@@ -28,7 +28,6 @@ import type {
   ExecutePostActionMenuChoice as ExecutePostActionMenuChoice,
   StartPostActionSession,
 } from '../action-types'
-import { SelectComponents } from '../action-types'
 import {
   isClearInteractionSession,
   isCreateOrUpdateInteractionSession,

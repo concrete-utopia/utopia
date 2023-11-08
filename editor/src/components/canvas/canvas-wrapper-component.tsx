@@ -1,6 +1,11 @@
+import * as friendlyWords from 'friendly-words'
 import React from 'react'
+import { getProjectID } from '../../common/env-vars'
+import { isLoginNotYetKnown } from '../../common/user'
 import { usePubSubAtomWriteOnly } from '../../core/shared/atom-with-pub-sub'
+import * as EP from '../../core/shared/element-path'
 import type { ErrorMessage } from '../../core/shared/error-messages'
+import { canvasPoint, windowPoint } from '../../core/shared/math-utils'
 import { useErrorOverlayRecords } from '../../core/shared/runtime-report-logs'
 import { NO_OP, fastForEach } from '../../core/shared/utils'
 import { EditorCanvas } from '../../templates/editor-canvas'
@@ -8,8 +13,20 @@ import CloseButton from '../../third-party/react-error-overlay/components/CloseB
 import ErrorOverlay from '../../third-party/react-error-overlay/components/ErrorOverlay'
 import Footer from '../../third-party/react-error-overlay/components/Footer'
 import Header from '../../third-party/react-error-overlay/components/Header'
-import { Button, FlexColumn, FlexRow, UtopiaTheme } from '../../uuiui'
-import { clearPostActionData, setSafeMode } from '../editor/actions/action-creators'
+import {
+  Button,
+  FlexColumn,
+  FlexRow,
+  UtopiaTheme,
+  getPreferredColorScheme,
+  useColorTheme,
+} from '../../uuiui'
+import { isLoggedIn } from '../editor/action-types'
+import {
+  clearPostActionData,
+  setSafeMode,
+  setSelectedComponents,
+} from '../editor/actions/action-creators'
 import { useDispatch } from '../editor/store/dispatch-context'
 import {
   CanvasSizeAtom,
@@ -17,8 +34,19 @@ import {
   getAllCodeEditorErrors,
 } from '../editor/store/editor-state'
 import { Substores, useEditorState } from '../editor/store/store-hook'
+import CanvasActions from './canvas-actions'
+import type { CanvasAction } from './canvas-types'
 import { shouldShowErrorOverlay } from './canvas-utils'
 import { FloatingPostActionMenu } from './controls/select-mode/post-action-menu'
+import { canvasPointToWindowPoint, windowToCanvasCoordinates } from './dom-lookup'
+import {
+  Multiplayer,
+  multiplayerCursorColors,
+  type MultiplayerCursorColor,
+  type MultiplayerState,
+} from './multiplayer'
+import type { OutboundMessage } from './multiplayer-messages'
+import { messageMove } from './multiplayer-messages'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
@@ -41,6 +69,11 @@ export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<Error
       return passTimes[errorMessage.source] === errorMessage.passTime
     }
   })
+}
+
+function generateAnonymousUserName(): string {
+  const suffix = friendlyWords.objects[Math.floor(Math.random() * friendlyWords.objects.length)]
+  return 'Anonymous' + ' ' + suffix
 }
 
 export const CanvasWrapperComponent = React.memo(() => {
@@ -96,6 +129,141 @@ export const CanvasWrapperComponent = React.memo(() => {
     }
   }, [dispatch, shouldDimErrorMessage])
 
+  const anonymousPlayerName = React.useMemo(() => generateAnonymousUserName(), [])
+  const [playerColors, setPlayerColors] = React.useState<{
+    [id: string]: MultiplayerCursorColor
+  }>({})
+
+  const loginState = useEditorState(Substores.userState, (store) => store.userState.loginState, '')
+  React.useEffect(() => {
+    Multiplayer.state.loginState = loginState
+  }, [loginState])
+
+  const canvasScale = useEditorState(Substores.canvas, (store) => store.editor.canvas.scale, '')
+  const canvasOffset = useEditorState(
+    Substores.canvasOffset,
+    (store) => store.editor.canvas.realCanvasOffset,
+    '',
+  )
+  const [roomState, setRoomState] = React.useState<MultiplayerState | null>()
+  const players = React.useMemo(() => {
+    return roomState?.players ?? []
+  }, [roomState])
+
+  const listener = React.useCallback(
+    (data: OutboundMessage) => {
+      if (data.type === 'state') {
+        setRoomState(data.state)
+        setPlayerColors((current) => {
+          const colors =
+            getPreferredColorScheme() === 'light'
+              ? multiplayerCursorColors.light
+              : multiplayerCursorColors.dark
+          for (const player of data.state.players) {
+            if (current[player.id] == null) {
+              const color = colors[Math.floor(Math.random() * colors.length)]
+              current[player.id] = color
+            }
+          }
+          return current
+        })
+        if (data.state.selectedElements != null) {
+          dispatch([setSelectedComponents(data.state.selectedElements.map(EP.fromString))])
+        }
+      } else if (data.type === 'move') {
+        setRoomState((state) => {
+          if (state == null) {
+            return state
+          }
+          const newPlayers = [...state.players]
+          const index = newPlayers.findIndex((p) => p.id === data.move.playerId)
+          if (index >= 0) {
+            newPlayers[index].position = data.move.position
+            newPlayers[index].canvasOffset = data.move.canvasOffset
+            newPlayers[index].canvasScale = data.move.canvasScale
+          }
+          return { ...state, players: newPlayers }
+        })
+      }
+    },
+    [dispatch],
+  )
+
+  Multiplayer.listen('canvas', listener)
+
+  const [following, setFollowing] = React.useState<string | null>(null)
+
+  React.useEffect(() => {
+    if (following == null) {
+      return
+    }
+    if (roomState == null) {
+      return
+    }
+    const target = roomState.players.find((p) => p.id === following)
+    if (target == null) {
+      return
+    }
+    const actions: CanvasAction[] = []
+    if (target.canvasScale != null && target.canvasScale !== canvasScale) {
+      actions.push(CanvasActions.zoom(target.canvasScale, null))
+    }
+    if (
+      target.canvasOffset != null &&
+      (target.canvasOffset.x !== canvasOffset.x || target.canvasOffset.y !== canvasOffset.y)
+    ) {
+      actions.push(CanvasActions.positionCanvas(target.canvasOffset))
+    }
+    dispatch(actions)
+  }, [roomState, following, dispatch, canvasScale, canvasOffset])
+
+  const projectId = useEditorState(Substores.restOfEditor, (store) => store.editor.id, '')
+
+  React.useEffect(() => {
+    if (projectId == null || isLoginNotYetKnown(loginState)) {
+      return
+    }
+    const id = isLoggedIn(loginState) ? loginState.user.userId : anonymousPlayerName
+    const name = isLoggedIn(loginState)
+      ? loginState.user.name ??
+        loginState.user.email?.replace(/@.+/, '') ?? // TODO heh this is baaaaaad
+        anonymousPlayerName
+      : anonymousPlayerName
+    Multiplayer.state.playerId = id
+    Multiplayer.state.playerName = name
+    const previousRoom = Multiplayer.state.roomId
+    Multiplayer.state.roomId = projectId
+    if (previousRoom != null && previousRoom !== projectId) {
+      Multiplayer.reset()
+    }
+  }, [loginState, anonymousPlayerName, projectId])
+
+  const onMouseMove = React.useCallback(
+    (e: React.MouseEvent) => {
+      Multiplayer.send(
+        messageMove({
+          position: windowToCanvasCoordinates(
+            canvasScale,
+            canvasOffset,
+            windowPoint({ x: e.clientX, y: e.clientY }),
+          ).canvasPositionRounded,
+          canvasOffset: canvasOffset,
+          canvasScale: canvasScale,
+        }),
+      )
+    },
+    [canvasScale, canvasOffset],
+  )
+
+  const colorTheme = useColorTheme()
+
+  const onClickFollow = React.useCallback(
+    (id: string) => () => {
+      setFollowing((current) => (current === id ? null : id))
+    },
+    [],
+  )
+
   return (
     <FlexColumn
       className='CanvasWrapperComponent'
@@ -108,7 +276,111 @@ export const CanvasWrapperComponent = React.memo(() => {
         height: '100%',
         // ^ prevents Monaco from pushing the inspector out
       }}
+      onMouseMove={onMouseMove}
     >
+      {players.length > 0 && roomState != null && (
+        <div
+          style={{
+            position: 'fixed',
+            zIndex: 1000,
+            bottom: 5,
+            right: 5,
+            boxShadow: `0px 0px 3px ${colorTheme.panelShadowColor.value}`,
+            padding: 4,
+            fontSize: 10,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 4,
+            backgroundColor: colorTheme.bg0.value,
+            color: colorTheme.fg0.value,
+          }}
+        >
+          {roomState.players
+            .sort((a, b) => -a.id.localeCompare(b.id))
+            .map((p) => {
+              return (
+                <div
+                  key={p.id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    border: `1px solid ${colorTheme.border0.value}`,
+                    padding: 4,
+                  }}
+                >
+                  <div
+                    style={{
+                      borderRadius: '100%',
+                      backgroundColor: playerColors[p.id]?.background ?? '#000',
+                      width: 6,
+                      height: 6,
+                    }}
+                  />
+                  <div style={{ flex: 1 }}>{p.name}</div>
+                  {p.id !== Multiplayer.state.playerId ? (
+                    <Button
+                      spotlight
+                      highlight
+                      style={{ padding: '0 4px' }}
+                      onClick={onClickFollow(p.id)}
+                    >
+                      {following !== p.id ? 'Follow' : 'Stop following'}
+                    </Button>
+                  ) : (
+                    <div>(it's you!)</div>
+                  )}
+                </div>
+              )
+            })}
+        </div>
+      )}
+      {roomState != null &&
+        roomState.players.map((p) => {
+          if (p.id == Multiplayer.state.playerId || p.position == null) {
+            return null
+          }
+          const pos = canvasPointToWindowPoint(p.position, canvasScale, canvasOffset)
+          return (
+            <div
+              key={p.id}
+              style={{
+                position: 'fixed',
+                left: pos.x,
+                top: pos.y,
+                zIndex: 1,
+                pointerEvents: 'none',
+              }}
+            >
+              <div style={{ position: 'relative' }}>
+                <div
+                  style={{
+                    borderRadius: '100%',
+                    backgroundColor: playerColors[p.id]?.background ?? '#000',
+                    width: 4,
+                    height: 4,
+                    position: 'absolute',
+                  }}
+                />
+                <div
+                  style={{
+                    position: 'absolute',
+                    backgroundColor: playerColors[p.id]?.background ?? '#000',
+                    color: playerColors[p.id]?.foreground ?? '#fff',
+                    borderRadius: 4,
+                    fontSize: 10,
+                    fontWeight: 'bold',
+                    padding: '0px 2px',
+                    top: 4,
+                    left: 4,
+                  }}
+                >
+                  {p.name ?? p.id}
+                </div>
+              </div>
+            </div>
+          )
+        })}
       {fatalErrors.length === 0 && !safeMode ? (
         <EditorCanvas
           userState={userState}

@@ -219,6 +219,7 @@ import type {
   WrapInElementWith,
   ScrollToPosition,
   UpdateProjectServerState,
+  SetSelectedComponents,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -322,6 +323,13 @@ export function selectComponents(
     action: 'SELECT_COMPONENTS',
     target: target,
     addToSelection: addToSelection,
+  }
+}
+
+export function setSelectedComponents(paths: ElementPath[]): SetSelectedComponents {
+  return {
+    action: 'SET_SELECTED_COMPONENTS',
+    paths: paths,
   }
 }
 

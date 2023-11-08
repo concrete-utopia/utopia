@@ -75,6 +75,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'CLEAR_PARSE_OR_PRINT_IN_FLIGHT':
     case 'UPDATE_FROM_WORKER':
     case 'SELECT_COMPONENTS':
+    case 'SET_SELECTED_COMPONENTS':
     case 'TOGGLE_CANVAS_IS_LIVE':
     case 'RENAME_PROP_KEY':
     case 'SET_SAFE_MODE':
