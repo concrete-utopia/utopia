@@ -311,6 +311,7 @@ import type {
   UpdateConditionalExpression,
   SetMapCountOverride,
   ScrollToPosition,
+  SetSelectedComponents,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -534,6 +535,8 @@ import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import { resultForFirstApplicableStrategy } from '../../inspector/inspector-strategies/inspector-strategy'
 import { reparentToUnwrapAsAbsoluteStrategy } from '../one-shot-unwrap-strategies/reparent-to-unwrap-as-absolute-strategy'
 import { convertToAbsoluteAndReparentToUnwrapStrategy } from '../one-shot-unwrap-strategies/convert-to-absolute-and-reparent-to-unwrap'
+import { Multiplayer } from '../../canvas/multiplayer'
+import { messageSelection } from '../../canvas/multiplayer-messages'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1957,6 +1960,12 @@ export const UPDATE_FNS = {
   MOVE_SELECTED_FORWARD: (editor: EditorModel): EditorModel => {
     return setZIndexOnSelected(editor, 'forward')
   },
+  SET_SELECTED_COMPONENTS: (action: SetSelectedComponents, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      selectedViews: action.paths,
+    }
+  },
   SELECT_COMPONENTS: (
     action: SelectComponents,
     editor: EditorModel,
@@ -1970,6 +1979,8 @@ export const UPDATE_FNS = {
     } else {
       newlySelectedPaths = EP.uniqueElementPaths(action.target)
     }
+
+    Multiplayer.send(messageSelection(newlySelectedPaths))
 
     const updatedEditor: EditorModel = {
       ...editor,
@@ -1988,6 +1999,8 @@ export const UPDATE_FNS = {
     if (editor.selectedViews.length === 0) {
       return UPDATE_FNS.SET_FOCUSED_ELEMENT(setFocusedElement(null), editor, derived)
     }
+
+    Multiplayer.send(messageSelection([]))
 
     return {
       ...editor,

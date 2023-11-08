@@ -154,6 +154,11 @@ export type DeleteView = {
   target: ElementPath
 }
 
+export type SetSelectedComponents = {
+  action: 'SET_SELECTED_COMPONENTS'
+  paths: ElementPath[]
+}
+
 export type SelectComponents = {
   action: 'SELECT_COMPONENTS'
   target: Array<ElementPath>
@@ -1057,6 +1062,7 @@ export type EditorAction =
   | UpdateEditorMode
   | SwitchEditorMode
   | SelectComponents
+  | SetSelectedComponents
   | UnsetProperty
   | Canvas
   | DuplicateSelected

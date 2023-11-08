@@ -99,6 +99,8 @@ import { CursorComponent } from '../components/canvas/controls/select-mode/curso
 import * as ResizeObserverSyntheticDefault from 'resize-observer-polyfill'
 import { isFeatureEnabled } from '../utils/feature-switches'
 import { getCanvasViewportCenter } from './paste-helpers'
+import { Multiplayer } from '../components/canvas/multiplayer'
+import { messageMove } from '../components/canvas/multiplayer-messages'
 const ResizeObserver = ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
@@ -348,6 +350,7 @@ export function runLocalCanvasAction(
         model.canvas.realCanvasOffset,
         Utils.negate(action.delta),
       )
+      Multiplayer.send(messageMove({ canvasOffset: newCanvasOffset }))
       return {
         ...model,
         canvas: {
@@ -358,6 +361,7 @@ export function runLocalCanvasAction(
       }
     }
     case 'POSITION_CANVAS':
+      Multiplayer.send(messageMove({ canvasOffset: action.position }))
       return {
         ...model,
         canvas: {
@@ -391,6 +395,8 @@ export function runLocalCanvasAction(
         focusPoint,
         false,
       )
+
+      Multiplayer.send(messageMove({ canvasOffset: newCanvasOffset, canvasScale: scale }))
 
       return {
         ...model,
