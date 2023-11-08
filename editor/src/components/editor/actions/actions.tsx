@@ -312,6 +312,7 @@ import type {
   SetMapCountOverride,
   ScrollToPosition,
   ApplyCollabFileUpdate,
+  UpdateTopLevelElements,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -420,7 +421,10 @@ import {
   sendSetVSCodeTheme,
 } from '../../../core/vscode/vscode-bridge'
 import { createClipboardDataFromSelection, Clipboard } from '../../../utils/clipboard'
-import { NavigatorStateKeepDeepEquality } from '../store/store-deep-equality-instances'
+import {
+  NavigatorStateKeepDeepEquality,
+  TopLevelElementKeepDeepEquality,
+} from '../store/store-deep-equality-instances'
 import type { MouseButtonsPressed } from '../../../utils/mouse'
 import { addButtonPressed, removeButtonPressed } from '../../../utils/mouse'
 import { stripLeadingSlash } from '../../../utils/path-utils'
@@ -536,10 +540,8 @@ import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import { resultForFirstApplicableStrategy } from '../../inspector/inspector-strategies/inspector-strategy'
 import { reparentToUnwrapAsAbsoluteStrategy } from '../one-shot-unwrap-strategies/reparent-to-unwrap-as-absolute-strategy'
 import { convertToAbsoluteAndReparentToUnwrapStrategy } from '../one-shot-unwrap-strategies/convert-to-absolute-and-reparent-to-unwrap'
-import {
-  addHookForProjectChanges,
-  populateCollaborativeProjectContents,
-} from '../store/collaborative-editing'
+import { addHookForProjectChanges } from '../store/collaborative-editing'
+import { arrayDeepEquality } from '../../../utils/deep-equality'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1595,10 +1597,10 @@ export const UPDATE_FNS = {
       dispatch,
       StoryboardFilePath,
     )
-    populateCollaborativeProjectContents(
-      collaborativeEditingSupport,
-      newModelMergedWithStoredStateAndStoryboardFile.projectContents,
-    )
+    // populateCollaborativeProjectContents(
+    //   collaborativeEditingSupport,
+    //   newModelMergedWithStoredStateAndStoryboardFile.projectContents,
+    // )
     addHookForProjectChanges(collaborativeEditingSupport, dispatch)
 
     return loadModel(newModelMergedWithStoredStateAndStoryboardFile, oldEditor)
@@ -5323,8 +5325,26 @@ export const UPDATE_FNS = {
     return modifyParseSuccessAtPath(
       action.fullPath,
       editor,
-      () => {
-        return action.update.success
+      (success) => {
+        return success
+        // return action.update.success
+      },
+      false,
+    )
+  },
+  UPDATE_TOP_LEVEL_ELEMENTS: (action: UpdateTopLevelElements, editor: EditorModel): EditorModel => {
+    return modifyParseSuccessAtPath(
+      action.fullPath,
+      editor,
+      (parsed) => {
+        const newTopLevelElements = arrayDeepEquality(TopLevelElementKeepDeepEquality)(
+          parsed.topLevelElements,
+          action.topLevelElements,
+        ).value
+        return {
+          ...parsed,
+          topLevelElements: newTopLevelElements,
+        }
       },
       false,
     )

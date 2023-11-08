@@ -6,6 +6,7 @@ import type {
   JSXElementChild,
   JSXConditionalExpression,
   JSXFragment,
+  TopLevelElement,
 } from '../../core/shared/element-template'
 import { SettableLayoutSystem } from '../../core/shared/element-template'
 import type { KeysPressed, Key } from '../../utils/keyboard'
@@ -1056,6 +1057,12 @@ export interface ApplyCollabFileUpdate {
   update: CollabFile
 }
 
+export interface UpdateTopLevelElements {
+  action: 'UPDATE_TOP_LEVEL_ELEMENTS'
+  fullPath: string
+  topLevelElements: Array<TopLevelElement>
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
@@ -1227,6 +1234,7 @@ export type EditorAction =
   | TruncateHistory
   | UpdateProjectServerState
   | ApplyCollabFileUpdate
+  | UpdateTopLevelElements
 
 export type DispatchPriority =
   | 'everyone'

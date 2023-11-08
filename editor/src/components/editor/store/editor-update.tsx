@@ -380,6 +380,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SWITCH_CONDITIONAL_BRANCHES(action, state)
     case 'APPLY_COLLAB_FILE_UPDATE':
       return UPDATE_FNS.APPLY_COLLAB_FILE_UPDATE(action, state)
+    case 'UPDATE_TOP_LEVEL_ELEMENTS':
+      return UPDATE_FNS.UPDATE_TOP_LEVEL_ELEMENTS(action, state)
     default:
       return state
   }

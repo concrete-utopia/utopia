@@ -197,6 +197,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_CONIDTIONAL_EXPRESSION':
     case 'CUT_SELECTION_TO_CLIPBOARD':
     case 'APPLY_COLLAB_FILE_UPDATE':
+    case 'UPDATE_TOP_LEVEL_ELEMENTS':
       return false
     case 'SAVE_ASSET':
       return (

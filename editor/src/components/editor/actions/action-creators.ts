@@ -11,6 +11,7 @@ import type {
   JSXElementChild,
   JSXConditionalExpression,
   JSXFragment,
+  TopLevelElement,
 } from '../../../core/shared/element-template'
 import type {
   CanvasPoint,
@@ -220,6 +221,7 @@ import type {
   ScrollToPosition,
   UpdateProjectServerState,
   ApplyCollabFileUpdate,
+  UpdateTopLevelElements,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -1671,5 +1673,16 @@ export function applyCollabFileUpdate(
     action: 'APPLY_COLLAB_FILE_UPDATE',
     fullPath: fullPath,
     update: collabFileUpdate,
+  }
+}
+
+export function updateTopLevelElements(
+  fullPath: string,
+  topLevelElements: Array<TopLevelElement>,
+): UpdateTopLevelElements {
+  return {
+    action: 'UPDATE_TOP_LEVEL_ELEMENTS',
+    fullPath: fullPath,
+    topLevelElements: topLevelElements,
   }
 }
