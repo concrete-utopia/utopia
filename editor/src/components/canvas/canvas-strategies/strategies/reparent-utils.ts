@@ -10,7 +10,7 @@ import type {
 } from '../../../../core/shared/element-template'
 import { isJSXConditionalExpression, isJSXElement } from '../../../../core/shared/element-template'
 import * as EP from '../../../../core/shared/element-path'
-import { getRequiredImportsForElement } from '../../../editor/import-utils'
+import { getRequiredImportsForElement, handleDuplicateImports } from '../../../editor/import-utils'
 import { forceNotNull } from '../../../../core/shared/optional-utils'
 import { addImportsToFile } from '../../commands/add-imports-to-file-command'
 import type { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
@@ -46,13 +46,10 @@ import {
   lastOfNonEmptyArray,
 } from '../../../../core/shared/array-utils'
 import type { CanvasRectangle } from '../../../../core/shared/math-utils'
-import {
-  boundingRectangleArray,
-  isInfinityRectangle,
-  nullIfInfinity,
-} from '../../../../core/shared/math-utils'
+import { boundingRectangleArray, nullIfInfinity } from '../../../../core/shared/math-utils'
 import { isElementRenderedBySameComponent } from './reparent-helpers/reparent-helpers'
 import type { ParsedCopyData } from '../../../../utils/clipboard'
+import { getParseSuccessForFilePath } from '../../canvas-utils'
 
 interface GetReparentOutcomeResult {
   commands: Array<CanvasCommand>
@@ -86,6 +83,27 @@ export function elementToReparent(element: JSXElementChild, imports: Imports): E
 }
 
 export type ToReparent = PathToReparent | ElementToReparent
+
+function adjustElementDuplicateName(
+  element: ElementToReparent,
+  targetFile: string,
+  projectContents: ProjectContentTreeRoot,
+): ElementToReparent {
+  const fileContents = getParseSuccessForFilePath(targetFile, projectContents)
+  if (fileContents == null) {
+    return element
+  }
+  const { imports, nameMapping } = handleDuplicateImports(fileContents.imports, element.imports)
+  // handle element name
+  if (element.element.type === 'JSX_ELEMENT') {
+    const elementName = MetadataUtils.getJSXElementName(element.element)?.baseVariable
+    if (elementName != null && nameMapping.has(elementName)) {
+      element.element.name.baseVariable = nameMapping.get(elementName)!
+    }
+  }
+  element.imports = imports
+  return element
+}
 
 export function getReparentOutcome(
   metadata: ElementInstanceMetadataMap,
@@ -140,10 +158,15 @@ export function getReparentOutcome(
       newPath = EP.appendToPath(newParentElementPath, EP.toUid(toReparent.target))
       break
     case 'ELEMENT_TO_REPARENT':
-      newPath = EP.appendToPath(newParentElementPath, getUtopiaID(toReparent.element))
-      commands.push(addImportsToFile(whenToRun, newTargetFilePath, toReparent.imports))
+      const adjustedElement = adjustElementDuplicateName(
+        toReparent,
+        newTargetFilePath,
+        projectContents,
+      )
+      newPath = EP.appendToPath(newParentElementPath, getUtopiaID(adjustedElement.element))
+      commands.push(addImportsToFile(whenToRun, newTargetFilePath, adjustedElement.imports))
       commands.push(
-        addElement(whenToRun, targetParent, toReparent.element, {
+        addElement(whenToRun, targetParent, adjustedElement.element, {
           indexPosition: indexPosition ?? undefined,
         }),
       )
