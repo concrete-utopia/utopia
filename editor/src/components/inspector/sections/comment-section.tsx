@@ -28,16 +28,6 @@ export const CommentSection = React.memo(({ paths }: { paths: ElementPath[] }) =
     'CommentSection element',
   )
 
-  const projectId = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.id,
-    'CommentSection projectId',
-  )
-
-  if (projectId == null) {
-    return null
-  }
-
   if (element == null) {
     return null
   }
@@ -51,22 +41,20 @@ export const CommentSection = React.memo(({ paths }: { paths: ElementPath[] }) =
 
   return (
     <div onKeyDown={stopPropagation} onKeyUp={stopPropagation}>
-      <RoomProvider id={projectId} initialPresence={{}}>
-        <InspectorSubsectionHeader>
-          <FlexRow
-            style={{
-              flexGrow: 1,
-              gap: 8,
-              height: 42,
-            }}
-          >
-            <span>Comments</span>
-          </FlexRow>
-        </InspectorSubsectionHeader>
-        <ClientSideSuspense fallback={<div>Loading…</div>}>
-          {() => <Room id={threadId} path={paths[0]} />}
-        </ClientSideSuspense>
-      </RoomProvider>
+      <InspectorSubsectionHeader>
+        <FlexRow
+          style={{
+            flexGrow: 1,
+            gap: 8,
+            height: 42,
+          }}
+        >
+          <span>Comments</span>
+        </FlexRow>
+      </InspectorSubsectionHeader>
+      <ClientSideSuspense fallback={<div>Loading…</div>}>
+        {() => <Room id={threadId} path={paths[0]} />}
+      </ClientSideSuspense>
     </div>
   )
 })
@@ -105,7 +93,9 @@ function Room(props: RoomProps) {
       // Create a new thread
       const newThread = createThread({
         body,
-        metadata: {},
+        metadata: {
+          type: 'element',
+        },
       })
 
       dispatch([setCommentId(props.path, newThread.id)])
