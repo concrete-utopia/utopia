@@ -97,8 +97,12 @@ export function getHookValueRef() {
 export function restoreHookValues(snapshot: typeof HookValueReff.current) {
   Object.values(snapshot).forEach(({ fiberReference, hookValues, forceUpdate }) => {
     forEachHook((hook, index) => {
+      if (hookValues[index] === 'do-not-restore-state') {
+        return
+      }
       hook.memoizedState = hookValues[index]
       hook.baseState = hookValues[index]
+      hook.queue.lastRenderedState = hookValues[index]
     }, findHooksAfterSentinel(fiberReference.memoizedState))
 
     fiberReference.memoizedProps = { ...fiberReference.memoizedProps }
@@ -282,7 +286,9 @@ export function createComponentRendererComponent(params: {
       }
 
       forEachHook((hook, index) => {
-        HookValueReff.current[elementPathString].hookValues.push(hook.memoizedState)
+        const stateToStore =
+          hook.queue == null ? 'do-not-restore-state' : hook.queue.lastRenderedState
+        HookValueReff.current[elementPathString].hookValues.push(stateToStore)
       }, firstHookAfterSentinel)
     })
 
