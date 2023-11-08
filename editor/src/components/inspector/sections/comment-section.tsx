@@ -9,7 +9,7 @@ import {
   isUtopiaCommentFlagComment,
 } from '../../../core/shared/comment-flags'
 import { RoomProvider, useCreateThread, useThreads } from '../../../../liveblocks.config'
-import { ClientSideSuspense } from '@liveblocks/react'
+import { ClientSideSuspense, createRoomContext } from '@liveblocks/react'
 import type { ComposerSubmitComment } from '@liveblocks/react-comments'
 import { Comment, Composer } from '@liveblocks/react-comments'
 import { stopPropagation } from '../common/inspector-utils'
@@ -26,8 +26,18 @@ export const CommentSection = React.memo(({ paths }: { paths: ElementPath[] }) =
       }
       return findMaybeConditionalExpression(paths[0], store.editor.jsxMetadata)
     },
-    'CommentSection',
+    'CommentSection element',
   )
+
+  const projectId = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.id,
+    'CommentSection projectId',
+  )
+
+  if (projectId == null) {
+    return null
+  }
 
   if (element == null) {
     return null
@@ -42,7 +52,7 @@ export const CommentSection = React.memo(({ paths }: { paths: ElementPath[] }) =
 
   return (
     <div onKeyDown={stopPropagation} onKeyUp={stopPropagation}>
-      <RoomProvider id={'my-room'} initialPresence={{}}>
+      <RoomProvider id={projectId} initialPresence={{}}>
         <InspectorSubsectionHeader>
           <FlexRow
             style={{
@@ -63,7 +73,12 @@ export const CommentSection = React.memo(({ paths }: { paths: ElementPath[] }) =
 })
 CommentSection.displayName = 'CommentSection'
 
-export function Room(props: any) {
+interface RoomProps {
+  id: string | null
+  path: ElementPath
+}
+
+function Room(props: RoomProps) {
   const { threads } = useThreads()
 
   const createThread = useCreateThread()
@@ -99,7 +114,7 @@ export function Room(props: any) {
     [createThread, dispatch, props.path],
   )
 
-  if (thread == null) {
+  if (threadId == null || thread == null) {
     return <Composer onComposerSubmit={onCreateThread} />
   }
 
