@@ -5,26 +5,41 @@ import { jsx } from '@emotion/react'
 import React, { useState } from 'react'
 import type { TooltipProps } from '../../uuiui'
 import { UtopiaTheme, colorTheme } from '../../uuiui'
-import {
-  FlexColumn,
-  Icn,
-  SquareButton,
-  Tooltip as TooltipWithoutSpanFixme,
-  useColorTheme,
-} from '../../uuiui'
+import { FlexColumn, Icn, SquareButton, Tooltip as TooltipWithoutSpanFixme } from '../../uuiui'
 import { useDispatch } from './store/dispatch-context'
-import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
+import { Substores, useEditorState } from './store/store-hook'
 import { togglePanel } from './actions/action-creators'
 import { stopPropagation } from '../inspector/common/inspector-utils'
 import { setFocus } from '../common/actions'
+import { useAtom } from 'jotai'
+import { GridPanelsStateAtom } from '../canvas/grid-panels-state'
+import type { StoredLayout, StoredPanel } from '../canvas/stored-layout'
+import { assertNever } from '../../core/shared/utils'
+import { TestMenu } from '../titlebar/test-menu'
 
-export const ClosedPanels = React.memo(() => {
+function getPanelColumn(side: 'left' | 'right', panels: StoredLayout): Array<StoredPanel> {
+  switch (side) {
+    case 'left':
+      return [...panels[0].panels, ...panels[1].panels]
+    case 'right':
+      return [...panels[2].panels, ...panels[3].panels]
+    default:
+      assertNever(side)
+  }
+}
+
+export const ClosedPanels = React.memo((props: { side: 'left' | 'right' }) => {
   const dispatch = useDispatch()
-  const theme = useColorTheme()
+  const [panelState] = useAtom(GridPanelsStateAtom)
+  const thisColumn = getPanelColumn(props.side, panelState)
 
   const inspectorInvisible = useEditorState(
     Substores.restOfEditor,
-    (store) => !store.editor.rightMenu.visible,
+    (store) => {
+      const theInspectorInvisible = !store.editor.rightMenu.visible
+      const inspectorOnThisSide = thisColumn.some((panel) => panel.name === 'inspector')
+      return theInspectorInvisible && inspectorOnThisSide
+    },
     'SettingsPanel inspector.minimized',
   )
 
@@ -34,7 +49,11 @@ export const ClosedPanels = React.memo(() => {
 
   const navigatorInvisible = useEditorState(
     Substores.restOfEditor,
-    (store) => !store.editor.leftMenu.visible,
+    (store) => {
+      const theNavigatorInvisible = !store.editor.leftMenu.visible
+      const navigatorOnThisSide = thisColumn.some((panel) => panel.name === 'navigator')
+      return theNavigatorInvisible && navigatorOnThisSide
+    },
     'SettingsPanel navigator.minimised',
   )
 
@@ -44,7 +63,11 @@ export const ClosedPanels = React.memo(() => {
 
   const editorInvisible = useEditorState(
     Substores.restOfEditor,
-    (store) => !store.editor.interfaceDesigner.codePaneVisible,
+    (store) => {
+      const theEditorInvisible = !store.editor.interfaceDesigner.codePaneVisible
+      const codeEditorOnThisSide = thisColumn.some((panel) => panel.name === 'code-editor')
+      return theEditorInvisible && codeEditorOnThisSide
+    },
     'SettingsPanel navigator.minimised',
   )
 
@@ -72,43 +95,56 @@ export const ClosedPanels = React.memo(() => {
 
   return (
     <FlexColumn
-      // Mouse events should never go through this component.
-      onClick={stopPropagation}
-      onMouseDown={focusCanvasOnMouseDown}
-      onMouseUp={stopPropagation}
       style={{
-        gap: 10,
-        height: 300,
-        width: 32,
-        zIndex: 100,
-        // background: isVisible ? 'pink' : 'yellow',
+        pointerEvents: 'initial',
+        alignItems: 'flex-end',
+        justifyContent: 'space-between',
+        height: '100%',
       }}
-      onMouseEnter={setIsVisibleTrue}
-      onMouseLeave={setIsVisibleFalse}
     >
-      {navigatorInvisible ? (
-        <Tooltip title='Toggle Navigator (⌘⌥1)' placement='bottom'>
-          <InsertModeButton
-            iconType='navigator'
-            onClick={toggleNavigatorVisible}
-            visible={isVisible}
-          />
-        </Tooltip>
-      ) : null}
-      {editorInvisible ? (
-        <Tooltip title='Toggle Code Editor (⌘.)' placement='bottom'>
-          <InsertModeButton iconType='cody' onClick={toggleCodeEditorVisible} visible={isVisible} />
-        </Tooltip>
-      ) : null}
-      {inspectorInvisible ? (
-        <Tooltip title='Toggle Inspector (⌘⌥2)' placement='bottom'>
-          <InsertModeButton
-            iconType='inspector'
-            onClick={toggleInspectorVisible}
-            visible={isVisible}
-          />
-        </Tooltip>
-      ) : null}
+      <FlexColumn
+        // Mouse events should never go through this component.
+        onClick={stopPropagation}
+        onMouseDown={focusCanvasOnMouseDown}
+        onMouseUp={stopPropagation}
+        style={{
+          gap: 10,
+          height: 300,
+          width: 32,
+          pointerEvents: 'initial',
+        }}
+        onMouseEnter={setIsVisibleTrue}
+        onMouseLeave={setIsVisibleFalse}
+      >
+        {navigatorInvisible ? (
+          <Tooltip title='Toggle Navigator (⌘⌥1)' placement='bottom'>
+            <ClosedPanelButton
+              iconType='navigator'
+              onClick={toggleNavigatorVisible}
+              visible={isVisible}
+            />
+          </Tooltip>
+        ) : null}
+        {editorInvisible ? (
+          <Tooltip title='Toggle Code Editor (⌘.)' placement='bottom'>
+            <ClosedPanelButton
+              iconType='cody'
+              onClick={toggleCodeEditorVisible}
+              visible={isVisible}
+            />
+          </Tooltip>
+        ) : null}
+        {inspectorInvisible ? (
+          <Tooltip title='Toggle Inspector (⌘⌥2)' placement='bottom'>
+            <ClosedPanelButton
+              iconType='inspector'
+              onClick={toggleInspectorVisible}
+              visible={isVisible}
+            />
+          </Tooltip>
+        ) : null}
+      </FlexColumn>
+      {props.side === 'right' ? <TestMenu /> : null}
     </FlexColumn>
   )
 })
@@ -118,7 +154,7 @@ interface InsertModeButtonProps {
   visible?: boolean
   onClick: (event: React.MouseEvent<Element>) => void
 }
-const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
+const ClosedPanelButton = React.memo((props: InsertModeButtonProps) => {
   const [isHovered, setIsHovered] = useState(false)
   const setIsHoveredTrue = React.useCallback(() => {
     setIsHovered(true)
@@ -131,7 +167,7 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
   return (
     <SquareButton
       style={{
-        backgroundColor: props.visible ? colorTheme.bg1.value : 'transparent',
+        background: props.visible ? colorTheme.bg1.value : 'transparent',
         overflow: 'hidden',
         boxShadow: UtopiaTheme.panelStyles.shadows.medium,
         pointerEvents: 'initial',
@@ -140,6 +176,7 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
         width: 32,
         height: 32,
         borderRadius: 32,
+        transition: 'background .1s .1s ease-in-out',
       }}
       onClick={props.onClick}
       onMouseEnter={setIsHoveredTrue}
