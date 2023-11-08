@@ -79,15 +79,16 @@ function tryToGetInstancePath(
     return null
   }
 }
+export interface HookValueMap {
+  [elementPathString: string]: {
+    fiberReference: any
+    hookValues: { [hookID: number]: any }
+    forceUpdate: () => void
+  }
+}
 
 const HookValueReff: {
-  current: {
-    [elementPathString: string]: {
-      fiberReference: any
-      hookValues: Array<any>
-      forceUpdate: () => void
-    }
-  }
+  current: HookValueMap
 } = { current: {} }
 
 export function getHookValueRef() {
@@ -96,18 +97,14 @@ export function getHookValueRef() {
 
 export function restoreHookValues(snapshot: typeof HookValueReff.current) {
   Object.values(snapshot).forEach(({ fiberReference, hookValues, forceUpdate }) => {
-    forEachHook((hook, index) => {
-      if (hookValues[index] === 'do-not-restore-state') {
+    forEachHook((hook, hookID) => {
+      if (hookValues[hookID] === 'do-not-restore-state') {
         return
       }
-      hook.memoizedState = hookValues[index]
-      hook.baseState = hookValues[index]
-      hook.queue.lastRenderedState = hookValues[index]
-    }, findHooksAfterSentinel(fiberReference.memoizedState))
-
-    fiberReference.memoizedProps = { ...fiberReference.memoizedProps }
-
-    forceUpdate()
+      ;(window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__.renderers
+        .get(1)
+        .overrideHookState(fiberReference, hookID, [], hookValues[hookID])
+    }, fiberReference.memoizedState)
   })
 }
 
@@ -237,6 +234,7 @@ export function createComponentRendererComponent(params: {
       if (instancePath == null) {
         return
       }
+
       const elementPathString = EP.toString(instancePath)
       /**
        * TODO move this to a dedicated helper and share code with dom-walker
@@ -277,19 +275,25 @@ export function createComponentRendererComponent(params: {
 
       const matchingFiber = walkUpUntilMatchingFiber(foundFiber)
 
-      const firstHookAfterSentinel = findHooksAfterSentinel(matchingFiber.memoizedState)
-
       HookValueReff.current[elementPathString] = {
         fiberReference: matchingFiber,
-        hookValues: [],
+        hookValues: {},
         forceUpdate: forceUpdate,
       }
 
-      forEachHook((hook, index) => {
-        const stateToStore =
-          hook.queue == null ? 'do-not-restore-state' : hook.queue.lastRenderedState
-        HookValueReff.current[elementPathString].hookValues.push(stateToStore)
-      }, firstHookAfterSentinel)
+      forEachHook((hook, hookID) => {
+        // console.log(
+        //   'saving hook state',
+        //   matchingFiber.memoizedState.memoizedState,
+        //   hookID,
+        //   'queue',
+        //   hook.queue?.lastRenderedState,
+        //   hook.memoizedState,
+        //   hook.baseState,
+        // )
+        const stateToStore = hook.baseState
+        HookValueReff.current[elementPathString].hookValues[hookID] = stateToStore
+      }, matchingFiber.memoizedState)
     })
 
     React.useState('sentinel')
@@ -431,12 +435,24 @@ function isElementInChildrenPropTree(elementPath: string, props: any): boolean {
   }
 }
 
-function forEachHook(callback: (hook: any, hookIndex: number) => void, firstHook: any) {
+function forEachHook(callback: (hook: any, hookID: number) => void, firstHook: any) {
   if (firstHook == null) {
     return
   }
   let workingHook = firstHook
   let hookIndex = 0
+
+  while (workingHook.memoizedState !== 'sentinel') {
+    hookIndex++
+    workingHook = workingHook.next
+  }
+
+  // we increment one more to get after the sentinel
+  {
+    hookIndex++
+    workingHook = workingHook.next
+  }
+
   while (workingHook.memoizedState !== 'uto-sentinel') {
     callback(workingHook, hookIndex)
     hookIndex++
@@ -444,16 +460,16 @@ function forEachHook(callback: (hook: any, hookIndex: number) => void, firstHook
   }
 }
 
-function findHooksAfterSentinel(maybeSentinel: any) {
-  if (maybeSentinel == null) {
-    return null
-  }
+// function findHooksAfterSentinel(maybeSentinel: any) {
+//   if (maybeSentinel == null) {
+//     return null
+//   }
 
-  if (maybeSentinel.memoizedState === 'sentinel') {
-    if (maybeSentinel.next?.memoizedState === 'uto-sentinel') {
-      return null
-    }
-    return maybeSentinel.next
-  }
-  return findHooksAfterSentinel(maybeSentinel.next)
-}
+//   if (maybeSentinel.memoizedState === 'sentinel') {
+//     if (maybeSentinel.next?.memoizedState === 'uto-sentinel') {
+//       return null
+//     }
+//     return maybeSentinel.next
+//   }
+//   return findHooksAfterSentinel(maybeSentinel.next)
+// }
