@@ -282,16 +282,27 @@ export function createComponentRendererComponent(params: {
       }
 
       forEachHook((hook, hookID) => {
+        const stateToStore = (() => {
+          if (hook.baseQueue != null) {
+            return hook.queue.lastRenderedState
+          } else {
+            return hook.memoizedState
+          }
+        })()
+        // if (hookID === 46) {
+        // console.log('stateToStore', stateToStore)
         // console.log(
         //   'saving hook state',
         //   matchingFiber.memoizedState.memoizedState,
         //   hookID,
+        //   JSON.stringify(restOfBaseQueue),
         //   'queue',
-        //   hook.queue?.lastRenderedState,
+        //   hook.queue?.lanes,
+        //   JSON.stringify(hook.queue),
         //   hook.memoizedState,
         //   hook.baseState,
         // )
-        const stateToStore = hook.baseState
+        // }
         HookValueReff.current[elementPathString].hookValues[hookID] = stateToStore
       }, matchingFiber.memoizedState)
     })
