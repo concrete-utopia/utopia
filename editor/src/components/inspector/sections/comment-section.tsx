@@ -2,14 +2,13 @@ import '@liveblocks/react-comments/styles.css'
 import React from 'react'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { FlexRow, InspectorSubsectionHeader } from '../../../uuiui'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import {
   findUtopiaCommentFlag,
   isUtopiaCommentFlagComment,
 } from '../../../core/shared/comment-flags'
 import { RoomProvider, useCreateThread, useThreads } from '../../../../liveblocks.config'
-import { ClientSideSuspense, createRoomContext } from '@liveblocks/react'
+import { ClientSideSuspense } from '@liveblocks/react'
 import type { ComposerSubmitComment } from '@liveblocks/react-comments'
 import { Comment, Composer } from '@liveblocks/react-comments'
 import { stopPropagation } from '../common/inspector-utils'
