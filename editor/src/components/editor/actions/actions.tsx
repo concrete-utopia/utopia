@@ -1980,7 +1980,9 @@ export const UPDATE_FNS = {
       newlySelectedPaths = EP.uniqueElementPaths(action.target)
     }
 
-    Multiplayer.send(messageSelection(newlySelectedPaths))
+    if (!Multiplayer.state.following) {
+      Multiplayer.send(messageSelection(newlySelectedPaths))
+    }
 
     const updatedEditor: EditorModel = {
       ...editor,
@@ -2000,7 +2002,9 @@ export const UPDATE_FNS = {
       return UPDATE_FNS.SET_FOCUSED_ELEMENT(setFocusedElement(null), editor, derived)
     }
 
-    Multiplayer.send(messageSelection([]))
+    if (!Multiplayer.state.following) {
+      Multiplayer.send(messageSelection([]))
+    }
 
     return {
       ...editor,

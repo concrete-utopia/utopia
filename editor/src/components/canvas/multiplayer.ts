@@ -64,6 +64,7 @@ type State = {
   playerName: string | null
   roomId: string | null
   loginState: LoginState | null
+  following: boolean
 }
 
 function newState(): State {
@@ -74,6 +75,7 @@ function newState(): State {
     playerName: null,
     roomId: null,
     loginState: null,
+    following: false,
   }
 }
 

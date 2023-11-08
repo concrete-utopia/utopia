@@ -350,7 +350,9 @@ export function runLocalCanvasAction(
         model.canvas.realCanvasOffset,
         Utils.negate(action.delta),
       )
-      Multiplayer.send(messageMove({ canvasOffset: newCanvasOffset }))
+      if (!Multiplayer.state.following) {
+        Multiplayer.send(messageMove({ canvasOffset: newCanvasOffset }))
+      }
       return {
         ...model,
         canvas: {
@@ -361,7 +363,9 @@ export function runLocalCanvasAction(
       }
     }
     case 'POSITION_CANVAS':
-      Multiplayer.send(messageMove({ canvasOffset: action.position }))
+      if (!Multiplayer.state.following) {
+        Multiplayer.send(messageMove({ canvasOffset: action.position }))
+      }
       return {
         ...model,
         canvas: {
@@ -396,7 +400,9 @@ export function runLocalCanvasAction(
         false,
       )
 
-      Multiplayer.send(messageMove({ canvasOffset: newCanvasOffset, canvasScale: scale }))
+      if (!Multiplayer.state.following) {
+        Multiplayer.send(messageMove({ canvasOffset: newCanvasOffset, canvasScale: scale }))
+      }
 
       return {
         ...model,
