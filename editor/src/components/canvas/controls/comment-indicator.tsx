@@ -1,3 +1,6 @@
+/** @jsxRuntime classic */
+/** @jsx jsx */
+import { jsx, css } from '@emotion/react'
 import React from 'react'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { EditorModes } from '../../editor/editor-modes'
@@ -6,6 +9,7 @@ import { useThreads } from '../../../../liveblocks.config'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { switchEditorMode } from '../../editor/actions/action-creators'
 import { canvasPoint } from '../../../core/shared/math-utils'
+import { UtopiaTheme } from '../../../uuiui'
 
 export const CommentIndicator = React.memo(() => {
   return (
@@ -20,7 +24,7 @@ function Room() {
   const coordThreads = threads.filter((thread) => (thread.metadata as any)?.type === 'coord')
   const dispatch = useDispatch()
   return (
-    <>
+    <React.Fragment>
       {coordThreads.map((thread) => {
         const top = (thread.metadata as any).top
         const left = (thread.metadata as any).left
@@ -38,11 +42,41 @@ function Room() {
               dispatch([switchEditorMode(EditorModes.commentMode(point))])
             }}
           >
-            <CommentIcon />
+            <div
+              css={{
+                height: 24,
+                width: 24,
+                background: 'black',
+
+                border: '1px solid ',
+                borderRadius: '24px 24px 24px 0px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <div
+                style={{
+                  height: 20,
+                  width: 20,
+                  borderRadius: 10,
+                  background: '#ff00a7',
+                  color: 'white',
+                  fontSize: 9,
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+                }}
+              >
+                AN
+              </div>
+            </div>
           </div>
         )
       })}
-    </>
+    </React.Fragment>
   )
 }
 

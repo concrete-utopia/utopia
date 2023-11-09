@@ -159,9 +159,9 @@ export const CanvasWrapperComponent = React.memo(() => {
         setRoomState(data.state)
         setPlayerColors((current) => {
           const colors =
-            getPreferredColorScheme() === 'light'
-              ? multiplayerCursorColors.light
-              : multiplayerCursorColors.dark
+            getPreferredColorScheme() === 'dark'
+              ? multiplayerCursorColors.dark
+              : multiplayerCursorColors.light
           for (const player of data.state.players) {
             if (current[player.id] == null) {
               const color = colors[Math.floor(Math.random() * colors.length)]
@@ -358,15 +358,78 @@ export const CanvasWrapperComponent = React.memo(() => {
               }}
             >
               <div style={{ position: 'relative' }}>
-                <div
-                  style={{
-                    borderRadius: '100%',
-                    backgroundColor: playerColors[p.id]?.background ?? '#000',
-                    width: 4,
-                    height: 4,
-                    position: 'absolute',
-                  }}
-                />
+                <svg
+                  width='36px'
+                  height='36px'
+                  viewBox='0 0 36 36'
+                  version='1.1'
+                  xmlns='http://www.w3.org/2000/svg'
+                  xmlnsXlink='http://www.w3.org/1999/xlink'
+                  style={{ position: 'absolute', left: -18, top: -26, transform: 'rotate(-5deg)' }}
+                >
+                  <defs>
+                    <polygon id='path-1' points='18 18 18 33 21.75 28 28 28'></polygon>
+                    <filter
+                      x='-95.0%'
+                      y='-50.0%'
+                      width='290.0%'
+                      height='226.7%'
+                      filterUnits='objectBoundingBox'
+                      id='filter-2'
+                    >
+                      <feMorphology
+                        radius='1'
+                        operator='dilate'
+                        in='SourceAlpha'
+                        result='shadowSpreadOuter1'
+                      ></feMorphology>
+                      <feOffset
+                        dx='0'
+                        dy='2'
+                        in='shadowSpreadOuter1'
+                        result='shadowOffsetOuter1'
+                      ></feOffset>
+                      <feGaussianBlur
+                        stdDeviation='2.5'
+                        in='shadowOffsetOuter1'
+                        result='shadowBlurOuter1'
+                      ></feGaussianBlur>
+                      <feComposite
+                        in='shadowBlurOuter1'
+                        in2='SourceAlpha'
+                        operator='out'
+                        result='shadowBlurOuter1'
+                      ></feComposite>
+                      <feColorMatrix
+                        values='0 0 0 0 0.632493622   0 0 0 0 0.632493622   0 0 0 0 0.632493622  0 0 0 1 0'
+                        type='matrix'
+                        in='shadowBlurOuter1'
+                      ></feColorMatrix>
+                    </filter>
+                  </defs>
+                  <g id='Page-1' stroke='none' strokeWidth='1' fill='none' fillRule='evenodd'>
+                    <g id='cursor-default'>
+                      <g id='Default'>
+                        <use
+                          fill='black'
+                          fillOpacity='1'
+                          filter='url(#filter-2)'
+                          xlinkHref='#path-1'
+                        ></use>
+                        <use
+                          fill={playerColors[p.id]?.background ?? '#000'}
+                          fillRule='evenodd'
+                          xlinkHref='#path-1'
+                        ></use>
+                        <path
+                          stroke={'#fff'}
+                          strokeWidth='.5'
+                          d='M22,28.5 L17.5,34.5 L17.5,16.7928932 L29.2071068,28.5 L22,28.5 Z'
+                        ></path>
+                      </g>
+                    </g>
+                  </g>
+                </svg>
                 <div
                   style={{
                     position: 'absolute',
@@ -375,7 +438,7 @@ export const CanvasWrapperComponent = React.memo(() => {
                     borderRadius: 4,
                     fontSize: 10,
                     fontWeight: 'bold',
-                    padding: '0px 2px',
+                    padding: '0px 6px',
                     top: 4,
                     left: 4,
                   }}
