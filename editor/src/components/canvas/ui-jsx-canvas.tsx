@@ -16,14 +16,7 @@ import {
   isExportDestructuredAssignment,
 } from '../../core/shared/project-file-types'
 import type { Either } from '../../core/shared/either'
-import {
-  flatMapEither,
-  foldEither,
-  forEachRight,
-  isRight,
-  left,
-  right,
-} from '../../core/shared/either'
+import { foldEither, forEachRight, isRight, left, right } from '../../core/shared/either'
 import Utils from '../../utils/utils'
 import type {
   CurriedResolveFn,
@@ -31,25 +24,22 @@ import type {
   PropertyControlsInfo,
 } from '../custom-code/code-file'
 import type {
-  DerivedState,
   EditorState,
   ConsoleLog,
   CanvasBase64Blobs,
   ElementsToRerender,
   AllElementProps,
+  DerivedState,
 } from '../editor/store/editor-state'
 import {
   getOpenUIJSFile,
   getOpenUIJSFileKey,
-  UIFileBase64Blobs,
   getIndexHtmlFileFromEditorState,
-  TransientFilesState,
 } from '../editor/store/editor-state'
 import { proxyConsole } from './console-proxy'
 import type { UpdateMutableCallback } from './dom-walker'
 import { isLiveMode, isTextEditMode } from '../editor/editor-modes'
 import { BakedInStoryboardVariableName } from '../../core/model/scene-utils'
-import { normalizeName } from '../custom-code/custom-code-utils'
 import { getGeneratedExternalLinkText } from '../../printer-parsers/html/external-resources-parser'
 import { Helmet } from 'react-helmet'
 import parse from 'html-react-parser'
@@ -92,6 +82,7 @@ import { useRefEditorState } from '../editor/store/store-hook'
 import { matchRoutes } from 'react-router'
 import { useAtom } from 'jotai'
 import { RemixNavigationAtom } from './remix/utopia-remix-root-component'
+import type { HookResultContext } from '../../core/shared/javascript-cache'
 
 applyUIDMonkeyPatch()
 
@@ -235,17 +226,6 @@ export function pickUiJsxCanvasProps(
   }
 }
 
-function normalizedCssImportsFromImports(filePath: string, imports: Imports): Array<string> {
-  let result: Array<string> = []
-  Utils.fastForEach(Object.keys(imports), (importSource) => {
-    if (importSource.endsWith('.css')) {
-      result.push(normalizeName(filePath, importSource))
-    }
-  })
-  result.sort()
-  return result
-}
-
 function useClearSpyMetadataOnRemount(
   canvasMountCount: number,
   domWalkerInvalidateCount: number,
@@ -289,7 +269,6 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     curriedResolveFn,
     hiddenInstances,
     displayNoneInstances,
-    imports_KILLME: imports, // FIXME this is the storyboard imports object used only for the cssimport
     clearErrors,
     clearConsoleLogs,
     addToConsoleLogs,
@@ -413,6 +392,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
         displayNoneInstances,
         metadataContext,
         updateInvalidatedPaths,
+        { type: 'transparent' },
         shouldIncludeCanvasRootInTheSpy,
         filePathResolveResult,
         editedText,
@@ -430,7 +410,6 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
       )
     },
     [
-      requireFn,
       resolve,
       projectContentsForRequireFn,
       uiFilePath,
@@ -441,6 +420,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
       updateInvalidatedPaths,
       shouldIncludeCanvasRootInTheSpy,
       editedText,
+      requireFn,
     ],
   )
 
@@ -457,6 +437,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
       displayNoneInstances,
       metadataContext,
       updateInvalidatedPaths,
+      { type: 'transparent' },
       props.shouldIncludeCanvasRootInTheSpy,
       editedText,
     )
@@ -469,16 +450,16 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     }
     return executionScope
   }, [
-    base64FileBlobs,
+    uiFilePath,
     customRequire,
-    displayNoneInstances,
-    hiddenInstances,
-    metadataContext,
     projectContentsForRequireFn,
+    base64FileBlobs,
+    hiddenInstances,
+    displayNoneInstances,
+    metadataContext,
+    updateInvalidatedPaths,
     props.shouldIncludeCanvasRootInTheSpy,
     editedText,
-    uiFilePath,
-    updateInvalidatedPaths,
   ])
 
   evaluatedFileNames.current = getListOfEvaluatedFiles()
@@ -594,6 +575,7 @@ export function attemptToResolveParsedComponents(
   displayNoneInstances: Array<ElementPath>,
   metadataContext: UiJsxCanvasContextData,
   updateInvalidatedPaths: UpdateMutableCallback<Set<string>>,
+  updateComponentStateData: HookResultContext,
   shouldIncludeCanvasRootInTheSpy: boolean,
   filePathResolveResult: Either<string, string>,
   editedText: ElementPath | null,
@@ -635,6 +617,7 @@ export function attemptToResolveParsedComponents(
             displayNoneInstances,
             metadataContext,
             updateInvalidatedPaths,
+            updateComponentStateData,
             shouldIncludeCanvasRootInTheSpy,
             editedText,
           )
@@ -747,7 +730,6 @@ export function attemptToResolveParsedComponents(
                 }
                 break
               default:
-                const _exhaustiveCheck: never = exportDetail
                 throw new Error(`Unhandled type ${JSON.stringify(exportDetail)}`)
             }
           }

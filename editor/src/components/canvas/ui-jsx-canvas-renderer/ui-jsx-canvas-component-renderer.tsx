@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import type { MapLike } from 'typescript'
 import type { PropertyControls } from 'utopia-api/core'
 import type { JSXElementChild, UtopiaJSXComponent } from '../../../core/shared/element-template'
@@ -24,7 +24,6 @@ import {
   renderCoreElement,
   utopiaCanvasJSXLookup,
 } from './ui-jsx-canvas-element-renderer-utils'
-import { useContextSelector } from 'use-context-selector'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { UTOPIA_INSTANCE_PATH, UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
 import { getPathsFromString, getUtopiaID } from '../../../core/shared/uid-utils'
@@ -32,7 +31,15 @@ import { useGetTopLevelElementsAndImports } from './ui-jsx-canvas-top-level-elem
 import { useGetCodeAndHighlightBounds } from './ui-jsx-canvas-execution-scope'
 import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
+import type { HookResultContext } from '../../../core/shared/javascript-cache'
+import {
+  ComponentStateDataAtom,
+  updateComponentStateData,
+  ComponentStateRecordingModeAtom,
+} from '../../../core/shared/javascript-cache'
+import { useAtom, useSetAtom } from 'jotai'
+import { NO_OP } from '../../../core/shared/utils'
+import { useForceUpdate } from '../../editor/hook-utils'
 
 export type ComponentRendererComponent = React.ComponentType<
   React.PropsWithChildren<{
@@ -72,6 +79,35 @@ function tryToGetInstancePath(
     return null
   }
 }
+export interface HookValueMap {
+  [elementPathString: string]: {
+    fiberReference: any
+    hookValues: { [hookID: number]: any }
+    forceUpdate: () => void
+  }
+}
+
+const HookValueReff: {
+  current: HookValueMap
+} = { current: {} }
+
+export function getHookValueRef() {
+  return { ...HookValueReff.current }
+}
+
+export function restoreHookValues(snapshot: typeof HookValueReff.current) {
+  Object.values(snapshot).forEach(({ fiberReference, hookValues, forceUpdate }) => {
+    // instead of the fiber reference we should look up the fiber on the DOM and then set the hooks on that. to verify that we can set the value for a given hook ID, we need to make sure that the current component fiber has the same number of hooks as the number of hooks at the time of saving the hook value snapshot to make sure that we are not breaking the rules of hooks.
+    forEachHook((hook, hookID) => {
+      if (hookValues[hookID] === 'do-not-restore-state') {
+        return
+      }
+      ;(window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__.renderers
+        .get(1)
+        .overrideHookState(fiberReference, hookID, [], hookValues[hookID])
+    }, fiberReference.memoizedState)
+  })
+}
 
 export function createComponentRendererComponent(params: {
   topLevelElementName: string | null
@@ -88,6 +124,14 @@ export function createComponentRendererComponent(params: {
     const mutableContext = params.mutableContextRef.current[params.filePath].mutableContext
 
     const instancePath: ElementPath | null = tryToGetInstancePath(instancePathAny, pathsString)
+
+    const componentIdHookGuardValue = `utopia-component-renderer-component-${optionalMap(
+      EP.toString,
+      instancePath,
+    )}`
+    React.useState(componentIdHookGuardValue)
+
+    const forceUpdate = useForceUpdate()
 
     function shouldUpdate() {
       return (
@@ -135,6 +179,9 @@ export function createComponentRendererComponent(params: {
       throw new ReferenceError(`${params.topLevelElementName} is not defined`)
     }
 
+    const setHookValues = useSetAtom(ComponentStateDataAtom)
+    const [hookValuesMode] = useAtom(ComponentStateRecordingModeAtom)
+
     const appliedProps = optionalMap(
       (param) =>
         applyPropsParamToPassedProps(
@@ -143,6 +190,7 @@ export function createComponentRendererComponent(params: {
           mutableContext.requireResult,
           realPassedProps,
           param,
+          { type: 'transparent' },
         ),
       utopiaJsxComponent.param,
     ) ?? { props: realPassedProps }
@@ -183,7 +231,99 @@ export function createComponentRendererComponent(params: {
       })
     }
 
+    React.useEffect(() => {
+      if (instancePath == null) {
+        return
+      }
+
+      const elementPathString = EP.toString(instancePath)
+      /**
+       * TODO move this to a dedicated helper and share code with dom-walker
+       */
+      /**
+       * if a elementToFocusOn path points to a component instance, such as App/card-instance, the DOM will
+       * only contain an element with the path App/card-instance:card-root. To be able to quickly find the "rootest" element
+       * that belongs to a path, we use the ^= prefix search in querySelector.
+       * The assumption is that querySelector will return the "topmost" DOM-element with the matching prefix,
+       * which is the same as the "rootest" element we are looking for
+       */
+      const foundElement = document.querySelector(
+        `[${UTOPIA_PATH_KEY}^="${EP.toString(instancePath)}"]`,
+      ) as HTMLElement | null
+
+      if (foundElement == null) {
+        return // give up?
+      }
+
+      const foundFiber = (() => {
+        const fiberName = Object.keys(foundElement).find((key) => key.startsWith(`__reactFiber$`))
+        if (fiberName == null) {
+          return null
+        }
+        return (foundElement as any)[fiberName]
+      })()
+
+      function walkUpUntilMatchingFiber(maybeMatchingFiber: any) {
+        if (maybeMatchingFiber == null) {
+          return null // we reached the root of a React tree
+        }
+        if (maybeMatchingFiber.memoizedState?.baseState === componentIdHookGuardValue) {
+          return maybeMatchingFiber
+        }
+        // otherwise walk up, rinse, repeat
+        return walkUpUntilMatchingFiber(maybeMatchingFiber.return)
+      }
+
+      const matchingFiber = walkUpUntilMatchingFiber(foundFiber)
+
+      HookValueReff.current[elementPathString] = {
+        fiberReference: matchingFiber,
+        hookValues: {},
+        forceUpdate: forceUpdate,
+      }
+
+      forEachHook((hook, hookID) => {
+        const stateToStore = (() => {
+          if (hook.baseQueue != null) {
+            return hook.queue.lastRenderedState
+          } else {
+            return hook.memoizedState
+          }
+        })()
+        // if (hookID === 46) {
+        // console.log('stateToStore', stateToStore)
+        // console.log(
+        //   'saving hook state',
+        //   matchingFiber.memoizedState.memoizedState,
+        //   hookID,
+        //   JSON.stringify(restOfBaseQueue),
+        //   'queue',
+        //   hook.queue?.lanes,
+        //   JSON.stringify(hook.queue),
+        //   hook.memoizedState,
+        //   hook.baseState,
+        // )
+        // }
+        HookValueReff.current[elementPathString].hookValues[hookID] = stateToStore
+      }, matchingFiber.memoizedState)
+    })
+
+    React.useState('sentinel')
+
     if (utopiaJsxComponent.arbitraryJSBlock != null) {
+      const hookResultContext: HookResultContext =
+        rootElementPath === null
+          ? { type: 'transparent' }
+          : {
+              type: 'active',
+              mode: hookValuesMode,
+              elementPath: rootElementPath,
+              setHookResult: (hookId, value) =>
+                setHookValues((currentValue) =>
+                  updateComponentStateData(currentValue, rootElementPath)(hookId, value),
+                ),
+            }
+
       const lookupRenderer = createLookupRender(
         rootElementPath,
         scope,
@@ -196,6 +336,7 @@ export function createComponentRendererComponent(params: {
         undefined,
         metadataContext,
         updateInvalidatedPaths,
+        hookResultContext,
         mutableContext.jsxFactoryFunctionName,
         shouldIncludeCanvasRootInTheSpy,
         params.filePath,
@@ -217,6 +358,7 @@ export function createComponentRendererComponent(params: {
         mutableContext.requireResult,
         utopiaJsxComponent.arbitraryJSBlock,
         scope,
+        hookResultContext,
       )
     }
 
@@ -225,6 +367,19 @@ export function createComponentRendererComponent(params: {
         (path) => EP.appendNewElementPath(path, getUtopiaID(element)),
         instancePath,
       )
+
+      const hookResultContext: HookResultContext =
+        ownElementPath === null
+          ? { type: 'transparent' }
+          : {
+              type: 'active',
+              mode: hookValuesMode,
+              elementPath: ownElementPath,
+              setHookResult: (hookId, value) =>
+                setHookValues((currentValue) =>
+                  updateComponentStateData(currentValue, ownElementPath)(hookId, value),
+                ),
+            }
 
       const renderedCoreElement = renderCoreElement(
         element,
@@ -241,6 +396,7 @@ export function createComponentRendererComponent(params: {
         undefined,
         metadataContext,
         updateInvalidatedPaths,
+        hookResultContext,
         mutableContext.jsxFactoryFunctionName,
         codeError,
         shouldIncludeCanvasRootInTheSpy,
@@ -257,6 +413,7 @@ export function createComponentRendererComponent(params: {
         return renderedCoreElement
       }
     }
+    React.useState('uto-sentinel')
 
     const buildResult = React.useRef<React.ReactElement | null>(
       buildComponentRenderResult(utopiaJsxComponent.rootElement),
@@ -289,3 +446,42 @@ function isElementInChildrenPropTree(elementPath: string, props: any): boolean {
     return childrenArr.some((c) => isElementInChildrenPropTree(elementPath, c.props))
   }
 }
+
+function forEachHook(callback: (hook: any, hookID: number) => void, firstHook: any) {
+  if (firstHook == null) {
+    return
+  }
+  let workingHook = firstHook
+  let hookIndex = 0
+
+  while (workingHook.memoizedState !== 'sentinel') {
+    hookIndex++
+    workingHook = workingHook.next
+  }
+
+  // we increment one more to get after the sentinel
+  {
+    hookIndex++
+    workingHook = workingHook.next
+  }
+
+  while (workingHook.memoizedState !== 'uto-sentinel') {
+    callback(workingHook, hookIndex)
+    hookIndex++
+    workingHook = workingHook.next
+  }
+}
+
+// function findHooksAfterSentinel(maybeSentinel: any) {
+//   if (maybeSentinel == null) {
+//     return null
+//   }
+
+//   if (maybeSentinel.memoizedState === 'sentinel') {
+//     if (maybeSentinel.next?.memoizedState === 'uto-sentinel') {
+//       return null
+//     }
+//     return maybeSentinel.next
+//   }
+//   return findHooksAfterSentinel(maybeSentinel.next)
+// }

@@ -3,9 +3,15 @@ import type {
   ArbitraryJSBlock,
   JSXMapExpression,
 } from './element-template'
-import { JSExpression } from './element-template'
 import type { MapLike } from 'typescript'
 import { SafeFunctionCurriedErrorHandler } from './code-exec-utils'
+import type { Dispatch } from 'react'
+import React from 'react'
+import { atom } from 'jotai'
+import type { ElementPath } from './project-file-types'
+import * as EP from './element-path'
+import invariant from '../../third-party/remix/invariant'
+import { assertNever } from './utils'
 
 type JavaScriptContainer = JSExpressionOtherJavaScript | ArbitraryJSBlock | JSXMapExpression
 
@@ -19,17 +25,148 @@ export function resetFunctionCache(): void {
   functionCache = {}
 }
 
+type PropsData = Record<string, any>
+type HookData = Record<string, any>
+
+interface ComponentStateData {
+  props: PropsData
+  hooks: HookData
+}
+
+export interface ComponentStateDataMap {
+  [pathString: string]: ComponentStateData
+}
+
+export const ComponentStateDataAtom = atom<ComponentStateDataMap>({})
+
+type ComponentStateRecordingMode =
+  | { type: 'recording' }
+  | { type: 'pinned'; componentStateDataMap: ComponentStateDataMap }
+
+export const ComponentStateRecordingModeAtom = atom<ComponentStateRecordingMode>({
+  type: 'recording',
+})
+
+type HookResultFunction = (hookId: string, result: any) => any
+
+export const updateComponentStateData =
+  (componentStateData: ComponentStateDataMap, elementPath: ElementPath): HookResultFunction =>
+  (hookId, value) => {
+    const elementPathString = EP.toString(elementPath)
+    const entryForThisPath = componentStateData[elementPathString] ?? { props: {}, hooks: {} }
+    const updatedEntries = {
+      ...componentStateData,
+      [elementPathString]: {
+        props: entryForThisPath.props,
+        hooks: { ...entryForThisPath.hooks, [hookId]: value },
+      },
+    }
+    return updatedEntries
+  }
+
+function getFromComponentStateData(
+  componentStateData: ComponentStateDataMap,
+  elementPath: ElementPath,
+  hookId: string,
+) {
+  const elementPathString = EP.toString(elementPath)
+  const dataForElement = componentStateData[elementPathString] ?? null
+  invariant(
+    dataForElement,
+    `No data provided for element at path ${elementPathString} in componentStateData`,
+  )
+  if (!(hookId in dataForElement.hooks)) {
+    throw new Error(`No data provided for hook with id ${hookId} in componentStateData`)
+  }
+  return dataForElement.hooks[hookId]
+}
+
+type Callable<Args extends any[] = any[], ReturnType = any> = (...args: Args) => ReturnType
+
+export type HookResultContext =
+  | { type: 'transparent' }
+  | {
+      type: 'active'
+      mode: ComponentStateRecordingMode
+      elementPath: ElementPath
+      setHookResult: (hookId: string, result: any) => void
+    }
+
+interface MergeHookResult<HookResult, StoredValue> {
+  toStoredValue: (hookResult: HookResult) => StoredValue
+  fromStoredValue: (storedValue: StoredValue, hookResult: HookResult) => HookResult
+}
+
+// TODO: https://github.com/facebook/react/blob/ce2bc58a9f6f3b0bfc8c738a0d8e2a5f3a332ff5/packages/react-reconciler/src/ReactFiberReconciler.js#L644
+function setMemoizedStateValue() {}
+
+/**
+ * - get DOM element from the document via querying the data-path prop
+ * - walk up the `return` ladder until we find the first component with a non-null `memoized state`
+ * + add a first useState with the path value, check if the same
+ * + add a last  useState with the path value, check if the same
+ * - walk down `memoizedState` until we find a hook with the path string
+ * - call `setMemoizedStateValue`
+ */
+
 export function resolveParamsAndRunJsCode(
   filePath: string,
   javascriptBlock: JavaScriptContainer,
   requireResult: MapLike<any>,
   currentScope: MapLike<any>,
+  hookResultContext: HookResultContext,
 ): any {
+  let hookCounter = 0
+  const hookOverride =
+    <Hook extends Callable, StoredValue>(
+      name: string,
+      originalHook: Hook,
+      mergeHookResult: MergeHookResult<ReturnType<Hook>, StoredValue>,
+    ) =>
+    (...args: unknown[]) => {
+      hookCounter += 1
+      const hookId = `${name}-${hookCounter}`
+      const hookResult = originalHook(...args)
+      if (hookResultContext.type === 'transparent') {
+        return hookResult
+      } else if (hookResultContext.type === 'active') {
+        switch (hookResultContext.mode.type) {
+          case 'pinned':
+            const recordedValue = getFromComponentStateData(
+              hookResultContext.mode.componentStateDataMap,
+              hookResultContext.elementPath,
+              hookId,
+            )
+            const result = mergeHookResult.fromStoredValue(recordedValue, hookResult)
+            return result
+          case 'recording':
+            hookResultContext.setHookResult(hookId, mergeHookResult.toStoredValue(hookResult))
+            return hookResult
+          default:
+            assertNever(hookResultContext.mode)
+        }
+      }
+      assertNever(hookResultContext)
+    }
+
+  // const useStateOverridden = hookOverride('useState', React.useState, {
+  //   toStoredValue: ([value]) => value,
+  //   fromStoredValue: (value, [_, setter]) => [value, setter] as [unknown, Dispatch<unknown>],
+  // })
+
+  // const MonkeyReact = {
+  //   ...React,
+  //   useState: useStateOverridden,
+  // }
+
   const definedElsewhereInfo = resolveDefinedElsewhere(
     javascriptBlock.definedElsewhere,
     requireResult,
     currentScope,
   )
+  // definedElsewhereInfo['React'] = MonkeyReact
+  // definedElsewhereInfo['useState'] = useStateOverridden
+
   const updatedBlock = {
     ...javascriptBlock,
     definedElsewhere: Object.keys(definedElsewhereInfo),

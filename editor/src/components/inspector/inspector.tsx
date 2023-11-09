@@ -51,7 +51,7 @@ import {
   useKeepReferenceEqualityIfPossible,
   useKeepShallowReferenceEquality,
 } from '../../utils/react-performance'
-import { Icn, useColorTheme, UtopiaTheme, FlexRow, Button } from '../../uuiui'
+import { Icn, useColorTheme, UtopiaTheme, FlexRow, FlexColumn, Button } from '../../uuiui'
 import { getElementsToTarget } from './common/inspector-utils'
 import type { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
 import { unless, when } from '../../utils/react-conditionals'
@@ -79,8 +79,17 @@ import { FlexCol } from 'utopia-api'
 import { SettingsPanel } from './sections/settings-panel/inspector-settingspanel'
 import { strictEvery } from '../../core/shared/array-utils'
 import { SimplifiedLayoutSubsection } from './sections/layout-section/self-layout-subsection/simplified-layout-subsection'
-import { isFeatureEnabled } from '../../utils/feature-switches'
 import { ConstraintsSection } from './constraints-section'
+import type { ComponentStateDataMap } from '../../core/shared/javascript-cache'
+import {
+  ComponentStateDataAtom,
+  ComponentStateRecordingModeAtom,
+} from '../../core/shared/javascript-cache'
+import { useAtom, useSetAtom } from 'jotai'
+import {
+  getHookValueRef,
+  restoreHookValues,
+} from '../canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
 
 export interface ElementPathElement {
   name?: string
@@ -95,6 +104,92 @@ export interface InspectorProps extends TargetSelectorSectionProps {
   setSelectedTarget: React.Dispatch<React.SetStateAction<string[]>>
   selectedViews: Array<ElementPath>
 }
+
+const SnapshotUI = React.memo(() => {
+  const [snapshotSequenceNumber, setSnapshotSequenceNumber] = React.useState(1)
+  const [snapshots, setSnapshots] = React.useState<Array<[number, any]>>([])
+  const dispatch = useDispatch()
+
+  const onClick = React.useCallback(() => {
+    // console.log(componentStateData)
+  }, [])
+  // }, [componentStateData])
+
+  const onCreateSnapShot = React.useCallback(() => {
+    setSnapshots((currentSnapshots) => [
+      [snapshotSequenceNumber, getHookValueRef()],
+      ...currentSnapshots,
+    ])
+    setSnapshotSequenceNumber((s) => s + 1)
+  }, [snapshotSequenceNumber])
+
+  const restoreSnapshot = React.useCallback((snapshot: any) => {
+    restoreHookValues(snapshot)
+    // dispatch([EditorActions.resetCanvas()])
+  }, [])
+
+  return (
+    <FlexColumn>
+      {snapshots.map(([n, s]) => {
+        return (
+          <FlexRow key={n} style={{ gap: 12 }}>
+            <Button
+              // eslint-disable-next-line react/jsx-no-bind
+              onClick={() => restoreSnapshot(s)}
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '10px 10px 10px 10px',
+                borderRadius: 10,
+                overflow: 'hidden',
+                backgroundColor: '#0074ff',
+                color: '#ffffff',
+              }}
+            >{`Reset snapshot #${n}`}</Button>
+          </FlexRow>
+        )
+      })}
+      <FlexRow style={{ gap: 12 }}>
+        <Button
+          onClick={onCreateSnapShot}
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '10px 10px 10px 10px',
+            borderRadius: 10,
+            overflow: 'hidden',
+            backgroundColor: '#0074ff',
+            color: '#ffffff',
+          }}
+        >
+          Snapshot application state
+        </Button>
+      </FlexRow>
+      <FlexRow style={{ gap: 12 }}>
+        <Button
+          onClick={onClick}
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '10px 10px 10px 10px',
+            borderRadius: 10,
+            overflow: 'hidden',
+            backgroundColor: '#0074ff',
+            color: '#ffffff',
+          }}
+        >
+          Print application state snapshot
+        </Button>
+      </FlexRow>
+    </FlexColumn>
+  )
+})
 
 interface AlignDistributeButtonProps {
   onMouseUp: () => void
@@ -362,6 +457,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
               paddingBottom: 50,
             }}
           >
+            <SnapshotUI />
             {rootElementIsSelected ? (
               <RootElementIndicator />
             ) : (

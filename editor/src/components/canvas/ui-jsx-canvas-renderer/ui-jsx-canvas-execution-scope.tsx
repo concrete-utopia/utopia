@@ -1,13 +1,12 @@
 import React from 'react'
 import type { MapLike } from 'typescript'
 import type { UtopiaJSXComponent } from '../../../core/shared/element-template'
-import { ArbitraryJSBlock, isUtopiaJSXComponent } from '../../../core/shared/element-template'
+import { isUtopiaJSXComponent } from '../../../core/shared/element-template'
 import { fastForEach } from '../../../core/shared/utils'
 import type { ProjectContentTreeRoot } from '../../assets'
-import { getProjectFileByFilePath, ProjectContentsTree } from '../../assets'
+import { getProjectFileByFilePath } from '../../assets'
 import { importResultFromImports } from '../../editor/npm-dependency/npm-dependency'
 import type { CanvasBase64Blobs, UIFileBase64Blobs } from '../../editor/store/editor-state'
-import { TransientFilesState, TransientFileState } from '../../editor/store/editor-state'
 import type { ComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
 import { createComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
 import type { MutableUtopiaCtxRefData } from './ui-jsx-canvas-contexts'
@@ -21,13 +20,11 @@ import * as EP from '../../../core/shared/element-path'
 import type { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import type { ElementPath, HighlightBoundsForUids } from '../../../core/shared/project-file-types'
 import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
-import { defaultIfNull, optionalFlatMap } from '../../../core/shared/optional-utils'
+import { defaultIfNull } from '../../../core/shared/optional-utils'
 import { getParseSuccessForFilePath } from '../canvas-utils'
-import { useContextSelector } from 'use-context-selector'
-import { shallowEqual } from '../../../core/shared/equality-utils'
 import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
-import { emptySet } from '../../../core/shared/set-utils'
+import type { HookResultContext } from '../../../core/shared/javascript-cache'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -51,6 +48,7 @@ export function createExecutionScope(
   displayNoneInstances: Array<ElementPath>,
   metadataContext: UiJsxCanvasContextData,
   updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
+  updateComponentStateData: HookResultContext,
   shouldIncludeCanvasRootInTheSpy: boolean,
   editedText: ElementPath | null,
 ): {
@@ -131,6 +129,7 @@ export function createExecutionScope(
       undefined,
       metadataContext,
       updateInvalidatedPaths,
+      updateComponentStateData,
       jsxFactoryFunction,
       shouldIncludeCanvasRootInTheSpy,
       openStoryboardFileNameKILLME,
@@ -147,7 +146,9 @@ export function createExecutionScope(
       lookupRenderer,
     )
 
-    runBlockUpdatingScope(filePath, requireResult, combinedTopLevelArbitraryBlock, executionScope)
+    runBlockUpdatingScope(filePath, requireResult, combinedTopLevelArbitraryBlock, executionScope, {
+      type: 'transparent',
+    })
   }
   // WARNING: mutating the mutableContextRef
   updateMutableUtopiaCtxRefWithNewProps(mutableContextRef, {

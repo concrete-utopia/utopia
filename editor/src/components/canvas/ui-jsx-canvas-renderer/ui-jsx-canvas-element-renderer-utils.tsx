@@ -43,6 +43,7 @@ import type { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '..
 import { SceneComponent } from './scene-component'
 import * as PP from '../../../core/shared/property-path'
 import * as EP from '../../../core/shared/element-path'
+import type { HookResultContext } from '../../../core/shared/javascript-cache'
 import { resolveParamsAndRunJsCode } from '../../../core/shared/javascript-cache'
 import { objectMap } from '../../../core/shared/object-utils'
 import { cssValueOnlyContainsComments } from '../../../printer-parsers/css/css-parser-utils'
@@ -66,7 +67,6 @@ import {
   isUtopiaCommentFlagMapCount,
 } from '../../../core/shared/comment-flags'
 import { RemixSceneComponent } from './remix-scene-component'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export function createLookupRender(
   elementPath: ElementPath | null,
@@ -80,6 +80,7 @@ export function createLookupRender(
   reactChildren: React.ReactNode | undefined,
   metadataContext: UiJsxCanvasContextData,
   updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
+  updateComponentStateData: HookResultContext,
   jsxFactoryFunctionName: string | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
   filePath: string,
@@ -128,6 +129,7 @@ export function createLookupRender(
       reactChildren,
       metadataContext,
       updateInvalidatedPaths,
+      updateComponentStateData,
       jsxFactoryFunctionName,
       null,
       shouldIncludeCanvasRootInTheSpy,
@@ -173,6 +175,7 @@ export function renderCoreElement(
   reactChildren: React.ReactNode | undefined,
   metadataContext: UiJsxCanvasContextData,
   updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
+  updateComponentStateData: HookResultContext,
   jsxFactoryFunctionName: string | null,
   codeError: Error | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
@@ -205,6 +208,7 @@ export function renderCoreElement(
             reactChildren,
             metadataContext,
             updateInvalidatedPaths,
+            updateComponentStateData,
             jsxFactoryFunctionName,
             shouldIncludeCanvasRootInTheSpy,
             filePath,
@@ -232,6 +236,7 @@ export function renderCoreElement(
         blockScope,
         element.props,
         requireResult,
+        updateComponentStateData,
       )
 
       const passthroughProps = monkeyUidProp(uid, assembledProps)
@@ -253,6 +258,7 @@ export function renderCoreElement(
         passthroughProps,
         metadataContext,
         updateInvalidatedPaths,
+        updateComponentStateData,
         jsxFactoryFunctionName,
         null,
         shouldIncludeCanvasRootInTheSpy,
@@ -323,6 +329,7 @@ export function renderCoreElement(
         reactChildren,
         metadataContext,
         updateInvalidatedPaths,
+        updateComponentStateData,
         jsxFactoryFunctionName,
         shouldIncludeCanvasRootInTheSpy,
         filePath,
@@ -341,7 +348,8 @@ export function renderCoreElement(
           innerRender,
         ),
       }
-      return runJSExpression(filePath, requireResult, element, blockScope)
+
+      return runJSExpression(filePath, requireResult, element, blockScope, updateComponentStateData)
     }
     case 'JSX_FRAGMENT': {
       const key = optionalMap(EP.toString, elementPath) ?? element.uid
@@ -361,6 +369,7 @@ export function renderCoreElement(
         [],
         metadataContext,
         updateInvalidatedPaths,
+        updateComponentStateData,
         jsxFactoryFunctionName,
         null,
         shouldIncludeCanvasRootInTheSpy,
@@ -398,6 +407,7 @@ export function renderCoreElement(
         inScope,
         requireResult,
         element.condition,
+        updateComponentStateData,
       )
       // Coerce `defaultConditionValueAsAny` to a value that is definitely a boolean, not something that is truthy.
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
@@ -484,6 +494,7 @@ export function renderCoreElement(
         reactChildren,
         metadataContext,
         updateInvalidatedPaths,
+        updateComponentStateData,
         jsxFactoryFunctionName,
         codeError,
         shouldIncludeCanvasRootInTheSpy,
@@ -527,7 +538,13 @@ export function renderCoreElement(
         )
       }
 
-      return jsxAttributeToValue(filePath, inScope, requireResult, element)
+      return jsxAttributeToValue(
+        filePath,
+        inScope,
+        requireResult,
+        element,
+        updateComponentStateData,
+      )
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled type ${JSON.stringify(element)}`)
@@ -667,6 +684,7 @@ function renderJSXElement(
   passthroughProps: MapLike<any>,
   metadataContext: UiJsxCanvasContextData,
   updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
+  updateComponentStateData: HookResultContext,
   jsxFactoryFunctionName: string | null,
   codeError: Error | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
@@ -693,6 +711,7 @@ function renderJSXElement(
       undefined,
       metadataContext,
       updateInvalidatedPaths,
+      updateComponentStateData,
       jsxFactoryFunctionName,
       codeError,
       shouldIncludeCanvasRootInTheSpy,
@@ -899,17 +918,17 @@ function runJSExpression(
   requireResult: MapLike<any>,
   block: JSExpression,
   currentScope: MapLike<any>,
-  limit?: number,
+  setHookResult: HookResultContext,
 ): any {
   switch (block.type) {
     case 'ATTRIBUTE_VALUE':
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
-      return jsxAttributeToValue(filePath, block, requireResult, block)
+      return jsxAttributeToValue(filePath, block, requireResult, block, setHookResult)
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      return resolveParamsAndRunJsCode(filePath, block, requireResult, currentScope)
+      return resolveParamsAndRunJsCode(filePath, block, requireResult, currentScope, setHookResult)
     default:
       assertNever(block)
   }
