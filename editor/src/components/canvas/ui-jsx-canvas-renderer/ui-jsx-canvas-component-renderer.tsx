@@ -97,6 +97,7 @@ export function getHookValueRef() {
 
 export function restoreHookValues(snapshot: typeof HookValueReff.current) {
   Object.values(snapshot).forEach(({ fiberReference, hookValues, forceUpdate }) => {
+    // instead of the fiber reference we should look up the fiber on the DOM and then set the hooks on that. to verify that we can set the value for a given hook ID, we need to make sure that the current component fiber has the same number of hooks as the number of hooks at the time of saving the hook value snapshot to make sure that we are not breaking the rules of hooks.
     forEachHook((hook, hookID) => {
       if (hookValues[hookID] === 'do-not-restore-state') {
         return
