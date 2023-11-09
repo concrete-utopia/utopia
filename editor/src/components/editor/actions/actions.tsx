@@ -73,6 +73,7 @@ import {
   modifiableAttributeIsAttributeValue,
   isJSExpression,
   isJSXMapExpression,
+  isArbitraryJSBlock,
 } from '../../../core/shared/element-template'
 import type { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import {
@@ -314,6 +315,7 @@ import type {
   SetSelectedComponents,
   ApplyCollabFileUpdate,
   UpdateTopLevelElements,
+  SetCommentId,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -4108,6 +4110,49 @@ export const UPDATE_FNS = {
             questionTokenComments: element.comments.questionTokenComments,
           },
         }
+      },
+      editor,
+    )
+  },
+  SET_COMMENT_ID: (action: SetCommentId, editor: EditorModel): EditorModel => {
+    return modifyOpenJsxChildAtPath(
+      action.target,
+      (element) => {
+        if (isJSXConditionalExpression(element) || isJSXMapExpression(element)) {
+          function isNotCommentFlag(c: Comment): boolean {
+            return !isUtopiaCommentFlag(c, 'comment')
+          }
+
+          const leadingComments = [...element.comments.leadingComments.filter(isNotCommentFlag)]
+          if (action.commentId != null) {
+            leadingComments.push(
+              makeUtopiaFlagComment({ type: 'comment', value: action.commentId }),
+            )
+          }
+
+          return {
+            ...element,
+            comments: {
+              leadingComments: leadingComments,
+              trailingComments: element.comments.trailingComments.filter(isNotCommentFlag),
+              questionTokenComments: element.comments.questionTokenComments,
+            },
+          }
+        } else if (isJSXElement(element)) {
+          const newProps = setJSXValueAtPath(
+            element.props,
+            PP.create('data-comment'),
+            jsExpressionValue(action.commentId, emptyComments),
+          )
+          if (isLeft(newProps)) {
+            return element
+          }
+          return {
+            ...element,
+            props: newProps.value,
+          }
+        }
+        return element
       },
       editor,
     )

@@ -13,6 +13,8 @@ export type UtopiaCommentFlagTypeUid = 'uid'
 
 export type UtopiaCommentFlagTypeGroup = 'group'
 
+export type UtopiaCommentFlagTypeComment = 'comment'
+
 export type UtopiaCommentFlagConditional = {
   type: UtopiaCommentFlagTypeConditional
   value: boolean | null
@@ -33,17 +35,24 @@ export type UtopiaCommentFlagGroup = {
   value: boolean | null
 }
 
+export type UtopiaCommentFlagComment = {
+  type: UtopiaCommentFlagTypeComment
+  value: string
+}
+
 export type UtopiaCommentFlagType =
   | UtopiaCommentFlagTypeConditional
   | UtopiaCommentFlagTypeMapCount
   | UtopiaCommentFlagTypeUid
   | UtopiaCommentFlagTypeGroup
+  | UtopiaCommentFlagTypeComment
 
 export type UtopiaCommentFlag =
   | UtopiaCommentFlagConditional
   | UtopiaCommentFlagMapCount
   | UtopiaCommentFlagUid
   | UtopiaCommentFlagGroup
+  | UtopiaCommentFlagComment
 
 export function isUtopiaCommentFlagConditional(
   flag: UtopiaCommentFlag | null,
@@ -69,6 +78,12 @@ export function isUtopiaCommentFlagGroup(
   return flag?.type === 'group'
 }
 
+export function isUtopiaCommentFlagComment(
+  flag: UtopiaCommentFlag | null,
+): flag is UtopiaCommentFlagComment {
+  return flag?.type === 'comment'
+}
+
 function utopiaCommentFlagKey(type: UtopiaCommentFlagType): string {
   return `${UtopiaCommentFlagPrefix}${type}`
 }
@@ -83,7 +98,7 @@ export function isUtopiaCommentFlag(c: Comment, type: UtopiaCommentFlagType): bo
 }
 
 function commentString(c: Comment): string {
-  return c.comment.trim().toLowerCase()
+  return c.comment.trim()
 }
 
 function getUtopiaCommentFlag(c: Comment, type: UtopiaCommentFlagType): UtopiaCommentFlag | null {
@@ -130,6 +145,11 @@ function getUtopiaCommentFlag(c: Comment, type: UtopiaCommentFlagType): UtopiaCo
         return {
           type: 'map-count',
           value: parseNonNegativeIntOrNull(value),
+        }
+      case 'comment':
+        return {
+          type: 'comment',
+          value: value,
         }
       default:
         assertNever(type)

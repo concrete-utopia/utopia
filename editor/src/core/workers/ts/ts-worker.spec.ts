@@ -246,6 +246,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                   },
                 }),
                 children: [],
+                comments: emptyComments,
               },
               arbitraryJSBlock: null,
               usedInReactDOMRender: false,

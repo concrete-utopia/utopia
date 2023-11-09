@@ -55,6 +55,7 @@ import { EditorCommon } from './editor-component-common'
 import { notice } from '../common/notice'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { ProjectServerStateUpdater } from './store/project-server-state'
+import { RoomProvider } from '../../../liveblocks.config'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -507,15 +508,17 @@ export function EditorComponent(props: EditorProps) {
   return indexedDBFailed ? (
     <FatalIndexedDBErrorComponent />
   ) : (
-    <DndProvider backend={HTML5Backend} context={window}>
-      <ProjectServerStateUpdater
-        projectId={projectId}
-        forkedFromProjectId={forkedFromProjectId}
-        dispatch={dispatch}
-      >
-        <EditorComponentInner {...props} />
-      </ProjectServerStateUpdater>
-    </DndProvider>
+    <RoomProvider id={projectId ?? 'tmp'} initialPresence={{}}>
+      <DndProvider backend={HTML5Backend} context={window}>
+        <ProjectServerStateUpdater
+          projectId={projectId}
+          forkedFromProjectId={forkedFromProjectId}
+          dispatch={dispatch}
+        >
+          <EditorComponentInner {...props} />
+        </ProjectServerStateUpdater>
+      </DndProvider>
+    </RoomProvider>
   )
 }
 

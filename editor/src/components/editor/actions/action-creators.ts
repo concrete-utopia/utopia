@@ -223,6 +223,7 @@ import type {
   SetSelectedComponents,
   ApplyCollabFileUpdate,
   UpdateTopLevelElements,
+  SetCommentId,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -1623,6 +1624,14 @@ export function setMapCountOverride(
     action: 'SET_MAP_COUNT_OVERRIDE',
     target: target,
     value: value,
+  }
+}
+
+export function setCommentId(target: ElementPath, commentId: string | null): SetCommentId {
+  return {
+    action: 'SET_COMMENT_ID',
+    target: target,
+    commentId: commentId,
   }
 }
 
