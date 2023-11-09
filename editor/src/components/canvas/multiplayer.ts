@@ -4,6 +4,10 @@ import type { LoginState } from '../editor/action-types'
 import type { OutboundMessage } from './multiplayer-messages'
 import { messageHandshake, messagePing } from './multiplayer-messages'
 
+const PRESENCE_SERVER_HOST = 'localhost'
+const PRESENCE_SERVER_PORT = 8080
+const PRESENCE_SERVER_ADDRESS = `ws://${PRESENCE_SERVER_HOST}:${PRESENCE_SERVER_PORT}`
+
 export type MultiplayerCursorColor = {
   background: string
   foreground: string
@@ -165,7 +169,7 @@ function initWebsocket() {
     ws.close()
   }
   wsReady = false
-  ws = new WebSocket('ws://localhost:8080')
+  ws = new WebSocket(PRESENCE_SERVER_ADDRESS)
   ws.onopen = () => {
     Multiplayer.log('ws open')
     wsReady = true
