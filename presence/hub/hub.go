@@ -41,8 +41,6 @@ func (h *Hub) Stop() {
 }
 
 func (h *Hub) Handle(conn net.Conn) error {
-	defer conn.Close()
-
 	// handshake and auth
 	msg, _, err := wsutil.ReadClientData(conn)
 	if err != nil {
@@ -69,10 +67,12 @@ func (h *Hub) Handle(conn net.Conn) error {
 		return fmt.Errorf("[room=%s player=%s] send reply: %w", request.Handshake.RoomID, request.Handshake.PlayerID, err)
 	}
 
-	err = h.listen(*request.Handshake, conn)
-	if err != nil {
-		return fmt.Errorf("[room=%s player=%s] listen: %w", request.Handshake.RoomID, request.Handshake.PlayerID, err)
-	}
+	go func() {
+		err := h.listen(*request.Handshake, conn)
+		if err != nil {
+			logging.Errorf("[room=%s player=%s] listen: %s", request.Handshake.RoomID, request.Handshake.PlayerID, err)
+		}
+	}()
 
 	return nil
 }

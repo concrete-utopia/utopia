@@ -15,6 +15,8 @@ import { windowToCanvasCoordinates } from '../../dom-lookup'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isSelectModeWithArea } from '../../../editor/editor-modes'
 import { getSubTree } from '../../../../core/shared/element-path-tree'
+import { Multiplayer } from '../../multiplayer'
+import { messageMove } from '../../multiplayer-messages'
 
 interface SceneLabelControlProps {
   maybeHighlightOnHover: (target: ElementPath) => void
@@ -127,12 +129,18 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
 
   const onMouseMove = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
+      const point = windowToCanvasCoordinates(
+        scale,
+        canvasOffset,
+        windowPoint({ x: event.clientX, y: event.clientY }),
+      ).canvasPositionRounded
+      Multiplayer.send(messageMove({ position: point }))
       const isSelectingArea = isSelectModeWithArea(storeRef.current.mode)
       if (!isSelectingArea) {
         event.stopPropagation()
       }
     },
-    [storeRef],
+    [storeRef, canvasOffset, scale],
   )
   const onMouseOver = React.useCallback(() => {
     if (!isHighlighted) {

@@ -3,6 +3,8 @@ package types
 import (
 	"net"
 	"sync"
+
+	"github.com/concrete-utopia/flamingo/logging"
 )
 
 type Conns struct {
@@ -21,6 +23,7 @@ func (c *Conns) Add(id string, conn net.Conn) {
 	defer c.rmu.Unlock()
 	old, ok := c.data[id]
 	if ok {
+		logging.Warnf("recycling old connection for id %q", id)
 		_ = old.Close() // ignore the error, we don't care about it
 	}
 	c.data[id] = conn
