@@ -379,7 +379,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
             )}
             <CodeElementSection paths={selectedViews} />
             <ConditionalSection paths={selectedViews} />
-            <CommentSection paths={selectedViews} />
 
             {unless(
               hideAllSections,
