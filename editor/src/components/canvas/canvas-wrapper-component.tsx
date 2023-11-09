@@ -48,6 +48,9 @@ import {
 import type { OutboundMessage } from './multiplayer-messages'
 import { messageMove } from './multiplayer-messages'
 
+const testPlayerId = 'the-player-id'
+const testRoomId = 'the-room'
+
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
   fastForEach(errorMessages, (errorMessage) => {
@@ -224,17 +227,13 @@ export const CanvasWrapperComponent = React.memo(() => {
     if (projectId == null || isLoginNotYetKnown(loginState)) {
       return
     }
-    const id = isLoggedIn(loginState) ? loginState.user.userId : anonymousPlayerName
-    const name = isLoggedIn(loginState)
-      ? loginState.user.name ??
-        loginState.user.email?.replace(/@.+/, '') ?? // TODO heh this is baaaaaad
-        anonymousPlayerName
-      : anonymousPlayerName
+    const id = testPlayerId //isLoggedIn(loginState) ? loginState.user.userId : anonymousPlayerName
+    const name = testPlayerId
     Multiplayer.state.playerId = id
     Multiplayer.state.playerName = name
     const previousRoom = Multiplayer.state.roomId
-    Multiplayer.state.roomId = projectId
-    if (previousRoom != null && previousRoom !== projectId) {
+    Multiplayer.state.roomId = testRoomId // TODO projectId
+    if (previousRoom != null && previousRoom !== testRoomId /* TODO projectId */) {
       Multiplayer.reset()
     }
   }, [loginState, anonymousPlayerName, projectId])
