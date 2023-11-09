@@ -37,15 +37,14 @@ export const CanvasFloatingToolbars = React.memo((props: { style: React.CSSPrope
           padding: 10,
           width: '100%',
           height: '100%',
-          //background: '#ffff0090',
         }}
       >
         <ClosedPanels side='left' />
-        <div style={{ width: 250 }}>
+        <FlexRow style={{ width: 250, alignItems: 'flex-start', gap: 10 }}>
           <CanvasToolbar />
-        </div>
+          <CanvasStrategyPicker />
+        </FlexRow>
         <ClosedPanels side='right' />
-        {/* <CanvasStrategyPicker /> */}
       </FlexRow>
       {/* The error overlays are deliberately the last here so they hide other canvas UI */}
       {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}

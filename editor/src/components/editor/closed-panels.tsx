@@ -97,9 +97,10 @@ export const ClosedPanels = React.memo((props: { side: 'left' | 'right' }) => {
     <FlexColumn
       style={{
         pointerEvents: 'initial',
-        alignItems: 'flex-end',
+        alignItems: 'flex-start',
         justifyContent: 'space-between',
         height: '100%',
+        // background: '#ffff0030',
       }}
     >
       <FlexColumn
@@ -144,7 +145,7 @@ export const ClosedPanels = React.memo((props: { side: 'left' | 'right' }) => {
           </Tooltip>
         ) : null}
       </FlexColumn>
-      {props.side === 'right' ? <TestMenu /> : null}
+      {props.side === 'left' ? <TestMenu /> : null}
     </FlexColumn>
   )
 })
@@ -169,14 +170,16 @@ const ClosedPanelButton = React.memo((props: InsertModeButtonProps) => {
       style={{
         background: props.visible ? colorTheme.bg1.value : 'transparent',
         overflow: 'hidden',
-        boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+        boxShadow: props.visible
+          ? 'inset -2px 2px 6px -1px #ffffff05, -4px 4px 10px -2px rgba(0,0,0,0.15)'
+          : 'inset -2px 2px 6px -1px #ffffff60, -2px 2px 10px -2px rgba(0,0,0,0.45)',
         pointerEvents: 'initial',
         display: 'flex',
         flexDirection: 'row',
         width: 32,
         height: 32,
         borderRadius: 32,
-        transition: 'background .1s .1s ease-in-out',
+        transition: 'all .1s .1s ease-in-out',
       }}
       onClick={props.onClick}
       onMouseEnter={setIsHoveredTrue}
