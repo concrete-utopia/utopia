@@ -31,7 +31,7 @@ export const CommentPopup = React.memo(() => {
         onKeyUp={stopPropagation}
       >
         <ClientSideSuspense fallback={<div>Loading…</div>}>
-          {() => <Room id={`${location.x}-${location.y}`} />}
+          {() => <Room top={location.y} left={location.x} />}
         </ClientSideSuspense>
       </div>
     </CanvasOffsetWrapper>
@@ -39,15 +39,17 @@ export const CommentPopup = React.memo(() => {
 })
 
 interface RoomProps {
-  id: string | null
+  top: number
+  left: number
 }
 
 function Room(props: RoomProps) {
   const { threads } = useThreads()
   const createThread = useCreateThread()
 
-  const threadId = props.id
-  const thread = threads.find((t) => (t.metadata as any).location === threadId)
+  const thread = threads.find(
+    (t) => (t.metadata as any).top === props.top && (t.metadata as any).left === props.left,
+  )
 
   const onCreateThread = React.useCallback(
     ({ body }: ComposerSubmitComment, event: React.FormEvent<HTMLFormElement>) => {
@@ -58,14 +60,15 @@ function Room(props: RoomProps) {
         body,
         metadata: {
           type: 'coord',
-          location: threadId,
+          top: props.top,
+          left: props.left,
         },
       })
     },
-    [createThread, threadId],
+    [createThread, props.left, props.top],
   )
 
-  if (threadId == null || thread == null) {
+  if (thread == null) {
     return <Composer onComposerSubmit={onCreateThread} />
   }
 
