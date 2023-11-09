@@ -5357,13 +5357,18 @@ export const UPDATE_FNS = {
       action.fullPath,
       editor,
       (parsed) => {
-        const newTopLevelElements = arrayDeepEquality(TopLevelElementKeepDeepEquality)(
+        const newTopLevelElementsDeepEquals = arrayDeepEquality(TopLevelElementKeepDeepEquality)(
           parsed.topLevelElements,
           action.topLevelElements,
-        ).value
-        return {
-          ...parsed,
-          topLevelElements: newTopLevelElements,
+        )
+
+        if (newTopLevelElementsDeepEquals.areEqual) {
+          return parsed
+        } else {
+          return {
+            ...parsed,
+            topLevelElements: newTopLevelElementsDeepEquals.value,
+          }
         }
       },
       false,

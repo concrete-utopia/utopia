@@ -231,37 +231,37 @@ export function addHookForProjectChanges(
       }
       const filePath = changeEvent.path[0] as string
       // FIXME Can be null actually
-      const file = forceNotNull(
-        `Could not find file ${filePath}`,
-        collaborativeEditingSupport.projectContents.get(filePath),
-      )
-      const oldTopLevelElements = file.get('topLevelElements') as CollabTextFileTopLevelElements
-      let newTopLevelElements: Array<TopLevelElement> = []
-      let writeIndex = 0
-      let readIndex = 0
-      changeEvent.delta.forEach((delta) => {
-        if (delta.retain != undefined) {
-          const elementsToPush = oldTopLevelElements.slice(readIndex, readIndex + delta.retain)
+      const file = collaborativeEditingSupport.projectContents.get(filePath)
+      if (file != null) {
+        const oldTopLevelElements = file.get('topLevelElements') as CollabTextFileTopLevelElements
+        let newTopLevelElements: Array<TopLevelElement> = []
+        let writeIndex = 0
+        let readIndex = 0
+        changeEvent.delta.forEach((delta) => {
+          if (delta.retain != undefined) {
+            const elementsToPush = oldTopLevelElements.slice(readIndex, readIndex + delta.retain)
+            newTopLevelElements.push(...elementsToPush)
+            readIndex += delta.retain
+            writeIndex += delta.retain
+          }
+          if (delta.insert != null && Array.isArray(delta.insert)) {
+            newTopLevelElements.push(...delta.insert)
+            writeIndex += delta.insert.length
+          }
+          if (delta.delete != undefined) {
+            readIndex += delta.delete
+          }
+        })
+
+        if (readIndex < oldTopLevelElements.length) {
+          // There is an implicit retain for the remainder of the items
+          const elementsToPush = oldTopLevelElements.slice(readIndex)
           newTopLevelElements.push(...elementsToPush)
-          readIndex += delta.retain
-          writeIndex += delta.retain
         }
-        if (delta.insert != null && Array.isArray(delta.insert)) {
-          newTopLevelElements.push(...delta.insert)
-          writeIndex += delta.insert.length
-        }
-        if (delta.delete != undefined) {
-          readIndex += delta.delete
-        }
-      })
 
-      if (readIndex < oldTopLevelElements.length) {
-        // There is an implicit retain for the remainder of the items
-        const elementsToPush = oldTopLevelElements.slice(readIndex)
-        newTopLevelElements.push(...elementsToPush)
+        console.log(`newTopLevelElements`, newTopLevelElements)
+        dispatch([updateTopLevelElements(filePath, newTopLevelElements)])
       }
-
-      dispatch([updateTopLevelElements(filePath, newTopLevelElements)])
     })
   })
 }
