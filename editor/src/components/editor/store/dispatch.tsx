@@ -632,6 +632,7 @@ export function editorDispatchClosingOut(
     )
   }
 
+  let finalStoreV1Final: DispatchResult = finalStore
   // If the action was a load action then we don't want to send across any changes
   if (!isLoadAction) {
     const parsedAfterCodeChanged = onlyActionIsWorkerParsedUpdate(dispatchedActions)
@@ -645,7 +646,22 @@ export function editorDispatchClosingOut(
       updatedFromVSCodeOrParsedAfterCodeChange,
     )
     applyProjectChangesToVSCode(frozenEditorState, projectChanges)
-    updateCollaborativeProjectContents(finalStore.collaborativeEditingSupport, projectChanges)
+    updateCollaborativeProjectContents(
+      finalStore.collaborativeEditingSupport,
+      projectChanges,
+      frozenEditorState.filesModifiedByElsewhere,
+    )
+    const filesChanged = projectChanges.fileChanges.collabProjectChanges.map((v) => v.fullPath)
+    const updatedFilesModifiedByElsewhere = frozenEditorState.filesModifiedByElsewhere.filter(
+      (v) => !filesChanged.includes(v),
+    )
+    finalStoreV1Final = {
+      ...finalStoreV1Final,
+      unpatchedEditor: {
+        ...finalStoreV1Final.unpatchedEditor,
+        filesModifiedByElsewhere: updatedFilesModifiedByElsewhere,
+      },
+    }
   }
 
   const shouldUpdatePreview =
@@ -664,7 +680,7 @@ export function editorDispatchClosingOut(
     anyWorkerUpdates ? 'schedule-now' : 'dont-schedule',
   )
 
-  return finalStore
+  return finalStoreV1Final
 }
 
 function editorChangesShouldTriggerSave(oldState: EditorState, newState: EditorState): boolean {

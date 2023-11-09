@@ -178,10 +178,13 @@ function applyFileChangeToMap(
 export function updateCollaborativeProjectContents(
   collaborativeEditingSupport: CollaborativeEditingSupport,
   projectChanges: ProjectChanges,
+  filesModifiedByElsewhere: Array<string>,
 ): void {
   const projectContentsMap = collaborativeEditingSupport.projectContents
   for (const change of projectChanges.fileChanges.collabProjectChanges) {
-    applyFileChangeToMap(change, projectContentsMap, collaborativeEditingSupport.mergeDoc)
+    if (!filesModifiedByElsewhere.includes(change.fullPath)) {
+      applyFileChangeToMap(change, projectContentsMap, collaborativeEditingSupport.mergeDoc)
+    }
   }
 }
 

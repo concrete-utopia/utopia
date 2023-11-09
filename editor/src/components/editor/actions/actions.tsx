@@ -914,6 +914,7 @@ export function restoreEditorState(
     refreshingDependencies: currentEditor.refreshingDependencies,
     colorSwatches: currentEditor.colorSwatches,
     internalClipboard: currentEditor.internalClipboard,
+    filesModifiedByElsewhere: currentEditor.filesModifiedByElsewhere,
   }
 }
 
@@ -5353,7 +5354,7 @@ export const UPDATE_FNS = {
     )
   },
   UPDATE_TOP_LEVEL_ELEMENTS: (action: UpdateTopLevelElements, editor: EditorModel): EditorModel => {
-    return modifyParseSuccessAtPath(
+    const updatedEditor = modifyParseSuccessAtPath(
       action.fullPath,
       editor,
       (parsed) => {
@@ -5373,6 +5374,11 @@ export const UPDATE_FNS = {
       },
       false,
     )
+
+    return {
+      ...updatedEditor,
+      filesModifiedByElsewhere: updatedEditor.filesModifiedByElsewhere.concat(action.fullPath),
+    }
   },
 }
 
