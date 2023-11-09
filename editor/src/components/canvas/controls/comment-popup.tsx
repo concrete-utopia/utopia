@@ -29,6 +29,7 @@ export const CommentPopup = React.memo(() => {
         style={{ position: 'absolute', top: location.y, left: location.x }}
         onKeyDown={stopPropagation}
         onKeyUp={stopPropagation}
+        onMouseUp={stopPropagation}
       >
         <ClientSideSuspense fallback={<div>Loading…</div>}>
           {() => <Room top={location.y} left={location.x} />}

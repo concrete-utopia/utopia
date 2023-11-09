@@ -12,8 +12,6 @@ import type { CanvasPoint } from '../../../../core/shared/math-utils'
 import { windowPoint } from '../../../../core/shared/math-utils'
 
 export function useCommentModeSelectAndHover(location: CanvasPoint | null): MouseCallbacks {
-  const { threads } = useThreads()
-  const createThread = useCreateThread()
   const dispatch = useDispatch()
 
   const storeRef = useRefEditorState((store) => {
@@ -23,7 +21,6 @@ export function useCommentModeSelectAndHover(location: CanvasPoint | null): Mous
     }
   })
 
-  let globalThread = threads.find((t) => (t.metadata as any).type === 'global')
   const onMouseUp = React.useCallback(
     (event: React.MouseEvent) => {
       if (location == null) {
@@ -33,6 +30,8 @@ export function useCommentModeSelectAndHover(location: CanvasPoint | null): Mous
           windowPoint({ x: event.clientX, y: event.clientY }),
         )
         dispatch([switchEditorMode(EditorModes.commentMode(loc.canvasPositionRounded))])
+      } else {
+        dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
       }
     },
     [dispatch, location, storeRef],
