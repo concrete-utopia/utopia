@@ -233,7 +233,7 @@ export const CanvasWrapperComponent = React.memo(() => {
     Multiplayer.state.playerId = id
     Multiplayer.state.playerName = name
     const previousRoom = Multiplayer.state.roomId
-    Multiplayer.state.roomId = projectId
+    Multiplayer.state.roomId = 'the-room' // TODO projectId
     if (previousRoom != null && previousRoom !== projectId) {
       Multiplayer.reset()
     }
