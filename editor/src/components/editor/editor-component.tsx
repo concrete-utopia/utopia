@@ -508,7 +508,7 @@ export function EditorComponent(props: EditorProps) {
   return indexedDBFailed ? (
     <FatalIndexedDBErrorComponent />
   ) : (
-    <RoomProvider id={projectId ?? 'tmp'} initialPresence={{}}>
+    <RoomProvider id={'the-room'} initialPresence={{}}>
       <DndProvider backend={HTML5Backend} context={window}>
         <ProjectServerStateUpdater
           projectId={projectId}
