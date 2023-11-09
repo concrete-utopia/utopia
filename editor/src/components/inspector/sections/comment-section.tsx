@@ -7,14 +7,23 @@ import {
   findUtopiaCommentFlag,
   isUtopiaCommentFlagComment,
 } from '../../../core/shared/comment-flags'
-import { RoomProvider, useCreateThread, useThreads } from '../../../../liveblocks.config'
+import { useCreateThread, useThreads } from '../../../../liveblocks.config'
 import { ClientSideSuspense } from '@liveblocks/react'
 import type { ComposerSubmitComment } from '@liveblocks/react-comments'
 import { Comment, Composer } from '@liveblocks/react-comments'
 import { stopPropagation } from '../common/inspector-utils'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { setCommentId } from '../../editor/actions/action-creators'
-import { findMaybeConditionalExpression } from '../../../core/model/conditionals'
+import { maybeConditionalExpression } from '../../../core/model/conditionals'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { getJSXAttributesAtPath } from '../../../core/shared/jsx-attributes'
+import * as PP from '../../../core/shared/property-path'
+import {
+  isJSXConditionalExpression,
+  isJSXElement,
+  isJSXMapExpression,
+} from '../../../core/shared/element-template'
+import { isLeft, isRight } from '../../../core/shared/either'
 
 export const CommentSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
   const element = useEditorState(
@@ -23,7 +32,7 @@ export const CommentSection = React.memo(({ paths }: { paths: ElementPath[] }) =
       if (paths.length === 0) {
         return null
       }
-      return findMaybeConditionalExpression(paths[0], store.editor.jsxMetadata)
+      return MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, paths[0])
     },
     'CommentSection element',
   )
@@ -36,8 +45,24 @@ export const CommentSection = React.memo(({ paths }: { paths: ElementPath[] }) =
     return null
   }
 
-  const flag = findUtopiaCommentFlag(element.comments, 'comment')
-  const threadId = isUtopiaCommentFlagComment(flag) ? flag.value : null
+  const threadId = (() => {
+    if (isLeft(element.element)) {
+      return null
+    }
+    const jsxElem = element.element.value
+    if (isJSXConditionalExpression(jsxElem) || isJSXMapExpression(jsxElem)) {
+      const flag = findUtopiaCommentFlag(jsxElem.comments, 'comment')
+      return isUtopiaCommentFlagComment(flag) ? flag.value : null
+    }
+
+    if (isJSXElement(jsxElem)) {
+      const attrs = getJSXAttributesAtPath(jsxElem.props, PP.create('data-comment'))
+      if (attrs.attribute.type === 'ATTRIBUTE_VALUE') {
+        return attrs.attribute.value
+      }
+    }
+    return null
+  })()
 
   return (
     <div onKeyDown={stopPropagation} onKeyUp={stopPropagation}>
