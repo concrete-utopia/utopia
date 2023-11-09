@@ -7,6 +7,8 @@ import { ErrorOverlayComponent } from './canvas-error-overlay'
 import { SafeModeErrorOverlay } from './canvas-wrapper-component'
 import { CanvasStrategyPicker } from './controls/select-mode/canvas-strategy-picker'
 import { FlexCol } from 'utopia-api'
+import { TestMenu } from '../titlebar/test-menu'
+import { ToastRenderer } from '../editor/editor-component'
 
 export const CanvasFloatingToolbars = React.memo((props: { style: React.CSSProperties }) => {
   const safeMode = useEditorState(

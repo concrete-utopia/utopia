@@ -16,6 +16,7 @@ import { GridPanelsStateAtom } from '../canvas/grid-panels-state'
 import type { StoredLayout, StoredPanel } from '../canvas/stored-layout'
 import { assertNever } from '../../core/shared/utils'
 import { TestMenu } from '../titlebar/test-menu'
+import { ToastRenderer } from './editor-component'
 
 function getPanelColumn(side: 'left' | 'right', panels: StoredLayout): Array<StoredPanel> {
   switch (side) {
@@ -97,10 +98,10 @@ export const ClosedPanels = React.memo((props: { side: 'left' | 'right' }) => {
     <FlexColumn
       style={{
         pointerEvents: 'initial',
-        alignItems: 'flex-start',
+        alignItems: props.side === 'left' ? 'flex-start' : 'flex-end',
         justifyContent: 'space-between',
         height: '100%',
-        // background: '#ffff0030',
+        width: 32,
       }}
     >
       <FlexColumn
@@ -145,7 +146,7 @@ export const ClosedPanels = React.memo((props: { side: 'left' | 'right' }) => {
           </Tooltip>
         ) : null}
       </FlexColumn>
-      {props.side === 'left' ? <TestMenu /> : null}
+      {props.side === 'left' ? <TestMenu /> : <ToastRenderer />}
     </FlexColumn>
   )
 })
