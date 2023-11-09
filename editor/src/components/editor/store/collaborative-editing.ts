@@ -185,18 +185,18 @@ export function updateCollaborativeProjectContents(
   }
 }
 
-// export function populateCollaborativeProjectContents(
-//   collaborativeEditingSupport: CollaborativeEditingSupport,
-//   projectContents: ProjectContentTreeRoot,
-// ): void {
-//   walkContentsTree(projectContents, (fullPath, file) => {
-//     applyFileChangeToMap(
-//       writeProjectFileChange(fullPath, file),
-//       collaborativeEditingSupport.projectContents,
-//       collaborativeEditingSupport.mergeDoc,
-//     )
-//   })
-// }
+export function populateCollaborativeProjectContents(
+  collaborativeEditingSupport: CollaborativeEditingSupport,
+  projectContents: ProjectContentTreeRoot,
+): void {
+  walkContentsTree(projectContents, (fullPath, file) => {
+    applyFileChangeToMap(
+      writeProjectFileChange(fullPath, file),
+      collaborativeEditingSupport.projectContents,
+      collaborativeEditingSupport.mergeDoc,
+    )
+  })
+}
 
 export function addHookForProjectChanges(
   collaborativeEditingSupport: CollaborativeEditingSupport,
@@ -226,11 +226,13 @@ export function addHookForProjectChanges(
   collaborativeEditingSupport.projectContents.observeDeep((changeEvents) => {
     // TODO Check that this is the array change before doing anything
     changeEvents.forEach((changeEvent) => {
-      console.log(`observeDeep`, changeEvent.delta)
+      if (changeEvent.path.length === 0) {
+        return
+      }
       const filePath = changeEvent.path[0] as string
       // FIXME Can be null actually
       const file = forceNotNull(
-        'Should not be null.',
+        `Could not find file ${filePath}`,
         collaborativeEditingSupport.projectContents.get(filePath),
       )
       const oldTopLevelElements = file.get('topLevelElements') as CollabTextFileTopLevelElements
@@ -259,7 +261,6 @@ export function addHookForProjectChanges(
         newTopLevelElements.push(...elementsToPush)
       }
 
-      console.log(`newTopLevelElements`, newTopLevelElements)
       dispatch([updateTopLevelElements(filePath, newTopLevelElements)])
     })
   })
