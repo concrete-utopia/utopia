@@ -1603,10 +1603,10 @@ export const UPDATE_FNS = {
       dispatch,
       StoryboardFilePath,
     )
-    populateCollaborativeProjectContents(
-      collaborativeEditingSupport,
-      newModelMergedWithStoredStateAndStoryboardFile.projectContents,
-    )
+    // populateCollaborativeProjectContents(
+    //  collaborativeEditingSupport,
+    //  newModelMergedWithStoredStateAndStoryboardFile.projectContents,
+    // )
     addHookForProjectChanges(collaborativeEditingSupport, dispatch)
 
     return loadModel(newModelMergedWithStoredStateAndStoryboardFile, oldEditor)
