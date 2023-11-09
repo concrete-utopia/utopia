@@ -1,7 +1,7 @@
 import '@liveblocks/react-comments/styles.css'
 import React from 'react'
 import type { ElementPath } from '../../../core/shared/project-file-types'
-import { FlexRow, InspectorSubsectionHeader } from '../../../uuiui'
+import { FlexColumn, FlexRow, InspectorSubsectionHeader, Section } from '../../../uuiui'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import {
   findUtopiaCommentFlag,
@@ -25,7 +25,13 @@ import {
 } from '../../../core/shared/element-template'
 import { isLeft, isRight } from '../../../core/shared/either'
 
-export const CommentSection = React.memo(({ paths }: { paths: ElementPath[] }) => {
+export const CommentSection = React.memo(() => {
+  const paths = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews,
+    'CommentSection paths',
+  )
+
   const element = useEditorState(
     Substores.metadata,
     (store) => {
@@ -65,22 +71,36 @@ export const CommentSection = React.memo(({ paths }: { paths: ElementPath[] }) =
   })()
 
   return (
-    <div onKeyDown={stopPropagation} onKeyUp={stopPropagation}>
-      <InspectorSubsectionHeader>
-        <FlexRow
-          style={{
-            flexGrow: 1,
-            gap: 8,
-            height: 42,
-          }}
-        >
-          <span>Comments</span>
-        </FlexRow>
-      </InspectorSubsectionHeader>
-      <ClientSideSuspense fallback={<div>Loading…</div>}>
-        {() => <Room id={threadId} path={paths[0]} />}
-      </ClientSideSuspense>
-    </div>
+    <FlexColumn
+      id='leftPaneSettings'
+      key='leftPaneSettings'
+      style={{
+        display: 'relative',
+        alignItems: 'stretch',
+        paddingBottom: 50,
+        overflowY: 'scroll',
+        alignSelf: 'stretch',
+      }}
+    >
+      <Section>
+        <div onKeyDown={stopPropagation} onKeyUp={stopPropagation}>
+          <InspectorSubsectionHeader>
+            <FlexRow
+              style={{
+                flexGrow: 1,
+                gap: 8,
+                height: 42,
+              }}
+            >
+              <span>Comments</span>
+            </FlexRow>
+          </InspectorSubsectionHeader>
+          <ClientSideSuspense fallback={<div>Loading…</div>}>
+            {() => <Room id={threadId} path={paths[0]} />}
+          </ClientSideSuspense>
+        </div>
+      </Section>
+    </FlexColumn>
   )
 })
 CommentSection.displayName = 'CommentSection'
