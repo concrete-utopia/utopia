@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion'
 import * as friendlyWords from 'friendly-words'
 import React from 'react'
 import { usePubSubAtomWriteOnly } from '../../core/shared/atom-with-pub-sub'
@@ -29,13 +30,7 @@ import {
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import { shouldShowErrorOverlay } from './canvas-utils'
 import { FloatingPostActionMenu } from './controls/select-mode/post-action-menu'
-import {
-  liveblocksThrottle,
-  useMyPresence,
-  useOthers,
-  useRoom,
-  useSelf,
-} from '../../../liveblocks.config'
+import { useMyPresence, useOthers, useRoom, useSelf } from '../../../liveblocks.config'
 import { ClientSideSuspense } from '@liveblocks/react'
 import { canvasPointToWindowPoint, windowToCanvasCoordinates } from './dom-lookup'
 import { isLoginNotYetKnown } from '../../common/user'
@@ -411,14 +406,20 @@ const Room = React.memo(() => {
             ? other.presence.color?.dark
             : other.presence.color?.light
         return (
-          <div
+          <motion.div
             key={`cursor-${other.connectionId}`}
+            initial={position}
+            animate={position}
+            transition={{
+              type: 'spring',
+              damping: 30,
+              mass: 0.8,
+              stiffness: 350,
+            }}
             style={{
               position: 'fixed',
               zIndex: 1,
               pointerEvents: 'none',
-              transform: `translate(${position.x + 1}px, ${position.y + 4}px)`,
-              transition: `transform ${liveblocksThrottle}ms linear`,
             }}
           >
             <div style={{ position: 'relative', border: '1px solid black' }}>
@@ -441,7 +442,7 @@ const Room = React.memo(() => {
                 {other.presence.playerName ?? other.presence.playerId ?? other.connectionId}
               </div>
             </div>
-          </div>
+          </motion.div>
         )
       })}
     </>
