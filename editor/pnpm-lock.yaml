@@ -60,10 +60,10 @@ specifiers:
   '@emotion/styled': 11.0.0
   '@emotion/styled-base': 11.0.0
   '@hot-loader/react-dom': 16.13.0
-  '@liveblocks/client': ^1.7.0
-  '@liveblocks/react': ^1.7.0
-  '@liveblocks/react-comments': ^1.7.0
-  '@liveblocks/yjs': ^1.7.0
+  '@liveblocks/client': 1.7.0
+  '@liveblocks/react': 1.7.0
+  '@liveblocks/react-comments': 1.7.0
+  '@liveblocks/yjs': 1.7.0
   '@originjs/vite-plugin-commonjs': 1.0.3
   '@popperjs/core': 2.4.4
   '@react-three/fiber': 8.0.14
@@ -348,7 +348,7 @@ dependencies:
   '@liveblocks/client': 1.7.0
   '@liveblocks/react': 1.7.0_react@18.1.0
   '@liveblocks/react-comments': 1.7.0_wgqxz3kjpz4ixw4iz4mbg2tk4i
-  '@liveblocks/yjs': 1.7.1_yjs@13.6.8
+  '@liveblocks/yjs': 1.7.0_yjs@13.6.8
   '@popperjs/core': 2.4.4
   '@remix-run/react': 2.0.1_njludxb6fcqnim6moy22jieofi
   '@root/encoding': 1.0.1
@@ -3409,18 +3409,8 @@ packages:
       '@liveblocks/core': 1.7.0
     dev: false
 
-  /@liveblocks/client/1.7.1:
-    resolution: {integrity: sha512-i/r4CrKcFAuJw7RFPsbyr3NobeVc3rylGSOtAY70Acl9UO6i0Qe1Ai7V+uWKfzooqAiThwrr8mPxtfu0ji4DRA==}
-    dependencies:
-      '@liveblocks/core': 1.7.1
-    dev: false
-
   /@liveblocks/core/1.7.0:
     resolution: {integrity: sha512-JSEvFr4iQYAKnE0dH36VWNFW6KmWStP8XJtb711bSXevRxx/4ODN88kQkTNNVuUjpgAOM+ekKjbqEdHmd8JhKw==}
-    dev: false
-
-  /@liveblocks/core/1.7.1:
-    resolution: {integrity: sha512-x3HBVFk9tWppCkzScVaFn8VqTPC+rKgNxiB8bkazJmplYJO6/2k0oBHEq5lA034ERzVVdW1qkWMQKhmINNJiIQ==}
     dev: false
 
   /@liveblocks/react-comments/1.7.0_wgqxz3kjpz4ixw4iz4mbg2tk4i:
@@ -3461,13 +3451,13 @@ packages:
       use-sync-external-store: 1.2.0_react@18.1.0
     dev: false
 
-  /@liveblocks/yjs/1.7.1_yjs@13.6.8:
-    resolution: {integrity: sha512-2qB7p184GyHUBVNY3mj92RryHbNs2jGD1kEmWzVwLNfx2ghIAVwVTLX0QpeXOLEJcWcKzzUzcJ+th054rx4yEA==}
+  /@liveblocks/yjs/1.7.0_yjs@13.6.8:
+    resolution: {integrity: sha512-Uwsk6aCYUyZm67UGOuDvRTeGJL2wsG4kn8LseLWza7eUZiYGYSCrDbVTuRnE2nIPXtu0esnUqp6Pce5HUXAa8g==}
     peerDependencies:
       yjs: ^13.6.1
     dependencies:
-      '@liveblocks/client': 1.7.1
-      '@liveblocks/core': 1.7.1
+      '@liveblocks/client': 1.7.0
+      '@liveblocks/core': 1.7.0
       js-base64: 3.7.5
       yjs: 13.6.8
     dev: false
