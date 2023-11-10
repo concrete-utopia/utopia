@@ -55,7 +55,9 @@ import { EditorCommon } from './editor-component-common'
 import { notice } from '../common/notice'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { ProjectServerStateUpdater } from './store/project-server-state'
-import { RoomProvider } from '../../../liveblocks.config'
+import type { Storage, Presence, RoomEvent, UserMeta } from '../../../liveblocks.config'
+import { useRoom, RoomProvider } from '../../../liveblocks.config'
+import LiveblocksProvider from '@liveblocks/yjs'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -89,6 +91,7 @@ function useDelayedValueHook(inputValue: boolean, delayMs: number): boolean {
 }
 
 export const EditorComponentInner = React.memo((props: EditorProps) => {
+  const yjsRoom = useRoom()
   const dispatch = useDispatch()
   const editorStoreRef = useRefEditorState((store) => store)
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
@@ -303,6 +306,28 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     (store) => store.editor.preview.visible,
     'EditorComponentInner previewVisible',
   )
+
+  const yDoc = useEditorState(
+    Substores.restOfStore,
+    (store) => store.collaborativeEditingSupport.session?.mergeDoc,
+    'EditorComponentInner yDoc',
+  )
+
+  React.useEffect(() => {
+    if (yDoc != null) {
+      const yProvider = new LiveblocksProvider<Presence, Storage, UserMeta, RoomEvent>(
+        yjsRoom,
+        yDoc,
+      )
+
+      return () => {
+        yDoc.destroy()
+        yProvider.destroy()
+      }
+    }
+
+    return () => {}
+  }, [yDoc, yjsRoom])
 
   React.useEffect(() => {
     document.title = projectName + ' - Utopia'

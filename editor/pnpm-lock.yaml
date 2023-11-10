@@ -63,6 +63,7 @@ specifiers:
   '@liveblocks/client': ^1.7.0
   '@liveblocks/react': ^1.7.0
   '@liveblocks/react-comments': ^1.7.0
+  '@liveblocks/yjs': ^1.7.0
   '@originjs/vite-plugin-commonjs': 1.0.3
   '@popperjs/core': 2.4.4
   '@react-three/fiber': 8.0.14
@@ -325,7 +326,6 @@ specifiers:
   webpack-merge: 5.9.0
   webpack-node-externals: 3.0.0
   xstate: 4.23.1
-  y-webrtc: 10.2.5
   yjs: 13.6.8
   zustand: 4.1.5
 
@@ -348,6 +348,7 @@ dependencies:
   '@liveblocks/client': 1.7.0
   '@liveblocks/react': 1.7.0_react@18.1.0
   '@liveblocks/react-comments': 1.7.0_wgqxz3kjpz4ixw4iz4mbg2tk4i
+  '@liveblocks/yjs': 1.7.1_yjs@13.6.8
   '@popperjs/core': 2.4.4
   '@remix-run/react': 2.0.1_njludxb6fcqnim6moy22jieofi
   '@root/encoding': 1.0.1
@@ -468,7 +469,6 @@ dependencies:
   utopia-vscode-common: file:../utopia-vscode-common
   uuid: 8.3.2
   xstate: 4.23.1
-  y-webrtc: 10.2.5_yjs@13.6.8
   yjs: 13.6.8
   zustand: 4.1.5_immer@3.2.0+react@18.1.0
 
@@ -3409,8 +3409,18 @@ packages:
       '@liveblocks/core': 1.7.0
     dev: false
 
+  /@liveblocks/client/1.7.1:
+    resolution: {integrity: sha512-i/r4CrKcFAuJw7RFPsbyr3NobeVc3rylGSOtAY70Acl9UO6i0Qe1Ai7V+uWKfzooqAiThwrr8mPxtfu0ji4DRA==}
+    dependencies:
+      '@liveblocks/core': 1.7.1
+    dev: false
+
   /@liveblocks/core/1.7.0:
     resolution: {integrity: sha512-JSEvFr4iQYAKnE0dH36VWNFW6KmWStP8XJtb711bSXevRxx/4ODN88kQkTNNVuUjpgAOM+ekKjbqEdHmd8JhKw==}
+    dev: false
+
+  /@liveblocks/core/1.7.1:
+    resolution: {integrity: sha512-x3HBVFk9tWppCkzScVaFn8VqTPC+rKgNxiB8bkazJmplYJO6/2k0oBHEq5lA034ERzVVdW1qkWMQKhmINNJiIQ==}
     dev: false
 
   /@liveblocks/react-comments/1.7.0_wgqxz3kjpz4ixw4iz4mbg2tk4i:
@@ -3449,6 +3459,17 @@ packages:
       nanoid: 3.3.6
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
       use-sync-external-store: 1.2.0_react@18.1.0
+    dev: false
+
+  /@liveblocks/yjs/1.7.1_yjs@13.6.8:
+    resolution: {integrity: sha512-2qB7p184GyHUBVNY3mj92RryHbNs2jGD1kEmWzVwLNfx2ghIAVwVTLX0QpeXOLEJcWcKzzUzcJ+th054rx4yEA==}
+    peerDependencies:
+      yjs: ^13.6.1
+    dependencies:
+      '@liveblocks/client': 1.7.1
+      '@liveblocks/core': 1.7.1
+      js-base64: 3.7.5
+      yjs: 13.6.8
     dev: false
 
   /@mantine/core/6.0.21_2nlaf5wpdo4ci5lvq3grwyjxf4:
@@ -7711,7 +7732,7 @@ packages:
     dev: true
 
   /component-indexof/0.0.3:
-    resolution: {integrity: sha1-EdCRMSI5648yyPJa6csAL/6NPCQ=}
+    resolution: {integrity: sha512-puDQKvx/64HZXb4hBwIcvQLaLgux8o1CbWl39s41hrIIZDl1lJiD5jc22gj3RBeGK0ovxALDYpIbyjqDUUl0rw==}
     dev: false
 
   /compressible/2.0.18:
@@ -8975,10 +8996,6 @@ packages:
       raf: 3.4.1
       rst-selector-parser: 2.2.3
     dev: true
-
-  /err-code/3.0.1:
-    resolution: {integrity: sha512-GiaH0KJUewYok+eeY05IIgjtAe4Yltygk9Wqp1V5yVWLdhf0hYZchRjNIT9bb0mSwRcIusT3cx7PJUf3zEIfUA==}
-    dev: false
 
   /errlop/3.17.0:
     resolution: {integrity: sha512-TDlb+YMx08OiaLq1g7Hu0nDca/oLo+LpMEgEI2lybBKE1rB8qsqFgXzEbnn1LU6NfDCfIdVcl3073aO3ZLTYNg==}
@@ -10485,10 +10502,6 @@ packages:
   /get-assigned-identifiers/1.2.0:
     resolution: {integrity: sha512-mBBwmeGTrxEMO4pMaaf/uUEFHnYtwr8FTe8Y/mer4rcV/bye0qGm6pw1bGZFGStxC5O76c5ZAVBGnqHmOaJpdQ==}
     dev: true
-
-  /get-browser-rtc/1.1.0:
-    resolution: {integrity: sha512-MghbMJ61EJrRsDe7w1Bvqt3ZsBuqhce5nrn/XAwgwOXhcsz53/ltdxOse1h/8eKXj5slzxdsz56g5rzOFSGwfQ==}
-    dev: false
 
   /get-caller-file/2.0.5:
     resolution: {integrity: sha512-DyFP3BM/3YHTQOCUL/w0OZHR0lpKeGrxotcHWcqNEdnltqFwXVfhEBQ94eIo34AfQpo0rGki4cyIiftY06h2Fg==}
@@ -12564,6 +12577,10 @@ packages:
   /js-base64/2.6.4:
     resolution: {integrity: sha512-pZe//GGmwJndub7ZghVHz7vjb2LgC1m8B07Au3eYqeqv9emhESByMXxaEgkUkEqJe87oBbSniGYoQNIBklc7IQ==}
     dev: true
+
+  /js-base64/3.7.5:
+    resolution: {integrity: sha512-3MEt5DTINKqfScXKfJFrRbxkrnk2AxPWGBL/ycjz4dK8iqiSJ06UxD8jh8xuh6p10TX4t2+7FsBYVxxQbMg+qA==}
+    dev: false
 
   /js-tokens/3.0.2:
     resolution: {integrity: sha512-RjTcuD4xjtthQkaWH7dFlH85L+QaVtSoOyGdZ3g6HFhS9dFNDfLyqgm2NFe2X6cQpeFmt0452FJjFG5UameExg==}
@@ -15177,6 +15194,7 @@ packages:
     resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==}
     dependencies:
       safe-buffer: 5.2.1
+    dev: true
 
   /randomfill/1.0.4:
     resolution: {integrity: sha512-87lcbR8+MhcWcUiQ+9e+Rwx8MyR2P7qnt15ynUlbm3TU/fjbgz4GsvfSUDTemtCCtVCqb4ZcEFlyPNTh9bBTLw==}
@@ -17182,20 +17200,6 @@ packages:
     transitivePeerDependencies:
       - supports-color
     dev: true
-
-  /simple-peer/9.11.1:
-    resolution: {integrity: sha512-D1SaWpOW8afq1CZGWB8xTfrT3FekjQmPValrqncJMX7QFl8YwhrPTZvMCANLtgBwwdS+7zURyqxDDEmY558tTw==}
-    dependencies:
-      buffer: 6.0.3
-      debug: 4.3.4
-      err-code: 3.0.1
-      get-browser-rtc: 1.1.0
-      queue-microtask: 1.2.3
-      randombytes: 2.1.0
-      readable-stream: 3.6.0
-    transitivePeerDependencies:
-      - supports-color
-    dev: false
 
   /simple-swizzle/0.2.2:
     resolution: {integrity: sha512-JA//kQgZtbuY83m+xT+tXJkmJncGMTFT+C+g2h2R9uxkYIrE2yy9sgmcLhCnw57/WSD+Eh3J97FPEDFnbXnDUg==}
@@ -19304,6 +19308,7 @@ packages:
         optional: true
       utf-8-validate:
         optional: true
+    dev: true
 
   /ws/8.11.0:
     resolution: {integrity: sha512-HPG3wQd9sNQoT9xHyNCXoDUa+Xw/VevmY9FoHyQ+g+rrMn4j6FB4np7Z0OhdTgjx6MgQLK7jwSy1YecU1+4Asg==}
@@ -19394,33 +19399,6 @@ packages:
   /xtend/4.0.2:
     resolution: {integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==}
     engines: {node: '>=0.4'}
-
-  /y-protocols/1.0.6_yjs@13.6.8:
-    resolution: {integrity: sha512-vHRF2L6iT3rwj1jub/K5tYcTT/mEYDUppgNPXwp8fmLpui9f7Yeq3OEtTLVF012j39QnV+KEQpNqoN7CWU7Y9Q==}
-    engines: {node: '>=16.0.0', npm: '>=8.0.0'}
-    peerDependencies:
-      yjs: ^13.0.0
-    dependencies:
-      lib0: 0.2.87
-      yjs: 13.6.8
-    dev: false
-
-  /y-webrtc/10.2.5_yjs@13.6.8:
-    resolution: {integrity: sha512-ZyBNvTI5L28sQ2PQI0T/JvyWgvuTq05L21vGkIlcvNLNSJqAaLCBJRe3FHEqXoaogqWmRcEAKGfII4ErNXMnNw==}
-    engines: {node: '>=12'}
-    hasBin: true
-    dependencies:
-      lib0: 0.2.87
-      simple-peer: 9.11.1
-      y-protocols: 1.0.6_yjs@13.6.8
-    optionalDependencies:
-      ws: 7.5.5
-    transitivePeerDependencies:
-      - bufferutil
-      - supports-color
-      - utf-8-validate
-      - yjs
-    dev: false
 
   /y18n/5.0.8:
     resolution: {integrity: sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA==}

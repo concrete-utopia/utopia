@@ -177,8 +177,8 @@ import type { ProjectServerState } from './project-server-state'
 import type { ReparentTargetForPaste } from '../../canvas/canvas-strategies/strategies/reparent-utils'
 import { GridMenuWidth } from '../../canvas/stored-layout'
 import * as Y from 'yjs'
-import { WebrtcProvider } from 'y-webrtc'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+import LiveblocksProvider from '@liveblocks/yjs'
 
 const ObjectPathImmutable: any = OPI
 
@@ -403,7 +403,6 @@ export type CollabFile = CollabTextFile //| CollabImageFileUpdate | CollabAssetF
 export interface CollaborativeEditingSupportSession {
   mergeDoc: Y.Doc
   projectContents: Y.Map<CollabFile>
-  webRTCProvider: WebrtcProvider
 }
 
 export interface CollaborativeEditingSupport {
@@ -414,14 +413,9 @@ export function emptyCollaborativeEditingSupport(): CollaborativeEditingSupport 
   let session: CollaborativeEditingSupportSession | null = null
   if (isFeatureEnabled('Collaboration')) {
     const doc = new Y.Doc()
-    const webRTCProvider = new WebrtcProvider('utopia-room', doc, {
-      signaling: ['ws://192.168.1.144:4444'],
-      password: 'utopia-password',
-    })
     session = {
       mergeDoc: doc,
       projectContents: doc.getMap('projectContents'),
-      webRTCProvider: webRTCProvider,
     }
   }
   return {
