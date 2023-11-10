@@ -531,7 +531,7 @@ export function EditorComponent(props: EditorProps) {
 
   const roomId = useEditorState(
     Substores.restOfEditor,
-    (store) => store.editor.multiplayer?.roomId ?? projectId ?? generateUUID(),
+    (store) => store.editor.multiplayer?.roomId ?? projectId ?? 'temp',
     '',
   )
 
