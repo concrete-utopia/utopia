@@ -4,6 +4,9 @@ import { useDispatch } from '../../components/editor/store/dispatch-context'
 import { getOpenUIJSFile, getOpenUIJSFileKey } from '../../components/editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../components/editor/store/store-hook'
 import { RevisionsState, textFile, textFileContents } from '../shared/project-file-types'
+import type { SteganoTextData } from '../shared/stegano-text'
+import { getTextFileByPath } from '../../components/custom-code/code-file.test-utils'
+import { getProjectFileByFilePath } from '../../components/assets'
 
 export function useReParseOpenProjectFile(): () => void {
   const dispatch = useDispatch()
@@ -25,4 +28,53 @@ export function useReParseOpenProjectFile(): () => void {
       dispatch([updateFile(openFilePath, openFileCodeAhead, false)])
     }
   }, [refEditorState, dispatch])
+}
+
+function spliceCode(
+  originalCode: string,
+  originalStringData: SteganoTextData,
+  updatedString: string,
+): string {
+  const currentString = originalCode.slice(
+    originalStringData.startPosition,
+    originalStringData.endPosition,
+  )
+  if (currentString !== originalStringData.originalString) {
+    throw new Error(`Tried to rewrite string but it was not matching the last known value.
+Current: >>>${currentString}<<<
+Expected: >>>${originalStringData.originalString}<<<
+`)
+  }
+
+  const originalBefore = originalCode.slice(0, originalStringData.startPosition)
+  const originalAfter = originalCode.slice(originalStringData.endPosition)
+
+  return '' + originalBefore + updatedString + originalAfter
+}
+
+export function useUpdateStringRun(): (
+  originalStringData: SteganoTextData,
+  updatedString: string,
+) => void {
+  const dispatch = useDispatch()
+  const refEditorState = useRefEditorState((store) => store.editor)
+  return React.useCallback(
+    (originalStringData: SteganoTextData, updatedString: string) => {
+      const editor = refEditorState.current
+      const sourceFile = getTextFileByPath(editor.projectContents, originalStringData.filePath)
+      const updatedCode = spliceCode(
+        sourceFile.fileContents.code,
+        originalStringData,
+        updatedString,
+      )
+      const updatedFileCodeAhead = textFile(
+        textFileContents(updatedCode, sourceFile.fileContents.parsed, RevisionsState.CodeAhead),
+        sourceFile.lastSavedContents,
+        sourceFile.lastParseSuccess,
+        sourceFile.versionNumber + 1,
+      )
+      dispatch([updateFile(originalStringData.filePath, updatedFileCodeAhead, false)])
+    },
+    [refEditorState, dispatch],
+  )
 }

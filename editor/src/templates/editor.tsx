@@ -130,6 +130,7 @@ import {
 import { GithubOperations } from '../core/shared/github/operations'
 import { GithubAuth } from '../utils/github-auth'
 import { Provider as JotaiProvider } from 'jotai'
+import { encodeSteganoData, steganoTextData } from '../core/shared/stegano-text'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -826,3 +827,9 @@ async function renderProjectLoadError(error: string): Promise<void> {
     root.render(<ProjectLoadError error={error} />)
   }
 }
+
+// console.log('cic')
+// console.log(
+//   encodeSteganoData('Hello World', steganoTextData('Hello World', 'src/myFile.js', 0, 15)),
+// )
+// console.log('mic')

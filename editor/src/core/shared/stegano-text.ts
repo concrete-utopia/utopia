@@ -1,4 +1,5 @@
 import { vercelStegaCombine, vercelStegaDecodeAll } from '@vercel/stega'
+import { EditorAction } from '../../components/editor/action-types'
 
 export interface SteganoTextData {
   originalString: string
