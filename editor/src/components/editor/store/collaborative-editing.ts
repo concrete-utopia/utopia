@@ -18,12 +18,19 @@ import {
   getProjectFileFromTree,
   isProjectContentFile,
   zipContentsTree,
+  addFileToProjectContents,
 } from '../../../components/assets'
 import type { EditorDispatch } from '../action-types'
-import { updateTopLevelElements } from '../actions/action-creators'
+import { updateProjectContents, updateTopLevelElements } from '../actions/action-creators'
 import { assertNever, isBrowserEnvironment } from '../../../core/shared/utils'
 import type { ParseSuccess } from '../../../core/shared/project-file-types'
-import { isTextFile } from '../../../core/shared/project-file-types'
+import {
+  RevisionsState,
+  isTextFile,
+  parseSuccess,
+  textFile,
+  textFileContents,
+} from '../../../core/shared/project-file-types'
 import {
   ParsedTextFileKeepDeepEquality,
   TopLevelElementKeepDeepEquality,
@@ -207,66 +214,31 @@ export function addHookForProjectChanges(
   dispatch: EditorDispatch,
 ): void {
   if (isFeatureEnabled('Collaboration')) {
-    // collaborativeEditingSupport.projectContents.observe((changeEvent) => {
-    //   console.log(`observe`, changeEvent.changes)
-    //   changeEvent.changes.keys.forEach((change, key) => {
-    //     switch (change.action) {
-    //       case 'add':
-    //       case 'update':
-    //         const file = forceNotNull(
-    //           'Should not be null.',
-    //           collaborativeEditingSupport.projectContents.get(key),
-    //         )
-    //         dispatch([applyCollabFileUpdate(key, file)])
-    //         break
-    //       case 'delete':
-    //         console.error('Deletes to be handled later.')
-    //         break
-    //       default:
-    //         console.error(`Not sure what this is: ${change}`)
-    //     }
-    //   })
-    // })
-
     session.projectContents.observeDeep((changeEvents) => {
       // TODO Check that this is the array change before doing anything
-      changeEvents.forEach((changeEvent) => {
-        if (changeEvent.path.length === 0) {
-          return
-        }
-        const filePath = changeEvent.path[0] as string
-        // FIXME Can be null actually
-        const file = session.projectContents.get(filePath)
-        if (file != null) {
-          const oldTopLevelElements = file.get('topLevelElements') as CollabTextFileTopLevelElements
-          let newTopLevelElements: Array<TopLevelElement> = []
-          let writeIndex = 0
-          let readIndex = 0
-          changeEvent.delta.forEach((delta) => {
-            if (delta.retain != undefined) {
-              const elementsToPush = oldTopLevelElements.slice(readIndex, readIndex + delta.retain)
-              newTopLevelElements.push(...elementsToPush)
-              readIndex += delta.retain
-              writeIndex += delta.retain
-            }
-            if (delta.insert != null && Array.isArray(delta.insert)) {
-              newTopLevelElements.push(...delta.insert)
-              writeIndex += delta.insert.length
-            }
-            if (delta.delete != undefined) {
-              readIndex += delta.delete
-            }
-          })
-
-          if (readIndex < oldTopLevelElements.length) {
-            // There is an implicit retain for the remainder of the items
-            const elementsToPush = oldTopLevelElements.slice(readIndex)
-            newTopLevelElements.push(...elementsToPush)
+      for (const changeEvent of changeEvents) {
+        switch (changeEvent.path.length) {
+          case 0: {
+            updateEntireProjectContents(session, changeEvent, dispatch)
+            break
           }
-
-          dispatch([updateTopLevelElements(filePath, newTopLevelElements)])
+          case 1: {
+            const filePath = changeEvent.path[0] as string
+            // TODO: Entire file update.
+            break
+          }
+          case 2: {
+            const filePath = changeEvent.path[0] as string
+            if (changeEvent.path[1] !== 'topLevelElements') {
+              throw new Error(`Unexpected second part of change path: ${changeEvent.path[1]}`)
+            }
+            updateTopLevelElementsOfFile(session, filePath, changeEvent, dispatch)
+            break
+          }
+          default:
+            throw new Error(`Unexpected change path: ${JSON.stringify(changeEvent.path)}`)
         }
-      })
+      }
     })
   }
 }
@@ -274,6 +246,82 @@ export function addHookForProjectChanges(
 export interface ArrayChanges {
   updatesAt: Array<number>
   deleteFrom: number | null
+}
+
+function updateEntireProjectContents(
+  session: CollaborativeEditingSupportSession,
+  changeEvent: Y.YEvent<any>,
+  dispatch: EditorDispatch,
+): void {
+  for (const delta of changeEvent.delta) {
+    if (delta.retain != null) {
+      // Do nothing.
+    }
+    if (delta.insert != null && Array.isArray(delta.insert)) {
+      if (delta.insert instanceof Y.Map) {
+        const insertMap: CollabTextFile = delta.insert
+        let projectContents: ProjectContentTreeRoot = {}
+        for (const entry of insertMap.entries()) {
+          switch (entry[0]) {
+            case 'type':
+              // Ignore.
+              break
+            case 'topLevelElements':
+              const success = parseSuccess({}, entry[1], {}, null, null, [], {})
+              const newFile = textFile(
+                textFileContents('', success, RevisionsState.ParsedAhead),
+                null,
+                null,
+                1,
+              )
+              projectContents = addFileToProjectContents(projectContents, entry[0], newFile)
+              break
+            default:
+              throw new Error(`Unknown key: ${entry[0]}`)
+          }
+        }
+        dispatch([updateProjectContents(projectContents)])
+      }
+    }
+    if (delta.delete != null) {
+      dispatch([updateProjectContents({})])
+    }
+  }
+}
+
+function updateTopLevelElementsOfFile(
+  session: CollaborativeEditingSupportSession,
+  filePath: string,
+  changeEvent: Y.YEvent<any>,
+  dispatch: EditorDispatch,
+): void {
+  const file = session.projectContents.get(filePath)
+  if (file != null) {
+    const oldTopLevelElements = file.get('topLevelElements') as CollabTextFileTopLevelElements
+    let newTopLevelElements: Array<TopLevelElement> = []
+    let readIndex = 0
+    for (const delta of changeEvent.delta) {
+      if (delta.retain != undefined) {
+        const elementsToPush = oldTopLevelElements.slice(readIndex, readIndex + delta.retain)
+        newTopLevelElements.push(...elementsToPush)
+        readIndex += delta.retain
+      }
+      if (delta.insert != null && Array.isArray(delta.insert)) {
+        newTopLevelElements.push(...delta.insert)
+      }
+      if (delta.delete != undefined) {
+        readIndex += delta.delete
+      }
+    }
+
+    if (readIndex < oldTopLevelElements.length) {
+      // There is an implicit retain for the remainder of the items
+      const elementsToPush = oldTopLevelElements.slice(readIndex)
+      newTopLevelElements.push(...elementsToPush)
+    }
+
+    dispatch([updateTopLevelElements(filePath, newTopLevelElements)])
+  }
 }
 
 function arrayChanges(updatesAt: Array<number>, deleteFrom: number | null): ArrayChanges {
