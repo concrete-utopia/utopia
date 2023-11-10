@@ -142,6 +142,8 @@ import { fromField } from '../../../core/shared/optics/optic-creators'
 import type { Optic } from '../../../core/shared/optics/optics'
 import { modify } from '../../../core/shared/optics/optic-utilities'
 import { updateHighlightBounds } from '../../../core/shared/uid-utils'
+import { vercelStegaCombine, vercelStegaDecode } from '@vercel/stega'
+import { encodeSteganoData } from '../../shared/stegano-text'
 
 function buildPropertyCallingFunction(
   functionName: string,
@@ -1257,18 +1259,95 @@ export function isReactImported(sourceFile: TS.SourceFile): boolean {
 }
 
 export function parseCode(
-  filename: string,
+  filePath: string,
   sourceText: string,
   oldParseResultForUIDComparison: ParseSuccess | null,
   alreadyExistingUIDs_MUTABLE: Set<string>,
 ): ParsedTextFile {
   const originalAlreadyExistingUIDs_MUTABLE: Set<string> = new Set(alreadyExistingUIDs_MUTABLE)
-  const sourceFile = TS.createSourceFile(filename, sourceText, TS.ScriptTarget.ES3)
+  const sourceFileOriginal = TS.createSourceFile(filePath, sourceText, TS.ScriptTarget.ES3)
+
+  const visitor =
+    (context: TS.TransformationContext) =>
+    (node: TS.Node): TS.Node => {
+      if (!TS.isVariableStatement(node)) {
+        return TS.visitEachChild(node, visitor(context), context)
+      }
+      const noStringLiteralsInDeclaration = !node.declarationList.declarations.some(
+        (declaration) =>
+          declaration.initializer != null && TS.isStringLiteral(declaration.initializer),
+      )
+
+      if (noStringLiteralsInDeclaration) {
+        return TS.visitEachChild(node, visitor(context), context)
+      }
+
+      const declarations = node.declarationList.declarations.map((declaration) => {
+        if (declaration.initializer == null || !TS.isStringLiteral(declaration.initializer)) {
+          return declaration
+        }
+        // console.log(
+        //   'vercelStegaDecode(declaration.initializer.text)',
+        //   declaration.initializer.text,
+        //   vercelStegaDecode(declaration.initializer.text),
+        // )
+        const startPosition = declaration.initializer.getStart(sourceFileOriginal)
+        const endPosition = declaration.initializer.getEnd()
+        const stega = encodeSteganoData(declaration.initializer.text, {
+          originalString: declaration.initializer.text,
+          filePath: filePath,
+          startPosition: startPosition,
+          endPosition: endPosition,
+        })
+        return context.factory.updateVariableDeclaration(
+          declaration,
+          declaration.name,
+          declaration.exclamationToken,
+          declaration.type,
+          context.factory.createStringLiteral(stega, true),
+        )
+      })
+
+      // console.log(
+      //   '>>> isVariableStatement',
+      //   node.declarationList.declarations.map((d) => d.name),
+      // )
+
+      return context.factory.updateVariableStatement(
+        node,
+        node.modifiers,
+        context.factory.updateVariableDeclarationList(node.declarationList, declarations),
+      )
+    }
+
+  const transformer = (context: TS.TransformationContext) => (n: TS.Node) =>
+    TS.visitNode(n, visitor(context))
+
+  const newFile = TS.transform(sourceFileOriginal, [transformer]).transformed[0]
+  // TS.transform(newFile, [transformer])
+
+  const printer = TS.createPrinter({ newLine: TS.NewLineKind.LineFeed })
+  const resultFile = TS.createSourceFile(
+    'print.ts',
+    '',
+    TS.ScriptTarget.Latest,
+    false,
+    TS.ScriptKind.TS,
+  )
+
+  const sourceFileReprinted = printer.printNode(TS.EmitHint.Unspecified, newFile, resultFile)
+
+  const sourceFile = TS.createSourceFile(filePath, sourceFileReprinted, TS.ScriptTarget.ES3)
+
+  const topLevelNodes = flatMapArray(
+    (e) => flattenOutAnnoyingContainers(sourceFile, e),
+    sourceFile.getChildren(sourceFile),
+  )
 
   const jsxFactoryFunction = getJsxFactoryFunction(sourceFile)
 
   if (sourceFile == null) {
-    return parseFailure([], null, `File ${filename} not found.`, [])
+    return parseFailure([], null, `File ${filePath} not found.`, [])
   } else {
     let topLevelElements: Array<Either<string, TopLevelElement>> = []
     let imports: Imports = emptyImports()
@@ -1291,7 +1370,7 @@ export function parseCode(
         const nodeParseResult = parseArbitraryNodes(
           sourceFile,
           sourceText,
-          filename,
+          filePath,
           [node],
           imports,
           topLevelNames,
@@ -1325,11 +1404,6 @@ export function parseCode(
     function pushUnparsedCode(rawCode: string) {
       topLevelElements.push(right(unparsedCode(rawCode)))
     }
-
-    const topLevelNodes = flatMapArray(
-      (e) => flattenOutAnnoyingContainers(sourceFile, e),
-      sourceFile.getChildren(sourceFile),
-    )
 
     const topLevelNames = flatMapArray((node) => {
       let names: Array<string> = []
@@ -1441,7 +1515,7 @@ export function parseCode(
           // this import looks like `import Cat from './src/cats'`
           const importedWithName = optionalMap((n) => n.getText(sourceFile), importClause?.name)
           imports = addImport(
-            filename,
+            filePath,
             importFrom,
             importedWithName,
             importedFromWithin,
@@ -1475,7 +1549,7 @@ export function parseCode(
               parameters,
               sourceFile,
               sourceText,
-              filename,
+              filePath,
               imports,
               topLevelNames,
               highlightBounds,
@@ -1505,7 +1579,7 @@ export function parseCode(
               parsedContents = parseOutFunctionContents(
                 sourceFile,
                 sourceText,
-                filename,
+                filePath,
                 imports,
                 topLevelNames,
                 propsObjectName,
@@ -1521,7 +1595,7 @@ export function parseCode(
               parseOutJSXElements(
                 sourceFile,
                 sourceText,
-                filename,
+                filePath,
                 [canvasContents.initializer],
                 imports,
                 topLevelNames,
@@ -1689,7 +1763,7 @@ export function parseCode(
       const nodeParseResult = parseArbitraryNodes(
         sourceFile,
         sourceText,
-        filename,
+        filePath,
         allArbitraryNodes.map((entry) => entry.node),
         imports,
         topLevelNames,

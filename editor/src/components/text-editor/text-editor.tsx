@@ -45,6 +45,7 @@ import { assertNever } from '../../core/shared/utils'
 import { notice } from '../common/notice'
 import type { AllElementProps } from '../editor/store/editor-state'
 import { toString } from '../../core/shared/element-path'
+import { decodeSteganoData } from '../../core/shared/stegano-text'
 
 export const TextEditorSpanId = 'text-editor'
 
@@ -53,6 +54,7 @@ export type TextProp = 'itself' | 'child' | 'whenTrue' | 'whenFalse' | 'fullCond
 export interface TextEditorProps {
   elementPath: ElementPath
   text: string
+  originalText: string | null
   component: React.ComponentType<React.PropsWithChildren<any>>
   passthroughProps: Record<string, any>
   filePath: string
@@ -321,7 +323,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
   const outlineWidth = 1 / scale
   const outlineColor = colorTheme.textEditableOutline.value
 
-  const [firstTextProp] = React.useState(text)
+  const [firstTextProp] = React.useState(props.originalText)
 
   const myElement = React.useRef<HTMLSpanElement>(null)
 

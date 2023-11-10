@@ -115,7 +115,12 @@ import { isEmptyString } from '../../shared/string-utils'
 import type { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 import { emptySet } from '../../../core/shared/set-utils'
 import { getAllUniqueUidsFromAttributes } from '../../../core/model/get-unique-ids'
-import { vercelStegaCombine, vercelStegaDecode, vercelStegaSplit } from '@vercel/stega'
+import {
+  vercelStegaCombine,
+  vercelStegaDecode,
+  vercelStegaDecodeAll,
+  vercelStegaSplit,
+} from '@vercel/stega'
 
 function inPositionToElementsWithin(elements: ElementsWithinInPosition): ElementsWithin {
   let result: ElementsWithin = {}
@@ -2938,34 +2943,6 @@ export function parseOutFunctionContents(
 ): Either<string, WithParserMetadata<FunctionContents>> {
   let highlightBounds = existingHighlightBounds
   if (TS.isBlock(arrowFunctionBody)) {
-    // const transformer = (context: TS.TransformationContext) => (n: TS.Node) => {
-    //   console.log('n', n)
-    //   return TS.visitEachChild(
-    //     n,
-    //     (innerNode: TS.Node) => {
-    //       console.log('innerNode', innerNode)
-    //       if (TS.isVariableStatement(innerNode)) {
-    //         for (const declaration of innerNode.declarationList.declarations) {
-    //           if (declaration.initializer != null && TS.isStringLiteral(declaration.initializer)) {
-    //             // console.log(
-    //             //   vercelStegaCombine(declaration.initializer.text, {
-    //             //     filename: sourceFile.fileName,
-    //             //     start: declaration.initializer.getStart(sourceFile),
-    //             //   }),
-    //             // )
-    //             const stega = vercelStegaCombine(declaration.initializer.text, { foo: 'bar' })
-    //             console.table({ stega, encoded: vercelStegaDecode(stega) })
-    //           }
-    //         }
-    //       }
-    //       return innerNode
-    //     },
-    //     context,
-    //   )
-    // }
-
-    // arrowFunctionBody = TS.transform<TS.Block>(arrowFunctionBody, [transformer])
-
     if (arrowFunctionBody.statements.length === 0) {
       return left('No body for component.')
     } else {

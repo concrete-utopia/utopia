@@ -66,7 +66,6 @@ import {
   isUtopiaCommentFlagMapCount,
 } from '../../../core/shared/comment-flags'
 import { RemixSceneComponent } from './remix-scene-component'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export function createLookupRender(
   elementPath: ElementPath | null,
@@ -286,11 +285,42 @@ export function renderCoreElement(
       }
 
       if (elementIsTextEdited) {
+        const innerRender = createLookupRender(
+          elementPath,
+          rootScope,
+          parentComponentInputProps,
+          requireResult,
+          hiddenInstances,
+          displayNoneInstances,
+          fileBlobs,
+          validPaths,
+          reactChildren,
+          metadataContext,
+          updateInvalidatedPaths,
+          jsxFactoryFunctionName,
+          shouldIncludeCanvasRootInTheSpy,
+          filePath,
+          imports,
+          code,
+          highlightBounds,
+          editedText,
+          mapCountOverride,
+        )
+        const blockScope = {
+          ...inScope,
+          [JSX_CANVAS_LOOKUP_FUNCTION_NAME]: utopiaCanvasJSXLookup(
+            element.elementsWithin,
+            inScope,
+            innerRender,
+          ),
+        }
+        const originalTextContent = runJSExpression(filePath, requireResult, element, blockScope)
         const textContent = trimJoinUnescapeTextFromJSXElements([element])
         const textEditorProps: TextEditorProps = {
           elementPath: elementPath,
           filePath: filePath,
           text: textContent,
+          originalText: originalTextContent,
           component: React.Fragment,
           passthroughProps: {},
           textProp: 'itself',
@@ -448,6 +478,7 @@ export function renderCoreElement(
           elementPath: elementPath,
           filePath: filePath,
           text: textContent,
+          originalText: null,
           component: React.Fragment,
           passthroughProps: {},
           textProp: textProp,
@@ -506,6 +537,7 @@ export function renderCoreElement(
           elementPath: elementPath,
           filePath: filePath,
           text: textContent,
+          originalText: null,
           component: React.Fragment,
           passthroughProps: {},
           textProp: 'itself',
@@ -790,11 +822,44 @@ function renderJSXElement(
     validPaths.has(EP.toString(EP.makeLastPartOfPathStatic(elementPath)))
   ) {
     if (elementIsTextEdited) {
+      const innerRender = createLookupRender(
+        elementPath,
+        rootScope,
+        parentComponentInputProps,
+        requireResult,
+        hiddenInstances,
+        displayNoneInstances,
+        fileBlobs,
+        validPaths,
+        [],
+        metadataContext,
+        updateInvalidatedPaths,
+        jsxFactoryFunctionName,
+        shouldIncludeCanvasRootInTheSpy,
+        filePath,
+        imports,
+        code,
+        highlightBounds,
+        editedText,
+        null,
+      )
+      const blockScope = {
+        ...inScope,
+        [JSX_CANVAS_LOOKUP_FUNCTION_NAME]: utopiaCanvasJSXLookup({}, inScope, innerRender),
+      }
+
+      const originalTextContent = runJSExpression(
+        filePath,
+        requireResult,
+        childrenWithNewTextBlock[0],
+        blockScope,
+      )
       const textContent = trimJoinUnescapeTextFromJSXElements(childrenWithNewTextBlock)
       const textEditorProps: TextEditorProps = {
         elementPath: elementPath,
         filePath: filePath,
         text: textContent,
+        originalText: originalTextContent,
         component: FinalElement,
         passthroughProps: finalProps,
         textProp: 'child',
