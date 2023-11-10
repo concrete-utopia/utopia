@@ -48,11 +48,9 @@ import { isFiniteRectangle, size } from '../../../core/shared/math-utils'
 import type { PackageStatus, PackageStatusMap } from '../../../core/shared/npm-dependency-types'
 import type {
   ElementPath,
-  ExportDetail,
   HighlightBoundsForUids,
   HighlightBoundsWithFile,
   HighlightBoundsWithFileForUids,
-  ImportDetails,
   Imports,
   NodeModules,
   ParseSuccess,
@@ -79,7 +77,7 @@ import type {
 import type { KeysPressed } from '../../../utils/keyboard'
 import type { IndexPosition } from '../../../utils/utils'
 import Utils from '../../../utils/utils'
-import type { ProjectContentFile, ProjectContentTreeRoot } from '../../assets'
+import type { ProjectContentTreeRoot } from '../../assets'
 import { packageJsonFileFromProjectContents } from '../../assets'
 import {
   addFileToProjectContents,
@@ -178,7 +176,6 @@ import type { ReparentTargetForPaste } from '../../canvas/canvas-strategies/stra
 import { GridMenuWidth } from '../../canvas/stored-layout'
 import * as Y from 'yjs'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
-import LiveblocksProvider from '@liveblocks/yjs'
 
 const ObjectPathImmutable: any = OPI
 
@@ -261,6 +258,20 @@ export interface GithubState {
 export interface UserState extends UserConfiguration {
   loginState: LoginState
   githubState: GithubState
+}
+
+export type MultiplayerState = {
+  roomId: string | null
+  playerId: string | null
+  playerName: string | null
+}
+
+export function emptyMultiplayerState(): MultiplayerState {
+  return {
+    roomId: null,
+    playerId: null,
+    playerName: null,
+  }
 }
 
 export interface GithubCommitAndPush {
@@ -1462,6 +1473,7 @@ export interface EditorState {
   colorSwatches: Array<ColorSwatch>
   internalClipboard: InternalClipboard
   filesModifiedByElsewhere: Array<string>
+  multiplayer: MultiplayerState
 }
 
 export function editorState(
@@ -1541,6 +1553,7 @@ export function editorState(
   colorSwatches: Array<ColorSwatch>,
   internalClipboardData: InternalClipboard,
   filesModifiedByElsewhere: Array<string>,
+  multiplayer: MultiplayerState,
 ): EditorState {
   return {
     id: id,
@@ -1619,6 +1632,7 @@ export function editorState(
     colorSwatches: colorSwatches,
     internalClipboard: internalClipboardData,
     filesModifiedByElsewhere: filesModifiedByElsewhere,
+    multiplayer: multiplayer,
   }
 }
 
@@ -2490,6 +2504,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       elements: [],
     },
     filesModifiedByElsewhere: [],
+    multiplayer: emptyMultiplayerState(),
   }
 }
 
@@ -2860,6 +2875,7 @@ export function editorModelFromPersistentModel(
       elements: [],
     },
     filesModifiedByElsewhere: [],
+    multiplayer: emptyMultiplayerState(),
   }
   return editor
 }

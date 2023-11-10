@@ -10,6 +10,7 @@ import {
   setProjectName,
   showToast,
   updateFile,
+  updateMultiplayerState,
 } from '../actions/action-creators'
 import type { PersistentModel } from '../store/editor-state'
 import type { PersistenceEvent, SaveEvent } from './generic/persistence-machine'
@@ -75,7 +76,10 @@ export class PersistenceMachine {
             this.projectCreatedOrLoadedThisTick = true
             break
           case 'PROJECT_ID_CREATED':
-            this.queuedActions.push(setProjectID(event.projectId))
+            this.queuedActions.push(
+              setProjectID(event.projectId),
+              updateMultiplayerState({ roomId: 'the-room' }), //event.projectId }),
+            )
             break
           case 'LOAD_FAILED':
             onProjectNotFound()

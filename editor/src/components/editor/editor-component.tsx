@@ -34,7 +34,6 @@ import { ConfirmOverwriteDialog } from '../filebrowser/confirm-overwrite-dialog'
 import { ConfirmRevertDialog } from '../filebrowser/confirm-revert-dialog'
 import { ConfirmRevertAllDialog } from '../filebrowser/confirm-revert-all-dialog'
 import { PreviewColumn } from '../preview/preview-pane'
-import TitleBar from '../titlebar/title-bar'
 import * as EditorActions from './actions/action-creators'
 import { FatalIndexedDBErrorComponent } from './fatal-indexeddb-error-component'
 import { editorIsTarget, handleKeyDown, handleKeyUp } from './global-shortcuts'
@@ -47,17 +46,17 @@ import {
 } from './store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
 import { ConfirmDisconnectBranchDialog } from '../filebrowser/confirm-branch-disconnect'
-import { unless, when } from '../../utils/react-conditionals'
+import { when } from '../../utils/react-conditionals'
 import { LowPriorityStoreProvider } from './store/store-context-providers'
 import { useDispatch } from './store/dispatch-context'
 import type { EditorAction } from './action-types'
 import { EditorCommon } from './editor-component-common'
 import { notice } from '../common/notice'
-import { isFeatureEnabled } from '../../utils/feature-switches'
 import { ProjectServerStateUpdater } from './store/project-server-state'
 import type { Storage, Presence, RoomEvent, UserMeta } from '../../../liveblocks.config'
-import { useRoom, RoomProvider } from '../../../liveblocks.config'
 import LiveblocksProvider from '@liveblocks/yjs'
+import { useRoom, RoomProvider, initialPresence } from '../../../liveblocks.config'
+import { generateUUID } from '../../utils/utils'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -530,10 +529,16 @@ export function EditorComponent(props: EditorProps) {
 
   const dispatch = useDispatch()
 
+  const roomId = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.multiplayer?.roomId ?? projectId ?? generateUUID(),
+    '',
+  )
+
   return indexedDBFailed ? (
     <FatalIndexedDBErrorComponent />
   ) : (
-    <RoomProvider id={'the-room'} initialPresence={{}}>
+    <RoomProvider id={roomId} autoConnect={true} initialPresence={initialPresence()}>
       <DndProvider backend={HTML5Backend} context={window}>
         <ProjectServerStateUpdater
           projectId={projectId}

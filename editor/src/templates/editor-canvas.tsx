@@ -1,10 +1,11 @@
 import update from 'immutability-helper'
 import React from 'react'
-import { interactionInProgress } from '../components/canvas/canvas-strategies/canvas-strategies'
+import * as ResizeObserverSyntheticDefault from 'resize-observer-polyfill'
 import { PROBABLY_ELECTRON, requireElectron } from '../common/env-vars'
 import { isAspectRatioLockedNew } from '../components/aspect-ratio'
 import CanvasActions from '../components/canvas/canvas-actions'
 import { CanvasComponentEntry } from '../components/canvas/canvas-component-entry'
+import { interactionInProgress } from '../components/canvas/canvas-strategies/canvas-strategies'
 import {
   boundingArea,
   createInteractionViaMouse,
@@ -23,11 +24,13 @@ import type {
 import { CSSCursor } from '../components/canvas/canvas-types'
 import { getCanvasOffset } from '../components/canvas/canvas-utils'
 import { NewCanvasControls } from '../components/canvas/controls/new-canvas-controls'
+import { CursorComponent } from '../components/canvas/controls/select-mode/cursor-component'
 import { setFocus } from '../components/common/actions/index'
 import type { EditorAction, EditorDispatch } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
 import type { HandleInteractionSession } from '../components/editor/actions/meta-actions'
 import { cancelInsertModeActions } from '../components/editor/actions/meta-actions'
+import { EditorCommon } from '../components/editor/editor-component-common'
 import type { Mode } from '../components/editor/editor-modes'
 import { EditorModes, isLiveMode } from '../components/editor/editor-modes'
 import { saveAssets } from '../components/editor/server'
@@ -64,8 +67,6 @@ import type {
   CanvasPoint,
   CanvasRectangle,
   CanvasVector,
-  CoordinateMarker,
-  Point,
   RawPoint,
   Size,
   WindowPoint,
@@ -76,31 +77,20 @@ import {
   roundPointToNearestHalf,
   roundPointToNearestWhole,
   windowRectangle,
-  zeroCanvasPoint,
   zeroCanvasRect,
 } from '../core/shared/math-utils'
 import type { ElementPath } from '../core/shared/project-file-types'
-import { getActionsForClipboardItems, Clipboard } from '../utils/clipboard'
-import {
-  CanvasMousePositionRaw,
-  CanvasMousePositionRounded,
-  updateGlobalPositions,
-} from '../utils/global-positions'
+import { Clipboard, getActionsForClipboardItems } from '../utils/clipboard'
+import { CanvasMousePositionRaw, updateGlobalPositions } from '../utils/global-positions'
 import type { KeysPressed } from '../utils/keyboard'
-import Keyboard, { KeyCharacter } from '../utils/keyboard'
-import { emptyModifiers, Modifier } from '../utils/modifiers'
+import { Modifier, emptyModifiers } from '../utils/modifiers'
 import type { MouseButtonsPressed } from '../utils/mouse'
 import RU from '../utils/react-utils'
 import Utils from '../utils/utils'
 import { UtopiaStyles } from '../uuiui'
 import { DropHandlers } from './image-drop'
-import { EditorCommon } from '../components/editor/editor-component-common'
-import { CursorComponent } from '../components/canvas/controls/select-mode/cursor-component'
-import * as ResizeObserverSyntheticDefault from 'resize-observer-polyfill'
-import { isFeatureEnabled } from '../utils/feature-switches'
 import { getCanvasViewportCenter } from './paste-helpers'
-import { Multiplayer } from '../components/canvas/multiplayer'
-import { messageMove } from '../components/canvas/multiplayer-messages'
+import { liveblocksClient } from '../../liveblocks.config'
 const ResizeObserver = ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
@@ -352,9 +342,9 @@ export function runLocalCanvasAction(
         model.canvas.realCanvasOffset,
         Utils.negate(action.delta),
       )
-      if (!Multiplayer.state.following) {
-        Multiplayer.send(messageMove({ canvasOffset: newCanvasOffset }))
-      }
+      liveblocksClient.getRoom(model.multiplayer?.roomId ?? model.id ?? '')?.updatePresence({
+        canvasOffset: newCanvasOffset,
+      })
       return {
         ...model,
         canvas: {
@@ -365,9 +355,9 @@ export function runLocalCanvasAction(
       }
     }
     case 'POSITION_CANVAS':
-      if (!Multiplayer.state.following) {
-        Multiplayer.send(messageMove({ canvasOffset: action.position }))
-      }
+      liveblocksClient.getRoom(model.multiplayer?.roomId ?? model.id ?? '')?.updatePresence({
+        canvasOffset: action.position,
+      })
       return {
         ...model,
         canvas: {
@@ -402,10 +392,10 @@ export function runLocalCanvasAction(
         false,
       )
 
-      if (!Multiplayer.state.following) {
-        Multiplayer.send(messageMove({ canvasOffset: newCanvasOffset, canvasScale: scale }))
-      }
-
+      liveblocksClient.getRoom(model.multiplayer?.roomId ?? model.id ?? '')?.updatePresence({
+        canvasOffset: newCanvasOffset,
+        canvasScale: scale,
+      })
       return {
         ...model,
         canvas: {

@@ -62,6 +62,7 @@ import type {
   ColorSwatch,
   PostActionMenuData,
   CollabFile,
+  MultiplayerState,
 } from './store/editor-state'
 import { NavigatorEntry } from './store/editor-state'
 import type { Notice } from '../common/notice'
@@ -154,11 +155,6 @@ export type DeleteSelected = {
 export type DeleteView = {
   action: 'DELETE_VIEW'
   target: ElementPath
-}
-
-export type SetSelectedComponents = {
-  action: 'SET_SELECTED_COMPONENTS'
-  paths: ElementPath[]
 }
 
 export type SelectComponents = {
@@ -1074,6 +1070,11 @@ export interface UpdateTopLevelElements {
   topLevelElements: Array<TopLevelElement>
 }
 
+export interface UpdateMultiplayerState {
+  action: 'UPDATE_MULTIPLAYER_STATE'
+  state: Partial<MultiplayerState>
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
@@ -1082,7 +1083,6 @@ export type EditorAction =
   | UpdateEditorMode
   | SwitchEditorMode
   | SelectComponents
-  | SetSelectedComponents
   | UnsetProperty
   | Canvas
   | DuplicateSelected
@@ -1248,6 +1248,7 @@ export type EditorAction =
   | UpdateProjectServerState
   | ApplyCollabFileUpdate
   | UpdateTopLevelElements
+  | UpdateMultiplayerState
 
 export type DispatchPriority =
   | 'everyone'

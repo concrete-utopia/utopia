@@ -1,18 +1,37 @@
 import { createClient } from '@liveblocks/client'
 import { createRoomContext } from '@liveblocks/react'
+import type { MultiplayerCursorColor } from './src/components/canvas/multiplayer'
+import type { CanvasVector } from './src/core/shared/math-utils'
 
-const client = createClient({
+export const liveblocksThrottle = 100 // ms
+
+export const liveblocksClient = createClient({
   publicApiKey: 'pk_dev_JKA4v6OjxmJkgn49CmIafpJypWfPCUZz2TDUytEFcCpInUcUMH604iXIBYllN40k',
+  throttle: liveblocksThrottle,
   // authEndpoint: "/api/auth",
-  // throttle: 100,
 })
 
 // Presence represents the properties that exist on every user in the Room
 // and that will automatically be kept in sync. Accessible through the
 // `user.presence` property. Must be JSON-serializable.
 export type Presence = {
-  // cursor: { x: number, y: number } | null,
-  // ...
+  playerId: string | null
+  playerName: string | null
+  color: { light: MultiplayerCursorColor; dark: MultiplayerCursorColor } | null
+  cursor: { x: number; y: number } | null
+  canvasScale: number | null
+  canvasOffset: CanvasVector | null
+}
+
+export function initialPresence(): Presence {
+  return {
+    cursor: null,
+    playerId: null,
+    playerName: null,
+    color: null,
+    canvasScale: null,
+    canvasOffset: null,
+  }
 }
 
 // Optionally, Storage represents the shared document that persists in the
@@ -82,9 +101,8 @@ export const {
     useEditComment,
     useDeleteComment,
     useAddReaction,
-    useRemoveReaction,
   },
-} = createRoomContext<Presence, Storage, UserMeta, RoomEvent, ThreadMetadata>(client, {
+} = createRoomContext<Presence, Storage, UserMeta, RoomEvent, ThreadMetadata>(liveblocksClient, {
   async resolveUsers({ userIds }) {
     // Used only for Comments. Return a list of user information retrieved
     // from `userIds`. This info is used in comments, mentions etc.

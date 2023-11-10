@@ -92,8 +92,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UNDO(state, stateHistory)
     case 'REDO':
       return UPDATE_FNS.REDO(state, stateHistory)
-    case 'SET_SELECTED_COMPONENTS':
-      return UPDATE_FNS.SET_SELECTED_COMPONENTS(action, state)
     case 'SELECT_COMPONENTS':
       return UPDATE_FNS.SELECT_COMPONENTS(action, state, dispatch)
     case 'CLEAR_SELECTION':
@@ -386,6 +384,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.APPLY_COLLAB_FILE_UPDATE(action, state)
     case 'UPDATE_TOP_LEVEL_ELEMENTS':
       return UPDATE_FNS.UPDATE_TOP_LEVEL_ELEMENTS(action, state)
+    case 'UPDATE_MULTIPLAYER_STATE':
+      return UPDATE_FNS.UPDATE_MULTIPLAYER_STATE(action, state)
     default:
       return state
   }

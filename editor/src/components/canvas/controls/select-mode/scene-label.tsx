@@ -1,22 +1,20 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
+import { getSubTree } from '../../../../core/shared/element-path-tree'
 import { isFiniteRectangle, windowPoint } from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { NO_OP } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
 import { FlexRow, useColorTheme } from '../../../../uuiui'
 import { clearHighlightedViews, selectComponents } from '../../../editor/actions/action-creators'
+import { isSelectModeWithArea } from '../../../editor/editor-modes'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
 import { boundingArea, createInteractionViaMouse } from '../../canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
-import { isSelectModeWithArea } from '../../../editor/editor-modes'
-import { getSubTree } from '../../../../core/shared/element-path-tree'
-import { Multiplayer } from '../../multiplayer'
-import { messageMove } from '../../multiplayer-messages'
 
 interface SceneLabelControlProps {
   maybeHighlightOnHover: (target: ElementPath) => void
@@ -129,18 +127,12 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
 
   const onMouseMove = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
-      const point = windowToCanvasCoordinates(
-        scale,
-        canvasOffset,
-        windowPoint({ x: event.clientX, y: event.clientY }),
-      ).canvasPositionRounded
-      Multiplayer.send(messageMove({ position: point }))
       const isSelectingArea = isSelectModeWithArea(storeRef.current.mode)
       if (!isSelectingArea) {
         event.stopPropagation()
       }
     },
-    [storeRef, canvasOffset, scale],
+    [storeRef],
   )
   const onMouseOver = React.useCallback(() => {
     if (!isHighlighted) {
