@@ -13,6 +13,8 @@ import {
   Button,
   FlexColumn,
   FlexRow,
+  Icons,
+  SquareButton,
   UtopiaTheme,
   getPreferredColorScheme,
   useColorTheme,
@@ -27,7 +29,13 @@ import {
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import { shouldShowErrorOverlay } from './canvas-utils'
 import { FloatingPostActionMenu } from './controls/select-mode/post-action-menu'
-import { liveblocksThrottle, useMyPresence, useOthers, useSelf } from '../../../liveblocks.config'
+import {
+  liveblocksThrottle,
+  useMyPresence,
+  useOthers,
+  useRoom,
+  useSelf,
+} from '../../../liveblocks.config'
 import { ClientSideSuspense } from '@liveblocks/react'
 import { canvasPointToWindowPoint, windowToCanvasCoordinates } from './dom-lookup'
 import { isLoginNotYetKnown } from '../../common/user'
@@ -37,6 +45,7 @@ import CanvasActions from './canvas-actions'
 import type { CanvasAction } from './canvas-types'
 import { multiplayerCursorColors } from './multiplayer'
 import { MultiplayerCursor } from './multiplayer-cursors'
+import { when } from '../../utils/react-conditionals'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
@@ -180,13 +189,21 @@ const Room = React.memo(() => {
   const connectionId = React.useMemo(() => self.connectionId, [self])
   const others = useOthers()
 
-  const loginState = useEditorState(Substores.userState, (store) => store.userState.loginState, '')
+  const loginState = useEditorState(
+    Substores.userState,
+    (store) => store.userState.loginState,
+    'Room loginState',
+  )
 
-  const canvasScale = useEditorState(Substores.canvas, (store) => store.editor.canvas.scale, '')
+  const canvasScale = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.scale,
+    'Room canvasScale',
+  )
   const canvasOffset = useEditorState(
     Substores.canvasOffset,
     (store) => store.editor.canvas.realCanvasOffset,
-    '',
+    'Room canvasOffset',
   )
 
   const [following, setFollowing] = React.useState<string | null>(null)
@@ -275,64 +292,111 @@ const Room = React.memo(() => {
     dispatch(actions)
   }, [followTarget, dispatch, canvasOffset, canvasScale])
 
+  const room = useRoom()
+
+  const [playerListVisble, setPlayerListVisible] = React.useState(false)
+  const togglePlayerList = React.useCallback(() => {
+    setPlayerListVisible((visible) => !visible)
+  }, [])
+
   return (
     <>
-      <div
-        style={{
-          position: 'fixed',
-          zIndex: 1000,
-          bottom: 5,
-          right: 5,
-          boxShadow: UtopiaTheme.panelStyles.shadows.medium,
-          padding: 4,
-          fontSize: 10,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 4,
-          backgroundColor: colorTheme.bg0.value,
-          color: colorTheme.fg0.value,
-        }}
-      >
-        {others.map((other) => {
-          const color =
-            getPreferredColorScheme() === 'dark'
-              ? other.presence.color?.dark
-              : other.presence.color?.light
-          const otherId = other.presence.playerId ?? `${other.connectionId}`
-          return (
+      {when(
+        others.length > 0,
+        <div
+          style={{
+            position: 'fixed',
+            zIndex: 1000,
+            bottom: 5,
+            right: 5,
+            boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+            padding: 4,
+            minWidth: 100,
+            fontSize: 10,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 4,
+            backgroundColor: colorTheme.bg0.value,
+            color: colorTheme.fg0.value,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 10,
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 4,
+            }}
+          >
+            <div style={{ flex: 1 }}>
+              Online: <strong>{others.length + 1}</strong>
+            </div>
             <div
-              key={`player-${other.connectionId}`}
               style={{
                 display: 'flex',
+                gap: 4,
                 alignItems: 'center',
-                gap: 8,
-                border: `1px solid ${colorTheme.border0.value}`,
-                padding: 4,
+                justifyContent: 'center',
               }}
             >
-              <div
-                style={{
-                  borderRadius: '100%',
-                  backgroundColor: color?.background ?? '#000',
-                  width: 6,
-                  height: 6,
-                }}
-              />
-              <div style={{ flex: 1 }}>
-                {other.presence.playerName ?? other.presence.playerId ?? other.connectionId}
-              </div>
-              <Button
-                spotlight
-                highlight
-                style={{ padding: '0 4px' }}
-                onClick={onClickFollow(otherId)}
-              >
-                {following !== otherId ? 'Follow' : 'Stop following'}
-              </Button>
+              {when(
+                playerListVisble,
+                <span style={{ fontSize: 8, fontFamily: 'monospace', color: colorTheme.fg7.value }}>
+                  {room.id}
+                </span>,
+              )}
+              <SquareButton highlight spotlight onClick={togglePlayerList}>
+                <Icons.ExpansionArrow
+                  style={{ transform: playerListVisble ? undefined : 'rotate(180deg)' }}
+                />
+              </SquareButton>
             </div>
-          )
-        })}
-      </div>
+          </div>
+          {when(
+            playerListVisble,
+            others.map((other) => {
+              const color =
+                getPreferredColorScheme() === 'dark'
+                  ? other.presence.color?.dark
+                  : other.presence.color?.light
+              const otherId = other.presence.playerId ?? `${other.connectionId}`
+              return (
+                <div
+                  key={`player-${other.connectionId}`}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    border: `1px solid ${colorTheme.border0.value}`,
+                    padding: 4,
+                  }}
+                >
+                  <div
+                    style={{
+                      borderRadius: '100%',
+                      backgroundColor: color?.background ?? '#000',
+                      width: 6,
+                      height: 6,
+                    }}
+                  />
+                  <div style={{ flex: 1 }}>
+                    {other.presence.playerName ?? other.presence.playerId ?? other.connectionId}
+                  </div>
+                  <Button
+                    spotlight
+                    highlight
+                    style={{ padding: '0 4px' }}
+                    onClick={onClickFollow(otherId)}
+                  >
+                    {following !== otherId ? 'Follow' : 'Stop following'}
+                  </Button>
+                </div>
+              )
+            }),
+          )}
+        </div>,
+      )}
       {others.map((other) => {
         if (other.presence.cursor == null) {
           return null
@@ -383,6 +447,8 @@ const Room = React.memo(() => {
     </>
   )
 })
+
+Room.displayName = 'Room'
 
 export const SafeModeErrorOverlay = React.memo(() => {
   const dispatch = useDispatch()

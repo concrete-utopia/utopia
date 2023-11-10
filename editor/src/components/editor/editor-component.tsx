@@ -531,9 +531,16 @@ export function EditorComponent(props: EditorProps) {
 
   const roomId = useEditorState(
     Substores.restOfEditor,
-    (store) => store.editor.multiplayer?.roomId ?? projectId ?? 'temp',
-    '',
+    (store) => store.editor.multiplayer?.roomId ?? projectId ?? generateUUID(),
+    'EditorComponent roomId',
   )
+
+  React.useEffect(() => {
+    if (projectId != null) {
+      dispatch([EditorActions.updateMultiplayerState({ roomId: 'the-room' })])
+      //   dispatch([EditorActions.updateMultiplayerState({ roomId: projectId })])
+    }
+  }, [projectId, dispatch])
 
   return indexedDBFailed ? (
     <FatalIndexedDBErrorComponent />

@@ -32,3 +32,5 @@ export const MultiplayerCursor = React.memo((props: MultiplayerCursorProps) => {
     </svg>
   )
 })
+
+MultiplayerCursor.displayName = 'MultiplayerCursor'
