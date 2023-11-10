@@ -142,8 +142,8 @@ import { fromField } from '../../../core/shared/optics/optic-creators'
 import type { Optic } from '../../../core/shared/optics/optics'
 import { modify } from '../../../core/shared/optics/optic-utilities'
 import { updateHighlightBounds } from '../../../core/shared/uid-utils'
-import { vercelStegaCombine, vercelStegaDecode } from '@vercel/stega'
-import { encodeSteganoData } from '../../shared/stegano-text'
+import { vercelStegaCombine, vercelStegaDecode, vercelStegaSplit } from '@vercel/stega'
+import { decodeSteganoData, encodeSteganoData } from '../../shared/stegano-text'
 
 function buildPropertyCallingFunction(
   functionName: string,
@@ -1289,12 +1289,13 @@ export function parseCode(
         // console.log(
         //   'vercelStegaDecode(declaration.initializer.text)',
         //   declaration.initializer.text,
-        //   vercelStegaDecode(declaration.initializer.text),
+        //   decodeSteganoData(declaration.initializer.text),
         // )
         const startPosition = declaration.initializer.getStart(sourceFileOriginal)
         const endPosition = declaration.initializer.getEnd()
-        const stega = encodeSteganoData(declaration.initializer.text, {
-          originalString: declaration.initializer.text,
+        const textToEncode = vercelStegaSplit(declaration.initializer.text).cleaned
+        const stega = encodeSteganoData(textToEncode, {
+          originalString: "'" + textToEncode + "'",
           filePath: filePath,
           startPosition: startPosition,
           endPosition: endPosition,
@@ -1307,11 +1308,6 @@ export function parseCode(
           context.factory.createStringLiteral(stega, true),
         )
       })
-
-      // console.log(
-      //   '>>> isVariableStatement',
-      //   node.declarationList.declarations.map((d) => d.name),
-      // )
 
       return context.factory.updateVariableStatement(
         node,

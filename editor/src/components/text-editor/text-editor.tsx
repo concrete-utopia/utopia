@@ -46,6 +46,9 @@ import { notice } from '../common/notice'
 import type { AllElementProps } from '../editor/store/editor-state'
 import { toString } from '../../core/shared/element-path'
 import { decodeSteganoData } from '../../core/shared/stegano-text'
+import { useUpdateStringRun } from '../../core/model/project-file-helper-hooks'
+import { optionalMap } from '../../core/shared/optional-utils'
+import { vercelStegaSplit } from '@vercel/stega'
 
 export const TextEditorSpanId = 'text-editor'
 
@@ -289,7 +292,8 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
 })
 
 const TextEditor = React.memo((props: TextEditorProps) => {
-  const { elementPath, text, component, passthroughProps, textProp } = props
+  const { elementPath, component, passthroughProps, textProp } = props
+  const stegaData = optionalMap(decodeSteganoData, props.originalText)
   const dispatch = useDispatch()
   const cursorPosition = useEditorState(
     Substores.restOfEditor,
@@ -323,9 +327,11 @@ const TextEditor = React.memo((props: TextEditorProps) => {
   const outlineWidth = 1 / scale
   const outlineColor = colorTheme.textEditableOutline.value
 
-  const [firstTextProp] = React.useState(props.originalText)
+  const [firstTextProp] = React.useState(vercelStegaSplit(props.originalText ?? '').cleaned)
 
   const myElement = React.useRef<HTMLSpanElement>(null)
+
+  const updateStringRun = useUpdateStringRun()
 
   React.useEffect(() => {
     const currentElement = myElement.current
@@ -359,7 +365,11 @@ const TextEditor = React.memo((props: TextEditorProps) => {
         } else {
           if (elementState != null && savedContentRef.current !== content) {
             savedContentRef.current = content
-            requestAnimationFrame(() => dispatch([getSaveAction(elementPath, content, textProp)]))
+            if (stegaData != null) {
+              requestAnimationFrame(() => updateStringRun(stegaData[0], [...content].join('')))
+            } else {
+              requestAnimationFrame(() => dispatch([getSaveAction(elementPath, content, textProp)]))
+            }
           }
           // remove dangling empty spans
           if (
@@ -373,7 +383,16 @@ const TextEditor = React.memo((props: TextEditorProps) => {
         }
       }
     }
-  }, [dispatch, elementPath, elementState, textProp, metadataRef, allElementPropsRef])
+  }, [
+    dispatch,
+    elementPath,
+    elementState,
+    textProp,
+    metadataRef,
+    allElementPropsRef,
+    stegaData,
+    updateStringRun,
+  ])
 
   React.useLayoutEffect(() => {
     if (myElement.current == null) {
@@ -451,14 +470,21 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     const content = myElement.current?.textContent
     if (content != null && elementState != null && savedContentRef.current !== content) {
       savedContentRef.current = content
-      dispatch([
-        getSaveAction(elementPath, content, textProp),
-        updateEditorMode(EditorModes.selectMode(null, false, 'none')),
-      ])
+      if (stegaData != null) {
+        requestAnimationFrame(() => {
+          updateStringRun(stegaData[0], "'" + [...content].join('') + "'")
+          dispatch([updateEditorMode(EditorModes.selectMode(null, false, 'none'))])
+        })
+      } else {
+        dispatch([
+          getSaveAction(elementPath, content, textProp),
+          updateEditorMode(EditorModes.selectMode(null, false, 'none')),
+        ])
+      }
     } else {
       dispatch([updateEditorMode(EditorModes.selectMode(null, false, 'none'))])
     }
-  }, [dispatch, elementPath, elementState, textProp])
+  }, [dispatch, elementPath, elementState, stegaData, textProp, updateStringRun])
 
   const editorProps: React.DetailedHTMLProps<
     React.HTMLAttributes<HTMLSpanElement>,

@@ -1,5 +1,4 @@
-import { vercelStegaCombine, vercelStegaDecodeAll } from '@vercel/stega'
-import { EditorAction } from '../../components/editor/action-types'
+import { vercelStegaCombine, vercelStegaDecode, vercelStegaSplit } from '@vercel/stega'
 
 export interface SteganoTextData {
   originalString: string
@@ -22,10 +21,30 @@ export function steganoTextData(
   }
 }
 
-export function encodeSteganoData(originalString: string, data: SteganoTextData): string {
-  return vercelStegaCombine(originalString, data)
+export function encodeSteganoData(text: string, data: SteganoTextData): string {
+  const { cleaned } = vercelStegaSplit(text)
+
+  const { originalString, filePath, startPosition, endPosition } = data
+  const dataToEncode = {
+    originalString: originalString,
+    filePath: filePath,
+    startPosition: `${startPosition}`,
+    endPosition: `${endPosition}`,
+  }
+  return vercelStegaCombine(cleaned, dataToEncode)
 }
 
 export function decodeSteganoData(encodedString: string): Array<SteganoTextData> {
-  return vercelStegaDecodeAll(encodedString)
+  const data = vercelStegaDecode(encodedString)
+  if (!(typeof data === 'object')) {
+    return []
+  }
+  const steganoData: SteganoTextData = {
+    originalString: data['originalString'],
+    filePath: data['filePath'],
+    startPosition: parseInt(data['startPosition']),
+    endPosition: parseInt(data['endPosition']),
+  }
+
+  return [steganoData]
 }
