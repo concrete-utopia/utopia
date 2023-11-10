@@ -1610,7 +1610,9 @@ export const UPDATE_FNS = {
     //  collaborativeEditingSupport,
     //  newModelMergedWithStoredStateAndStoryboardFile.projectContents,
     // )
-    addHookForProjectChanges(collaborativeEditingSupport, dispatch)
+    if (collaborativeEditingSupport.session != null) {
+      addHookForProjectChanges(collaborativeEditingSupport.session, dispatch)
+    }
 
     return loadModel(newModelMergedWithStoredStateAndStoryboardFile, oldEditor)
   },

@@ -48,7 +48,7 @@ import {
 import type { OutboundMessage } from './multiplayer-messages'
 import { messageMove } from './multiplayer-messages'
 
-const testPlayerId = 'the-player-id'
+const testPlayerId = 'sean'
 const testRoomId = 'the-room'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {

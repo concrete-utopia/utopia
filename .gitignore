@@ -139,3 +139,6 @@ custom-shell.nix
 
 # Benchmark results.
 editor/benchmark
+
+# Presence.
+presence/flamingo

@@ -178,6 +178,7 @@ import type { ReparentTargetForPaste } from '../../canvas/canvas-strategies/stra
 import { GridMenuWidth } from '../../canvas/stored-layout'
 import * as Y from 'yjs'
 import { WebrtcProvider } from 'y-webrtc'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 const ObjectPathImmutable: any = OPI
 
@@ -399,22 +400,32 @@ export type CollabTextFile = Y.Map<'TEXT_FILE' | CollabTextFileTopLevelElements>
 
 export type CollabFile = CollabTextFile //| CollabImageFileUpdate | CollabAssetFileUpdate | CollabDirectoryFileUpdate
 
-export interface CollaborativeEditingSupport {
+export interface CollaborativeEditingSupportSession {
   mergeDoc: Y.Doc
   projectContents: Y.Map<CollabFile>
   webRTCProvider: WebrtcProvider
 }
 
+export interface CollaborativeEditingSupport {
+  session: CollaborativeEditingSupportSession | null
+}
+
 export function emptyCollaborativeEditingSupport(): CollaborativeEditingSupport {
-  const doc = new Y.Doc()
-  const webRTCProvider = new WebrtcProvider('utopia-room', doc, {
-    signaling: ['ws://192.168.1.144:4444'],
-    password: 'utopia-password',
-  })
+  let session: CollaborativeEditingSupportSession | null = null
+  if (isFeatureEnabled('Collaboration')) {
+    const doc = new Y.Doc()
+    const webRTCProvider = new WebrtcProvider('utopia-room', doc, {
+      signaling: ['ws://192.168.1.144:4444'],
+      password: 'utopia-password',
+    })
+    session = {
+      mergeDoc: doc,
+      projectContents: doc.getMap('projectContents'),
+      webRTCProvider: webRTCProvider,
+    }
+  }
   return {
-    mergeDoc: doc,
-    projectContents: doc.getMap('projectContents'),
-    webRTCProvider: webRTCProvider,
+    session: session,
   }
 }
 

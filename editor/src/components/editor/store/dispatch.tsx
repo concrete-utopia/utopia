@@ -646,11 +646,13 @@ export function editorDispatchClosingOut(
       updatedFromVSCodeOrParsedAfterCodeChange,
     )
     applyProjectChangesToVSCode(frozenEditorState, projectChanges)
-    updateCollaborativeProjectContents(
-      finalStore.collaborativeEditingSupport,
-      projectChanges,
-      frozenEditorState.filesModifiedByElsewhere,
-    )
+    if (finalStore.collaborativeEditingSupport.session != null) {
+      updateCollaborativeProjectContents(
+        finalStore.collaborativeEditingSupport.session,
+        projectChanges,
+        frozenEditorState.filesModifiedByElsewhere,
+      )
+    }
     const filesChanged = projectChanges.fileChanges.collabProjectChanges.map((v) => v.fullPath)
     const updatedFilesModifiedByElsewhere = frozenEditorState.filesModifiedByElsewhere.filter(
       (v) => !filesChanged.includes(v),
