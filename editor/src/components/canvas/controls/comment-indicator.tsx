@@ -7,9 +7,24 @@ import { EditorModes } from '../../editor/editor-modes'
 import { ClientSideSuspense } from '@liveblocks/react'
 import { useThreads } from '../../../../liveblocks.config'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { switchEditorMode } from '../../editor/actions/action-creators'
-import { canvasPoint } from '../../../core/shared/math-utils'
+import { selectComponents, switchEditorMode } from '../../editor/actions/action-creators'
+import { canvasPoint, isNotNullFiniteRectangle } from '../../../core/shared/math-utils'
 import { UtopiaTheme } from '../../../uuiui'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { isLeft } from '../../../core/shared/either'
+import {
+  isJSXConditionalExpression,
+  isJSXElement,
+  isJSXMapExpression,
+} from '../../../core/shared/element-template'
+import type { ElementInstanceMetadata } from '../../../core/shared/element-template'
+import {
+  findUtopiaCommentFlag,
+  isUtopiaCommentFlagComment,
+} from '../../../core/shared/comment-flags'
+import { getJSXAttributesAtPath } from '../../../core/shared/jsx-attributes'
+import * as PP from '../../../core/shared/property-path'
 
 export const CommentIndicator = React.memo(() => {
   return (
@@ -21,25 +36,84 @@ export const CommentIndicator = React.memo(() => {
 
 function Room() {
   const { threads } = useThreads()
-  const coordThreads = threads.filter((thread) => (thread.metadata as any)?.type === 'coord')
+
+  const elementsWithComment = useEditorState(
+    Substores.fullStore,
+    (store) => {
+      const elements = Object.values(store.editor.jsxMetadata)
+      let result: Array<{ commentId: string; element: ElementInstanceMetadata }> = []
+      elements.forEach((element) => {
+        if (isLeft(element.element)) {
+          return
+        }
+        const jsxElement = element.element.value
+        if (isJSXConditionalExpression(jsxElement) || isJSXMapExpression(jsxElement)) {
+          const flag = findUtopiaCommentFlag(jsxElement.comments, 'comment')
+          if (isUtopiaCommentFlagComment(flag)) {
+            result.push({ commentId: flag.value, element: element })
+          }
+        }
+        if (isJSXElement(jsxElement)) {
+          const attrs = getJSXAttributesAtPath(jsxElement.props, PP.create('data-comment'))
+          if (attrs.attribute.type === 'ATTRIBUTE_VALUE') {
+            result.push({ commentId: attrs.attribute.value, element: element })
+          }
+        }
+      })
+      return result
+    },
+    'CommentSection elementsWithComment',
+  )
+
   const dispatch = useDispatch()
   return (
     <React.Fragment>
-      {coordThreads.map((thread) => {
-        const top = (thread.metadata as any).top
-        const left = (thread.metadata as any).left
-        const point = canvasPoint({ x: left, y: top })
+      {threads.map((thread) => {
+        const commentData = (() => {
+          if ((thread.metadata as any)?.type === 'coord') {
+            const top = (thread.metadata as any).top
+            const left = (thread.metadata as any).left
+            return { point: canvasPoint({ x: left, y: top }), type: 'coord' }
+          }
+          const element = elementsWithComment.find((e) => e.commentId === thread.id)?.element
+          const globalFrame = element?.globalFrame ?? null
+          if (!isNotNullFiniteRectangle(globalFrame)) {
+            return null
+          }
+          return {
+            point: canvasPoint({
+              x: globalFrame.x + globalFrame.width - 10,
+              y: globalFrame.y - 10,
+            }),
+            type: 'element',
+          }
+        })()
+        if (commentData == null) {
+          return null
+        }
+        const { point } = commentData
         return (
           <div
             key={thread.id}
             style={{
               position: 'absolute',
-              top: top,
-              left: left,
+              top: point.y,
+              left: point.x,
               width: 20,
             }}
             onClick={() => {
-              dispatch([switchEditorMode(EditorModes.commentMode(point))])
+              if (commentData == null) {
+                return
+              }
+              if (commentData.type == 'coord') {
+                dispatch([switchEditorMode(EditorModes.commentMode(point))])
+              }
+              if (commentData.type == 'element') {
+                const element = elementsWithComment.find((e) => e.commentId === thread.id)
+                if (element != null) {
+                  dispatch([selectComponents([element?.element.elementPath], false)])
+                }
+              }
             }}
           >
             <div
