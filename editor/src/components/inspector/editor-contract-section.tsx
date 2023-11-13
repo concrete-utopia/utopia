@@ -1,39 +1,52 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
-import React from 'react'
 import { jsx } from '@emotion/react'
+import React from 'react'
 import { createSelector } from 'reselect'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { allElemsEqual, mapDropNulls } from '../../core/shared/array-utils'
+import * as EP from '../../core/shared/element-path'
 import { assertNever } from '../../core/shared/utils'
-import { FlexColumn, InspectorSectionHeader, PopupList, FlexRow, colorTheme } from '../../uuiui'
+import { when } from '../../utils/react-conditionals'
+import {
+  Button,
+  FlexColumn,
+  FlexRow,
+  InspectorSectionHeader,
+  PopupList,
+  Tooltip,
+  colorTheme,
+} from '../../uuiui'
 import type { ControlStyles } from '../../uuiui-deps'
 import { getControlStyles } from '../../uuiui-deps'
+import type { EditorContract } from '../canvas/canvas-strategies/strategies/contracts/contract-helpers'
+import { getEditorContractForElement } from '../canvas/canvas-strategies/strategies/contracts/contract-helpers'
 import { getElementFragmentLikeType } from '../canvas/canvas-strategies/strategies/fragment-like-helpers'
-import { addToast, applyCommandsAction } from '../editor/actions/action-creators'
-import { useDispatch } from '../editor/store/dispatch-context'
-import { useRefEditorState, useEditorState, Substores } from '../editor/store/store-hook'
-import type { MetadataSubstate } from '../editor/store/store-hook-substore-types'
-import type { SelectOption } from './controls/select-control'
-import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import {
-  convertFragmentToFrame,
-  convertFragmentToGroup,
-  convertGroupOrFrameToFragmentCommands,
-  convertFrameToGroup,
-  convertGroupToFrameCommands,
+  getCommandsForConversionToDesiredType,
   getInstanceForFragmentToFrameConversion,
   getInstanceForFragmentToGroupConversion,
   getInstanceForFrameToFragmentConversion,
   getInstanceForFrameToGroupConversion,
   getInstanceForGroupToFrameConversion,
   isConversionForbidden,
-  getCommandsForConversionToDesiredType,
 } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
-import type { CanvasCommand } from '../canvas/commands/commands'
-import type { EditorContract } from '../canvas/canvas-strategies/strategies/contracts/contract-helpers'
-import { getEditorContractForElement } from '../canvas/canvas-strategies/strategies/contracts/contract-helpers'
-import { allElemsEqual } from '../../core/shared/array-utils'
-import * as EP from '../../core/shared/element-path'
+import type { GroupProblem } from '../canvas/canvas-strategies/strategies/group-helpers'
+import {
+  getFixGroupProblemsCommands,
+  getGroupChildState,
+  getGroupState,
+  invalidGroupStateToString,
+  isInvalidGroupState,
+  treatElementAsGroupLike,
+} from '../canvas/canvas-strategies/strategies/group-helpers'
 import { notice } from '../common/notice'
+import { addToast, applyCommandsAction } from '../editor/actions/action-creators'
+import { useDispatch } from '../editor/store/dispatch-context'
+import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
+import type { MetadataSubstate } from '../editor/store/store-hook-substore-types'
+import type { SelectOption } from './controls/select-control'
+import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 
 const simpleControlStyles = getControlStyles('simple')
 const disabledControlStyles: ControlStyles = {
@@ -105,6 +118,8 @@ export function groupSectionOption(wrapperType: 'frame' | 'fragment' | 'group'):
 const FragmentOption = groupSectionOption('fragment')
 const FrameOption = groupSectionOption('frame')
 const GroupOption = groupSectionOption('group')
+
+export const EditorFixProblemsButtonTestId = 'editor-fix-problems-button'
 
 export const EditorContractDropdown = React.memo(() => {
   const dispatch = useDispatch()
@@ -270,6 +285,42 @@ export const EditorContractDropdown = React.memo(() => {
     ]
   }, [selectedViews, metadataRef, elementPathTreeRef, allElementPropsRef, currentValue])
 
+  const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
+
+  const groupProblems = useEditorState(
+    Substores.metadata,
+    (store): GroupProblem[] =>
+      mapDropNulls((path) => {
+        if (treatElementAsGroupLike(store.editor.jsxMetadata, path)) {
+          const state = getGroupState(
+            path,
+            store.editor.jsxMetadata,
+            store.editor.elementPathTree,
+            store.editor.allElementProps,
+            projectContentsRef.current,
+          )
+          if (isInvalidGroupState(state)) {
+            return { target: 'group', path: path, state: state }
+          }
+        } else if (treatElementAsGroupLike(store.editor.jsxMetadata, EP.parentPath(path))) {
+          const metadata = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
+          const state = getGroupChildState(projectContentsRef.current, metadata)
+          if (isInvalidGroupState(state)) {
+            return { target: 'group-child', path: path, state: state }
+          }
+        }
+        return null
+      }, selectedViews),
+    'EditorContractDropdown groupProblems',
+  )
+
+  const fixGroupProblems = React.useCallback(() => {
+    const commands = getFixGroupProblemsCommands(metadataRef.current, groupProblems)
+    if (commands.length > 0) {
+      dispatch([applyCommandsAction(commands)])
+    }
+  }, [groupProblems, dispatch, metadataRef])
+
   return (
     <FlexRow data-testid={EditorContractSelectorTestID} style={{ flex: 1 }}>
       <PopupList
@@ -285,6 +336,30 @@ export const EditorContractDropdown = React.memo(() => {
         containerMode={'noBorder'}
         style={{ position: 'relative', left: -8 }}
       />
+      {when(
+        groupProblems.length > 0,
+        <Tooltip
+          title={groupProblems
+            .map((problem) => `Fix: ${invalidGroupStateToString(problem.state).toLowerCase()}`)
+            .join(', ')}
+          placement='left'
+        >
+          <Button
+            highlight
+            spotlight
+            data-testid={EditorFixProblemsButtonTestId}
+            style={{
+              backgroundColor: colorTheme.errorForeground20.value,
+              color: colorTheme.errorForeground.value,
+              padding: '0 6px',
+              borderRadius: 2,
+            }}
+            onClick={fixGroupProblems}
+          >
+            Fix problems
+          </Button>
+        </Tooltip>,
+      )}
     </FlexRow>
   )
 })

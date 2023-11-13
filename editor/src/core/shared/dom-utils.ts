@@ -1,9 +1,17 @@
 import type { ReactDOM } from 'react'
-import type { CanvasRectangle } from './math-utils'
-import { boundingRectangle, canvasRectangle, roundToNearestHalf, scaleRect } from './math-utils'
+import type { CanvasRectangle, MaybeInfinityCanvasRectangle } from './math-utils'
+import {
+  boundingRectangle,
+  canvasRectangle,
+  isNotNullFiniteRectangle,
+  roundToNearestHalf,
+  scaleRect,
+} from './math-utils'
 import { URL_HASH } from '../../common/env-vars'
 import { blockLevelHtmlElements, inlineHtmlElements } from '../../utils/html-elements'
 import { assertNever, identity } from './utils'
+import type { HugProperty, HugPropertyWidthHeight } from './element-template'
+import type { AbsolutePin } from '../../components/canvas/canvas-strategies/strategies/resize-helpers'
 
 export const intrinsicHTMLElementNames: Array<keyof ReactDOM> = [
   'a',
@@ -338,4 +346,74 @@ export function defaultDisplayTypeForHTMLElement(elementName: string): 'inline' 
   } else {
     return null
   }
+}
+
+export function hugPropertiesFromStyleMap(
+  getStyleValue: (key: AbsolutePin | 'display') => string | null,
+  globalFrame: MaybeInfinityCanvasRectangle | null,
+): HugPropertyWidthHeight {
+  const pins = (
+    ['left', 'top', 'right', 'bottom'] as Array<'left' | 'top' | 'right' | 'bottom'>
+  ).filter((pin) => {
+    const pinValue = getStyleValue(pin)
+    return pinValue != null && pinValue != 'auto'
+  })
+
+  const display = getStyleValue('display')
+  return {
+    width: hugPropertyFromStyleValue(
+      getStyleValue('width') ?? 'auto',
+      'width',
+      pins,
+      display,
+      globalFrame,
+    ),
+    height: hugPropertyFromStyleValue(
+      getStyleValue('height') ?? 'auto',
+      'height',
+      pins,
+      display,
+      globalFrame,
+    ),
+  }
+}
+
+function hugPropertyFromStyleValue(
+  value: string,
+  property: 'width' | 'height',
+  pins: Array<'left' | 'top' | 'right' | 'bottom'>,
+  display: string | null,
+  globalFrame: MaybeInfinityCanvasRectangle | null,
+): HugProperty | null {
+  const hugProp = (() => {
+    // width/height max-content and min-content are efective even when the dimensions are overspecified, e.g. left, right and width are all set
+    if (value === 'max-content') {
+      return 'hug'
+    }
+    if (value === 'min-content') {
+      return 'squeeze'
+    }
+    // when the pins specify the width/height and no width/height is not set (or set to auto), it is not hugging
+    if (property === 'width' && pins.includes('left') && pins.includes('right')) {
+      return null
+    }
+    if (property === 'height' && pins.includes('top') && pins.includes('bottom')) {
+      return null
+    }
+    // width is not set neither explicitly nor by the pins, but the display is block, then it is not hugging
+    if (value === 'auto' && property === 'width' && display === 'block') {
+      return null // TODO: in this case this is a fill, unify this with fill detection
+    }
+    // width/height is not set neither explicitly nor by the pins, in this case it hugs
+    if (value === 'auto') {
+      return 'hug'
+    }
+
+    return null
+  })()
+
+  if (isNotNullFiniteRectangle(globalFrame) && globalFrame[property] === 0 && hugProp != null) {
+    return 'collapsed'
+  }
+  return hugProp
 }

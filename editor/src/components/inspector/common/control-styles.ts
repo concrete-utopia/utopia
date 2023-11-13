@@ -18,6 +18,7 @@ export interface ControlStyles {
   set: boolean
   interactive: boolean
   mixed: boolean
+  invalid: boolean
   unknown: boolean
   trackColor: string
   railColor: string
@@ -75,6 +76,7 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = mapArrayToDictio
     let unknown = false
     let showContent = true
     let unsettable = true
+    let invalid = false
     let iconColor: IcnColor = 'main'
 
     switch (status) {
@@ -205,6 +207,7 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = mapArrayToDictio
       unknown,
       unsettable,
       iconColor,
+      invalid,
     }
   },
 )

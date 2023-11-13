@@ -507,7 +507,11 @@ export function useHighlightCallbacks(
   )
 
   React.useEffect(() => {
-    if (active && WindowMousePositionRaw != null) {
+    if (
+      active &&
+      WindowMousePositionRaw != null &&
+      document.elementFromPoint != null // this is here so in case the editor is rendered in Jest we don't bother with figuring out highlighted views
+    ) {
       // this useEffect will re-calculate (and update) the highlighted views if the user presses or releases 'cmd' without moving the mouse,
       // or if the user enters a new mode (the `active` flag will change for the modes), this is important when entering insert mode
       setTimeout(() => {

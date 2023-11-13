@@ -1078,6 +1078,13 @@ export const MetadataUtils = {
       }
     }
   },
+  intrinsicElementThatSupportsChildren: (element: JSXElementChild) => {
+    return (
+      isJSXElement(element) &&
+      isIntrinsicHTMLElement(element.name) &&
+      intrinsicHTMLElementNamesThatSupportChildren.includes(element.name.baseVariable)
+    )
+  },
   targetTextEditable(
     metadata: ElementInstanceMetadataMap,
     pathTree: ElementPathTrees,
@@ -1302,7 +1309,7 @@ export const MetadataUtils = {
             return VoidElementsToFilter.includes(r.name.baseVariable)
           }
           if (
-            isJSExpressionMapOrOtherJavaScript(r) &&
+            isJSExpressionOtherJavaScript(r) &&
             !MetadataUtils.isElementPathConditionalFromMetadata(metadata, EP.parentPath(path))
           ) {
             const children = MetadataUtils.getChildrenOrdered(metadata, pathTree, path)

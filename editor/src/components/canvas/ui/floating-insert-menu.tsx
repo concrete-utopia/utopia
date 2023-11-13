@@ -8,7 +8,7 @@ import type { OptionProps, StylesConfig } from 'react-windowed-select'
 import { getControlStyles } from '../../../uuiui-deps'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 
-import { useColorTheme, UtopiaTheme } from '../../../uuiui'
+import { Icn, useColorTheme, UtopiaTheme } from '../../../uuiui'
 import { usePossiblyResolvedPackageDependencies } from '../../editor/npm-dependency/npm-dependency'
 import type {
   InsertableComponent,
@@ -273,21 +273,30 @@ export const CustomComponentOption = (props: OptionProps<InsertMenuItem, false>)
     <div
       ref={innerRef}
       {...innerProps}
+      data-testid={`floating-menu-item-${label}`}
       style={{
         boxSizing: 'border-box',
         height: UtopiaTheme.layout.rowHeight.smaller,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingLeft: 4,
-        paddingRight: 4,
         cursor: isDisabled ? 'not-allowed' : 'default',
         color: isFocused ? colorTheme.dynamicBlue.value : colorTheme.fg0.value,
         backgroundColor: 'transparent',
         borderRadius: UtopiaTheme.inputBorderRadius,
       }}
     >
-      <div style={{ paddingRight: 2 }}>{label}</div>
+      <div style={{ display: 'flex', gap: 8, flexDirection: 'row', paddingRight: 2 }}>
+        <Icn
+          category='semantic'
+          type='classicarrow-right'
+          width={16}
+          height={16}
+          style={{ opacity: isFocused ? 1 : 0 }}
+          color='dynamic'
+        />
+        {label}
+      </div>
       <div
         style={{
           color: isFocused ? colorTheme.dynamicBlue30.value : colorTheme.fg7.value,

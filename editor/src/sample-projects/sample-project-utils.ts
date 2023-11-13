@@ -131,9 +131,13 @@ export var Card = (props) => {
 }
 
 export function complexDefaultProject(): PersistentModel {
-  const projectContents = createComplexDefaultProjectContents()
+  const projectContents: ProjectContents = createComplexDefaultProjectContents()
   const persistentModel = persistentModelForProjectContents(contentsToTree(projectContents))
   return persistentModel
+}
+
+export function emptyDefaultProject(): PersistentModel {
+  return persistentModelForProjectContents(contentsToTree({}))
 }
 
 function createBeachesProjectContents(): ProjectContentTreeRoot {

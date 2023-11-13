@@ -75,6 +75,8 @@ export const FillContainerLabel = 'Fill container' as const
 export const FixedLabel = 'Fixed' as const
 export const ScaledLabel = 'Scaled' as const
 export const HugContentsLabel = 'Hug contents' as const
+export const SqueezeContentsLabel = 'Squeeze' as const
+export const CollapsedLabel = 'Collapsed' as const
 export const HugGroupContentsLabel = 'Hug contents' as const
 export const ComputedLabel = 'Computed' as const
 export const DetectedLabel = 'Detected' as const
@@ -89,6 +91,10 @@ export function selectOptionLabel(mode: FixedHugFillMode): string {
       return ScaledLabel
     case 'hug':
       return HugContentsLabel
+    case 'squeeze':
+      return SqueezeContentsLabel
+    case 'collapsed':
+      return CollapsedLabel
     case 'hug-group':
       return HugGroupContentsLabel
     case 'computed':
@@ -111,7 +117,9 @@ export function selectOptionIconType(
     case 'scaled': // TODO: needs separate icon
       return `fixed-${dimension}`
     case 'hug':
-      return `hug-${dimension}`
+    case 'squeeze':
+    case 'collapsed':
+      return `hug-${dimension}` // TODO: needs separate icon
     case 'hug-group':
       return `hug-${dimension}`
     case 'computed':
@@ -153,278 +161,6 @@ const fixedHugFillOptionsSelector = createCachedSelector(
     return applicableOptions.map(selectOption(dimension))
   },
 )((_, dimension: 'width' | 'height') => dimension)
-
-export const FillHugFixedControlOld = React.memo(() => {
-  const onlyGroupChildrenSelected = useEditorState(
-    Substores.metadata,
-    allElementsAreGroupChildren,
-    'FillHugFixedControl groupChildrenSelected',
-  )
-
-  const gridTemplate = React.useMemo((): GridRowVariant => {
-    return onlyGroupChildrenSelected ? '|--67px--|<--------1fr-------->' : '<--1fr--><--1fr-->'
-  }, [onlyGroupChildrenSelected])
-
-  return (
-    <FlexCol css={{ paddingBottom: UtopiaTheme.layout.rowHorizontalPadding }}>
-      <UIGridRow padded variant='<-auto-><----------1fr--------->'>
-        <GroupChildPinControl />
-        <FlexCol css={{ gap: 0 }}>
-          <UIGridRow padded={false} variant={gridTemplate} css={InspectorRowHoverCSS}>
-            <WidthHeightNumberControl dimension='width' />
-            {onlyGroupChildrenSelected ? (
-              <GroupConstraintSelect dimension={'width'} />
-            ) : (
-              <FixedHugDropdown dimension='width' />
-            )}
-          </UIGridRow>
-          <UIGridRow padded={false} variant={gridTemplate} css={InspectorRowHoverCSS}>
-            <WidthHeightNumberControl dimension='height' />
-            {onlyGroupChildrenSelected ? (
-              <GroupConstraintSelect dimension={'height'} />
-            ) : (
-              <FixedHugDropdown dimension='height' />
-            )}
-          </UIGridRow>
-        </FlexCol>
-      </UIGridRow>
-    </FlexCol>
-  )
-})
-
-export const GroupChildPinControl = React.memo(() => {
-  const dispatch = useDispatch()
-  const selectedViewsRef = useRefEditorState(selectedViewsSelector)
-  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
-
-  const onlyGroupChildrenSelected = useEditorState(
-    Substores.metadata,
-    allElementsAreGroupChildren,
-    'GroupChildPinControl onlyGroupChildrenSelected',
-  )
-
-  const handleGroupConstraintPinMouseDown = React.useCallback(
-    (dimension: LayoutPinnedPropIncludingCenter) => {
-      if (dimension === 'centerX' || dimension === 'centerY') {
-        // early return, we ignore centerX centerY
-        return
-      }
-      return setGroupChildConstraint(
-        dispatch,
-        'toggle',
-        selectedViewsRef.current,
-        allElementPropsRef.current,
-        dimension,
-      )
-    },
-    [dispatch, selectedViewsRef, allElementPropsRef],
-  )
-
-  const groupChildConstraints = useEditorState(
-    Substores.metadata,
-    (store) => ({
-      width: checkGroupChildConstraint(
-        'width',
-        store.editor.selectedViews,
-        store.editor.jsxMetadata,
-        store.editor.allElementProps,
-      ),
-      height: checkGroupChildConstraint(
-        'height',
-        store.editor.selectedViews,
-        store.editor.jsxMetadata,
-        store.editor.allElementProps,
-      ),
-      top: checkGroupChildConstraint(
-        'top',
-        store.editor.selectedViews,
-        store.editor.jsxMetadata,
-        store.editor.allElementProps,
-      ),
-      left: checkGroupChildConstraint(
-        'left',
-        store.editor.selectedViews,
-        store.editor.jsxMetadata,
-        store.editor.allElementProps,
-      ),
-      bottom: checkGroupChildConstraint(
-        'bottom',
-        store.editor.selectedViews,
-        store.editor.jsxMetadata,
-        store.editor.allElementProps,
-      ),
-      right: checkGroupChildConstraint(
-        'right',
-        store.editor.selectedViews,
-        store.editor.jsxMetadata,
-        store.editor.allElementProps,
-      ),
-    }),
-    'GroupChildPinControl groupChildConstraints',
-  )
-
-  const framePoints: FramePinsInfo = React.useMemo(() => {
-    const ignore = { isPrimaryPosition: false, isRelativePosition: false }
-    return {
-      left: {
-        isPrimaryPosition: groupChildConstraints.left !== 'not-constrained',
-        isRelativePosition: false,
-      },
-      top: {
-        isPrimaryPosition: groupChildConstraints.top !== 'not-constrained',
-        isRelativePosition: false,
-      },
-      bottom: {
-        isPrimaryPosition: groupChildConstraints.bottom !== 'not-constrained',
-        isRelativePosition: false,
-      },
-      right: {
-        isPrimaryPosition: groupChildConstraints.right !== 'not-constrained',
-        isRelativePosition: false,
-      },
-      width: ignore,
-      height: ignore,
-      centerX: ignore,
-      centerY: ignore,
-    }
-  }, [groupChildConstraints])
-
-  if (!onlyGroupChildrenSelected) {
-    return null
-  }
-
-  return (
-    <PinControl
-      handlePinMouseDown={handleGroupConstraintPinMouseDown}
-      framePoints={framePoints}
-      controlStatus='simple'
-      exclude={{ center: true }}
-      name='group-child-controls'
-    />
-  )
-})
-GroupChildPinControl.displayName = 'GroupChildPinControl'
-
-const WidthHeightNumberControl = React.memo((props: { dimension: 'width' | 'height' }) => {
-  const { dimension } = props
-  const axis = dimension === 'width' ? 'horizontal' : 'vertical'
-
-  const dispatch = useDispatch()
-  const metadataRef = useRefEditorState(metadataSelector)
-  const selectedViewsRef = useRefEditorState(selectedViewsSelector)
-  const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
-  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
-
-  const elementOrParentGroupRef = useRefEditorState(anySelectedElementGroupOrChildOfGroup)
-
-  const currentValue = useEditorState(
-    Substores.metadata,
-    (store) =>
-      detectFillHugFixedStateMultiselect(
-        axis,
-        metadataSelector(store),
-        selectedViewsSelector(store),
-      ),
-    'WidthHeightNumberControl currentValue',
-    isFixedHugFillEqual,
-  )
-
-  const fixedValue = optionalMap(pickFixedValue, currentValue.fixedHugFill) ?? null
-
-  const inputControlStatus = isNumberInputEnabled(currentValue.fixedHugFill)
-    ? currentValue.controlStatus
-    : 'disabled'
-
-  const onAdjustValue = React.useCallback(
-    (value: UnknownOrEmptyInput<CSSNumber>) => {
-      if (
-        'type' in value &&
-        (value.type === 'EMPTY_INPUT_VALUE' || value.type === 'UNKNOWN_INPUT')
-      ) {
-        return
-      }
-      if (elementOrParentGroupRef.current) {
-        if (value.unit != null && value.unit !== 'px') {
-          // if the element or its parent is a group, we only allow setting the size to Fixed pixels to avoid inconsistent behavior
-          return
-        }
-        executeFirstApplicableStrategy(
-          dispatch,
-          setPropFixedSizeStrategies(
-            'always',
-            metadataRef.current,
-            selectedViewsRef.current,
-            axis,
-            value,
-          ),
-        )
-        return
-      }
-      if (currentValue.fixedHugFill?.type === 'fill') {
-        if (value.unit != null && value.unit !== '%') {
-          // fill mode only accepts percentage or valueless numbers
-          return
-        }
-        executeFirstApplicableStrategy(
-          dispatch,
-          setPropFillStrategies(
-            metadataRef.current,
-            selectedViewsRef.current,
-            axis,
-            value.value,
-            false,
-          ),
-        )
-      }
-      if (
-        currentValue.fixedHugFill?.type === 'fixed' ||
-        currentValue.fixedHugFill?.type === 'computed'
-      ) {
-        executeFirstApplicableStrategy(
-          dispatch,
-          setPropFixedSizeStrategies(
-            'always',
-            metadataRef.current,
-            selectedViewsRef.current,
-            axis,
-            value,
-          ),
-        )
-      }
-    },
-    [
-      dispatch,
-      axis,
-      currentValue.fixedHugFill?.type,
-      metadataRef,
-      selectedViewsRef,
-      elementOrParentGroupRef,
-    ],
-  )
-
-  const innerLabel = dimension.charAt(0).toUpperCase()
-
-  return (
-    <NumberInput
-      labelInner={innerLabel}
-      id={FillFixedHugControlId(dimension)}
-      testId={FillFixedHugControlId(dimension)}
-      value={fixedValue}
-      onSubmitValue={onAdjustValue}
-      onTransientSubmitValue={onAdjustValue}
-      onForcedSubmitValue={onAdjustValue}
-      controlStatus={inputControlStatus}
-      numberType={pickNumberType(currentValue.fixedHugFill)}
-      incrementControls={true}
-      stepSize={1}
-      minimum={0}
-      maximum={Infinity}
-      defaultUnitToHide={null}
-      focusOnMount={false}
-    />
-  )
-})
-WidthHeightNumberControl.displayName = 'WidthHeightNumberControl'
 
 function useOnSubmitFixedFillHugType(dimension: 'width' | 'height') {
   const axis = dimension === 'width' ? 'horizontal' : 'vertical'
@@ -661,6 +397,8 @@ function strategyForChangingFillFixedHugType(
     case 'fill':
       return setPropFillStrategies(metadata, selectedElements, axis, 'default', otherAxisSetToFill)
     case 'hug':
+    case 'squeeze':
+    case 'collapsed':
       return setPropHugStrategies(metadata, selectedElements, elementPathTree, axis)
     case 'fixed':
     case 'scaled':
@@ -689,6 +427,8 @@ function pickFixedValue(value: FixedHugFill): CSSNumber | undefined {
     case 'hug-group':
       return value.value
     case 'hug':
+    case 'squeeze':
+    case 'collapsed':
       return undefined
     default:
       assertNever(value)
@@ -802,7 +542,7 @@ function groupChildConstraintOption(type: GroupChildConstraintOptionType): Selec
 
 export type ConstraintsMode = 'add' | 'remove'
 
-function setGroupChildConstraint(
+export function setGroupChildConstraint(
   dispatch: EditorDispatch,
   option: GroupChildConstraintOptionType | 'toggle',
   selectedViews: ElementPath[],

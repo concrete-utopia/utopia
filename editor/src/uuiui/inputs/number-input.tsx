@@ -37,6 +37,7 @@ import type { Either } from '../../core/shared/either'
 import { isLeft, mapEither } from '../../core/shared/either'
 import { clampValue } from '../../core/shared/math-utils'
 import { memoize } from '../../core/shared/memoize'
+import type { ControlStyles } from '../../uuiui-deps'
 import { getControlStyles, CSSCursor } from '../../uuiui-deps'
 import type { IcnProps } from '../icn'
 import { Icn } from '../icn'
@@ -141,6 +142,7 @@ export interface AbstractNumberInputProps<T extends CSSNumber | number>
     InspectorControlProps {
   value: T | null | undefined
   DEPRECATED_labelBelow?: React.ReactChild
+  invalid?: boolean
 }
 
 export interface NumberInputProps extends AbstractNumberInputProps<CSSNumber> {
@@ -181,18 +183,22 @@ export const NumberInput = React.memo<NumberInputProps>(
     setGlobalCursor,
     onMouseEnter,
     onMouseLeave,
+    invalid,
   }) => {
     const ref = React.useRef<HTMLInputElement>(null)
     const colorTheme = useColorTheme()
 
-    const controlStyles = React.useMemo(() => {
-      return getControlStyles(controlStatus)
-    }, [controlStatus])
+    const controlStyles = React.useMemo((): ControlStyles => {
+      return {
+        ...getControlStyles(controlStatus),
+        invalid: invalid ?? false,
+      }
+    }, [controlStatus, invalid])
 
     const { mixed, showContent } = React.useMemo(
       () => ({
         mixed: controlStyles.mixed,
-        showContent: controlStyles.showContent,
+        showContent: controlStyles.showContent && !controlStyles.invalid,
       }),
       [controlStyles],
     )
@@ -678,7 +684,12 @@ export const NumberInput = React.memo<NumberInputProps>(
             mixed={mixed}
             value={displayValue}
             ref={ref}
-            style={{ color: controlStyles.mainColor }}
+            style={{
+              color: controlStyles.mainColor,
+            }}
+            css={{
+              '::placeholder': { color: invalid ? colorTheme.error.value : undefined },
+            }}
             className='number-input'
             height={height}
             id={id}

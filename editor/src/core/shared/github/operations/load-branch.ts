@@ -34,6 +34,7 @@ import {
 } from '../helpers'
 import { updateProjectContentsWithParseResults } from '../../parser-projectcontents-utils'
 import type { GithubOperationContext } from './github-operation-context'
+import { createStoryboardFileIfNecessary } from '../../../../components/editor/actions/actions'
 
 export const saveAssetsToProject =
   (operationContext: GithubOperationContext) =>
@@ -136,9 +137,8 @@ export const updateProjectWithBranchContent =
 
             // Push any code through the parser so that the representations we end up with are in a state of `BOTH_MATCH`.
             // So that it will override any existing files that might already exist in the project when sending them to VS Code.
-            const parsedProjectContents = await updateProjectContentsWithParseResults(
-              workers,
-              responseBody.branch.content,
+            const parsedProjectContents = createStoryboardFileIfNecessary(
+              await updateProjectContentsWithParseResults(workers, responseBody.branch.content),
             )
 
             // Save assets to the server from Github.
@@ -150,17 +150,8 @@ export const updateProjectWithBranchContent =
               currentProjectContents,
             )
 
-            const packageJson = packageJsonFileFromProjectContents(parsedProjectContents)
-            if (packageJson != null && isTextFile(packageJson)) {
-              await refreshDependencies(
-                dispatch,
-                packageJson.fileContents.code,
-                currentDeps,
-                builtInDependencies,
-                {},
-              )
-            }
-
+            // Update the editor with everything so that if anything else fails past this point
+            // there's no loss of data from the user's perspective.
             dispatch(
               [
                 ...connectRepo(
@@ -173,15 +164,52 @@ export const updateProjectWithBranchContent =
                 updateProjectContents(parsedProjectContents),
                 updateBranchContents(parsedProjectContents),
                 truncateHistory(),
-                showToast(
-                  notice(
-                    `Github: Updated the project with the content from ${branchName}`,
-                    'SUCCESS',
-                  ),
-                ),
               ],
               'everyone',
             )
+
+            // If there's a package.json file, then attempt to load the dependencies for it.
+            let dependenciesPromise: Promise<void> = Promise.resolve()
+            const packageJson = packageJsonFileFromProjectContents(parsedProjectContents)
+            if (packageJson != null && isTextFile(packageJson)) {
+              dependenciesPromise = refreshDependencies(
+                dispatch,
+                packageJson.fileContents.code,
+                currentDeps,
+                builtInDependencies,
+                {},
+              ).then(() => {})
+            }
+
+            // When the dependencies update has gone through, then indicate that the project was imported.
+            await dependenciesPromise
+              .catch(() => {
+                dispatch(
+                  [
+                    showToast(
+                      notice(
+                        `Github: There was an error when attempting to update the dependencies.`,
+                        'ERROR',
+                      ),
+                    ),
+                  ],
+                  'everyone',
+                )
+              })
+              .finally(() => {
+                dispatch(
+                  [
+                    showToast(
+                      notice(
+                        `Github: Updated the project with the content from ${branchName}`,
+                        'SUCCESS',
+                      ),
+                    ),
+                  ],
+                  'everyone',
+                )
+              })
+
             break
           default:
             const _exhaustiveCheck: never = responseBody

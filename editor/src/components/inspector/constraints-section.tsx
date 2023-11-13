@@ -5,8 +5,16 @@ import { jsx } from '@emotion/react'
 import React from 'react'
 import { useContextSelector } from 'use-context-selector'
 import type { LayoutPinnedPropIncludingCenter } from '../../core/layout/layout-helpers-new'
+import { NO_OP } from '../../core/shared/utils'
 import { when } from '../../utils/react-conditionals'
-import { FlexColumn, FlexRow, InspectorSubsectionHeader, PopupList, UtopiaTheme } from '../../uuiui'
+import {
+  FlexColumn,
+  FlexRow,
+  InspectorSubsectionHeader,
+  PopupList,
+  UtopiaTheme,
+  useColorTheme,
+} from '../../uuiui'
 import type { SelectOption } from '../../uuiui-deps'
 import { getControlStyles } from '../../uuiui-deps'
 import { InspectorRowHoverCSS } from '../context-menu-wrapper'
@@ -14,7 +22,7 @@ import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import type { FramePinsInfo } from './common/layout-property-path-hooks'
 import { InspectorPropsContext } from './common/property-path-hooks'
-import { PinControl, PinHeightControl, PinWidthControl } from './controls/pin-control'
+import { CombinedPinControl, PinControl } from './controls/pin-control'
 import {
   allElementsAreGroupChildren,
   allElementsArePositionedAbsolutelySelector,
@@ -37,7 +45,6 @@ import {
   useDetectedConstraints,
 } from './simplified-pinning-helpers'
 import { UIGridRow } from './widgets/ui-grid-row'
-import { NO_OP } from '../../core/shared/utils'
 
 export const InspectorSectionConstraintsTestId = 'inspector-section-constraints'
 
@@ -77,7 +84,7 @@ export const ConstraintsSection = React.memo(() => {
     <React.Fragment>
       <InspectorSubsectionHeader>
         <FlexRow
-          data-testId={InspectorSectionConstraintsTestId}
+          data-testid={InspectorSectionConstraintsTestId}
           style={{
             flexGrow: 1,
             height: 42,
@@ -101,19 +108,9 @@ const GroupChildConstraintsSection = React.memo(() => {
     <FlexColumn css={{ paddingBottom: UtopiaTheme.layout.rowHorizontalPadding }}>
       <UIGridRow padded variant='<-auto-><----------1fr--------->'>
         <ChildPinControl isGroupChild='group-child' pins={pins} framePinsInfo={framePinsInfo} />
-        <FlexColumn style={{ gap: 8 }}>
-          <FlexRow css={InspectorRowHoverCSS}>
-            <PinWidthControl controlStatus='simple' framePins={framePinsInfo} toggleWidth={NO_OP} />
-            <ChildConstraintSelect isGroupChild='group-child' dimension={'width'} />
-          </FlexRow>
-          <FlexRow css={InspectorRowHoverCSS}>
-            <PinHeightControl
-              controlStatus='simple'
-              framePins={framePinsInfo}
-              toggleHeight={NO_OP}
-            />
-            <ChildConstraintSelect isGroupChild='group-child' dimension={'height'} />
-          </FlexRow>
+        <FlexColumn css={{ gap: 8 }}>
+          <ChildConstraintSelect isGroupChild='group-child' dimension={'width'} />
+          <ChildConstraintSelect isGroupChild='group-child' dimension={'height'} />
         </FlexColumn>
       </UIGridRow>
     </FlexColumn>
@@ -130,18 +127,8 @@ const FrameChildConstraintsSection = React.memo(() => {
       <UIGridRow padded variant='<-auto-><----------1fr--------->'>
         <ChildPinControl isGroupChild='frame-child' pins={pins} framePinsInfo={framePinsInfo} />
         <FlexColumn css={{ gap: 8 }}>
-          <FlexRow css={InspectorRowHoverCSS}>
-            <PinWidthControl controlStatus='simple' framePins={framePinsInfo} toggleWidth={NO_OP} />
-            <ChildConstraintSelect isGroupChild='frame-child' dimension={'width'} />
-          </FlexRow>
-          <FlexRow css={InspectorRowHoverCSS}>
-            <PinHeightControl
-              controlStatus='simple'
-              framePins={framePinsInfo}
-              toggleHeight={NO_OP}
-            />
-            <ChildConstraintSelect isGroupChild='frame-child' dimension={'height'} />
-          </FlexRow>
+          <ChildConstraintSelect isGroupChild='frame-child' dimension={'width'} />
+          <ChildConstraintSelect isGroupChild='frame-child' dimension={'height'} />
         </FlexColumn>
       </UIGridRow>
     </FlexColumn>
@@ -149,7 +136,7 @@ const FrameChildConstraintsSection = React.memo(() => {
 })
 FrameChildConstraintsSection.displayName = 'FrameChildConstraintsSection'
 
-const ChildPinControl = React.memo(
+export const ChildPinControl = React.memo(
   ({
     isGroupChild,
     pins,
@@ -193,6 +180,9 @@ const ChildPinControl = React.memo(
               }
             }
             case 'width': {
+              if (pins.horizontal.includes('width')) {
+                return 'no-op' // if Height is already pressed, we leave it as-is
+              }
               return 'left-and-width'
             }
             case 'top': {
@@ -210,6 +200,9 @@ const ChildPinControl = React.memo(
               }
             }
             case 'height': {
+              if (pins.vertical.includes('height')) {
+                return 'no-op' // if Height is already pressed, we leave it as-is
+              }
               return 'top-and-height'
             }
             case 'centerX': {
@@ -238,14 +231,7 @@ const ChildPinControl = React.memo(
         }
         dispatch(
           isGroupChild === 'group-child'
-            ? getConstraintAndFrameChangeActionsForGroupChild(
-                metadataRef.current,
-                allElementPropsRef.current,
-                elementPathTreesRef.current,
-                propertyTarget,
-                selectedViewsRef.current,
-                requestedPinChange,
-              )
+            ? [] // nothing for Group children yet!!
             : getFrameChangeActionsForFrameChild(
                 metadataRef.current,
                 elementPathTreesRef.current,
@@ -259,7 +245,6 @@ const ChildPinControl = React.memo(
         dispatch,
         isGroupChild,
         metadataRef,
-        allElementPropsRef,
         elementPathTreesRef,
         propertyTarget,
         selectedViewsRef,
@@ -269,11 +254,10 @@ const ChildPinControl = React.memo(
     )
 
     return (
-      <PinControl
-        handlePinMouseDown={NO_OP} // for group children, the visual controls are so confusing, I'm going to disable them until they are fixed
-        framePoints={framePinsInfo}
-        controlStatus='simple'
-        name='group-child-controls'
+      <CombinedPinControl
+        handlePinMouseDown={onPinControlMouseDown}
+        pins={pins}
+        framePinsInfo={framePinsInfo}
       />
     )
   },
@@ -360,6 +344,12 @@ const ChildConstraintSelect = React.memo(
       [dispatch, propertyTarget, editorRef, isGroupChild, activeOption],
     )
 
+    const styles = React.useMemo(() => {
+      return getControlStyles('simple')
+    }, [])
+
+    const colorTheme = useColorTheme()
+
     return (
       <PopupList
         id={`frame-child-constraint-${dimension}`}
@@ -369,7 +359,10 @@ const ChildConstraintSelect = React.memo(
         style={{
           position: 'relative',
         }}
-        controlStyles={getControlStyles('simple')}
+        controlStyles={{
+          ...styles,
+          mainColor: activeOption.invalid ? colorTheme.error.value : styles.mainColor,
+        }}
       />
     )
   },

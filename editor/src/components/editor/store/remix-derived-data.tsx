@@ -7,7 +7,11 @@ import type { MutableUtopiaCtxRefData } from '../../canvas/ui-jsx-canvas-rendere
 import type { MapLike } from 'typescript'
 import type { ComponentRendererComponent } from '../../canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
 import type { DataRouteObject } from 'react-router'
-import { isProjectContentDirectory, isProjectContentFile } from '../../assets'
+import {
+  getProjectFileByFilePath,
+  isProjectContentDirectory,
+  isProjectContentFile,
+} from '../../assets'
 import type { ProjectContentTreeRoot } from '../../assets'
 import type {
   RouteIdsToModuleCreators,
@@ -17,11 +21,13 @@ import {
   DefaultFutureConfig,
   createAssetsManifest,
   createRouteManifestFromProjectContents,
+  getRootFile,
   getRoutesAndModulesFromManifest,
 } from '../../canvas/remix/remix-utils'
 import type { CurriedUtopiaRequireFn, CurriedResolveFn } from '../../custom-code/code-file'
 import { memoize } from '../../../core/shared/memoize'
 import { shallowEqual } from '../../../core/shared/equality-utils'
+import { evaluator } from '../../../core/es-modules/evaluator/evaluator'
 
 export interface RemixRoutingTable {
   [rootElementUid: string]: string /* file path */
@@ -45,6 +51,29 @@ export const CreateRemixDerivedDataRefsGLOBAL: {
   topLevelComponentRendererComponents: { current: {} },
   routeModulesCache: { current: {} },
 }
+export const REMIX_CONFIG_JS_PATH = '/remix.config.js'
+
+export function getRemixRootDir(projectContents: ProjectContentTreeRoot): string {
+  const defaultRootDirName = 'app'
+  const makeRootDirPath = (dir: string = defaultRootDirName) => `/${dir}`
+
+  const remixConfigFile = getProjectFileByFilePath(projectContents, REMIX_CONFIG_JS_PATH)
+  if (remixConfigFile == null || remixConfigFile.type !== 'TEXT_FILE') {
+    return makeRootDirPath()
+  }
+
+  const m = evaluator(
+    REMIX_CONFIG_JS_PATH,
+    remixConfigFile.fileContents.code,
+    {
+      exports: {},
+    },
+    () => null,
+  )
+
+  const dir = m?.['exports']?.['appDirectory'] ?? defaultRootDirName
+  return makeRootDirPath(dir)
+}
 
 // Important Note: When updating the params here, you must evaluate whether the change should
 // have an effect on the memoization, and if so update paramsEqualityFn below
@@ -53,7 +82,16 @@ export function createRemixDerivedData(
   curriedRequireFn: CurriedUtopiaRequireFn,
   curriedResolveFn: CurriedResolveFn,
 ): RemixDerivedData | null {
-  const routeManifest = createRouteManifestFromProjectContents(projectContents)
+  const rootDir = getRemixRootDir(projectContents)
+  const rootJsFile = getRootFile(rootDir, projectContents)
+  if (rootJsFile == null) {
+    return null
+  }
+
+  const routeManifest = createRouteManifestFromProjectContents(
+    { rootFilePath: rootJsFile.path, rootDir: rootDir },
+    projectContents,
+  )
   if (routeManifest == null) {
     return null
   }
@@ -61,6 +99,7 @@ export function createRemixDerivedData(
   const assetsManifest = createAssetsManifest(routeManifest)
 
   const routesAndModulesFromManifestResult = getRoutesAndModulesFromManifest(
+    rootJsFile.file,
     routeManifest,
     DefaultFutureConfig,
     curriedRequireFn,

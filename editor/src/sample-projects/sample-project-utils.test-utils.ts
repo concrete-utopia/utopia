@@ -14,6 +14,7 @@ import {
   textFileContents,
   isParseFailure,
   isUnparsed,
+  unparsed,
 } from '../core/shared/project-file-types'
 import { emptySet } from '../core/shared/set-utils'
 import { lintAndParse } from '../core/workers/parser-printer/parser-printer'
@@ -124,21 +125,24 @@ export function createTestProjectWithMultipleFiles(files: {
   }, baseModel)
 }
 
-export function createModifiedProject(modifiedFiles: { [filename: string]: string }) {
-  const baseModel = complexDefaultProject()
-
+export function createModifiedProject(
+  modifiedFiles: { [filename: string]: string },
+  baseModel = complexDefaultProject(),
+) {
   const updatedProject = Object.keys(modifiedFiles).reduce((workingProject, modifiedFilename) => {
-    const parsedFile = lintAndParse(
-      modifiedFilename,
-      modifiedFiles[modifiedFilename],
-      null,
-      emptySet(),
-      'trim-bounds',
-    ) as ParsedTextFile
-    if (!isParseSuccess(parsedFile)) {
-      const failedParse = parsedFile as ParseFailure
+    const fileParseResult = modifiedFilename.endsWith('.json')
+      ? unparsed
+      : (lintAndParse(
+          modifiedFilename,
+          modifiedFiles[modifiedFilename],
+          null,
+          emptySet(),
+          'trim-bounds',
+        ) as ParsedTextFile)
+    if (isParseFailure(fileParseResult)) {
       const failure =
-        failedParse.errorMessage ?? failedParse.errorMessages.map((m) => m.message).join(`,\n`)
+        fileParseResult.errorMessage ??
+        fileParseResult.errorMessages.map((m) => m.message).join(`,\n`)
       throw new Error(`The test file parse failed ${modifiedFilename}, ${failure}`)
     }
 
@@ -146,9 +150,13 @@ export function createModifiedProject(modifiedFiles: { [filename: string]: strin
       workingProject.projectContents,
       modifiedFilename,
       textFile(
-        textFileContents(modifiedFiles[modifiedFilename], parsedFile, RevisionsState.BothMatch),
+        textFileContents(
+          modifiedFiles[modifiedFilename],
+          fileParseResult,
+          RevisionsState.BothMatch,
+        ),
         null,
-        parsedFile,
+        fileParseResult.type === 'PARSE_SUCCESS' ? fileParseResult : null,
         0,
       ),
     )

@@ -143,7 +143,7 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
           menuPortal: (): CSSObject => {
             return {
               zIndex: -2,
-              padding: '0 8px',
+              padding: '0 4px',
               overflow: 'hidden',
               height: 'auto',
               backgroundColor: theme.bg1subdued.value,

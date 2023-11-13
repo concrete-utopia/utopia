@@ -6,6 +6,7 @@ import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { ClipContentControl } from './clip-content-control'
 import { FrameUpdatingLayoutSection } from './frame-updating-layout-section'
 import { RadiusRow } from '../../style-section/container-subsection/radius-row'
+import { ResizeToFitControl } from '../../../resize-to-fit-control'
 
 export const SimplifiedLayoutSubsection = React.memo(() => {
   return (
@@ -19,6 +20,7 @@ export const SimplifiedLayoutSubsection = React.memo(() => {
           }}
         >
           <EditorContractDropdown />
+          <ResizeToFitControl />
         </FlexRow>
       </InspectorSubsectionHeader>
       <FlexColumn style={{ gap: 8, paddingLeft: 8, paddingRight: 8 }}>

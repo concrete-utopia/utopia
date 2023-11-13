@@ -1,10 +1,5 @@
 import * as EP from '../../core/shared/element-path'
-import {
-  expectSingleUndo2Saves,
-  expectSingleUndoNSaves,
-  setFeatureForBrowserTestsUseInDescribeBlockOnly,
-  wait,
-} from '../../utils/utils.test-utils'
+import { expectSingleUndo2Saves, expectSingleUndoNSaves, wait } from '../../utils/utils.test-utils'
 import type { Modifiers } from '../../utils/modifiers'
 import { altCmdModifier, cmdModifier, shiftCmdModifier } from '../../utils/modifiers'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'

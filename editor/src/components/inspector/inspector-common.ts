@@ -51,8 +51,8 @@ import {
   isFiniteRectangle,
   isInfinityRectangle,
   roundRectangleToNearestWhole,
-  type LocalRectangle,
 } from '../../core/shared/math-utils'
+import type { LocalRectangle, MaybeInfinityCanvasRectangle } from '../../core/shared/math-utils'
 import { inlineHtmlElements } from '../../utils/html-elements'
 import { intersection } from '../../core/shared/set-utils'
 import { showToastCommand } from '../canvas/commands/show-toast-command'
@@ -73,6 +73,7 @@ import {
 } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { fixedSizeDimensionHandlingText } from '../text-editor/text-handling'
 import { convertToAbsolute } from '../canvas/commands/convert-to-absolute-command'
+import { hugPropertiesFromStyleMap } from '../../core/shared/dom-utils'
 import { setHugContentForAxis } from './inspector-strategies/hug-contents-basic-strategy'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
@@ -570,12 +571,20 @@ export type FixedHugFill =
   | { type: 'fixed'; value: CSSNumber }
   | { type: 'fill'; value: CSSNumber }
   | { type: 'hug' }
+  | { type: 'squeeze' }
+  | { type: 'collapsed' }
   | { type: 'hug-group'; value: CSSNumber } // hug-group has a Fixed value but shows us Hug on the UI to explain Group behavior
   | { type: 'computed'; value: CSSNumber }
   | { type: 'detected'; value: CSSNumber }
   | { type: 'scaled'; value: CSSNumber }
 
 export type FixedHugFillMode = FixedHugFill['type']
+
+export function isHuggingFixedHugFill(fixedHugFillMode: FixedHugFillMode | null | undefined) {
+  return (
+    fixedHugFillMode === 'hug' || fixedHugFillMode === 'squeeze' || fixedHugFillMode === 'collapsed'
+  )
+}
 
 export function detectFillHugFixedState(
   axis: Axis,
@@ -651,9 +660,26 @@ export function detectFillHugFixedState(
     getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', property)),
   )
 
-  if (isHugFromStyleAttribute(element.element.value.props, property, 'only-max-content')) {
-    const valueWithType = { type: 'hug' as const }
-    return { fixedHugFill: valueWithType, controlStatus: 'simple' }
+  const detectedHugType = element.specialSizeMeasurements.computedHugProperty[property]
+  if (detectedHugType != null) {
+    const hugTypeFromStyleProps = hugTypeFromStyleAttribute(
+      element.element.value.props,
+      property,
+      element.specialSizeMeasurements.display,
+      element.globalFrame,
+    )
+    const controlStatus: ControlStatus = (() => {
+      if (detectedHugType !== hugTypeFromStyleProps) {
+        return 'detected-fromcss'
+      }
+      if (detectedHugType === 'squeeze' || detectedHugType === 'collapsed') {
+        return hugTypeFromStyleProps != null ? 'simple' : 'detected-fromcss'
+      }
+      return 'simple'
+    })()
+
+    const valueWithType = { type: detectedHugType }
+    return { fixedHugFill: valueWithType, controlStatus: controlStatus }
   }
 
   const isGroupLike = treatElementAsGroupLike(metadata, elementPath)
@@ -761,6 +787,22 @@ export function isHugFromStyleAttribute(
 
   // TODO simpleAttribute == null is not good enough here, see https://github.com/concrete-utopia/utopia/pull/4389#discussion_r1363594423
   return simpleAttribute == null || HuggingWidthHeightValues.includes(simpleAttribute)
+}
+
+export function hugTypeFromStyleAttribute(
+  props: JSXAttributes,
+  property: 'width' | 'height',
+  display: string,
+  globalFrame: MaybeInfinityCanvasRectangle | null,
+): 'hug' | 'squeeze' | 'collapsed' | null {
+  const getStyleValue = (prop: string) =>
+    prop === 'display'
+      ? display
+      : defaultEither(null, getSimpleAttributeAtPath(right(props), PP.create('style', prop)))
+
+  const hugProperties = hugPropertiesFromStyleMap(getStyleValue, globalFrame)
+
+  return hugProperties[property]
 }
 
 export function isHugFromStyleAttributeOrNull(
@@ -981,7 +1023,9 @@ export function setParentToFixedIfHugCommands(
     return []
   }
 
-  const isHug = detectFillHugFixedState(axis, metadata, parentPath).fixedHugFill?.type === 'hug'
+  const isHug = isHuggingFixedHugFill(
+    detectFillHugFixedState(axis, metadata, parentPath).fixedHugFill?.type,
+  )
   if (!isHug) {
     return []
   }
@@ -1094,7 +1138,9 @@ export function isFixedHugFillEqual(
 
   switch (a.fixedHugFill.type) {
     case 'hug':
-      return b.fixedHugFill.type === 'hug'
+    case 'squeeze':
+    case 'collapsed':
+      return a.fixedHugFill.type === b.fixedHugFill.type
     case 'fill':
     case 'fixed':
     case 'scaled':
@@ -1299,6 +1345,6 @@ export function getConstraintsIncludingImplicitForElement(
   return Array.from(constraints)
 }
 
-export function isHuggingParent(element: JSXElement, property: 'width' | 'height') {
-  return isHugFromStyleAttribute(element.props, property, 'include-all-hugs')
+export function isHuggingParent(element: ElementInstanceMetadata, property: 'width' | 'height') {
+  return element.specialSizeMeasurements.computedHugProperty[property] != null
 }

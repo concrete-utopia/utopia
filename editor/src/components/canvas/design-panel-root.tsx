@@ -29,9 +29,7 @@ import { unless, when } from '../../utils/react-conditionals'
 import { InsertMenuPane } from '../navigator/insert-menu-pane'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { LeftPaneComponent } from '../navigator/left-pane'
-import { GridMenuWidth } from './grid-panels-state'
 import { GridPanelsContainer } from './grid-panels-container'
-import type { Menu, Pane, StoredPanel } from './grid-panels-state'
 import type { ResizableProps } from '../../uuiui-deps'
 import type { Direction } from 're-resizable/lib/resizer'
 import { isFeatureEnabled } from '../../utils/feature-switches'
@@ -40,6 +38,7 @@ import type { EditorAction } from '../editor/action-types'
 import { SettingsPane } from '../navigator/left-pane/settings-pane'
 import { MenuTab } from '../../uuiui/menu-tab'
 import { FlexRow } from 'utopia-api'
+import type { StoredPanel } from './stored-layout'
 
 interface NumberSize {
   width: number

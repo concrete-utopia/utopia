@@ -34,6 +34,8 @@ import {
   HugContentsLabel,
   selectOptionLabel,
   ScaledLabel,
+  SqueezeContentsLabel,
+  CollapsedLabel,
 } from '../fill-hug-fixed-control'
 import type { Axis, FixedHugFillMode } from '../inspector-common'
 import { MaxContent } from '../inspector-common'
@@ -817,6 +819,254 @@ describe('Fixed / Fill / Hug control', () => {
       expect(span.style.width).toEqual('30px')
       expect(span.style.height).toEqual(MaxContent)
     })
+
+    describe('detecting types of hugging', () => {
+      it('in case of width max-content it is hug', async () => {
+        const editor = await renderTestEditorWithCode(
+          `import * as React from 'react'
+        import { Storyboard } from 'utopia-api'
+        
+        export var storyboard = (
+          <Storyboard>
+            <div
+              data-testid='parent'
+              style={{
+                width: 700,
+                height: 759,
+                position: 'absolute',
+                left: 212,
+                top: 128,
+                display: 'flex',
+                flexDirection: 'row'
+              }}
+              data-label='Playground'
+            >
+              <span
+                data-testid='child'
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  wordBreak: 'break-word',
+                  width: 'max-content',
+                  height: 'max-content',
+                  contain: 'layout',
+                }}
+              >span</span>
+            </div>
+          </Storyboard>
+        )`,
+          'await-first-dom-report',
+        )
+        await select(editor, 'child')
+
+        const hugControls = await editor.renderedDOM.findAllByText(HugContentsLabel)
+
+        expect(hugControls).toHaveLength(2)
+      })
+
+      it('in case of width/height max-content from css it is hug', async () => {
+        const editor = await renderTestEditorWithCode(
+          `import * as React from 'react'
+      import { Storyboard } from 'utopia-api'
+
+      const css = \`.minContent {
+        width: min-content;
+        height: min-content;
+      }
+
+      .maxContent {
+        width: max-content;
+        height: max-content;
+      }
+      
+      .auto {
+        width: auto;
+        height: auto;
+      }\`
+      
+      export var storyboard = (
+        <Storyboard>
+          <style>{css}</style>
+          <div
+            data-testid='parent'
+            style={{
+              width: 700,
+              height: 759,
+              position: 'absolute',
+              left: 212,
+              top: 128,
+              display: 'flex',
+              flexDirection: 'row'
+            }}
+            data-label='Playground'
+          >
+            <span
+              data-testid='child'
+              className='maxContent'
+              style={{
+                backgroundColor: '#aaaaaa33',
+                wordBreak: 'break-word',
+                contain: 'layout',
+              }}
+            >span</span>
+          </div>
+        </Storyboard>
+      )`,
+          'await-first-dom-report',
+        )
+        await select(editor, 'child')
+
+        const hugControls = await editor.renderedDOM.findAllByText(HugContentsLabel)
+
+        expect(hugControls).toHaveLength(2)
+        // TODO check the control status is detected from css
+      })
+
+      it('in case of width min-content it is squeeze', async () => {
+        const editor = await renderTestEditorWithCode(
+          `import * as React from 'react'
+        import { Storyboard } from 'utopia-api'
+        
+        export var storyboard = (
+          <Storyboard>
+            <div
+              data-testid='parent'
+              style={{
+                width: 700,
+                height: 759,
+                position: 'absolute',
+                left: 212,
+                top: 128,
+                display: 'flex',
+                flexDirection: 'row'
+              }}
+              data-label='Playground'
+            >
+              <span
+                data-testid='child'
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  wordBreak: 'break-word',
+                  width: 'min-content',
+                  height: 'min-content',
+                  contain: 'layout',
+                }}
+              >span</span>
+            </div>
+          </Storyboard>
+        )`,
+          'await-first-dom-report',
+        )
+        await select(editor, 'child')
+
+        const hugControls = await editor.renderedDOM.findAllByText(SqueezeContentsLabel)
+
+        expect(hugControls).toHaveLength(2)
+      })
+
+      it('in case of width/height min-content from css it is squeeze', async () => {
+        const editor = await renderTestEditorWithCode(
+          `import * as React from 'react'
+      import { Storyboard } from 'utopia-api'
+
+      const css = \`.minContent {
+        width: min-content;
+        height: min-content;
+      }
+
+      .maxContent {
+        width: max-content;
+        height: max-content;
+      }
+      
+      .auto {
+        width: auto;
+        height: auto;
+      }\`
+      
+      export var storyboard = (
+        <Storyboard>
+          <style>{css}</style>
+          <div
+            data-testid='parent'
+            style={{
+              width: 700,
+              height: 759,
+              position: 'absolute',
+              left: 212,
+              top: 128,
+              display: 'flex',
+              flexDirection: 'row'
+            }}
+            data-label='Playground'
+          >
+            <span
+              data-testid='child'
+              className='minContent'
+              style={{
+                backgroundColor: '#aaaaaa33',
+                wordBreak: 'break-word',
+                contain: 'layout',
+              }}
+            >span</span>
+          </div>
+        </Storyboard>
+      )`,
+          'await-first-dom-report',
+        )
+        await select(editor, 'child')
+
+        const hugControls = await editor.renderedDOM.findAllByText(SqueezeContentsLabel)
+
+        expect(hugControls).toHaveLength(2)
+        // TODO check the control status is detected from css
+      })
+
+      it('in case of hugging zero size is collapsed', async () => {
+        const editor = await renderTestEditorWithCode(
+          `import * as React from 'react'
+        import { Storyboard } from 'utopia-api'
+        
+        export var storyboard = (
+          <Storyboard data-uid='storyboard'>
+            <div
+              data-testid='parent'
+              style={{
+                width: 700,
+                height: 759,
+                position: 'absolute',
+                left: 212,
+                top: 128,
+                display: 'flex',
+                flexDirection: 'row'
+              }}
+              data-uid='parent'
+              data-label='Playground'
+            >
+              <span
+                data-testid='child'
+                data-uid='child'
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  wordBreak: 'break-word',
+                  width: 'max-content',
+                  height: 'max-content',
+                  contain: 'layout',
+                }}
+              />
+            </div>
+          </Storyboard>
+        )`,
+          'await-first-dom-report',
+        )
+        await editor.dispatch(
+          selectComponents([EP.fromString('storyboard/parent/child')], false),
+          true,
+        )
+        const hugControls = await editor.renderedDOM.findAllByText(CollapsedLabel)
+
+        expect(hugControls).toHaveLength(2)
+      })
+    })
   })
 
   describe('groups', () => {
@@ -1049,7 +1299,6 @@ describe('Fixed / Fill / Hug control', () => {
   })
 
   describe('fixed size', () => {
-    setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', true)
     it('global frames are correct for frames wrapping frames', async () => {
       const editor = await renderTestEditorWithCode(
         projectWithNestedFrames,
@@ -1659,7 +1908,7 @@ describe('Fixed / Fill / Hug control', () => {
     </div>
   </div>
     `
-    it('element with no explicit size is classified as `Detected`', async () => {
+    it('element with no explicit size is classified as `Detected` height and `Hug contents` width', async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(project),
         'await-first-dom-report',
@@ -1669,7 +1918,8 @@ describe('Fixed / Fill / Hug control', () => {
         EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/text`),
       ])
 
-      expect(editor.renderedDOM.getAllByText(DetectedLabel).length).toEqual(2)
+      expect(editor.renderedDOM.getAllByText(DetectedLabel).length).toEqual(1)
+      expect(editor.renderedDOM.getAllByText(HugContentsLabel).length).toEqual(1)
 
       await selectComponentsForTest(editor, [
         EP.fromString(
@@ -1677,7 +1927,7 @@ describe('Fixed / Fill / Hug control', () => {
         ),
       ])
 
-      expect(editor.renderedDOM.getAllByText(DetectedLabel).length).toEqual(2)
+      expect(editor.renderedDOM.getAllByText(HugContentsLabel).length).toEqual(2)
 
       await selectComponentsForTest(editor, [
         EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}`),
@@ -1686,7 +1936,7 @@ describe('Fixed / Fill / Hug control', () => {
       expect(editor.renderedDOM.getAllByText(DetectedLabel).length).toEqual(2)
     })
 
-    it('can set from detected to fixed size', async () => {
+    it('can set from detected and hug to fixed size', async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(project),
         'await-first-dom-report',
@@ -1718,7 +1968,7 @@ describe('Fixed / Fill / Hug control', () => {
           ),
         ])
 
-        const control = (await editor.renderedDOM.findAllByText(DetectedLabel))[0]
+        const control = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
 
         await mouseClickAtPoint(control, { x: 5, y: 5 })
 

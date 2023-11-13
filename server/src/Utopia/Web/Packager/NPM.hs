@@ -116,7 +116,7 @@ withInstalledProject logger NPMMetrics{..} semaphore versionedPackageName withIn
   bracketP createDir deleteDir $ \tempDir -> do
     -- Run `npm install "packageName@packageVersion"`.
     let baseProc = proc "yarn" ["add", "--silent", "--ignore-scripts", toS versionedPackageName]
-    let procWithCwd = baseProc { cwd = Just tempDir, env = Just [("NODE_OPTIONS", "--max_old_space_size=256")] }
+    let procWithCwd = baseProc { cwd = Just tempDir, env = Just [("NODE_OPTIONS", "--max_old_space_size=512")] }
     liftIO $ limitWithSemaphore semaphore $ do
       loggerLn logger ("Starting Yarn Add: " <> toLogStr versionedPackageName)
       _ <- invokeAndMeasure npmInstallMetric $

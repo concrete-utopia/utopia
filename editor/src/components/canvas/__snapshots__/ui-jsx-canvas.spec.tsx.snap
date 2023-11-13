@@ -206,6 +206,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -341,6 +345,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -648,6 +656,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -840,6 +852,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -974,6 +990,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -1110,6 +1130,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -1244,6 +1268,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -1485,6 +1513,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -1620,6 +1652,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -1829,6 +1865,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -2069,6 +2109,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -2205,6 +2249,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -2320,6 +2368,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -2578,6 +2630,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -2713,6 +2769,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -2981,6 +3041,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -3214,6 +3278,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -3387,6 +3455,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -3525,6 +3597,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -3699,6 +3775,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -3837,6 +3917,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -4011,6 +4095,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -4149,6 +4237,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -4458,6 +4550,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -4593,6 +4689,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -4985,6 +5085,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -5342,6 +5446,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -5624,6 +5732,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -5872,6 +5984,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -6053,6 +6169,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -6199,6 +6319,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -6381,6 +6505,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -6527,6 +6655,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -6709,6 +6841,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -6855,6 +6991,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -7138,6 +7278,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -7386,6 +7530,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -7567,6 +7715,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -7713,6 +7865,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -7895,6 +8051,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -8041,6 +8201,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -8223,6 +8387,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -8369,6 +8537,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -8652,6 +8824,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -8900,6 +9076,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -9081,6 +9261,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -9227,6 +9411,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -9409,6 +9597,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -9555,6 +9747,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -9737,6 +9933,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -9883,6 +10083,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -10135,6 +10339,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -10270,6 +10478,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -10448,6 +10660,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -10565,6 +10781,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -10681,6 +10901,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -10921,6 +11145,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -11056,6 +11284,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -11250,6 +11482,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -11508,6 +11744,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -11643,6 +11883,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -11922,6 +12166,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -12165,6 +12413,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -12347,6 +12599,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -12531,6 +12787,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -12713,6 +12973,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -12971,6 +13235,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -13106,6 +13374,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -13385,6 +13657,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -13628,6 +13904,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -13810,6 +14090,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -13994,6 +14278,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -14176,6 +14464,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -14428,6 +14720,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -14563,6 +14859,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -14741,6 +15041,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -14858,6 +15162,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -14974,6 +15282,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -15226,6 +15538,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -15361,6 +15677,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -15575,6 +15895,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -15754,6 +16078,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -15872,6 +16200,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -15989,6 +16321,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -16257,6 +16593,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -16407,6 +16747,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -16752,6 +17096,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -16957,6 +17305,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -17224,6 +17576,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -17374,6 +17730,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -17719,6 +18079,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -17924,6 +18288,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -18192,6 +18560,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -18342,6 +18714,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -18738,6 +19114,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -18994,6 +19374,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -19262,6 +19646,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -19412,6 +19800,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -19808,6 +20200,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -20065,6 +20461,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -20303,6 +20703,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -20439,6 +20843,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -20554,6 +20962,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -20916,6 +21328,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -21051,6 +21467,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -22284,6 +22704,10 @@ export var storyboard = (props) => {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -23168,6 +23592,10 @@ export var storyboard = (props) => {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -24018,6 +24446,10 @@ export var storyboard = (props) => {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -24394,6 +24826,10 @@ export var storyboard = (props) => {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -24603,6 +25039,10 @@ export var storyboard = (props) => {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -24980,6 +25420,10 @@ export var storyboard = (props) => {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -25189,6 +25633,10 @@ export var storyboard = (props) => {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -25566,6 +26014,10 @@ export var storyboard = (props) => {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -25775,6 +26227,10 @@ export var storyboard = (props) => {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -26190,6 +26646,10 @@ export var storyboard = (props) => {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -26441,6 +26901,10 @@ export var storyboard = (props) => {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -26856,6 +27320,10 @@ export var storyboard = (props) => {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -27107,6 +27575,10 @@ export var storyboard = (props) => {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -27522,6 +27994,10 @@ export var storyboard = (props) => {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -27773,6 +28249,10 @@ export var storyboard = (props) => {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -28035,6 +28515,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -28170,6 +28654,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -28382,6 +28870,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -28516,6 +29008,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -28649,6 +29145,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -28890,6 +29390,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -29025,6 +29529,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -29210,6 +29718,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -29450,6 +29962,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -29585,6 +30101,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -29841,6 +30361,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -30127,6 +30651,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -30262,6 +30790,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -30507,6 +31039,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -30700,6 +31236,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -30841,6 +31381,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -31109,6 +31653,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -31259,6 +31807,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -31539,6 +32091,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -31681,6 +32237,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -32102,6 +32662,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -32252,6 +32816,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -32533,6 +33101,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -32675,6 +33247,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -33027,6 +33603,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -33161,6 +33741,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -33931,6 +34515,10 @@ export var App = (props) => {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -34048,6 +34636,10 @@ export var App = (props) => {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -34167,6 +34759,10 @@ export var App = (props) => {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -34284,6 +34880,10 @@ export var App = (props) => {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -34403,6 +35003,10 @@ export var App = (props) => {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -34521,6 +35125,10 @@ export var App = (props) => {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -34638,6 +35246,10 @@ export var App = (props) => {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -34834,6 +35446,10 @@ export var App = (props) => {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -34990,6 +35606,10 @@ export var App = (props) => {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -35107,6 +35727,10 @@ export var App = (props) => {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -35226,6 +35850,10 @@ export var App = (props) => {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -35343,6 +35971,10 @@ export var App = (props) => {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -35462,6 +36094,10 @@ export var App = (props) => {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -35579,6 +36215,10 @@ export var App = (props) => {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -35700,6 +36340,10 @@ export var App = (props) => {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -35817,6 +36461,10 @@ export var App = (props) => {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -35936,6 +36584,10 @@ export var App = (props) => {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -36053,6 +36705,10 @@ export var App = (props) => {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -36172,6 +36828,10 @@ export var App = (props) => {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -36289,6 +36949,10 @@ export var App = (props) => {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -36409,6 +37073,10 @@ export var App = (props) => {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -36667,6 +37335,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -36802,6 +37474,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -37081,6 +37757,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -37324,6 +38004,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -37506,6 +38190,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -37690,6 +38378,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -37872,6 +38564,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -38130,6 +38826,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -38265,6 +38965,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -38545,6 +39249,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -38789,6 +39497,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -38972,6 +39684,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -39157,6 +39873,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -39340,6 +40060,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -39598,6 +40322,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -39733,6 +40461,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -40019,6 +40751,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -40269,6 +41005,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -40451,6 +41191,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -40635,6 +41379,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -40817,6 +41565,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -41081,6 +41833,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -41231,6 +41987,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -41471,6 +42231,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -41613,6 +42377,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -41855,6 +42623,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -41967,6 +42739,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -42129,6 +42905,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -42252,6 +43032,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -42374,6 +43158,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -42606,6 +43394,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -42718,6 +43510,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -43004,6 +43800,10 @@ export var storyboard = (
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -43231,6 +44031,10 @@ export var storyboard = (
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -43447,6 +44251,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -43559,6 +44367,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -43799,6 +44611,10 @@ export var storyboard = (
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -43936,6 +44752,10 @@ export var storyboard = (
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -44153,6 +44973,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -44265,6 +45089,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -44381,6 +45209,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -44606,6 +45438,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -44718,6 +45554,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -44913,6 +45753,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -45055,6 +45899,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -45274,6 +46122,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -45386,6 +46238,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -45672,6 +46528,10 @@ export var storyboard = (
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -45826,6 +46686,10 @@ export var storyboard = (
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -45979,6 +46843,10 @@ export var storyboard = (
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -46197,6 +47065,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -46309,6 +47181,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -46442,6 +47318,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -46705,6 +47585,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -46840,6 +47724,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -47274,6 +48162,10 @@ export var storyboard = (
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -47396,6 +48288,10 @@ export var storyboard = (
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -47634,6 +48530,10 @@ export var storyboard = (
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -47869,6 +48769,10 @@ export var storyboard = (
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -48028,6 +48932,10 @@ export var storyboard = (
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -48184,6 +49092,10 @@ export var storyboard = (
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -48429,6 +49341,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -48564,6 +49480,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -48730,6 +49650,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -48863,6 +49787,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -49106,6 +50034,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -49242,6 +50174,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -49357,6 +50293,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -49630,6 +50570,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -49765,6 +50709,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -50073,6 +51021,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -50345,6 +51297,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -50552,6 +51508,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -50729,6 +51689,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -50871,6 +51835,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -51079,6 +52047,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -51256,6 +52228,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -51398,6 +52374,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -51606,6 +52586,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -51783,6 +52767,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -51925,6 +52913,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -52167,6 +53159,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -52303,6 +53299,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -52418,6 +53418,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -52670,6 +53674,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -52805,6 +53813,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",
@@ -52990,6 +54002,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -53144,6 +54160,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -53267,6 +54287,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",

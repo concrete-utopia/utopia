@@ -4,13 +4,13 @@ import type { ControlStyles } from '../common/control-styles'
 import type { ControlStatus } from '../common/control-status'
 import { getControlStyles } from '../common/control-styles'
 import { FramePoint } from 'utopia-api/core'
-import type {
-  LayoutPinnedProp,
-  LayoutPinnedPropIncludingCenter,
-} from '../../../core/layout/layout-helpers-new'
-import type { FramePinsInfo } from '../common/layout-property-path-hooks'
-import { UtopiaTheme, SquareButton, colorTheme, color } from '../../../uuiui'
-import { unless } from '../../../utils/react-conditionals'
+import type { LayoutPinnedPropIncludingCenter } from '../../../core/layout/layout-helpers-new'
+import { type FramePinsInfo } from '../common/layout-property-path-hooks'
+import { UtopiaTheme, colorTheme } from '../../../uuiui'
+import { unless, when } from '../../../utils/react-conditionals'
+import { FlexCol, FlexRow } from 'utopia-api'
+import type { DetectedPins } from '../simplified-pinning-helpers'
+import { PinHeightControl, PinWidthControl } from '../utility-controls/pin-control'
 
 interface PinControlProps {
   handlePinMouseDown: (
@@ -24,6 +24,7 @@ interface PinControlProps {
   className?: string
   style?: React.CSSProperties
   exclude?: ExcludePinControls
+  regularBorder: boolean
 }
 
 export type ExcludePinControls = {
@@ -110,7 +111,11 @@ export const PinControl = (props: PinControlProps) => {
         version='1.1'
         xmlns='http://www.w3.org/2000/svg'
         vectorEffect='non-scaling-stroke'
-        style={{ border: `1px solid ${colorTheme.fg8.value}`, borderRadius: 2 }}
+        style={
+          props.regularBorder
+            ? { border: `1px solid ${colorTheme.fg8.value}`, borderRadius: 2 }
+            : {}
+        }
       >
         <rect
           id={getTestId(props.name, 'box')}
@@ -317,100 +322,46 @@ export const PinControl = (props: PinControlProps) => {
   )
 }
 
-const DimensionWidth = 20
-const DimensionHeight = 20
-const DimensionVerticalMid = DimensionHeight / 2
-const DimensionHorizontalMid = DimensionWidth / 2
-
-const DimensionInset = 5
-const DimensionStart = DimensionInset
-const HorizontalDimensionEnd = DimensionWidth - DimensionInset
-const VerticalDimensionEnd = DimensionHeight - DimensionInset
-const DimensionButt = 4
-const HorizontalDimensionButtStart = DimensionHorizontalMid - DimensionButt / 2
-const VerticalDimensionButtStart = DimensionVerticalMid - DimensionButt / 2
-
-interface PinWidthControlProps {
-  controlStatus: ControlStatus
-  framePins: FramePinsInfo
-  mixed?: boolean
-  toggleWidth: () => void
+export interface CombinedPinControlProps {
+  pins: DetectedPins
+  framePinsInfo: FramePinsInfo
+  handlePinMouseDown: (
+    frameProp: LayoutPinnedPropIncludingCenter,
+    event: React.MouseEvent<Element, MouseEvent>,
+  ) => void
 }
 
-export const PinWidthControl = React.memo((props: PinWidthControlProps) => {
-  const controlStyles: ControlStyles = getControlStyles(props.controlStatus)
+export const CombinedPinControl = React.memo((props: CombinedPinControlProps) => {
   return (
-    <svg width='20' height='20'>
-      <g
-        id='dimensioncontrols-pin-width'
-        stroke={getStrokeColor(controlStyles, props.framePins, props.mixed, FramePoint.Width)}
+    <FlexRow css={{ border: `1px solid ${colorTheme.subduedBorder.value}`, margin: `2px` }}>
+      <PinControl
+        handlePinMouseDown={props.handlePinMouseDown}
+        name={'pin-control'}
+        controlStatus={'simple'}
+        framePoints={props.framePinsInfo}
+        regularBorder={false}
+      />
+      <FlexCol
+        css={{
+          justifyContent: 'space-evenly',
+          borderLeft: `1px solid ${colorTheme.subduedBorder.value}`,
+        }}
       >
-        <path
-          d={`M${DimensionStart},${VerticalDimensionButtStart} l0,${DimensionButt}`}
-          id='dimensioncontrols-pin-width-EdgeEnd-l'
-          strokeLinecap='round'
-        />
-        <path
-          d={`M${HorizontalDimensionEnd},${VerticalDimensionButtStart} l0,${DimensionButt}`}
-          id='dimensioncontrols-pin-width-EdgeEnd-r'
-          strokeLinecap='round'
-        />
-        <path
-          d={`M${DimensionStart},${DimensionVerticalMid} L${HorizontalDimensionEnd},${DimensionVerticalMid}`}
-          id='dimensioncontrols-pin-width-line'
-          strokeDasharray={getStrokeDashArray(props.framePins, props.mixed, FramePoint.Width)}
-          strokeLinecap='round'
-        />
-        <path
-          d={`M 0,0 0,${DimensionHeight} ${DimensionWidth},0 ${DimensionWidth},${DimensionHeight} z`}
-          strokeLinecap='butt'
-          id='dimensioncontrols-pin-width-transparent'
-          stroke='transparent'
-          fill='transparent'
-        />
-      </g>
-    </svg>
-  )
-})
-
-interface PinHeightControlProps {
-  controlStatus: ControlStatus
-  framePins: FramePinsInfo
-  mixed?: boolean
-  toggleHeight: () => void
-}
-
-export const PinHeightControl = React.memo((props: PinHeightControlProps) => {
-  const controlStyles: ControlStyles = getControlStyles(props.controlStatus)
-  return (
-    <svg width='20' height='20'>
-      <g
-        id='dimensioncontrols-pin-height'
-        stroke={getStrokeColor(controlStyles, props.framePins, props.mixed, FramePoint.Height)}
-      >
-        <path
-          d={`M${HorizontalDimensionButtStart},${DimensionStart} l${DimensionButt},0`}
-          id='dimensioncontrols-pin-height-EdgeEnd-t'
-          strokeLinecap='round'
-        />
-        <path
-          d={`M${HorizontalDimensionButtStart},${VerticalDimensionEnd} l${DimensionButt},0`}
-          id='dimensioncontrols-pin-height-EdgeEnd-b'
-          strokeLinecap='round'
-        />
-        <path
-          d={`M${DimensionHorizontalMid},${DimensionStart} L${DimensionHorizontalMid},${VerticalDimensionEnd}`}
-          id='dimensioncontrols-pin-height-line'
-          strokeDasharray={getStrokeDashArray(props.framePins, props.mixed, FramePoint.Height)}
-          strokeLinecap='round'
-        />
-        <path
-          d={`M 0,0 ${DimensionWidth},0 0,${DimensionHeight} ${DimensionWidth},${DimensionHeight} z`}
-          id='dimensioncontrols-pin-width-transparent'
-          stroke='transparent'
-          fill='transparent'
-        />
-      </g>
-    </svg>
+        <FlexRow css={{ flexGrow: 1, alignItems: 'center' }}>
+          <PinWidthControl
+            controlStatus={'simple'}
+            framePins={props.framePinsInfo}
+            handlePinMouseDown={props.handlePinMouseDown}
+          />
+        </FlexRow>
+        <FlexRow css={{ flexGrow: 1, alignItems: 'center' }}>
+          <PinHeightControl
+            controlStatus={'simple'}
+            framePins={props.framePinsInfo}
+            handlePinMouseDown={props.handlePinMouseDown}
+          />
+        </FlexRow>
+      </FlexCol>
+    </FlexRow>
   )
 })

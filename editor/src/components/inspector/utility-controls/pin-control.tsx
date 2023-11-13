@@ -4,7 +4,10 @@ import type { ControlStyles } from '../common/control-styles'
 import type { ControlStatus } from '../common/control-status'
 import { getControlStyles } from '../common/control-styles'
 import { FramePoint } from 'utopia-api/core'
-import type { LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
+import type {
+  LayoutPinnedProp,
+  LayoutPinnedPropIncludingCenter,
+} from '../../../core/layout/layout-helpers-new'
 import type { FramePinsInfo } from '../common/layout-property-path-hooks'
 import { UtopiaTheme, SquareButton, colorTheme } from '../../../uuiui'
 
@@ -238,7 +241,10 @@ interface PinWidthControlProps {
   controlStatus: ControlStatus
   framePins: FramePinsInfo
   mixed?: boolean
-  toggleWidth: () => void
+  handlePinMouseDown: (
+    frameProp: LayoutPinnedPropIncludingCenter,
+    event: React.MouseEvent<Element, MouseEvent>,
+  ) => void
 }
 
 export const PinWidthSVG = React.memo(() => {
@@ -303,9 +309,19 @@ export const PinHeightSVG = React.memo(() => {
 })
 
 export const PinWidthControl = React.memo((props: PinWidthControlProps) => {
+  const { handlePinMouseDown } = props
+
+  const onClick = React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      handlePinMouseDown('width', event)
+    },
+    [handlePinMouseDown],
+  )
+
   const controlStyles: ControlStyles = getControlStyles(props.controlStatus)
+
   return (
-    <SquareButton onClick={props.toggleWidth} outline={true}>
+    <SquareButton data-testid={'pin-width-control-button'} onClick={onClick}>
       <svg width='20' height='20'>
         <g
           id='dimensioncontrols-pin-width'
@@ -344,13 +360,25 @@ interface PinHeightControlProps {
   controlStatus: ControlStatus
   framePins: FramePinsInfo
   mixed?: boolean
-  toggleHeight: () => void
+  handlePinMouseDown: (
+    frameProp: LayoutPinnedPropIncludingCenter,
+    event: React.MouseEvent<Element, MouseEvent>,
+  ) => void
 }
 
 export const PinHeightControl = React.memo((props: PinHeightControlProps) => {
   const controlStyles: ControlStyles = getControlStyles(props.controlStatus)
+  const { handlePinMouseDown } = props
+
+  const onClick = React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      handlePinMouseDown('height', event)
+    },
+    [handlePinMouseDown],
+  )
+
   return (
-    <SquareButton onClick={props.toggleHeight} outline={true}>
+    <SquareButton data-testid={'pin-height-control-button'} onClick={onClick}>
       <svg width='20' height='20'>
         <g
           id='dimensioncontrols-pin-height'

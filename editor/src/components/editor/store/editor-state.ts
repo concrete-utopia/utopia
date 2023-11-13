@@ -172,8 +172,8 @@ import {
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import type { RemixDerivedData, RemixDerivedDataFactory } from './remix-derived-data'
 import type { ProjectServerState } from './project-server-state'
-import { GridMenuWidth } from '../../canvas/grid-panels-state'
 import type { ReparentTargetForPaste } from '../../canvas/canvas-strategies/strategies/reparent-utils'
+import { GridMenuWidth } from '../../canvas/stored-layout'
 
 const ObjectPathImmutable: any = OPI
 
@@ -2867,7 +2867,7 @@ export function persistentModelForProjectContents(
     forkedFromProjectId: null,
     projectVersion: CURRENT_PROJECT_VERSION,
     projectDescription: '',
-    projectContents: projectContents,
+    projectContents: removeParsedModelsFromProjectContents(projectContents),
     exportsInfo: [],
     codeEditorErrors: {
       buildErrors: {},
@@ -2913,8 +2913,10 @@ export const DefaultPackageJson = {
   },
 }
 
-export function getPackageJsonFromEditorState(editor: EditorState): Either<string, any> {
-  const packageJsonFile = packageJsonFileFromProjectContents(editor.projectContents)
+export function getPackageJsonFromProjectContents(
+  projectContents: ProjectContentTreeRoot,
+): Either<string, any> {
+  const packageJsonFile = packageJsonFileFromProjectContents(projectContents)
   if (packageJsonFile != null && isTextFile(packageJsonFile)) {
     const packageJsonContents = Utils.jsonParseOrNull(packageJsonFile.fileContents.code)
     return packageJsonContents != null
@@ -2926,7 +2928,7 @@ export function getPackageJsonFromEditorState(editor: EditorState): Either<strin
 }
 
 export function getMainUIFromModel(model: EditorState): string | null {
-  const packageJsonContents = getPackageJsonFromEditorState(model)
+  const packageJsonContents = getPackageJsonFromProjectContents(model.projectContents)
   if (isRight(packageJsonContents)) {
     const mainUI = Utils.path(['utopia', 'main-ui'], packageJsonContents.value)
     // Make sure someone hasn't put something bizarro in there.
@@ -2940,7 +2942,7 @@ export function getMainUIFromModel(model: EditorState): string | null {
 export function getIndexHtmlFileFromEditorState(editor: EditorState): Either<string, TextFile> {
   const parsedFilePath = mapEither(
     (contents) => contents?.utopia?.html,
-    getPackageJsonFromEditorState(editor),
+    getPackageJsonFromProjectContents(editor.projectContents),
   )
   const filePath =
     isRight(parsedFilePath) && typeof parsedFilePath.value === 'string'

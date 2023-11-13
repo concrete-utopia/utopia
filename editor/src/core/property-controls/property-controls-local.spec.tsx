@@ -19,9 +19,10 @@ describe('registered property controls', () => {
         }
 
         registerModule(
-          '/src/card',
+          '/src/card.js',
           {
             Card: {
+              supportsChildren: false,
               properties: {
                 label: {
                   control: 'string-input',
@@ -68,7 +69,7 @@ describe('registered property controls', () => {
     await wait(10) // this is quite ugly but we want to wait for a timeout(0) in ui-jsx-canvas before calling validateControlsToCheck
     const editorState = renderResult.getEditorState().editor
 
-    expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
+    expect(editorState.propertyControlsInfo['/src/card.js']).toMatchInlineSnapshot(`
       Object {
         "Card": Object {
           "properties": Object {
@@ -82,11 +83,12 @@ describe('registered property controls', () => {
               "control": "checkbox",
             },
           },
+          "supportsChildren": false,
           "variants": Array [
             Object {
               "elementToInsert": [Function],
               "importsToAdd": Object {
-                "/src/card": Object {
+                "/src/card.js": Object {
                   "importedAs": null,
                   "importedFromWithin": Array [
                     Object {
@@ -102,7 +104,7 @@ describe('registered property controls', () => {
             Object {
               "elementToInsert": [Function],
               "importsToAdd": Object {
-                "/src/card": Object {
+                "/src/card.js": Object {
                   "importedAs": null,
                   "importedFromWithin": Array [
                     Object {

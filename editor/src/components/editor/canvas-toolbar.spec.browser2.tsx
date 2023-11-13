@@ -1,3 +1,4 @@
+import { screen } from '@testing-library/react'
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
 import { createTestProjectWithMultipleFiles } from '../../sample-projects/sample-project-utils.test-utils'
 import {
@@ -1269,6 +1270,69 @@ export var Playground = () => {
     })
   })
 
+  describe('wrapping', () => {
+    it('can only wrap into elements that support children', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        `import * as React from 'react'
+        import { Scene, Storyboard } from 'utopia-api'
+        
+        export var App = (props) => {
+          return <div>hello</div>
+        }
+        
+        export var Card = ({ person }) => (
+          <h1>Hello, {person ?? 'John Doe'}</h1>
+        )
+        
+        export var MyCustomContainer = ({ children }) => (
+          <div>{children}</div>
+        )
+        
+        export var storyboard = (props) => {
+          return (
+            <Storyboard data-uid='sb'>
+              <Scene
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  width: 400,
+                  height: 400,
+                }}
+                data-uid='scene'
+              >
+                <App data-uid='app'/>
+              </Scene>
+            </Storyboard>
+          )
+        }        
+       `,
+        'await-first-dom-report',
+      )
+      await selectComponentsForTest(renderResult, [EP.fromString('sb/scene/app')])
+
+      const element = renderResult.renderedDOM.getByText('Wrap')
+      await mouseClickAtPoint(element, { x: 2, y: 2 })
+
+      const items = getFloatingMenuItems().map((e) => e.firstChild?.textContent)
+
+      // `Card` is not included
+      expect(items).toEqual([
+        'MyCustomContainer', // uses `children`
+        'div', // intrinsically supports children
+        'span', // intrinsically supports children
+        'button', // intrinsically supports children
+        'Conditional', // supports children on the code level
+        'Fragment', // supports children on the code level
+        'Group', // uses `children`
+        'View', // uses `children`
+        'FlexRow', // uses `children`
+        'FlexCol', // uses `children`
+        'Scene', // uses `children`
+      ])
+    })
+  })
+
   describe('wrap in div', () => {
     const entryPoints = {
       'click wrap in div button': async (renderResult: EditorRenderResult): Promise<void> => {
@@ -1554,4 +1618,8 @@ async function wrapViaAddElementPopup(editor: EditorRenderResult, query: string)
 async function convertViaAddElementPopup(editor: EditorRenderResult, query: string) {
   await pressKey('c')
   await searchInFloatingMenu(editor, query)
+}
+
+function getFloatingMenuItems() {
+  return screen.queryAllByTestId(/^floating-menu-item-/gi)
 }
