@@ -20,8 +20,12 @@ import {
   zipContentsTree,
   addFileToProjectContents,
 } from '../../../components/assets'
-import type { EditorDispatch } from '../action-types'
-import { updateProjectContents, updateTopLevelElements } from '../actions/action-creators'
+import type { EditorAction, EditorDispatch } from '../action-types'
+import {
+  deleteFile,
+  updateProjectContents,
+  updateTopLevelElements,
+} from '../actions/action-creators'
 import { assertNever, isBrowserEnvironment } from '../../../core/shared/utils'
 import type { ParseSuccess } from '../../../core/shared/project-file-types'
 import {
@@ -180,7 +184,6 @@ function applyFileChangeToMap(
   }
 }
 
-// FIXME This is still being called on load
 export function updateCollaborativeProjectContents(
   session: CollaborativeEditingSupportSession,
   projectChanges: ProjectChanges,
@@ -196,19 +199,6 @@ export function updateCollaborativeProjectContents(
   }
 }
 
-export function populateCollaborativeProjectContents(
-  session: CollaborativeEditingSupportSession,
-  projectContents: ProjectContentTreeRoot,
-): void {
-  walkContentsTree(projectContents, (fullPath, file) => {
-    applyFileChangeToMap(
-      writeProjectFileChange(fullPath, file),
-      session.projectContents,
-      session.mergeDoc,
-    )
-  })
-}
-
 export function addHookForProjectChanges(
   session: CollaborativeEditingSupportSession,
   dispatch: EditorDispatch,
@@ -219,12 +209,16 @@ export function addHookForProjectChanges(
       for (const changeEvent of changeEvents) {
         switch (changeEvent.path.length) {
           case 0: {
-            updateEntireProjectContents(session, changeEvent, dispatch)
+            if (changeEvent instanceof Y.YMapEvent) {
+              updateEntireProjectContents(session, changeEvent as Y.YMapEvent<any>, dispatch)
+            } else {
+              throw new Error(`Could not treat change event as Y.YMapEvent.`)
+            }
             break
           }
           case 1: {
             const filePath = changeEvent.path[0] as string
-            // TODO: Entire file update.
+            updateSingleFileOfProjectContents(session, filePath, changeEvent, dispatch)
             break
           }
           case 2: {
@@ -250,41 +244,53 @@ export interface ArrayChanges {
 
 function updateEntireProjectContents(
   session: CollaborativeEditingSupportSession,
+  changeEvent: Y.YMapEvent<any>,
+  dispatch: EditorDispatch,
+): void {
+  let actions: Array<EditorAction> = []
+  const entriesIterator = changeEvent.keys.entries()
+  let entriesIteratorResult = entriesIterator.next()
+  while (!entriesIteratorResult.done) {
+    const [filename, changeEntry] = entriesIteratorResult.value
+    switch (changeEntry.action) {
+      case 'update':
+      case 'add':
+        if (changeEntry.newValue != null) {
+          actions.push(
+            updateTopLevelElements(
+              filename,
+              (changeEntry.newValue as CollabTextFileTopLevelElements).toArray(),
+            ),
+          )
+        }
+        break
+      case 'delete':
+        actions.push(deleteFile(filename))
+        break
+      default:
+        throw new Error(`Unhandled change entry action: ${changeEntry.action}`)
+    }
+    entriesIteratorResult = entriesIterator.next()
+  }
+  dispatch(actions)
+}
+
+function updateSingleFileOfProjectContents(
+  session: CollaborativeEditingSupportSession,
+  filePath: string,
   changeEvent: Y.YEvent<any>,
   dispatch: EditorDispatch,
 ): void {
+  let projectContents: ProjectContentTreeRoot = {}
   for (const delta of changeEvent.delta) {
     if (delta.retain != null) {
       // Do nothing.
     }
-    if (delta.insert != null && Array.isArray(delta.insert)) {
-      if (delta.insert instanceof Y.Map) {
-        const insertMap: CollabTextFile = delta.insert
-        let projectContents: ProjectContentTreeRoot = {}
-        for (const entry of insertMap.entries()) {
-          switch (entry[0]) {
-            case 'type':
-              // Ignore.
-              break
-            case 'topLevelElements':
-              const success = parseSuccess({}, entry[1], {}, null, null, [], {})
-              const newFile = textFile(
-                textFileContents('', success, RevisionsState.ParsedAhead),
-                null,
-                null,
-                1,
-              )
-              projectContents = addFileToProjectContents(projectContents, entry[0], newFile)
-              break
-            default:
-              throw new Error(`Unknown key: ${entry[0]}`)
-          }
-        }
-        dispatch([updateProjectContents(projectContents)])
-      }
+    if (delta.insert != null) {
+      // Do nothing.
     }
     if (delta.delete != null) {
-      dispatch([updateProjectContents({})])
+      // Do nothing.
     }
   }
 }

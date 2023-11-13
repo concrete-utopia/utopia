@@ -533,10 +533,7 @@ import {
   unwrapTextContainingConditional,
   wrapElementInsertions,
 } from './wrap-unwrap-helpers'
-import {
-  populateCollaborativeProjectContents,
-  addHookForProjectChanges,
-} from '../store/collaborative-editing'
+import { addHookForProjectChanges } from '../store/collaborative-editing'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
