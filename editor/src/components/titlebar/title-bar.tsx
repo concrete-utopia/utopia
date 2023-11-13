@@ -38,7 +38,6 @@ import {
 } from '../canvas/grid-panels-state'
 import { NO_OP } from '../../core/shared/utils'
 import type { StoredPanel } from '../canvas/stored-layout'
-import { useUpdateStringRun } from '../../core/model/project-file-helper-hooks'
 
 interface ProjectTitleProps {}
 
@@ -286,20 +285,6 @@ export const TitleBarUserProfile = React.memo((props: { panelData: StoredPanel }
     setIsHovered(false)
   }, [])
 
-  const updateStringRun = useUpdateStringRun()
-
-  const onClickmeClick = React.useCallback(() => {
-    updateStringRun(
-      {
-        filePath: '/src/playground.js',
-        startPosition: 195,
-        endPosition: 206,
-        originalString: 'Hello World',
-      },
-      'Cica Mica',
-    )
-  }, [updateStringRun])
-
   return (
     <div
       ref={drag}
@@ -323,7 +308,6 @@ export const TitleBarUserProfile = React.memo((props: { panelData: StoredPanel }
         <PanelButton onClick={toggleInspectorVisible} color='#FF5F57' isHovered={isHovered} />
         <PanelButton isHovered={isHovered} color={colorTheme.unavailableGrey.value} />
       </FlexRow>
-      <div onClick={onClickmeClick}>CLICK ME?</div>
       <div style={{ flex: '0 0 0px' }}>
         {unless(
           loggedIn,

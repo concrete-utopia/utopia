@@ -2,11 +2,11 @@ import React from 'react'
 import { updateFile } from '../../components/editor/actions/action-creators'
 import { useDispatch } from '../../components/editor/store/dispatch-context'
 import { getOpenUIJSFile, getOpenUIJSFileKey } from '../../components/editor/store/editor-state'
-import { useEditorState, useRefEditorState } from '../../components/editor/store/store-hook'
+import { useRefEditorState } from '../../components/editor/store/store-hook'
 import { RevisionsState, textFile, textFileContents } from '../shared/project-file-types'
 import type { SteganoTextData } from '../shared/stegano-text'
 import { getTextFileByPath } from '../../components/custom-code/code-file.test-utils'
-import { getProjectFileByFilePath } from '../../components/assets'
+import type { EditorAction } from '../../components/editor/action-types'
 
 export function useReParseOpenProjectFile(): () => void {
   const dispatch = useDispatch()
@@ -55,8 +55,7 @@ Expected: >>>${originalStringData.originalString}<<<
 export function useUpdateStringRun(): (
   originalStringData: SteganoTextData,
   updatedString: string,
-) => void {
-  const dispatch = useDispatch()
+) => EditorAction[] {
   const refEditorState = useRefEditorState((store) => store.editor)
   return React.useCallback(
     (originalStringData: SteganoTextData, updatedString: string) => {
@@ -73,8 +72,8 @@ export function useUpdateStringRun(): (
         sourceFile.lastParseSuccess,
         sourceFile.versionNumber + 1,
       )
-      dispatch([updateFile(originalStringData.filePath, updatedFileCodeAhead, false)])
+      return [updateFile(originalStringData.filePath, updatedFileCodeAhead, false)]
     },
-    [refEditorState, dispatch],
+    [refEditorState],
   )
 }

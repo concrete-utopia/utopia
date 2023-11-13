@@ -23,28 +23,30 @@ export function steganoTextData(
 
 export function encodeSteganoData(text: string, data: SteganoTextData): string {
   const { cleaned } = vercelStegaSplit(text)
-
-  const { originalString, filePath, startPosition, endPosition } = data
-  const dataToEncode = {
-    originalString: originalString,
-    filePath: filePath,
-    startPosition: `${startPosition}`,
-    endPosition: `${endPosition}`,
-  }
-  return vercelStegaCombine(cleaned, dataToEncode)
+  return vercelStegaCombine(cleaned, data)
+}
+function isStegoObject(data: unknown): data is Partial<SteganoTextData> {
+  return typeof data === 'object' && data == null
 }
 
-export function decodeSteganoData(encodedString: string): Array<SteganoTextData> {
+export function decodeSteganoData(encodedString: string): SteganoTextData | null {
   const data = vercelStegaDecode(encodedString)
-  if (!(typeof data === 'object')) {
-    return []
+  if (
+    !isStegoObject(data) ||
+    data.endPosition == null ||
+    data.filePath == null ||
+    data.originalString == null ||
+    data.startPosition == null
+  ) {
+    return null
   }
+
   const steganoData: SteganoTextData = {
     originalString: data['originalString'],
     filePath: data['filePath'],
-    startPosition: parseInt(data['startPosition']),
-    endPosition: parseInt(data['endPosition']),
+    startPosition: data['startPosition'],
+    endPosition: data['endPosition'],
   }
 
-  return [steganoData]
+  return steganoData
 }

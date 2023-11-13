@@ -1286,11 +1286,6 @@ export function parseCode(
         if (declaration.initializer == null || !TS.isStringLiteral(declaration.initializer)) {
           return declaration
         }
-        // console.log(
-        //   'vercelStegaDecode(declaration.initializer.text)',
-        //   declaration.initializer.text,
-        //   decodeSteganoData(declaration.initializer.text),
-        // )
         const startPosition = declaration.initializer.getStart(sourceFileOriginal)
         const endPosition = declaration.initializer.getEnd()
         const textToEncode = vercelStegaSplit(declaration.initializer.text).cleaned

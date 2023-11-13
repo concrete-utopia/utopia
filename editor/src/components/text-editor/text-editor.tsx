@@ -293,7 +293,11 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
 
 const TextEditor = React.memo((props: TextEditorProps) => {
   const { elementPath, component, passthroughProps, textProp } = props
-  const stegaData = optionalMap(decodeSteganoData, props.originalText)
+
+  const textToUse = props.originalText ?? props.text
+
+  const stegaData = optionalMap(decodeSteganoData, textToUse)
+
   const dispatch = useDispatch()
   const cursorPosition = useEditorState(
     Substores.restOfEditor,
@@ -327,11 +331,11 @@ const TextEditor = React.memo((props: TextEditorProps) => {
   const outlineWidth = 1 / scale
   const outlineColor = colorTheme.textEditableOutline.value
 
-  const [firstTextProp] = React.useState(vercelStegaSplit(props.originalText ?? '').cleaned)
+  const [firstTextProp] = React.useState(vercelStegaSplit(textToUse).cleaned)
 
   const myElement = React.useRef<HTMLSpanElement>(null)
 
-  const updateStringRun = useUpdateStringRun()
+  const updateStringRunCommands = useUpdateStringRun()
 
   React.useEffect(() => {
     const currentElement = myElement.current
@@ -359,28 +363,31 @@ const TextEditor = React.memo((props: TextEditorProps) => {
 
     return () => {
       const content = currentElement.textContent
-      if (content != null) {
-        if (elementState === 'new' && content.replace(/\n/g, '') === '') {
-          requestAnimationFrame(() => dispatch([deleteView(elementPath)]))
+      if (content == null) {
+        return
+      }
+      if (elementState === 'new' && content.replace(/\n/g, '') === '') {
+        requestAnimationFrame(() => dispatch([deleteView(elementPath)]))
+        return
+      }
+      if (elementState != null && savedContentRef.current !== content) {
+        savedContentRef.current = content
+        if (stegaData != null) {
+          requestAnimationFrame(() =>
+            dispatch(updateStringRunCommands(stegaData, [...content].join(''))),
+          )
         } else {
-          if (elementState != null && savedContentRef.current !== content) {
-            savedContentRef.current = content
-            if (stegaData != null) {
-              requestAnimationFrame(() => updateStringRun(stegaData[0], [...content].join('')))
-            } else {
-              requestAnimationFrame(() => dispatch([getSaveAction(elementPath, content, textProp)]))
-            }
-          }
-          // remove dangling empty spans
-          if (
-            content != null &&
-            initialText !== content &&
-            content.replace(/^\n/, '').length === 0 &&
-            canDeleteWhenEmpty
-          ) {
-            requestAnimationFrame(() => dispatch([deleteView(elementPath)]))
-          }
+          requestAnimationFrame(() => dispatch([getSaveAction(elementPath, content, textProp)]))
         }
+      }
+
+      if (
+        content != null &&
+        initialText !== content &&
+        content.replace(/^\n/, '').length === 0 &&
+        canDeleteWhenEmpty
+      ) {
+        requestAnimationFrame(() => dispatch([deleteView(elementPath)]))
       }
     }
   }, [
@@ -391,7 +398,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     metadataRef,
     allElementPropsRef,
     stegaData,
-    updateStringRun,
+    updateStringRunCommands,
   ])
 
   React.useLayoutEffect(() => {
@@ -472,7 +479,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
       savedContentRef.current = content
       if (stegaData != null) {
         requestAnimationFrame(() => {
-          updateStringRun(stegaData[0], "'" + [...content].join('') + "'")
+          updateStringRunCommands(stegaData, "'" + [...content].join('') + "'")
           dispatch([updateEditorMode(EditorModes.selectMode(null, false, 'none'))])
         })
       } else {
@@ -484,7 +491,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     } else {
       dispatch([updateEditorMode(EditorModes.selectMode(null, false, 'none'))])
     }
-  }, [dispatch, elementPath, elementState, stegaData, textProp, updateStringRun])
+  }, [dispatch, elementPath, elementState, stegaData, textProp, updateStringRunCommands])
 
   const editorProps: React.DetailedHTMLProps<
     React.HTMLAttributes<HTMLSpanElement>,

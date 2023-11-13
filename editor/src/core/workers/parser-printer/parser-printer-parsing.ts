@@ -115,12 +115,6 @@ import { isEmptyString } from '../../shared/string-utils'
 import type { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 import { emptySet } from '../../../core/shared/set-utils'
 import { getAllUniqueUidsFromAttributes } from '../../../core/model/get-unique-ids'
-import {
-  vercelStegaCombine,
-  vercelStegaDecode,
-  vercelStegaDecodeAll,
-  vercelStegaSplit,
-} from '@vercel/stega'
 
 function inPositionToElementsWithin(elements: ElementsWithinInPosition): ElementsWithin {
   let result: ElementsWithin = {}
