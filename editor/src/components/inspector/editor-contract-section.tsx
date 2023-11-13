@@ -102,10 +102,14 @@ export const allSelectedElementsContractSelector = createSelector(
   },
 )
 
-export function groupSectionOption(wrapperType: 'frame' | 'fragment' | 'group'): SelectOption {
+export function groupSectionOption(
+  wrapperType: 'frame' | 'not-quite-frame' | 'fragment' | 'group',
+): SelectOption {
   switch (wrapperType) {
     case 'frame':
       return { value: 'frame', label: 'Frame' }
+    case 'not-quite-frame':
+      return { value: 'not-quite-frame', label: 'Frame*' }
     case 'fragment':
       return { value: 'fragment', label: 'Fragment' }
     case 'group':
@@ -117,6 +121,7 @@ export function groupSectionOption(wrapperType: 'frame' | 'fragment' | 'group'):
 
 const FragmentOption = groupSectionOption('fragment')
 const FrameOption = groupSectionOption('frame')
+const NotQuiteFrameOption = groupSectionOption('not-quite-frame')
 const GroupOption = groupSectionOption('group')
 
 export const EditorFixProblemsButtonTestId = 'editor-fix-problems-button'
@@ -199,8 +204,12 @@ export const EditorContractDropdown = React.memo(() => {
       return FragmentOption
     } else if (selectedElementContract === 'group') {
       return GroupOption
+    } else if (selectedElementContract === 'not-quite-frame') {
+      return NotQuiteFrameOption
+    } else if (selectedElementContract === 'frame' || selectedElementContract == null) {
+      return FrameOption
     }
-    return FrameOption
+    assertNever(selectedElementContract)
   }, [selectedElementContract])
 
   const options = React.useMemo((): Array<SelectOption> => {
