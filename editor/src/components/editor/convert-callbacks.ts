@@ -63,6 +63,12 @@ import { addElements } from '../canvas/commands/add-elements-command'
 import { updateSelectedViews } from '../canvas/commands/update-selected-views-command'
 import { addImportsToFile } from '../canvas/commands/add-imports-to-file-command'
 import { withUnderlyingTarget } from './store/editor-state'
+import { showToastCommand } from '../canvas/commands/show-toast-command'
+import {
+  isEmptyGroup,
+  isMaybeGroupForWrapping,
+} from '../canvas/canvas-strategies/strategies/group-helpers'
+import { elementCanBeAGroupChild } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
 
 export function convertToConditionalOrFragment(
   selectedViews: Array<ElementPath>,
@@ -264,6 +270,60 @@ export function wrapWithFragmentOrConditional(
   assertNever(element)
 }
 
+function wrapRootElementOfInstance(targets: ElementPath[]): CanvasCommand[] | null {
+  const anyTargetIsARootElement = targets.some(EP.isRootElementOfInstance)
+  if (anyTargetIsARootElement) {
+    return [
+      showToastCommand(
+        `Root elements can't be wrapped into other elements.`,
+        'INFO',
+        'wrap-root-element-toast',
+      ),
+    ]
+  }
+
+  return null
+}
+
+function wrapEmptyGroup(
+  metadata: ElementInstanceMetadataMap,
+  targets: ElementPath[],
+): CanvasCommand[] | null {
+  const anyTargetIsAnEmptyGroup = targets.some((path) => isEmptyGroup(metadata, path))
+  if (anyTargetIsAnEmptyGroup) {
+    return [showToastCommand(`Empty Groups cannot be wrapped`, 'ERROR', 'wrap-empty-group-toast')]
+  }
+
+  return null
+}
+
+function wrapInvalidGroupChildrenIntoGroup(
+  metadata: ElementInstanceMetadataMap,
+  targets: ElementPath[],
+  wrapper: { element: JSXElementChild; imports: Imports },
+): CanvasCommand[] | null {
+  const wrapperIsGroup = isMaybeGroupForWrapping(wrapper.element, wrapper.imports)
+  const anyElementInvalidGroupChild = targets.some((path) => {
+    return !elementCanBeAGroupChild(
+      MetadataUtils.getJsxElementChildFromMetadata(metadata, path),
+      path,
+      metadata,
+    )
+  })
+
+  const elementsCannotBeWrappedInGroup = wrapperIsGroup && anyElementInvalidGroupChild
+  if (elementsCannotBeWrappedInGroup) {
+    return [
+      showToastCommand(
+        `Not all targets can be wrapped into a Group`,
+        'ERROR',
+        'wrap-invalid-element-into-group-toast',
+      ),
+    ]
+  }
+  return null
+}
+
 export function useWrapInto(): (wrapInto: InsertMenuItem | null) => void {
   const dispatch = useDispatch()
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
@@ -300,6 +360,18 @@ export function useWrapInto(): (wrapInto: InsertMenuItem | null) => void {
         projectContentsRef.current,
         wrapIntoElement,
       )
+
+      const edgeCaseCommands =
+        wrapRootElementOfInstance(originalSelectedElements) ??
+        wrapEmptyGroup(jsxMetadataRef.current, originalSelectedElements) ??
+        wrapInvalidGroupChildrenIntoGroup(jsxMetadataRef.current, originalSelectedElements, {
+          element: element,
+          imports: wrapIntoElement.value.importsToAdd,
+        })
+
+      if (edgeCaseCommands != null) {
+        return dispatch([applyCommandsAction(edgeCaseCommands)])
+      }
 
       const allElementUids = new Set(getAllUniqueUids(projectContentsRef.current).allIDs)
       allElementUids.add(element.uid)
