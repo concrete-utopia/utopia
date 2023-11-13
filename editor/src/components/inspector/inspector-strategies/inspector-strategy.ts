@@ -1,6 +1,10 @@
+import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { CanvasCommand } from '../../canvas/commands/commands'
 import type { EditorDispatch } from '../../editor/action-types'
 import { applyCommandsAction } from '../../editor/actions/action-creators'
+import type { AllElementProps } from '../../editor/store/editor-state'
 
 interface CustomInspectorStrategyResultBase {
   commands: Array<CanvasCommand>
@@ -19,6 +23,16 @@ export interface CustomInspectorStrategy<T extends undefined | Record<string, un
 export interface InspectorStrategy {
   name: string
   strategy: () => Array<CanvasCommand> | null
+}
+
+export interface MultiPhaseInspectorStrategy {
+  name: string
+  strategy: (
+    metadata: ElementInstanceMetadataMap,
+    selectedElementPaths: Array<ElementPath>,
+    elementPathTree: ElementPathTrees,
+    allElementProps: AllElementProps,
+  ) => Generator<Array<CanvasCommand> | null, void>
 }
 
 export function resultForFirstApplicableStrategy<T extends undefined | Record<string, unknown>>(
@@ -53,5 +67,36 @@ export function executeFirstApplicableStrategy(
   const commands = commandsForFirstApplicableStrategy(strategies)
   if (commands != null) {
     dispatch([applyCommandsAction(commands)])
+  }
+}
+
+export function executeFirstMultiPhaseStrategy(
+  dispatch: EditorDispatch,
+  metadata: ElementInstanceMetadataMap,
+  selectedViews: ElementPath[],
+  elementPathTree: ElementPathTrees,
+  allElementProps: AllElementProps,
+  strategies: MultiPhaseInspectorStrategy[],
+): void {
+  function executeMultiPhaseStrategy(strategy: MultiPhaseInspectorStrategy): 'success' | 'fail' {
+    for (const commands of strategy.strategy(
+      metadata,
+      selectedViews,
+      elementPathTree,
+      allElementProps,
+    )) {
+      if (commands == null) {
+        return 'fail'
+      }
+      dispatch([applyCommandsAction(commands)])
+    }
+    return 'success'
+  }
+
+  for (const strategy of strategies) {
+    const result = executeMultiPhaseStrategy(strategy)
+    if (result === 'success') {
+      return
+    }
   }
 }

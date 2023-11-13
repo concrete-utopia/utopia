@@ -72,7 +72,7 @@ export const wrapInDivStrategy = (
   },
 })
 
-function wrapInDivCommands(
+export function wrapInDivCommands(
   metadata: ElementInstanceMetadataMap,
   elementPathTrees: ElementPathTrees,
   allElementProps: AllElementProps,

@@ -286,6 +286,7 @@ describe('canvas toolbar', () => {
       top: 168,
       width: 247,
       height: 402,
+      contain: 'layout'
     }}
     data-uid='container'
   >
@@ -329,6 +330,7 @@ describe('canvas toolbar', () => {
       top: 168,
       width: 247,
       height: 402,
+      contain: 'layout'
     }}
     data-uid='container'
   >
@@ -360,7 +362,7 @@ describe('canvas toolbar', () => {
       EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
     ])
 
-    FOR_TESTS_setNextGeneratedUids(['reserved', 'new-div'])
+    FOR_TESTS_setNextGeneratedUids(['new-div'])
 
     await insertViaAddElementPopup(editor, 'div')
 
@@ -373,6 +375,7 @@ describe('canvas toolbar', () => {
       top: 168,
       width: 247,
       height: 402,
+      contain: 'layout'
     }}
     data-uid='container'
   >
@@ -411,7 +414,7 @@ describe('canvas toolbar', () => {
       'await-first-dom-report',
     )
 
-    FOR_TESTS_setNextGeneratedUids(['reserved', 'new-div'])
+    FOR_TESTS_setNextGeneratedUids(['new-div'])
 
     await insertViaAddElementPopup(editor, 'div')
 
@@ -446,7 +449,7 @@ describe('canvas toolbar', () => {
       EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
     ])
 
-    FOR_TESTS_setNextGeneratedUids(['reserved', 'sample-text'])
+    FOR_TESTS_setNextGeneratedUids(['sample-text'])
 
     await insertViaAddElementPopup(editor, 'sampl')
 
@@ -459,6 +462,7 @@ describe('canvas toolbar', () => {
       top: 168,
       width: 247,
       height: 402,
+      contain: 'layout'
     }}
     data-uid='container'
   >
@@ -566,6 +570,7 @@ export var storyboard = (
           top: 77,
           width: 275,
           height: 303,
+          contain: 'layout',
         }}
       >
         <DefaultExportedComponent
@@ -606,14 +611,14 @@ export var storyboard = (
       EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
     ])
 
-    FOR_TESTS_setNextGeneratedUids(['reserved', 'new-img'])
+    FOR_TESTS_setNextGeneratedUids(['new-img'])
     await insertViaAddElementPopup(editor, 'img')
 
     await selectComponentsForTest(editor, [
       EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
     ])
 
-    FOR_TESTS_setNextGeneratedUids(['reserved', 'new-img-2'])
+    FOR_TESTS_setNextGeneratedUids(['new-img-2'])
     await insertViaAddElementPopup(editor, 'img')
 
     expect(editor.getActionsCausingDuplicateUIDs()).toHaveLength(0)
@@ -627,6 +632,7 @@ export var storyboard = (
       top: 168,
       width: 247,
       height: 402,
+      contain: 'layout'
     }}
     data-uid='container'
   >
@@ -682,7 +688,7 @@ export var storyboard = (
 
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(`
-        <div data-uid='container'>
+        <div data-uid='container' style={{ contain: 'layout' }}>
           {
             // @utopia/uid=conditional
             [].length === 0 ? null : (
@@ -698,7 +704,7 @@ export var storyboard = (
               left: 0,
             }}
             src='/editor/utopia-logo-white-fill.png?hash=nocommit'
-            data-uid='ele'
+            data-uid='wra'
           />
         </div>
       `),
@@ -717,7 +723,7 @@ export var storyboard = (
         'await-first-dom-report',
       )
 
-      FOR_TESTS_setNextGeneratedUids(['reserved for fragment wrapper', 'newly-added-img'])
+      FOR_TESTS_setNextGeneratedUids(['newly-added-img'])
 
       await clickEmptySlot(editor)
       await expectSingleUndo2Saves(editor, () => insertViaAddElementPopup(editor, 'img'))
@@ -728,7 +734,7 @@ export var storyboard = (
 
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(`
-        <div data-uid='container'>
+        <div data-uid='container' style={{ contain: 'layout' }}>
         {
           // @utopia/uid=conditional
           [].length === 0 ? (
@@ -766,7 +772,7 @@ export var storyboard = (
       )
 
       await clickEmptySlot(editor) // This click will add an override
-      FOR_TESTS_setNextGeneratedUids(['reserved for fragment wrapper', 'newly-added-img'])
+      FOR_TESTS_setNextGeneratedUids(['newly-added-img'])
       await expectSingleUndo2Saves(editor, () => insertViaAddElementPopup(editor, 'img'))
 
       expect(editor.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
@@ -775,7 +781,7 @@ export var storyboard = (
 
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(`
-      <div data-uid='container'>
+      <div data-uid='container' style={{ contain: 'layout' }}>
       {
         // @utopia/uid=conditional
         // @utopia/conditional=false
@@ -829,13 +835,13 @@ export var storyboard = (
         'utopia-storyboard-uid/scene-aaa/app-entity:container/conditional/img',
       ])
 
-      FOR_TESTS_setNextGeneratedUids(['reserved for fragment wrapper', 'newly-added-img'])
+      FOR_TESTS_setNextGeneratedUids(['newly-added-img'])
 
       await expectSingleUndo2Saves(editor, () => insertViaAddElementPopup(editor, 'img'))
 
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(`
-        <div data-uid='container'>
+        <div data-uid='container' style={{ contain: 'layout' }}>
         {
           /* @utopia/uid=conditional */
           true ? (
@@ -897,7 +903,7 @@ export var storyboard = (
       )
       await mouseClickAtPoint(slot, { x: 5, y: 5 })
 
-      FOR_TESTS_setNextGeneratedUids(['reserved for fragment wrapper', 'newly-added-img'])
+      FOR_TESTS_setNextGeneratedUids(['newly-added-img'])
 
       await expectSingleUndo2Saves(editor, () => insertViaAddElementPopup(editor, 'img'))
 
@@ -915,6 +921,7 @@ export var storyboard = (
               top: 235,
               width: 96,
               height: 115,
+              contain: 'layout'
             }}
             data-uid='52b'
           >
@@ -1126,6 +1133,7 @@ export var Playground = () => {
           left: 154,
           top: 134,
           backgroundColor: '#ff7262',
+          contain: 'layout',
         }}
         data-uid='pg-container'
       >
@@ -1202,14 +1210,25 @@ export var Playground = () => {
               top: 168,
               width: 247,
               height: 402,
+              contain: 'layout'
             }}
             data-uid='container'
           >
             <Group
-              style={{ position: 'absolute', left: 0, top: 0 }}
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 247,
+                height: 0,
+                contain: 'layout'
+              }}
               data-uid='new-group'
             >
-              <div data-uid='target' />
+              <div
+                data-uid='target'
+                style={{ top: 0, left: 0, position: 'absolute' }}
+              />
             </Group>
           </div>
       `),
@@ -1502,19 +1521,6 @@ export var Playground = () => {
             EP.appendNewElementPath(TestScenePath, ['root', 'container', 'two']),
           ])
           await trigger(renderResult)
-
-          expect(
-            renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
-          ).toEqual([
-            'regular-utopia-storyboard-uid/scene-aaa',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/wra',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/wra/one',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/wra/two',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/three',
-          ])
 
           expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
             makeTestProjectCodeWithSnippet(`<div

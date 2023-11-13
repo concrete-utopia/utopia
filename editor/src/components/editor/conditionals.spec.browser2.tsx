@@ -10,7 +10,11 @@ import { unsafeGet } from '../../core/shared/optics/optic-utilities'
 import type { Optic } from '../../core/shared/optics/optics'
 import { forceNotNull } from '../../core/shared/optional-utils'
 import type { ElementPath } from '../../core/shared/project-file-types'
-import { searchInFloatingMenu, selectComponentsForTest } from '../../utils/utils.test-utils'
+import {
+  expectSingleUndo2Saves,
+  searchInFloatingMenu,
+  selectComponentsForTest,
+} from '../../utils/utils.test-utils'
 import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import {
   TestScenePath,
@@ -1114,5 +1118,5 @@ describe('conditionals', () => {
 
 async function wrapInConditional(renderResult: EditorRenderResult) {
   await pressKey('w') // open the wrap menu
-  await searchInFloatingMenu(renderResult, 'Condition')
+  await expectSingleUndo2Saves(renderResult, () => searchInFloatingMenu(renderResult, 'Condition'))
 }
