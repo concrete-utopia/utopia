@@ -848,10 +848,15 @@ function renderJSXElement(
         [JSX_CANVAS_LOOKUP_FUNCTION_NAME]: utopiaCanvasJSXLookup({}, inScope, innerRender),
       }
 
+      const expressionToEvaluate =
+        childrenWithNewTextBlock.length > 0 && isJSExpression(childrenWithNewTextBlock[0])
+          ? childrenWithNewTextBlock[0]
+          : jsExpressionValue(null, emptyComments) // placeholder
+
       const originalTextContent = runJSExpression(
         filePath,
         requireResult,
-        childrenWithNewTextBlock[0],
+        expressionToEvaluate,
         blockScope,
       )
       const textContent = trimJoinUnescapeTextFromJSXElements(childrenWithNewTextBlock)
