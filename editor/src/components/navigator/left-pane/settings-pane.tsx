@@ -41,6 +41,8 @@ import { saveUserPreferencesDefaultLayout } from '../../common/user-preferences'
 import { useGridPanelState } from '../../canvas/grid-panels-state'
 import { notice } from '../../common/notice'
 import { gridMenuDefaultPanels } from '../../canvas/stored-layout'
+import { getProjectServerState } from '../../editor/store/project-server-state'
+import { setProjectSharedStatus } from '../../../common/server'
 
 const themeOptions = [
   {
@@ -233,6 +235,28 @@ export const SettingsPane = React.memo(() => {
     dispatch([EditorActions.addToast(notice('Restored default panels layout.', 'SUCCESS'))])
   }, [dispatch, setPanelState])
 
+  const projectId = useEditorState(Substores.restOfEditor, (store) => store.editor.id, '')
+  const [shared, setShared] = React.useState<boolean | null>(null)
+
+  React.useEffect(() => {
+    if (projectId == null) {
+      return
+    }
+    void getProjectServerState(projectId, null).then((state) => {
+      const value = state.projectData?.shared ?? null
+      setShared(value)
+    })
+  }, [projectId])
+
+  const toggleShared = React.useCallback(() => {
+    if (projectId == null || shared == null) {
+      return
+    }
+    void setProjectSharedStatus(projectId, !shared).then(() => {
+      setShared(!shared)
+    })
+  }, [projectId, shared])
+
   return (
     <FlexColumn
       id='leftPaneSettings'
@@ -303,6 +327,34 @@ export const SettingsPane = React.memo(() => {
               Fork this project
             </Button>
           </div>,
+        )}
+        {when(
+          shared != null,
+          <SectionBodyArea minimised={false}>
+            <UIGridRow
+              style={{ color: colorTheme.fg1.value, marginTop: 16 }}
+              padded
+              variant='<---1fr--->|------172px-------|'
+            >
+              <H2>Access</H2>
+            </UIGridRow>
+            <div style={{ padding: '0px 10px' }}>
+              {shared ? (
+                <span>
+                  This project is <strong>shared</strong> with collaborators.
+                </span>
+              ) : (
+                <span>
+                  This project is <strong>not shared</strong> yet.
+                </span>
+              )}
+            </div>
+            <div style={{ padding: 10 }}>
+              <Button highlight spotlight onClick={toggleShared}>
+                {shared ? 'Unshare' : 'Share'}
+              </Button>
+            </div>
+          </SectionBodyArea>,
         )}
         <SectionBodyArea minimised={false}>
           {/** Theme Toggle: */}

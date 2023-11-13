@@ -30,12 +30,12 @@ projectIDTable = table "project_i_d" (p1 (tableField "proj_id"))
 projectIDSelect :: Select ProjectIDFields
 projectIDSelect = selectTable projectIDTable
 
-type ProjectFields = (Field SqlText, Field SqlText, Field SqlText, Field SqlTimestamptz, Field SqlTimestamptz, Field SqlBytea, FieldNullable SqlBool)
+type ProjectFields = (Field SqlText, Field SqlText, Field SqlText, Field SqlTimestamptz, Field SqlTimestamptz, Field SqlBytea, FieldNullable SqlBool, Field SqlBool)
 
-type Project = (Text, Text, Text, UTCTime, UTCTime, ByteString, Maybe Bool)
+type Project = (Text, Text, Text, UTCTime, UTCTime, ByteString, Maybe Bool, Bool)
 
 projectTable :: Table ProjectFields ProjectFields
-projectTable = table "project" (p7
+projectTable = table "project" (p8
                 ( tableField "proj_id"
                 , tableField "owner_id"
                 , tableField "title"
@@ -43,6 +43,7 @@ projectTable = table "project" (p7
                 , tableField "modified_at"
                 , tableField "content"
                 , tableField "deleted"
+                , tableField "shared"
                 )
                )
 
@@ -94,6 +95,7 @@ data DecodedProject = DecodedProject
                     , title      :: Text
                     , modifiedAt :: UTCTime
                     , content    :: Value
+                    , shared     :: Bool
                     } deriving (Eq, Show, Generic)
 
 defaultProjectTitle :: Text
@@ -109,6 +111,7 @@ data ProjectMetadata = ProjectMetadata
                      , createdAt    :: UTCTime
                      , modifiedAt   :: UTCTime
                      , deleted      :: Bool
+                     , shared       :: Bool
                      } deriving (Eq, Show, Generic)
 
 data DecodedUserConfiguration = DecodedUserConfiguration

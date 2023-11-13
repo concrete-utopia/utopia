@@ -39,6 +39,7 @@ export interface ServerProjectListing {
   description: string | null
   createdAt: string
   modifiedAt: string
+  shared: boolean
 }
 
 export interface FetchProjectListResponse {
@@ -255,6 +256,21 @@ export async function deleteProjectFromServer(projectId: string): Promise<void> 
   } else {
     console.error(
       `Failed to delete project ${projectId} (${response.status}): ${response.statusText}`,
+    )
+  }
+}
+
+export async function setProjectSharedStatus(projectId: string, shared: boolean): Promise<void> {
+  const url = urljoin(projectURL(projectId), 'shared') + `?value=${shared}`
+  const response = await fetch(url, {
+    method: 'POST',
+    credentials: 'include',
+    headers: HEADERS,
+    mode: MODE,
+  })
+  if (!response.ok) {
+    console.error(
+      `Failed to set project ${projectId} shared status (${response.status}): ${response.statusText}`,
     )
   }
 }

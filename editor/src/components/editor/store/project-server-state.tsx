@@ -10,17 +10,20 @@ export interface ProjectMetadataFromServer {
   title: string
   ownerName: string | null
   ownerPicture: string | null
+  shared: boolean
 }
 
 export function projectMetadataFromServer(
   title: string,
   ownerName: string | null,
   ownerPicture: string | null,
+  shared: boolean,
 ): ProjectMetadataFromServer {
   return {
     title: title,
     ownerName: ownerName,
     ownerPicture: ownerPicture,
+    shared: shared,
   }
 }
 
@@ -60,6 +63,7 @@ function projectListingToProjectMetadataFromServer(
       title: projectListing.title,
       ownerName: projectListing.ownerName ?? null,
       ownerPicture: projectListing.ownerPicture ?? null,
+      shared: projectListing.shared,
     }
   }
 }

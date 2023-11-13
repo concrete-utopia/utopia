@@ -55,6 +55,7 @@ data ProjectListing = ProjectListing
                     , _description  :: Maybe Text
                     , _createdAt    :: UTCTime
                     , _modifiedAt   :: UTCTime
+                    , _shared       :: Bool
                     } deriving (Eq, Show, Generic)
 
 $(makeFieldsNoPrefix ''ProjectListing)
@@ -78,6 +79,7 @@ listingFromProjectMetadata project = ProjectListing
                                    , _description = view (field @"description") project
                                    , _createdAt = view (field @"createdAt") project
                                    , _modifiedAt = view (field @"modifiedAt") project
+                                   , _shared = view (field @"shared") project
                                    }
 
 data ProjectDetails = UnknownProject
@@ -142,6 +144,7 @@ data ServiceCallsF a = NotFound
                      | SaveGithubAsset Text Text Text Text Text [Text] (GithubSaveAssetResponse -> a)
                      | GetPullRequestForBranch Text Text Text Text (GetBranchPullRequestResponse -> a)
                      | GetGithubUserDetails Text (GetGithubUserResponse -> a)
+                     | UpdateProjectSharedStatus SessionUser Text Bool a
                      deriving Functor
 
 {-

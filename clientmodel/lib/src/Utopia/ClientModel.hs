@@ -66,10 +66,10 @@ instance Arbitrary RevisionsState where
   shrink = genericShrink
 
 data ParseFailure = ParseFailure
-                  { diagnostics         :: Maybe [Value]
-                  , parsedJSONFailure   :: Value
-                  , errorMessage        :: Maybe Text
-                  , errorMessages       :: [Value]
+                  { diagnostics       :: Maybe [Value]
+                  , parsedJSONFailure :: Value
+                  , errorMessage      :: Maybe Text
+                  , errorMessages     :: [Value]
                   }
                   deriving (Eq, Show, Generic, Data, Typeable)
 

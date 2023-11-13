@@ -120,6 +120,9 @@ saveProjectClient = client (Proxy :: Proxy (AuthCookie :> SaveProjectAPI))
 deleteProjectClient :: Maybe Text -> ProjectIdWithSuffix -> ClientM NoContent
 deleteProjectClient = client (Proxy :: Proxy (AuthCookie :> DeleteProjectAPI))
 
+updateProjectSharedStatusClient :: Maybe Bool -> ProjectIdWithSuffix -> Maybe Bool -> ClientM NoContent
+updateProjectSharedStatusClient = client (Proxy :: Proxy (AuthCookie :> UpdateProjectSharedStatusAPI))
+
 projectOwnerClient :: Maybe Text -> ProjectIdWithSuffix -> ClientM ProjectOwnerResponse
 projectOwnerClient = client (Proxy :: Proxy (AuthCookie :> ProjectOwnerAPI))
 
