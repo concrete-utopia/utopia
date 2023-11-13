@@ -58,7 +58,7 @@ export function useUpdateStringRun(): (
 ) => EditorAction[] {
   const refEditorState = useRefEditorState((store) => store.editor)
   return React.useCallback(
-    (originalStringData: SteganoTextData, updatedString: string) => {
+    (originalStringData: SteganoTextData, updatedString: string): EditorAction[] => {
       const editor = refEditorState.current
       const sourceFile = getTextFileByPath(editor.projectContents, originalStringData.filePath)
       const updatedCode = spliceCode(
@@ -67,7 +67,11 @@ export function useUpdateStringRun(): (
         updatedString,
       )
       const updatedFileCodeAhead = textFile(
-        textFileContents(updatedCode, sourceFile.fileContents.parsed, RevisionsState.CodeAhead),
+        textFileContents(
+          updatedCode,
+          sourceFile.fileContents.parsed,
+          RevisionsState.CodeAheadButPleaseTellVSCodeAboutIt,
+        ),
         sourceFile.lastSavedContents,
         sourceFile.lastParseSuccess,
         sourceFile.versionNumber + 1,

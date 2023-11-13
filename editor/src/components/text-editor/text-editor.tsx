@@ -479,8 +479,10 @@ const TextEditor = React.memo((props: TextEditorProps) => {
       savedContentRef.current = content
       if (stegaData != null) {
         requestAnimationFrame(() => {
-          updateStringRunCommands(stegaData, "'" + [...content].join('') + "'")
-          dispatch([updateEditorMode(EditorModes.selectMode(null, false, 'none'))])
+          dispatch([
+            ...updateStringRunCommands(stegaData, "'" + [...content].join('') + "'"),
+            updateEditorMode(EditorModes.selectMode(null, false, 'none')),
+          ])
         })
       } else {
         dispatch([

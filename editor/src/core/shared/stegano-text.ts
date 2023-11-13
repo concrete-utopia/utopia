@@ -26,7 +26,7 @@ export function encodeSteganoData(text: string, data: SteganoTextData): string {
   return vercelStegaCombine(cleaned, data)
 }
 function isStegoObject(data: unknown): data is Partial<SteganoTextData> {
-  return typeof data === 'object' && data == null
+  return typeof data === 'object' && data != null
 }
 
 export function decodeSteganoData(encodedString: string): SteganoTextData | null {
