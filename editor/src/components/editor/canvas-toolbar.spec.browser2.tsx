@@ -1425,14 +1425,13 @@ export var Playground = () => {
         >
           <div
             style={{
-              backgroundColor: '#aaaaaa33',
-              position: 'absolute',
+              contain: 'layout',
               width: 100,
               height: 41,
+              position: 'absolute',
               top: 22,
               left: 20,
             }}
-            data-uid='wra'
           >
             <div
               style={{
@@ -1523,19 +1522,6 @@ export var Playground = () => {
           ])
           await trigger(renderResult)
 
-          expect(
-            renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
-          ).toEqual([
-            'regular-utopia-storyboard-uid/scene-aaa',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/wra',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/wra/one',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/wra/two',
-            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/three',
-          ])
-
           expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
             makeTestProjectCodeWithSnippet(`<div
           style={{
@@ -1563,12 +1549,10 @@ export var Playground = () => {
           >
             <div
               style={{
-                backgroundColor: '#aaaaaa33',
+                contain: 'layout',
                 width: 98,
                 height: 41,
-                contain: 'layout',
               }}
-              data-uid='wra'
             >
               <div
                 style={{

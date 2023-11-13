@@ -48,7 +48,7 @@ import * as PP from '../../core/shared/property-path'
 import { sizeToDimensionsFromFrame } from '../inspector/inspector-common'
 import { deleteProperties } from '../canvas/commands/delete-properties-command'
 import { getStoryboardElementPath } from '../../core/model/scene-utils'
-import { defaultEither } from '../../core/shared/either'
+import { defaultEither, isRight } from '../../core/shared/either'
 import { absolute } from '../../utils/utils'
 import type { CanvasCommand } from '../canvas/commands/commands'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
@@ -70,6 +70,8 @@ import { elementCanBeAGroupChild } from '../canvas/canvas-strategies/strategies/
 import { flattenSelection } from '../canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
 import { getConditionalCaseCorrespondingToBranchPath } from '../../core/model/conditionals'
 import { optionalMap } from '../../core/shared/optional-utils'
+import { getInsertableGroupLabel } from '../shared/project-components'
+import { wrapInDivCommands } from './wrap-in-callbacks'
 
 function findTargetParentForWrapper(
   selectedViews: NonEmptyArray<ElementPath>,
@@ -348,6 +350,20 @@ export function useWrapInto(): (wrapInto: InsertMenuItem | null) => void {
     (wrapIntoElement: InsertMenuItem | null) => {
       if (wrapIntoElement == null) {
         return
+      }
+
+      if (wrapIntoElement.source === getInsertableGroupLabel({ type: 'HTML_DIV' })) {
+        const commands = wrapInDivCommands(
+          jsxMetadataRef.current,
+          elementPathTreeRef.current,
+          allElementPropsRef.current,
+          projectContentsRef.current,
+          selectedViewsRef.current,
+        )
+        if (isRight(commands)) {
+          dispatch([applyCommandsAction(commands.value)])
+          return
+        }
       }
 
       const storyboardPath = getStoryboardElementPath(
