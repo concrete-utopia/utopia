@@ -37,6 +37,7 @@ import {
 import { getElementFromRenderResult } from './actions.test-utils'
 import {
   expectNoAction,
+  expectSingleUndo2Saves,
   expectSingleUndoNSaves,
   searchInFloatingMenu,
   selectComponentsForTest,
@@ -7011,11 +7012,13 @@ export var storyboard = (
         'await-first-dom-report',
       )
 
-      await wrapInElement(
-        renderResult,
-        [makeTargetPath('aaa/ccc'), makeTargetPath('aaa/ddd')],
-        testUID,
-        'div',
+      await expectSingleUndo2Saves(renderResult, () =>
+        wrapInElement(
+          renderResult,
+          [makeTargetPath('aaa/ccc'), makeTargetPath('aaa/ddd')],
+          testUID,
+          'div',
+        ),
       )
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -7026,15 +7029,13 @@ export var storyboard = (
             >
               <div
                 style={{
-                  backgroundColor: '#aaaaaa33',
-                  position: 'absolute',
+                  contain: 'layout',
                   width: 120,
                   height: 150,
+                  position: 'absolute',
                   top: 0,
                   left: 0,
-                  contain: 'layout'
                 }}
-                data-uid='bbb'
               >
                 <div
                   data-uid='ccc'
@@ -7042,8 +7043,8 @@ export var storyboard = (
                     position: 'absolute',
                     left: 20,
                     top: 50,
-                    bottom: 150,
                     width: 100,
+                    height: 100,
                   }}
                 />
                 <div
@@ -7080,11 +7081,13 @@ export var storyboard = (
         'await-first-dom-report',
       )
 
-      await wrapInElement(
-        renderResult,
-        [makeTargetPath('aaa/bbb/ddd'), makeTargetPath('aaa/bbb/eee')],
-        testUID,
-        'div',
+      await expectSingleUndo2Saves(renderResult, () =>
+        wrapInElement(
+          renderResult,
+          [makeTargetPath('aaa/bbb/ddd'), makeTargetPath('aaa/bbb/eee')],
+          testUID,
+          'div',
+        ),
       )
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -7103,12 +7106,10 @@ export var storyboard = (
               />
               <div
                 style={{
-                  backgroundColor: '#aaaaaa33',
+                  contain: 'layout',
                   width: 210,
                   height: 60,
-                  contain: 'layout',
                 }}
-                data-uid='zzz'
               >
                 <div
                 data-uid='ddd'
@@ -7149,11 +7150,13 @@ export var storyboard = (
         'await-first-dom-report',
       )
 
-      await wrapInElement(
-        renderResult,
-        [makeTargetPath('aaa/ccc'), makeTargetPath('aaa/ddd')],
-        testUID,
-        'Fragment',
+      await expectSingleUndo2Saves(renderResult, () =>
+        wrapInElement(
+          renderResult,
+          [makeTargetPath('aaa/ccc'), makeTargetPath('aaa/ddd')],
+          testUID,
+          'Fragment',
+        ),
       )
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -7209,11 +7212,13 @@ export var storyboard = (
           'await-first-dom-report',
         )
 
-        await wrapInElement(
-          renderResult,
-          [makeTargetPath('aaa/foo'), makeTargetPath('aaa/cond')],
-          'grp',
-          'Group',
+        await expectSingleUndoNSaves(renderResult, 4, () =>
+          wrapInElement(
+            renderResult,
+            [makeTargetPath('aaa/foo'), makeTargetPath('aaa/cond')],
+            'grp',
+            'Group',
+          ),
         )
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -7369,11 +7374,13 @@ export var storyboard = (
           'await-first-dom-report',
         )
 
-        await wrapInElement(
-          renderResult,
-          [makeTargetPath('aaa/foo'), makeTargetPath('aaa/cond1')],
-          'grp',
-          'Group',
+        await expectSingleUndoNSaves(renderResult, 4, () =>
+          wrapInElement(
+            renderResult,
+            [makeTargetPath('aaa/foo'), makeTargetPath('aaa/cond1')],
+            'grp',
+            'Group',
+          ),
         )
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
