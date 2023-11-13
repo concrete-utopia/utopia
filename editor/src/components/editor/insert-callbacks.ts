@@ -206,6 +206,10 @@ export function insertWithStrategies(
       editorContext.builtInDependencies,
       editorContext.projectContents,
       editorContext.nodeModules.files,
+      {
+        indexPosition: insertionContext.indexPosition,
+        toPosition: insertionContext.position,
+      },
     ),
     insertAsStaticStrategy(
       element,
@@ -216,6 +220,9 @@ export function insertWithStrategies(
       editorContext.builtInDependencies,
       editorContext.projectContents,
       editorContext.nodeModules.files,
+      {
+        indexPosition: insertionContext.indexPosition,
+      },
     ),
   ])
 
