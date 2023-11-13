@@ -58,6 +58,7 @@ data DatabaseMetrics = DatabaseMetrics
                      , _checkIfProjectIDReservedMetrics :: InvocationMetric
                      , _updateGithubAuthenticationDetailsMetrics ::InvocationMetric
                      , _getGithubAuthenticationDetailsMetrics :: InvocationMetric
+                     , _updateProjectSharedMetrics :: InvocationMetric
                      }
 
 createDatabaseMetrics :: Store -> IO DatabaseMetrics
@@ -81,6 +82,7 @@ createDatabaseMetrics store = DatabaseMetrics
   <*> createInvocationMetric "utopia.database.checkifprojectidreserved" store
   <*> createInvocationMetric "utopia.database.updategithubauthenticationdetails" store
   <*> createInvocationMetric "utopia.database.lookupgithubauthenticationdetails" store
+  <*> createInvocationMetric "utopia.database.updateProjectSharedMetrics" store
 
 data UserIDIncorrectException = UserIDIncorrectException
                               deriving (Eq, Show)
@@ -141,7 +143,7 @@ printSql = putStrLn . fromMaybe "Empty select" . showSql
 loadProject :: DatabaseMetrics -> DBPool -> Text -> IO (Maybe DecodedProject)
 loadProject metrics pool projectID = invokeAndMeasure (_loadProjectMetrics metrics) $ usePool pool $ \connection -> do
   let projectLookupQuery = do
-            project@(projId, _, _, _, _, _, deleted) <- projectSelect
+            project@(projId, _, _, _, _, _, deleted, _) <- projectSelect
             where_ $ projId .== toFields projectID
             where_ $ notDeletedProject deleted
             pure project
@@ -149,13 +151,14 @@ loadProject metrics pool projectID = invokeAndMeasure (_loadProjectMetrics metri
   traverse projectToDecodedProject $ listToMaybe projects
 
 projectToDecodedProject :: Project -> IO DecodedProject
-projectToDecodedProject (projectId, ownerId, title, _, modifiedAt, content, _) = do
+projectToDecodedProject (projectId, ownerId, title, _, modifiedAt, content, _, shared) = do
   projectCont <- getProjectContent content
   pure $ DecodedProject { id=projectId
                         , ownerId=ownerId
                         , title=title
                         , modifiedAt=modifiedAt
                         , content=projectCont
+                        , shared=shared
                         }
 
 createProject :: DatabaseMetrics -> DBPool -> IO Text
@@ -173,7 +176,7 @@ insertProject :: DatabaseMetrics -> Connection -> Text -> Text -> UTCTime -> May
 insertProject metrics connection userId projectId timestamp (Just pTitle) (Just projectContents) = invokeAndMeasure (_insertProjectMetrics metrics) $ do
   let projectInsert = Insert
                       { iTable = projectTable
-                      , iRows = [toFields (projectId, userId, pTitle, timestamp, timestamp, encodeContent projectContents, Nothing :: Maybe Bool)]
+                      , iRows = [toFields (projectId, userId, pTitle, timestamp, timestamp, encodeContent projectContents, Nothing :: Maybe Bool, False)]
                       , iReturning = rCount
                       , iOnConflict = Nothing
                       }
@@ -194,7 +197,7 @@ saveProjectInner _ connection userId projectId timestamp possibleTitle possibleP
   let projectUpdate = Update
                     { uTable = projectTable
                     , uUpdateWith = updateEasy (projectContentUpdate . projectTitleUpdate . modifiedAtUpdate)
-                    , uWhere = \(projId, _, _, _, _, _, _) -> projId .== toFields projectId
+                    , uWhere = \(projId, _, _, _, _, _, _, _) -> projId .== toFields projectId
                     , uReturning = rCount
                     }
   when correctUser $ void $ runUpdate_ connection projectUpdate
@@ -208,7 +211,19 @@ deleteProject metrics pool userId projectId = invokeAndMeasure (_deleteProjectMe
   let projectUpdate = Update
                     { uTable = projectTable
                     , uUpdateWith = updateEasy (set _7 $ toFields $ Just True)
-                    , uWhere = \(projId, _, _, _, _, _, _) -> projId .=== toFields projectId
+                    , uWhere = \(projId, _, _, _, _, _, _, _) -> projId .=== toFields projectId
+                    , uReturning = rCount
+                    }
+  when correctUser $ void $ runUpdate_ connection projectUpdate
+  unless correctUser $ throwM UserIDIncorrectException
+
+updateProjectShared :: DatabaseMetrics -> DBPool -> Text -> Text -> Bool -> IO ()
+updateProjectShared metrics pool userId projectId shared = invokeAndMeasure (_updateProjectSharedMetrics metrics) $ usePool pool $ \connection -> do
+  correctUser <- checkIfProjectOwnerWithConnection metrics connection userId projectId
+  let projectUpdate = Update
+                    { uTable = projectTable
+                    , uUpdateWith = updateEasy (set _8 $ toFields $ shared)
+                    , uWhere = \(projId, _, _, _, _, _, _, _) -> projId .=== toFields projectId
                     , uReturning = rCount
                     }
   when correctUser $ void $ runUpdate_ connection projectUpdate
@@ -227,19 +242,19 @@ projectMetadataSelectByProjectId = projectMetadataSelect "proj_id"
 projectMetadataSelectByOwnerId :: Text
 projectMetadataSelectByOwnerId = projectMetadataSelect "owner_id"
 
-projectMetataFromColumns :: (Text, Text, Maybe Text, Maybe Text, Text, UTCTime, UTCTime, Maybe Bool) -> ProjectMetadata
-projectMetataFromColumns (id, ownerId, ownerName, ownerPicture, title, createdAt, modifiedAt, Nothing) =
+projectMetataFromColumns :: (Text, Text, Maybe Text, Maybe Text, Text, UTCTime, UTCTime, Maybe Bool, Bool) -> ProjectMetadata
+projectMetataFromColumns (id, ownerId, ownerName, ownerPicture, title, createdAt, modifiedAt, Nothing, shared) =
   let deleted = False
       description = Nothing
    in ProjectMetadata{..}
-projectMetataFromColumns (id, ownerId, ownerName, ownerPicture, title, createdAt, modifiedAt, Just deleted) =
+projectMetataFromColumns (id, ownerId, ownerName, ownerPicture, title, createdAt, modifiedAt, Just deleted, shared) =
   let description = Nothing
    in ProjectMetadata{..}
 
 lookupProjectMetadata :: Maybe (ProjectFields -> Column SqlBool) -> Maybe (UserDetailsFields -> Column SqlBool) -> Connection -> IO [ProjectMetadata]
 lookupProjectMetadata projectFilter userDetailsFilter connection = do
   metadataEntries <- runSelect connection $ do
-    project@(projectId, ownerId, title, createdAt, modifiedAt, _, deleted) <- projectSelect
+    project@(projectId, ownerId, title, createdAt, modifiedAt, _, deleted, shared) <- projectSelect
     userDetails@(userId, _, name, picture) <- userDetailsSelect
     -- Join the tables.
     where_ $ ownerId .== userId
@@ -247,22 +262,22 @@ lookupProjectMetadata projectFilter userDetailsFilter connection = do
     traverse_ (\rowFilter -> where_ $ rowFilter project) projectFilter
     -- If there is one, apply the user filter.
     traverse_ (\rowFilter -> where_ $ rowFilter userDetails) userDetailsFilter
-    pure (projectId, ownerId, name, picture, title, createdAt, modifiedAt, deleted)
+    pure (projectId, ownerId, name, picture, title, createdAt, modifiedAt, deleted, shared)
   pure $ fmap projectMetataFromColumns metadataEntries
 
 getProjectMetadataWithConnection :: DatabaseMetrics -> DBPool -> Text -> IO (Maybe ProjectMetadata)
 getProjectMetadataWithConnection metrics pool projectId = invokeAndMeasure (_getProjectsForUserMetrics metrics) $ usePool pool $ \connection -> do
-  result <- lookupProjectMetadata (Just (\(rowProjectId, _, _, _, _, _, _) -> rowProjectId .== toFields projectId)) Nothing connection
+  result <- lookupProjectMetadata (Just (\(rowProjectId, _, _, _, _, _, _, _) -> rowProjectId .== toFields projectId)) Nothing connection
   pure $ listToMaybe result
 
 getProjectsForUser :: DatabaseMetrics -> DBPool -> Text -> IO [ProjectMetadata]
 getProjectsForUser metrics pool userId = invokeAndMeasure (_getProjectsForUserMetrics metrics) $ usePool pool $ \connection -> do
-  lookupProjectMetadata (Just (\(_, _, _, _, _, _, rowDeleted) -> notDeletedProject rowDeleted)) (Just (\(rowUserId, _, _, _) -> rowUserId .== toFields userId)) connection
+  lookupProjectMetadata (Just (\(_, _, _, _, _, _, rowDeleted, _) -> notDeletedProject rowDeleted)) (Just (\(rowUserId, _, _, _) -> rowUserId .== toFields userId)) connection
 
 getProjectOwnerWithConnection :: DatabaseMetrics -> Connection -> Text -> IO (Maybe Text)
 getProjectOwnerWithConnection metrics connection projectId = invokeAndMeasure (_getProjectOwnerMetrics metrics) $ do
   result <- runSelect connection $ do
-    (rowProjectId, rowOwnerId, _, _, _, _, _) <- projectSelect
+    (rowProjectId, rowOwnerId, _, _, _, _, _, _) <- projectSelect
     where_ $ rowProjectId .== toFields projectId
     pure rowOwnerId
   pure $ listToMaybe result
@@ -284,7 +299,7 @@ getShowcaseProjects :: DatabaseMetrics -> DBPool -> IO [ProjectMetadata]
 getShowcaseProjects metrics pool = invokeAndMeasure (_getShowcaseProjectsMetrics metrics) $ usePool pool $ \connection -> do
   showcaseElements <- runSelect connection showcaseSelect
   let projectIds = fmap fst showcaseElements :: [Text]
-  projects <- foldMap (\projectIdToLookup -> lookupProjectMetadata (Just (\(rowProjectId, _, _, _, _, _, _) -> rowProjectId .== toFields projectIdToLookup)) Nothing connection) projectIds
+  projects <- foldMap (\projectIdToLookup -> lookupProjectMetadata (Just (\(rowProjectId, _, _, _, _, _, _, _) -> rowProjectId .== toFields projectIdToLookup)) Nothing connection) projectIds
   let findIndex ProjectMetadata{..} = snd <$> find (\(projId, _) -> projId == id) showcaseElements :: Maybe Int
   let sortedProjects = sortOn findIndex projects
   pure sortedProjects

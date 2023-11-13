@@ -34,7 +34,6 @@ import { ConfirmOverwriteDialog } from '../filebrowser/confirm-overwrite-dialog'
 import { ConfirmRevertDialog } from '../filebrowser/confirm-revert-dialog'
 import { ConfirmRevertAllDialog } from '../filebrowser/confirm-revert-all-dialog'
 import { PreviewColumn } from '../preview/preview-pane'
-import TitleBar from '../titlebar/title-bar'
 import * as EditorActions from './actions/action-creators'
 import { FatalIndexedDBErrorComponent } from './fatal-indexeddb-error-component'
 import { editorIsTarget, handleKeyDown, handleKeyUp } from './global-shortcuts'
@@ -47,14 +46,17 @@ import {
 } from './store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
 import { ConfirmDisconnectBranchDialog } from '../filebrowser/confirm-branch-disconnect'
-import { unless, when } from '../../utils/react-conditionals'
+import { when } from '../../utils/react-conditionals'
 import { LowPriorityStoreProvider } from './store/store-context-providers'
 import { useDispatch } from './store/dispatch-context'
 import type { EditorAction } from './action-types'
 import { EditorCommon } from './editor-component-common'
 import { notice } from '../common/notice'
-import { isFeatureEnabled } from '../../utils/feature-switches'
 import { ProjectServerStateUpdater } from './store/project-server-state'
+import type { Storage, Presence, RoomEvent, UserMeta } from '../../../liveblocks.config'
+import LiveblocksProvider from '@liveblocks/yjs'
+import { useRoom, RoomProvider, initialPresence } from '../../../liveblocks.config'
+import { generateUUID } from '../../utils/utils'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -88,6 +90,7 @@ function useDelayedValueHook(inputValue: boolean, delayMs: number): boolean {
 }
 
 export const EditorComponentInner = React.memo((props: EditorProps) => {
+  const yjsRoom = useRoom()
   const dispatch = useDispatch()
   const editorStoreRef = useRefEditorState((store) => store)
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
@@ -303,6 +306,28 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     'EditorComponentInner previewVisible',
   )
 
+  const yDoc = useEditorState(
+    Substores.restOfStore,
+    (store) => store.collaborativeEditingSupport.session?.mergeDoc,
+    'EditorComponentInner yDoc',
+  )
+
+  React.useEffect(() => {
+    if (yDoc != null) {
+      const yProvider = new LiveblocksProvider<Presence, Storage, UserMeta, RoomEvent>(
+        yjsRoom,
+        yDoc,
+      )
+
+      return () => {
+        yDoc.destroy()
+        yProvider.destroy()
+      }
+    }
+
+    return () => {}
+  }, [yDoc, yjsRoom])
+
   React.useEffect(() => {
     document.title = projectName + ' - Utopia'
   }, [projectName])
@@ -504,18 +529,33 @@ export function EditorComponent(props: EditorProps) {
 
   const dispatch = useDispatch()
 
+  const roomId = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.multiplayer?.roomId ?? projectId ?? generateUUID(),
+    'EditorComponent roomId',
+  )
+
+  React.useEffect(() => {
+    if (projectId != null) {
+      dispatch([EditorActions.updateMultiplayerState({ roomId: 'the-room' })])
+      //   dispatch([EditorActions.updateMultiplayerState({ roomId: projectId })])
+    }
+  }, [projectId, dispatch])
+
   return indexedDBFailed ? (
     <FatalIndexedDBErrorComponent />
   ) : (
-    <DndProvider backend={HTML5Backend} context={window}>
-      <ProjectServerStateUpdater
-        projectId={projectId}
-        forkedFromProjectId={forkedFromProjectId}
-        dispatch={dispatch}
-      >
-        <EditorComponentInner {...props} />
-      </ProjectServerStateUpdater>
-    </DndProvider>
+    <RoomProvider id={roomId} autoConnect={true} initialPresence={initialPresence()}>
+      <DndProvider backend={HTML5Backend} context={window}>
+        <ProjectServerStateUpdater
+          projectId={projectId}
+          forkedFromProjectId={forkedFromProjectId}
+          dispatch={dispatch}
+        >
+          <EditorComponentInner {...props} />
+        </ProjectServerStateUpdater>
+      </DndProvider>
+    </RoomProvider>
   )
 }
 

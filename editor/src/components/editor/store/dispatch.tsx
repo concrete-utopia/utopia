@@ -42,6 +42,7 @@ import type {
 } from './editor-state'
 import {
   deriveState,
+  emptyCollaborativeEditingSupport,
   persistentModelFromEditorModel,
   reconstructJSXMetadata,
   storedEditorStateFromEditorState,
@@ -87,6 +88,7 @@ import {
 } from '../../../core/shared/parser-projectcontents-utils'
 import { unpatchedCreateRemixDerivedDataMemo } from './remix-derived-data'
 import { maybeClearPseudoInsertMode } from '../canvas-toolbar-states'
+import { updateCollaborativeProjectContents } from './collaborative-editing'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -207,6 +209,7 @@ function processAction(
     dispatchEvent,
     spyCollector,
     working.builtInDependencies,
+    working.collaborativeEditingSupport,
   )
   const editorAfterCanvas = runLocalCanvasAction(
     dispatchEvent,
@@ -262,6 +265,7 @@ function processAction(
     saveCountThisSession: working.saveCountThisSession,
     builtInDependencies: working.builtInDependencies,
     projectServerState: working.projectServerState,
+    collaborativeEditingSupport: working.collaborativeEditingSupport,
   }
 }
 
@@ -596,6 +600,7 @@ export function editorDispatchClosingOut(
     saveCountThisSession: saveCountThisSession + (shouldSave ? 1 : 0),
     builtInDependencies: storedState.builtInDependencies,
     projectServerState: storedState.projectServerState,
+    collaborativeEditingSupport: storedState.collaborativeEditingSupport,
   }
 
   reduxDevtoolsSendActions(actionGroupsToProcess, finalStore, allTransient)
@@ -627,6 +632,7 @@ export function editorDispatchClosingOut(
     )
   }
 
+  let finalStoreV1Final: DispatchResult = finalStore
   // If the action was a load action then we don't want to send across any changes
   if (!isLoadAction) {
     const parsedAfterCodeChanged = onlyActionIsWorkerParsedUpdate(dispatchedActions)
@@ -640,6 +646,24 @@ export function editorDispatchClosingOut(
       updatedFromVSCodeOrParsedAfterCodeChange,
     )
     applyProjectChangesToVSCode(frozenEditorState, projectChanges)
+    if (finalStore.collaborativeEditingSupport.session != null) {
+      updateCollaborativeProjectContents(
+        finalStore.collaborativeEditingSupport.session,
+        projectChanges,
+        frozenEditorState.filesModifiedByElsewhere,
+      )
+    }
+    const filesChanged = projectChanges.fileChanges.collabProjectChanges.map((v) => v.fullPath)
+    const updatedFilesModifiedByElsewhere = frozenEditorState.filesModifiedByElsewhere.filter(
+      (v) => !filesChanged.includes(v),
+    )
+    finalStoreV1Final = {
+      ...finalStoreV1Final,
+      unpatchedEditor: {
+        ...finalStoreV1Final.unpatchedEditor,
+        filesModifiedByElsewhere: updatedFilesModifiedByElsewhere,
+      },
+    }
   }
 
   const shouldUpdatePreview =
@@ -658,7 +682,7 @@ export function editorDispatchClosingOut(
     anyWorkerUpdates ? 'schedule-now' : 'dont-schedule',
   )
 
-  return finalStore
+  return finalStoreV1Final
 }
 
 function editorChangesShouldTriggerSave(oldState: EditorState, newState: EditorState): boolean {
@@ -727,7 +751,9 @@ function applyProjectChangesToEditor(
   frozenEditorState: EditorState,
   projectChanges: ProjectChanges,
 ): void {
-  const updatedFileNames = projectChanges.fileChanges.map((fileChange) => fileChange.fullPath)
+  const updatedFileNames = projectChanges.fileChanges.collabProjectChanges.map(
+    (fileChange) => fileChange.fullPath,
+  )
   const updatedAndReverseDepFilenames = getTransitiveReverseDependencies(
     frozenEditorState.projectContents,
     frozenEditorState.nodeModules.files,
@@ -924,6 +950,7 @@ function editorDispatchInner(
       saveCountThisSession: storedState.saveCountThisSession,
       builtInDependencies: storedState.builtInDependencies,
       projectServerState: storedState.projectServerState,
+      collaborativeEditingSupport: storedState.collaborativeEditingSupport,
     }
   } else {
     //empty return

@@ -10,7 +10,7 @@ import {
   useSelectorWithCallback,
 } from './store-hook'
 import type { EditorStorePatched } from './editor-state'
-import { createEditorState, EditorState } from './editor-state'
+import { createEditorState, EditorState, emptyCollaborativeEditingSupport } from './editor-state'
 import { NO_OP } from '../../../core/shared/utils'
 import * as EP from '../../../core/shared/element-path'
 import { shallowEqual } from '../../../core/shared/equality-utils'
@@ -38,6 +38,7 @@ const initialEditorStore: EditorStorePatched = {
   builtInDependencies: createBuiltInDependenciesList(null),
   storeName: 'editor-store',
   projectServerState: emptyProjectServerState(),
+  collaborativeEditingSupport: emptyCollaborativeEditingSupport(),
 }
 
 function createEmptyEditorStoreHook() {

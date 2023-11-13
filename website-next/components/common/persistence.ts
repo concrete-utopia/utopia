@@ -10,6 +10,7 @@ export interface ProjectListing {
   createdAt: string
   modifiedAt: string
   thumbnail: string
+  shared: boolean
 }
 
 export const LOCAL_PROJECT_PREFIX = 'local-project-'
@@ -50,6 +51,7 @@ export async function fetchProjectListFromLocalStorage(): Promise<Array<ProjectL
           createdAt: localProject.createdAt,
           modifiedAt: localProject.lastModified,
           thumbnail: localProject.thumbnail,
+          shared: false,
         }
       }
     },

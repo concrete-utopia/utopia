@@ -94,6 +94,7 @@ import {
   defaultUserState,
   deriveState,
   editorModelFromPersistentModel,
+  emptyCollaborativeEditingSupport,
   getOpenUIJSFile,
   withUnderlyingTargetFromEditorState,
 } from '../store/editor-state'
@@ -379,7 +380,7 @@ describe('LOAD', () => {
     }
 
     const startingState = deepFreeze(createEditorState(NO_OP))
-    const result = UPDATE_FNS.LOAD(action, startingState, NO_OP)
+    const result = UPDATE_FNS.LOAD(action, startingState, NO_OP, emptyCollaborativeEditingSupport())
     const newFirstFileContents = (
       getProjectFileByFilePath(result.projectContents, firstUIJSFile) as TextFile
     ).fileContents

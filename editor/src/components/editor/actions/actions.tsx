@@ -43,13 +43,12 @@ import * as EP from '../../../core/shared/element-path'
 import type {
   Comment,
   ElementInstanceMetadataMap,
-  JSXAttributes,
   JSExpressionValue,
+  JSXAttributes,
   JSXElement,
-  JSXElementChildren,
-  SettableLayoutSystem,
-  UtopiaJSXComponent,
   JSXElementChild,
+  JSXElementChildren,
+  UtopiaJSXComponent,
 } from '../../../core/shared/element-template'
 import {
   deleteJSXAttribute,
@@ -57,22 +56,22 @@ import {
   emptyJsxMetadata,
   getJSXAttribute,
   isImportStatement,
+  isJSExpression,
   isJSXAttributeValue,
   isJSXConditionalExpression,
   isJSXElement,
-  modifiableAttributeIsPartOfAttributeValue,
+  isJSXMapExpression,
   jsExpressionOtherJavaScript,
-  jsxAttributesFromMap,
   jsExpressionValue,
+  jsxAttributesFromMap,
   jsxConditionalExpression,
   jsxElement,
   jsxElementName,
   jsxFragment,
   jsxTextBlock,
-  walkElements,
   modifiableAttributeIsAttributeValue,
-  isJSExpression,
-  isJSXMapExpression,
+  modifiableAttributeIsPartOfAttributeValue,
+  walkElements,
 } from '../../../core/shared/element-template'
 import type { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import {
@@ -86,22 +85,22 @@ import {
 import type {
   CanvasPoint,
   CanvasRectangle,
+  CanvasVector,
   LocalRectangle,
   Size,
-  CanvasVector,
 } from '../../../core/shared/math-utils'
 import {
-  canvasRectangle,
-  isInfinityRectangle,
-  isFiniteRectangle,
-  rectangleIntersection,
-  canvasPoint,
-  getRectCenter,
-  localRectangle,
-  zeroRectIfNullOrInfinity,
-  roundPointToNearestWhole,
   boundingRectangleArray,
+  canvasPoint,
+  canvasRectangle,
+  getRectCenter,
+  isFiniteRectangle,
+  isInfinityRectangle,
+  localRectangle,
+  rectangleIntersection,
+  roundPointToNearestWhole,
   zeroRectangle,
+  zeroRectIfNullOrInfinity,
 } from '../../../core/shared/math-utils'
 import type {
   PackageStatusMap,
@@ -121,15 +120,13 @@ import type {
 } from '../../../core/shared/project-file-types'
 import {
   assetFile,
+  codeFile,
   directory,
   imageFile,
-  isImageFile,
-  isDirectory,
-} from '../../../core/shared/project-file-types'
-import {
-  codeFile,
   importStatementFromImportDetails,
   isAssetFile,
+  isDirectory,
+  isImageFile,
   isParseSuccess,
   isTextFile,
   RevisionsState,
@@ -144,11 +141,11 @@ import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import type { IndexPosition } from '../../../utils/utils'
 import Utils from '../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../assets'
-import { packageJsonFileFromProjectContents } from '../../assets'
 import {
   addFileToProjectContents,
   contentsToTree,
   getProjectFileByFilePath,
+  packageJsonFileFromProjectContents,
   removeFromProjectContents,
   treeToContents,
   walkContentsTreeForParseSuccess,
@@ -181,13 +178,17 @@ import type {
   AddToast,
   Alignment,
   AlignSelectedViews,
+  ApplyCollabFileUpdate,
+  ApplyCommandsAction,
   ClearHighlightedViews,
+  ClearHoveredViews,
   ClearImageFileBlob,
   ClearParseOrPrintInFlight,
   ClearTransientProps,
   CloseFloatingInsertMenu,
   ClosePopup,
   CloseTextEditor,
+  CopyProperties,
   DeleteFile,
   DeleteView,
   DistributeSelectedViews,
@@ -209,7 +210,9 @@ import type {
   OpenFloatingInsertMenu,
   OpenPopup,
   OpenTextEditor,
+  PasteProperties,
   RegenerateThumbnail,
+  RemoveFileConflict,
   RemoveFromNodeModulesContents,
   RemoveToast,
   RenameComponent,
@@ -221,6 +224,7 @@ import type {
   SaveCurrentFile,
   SaveDOMReport,
   ScrollToElement,
+  ScrollToPosition,
   SelectAllSiblings,
   SelectComponents,
   SendPreviewModel,
@@ -229,6 +233,8 @@ import type {
   SetCodeEditorBuildErrors,
   SetCodeEditorLintErrors,
   SetCodeEditorVisibility,
+  SetCommentId,
+  SetConditionalOverriddenCondition,
   SetCurrentTheme,
   SetCursorOverlay,
   SetElementsToRerender,
@@ -239,11 +245,13 @@ import type {
   SetForkedFromProjectID,
   SetGithubState,
   SetHighlightedViews,
+  SetHoveredViews,
   SetImageDragSessionState,
   SetLeftMenuExpanded,
   SetLeftMenuTab,
   SetLoginState,
   SetMainUIFile,
+  SetMapCountOverride,
   SetNavigatorRenamingTarget,
   SetPackageStatus,
   SetPanelVisibility,
@@ -252,6 +260,7 @@ import type {
   SetProjectName,
   SetProp,
   SetPropTransient,
+  SetRefreshingDependencies,
   SetResizeOptionsTargetOptions,
   SetRightMenuExpanded,
   SetRightMenuTab,
@@ -260,10 +269,12 @@ import type {
   SetScrollAnimation,
   SetShortcut,
   SetStoredFontSettings,
+  SetUserConfiguration,
   SetZIndex,
   ShowContextMenu,
   ShowModal,
   StartCheckpointTimer,
+  SwitchConditionalBranches,
   SwitchEditorMode,
   ToggleCollapse,
   ToggleHidden,
@@ -273,8 +284,11 @@ import type {
   ToggleSelectionLock,
   UnsetProperty,
   UnwrapElements,
-  UpdateText,
+  UpdateAgainstGithub,
+  UpdateBranchContents,
   UpdateCodeResultCache,
+  UpdateColorSwatches,
+  UpdateConditionalExpression,
   UpdateDuplicationState,
   UpdateEditorMode,
   UpdateFile,
@@ -282,42 +296,28 @@ import type {
   UpdateFormulaBarMode,
   UpdateFrameDimensions,
   UpdateFromWorker,
+  UpdateGithubData,
+  UpdateGithubOperations,
   UpdateGithubSettings,
   UpdateJSXElementName,
   UpdateKeysPressed,
   UpdateMouseButtonsPressed,
+  UpdateMultiplayerState,
   UpdateNodeModulesContents,
   UpdatePackageJson,
   UpdatePreviewConnected,
   UpdateProjectContents,
   UpdatePropertyControlsInfo,
+  UpdateText,
   UpdateThumbnailGenerated,
+  UpdateTopLevelElements,
   WrapInElement,
-  UpdateGithubOperations,
-  UpdateBranchContents,
-  UpdateAgainstGithub,
-  UpdateGithubData,
-  RemoveFileConflict,
-  SetRefreshingDependencies,
-  SetUserConfiguration,
-  SetHoveredViews,
-  ClearHoveredViews,
-  ApplyCommandsAction,
-  UpdateColorSwatches,
-  PasteProperties,
-  CopyProperties,
-  SetConditionalOverriddenCondition,
-  SwitchConditionalBranches,
-  UpdateConditionalExpression,
-  SetMapCountOverride,
-  ScrollToPosition,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
-import { isTextEditMode } from '../editor-modes'
-import { EditorModes, isLiveMode, isSelectMode } from '../editor-modes'
-import * as History from '../history'
+import { EditorModes, isLiveMode, isSelectMode, isTextEditMode } from '../editor-modes'
 import type { StateHistory } from '../history'
+import * as History from '../history'
 import {
   createLoadedPackageStatusMapFromDependencies,
   dependenciesFromPackageJson,
@@ -335,24 +335,19 @@ import {
 } from '../server'
 import type {
   CanvasBase64Blobs,
+  CollaborativeEditingSupport,
   DerivedState,
   EditorState,
+  EditorStoreUnpatched,
+  NavigatorEntry,
   PersistentModel,
   RightMenuTab,
   SimpleParseSuccess,
+  TrueUpHuggingElement,
+  TrueUpTarget,
   UIFileBase64Blobs,
   UserConfiguration,
   UserState,
-  EditorStoreUnpatched,
-  NavigatorEntry,
-  TrueUpTarget,
-  TrueUpHuggingElement,
-} from '../store/editor-state'
-import {
-  trueUpChildrenOfGroupChanged,
-  trueUpHuggingElement,
-  trueUpGroupElementChanged,
-  getPackageJsonFromProjectContents,
 } from '../store/editor-state'
 import {
   areGeneratedElementsTargeted,
@@ -368,35 +363,55 @@ import {
   getOpenFilename,
   getOpenTextFileKey,
   getOpenUIJSFileKey,
+  getPackageJsonFromProjectContents,
+  isConditionalClauseNavigatorEntry,
   LeftMenuTab,
   mergeStoredEditorStateIntoEditorState,
+  modifyOpenJsxChildAtPath,
   modifyOpenJsxElementAtPath,
+  modifyOpenJsxElementOrConditionalAtPath,
   modifyParseSuccessAtPath,
   modifyParseSuccessWithSimple,
   modifyUnderlyingElementForOpenFile,
   modifyUnderlyingTargetElement,
   removeElementAtPath,
   StoryboardFilePath,
+  trueUpChildrenOfGroupChanged,
+  trueUpGroupElementChanged,
+  trueUpHuggingElement,
   updateMainUIInEditorState,
   vsCodeBridgeIdProjectId,
   withUnderlyingTarget,
-  modifyOpenJsxElementOrConditionalAtPath,
-  modifyOpenJsxChildAtPath,
-  isConditionalClauseNavigatorEntry,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
 
 import { defaultConfig } from 'utopia-vscode-common'
 import { reorderElement } from '../../../components/canvas/commands/reorder-element-command'
+import { collapseTextElements } from '../../../components/text-editor/text-handling'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
 import { resolveModule } from '../../../core/es-modules/package-manager/module-resolution'
+import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
+import { getConditionalCaseCorrespondingToBranchPath } from '../../../core/model/conditionals'
+import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { addStoryboardFileToProject } from '../../../core/model/storyboard-utils'
+import {
+  addToTrueUpElements,
+  getCommandsForPushIntendedBounds,
+} from '../../../core/model/true-up-targets'
 import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
 import { mapDropNulls, uniqBy } from '../../../core/shared/array-utils'
+import { isUtopiaCommentFlag, makeUtopiaFlagComment } from '../../../core/shared/comment-flags'
+import {
+  refreshDependencies,
+  removeModulesFromNodeModules,
+} from '../../../core/shared/dependencies'
 import type { TreeConflicts } from '../../../core/shared/github/helpers'
 import { mergeProjectContents } from '../../../core/shared/github/helpers'
+import { fromField, traverseArray } from '../../../core/shared/optics/optic-creators'
+import { toArrayOf } from '../../../core/shared/optics/optic-utilities'
+import { processWorkerUpdates } from '../../../core/shared/parser-projectcontents-utils'
 import { emptySet } from '../../../core/shared/set-utils'
 import {
   fixUtopiaElement,
@@ -417,13 +432,30 @@ import {
   sendSetFollowSelectionEnabledMessage,
   sendSetVSCodeTheme,
 } from '../../../core/vscode/vscode-bridge'
-import { createClipboardDataFromSelection, Clipboard } from '../../../utils/clipboard'
-import { NavigatorStateKeepDeepEquality } from '../store/store-deep-equality-instances'
+import { Clipboard, createClipboardDataFromSelection } from '../../../utils/clipboard'
+import { encodeUtopiaDataToHtml } from '../../../utils/clipboard-utils'
+import { styleStringInArray } from '../../../utils/common-constants'
+import { arrayDeepEquality } from '../../../utils/deep-equality'
 import type { MouseButtonsPressed } from '../../../utils/mouse'
 import { addButtonPressed, removeButtonPressed } from '../../../utils/mouse'
 import { stripLeadingSlash } from '../../../utils/path-utils'
+import { AspectRatioLockedProp } from '../../aspect-ratio'
 import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
 import { getEscapeHatchCommands } from '../../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
+import { treatElementAsFragmentLike } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
+import {
+  createPinChangeCommandsForElementBecomingGroupChild,
+  createPinChangeCommandsForElementInsertedIntoGroup,
+  elementCanBeAGroupChild,
+} from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import {
+  groupStateFromJSXElement,
+  invalidGroupStateToString,
+  isEmptyGroup,
+  isInvalidGroupState,
+  isMaybeGroupForWrapping,
+  treatElementAsGroupLike,
+} from '../../canvas/canvas-strategies/strategies/group-helpers'
 import {
   canCopyElement,
   isAllowedToReparent,
@@ -436,13 +468,35 @@ import {
   areAllSelectedElementsNonAbsolute,
   flattenSelection,
 } from '../../canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
+import { addElements } from '../../canvas/commands/add-elements-command'
 import type { CanvasCommand } from '../../canvas/commands/commands'
 import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
+import { deleteElement } from '../../canvas/commands/delete-element-command'
+import { deleteProperties } from '../../canvas/commands/delete-properties-command'
+import { queueTrueUpElement } from '../../canvas/commands/queue-true-up-command'
 import { setElementsToRerenderCommand } from '../../canvas/commands/set-elements-to-rerender-command'
 import type { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { notice } from '../../common/notice'
+import { LayoutPropertyList, StyleProperties } from '../../inspector/common/css-utils'
+import { resultForFirstApplicableStrategy } from '../../inspector/inspector-strategies/inspector-strategy'
+import { convertToAbsoluteAndReparentToUnwrapStrategy } from '../one-shot-unwrap-strategies/convert-to-absolute-and-reparent-to-unwrap'
+import { reparentToUnwrapAsAbsoluteStrategy } from '../one-shot-unwrap-strategies/reparent-to-unwrap-as-absolute-strategy'
 import type { ShortcutConfiguration } from '../shortcut-definitions'
-import { ElementInstanceMetadataMapKeepDeepEquality } from '../store/store-deep-equality-instances'
+import type { InsertionPath } from '../store/insertion-path'
+import {
+  childInsertionPath,
+  commonInsertionPathFromArray,
+  conditionalClauseInsertionPath,
+  getElementPathFromInsertionPath,
+  isConditionalClauseInsertionPath,
+  replaceWithElementsWrappedInFragmentBehaviour,
+  replaceWithSingleElement,
+} from '../store/insertion-path'
+import {
+  ElementInstanceMetadataMapKeepDeepEquality,
+  NavigatorStateKeepDeepEquality,
+  TopLevelElementKeepDeepEquality,
+} from '../store/store-deep-equality-instances'
 import {
   addImports,
   clearImageFileBlob,
@@ -461,43 +515,6 @@ import {
   updatePackageJson,
   updateThumbnailGenerated,
 } from './action-creators'
-import { addToastToState, includeToast, removeToastFromState } from './toast-helpers'
-import { AspectRatioLockedProp } from '../../aspect-ratio'
-import {
-  refreshDependencies,
-  removeModulesFromNodeModules,
-} from '../../../core/shared/dependencies'
-import { styleStringInArray } from '../../../utils/common-constants'
-import { collapseTextElements } from '../../../components/text-editor/text-handling'
-import { LayoutPropertyList, StyleProperties } from '../../inspector/common/css-utils'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { isUtopiaCommentFlag, makeUtopiaFlagComment } from '../../../core/shared/comment-flags'
-import { toArrayOf } from '../../../core/shared/optics/optic-utilities'
-import { fromField, traverseArray } from '../../../core/shared/optics/optic-creators'
-import type { InsertionPath } from '../store/insertion-path'
-import {
-  commonInsertionPathFromArray,
-  getElementPathFromInsertionPath,
-  isConditionalClauseInsertionPath,
-  childInsertionPath,
-  conditionalClauseInsertionPath,
-  replaceWithSingleElement,
-  replaceWithElementsWrappedInFragmentBehaviour,
-} from '../store/insertion-path'
-import { getConditionalCaseCorrespondingToBranchPath } from '../../../core/model/conditionals'
-import { deleteProperties } from '../../canvas/commands/delete-properties-command'
-import {
-  replaceFragmentLikePathsWithTheirChildrenRecursive,
-  treatElementAsFragmentLike,
-} from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
-import {
-  fixParentContainingBlockSettings,
-  isTextContainingConditional,
-  unwrapConditionalClause,
-  unwrapTextContainingConditional,
-  wrapElementInsertions,
-} from './wrap-unwrap-helpers'
-import { encodeUtopiaDataToHtml } from '../../../utils/clipboard-utils'
 import type {
   DeleteFileFromVSCode,
   HideVSCodeLoadingScreen,
@@ -508,32 +525,15 @@ import type {
   UpdateConfigFromVSCode,
   UpdateFromCodeEditor,
 } from './actions-from-vscode'
+import { addToastToState, includeToast, removeToastFromState } from './toast-helpers'
 import {
-  addToTrueUpElements,
-  getCommandsForPushIntendedBounds,
-} from '../../../core/model/true-up-targets'
-import {
-  groupStateFromJSXElement,
-  invalidGroupStateToString,
-  isEmptyGroup,
-  isMaybeGroupForWrapping,
-  isInvalidGroupState,
-  treatElementAsGroupLike,
-} from '../../canvas/canvas-strategies/strategies/group-helpers'
-import {
-  createPinChangeCommandsForElementInsertedIntoGroup,
-  createPinChangeCommandsForElementBecomingGroupChild,
-  elementCanBeAGroupChild,
-} from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
-import { addElements } from '../../canvas/commands/add-elements-command'
-import { deleteElement } from '../../canvas/commands/delete-element-command'
-import { queueTrueUpElement } from '../../canvas/commands/queue-true-up-command'
-import { processWorkerUpdates } from '../../../core/shared/parser-projectcontents-utils'
-import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
-import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
-import { resultForFirstApplicableStrategy } from '../../inspector/inspector-strategies/inspector-strategy'
-import { reparentToUnwrapAsAbsoluteStrategy } from '../one-shot-unwrap-strategies/reparent-to-unwrap-as-absolute-strategy'
-import { convertToAbsoluteAndReparentToUnwrapStrategy } from '../one-shot-unwrap-strategies/convert-to-absolute-and-reparent-to-unwrap'
+  fixParentContainingBlockSettings,
+  isTextContainingConditional,
+  unwrapConditionalClause,
+  unwrapTextContainingConditional,
+  wrapElementInsertions,
+} from './wrap-unwrap-helpers'
+import { addHookForProjectChanges } from '../store/collaborative-editing'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -900,6 +900,8 @@ export function restoreEditorState(
     refreshingDependencies: currentEditor.refreshingDependencies,
     colorSwatches: currentEditor.colorSwatches,
     internalClipboard: currentEditor.internalClipboard,
+    filesModifiedByElsewhere: currentEditor.filesModifiedByElsewhere,
+    multiplayer: currentEditor.multiplayer,
   }
 }
 
@@ -1539,7 +1541,12 @@ export const UPDATE_FNS = {
       codeResultCache: action.codeResultCache,
     }
   },
-  LOAD: (action: Load, oldEditor: EditorModel, dispatch: EditorDispatch): EditorModel => {
+  LOAD: (
+    action: Load,
+    oldEditor: EditorModel,
+    dispatch: EditorDispatch,
+    collaborativeEditingSupport: CollaborativeEditingSupport,
+  ): EditorModel => {
     const migratedModel = applyMigrations(action.model)
     const parsedProjectFiles = applyToAllUIJSFiles(
       migratedModel.projectContents,
@@ -1584,6 +1591,13 @@ export const UPDATE_FNS = {
       dispatch,
       StoryboardFilePath,
     )
+    // populateCollaborativeProjectContents(
+    //  collaborativeEditingSupport,
+    //  newModelMergedWithStoredStateAndStoryboardFile.projectContents,
+    // )
+    if (collaborativeEditingSupport.session != null) {
+      addHookForProjectChanges(collaborativeEditingSupport.session, dispatch)
+    }
 
     return loadModel(newModelMergedWithStoredStateAndStoryboardFile, oldEditor)
   },
@@ -4073,6 +4087,49 @@ export const UPDATE_FNS = {
       editor,
     )
   },
+  SET_COMMENT_ID: (action: SetCommentId, editor: EditorModel): EditorModel => {
+    return modifyOpenJsxChildAtPath(
+      action.target,
+      (element) => {
+        if (isJSXConditionalExpression(element) || isJSXMapExpression(element)) {
+          function isNotCommentFlag(c: Comment): boolean {
+            return !isUtopiaCommentFlag(c, 'comment')
+          }
+
+          const leadingComments = [...element.comments.leadingComments.filter(isNotCommentFlag)]
+          if (action.commentId != null) {
+            leadingComments.push(
+              makeUtopiaFlagComment({ type: 'comment', value: action.commentId }),
+            )
+          }
+
+          return {
+            ...element,
+            comments: {
+              leadingComments: leadingComments,
+              trailingComments: element.comments.trailingComments.filter(isNotCommentFlag),
+              questionTokenComments: element.comments.questionTokenComments,
+            },
+          }
+        } else if (isJSXElement(element)) {
+          const newProps = setJSXValueAtPath(
+            element.props,
+            PP.create('data-comment'),
+            jsExpressionValue(action.commentId, emptyComments),
+          )
+          if (isLeft(newProps)) {
+            return element
+          }
+          return {
+            ...element,
+            props: newProps.value,
+          }
+        }
+        return element
+      },
+      editor,
+    )
+  },
   UPDATE_CONDITIONAL_EXPRESSION: (
     action: UpdateConditionalExpression,
     editor: EditorModel,
@@ -5302,6 +5359,53 @@ export const UPDATE_FNS = {
     )
 
     return updatedEditor
+  },
+  APPLY_COLLAB_FILE_UPDATE: (action: ApplyCollabFileUpdate, editor: EditorModel): EditorModel => {
+    return modifyParseSuccessAtPath(
+      action.fullPath,
+      editor,
+      (success) => {
+        return success
+        // return action.update.success
+      },
+      false,
+    )
+  },
+  UPDATE_TOP_LEVEL_ELEMENTS: (action: UpdateTopLevelElements, editor: EditorModel): EditorModel => {
+    const updatedEditor = modifyParseSuccessAtPath(
+      action.fullPath,
+      editor,
+      (parsed) => {
+        const newTopLevelElementsDeepEquals = arrayDeepEquality(TopLevelElementKeepDeepEquality)(
+          parsed.topLevelElements,
+          action.topLevelElements,
+        )
+
+        if (newTopLevelElementsDeepEquals.areEqual) {
+          return parsed
+        } else {
+          return {
+            ...parsed,
+            topLevelElements: newTopLevelElementsDeepEquals.value,
+          }
+        }
+      },
+      false,
+    )
+
+    return {
+      ...updatedEditor,
+      filesModifiedByElsewhere: updatedEditor.filesModifiedByElsewhere.concat(action.fullPath),
+    }
+  },
+  UPDATE_MULTIPLAYER_STATE: (action: UpdateMultiplayerState, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      multiplayer: {
+        ...editor.multiplayer,
+        ...action.state,
+      },
+    }
   },
 }
 

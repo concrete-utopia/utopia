@@ -442,6 +442,11 @@ deleteProjectEndpoint cookie (ProjectIdWithSuffix projectID _) = requireUser coo
   deleteProject sessionUser projectID
   return NoContent
 
+updateProjectSharedStatusEndpoint :: Maybe Text -> ProjectIdWithSuffix -> Bool -> ServerMonad NoContent
+updateProjectSharedStatusEndpoint cookie (ProjectIdWithSuffix projectID _) value = requireUser cookie $ \sessionUser -> do
+  updateProjectSharedStatus sessionUser projectID value
+  return NoContent
+
 loadProjectFileContents :: DecodedProject -> [[Text]] -> Either Text (Maybe (ProjectFile, [Text]))
 loadProjectFileContents decodedProject pathsToCheck = do
   projectContentsTree <- projectContentTreeFromDecodedProject decodedProject
@@ -734,6 +739,7 @@ protected authCookie = logoutPage authCookie
                   :<|> getGithubUsersRepositoriesEndpoint authCookie
                   :<|> saveGithubAssetEndpoint authCookie
                   :<|> getGithubUserEndpoint authCookie
+                  :<|> updateProjectSharedStatusEndpoint authCookie
 
 unprotected :: ServerT Unprotected ServerMonad
 unprotected = authenticate

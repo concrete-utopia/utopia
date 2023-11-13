@@ -11,6 +11,7 @@ import type {
   JSXElementChild,
   JSXConditionalExpression,
   JSXFragment,
+  TopLevelElement,
 } from '../../../core/shared/element-template'
 import type {
   CanvasPoint,
@@ -219,6 +220,10 @@ import type {
   WrapInElementWith,
   ScrollToPosition,
   UpdateProjectServerState,
+  ApplyCollabFileUpdate,
+  UpdateTopLevelElements,
+  SetCommentId,
+  UpdateMultiplayerState,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -241,6 +246,8 @@ import type {
   ThemeSetting,
   ColorSwatch,
   PostActionMenuData,
+  CollabFile,
+  MultiplayerState,
 } from '../store/editor-state'
 import type { InsertionPath } from '../store/insertion-path'
 import type { TextProp } from '../../text-editor/text-editor'
@@ -1614,6 +1621,14 @@ export function setMapCountOverride(
   }
 }
 
+export function setCommentId(target: ElementPath, commentId: string | null): SetCommentId {
+  return {
+    action: 'SET_COMMENT_ID',
+    target: target,
+    commentId: commentId,
+  }
+}
+
 export function updateConditionalExpression(
   target: ElementPath,
   expression: string,
@@ -1658,5 +1673,34 @@ export function updateProjectServerState(
   return {
     action: 'UPDATE_PROJECT_SERVER_STATE',
     serverState: projectServerState,
+  }
+}
+
+export function applyCollabFileUpdate(
+  fullPath: string,
+  collabFileUpdate: CollabFile,
+): ApplyCollabFileUpdate {
+  return {
+    action: 'APPLY_COLLAB_FILE_UPDATE',
+    fullPath: fullPath,
+    update: collabFileUpdate,
+  }
+}
+
+export function updateTopLevelElements(
+  fullPath: string,
+  topLevelElements: Array<TopLevelElement>,
+): UpdateTopLevelElements {
+  return {
+    action: 'UPDATE_TOP_LEVEL_ELEMENTS',
+    fullPath: fullPath,
+    topLevelElements: topLevelElements,
+  }
+}
+
+export function updateMultiplayerState(state: Partial<MultiplayerState>): UpdateMultiplayerState {
+  return {
+    action: 'UPDATE_MULTIPLAYER_STATE',
+    state: state,
   }
 }

@@ -177,6 +177,10 @@ deleteProjectWithDBPool :: (MonadIO m) => DB.DatabaseMetrics -> DBPool -> Sessio
 deleteProjectWithDBPool metrics pool sessionUser projectID = do
   liftIO $ DB.deleteProject metrics pool (view (field @"_id") sessionUser) projectID
 
+updateProjectSharedStatusWithDBPool :: (MonadIO m) => DB.DatabaseMetrics -> DBPool -> SessionUser -> Text -> Bool -> m ()
+updateProjectSharedStatusWithDBPool metrics pool sessionUser projectID sharedValue = do
+  liftIO $ DB.updateProjectShared metrics pool (view (field @"_id") sessionUser) projectID sharedValue
+
 getUserProjectsWithDBPool :: (MonadIO m) => DB.DatabaseMetrics -> DBPool -> Text -> ([ProjectListing] -> a) -> m a
 getUserProjectsWithDBPool metrics pool user action = do
   projectsForUser <- liftIO $ DB.getProjectsForUser metrics pool user

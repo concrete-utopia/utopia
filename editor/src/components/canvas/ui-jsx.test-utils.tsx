@@ -86,6 +86,7 @@ import type {
 import {
   createEditorState,
   deriveState,
+  emptyCollaborativeEditingSupport,
   patchedStoreFromFullStore,
   persistentModelForProjectContents,
   StoryboardFilePath,
@@ -547,6 +548,7 @@ export async function renderTestEditorWithModel(
     builtInDependencies: builtInDependencies,
     postActionInteractionSession: null,
     projectServerState: emptyProjectServerState(),
+    collaborativeEditingSupport: emptyCollaborativeEditingSupport(),
   }
 
   const canvasStoreHook: UtopiaStoreAPI = createStoresAndState(

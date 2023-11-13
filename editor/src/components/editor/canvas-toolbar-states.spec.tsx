@@ -3,7 +3,11 @@ import { runLocalCanvasAction } from '../../templates/editor-canvas'
 import { canvasPoint, point } from '../../core/shared/math-utils'
 import CanvasActions from '../canvas/canvas-actions'
 import { editorStateToolbarModeOptic, maybeClearPseudoInsertMode } from './canvas-toolbar-states'
-import { defaultUserState, StoryboardFilePath } from './store/editor-state'
+import {
+  defaultUserState,
+  emptyCollaborativeEditingSupport,
+  StoryboardFilePath,
+} from './store/editor-state'
 import { setFocus } from '../common/actions'
 import { runLocalEditorAction } from './store/editor-update'
 import type { CreateEditorStatesResult } from '../../utils/utils.test-utils'
@@ -73,6 +77,7 @@ describe('maybeClearPseudoInsertMode', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
       [],
+      emptyCollaborativeEditingSupport(),
     )
     const editorStateAfterPseudoInsertUpdate = maybeClearPseudoInsertMode(
       editor,
@@ -106,6 +111,7 @@ describe('maybeClearPseudoInsertMode', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
       [],
+      emptyCollaborativeEditingSupport(),
     )
     const editorStateAfterPseudoInsertUpdate = maybeClearPseudoInsertMode(
       editor,
@@ -140,6 +146,7 @@ describe('maybeClearPseudoInsertMode', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
       [],
+      emptyCollaborativeEditingSupport(),
     )
     const editorStateAfterPseudoInsertUpdate = maybeClearPseudoInsertMode(
       editor,
@@ -203,6 +210,7 @@ describe('maybeClearPseudoInsertMode', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
       [],
+      emptyCollaborativeEditingSupport(),
     )
     const editorStateAfterPseudoInsertUpdate = maybeClearPseudoInsertMode(
       editor,

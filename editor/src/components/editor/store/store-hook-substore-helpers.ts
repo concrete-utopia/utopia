@@ -1,3 +1,4 @@
+import { emptyMultiplayerState } from './editor-state'
 import type { EditorState } from './editor-state'
 
 export const EmptyEditorStateForKeysOnly: EditorState = {
@@ -169,4 +170,6 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
     styleClipboard: [],
     elements: [],
   },
+  filesModifiedByElsewhere: [],
+  multiplayer: emptyMultiplayerState(),
 }

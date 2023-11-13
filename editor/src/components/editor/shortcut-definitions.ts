@@ -29,6 +29,7 @@ export const ZOOM_CANVAS_IN_SHORTCUT = 'zoom-canvas-in'
 export const ZOOM_UI_OUT_SHORTCUT = 'zoom-ui-out'
 export const ZOOM_CANVAS_OUT_SHORTCUT = 'zoom-canvas-out'
 export const FIRST_CHILD_OR_EDIT_TEXT_SHORTCUT = 'first-child-or-edit-text'
+export const COMMENT_SHORTCUT = 'comment'
 export const JUMP_TO_PARENT_SHORTCUT = 'jump-to-parent'
 export const JUMP_TO_PARENT_SHORTCUT_BACKSLASH = 'jump-to-parent-backslash'
 export const CANCEL_EVERYTHING_SHORTCUT = 'cancel-everything'
@@ -102,6 +103,10 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
   [FIRST_CHILD_OR_EDIT_TEXT_SHORTCUT]: shortcut(
     'Select the first child of or edit the currently selected text element.',
     key('enter', []),
+  ),
+  [COMMENT_SHORTCUT]: shortcut(
+    'Select the first child of or edit the currently selected text element.',
+    key('c', ['shift']),
   ),
   [JUMP_TO_PARENT_SHORTCUT]: shortcut('Jump to parent element.', key('enter', 'shift')),
   [JUMP_TO_PARENT_SHORTCUT_BACKSLASH]: shortcut(

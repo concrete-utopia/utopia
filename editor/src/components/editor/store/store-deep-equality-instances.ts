@@ -225,7 +225,6 @@ import {
   NullableNumberKeepDeepEquality,
   combine9EqualityCalls,
   unionDeepEquality,
-  combine13EqualityCalls,
   combine14EqualityCalls,
 } from '../../../utils/deep-equality'
 import {
@@ -322,6 +321,7 @@ import type {
   TrueUpTarget,
   InvalidOverrideNavigatorEntry,
   TrueUpHuggingElement,
+  MultiplayerState,
 } from './editor-state'
 import {
   trueUpGroupElementChanged,
@@ -471,6 +471,7 @@ import type {
   TextEditableElementState,
   InsertionSubjectWrapper,
   SelectModeToolbarMode,
+  CommentMode,
 } from '../editor-modes'
 import {
   EditorModes,
@@ -3229,6 +3230,12 @@ export const TextEditModeKeepDeepEquality: KeepDeepEqualityCall<TextEditMode> =
     EditorModes.textEditMode,
   )
 
+export const CommentModeKeepDeepEquality: KeepDeepEqualityCall<CommentMode> = combine1EqualityCall(
+  (mode) => mode.location,
+  nullableDeepEquality(CanvasPointKeepDeepEquality),
+  EditorModes.commentMode,
+)
+
 export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newValue) => {
   switch (oldValue.type) {
     case 'insert':
@@ -3249,6 +3256,11 @@ export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newVa
     case 'textEdit':
       if (newValue.type === oldValue.type) {
         return TextEditModeKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'comment':
+      if (newValue.type === oldValue.type) {
+        return CommentModeKeepDeepEquality(newValue, oldValue)
       }
       break
     default:
@@ -3949,6 +3961,21 @@ export const InternalClipboardKeepDeepEquality: KeepDeepEqualityCall<InternalCli
     internalClipboard,
   )
 
+export const MultiplayerKeepDeepEquality: KeepDeepEqualityCall<MultiplayerState> =
+  combine3EqualityCalls(
+    (data) => data.playerId,
+    NullableStringKeepDeepEquality,
+    (data) => data.playerName,
+    NullableStringKeepDeepEquality,
+    (data) => data.roomId,
+    NullableStringKeepDeepEquality,
+    (playerId, playerName, roomId) => ({
+      playerId,
+      playerName,
+      roomId,
+    }),
+  )
+
 export const PastePostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<PastePostActionMenuData> =
   combine7EqualityCalls(
     (data) => data.dataWithPropsPreserved,
@@ -4393,6 +4420,12 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.internalClipboard,
     newValue.internalClipboard,
   )
+  const filesModifiedByElsewhereResults = arrayDeepEquality(StringKeepDeepEquality)(
+    oldValue.filesModifiedByElsewhere,
+    newValue.filesModifiedByElsewhere,
+  )
+
+  const multiplayerResults = MultiplayerKeepDeepEquality(oldValue.multiplayer, newValue.multiplayer)
 
   const areEqual =
     idResult.areEqual &&
@@ -4469,8 +4502,9 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     githubDataResults.areEqual &&
     refreshingDependenciesResults.areEqual &&
     colorSwatchesResults.areEqual &&
-    internalClipboardResults.areEqual
-
+    internalClipboardResults.areEqual &&
+    filesModifiedByElsewhereResults.areEqual &&
+    multiplayerResults.areEqual
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
   } else {
@@ -4550,6 +4584,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       refreshingDependenciesResults.value,
       colorSwatchesResults.value,
       internalClipboardResults.value,
+      filesModifiedByElsewhereResults.value,
+      multiplayerResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

@@ -418,6 +418,11 @@ innerServerExecutor (GetGithubUserDetails user action) = do
     Just githubResources -> do
       result <- getDetailsOfGithubUser githubSemaphore githubResources logger metrics pool user
       pure $ action result
+innerServerExecutor (UpdateProjectSharedStatus user projectID sharedValue action) = do
+  metrics <- fmap _databaseMetrics ask
+  pool <- fmap _projectPool ask
+  updateProjectSharedStatusWithDBPool metrics pool user projectID sharedValue
+  return action
 
 {-|
   Invokes a service call using the supplied resources.

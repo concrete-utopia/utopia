@@ -6,6 +6,7 @@ import type {
   JSXElementChild,
   JSXConditionalExpression,
   JSXFragment,
+  TopLevelElement,
 } from '../../core/shared/element-template'
 import { SettableLayoutSystem } from '../../core/shared/element-template'
 import type { KeysPressed, Key } from '../../utils/keyboard'
@@ -60,6 +61,8 @@ import type {
   ThemeSetting,
   ColorSwatch,
   PostActionMenuData,
+  CollabFile,
+  MultiplayerState,
 } from './store/editor-state'
 import { NavigatorEntry } from './store/editor-state'
 import type { Notice } from '../common/notice'
@@ -762,6 +765,12 @@ export interface SetMapCountOverride {
   value: number | null
 }
 
+export interface SetCommentId {
+  action: 'SET_COMMENT_ID'
+  target: ElementPath
+  commentId: string | null
+}
+
 export interface UpdateConditionalExpression {
   action: 'UPDATE_CONIDTIONAL_EXPRESSION'
   target: ElementPath
@@ -1049,6 +1058,23 @@ export interface UpdateProjectServerState {
   serverState: ProjectServerState
 }
 
+export interface ApplyCollabFileUpdate {
+  action: 'APPLY_COLLAB_FILE_UPDATE'
+  fullPath: string
+  update: CollabFile
+}
+
+export interface UpdateTopLevelElements {
+  action: 'UPDATE_TOP_LEVEL_ELEMENTS'
+  fullPath: string
+  topLevelElements: Array<TopLevelElement>
+}
+
+export interface UpdateMultiplayerState {
+  action: 'UPDATE_MULTIPLAYER_STATE'
+  state: Partial<MultiplayerState>
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
@@ -1211,6 +1237,7 @@ export type EditorAction =
   | UpdateColorSwatches
   | SetConditionalOverriddenCondition
   | SetMapCountOverride
+  | SetCommentId
   | SwitchConditionalBranches
   | UpdateConditionalExpression
   | ExecutePostActionMenuChoice
@@ -1219,6 +1246,9 @@ export type EditorAction =
   | FromVSCodeAction
   | TruncateHistory
   | UpdateProjectServerState
+  | ApplyCollabFileUpdate
+  | UpdateTopLevelElements
+  | UpdateMultiplayerState
 
 export type DispatchPriority =
   | 'everyone'

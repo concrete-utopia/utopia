@@ -31,7 +31,14 @@ import {
   defaultRectangleElement,
   defaultSpanElement,
 } from './defaults'
-import { EditorModes, isInsertMode, isLiveMode, isSelectMode, isTextEditMode } from './editor-modes'
+import {
+  EditorModes,
+  isCommentMode,
+  isInsertMode,
+  isLiveMode,
+  isSelectMode,
+  isTextEditMode,
+} from './editor-modes'
 import { insertImage } from './image-insert'
 import type { ShortcutNamesByKey } from './shortcut-definitions'
 import {
@@ -98,6 +105,7 @@ import {
   OPEN_INSERT_MENU,
   PASTE_TO_REPLACE,
   WRAP_IN_DIV,
+  COMMENT_SHORTCUT,
 } from './shortcut-definitions'
 import type { EditorState, LockedElements, NavigatorEntry } from './store/editor-state'
 import { getOpenFile, RightMenuTab } from './store/editor-state'
@@ -433,6 +441,9 @@ export function handleKeyDown(
         }
         return []
       },
+      [COMMENT_SHORTCUT]: () => {
+        return [EditorActions.switchEditorMode(EditorModes.commentMode(null))]
+      },
       [JUMP_TO_PARENT_SHORTCUT]: () => {
         if (isSelectMode(editor.mode)) {
           return jumpToParentActions(
@@ -487,6 +498,9 @@ export function handleKeyDown(
           ]
         }
         if (isTextEditMode(editor.mode)) {
+          return [EditorActions.updateEditorMode(EditorModes.selectMode(null, false, 'none'))]
+        }
+        if (isCommentMode(editor.mode)) {
           return [EditorActions.updateEditorMode(EditorModes.selectMode(null, false, 'none'))]
         }
         return []

@@ -13,6 +13,7 @@ export type FeatureName =
   | 'Canvas Strategies Debug Panel'
   | 'Project Thumbnail Generation'
   | 'Debug - Print UIDs'
+  | 'Collaboration'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -26,6 +27,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Canvas Strategies Debug Panel',
   'Project Thumbnail Generation',
   'Debug - Print UIDs',
+  'Collaboration',
 ]
 
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
@@ -39,6 +41,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Canvas Strategies Debug Panel': false,
   'Project Thumbnail Generation': false,
   'Debug - Print UIDs': false,
+  Collaboration: false,
 }
 
 let FeatureSwitchLoaded: { [feature in FeatureName]?: boolean } = {}

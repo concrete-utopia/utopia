@@ -583,7 +583,6 @@ export function createPersistenceMachine<ModelType, FileType>(
                     cond: (context, _) => context.projectOwned,
                     target: Saving,
                   },
-                  { target: Forking },
                 ],
                 FORK: Forking,
                 USER_LOG_IN: [

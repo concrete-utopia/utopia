@@ -99,6 +99,8 @@ type SaveProjectAPI = "v1" :> "project" :> Capture "project_id" ProjectIdWithSuf
 
 type DeleteProjectAPI = "v1" :> "project" :> Capture "project_id" ProjectIdWithSuffix :> Delete '[JSON] NoContent
 
+type UpdateProjectSharedStatusAPI = "v1" :> "project" :> Capture "project_id" ProjectIdWithSuffix :> "shared" :> QueryParam' '[Required] "value" Bool :> Post '[JSON] NoContent
+
 type GetUserConfigurationAPI = "v1" :> "user" :> "config" :> Get '[JSON] UserConfigurationResponse
 
 type SaveUserConfigurationAPI = "v1" :> "user" :> "config" :> ReqBody '[JSON] UserConfigurationRequest :> Post '[JSON] NoContent
@@ -202,6 +204,7 @@ type Protected = LogoutAPI
             :<|> GithubUsersRepositoriesAPI
             :<|> GithubSaveAssetAPI
             :<|> GithubUserAPI
+            :<|> UpdateProjectSharedStatusAPI
 
 type Unprotected = AuthenticateAPI H.Html
               :<|> EmptyProjectPageAPI

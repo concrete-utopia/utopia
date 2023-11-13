@@ -19,6 +19,7 @@ import {
   defaultUserState,
   StoryboardFilePath,
   modifyUnderlyingElementForOpenFile,
+  emptyCollaborativeEditingSupport,
 } from '../../editor/store/editor-state'
 import type { UtopiaStoreAPI } from '../../editor/store/store-hook'
 import {
@@ -74,6 +75,7 @@ export function getStoreHook(): UtopiaStoreAPI & UpdateFunctionHelpers {
     postActionInteractionSession: null,
     builtInDependencies: createBuiltInDependenciesList(null),
     projectServerState: emptyProjectServerState(),
+    collaborativeEditingSupport: emptyCollaborativeEditingSupport(),
   }
 
   const storeHook: UtopiaStoreAPI = createStoresAndState(defaultState)
