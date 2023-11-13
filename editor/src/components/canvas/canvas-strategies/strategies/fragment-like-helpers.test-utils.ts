@@ -31,6 +31,8 @@ export function getOpeningFragmentLikeTag(
 
   switch (type) {
     case 'sizeless-div':
+      return `<div ${outerDataUid} ${outerTestId} style={{position: 'absolute'}}><React.Fragment ${innerDataUid}>`
+    case 'wrapper-div':
       return `<div ${outerDataUid} ${outerTestId}><React.Fragment ${innerDataUid}>`
     case 'fragment':
       return `<React.Fragment ${outerDataUid} ${outerTestId}><React.Fragment ${innerDataUid}>`
@@ -45,6 +47,7 @@ export function getOpeningFragmentLikeTag(
 export function getClosingFragmentLikeTag(type: FragmentLikeType): string {
   switch (type) {
     case 'sizeless-div':
+    case 'wrapper-div':
       return `</React.Fragment></div>`
     case 'fragment':
       return `</React.Fragment></React.Fragment>`

@@ -1275,7 +1275,7 @@ export function getCommandsForConversionToDesiredType(
   currentType: EditorContract,
   desiredType: EditorContract,
 ): Array<CanvasCommand> {
-  if (desiredType === 'not-quite-frame') {
+  if (desiredType === 'not-quite-frame' || desiredType === 'wrapper-div') {
     throw new Error(
       'Invariant violation: not-quite-frame should never be a selectable option in the dropdown',
     )
@@ -1304,10 +1304,18 @@ export function getCommandsForConversionToDesiredType(
       assertNever(desiredType)
     }
 
-    if (currentType === 'frame' || currentType === 'not-quite-frame') {
+    if (
+      currentType === 'frame' ||
+      currentType === 'not-quite-frame' ||
+      currentType === 'wrapper-div'
+    ) {
       if (desiredType === 'frame') {
-        // NOOP
-        return []
+        if (currentType === 'frame') {
+          // NOOP
+          return []
+        }
+
+        throw new Error('Implement me!')
       }
 
       if (desiredType === 'fragment') {

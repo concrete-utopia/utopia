@@ -400,7 +400,9 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                   </>,
                 )}
                 {unless(
-                  multiselectedContract === 'fragment' || multiselectedContract === 'group',
+                  multiselectedContract === 'fragment' ||
+                    multiselectedContract === 'group' ||
+                    multiselectedContract === 'wrapper-div',
                   // All the regular inspector sections are only visible if frames are selected
                   <>
                     <FlexSection />

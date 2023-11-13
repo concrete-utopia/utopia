@@ -221,7 +221,11 @@ export function replaceNonDomElementWithFirstDomAncestorPath(
 }
 
 export const AllFragmentLikeNonDomElementTypes = ['fragment', 'conditional'] as const
-export const AllFragmentLikeTypes = [...AllFragmentLikeNonDomElementTypes, 'sizeless-div'] as const
+export const AllFragmentLikeTypes = [
+  ...AllFragmentLikeNonDomElementTypes,
+  'wrapper-div',
+  'sizeless-div',
+] as const
 export type FragmentLikeType = typeof AllFragmentLikeTypes[number] // <- this gives us the union type of the Array's entries
 
 type SizelessDivsConsideredFragmentLike =
@@ -269,10 +273,22 @@ export function getElementFragmentLikeType(
     return null
   }
 
+  const allChildrenAreAbsolute = children.every(MetadataUtils.isPositionAbsolute)
+
+  const hasNoStyleProp = elementProps?.['style'] == null
+  const hasNoClassName = elementProps?.['className'] == null
+
+  if (
+    sizelessDivsConsideredFragmentLike === 'sizeless-div-considered-fragment-like' &&
+    hasNoStyleProp &&
+    hasNoClassName &&
+    allChildrenAreAbsolute
+  ) {
+    return 'wrapper-div'
+  }
+
   const hasNoWidthAndHeightProps = // TODO make this information come from the computed style instead of reading the style prop
     elementProps?.['style']?.['width'] == null && elementProps?.['style']?.['height'] == null
-
-  const allChildrenAreAbsolute = children.every(MetadataUtils.isPositionAbsolute)
 
   if (
     sizelessDivsConsideredFragmentLike === 'sizeless-div-considered-fragment-like' &&
