@@ -286,6 +286,7 @@ describe('canvas toolbar', () => {
       top: 168,
       width: 247,
       height: 402,
+      contain: 'layout'
     }}
     data-uid='container'
   >
@@ -329,6 +330,7 @@ describe('canvas toolbar', () => {
       top: 168,
       width: 247,
       height: 402,
+      contain: 'layout'
     }}
     data-uid='container'
   >
@@ -373,6 +375,7 @@ describe('canvas toolbar', () => {
       top: 168,
       width: 247,
       height: 402,
+      contain: 'layout'
     }}
     data-uid='container'
   >
@@ -459,6 +462,7 @@ describe('canvas toolbar', () => {
       top: 168,
       width: 247,
       height: 402,
+      contain: 'layout'
     }}
     data-uid='container'
   >
@@ -566,6 +570,7 @@ export var storyboard = (
           top: 77,
           width: 275,
           height: 303,
+          contain: 'layout',
         }}
       >
         <DefaultExportedComponent
@@ -627,6 +632,7 @@ export var storyboard = (
       top: 168,
       width: 247,
       height: 402,
+      contain: 'layout'
     }}
     data-uid='container'
   >
@@ -682,7 +688,7 @@ export var storyboard = (
 
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(`
-        <div data-uid='container'>
+        <div data-uid='container' style={{ contain: 'layout' }}>
           {
             // @utopia/uid=conditional
             [].length === 0 ? null : (
@@ -728,7 +734,7 @@ export var storyboard = (
 
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(`
-        <div data-uid='container'>
+        <div data-uid='container' style={{ contain: 'layout' }}>
         {
           // @utopia/uid=conditional
           [].length === 0 ? (
@@ -775,7 +781,7 @@ export var storyboard = (
 
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(`
-      <div data-uid='container'>
+      <div data-uid='container' style={{ contain: 'layout' }}>
       {
         // @utopia/uid=conditional
         // @utopia/conditional=false
@@ -835,7 +841,7 @@ export var storyboard = (
 
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(`
-        <div data-uid='container'>
+        <div data-uid='container' style={{ contain: 'layout' }}>
         {
           /* @utopia/uid=conditional */
           true ? (
@@ -915,6 +921,7 @@ export var storyboard = (
               top: 235,
               width: 96,
               height: 115,
+              contain: 'layout'
             }}
             data-uid='52b'
           >
@@ -1126,6 +1133,7 @@ export var Playground = () => {
           left: 154,
           top: 134,
           backgroundColor: '#ff7262',
+          contain: 'layout',
         }}
         data-uid='pg-container'
       >
@@ -1202,6 +1210,7 @@ export var Playground = () => {
               top: 168,
               width: 247,
               height: 402,
+              contain: 'layout'
             }}
             data-uid='container'
           >
@@ -1212,6 +1221,7 @@ export var Playground = () => {
                 top: 0,
                 width: 247,
                 height: 0,
+                contain: 'layout'
               }}
               data-uid='new-group'
             >
@@ -1415,13 +1425,14 @@ export var Playground = () => {
         >
           <div
             style={{
-              contain: 'layout',
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
               width: 100,
               height: 41,
-              position: 'absolute',
               top: 22,
               left: 20,
             }}
+            data-uid='wra'
           >
             <div
               style={{
@@ -1552,10 +1563,12 @@ export var Playground = () => {
           >
             <div
               style={{
-                contain: 'layout',
+                backgroundColor: '#aaaaaa33',
                 width: 98,
                 height: 41,
+                contain: 'layout',
               }}
+              data-uid='wra'
             >
               <div
                 style={{

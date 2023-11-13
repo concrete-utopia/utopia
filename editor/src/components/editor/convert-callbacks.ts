@@ -69,6 +69,7 @@ import {
   isMaybeGroupForWrapping,
 } from '../canvas/canvas-strategies/strategies/group-helpers'
 import { elementCanBeAGroupChild } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { flattenSelection } from '../canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
 
 export function convertToConditionalOrFragment(
   selectedViews: Array<ElementPath>,
@@ -351,7 +352,7 @@ export function useWrapInto(): (wrapInto: InsertMenuItem | null) => void {
         return
       }
 
-      const originalSelectedElements = [...selectedViewsRef.current]
+      const originalSelectedElements = flattenSelection([...selectedViewsRef.current])
       if (!isNonEmptyArray(originalSelectedElements)) {
         return
       }

@@ -8,6 +8,7 @@ import * as PP from '../../../core/shared/property-path'
 import type { IndexPosition } from '../../../utils/utils'
 import { front } from '../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../assets'
+import { replaceNonDomElementWithFirstDomAncestorPath } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import { getAbsoluteReparentPropertyChanges } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-changes'
 import { autoLayoutParentAbsoluteOrStatic } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-strategy-parent-lookup'
 import type { ToReparent } from '../../canvas/canvas-strategies/strategies/reparent-utils'
@@ -16,7 +17,6 @@ import { foldAndApplyCommandsInner } from '../../canvas/commands/commands'
 import { setCssLengthProperty } from '../../canvas/commands/set-css-length-command'
 import { setProperty } from '../../canvas/commands/set-property-command'
 import { updateFunctionCommand } from '../../canvas/commands/update-function-command'
-import { updateSelectedViews } from '../../canvas/commands/update-selected-views-command'
 import { cssNumber } from '../../inspector/common/css-utils'
 import type { CustomInspectorStrategy } from '../../inspector/inspector-strategies/inspector-strategy'
 import type { AllElementProps } from '../store/editor-state'
@@ -74,6 +74,13 @@ export const insertAsAbsoluteStrategy = (
       return null
     }
 
+    const firstDOMParentPath = replaceNonDomElementWithFirstDomAncestorPath(
+      metadata,
+      allElementProps,
+      elementPathTree,
+      parentInsertionPath.intendedParentPath,
+    )
+
     return {
       commands: [
         ...result.commands,
@@ -91,6 +98,7 @@ export const insertAsAbsoluteStrategy = (
                 'force-pins',
               ),
               setProperty('always', result.newPath, PP.create('style', 'position'), 'absolute'),
+              setProperty('always', firstDOMParentPath, PP.create('style', 'contain'), 'layout'),
               ...(toPosition == null
                 ? []
                 : [

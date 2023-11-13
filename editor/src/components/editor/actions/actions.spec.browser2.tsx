@@ -7026,13 +7026,15 @@ export var storyboard = (
             >
               <div
                 style={{
-                  contain: 'layout',
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
                   width: 120,
                   height: 150,
-                  position: 'absolute',
                   top: 0,
                   left: 0,
+                  contain: 'layout'
                 }}
+                data-uid='bbb'
               >
                 <div
                   data-uid='ccc'
@@ -7040,8 +7042,8 @@ export var storyboard = (
                     position: 'absolute',
                     left: 20,
                     top: 50,
+                    bottom: 150,
                     width: 100,
-                    height: 100,
                   }}
                 />
                 <div
@@ -7065,10 +7067,10 @@ export var storyboard = (
     it(`Wraps 2 elements inside a flex layout`, async () => {
       const testUID = 'zzz'
       const testCode = `
-      <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+      <div data-uid='aaa' style={{contain: 'layout', width: 500, height: 300}}>
         <div data-uid='bbb' style={{display: 'flex', gap: 10, padding: 10}}>
           <div data-uid='ccc' style={{width: 100, height: 60}} />
-          <div data-uid='ddd' style={{flexGrow: 1, height: '100%'}} />
+          <div data-uid='ddd' style={{width: 100, height: 60}} />
           <div data-uid='eee' style={{width: 100, height: 60}} />
         </div>
       </div>
@@ -7089,25 +7091,30 @@ export var storyboard = (
         makeTestProjectCodeWithSnippet(
           `<div
             data-uid='aaa'
-            style={{ contain: 'layout', width: 300, height: 300 }}
+            style={{ contain: 'layout', width: 500, height: 300 }}
           >
             <div
               data-uid='bbb'
               style={{ display: 'flex', gap: 10, padding: 10 }}
             >
-              <div data-uid='ccc' style={{ width: 100, height: 60 }} />
+              <div
+                data-uid='ccc'
+                style={{ width: 100, height: 60 }}
+              />
               <div
                 style={{
-                  contain: 'layout',
-                  width: 170,
+                  backgroundColor: '#aaaaaa33',
+                  width: 210,
                   height: 60,
+                  contain: 'layout',
                 }}
+                data-uid='zzz'
               >
                 <div
-                  data-uid='ddd'
+                data-uid='ddd'
                   style={{
-                    height: 0,
-                    width: 60,
+                    width: 100,
+                    height: 60,
                     top: 0,
                     left: 0,
                     position: 'absolute',
@@ -7119,7 +7126,7 @@ export var storyboard = (
                     width: 100,
                     height: 60,
                     top: 0,
-                    left: 70,
+                    left: 110,
                     position: 'absolute',
                   }}
                 />
@@ -7212,27 +7219,49 @@ export var storyboard = (
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
           formatTestProjectCode(
             makeTestProjectCodeWithSnippet(`
-              <div data-uid='aaa' style={{ contain: 'layout' }}>
-                <Group
-                  style={{ position: 'absolute', left: 0, top: 0 }}
-                  data-uid='grp'
-                >
-                  <div data-uid='foo' style={{ position: 'absolute', width: 50, height: 50, top: 0, left: 0, background: 'red' }} />
-                  {
-                    // @utopia/uid=cond
-                    true ? <div data-uid='bar' style={{ position: 'absolute', width: 50, height: 50, top: 0, left: 0, background: 'blue' }} /> : null
-                  }
-                </Group>
-              </div>
+            <div data-uid='aaa' style={{ contain: 'layout' }}>
+              <Group
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  width: 50,
+                  height: 50,
+                  contain: 'layout',
+                }}
+                data-uid='grp'
+              >
+                <div
+                data-uid='foo'
+                  style={{
+                    position: 'absolute',
+                    width: 50,
+                    height: 50,
+                    top: 0,
+                    left: 0,
+                    background: 'red',
+                  }}
+                />
+                {
+                  // @utopia/uid=cond
+                  true ? (
+                    <div
+                      data-uid='bar'
+                      style={{
+                        position: 'absolute',
+                        width: 50,
+                        height: 50,
+                        top: 0,
+                        left: 0,
+                        background: 'blue',
+                      }}
+                    />
+                  ) : null
+                }
+              </Group>
+            </div>
           `),
           ),
-        )
-
-        expect(renderResult.getEditorState().editor.toasts).toHaveLength(1)
-        const firstToast = safeIndex(renderResult.getEditorState().editor.toasts, 0)
-        expect(firstToast?.level).toEqual('INFO')
-        expect(firstToast?.message).toEqual(
-          "Added `contain: 'layout'` to the parent of the newly added element.",
         )
       })
 
@@ -7350,32 +7379,52 @@ export var storyboard = (
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
           formatTestProjectCode(
             makeTestProjectCodeWithSnippet(`
-              <div data-uid='aaa' style={{ contain: 'layout' }}>
-                <Group
-                  style={{ position: 'absolute', left: 0, top: 0 }}
-                  data-uid='grp'
-                >
-                  <div data-uid='foo' style={{ position: 'absolute', width: 50, height: 50, top: 0, left: 0, background: 'red' }} />
-                  {
-                    // @utopia/uid=cond1
-                    true ? (
-                      // @utopia/uid=cond2
-                      true ? (
-                        <div data-uid='bar' style={{ position: 'absolute', width: 50, height: 50, top: 0, left: 0, background: 'blue' }} />
-                      ) : null
-                    ) : null
-                  }
-                </Group>
-              </div>
+            <div data-uid='aaa' style={{ contain: 'layout' }}>
+            <Group
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 50,
+                height: 50,
+                contain: 'layout',
+              }}
+              data-uid='grp'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  width: 50,
+                  height: 50,
+                  top: 0,
+                  left: 0,
+                  background: 'red',
+                }}
+              />
+              {
+                // @utopia/uid=cond1
+                true ? (
+                  // @utopia/uid=cond2
+                  true ? (
+                    <div
+                      data-uid='bar'
+                      style={{
+                        position: 'absolute',
+                        width: 50,
+                        height: 50,
+                        top: 0,
+                        left: 0,
+                        background: 'blue',
+                      }}
+                    />
+                  ) : null
+                ) : null
+              }
+            </Group>
+          </div>
           `),
           ),
-        )
-
-        expect(renderResult.getEditorState().editor.toasts).toHaveLength(1)
-        const firstToast = safeIndex(renderResult.getEditorState().editor.toasts, 0)
-        expect(firstToast?.level).toEqual('INFO')
-        expect(firstToast?.message).toEqual(
-          "Added `contain: 'layout'` to the parent of the newly added element.",
         )
       })
 
