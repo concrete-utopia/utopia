@@ -1315,7 +1315,6 @@ export function parseCode(
     TS.visitNode(n, visitor(context))
 
   const newFile = TS.transform(sourceFileOriginal, [transformer]).transformed[0]
-  // TS.transform(newFile, [transformer])
 
   const printer = TS.createPrinter({ newLine: TS.NewLineKind.LineFeed })
   const resultFile = TS.createSourceFile(

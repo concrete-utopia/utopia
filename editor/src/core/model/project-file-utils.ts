@@ -538,6 +538,22 @@ export function updateFileIfPossible(
   return 'cant-update'
 }
 
+export function updateUiJsCode(file: TextFile, code: string, codeIsNowAhead: boolean): TextFile {
+  const revisionsState = codeIsNowAhead ? RevisionsState.CodeAhead : RevisionsState.BothMatch
+  const fileContents: TextFileContents = {
+    ...file.fileContents,
+    revisionsState: revisionsState,
+    code: code,
+  }
+
+  return textFile(
+    fileContents,
+    file.lastSavedContents,
+    file.lastParseSuccess,
+    file.versionNumber + 1,
+  )
+}
+
 export function sameTextFile(first: ProjectFile, second: ProjectFile): boolean {
   if (isTextFile(first) && isTextFile(second)) {
     return first.fileContents === second.fileContents
