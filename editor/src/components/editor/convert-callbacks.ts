@@ -21,7 +21,7 @@ import {
 } from './actions/action-creators'
 import { useDispatch } from './store/dispatch-context'
 import { useRefEditorState } from './store/store-hook'
-import type { ConditionalClauseInsertBehavior } from './store/insertion-path'
+import type { ConditionalClauseInsertBehavior, InsertionPath } from './store/insertion-path'
 import {
   childInsertionPath,
   conditionalClauseInsertionPath,
@@ -34,7 +34,6 @@ import { elementFromInsertItem, insertWithStrategies } from './insert-callbacks'
 import type { ElementToReparent } from '../canvas/canvas-strategies/strategies/reparent-utils'
 import {
   elementToReparent,
-  getTargetParentForOneShotInsertion,
   pathToReparent,
 } from '../canvas/canvas-strategies/strategies/reparent-utils'
 import type { CanvasPoint, LocalRectangle } from '../../core/shared/math-utils'
@@ -49,13 +48,12 @@ import * as PP from '../../core/shared/property-path'
 import { sizeToDimensionsFromFrame } from '../inspector/inspector-common'
 import { deleteProperties } from '../canvas/commands/delete-properties-command'
 import { getStoryboardElementPath } from '../../core/model/scene-utils'
-import { isLeft } from '../../core/shared/either'
+import { defaultEither } from '../../core/shared/either'
 import { absolute } from '../../utils/utils'
 import type { CanvasCommand } from '../canvas/commands/commands'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import type { ProjectContentTreeRoot } from '../assets'
 import { addElement } from '../canvas/commands/add-element-command'
-import { reparentElement } from '../canvas/commands/reparent-element-command'
 import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 import { generateConsistentUID } from '../../core/shared/uid-utils'
 import { deleteElement } from '../canvas/commands/delete-element-command'
@@ -70,6 +68,29 @@ import {
 } from '../canvas/canvas-strategies/strategies/group-helpers'
 import { elementCanBeAGroupChild } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { flattenSelection } from '../canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
+import { getConditionalCaseCorrespondingToBranchPath } from '../../core/model/conditionals'
+import { optionalMap } from '../../core/shared/optional-utils'
+
+function findTargetParentForWrapper(
+  selectedViews: NonEmptyArray<ElementPath>,
+  metadata: ElementInstanceMetadataMap,
+): InsertionPath {
+  if (selectedViews.length !== 1) {
+    const commonParent = EP.getCommonParentOfNonemptyPathArray(selectedViews, true)
+    return childInsertionPath(commonParent)
+  }
+
+  const conditionalClause = getConditionalCaseCorrespondingToBranchPath(selectedViews[0], metadata)
+  if (conditionalClause == null) {
+    return childInsertionPath(EP.parentPath(selectedViews[0]))
+  }
+
+  return conditionalClauseInsertionPath(
+    EP.parentPath(selectedViews[0]),
+    conditionalClause,
+    replaceWithSingleElement(),
+  )
+}
 
 export function convertToConditionalOrFragment(
   selectedViews: Array<ElementPath>,
@@ -180,7 +201,6 @@ export function wrapWithFragmentOrConditional(
   metadata: ElementInstanceMetadataMap,
   elementPathTrees: ElementPathTrees,
   projectContents: ProjectContentTreeRoot,
-  storyboardPath: ElementPath,
   selectedViews: NonEmptyArray<ElementPath>,
   wrapperUid: string,
   element: JSXElementChild,
@@ -189,23 +209,10 @@ export function wrapWithFragmentOrConditional(
     return null
   }
 
-  const commonParent = EP.getCommonParentOfNonemptyPathArray(selectedViews)
-
-  const targetParent = getTargetParentForOneShotInsertion(
-    storyboardPath,
-    projectContents,
-    [commonParent],
-    metadata,
-    [element],
-    elementPathTrees,
-  )
-
-  if (isLeft(targetParent)) {
-    return null
-  }
+  const targetParentInsertionPath = findTargetParentForWrapper(selectedViews, metadata)
 
   const targetFilePath = withUnderlyingTarget(
-    targetParent.value.parentPath.intendedParentPath,
+    targetParentInsertionPath.intendedParentPath,
     projectContents,
     null,
     (_, __, ___, underlyingFilePath) => {
@@ -220,18 +227,19 @@ export function wrapWithFragmentOrConditional(
     MetadataUtils.getIndexInParent(metadata, elementPathTrees, selectedViews[0]) ?? 0
 
   const newParentPath = EP.appendToPath(
-    getElementPathFromInsertionPath(targetParent.value.parentPath),
+    getElementPathFromInsertionPath(targetParentInsertionPath),
     element.uid,
   )
 
+  const jsxElements = mapDropNulls((path) => {
+    return optionalMap(
+      (instance) => defaultEither(null, instance.element),
+      MetadataUtils.findElementByElementPath(metadata, path),
+    )
+  }, selectedViews)
+
   if (element.type === 'JSX_FRAGMENT') {
     return [
-      addElement('always', targetParent.value.parentPath, element, {
-        indexPosition: absolute(indexInParent),
-      }),
-      ...selectedViews.map((path) =>
-        reparentElement('always', path, childInsertionPath(newParentPath)),
-      ),
       addImportsToFile('always', targetFilePath, {
         react: {
           importedAs: 'React',
@@ -239,26 +247,26 @@ export function wrapWithFragmentOrConditional(
           importedWithName: null,
         },
       }),
+      ...selectedViews.map((path) => deleteElement('always', path)),
+      addElement('always', targetParentInsertionPath, element, {
+        indexPosition: absolute(indexInParent),
+      }),
+      addElements('always', childInsertionPath(newParentPath), jsxElements),
       updateSelectedViews('always', [newParentPath]),
     ]
   }
 
-  const jsxElements = mapDropNulls(
-    (path) => MetadataUtils.getJSXElementFromMetadata(metadata, path),
-    selectedViews,
-  )
-
   if (element.type === 'JSX_CONDITIONAL_EXPRESSION') {
     const insertBehaviour: ConditionalClauseInsertBehavior =
-      selectedViews.length > 1
+      jsxElements.length > 1
         ? replaceWithElementsWrappedInFragmentBehaviour(wrapperUid)
         : replaceWithSingleElement()
 
     return [
-      addElement('always', targetParent.value.parentPath, element, {
+      ...selectedViews.map((path) => deleteElement('always', path)),
+      addElement('always', targetParentInsertionPath, element, {
         indexPosition: absolute(indexInParent),
       }),
-      ...selectedViews.map((path) => deleteElement('always', path)),
       addElements(
         'always',
         conditionalClauseInsertionPath(newParentPath, 'true-case', insertBehaviour),
@@ -382,7 +390,6 @@ export function useWrapInto(): (wrapInto: InsertMenuItem | null) => void {
         jsxMetadataRef.current,
         elementPathTreeRef.current,
         projectContentsRef.current,
-        storyboardPath,
         originalSelectedElements,
         wrapperUid,
         element,
@@ -395,20 +402,10 @@ export function useWrapInto(): (wrapInto: InsertMenuItem | null) => void {
 
       element = elementToReparent(element, wrapIntoElement.value.importsToAdd)
 
-      const commonParent = EP.getCommonParentOfNonemptyPathArray(originalSelectedElements)
-
-      const targetParent = getTargetParentForOneShotInsertion(
-        storyboardPath,
-        projectContentsRef.current,
-        [commonParent],
+      const targetParentInsertionPath = findTargetParentForWrapper(
+        originalSelectedElements,
         jsxMetadataRef.current,
-        [element.element],
-        elementPathTreeRef.current,
       )
-
-      if (isLeft(targetParent)) {
-        return
-      }
 
       const indexInParent =
         MetadataUtils.getIndexInParent(
@@ -442,7 +439,7 @@ export function useWrapInto(): (wrapInto: InsertMenuItem | null) => void {
 
       const wrapperInsertResult = insertWithStrategies(
         element,
-        targetParent.value.parentPath,
+        targetParentInsertionPath,
         {
           metadata: jsxMetadataRef.current,
           elementPathTree: elementPathTreeRef.current,
