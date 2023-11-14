@@ -67,7 +67,7 @@ authorizeUserForLiveblocksProjectRoom liveblocksResources metrics pool userID ro
   token <- withExceptT show
             $ ExceptT
             $ authorizeUserWithLiveblocks liveblocksResources userID
-  -- Check if this user is the owner of the project.
+  -- Find out if the user is the owner of the project.
   isOwner <- lift $ checkIfProjectOwner metrics pool userID projectID
   -- Don't need this with later versions of transformers.
   let handleE = flip catchE
