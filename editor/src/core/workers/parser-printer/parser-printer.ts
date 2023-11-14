@@ -1323,6 +1323,8 @@ function stegaTransform({ filePath, sourceText }: { filePath: string; sourceText
   return sourceFileReprinted
 }
 
+export type SteganographyMode = 'apply-steganography' | 'do-not-apply-steganography'
+
 export function parseCode(
   filePath: string,
   sourceText: string,

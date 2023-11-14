@@ -1,4 +1,6 @@
 import { vercelStegaCombine, vercelStegaDecode, vercelStegaSplit } from '@vercel/stega'
+import type { SteganographyMode } from '../workers/parser-printer/parser-printer'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 export interface SteganoTextData {
   originalString: string
@@ -54,4 +56,11 @@ export function decodeSteganoData(encodedString: string): SteganoTextData | null
 export function cleanSteganoTextData(text: string): { cleaned: string } {
   const { cleaned } = vercelStegaSplit(text)
   return { cleaned }
+}
+
+export function isSteganographyEnabled(): SteganographyMode {
+  if (isFeatureEnabled('Steganography')) {
+    return 'apply-steganography'
+  }
+  return 'do-not-apply-steganography'
 }
