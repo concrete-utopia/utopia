@@ -28,8 +28,7 @@ function Room() {
       {threads.map((thread) => {
         const commentData = (() => {
           if ((thread.metadata as any)?.type === 'coord') {
-            const top = (thread.metadata as any).top
-            const left = (thread.metadata as any).left
+            const { top, left } = thread.metadata
             return { point: canvasPoint({ x: left, y: top }), type: 'coord' }
           }
           return null

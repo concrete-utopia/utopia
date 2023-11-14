@@ -45,6 +45,9 @@ export type ThreadMetadata = {
   // resolved: boolean;
   // quote: string;
   // time: number;
+  type: 'coord'
+  top: number
+  left: number
 }
 
 export const {

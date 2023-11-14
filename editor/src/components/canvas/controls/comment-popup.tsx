@@ -57,9 +57,7 @@ function Room(props: RoomProps) {
   const { threads } = useThreads()
   const createThread = useCreateThread()
 
-  const thread = threads.find(
-    (t) => (t.metadata as any).top === props.top && (t.metadata as any).left === props.left,
-  )
+  const thread = threads.find((t) => t.metadata.top === props.top && t.metadata.left === props.left)
 
   const onCreateThread = React.useCallback(
     ({ body }: ComposerSubmitComment, event: React.FormEvent<HTMLFormElement>) => {
