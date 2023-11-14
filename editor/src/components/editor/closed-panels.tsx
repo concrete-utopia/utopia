@@ -171,9 +171,7 @@ const ClosedPanelButton = React.memo((props: InsertModeButtonProps) => {
       style={{
         background: props.visible ? colorTheme.bg1.value : colorTheme.canvasBackground.value,
         overflow: 'hidden',
-        boxShadow: props.visible
-          ? 'inset -2px 2px 6px -1px #ffffff05, -4px 4px 10px -2px rgba(0,0,0,0.15)'
-          : 'inset -2px 2px 6px -1px #ffffff60, -2px 2px 10px -2px rgba(0,0,0,0.45)',
+        boxShadow: 'inset 0px 1px 3px 0px #ffffff10, 0px 1px 2px 0px rgba(0,0,0,.3)',
         pointerEvents: 'initial',
         display: 'flex',
         flexDirection: 'row',
