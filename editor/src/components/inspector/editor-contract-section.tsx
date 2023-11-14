@@ -112,7 +112,7 @@ export function groupSectionOption(
     case 'not-quite-frame':
       return { value: 'not-quite-frame', label: 'Frame*' }
     case 'wrapper-div':
-      return { value: 'wrapper-div', label: 'Wrapper Element' }
+      return { value: 'wrapper-div', label: 'Wrapper' }
     case 'fragment':
       return { value: 'fragment', label: 'Fragment' }
     case 'group':
