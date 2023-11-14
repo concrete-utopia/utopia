@@ -102,10 +102,7 @@ export const allSelectedElementsContractSelector = createSelector(
   },
 )
 
-type EditorContractOption = 'frame' | 'not-quite-frame' | 'wrapper-div' | 'fragment' | 'group'
-export function groupSectionOption(
-  wrapperType: EditorContractOption,
-): SelectOption<EditorContractOption> {
+export function groupSectionOption(wrapperType: EditorContract): SelectOption<EditorContract> {
   switch (wrapperType) {
     case 'frame':
       return { value: 'frame', label: 'Frame' }
