@@ -762,12 +762,6 @@ export interface SetMapCountOverride {
   value: number | null
 }
 
-export interface SetCommentId {
-  action: 'SET_COMMENT_ID'
-  target: ElementPath
-  commentId: string | null
-}
-
 export interface UpdateConditionalExpression {
   action: 'UPDATE_CONIDTIONAL_EXPRESSION'
   target: ElementPath
@@ -1217,7 +1211,6 @@ export type EditorAction =
   | UpdateColorSwatches
   | SetConditionalOverriddenCondition
   | SetMapCountOverride
-  | SetCommentId
   | SwitchConditionalBranches
   | UpdateConditionalExpression
   | ExecutePostActionMenuChoice

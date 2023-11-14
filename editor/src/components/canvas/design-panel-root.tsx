@@ -39,7 +39,6 @@ import { SettingsPane } from '../navigator/left-pane/settings-pane'
 import { MenuTab } from '../../uuiui/menu-tab'
 import { FlexRow } from 'utopia-api'
 import type { StoredPanel } from './stored-layout'
-import { CommentSection } from '../inspector/sections/comment-section'
 
 interface NumberSize {
   width: number
@@ -216,10 +215,6 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
     onClickTab(RightMenuTab.Settings)
   }, [onClickTab])
 
-  const onClickCommentsTab = React.useCallback(() => {
-    onClickTab(RightMenuTab.Comments)
-  }, [onClickTab])
-
   if (!isRightMenuExpanded) {
     return null
   }
@@ -243,11 +238,6 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
           label={'Inspector'}
           selected={selectedTab === RightMenuTab.Inspector}
           onClick={onClickInspectorTab}
-        />
-        <MenuTab
-          label={'Comments'}
-          selected={selectedTab === RightMenuTab.Comments}
-          onClick={onClickCommentsTab}
         />
         <MenuTab
           label={'Insert'}
@@ -276,7 +266,6 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
         {when(selectedTab === RightMenuTab.Insert, <InsertMenuPane />)}
         {when(selectedTab === RightMenuTab.Inspector, <InspectorEntryPoint />)}
         {when(selectedTab === RightMenuTab.Settings, <SettingsPane />)}
-        {when(selectedTab === RightMenuTab.Comments, <CommentSection />)}
       </SimpleFlexRow>
       <CanvasStrategyInspector />
     </FlexColumn>

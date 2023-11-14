@@ -81,7 +81,6 @@ import { strictEvery } from '../../core/shared/array-utils'
 import { SimplifiedLayoutSubsection } from './sections/layout-section/self-layout-subsection/simplified-layout-subsection'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { ConstraintsSection } from './constraints-section'
-import { CommentSection } from './sections/comment-section'
 
 export interface ElementPathElement {
   name?: string

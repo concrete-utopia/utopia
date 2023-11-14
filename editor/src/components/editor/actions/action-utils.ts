@@ -193,7 +193,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_COLOR_SWATCHES':
     case 'SET_CONDITIONAL_OVERRIDDEN_CONDITION':
     case 'SET_MAP_COUNT_OVERRIDE':
-    case 'SET_COMMENT_ID':
     case 'SWITCH_CONDITIONAL_BRANCHES':
     case 'UPDATE_CONIDTIONAL_EXPRESSION':
     case 'CUT_SELECTION_TO_CLIPBOARD':

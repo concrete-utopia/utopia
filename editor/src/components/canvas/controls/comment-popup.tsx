@@ -1,3 +1,4 @@
+import '@liveblocks/react-comments/styles.css'
 import React from 'react'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
@@ -7,6 +8,7 @@ import { useCreateThread, useThreads } from '../../../../liveblocks.config'
 import type { ComposerSubmitComment } from '@liveblocks/react-comments'
 import { Comment, Composer } from '@liveblocks/react-comments'
 import { stopPropagation } from '../../inspector/common/inspector-utils'
+import { UtopiaTheme } from '../../../uuiui'
 
 export const CommentPopup = React.memo(() => {
   const mode = useEditorState(
@@ -26,7 +28,14 @@ export const CommentPopup = React.memo(() => {
   return (
     <CanvasOffsetWrapper>
       <div
-        style={{ position: 'absolute', top: location.y, left: location.x }}
+        style={{
+          position: 'absolute',
+          top: location.y,
+          left: location.x,
+          cursor: 'text',
+          minWidth: 250,
+          boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+        }}
         onKeyDown={stopPropagation}
         onKeyUp={stopPropagation}
         onMouseUp={stopPropagation}
