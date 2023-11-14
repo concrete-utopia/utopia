@@ -31,7 +31,7 @@ export const CommentPopup = React.memo(() => {
         style={{
           position: 'absolute',
           top: location.y,
-          left: location.x,
+          left: location.x + 30,
           cursor: 'text',
           minWidth: 250,
           boxShadow: UtopiaTheme.panelStyles.shadows.medium,
@@ -41,19 +41,19 @@ export const CommentPopup = React.memo(() => {
         onMouseUp={stopPropagation}
       >
         <ClientSideSuspense fallback={<div>Loading…</div>}>
-          {() => <Room top={location.y} left={location.x} />}
+          {() => <CommentThread top={location.y} left={location.x} />}
         </ClientSideSuspense>
       </div>
     </CanvasOffsetWrapper>
   )
 })
 
-interface RoomProps {
+interface CommentThreadProps {
   top: number
   left: number
 }
 
-function Room(props: RoomProps) {
+function CommentThread(props: CommentThreadProps) {
   const { threads } = useThreads()
   const createThread = useCreateThread()
 
@@ -77,7 +77,7 @@ function Room(props: RoomProps) {
   )
 
   if (thread == null) {
-    return <Composer onComposerSubmit={onCreateThread} />
+    return <Composer autoFocus onComposerSubmit={onCreateThread} />
   }
 
   return (
@@ -85,7 +85,7 @@ function Room(props: RoomProps) {
       {thread.comments.map((comment) => (
         <Comment key={comment.id} comment={comment} />
       ))}
-      <Composer threadId={thread.id} />
+      <Composer autoFocus threadId={thread.id} />
     </div>
   )
 }
