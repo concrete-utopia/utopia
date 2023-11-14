@@ -835,6 +835,7 @@ export const printCode = memoize(printCodeImpl, {
 })
 
 function printStatements(
+  filePath: string,
   statements: Array<TS.Node>,
   shouldPrettify: boolean,
   insertLinesBetweenStatements: boolean,
@@ -849,7 +850,10 @@ function printStatements(
   )
 
   const printedParts: Array<string> = statements.map((statement) =>
-    printer.printNode(TS.EmitHint.Unspecified, statement, resultFile),
+    transformStripStegaData({
+      filePath: filePath,
+      sourceText: printer.printNode(TS.EmitHint.Unspecified, statement, resultFile),
+    }),
   )
   const typescriptPrintedResult = printedParts.join(insertLinesBetweenStatements ? '\n' : '')
   let result: string
@@ -994,14 +998,12 @@ function printCodeImpl(
     ...printTopLevelElements(printOptions, imports, afterLastImport, detailOfExports),
   ]
 
-  const result = printStatements(
+  return printStatements(
+    filePath,
     statementsToPrint,
     printOptions.pretty,
     printOptions.insertLinesBetweenStatements,
   )
-
-  return result
-  // return transformStripStegaData({ filePath: filePath, sourceText: result })
 }
 
 interface PossibleCanvasContentsExpression {

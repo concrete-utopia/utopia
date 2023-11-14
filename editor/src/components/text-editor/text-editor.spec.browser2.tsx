@@ -1709,17 +1709,20 @@ describe('Use the text editor', () => {
       const editor = await renderTestEditorWithCode(
         `import * as React from 'react'
         import { Storyboard, Scene } from 'utopia-api'
+
         const StoryboardWrapper = ({ style }) => {
           const text = 'Hello'
           return (
-            <div data-testid='div' style={{ ...style }}>
+            <div data-uid='div' data-testid='div' style={{ ...style }}>
               {text}
             </div>
           )
         }
+
         export var storyboard = (
-          <Storyboard>
+          <Storyboard data-uid='sb'>
             <Scene
+              data-uid='scene'
               style={{
                 backgroundColor: '#0091FFAA',
                 position: 'absolute',
@@ -1729,7 +1732,7 @@ describe('Use the text editor', () => {
                 height: 362,
               }}
             >
-              <StoryboardWrapper />
+              <StoryboardWrapper data-uid='wrapper' />
             </Scene>
           </Storyboard>
         )
@@ -1752,15 +1755,16 @@ describe('Use the text editor', () => {
         const StoryboardWrapper = ({ style }) => {
           const text = ' UtopiaHello'
           return (
-            <div data-testid='div' style={{ ...style }}>
+            <div data-uid='div' data-testid='div' style={{ ...style }}>
               {text}
             </div>
           )
         }
         
         export var storyboard = (
-          <Storyboard>
+          <Storyboard data-uid='sb'>
             <Scene
+              data-uid='scene'
               style={{
                 backgroundColor: '#0091FFAA',
                 position: 'absolute',
@@ -1770,7 +1774,7 @@ describe('Use the text editor', () => {
                 height: 362,
               }}
             >
-              <StoryboardWrapper />
+              <StoryboardWrapper data-uid='wrapper' />
             </Scene>
           </Storyboard>
         )
@@ -1786,7 +1790,7 @@ describe('Use the text editor', () => {
         const StoryboardWrapper = ({ style }) => {
           const text = 'Hello'
           return (
-            <div data-testid='div' style={{ ...style }}>
+            <div data-uid='div' data-testid='div' style={{ ...style }}>
               {text}
             </div>
           )
@@ -1817,6 +1821,7 @@ describe('Use the text editor', () => {
       await selectComponentsForTest(editor, [EP.fromString('sb/scene/wrapper')])
       await pressKey('Backspace')
 
+      // TODO: the newlines are lost
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         formatTestProjectCode(`
         import * as React from 'react'
@@ -1824,7 +1829,7 @@ describe('Use the text editor', () => {
         const StoryboardWrapper = ({ style }) => {
           const text = 'Hello'
           return (
-            <div data-testid='div' style={{ ...style }}>
+            <div data-uid='div' data-testid='div' style={{ ...style }}>
               {text}
             </div>
           )
@@ -1841,8 +1846,7 @@ describe('Use the text editor', () => {
                 width: 288,
                 height: 362,
               }}
-            >
-            </Scene>
+            />
           </Storyboard>
         )
 `),
