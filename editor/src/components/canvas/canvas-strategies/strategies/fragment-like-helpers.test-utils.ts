@@ -31,7 +31,6 @@ export function getOpeningFragmentLikeTag(
 
   switch (type) {
     case 'sizeless-div':
-      return `<div ${outerDataUid} ${outerTestId} style={{position: 'absolute'}}><React.Fragment ${innerDataUid}>`
     case 'wrapper-div':
       return `<div ${outerDataUid} ${outerTestId}><React.Fragment ${innerDataUid}>`
     case 'fragment':
