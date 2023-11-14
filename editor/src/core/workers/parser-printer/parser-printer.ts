@@ -143,6 +143,7 @@ import type { Optic } from '../../../core/shared/optics/optics'
 import { modify } from '../../../core/shared/optics/optic-utilities'
 import { updateHighlightBounds } from '../../../core/shared/uid-utils'
 import { cleanSteganoTextData, encodeSteganoData } from '../../shared/stegano-text'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 function buildPropertyCallingFunction(
   functionName: string,
@@ -1257,15 +1258,7 @@ export function isReactImported(sourceFile: TS.SourceFile): boolean {
   })
 }
 
-export function parseCode(
-  filePath: string,
-  sourceText: string,
-  oldParseResultForUIDComparison: ParseSuccess | null,
-  alreadyExistingUIDs_MUTABLE: Set<string>,
-): ParsedTextFile {
-  const originalAlreadyExistingUIDs_MUTABLE: Set<string> = new Set(alreadyExistingUIDs_MUTABLE)
-  const sourceFileOriginal = TS.createSourceFile(filePath, sourceText, TS.ScriptTarget.ES3)
-
+function stegaTransform({ filePath, sourceText }: { filePath: string; sourceText: string }) {
   const visitor =
     (context: TS.TransformationContext) =>
     (node: TS.Node): TS.Node => {
@@ -1313,6 +1306,8 @@ export function parseCode(
   const transformer = (context: TS.TransformationContext) => (n: TS.Node) =>
     TS.visitNode(n, visitor(context))
 
+  const sourceFileOriginal = TS.createSourceFile(filePath, sourceText, TS.ScriptTarget.ES3)
+
   const newFile = TS.transform(sourceFileOriginal, [transformer]).transformed[0]
 
   const printer = TS.createPrinter({ newLine: TS.NewLineKind.LineFeed })
@@ -1325,8 +1320,23 @@ export function parseCode(
   )
 
   const sourceFileReprinted = printer.printNode(TS.EmitHint.Unspecified, newFile, resultFile)
+  return sourceFileReprinted
+}
 
-  const sourceFile = TS.createSourceFile(filePath, sourceFileReprinted, TS.ScriptTarget.ES3)
+export function parseCode(
+  filePath: string,
+  sourceText: string,
+  oldParseResultForUIDComparison: ParseSuccess | null,
+  alreadyExistingUIDs_MUTABLE: Set<string>,
+): ParsedTextFile {
+  const originalAlreadyExistingUIDs_MUTABLE: Set<string> = new Set(alreadyExistingUIDs_MUTABLE)
+  const sourceTextToUse = stegaTransform({ filePath, sourceText })
+  // TODO: this throws an error about reading feature switches before they were loaded
+  // const sourceTextToUse = isFeatureEnabled('Steganography')
+  //   ? stegaTransform({ filePath, sourceText })
+  //   : sourceText
+
+  const sourceFile = TS.createSourceFile(filePath, sourceTextToUse, TS.ScriptTarget.ES3)
 
   const topLevelNodes = flatMapArray(
     (e) => flattenOutAnnoyingContainers(sourceFile, e),
@@ -2030,27 +2040,6 @@ function parseBindingName(
   } else {
     return left('Unable to parse binding element')
   }
-}
-
-function withJSXElementAttributes(
-  sourceFile: TS.SourceFile,
-  withAttributes: (node: TS.Node, attrs: TS.JsxAttributes) => void,
-): void {
-  const transformer = (context: TS.TransformationContext) => {
-    const walkTree = (node: TS.Node) => {
-      if (TS.isJsxSelfClosingElement(node)) {
-        withAttributes(node, node.attributes)
-      } else if (TS.isJsxElement(node)) {
-        withAttributes(node, node.openingElement.attributes)
-      }
-      TS.visitEachChild(node, walkTree, context)
-
-      return node
-    }
-    return (n: TS.Node) => TS.visitNode(n, walkTree)
-  }
-
-  TS.transform(sourceFile, [transformer])
 }
 
 // In practical usage currently these highlight bounds should only include entries

@@ -48,6 +48,7 @@ import { toString } from '../../core/shared/element-path'
 import { cleanSteganoTextData, decodeSteganoData } from '../../core/shared/stegano-text'
 import { useUpdateStringRun } from '../../core/model/project-file-helper-hooks'
 import { optionalMap } from '../../core/shared/optional-utils'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 export const TextEditorSpanId = 'text-editor'
 
@@ -293,7 +294,9 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
 const TextEditor = React.memo((props: TextEditorProps) => {
   const { elementPath, component, passthroughProps, textProp } = props
 
-  const textToUse = props.originalText ?? props.text
+  const textToUse = isFeatureEnabled('Steganography')
+    ? props.originalText ?? props.text
+    : props.text
 
   const stegaData = optionalMap(decodeSteganoData, textToUse)
 
