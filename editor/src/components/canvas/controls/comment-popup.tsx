@@ -41,7 +41,7 @@ export const CommentPopup = React.memo(() => {
         onMouseUp={stopPropagation}
       >
         <ClientSideSuspense fallback={<div>Loading…</div>}>
-          {() => <CommentThread top={location.y} left={location.x} />}
+          {() => <CommentThread x={location.x} y={location.y} />}
         </ClientSideSuspense>
       </div>
     </CanvasOffsetWrapper>
@@ -49,15 +49,15 @@ export const CommentPopup = React.memo(() => {
 })
 
 interface CommentThreadProps {
-  top: number
-  left: number
+  x: number
+  y: number
 }
 
-function CommentThread(props: CommentThreadProps) {
+function CommentThread({ x, y }: CommentThreadProps) {
   const { threads } = useThreads()
   const createThread = useCreateThread()
 
-  const thread = threads.find((t) => t.metadata.top === props.top && t.metadata.left === props.left)
+  const thread = threads.find((t) => t.metadata.x === x && t.metadata.y === y)
 
   const onCreateThread = React.useCallback(
     ({ body }: ComposerSubmitComment, event: React.FormEvent<HTMLFormElement>) => {
@@ -68,12 +68,12 @@ function CommentThread(props: CommentThreadProps) {
         body,
         metadata: {
           type: 'coord',
-          top: props.top,
-          left: props.left,
+          x: x,
+          y: y,
         },
       })
     },
-    [createThread, props.left, props.top],
+    [createThread, x, y],
   )
 
   if (thread == null) {

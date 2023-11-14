@@ -27,9 +27,9 @@ function Room() {
     <React.Fragment>
       {threads.map((thread) => {
         const commentData = (() => {
-          if ((thread.metadata as any)?.type === 'coord') {
-            const { top, left } = thread.metadata
-            return { point: canvasPoint({ x: left, y: top }), type: 'coord' }
+          if (thread.metadata.type === 'coord') {
+            const { x, y } = thread.metadata
+            return { point: canvasPoint({ x, y }), type: 'coord' }
           }
           return null
         })()
@@ -60,7 +60,6 @@ function Room() {
                 height: 24,
                 width: 24,
                 background: 'black',
-
                 border: '1px solid ',
                 borderRadius: '24px 24px 24px 0px',
                 display: 'flex',
