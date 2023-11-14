@@ -17,6 +17,7 @@ import {
   unparsed,
 } from '../core/shared/project-file-types'
 import { emptySet } from '../core/shared/set-utils'
+import type { SteganographyMode } from '../core/workers/parser-printer/parser-printer'
 import { lintAndParse } from '../core/workers/parser-printer/parser-printer'
 import { complexDefaultProject, simpleDefaultProject } from './sample-project-utils'
 
@@ -71,14 +72,17 @@ export function parseProjectContents(
   })
 }
 
-export function getParseSuccessForStoryboardCode(appUiJsFile: string): ParseSuccess {
+export function getParseSuccessForStoryboardCode(
+  appUiJsFile: string,
+  applySteganography: SteganographyMode = 'do-not-apply-steganography',
+): ParseSuccess {
   const parsedFile = lintAndParse(
     StoryboardFilePath,
     appUiJsFile,
     null,
     emptySet(),
     'trim-bounds',
-    'do-not-apply-steganography',
+    applySteganography,
   )
 
   if (isParseFailure(parsedFile)) {
@@ -91,9 +95,12 @@ export function getParseSuccessForStoryboardCode(appUiJsFile: string): ParseSucc
   return parsedFile
 }
 
-export function createTestProjectWithCode(appUiJsFile: string): PersistentModel {
+export function createTestProjectWithCode(
+  appUiJsFile: string,
+  applySteganography: SteganographyMode = 'do-not-apply-steganography',
+): PersistentModel {
   const baseModel = complexDefaultProject()
-  const parsedFile: ParseSuccess = getParseSuccessForStoryboardCode(appUiJsFile)
+  const parsedFile: ParseSuccess = getParseSuccessForStoryboardCode(appUiJsFile, applySteganography)
 
   return {
     ...baseModel,

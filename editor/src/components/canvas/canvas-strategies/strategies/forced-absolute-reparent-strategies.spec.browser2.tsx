@@ -187,7 +187,7 @@ describe('Fallback Absolute Reparent Strategies', () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),
       'await-first-dom-report',
-      [absoluteReparentMetastrategy],
+      { strategiesToUse: [absoluteReparentMetastrategy] },
     )
 
     const absoluteChild = await renderResult.renderedDOM.findByTestId('absolutechild')
@@ -300,7 +300,6 @@ describe('Fallback Absolute Reparent Strategies', () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),
       'await-first-dom-report',
-      RegisteredCanvasStrategies,
     )
 
     const absoluteChild = await renderResult.renderedDOM.findByTestId('absolutechild')
@@ -419,7 +418,7 @@ describe('Fallback Absolute Reparent Strategies', () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),
       'await-first-dom-report',
-      [reparentMetaStrategy],
+      { strategiesToUse: [reparentMetaStrategy] },
     )
 
     const absoluteChild = await renderResult.renderedDOM.findByTestId('absolutechild')
@@ -531,7 +530,7 @@ describe('Fallback Absolute Reparent Strategies', () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),
       'await-first-dom-report',
-      [absoluteReparentMetastrategy],
+      { strategiesToUse: [absoluteReparentMetastrategy] },
     )
     const firstFlexChild = await renderResult.renderedDOM.findByTestId('flexchild1')
     const firstFlexChildRect = firstFlexChild.getBoundingClientRect()
@@ -647,7 +646,7 @@ describe('Fallback Absolute Reparent Strategies', () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(defaultTestCode),
       'await-first-dom-report',
-      [reparentMetaStrategy],
+      { strategiesToUse: [reparentMetaStrategy] },
     )
     const firstFlexChild = await renderResult.renderedDOM.findByTestId('flexchild1')
     const firstFlexChildRect = firstFlexChild.getBoundingClientRect()
@@ -792,7 +791,7 @@ describe('Fallback Absolute Reparent Strategies', () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(testCode),
       'await-first-dom-report',
-      [reparentMetaStrategy],
+      { strategiesToUse: [reparentMetaStrategy] },
     )
 
     await renderResult.getDispatchFollowUpActionsFinished()
