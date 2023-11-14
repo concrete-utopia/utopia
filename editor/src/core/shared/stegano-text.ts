@@ -50,3 +50,8 @@ export function decodeSteganoData(encodedString: string): SteganoTextData | null
 
   return steganoData
 }
+
+export function cleanSteganoTextData(text: string): { cleaned: string } {
+  const { cleaned } = vercelStegaSplit(text)
+  return { cleaned }
+}

@@ -45,10 +45,9 @@ import { assertNever } from '../../core/shared/utils'
 import { notice } from '../common/notice'
 import type { AllElementProps } from '../editor/store/editor-state'
 import { toString } from '../../core/shared/element-path'
-import { decodeSteganoData } from '../../core/shared/stegano-text'
+import { cleanSteganoTextData, decodeSteganoData } from '../../core/shared/stegano-text'
 import { useUpdateStringRun } from '../../core/model/project-file-helper-hooks'
 import { optionalMap } from '../../core/shared/optional-utils'
-import { vercelStegaSplit } from '@vercel/stega'
 
 export const TextEditorSpanId = 'text-editor'
 
@@ -331,7 +330,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
   const outlineWidth = 1 / scale
   const outlineColor = colorTheme.textEditableOutline.value
 
-  const [firstTextProp] = React.useState(vercelStegaSplit(textToUse).cleaned)
+  const [firstTextProp] = React.useState(cleanSteganoTextData(textToUse).cleaned)
 
   const myElement = React.useRef<HTMLSpanElement>(null)
 
