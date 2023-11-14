@@ -23,6 +23,7 @@ export interface ReparentElement extends BaseCommand {
   target: ElementPath
   newParent: InsertionPath
   indexPosition: IndexPosition | null
+  renameElement: string | null
 }
 
 export function reparentElement(
@@ -30,6 +31,7 @@ export function reparentElement(
   target: ElementPath,
   newParent: InsertionPath,
   indexPosition?: IndexPosition | null,
+  renameElement?: string | null,
 ): ReparentElement {
   return {
     type: 'REPARENT_ELEMENT',
@@ -37,6 +39,7 @@ export function reparentElement(
     target: target,
     newParent: newParent,
     indexPosition: indexPosition ?? null,
+    renameElement: renameElement ?? null,
   }
 }
 

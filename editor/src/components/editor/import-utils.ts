@@ -104,6 +104,8 @@ export function getRequiredImportsForElement(
         }
       })
 
+      // adjust imports in case of duplicate names
+
       return importsToAdd
     },
   )
