@@ -366,7 +366,8 @@ export const CanvasToolbar = React.memo(() => {
         data-testid='canvas-toolbar-submenu'
         style={{
           marginLeft: 8,
-          height: 32,
+          minHeight: 32,
+          minWidth: 234,
           overflow: 'hidden',
           backgroundColor: colorTheme.bg1subdued.value,
           borderRadius: '0px 10px 10px 10px',
@@ -387,6 +388,12 @@ export const CanvasToolbar = React.memo(() => {
     },
     [dispatch],
   )
+
+  const [showLiveModeInstruction, setShowLiveModeInstruction] = useState(true)
+
+  const handleHideInstruction = () => {
+    setShowLiveModeInstruction(false)
+  }
 
   return (
     <FlexColumn
@@ -661,7 +668,58 @@ export const CanvasToolbar = React.memo(() => {
           )
         : null}
       {/* Live Mode */}
-      {canvasToolbarMode.primary === 'play' ? wrapInSubmenu(<RemixNavigationBar />) : null}
+      {canvasToolbarMode.primary === 'play' && !showLiveModeInstruction
+        ? wrapInSubmenu(<RemixNavigationBar />)
+        : canvasToolbarMode.primary === 'play' && showLiveModeInstruction
+        ? wrapInSubmenu(
+            <FlexColumn
+              style={{ justifyContent: 'flex-start', alignSelf: 'stretch', width: '100%' }}
+            >
+              <RemixNavigationBar />
+              <FlexRow
+                style={{
+                  height: 32,
+                  padding: '0 12px',
+                  justifyContent: 'space-between',
+                  width: '100%',
+                }}
+              >
+                <div
+                  style={{
+                    color: colorTheme.dynamicBlue.value,
+                  }}
+                >
+                  Hold{' '}
+                  <span
+                    style={{
+                      background: colorTheme.canvasBackground.value,
+                      padding: '1px 3px',
+                      borderRadius: 2,
+                      margin: '0 3px',
+                    }}
+                  >
+                    ⌘
+                  </span>{' '}
+                  to select and scroll.
+                </div>
+                <div
+                  css={{
+                    width: 10,
+                    fontSize: 14,
+                    cursor: 'pointer',
+                    opacity: 0.3,
+                    '&:hover': {
+                      opacity: 1,
+                    },
+                  }}
+                  onClick={handleHideInstruction}
+                >
+                  ×
+                </div>
+              </FlexRow>
+            </FlexColumn>,
+          )
+        : null}
       <ToolbarSearchListing />
     </FlexColumn>
   )
