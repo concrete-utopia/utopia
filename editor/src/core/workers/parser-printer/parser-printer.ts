@@ -1000,7 +1000,8 @@ function printCodeImpl(
     printOptions.insertLinesBetweenStatements,
   )
 
-  return transformStripStegaData({ filePath: filePath, sourceText: result })
+  return result
+  // return transformStripStegaData({ filePath: filePath, sourceText: result })
 }
 
 interface PossibleCanvasContentsExpression {

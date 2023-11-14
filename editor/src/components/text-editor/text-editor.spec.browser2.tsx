@@ -2,6 +2,7 @@ import * as EP from '../../core/shared/element-path'
 import {
   expectSingleUndo2Saves,
   expectSingleUndoNSaves,
+  selectComponentsForTest,
   setFeatureForBrowserTestsUseInDescribeBlockOnly,
   wait,
 } from '../../utils/utils.test-utils'
@@ -1747,14 +1748,16 @@ describe('Use the text editor', () => {
         formatTestProjectCode(`
         import * as React from 'react'
         import { Storyboard, Scene } from 'utopia-api'
+        
         const StoryboardWrapper = ({ style }) => {
-          const text = 'Hello'
+          const text = ' UtopiaHello'
           return (
             <div data-testid='div' style={{ ...style }}>
               {text}
             </div>
           )
         }
+        
         export var storyboard = (
           <Storyboard>
             <Scene
@@ -1768,6 +1771,77 @@ describe('Use the text editor', () => {
               }}
             >
               <StoryboardWrapper />
+            </Scene>
+          </Storyboard>
+        )
+`),
+      )
+    })
+
+    it('does not print back weird characters into the file on unrelated edits', async () => {
+      const editor = await renderTestEditorWithCode(
+        `import * as React from 'react'
+        import { Storyboard, Scene } from 'utopia-api'
+        
+        const StoryboardWrapper = ({ style }) => {
+          const text = 'Hello'
+          return (
+            <div data-testid='div' style={{ ...style }}>
+              {text}
+            </div>
+          )
+        }
+        
+        export var storyboard = (
+          <Storyboard data-uid='sb'>
+            <Scene
+              data-uid='scene'
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 144,
+                top: 58,
+                width: 288,
+                height: 362,
+              }}
+            >
+              <StoryboardWrapper data-uid='wrapper' />
+            </Scene>
+          </Storyboard>
+        )
+        `,
+        'await-first-dom-report',
+        { applySteganography: 'apply-steganography' },
+      )
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/scene/wrapper')])
+      await pressKey('Backspace')
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        formatTestProjectCode(`
+        import * as React from 'react'
+        import { Storyboard, Scene } from 'utopia-api'
+        const StoryboardWrapper = ({ style }) => {
+          const text = 'Hello'
+          return (
+            <div data-testid='div' style={{ ...style }}>
+              {text}
+            </div>
+          )
+        }
+        export var storyboard = (
+          <Storyboard data-uid='sb'>
+            <Scene
+              data-uid='scene'
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 144,
+                top: 58,
+                width: 288,
+                height: 362,
+              }}
+            >
             </Scene>
           </Storyboard>
         )
