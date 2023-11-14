@@ -26,12 +26,12 @@ export interface DEPRECATEDSelectControlOptions extends DEPRECATEDGenericControl
   onKeyDown?: (e: React.KeyboardEvent<HTMLElement>) => void
 }
 
-export interface SelectOption {
-  value: any
+export interface SelectOption<T = any> {
+  value: T
   icon?: Omit<IcnProps, 'color' | 'width' | 'height'>
   label?: string
   style?: React.CSSProperties
-  options?: SelectOption[]
+  options?: SelectOption<any>[]
   disabled?: boolean
   tooltip?: string
   invalid?: boolean

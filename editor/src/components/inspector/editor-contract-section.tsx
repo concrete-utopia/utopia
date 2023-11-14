@@ -102,9 +102,10 @@ export const allSelectedElementsContractSelector = createSelector(
   },
 )
 
+type EditorContractOption = 'frame' | 'not-quite-frame' | 'wrapper-div' | 'fragment' | 'group'
 export function groupSectionOption(
-  wrapperType: 'frame' | 'not-quite-frame' | 'wrapper-div' | 'fragment' | 'group',
-): SelectOption {
+  wrapperType: EditorContractOption,
+): SelectOption<EditorContractOption> {
   switch (wrapperType) {
     case 'frame':
       return { value: 'frame', label: 'Frame' }
@@ -243,6 +244,8 @@ export const EditorContractDropdown = React.memo(() => {
       const view = selectedViews[0]
       switch (currentValue.value) {
         case 'frame':
+        case 'not-quite-frame':
+        case 'wrapper-div':
           disabledOptions.group = maybeReasonForConversionForbidden(
             getInstanceForFrameToGroupConversion(
               metadataRef.current,
@@ -289,6 +292,8 @@ export const EditorContractDropdown = React.memo(() => {
             ),
           )
           break
+        default:
+          assertNever(currentValue.value)
       }
     }
 
