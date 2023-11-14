@@ -100,6 +100,7 @@ describe('Updating a transitive dependency', () => {
       null,
       emptySet(),
       'trim-bounds',
+      'do-not-apply-steganography',
     ) as ParsedTextFile
 
     const oldFile = forceNotNull(

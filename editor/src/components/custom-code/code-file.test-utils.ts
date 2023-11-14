@@ -42,7 +42,14 @@ export const Spring = (props) => {
 }
 
 export function createCodeFile(path: string, contents: string): TextFile {
-  const result = lintAndParse(path, contents, null, emptySet(), 'trim-bounds')
+  const result = lintAndParse(
+    path,
+    contents,
+    null,
+    emptySet(),
+    'trim-bounds',
+    'do-not-apply-steganography',
+  )
   return textFile(textFileContents(contents, result, RevisionsState.BothMatch), null, null, 0)
 }
 

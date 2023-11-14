@@ -113,6 +113,7 @@ function lintAndParseAndValidateResult(
     oldParseResultForUIDComparison,
     alreadyExistingUIDs_MUTABLE,
     shouldTrimBounds,
+    'do-not-apply-steganography',
   )
   validateParsedTextFileElementUIDs(result)
   validateHighlightBoundsForUIDs(result)

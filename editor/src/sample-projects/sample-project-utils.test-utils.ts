@@ -53,6 +53,7 @@ export function parseProjectContents(
           null,
           emptySet(),
           'trim-bounds',
+          'do-not-apply-steganography',
         )
         const updatedFile = textFile(
           textFileContents(file.fileContents.code, parsed, RevisionsState.BothMatch),
@@ -71,7 +72,14 @@ export function parseProjectContents(
 }
 
 export function getParseSuccessForStoryboardCode(appUiJsFile: string): ParseSuccess {
-  const parsedFile = lintAndParse(StoryboardFilePath, appUiJsFile, null, emptySet(), 'trim-bounds')
+  const parsedFile = lintAndParse(
+    StoryboardFilePath,
+    appUiJsFile,
+    null,
+    emptySet(),
+    'trim-bounds',
+    'do-not-apply-steganography',
+  )
 
   if (isParseFailure(parsedFile)) {
     const failure =
@@ -138,6 +146,7 @@ export function createModifiedProject(
           null,
           emptySet(),
           'trim-bounds',
+          'do-not-apply-steganography',
         ) as ParsedTextFile)
     if (isParseFailure(fileParseResult)) {
       const failure =

@@ -7,6 +7,7 @@ import type {
   ParsedTextFile,
   ProjectFile,
 } from '../../shared/project-file-types'
+import type { SteganographyMode } from '../parser-printer/parser-printer'
 import type { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 
 export type FileContent = string | TextFile
@@ -141,18 +142,21 @@ export interface ParsePrintFilesRequest extends ParsePrintBase {
   type: 'parseprintfiles'
   files: Array<ParseOrPrint>
   alreadyExistingUIDs: Set<string>
+  applySteganography: SteganographyMode
 }
 
 export function createParsePrintFilesRequest(
   files: Array<ParseOrPrint>,
   alreadyExistingUIDs: Set<string>,
   messageID: number,
+  applySteganography: SteganographyMode,
 ): ParsePrintFilesRequest {
   return {
     type: 'parseprintfiles',
     files: files,
     alreadyExistingUIDs: alreadyExistingUIDs,
     messageID: messageID,
+    applySteganography: applySteganography,
   }
 }
 
@@ -162,6 +166,7 @@ export function getParseResult(
   workers: UtopiaTsWorkers,
   files: Array<ParseOrPrint>,
   alreadyExistingUIDs: Set<string>,
+  applySteganography: SteganographyMode,
 ): Promise<Array<ParseOrPrintResult>> {
   const messageIDForThisRequest = PARSE_PRINT_MESSAGE_COUNTER++
   return new Promise((resolve, reject) => {
@@ -186,7 +191,12 @@ export function getParseResult(
 
     workers.addParserPrinterEventListener(handleMessage)
     workers.sendParsePrintMessage(
-      createParsePrintFilesRequest(files, alreadyExistingUIDs, messageIDForThisRequest),
+      createParsePrintFilesRequest(
+        files,
+        alreadyExistingUIDs,
+        messageIDForThisRequest,
+        applySteganography,
+      ),
     )
   })
 }

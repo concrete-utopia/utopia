@@ -143,7 +143,6 @@ import type { Optic } from '../../../core/shared/optics/optics'
 import { modify } from '../../../core/shared/optics/optic-utilities'
 import { updateHighlightBounds } from '../../../core/shared/uid-utils'
 import { cleanSteganoTextData, encodeSteganoData } from '../../shared/stegano-text'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 function buildPropertyCallingFunction(
   functionName: string,
@@ -1330,13 +1329,15 @@ export function parseCode(
   sourceText: string,
   oldParseResultForUIDComparison: ParseSuccess | null,
   alreadyExistingUIDs_MUTABLE: Set<string>,
+  applySteganography: SteganographyMode,
 ): ParsedTextFile {
   const originalAlreadyExistingUIDs_MUTABLE: Set<string> = new Set(alreadyExistingUIDs_MUTABLE)
-  const sourceTextToUse = stegaTransform({ filePath, sourceText })
-  // TODO: this throws an error about reading feature switches before they were loaded
-  // const sourceTextToUse = isFeatureEnabled('Steganography')
-  //   ? stegaTransform({ filePath, sourceText })
-  //   : sourceText
+  const sourceTextToUse =
+    applySteganography === 'apply-steganography'
+      ? stegaTransform({ filePath, sourceText })
+      : applySteganography === 'do-not-apply-steganography'
+      ? sourceText
+      : assertNever(applySteganography)
 
   const sourceFile = TS.createSourceFile(filePath, sourceTextToUse, TS.ScriptTarget.ES3)
 
@@ -2132,6 +2133,7 @@ export function lintAndParse(
   oldParseResultForUIDComparison: ParseSuccess | null,
   alreadyExistingUIDs_MUTABLE: Set<string>,
   shouldTrimBounds: 'trim-bounds' | 'do-not-trim-bounds',
+  applySteganography: SteganographyMode,
 ): ParsedTextFile {
   const lintResult = lintCode(filename, content)
   // Only fatal or error messages should bounce the parse.
@@ -2141,6 +2143,7 @@ export function lintAndParse(
       content,
       oldParseResultForUIDComparison,
       alreadyExistingUIDs_MUTABLE,
+      applySteganography,
     )
     if (isParseSuccess(result) && shouldTrimBounds === 'trim-bounds') {
       return trimHighlightBounds(result)
