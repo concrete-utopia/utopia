@@ -177,9 +177,9 @@ const ClosedPanelButton = React.memo((props: InsertModeButtonProps) => {
         pointerEvents: 'initial',
         display: 'flex',
         flexDirection: 'row',
-        width: 32,
-        height: 32,
-        borderRadius: 32,
+        width: 28,
+        height: 28,
+        borderRadius: 28,
         transition: 'all .1s .1s ease-in-out',
       }}
       onClick={props.onClick}
