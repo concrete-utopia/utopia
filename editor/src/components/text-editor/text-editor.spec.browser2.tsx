@@ -1738,12 +1738,9 @@ describe('Use the text editor', () => {
       )
 
       await enterTextEditMode(editor, 'start')
-      await wait(5000)
       typeText(' Utopia')
-      await wait(5000)
       await expectSingleUndo2Saves(editor, async () => closeTextEditor())
       await editor.getDispatchFollowUpActionsFinished()
-      await wait(5000)
 
       expect(editor.getEditorState().editor.mode.type).toEqual('select')
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
