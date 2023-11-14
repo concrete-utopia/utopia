@@ -144,6 +144,7 @@ import { isRight } from '../../core/shared/either'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { createPasteToReplacePostActionActions } from '../canvas/canvas-strategies/post-action-options/post-action-options'
 import { wrapInDivStrategy } from './wrap-in-callbacks'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -442,7 +443,10 @@ export function handleKeyDown(
         return []
       },
       [COMMENT_SHORTCUT]: () => {
-        return [EditorActions.switchEditorMode(EditorModes.commentMode(null))]
+        if (isFeatureEnabled('Commenting')) {
+          return [EditorActions.switchEditorMode(EditorModes.commentMode(null))]
+        }
+        return []
       },
       [JUMP_TO_PARENT_SHORTCUT]: () => {
         if (isSelectMode(editor.mode)) {
