@@ -66,6 +66,7 @@ import {
   isUtopiaCommentFlagMapCount,
 } from '../../../core/shared/comment-flags'
 import { RemixSceneComponent } from './remix-scene-component'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export function createLookupRender(
   elementPath: ElementPath | null,
@@ -285,36 +286,44 @@ export function renderCoreElement(
       }
 
       if (elementIsTextEdited) {
-        const innerRender = createLookupRender(
-          elementPath,
-          rootScope,
-          parentComponentInputProps,
-          requireResult,
-          hiddenInstances,
-          displayNoneInstances,
-          fileBlobs,
-          validPaths,
-          reactChildren,
-          metadataContext,
-          updateInvalidatedPaths,
-          jsxFactoryFunctionName,
-          shouldIncludeCanvasRootInTheSpy,
-          filePath,
-          imports,
-          code,
-          highlightBounds,
-          editedText,
-          mapCountOverride,
-        )
-        const blockScope = {
-          ...inScope,
-          [JSX_CANVAS_LOOKUP_FUNCTION_NAME]: utopiaCanvasJSXLookup(
-            element.elementsWithin,
-            inScope,
-            innerRender,
-          ),
+        const runJSExpressionWrapper = () => {
+          const innerRender = createLookupRender(
+            elementPath,
+            rootScope,
+            parentComponentInputProps,
+            requireResult,
+            hiddenInstances,
+            displayNoneInstances,
+            fileBlobs,
+            validPaths,
+            reactChildren,
+            metadataContext,
+            updateInvalidatedPaths,
+            jsxFactoryFunctionName,
+            shouldIncludeCanvasRootInTheSpy,
+            filePath,
+            imports,
+            code,
+            highlightBounds,
+            editedText,
+            mapCountOverride,
+          )
+
+          const blockScope = {
+            ...inScope,
+            [JSX_CANVAS_LOOKUP_FUNCTION_NAME]: utopiaCanvasJSXLookup(
+              element.elementsWithin,
+              inScope,
+              innerRender,
+            ),
+          }
+          return runJSExpression(filePath, requireResult, element, blockScope)
         }
-        const originalTextContent = runJSExpression(filePath, requireResult, element, blockScope)
+
+        const originalTextContent = isFeatureEnabled('Steganography')
+          ? runJSExpressionWrapper()
+          : null
+
         const textContent = trimJoinUnescapeTextFromJSXElements([element])
         const textEditorProps: TextEditorProps = {
           elementPath: elementPath,
@@ -822,43 +831,48 @@ function renderJSXElement(
     validPaths.has(EP.toString(EP.makeLastPartOfPathStatic(elementPath)))
   ) {
     if (elementIsTextEdited) {
-      const innerRender = createLookupRender(
-        elementPath,
-        rootScope,
-        parentComponentInputProps,
-        requireResult,
-        hiddenInstances,
-        displayNoneInstances,
-        fileBlobs,
-        validPaths,
-        [],
-        metadataContext,
-        updateInvalidatedPaths,
-        jsxFactoryFunctionName,
-        shouldIncludeCanvasRootInTheSpy,
-        filePath,
-        imports,
-        code,
-        highlightBounds,
-        editedText,
-        null,
-      )
-      const blockScope = {
-        ...inScope,
-        [JSX_CANVAS_LOOKUP_FUNCTION_NAME]: utopiaCanvasJSXLookup({}, inScope, innerRender),
+      const runJSExpressionWrapper = () => {
+        const innerRender = createLookupRender(
+          elementPath,
+          rootScope,
+          parentComponentInputProps,
+          requireResult,
+          hiddenInstances,
+          displayNoneInstances,
+          fileBlobs,
+          validPaths,
+          [],
+          metadataContext,
+          updateInvalidatedPaths,
+          jsxFactoryFunctionName,
+          shouldIncludeCanvasRootInTheSpy,
+          filePath,
+          imports,
+          code,
+          highlightBounds,
+          editedText,
+          null,
+        )
+
+        const blockScope = {
+          ...inScope,
+          [JSX_CANVAS_LOOKUP_FUNCTION_NAME]: utopiaCanvasJSXLookup(
+            element.elementsWithin,
+            inScope,
+            innerRender,
+          ),
+        }
+        const expressionToEvaluate =
+          childrenWithNewTextBlock.length > 0 && isJSExpression(childrenWithNewTextBlock[0])
+            ? childrenWithNewTextBlock[0]
+            : jsExpressionValue(null, emptyComments) // placeholder
+        return runJSExpression(filePath, requireResult, expressionToEvaluate, blockScope)
       }
 
-      const expressionToEvaluate =
-        childrenWithNewTextBlock.length > 0 && isJSExpression(childrenWithNewTextBlock[0])
-          ? childrenWithNewTextBlock[0]
-          : jsExpressionValue(null, emptyComments) // placeholder
+      const originalTextContent = isFeatureEnabled('Steganography')
+        ? runJSExpressionWrapper()
+        : null
 
-      const originalTextContent = runJSExpression(
-        filePath,
-        requireResult,
-        expressionToEvaluate,
-        blockScope,
-      )
       const textContent = trimJoinUnescapeTextFromJSXElements(childrenWithNewTextBlock)
       const textEditorProps: TextEditorProps = {
         elementPath: elementPath,
