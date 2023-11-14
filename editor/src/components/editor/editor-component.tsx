@@ -428,7 +428,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
           </SimpleFlexRow>
         </SimpleFlexColumn>
         <ModalComponent />
-        <ToastRenderer />
         <LockedOverlay />
       </SimpleFlexRow>
       <EditorCommon
@@ -519,7 +518,7 @@ export function EditorComponent(props: EditorProps) {
   )
 }
 
-const ToastRenderer = React.memo(() => {
+export const ToastRenderer = React.memo(() => {
   const toasts = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.toasts,
@@ -530,15 +529,8 @@ const ToastRenderer = React.memo(() => {
     <FlexColumn
       key={'toast-stack'}
       style={{
-        position: 'fixed',
-        bottom: 8,
-        justifyContent: 'center',
-        right: 260,
         zIndex: 100,
-        // padding required to not cut off the boxShadow on each toast
-        paddingTop: 50,
-        paddingLeft: 50,
-        paddingRight: 50,
+        gap: 10,
       }}
     >
       {toasts.map((toast, index) => (

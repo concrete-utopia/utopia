@@ -59,7 +59,7 @@ export const UtopiaTheme = {
     panelBorderRadius: 10,
     shadows: {
       // NB this uses black since shadows are always darker than the surrounding area, dark mode or not
-      medium: `rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.06) 0px 1px 2px 0px`,
+      medium: `rgba(0, 0, 0, 0.3) 0px 1px 3px 0px, rgba(0, 0, 0, 0.06) 0px 1px 2px 0px`,
     },
   },
 } as const

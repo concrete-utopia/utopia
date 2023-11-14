@@ -74,31 +74,30 @@ export const Toast: React.FunctionComponent<React.PropsWithChildren<NoticeProps>
     <div
       key={'toast-item'}
       style={{
-        background: '#111',
         ...getStylesForLevel(props.level ?? 'INFO'),
         borderRadius: 6,
         boxShadow:
           '0px 0px .5px rgba(0, 0, 0, .12), 0px 10px 16px rgba(0, 0, 0, .12), 0px 2px 5px rgba(0, 0, 0, .15), 0px 2px 14px rgba(0, 0, 0, .15), 0px 0px 0px 0.5px rgba(0, 0, 0, .2)',
         color: 'white',
-        width: 290,
-        minHeight: 27,
-        fontSize: 12,
+        maxWidth: 300,
+        fontSize: 11,
         fontWeight: 400,
-        letterSpacing: 0.2,
         fontFamily: 'utopian-Inter',
-        overflow: 'hidden',
-        overflowWrap: 'break-word',
-        wordWrap: 'break-word',
-        hyphens: 'auto',
-        whiteSpace: 'normal',
-        margin: '5px',
         display: 'flex',
         alignItems: 'stretch',
+        gap: 10,
+        padding: 8,
       }}
     >
       <div
-        style={{ flexGrow: 1, padding: 8, display: 'flex', alignItems: 'center' }}
         id='toast-message'
+        style={{
+          overflowWrap: 'break-word',
+          wordWrap: 'break-word',
+          hyphens: 'auto',
+          whiteSpace: 'pre-wrap',
+          width: 280,
+        }}
       >
         {getPrefixForLevel(props.level)}&nbsp;
         {props.message}
@@ -107,10 +106,7 @@ export const Toast: React.FunctionComponent<React.PropsWithChildren<NoticeProps>
         props.persistent,
         <div
           css={{
-            display: 'flex',
-            flex: '0 0 24px',
-            alignItems: 'center',
-            justifyContent: 'center',
+            width: 10,
             fontSize: 14,
             cursor: 'pointer',
             opacity: 0.3,
