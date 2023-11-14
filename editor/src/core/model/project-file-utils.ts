@@ -594,6 +594,9 @@ export function fileTypeFromFileName(
   if (filename == null) {
     return null
   }
+  if (filename.endsWith('.svg')) {
+    return 'ASSET_FILE'
+  }
   if (isText(filename)) {
     return 'TEXT_FILE'
   } else {
