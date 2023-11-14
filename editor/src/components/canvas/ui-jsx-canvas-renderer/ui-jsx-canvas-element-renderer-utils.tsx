@@ -853,19 +853,16 @@ function renderJSXElement(
           editedText,
           null,
         )
-
         const blockScope = {
           ...inScope,
-          [JSX_CANVAS_LOOKUP_FUNCTION_NAME]: utopiaCanvasJSXLookup(
-            element.elementsWithin,
-            inScope,
-            innerRender,
-          ),
+          [JSX_CANVAS_LOOKUP_FUNCTION_NAME]: utopiaCanvasJSXLookup({}, inScope, innerRender),
         }
+
         const expressionToEvaluate =
           childrenWithNewTextBlock.length > 0 && isJSExpression(childrenWithNewTextBlock[0])
             ? childrenWithNewTextBlock[0]
             : jsExpressionValue(null, emptyComments) // placeholder
+
         return runJSExpression(filePath, requireResult, expressionToEvaluate, blockScope)
       }
 
