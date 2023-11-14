@@ -1,5 +1,6 @@
 import { createClient } from '@liveblocks/client'
 import { createRoomContext } from '@liveblocks/react'
+import type { CanvasPoint } from './src/core/shared/math-utils'
 
 export const liveblocksThrottle = 100 // ms
 
@@ -12,9 +13,19 @@ export const liveblocksClient = createClient({
 // and that will automatically be kept in sync. Accessible through the
 // `user.presence` property. Must be JSON-serializable.
 type Presence = {
-  // cursor: { x: number, y: number } | null,
-  // ...
+  name: string | null
+  cursor: CanvasPoint | null
+  colorIndex: number | null
 }
+
+export function initialPresence(): Presence {
+  return {
+    name: null,
+    cursor: null,
+    colorIndex: null,
+  }
+}
+
 // Optionally, Storage represents the shared document that persists in the
 // Room, even after all users leave. Fields under Storage typically are
 // LiveList, LiveMap, LiveObject instances, for which updates are
@@ -28,7 +39,7 @@ export type Storage = {
 // provided by your own custom auth back end (if used). Useful for data that
 // will not change during a session, like a user's name or avatar.
 export type UserMeta = {
-  // id?: string,  // Accessible through `user.id`
+  id: string // Accessible through `user.id`
   // info?: Json,  // Accessible through `user.info`
 }
 
