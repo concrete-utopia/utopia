@@ -92,7 +92,7 @@ import { emptyModifiers, Modifier } from '../utils/modifiers'
 import type { MouseButtonsPressed } from '../utils/mouse'
 import RU from '../utils/react-utils'
 import Utils from '../utils/utils'
-import { UtopiaStyles } from '../uuiui'
+import { UtopiaStyles, colorTheme } from '../uuiui'
 import { DropHandlers } from './image-drop'
 import { EditorCommon } from '../components/editor/editor-component-common'
 import { CursorComponent } from '../components/canvas/controls/select-mode/cursor-component'
@@ -858,6 +858,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         'data-testid': 'canvas-root',
         style: {
           ...canvasLiveEditingStyle,
+          backgroundColor: colorTheme.canvasBackground.value,
           transition: 'all .2s linear',
           position: 'relative',
           overflow: 'hidden',
