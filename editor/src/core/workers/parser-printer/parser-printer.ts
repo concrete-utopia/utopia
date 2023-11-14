@@ -142,8 +142,7 @@ import { fromField } from '../../../core/shared/optics/optic-creators'
 import type { Optic } from '../../../core/shared/optics/optics'
 import { modify } from '../../../core/shared/optics/optic-utilities'
 import { updateHighlightBounds } from '../../../core/shared/uid-utils'
-import { vercelStegaCombine, vercelStegaDecode, vercelStegaSplit } from '@vercel/stega'
-import { decodeSteganoData, encodeSteganoData } from '../../shared/stegano-text'
+import { cleanSteganoTextData, encodeSteganoData } from '../../shared/stegano-text'
 
 function buildPropertyCallingFunction(
   functionName: string,
@@ -1288,7 +1287,7 @@ export function parseCode(
         }
         const startPosition = declaration.initializer.getStart(sourceFileOriginal)
         const endPosition = declaration.initializer.getEnd()
-        const textToEncode = vercelStegaSplit(declaration.initializer.text).cleaned
+        const textToEncode = cleanSteganoTextData(declaration.initializer.text).cleaned
         const stega = encodeSteganoData(textToEncode, {
           originalString: "'" + textToEncode + "'",
           filePath: filePath,
