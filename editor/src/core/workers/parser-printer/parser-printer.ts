@@ -142,6 +142,7 @@ import { fromField } from '../../../core/shared/optics/optic-creators'
 import type { Optic } from '../../../core/shared/optics/optics'
 import { modify } from '../../../core/shared/optics/optic-utilities'
 import { updateHighlightBounds } from '../../../core/shared/uid-utils'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 function buildPropertyCallingFunction(
   functionName: string,
@@ -1266,6 +1267,10 @@ export function parseCode(
   const sourceFile = TS.createSourceFile(filename, sourceText, TS.ScriptTarget.ES3)
 
   const jsxFactoryFunction = getJsxFactoryFunction(sourceFile)
+
+  if (isFeatureEnabled('my amazing fs')) {
+    // console.log('yay')
+  }
 
   if (sourceFile == null) {
     return parseFailure([], null, `File ${filename} not found.`, [])
