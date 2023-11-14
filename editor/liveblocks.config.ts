@@ -1,6 +1,5 @@
 import { createClient } from '@liveblocks/client'
 import { createRoomContext } from '@liveblocks/react'
-import type { CanvasVector } from './src/core/shared/math-utils'
 
 export const liveblocksThrottle = 100 // ms
 
@@ -12,26 +11,10 @@ export const liveblocksClient = createClient({
 // Presence represents the properties that exist on every user in the Room
 // and that will automatically be kept in sync. Accessible through the
 // `user.presence` property. Must be JSON-serializable.
-export type Presence = {
-  playerId: string | null
-  playerName: string | null
-  //color: { light: MultiplayerCursorColor; dark: MultiplayerCursorColor } | null
-  cursor: { x: number; y: number } | null
-  canvasScale: number | null
-  canvasOffset: CanvasVector | null
+type Presence = {
+  // cursor: { x: number, y: number } | null,
+  // ...
 }
-
-export function initialPresence(): Presence {
-  return {
-    cursor: null,
-    playerId: null,
-    playerName: null,
-    //color: null,
-    canvasScale: null,
-    canvasOffset: null,
-  }
-}
-
 // Optionally, Storage represents the shared document that persists in the
 // Room, even after all users leave. Fields under Storage typically are
 // LiveList, LiveMap, LiveObject instances, for which updates are
