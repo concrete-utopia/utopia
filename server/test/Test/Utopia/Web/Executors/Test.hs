@@ -83,6 +83,7 @@ initialiseTestResources databasePool = do
          , _logger = _logger
          , _loggerShutdown = _loggerShutdown
          , _matchingVersionsCache = matchingVersionsCache
+         , _liveblocksResources = Nothing
          }
 
 testEnvironmentRuntime :: DB.DBPool -> EnvironmentRuntime DevServerResources
