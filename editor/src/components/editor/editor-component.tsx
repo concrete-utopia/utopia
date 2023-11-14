@@ -508,12 +508,10 @@ export function EditorComponent(props: EditorProps) {
 
   const dispatch = useDispatch()
 
-  const roomId = useEditorState(
-    Substores.restOfEditor,
-    (store) => (projectId == null ? generateUUID() : `project-room-${projectId}`),
-    'EditorComponent roomId',
+  const roomId = React.useMemo(
+    () => (projectId == null ? generateUUID() : `project-room-${projectId}`),
+    [projectId],
   )
-
   return indexedDBFailed ? (
     <FatalIndexedDBErrorComponent />
   ) : (
