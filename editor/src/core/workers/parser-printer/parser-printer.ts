@@ -142,6 +142,7 @@ import { fromField } from '../../../core/shared/optics/optic-creators'
 import type { Optic } from '../../../core/shared/optics/optics'
 import { modify } from '../../../core/shared/optics/optic-utilities'
 import { updateHighlightBounds } from '../../../core/shared/uid-utils'
+import type { SteganoTextData } from '../../shared/stegano-text'
 import { cleanSteganoTextData, encodeSteganoData } from '../../shared/stegano-text'
 
 function buildPropertyCallingFunction(
@@ -993,11 +994,13 @@ function printCodeImpl(
     ...printTopLevelElements(printOptions, imports, afterLastImport, detailOfExports),
   ]
 
-  return printStatements(
+  const result = printStatements(
     statementsToPrint,
     printOptions.pretty,
     printOptions.insertLinesBetweenStatements,
   )
+
+  return transformStripStegaData({ filePath: filePath, sourceText: result })
 }
 
 interface PossibleCanvasContentsExpression {
@@ -1257,70 +1260,76 @@ export function isReactImported(sourceFile: TS.SourceFile): boolean {
   })
 }
 
-function stegaTransform({ filePath, sourceText }: { filePath: string; sourceText: string }) {
-  const visitor =
-    (context: TS.TransformationContext) =>
-    (node: TS.Node): TS.Node => {
-      if (!TS.isVariableStatement(node)) {
-        return TS.visitEachChild(node, visitor(context), context)
-      }
-      const noStringLiteralsInDeclaration = !node.declarationList.declarations.some(
-        (declaration) =>
-          declaration.initializer != null && TS.isStringLiteral(declaration.initializer),
-      )
-
-      if (noStringLiteralsInDeclaration) {
-        return TS.visitEachChild(node, visitor(context), context)
-      }
-
-      const declarations = node.declarationList.declarations.map((declaration) => {
-        if (declaration.initializer == null || !TS.isStringLiteral(declaration.initializer)) {
-          return declaration
+const stegaTransform =
+  (fn: (literal: string, data: SteganoTextData) => string) =>
+  ({ filePath, sourceText }: { filePath: string; sourceText: string }) => {
+    const visitor =
+      (context: TS.TransformationContext) =>
+      (node: TS.Node): TS.Node => {
+        if (!TS.isVariableStatement(node)) {
+          return TS.visitEachChild(node, visitor(context), context)
         }
-        const startPosition = declaration.initializer.getStart(sourceFileOriginal)
-        const endPosition = declaration.initializer.getEnd()
-        const textToEncode = cleanSteganoTextData(declaration.initializer.text).cleaned
-        const stega = encodeSteganoData(textToEncode, {
-          originalString: "'" + textToEncode + "'",
-          filePath: filePath,
-          startPosition: startPosition,
-          endPosition: endPosition,
-        })
-        return context.factory.updateVariableDeclaration(
-          declaration,
-          declaration.name,
-          declaration.exclamationToken,
-          declaration.type,
-          context.factory.createStringLiteral(stega, true),
+        const noStringLiteralsInDeclaration = !node.declarationList.declarations.some(
+          (declaration) =>
+            declaration.initializer != null && TS.isStringLiteral(declaration.initializer),
         )
-      })
 
-      return context.factory.updateVariableStatement(
-        node,
-        node.modifiers,
-        context.factory.updateVariableDeclarationList(node.declarationList, declarations),
-      )
-    }
+        if (noStringLiteralsInDeclaration) {
+          return TS.visitEachChild(node, visitor(context), context)
+        }
 
-  const transformer = (context: TS.TransformationContext) => (n: TS.Node) =>
-    TS.visitNode(n, visitor(context))
+        const declarations = node.declarationList.declarations.map((declaration) => {
+          if (declaration.initializer == null || !TS.isStringLiteral(declaration.initializer)) {
+            return declaration
+          }
+          const startPosition = declaration.initializer.getStart(sourceFileOriginal)
+          const endPosition = declaration.initializer.getEnd()
+          const textToEncode = cleanSteganoTextData(declaration.initializer.text).cleaned
+          const stegaData: SteganoTextData = {
+            originalString: "'" + textToEncode + "'",
+            filePath: filePath,
+            startPosition: startPosition,
+            endPosition: endPosition,
+          }
+          const transformedText = fn(textToEncode, stegaData)
+          return context.factory.updateVariableDeclaration(
+            declaration,
+            declaration.name,
+            declaration.exclamationToken,
+            declaration.type,
+            context.factory.createStringLiteral(transformedText, true),
+          )
+        })
 
-  const sourceFileOriginal = TS.createSourceFile(filePath, sourceText, TS.ScriptTarget.ES3)
+        return context.factory.updateVariableStatement(
+          node,
+          node.modifiers,
+          context.factory.updateVariableDeclarationList(node.declarationList, declarations),
+        )
+      }
 
-  const newFile = TS.transform(sourceFileOriginal, [transformer]).transformed[0]
+    const transformer = (context: TS.TransformationContext) => (n: TS.Node) =>
+      TS.visitNode(n, visitor(context))
 
-  const printer = TS.createPrinter({ newLine: TS.NewLineKind.LineFeed })
-  const resultFile = TS.createSourceFile(
-    'print.ts',
-    '',
-    TS.ScriptTarget.Latest,
-    false,
-    TS.ScriptKind.TS,
-  )
+    const sourceFileOriginal = TS.createSourceFile(filePath, sourceText, TS.ScriptTarget.ES3)
 
-  const sourceFileReprinted = printer.printNode(TS.EmitHint.Unspecified, newFile, resultFile)
-  return sourceFileReprinted
-}
+    const newFile = TS.transform(sourceFileOriginal, [transformer]).transformed[0]
+
+    const printer = TS.createPrinter({ newLine: TS.NewLineKind.LineFeed })
+    const resultFile = TS.createSourceFile(
+      'print.ts',
+      '',
+      TS.ScriptTarget.Latest,
+      false,
+      TS.ScriptKind.TS,
+    )
+
+    const sourceFileReprinted = printer.printNode(TS.EmitHint.Unspecified, newFile, resultFile)
+    return sourceFileReprinted
+  }
+
+const transformEncodeStegaData = stegaTransform((text, data) => encodeSteganoData(text, data))
+const transformStripStegaData = stegaTransform((text) => cleanSteganoTextData(text).cleaned)
 
 export type SteganographyMode = 'apply-steganography' | 'do-not-apply-steganography'
 
@@ -1334,7 +1343,7 @@ export function parseCode(
   const originalAlreadyExistingUIDs_MUTABLE: Set<string> = new Set(alreadyExistingUIDs_MUTABLE)
   const sourceTextToUse =
     applySteganography === 'apply-steganography'
-      ? stegaTransform({ filePath, sourceText })
+      ? transformEncodeStegaData({ filePath, sourceText })
       : applySteganography === 'do-not-apply-steganography'
       ? sourceText
       : assertNever(applySteganography)
