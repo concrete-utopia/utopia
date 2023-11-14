@@ -425,6 +425,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
         width: '100%',
         position: 'relative',
         height: '100%',
+        zIndex: 2,
       }}
       onFocus={onFocus}
     >
