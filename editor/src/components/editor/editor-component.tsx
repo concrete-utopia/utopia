@@ -55,6 +55,8 @@ import { EditorCommon } from './editor-component-common'
 import { notice } from '../common/notice'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { ProjectServerStateUpdater } from './store/project-server-state'
+import { useRoom, RoomProvider } from '../../../liveblocks.config'
+import { generateUUID } from '../../utils/utils'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -88,6 +90,8 @@ function useDelayedValueHook(inputValue: boolean, delayMs: number): boolean {
 }
 
 export const EditorComponentInner = React.memo((props: EditorProps) => {
+  const room = useRoom()
+  console.info('room', JSON.stringify(room.getStatus()))
   const dispatch = useDispatch()
   const editorStoreRef = useRefEditorState((store) => store)
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
@@ -503,18 +507,24 @@ export function EditorComponent(props: EditorProps) {
 
   const dispatch = useDispatch()
 
+  const roomId = React.useMemo(
+    () => (projectId == null ? generateUUID() : `project-room-${projectId}`),
+    [projectId],
+  )
   return indexedDBFailed ? (
     <FatalIndexedDBErrorComponent />
   ) : (
-    <DndProvider backend={HTML5Backend} context={window}>
-      <ProjectServerStateUpdater
-        projectId={projectId}
-        forkedFromProjectId={forkedFromProjectId}
-        dispatch={dispatch}
-      >
-        <EditorComponentInner {...props} />
-      </ProjectServerStateUpdater>
-    </DndProvider>
+    <RoomProvider id={roomId} autoConnect={true} initialPresence={{}}>
+      <DndProvider backend={HTML5Backend} context={window}>
+        <ProjectServerStateUpdater
+          projectId={projectId}
+          forkedFromProjectId={forkedFromProjectId}
+          dispatch={dispatch}
+        >
+          <EditorComponentInner {...props} />
+        </ProjectServerStateUpdater>
+      </DndProvider>
+    </RoomProvider>
   )
 }
 

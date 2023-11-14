@@ -43,6 +43,9 @@ executable utopia-web
       Utopia.Web.Github
       Utopia.Web.Github.Types
       Utopia.Web.JSON
+      Utopia.Web.Liveblocks
+      Utopia.Web.Liveblocks.API
+      Utopia.Web.Liveblocks.Types
       Utopia.Web.Logging
       Utopia.Web.Metrics
       Utopia.Web.Packager.Locking
@@ -182,6 +185,9 @@ test-suite utopia-web-test
       Utopia.Web.Github
       Utopia.Web.Github.Types
       Utopia.Web.JSON
+      Utopia.Web.Liveblocks
+      Utopia.Web.Liveblocks.API
+      Utopia.Web.Liveblocks.Types
       Utopia.Web.Logging
       Utopia.Web.Metrics
       Utopia.Web.Packager.Locking
