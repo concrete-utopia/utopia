@@ -44,6 +44,8 @@ import           Utopia.Web.Editor.Branches
 import           Utopia.Web.Endpoints
 import           Utopia.Web.Executors.Common
 import           Utopia.Web.Github
+import           Utopia.Web.Liveblocks
+import           Utopia.Web.Liveblocks.Types
 import           Utopia.Web.Logging
 import           Utopia.Web.Metrics
 import           Utopia.Web.Packager.Locking
@@ -79,6 +81,7 @@ data DevServerResources = DevServerResources
                         , _matchingVersionsCache :: MatchingVersionsCache
                         , _logger                :: FastLogger
                         , _loggerShutdown        :: IO ()
+                        , _liveblocksResources   :: Maybe LiveblocksResources
                         }
 
 type DevProcessMonad a = ServerProcessMonad DevServerResources a
@@ -418,6 +421,17 @@ innerServerExecutor (GetGithubUserDetails user action) = do
     Just githubResources -> do
       result <- getDetailsOfGithubUser githubSemaphore githubResources logger metrics pool user
       pure $ action result
+innerServerExecutor (AuthLiveblocksUser user roomID action) = do
+  possibleLiveblocksResources <- fmap _liveblocksResources ask
+  metrics <- fmap _databaseMetrics ask
+  pool <- fmap _projectPool ask
+  case possibleLiveblocksResources of
+    Nothing -> throwError err501
+    Just liveblocksResources -> do
+      errorOrToken <- liftIO $ authorizeUserForLiveblocksProjectRoom liveblocksResources metrics pool user roomID
+      case errorOrToken of
+        Left errorMessage -> putStrLn errorMessage >> throwError err500
+        Right token       -> pure $ action token
 
 {-|
   Invokes a service call using the supplied resources.
@@ -487,6 +501,7 @@ initialiseResources = do
   let _logOnStartup = True
   (_logger, _loggerShutdown) <- newFastLogger (LogStdout defaultBufSize)
   _matchingVersionsCache <- newMatchingVersionsCache
+  _liveblocksResources <- makeLiveblocksResources
   return $ DevServerResources{..}
 
 devEnvironmentRuntime :: EnvironmentRuntime DevServerResources

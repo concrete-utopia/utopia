@@ -372,8 +372,8 @@ useAccessToken githubResources logger metrics pool userID action = do
       let expired = (fmap (< now) $ expiresAt authDetails) == Just True
       accessTokenToUse <- if expired then refreshTheToken else (pure $ Just currentAccessToken)
       case accessTokenToUse of
-        Nothing    -> throwE "User not authenticated with Github."
-        Just token -> action token
+        Nothing      -> throwE "User not authenticated with Github."
+        Just ghToken -> action ghToken
 
 createInitialCommitIfNecessary :: (MonadBaseControl IO m, MonadIO m) => QSem -> AccessToken -> Text -> Text -> ExceptT Text m (Maybe Text)
 createInitialCommitIfNecessary githubSemaphore accessToken owner repository = do
