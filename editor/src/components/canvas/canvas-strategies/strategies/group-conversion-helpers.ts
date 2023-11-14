@@ -490,7 +490,11 @@ export function convertSizelessDivToFrameCommands(
 ): CanvasCommand[] | null {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
 
-  const childrenBoundingFrame = MetadataUtils.getFrameInCanvasCoords(elementPath, metadata)
+  const childrenBoundingFrame = MetadataUtils.getBoundingRectangleOfChildren(
+    metadata,
+    pathTrees,
+    elementPath,
+  )
   if (childrenBoundingFrame == null || isInfinityRectangle(childrenBoundingFrame)) {
     return null
   }
@@ -545,34 +549,6 @@ export function convertSizelessDivToFrameCommands(
       element?.specialSizeMeasurements.parentFlexDirection ?? null,
     ),
     ...offsetChildrenByDelta(childInstances, childrenBoundingFrame),
-  ]
-}
-
-export function convertFrameToSizelessDivCommands(
-  metadata: ElementInstanceMetadataMap,
-  allElementProps: AllElementProps,
-  pathTrees: ElementPathTrees,
-  elementPath: ElementPath,
-): Array<CanvasCommand> {
-  const parentOffset =
-    MetadataUtils.findElementByElementPath(metadata, elementPath)?.specialSizeMeasurements.offset ??
-    zeroCanvasPoint
-
-  const childInstances = mapDropNulls(
-    (path) => MetadataUtils.findElementByElementPath(metadata, path),
-    replaceFragmentLikePathsWithTheirChildrenRecursive(
-      metadata,
-      allElementProps,
-      pathTrees,
-      MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath),
-    ),
-  )
-
-  return [
-    ...nukeAllAbsolutePositioningPropsCommands(elementPath),
-    nukeSizingPropsForAxisCommand('vertical', elementPath),
-    nukeSizingPropsForAxisCommand('horizontal', elementPath),
-    ...offsetChildrenByVectorCommands(childInstances, parentOffset),
   ]
 }
 
@@ -1315,7 +1291,15 @@ export function getCommandsForConversionToDesiredType(
           return []
         }
 
-        throw new Error('Implement me!')
+        // TODO before merge: do the getInstance... stuff
+        return (
+          convertSizelessDivToFrameCommands(
+            metadata,
+            allElementProps,
+            elementPathTree,
+            elementPath,
+          ) ?? []
+        )
       }
 
       if (desiredType === 'fragment') {
