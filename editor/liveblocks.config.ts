@@ -1,10 +1,11 @@
 import { createClient } from '@liveblocks/client'
 import { createRoomContext } from '@liveblocks/react'
 
-const client = createClient({
-  publicApiKey: 'pk_dev_JKA4v6OjxmJkgn49CmIafpJypWfPCUZz2TDUytEFcCpInUcUMH604iXIBYllN40k',
-  // authEndpoint: "/api/auth",
-  // throttle: 100,
+export const liveblocksThrottle = 100 // ms
+
+export const liveblocksClient = createClient({
+  throttle: liveblocksThrottle,
+  authEndpoint: '/v1/liveblocks/authentication',
 })
 
 // Presence represents the properties that exist on every user in the Room
@@ -14,12 +15,11 @@ type Presence = {
   // cursor: { x: number, y: number } | null,
   // ...
 }
-
 // Optionally, Storage represents the shared document that persists in the
 // Room, even after all users leave. Fields under Storage typically are
 // LiveList, LiveMap, LiveObject instances, for which updates are
 // automatically persisted and synced to all connected clients.
-type Storage = {
+export type Storage = {
   // author: LiveObject<{ firstName: string, lastName: string }>,
   // ...
 }
@@ -27,14 +27,14 @@ type Storage = {
 // Optionally, UserMeta represents static/readonly metadata on each user, as
 // provided by your own custom auth back end (if used). Useful for data that
 // will not change during a session, like a user's name or avatar.
-type UserMeta = {
+export type UserMeta = {
   // id?: string,  // Accessible through `user.id`
   // info?: Json,  // Accessible through `user.info`
 }
 
 // Optionally, the type of custom events broadcast and listened to in this
 // room. Use a union for multiple events. Must be JSON-serializable.
-type RoomEvent = {
+export type RoomEvent = {
   // type: "NOTIFICATION",
   // ...
 }
@@ -45,9 +45,6 @@ export type ThreadMetadata = {
   // resolved: boolean;
   // quote: string;
   // time: number;
-  type: 'coord'
-  top: number
-  left: number
 }
 
 export const {
@@ -85,9 +82,8 @@ export const {
     useEditComment,
     useDeleteComment,
     useAddReaction,
-    useRemoveReaction,
   },
-} = createRoomContext<Presence, Storage, UserMeta, RoomEvent, ThreadMetadata>(client, {
+} = createRoomContext<Presence, Storage, UserMeta, RoomEvent, ThreadMetadata>(liveblocksClient, {
   async resolveUsers({ userIds }) {
     // Used only for Comments. Return a list of user information retrieved
     // from `userIds`. This info is used in comments, mentions etc.

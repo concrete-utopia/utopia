@@ -343,37 +343,6 @@ export const CanvasToolbar = React.memo(() => {
     dispatch([resetCanvas()])
   }, [dispatch, resetRemixApps])
 
-  const inspectorInvisible = useEditorState(
-    Substores.restOfEditor,
-    (store) => !store.editor.rightMenu.visible,
-    'SettingsPanel inspector.minimized',
-  )
-
-  const toggleInspectorVisible = React.useCallback(() => {
-    dispatch([togglePanel('rightmenu')])
-  }, [dispatch])
-
-  const navigatorInvisible = useEditorState(
-    Substores.restOfEditor,
-    (store) => !store.editor.leftMenu.visible,
-    'SettingsPanel navigator.minimised',
-  )
-
-  const toggleNavigatorVisible = React.useCallback(() => {
-    dispatch([togglePanel('leftmenu')])
-  }, [dispatch])
-
-  const editorInvisible = useEditorState(
-    Substores.restOfEditor,
-    (store) => !store.editor.interfaceDesigner.codePaneVisible,
-    'SettingsPanel navigator.minimised',
-  )
-
-  const toggleCodeEditorVisible = React.useCallback(
-    () => dispatch([togglePanel('codeEditor')]),
-    [dispatch],
-  )
-
   const toggleInsertButtonClicked = React.useCallback(() => {
     if (canvasToolbarMode.primary === 'insert') {
       dispatchSwitchToSelectModeCloseMenus()
@@ -420,307 +389,166 @@ export const CanvasToolbar = React.memo(() => {
   )
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        gap: 10,
-        flexDirection: 'row',
-      }}
+    <FlexColumn
+      style={{ alignItems: 'start', justifySelf: 'center' }}
       // Mouse events should never go through this component.
       onClick={stopPropagation}
       onMouseDown={focusCanvasOnMouseDown}
       onMouseUp={stopPropagation}
     >
-      {navigatorInvisible ? (
-        <div
-          style={{
-            backgroundColor: theme.inspectorBackground.value,
-            borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
-            overflow: 'hidden',
-            boxShadow: UtopiaTheme.panelStyles.shadows.medium,
-            pointerEvents: 'initial',
-            display: 'flex',
-            flexDirection: 'row',
-            width: 32,
-            height: 32,
-          }}
-        >
-          <Tooltip title='Toggle Navigator (⌘⌥1)' placement='bottom'>
-            <InsertModeButton
-              iconType='navigator-larger'
-              iconCategory='semantic'
-              onClick={toggleNavigatorVisible}
-            />
-          </Tooltip>
-        </div>
-      ) : null}
-      {editorInvisible ? (
-        <div
-          style={{
-            backgroundColor: theme.inspectorBackground.value,
-            borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
-            overflow: 'hidden',
-            boxShadow: UtopiaTheme.panelStyles.shadows.medium,
-            pointerEvents: 'initial',
-            display: 'flex',
-            flexDirection: 'row',
-            width: 32,
-            height: 32,
-          }}
-        >
-          <Tooltip title='Toggle Code Editor (⌘.)' placement='bottom'>
-            <InsertModeButton
-              iconType='codymccodeface-larger'
-              iconCategory='semantic'
-              onClick={toggleCodeEditorVisible}
-            />
-          </Tooltip>
-        </div>
-      ) : null}
-      {inspectorInvisible ? (
-        <div
-          style={{
-            backgroundColor: theme.inspectorBackground.value,
-            borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
-            overflow: 'hidden',
-            boxShadow: UtopiaTheme.panelStyles.shadows.medium,
-            pointerEvents: 'initial',
-            display: 'flex',
-            flexDirection: 'row',
-            width: 32,
-            height: 32,
-          }}
-        >
-          <Tooltip title='Toggle Inspector (⌘⌥2)' placement='bottom'>
-            <InsertModeButton
-              iconType='inspector-larger'
-              iconCategory='semantic'
-              onClick={toggleInspectorVisible}
-            />
-          </Tooltip>
-        </div>
-      ) : null}
-      <FlexColumn style={{ alignItems: 'start' }}>
-        <div
-          id={CanvasToolbarId}
-          style={{
-            backgroundColor: theme.inspectorBackground.value,
-            borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
-            overflow: 'hidden',
-            boxShadow: UtopiaTheme.panelStyles.shadows.medium,
-            pointerEvents: 'initial',
-            display: 'flex',
-            flexDirection: 'row',
-            padding: '0 8px',
-          }}
-        >
-          <Tooltip title='Edit' placement='bottom'>
-            <InsertModeButton
-              iconType={editButtonIcon.type}
-              iconCategory={editButtonIcon.category}
-              primary={canvasToolbarMode.primary === 'edit'}
-              onClick={dispatchSwitchToSelectModeCloseMenus}
-              keepActiveInLiveMode
-              testid={CanvasToolbarEditButtonID}
-              style={{ width: 36 }}
-            />
-          </Tooltip>
-          <Tooltip title='Insert or Edit Text' placement='bottom'>
-            <InsertModeButton
-              iconType='text'
-              iconCategory='tools'
-              primary={canvasToolbarMode.primary === 'text'}
-              onClick={insertTextCallback}
-              keepActiveInLiveMode
-              style={{ width: 36 }}
-            />
-          </Tooltip>
-          <Tooltip title='Insert' placement='bottom'>
-            <InsertModeButton
-              testid={InsertMenuButtonTestId}
-              iconType='insert'
-              iconCategory='tools'
-              primary={canvasToolbarMode.primary === 'insert'}
-              onClick={toggleInsertButtonClicked}
-              keepActiveInLiveMode
-              style={{ width: 36 }}
-            />
-          </Tooltip>
-          <Tooltip title='Live Mode' placement='bottom'>
-            <InsertModeButton
-              testid={PlayModeButtonTestId}
-              iconType={isLiveMode ? 'stop' : 'play'}
-              iconCategory='tools'
-              primary={canvasToolbarMode.primary === 'play'}
-              onClick={toggleLiveMode}
-              keepActiveInLiveMode
-              style={{ width: 36 }}
-            />
-          </Tooltip>
-          <Separator />
-          <Tooltip title='Zoom to 100%' placement='bottom'>
-            <SquareButton
-              style={{
-                height: 32,
-                width: 'min-content',
-                padding: '0 8px',
-              }}
-              css={{
-                '&:hover': {
-                  color: colorTheme.dynamicBlue.value,
-                },
-              }}
-              onClick={zoom100pct}
-            >
-              {zoomLevel * 100}%
-            </SquareButton>
-          </Tooltip>
-          <Tooltip title='Reset Canvas' placement='bottom'>
-            <InsertModeButton
-              iconType='refresh'
-              iconCategory='semantic'
-              onClick={resetCanvasCallback}
-              keepActiveInLiveMode
-              size={16}
-            />
-          </Tooltip>
-          <ElementsOutsideVisibleAreaIndicator />
-        </div>
-        {/* Edit Mode submenus */}
-        {when(
-          canvasToolbarMode.primary === 'edit' && canvasToolbarMode.secondary === 'selected',
-          <>
-            {when(
-              insertMenuMode === 'closed',
-              wrapInSubmenu(
+      <div
+        id={CanvasToolbarId}
+        style={{
+          backgroundColor: theme.inspectorBackground.value,
+          borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
+          overflow: 'hidden',
+          boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+          pointerEvents: 'initial',
+          display: 'flex',
+          flexDirection: 'row',
+          padding: '0 8px',
+        }}
+      >
+        <Tooltip title='Edit' placement='bottom'>
+          <InsertModeButton
+            iconType={editButtonIcon.type}
+            iconCategory={editButtonIcon.category}
+            primary={canvasToolbarMode.primary === 'edit'}
+            onClick={dispatchSwitchToSelectModeCloseMenus}
+            keepActiveInLiveMode
+            testid={CanvasToolbarEditButtonID}
+            style={{ width: 36 }}
+          />
+        </Tooltip>
+        <Tooltip title='Insert or Edit Text' placement='bottom'>
+          <InsertModeButton
+            iconType='text'
+            iconCategory='tools'
+            primary={canvasToolbarMode.primary === 'text'}
+            onClick={insertTextCallback}
+            keepActiveInLiveMode
+            style={{ width: 36 }}
+          />
+        </Tooltip>
+        <Tooltip title='Insert' placement='bottom'>
+          <InsertModeButton
+            testid={InsertMenuButtonTestId}
+            iconType='insert'
+            iconCategory='tools'
+            primary={canvasToolbarMode.primary === 'insert'}
+            onClick={toggleInsertButtonClicked}
+            keepActiveInLiveMode
+            style={{ width: 36 }}
+          />
+        </Tooltip>
+        <Tooltip title='Live Mode' placement='bottom'>
+          <InsertModeButton
+            testid={PlayModeButtonTestId}
+            iconType={isLiveMode ? 'stop' : 'play'}
+            iconCategory='tools'
+            primary={canvasToolbarMode.primary === 'play'}
+            onClick={toggleLiveMode}
+            keepActiveInLiveMode
+            style={{ width: 36 }}
+          />
+        </Tooltip>
+        <Separator />
+        <Tooltip title='Zoom to 100%' placement='bottom'>
+          <SquareButton
+            style={{
+              height: 32,
+              width: 'min-content',
+              padding: '0 8px',
+            }}
+            css={{
+              '&:hover': {
+                color: colorTheme.dynamicBlue.value,
+              },
+            }}
+            onClick={zoom100pct}
+          >
+            {zoomLevel * 100}%
+          </SquareButton>
+        </Tooltip>
+        <Tooltip title='Reset Canvas' placement='bottom'>
+          <InsertModeButton
+            iconType='refresh'
+            iconCategory='semantic'
+            onClick={resetCanvasCallback}
+            keepActiveInLiveMode
+            size={16}
+          />
+        </Tooltip>
+        <ElementsOutsideVisibleAreaIndicator />
+      </div>
+      {/* Edit Mode submenus */}
+      {when(
+        canvasToolbarMode.primary === 'edit' && canvasToolbarMode.secondary === 'selected',
+        <>
+          {when(
+            insertMenuMode === 'closed',
+            wrapInSubmenu(
+              <FlexRow
+                style={{
+                  gap: 25,
+                  padding: '0 18px',
+                  alignSelf: 'stretch',
+                }}
+              >
                 <FlexRow
-                  style={{
-                    gap: 25,
-                    padding: '0 18px',
-                    alignSelf: 'stretch',
+                  onClick={wrapInGroupCallback}
+                  css={{
+                    gap: 8,
+                    '&:hover': {
+                      color: colorTheme.dynamicBlue.value,
+                    },
                   }}
                 >
-                  <FlexRow
-                    onClick={wrapInGroupCallback}
-                    css={{
-                      gap: 8,
-                      '&:hover': {
-                        color: colorTheme.dynamicBlue.value,
-                      },
-                    }}
-                  >
-                    <Icn category='tools' type='group-action' width={18} height={18} />
-                    Group
-                  </FlexRow>
-                  <FlexRow
-                    onClick={openFloatingWrapInMenuCallback}
-                    css={{
-                      gap: 8,
-                      '&:hover': {
-                        color: colorTheme.dynamicBlue.value,
-                      },
-                    }}
-                  >
-                    <Icn category='tools' type='wrap-action' width={18} height={18} />
-                    Wrap
-                  </FlexRow>
-                  <FlexRow
-                    onClick={openFloatingConvertMenuCallback}
-                    css={{
-                      gap: 8,
-                      '&:hover': {
-                        color: colorTheme.dynamicBlue.value,
-                      },
-                    }}
-                  >
-                    <Icn category='tools' type='convert-action' width={18} height={18} />
-                    Convert
-                  </FlexRow>
-                  <FlexRow
-                    onClick={toggleAbsolutePositioningCallback}
-                    css={{
-                      gap: 8,
-                      '&:hover': {
-                        color: colorTheme.dynamicBlue.value,
-                      },
-                    }}
-                  >
-                    <Icn category='tools' type='position-action' width={18} height={18} />
-                    Position
-                  </FlexRow>
-                </FlexRow>,
-              ),
-            )}
-            {when(
-              insertMenuMode === 'wrap',
-              wrapInSubmenu(
-                <FlexRow style={{ padding: '0 8px' }}>
-                  <Tooltip title='Back' placement='bottom'>
-                    <InsertModeButton
-                      iconCategory='semantic'
-                      iconType='icon-semantic-back'
-                      onClick={dispatchSwitchToSelectModeCloseMenus}
-                      style={{ width: undefined }}
-                    />
-                  </Tooltip>
-                  <Icn
-                    category='tools'
-                    type='wrap-action'
-                    width={18}
-                    height={18}
-                    style={{ marginRight: 10 }}
-                  />
-
-                  <Tooltip title='Wrap in div' placement='bottom'>
-                    <InsertModeButton
-                      testid={WrapInDivButtonTestId}
-                      iconType='div'
-                      onClick={wrapInDivAndClose}
-                    />
-                  </Tooltip>
-                  <Tile style={{ height: '100%' }}>
-                    <CanvasToolbarSearch actionWith={convertToAndClose} />
-                  </Tile>
-                </FlexRow>,
-              ),
-            )}
-            {when(
-              insertMenuMode === 'convert',
-              wrapInSubmenu(
-                <FlexRow style={{ padding: '0 8px' }}>
-                  <Tooltip title='Back' placement='bottom'>
-                    <InsertModeButton
-                      iconCategory='semantic'
-                      iconType='icon-semantic-back'
-                      onClick={dispatchSwitchToSelectModeCloseMenus}
-                      style={{ width: undefined }}
-                    />
-                  </Tooltip>
-                  <Icn
-                    category='tools'
-                    type='convert-action'
-                    width={18}
-                    height={18}
-                    style={{ marginRight: 10 }}
-                  />
-                  <Tooltip title='Convert to Fragment' placement='bottom'>
-                    <InsertModeButton iconType='fragment' onClick={convertToFragment} />
-                  </Tooltip>
-                  <Tile style={{ height: '100%' }}>
-                    <CanvasToolbarSearch actionWith={convertToAndClose} />
-                  </Tile>
-                </FlexRow>,
-              ),
-            )}
-          </>,
-        )}
-        {when(
-          canvasToolbarMode.primary === 'edit' && canvasToolbarMode.secondary === 'strategy-active',
-          <StrategyIndicator />,
-        )}
-        {/* Insert Mode */}
-        {canvasToolbarMode.primary === 'insert'
-          ? wrapInSubmenu(
+                  <Icn category='tools' type='group-action' width={18} height={18} />
+                  Group
+                </FlexRow>
+                <FlexRow
+                  onClick={openFloatingWrapInMenuCallback}
+                  css={{
+                    gap: 8,
+                    '&:hover': {
+                      color: colorTheme.dynamicBlue.value,
+                    },
+                  }}
+                >
+                  <Icn category='tools' type='wrap-action' width={18} height={18} />
+                  Wrap
+                </FlexRow>
+                <FlexRow
+                  onClick={openFloatingConvertMenuCallback}
+                  css={{
+                    gap: 8,
+                    '&:hover': {
+                      color: colorTheme.dynamicBlue.value,
+                    },
+                  }}
+                >
+                  <Icn category='tools' type='convert-action' width={18} height={18} />
+                  Convert
+                </FlexRow>
+                <FlexRow
+                  onClick={toggleAbsolutePositioningCallback}
+                  css={{
+                    gap: 8,
+                    '&:hover': {
+                      color: colorTheme.dynamicBlue.value,
+                    },
+                  }}
+                >
+                  <Icn category='tools' type='position-action' width={18} height={18} />
+                  Position
+                </FlexRow>
+              </FlexRow>,
+            ),
+          )}
+          {when(
+            insertMenuMode === 'wrap',
+            wrapInSubmenu(
               <FlexRow style={{ padding: '0 8px' }}>
                 <Tooltip title='Back' placement='bottom'>
                   <InsertModeButton
@@ -730,46 +558,112 @@ export const CanvasToolbar = React.memo(() => {
                     style={{ width: undefined }}
                   />
                 </Tooltip>
-                <Tooltip title='Insert div' placement='bottom'>
+                <Icn
+                  category='tools'
+                  type='wrap-action'
+                  width={18}
+                  height={18}
+                  style={{ marginRight: 10 }}
+                />
+
+                <Tooltip title='Wrap in div' placement='bottom'>
                   <InsertModeButton
-                    iconType='view'
-                    secondary={canvasToolbarMode.secondary.divInsertionActive}
-                    onClick={insertDivCallback}
-                  />
-                </Tooltip>
-                <Tooltip title='Insert image' placement='bottom'>
-                  <InsertModeButton
-                    iconType='image'
-                    secondary={canvasToolbarMode.secondary.imageInsertionActive}
-                    onClick={insertImgCallback}
-                  />
-                </Tooltip>
-                <Tooltip title='Insert button' placement='bottom'>
-                  <InsertModeButton
-                    iconType='clickable'
-                    secondary={canvasToolbarMode.secondary.buttonInsertionActive}
-                    onClick={insertButtonCallback}
-                  />
-                </Tooltip>
-                <Tooltip title='Insert conditional' placement='bottom'>
-                  <InsertModeButton
-                    testid={InsertConditionalButtonTestId}
-                    iconType='conditional'
-                    secondary={canvasToolbarMode.secondary.conditionalInsertionActive}
-                    onClick={insertConditionalCallback}
+                    testid={WrapInDivButtonTestId}
+                    iconType='div'
+                    onClick={wrapInDivAndClose}
                   />
                 </Tooltip>
                 <Tile style={{ height: '100%' }}>
-                  <CanvasToolbarSearch actionWith={toInsertAndClose} />
+                  <CanvasToolbarSearch actionWith={convertToAndClose} />
                 </Tile>
               </FlexRow>,
-            )
-          : null}
-        {/* Live Mode */}
-        {canvasToolbarMode.primary === 'play' ? wrapInSubmenu(<RemixNavigationBar />) : null}
-        <ToolbarSearchListing />
-      </FlexColumn>
-    </div>
+            ),
+          )}
+          {when(
+            insertMenuMode === 'convert',
+            wrapInSubmenu(
+              <FlexRow style={{ padding: '0 8px' }}>
+                <Tooltip title='Back' placement='bottom'>
+                  <InsertModeButton
+                    iconCategory='semantic'
+                    iconType='icon-semantic-back'
+                    onClick={dispatchSwitchToSelectModeCloseMenus}
+                    style={{ width: undefined }}
+                  />
+                </Tooltip>
+                <Icn
+                  category='tools'
+                  type='convert-action'
+                  width={18}
+                  height={18}
+                  style={{ marginRight: 10 }}
+                />
+                <Tooltip title='Convert to Fragment' placement='bottom'>
+                  <InsertModeButton iconType='fragment' onClick={convertToFragment} />
+                </Tooltip>
+                <Tile style={{ height: '100%' }}>
+                  <CanvasToolbarSearch actionWith={convertToAndClose} />
+                </Tile>
+              </FlexRow>,
+            ),
+          )}
+        </>,
+      )}
+      {when(
+        canvasToolbarMode.primary === 'edit' && canvasToolbarMode.secondary === 'strategy-active',
+        <StrategyIndicator />,
+      )}
+      {/* Insert Mode */}
+      {canvasToolbarMode.primary === 'insert'
+        ? wrapInSubmenu(
+            <FlexRow style={{ padding: '0 8px' }}>
+              <Tooltip title='Back' placement='bottom'>
+                <InsertModeButton
+                  iconCategory='semantic'
+                  iconType='icon-semantic-back'
+                  onClick={dispatchSwitchToSelectModeCloseMenus}
+                  style={{ width: undefined }}
+                />
+              </Tooltip>
+              <Tooltip title='Insert div' placement='bottom'>
+                <InsertModeButton
+                  iconType='view'
+                  secondary={canvasToolbarMode.secondary.divInsertionActive}
+                  onClick={insertDivCallback}
+                />
+              </Tooltip>
+              <Tooltip title='Insert image' placement='bottom'>
+                <InsertModeButton
+                  iconType='image'
+                  secondary={canvasToolbarMode.secondary.imageInsertionActive}
+                  onClick={insertImgCallback}
+                />
+              </Tooltip>
+              <Tooltip title='Insert button' placement='bottom'>
+                <InsertModeButton
+                  iconType='clickable'
+                  secondary={canvasToolbarMode.secondary.buttonInsertionActive}
+                  onClick={insertButtonCallback}
+                />
+              </Tooltip>
+              <Tooltip title='Insert conditional' placement='bottom'>
+                <InsertModeButton
+                  testid={InsertConditionalButtonTestId}
+                  iconType='conditional'
+                  secondary={canvasToolbarMode.secondary.conditionalInsertionActive}
+                  onClick={insertConditionalCallback}
+                />
+              </Tooltip>
+              <Tile style={{ height: '100%' }}>
+                <CanvasToolbarSearch actionWith={toInsertAndClose} />
+              </Tile>
+            </FlexRow>,
+          )
+        : null}
+      {/* Live Mode */}
+      {canvasToolbarMode.primary === 'play' ? wrapInSubmenu(<RemixNavigationBar />) : null}
+      <ToolbarSearchListing />
+    </FlexColumn>
   )
 })
 

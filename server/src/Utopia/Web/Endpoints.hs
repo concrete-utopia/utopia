@@ -705,6 +705,12 @@ getGithubUserEndpoint :: Maybe Text -> ServerMonad GetGithubUserResponse
 getGithubUserEndpoint cookie = requireUser cookie $ \sessionUser -> do
   getGithubUserDetails (view (field @"_id") sessionUser)
 
+liveblocksAuthenticationEndpoint :: Maybe Text -> LiveblocksAuthenticationRequest -> ServerMonad LiveblocksAuthenticationResponse
+liveblocksAuthenticationEndpoint cookie authBody = requireUser cookie $ \sessionUser -> do
+  let roomID = view (field @"_room") authBody
+  token <- authLiveblocksUser (view (field @"_id") sessionUser) roomID
+  pure $ LiveblocksAuthenticationResponse { _token = token }
+
 {-|
   Compose together all the individual endpoints into a definition for the whole server.
 -}
@@ -734,6 +740,7 @@ protected authCookie = logoutPage authCookie
                   :<|> getGithubUsersRepositoriesEndpoint authCookie
                   :<|> saveGithubAssetEndpoint authCookie
                   :<|> getGithubUserEndpoint authCookie
+                  :<|> liveblocksAuthenticationEndpoint authCookie
 
 unprotected :: ServerT Unprotected ServerMonad
 unprotected = authenticate

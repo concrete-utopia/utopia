@@ -51,6 +51,10 @@ $(deriveJSON jsonOptions ''UserConfigurationRequest)
 
 $(deriveJSON jsonOptions ''UserConfigurationResponse)
 
+$(deriveJSON jsonOptions ''LiveblocksAuthenticationRequest)
+
+$(deriveJSON jsonOptions ''LiveblocksAuthenticationResponse)
+
 {-
   The following types define the endpoints that we expose to the world.
   * 'Get' and 'Post' define the HTTP method used to access the endpoint,
@@ -129,6 +133,8 @@ type GithubStartAuthenticationAPI = "v1" :> "github" :> "authentication" :> "sta
 
 type GithubFinishAuthenticationAPI = "v1" :> "github" :> "authentication" :> "finish" :> QueryParam "code" ExchangeToken :> Get '[HTML] H.Html
 
+type LiveblocksAuthenticationAPI = "v1" :> "liveblocks" :> "authentication" :> ReqBody '[JSON] LiveblocksAuthenticationRequest :> Post '[JSON] LiveblocksAuthenticationResponse
+
 type GithubSaveAPI = "v1" :> "github" :> "save" :> Capture "project_id" Text :> QueryParam "branch_name" Text :> QueryParam "commit_message" Text :> ReqBody '[JSON] PersistentModel :> Post '[JSON] SaveToGithubResponse
 
 type GithubBranchesAPI = "v1" :> "github" :> "branches" :> Capture "owner" Text :> Capture "repository" Text :> Get '[JSON] GetBranchesResponse
@@ -202,6 +208,7 @@ type Protected = LogoutAPI
             :<|> GithubUsersRepositoriesAPI
             :<|> GithubSaveAssetAPI
             :<|> GithubUserAPI
+            :<|> LiveblocksAuthenticationAPI
 
 type Unprotected = AuthenticateAPI H.Html
               :<|> EmptyProjectPageAPI

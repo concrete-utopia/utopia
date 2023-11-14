@@ -70,3 +70,10 @@ export GITHUB_OAUTH_REDIRECT_URL=http://localhost:8000/v1/github/authentication/
 
 Finally restart your environment, which if running locally might mean running something like `direnv allow` to permit the new settings to apply before rerunning `start-minimal` for instance to start your local environment.
 
+### Liveblocks
+
+In the project dashboard for your given project, the "API keys" option from the side allows access to the secret key. To utilise this then add that to the environment in `.envrc` with a snippet like the following:
+
+```
+export LIVEBLOCKS_SECRET_KEY=yoursecretkey
+```
