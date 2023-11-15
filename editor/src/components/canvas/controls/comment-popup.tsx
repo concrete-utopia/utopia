@@ -24,9 +24,6 @@ export const CommentPopup = React.memo(() => {
     return null
   }
   const { location } = mode
-  if (location == null) {
-    return null
-  }
 
   return (
     <CanvasOffsetWrapper>
