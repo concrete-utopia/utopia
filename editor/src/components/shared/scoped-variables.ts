@@ -17,14 +17,14 @@ export function getVariablesInScope(
     projectContents,
     [],
     (success, element, underlyingTarget, underlyingFilePath) => {
-      const topLevelCode: ArbitraryJSBlock = success.topLevelElements.find((el) =>
+      const topLevelCode: ArbitraryJSBlock[] = success.topLevelElements.filter((el) =>
         isArbitraryJSBlock(el),
-      ) as ArbitraryJSBlock
+      ) as ArbitraryJSBlock[]
       const jsxComponent = success.topLevelElements.find((el) =>
         isUtopiaJSXComponent(el),
       ) as UtopiaJSXComponent
 
-      const topLevelVariables = topLevelCode?.definedWithin ?? []
+      const topLevelVariables = topLevelCode?.map((block) => block?.definedWithin ?? []).flat()
       const componentVariables = jsxComponent?.arbitraryJSBlock?.definedWithin ?? []
       const elementName = jsxComponent?.name
       // const propsUsed = jsxComponent?.propsUsed ?? []
