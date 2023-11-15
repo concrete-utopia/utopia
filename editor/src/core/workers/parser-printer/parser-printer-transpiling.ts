@@ -18,6 +18,8 @@ import infiniteLoopPrevention from './transform-prevent-infinite-loops'
 import type { ElementsWithinInPosition, CodeWithMap } from './parser-printer-utils'
 import { wrapCodeInParens, wrapCodeInParensWithMap } from './parser-printer-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../shared/dom-utils'
+import { encodeSteganoData } from '../../shared/stegano-text'
+import { SourceMapConsumer } from 'source-map'
 
 interface TranspileResult {
   code: string
@@ -190,12 +192,12 @@ function babelRewriteJSExpressionCode(
 export function transpileJavascript(
   sourceFileName: string,
   sourceFileText: string,
-  inputSourceNode: typeof SourceNode,
+  fileSourceNode: typeof SourceNode,
   elementsWithin: ElementsWithinInPosition,
   wrapInParens: boolean,
 ): Either<string, TranspileResult> {
   try {
-    const { code, map } = inputSourceNode.toStringWithSourceMap({ file: sourceFileName })
+    const { code, map } = fileSourceNode.toStringWithSourceMap({ file: sourceFileName })
     const rawMap = JSON.parse(map.toString())
     return transpileJavascriptFromCode(
       sourceFileName,
@@ -243,6 +245,19 @@ export function insertDataUIDsIntoCode(
   }
 }
 
+function getAbsoluteOffsetFromFile(
+  lines: string[],
+  { line, column }: { line: number; column: number },
+): number {
+  let offset = 0
+  for (let i = 0; i < line - 1; i++) {
+    // Add 1 for newline character
+    offset += lines[i].length + 1
+  }
+  offset += column
+  return offset
+}
+
 export function transpileJavascriptFromCode(
   sourceFileName: string,
   sourceFileText: string,
@@ -254,6 +269,7 @@ export function transpileJavascriptFromCode(
   try {
     let codeToUse: string = code
     let mapToUse: RawSourceMap = map
+
     if (wrapInParens) {
       const wrappedInParens = wrapCodeInParensWithMap(
         sourceFileName,
@@ -264,7 +280,35 @@ export function transpileJavascriptFromCode(
       codeToUse = wrappedInParens.code
       mapToUse = wrappedInParens.sourceMap
     }
-    let plugins: Array<any> = []
+
+    const fileLines = sourceFileText.split('\n')
+
+    let plugins: Array<any> = [
+      () => ({
+        visitor: {
+          StringLiteral(path) {
+            const smc = new SourceMapConsumer(mapToUse)
+            const originalStartPosition = smc.originalPositionFor(path.node.loc.start)
+            const originalEndPosition = smc.originalPositionFor(path.node.loc.end)
+
+            const data = {
+              filePath: sourceFileName,
+              originalString: "'" + path.node.value + "'",
+              startPosition:
+                getAbsoluteOffsetFromFile(fileLines, {
+                  line: originalStartPosition.line,
+                  column: originalStartPosition.column,
+                }) - 1,
+              endPosition: getAbsoluteOffsetFromFile(fileLines, {
+                line: originalEndPosition.line,
+                column: originalEndPosition.column,
+              }),
+            }
+            path.node.value = encodeSteganoData(path.node.value, data)
+          },
+        },
+      }),
+    ]
     if (Object.keys(elementsWithin).length > 0) {
       plugins.push(babelRewriteJSExpressionCode(elementsWithin, true))
     }

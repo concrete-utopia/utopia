@@ -850,10 +850,7 @@ function printStatements(
   )
 
   const printedParts: Array<string> = statements.map((statement) =>
-    transformStripStegaData({
-      filePath: filePath,
-      sourceText: printer.printNode(TS.EmitHint.Unspecified, statement, resultFile),
-    }),
+    printer.printNode(TS.EmitHint.Unspecified, statement, resultFile),
   )
   const typescriptPrintedResult = printedParts.join(insertLinesBetweenStatements ? '\n' : '')
   let result: string
@@ -1263,77 +1260,6 @@ export function isReactImported(sourceFile: TS.SourceFile): boolean {
   })
 }
 
-const stegaTransform =
-  (fn: (literal: string, data: SteganoTextData) => string) =>
-  ({ filePath, sourceText }: { filePath: string; sourceText: string }) => {
-    const visitor =
-      (context: TS.TransformationContext) =>
-      (node: TS.Node): TS.Node => {
-        if (!TS.isVariableStatement(node)) {
-          return TS.visitEachChild(node, visitor(context), context)
-        }
-        const noStringLiteralsInDeclaration = !node.declarationList.declarations.some(
-          (declaration) =>
-            declaration.initializer != null && TS.isStringLiteral(declaration.initializer),
-        )
-
-        if (noStringLiteralsInDeclaration) {
-          return TS.visitEachChild(node, visitor(context), context)
-        }
-
-        const declarations = node.declarationList.declarations.map((declaration) => {
-          if (declaration.initializer == null || !TS.isStringLiteral(declaration.initializer)) {
-            return declaration
-          }
-          const startPosition = declaration.initializer.getStart(sourceFileOriginal)
-          const endPosition = declaration.initializer.getEnd()
-          const textToEncode = cleanSteganoTextData(declaration.initializer.text).cleaned
-          const stegaData: SteganoTextData = {
-            originalString: "'" + textToEncode + "'",
-            filePath: filePath,
-            startPosition: startPosition,
-            endPosition: endPosition,
-          }
-          const transformedText = fn(textToEncode, stegaData)
-          return context.factory.updateVariableDeclaration(
-            declaration,
-            declaration.name,
-            declaration.exclamationToken,
-            declaration.type,
-            context.factory.createStringLiteral(transformedText, true),
-          )
-        })
-
-        return context.factory.updateVariableStatement(
-          node,
-          node.modifiers,
-          context.factory.updateVariableDeclarationList(node.declarationList, declarations),
-        )
-      }
-
-    const transformer = (context: TS.TransformationContext) => (n: TS.Node) =>
-      TS.visitNode(n, visitor(context))
-
-    const sourceFileOriginal = TS.createSourceFile(filePath, sourceText, TS.ScriptTarget.ES3)
-
-    const newFile = TS.transform(sourceFileOriginal, [transformer]).transformed[0]
-
-    const printer = TS.createPrinter({ newLine: TS.NewLineKind.LineFeed })
-    const resultFile = TS.createSourceFile(
-      'print.ts',
-      '',
-      TS.ScriptTarget.Latest,
-      false,
-      TS.ScriptKind.TS,
-    )
-
-    const sourceFileReprinted = printer.printNode(TS.EmitHint.Unspecified, newFile, resultFile)
-    return sourceFileReprinted
-  }
-
-const transformEncodeStegaData = stegaTransform((text, data) => encodeSteganoData(text, data))
-const transformStripStegaData = stegaTransform((text) => cleanSteganoTextData(text).cleaned)
-
 export type SteganographyMode = 'apply-steganography' | 'do-not-apply-steganography'
 
 export function parseCode(
@@ -1344,14 +1270,7 @@ export function parseCode(
   applySteganography: SteganographyMode,
 ): ParsedTextFile {
   const originalAlreadyExistingUIDs_MUTABLE: Set<string> = new Set(alreadyExistingUIDs_MUTABLE)
-  const sourceTextToUse =
-    applySteganography === 'apply-steganography'
-      ? transformEncodeStegaData({ filePath, sourceText })
-      : applySteganography === 'do-not-apply-steganography'
-      ? sourceText
-      : assertNever(applySteganography)
-
-  const sourceFile = TS.createSourceFile(filePath, sourceTextToUse, TS.ScriptTarget.ES3)
+  const sourceFile = TS.createSourceFile(filePath, sourceText, TS.ScriptTarget.ES3)
 
   const topLevelNodes = flatMapArray(
     (e) => flattenOutAnnoyingContainers(sourceFile, e),
