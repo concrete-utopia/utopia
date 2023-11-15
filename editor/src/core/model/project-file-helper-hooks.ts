@@ -35,13 +35,13 @@ function spliceCode(
   originalStringData: SteganoTextData,
   updatedString: string,
 ): string {
-  const currentString = originalCode.slice(
+  const originalString = originalCode.slice(
     originalStringData.startPosition,
     originalStringData.endPosition,
   )
-  if (currentString !== originalStringData.originalString) {
+  if (originalString !== originalStringData.originalString) {
     throw new Error(`Tried to rewrite string but it was not matching the last known value.
-Current: >>>${currentString}<<<
+Current: >>>${originalString}<<<
 Expected: >>>${originalStringData.originalString}<<<
 `)
   }
