@@ -432,6 +432,9 @@ innerServerExecutor (AuthLiveblocksUser user roomID action) = do
       case errorOrToken of
         Left errorMessage -> putStrLn errorMessage >> throwError err500
         Right token       -> pure $ action token
+innerServerExecutor (IsLiveblocksEnabled action) = do
+  possibleLiveblocksResources <- fmap _liveblocksResources ask
+  pure $ action $ isJust possibleLiveblocksResources
 
 {-|
   Invokes a service call using the supplied resources.

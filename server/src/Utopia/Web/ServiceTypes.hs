@@ -143,6 +143,7 @@ data ServiceCallsF a = NotFound
                      | GetPullRequestForBranch Text Text Text Text (GetBranchPullRequestResponse -> a)
                      | GetGithubUserDetails Text (GetGithubUserResponse -> a)
                      | AuthLiveblocksUser Text Text (Text -> a)
+                     | IsLiveblocksEnabled (Bool -> a)
                      deriving Functor
 
 {-

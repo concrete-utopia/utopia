@@ -67,7 +67,7 @@ data LiveblocksCreateRoomRequest = LiveblocksCreateRoomRequest
 $(deriveJSON jsonOptions ''LiveblocksCreateRoomRequest)
 
 data LiveblocksCreateRoomResponse = LiveblocksCreateRoomResponse
-                                     {
+                                     { _id     :: Text
                                      } deriving (Eq, Show, Generic)
 
 $(deriveJSON jsonOptions ''LiveblocksCreateRoomResponse)
