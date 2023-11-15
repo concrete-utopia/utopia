@@ -3,11 +3,8 @@ import * as puppeteer from 'puppeteer'
 import type { PageEventObject } from 'puppeteer'
 const fs = require('fs')
 const path = require('path')
-const AWS = require('aws-sdk')
-
-const { Upload } = require('@aws-sdk/lib-storage');
-const { S3 } = require('@aws-sdk/client-s3');
-
+const { Upload } = require('@aws-sdk/lib-storage')
+const { S3 } = require('@aws-sdk/client-s3')
 const yn = require('yn')
 
 export interface BrowserForPuppeteerTest {
@@ -122,38 +119,7 @@ export async function uploadPNGtoAWS(testFile: string): Promise<string | null> {
     return null
   }
 
-  // JS SDK v3 does not support global configuration.
-  // Codemod has attempted to pass values to each service client in this file.
-  // You may need to update clients outside of this file, if they use global config.
-  AWS.config.update({
-    region: process.env.AWS_REGION,
-    // The transformation for AWS_ACCESS_KEY_ID is not implemented.
-    // Refer to UPGRADING.md on aws-sdk-js-v3 for changes needed.
-    // Please create/upvote feature request on aws-sdk-js-codemod for AWS_ACCESS_KEY_ID.
-    AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
-    // The transformation for AWS_SECRET_ACCESS_KEY is not implemented.
-    // Refer to UPGRADING.md on aws-sdk-js-v3 for changes needed.
-    // Please create/upvote feature request on aws-sdk-js-codemod for AWS_SECRET_ACCESS_KEY.
-    AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
-  })
-
-  let s3 = new S3({
-    // The key apiVersion is no longer supported in v3, and can be removed.
-    // @deprecated The client uses the "latest" apiVersion.
-    apiVersion: '2006-03-01',
-
-    region: process.env.AWS_REGION,
-
-    // The transformation for AWS_ACCESS_KEY_ID is not implemented.
-    // Refer to UPGRADING.md on aws-sdk-js-v3 for changes needed.
-    // Please create/upvote feature request on aws-sdk-js-codemod for AWS_ACCESS_KEY_ID.
-    AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
-
-    // The transformation for AWS_SECRET_ACCESS_KEY is not implemented.
-    // Refer to UPGRADING.md on aws-sdk-js-v3 for changes needed.
-    // Please create/upvote feature request on aws-sdk-js-codemod for AWS_SECRET_ACCESS_KEY.
-    AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
-  })
+  let s3 = new S3({ region: process.env.AWS_REGION })
   const uploadParams = {
     Bucket: process.env.AWS_S3_BUCKET,
     Key: testFile,
@@ -182,7 +148,7 @@ export async function uploadPNGtoAWS(testFile: string): Promise<string | null> {
       console.log('Error', err)
       reject(err)
     })
-  });
+  })
 }
 
 export async function initialiseTests(page: puppeteer.Page): Promise<void> {
