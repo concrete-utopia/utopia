@@ -26,11 +26,12 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import type { InsertMenuMode } from './floating-insert-menu-helpers'
 import {
   jsxAttributesFromMap,
-  jsxElement,
   jsxElementWithoutUID,
   jsxTextBlock,
 } from '../../../core/shared/element-template'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
+import type { VariablesInScope } from '../../../core/shared/project-file-types'
+import { getVariablesInScope } from '../../../components/shared/scoped-variables'
 
 export const FloatingMenuTestId = 'floating-menu-test-id'
 
@@ -123,40 +124,37 @@ export function useGetInsertableComponents(
     }
   }, [packageStatus, propertyControlsInfo, projectContents, dependencies, fullPath, insertMenuMode])
 
+  const scopedVariables = useEditorState(
+    Substores.selectedViews,
+    (store) => getVariablesInScope(store.editor.selectedViews[0], projectContents),
+    'useGetInsertableComponents scopedVariables',
+  )
+
   const insertableVariables = React.useMemo(() => {
     if (fullPath == null) {
       return []
     } else {
-      return convertInsertableComponentsToFlatList(getVariablesInScope())
+      return convertInsertableComponentsToFlatList(convertVariablesToElements(scopedVariables))
     }
-  }, [fullPath])
+  }, [fullPath, scopedVariables])
 
   return insertableComponents.concat(insertableVariables)
 }
 
-function getVariablesInScope(): InsertableComponentGroup[] {
-  const variableInScope = [
-    {
-      file: './src/playground.ts',
-      variables: [
-        {
-          variableName: 'myTitle',
-          variableType: 'string',
-        },
-      ],
-    },
-  ]
+function convertVariablesToElements(
+  variableInScope: VariablesInScope[],
+): InsertableComponentGroup[] {
   return variableInScope.map((variableGroup) => {
     return {
-      source: insertableComponentGroupProjectComponent(variableGroup.file),
+      source: insertableComponentGroupProjectComponent(variableGroup.filePath),
       insertableComponents: variableGroup.variables.map((variable) => {
         return insertableComponent(
           emptyImports(),
           () =>
             jsxElementWithoutUID('span', jsxAttributesFromMap({}), [
-              jsxTextBlock(`{${variable.variableName}}`),
+              jsxTextBlock(`{${variable.name}}`),
             ]),
-          variable.variableName,
+          variable.name,
           [],
           null,
         )

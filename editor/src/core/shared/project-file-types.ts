@@ -765,3 +765,12 @@ export type NodeModules = {
 
 // Key here is the full filename.
 export type ProjectContents = { [filepath: string]: ProjectFile }
+
+export type VariablesInScope = {
+  filePath: string
+  variables: {
+    name: string
+    type: 'string' | 'boolean' | 'number' | 'object' | 'array' | 'function' | 'unknown'
+    value?: string
+  }[]
+}
