@@ -1826,6 +1826,7 @@ describe('Use the text editor', () => {
         formatTestProjectCode(`
         import * as React from 'react'
         import { Storyboard, Scene } from 'utopia-api'
+
         const StoryboardWrapper = ({ style }) => {
           const text = 'Hello'
           return (
@@ -1834,6 +1835,7 @@ describe('Use the text editor', () => {
             </div>
           )
         }
+
         export var storyboard = (
           <Storyboard data-uid='sb'>
             <Scene
