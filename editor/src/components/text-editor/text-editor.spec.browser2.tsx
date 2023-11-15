@@ -1782,6 +1782,92 @@ describe('Use the text editor', () => {
       )
     })
 
+    it('updates text var passed through props', async () => {
+      const editor = await renderTestEditorWithCode(
+        `import * as React from 'react'
+        import { Storyboard, Scene } from 'utopia-api'
+        
+        const variable = 'constant'
+        
+        const StoryboardWrapper = ({ style, text }) => {
+          return (
+            <div
+              data-uid='div'
+              data-testid='div'
+              style={{ ...style }}
+            >
+              {text}
+            </div>
+          )
+        }
+        
+        export var storyboard = (
+          <Storyboard data-uid='sb'>
+            <Scene
+              data-uid='scene'
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 144,
+                top: 58,
+                width: 288,
+                height: 362,
+              }}
+            >
+              <StoryboardWrapper text={variable} data-uid='wrapper' />
+            </Scene>
+          </Storyboard>
+        )`,
+        'await-first-dom-report',
+        { applySteganography: 'apply-steganography' },
+      )
+
+      await enterTextEditMode(editor, 'start')
+      typeText('this is not a ')
+      await expectSingleUndo2Saves(editor, async () => closeTextEditor())
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        formatTestProjectCode(`
+        import * as React from 'react'
+        import { Storyboard, Scene } from 'utopia-api'
+        
+        const variable = 'this is not a constant'
+        
+        const StoryboardWrapper = ({ style, text }) => {
+          return (
+            <div
+              data-uid='div'
+              data-testid='div'
+              style={{ ...style }}
+            >
+              {text}
+            </div>
+          )
+        }
+        
+        export var storyboard = (
+          <Storyboard data-uid='sb'>
+            <Scene
+              data-uid='scene'
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 144,
+                top: 58,
+                width: 288,
+                height: 362,
+              }}
+            >
+              <StoryboardWrapper text={variable} data-uid='wrapper' />
+            </Scene>
+          </Storyboard>
+        )
+`),
+      )
+    })
+
     it('does not print back weird characters into the file on unrelated edits', async () => {
       const editor = await renderTestEditorWithCode(
         `import * as React from 'react'
@@ -1821,7 +1907,6 @@ describe('Use the text editor', () => {
       await selectComponentsForTest(editor, [EP.fromString('sb/scene/wrapper')])
       await pressKey('Backspace')
 
-      // TODO: the newlines are lost
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         formatTestProjectCode(`
         import * as React from 'react'
