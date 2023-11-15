@@ -17,7 +17,7 @@ export const CommentPopup = React.memo(() => {
   const mode = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.mode,
-    'CommentIndicator mode',
+    'CommentPopup mode',
   )
 
   if (!isCommentMode(mode) || mode.location == null) {
