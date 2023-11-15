@@ -32,6 +32,7 @@ import type { MapLike } from 'typescript'
 
 import LRU from 'lru-cache'
 import type { BuiltInDependencies } from './built-in-dependencies-list'
+import { applyFilePathMappingsToFilePath } from '../../model/project-file-utils'
 
 const partialPackageJsonCache: LRU<string, ParseResult<PartialPackageJsonDefinition>> = new LRU({
   max: 20,
@@ -492,7 +493,11 @@ function resolveModuleAndApplySubstitutions(
   if (isLeft(substitutedImport)) {
     return resolveSuccessIgnoreModule
   } else {
-    return resolveModuleInternal(lookupFn, importOrigin, substitutedImport.value)
+    const unAliasedImport = applyFilePathMappingsToFilePath(
+      substitutedImport.value,
+      projectContents,
+    )
+    return resolveModuleInternal(lookupFn, importOrigin, unAliasedImport)
   }
 }
 
