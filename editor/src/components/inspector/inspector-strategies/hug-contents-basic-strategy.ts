@@ -32,10 +32,14 @@ import { queueTrueUpElement } from '../../canvas/commands/queue-true-up-command'
 import { trueUpGroupElementChanged } from '../../../components/editor/store/editor-state'
 import type { AllElementProps } from '../../../components/editor/store/editor-state'
 import { mapDropNulls } from '../../../core/shared/array-utils'
-import { actuallyConvertFramentToFrame } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import {
+  actuallyConvertFramentToFrame,
+  convertSizelessDivToFrameCommands,
+} from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import type { JSXFragmentConversion } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import {
   boundingRectangleArray,
+  isInfinityRectangle,
   nullIfInfinity,
   zeroCanvasRect,
 } from '../../../core/shared/math-utils'
@@ -138,35 +142,8 @@ export const hugContentsAbsoluteStrategy = (
       return null
     }
 
-    return targetsWithOnlyAbsoluteChildren.flatMap((path) => {
-      const element = MetadataUtils.findElementByElementPath(metadata, path)
-      if (element == null || isLeft(element.element) || !isJSXElementLike(element.element.value)) {
-        return []
-      }
-      const childInstances = mapDropNulls(
-        (childPath) => MetadataUtils.findElementByElementPath(metadata, childPath),
-        MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, path),
-      )
-
-      const childrenBoundingFrame =
-        boundingRectangleArray(
-          mapDropNulls(
-            (rect) => nullIfInfinity(rect),
-            childInstances.map((c) => c.globalFrame),
-          ),
-        ) ?? zeroCanvasRect
-
-      // well this looks like a fake fragment
-      const instance: JSXFragmentConversion = {
-        element: jsxFragment(element.element.value.uid, element.element.value.children, false),
-        childInstances: childInstances,
-        childrenBoundingFrame: childrenBoundingFrame,
-        specialSizeMeasurements: { ...element.specialSizeMeasurements, position: 'absolute' }, // this is not so nice here
-      }
-      return [
-        convertToAbsolute('always', path), // should this be included in actuallyConvertFramentToFrame??
-        ...actuallyConvertFramentToFrame(metadata, pathTrees, instance, path),
-      ]
-    })
+    return targetsWithOnlyAbsoluteChildren.flatMap(
+      (path) => convertSizelessDivToFrameCommands(metadata, allElementProps, pathTrees, path) ?? [],
+    )
   },
 })

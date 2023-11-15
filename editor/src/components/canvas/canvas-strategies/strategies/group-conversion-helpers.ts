@@ -489,8 +489,11 @@ export function convertSizelessDivToFrameCommands(
   elementPath: ElementPath,
 ): CanvasCommand[] | null {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
-
-  const childrenBoundingFrame = MetadataUtils.getFrameInCanvasCoords(elementPath, metadata)
+  const childrenBoundingFrame = MetadataUtils.getBoundingRectangleOfChildren(
+    metadata,
+    pathTrees,
+    elementPath,
+  )
   if (childrenBoundingFrame == null || isInfinityRectangle(childrenBoundingFrame)) {
     return null
   }
