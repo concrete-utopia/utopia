@@ -10,25 +10,30 @@ import { useDispatch } from '../../editor/store/dispatch-context'
 import { switchEditorMode } from '../../editor/actions/action-creators'
 import { canvasPoint } from '../../../core/shared/math-utils'
 import { UtopiaTheme } from '../../../uuiui'
+import { ErrorBoundary } from '../../../utils/react-error-boundary'
 
 export const CommentIndicator = React.memo(() => {
   return (
     <CanvasOffsetWrapper>
-      <ClientSideSuspense fallback={<div>Loading…</div>}>
-        {() => <CommentIndicatorInner />}
-      </ClientSideSuspense>
+      <ErrorBoundary fallback={null}>
+        <ClientSideSuspense fallback={<div>Loading…</div>}>
+          {() => <CommentIndicatorInner />}
+        </ClientSideSuspense>
+      </ErrorBoundary>
     </CanvasOffsetWrapper>
   )
 })
 
 function CommentIndicatorInner() {
   const { threads } = useThreads()
-
   const dispatch = useDispatch()
+
   return (
     <React.Fragment>
       {threads.map((thread) => {
         const point = canvasPoint(thread.metadata)
+        // TODO: unify initial handling for multiplayer
+        const initials = getInitials(thread.metadata.name)
         return (
           <div
             key={thread.id}
@@ -69,7 +74,7 @@ function CommentIndicatorInner() {
                   boxShadow: UtopiaTheme.panelStyles.shadows.medium,
                 }}
               >
-                AN
+                {initials}
               </div>
             </div>
           </div>
@@ -77,4 +82,12 @@ function CommentIndicatorInner() {
       })}
     </React.Fragment>
   )
+}
+
+function getInitials(name: string) {
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .slice(0, 2)
 }

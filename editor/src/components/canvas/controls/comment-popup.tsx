@@ -9,6 +9,9 @@ import type { ComposerSubmitComment } from '@liveblocks/react-comments'
 import { Comment, Composer } from '@liveblocks/react-comments'
 import { stopPropagation } from '../../inspector/common/inspector-utils'
 import { UtopiaTheme } from '../../../uuiui'
+import { ErrorBoundary } from '../../../utils/react-error-boundary'
+import { useCanvasCommentThread } from '../../../core/commenting/comment-hooks'
+import { isLoggedIn } from '../../editor/action-types'
 
 export const CommentPopup = React.memo(() => {
   const mode = useEditorState(
@@ -40,9 +43,11 @@ export const CommentPopup = React.memo(() => {
         onKeyUp={stopPropagation}
         onMouseUp={stopPropagation}
       >
-        <ClientSideSuspense fallback={<div>Loading…</div>}>
-          {() => <CommentThread x={location.x} y={location.y} />}
-        </ClientSideSuspense>
+        <ErrorBoundary fallback={<div>Can not load comments</div>}>
+          <ClientSideSuspense fallback={<div>Loading…</div>}>
+            {() => <CommentThread x={location.x} y={location.y} />}
+          </ClientSideSuspense>
+        </ErrorBoundary>
       </div>
     </CanvasOffsetWrapper>
   )
@@ -54,10 +59,17 @@ interface CommentThreadProps {
 }
 
 function CommentThread({ x, y }: CommentThreadProps) {
-  const { threads } = useThreads()
+  const thread = useCanvasCommentThread(x, y)
   const createThread = useCreateThread()
 
-  const thread = threads.find((t) => t.metadata.x === x && t.metadata.y === y)
+  // TODO: Unify getting name in different multiplayer components
+  const loginState = useEditorState(
+    Substores.userState,
+    (store) => store.userState.loginState,
+    'CommentThread loginState',
+  )
+
+  const name = isLoggedIn(loginState) ? loginState.user.name : null
 
   const onCreateThread = React.useCallback(
     ({ body }: ComposerSubmitComment, event: React.FormEvent<HTMLFormElement>) => {
@@ -66,10 +78,10 @@ function CommentThread({ x, y }: CommentThreadProps) {
       // Create a new thread
       createThread({
         body,
-        metadata: { type: 'canvas', x: x, y: y },
+        metadata: { type: 'canvas', x: x, y: y, name: name ?? 'Anonymous' },
       })
     },
-    [createThread, x, y],
+    [createThread, x, y, name],
   )
 
   if (thread == null) {

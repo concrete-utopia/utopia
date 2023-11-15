@@ -48,6 +48,7 @@ export type ThreadMetadata = {
   type: 'canvas'
   x: number
   y: number
+  name: string
 }
 
 export const {
