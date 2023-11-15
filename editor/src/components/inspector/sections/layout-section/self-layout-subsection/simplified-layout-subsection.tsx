@@ -21,6 +21,7 @@ import { Substores, useEditorState } from '../../../../editor/store/store-hook'
 import { NO_OP } from '../../../../../core/shared/utils'
 import { when } from '../../../../../utils/react-conditionals'
 import { useConvertWrapperToFrame } from '../../../../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { Link } from '../../../../../uuiui/link'
 
 export const SimplifiedLayoutSubsection = React.memo(() => {
   const selectedElementContract = useEditorState(
@@ -86,34 +87,12 @@ const WrapperElementDisclosureBox = React.memo(() => {
           ['textWrap' as any]: 'balance', // this is an experimental Chrome feature
         }}
       >
-        The selected element appears to be a collapsed wrapper element around absolutely positioned
-        children. If you want to explicitly set its size and layout, convert it to a fixed sized
-        element!
-      </span>
-      <FlexRow
-        style={{
-          flexGrow: 1,
-          gap: 8,
-          height: 42,
-        }}
-      >
+        Element has zero width or height because it only has absolute children.{' '}
         <Tooltip title={'Convert element to Frame'} placement='left'>
-          <Button
-            highlight
-            spotlight
-            data-testid={'convert-to-frame-button'}
-            style={{
-              backgroundColor: colorTheme.errorForeground20.value,
-              color: colorTheme.errorForeground.value,
-              padding: '0 6px',
-              borderRadius: 2,
-            }}
-            onClick={convertToFrame}
-          >
-            Convert to Frame
-          </Button>
-        </Tooltip>
-      </FlexRow>
+          <Link onClick={convertToFrame}>Make it a Frame</Link>
+        </Tooltip>{' '}
+        to style and position it.
+      </span>
     </FlexColumn>
   )
 })
