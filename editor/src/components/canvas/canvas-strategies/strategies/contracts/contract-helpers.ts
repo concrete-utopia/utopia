@@ -26,7 +26,7 @@ export function getEditorContractForElement(
     return 'fragment'
   }
 
-  if (fragmentLikeType === 'sizeless-div' || fragmentLikeType === 'wrapper-div') {
+  if (fragmentLikeType === 'sizeless-div') {
     return 'wrapper-div'
   }
 
