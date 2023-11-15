@@ -16,6 +16,7 @@ export const CommentIndicator = React.memo(() => {
   return (
     <CanvasOffsetWrapper>
       <ErrorBoundary fallback={null}>
+        {/* there is no fallback because we have an intermediate error during loading before we have the proper projectId/roomId */}
         <ClientSideSuspense fallback={<div>Loading…</div>}>
           {() => <CommentIndicatorInner />}
         </ClientSideSuspense>
