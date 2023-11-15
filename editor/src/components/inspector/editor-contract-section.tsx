@@ -106,8 +106,6 @@ export function groupSectionOption(wrapperType: EditorContract): SelectOption<Ed
   switch (wrapperType) {
     case 'frame':
       return { value: 'frame', label: 'Frame' }
-    case 'not-quite-frame':
-      return { value: 'not-quite-frame', label: 'Frame*' }
     case 'wrapper-div':
       return { value: 'wrapper-div', label: 'Wrapper' }
     case 'fragment':
@@ -122,7 +120,6 @@ export function groupSectionOption(wrapperType: EditorContract): SelectOption<Ed
 const FragmentOption = groupSectionOption('fragment')
 const FrameOption = groupSectionOption('frame')
 const WrapperDivOption = groupSectionOption('wrapper-div')
-const NotQuiteFrameOption = groupSectionOption('not-quite-frame')
 const GroupOption = groupSectionOption('group')
 
 export const EditorFixProblemsButtonTestId = 'editor-fix-problems-button'
@@ -205,8 +202,6 @@ export const EditorContractDropdown = React.memo(() => {
       return FragmentOption
     } else if (selectedElementContract === 'group') {
       return GroupOption
-    } else if (selectedElementContract === 'not-quite-frame') {
-      return NotQuiteFrameOption
     } else if (selectedElementContract === 'frame' || selectedElementContract == null) {
       return FrameOption
     } else if (selectedElementContract === 'wrapper-div') {
@@ -241,7 +236,6 @@ export const EditorContractDropdown = React.memo(() => {
       const view = selectedViews[0]
       switch (currentValue.value) {
         case 'frame':
-        case 'not-quite-frame':
         case 'wrapper-div':
           disabledOptions.group = maybeReasonForConversionForbidden(
             getInstanceForFrameToGroupConversion(
@@ -344,11 +338,7 @@ export const EditorContractDropdown = React.memo(() => {
         value={currentValue}
         options={options}
         onSubmitValue={onChange}
-        controlStyles={
-          selectedElementContract === 'not-quite-frame'
-            ? disabledControlStyles
-            : simpleControlStyles
-        }
+        controlStyles={simpleControlStyles}
         containerMode={'noBorder'}
         style={{ position: 'relative', left: -8 }}
       />

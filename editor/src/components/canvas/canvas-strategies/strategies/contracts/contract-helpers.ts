@@ -6,7 +6,7 @@ import type { AllElementProps } from '../../../../editor/store/editor-state'
 import { getElementFragmentLikeType } from '../fragment-like-helpers'
 import { treatElementAsGroupLike } from '../group-helpers'
 
-export type EditorContract = 'fragment' | 'frame' | 'group' | 'wrapper-div' | 'not-quite-frame'
+export type EditorContract = 'fragment' | 'frame' | 'group' | 'wrapper-div'
 
 export function getEditorContractForElement(
   metadata: ElementInstanceMetadataMap,
@@ -22,11 +22,8 @@ export function getEditorContractForElement(
   if (fragmentLikeType === 'fragment' || fragmentLikeType === 'conditional') {
     return 'fragment'
   }
-  if (fragmentLikeType === 'sizeless-div') {
-    return 'not-quite-frame'
-  }
 
-  if (fragmentLikeType === 'wrapper-div') {
+  if (fragmentLikeType === 'sizeless-div' || fragmentLikeType === 'wrapper-div') {
     return 'wrapper-div'
   }
 
