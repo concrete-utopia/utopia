@@ -5354,7 +5354,15 @@ export var App = (props) => {
       ],
     }
     expect(
-      transpileJavascriptFromCode('test.js', file, code, sourceMap, [], false),
+      transpileJavascriptFromCode(
+        'test.js',
+        file,
+        code,
+        sourceMap,
+        [],
+        false,
+        'do-not-apply-steganography',
+      ),
     ).toMatchSnapshot()
   })
 })

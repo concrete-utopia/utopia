@@ -1313,6 +1313,7 @@ export function parseCode(
           true,
           '',
           false,
+          applySteganography,
         )
         topLevelElements.push(
           mapEither((parsed) => {
@@ -1487,6 +1488,7 @@ export function parseCode(
               topLevelNames,
               highlightBounds,
               alreadyExistingUIDs_MUTABLE,
+              applySteganography,
             )
             parsedFunctionParam = flatMapEither((parsedParams) => {
               const paramsValue = parsedParams.value
@@ -1519,6 +1521,7 @@ export function parseCode(
                 body,
                 param?.highlightBounds ?? {},
                 alreadyExistingUIDs_MUTABLE,
+                applySteganography,
               )
             })
           } else {
@@ -1535,6 +1538,7 @@ export function parseCode(
                 null,
                 highlightBounds,
                 alreadyExistingUIDs_MUTABLE,
+                applySteganography,
               ),
             )
           }
@@ -1709,6 +1713,7 @@ export function parseCode(
         true,
         '',
         true,
+        applySteganography,
       )
       forEachRight(nodeParseResult, (nodeParseSuccess) => {
         combinedTopLevelArbitraryBlock = nodeParseSuccess.value
@@ -1789,6 +1794,7 @@ function parseParams(
   topLevelNames: Array<string>,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   existingUIDs: Set<string>,
+  applySteganography: SteganographyMode,
 ): Either<string, WithParserMetadata<Array<Param>>> {
   let parsedParams: Array<Param> = []
   let highlightBounds: HighlightBoundsForUids = { ...existingHighlightBounds }
@@ -1803,6 +1809,7 @@ function parseParams(
       topLevelNames,
       highlightBounds,
       existingUIDs,
+      applySteganography,
     )
     if (isRight(parseResult)) {
       const parsedParam = parseResult.value
@@ -1828,6 +1835,7 @@ function parseParam(
   topLevelNames: Array<string>,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   existingUIDs: Set<string>,
+  applySteganography: SteganographyMode,
 ): Either<string, WithParserMetadata<Param>> {
   const dotDotDotToken = param.dotDotDotToken != null
   const parsedExpression: Either<
@@ -1845,6 +1853,7 @@ function parseParam(
         param.initializer,
         existingHighlightBounds,
         existingUIDs,
+        applySteganography,
       )
   return flatMapEither((paramExpression) => {
     const parsedBindingName = parseBindingName(
@@ -1857,6 +1866,7 @@ function parseParam(
       topLevelNames,
       existingHighlightBounds,
       existingUIDs,
+      applySteganography,
     )
     return mapEither(
       (bindingName) =>
@@ -1881,6 +1891,7 @@ function parseBindingName(
   topLevelNames: Array<string>,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   existingUIDs: Set<string>,
+  applySteganography: SteganographyMode,
 ): Either<string, WithParserMetadata<BoundParam>> {
   let highlightBounds: HighlightBoundsForUids = {
     ...existingHighlightBounds,
@@ -1916,6 +1927,7 @@ function parseBindingName(
           topLevelNames,
           highlightBounds,
           existingUIDs,
+          applySteganography,
         )
         if (isRight(parsedParam)) {
           const bound = parsedParam.value.value
@@ -1956,6 +1968,7 @@ function parseBindingName(
           topLevelNames,
           highlightBounds,
           existingUIDs,
+          applySteganography,
         )
         if (isRight(parsedParam)) {
           const bound = parsedParam.value.value

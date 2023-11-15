@@ -18,8 +18,9 @@ import infiniteLoopPrevention from './transform-prevent-infinite-loops'
 import type { ElementsWithinInPosition, CodeWithMap } from './parser-printer-utils'
 import { wrapCodeInParens, wrapCodeInParensWithMap } from './parser-printer-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../shared/dom-utils'
-import { encodeSteganoData } from '../../shared/stegano-text'
+import { cleanSteganoTextData, encodeSteganoData } from '../../shared/stegano-text'
 import { SourceMapConsumer } from 'source-map'
+import type { SteganographyMode } from './parser-printer'
 
 interface TranspileResult {
   code: string
@@ -195,6 +196,7 @@ export function transpileJavascript(
   fileSourceNode: typeof SourceNode,
   elementsWithin: ElementsWithinInPosition,
   wrapInParens: boolean,
+  applySteganography: SteganographyMode,
 ): Either<string, TranspileResult> {
   try {
     const { code, map } = fileSourceNode.toStringWithSourceMap({ file: sourceFileName })
@@ -206,6 +208,7 @@ export function transpileJavascript(
       rawMap,
       elementsWithin,
       wrapInParens,
+      applySteganography,
     )
   } catch (e: any) {
     return left(e.message)
@@ -249,6 +252,10 @@ function getAbsoluteOffsetFromFile(
   lines: string[],
   { line, column }: { line: number; column: number },
 ): number {
+  if (line >= lines.length) {
+    return -1
+  }
+
   let offset = 0
   for (let i = 0; i < line - 1; i++) {
     // Add 1 for newline character
@@ -258,6 +265,42 @@ function getAbsoluteOffsetFromFile(
   return offset
 }
 
+function applySteganographyPlugin(
+  sourceFileName: string,
+  mapToUse: RawSourceMap,
+  fileLines: string[],
+) {
+  return () => ({
+    visitor: {
+      StringLiteral(path: any) {
+        if (path.node.loc == null) {
+          return
+        }
+
+        // this call somehow messes with the snapshots
+        const smc = new SourceMapConsumer(mapToUse)
+        const originalStartPosition = smc.originalPositionFor(path.node.loc.start)
+        const originalEndPosition = smc.originalPositionFor(path.node.loc.end)
+        const original = cleanSteganoTextData(path.node.value).cleaned
+        const data = {
+          filePath: sourceFileName,
+          originalString: "'" + original + "'",
+          startPosition:
+            getAbsoluteOffsetFromFile(fileLines, {
+              line: originalStartPosition.line,
+              column: originalStartPosition.column,
+            }) - 1,
+          endPosition: getAbsoluteOffsetFromFile(fileLines, {
+            line: originalEndPosition.line,
+            column: originalEndPosition.column,
+          }),
+        }
+        path.node.value = encodeSteganoData(original, data)
+      },
+    },
+  })
+}
+
 export function transpileJavascriptFromCode(
   sourceFileName: string,
   sourceFileText: string,
@@ -265,6 +308,7 @@ export function transpileJavascriptFromCode(
   map: RawSourceMap,
   elementsWithin: ElementsWithinInPosition,
   wrapInParens: boolean,
+  applySteganography: SteganographyMode,
 ): Either<string, TranspileResult> {
   try {
     let codeToUse: string = code
@@ -281,34 +325,10 @@ export function transpileJavascriptFromCode(
       mapToUse = wrappedInParens.sourceMap
     }
 
-    const fileLines = sourceFileText.split('\n')
-
-    let plugins: Array<any> = [
-      () => ({
-        visitor: {
-          StringLiteral(path: any) {
-            const smc = new SourceMapConsumer(mapToUse)
-            const originalStartPosition = smc.originalPositionFor(path.node.loc.start)
-            const originalEndPosition = smc.originalPositionFor(path.node.loc.end)
-
-            const data = {
-              filePath: sourceFileName,
-              originalString: "'" + path.node.value + "'",
-              startPosition:
-                getAbsoluteOffsetFromFile(fileLines, {
-                  line: originalStartPosition.line,
-                  column: originalStartPosition.column,
-                }) - 1,
-              endPosition: getAbsoluteOffsetFromFile(fileLines, {
-                line: originalEndPosition.line,
-                column: originalEndPosition.column,
-              }),
-            }
-            path.node.value = encodeSteganoData(path.node.value, data)
-          },
-        },
-      }),
-    ]
+    let plugins: Array<any> =
+      applySteganography === 'apply-steganography'
+        ? [applySteganographyPlugin(sourceFileName, mapToUse, sourceFileText.split('\n'))]
+        : []
     if (Object.keys(elementsWithin).length > 0) {
       plugins.push(babelRewriteJSExpressionCode(elementsWithin, true))
     }
