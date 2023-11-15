@@ -55,7 +55,7 @@ import { EditorCommon } from './editor-component-common'
 import { notice } from '../common/notice'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { ProjectServerStateUpdater } from './store/project-server-state'
-import { useRoom, RoomProvider } from '../../../liveblocks.config'
+import { RoomProvider, initialPresence } from '../../../liveblocks.config'
 import { generateUUID } from '../../utils/utils'
 import { isLiveblocksEnabled } from './liveblocks-utils'
 
@@ -91,8 +91,6 @@ function useDelayedValueHook(inputValue: boolean, delayMs: number): boolean {
 }
 
 export const EditorComponentInner = React.memo((props: EditorProps) => {
-  const room = useRoom()
-  console.info('room', JSON.stringify(room.getStatus()))
   const dispatch = useDispatch()
   const editorStoreRef = useRefEditorState((store) => store)
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
@@ -515,7 +513,11 @@ export function EditorComponent(props: EditorProps) {
   return indexedDBFailed ? (
     <FatalIndexedDBErrorComponent />
   ) : (
-    <RoomProvider id={roomId} autoConnect={isLiveblocksEnabled()} initialPresence={{}}>
+    <RoomProvider
+      id={roomId}
+      autoConnect={isLiveblocksEnabled()}
+      initialPresence={initialPresence()}
+    >
       <DndProvider backend={HTML5Backend} context={window}>
         <ProjectServerStateUpdater
           projectId={projectId}
