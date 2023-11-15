@@ -123,11 +123,13 @@ const MultiplayerUserBar = React.memo(() => {
           )}
         </div>
       )}
-      <MultiplayerAvatar
-        name={multiplayerInitialsFromName(myName)}
-        tooltip={`${myName} (you)`}
-        color={{ background: colorTheme.bg3.value, foreground: colorTheme.fg1.value }}
-      />
+      <a href='/projects' target='_blank'>
+        <MultiplayerAvatar
+          name={multiplayerInitialsFromName(myName)}
+          tooltip={`${myName} (you)`}
+          color={{ background: colorTheme.bg3.value, foreground: colorTheme.fg1.value }}
+        />
+      </a>
     </div>
   )
 })
