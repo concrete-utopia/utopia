@@ -1,3 +1,4 @@
+import React from 'react'
 import type { CSSProperties } from 'react'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import type { StyleLayoutProp } from '../../../../core/layout/layout-helpers-new'
@@ -100,7 +101,7 @@ import {
 } from '../../../inspector/inspector-common'
 import { EdgePositionBottomRight } from '../../canvas-types'
 import { addElement } from '../../commands/add-element-command'
-import type { CanvasCommand } from '../../commands/commands'
+import { runCanvasCommand, type CanvasCommand } from '../../commands/commands'
 import { deleteElement } from '../../commands/delete-element-command'
 import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import type { SetCssLengthProperty } from '../../commands/set-css-length-command'
@@ -124,6 +125,8 @@ import { showToastCommand } from '../../commands/show-toast-command'
 import { unsetJSXValueAtPath } from '../../../../core/shared/jsx-attributes'
 import type { Optic } from '../../../../core/shared/optics/optics'
 import type { EditorContract } from './contracts/contract-helpers'
+import { useRefEditorState } from '../../../editor/store/store-hook'
+import { useDispatch } from '../../../editor/store/dispatch-context'
 
 const GroupImport: Imports = {
   'utopia-api': {
@@ -480,6 +483,31 @@ function removeDataConstraintsFromChildren(children: JSXElementChildren): JSXEle
     },
     children,
   )
+}
+
+export function useConvertWrapperToFrame() {
+  const dispatch = useDispatch()
+  const editorStateRef = useRefEditorState((store) => store)
+  return React.useCallback(() => {
+    const { jsxMetadata, allElementProps, elementPathTree, selectedViews } =
+      editorStateRef.current.editor
+    dispatch([
+      applyCommandsAction(
+        selectedViews.flatMap((sv) =>
+          convertWrapperToFrameCommands(jsxMetadata, allElementProps, elementPathTree, sv),
+        ),
+      ),
+    ])
+  }, [dispatch, editorStateRef])
+}
+
+function convertWrapperToFrameCommands(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
+  elementPath: ElementPath,
+): CanvasCommand[] {
+  return convertSizelessDivToFrameCommands(metadata, allElementProps, pathTrees, elementPath) ?? []
 }
 
 export function convertSizelessDivToFrameCommands(
@@ -1287,13 +1315,11 @@ export function getCommandsForConversionToDesiredType(
           return []
         }
 
-        return (
-          convertSizelessDivToFrameCommands(
-            metadata,
-            allElementProps,
-            elementPathTree,
-            elementPath,
-          ) ?? []
+        return convertWrapperToFrameCommands(
+          metadata,
+          allElementProps,
+          elementPathTree,
+          elementPath,
         )
       }
 

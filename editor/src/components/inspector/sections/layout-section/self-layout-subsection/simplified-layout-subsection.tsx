@@ -20,6 +20,7 @@ import { ResizeToFitControl } from '../../../resize-to-fit-control'
 import { Substores, useEditorState } from '../../../../editor/store/store-hook'
 import { NO_OP } from '../../../../../core/shared/utils'
 import { when } from '../../../../../utils/react-conditionals'
+import { useConvertWrapperToFrame } from '../../../../canvas/canvas-strategies/strategies/group-conversion-helpers'
 
 export const SimplifiedLayoutSubsection = React.memo(() => {
   const selectedElementContract = useEditorState(
@@ -76,6 +77,7 @@ export const SimplifiedLayoutSubsection = React.memo(() => {
 SimplifiedLayoutSubsection.displayName = 'SimplifiedLayoutSubsection'
 
 const WrapperElementDisclosureBox = React.memo(() => {
+  const convertToFrame = useConvertWrapperToFrame()
   return (
     <FlexColumn style={{ gap: 8, paddingLeft: 8, paddingRight: 8 }}>
       <span
@@ -106,7 +108,7 @@ const WrapperElementDisclosureBox = React.memo(() => {
               padding: '0 6px',
               borderRadius: 2,
             }}
-            onClick={NO_OP}
+            onClick={convertToFrame}
           >
             Convert to Frame
           </Button>
