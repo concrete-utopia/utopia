@@ -95,7 +95,6 @@ xdescribe('Group child constraints', () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCode(testCase.baseProject),
         'await-first-dom-report',
-        RegisteredCanvasStrategies,
       )
 
       await testCase.actionChange(editor)
@@ -379,7 +378,6 @@ describe('Frame child constraints', () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCode(testCase.baseProject),
         'await-first-dom-report',
-        RegisteredCanvasStrategies,
       )
 
       await testCase.actionChange(editor)

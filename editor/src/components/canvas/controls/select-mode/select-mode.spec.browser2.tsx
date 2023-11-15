@@ -1566,7 +1566,7 @@ describe('mouseup selection', () => {
     const renderResult = await renderTestEditorWithCode(
       MouseupTestProject,
       'await-first-dom-report',
-      [],
+      { strategiesToUse: [] },
     )
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -1598,7 +1598,7 @@ describe('mouseup selection', () => {
     const renderResult = await renderTestEditorWithCode(
       MouseupTestProject,
       'await-first-dom-report',
-      [],
+      { strategiesToUse: [] },
     )
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -1634,7 +1634,7 @@ describe('mouseup selection', () => {
     const renderResult = await renderTestEditorWithCode(
       MouseupTestProject,
       'await-first-dom-report',
-      [],
+      { strategiesToUse: [] },
     )
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -1695,7 +1695,7 @@ describe('mouseup selection', () => {
     const renderResult = await renderTestEditorWithCode(
       MouseupTestProject,
       'await-first-dom-report',
-      [],
+      { strategiesToUse: [] },
     )
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)

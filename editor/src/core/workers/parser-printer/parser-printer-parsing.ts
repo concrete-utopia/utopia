@@ -115,6 +115,7 @@ import { isEmptyString } from '../../shared/string-utils'
 import type { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 import { emptySet } from '../../../core/shared/set-utils'
 import { getAllUniqueUidsFromAttributes } from '../../../core/model/get-unique-ids'
+import type { SteganographyMode } from './parser-printer'
 
 function inPositionToElementsWithin(elements: ElementsWithinInPosition): ElementsWithin {
   let result: ElementsWithin = {}
@@ -177,6 +178,7 @@ function parseArrayLiteralExpression(
   literal: TS.ArrayLiteralExpression,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
+  applySteganography: SteganographyMode,
 ): Either<string, WithParserMetadata<JSExpression>> {
   let arrayContents: Array<JSXArrayElement> = []
   let highlightBounds = existingHighlightBounds
@@ -213,6 +215,7 @@ function parseArrayLiteralExpression(
         existingHighlightBounds,
         alreadyExistingUIDs,
         [],
+        applySteganography,
       )
       if (isLeft(subExpression)) {
         return subExpression
@@ -234,6 +237,7 @@ function parseArrayLiteralExpression(
         highlightBounds,
         alreadyExistingUIDs,
         [],
+        applySteganography,
       )
       if (isLeft(subExpression)) {
         return subExpression
@@ -272,6 +276,7 @@ function parseObjectLiteralExpression(
   literal: TS.ObjectLiteralExpression,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
+  applySteganography: SteganographyMode,
 ): Either<string, WithParserMetadata<JSExpression>> {
   let contents: Array<JSXProperty> = []
   let highlightBounds = existingHighlightBounds
@@ -318,6 +323,7 @@ function parseObjectLiteralExpression(
         highlightBounds,
         alreadyExistingUIDs,
         colonTokenComments.trailingComments,
+        applySteganography,
       )
 
       if (isLeft(subExpression)) {
@@ -351,6 +357,7 @@ function parseObjectLiteralExpression(
         highlightBounds,
         alreadyExistingUIDs,
         [],
+        applySteganography,
       )
       if (isLeft(subExpression)) {
         return subExpression
@@ -534,6 +541,7 @@ function parseOtherJavaScript<E extends TS.Node, T extends { uid: string }>(
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
   trailingCode: string,
+  applySteganography: SteganographyMode,
   create: (
     code: string,
     definedWithin: Array<string>,
@@ -672,6 +680,7 @@ function parseOtherJavaScript<E extends TS.Node, T extends { uid: string }>(
         propsObjectName,
         highlightBounds,
         alreadyExistingUIDs,
+        applySteganography,
       )
       forEachRight(parseResult, (success) => {
         // Be conservative with this for the moment.
@@ -1021,6 +1030,7 @@ export function parseAttributeOtherJavaScript(
   expression: TS.Node,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
+  applySteganography: SteganographyMode,
 ): Either<string, WithParserMetadata<JSExpressionMapOrOtherJavascript>> {
   const expressionAndText = createExpressionAndText(
     expression,
@@ -1039,6 +1049,7 @@ export function parseAttributeOtherJavaScript(
     existingHighlightBounds,
     alreadyExistingUIDs,
     '',
+    applySteganography,
     (code, _, definedElsewhere, fileSourceNode, parsedElementsWithin, isList) => {
       const { code: codeFromFile, map } = fileSourceNode.toStringWithSourceMap({ file: filename })
       const rawMap = JSON.parse(map.toString())
@@ -1049,6 +1060,7 @@ export function parseAttributeOtherJavaScript(
         rawMap,
         parsedElementsWithin,
         true,
+        applySteganography,
       )
       return mapEither((transpileResult) => {
         const prependedWithReturn = prependToSourceString(
@@ -1109,6 +1121,7 @@ function parseJSExpression(
   jsxExpression: TS.Expression,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
+  applySteganography: SteganographyMode,
 ): Either<string, WithParserMetadata<JSExpression>> {
   const expression = TS.isJsxExpression(jsxExpression) ? jsxExpression.expression : jsxExpression
   const expressionFullText = expression == null ? '' : expression.getText(sourceFile)
@@ -1141,6 +1154,7 @@ function parseJSExpression(
     existingHighlightBounds,
     alreadyExistingUIDs,
     '',
+    applySteganography,
     (code, _definedWithin, definedElsewhere, _fileSourceNode, parsedElementsWithin, isList) => {
       if (code === '') {
         return right(
@@ -1176,6 +1190,7 @@ function parseJSExpression(
             dataUIDFixResult.sourceMap,
             parsedElementsWithin,
             true,
+            applySteganography,
           )
 
           return mapEither((transpileResult) => {
@@ -1439,6 +1454,7 @@ export function parseAttributeExpression(
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
   trailingCommentsFromPriorToken: Array<Comment>,
+  applySteganography: SteganographyMode,
 ): Either<string, WithParserMetadata<JSExpression>> {
   let comments = getComments(sourceText, expression)
   if (trailingCommentsFromPriorToken.length > 0) {
@@ -1458,6 +1474,7 @@ export function parseAttributeExpression(
       expression,
       existingHighlightBounds,
       alreadyExistingUIDs,
+      applySteganography,
     )
   } else if (TS.isCallExpression(expression)) {
     // Parse the case that an attribute invokes a special case function.
@@ -1485,6 +1502,7 @@ export function parseAttributeExpression(
             highlightBounds,
             alreadyExistingUIDs,
             [],
+            applySteganography,
           )
           if (isLeft(parsedArgument)) {
             return left(`Error parsing function expression: ${parsedArgument.value}`)
@@ -1523,6 +1541,7 @@ export function parseAttributeExpression(
       expression,
       existingHighlightBounds,
       alreadyExistingUIDs,
+      applySteganography,
     )
   } else if (
     TS.isElementAccessExpression(expression) ||
@@ -1538,6 +1557,7 @@ export function parseAttributeExpression(
       expression,
       existingHighlightBounds,
       alreadyExistingUIDs,
+      applySteganography,
     )
   } else if (
     TS.isIdentifier(expression) &&
@@ -1567,6 +1587,7 @@ export function parseAttributeExpression(
       expression,
       existingHighlightBounds,
       alreadyExistingUIDs,
+      applySteganography,
     )
   } else if (TS.isPrefixUnaryExpression(expression)) {
     // Cater for negative numbers, because of course they're done in a weird way.
@@ -1595,6 +1616,7 @@ export function parseAttributeExpression(
       expression,
       existingHighlightBounds,
       alreadyExistingUIDs,
+      applySteganography,
     )
   } else if (TS.isStringLiteral(expression)) {
     return right(
@@ -1625,6 +1647,7 @@ export function parseAttributeExpression(
           expression,
           existingHighlightBounds,
           alreadyExistingUIDs,
+          applySteganography,
         )
     }
   }
@@ -1640,6 +1663,7 @@ function getAttributeExpression(
   initializer: TS.StringLiteral | TS.JsxExpression,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
+  applySteganography: SteganographyMode,
 ): Either<string, WithParserMetadata<JSExpression>> {
   if (TS.isStringLiteral(initializer)) {
     const comments = getComments(sourceText, initializer)
@@ -1702,6 +1726,7 @@ function getAttributeExpression(
         existingHighlightBounds,
         alreadyExistingUIDs,
         openBraceComments.trailingComments,
+        applySteganography,
       )
     }
   } else {
@@ -1720,6 +1745,7 @@ function parseElementProps(
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
   leadingCommentsAgainstClosingToken: Array<Comment>,
+  applySteganography: SteganographyMode,
 ): Either<string, WithParserMetadata<JSXAttributes>> {
   let result: JSXAttributes = []
   let highlightBounds = existingHighlightBounds
@@ -1747,6 +1773,7 @@ function parseElementProps(
         highlightBounds,
         alreadyExistingUIDs,
         [],
+        applySteganography,
       )
       if (isLeft(attributeResult)) {
         return attributeResult
@@ -1785,6 +1812,7 @@ function parseElementProps(
           prop.initializer,
           highlightBounds,
           alreadyExistingUIDs,
+          applySteganography,
         )
         if (isLeft(attributeResult)) {
           return attributeResult
@@ -2270,6 +2298,7 @@ export function parseOutJSXElements(
   propsObjectName: string | null,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
+  applySteganography: SteganographyMode,
 ): ParseElementsResult {
   let highlightBounds: HighlightBoundsForUids = existingHighlightBounds
   let propsUsed: Array<string> = []
@@ -2435,6 +2464,7 @@ export function parseOutJSXElements(
       tsExpression,
       highlightBounds,
       alreadyExistingUIDs,
+      applySteganography,
     )
     return bimapEither(
       (failure) => failure,
@@ -2536,6 +2566,7 @@ export function parseOutJSXElements(
         highlightBounds,
         alreadyExistingUIDs,
         commentsFromAfterAttributes.leadingComments,
+        applySteganography,
       )
       // Construct the element.
       return flatMapEither((attrs) => {
@@ -2595,6 +2626,7 @@ export function parseOutJSXElements(
         existingHighlightBounds,
         alreadyExistingUIDs,
         [],
+        applySteganography,
       )
     }
 
@@ -2822,6 +2854,7 @@ export function parseArbitraryNodes(
   rootLevel: boolean,
   trailingCode: string,
   useFullText: boolean,
+  applySteganography: SteganographyMode,
 ): Either<string, WithParserMetadata<ArbitraryJSBlock>> {
   const expressionsAndTexts = arbitraryNodes.map((node) => {
     return createExpressionAndText(
@@ -2842,6 +2875,7 @@ export function parseArbitraryNodes(
     existingHighlightBounds,
     alreadyExistingUIDs,
     trailingCode,
+    applySteganography,
     (code, definedWithin, definedElsewhere, fileSourceNode, parsedElementsWithin) => {
       const definedWithinFields = definedWithin.map((within) => `${within}: ${within}`).join(', ')
       const definedWithCode = `return { ${definedWithinFields} };`
@@ -2856,6 +2890,7 @@ export function parseArbitraryNodes(
         // In those cases that is incorrect as they are just regularly used elements which were in a class component (for example).
         rootLevel ? [] : parsedElementsWithin,
         false,
+        applySteganography,
       )
       const dataUIDFixed = insertDataUIDsIntoCode(
         code,
@@ -2934,6 +2969,7 @@ export function parseOutFunctionContents(
   arrowFunctionBody: TS.ConciseBody,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
+  applySteganography: SteganographyMode,
 ): Either<string, WithParserMetadata<FunctionContents>> {
   let highlightBounds = existingHighlightBounds
   if (TS.isBlock(arrowFunctionBody)) {
@@ -2967,6 +3003,7 @@ export function parseOutFunctionContents(
           false,
           returnStatementPrefixCode,
           true,
+          applySteganography,
         )
         if (isLeft(parseResult)) {
           return parseResult
@@ -3008,6 +3045,7 @@ export function parseOutFunctionContents(
         propsObjectName,
         highlightBounds,
         alreadyExistingUIDs,
+        applySteganography,
       )
       return mapEither((parsed) => {
         highlightBounds = mergeHighlightBounds(highlightBounds, parsed.highlightBounds)
@@ -3030,6 +3068,7 @@ export function parseOutFunctionContents(
       propsObjectName,
       highlightBounds,
       alreadyExistingUIDs,
+      applySteganography,
     )
     return liftParsedElementsIntoFunctionContents(
       expressionTypeForExpression(arrowFunctionBody),

@@ -27,7 +27,13 @@ async function processFile(
 ): Promise<string> {
   const fileContents = FS.readFileSync(javascriptFilePath, 'utf8')
   const initialPrettifiedContents = applyPrettier(fileContents, false).formatted
-  const parsedContents = parseCode(javascriptFilePath, initialPrettifiedContents, null, emptySet())
+  const parsedContents = parseCode(
+    javascriptFilePath,
+    initialPrettifiedContents,
+    null,
+    emptySet(),
+    'do-not-apply-steganography',
+  )
   const printedContents = foldParsedTextFile(
     (_) => initialPrettifiedContents,
     (success) => {
