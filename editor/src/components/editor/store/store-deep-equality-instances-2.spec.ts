@@ -56,7 +56,6 @@ describe('JSXElementKeepDeepEquality', () => {
       },
     ],
     uid: 'uid',
-    comments: emptyComments,
   }
   const newSameValue: JSXElement = {
     type: 'JSX_ELEMENT',
@@ -75,7 +74,6 @@ describe('JSXElementKeepDeepEquality', () => {
       },
     ],
     uid: 'uid',
-    comments: emptyComments,
   }
   const newDifferentValue: JSXElement = {
     type: 'JSX_ELEMENT',
@@ -94,7 +92,6 @@ describe('JSXElementKeepDeepEquality', () => {
       },
     ],
     uid: 'new-uid',
-    comments: emptyComments,
   }
 
   it('same reference returns the same reference', () => {
@@ -137,7 +134,6 @@ describe('ElementsWithinKeepDeepEqualityCall', () => {
       },
     ],
     uid: 'uid',
-    comments: emptyComments,
   }
   const oldValue: ElementsWithin = {
     uid: innerValue,
@@ -812,7 +808,6 @@ describe('UtopiaJSXComponentKeepDeepEquality', () => {
         },
       ],
       uid: 'uid',
-      comments: emptyComments,
     },
     arbitraryJSBlock: {
       type: 'ARBITRARY_JS_BLOCK',
@@ -860,7 +855,6 @@ describe('UtopiaJSXComponentKeepDeepEquality', () => {
         },
       ],
       uid: 'uid',
-      comments: emptyComments,
     },
     arbitraryJSBlock: {
       type: 'ARBITRARY_JS_BLOCK',
@@ -908,7 +902,6 @@ describe('UtopiaJSXComponentKeepDeepEquality', () => {
         },
       ],
       uid: 'uid',
-      comments: emptyComments,
     },
     arbitraryJSBlock: {
       type: 'ARBITRARY_JS_BLOCK',

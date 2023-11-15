@@ -112,6 +112,7 @@
     "@emotion/styled-base": "11.0.0",
     "@liveblocks/client": "1.7.0",
     "@liveblocks/react": "1.7.0",
+    "@liveblocks/react-comments": "1.7.1",
     "@popperjs/core": "2.4.4",
     "@remix-run/react": "2.0.1",
     "@root/encoding": "1.0.1",

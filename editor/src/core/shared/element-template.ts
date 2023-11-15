@@ -1146,7 +1146,7 @@ export function getJSXElementNameAsString(name: JSXElementName): string {
   }
 }
 
-export interface JSXElement extends WithComments {
+export interface JSXElement {
   type: 'JSX_ELEMENT'
   name: JSXElementName
   props: JSXAttributes
@@ -1458,7 +1458,6 @@ export function jsxElement(
   uid: string,
   props: JSXAttributes,
   children: JSXElementChildren,
-  comments: ParsedComments = emptyComments,
 ): JSXElement {
   return {
     type: 'JSX_ELEMENT',
@@ -1466,7 +1465,6 @@ export function jsxElement(
     uid: uid,
     props: props,
     children: children,
-    comments: comments,
   }
 }
 
@@ -1498,14 +1496,12 @@ export function jsxElementWithoutUID(
   name: JSXElementName | string,
   props: JSXAttributes,
   children: JSXElementChildren,
-  comments: ParsedComments = emptyComments,
 ): JSXElementWithoutUID {
   return {
     type: 'JSX_ELEMENT',
     name: typeof name === 'string' ? jsxElementName(name, []) : name,
     props: props,
     children: children,
-    comments: comments,
   }
 }
 
