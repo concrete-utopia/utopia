@@ -143,15 +143,12 @@ export async function uploadPNGtoAWS(testFile: string): Promise<string | null> {
     uploadParams.Body = filestream
     uploadParams.Key = path.basename(testFile)
 
-    s3.upload(uploadParams, function (err: any, data: any) {
-      if (err) {
-        console.log('Error', err)
-        reject(err)
-      }
-      if (data) {
-        console.log('Upload Success', data.Location)
-        resolve(data.Location)
-      }
+    s3.upload(uploadParams).promise().then(function (data: any) {
+      console.log('Upload Success', data.Location)
+      resolve(data.Location)
+    }).catch(function (err: any) {
+      console.log('Error', err)
+      reject(err)
     })
   })
 }
