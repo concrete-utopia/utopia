@@ -1,6 +1,6 @@
 import localforage from 'localforage'
 import { IS_TEST_ENVIRONMENT, PRODUCTION_CONFIG } from '../common/env-vars'
-import { fastForEach, isBrowserEnvironment } from '../core/shared/utils'
+import { isBrowserEnvironment } from '../core/shared/utils'
 
 export type FeatureName =
   | 'Debug – Redux Devtools'
@@ -14,6 +14,7 @@ export type FeatureName =
   | 'Project Thumbnail Generation'
   | 'Debug - Print UIDs'
   | 'Steganography'
+  | 'Collaboration'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -28,6 +29,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Project Thumbnail Generation',
   'Debug - Print UIDs',
   'Steganography',
+  'Collaboration',
 ]
 
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
@@ -42,6 +44,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Project Thumbnail Generation': false,
   'Debug - Print UIDs': false,
   Steganography: false,
+  Collaboration: false,
 }
 
 let FeatureSwitchLoaded: { [feature in FeatureName]?: boolean } = {}
