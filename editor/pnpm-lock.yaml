@@ -60,8 +60,8 @@ specifiers:
   '@emotion/styled': 11.0.0
   '@emotion/styled-base': 11.0.0
   '@hot-loader/react-dom': 16.13.0
-  '@liveblocks/client': 1.7.0
-  '@liveblocks/react': 1.7.0
+  '@liveblocks/client': 1.7.1
+  '@liveblocks/react': 1.7.1
   '@originjs/vite-plugin-commonjs': 1.0.3
   '@popperjs/core': 2.4.4
   '@react-three/fiber': 8.0.14
@@ -134,6 +134,7 @@ specifiers:
   '@typescript-eslint/eslint-plugin': 6.7.2
   '@typescript-eslint/parser': 6.7.2
   '@use-it/interval': 0.1.3
+  '@vercel/stega': 0.1.0
   '@vitejs/plugin-react': 4.0.4
   '@welldone-software/why-did-you-render': 5.0.0-rc.1
   ajv: 6.4.0
@@ -180,6 +181,7 @@ specifiers:
   fontfaceobserver: 2.1.0
   fork-ts-checker-async-overlay-webpack-plugin: 0.4.0
   fork-ts-checker-webpack-plugin: 8.0.0
+  framer-motion: 10.16.5
   friendly-words: 1.1.10
   fse: 1.0.1
   fsevents: 2.1.2
@@ -342,8 +344,8 @@ dependencies:
   '@emotion/serialize': 1.0.2
   '@emotion/styled': 11.0.0_kf2s5ttaepyzuejtstis4wzmwe
   '@emotion/styled-base': 11.0.0
-  '@liveblocks/client': 1.7.0
-  '@liveblocks/react': 1.7.0_react@18.1.0
+  '@liveblocks/client': 1.7.1
+  '@liveblocks/react': 1.7.1_react@18.1.0
   '@popperjs/core': 2.4.4
   '@remix-run/react': 2.0.1_njludxb6fcqnim6moy22jieofi
   '@root/encoding': 1.0.1
@@ -356,6 +358,7 @@ dependencies:
   '@types/react-syntax-highlighter': 11.0.4
   '@types/w3c-css-typed-object-model-level-1': 20180410.0.5
   '@use-it/interval': 0.1.3_react@18.1.0
+  '@vercel/stega': 0.1.0
   ajv: 6.4.0
   anser: 2.1.0
   antd: 4.3.5_ef5jwxihqo6n7gxfmzogljlgcm
@@ -377,6 +380,7 @@ dependencies:
   eslint4b: 6.6.0
   fast-deep-equal: 2.0.1
   fontfaceobserver: 2.1.0
+  framer-motion: 10.16.5_ef5jwxihqo6n7gxfmzogljlgcm
   friendly-words: 1.1.10
   graphlib: 2.1.1
   he: 1.2.0
@@ -2647,6 +2651,14 @@ packages:
       '@emotion/memoize': 0.6.6
     dev: false
 
+  /@emotion/is-prop-valid/0.8.8:
+    resolution: {integrity: sha512-u5WtneEAr5IDG2Wv65yhunPSMLIpuKsbuOktRojfrEiEvRyC85LgPMZI63cr7NUqT8ZIGdSVg8ZKGxIug4lXcA==}
+    requiresBuild: true
+    dependencies:
+      '@emotion/memoize': 0.7.4
+    dev: false
+    optional: true
+
   /@emotion/is-prop-valid/1.1.0:
     resolution: {integrity: sha512-9RkilvXAufQHsSsjQ3PIzSns+pxuX4EW8EbGeSPjZMHuMx6z/MOzb9LpqNieQX4F3mre3NWS2+X3JNRHTQztUQ==}
     dependencies:
@@ -3382,23 +3394,23 @@ packages:
     resolution: {integrity: sha512-Hcv+nVC0kZnQ3tD9GVu5xSMR4VVYOteQIr/hwFPVEvPdlXqgGEuRjiheChHgdM+JyqdgNcmzZOX/tnl0JOiI7A==}
     dev: true
 
-  /@liveblocks/client/1.7.0:
-    resolution: {integrity: sha512-BJnHDnp2GH+d7NuJJSRSZwSHLSd73BNS3ApiNInsatE56y5FSOx861kbbYKyD2Spv9vg3z9QZfBWMSrzTR5IeA==}
+  /@liveblocks/client/1.7.1:
+    resolution: {integrity: sha512-i/r4CrKcFAuJw7RFPsbyr3NobeVc3rylGSOtAY70Acl9UO6i0Qe1Ai7V+uWKfzooqAiThwrr8mPxtfu0ji4DRA==}
     dependencies:
-      '@liveblocks/core': 1.7.0
+      '@liveblocks/core': 1.7.1
     dev: false
 
-  /@liveblocks/core/1.7.0:
-    resolution: {integrity: sha512-JSEvFr4iQYAKnE0dH36VWNFW6KmWStP8XJtb711bSXevRxx/4ODN88kQkTNNVuUjpgAOM+ekKjbqEdHmd8JhKw==}
+  /@liveblocks/core/1.7.1:
+    resolution: {integrity: sha512-x3HBVFk9tWppCkzScVaFn8VqTPC+rKgNxiB8bkazJmplYJO6/2k0oBHEq5lA034ERzVVdW1qkWMQKhmINNJiIQ==}
     dev: false
 
-  /@liveblocks/react/1.7.0_react@18.1.0:
-    resolution: {integrity: sha512-dXSfMNlqjtMVuy1qpQAdUYQ8jKWI7kHKJsXc12vDUzGybyil7JKMJgRKI9RTQgHWcfq1t2aPlL5rw7JmQa4qbA==}
+  /@liveblocks/react/1.7.1_react@18.1.0:
+    resolution: {integrity: sha512-qx+zbTu0hUUj8U8ydB0YEY0+DFR0PuTGVN9hlFHTxWE5Xr0eRFlFegyE6FGtXfTHkyxtQ1vQvoBQcUO/i7+VBA==}
     peerDependencies:
       react: ^16.14.0 || ^17 || ^18
     dependencies:
-      '@liveblocks/client': 1.7.0
-      '@liveblocks/core': 1.7.0
+      '@liveblocks/client': 1.7.1
+      '@liveblocks/core': 1.7.1
       nanoid: 3.3.6
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
       use-sync-external-store: 1.2.0_react@18.1.0
@@ -4976,6 +4988,10 @@ packages:
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
     dev: false
 
+  /@vercel/stega/0.1.0:
+    resolution: {integrity: sha512-5b0PkOJsFBX5alChuIO3qpkt5vIZBevzLPhUQ1UP8UzVjL3F1VllnZxp/thfD8R5ol7D7WHkgZHIjdUBX4tDpQ==}
+    dev: false
+
   /@vitejs/plugin-react/4.0.4_vite@4.4.8:
     resolution: {integrity: sha512-7wU921ABnNYkETiMaZy7XqpueMnpu5VxvVps13MjmCo+utBdD79sZzrApHawHtVX66cCJQQTXFcjH0y9dSUK8g==}
     engines: {node: ^14.18.0 || >=16.0.0}
@@ -5573,7 +5589,7 @@ packages:
     resolution: {integrity: sha512-xcLxITLe2HYa1cnYnwCjkOO1PqUHQpozB8x9AR0OgWN2woOBi5kSDVxKfd0b7sb1hw5qFeJhXm9H1nu3xSfLeQ==}
     engines: {node: '>=10'}
     dependencies:
-      tslib: 2.3.1
+      tslib: 2.6.2
     dev: false
 
   /aria-query/4.2.2:
@@ -6566,7 +6582,7 @@ packages:
     resolution: {integrity: sha512-gxGWBrTT1JuMx6R+o5PTXMmUnhnVzLQ9SNutD4YqKtI6ap897t3tKECYla6gCWEkplXnlNybEkZg9GEGxKFCgw==}
     dependencies:
       pascal-case: 3.1.2
-      tslib: 2.3.1
+      tslib: 2.6.2
     dev: true
 
   /camelcase/5.3.1:
@@ -6708,7 +6724,7 @@ packages:
       htmlparser2: 6.1.0
       parse5: 6.0.1
       parse5-htmlparser2-tree-adapter: 6.0.1
-      tslib: 2.3.1
+      tslib: 2.6.2
     dev: true
 
   /chokidar/3.5.1:
@@ -7082,7 +7098,7 @@ packages:
     dev: true
 
   /component-indexof/0.0.3:
-    resolution: {integrity: sha1-EdCRMSI5648yyPJa6csAL/6NPCQ=}
+    resolution: {integrity: sha512-puDQKvx/64HZXb4hBwIcvQLaLgux8o1CbWl39s41hrIIZDl1lJiD5jc22gj3RBeGK0ovxALDYpIbyjqDUUl0rw==}
     dev: false
 
   /compressible/2.0.18:
@@ -8118,7 +8134,7 @@ packages:
     resolution: {integrity: sha512-Kv5nKlh6yRrdrGvxeJ2e5y2eRUpkUosIW4A2AS38zwSz27zu7ufDwQPi5Jhs3XAlGNetl3bmnGhQsMtkKJnj3w==}
     dependencies:
       no-case: 3.0.4
-      tslib: 2.3.1
+      tslib: 2.6.2
     dev: true
 
   /dotenv-expand/5.1.0:
@@ -9701,6 +9717,24 @@ packages:
     dependencies:
       map-cache: 0.2.2
     dev: true
+
+  /framer-motion/10.16.5_ef5jwxihqo6n7gxfmzogljlgcm:
+    resolution: {integrity: sha512-GEzVjOYP2MIpV9bT/GbhcsBNoImG3/2X3O/xVNWmktkv9MdJ7P/44zELm/7Fjb+O3v39SmKFnoDQB32giThzpg==}
+    peerDependencies:
+      react: ^18.0.0
+      react-dom: ^18.0.0
+    peerDependenciesMeta:
+      react:
+        optional: true
+      react-dom:
+        optional: true
+    dependencies:
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
+      tslib: 2.6.2
+    optionalDependencies:
+      '@emotion/is-prop-valid': 0.8.8
+    dev: false
 
   /fresh/0.5.2:
     resolution: {integrity: sha512-zJ2mQYM18rEFOudeV4GShTGIQ7RbzA7ozbU9I/XBpm7kqgMywgmylMwXHxZJmkVoYkna9d2pVXVXPdYTP9ej8Q==}
@@ -12657,7 +12691,7 @@ packages:
   /lower-case/2.0.2:
     resolution: {integrity: sha512-7fm3l3NAF9WfN6W3JOmf5drwpVqX78JtoGJ3A6W0a6ZnldM41w2fV5D490psKFTpMds8TJse/eHLFFsNHHjHgg==}
     dependencies:
-      tslib: 2.3.1
+      tslib: 2.6.2
     dev: true
 
   /lowercase-keys/2.0.0:
@@ -13181,7 +13215,7 @@ packages:
     resolution: {integrity: sha512-fgAN3jGAh+RoxUGZHTSOLJIqUc2wmoBwGR4tbpNAKmmovFoWq0OdRkb0VkldReO2a2iBT/OEulG9XSUc10r3zg==}
     dependencies:
       lower-case: 2.0.2
-      tslib: 2.3.1
+      tslib: 2.6.2
     dev: true
 
   /node-abort-controller/3.1.1:
@@ -13666,7 +13700,7 @@ packages:
     resolution: {integrity: sha512-RXlj7zCYokReqWpOPH9oYivUzLYZ5vAPIfEmCTNViosC78F8F0H9y7T7gG2M39ymgutxF5gcFEsyZQSph9Bp3A==}
     dependencies:
       dot-case: 3.0.4
-      tslib: 2.3.1
+      tslib: 2.6.2
     dev: true
 
   /parent-module/1.0.1:
@@ -13749,7 +13783,7 @@ packages:
     resolution: {integrity: sha512-uWlGT3YSnK9x3BQJaOdcZwrnV6hPpd8jFH1/ucpiLRPh/2zCVJKS19E4GvYHvaCcACn3foXZ0cLB9Wrx1KGe5g==}
     dependencies:
       no-case: 3.0.4
-      tslib: 2.3.1
+      tslib: 2.6.2
     dev: true
 
   /pascalcase/0.1.1:
@@ -15391,7 +15425,7 @@ packages:
       '@types/react': 18.0.9
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
       react-style-singleton: 2.2.1_7cpxmzzodpxnolj5zcc5cr63ji
-      tslib: 2.3.1
+      tslib: 2.6.2
     dev: false
 
   /react-remove-scroll/2.5.6_7cpxmzzodpxnolj5zcc5cr63ji:
@@ -15408,7 +15442,7 @@ packages:
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
       react-remove-scroll-bar: 2.3.4_7cpxmzzodpxnolj5zcc5cr63ji
       react-style-singleton: 2.2.1_7cpxmzzodpxnolj5zcc5cr63ji
-      tslib: 2.3.1
+      tslib: 2.6.2
       use-callback-ref: 1.3.0_7cpxmzzodpxnolj5zcc5cr63ji
       use-sidecar: 1.1.2_7cpxmzzodpxnolj5zcc5cr63ji
     dev: false
@@ -15535,7 +15569,7 @@ packages:
       get-nonce: 1.0.1
       invariant: 2.2.4
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
-      tslib: 2.3.1
+      tslib: 2.6.2
     dev: false
 
   /react-syntax-highlighter/12.2.1_react@18.1.0:
@@ -17572,8 +17606,8 @@ packages:
     resolution: {integrity: sha512-SgIkNheinmEBgx1IUNirK0TUD4X9yjjBRTqqjggWCU3pUEqIk3/Uwl3yRixYKT6WjQuGiwDv4NomL3wqRCj+CQ==}
     dev: false
 
-  /tslib/2.3.1:
-    resolution: {integrity: sha512-77EbyPPpMz+FRFRuAFlWMtmgUWGe9UOG2Z25NqCwiIjRhOf5iKGuzSe5P2w1laq+FkRy4p+PCuVkJSGkzTEKVw==}
+  /tslib/2.6.2:
+    resolution: {integrity: sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==}
 
   /tslint/5.20.1_typescript@5.2.2:
     resolution: {integrity: sha512-EcMxhzCFt8k+/UP5r8waCf/lzmeSyVlqxqMEDQE7rWYiQky8KpIBz1JAoYXfROHrPZ1XXd43q8yQnULOLiBRQg==}
@@ -17885,7 +17919,7 @@ packages:
     dependencies:
       '@types/react': 18.0.9
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
-      tslib: 2.3.1
+      tslib: 2.6.2
     dev: false
 
   /use-composed-ref/1.3.0_react@18.1.0:
@@ -17963,7 +17997,7 @@ packages:
       '@types/react': 18.0.9
       detect-node-es: 1.1.0
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
-      tslib: 2.3.1
+      tslib: 2.6.2
     dev: false
 
   /use-sync-external-store/1.2.0_react@18.1.0:

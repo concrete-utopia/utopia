@@ -87,6 +87,7 @@ import {
 } from '../../../core/shared/parser-projectcontents-utils'
 import { unpatchedCreateRemixDerivedDataMemo } from './remix-derived-data'
 import { maybeClearPseudoInsertMode } from '../canvas-toolbar-states'
+import { isSteganographyEnabled } from '../../../core/shared/stegano-text'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -314,7 +315,12 @@ function maybeRequestModelUpdate(
 
   // Should anything need to be sent across, do so here.
   if (filesToUpdate.length > 0) {
-    const parseFinished = getParseResult(workers, filesToUpdate, existingUIDs)
+    const parseFinished = getParseResult(
+      workers,
+      filesToUpdate,
+      existingUIDs,
+      isSteganographyEnabled(),
+    )
       .then((parseResult) => {
         const updates = parseResult.map((fileResult) => {
           return parseResultToWorkerUpdates(fileResult)
