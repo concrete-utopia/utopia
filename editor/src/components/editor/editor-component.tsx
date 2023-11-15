@@ -55,6 +55,8 @@ import { EditorCommon } from './editor-component-common'
 import { notice } from '../common/notice'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { ProjectServerStateUpdater } from './store/project-server-state'
+import { useRoom, RoomProvider } from '../../../liveblocks.config'
+import { generateUUID } from '../../utils/utils'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -88,6 +90,8 @@ function useDelayedValueHook(inputValue: boolean, delayMs: number): boolean {
 }
 
 export const EditorComponentInner = React.memo((props: EditorProps) => {
+  const room = useRoom()
+  console.info('room', JSON.stringify(room.getStatus()))
   const dispatch = useDispatch()
   const editorStoreRef = useRefEditorState((store) => store)
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
@@ -428,7 +432,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
           </SimpleFlexRow>
         </SimpleFlexColumn>
         <ModalComponent />
-        <ToastRenderer />
         <LockedOverlay />
       </SimpleFlexRow>
       <EditorCommon
@@ -504,22 +507,28 @@ export function EditorComponent(props: EditorProps) {
 
   const dispatch = useDispatch()
 
+  const roomId = React.useMemo(
+    () => (projectId == null ? generateUUID() : `project-room-${projectId}`),
+    [projectId],
+  )
   return indexedDBFailed ? (
     <FatalIndexedDBErrorComponent />
   ) : (
-    <DndProvider backend={HTML5Backend} context={window}>
-      <ProjectServerStateUpdater
-        projectId={projectId}
-        forkedFromProjectId={forkedFromProjectId}
-        dispatch={dispatch}
-      >
-        <EditorComponentInner {...props} />
-      </ProjectServerStateUpdater>
-    </DndProvider>
+    <RoomProvider id={roomId} autoConnect={true} initialPresence={{}}>
+      <DndProvider backend={HTML5Backend} context={window}>
+        <ProjectServerStateUpdater
+          projectId={projectId}
+          forkedFromProjectId={forkedFromProjectId}
+          dispatch={dispatch}
+        >
+          <EditorComponentInner {...props} />
+        </ProjectServerStateUpdater>
+      </DndProvider>
+    </RoomProvider>
   )
 }
 
-const ToastRenderer = React.memo(() => {
+export const ToastRenderer = React.memo(() => {
   const toasts = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.toasts,
@@ -530,15 +539,8 @@ const ToastRenderer = React.memo(() => {
     <FlexColumn
       key={'toast-stack'}
       style={{
-        position: 'fixed',
-        bottom: 8,
-        justifyContent: 'center',
-        right: 260,
         zIndex: 100,
-        // padding required to not cut off the boxShadow on each toast
-        paddingTop: 50,
-        paddingLeft: 50,
-        paddingRight: 50,
+        gap: 10,
       }}
     >
       {toasts.map((toast, index) => (

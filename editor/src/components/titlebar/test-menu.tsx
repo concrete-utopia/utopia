@@ -19,9 +19,16 @@ import { isFeatureEnabled } from '../../utils/feature-switches'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { printTree } from '../../core/shared/element-path-tree'
 import { useDispatch } from '../editor/store/dispatch-context'
+import type { EditorStorePatched } from '../editor/store/editor-state'
 
 interface TileProps {
   size: 'smaller' | 'normal' | 'large' | 'max'
+}
+
+declare global {
+  interface Window {
+    entireState: EditorStorePatched
+  }
 }
 
 const Tile = styled.div<TileProps>((props) => ({
@@ -40,7 +47,8 @@ export const TestMenu = React.memo(() => {
   })
 
   const printEditorState = React.useCallback(() => {
-    console.info('Current Editor State:', entireStateRef.current)
+    window.entireState = entireStateRef.current
+    console.info('Current Editor State: run `window.entireState` in console')
     console.info('Latest metadata:', jsxMetadata.current)
   }, [entireStateRef, jsxMetadata])
 

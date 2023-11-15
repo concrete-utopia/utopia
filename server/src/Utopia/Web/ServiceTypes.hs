@@ -142,6 +142,7 @@ data ServiceCallsF a = NotFound
                      | SaveGithubAsset Text Text Text Text Text [Text] (GithubSaveAssetResponse -> a)
                      | GetPullRequestForBranch Text Text Text Text (GetBranchPullRequestResponse -> a)
                      | GetGithubUserDetails Text (GetGithubUserResponse -> a)
+                     | AuthLiveblocksUser Text Text (Text -> a)
                      deriving Functor
 
 {-
@@ -236,3 +237,12 @@ data UserConfigurationRequest = UserConfigurationRequest
                               } deriving (Eq, Show, Generic)
 
 $(makeFieldsNoPrefix ''UserConfigurationRequest)
+
+data LiveblocksAuthenticationRequest = LiveblocksAuthenticationRequest
+                                       { _room :: Text
+                                       } deriving (Eq, Show, Generic)
+
+data LiveblocksAuthenticationResponse = LiveblocksAuthenticationResponse
+                                      { _token :: Text
+                                      } deriving (Eq, Show, Generic)
+
