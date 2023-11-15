@@ -11,15 +11,23 @@ import { switchEditorMode } from '../../editor/actions/action-creators'
 import { canvasPoint } from '../../../core/shared/math-utils'
 import { UtopiaTheme } from '../../../uuiui'
 import { ErrorBoundary } from '../../../utils/react-error-boundary'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 
 export const CommentIndicator = React.memo(() => {
+  const projectId = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.id,
+    'CommentIndicator projectId',
+  )
+
+  if (projectId == null) {
+    return null
+  }
+
   return (
     <CanvasOffsetWrapper>
       <ErrorBoundary fallback={null}>
-        {/* there is no fallback because we have an intermediate error during loading before we have the proper projectId/roomId */}
-        <ClientSideSuspense fallback={<div>Loading…</div>}>
-          {() => <CommentIndicatorInner />}
-        </ClientSideSuspense>
+        <ClientSideSuspense fallback={null}>{() => <CommentIndicatorInner />}</ClientSideSuspense>
       </ErrorBoundary>
     </CanvasOffsetWrapper>
   )
