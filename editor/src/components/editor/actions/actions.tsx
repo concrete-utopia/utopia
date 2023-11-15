@@ -73,7 +73,6 @@ import {
   modifiableAttributeIsAttributeValue,
   isJSExpression,
   isJSXMapExpression,
-  isArbitraryJSBlock,
 } from '../../../core/shared/element-template'
 import type { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import {
