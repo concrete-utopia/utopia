@@ -1,7 +1,7 @@
 import { within } from '@testing-library/react'
 import * as EP from '../../core/shared/element-path'
 import { assertNever } from '../../core/shared/utils'
-import { selectComponentsForTest } from '../../utils/utils.test-utils'
+import { selectComponentsForTest, wait } from '../../utils/utils.test-utils'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import {
@@ -610,7 +610,7 @@ export var storyboard = (
     const editor = await renderTestEditorWithCode(projectWithSizelessDiv, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/group')])
 
-    await chooseWrapperType(editor, 'frame', 'fragment')
+    await chooseWrapperType(editor, 'wrapper-div', 'fragment')
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(projectWithFragment)
 
     // then convert to a sized div!
@@ -1072,7 +1072,7 @@ export var storyboard = (
 
 async function chooseWrapperType(
   editor: EditorRenderResult,
-  fromWrapperType: 'fragment' | 'frame' | 'group',
+  fromWrapperType: 'fragment' | 'frame' | 'group' | 'wrapper-div',
   toWrapperType: 'fragment' | 'frame' | 'group',
 ) {
   const divLabel = groupSectionOption(fromWrapperType).label!
