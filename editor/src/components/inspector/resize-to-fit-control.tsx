@@ -21,6 +21,7 @@ import * as EP from '../../core/shared/element-path'
 import { assertNever } from '../../core/shared/utils'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
 
 export const ResizeToFitControlTestId = 'ResizeToFitControlTestId'
 export const ResizeToFillControlTestId = 'ResizeToFillControlTestId'
@@ -65,10 +66,16 @@ const isApplicableSelector = createCachedSelector(
       return false
     }
 
+    const children = MetadataUtils.getChildrenOrdered(metadata, pathTrees, firstSelectedView)
+    const targetsWithOnlyAbsoluteChildren =
+      children.length > 0 && children.every(MetadataUtils.isPositionAbsolute)
+
     const isApplicable: boolean =
-      selectedViews.length > 0 &&
-      checkGroupSuitability(metadata, firstSelectedView, mode) &&
-      getFixedFillHugOptionsForElement(metadata, pathTrees, firstSelectedView).has(mode)
+      targetsWithOnlyAbsoluteChildren ||
+      (selectedViews.length > 0 &&
+        checkGroupSuitability(metadata, firstSelectedView, mode) &&
+        getFixedFillHugOptionsForElement(metadata, pathTrees, firstSelectedView).has(mode))
+
     const isAlreadyApplied = isFixedHugFillModeApplied(metadata, firstSelectedView, mode)
     return isApplicable && !isAlreadyApplied
   },

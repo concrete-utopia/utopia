@@ -44,6 +44,7 @@ import {
 import {
   setPropFillStrategies,
   setPropHugStrategies,
+  setPropHugAbsoluteStrategies,
 } from './inspector-strategies/inspector-strategies'
 import { commandsForFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 import type { Size } from '../../core/shared/math-utils'
@@ -896,6 +897,14 @@ export function resizeToFitCommands(
       setPropHugStrategies(metadata, selectedViews, elementPathTree, 'vertical'),
     ) ?? []),
   ]
+
+  if (commands.length == 0) {
+    return (
+      commandsForFirstApplicableStrategy(
+        setPropHugAbsoluteStrategies(metadata, selectedViews, elementPathTree, allElementProps),
+      ) ?? []
+    )
+  }
   return commands
 }
 
