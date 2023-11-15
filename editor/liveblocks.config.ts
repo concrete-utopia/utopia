@@ -1,6 +1,6 @@
 import { createClient } from '@liveblocks/client'
 import { createRoomContext } from '@liveblocks/react'
-import type { CanvasPoint } from './src/core/shared/math-utils'
+import type { CanvasVector, WindowPoint } from './src/core/shared/math-utils'
 
 export const liveblocksThrottle = 100 // ms
 
@@ -14,7 +14,9 @@ export const liveblocksClient = createClient({
 // `user.presence` property. Must be JSON-serializable.
 type Presence = {
   name: string | null
-  cursor: CanvasPoint | null
+  cursor: WindowPoint | null
+  canvasScale: number | null
+  canvasOffset: CanvasVector | null
   colorIndex: number | null
 }
 
@@ -22,6 +24,8 @@ export function initialPresence(): Presence {
   return {
     name: null,
     cursor: null,
+    canvasScale: null,
+    canvasOffset: null,
     colorIndex: null,
   }
 }

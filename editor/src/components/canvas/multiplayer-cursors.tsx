@@ -45,22 +45,20 @@ export const MultiplayerCursors = React.memo(() => {
   }, [loginState, setMyPresence, myColorIndex])
 
   React.useEffect(() => {
-    function onMouseMove(e: MouseEvent) {
-      const position = windowToCanvasCoordinates(
-        canvasScale,
-        canvasOffset,
-        windowPoint({ x: e.clientX, y: e.clientY }),
-      ).canvasPositionRounded
+    setMyPresence({ canvasScale, canvasOffset })
+  }, [canvasScale, canvasOffset, setMyPresence])
 
+  React.useEffect(() => {
+    function onMouseMove(e: MouseEvent) {
       setMyPresence({
-        cursor: position,
+        cursor: windowPoint({ x: e.clientX, y: e.clientY }),
       })
     }
     window.addEventListener('mousemove', onMouseMove)
     return function () {
       window.removeEventListener('mousemove', onMouseMove)
     }
-  }, [canvasScale, canvasOffset, setMyPresence])
+  }, [setMyPresence])
 
   if (!isLoggedIn(loginState)) {
     return null
@@ -77,15 +75,24 @@ export const MultiplayerCursors = React.memo(() => {
       }}
     >
       {others.map((other) => {
-        if (other.presence.cursor == null) {
+        if (
+          other.presence.cursor == null ||
+          other.presence.canvasOffset == null ||
+          other.presence.canvasScale == null
+        ) {
           return null
         }
+        const position = windowToCanvasCoordinates(
+          other.presence.canvasScale,
+          other.presence.canvasOffset,
+          other.presence.cursor,
+        ).canvasPositionRounded
         return (
           <MultiplayerCursor
             key={other.id}
             name={other.presence.name}
             colorIndex={other.presence.colorIndex}
-            position={other.presence.cursor}
+            position={position}
           />
         )
       })}
