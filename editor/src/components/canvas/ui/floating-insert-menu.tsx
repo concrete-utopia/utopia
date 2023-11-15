@@ -18,10 +18,19 @@ import type {
 import {
   getInsertableGroupLabel,
   getNonEmptyComponentGroups,
+  insertableComponent,
+  insertableComponentGroupProjectComponent,
 } from '../../shared/project-components'
 import { InspectorInputEmotionStyle } from '../../../uuiui/inputs/base-input'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import type { InsertMenuMode } from './floating-insert-menu-helpers'
+import {
+  jsxAttributesFromMap,
+  jsxElement,
+  jsxElementWithoutUID,
+  jsxTextBlock,
+} from '../../../core/shared/element-template'
+import { emptyImports } from '../../../core/workers/common/project-file-utils'
 
 export const FloatingMenuTestId = 'floating-menu-test-id'
 
@@ -114,7 +123,46 @@ export function useGetInsertableComponents(
     }
   }, [packageStatus, propertyControlsInfo, projectContents, dependencies, fullPath, insertMenuMode])
 
-  return insertableComponents
+  const insertableVariables = React.useMemo(() => {
+    if (fullPath == null) {
+      return []
+    } else {
+      return convertInsertableComponentsToFlatList(getVariablesInScope())
+    }
+  }, [fullPath])
+
+  return insertableComponents.concat(insertableVariables)
+}
+
+function getVariablesInScope(): InsertableComponentGroup[] {
+  const variableInScope = [
+    {
+      file: './src/playground.ts',
+      variables: [
+        {
+          variableName: 'myTitle',
+          variableType: 'string',
+        },
+      ],
+    },
+  ]
+  return variableInScope.map((variableGroup) => {
+    return {
+      source: insertableComponentGroupProjectComponent(variableGroup.file),
+      insertableComponents: variableGroup.variables.map((variable) => {
+        return insertableComponent(
+          emptyImports(),
+          () =>
+            jsxElementWithoutUID('span', jsxAttributesFromMap({}), [
+              jsxTextBlock(`{${variable.variableName}}`),
+            ]),
+          variable.variableName,
+          [],
+          null,
+        )
+      }),
+    }
+  })
 }
 
 export function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
