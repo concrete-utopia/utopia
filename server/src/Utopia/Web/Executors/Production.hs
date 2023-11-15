@@ -71,7 +71,7 @@ data ProductionServerResources = ProductionServerResources
                                , _cdnHost                 :: Text
                                , _logger                  :: FastLogger
                                , _loggerShutdown          :: IO ()
-                               , _liveblocksResources     :: LiveblocksResources
+                               , _liveblocksResources     :: Maybe LiveblocksResources
                                }
 
 type ProductionProcessMonad a = ServerProcessMonad ProductionServerResources a
@@ -327,13 +327,19 @@ innerServerExecutor (GetGithubUserDetails user action) = do
   result <- getDetailsOfGithubUser githubSemaphore githubResources logger metrics pool user
   pure $ action result
 innerServerExecutor (AuthLiveblocksUser user roomID action) = do
-  liveblocksResources <- fmap _liveblocksResources ask
+  possibleLiveblocksResources <- fmap _liveblocksResources ask
   metrics <- fmap _databaseMetrics ask
   pool <- fmap _projectPool ask
-  errorOrToken <- liftIO $ authorizeUserForLiveblocksProjectRoom liveblocksResources metrics pool user roomID
-  case errorOrToken of
-    Left errorMessage -> putStrLn errorMessage >> throwError err500
-    Right token       -> pure $ action token
+  case possibleLiveblocksResources of
+    Nothing -> throwError err501
+    Just liveblocksResources -> do
+      errorOrToken <- liftIO $ authorizeUserForLiveblocksProjectRoom liveblocksResources metrics pool user roomID
+      case errorOrToken of
+        Left errorMessage -> putStrLn errorMessage >> throwError err500
+        Right token       -> pure $ action token
+innerServerExecutor (IsLiveblocksEnabled action) = do
+  possibleLiveblocksResources <- fmap _liveblocksResources ask
+  pure $ action $ isJust possibleLiveblocksResources
 
 readEditorContentFromDisk :: Maybe BranchDownloads -> Maybe Text -> Text -> IO Text
 readEditorContentFromDisk (Just downloads) (Just branchName) fileName = do
@@ -390,8 +396,7 @@ initialiseResources = do
   _locksRef <- newIORef mempty
   _matchingVersionsCache <- newMatchingVersionsCache
   (_logger, _loggerShutdown) <- newFastLogger (LogStdout defaultBufSize)
-  maybeLiveblocksResources <- makeLiveblocksResources
-  _liveblocksResources <- maybe (panic "No Liveblocks environment configured.") pure maybeLiveblocksResources
+  _liveblocksResources <- makeLiveblocksResources
   return $ ProductionServerResources{..}
 
 startup :: ProductionServerResources -> IO Stop

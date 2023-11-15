@@ -135,6 +135,8 @@ type GithubFinishAuthenticationAPI = "v1" :> "github" :> "authentication" :> "fi
 
 type LiveblocksAuthenticationAPI = "v1" :> "liveblocks" :> "authentication" :> ReqBody '[JSON] LiveblocksAuthenticationRequest :> Post '[JSON] LiveblocksAuthenticationResponse
 
+type LiveblocksEnabledAPI = "v1" :> "liveblocks" :> "enabled" :> Get '[JSON] Bool
+
 type GithubSaveAPI = "v1" :> "github" :> "save" :> Capture "project_id" Text :> QueryParam "branch_name" Text :> QueryParam "commit_message" Text :> ReqBody '[JSON] PersistentModel :> Post '[JSON] SaveToGithubResponse
 
 type GithubBranchesAPI = "v1" :> "github" :> "branches" :> Capture "owner" Text :> Capture "repository" Text :> Get '[JSON] GetBranchesResponse
@@ -224,6 +226,7 @@ type Unprotected = AuthenticateAPI H.Html
               :<|> LoadProjectFileAPI
               :<|> PreviewProjectFileAPI
               :<|> LoadProjectThumbnailAPI
+              :<|> LiveblocksEnabledAPI
               :<|> MonitoringAPI
               :<|> ClearBranchAPI
               :<|> PackagePackagerAPI

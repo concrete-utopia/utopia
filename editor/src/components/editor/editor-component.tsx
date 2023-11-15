@@ -57,6 +57,7 @@ import { isFeatureEnabled } from '../../utils/feature-switches'
 import { ProjectServerStateUpdater } from './store/project-server-state'
 import { useRoom, RoomProvider } from '../../../liveblocks.config'
 import { generateUUID } from '../../utils/utils'
+import { isLiveblocksEnabled } from './liveblocks-utils'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -514,7 +515,7 @@ export function EditorComponent(props: EditorProps) {
   return indexedDBFailed ? (
     <FatalIndexedDBErrorComponent />
   ) : (
-    <RoomProvider id={roomId} autoConnect={true} initialPresence={{}}>
+    <RoomProvider id={roomId} autoConnect={isLiveblocksEnabled()} initialPresence={{}}>
       <DndProvider backend={HTML5Backend} context={window}>
         <ProjectServerStateUpdater
           projectId={projectId}
