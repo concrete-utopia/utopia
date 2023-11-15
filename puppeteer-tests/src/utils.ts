@@ -143,6 +143,8 @@ export async function uploadPNGtoAWS(testFile: string): Promise<string | null> {
     uploadParams.Body = filestream
     uploadParams.Key = path.basename(testFile)
 
+    // S3 ManagedUpload with callbacks are not supported in AWS SDK for JavaScript (v3).
+    // Please convert to 'await client.upload(params, options).promise()', and re-run aws-sdk-js-codemod.
     s3.upload(uploadParams, function (err: any, data: any) {
       if (err) {
         console.log('Error', err)
@@ -153,7 +155,7 @@ export async function uploadPNGtoAWS(testFile: string): Promise<string | null> {
         resolve(data.Location)
       }
     })
-  })
+  });
 }
 
 export async function initialiseTests(page: puppeteer.Page): Promise<void> {
