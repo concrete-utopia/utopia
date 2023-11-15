@@ -36,15 +36,17 @@ export const multiplayerColors = {
 }
 
 export function multiplayerColorFromIndex(colorIndex: number | null): MultiplayerColor {
-  const defaultColor = { background: '#000', foreground: '#fff' }
-  if (colorIndex == null) {
-    return defaultColor
+  const fallbackColor = {
+    background: '#000',
+    foreground: '#fff',
   }
-  return (
-    (getPreferredColorScheme() === 'dark'
-      ? safeIndex(multiplayerColors.dark, colorIndex)
-      : safeIndex(multiplayerColors.light, colorIndex)) ?? defaultColor
-  )
+  if (colorIndex == null) {
+    return fallbackColor
+  }
+
+  const colors =
+    getPreferredColorScheme() === 'dark' ? multiplayerColors.dark : multiplayerColors.light
+  return safeIndex(colors, colorIndex) ?? fallbackColor
 }
 
 /**
