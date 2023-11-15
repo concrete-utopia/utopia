@@ -1,10 +1,6 @@
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import {
-  isJSXElementLike,
-  type ElementInstanceMetadataMap,
-  jsxFragment,
-} from '../../../core/shared/element-template'
+import { type ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import type { CanvasCommand } from '../../canvas/commands/commands'
@@ -31,20 +27,7 @@ import type { InspectorStrategy } from './inspector-strategy'
 import { queueTrueUpElement } from '../../canvas/commands/queue-true-up-command'
 import { trueUpGroupElementChanged } from '../../../components/editor/store/editor-state'
 import type { AllElementProps } from '../../../components/editor/store/editor-state'
-import { mapDropNulls } from '../../../core/shared/array-utils'
-import {
-  actuallyConvertFramentToFrame,
-  convertSizelessDivToFrameCommands,
-} from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
-import type { JSXFragmentConversion } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
-import {
-  boundingRectangleArray,
-  isInfinityRectangle,
-  nullIfInfinity,
-  zeroCanvasRect,
-} from '../../../core/shared/math-utils'
-import { isLeft } from '../../../core/shared/either'
-import { convertToAbsolute } from '../../canvas/commands/convert-to-absolute-command'
+import { convertSizelessDivToFrameCommands } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
 
 const CHILDREN_CONVERTED_TOAST_ID = 'CHILDREN_CONVERTED_TOAST_ID'
 
