@@ -1,27 +1,19 @@
 import React from 'react'
-import {
-  Button,
-  FlexColumn,
-  FlexRow,
-  InspectorSubsectionHeader,
-  Tooltip,
-  colorTheme,
-} from '../../../../../uuiui'
+import { when } from '../../../../../utils/react-conditionals'
+import { FlexColumn, FlexRow, InspectorSubsectionHeader, Tooltip } from '../../../../../uuiui'
+import { Link } from '../../../../../uuiui/link'
+import { useConvertWrapperToFrame } from '../../../../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { Substores, useEditorState } from '../../../../editor/store/store-hook'
 import {
   EditorContractDropdown,
   allSelectedElementsContractSelector,
 } from '../../../editor-contract-section'
 import { FixedHugDropdown } from '../../../fill-hug-fixed-control'
+import { ResizeToFitControl } from '../../../resize-to-fit-control'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
+import { RadiusRow } from '../../style-section/container-subsection/radius-row'
 import { ClipContentControl } from './clip-content-control'
 import { FrameUpdatingLayoutSection } from './frame-updating-layout-section'
-import { RadiusRow } from '../../style-section/container-subsection/radius-row'
-import { ResizeToFitControl } from '../../../resize-to-fit-control'
-import { Substores, useEditorState } from '../../../../editor/store/store-hook'
-import { NO_OP } from '../../../../../core/shared/utils'
-import { when } from '../../../../../utils/react-conditionals'
-import { useConvertWrapperToFrame } from '../../../../canvas/canvas-strategies/strategies/group-conversion-helpers'
-import { Link } from '../../../../../uuiui/link'
 
 export const SimplifiedLayoutSubsection = React.memo(() => {
   const selectedElementContract = useEditorState(
