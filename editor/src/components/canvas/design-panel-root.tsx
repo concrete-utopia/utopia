@@ -31,7 +31,8 @@ import { MenuTab } from '../../uuiui/menu-tab'
 import { FlexRow } from 'utopia-api'
 import type { StoredPanel } from './stored-layout'
 import { MultiplayerCursors } from './multiplayer-cursors'
-import { useRoom } from '../../../liveblocks.config'
+import { useStatus } from '../../../liveblocks.config'
+import { ClientSideSuspense } from '@liveblocks/react'
 
 interface NumberSize {
   width: number
@@ -120,16 +121,7 @@ const NothingOpenCard = React.memo(() => {
 })
 
 const DesignPanelRootInner = React.memo(() => {
-  const [multiplayerConnected, setMultiplayerConnected] = React.useState(false)
-  const room = useRoom()
-  React.useEffect(() => {
-    const unsubStatus = room.subscribe('status', (status) => {
-      setMultiplayerConnected(status === 'connected')
-    })
-    return function () {
-      unsubStatus()
-    }
-  }, [room])
+  const roomStatus = useStatus()
   return (
     <>
       <SimpleFlexRow
@@ -152,7 +144,12 @@ const DesignPanelRootInner = React.memo(() => {
             }}
           >
             <CanvasWrapperComponent />
-            {when(multiplayerConnected, <MultiplayerCursors />)}
+            {when(
+              roomStatus === 'connected',
+              <ClientSideSuspense fallback={<div />}>
+                {() => <MultiplayerCursors />}
+              </ClientSideSuspense>,
+            )}
             <GridPanelsContainer />
           </SimpleFlexColumn>
         }
