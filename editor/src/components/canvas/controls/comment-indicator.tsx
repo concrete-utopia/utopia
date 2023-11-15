@@ -64,7 +64,7 @@ function CommentIndicatorInner() {
                   height: 20,
                   width: 20,
                   borderRadius: 10,
-                  background: '#ff00a7',
+                  background: '#ff00a7', // TODO: vary colors between users or use avatar
                   color: 'white',
                   fontSize: 9,
                   fontWeight: 'bold',
