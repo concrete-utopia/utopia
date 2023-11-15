@@ -1287,7 +1287,6 @@ export function getCommandsForConversionToDesiredType(
           return []
         }
 
-        // TODO before merge: do the getInstance... stuff
         return (
           convertSizelessDivToFrameCommands(
             metadata,
