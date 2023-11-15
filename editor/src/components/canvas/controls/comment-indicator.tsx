@@ -14,29 +14,21 @@ import { UtopiaTheme } from '../../../uuiui'
 export const CommentIndicator = React.memo(() => {
   return (
     <CanvasOffsetWrapper>
-      <ClientSideSuspense fallback={<div>Loading…</div>}>{() => <Room />}</ClientSideSuspense>
+      <ClientSideSuspense fallback={<div>Loading…</div>}>
+        {() => <CommentIndicatorInner />}
+      </ClientSideSuspense>
     </CanvasOffsetWrapper>
   )
 })
 
-function Room() {
+function CommentIndicatorInner() {
   const { threads } = useThreads()
 
   const dispatch = useDispatch()
   return (
     <React.Fragment>
       {threads.map((thread) => {
-        const commentData = (() => {
-          if (thread.metadata.type === 'coord') {
-            const { x, y } = thread.metadata
-            return { point: canvasPoint({ x, y }), type: 'coord' }
-          }
-          return null
-        })()
-        if (commentData == null) {
-          return null
-        }
-        const { point } = commentData
+        const point = canvasPoint(thread.metadata)
         return (
           <div
             key={thread.id}
@@ -47,12 +39,7 @@ function Room() {
               width: 20,
             }}
             onClick={() => {
-              if (commentData == null) {
-                return
-              }
-              if (commentData.type === 'coord') {
-                dispatch([switchEditorMode(EditorModes.commentMode(point))])
-              }
+              dispatch([switchEditorMode(EditorModes.commentMode(point))])
             }}
           >
             <div

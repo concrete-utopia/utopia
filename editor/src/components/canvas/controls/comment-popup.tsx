@@ -66,11 +66,7 @@ function CommentThread({ x, y }: CommentThreadProps) {
       // Create a new thread
       createThread({
         body,
-        metadata: {
-          type: 'coord',
-          x: x,
-          y: y,
-        },
+        metadata: { type: 'canvas', x: x, y: y },
       })
     },
     [createThread, x, y],
