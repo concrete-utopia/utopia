@@ -2,6 +2,7 @@
 
 exports[`React Render Count Tests - Changing the selected view with a less simple project 2`] = `
 Array [
+  "/UtopiaSpiedFunctionComponent(SimpleFlexColumn)/div//Symbol(react.memo)()",
   "/UtopiaSpiedFunctionComponent(SimpleFlexColumn)/div//UtopiaSpiedClass(EditorCanvas)",
   "/UtopiaSpiedFunctionComponent(SimpleFlexColumn)/div//Symbol(react.memo)(FloatingPostActionMenu)",
   "/UtopiaSpiedFunctionComponent(SimpleFlexColumn)/div//div",
@@ -533,6 +534,7 @@ Array [
 
 exports[`React Render Count Tests - Changing the selected view with a simple project 2`] = `
 Array [
+  "/UtopiaSpiedFunctionComponent(SimpleFlexColumn)/div//Symbol(react.memo)()",
   "/UtopiaSpiedFunctionComponent(SimpleFlexColumn)/div//UtopiaSpiedClass(EditorCanvas)",
   "/UtopiaSpiedFunctionComponent(SimpleFlexColumn)/div//Symbol(react.memo)(FloatingPostActionMenu)",
   "/UtopiaSpiedFunctionComponent(SimpleFlexColumn)/div//div",
@@ -1011,6 +1013,7 @@ Array [
   "/UtopiaSpiedFunctionComponent(Provider)/UtopiaSpiedExoticType(Symbol(react.fragment))/UtopiaSpiedFunctionComponent(Provider)/UtopiaSpiedExoticType(Symbol(react.fragment))",
   "/UtopiaSpiedFunctionComponent(Provider)/UtopiaSpiedExoticType(Symbol(react.fragment))/Symbol(react.forward_ref)(CanvasContainer)/div:data-testid='canvas-container'",
   "/Symbol(react.forward_ref)(CanvasContainer)/div/UtopiaSpiedFunctionComponent(Provider)/UtopiaSpiedExoticType(Symbol(react.fragment))",
+  "/UtopiaSpiedFunctionComponent(SimpleFlexColumn)/div//Symbol(react.memo)()",
   "/UtopiaSpiedFunctionComponent(SimpleFlexColumn)/div//UtopiaSpiedClass(EditorCanvas)",
   "/UtopiaSpiedFunctionComponent(SimpleFlexColumn)/div//Symbol(react.memo)(FloatingPostActionMenu)",
   "/UtopiaSpiedFunctionComponent(SimpleFlexColumn)/div//div",
@@ -1319,6 +1322,7 @@ Array [
   "/UtopiaSpiedFunctionComponent(ComponentRenderer(App))/Symbol(react.forward_ref)(SpyWrapper)/UtopiaSpiedFunctionComponent(View)/div",
   "/UtopiaSpiedFunctionComponent(View)/div/Symbol(react.forward_ref)(SpyWrapper)/UtopiaSpiedFunctionComponent(View)",
   "/div/Symbol(react.forward_ref)(SpyWrapper)/UtopiaSpiedFunctionComponent(View)/div",
+  "/UtopiaSpiedFunctionComponent(SimpleFlexColumn)/div//Symbol(react.memo)()",
   "/UtopiaSpiedFunctionComponent(SimpleFlexColumn)/div//UtopiaSpiedClass(EditorCanvas)",
   "/UtopiaSpiedFunctionComponent(SimpleFlexColumn)/div//Symbol(react.memo)(FloatingPostActionMenu)",
   "/UtopiaSpiedFunctionComponent(SimpleFlexColumn)/div//div",
@@ -1761,6 +1765,7 @@ Array [
   "/UtopiaSpiedFunctionComponent(Provider)/UtopiaSpiedExoticType(Symbol(react.fragment))/UtopiaSpiedFunctionComponent(Provider)/UtopiaSpiedExoticType(Symbol(react.fragment))",
   "/UtopiaSpiedFunctionComponent(Provider)/UtopiaSpiedExoticType(Symbol(react.fragment))/Symbol(react.forward_ref)(CanvasContainer)/div:data-testid='canvas-container'",
   "/Symbol(react.forward_ref)(CanvasContainer)/div/UtopiaSpiedFunctionComponent(Provider)/UtopiaSpiedExoticType(Symbol(react.fragment))",
+  "/UtopiaSpiedFunctionComponent(SimpleFlexColumn)/div//Symbol(react.memo)()",
   "/UtopiaSpiedFunctionComponent(SimpleFlexColumn)/div//UtopiaSpiedClass(EditorCanvas)",
   "/UtopiaSpiedFunctionComponent(SimpleFlexColumn)/div//Symbol(react.memo)(FloatingPostActionMenu)",
   "/UtopiaSpiedFunctionComponent(SimpleFlexColumn)/div//div",
@@ -2058,6 +2063,7 @@ Array [
   "/UtopiaSpiedFunctionComponent(ComponentRenderer(App))/Symbol(react.forward_ref)(SpyWrapper)/UtopiaSpiedFunctionComponent(View)/div",
   "/UtopiaSpiedFunctionComponent(View)/div/Symbol(react.forward_ref)(SpyWrapper)/UtopiaSpiedFunctionComponent(View)",
   "/div/Symbol(react.forward_ref)(SpyWrapper)/UtopiaSpiedFunctionComponent(View)/div",
+  "/UtopiaSpiedFunctionComponent(SimpleFlexColumn)/div//Symbol(react.memo)()",
   "/UtopiaSpiedFunctionComponent(SimpleFlexColumn)/div//UtopiaSpiedClass(EditorCanvas)",
   "/UtopiaSpiedFunctionComponent(SimpleFlexColumn)/div//Symbol(react.memo)(FloatingPostActionMenu)",
   "/UtopiaSpiedFunctionComponent(SimpleFlexColumn)/div//div",
