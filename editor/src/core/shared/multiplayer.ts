@@ -53,15 +53,16 @@ export function multiplayerColorFromIndex(colorIndex: number | null): Multiplaye
  * If the name is made of a single word, the first two letters of the word will be returned ('John' -> 'JO').
  * If the name is shorter than two letters, the result will be padded with 'X' characters ('F' -> 'FX').
  */
-export function multiplayerInitialsFromName(name: string | null): string {
-  const trimmed = (name ?? 'unknown').trim().toUpperCase()
-  const words = trimmed.split(/\s+/)
+export function multiplayerInitialsFromName(name: string): string {
+  const baseName = name.trim().toUpperCase()
+
+  const words = baseName.split(/\s+/)
   if (words.length >= 2) {
     return words[0].charAt(0) + words[1].charAt(0)
-  } else if (trimmed.length > 1) {
-    return trimmed.charAt(0) + trimmed.charAt(1)
+  } else if (baseName.length > 1) {
+    return baseName.charAt(0) + baseName.charAt(1)
   } else {
-    return trimmed.padEnd(2, 'X')
+    return baseName.padEnd(2, 'X')
   }
 }
 
