@@ -48,14 +48,14 @@ export const SimplifiedLayoutSubsection = React.memo(() => {
               <FixedHugDropdown dimension='width' />
               <FixedHugDropdown dimension='height' />
             </UIGridRow>
+            <FlexRow style={{ minHeight: undefined, gap: 4 }}>
+              <RadiusRow />
+            </FlexRow>
+            <FlexRow style={{ minHeight: undefined, gap: 4 }}>
+              <ClipContentControl />
+            </FlexRow>
           </>
         )}
-        <FlexRow style={{ minHeight: undefined, gap: 4 }}>
-          <RadiusRow />
-        </FlexRow>
-        <FlexRow style={{ minHeight: undefined, gap: 4 }}>
-          <ClipContentControl />
-        </FlexRow>
       </FlexColumn>
     </FlexColumn>
   )
