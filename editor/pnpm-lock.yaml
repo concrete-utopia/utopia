@@ -180,7 +180,7 @@ specifiers:
   fontfaceobserver: 2.1.0
   fork-ts-checker-async-overlay-webpack-plugin: 0.4.0
   fork-ts-checker-webpack-plugin: 8.0.0
-  framer-motion: ^10.16.5
+  framer-motion: 10.16.5
   friendly-words: 1.1.10
   fse: 1.0.1
   fsevents: 2.1.2
