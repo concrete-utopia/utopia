@@ -60,6 +60,8 @@ specifiers:
   '@emotion/styled': 11.0.0
   '@emotion/styled-base': 11.0.0
   '@hot-loader/react-dom': 16.13.0
+  '@liveblocks/client': 1.7.0
+  '@liveblocks/react': 1.7.0
   '@originjs/vite-plugin-commonjs': 1.0.3
   '@popperjs/core': 2.4.4
   '@react-three/fiber': 8.0.14
@@ -341,6 +343,8 @@ dependencies:
   '@emotion/serialize': 1.0.2
   '@emotion/styled': 11.0.0_kf2s5ttaepyzuejtstis4wzmwe
   '@emotion/styled-base': 11.0.0
+  '@liveblocks/client': 1.7.0
+  '@liveblocks/react': 1.7.0_react@18.1.0
   '@popperjs/core': 2.4.4
   '@remix-run/react': 2.0.1_njludxb6fcqnim6moy22jieofi
   '@root/encoding': 1.0.1
@@ -3379,6 +3383,28 @@ packages:
   /@leichtgewicht/ip-codec/2.0.4:
     resolution: {integrity: sha512-Hcv+nVC0kZnQ3tD9GVu5xSMR4VVYOteQIr/hwFPVEvPdlXqgGEuRjiheChHgdM+JyqdgNcmzZOX/tnl0JOiI7A==}
     dev: true
+
+  /@liveblocks/client/1.7.0:
+    resolution: {integrity: sha512-BJnHDnp2GH+d7NuJJSRSZwSHLSd73BNS3ApiNInsatE56y5FSOx861kbbYKyD2Spv9vg3z9QZfBWMSrzTR5IeA==}
+    dependencies:
+      '@liveblocks/core': 1.7.0
+    dev: false
+
+  /@liveblocks/core/1.7.0:
+    resolution: {integrity: sha512-JSEvFr4iQYAKnE0dH36VWNFW6KmWStP8XJtb711bSXevRxx/4ODN88kQkTNNVuUjpgAOM+ekKjbqEdHmd8JhKw==}
+    dev: false
+
+  /@liveblocks/react/1.7.0_react@18.1.0:
+    resolution: {integrity: sha512-dXSfMNlqjtMVuy1qpQAdUYQ8jKWI7kHKJsXc12vDUzGybyil7JKMJgRKI9RTQgHWcfq1t2aPlL5rw7JmQa4qbA==}
+    peerDependencies:
+      react: ^16.14.0 || ^17 || ^18
+    dependencies:
+      '@liveblocks/client': 1.7.0
+      '@liveblocks/core': 1.7.0
+      nanoid: 3.3.6
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      use-sync-external-store: 1.2.0_react@18.1.0
+    dev: false
 
   /@mantine/core/6.0.21_2nlaf5wpdo4ci5lvq3grwyjxf4:
     resolution: {integrity: sha512-Kx4RrRfv0I+cOCIcsq/UA2aWcYLyXgW3aluAuW870OdXnbII6qg7RW28D+r9D76SHPxWFKwIKwmcucAG08Divg==}
@@ -7062,7 +7088,7 @@ packages:
     dev: true
 
   /component-indexof/0.0.3:
-    resolution: {integrity: sha512-puDQKvx/64HZXb4hBwIcvQLaLgux8o1CbWl39s41hrIIZDl1lJiD5jc22gj3RBeGK0ovxALDYpIbyjqDUUl0rw==}
+    resolution: {integrity: sha1-EdCRMSI5648yyPJa6csAL/6NPCQ=}
     dev: false
 
   /compressible/2.0.18:
@@ -13096,7 +13122,6 @@ packages:
     resolution: {integrity: sha512-BGcqMMJuToF7i1rt+2PWSNVnWIkGCU78jBG3RxO/bZlnZPK2Cmi2QaffxGO/2RvWi9sL+FAiRiXMgsyxQ1DIDA==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
-    dev: true
 
   /nanomatch/1.2.13:
     resolution: {integrity: sha512-fpoe2T0RbHwBTBUOftAfBPaDEi06ufaUai0mE6Yn1kacc3SnTErfb/h+X94VXzI64rKFHYImXSvdwGGCmwOqCA==}

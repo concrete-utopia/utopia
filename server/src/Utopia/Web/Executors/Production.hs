@@ -36,6 +36,8 @@ import           Utopia.Web.Editor.Branches
 import           Utopia.Web.Endpoints
 import           Utopia.Web.Executors.Common
 import           Utopia.Web.Github
+import           Utopia.Web.Liveblocks
+import           Utopia.Web.Liveblocks.Types
 import           Utopia.Web.Logging
 import           Utopia.Web.Metrics
 import           Utopia.Web.Packager.Locking
@@ -69,6 +71,7 @@ data ProductionServerResources = ProductionServerResources
                                , _cdnHost                 :: Text
                                , _logger                  :: FastLogger
                                , _loggerShutdown          :: IO ()
+                               , _liveblocksResources     :: LiveblocksResources
                                }
 
 type ProductionProcessMonad a = ServerProcessMonad ProductionServerResources a
@@ -323,6 +326,14 @@ innerServerExecutor (GetGithubUserDetails user action) = do
   pool <- fmap _projectPool ask
   result <- getDetailsOfGithubUser githubSemaphore githubResources logger metrics pool user
   pure $ action result
+innerServerExecutor (AuthLiveblocksUser user roomID action) = do
+  liveblocksResources <- fmap _liveblocksResources ask
+  metrics <- fmap _databaseMetrics ask
+  pool <- fmap _projectPool ask
+  errorOrToken <- liftIO $ authorizeUserForLiveblocksProjectRoom liveblocksResources metrics pool user roomID
+  case errorOrToken of
+    Left errorMessage -> putStrLn errorMessage >> throwError err500
+    Right token       -> pure $ action token
 
 readEditorContentFromDisk :: Maybe BranchDownloads -> Maybe Text -> Text -> IO Text
 readEditorContentFromDisk (Just downloads) (Just branchName) fileName = do
@@ -379,6 +390,8 @@ initialiseResources = do
   _locksRef <- newIORef mempty
   _matchingVersionsCache <- newMatchingVersionsCache
   (_logger, _loggerShutdown) <- newFastLogger (LogStdout defaultBufSize)
+  maybeLiveblocksResources <- makeLiveblocksResources
+  _liveblocksResources <- maybe (panic "No Liveblocks environment configured.") pure maybeLiveblocksResources
   return $ ProductionServerResources{..}
 
 startup :: ProductionServerResources -> IO Stop
