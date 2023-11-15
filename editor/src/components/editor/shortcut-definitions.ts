@@ -104,7 +104,7 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
     'Select the first child of or edit the currently selected text element.',
     key('enter', []),
   ),
-  [COMMENT_SHORTCUT]: shortcut('Activate comment mode.', key('c', ['shift'])),
+  [COMMENT_SHORTCUT]: shortcut('Activate comment mode.', key('c', ['shift'])), // TODO: remove shift and change convert to 's'
   [JUMP_TO_PARENT_SHORTCUT]: shortcut('Jump to parent element.', key('enter', 'shift')),
   [JUMP_TO_PARENT_SHORTCUT_BACKSLASH]: shortcut(
     'Jump to parent element, with backslash.',

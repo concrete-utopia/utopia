@@ -63,7 +63,7 @@ export type ThreadMetadata = {
   type: 'canvas'
   x: number
   y: number
-  name: string
+  name: string // TODO: this maybe unnecessary after we provide a resolveUsers function to liveblocks
 }
 
 export const {
