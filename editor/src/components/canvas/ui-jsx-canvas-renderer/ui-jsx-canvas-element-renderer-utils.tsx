@@ -286,11 +286,50 @@ export function renderCoreElement(
       }
 
       if (elementIsTextEdited) {
+        const runJSExpressionWrapper = () => {
+          const innerRender = createLookupRender(
+            elementPath,
+            rootScope,
+            parentComponentInputProps,
+            requireResult,
+            hiddenInstances,
+            displayNoneInstances,
+            fileBlobs,
+            validPaths,
+            reactChildren,
+            metadataContext,
+            updateInvalidatedPaths,
+            jsxFactoryFunctionName,
+            shouldIncludeCanvasRootInTheSpy,
+            filePath,
+            imports,
+            code,
+            highlightBounds,
+            editedText,
+            mapCountOverride,
+          )
+
+          const blockScope = {
+            ...inScope,
+            [JSX_CANVAS_LOOKUP_FUNCTION_NAME]: utopiaCanvasJSXLookup(
+              element.elementsWithin,
+              inScope,
+              innerRender,
+            ),
+          }
+          return runJSExpression(filePath, requireResult, element, blockScope)
+        }
+
+        const originalTextContent = isFeatureEnabled('Steganography')
+          ? runJSExpressionWrapper()
+          : null
+
         const textContent = trimJoinUnescapeTextFromJSXElements([element])
         const textEditorProps: TextEditorProps = {
           elementPath: elementPath,
           filePath: filePath,
           text: textContent,
+          originalText: originalTextContent,
           component: React.Fragment,
           passthroughProps: {},
           textProp: 'itself',
@@ -448,6 +487,7 @@ export function renderCoreElement(
           elementPath: elementPath,
           filePath: filePath,
           text: textContent,
+          originalText: null,
           component: React.Fragment,
           passthroughProps: {},
           textProp: textProp,
@@ -506,6 +546,7 @@ export function renderCoreElement(
           elementPath: elementPath,
           filePath: filePath,
           text: textContent,
+          originalText: null,
           component: React.Fragment,
           passthroughProps: {},
           textProp: 'itself',
@@ -790,11 +831,51 @@ function renderJSXElement(
     validPaths.has(EP.toString(EP.makeLastPartOfPathStatic(elementPath)))
   ) {
     if (elementIsTextEdited) {
+      const runJSExpressionWrapper = () => {
+        const innerRender = createLookupRender(
+          elementPath,
+          rootScope,
+          parentComponentInputProps,
+          requireResult,
+          hiddenInstances,
+          displayNoneInstances,
+          fileBlobs,
+          validPaths,
+          [],
+          metadataContext,
+          updateInvalidatedPaths,
+          jsxFactoryFunctionName,
+          shouldIncludeCanvasRootInTheSpy,
+          filePath,
+          imports,
+          code,
+          highlightBounds,
+          editedText,
+          null,
+        )
+        const blockScope = {
+          ...inScope,
+          [JSX_CANVAS_LOOKUP_FUNCTION_NAME]: utopiaCanvasJSXLookup({}, inScope, innerRender),
+        }
+
+        const expressionToEvaluate =
+          childrenWithNewTextBlock.length > 0 && isJSExpression(childrenWithNewTextBlock[0])
+            ? childrenWithNewTextBlock[0]
+            : jsExpressionValue(null, emptyComments) // placeholder
+
+        return runJSExpression(filePath, requireResult, expressionToEvaluate, blockScope)
+      }
+
+      const originalTextContent = isFeatureEnabled('Steganography')
+        ? runJSExpressionWrapper()
+        : null
+
       const textContent = trimJoinUnescapeTextFromJSXElements(childrenWithNewTextBlock)
       const textEditorProps: TextEditorProps = {
         elementPath: elementPath,
         filePath: filePath,
         text: textContent,
+        originalText: originalTextContent,
         component: FinalElement,
         passthroughProps: finalProps,
         textProp: 'child',

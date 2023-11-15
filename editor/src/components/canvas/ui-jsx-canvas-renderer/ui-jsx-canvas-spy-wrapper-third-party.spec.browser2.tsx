@@ -113,6 +113,7 @@ async function renderTestProject() {
       null,
       emptySet(),
       'trim-bounds',
+      'do-not-apply-steganography',
     ) as ParsedTextFile
     if (!isParseSuccess(parsedFile)) {
       throw new Error('The test file parse failed')

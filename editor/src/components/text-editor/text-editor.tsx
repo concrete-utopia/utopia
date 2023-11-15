@@ -45,6 +45,10 @@ import { assertNever } from '../../core/shared/utils'
 import { notice } from '../common/notice'
 import type { AllElementProps } from '../editor/store/editor-state'
 import { toString } from '../../core/shared/element-path'
+import { cleanSteganoTextData, decodeSteganoData } from '../../core/shared/stegano-text'
+import { useUpdateStringRun } from '../../core/model/project-file-helper-hooks'
+import { optionalMap } from '../../core/shared/optional-utils'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 export const TextEditorSpanId = 'text-editor'
 
@@ -53,6 +57,7 @@ export type TextProp = 'itself' | 'child' | 'whenTrue' | 'whenFalse' | 'fullCond
 export interface TextEditorProps {
   elementPath: ElementPath
   text: string
+  originalText: string | null
   component: React.ComponentType<React.PropsWithChildren<any>>
   passthroughProps: Record<string, any>
   filePath: string
@@ -287,7 +292,14 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
 })
 
 const TextEditor = React.memo((props: TextEditorProps) => {
-  const { elementPath, text, component, passthroughProps, textProp } = props
+  const { elementPath, component, passthroughProps, textProp } = props
+
+  const textToUse = isFeatureEnabled('Steganography')
+    ? props.originalText ?? props.text
+    : props.text
+
+  const stegaData = optionalMap(decodeSteganoData, textToUse)
+
   const dispatch = useDispatch()
   const cursorPosition = useEditorState(
     Substores.restOfEditor,
@@ -321,9 +333,11 @@ const TextEditor = React.memo((props: TextEditorProps) => {
   const outlineWidth = 1 / scale
   const outlineColor = colorTheme.textEditableOutline.value
 
-  const [firstTextProp] = React.useState(text)
+  const [firstTextProp] = React.useState(cleanSteganoTextData(textToUse).cleaned)
 
   const myElement = React.useRef<HTMLSpanElement>(null)
+
+  const updateStringRunCommands = useUpdateStringRun()
 
   React.useEffect(() => {
     const currentElement = myElement.current
@@ -351,27 +365,48 @@ const TextEditor = React.memo((props: TextEditorProps) => {
 
     return () => {
       const content = currentElement.textContent
-      if (content != null) {
-        if (elementState === 'new' && content.replace(/\n/g, '') === '') {
-          requestAnimationFrame(() => dispatch([deleteView(elementPath)]))
+      if (content == null) {
+        return
+      }
+      if (elementState === 'new' && content.replace(/\n/g, '') === '') {
+        requestAnimationFrame(() => dispatch([deleteView(elementPath)]))
+        return
+      }
+      if (elementState != null && savedContentRef.current !== content) {
+        savedContentRef.current = content
+        if (stegaData != null) {
+          requestAnimationFrame(() =>
+            dispatch(
+              updateStringRunCommands(
+                stegaData,
+                singleQuotes(cleanSteganoTextData(content).cleaned),
+              ),
+            ),
+          )
         } else {
-          if (elementState != null && savedContentRef.current !== content) {
-            savedContentRef.current = content
-            requestAnimationFrame(() => dispatch([getSaveAction(elementPath, content, textProp)]))
-          }
-          // remove dangling empty spans
-          if (
-            content != null &&
-            initialText !== content &&
-            content.replace(/^\n/, '').length === 0 &&
-            canDeleteWhenEmpty
-          ) {
-            requestAnimationFrame(() => dispatch([deleteView(elementPath)]))
-          }
+          requestAnimationFrame(() => dispatch([getSaveAction(elementPath, content, textProp)]))
         }
       }
+
+      if (
+        content != null &&
+        initialText !== content &&
+        content.replace(/^\n/, '').length === 0 &&
+        canDeleteWhenEmpty
+      ) {
+        requestAnimationFrame(() => dispatch([deleteView(elementPath)]))
+      }
     }
-  }, [dispatch, elementPath, elementState, textProp, metadataRef, allElementPropsRef])
+  }, [
+    dispatch,
+    elementPath,
+    elementState,
+    textProp,
+    metadataRef,
+    allElementPropsRef,
+    stegaData,
+    updateStringRunCommands,
+  ])
 
   React.useLayoutEffect(() => {
     if (myElement.current == null) {
@@ -449,14 +484,26 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     const content = myElement.current?.textContent
     if (content != null && elementState != null && savedContentRef.current !== content) {
       savedContentRef.current = content
-      dispatch([
-        getSaveAction(elementPath, content, textProp),
-        updateEditorMode(EditorModes.selectMode(null, false, 'none')),
-      ])
+      if (stegaData != null) {
+        requestAnimationFrame(() => {
+          dispatch([
+            ...updateStringRunCommands(
+              stegaData,
+              singleQuotes(cleanSteganoTextData(content).cleaned),
+            ),
+            updateEditorMode(EditorModes.selectMode(null, false, 'none')),
+          ])
+        })
+      } else {
+        dispatch([
+          getSaveAction(elementPath, content, textProp),
+          updateEditorMode(EditorModes.selectMode(null, false, 'none')),
+        ])
+      }
     } else {
       dispatch([updateEditorMode(EditorModes.selectMode(null, false, 'none'))])
     }
-  }, [dispatch, elementPath, elementState, textProp])
+  }, [dispatch, elementPath, elementState, stegaData, textProp, updateStringRunCommands])
 
   const editorProps: React.DetailedHTMLProps<
     React.HTMLAttributes<HTMLSpanElement>,
@@ -637,4 +684,8 @@ function canDeleteElementWhenEmpty(
   }
 
   return true
+}
+
+function singleQuotes(text: string): string {
+  return `'${text}'`
 }

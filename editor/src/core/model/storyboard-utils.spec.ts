@@ -38,6 +38,7 @@ export var App = (props) => {
     null,
     emptySet(),
     'trim-bounds',
+    'do-not-apply-steganography',
   ) as ParsedTextFile
 
   if (!isParseSuccess(parsedFile)) {

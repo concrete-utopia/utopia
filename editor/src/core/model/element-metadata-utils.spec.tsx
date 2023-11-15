@@ -379,7 +379,7 @@ function dummyInstanceDataForElementType(
 }
 
 function parseResultFromCode(filename: string, code: string): ParsedTextFile {
-  const parseResult = parseCode(filename, code, null, new Set())
+  const parseResult = parseCode(filename, code, null, new Set(), 'do-not-apply-steganography')
   if (isParseSuccess(parseResult)) {
     return parseResult
   } else {

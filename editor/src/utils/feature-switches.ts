@@ -1,6 +1,6 @@
 import localforage from 'localforage'
 import { IS_TEST_ENVIRONMENT, PRODUCTION_CONFIG } from '../common/env-vars'
-import { fastForEach, isBrowserEnvironment } from '../core/shared/utils'
+import { isBrowserEnvironment } from '../core/shared/utils'
 
 export type FeatureName =
   | 'Debug – Redux Devtools'
@@ -13,6 +13,7 @@ export type FeatureName =
   | 'Canvas Strategies Debug Panel'
   | 'Project Thumbnail Generation'
   | 'Debug - Print UIDs'
+  | 'Steganography'
   | 'Collaboration'
 
 export const AllFeatureNames: FeatureName[] = [
@@ -27,6 +28,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Canvas Strategies Debug Panel',
   'Project Thumbnail Generation',
   'Debug - Print UIDs',
+  'Steganography',
   'Collaboration',
 ]
 
@@ -41,6 +43,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Canvas Strategies Debug Panel': false,
   'Project Thumbnail Generation': false,
   'Debug - Print UIDs': false,
+  Steganography: false,
   Collaboration: false,
 }
 

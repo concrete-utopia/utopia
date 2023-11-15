@@ -111,7 +111,6 @@ describe('Frame updating layout section', () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCode(testCase.baseProject),
         'await-first-dom-report',
-        RegisteredCanvasStrategies,
       )
 
       await testCase.actionChange(editor)
