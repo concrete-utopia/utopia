@@ -38,7 +38,7 @@ export const MultiplayerCursors = React.memo(() => {
     if (!isLoggedIn(loginState)) {
       return
     }
-    const name = loginState.user.name ?? loginState.user.email ?? 'unknown'
+    const name = loginState.user.name ?? 'unknown'
     setMyPresence({
       name: name.replace(/@.+/, ''), // in case emails and names get mixed up
       colorIndex: myColorIndex,
