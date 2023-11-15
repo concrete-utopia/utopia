@@ -1,5 +1,12 @@
 import React from 'react'
-import { FlexColumn, FlexRow, InspectorSubsectionHeader } from '../../../../../uuiui'
+import {
+  Button,
+  FlexColumn,
+  FlexRow,
+  InspectorSubsectionHeader,
+  Tooltip,
+  colorTheme,
+} from '../../../../../uuiui'
 import {
   EditorContractDropdown,
   allSelectedElementsContractSelector,
@@ -11,6 +18,8 @@ import { FrameUpdatingLayoutSection } from './frame-updating-layout-section'
 import { RadiusRow } from '../../style-section/container-subsection/radius-row'
 import { ResizeToFitControl } from '../../../resize-to-fit-control'
 import { Substores, useEditorState } from '../../../../editor/store/store-hook'
+import { NO_OP } from '../../../../../core/shared/utils'
+import { when } from '../../../../../utils/react-conditionals'
 
 export const SimplifiedLayoutSubsection = React.memo(() => {
   const selectedElementContract = useEditorState(
@@ -21,6 +30,8 @@ export const SimplifiedLayoutSubsection = React.memo(() => {
 
   const showLayoutSection =
     selectedElementContract === 'frame' || selectedElementContract === 'group'
+
+  const showWrapperSectionWarning = selectedElementContract === 'wrapper-div'
 
   return (
     <FlexColumn style={{ paddingBottom: 8 }}>
@@ -36,8 +47,10 @@ export const SimplifiedLayoutSubsection = React.memo(() => {
           <ResizeToFitControl />
         </FlexRow>
       </InspectorSubsectionHeader>
+      {when(showWrapperSectionWarning, <WrapperElementDisclosureBox />)}
       <FlexColumn style={{ gap: 8, paddingLeft: 8, paddingRight: 8 }}>
-        {showLayoutSection && (
+        {when(
+          showLayoutSection,
           <>
             <FrameUpdatingLayoutSection />
             <UIGridRow
@@ -54,10 +67,51 @@ export const SimplifiedLayoutSubsection = React.memo(() => {
             <FlexRow style={{ minHeight: undefined, gap: 4 }}>
               <ClipContentControl />
             </FlexRow>
-          </>
+          </>,
         )}
       </FlexColumn>
     </FlexColumn>
   )
 })
 SimplifiedLayoutSubsection.displayName = 'SimplifiedLayoutSubsection'
+
+const WrapperElementDisclosureBox = React.memo(() => {
+  return (
+    <FlexColumn style={{ gap: 8, paddingLeft: 8, paddingRight: 8 }}>
+      <span
+        style={{
+          whiteSpace: 'initial',
+          ['textWrap' as any]: 'balance', // this is an experimental Chrome feature
+        }}
+      >
+        The selected element appears to be a collapsed wrapper element around absolutely positioned
+        children. If you want to explicitly set its size and layout, convert it to a fixed sized
+        element!
+      </span>
+      <FlexRow
+        style={{
+          flexGrow: 1,
+          gap: 8,
+          height: 42,
+        }}
+      >
+        <Tooltip title={'Convert element to Frame'} placement='left'>
+          <Button
+            highlight
+            spotlight
+            data-testid={'convert-to-frame-button'}
+            style={{
+              backgroundColor: colorTheme.errorForeground20.value,
+              color: colorTheme.errorForeground.value,
+              padding: '0 6px',
+              borderRadius: 2,
+            }}
+            onClick={NO_OP}
+          >
+            Convert to Frame
+          </Button>
+        </Tooltip>
+      </FlexRow>
+    </FlexColumn>
+  )
+})
