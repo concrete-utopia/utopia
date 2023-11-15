@@ -286,7 +286,7 @@ export function transpileJavascriptFromCode(
     let plugins: Array<any> = [
       () => ({
         visitor: {
-          StringLiteral(path) {
+          StringLiteral(path: any) {
             const smc = new SourceMapConsumer(mapToUse)
             const originalStartPosition = smc.originalPositionFor(path.node.loc.start)
             const originalEndPosition = smc.originalPositionFor(path.node.loc.end)
