@@ -60,8 +60,8 @@ specifiers:
   '@emotion/styled': 11.0.0
   '@emotion/styled-base': 11.0.0
   '@hot-loader/react-dom': 16.13.0
-  '@liveblocks/client': 1.7.0
-  '@liveblocks/react': 1.7.0
+  '@liveblocks/client': 1.7.1
+  '@liveblocks/react': 1.7.1
   '@originjs/vite-plugin-commonjs': 1.0.3
   '@popperjs/core': 2.4.4
   '@react-three/fiber': 8.0.14
@@ -343,8 +343,8 @@ dependencies:
   '@emotion/serialize': 1.0.2
   '@emotion/styled': 11.0.0_kf2s5ttaepyzuejtstis4wzmwe
   '@emotion/styled-base': 11.0.0
-  '@liveblocks/client': 1.7.0
-  '@liveblocks/react': 1.7.0_react@18.1.0
+  '@liveblocks/client': 1.7.1
+  '@liveblocks/react': 1.7.1_react@18.1.0
   '@popperjs/core': 2.4.4
   '@remix-run/react': 2.0.1_njludxb6fcqnim6moy22jieofi
   '@root/encoding': 1.0.1
@@ -3392,23 +3392,23 @@ packages:
     resolution: {integrity: sha512-Hcv+nVC0kZnQ3tD9GVu5xSMR4VVYOteQIr/hwFPVEvPdlXqgGEuRjiheChHgdM+JyqdgNcmzZOX/tnl0JOiI7A==}
     dev: true
 
-  /@liveblocks/client/1.7.0:
-    resolution: {integrity: sha512-BJnHDnp2GH+d7NuJJSRSZwSHLSd73BNS3ApiNInsatE56y5FSOx861kbbYKyD2Spv9vg3z9QZfBWMSrzTR5IeA==}
+  /@liveblocks/client/1.7.1:
+    resolution: {integrity: sha512-i/r4CrKcFAuJw7RFPsbyr3NobeVc3rylGSOtAY70Acl9UO6i0Qe1Ai7V+uWKfzooqAiThwrr8mPxtfu0ji4DRA==}
     dependencies:
-      '@liveblocks/core': 1.7.0
+      '@liveblocks/core': 1.7.1
     dev: false
 
-  /@liveblocks/core/1.7.0:
-    resolution: {integrity: sha512-JSEvFr4iQYAKnE0dH36VWNFW6KmWStP8XJtb711bSXevRxx/4ODN88kQkTNNVuUjpgAOM+ekKjbqEdHmd8JhKw==}
+  /@liveblocks/core/1.7.1:
+    resolution: {integrity: sha512-x3HBVFk9tWppCkzScVaFn8VqTPC+rKgNxiB8bkazJmplYJO6/2k0oBHEq5lA034ERzVVdW1qkWMQKhmINNJiIQ==}
     dev: false
 
-  /@liveblocks/react/1.7.0_react@18.1.0:
-    resolution: {integrity: sha512-dXSfMNlqjtMVuy1qpQAdUYQ8jKWI7kHKJsXc12vDUzGybyil7JKMJgRKI9RTQgHWcfq1t2aPlL5rw7JmQa4qbA==}
+  /@liveblocks/react/1.7.1_react@18.1.0:
+    resolution: {integrity: sha512-qx+zbTu0hUUj8U8ydB0YEY0+DFR0PuTGVN9hlFHTxWE5Xr0eRFlFegyE6FGtXfTHkyxtQ1vQvoBQcUO/i7+VBA==}
     peerDependencies:
       react: ^16.14.0 || ^17 || ^18
     dependencies:
-      '@liveblocks/client': 1.7.0
-      '@liveblocks/core': 1.7.0
+      '@liveblocks/client': 1.7.1
+      '@liveblocks/core': 1.7.1
       nanoid: 3.3.6
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
       use-sync-external-store: 1.2.0_react@18.1.0
