@@ -19,9 +19,6 @@ import {
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import { shouldShowErrorOverlay } from './canvas-utils'
 import { FloatingPostActionMenu } from './controls/select-mode/post-action-menu'
-import { MultiplayerCursors } from './multiplayer-cursors'
-import { useRoom } from '../../../liveblocks.config'
-import { when } from '../../utils/react-conditionals'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
@@ -99,8 +96,6 @@ export const CanvasWrapperComponent = React.memo(() => {
     }
   }, [dispatch, shouldDimErrorMessage])
 
-  const room = useRoom()
-
   return (
     <FlexColumn
       className='CanvasWrapperComponent'
@@ -114,7 +109,6 @@ export const CanvasWrapperComponent = React.memo(() => {
         // ^ prevents Monaco from pushing the inspector out
       }}
     >
-      {when(room.getStatus() === 'connected', <MultiplayerCursors />)}
       {fatalErrors.length === 0 && !safeMode ? (
         <EditorCanvas
           userState={userState}

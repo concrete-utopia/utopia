@@ -71,7 +71,6 @@ export const MultiplayerCursors = React.memo(() => {
         top: 0,
         left: 0,
         pointerEvents: 'none',
-        zIndex: 1,
       }}
     >
       {others.map((other) => {
