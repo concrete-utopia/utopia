@@ -11,7 +11,6 @@ import {
 } from '../../../core/shared/math-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { assertNever } from '../../../core/shared/utils'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
 import type { KeyCharacter } from '../../../utils/keyboard'
 import type { Modifiers } from '../../../utils/modifiers'
 import type { AllElementProps } from '../../editor/store/editor-state'
@@ -26,7 +25,7 @@ import type {
   CustomStrategyState,
 } from './canvas-strategy-types'
 import { defaultCustomStrategyState } from './canvas-strategy-types'
-import { ElementPasteWithMetadata } from '../../../utils/clipboard'
+import type { VariablesInScope } from '../ui-jsx-canvas'
 
 export type ZeroDragPermitted = 'zero-drag-permitted' | 'zero-drag-not-permitted'
 
@@ -95,6 +94,7 @@ export interface InteractionSession {
   lastInteractionTime: number
   latestMetadata: ElementInstanceMetadataMap
   latestAllElementProps: AllElementProps
+  latestVariablesInScope: VariablesInScope
   latestElementPathTree: ElementPathTrees
 
   // To track if the user selected a strategy
@@ -114,6 +114,7 @@ export function interactionSession(
   userPreferredStrategy: CanvasStrategyId | null,
   startedAt: number,
   allElementProps: AllElementProps,
+  latestVariablesInScope: VariablesInScope,
   updatedTargetPaths: UpdatedPathMap,
   aspectRatioLock: number | null,
   elementPathTree: ElementPathTrees,
@@ -126,6 +127,7 @@ export function interactionSession(
     userPreferredStrategy: userPreferredStrategy,
     startedAt: startedAt,
     latestAllElementProps: allElementProps,
+    latestVariablesInScope: latestVariablesInScope,
     updatedTargetPaths: updatedTargetPaths,
     aspectRatioLock: aspectRatioLock,
     latestElementPathTree: elementPathTree,
@@ -134,7 +136,7 @@ export function interactionSession(
 
 export type InteractionSessionWithoutMetadata = Omit<
   InteractionSession,
-  'latestMetadata' | 'latestAllElementProps' | 'latestElementPathTree'
+  'latestMetadata' | 'latestAllElementProps' | 'latestElementPathTree' | 'latestVariablesInScope'
 >
 
 export interface CommandDescription {
