@@ -35,17 +35,6 @@ function spliceCode(
   originalStringData: SteganoTextData,
   updatedString: string,
 ): string {
-  const originalString = originalCode.slice(
-    originalStringData.startPosition,
-    originalStringData.endPosition,
-  )
-  if (originalString !== originalStringData.originalString) {
-    throw new Error(`Tried to rewrite string but it was not matching the last known value.
-Current: >>>${originalString}<<<
-Expected: >>>${originalStringData.originalString}<<<
-`)
-  }
-
   const originalBefore = originalCode.slice(0, originalStringData.startPosition)
   const originalAfter = originalCode.slice(originalStringData.endPosition)
 
@@ -64,7 +53,7 @@ export function useUpdateStringRun(): (
       const updatedCode = spliceCode(
         sourceFile.fileContents.code,
         originalStringData,
-        updatedString,
+        sanitizeString(updatedString),
       )
       const updatedFileCodeAhead = textFile(
         textFileContents(
@@ -80,4 +69,8 @@ export function useUpdateStringRun(): (
     },
     [refEditorState],
   )
+}
+
+function sanitizeString(s: string): string {
+  return JSON.stringify(s) // get rid of the opening and closing quote marks
 }

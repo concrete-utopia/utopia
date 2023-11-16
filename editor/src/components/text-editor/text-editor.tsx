@@ -376,12 +376,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
         savedContentRef.current = content
         if (stegaData != null) {
           requestAnimationFrame(() =>
-            dispatch(
-              updateStringRunCommands(
-                stegaData,
-                singleQuotes(cleanSteganoTextData(content).cleaned),
-              ),
-            ),
+            dispatch(updateStringRunCommands(stegaData, cleanSteganoTextData(content).cleaned)),
           )
         } else {
           requestAnimationFrame(() => dispatch([getSaveAction(elementPath, content, textProp)]))
@@ -487,10 +482,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
       if (stegaData != null) {
         requestAnimationFrame(() => {
           dispatch([
-            ...updateStringRunCommands(
-              stegaData,
-              singleQuotes(cleanSteganoTextData(content).cleaned),
-            ),
+            ...updateStringRunCommands(stegaData, cleanSteganoTextData(content).cleaned),
             updateEditorMode(EditorModes.selectMode(null, false, 'none')),
           ])
         })
@@ -684,8 +676,4 @@ function canDeleteElementWhenEmpty(
   }
 
   return true
-}
-
-function singleQuotes(text: string): string {
-  return `'${text}'`
 }
