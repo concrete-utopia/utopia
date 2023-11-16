@@ -1419,8 +1419,8 @@ export interface EditorState {
   forceParseFiles: Array<string>
   allElementProps: AllElementProps // the final, resolved, static props value for each element. // This is the counterpart of jsxMetadata. we only update allElementProps when we update jsxMetadata
   currentAllElementProps: AllElementProps // This is the counterpart of domMetadata and spyMetadata. we update currentAllElementProps every time we update domMetadata/spyMetadata
-  variablesInScope: VariablesInScope
-  currentVariablesInScope: VariablesInScope
+  variablesInScope: VariablesInScope // updated every time we update jsxMetadata, along the same lines as `allElementProps` and `currentAllElementProps`
+  currentVariablesInScope: VariablesInScope // updated every time we update domMetadata/spyMetadata
   githubSettings: ProjectGithubSettings
   imageDragSessionState: ImageDragSessionState
   githubOperations: Array<GithubOperation>
