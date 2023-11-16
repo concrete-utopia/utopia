@@ -60,11 +60,10 @@ export const RemixNavigationBar = React.memo(() => {
         gap: 10,
         alignSelf: 'stretch',
         alignItems: 'center',
+        justifyContent: 'center',
         pointerEvents: 'initial',
         userSelect: 'none',
         padding: '0 8px',
-        height: 32,
-        width: '100%',
       }}
       onMouseDown={stopPropagation}
       onClick={stopPropagation}
@@ -118,7 +117,6 @@ export const RemixNavigationBar = React.memo(() => {
           borderRadius: 20,
           padding: '2px 10px',
           fontSize: 11,
-          flexGrow: 1,
         }}
       >
         {label}
