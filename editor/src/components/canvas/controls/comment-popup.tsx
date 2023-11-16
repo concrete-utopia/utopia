@@ -1,4 +1,4 @@
-import '../../../../node_modules/@liveblocks/react-comments/styles.css'
+import '../../../../resources/editor/css/liveblocks-comments.css'
 import React from 'react'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
