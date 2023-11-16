@@ -152,8 +152,6 @@ export function createComponentRendererComponent(params: {
       ...appliedProps,
     }
 
-    // console.log('appliedProps', appliedProps)
-
     let codeError: Error | null = null
 
     // Protect against infinite recursion by taking the view that anything

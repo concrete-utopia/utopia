@@ -11,7 +11,6 @@ export function runBlockUpdatingScope(
   const result = resolveParamsAndRunJsCode(filePath, block, requireResult, currentScope)
   const definedWithinWithValues: MapLike<any> = {}
   for (const within of block.definedWithin) {
-    // console.log(within, result[within])
     currentScope[within] = result[within]
     definedWithinWithValues[within] = result[within]
   }
