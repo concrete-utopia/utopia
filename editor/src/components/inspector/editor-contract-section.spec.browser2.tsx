@@ -1,7 +1,7 @@
 import { within } from '@testing-library/react'
 import * as EP from '../../core/shared/element-path'
 import { assertNever } from '../../core/shared/utils'
-import { selectComponentsForTest } from '../../utils/utils.test-utils'
+import { selectComponentsForTest, wait } from '../../utils/utils.test-utils'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import {
@@ -610,7 +610,7 @@ export var storyboard = (
     const editor = await renderTestEditorWithCode(projectWithSizelessDiv, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/group')])
 
-    await chooseWrapperType(editor, 'frame', 'fragment')
+    await chooseWrapperType(editor, 'wrapper-div', 'fragment')
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(projectWithFragment)
 
     // then convert to a sized div!
@@ -1072,10 +1072,13 @@ export var storyboard = (
 
 async function chooseWrapperType(
   editor: EditorRenderResult,
-  fromWrapperType: 'fragment' | 'frame' | 'group',
+  fromWrapperType: 'fragment' | 'frame' | 'group' | 'wrapper-div',
   toWrapperType: 'fragment' | 'frame' | 'group',
 ) {
-  const divLabel = groupSectionOption(fromWrapperType).label!
+  const divLabel =
+    fromWrapperType === 'wrapper-div'
+      ? 'Wrapper' // this is disgusting I know
+      : (groupSectionOption(fromWrapperType).label as string)
 
   const contractSelector = editor.renderedDOM.getByTestId(EditorContractSelectorTestID)
   // only search within the contract section for the word "Fragment" or "Group"
@@ -1083,7 +1086,7 @@ async function chooseWrapperType(
   await mouseClickAtPoint(groupDropDown, { x: 2, y: 2 })
 
   const menuPortal = editor.renderedDOM.getByTestId(MenuListTestID)
-  const wrapperLabel = groupSectionOption(toWrapperType).label!
+  const wrapperLabel = groupSectionOption(toWrapperType).label as string
   // only search within the open dropdown for the word "Fragment" or "Group"
   const optionElement = within(menuPortal).getByText(wrapperLabel)
   await mouseClickAtPoint(optionElement, { x: 2, y: 2 })

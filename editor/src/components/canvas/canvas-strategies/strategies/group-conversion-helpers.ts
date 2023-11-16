@@ -1,3 +1,4 @@
+import React from 'react'
 import type { CSSProperties } from 'react'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import type { StyleLayoutProp } from '../../../../core/layout/layout-helpers-new'
@@ -100,7 +101,7 @@ import {
 } from '../../../inspector/inspector-common'
 import { EdgePositionBottomRight } from '../../canvas-types'
 import { addElement } from '../../commands/add-element-command'
-import type { CanvasCommand } from '../../commands/commands'
+import { runCanvasCommand, type CanvasCommand } from '../../commands/commands'
 import { deleteElement } from '../../commands/delete-element-command'
 import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import type { SetCssLengthProperty } from '../../commands/set-css-length-command'
@@ -124,6 +125,8 @@ import { showToastCommand } from '../../commands/show-toast-command'
 import { unsetJSXValueAtPath } from '../../../../core/shared/jsx-attributes'
 import type { Optic } from '../../../../core/shared/optics/optics'
 import type { EditorContract } from './contracts/contract-helpers'
+import { useRefEditorState } from '../../../editor/store/store-hook'
+import { useDispatch } from '../../../editor/store/dispatch-context'
 
 const GroupImport: Imports = {
   'utopia-api': {
@@ -482,6 +485,31 @@ function removeDataConstraintsFromChildren(children: JSXElementChildren): JSXEle
   )
 }
 
+export function useConvertWrapperToFrame() {
+  const dispatch = useDispatch()
+  const editorStateRef = useRefEditorState((store) => store)
+  return React.useCallback(() => {
+    const { jsxMetadata, allElementProps, elementPathTree, selectedViews } =
+      editorStateRef.current.editor
+    dispatch([
+      applyCommandsAction(
+        selectedViews.flatMap((sv) =>
+          convertWrapperToFrameCommands(jsxMetadata, allElementProps, elementPathTree, sv),
+        ),
+      ),
+    ])
+  }, [dispatch, editorStateRef])
+}
+
+function convertWrapperToFrameCommands(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
+  elementPath: ElementPath,
+): CanvasCommand[] {
+  return convertSizelessDivToFrameCommands(metadata, allElementProps, pathTrees, elementPath) ?? []
+}
+
 export function convertSizelessDivToFrameCommands(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
@@ -489,6 +517,7 @@ export function convertSizelessDivToFrameCommands(
   elementPath: ElementPath,
 ): CanvasCommand[] | null {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+
   const childrenBoundingFrame = MetadataUtils.getBoundingRectangleOfChildren(
     metadata,
     pathTrees,
@@ -548,34 +577,6 @@ export function convertSizelessDivToFrameCommands(
       element?.specialSizeMeasurements.parentFlexDirection ?? null,
     ),
     ...offsetChildrenByDelta(childInstances, childrenBoundingFrame),
-  ]
-}
-
-export function convertFrameToSizelessDivCommands(
-  metadata: ElementInstanceMetadataMap,
-  allElementProps: AllElementProps,
-  pathTrees: ElementPathTrees,
-  elementPath: ElementPath,
-): Array<CanvasCommand> {
-  const parentOffset =
-    MetadataUtils.findElementByElementPath(metadata, elementPath)?.specialSizeMeasurements.offset ??
-    zeroCanvasPoint
-
-  const childInstances = mapDropNulls(
-    (path) => MetadataUtils.findElementByElementPath(metadata, path),
-    replaceFragmentLikePathsWithTheirChildrenRecursive(
-      metadata,
-      allElementProps,
-      pathTrees,
-      MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath),
-    ),
-  )
-
-  return [
-    ...nukeAllAbsolutePositioningPropsCommands(elementPath),
-    nukeSizingPropsForAxisCommand('vertical', elementPath),
-    nukeSizingPropsForAxisCommand('horizontal', elementPath),
-    ...offsetChildrenByVectorCommands(childInstances, parentOffset),
   ]
 }
 
@@ -1278,9 +1279,9 @@ export function getCommandsForConversionToDesiredType(
   currentType: EditorContract,
   desiredType: EditorContract,
 ): Array<CanvasCommand> {
-  if (desiredType === 'not-quite-frame') {
+  if (desiredType === 'wrapper-div') {
     throw new Error(
-      'Invariant violation: not-quite-frame should never be a selectable option in the dropdown',
+      'Invariant violation: wrapper-div should never be a selectable option in the dropdown',
     )
   }
 
@@ -1307,10 +1308,19 @@ export function getCommandsForConversionToDesiredType(
       assertNever(desiredType)
     }
 
-    if (currentType === 'frame' || currentType === 'not-quite-frame') {
+    if (currentType === 'frame' || currentType === 'wrapper-div') {
       if (desiredType === 'frame') {
-        // NOOP
-        return []
+        if (currentType === 'frame') {
+          // NOOP
+          return []
+        }
+
+        return convertWrapperToFrameCommands(
+          metadata,
+          allElementProps,
+          elementPathTree,
+          elementPath,
+        )
       }
 
       if (desiredType === 'fragment') {
