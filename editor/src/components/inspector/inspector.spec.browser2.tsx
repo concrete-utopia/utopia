@@ -212,21 +212,22 @@ describe('inspector', () => {
       'await-first-dom-report',
     )
 
-    function validatePaddingControlCount(): void {
+    function validatePaddingControlCount(length: 0 | 1): void {
       const paddingHControls = editor.renderedDOM.queryAllByTestId('padding-H')
       const paddingVControls = editor.renderedDOM.queryAllByTestId('padding-V')
-      expect(paddingHControls).toHaveLength(1)
-      expect(paddingVControls).toHaveLength(1)
+      expect(paddingHControls).toHaveLength(length)
+      expect(paddingVControls).toHaveLength(length)
     }
 
     await editor.dispatch([clearSelection()], true)
     await editor.getDispatchFollowUpActionsFinished()
-    validatePaddingControlCount()
+
+    validatePaddingControlCount(0)
 
     const appRootPath = elementPath([['storyboard', 'scene-1', 'app'], ['app-root']])
     await editor.dispatch([selectComponents([appRootPath], false)], true)
     await editor.getDispatchFollowUpActionsFinished()
-    validatePaddingControlCount()
+    validatePaddingControlCount(1)
 
     const divPath = elementPath([
       ['storyboard', 'scene-1', 'app'],
@@ -234,7 +235,7 @@ describe('inspector', () => {
     ])
     await editor.dispatch([selectComponents([divPath], false)], true)
     await editor.getDispatchFollowUpActionsFinished()
-    validatePaddingControlCount()
+    validatePaddingControlCount(1)
   })
   it('removes the transform property when clicking the cross on that section', async () => {
     const resultCode = await setupRemovalTest('inspector-transform-remove-all')

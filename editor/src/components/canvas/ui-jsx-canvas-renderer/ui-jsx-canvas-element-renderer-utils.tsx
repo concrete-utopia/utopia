@@ -39,7 +39,11 @@ import type {
 import { assertNever } from '../../../core/shared/utils'
 import { Utils } from '../../../uuiui-deps'
 import type { UIFileBase64Blobs } from '../../editor/store/editor-state'
-import type { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
+import type {
+  DomWalkerInvalidatePathsCtxData,
+  UiJsxCanvasContextData,
+  VariableData,
+} from '../ui-jsx-canvas'
 import { SceneComponent } from './scene-component'
 import * as PP from '../../../core/shared/property-path'
 import * as EP from '../../../core/shared/element-path'
@@ -136,6 +140,7 @@ export function createLookupRender(
       code,
       highlightBounds,
       editedText,
+      {},
     )
   }
 }
@@ -181,6 +186,7 @@ export function renderCoreElement(
   code: string,
   highlightBounds: HighlightBoundsForUids | null,
   editedText: ElementPath | null,
+  variablesInScope: VariableData,
 ): React.ReactChild {
   if (codeError != null) {
     throw codeError
@@ -261,6 +267,7 @@ export function renderCoreElement(
         code,
         highlightBounds,
         editedText,
+        variablesInScope,
       )
     }
     case 'JSX_MAP_EXPRESSION':
@@ -348,6 +355,7 @@ export function renderCoreElement(
           shouldIncludeCanvasRootInTheSpy,
           imports,
           filePath,
+          variablesInScope,
         )
       }
       const innerRender = createLookupRender(
@@ -408,6 +416,7 @@ export function renderCoreElement(
         code,
         highlightBounds,
         editedText,
+        variablesInScope,
       )
     }
     case 'JSX_TEXT_BLOCK': {
@@ -506,6 +515,7 @@ export function renderCoreElement(
           shouldIncludeCanvasRootInTheSpy,
           imports,
           filePath,
+          variablesInScope,
         )
       }
 
@@ -532,6 +542,7 @@ export function renderCoreElement(
         code,
         highlightBounds,
         editedText,
+        variablesInScope,
       )
     }
     case 'ATTRIBUTE_VALUE':
@@ -565,6 +576,7 @@ export function renderCoreElement(
           shouldIncludeCanvasRootInTheSpy,
           imports,
           filePath,
+          variablesInScope,
         )
       }
 
@@ -716,6 +728,7 @@ function renderJSXElement(
   code: string,
   highlightBounds: HighlightBoundsForUids | null,
   editedText: ElementPath | null,
+  variablesInScope: VariableData,
 ): React.ReactElement {
   const createChildrenElement = (child: JSXElementChild): React.ReactChild => {
     const childPath = optionalMap((path) => EP.appendToPath(path, getUtopiaID(child)), elementPath)
@@ -742,6 +755,7 @@ function renderJSXElement(
       code,
       highlightBounds,
       editedText,
+      variablesInScope,
     )
   }
 
@@ -894,6 +908,7 @@ function renderJSXElement(
         shouldIncludeCanvasRootInTheSpy,
         imports,
         filePath,
+        variablesInScope,
       )
     }
     return buildSpyWrappedElement(
@@ -909,6 +924,7 @@ function renderJSXElement(
       shouldIncludeCanvasRootInTheSpy,
       imports,
       filePath,
+      variablesInScope,
     )
   } else {
     return renderComponentUsingJsxFactoryFunction(

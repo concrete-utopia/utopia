@@ -891,7 +891,9 @@ export function restoreEditorState(
     indexedDBFailed: currentEditor.indexedDBFailed,
     forceParseFiles: currentEditor.forceParseFiles,
     allElementProps: desiredEditor.allElementProps,
-    _currentAllElementProps_KILLME: desiredEditor._currentAllElementProps_KILLME,
+    currentAllElementProps: desiredEditor.currentAllElementProps,
+    variablesInScope: desiredEditor.variablesInScope,
+    currentVariablesInScope: desiredEditor.currentVariablesInScope,
     githubSettings: currentEditor.githubSettings,
     imageDragSessionState: currentEditor.imageDragSessionState,
     githubOperations: currentEditor.githubOperations,
@@ -2843,7 +2845,7 @@ export const UPDATE_FNS = {
       return editor
     } else {
       const target = editor.selectedViews[0]
-      const styleProps = editor._currentAllElementProps_KILLME[EP.toString(target)]?.style ?? {}
+      const styleProps = editor.currentAllElementProps[EP.toString(target)]?.style ?? {}
       const styleClipboardData = Object.keys(styleProps).map((name) =>
         valueAtPath(PP.create('style', name), jsExpressionValue(styleProps[name], emptyComments)),
       )
@@ -3904,12 +3906,13 @@ export const UPDATE_FNS = {
     } else {
       return {
         ...editor,
-        // TODO move the reconstructMetadata call here, and remove _currentAllElementProps_KILLME
+        // TODO move the reconstructMetadata call here, and remove currentAllElementProps
         domMetadata: finalDomMetadata,
         spyMetadata: finalSpyMetadata,
-        _currentAllElementProps_KILLME: {
+        currentAllElementProps: {
           ...spyCollector.current.spyValues.allElementProps,
         },
+        currentVariablesInScope: { ...spyCollector.current.spyValues.variablesInScope },
       }
     }
   },

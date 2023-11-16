@@ -73,6 +73,7 @@ function createEditorStore(
       latestMetadata: {},
       latestAllElementProps: {},
       latestElementPathTree: {},
+      latestVariablesInScope: {},
     }
   }
 
