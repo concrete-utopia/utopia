@@ -50,6 +50,7 @@ export const MultiplayerCursors = React.memo(() => {
     }
     updateMyPresence({
       name: normalizeMultiplayerName(loginState.user.name ?? null),
+      picture: loginState.user.picture ?? null, // TODO remove this once able to resolve users
       colorIndex: getColorIndex(),
     })
   }, [loginState, updateMyPresence, getColorIndex])
