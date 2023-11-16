@@ -316,17 +316,20 @@ export function getFilePathForImportedComponent(
 
 export function isImportedComponentFromProjectFiles(
   element: ElementInstanceMetadata | null,
+  filePathMappings: FilePathMappings,
 ): boolean {
-  return !isImportedComponentNPM(element)
+  return !isImportedComponentNPM(element, filePathMappings)
 }
 
 export function isImportedComponent(
   elementInstanceMetadata: ElementInstanceMetadata | null,
+  filePathMappings: FilePathMappings,
 ): boolean {
   const importInfo = elementInstanceMetadata?.importInfo
   if (importInfo != null && isImportedOrigin(importInfo)) {
     const importKey = importInfo.filePath
-    return !importKey.startsWith('.') && !importKey.startsWith('/')
+    const isMappedFilePath = filePathMappings.some(([re, _]) => re.test(importKey))
+    return !isMappedFilePath && !importKey.startsWith('.') && !importKey.startsWith('/')
   } else {
     return false
   }
@@ -366,12 +369,13 @@ export function isIntrinsicHTMLElementMetadata(
 
 export function isImportedComponentNPM(
   elementInstanceMetadata: ElementInstanceMetadata | null,
+  filePathMappings: FilePathMappings,
 ): boolean {
   return (
     (elementInstanceMetadata != null &&
       isIntrinsicElementMetadata(elementInstanceMetadata) &&
       !isIntrinsicHTMLElementMetadata(elementInstanceMetadata)) ||
-    (isImportedComponent(elementInstanceMetadata) &&
+    (isImportedComponent(elementInstanceMetadata, filePathMappings) &&
       elementInstanceMetadata != null &&
       !isUtopiaAPIComponentFromMetadata(elementInstanceMetadata))
   )
@@ -934,9 +938,8 @@ export function getTopLevelElementByExportsDetail(
 
 export function applyFilePathMappingsToFilePath(
   filepath: string,
-  projectContents: ProjectContentTreeRoot,
+  filePathMappings: FilePathMappings,
 ): string {
-  const filePathMappings = getFilePathMappings(projectContents)
   return filePathMappings.reduce((working, nextMapping) => {
     // FIXME this is limited to only applying the first mapping, both from the paths object, and from the array of aliased paths
     const [mapFrom, mapToArray] = nextMapping
@@ -945,9 +948,10 @@ export function applyFilePathMappingsToFilePath(
   }, filepath)
 }
 
-type FilePathMappings = Array<[RegExp, Array<string>]>
+type FilePathMapping = [RegExp, Array<string>]
+export type FilePathMappings = Array<FilePathMapping>
 
-const getFilePathMappings = memoize(getFilePathMappingsImpl, { maxSize: 1, matchesArg: is })
+export const getFilePathMappings = memoize(getFilePathMappingsImpl, { maxSize: 1, matchesArg: is })
 
 function getFilePathMappingsImpl(projectContents: ProjectContentTreeRoot): FilePathMappings {
   const jsConfigFile = getProjectFileByFilePath(projectContents, 'jsconfig.json')
@@ -986,8 +990,9 @@ function getFilePathMappingsFromConfigFileImpl(configFile: TextFile): FilePathMa
 
             const globRegex = globToRegexp(k, { flags: 'g', globstar: true })
             const stickyRegex = new RegExp(globRegex, 'y')
+            ;(stickyRegex as any).skipDeepFreeze = true
 
-            return [stickyRegex, values] as [RegExp, Array<string>]
+            return [stickyRegex, values] as FilePathMapping
           } else {
             return null
           }

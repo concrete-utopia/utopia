@@ -114,6 +114,7 @@ import {
   isSceneFromMetadata,
   isUtopiaAPIComponentFromMetadata,
   isGivenUtopiaElementFromMetadata,
+  type FilePathMappings,
 } from './project-file-utils'
 import { fastForEach } from '../shared/utils'
 import { mapValues, objectValues, omit } from '../shared/object-utils'
@@ -1882,23 +1883,25 @@ export const MetadataUtils = {
     path: ElementPath,
     metadata: ElementInstanceMetadataMap,
     autoFocusedPaths: Array<ElementPath>,
+    filePathMappings: FilePathMappings,
   ): boolean {
     return (
       EP.containsPath(path, autoFocusedPaths) ||
-      MetadataUtils.isManuallyFocusableComponent(path, metadata, autoFocusedPaths)
+      MetadataUtils.isManuallyFocusableComponent(path, metadata, autoFocusedPaths, filePathMappings)
     )
   },
   isManuallyFocusableComponent(
     path: ElementPath,
     metadata: ElementInstanceMetadataMap,
     autoFocusedPaths: Array<ElementPath>,
+    filePathMappings: FilePathMappings,
   ): boolean {
     const element = MetadataUtils.findElementByElementPath(metadata, path)
     const isAnimatedComponent = isAnimatedElement(element)
     if (isAnimatedComponent) {
       return false
     }
-    const isImported = isImportedComponent(element)
+    const isImported = isImportedComponent(element, filePathMappings)
     if (isImported) {
       return false
     }
@@ -1922,10 +1925,11 @@ export const MetadataUtils = {
     pathTree: ElementPathTrees,
     metadata: ElementInstanceMetadataMap,
     autoFocusedPaths: Array<ElementPath>,
+    filePathMappings: FilePathMappings,
   ): boolean {
     return (
       MetadataUtils.getChildrenPathsOrdered(metadata, pathTree, path).length === 0 &&
-      MetadataUtils.isManuallyFocusableComponent(path, metadata, autoFocusedPaths)
+      MetadataUtils.isManuallyFocusableComponent(path, metadata, autoFocusedPaths, filePathMappings)
     )
   },
   isEmotionOrStyledComponent(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {

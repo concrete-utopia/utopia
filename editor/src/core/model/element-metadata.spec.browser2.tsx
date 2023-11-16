@@ -849,6 +849,7 @@ describe('isAutofocusable/isManuallyFocusableComponent', () => {
         path,
         metadata,
         autoFocusedPaths,
+        [],
       )}`
     })
     expect(isFocusableComponentResults).toEqual([

@@ -923,6 +923,7 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
     projectContentsChecksums: poppedDerived.projectContentsChecksums,
     branchOriginContentsChecksums: poppedDerived.branchOriginContentsChecksums,
     remixData: poppedDerived.remixData,
+    filePathMappings: poppedDerived.filePathMappings,
   }
 }
 
@@ -4505,6 +4506,7 @@ export const UPDATE_FNS = {
         action.focusedElementPath,
         editor.jsxMetadata,
         derived.autoFocusedPaths,
+        derived.filePathMappings,
       )
     ) {
       shouldApplyChange = true

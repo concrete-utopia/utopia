@@ -6,8 +6,10 @@ import {
   transformJSXComponentAtPath,
 } from '../../../core/model/element-template-utils'
 import {
+  type FilePathMappings,
   applyToAllUIJSFiles,
   applyUtopiaJSXComponentsChanges,
+  getFilePathMappings,
   getHighlightBoundsForProject,
   getHighlightBoundsFromParseResult,
   getUtopiaJSXComponentsFromSuccess,
@@ -2179,6 +2181,7 @@ export interface DerivedState {
   projectContentsChecksums: FileChecksumsWithFile
   branchOriginContentsChecksums: FileChecksumsWithFile | null
   remixData: RemixDerivedData | null
+  filePathMappings: FilePathMappings
 }
 
 function emptyDerivedState(editor: EditorState): DerivedState {
@@ -2191,6 +2194,7 @@ function emptyDerivedState(editor: EditorState): DerivedState {
     projectContentsChecksums: {},
     branchOriginContentsChecksums: {},
     remixData: null,
+    filePathMappings: [],
   }
 }
 
@@ -2602,6 +2606,8 @@ export function deriveState(
     editor.codeResultCache.curriedResolveFn,
   )
 
+  const filePathMappings = getFilePathMappings(editor.projectContents)
+
   const derived: DerivedState = {
     navigatorTargets: navigatorTargets,
     visibleNavigatorTargets: visibleNavigatorTargets,
@@ -2620,6 +2626,7 @@ export function deriveState(
             oldDerivedState?.branchOriginContentsChecksums ?? {},
           ),
     remixData: remixDerivedData,
+    filePathMappings: filePathMappings,
   }
 
   const sanitizedDerivedState = DerivedStateKeepDeepEquality()(derivedState, derived).value
