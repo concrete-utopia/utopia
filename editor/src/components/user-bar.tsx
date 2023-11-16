@@ -12,7 +12,7 @@ import {
 } from '../core/shared/multiplayer'
 import { Avatar, Tooltip, useColorTheme } from '../uuiui'
 import { Substores, useEditorState } from './editor/store/store-hook'
-import { when } from '../utils/react-conditionals'
+import { unless, when } from '../utils/react-conditionals'
 
 const MAX_VISIBLE_OTHER_PLAYERS = 4
 
@@ -180,8 +180,8 @@ const MultiplayerAvatar = React.memo(
           }}
         >
           {when(picture == null, props.name)}
-          {when(
-            picture != null,
+          {unless(
+            picture == null,
             // Using an img tag instead of using it as backgroundColor above because of potential 403s
             <img
               style={{
