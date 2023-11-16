@@ -717,7 +717,9 @@ function expectUpdatedFilesUpdateTimestamp(
 function expectNoActionsCausedDuplicateUids(
   actionsCausingDuplicateUIDs: ActionsCausingDuplicateUIDs,
 ) {
-  expect(actionsCausingDuplicateUIDs).toHaveLength(0)
+  if (actionsCausingDuplicateUIDs.length !== 0) {
+    throw new Error('Duplicate uids were introduced into the project')
+  }
 }
 
 export function getPrintedUiJsCode(

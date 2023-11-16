@@ -269,33 +269,35 @@ function applySteganographyPlugin(
   sourceFileName: string,
   mapToUse: RawSourceMap,
   fileLines: string[],
-) {
+): () => {
+  visitor: BabelTraverse.Visitor
+} {
   return () => ({
     visitor: {
-      StringLiteral(path: any) {
+      StringLiteral(path) {
         if (path.node.loc == null) {
           return
         }
 
         // this call somehow messes with the snapshots
         const smc = new SourceMapConsumer(mapToUse)
-        const originalStartPosition = smc.originalPositionFor(path.node.loc.start)
-        const originalEndPosition = smc.originalPositionFor(path.node.loc.end)
+        const originalStartPosition = smc.originalPositionFor({
+          line: path.node.loc.start.line,
+          column: path.node.loc.start.column,
+        })
+        // https://github.com/mozilla/source-map/issues/359 amazingn't
+        const absoluteStartPosition =
+          getAbsoluteOffsetFromFile(fileLines, {
+            line: originalStartPosition.line,
+            column: originalStartPosition.column,
+          }) - 1
         const original = cleanSteganoTextData(path.node.value).cleaned
         const data = {
           filePath: sourceFileName,
-          originalString: "'" + original + "'",
-          startPosition:
-            getAbsoluteOffsetFromFile(fileLines, {
-              line: originalStartPosition.line,
-              column: originalStartPosition.column,
-            }) - 1,
-          endPosition: getAbsoluteOffsetFromFile(fileLines, {
-            line: originalEndPosition.line,
-            column: originalEndPosition.column,
-          }),
+          startPosition: absoluteStartPosition,
+          endPosition: absoluteStartPosition + path.node.value.length + 2,
         }
-        path.node.value = encodeSteganoData(original, data)
+        path.replaceWith(BabelTypes.stringLiteral(encodeSteganoData(original, data)))
       },
     },
   })

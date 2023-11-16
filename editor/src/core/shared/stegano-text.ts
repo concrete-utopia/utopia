@@ -3,24 +3,9 @@ import type { SteganographyMode } from '../workers/parser-printer/parser-printer
 import { isFeatureEnabled } from '../../utils/feature-switches'
 
 export interface SteganoTextData {
-  originalString: string
   filePath: string
   startPosition: number
   endPosition: number
-}
-
-export function steganoTextData(
-  originalString: string,
-  filePath: string,
-  startPosition: number,
-  endPosition: number,
-): SteganoTextData {
-  return {
-    originalString: originalString,
-    filePath: filePath,
-    startPosition: startPosition,
-    endPosition: endPosition,
-  }
 }
 
 export function encodeSteganoData(text: string, data: SteganoTextData): string {
@@ -37,14 +22,12 @@ export function decodeSteganoData(encodedString: string): SteganoTextData | null
     !isStegoObject(data) ||
     data.endPosition == null ||
     data.filePath == null ||
-    data.originalString == null ||
     data.startPosition == null
   ) {
     return null
   }
 
   const steganoData: SteganoTextData = {
-    originalString: data['originalString'],
     filePath: data['filePath'],
     startPosition: data['startPosition'],
     endPosition: data['endPosition'],

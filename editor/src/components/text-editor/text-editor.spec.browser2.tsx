@@ -1987,6 +1987,128 @@ export var storyboard = (
 `),
       )
     })
+
+    it("can edit string when there's more than one declaration", async () => {
+      const editor = await renderTestEditorWithCode(
+        `import * as React from 'react'
+        import { Storyboard, Scene } from 'utopia-api'
+        
+        const aaa = 'aaa'
+        const bbb = 'bbb'
+        const ccc = 'ccc'
+        
+        export var storyboard = (
+          <Storyboard>
+            <Scene
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 144,
+                top: 58,
+                width: 288,
+                height: 362,
+              }}
+            >
+              <div data-testid='111' style={{}}>
+                {aaa}
+              </div>
+              <div
+                data-testid='222'
+                style={{
+                  width: 288,
+                  height: 19,
+                  position: 'absolute',
+                  left: 0,
+                  top: 41,
+                }}
+              >
+                {bbb}
+              </div>
+              <div
+                data-testid='333'
+                style={{
+                  width: 288,
+                  height: 19,
+                  position: 'absolute',
+                  left: 0,
+                  top: 71,
+                }}
+              >
+                {ccc}
+              </div>
+            </Scene>
+          </Storyboard>
+        )        
+      `,
+        'await-first-dom-report',
+        {
+          applySteganography: 'apply-steganography',
+        },
+      )
+
+      await enterTextEditMode(editor, 'start', '111', '111-span')
+      typeText('111')
+      await expectSingleUndo2Saves(editor, async () => closeTextEditor())
+
+      await enterTextEditMode(editor, 'start', '222', '222-span')
+      typeText('222')
+      await expectSingleUndo2Saves(editor, async () => closeTextEditor())
+
+      await enterTextEditMode(editor, 'start', '333', '333-span')
+      typeText('333')
+      await expectSingleUndo2Saves(editor, async () => closeTextEditor())
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Storyboard, Scene } from 'utopia-api'
+
+const aaa = "111aaa"
+const bbb = "222bbb"
+const ccc = "333ccc"
+
+export var storyboard = (
+  <Storyboard>
+    <Scene
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 144,
+        top: 58,
+        width: 288,
+        height: 362,
+      }}
+    >
+      <div data-testid='111' style={{}}>
+        {aaa}
+      </div>
+      <div
+        data-testid='222'
+        style={{
+          width: 288,
+          height: 19,
+          position: 'absolute',
+          left: 0,
+          top: 41,
+        }}
+      >
+        {bbb}
+      </div>
+      <div
+        data-testid='333'
+        style={{
+          width: 288,
+          height: 19,
+          position: 'absolute',
+          left: 0,
+          top: 71,
+        }}
+      >
+        {ccc}
+      </div>
+    </Scene>
+  </Storyboard>
+)
+`)
+    })
   })
 })
 
@@ -2198,6 +2320,7 @@ async function enterTextEditMode(
   editor: EditorRenderResult,
   where: 'start' | 'end' = 'end',
   testId: string = 'div',
+  nextUid = 'text-span',
 ): Promise<void> {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
   const element = editor.renderedDOM.getByTestId(testId)
@@ -2207,7 +2330,7 @@ async function enterTextEditMode(
     y: bounds.y + (where === 'start' ? 1 : 40),
   }
 
-  FOR_TESTS_setNextGeneratedUid('text-span')
+  FOR_TESTS_setNextGeneratedUid(nextUid)
 
   await pressKey('t')
   await editor.getDispatchFollowUpActionsFinished()
