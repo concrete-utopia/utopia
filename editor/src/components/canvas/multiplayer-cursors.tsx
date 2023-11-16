@@ -9,19 +9,24 @@ import { Substores, useEditorState } from '../editor/store/store-hook'
 import { canvasPointToWindowPoint, windowToCanvasCoordinates } from './dom-lookup'
 import {
   multiplayerColorFromIndex,
-  multiplayerColors,
   normalizeMultiplayerName,
   normalizeOthersList,
+  possiblyUniqueColor,
 } from '../../core/shared/multiplayer'
+import { useKeepShallowReferenceEquality } from '../../utils/react-performance'
 
 export const MultiplayerCursors = React.memo(() => {
   const self = useSelf()
   const others = useOthers((list) => normalizeOthersList(self.id, list))
   const updateMyPresence = useUpdateMyPresence()
+  const selfColorIndex = React.useMemo(() => self.presence.colorIndex, [self.presence])
+  const otherColorIndices = useKeepShallowReferenceEquality(
+    others.map((other) => other.presence.colorIndex),
+  )
 
-  const myColorIndex = React.useMemo(() => {
-    return self.presence.colorIndex ?? Math.floor(Math.random() * multiplayerColors.light.length)
-  }, [self.presence])
+  const getColorIndex = React.useCallback(() => {
+    return selfColorIndex ?? possiblyUniqueColor(otherColorIndices)
+  }, [selfColorIndex, otherColorIndices])
 
   const loginState = useEditorState(
     Substores.userState,
@@ -45,9 +50,9 @@ export const MultiplayerCursors = React.memo(() => {
     }
     updateMyPresence({
       name: normalizeMultiplayerName(loginState.user.name ?? null),
-      colorIndex: myColorIndex,
+      colorIndex: getColorIndex(),
     })
-  }, [loginState, updateMyPresence, myColorIndex])
+  }, [loginState, updateMyPresence, getColorIndex])
 
   React.useEffect(() => {
     updateMyPresence({ canvasScale, canvasOffset })

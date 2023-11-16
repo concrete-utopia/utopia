@@ -1,4 +1,10 @@
-import { aperture, intersection, mapAndFilter, strictEvery } from './array-utils'
+import {
+  aperture,
+  intersection,
+  mapAndFilter,
+  possiblyUniqueInArray,
+  strictEvery,
+} from './array-utils'
 
 describe('intersection', () => {
   it('two empty arrays should return an empty array', () => {
@@ -82,4 +88,16 @@ describe('strictEvery', () => {
     expect([1].every(() => false)).toBeFalsy()
     expect(strictEvery([1], () => false)).toBeFalsy()
   })
+})
+
+it('possiblyUniqueInArray', () => {
+  const arr = [0, 1, 2, 3, 4]
+  expect(possiblyUniqueInArray(arr, [1, 2, 4], 3)).toEqual(3)
+  expect(possiblyUniqueInArray(arr, [1, 2, 4], 4)).toEqual(0)
+  expect(possiblyUniqueInArray(arr, [1, 2, 4], 0)).toEqual(0)
+  expect(possiblyUniqueInArray(arr, [1, 2, 4], 1)).toEqual(3)
+  expect(possiblyUniqueInArray(arr, [1, 2, 4], 2)).toEqual(3)
+  expect(possiblyUniqueInArray(arr, [1, 2, 4], 5)).toEqual(5)
+  expect(possiblyUniqueInArray(arr, arr, 2)).toEqual(2)
+  expect(possiblyUniqueInArray([], [], 2)).toEqual(2)
 })
