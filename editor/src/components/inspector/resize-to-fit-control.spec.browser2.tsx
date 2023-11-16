@@ -109,9 +109,9 @@ describe('Resize to fit control', () => {
     const editor = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
         <div data-uid='component-root'>
-          <div data-uid='container'>
-          <div data-uid='child1' style={{position: 'absolute', left: 50, top: 40, width: 122, height: 112}} />
-          <div data-uid='child2' style={{position: 'absolute', left: 60, top: 30, height: 22}}>hello div</div>
+          <div data-uid='container' style={{backgroundColor: 'red'}}>
+            <div data-uid='child1' style={{position: 'absolute', left: 50, top: 40, width: 122, height: 112, backgroundColor: 'lavender'}} />
+            <div data-uid='child2' style={{position: 'absolute', left: 60, top: 30, height: 22, backgroundColor: 'mistyrose'}}>hello div</div>
         </div>
         </div>
     `),
@@ -130,9 +130,9 @@ describe('Resize to fit control', () => {
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
         `<div data-uid='component-root'>
-          <div data-uid='container' style={{position: 'absolute', top: 30, left: 50, width: 122, height: 122}}>
-            <div data-uid='child1' style={{position: 'absolute', left: 0, top: 10, width: 122, height: 112}} />
-            <div data-uid='child2' style={{position: 'absolute', left: 10, top: 0, height: 22}}>hello div</div>
+          <div data-uid='container' style={{backgroundColor: 'red', position: 'absolute', top: 30, left: 50, width: 122, height: 122}}>
+            <div data-uid='child1' style={{position: 'absolute', left: 0, top: 10, width: 122, height: 112, backgroundColor: 'lavender'}} />
+            <div data-uid='child2' style={{position: 'absolute', left: 10, top: 0, height: 22, backgroundColor: 'mistyrose'}}>hello div</div>
           </div>
         </div>`,
       ),
