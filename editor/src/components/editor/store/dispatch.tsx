@@ -785,8 +785,8 @@ function editorDispatchInner(
     const spyMetadataChanged =
       storedState.unpatchedEditor.spyMetadata !== result.unpatchedEditor.spyMetadata
     const allElementPropsChanged =
-      storedState.unpatchedEditor._currentAllElementProps_KILLME !==
-      result.unpatchedEditor._currentAllElementProps_KILLME
+      storedState.unpatchedEditor.currentAllElementProps !==
+      result.unpatchedEditor.currentAllElementProps
 
     const metadataChanged = domMetadataChanged || spyMetadataChanged || allElementPropsChanged
     if (metadataChanged) {
@@ -817,7 +817,7 @@ function editorDispatchInner(
               interactionSession: {
                 ...result.unpatchedEditor.canvas.interactionSession,
                 latestMetadata: metadata,
-                latestAllElementProps: result.unpatchedEditor._currentAllElementProps_KILLME,
+                latestAllElementProps: result.unpatchedEditor.currentAllElementProps,
                 latestElementPathTree: elementPathTree,
               },
             },
@@ -830,7 +830,7 @@ function editorDispatchInner(
             ...result.unpatchedEditor,
             jsxMetadata: metadata,
             elementPathTree: elementPathTree,
-            allElementProps: result.unpatchedEditor._currentAllElementProps_KILLME,
+            allElementProps: result.unpatchedEditor.currentAllElementProps,
             variablesInScope: result.unpatchedEditor.variablesInScope,
             lockedElements: {
               ...result.unpatchedEditor.lockedElements,

@@ -4357,9 +4357,9 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.allElementProps,
     newValue.allElementProps,
   )
-  const _currentAllElementProps_KILLME_Results = AllElementPropsKeepDeepEquality(
-    oldValue._currentAllElementProps_KILLME,
-    newValue._currentAllElementProps_KILLME,
+  const currentAllElementPropsResults = AllElementPropsKeepDeepEquality(
+    oldValue.currentAllElementProps,
+    newValue.currentAllElementProps,
   )
 
   const variablesInScopeResult = VariablesInScopeKeepDeepEquality(
@@ -4470,7 +4470,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     indexedDBFailedResults.areEqual &&
     forceParseFilesResults.areEqual &&
     allElementPropsResults.areEqual &&
-    _currentAllElementProps_KILLME_Results.areEqual &&
+    currentAllElementPropsResults.areEqual &&
     variablesInScopeResult.areEqual &&
     githubSettingsResults.areEqual &&
     imageDragSessionStateEqual.areEqual &&
@@ -4551,7 +4551,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       indexedDBFailedResults.value,
       forceParseFilesResults.value,
       allElementPropsResults.value,
-      _currentAllElementProps_KILLME_Results.value,
+      currentAllElementPropsResults.value,
       variablesInScopeResult.value,
       githubSettingsResults.value,
       imageDragSessionStateEqual.value,

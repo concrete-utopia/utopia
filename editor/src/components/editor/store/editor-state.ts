@@ -1418,7 +1418,7 @@ export interface EditorState {
   indexedDBFailed: boolean
   forceParseFiles: Array<string>
   allElementProps: AllElementProps // the final, resolved, static props value for each element. // This is the counterpart of jsxMetadata. we only update allElementProps when we update jsxMetadata
-  _currentAllElementProps_KILLME: AllElementProps // This is the counterpart of domMetadata and spyMetadata. we update _currentAllElementProps_KILLME every time we update domMetadata/spyMetadata
+  currentAllElementProps: AllElementProps // This is the counterpart of domMetadata and spyMetadata. we update currentAllElementProps every time we update domMetadata/spyMetadata
   variablesInScope: VariablesInScope
   githubSettings: ProjectGithubSettings
   imageDragSessionState: ImageDragSessionState
@@ -1496,7 +1496,7 @@ export function editorState(
   indexedDBFailed: boolean,
   forceParseFiles: Array<string>,
   allElementProps: AllElementProps,
-  _currentAllElementProps_KILLME: AllElementProps,
+  currentAllElementProps: AllElementProps,
   variablesInScope: VariablesInScope,
   githubSettings: ProjectGithubSettings,
   imageDragSessionState: ImageDragSessionState,
@@ -1575,7 +1575,7 @@ export function editorState(
     indexedDBFailed: indexedDBFailed,
     forceParseFiles: forceParseFiles,
     allElementProps: allElementProps,
-    _currentAllElementProps_KILLME: _currentAllElementProps_KILLME,
+    currentAllElementProps: currentAllElementProps,
     variablesInScope,
     githubSettings: githubSettings,
     imageDragSessionState: imageDragSessionState,
@@ -2442,7 +2442,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     indexedDBFailed: false,
     forceParseFiles: [],
     allElementProps: {},
-    _currentAllElementProps_KILLME: {},
+    currentAllElementProps: {},
     variablesInScope: {},
     githubSettings: emptyGithubSettings(),
     imageDragSessionState: notDragging(),
@@ -2812,7 +2812,7 @@ export function editorModelFromPersistentModel(
     indexedDBFailed: false,
     forceParseFiles: [],
     allElementProps: {},
-    _currentAllElementProps_KILLME: {},
+    currentAllElementProps: {},
     variablesInScope: {},
     githubSettings: persistentModel.githubSettings,
     imageDragSessionState: notDragging(),
