@@ -11,6 +11,7 @@ import {
 } from '../core/shared/multiplayer'
 import { Avatar, Tooltip, useColorTheme } from '../uuiui'
 import { Substores, useEditorState } from './editor/store/store-hook'
+import { when } from '../utils/react-conditionals'
 
 const MAX_VISIBLE_OTHER_PLAYERS = 4
 
@@ -83,7 +84,8 @@ const MultiplayerUserBar = React.memo(() => {
         gap: 4,
       }}
     >
-      {visibleOthers.length > 0 && (
+      {when(
+        visibleOthers.length > 0,
         <div
           style={{
             display: 'flex',
@@ -109,7 +111,8 @@ const MultiplayerUserBar = React.memo(() => {
               />
             )
           })}
-          {hiddenOthers.length > 0 && (
+          {when(
+            hiddenOthers.length > 0,
             <MultiplayerAvatar
               name={`+${hiddenOthers.length}`}
               tooltip={hiddenOthers.map((c) => normalizeMultiplayerName(c.name)).join(', ')}
@@ -117,9 +120,9 @@ const MultiplayerUserBar = React.memo(() => {
                 background: colorTheme.fg8.value,
                 foreground: colorTheme.fg0.value,
               }}
-            />
+            />,
           )}
-        </div>
+        </div>,
       )}
       <a href='/projects' target='_blank'>
         <MultiplayerAvatar
