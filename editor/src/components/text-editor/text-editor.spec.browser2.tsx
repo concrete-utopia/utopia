@@ -1747,39 +1747,40 @@ describe('Use the text editor', () => {
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(editor.getEditorState().editor.mode.type).toEqual('select')
-      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-        formatTestProjectCode(`
-        import * as React from 'react'
-        import { Storyboard, Scene } from 'utopia-api'
-        
-        const StoryboardWrapper = ({ style }) => {
-          const text = ' UtopiaHello'
-          return (
-            <div data-uid='div' data-testid='div' style={{ ...style }}>
-              {text}
-            </div>
-          )
-        }
-        
-        export var storyboard = (
-          <Storyboard data-uid='sb'>
-            <Scene
-              data-uid='scene'
-              style={{
-                backgroundColor: '#0091FFAA',
-                position: 'absolute',
-                left: 144,
-                top: 58,
-                width: 288,
-                height: 362,
-              }}
-            >
-              <StoryboardWrapper data-uid='wrapper' />
-            </Scene>
-          </Storyboard>
-        )
-`),
-      )
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Storyboard, Scene } from 'utopia-api'
+
+const StoryboardWrapper = ({ style }) => {
+  const text = " UtopiaHello"
+  return (
+    <div
+      data-uid='div'
+      data-testid='div'
+      style={{ ...style }}
+    >
+      {text}
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      data-uid='scene'
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 144,
+        top: 58,
+        width: 288,
+        height: 362,
+      }}
+    >
+      <StoryboardWrapper data-uid='wrapper' />
+    </Scene>
+  </Storyboard>
+)
+`)
     })
 
     it('updates text var passed through props', async () => {
@@ -1828,44 +1829,44 @@ describe('Use the text editor', () => {
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(editor.getEditorState().editor.mode.type).toEqual('select')
-      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-        formatTestProjectCode(`
-        import * as React from 'react'
-        import { Storyboard, Scene } from 'utopia-api'
-        
-        const variable = 'this is not a constant'
-        
-        const StoryboardWrapper = ({ style, text }) => {
-          return (
-            <div
-              data-uid='div'
-              data-testid='div'
-              style={{ ...style }}
-            >
-              {text}
-            </div>
-          )
-        }
-        
-        export var storyboard = (
-          <Storyboard data-uid='sb'>
-            <Scene
-              data-uid='scene'
-              style={{
-                backgroundColor: '#0091FFAA',
-                position: 'absolute',
-                left: 144,
-                top: 58,
-                width: 288,
-                height: 362,
-              }}
-            >
-              <StoryboardWrapper text={variable} data-uid='wrapper' />
-            </Scene>
-          </Storyboard>
-        )
-`),
-      )
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Storyboard, Scene } from 'utopia-api'
+
+const variable = "this is not a constant"
+
+const StoryboardWrapper = ({ style, text }) => {
+  return (
+    <div
+      data-uid='div'
+      data-testid='div'
+      style={{ ...style }}
+    >
+      {text}
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      data-uid='scene'
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 144,
+        top: 58,
+        width: 288,
+        height: 362,
+      }}
+    >
+      <StoryboardWrapper
+        text={variable}
+        data-uid='wrapper'
+      />
+    </Scene>
+  </Storyboard>
+)
+`)
     })
 
     it('can handle quote marks and newlines in the updated text', async () => {
