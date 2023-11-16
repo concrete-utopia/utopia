@@ -126,7 +126,6 @@ const MultiplayerUserBar = React.memo(() => {
                 foreground: colorTheme.fg0.value,
               }}
               picture={null}
-              border={false}
             />,
           )}
         </div>,
@@ -137,7 +136,6 @@ const MultiplayerUserBar = React.memo(() => {
           tooltip={`${myName} (you)`}
           color={{ background: colorTheme.bg3.value, foreground: colorTheme.fg1.value }}
           picture={self.presence.picture}
-          border={false}
         />
       </a>
     </div>
@@ -151,12 +149,28 @@ const MultiplayerAvatar = React.memo(
     tooltip: string
     color: MultiplayerColor
     coloredTooltip?: boolean
-    picture: string | null
-    border: boolean
+    picture?: string | null
+    border?: boolean
   }) => {
     const picture = React.useMemo(() => {
-      return isDefaultAuth0AvatarURL(props.picture) ? null : props.picture
+      return isDefaultAuth0AvatarURL(props.picture ?? null) ? null : props.picture
     }, [props.picture])
+
+    const [pictureNotFound, setPictureNotFound] = React.useState(false)
+
+    React.useEffect(() => {
+      setPictureNotFound(false)
+    }, [picture])
+
+    const onPictureError = React.useCallback(() => {
+      console.warn('cannot get picture', props.picture)
+      setPictureNotFound(true)
+    }, [props.picture])
+
+    const showPicture = React.useMemo(() => {
+      return picture != null && !pictureNotFound
+    }, [picture, pictureNotFound])
+
     return (
       <Tooltip
         title={props.tooltip}
@@ -179,18 +193,19 @@ const MultiplayerAvatar = React.memo(
             cursor: 'pointer',
           }}
         >
-          {when(picture == null, props.name)}
-          {unless(
-            picture == null,
+          {unless(showPicture, props.name)}
+          {when(
+            showPicture,
             // Using an img tag instead of using it as backgroundColor above because of potential 403s
             <img
               style={{
-                width: props.border ? 22 : '100%',
-                height: props.border ? 22 : '100%',
+                width: props.border === true ? 22 : '100%',
+                height: props.border === true ? 22 : '100%',
                 borderRadius: '100%',
               }}
-              src={props.picture ?? ''}
+              src={picture ?? ''}
               referrerPolicy='no-referrer'
+              onError={onPictureError}
             />,
           )}
         </div>
