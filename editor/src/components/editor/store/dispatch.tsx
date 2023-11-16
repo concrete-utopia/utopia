@@ -831,6 +831,7 @@ function editorDispatchInner(
             jsxMetadata: metadata,
             elementPathTree: elementPathTree,
             allElementProps: result.unpatchedEditor._currentAllElementProps_KILLME,
+            variablesInScope: result.unpatchedEditor.variablesInScope,
             lockedElements: {
               ...result.unpatchedEditor.lockedElements,
               simpleLock: updatedSimpleLocks,

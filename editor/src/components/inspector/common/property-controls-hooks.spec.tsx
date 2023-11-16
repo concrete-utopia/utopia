@@ -120,7 +120,6 @@ function callPropertyControlsHook(
       importInfos[0],
       'not-a-conditional',
       null,
-      {},
     ),
   }
   let allElementProps: AllElementProps = {
@@ -143,7 +142,6 @@ function callPropertyControlsHook(
       importInfos[1],
       'not-a-conditional',
       null,
-      {},
     )
     allElementProps[EP.toString(selectedViews[1])] = {
       propWithControlButNoValue: 'but there is a value!',
@@ -165,7 +163,6 @@ function callPropertyControlsHook(
       importInfos[2],
       'not-a-conditional',
       null,
-      {},
     )
 
     allElementProps[EP.toString(selectedViews[2])] = { propWithOtherKey: 10 }

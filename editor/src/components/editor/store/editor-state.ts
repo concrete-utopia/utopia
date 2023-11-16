@@ -174,6 +174,7 @@ import type { RemixDerivedData, RemixDerivedDataFactory } from './remix-derived-
 import type { ProjectServerState } from './project-server-state'
 import type { ReparentTargetForPaste } from '../../canvas/canvas-strategies/strategies/reparent-utils'
 import { GridMenuWidth } from '../../canvas/stored-layout'
+import type { VariablesInScope } from '../../canvas/ui-jsx-canvas'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1418,6 +1419,7 @@ export interface EditorState {
   forceParseFiles: Array<string>
   allElementProps: AllElementProps // the final, resolved, static props value for each element. // This is the counterpart of jsxMetadata. we only update allElementProps when we update jsxMetadata
   _currentAllElementProps_KILLME: AllElementProps // This is the counterpart of domMetadata and spyMetadata. we update _currentAllElementProps_KILLME every time we update domMetadata/spyMetadata
+  variablesInScope: VariablesInScope
   githubSettings: ProjectGithubSettings
   imageDragSessionState: ImageDragSessionState
   githubOperations: Array<GithubOperation>
@@ -1495,6 +1497,7 @@ export function editorState(
   forceParseFiles: Array<string>,
   allElementProps: AllElementProps,
   _currentAllElementProps_KILLME: AllElementProps,
+  variablesInScope: VariablesInScope,
   githubSettings: ProjectGithubSettings,
   imageDragSessionState: ImageDragSessionState,
   githubOperations: Array<GithubOperation>,
@@ -1573,6 +1576,7 @@ export function editorState(
     forceParseFiles: forceParseFiles,
     allElementProps: allElementProps,
     _currentAllElementProps_KILLME: _currentAllElementProps_KILLME,
+    variablesInScope,
     githubSettings: githubSettings,
     imageDragSessionState: imageDragSessionState,
     githubOperations: githubOperations,
@@ -2439,6 +2443,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     forceParseFiles: [],
     allElementProps: {},
     _currentAllElementProps_KILLME: {},
+    variablesInScope: {},
     githubSettings: emptyGithubSettings(),
     imageDragSessionState: notDragging(),
     githubOperations: [],
@@ -2808,6 +2813,7 @@ export function editorModelFromPersistentModel(
     forceParseFiles: [],
     allElementProps: {},
     _currentAllElementProps_KILLME: {},
+    variablesInScope: {},
     githubSettings: persistentModel.githubSettings,
     imageDragSessionState: notDragging(),
     githubOperations: [],

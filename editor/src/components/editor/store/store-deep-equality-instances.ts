@@ -225,9 +225,7 @@ import {
   NullableNumberKeepDeepEquality,
   combine9EqualityCalls,
   unionDeepEquality,
-  combine13EqualityCalls,
   combine14EqualityCalls,
-  combine15EqualityCalls,
 } from '../../../utils/deep-equality'
 import {
   ElementPathArrayKeepDeepEquality,
@@ -536,6 +534,7 @@ import type { CopyData, ElementPasteWithMetadata } from '../../../utils/clipboar
 import { elementPaste } from '../actions/action-creators'
 import type { ProjectMetadataFromServer, ProjectServerState } from './project-server-state'
 import { projectServerState, projectMetadataFromServer } from './project-server-state'
+import type { VariablesInScope } from '../../canvas/ui-jsx-canvas'
 
 export const ProjectMetadataFromServerKeepDeepEquality: KeepDeepEqualityCall<ProjectMetadataFromServer> =
   combine3EqualityCalls(
@@ -1745,7 +1744,7 @@ const ConditionValueKeepDeepEquality: KeepDeepEqualityCall<ConditionValue> = uni
 )
 
 export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<ElementInstanceMetadata> =
-  combine15EqualityCalls(
+  combine14EqualityCalls(
     (metadata) => metadata.elementPath,
     ElementPathKeepDeepEquality,
     (metadata) => metadata.element,
@@ -1774,8 +1773,6 @@ export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<Eleme
     ConditionValueKeepDeepEquality,
     (metadata) => metadata.textContent,
     nullableDeepEquality(StringKeepDeepEquality),
-    (m) => m.variablesInScope,
-    createCallWithShallowEquals(),
     elementInstanceMetadata,
   )
 
@@ -3264,6 +3261,9 @@ export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newVa
 export const AllElementPropsKeepDeepEquality: KeepDeepEqualityCall<AllElementProps> =
   objectDeepEquality(objectDeepEquality(createCallFromIntrospectiveKeepDeep()))
 
+export const VariablesInScopeKeepDeepEquality: KeepDeepEqualityCall<VariablesInScope> =
+  objectDeepEquality(objectDeepEquality(createCallFromIntrospectiveKeepDeep()))
+
 export const NoticeKeepDeepEquality: KeepDeepEqualityCall<Notice> = combine4EqualityCalls(
   (note) => note.message,
   createCallWithTripleEquals<React.ReactChild>(),
@@ -4361,6 +4361,12 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue._currentAllElementProps_KILLME,
     newValue._currentAllElementProps_KILLME,
   )
+
+  const variablesInScopeResult = VariablesInScopeKeepDeepEquality(
+    oldValue.variablesInScope,
+    newValue.variablesInScope,
+  )
+
   const githubSettingsResults = ProjectGithubSettingsKeepDeepEquality(
     oldValue.githubSettings,
     newValue.githubSettings,
@@ -4465,6 +4471,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     forceParseFilesResults.areEqual &&
     allElementPropsResults.areEqual &&
     _currentAllElementProps_KILLME_Results.areEqual &&
+    variablesInScopeResult.areEqual &&
     githubSettingsResults.areEqual &&
     imageDragSessionStateEqual.areEqual &&
     githubOperationsResults.areEqual &&
@@ -4545,6 +4552,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       forceParseFilesResults.value,
       allElementPropsResults.value,
       _currentAllElementProps_KILLME_Results.value,
+      variablesInScopeResult.value,
       githubSettingsResults.value,
       imageDragSessionStateEqual.value,
       githubOperationsResults.value,

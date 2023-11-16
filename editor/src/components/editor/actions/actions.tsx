@@ -892,6 +892,7 @@ export function restoreEditorState(
     forceParseFiles: currentEditor.forceParseFiles,
     allElementProps: desiredEditor.allElementProps,
     _currentAllElementProps_KILLME: desiredEditor._currentAllElementProps_KILLME,
+    variablesInScope: desiredEditor.variablesInScope,
     githubSettings: currentEditor.githubSettings,
     imageDragSessionState: currentEditor.imageDragSessionState,
     githubOperations: currentEditor.githubOperations,
@@ -3910,6 +3911,7 @@ export const UPDATE_FNS = {
         _currentAllElementProps_KILLME: {
           ...spyCollector.current.spyValues.allElementProps,
         },
+        variablesInScope: { ...spyCollector.current.spyValues.variablesInScope },
       }
     }
   },

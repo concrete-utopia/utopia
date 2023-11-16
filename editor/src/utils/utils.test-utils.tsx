@@ -360,7 +360,6 @@ function createFakeMetadataForJSXElement(
       importInfo: null,
       conditionValue: 'not-a-conditional',
       textContent: textContents,
-      variablesInScope: {},
     })
     elements.push(...children)
   } else if (isJSXFragment(element)) {
@@ -398,7 +397,6 @@ function createFakeMetadataForStoryboard(elementPath: ElementPath): ElementInsta
     importInfo: null,
     conditionValue: 'not-a-conditional',
     textContent: null,
-    variablesInScope: {},
   }
 }
 

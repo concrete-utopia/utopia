@@ -1230,11 +1230,8 @@ describe('computedHugProperty', () => {
 describe('record variable values', () => {
   it('records variables that are defined inside the component', async () => {
     const editor = await renderTestEditorWithCode(ProjectWithVariables, 'await-first-dom-report')
-    const { jsxMetadata } = editor.getEditorState().editor
-    expect(
-      MetadataUtils.findElementByElementPath(jsxMetadata, EP.fromString('sb/scene/pg:root'))
-        ?.variablesInScope,
-    ).toEqual({
+    const { variablesInScope } = editor.getEditorState().editor
+    expect(variablesInScope['sb/scene/pg:root']).toEqual({
       definedInsideNumber: 12,
       definedInsideObject: {
         prop: [33],
@@ -1242,10 +1239,7 @@ describe('record variable values', () => {
       definedInsideString: 'hello',
       functionResult: 35,
     })
-    expect(
-      MetadataUtils.findElementByElementPath(jsxMetadata, EP.fromString('sb/scene/pg:root/111'))
-        ?.variablesInScope,
-    ).toEqual({
+    expect(variablesInScope['sb/scene/pg:root/111']).toEqual({
       definedInsideNumber: 12,
       definedInsideObject: {
         prop: [33],
@@ -1253,10 +1247,7 @@ describe('record variable values', () => {
       definedInsideString: 'hello',
       functionResult: 35,
     })
-    expect(
-      MetadataUtils.findElementByElementPath(jsxMetadata, EP.fromString('sb/scene/pg:root/222'))
-        ?.variablesInScope,
-    ).toEqual({
+    expect(variablesInScope['sb/scene/pg:root/222']).toEqual({
       definedInsideNumber: 12,
       definedInsideObject: {
         prop: [33],
@@ -1264,10 +1255,7 @@ describe('record variable values', () => {
       definedInsideString: 'hello',
       functionResult: 35,
     })
-    expect(
-      MetadataUtils.findElementByElementPath(jsxMetadata, EP.fromString('sb/scene/pg:root/333'))
-        ?.variablesInScope,
-    ).toEqual({
+    expect(variablesInScope['sb/scene/pg:root/333']).toEqual({
       definedInsideNumber: 12,
       definedInsideObject: {
         prop: [33],

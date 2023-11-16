@@ -90,7 +90,6 @@ export function addFakeSpyEntry(
       ),
       conditionValue: conditionValue,
       textContent: null,
-      variablesInScope: {},
     }
     const elementPathString = EP.toComponentId(elementPath)
     metadataContext.current.spyValues.metadata[elementPathString] = instanceMetadata
@@ -140,7 +139,6 @@ export function buildSpyWrappedElement(
         : null,
       conditionValue: 'not-a-conditional',
       textContent: null,
-      variablesInScope: variablesInScope,
     }
     if (!EP.isStoryboardPath(elementPath) || shouldIncludeCanvasRootInTheSpy) {
       const elementPathString = EP.toComponentId(elementPath)
@@ -149,6 +147,7 @@ export function buildSpyWrappedElement(
       metadataContext.current.spyValues.metadata[elementPathString] = instanceMetadata
       metadataContext.current.spyValues.allElementProps[elementPathString] =
         makeCanvasElementPropsSafe(reportedProps)
+      metadataContext.current.spyValues.variablesInScope[elementPathString] = variablesInScope
     }
   }
   const spyWrapperProps: SpyWrapperProps = {

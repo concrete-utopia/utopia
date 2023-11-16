@@ -1983,7 +1983,6 @@ export interface ElementInstanceMetadata {
   importInfo: ImportInfo | null
   conditionValue: ConditionValue
   textContent: string | null
-  variablesInScope: VariablesInScope
 }
 
 export function elementInstanceMetadata(
@@ -2001,7 +2000,6 @@ export function elementInstanceMetadata(
   importInfo: ImportInfo | null,
   conditionValue: ConditionValue,
   textContent: string | null,
-  variablesInScope: VariablesInScope,
 ): ElementInstanceMetadata {
   return {
     elementPath: elementPath,
@@ -2018,7 +2016,6 @@ export function elementInstanceMetadata(
     importInfo: importInfo,
     conditionValue: conditionValue,
     textContent: textContent,
-    variablesInScope: variablesInScope,
   }
 }
 
