@@ -8,16 +8,18 @@ import type {
 import type { CanvasAction } from './canvas-types'
 
 const CanvasActions = {
-  scrollCanvas: function (delta: CanvasVector): CanvasAction {
+  scrollCanvas: function (delta: CanvasVector, must: boolean = false): CanvasAction {
     return {
       action: 'SCROLL_CANVAS',
       delta: delta,
+      must: must,
     }
   },
-  positionCanvas: function (position: CanvasVector): CanvasAction {
+  positionCanvas: function (position: CanvasVector, must: boolean = false): CanvasAction {
     return {
       action: 'POSITION_CANVAS',
       position: position,
+      must: must,
     }
   },
   createInteractionSession: function (session: InteractionSessionWithoutMetadata): CanvasAction {
@@ -54,11 +56,16 @@ const CanvasActions = {
       selectionControlsVisible: selectionControlsVisible,
     }
   },
-  zoom: function (scale: number, focusPoint: CanvasPoint | null = null): CanvasAction {
+  zoom: function (
+    scale: number,
+    focusPoint: CanvasPoint | null = null,
+    must: boolean = false,
+  ): CanvasAction {
     return {
       action: 'ZOOM',
       scale: Math.max(0.03125, Math.min(64, scale)),
       focusPoint: focusPoint,
+      must: must,
     }
   },
   zoomUI: function (zoomIn: boolean): CanvasAction {

@@ -219,6 +219,7 @@ import type {
   WrapInElementWith,
   ScrollToPosition,
   UpdateProjectServerState,
+  UpdateMultiplayerState,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -241,6 +242,7 @@ import type {
   ThemeSetting,
   ColorSwatch,
   PostActionMenuData,
+  MultiplayerState,
 } from '../store/editor-state'
 import type { InsertionPath } from '../store/insertion-path'
 import type { TextProp } from '../../text-editor/text-editor'
@@ -1658,5 +1660,12 @@ export function updateProjectServerState(
   return {
     action: 'UPDATE_PROJECT_SERVER_STATE',
     serverState: projectServerState,
+  }
+}
+
+export function updateMultiplayerState(state: Partial<MultiplayerState>): UpdateMultiplayerState {
+  return {
+    action: 'UPDATE_MULTIPLAYER_STATE',
+    state: state,
   }
 }

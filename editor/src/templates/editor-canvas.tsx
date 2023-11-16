@@ -344,6 +344,9 @@ export function runLocalCanvasAction(
   // TODO BB horrorshow performance
   switch (action.action) {
     case 'SCROLL_CANVAS': {
+      if (!action.must && model.multiplayer.following != null) {
+        return model
+      }
       const newCanvasOffset = Utils.offsetPoint(
         model.canvas.realCanvasOffset,
         Utils.negate(action.delta),
@@ -358,6 +361,9 @@ export function runLocalCanvasAction(
       }
     }
     case 'POSITION_CANVAS':
+      if (!action.must && model.multiplayer.following != null) {
+        return model
+      }
       return {
         ...model,
         canvas: {
@@ -380,6 +386,10 @@ export function runLocalCanvasAction(
       }
       return model
     case 'ZOOM': {
+      if (!action.must && model.multiplayer.following != null) {
+        return model
+      }
+
       const { focusPoint, scale } = action
       const previousScale = model.canvas.scale
       const newCanvasOffset = getCanvasOffset(

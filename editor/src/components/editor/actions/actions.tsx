@@ -311,6 +311,7 @@ import type {
   UpdateConditionalExpression,
   SetMapCountOverride,
   ScrollToPosition,
+  UpdateMultiplayerState,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -353,6 +354,7 @@ import {
   trueUpHuggingElement,
   trueUpGroupElementChanged,
   getPackageJsonFromProjectContents,
+  emptyMultiplayerState,
 } from '../store/editor-state'
 import {
   areGeneratedElementsTargeted,
@@ -902,6 +904,7 @@ export function restoreEditorState(
     refreshingDependencies: currentEditor.refreshingDependencies,
     colorSwatches: currentEditor.colorSwatches,
     internalClipboard: currentEditor.internalClipboard,
+    multiplayer: currentEditor.multiplayer,
   }
 }
 
@@ -5305,6 +5308,16 @@ export const UPDATE_FNS = {
     )
 
     return updatedEditor
+  },
+  UPDATE_MULTIPLAYER_STATE: (action: UpdateMultiplayerState, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      multiplayer: {
+        ...emptyMultiplayerState(),
+        ...editor.multiplayer,
+        ...action.state,
+      },
+    }
   },
 }
 

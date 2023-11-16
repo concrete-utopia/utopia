@@ -322,12 +322,14 @@ import type {
   TrueUpTarget,
   InvalidOverrideNavigatorEntry,
   TrueUpHuggingElement,
+  MultiplayerState,
 } from './editor-state'
 import {
   trueUpGroupElementChanged,
   trueUpChildrenOfGroupChanged,
   invalidOverrideNavigatorEntry,
   trueUpHuggingElement,
+  multiplayerState,
 } from './editor-state'
 import {
   editorStateNodeModules,
@@ -4128,6 +4130,15 @@ export const TrueUpTargetKeepDeepEquality: KeepDeepEqualityCall<TrueUpTarget> = 
   return keepDeepEqualityResult(newValue, false)
 }
 
+export const MultiplayerStateKeepDeepEquality: KeepDeepEqualityCall<MultiplayerState> =
+  combine2EqualityCalls(
+    (data) => data.roomId,
+    NullableStringKeepDeepEquality,
+    (data) => data.following,
+    NullableStringKeepDeepEquality,
+    multiplayerState,
+  )
+
 export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   oldValue,
   newValue,
@@ -4411,6 +4422,11 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.internalClipboard,
   )
 
+  const multiplayerStateResults = MultiplayerStateKeepDeepEquality(
+    oldValue.multiplayer,
+    newValue.multiplayer,
+  )
+
   const areEqual =
     idResult.areEqual &&
     vscodeBridgeIdResult.areEqual &&
@@ -4487,7 +4503,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     githubDataResults.areEqual &&
     refreshingDependenciesResults.areEqual &&
     colorSwatchesResults.areEqual &&
-    internalClipboardResults.areEqual
+    internalClipboardResults.areEqual &&
+    multiplayerStateResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -4570,6 +4587,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       refreshingDependenciesResults.value,
       colorSwatchesResults.value,
       internalClipboardResults.value,
+      multiplayerStateResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

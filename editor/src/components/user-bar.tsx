@@ -13,6 +13,8 @@ import {
 import { Avatar, Tooltip, useColorTheme } from '../uuiui'
 import { Substores, useEditorState } from './editor/store/store-hook'
 import { unless, when } from '../utils/react-conditionals'
+import { useDispatch } from './editor/store/dispatch-context'
+import { updateMultiplayerState } from './editor/actions/action-creators'
 
 const MAX_VISIBLE_OTHER_PLAYERS = 4
 
@@ -73,6 +75,25 @@ const MultiplayerUserBar = React.memo(() => {
     return others.slice(MAX_VISIBLE_OTHER_PLAYERS)
   }, [others])
 
+  const dispatch = useDispatch()
+
+  const following = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.multiplayer.following,
+    'MultiplayerUserBar following',
+  )
+
+  const toggleFollowing = React.useCallback(
+    (id: string) => () => {
+      dispatch([
+        updateMultiplayerState({
+          following: id === following ? null : id,
+        }),
+      ])
+    },
+    [dispatch, following],
+  )
+
   if (self.presence.name == null) {
     // it may still be loading, so fallback until it sorts itself out
     return <SinglePlayerUserBar />
@@ -113,6 +134,8 @@ const MultiplayerUserBar = React.memo(() => {
                 picture={other.picture}
                 border={true}
                 coloredTooltip={true}
+                onClick={toggleFollowing(other.id)}
+                active={following === other.id}
               />
             )
           })}
@@ -151,6 +174,8 @@ const MultiplayerAvatar = React.memo(
     coloredTooltip?: boolean
     picture?: string | null
     border?: boolean
+    onClick?: () => void
+    active?: boolean
   }) => {
     const picture = React.useMemo(() => {
       return isDefaultAuth0AvatarURL(props.picture ?? null) ? null : props.picture
@@ -171,6 +196,7 @@ const MultiplayerAvatar = React.memo(
       return picture != null && !pictureNotFound
     }, [picture, pictureNotFound])
 
+    const colorTheme = useColorTheme()
     return (
       <Tooltip
         title={props.tooltip}
@@ -188,10 +214,14 @@ const MultiplayerAvatar = React.memo(
             alignItems: 'center',
             justifyContent: 'center',
             borderRadius: '100%',
+            border: `3px solid ${props.active === true ? colorTheme.primary.value : 'transparent'}`,
             fontSize: 9,
             fontWeight: 700,
             cursor: 'pointer',
+            boxShadow:
+              props.active === true ? `0px 0px 15px ${colorTheme.primary.value}` : undefined,
           }}
+          onClick={props.onClick}
         >
           {unless(showPicture, props.name)}
           {when(

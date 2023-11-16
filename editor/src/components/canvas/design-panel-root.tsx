@@ -30,7 +30,7 @@ import { SettingsPane } from '../navigator/left-pane/settings-pane'
 import { MenuTab } from '../../uuiui/menu-tab'
 import { FlexRow } from 'utopia-api'
 import type { StoredPanel } from './stored-layout'
-import { MultiplayerCursors } from './multiplayer-cursors'
+import { MultiplayerPresence } from './multiplayer-cursors'
 import { useStatus } from '../../../liveblocks.config'
 import { ClientSideSuspense } from '@liveblocks/react'
 
@@ -147,7 +147,7 @@ const DesignPanelRootInner = React.memo(() => {
             {when(
               roomStatus === 'connected',
               <ClientSideSuspense fallback={<div />}>
-                {() => <MultiplayerCursors />}
+                {() => <MultiplayerPresence />}
               </ClientSideSuspense>,
             )}
             <GridPanelsContainer />

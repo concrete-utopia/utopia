@@ -1011,6 +1011,28 @@ export function draggedImageProperties(
   }
 }
 
+export type MultiplayerState = {
+  roomId: string | null
+  following: string | null
+}
+
+export function emptyMultiplayerState(): MultiplayerState {
+  return {
+    roomId: null,
+    following: null,
+  }
+}
+
+export function multiplayerState(
+  roomId: string | null,
+  following: string | null,
+): MultiplayerState {
+  return {
+    roomId: roomId,
+    following: following,
+  }
+}
+
 export interface EditorStateFileBrowser {
   minimised: boolean
   renamingTarget: string | null
@@ -1428,6 +1450,7 @@ export interface EditorState {
   refreshingDependencies: boolean
   colorSwatches: Array<ColorSwatch>
   internalClipboard: InternalClipboard
+  multiplayer: MultiplayerState
 }
 
 export function editorState(
@@ -1508,6 +1531,7 @@ export function editorState(
   refreshingDependencies: boolean,
   colorSwatches: Array<ColorSwatch>,
   internalClipboardData: InternalClipboard,
+  multiplayer: MultiplayerState,
 ): EditorState {
   return {
     id: id,
@@ -1587,6 +1611,7 @@ export function editorState(
     refreshingDependencies: refreshingDependencies,
     colorSwatches: colorSwatches,
     internalClipboard: internalClipboardData,
+    multiplayer: multiplayer,
   }
 }
 
@@ -2459,6 +2484,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       styleClipboard: [],
       elements: [],
     },
+    multiplayer: emptyMultiplayerState(),
   }
 }
 
@@ -2830,6 +2856,7 @@ export function editorModelFromPersistentModel(
       styleClipboard: [],
       elements: [],
     },
+    multiplayer: emptyMultiplayerState(),
   }
   return editor
 }

@@ -1,4 +1,4 @@
-import type { EditorState } from './editor-state'
+import { emptyMultiplayerState, type EditorState } from './editor-state'
 
 export const EmptyEditorStateForKeysOnly: EditorState = {
   id: null,
@@ -171,4 +171,5 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
     styleClipboard: [],
     elements: [],
   },
+  multiplayer: emptyMultiplayerState(),
 }

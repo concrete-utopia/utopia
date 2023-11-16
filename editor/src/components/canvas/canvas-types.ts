@@ -390,11 +390,13 @@ export type CanvasMouseEvent =
 type ScrollCanvas = {
   action: 'SCROLL_CANVAS'
   delta: CanvasVector
+  must: boolean
 }
 
 interface PositionCanvas {
   action: 'POSITION_CANVAS'
   position: CanvasVector
+  must: boolean
 }
 
 export interface CreateInteractionSession {
@@ -426,6 +428,7 @@ type Zoom = {
   action: 'ZOOM'
   scale: number
   focusPoint: CanvasPoint | null
+  must: boolean
 }
 
 type ZoomUI = {
