@@ -407,6 +407,8 @@ export function runLocalCanvasAction(
       const metadata = model.canvas.interactionSession?.latestMetadata ?? model.jsxMetadata
       const allElementProps =
         model.canvas.interactionSession?.latestAllElementProps ?? model.allElementProps
+      const variablesInScope =
+        model.canvas.interactionSession?.latestVariablesInScope ?? model.variablesInScope
       const elementPathTree =
         model.canvas.interactionSession?.latestElementPathTree ?? model.elementPathTree
 
@@ -419,6 +421,7 @@ export function runLocalCanvasAction(
             latestMetadata: metadata,
             latestAllElementProps: allElementProps,
             latestElementPathTree: elementPathTree,
+            latestVariablesInScope: variablesInScope,
           },
         },
       }

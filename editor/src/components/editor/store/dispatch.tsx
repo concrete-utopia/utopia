@@ -788,7 +788,13 @@ function editorDispatchInner(
       storedState.unpatchedEditor.currentAllElementProps !==
       result.unpatchedEditor.currentAllElementProps
 
-    const metadataChanged = domMetadataChanged || spyMetadataChanged || allElementPropsChanged
+    const variablesInScopeChanged =
+      storedState.unpatchedEditor.currentVariablesInScope !==
+      result.unpatchedEditor.currentVariablesInScope
+
+    const metadataChanged =
+      domMetadataChanged || spyMetadataChanged || allElementPropsChanged || variablesInScopeChanged
+
     if (metadataChanged) {
       const { metadata, elementPathTree } = reconstructJSXMetadata(result.unpatchedEditor)
       // Cater for the strategies wiping out the metadata on completion.
@@ -819,6 +825,7 @@ function editorDispatchInner(
                 latestMetadata: metadata,
                 latestAllElementProps: result.unpatchedEditor.currentAllElementProps,
                 latestElementPathTree: elementPathTree,
+                latestVariablesInScope: result.unpatchedEditor.currentVariablesInScope,
               },
             },
           },
@@ -831,7 +838,7 @@ function editorDispatchInner(
             jsxMetadata: metadata,
             elementPathTree: elementPathTree,
             allElementProps: result.unpatchedEditor.currentAllElementProps,
-            variablesInScope: result.unpatchedEditor.variablesInScope,
+            variablesInScope: result.unpatchedEditor.currentVariablesInScope,
             lockedElements: {
               ...result.unpatchedEditor.lockedElements,
               simpleLock: updatedSimpleLocks,

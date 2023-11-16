@@ -893,6 +893,7 @@ export function restoreEditorState(
     allElementProps: desiredEditor.allElementProps,
     currentAllElementProps: desiredEditor.currentAllElementProps,
     variablesInScope: desiredEditor.variablesInScope,
+    currentVariablesInScope: desiredEditor.currentVariablesInScope,
     githubSettings: currentEditor.githubSettings,
     imageDragSessionState: currentEditor.imageDragSessionState,
     githubOperations: currentEditor.githubOperations,
@@ -3911,7 +3912,7 @@ export const UPDATE_FNS = {
         currentAllElementProps: {
           ...spyCollector.current.spyValues.allElementProps,
         },
-        variablesInScope: { ...spyCollector.current.spyValues.variablesInScope },
+        currentVariablesInScope: { ...spyCollector.current.spyValues.variablesInScope },
       }
     }
   },

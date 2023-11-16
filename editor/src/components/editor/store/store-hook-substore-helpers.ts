@@ -159,6 +159,7 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   allElementProps: {},
   currentAllElementProps: {},
   variablesInScope: {},
+  currentVariablesInScope: {},
   githubSettings: null as any,
   imageDragSessionState: null as any,
   githubOperations: [],

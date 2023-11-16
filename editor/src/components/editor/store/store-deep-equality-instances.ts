@@ -226,6 +226,7 @@ import {
   combine9EqualityCalls,
   unionDeepEquality,
   combine14EqualityCalls,
+  combine11EqualityCalls,
 } from '../../../utils/deep-equality'
 import {
   ElementPathArrayKeepDeepEquality,
@@ -2329,8 +2330,11 @@ export function ElementPathTreeKeepDeepEquality(
   )(oldValue, newValue)
 }
 
+export const VariablesInScopeKeepDeepEquality: KeepDeepEqualityCall<VariablesInScope> =
+  objectDeepEquality(objectDeepEquality(createCallFromIntrospectiveKeepDeep()))
+
 export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<InteractionSession> =
-  combine10EqualityCalls(
+  combine11EqualityCalls(
     (session) => session.interactionData,
     InputDataKeepDeepEquality,
     (session) => session.activeControl,
@@ -2345,6 +2349,8 @@ export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<Interactio
     createCallWithTripleEquals(),
     (session) => session.latestAllElementProps,
     createCallFromIntrospectiveKeepDeep(),
+    (session) => session.latestVariablesInScope,
+    VariablesInScopeKeepDeepEquality,
     (session) => session.updatedTargetPaths,
     objectDeepEquality(ElementPathKeepDeepEquality),
     (session) => session.aspectRatioLock,
@@ -3259,9 +3265,6 @@ export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newVa
 }
 
 export const AllElementPropsKeepDeepEquality: KeepDeepEqualityCall<AllElementProps> =
-  objectDeepEquality(objectDeepEquality(createCallFromIntrospectiveKeepDeep()))
-
-export const VariablesInScopeKeepDeepEquality: KeepDeepEqualityCall<VariablesInScope> =
   objectDeepEquality(objectDeepEquality(createCallFromIntrospectiveKeepDeep()))
 
 export const NoticeKeepDeepEquality: KeepDeepEqualityCall<Notice> = combine4EqualityCalls(
@@ -4367,6 +4370,11 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.variablesInScope,
   )
 
+  const currentVariablesInScopeResult = VariablesInScopeKeepDeepEquality(
+    oldValue.currentVariablesInScope,
+    newValue.currentVariablesInScope,
+  )
+
   const githubSettingsResults = ProjectGithubSettingsKeepDeepEquality(
     oldValue.githubSettings,
     newValue.githubSettings,
@@ -4553,6 +4561,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       allElementPropsResults.value,
       currentAllElementPropsResults.value,
       variablesInScopeResult.value,
+      currentVariablesInScopeResult.value,
       githubSettingsResults.value,
       imageDragSessionStateEqual.value,
       githubOperationsResults.value,

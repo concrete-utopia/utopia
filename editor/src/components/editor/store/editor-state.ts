@@ -1420,6 +1420,7 @@ export interface EditorState {
   allElementProps: AllElementProps // the final, resolved, static props value for each element. // This is the counterpart of jsxMetadata. we only update allElementProps when we update jsxMetadata
   currentAllElementProps: AllElementProps // This is the counterpart of domMetadata and spyMetadata. we update currentAllElementProps every time we update domMetadata/spyMetadata
   variablesInScope: VariablesInScope
+  currentVariablesInScope: VariablesInScope
   githubSettings: ProjectGithubSettings
   imageDragSessionState: ImageDragSessionState
   githubOperations: Array<GithubOperation>
@@ -1498,6 +1499,7 @@ export function editorState(
   allElementProps: AllElementProps,
   currentAllElementProps: AllElementProps,
   variablesInScope: VariablesInScope,
+  currentVariablesInScope: VariablesInScope,
   githubSettings: ProjectGithubSettings,
   imageDragSessionState: ImageDragSessionState,
   githubOperations: Array<GithubOperation>,
@@ -1577,6 +1579,7 @@ export function editorState(
     allElementProps: allElementProps,
     currentAllElementProps: currentAllElementProps,
     variablesInScope,
+    currentVariablesInScope: currentVariablesInScope,
     githubSettings: githubSettings,
     imageDragSessionState: imageDragSessionState,
     githubOperations: githubOperations,
@@ -2444,6 +2447,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     allElementProps: {},
     currentAllElementProps: {},
     variablesInScope: {},
+    currentVariablesInScope: {},
     githubSettings: emptyGithubSettings(),
     imageDragSessionState: notDragging(),
     githubOperations: [],
@@ -2814,6 +2818,7 @@ export function editorModelFromPersistentModel(
     allElementProps: {},
     currentAllElementProps: {},
     variablesInScope: {},
+    currentVariablesInScope: {},
     githubSettings: persistentModel.githubSettings,
     imageDragSessionState: notDragging(),
     githubOperations: [],
