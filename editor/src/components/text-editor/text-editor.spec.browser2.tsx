@@ -1705,41 +1705,41 @@ describe('Use the text editor', () => {
   describe('Editing with steganograpy enabled', () => {
     setFeatureForBrowserTestsUseInDescribeBlockOnly('Steganography', true)
 
-    it('updates string literal valued variable in component body when it is edited', async () => {
-      const editor = await renderTestEditorWithCode(
-        `import * as React from 'react'
-        import { Storyboard, Scene } from 'utopia-api'
+    const steganoProject = `import * as React from 'react'
+    import { Storyboard, Scene } from 'utopia-api'
 
-        const StoryboardWrapper = ({ style }) => {
-          const text = 'Hello'
-          return (
-            <div data-uid='div' data-testid='div' style={{ ...style }}>
-              {text}
-            </div>
-          )
-        }
-
-        export var storyboard = (
-          <Storyboard data-uid='sb'>
-            <Scene
-              data-uid='scene'
-              style={{
-                backgroundColor: '#0091FFAA',
-                position: 'absolute',
-                left: 144,
-                top: 58,
-                width: 288,
-                height: 362,
-              }}
-            >
-              <StoryboardWrapper data-uid='wrapper' />
-            </Scene>
-          </Storyboard>
-        )
-        `,
-        'await-first-dom-report',
-        { applySteganography: 'apply-steganography' },
+    const StoryboardWrapper = ({ style }) => {
+      const text = 'Hello'
+      return (
+        <div data-uid='div' data-testid='div' style={{ ...style }}>
+          {text}
+        </div>
       )
+    }
+
+    export var storyboard = (
+      <Storyboard data-uid='sb'>
+        <Scene
+          data-uid='scene'
+          style={{
+            backgroundColor: '#0091FFAA',
+            position: 'absolute',
+            left: 144,
+            top: 58,
+            width: 288,
+            height: 362,
+          }}
+        >
+          <StoryboardWrapper data-uid='wrapper' />
+        </Scene>
+      </Storyboard>
+    )
+    `
+
+    it('updates string literal valued variable in component body when it is edited', async () => {
+      const editor = await renderTestEditorWithCode(steganoProject, 'await-first-dom-report', {
+        applySteganography: 'apply-steganography',
+      })
 
       await enterTextEditMode(editor, 'start')
       typeText(' Utopia')
@@ -1866,6 +1866,53 @@ describe('Use the text editor', () => {
         )
 `),
       )
+    })
+
+    it('can handle quote marks and newlines in the updated text', async () => {
+      const editor = await renderTestEditorWithCode(steganoProject, 'await-first-dom-report', {
+        applySteganography: 'apply-steganography',
+      })
+
+      await enterTextEditMode(editor, 'start')
+      typeText(`"quote" 'unquote'`)
+      document.execCommand('insertParagraph', false)
+      typeText('fin')
+      await expectSingleUndo2Saves(editor, async () => closeTextEditor())
+      await editor.getDispatchFollowUpActionsFinished()
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Storyboard, Scene } from 'utopia-api'
+
+const StoryboardWrapper = ({ style }) => {
+  const text = "\\"quote\\" \'unquote\'\\nfinHello"
+  return (
+    <div
+      data-uid='div'
+      data-testid='div'
+      style={{ ...style }}
+    >
+      {text}
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      data-uid='scene'
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 144,
+        top: 58,
+        width: 288,
+        height: 362,
+      }}
+    >
+      <StoryboardWrapper data-uid='wrapper' />
+    </Scene>
+  </Storyboard>
+)
+`)
     })
 
     it('does not print back weird characters into the file on unrelated edits', async () => {
@@ -2166,6 +2213,7 @@ async function enterTextEditMode(
   await mouseClickAtPoint(canvasControlsLayer, corner)
   await editor.getDispatchFollowUpActionsFinished()
 }
+
 function typeText(text: string) {
   document.execCommand('insertText', false, text)
 }
