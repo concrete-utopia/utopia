@@ -175,6 +175,8 @@ import type { ProjectServerState } from './project-server-state'
 import type { ReparentTargetForPaste } from '../../canvas/canvas-strategies/strategies/reparent-utils'
 import { GridMenuWidth } from '../../canvas/stored-layout'
 import type { VariablesInScope } from '../../canvas/ui-jsx-canvas'
+import * as Y from 'yjs'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 const ObjectPathImmutable: any = OPI
 
@@ -389,6 +391,39 @@ export const defaultUserState: UserState = {
   },
 }
 
+export type CollabTextFileTopLevelElements = Y.Array<TopLevelElement>
+
+export type CollabTextFile = Y.Map<'TEXT_FILE' | CollabTextFileTopLevelElements>
+
+export type CollabFile = CollabTextFile //| CollabImageFileUpdate | CollabAssetFileUpdate | CollabDirectoryFileUpdate
+
+export interface CollaborativeEditingSupportSession {
+  mergeDoc: Y.Doc
+  projectContents: Y.Map<CollabFile>
+}
+
+export interface CollaborativeEditingSupport {
+  session: CollaborativeEditingSupportSession | null
+}
+
+export function emptyCollaborativeEditingSupportSession(): CollaborativeEditingSupportSession {
+  const doc = new Y.Doc()
+  return {
+    mergeDoc: doc,
+    projectContents: doc.getMap('projectContents'),
+  }
+}
+
+export function emptyCollaborativeEditingSupport(): CollaborativeEditingSupport {
+  let session: CollaborativeEditingSupportSession | null = null
+  if (isFeatureEnabled('Collaboration')) {
+    session = emptyCollaborativeEditingSupportSession()
+  }
+  return {
+    session: session,
+  }
+}
+
 export type EditorStoreShared = {
   postActionInteractionSession: PostActionMenuSession | null
   strategyState: StrategyState
@@ -399,6 +434,7 @@ export type EditorStoreShared = {
   builtInDependencies: BuiltInDependencies
   saveCountThisSession: number
   projectServerState: ProjectServerState
+  collaborativeEditingSupport: CollaborativeEditingSupport
 }
 
 export type EditorStoreFull = EditorStoreShared & {
@@ -1428,6 +1464,7 @@ export interface EditorState {
   refreshingDependencies: boolean
   colorSwatches: Array<ColorSwatch>
   internalClipboard: InternalClipboard
+  filesModifiedByElsewhere: Array<string>
 }
 
 export function editorState(
@@ -1508,6 +1545,7 @@ export function editorState(
   refreshingDependencies: boolean,
   colorSwatches: Array<ColorSwatch>,
   internalClipboardData: InternalClipboard,
+  filesModifiedByElsewhere: Array<string>,
 ): EditorState {
   return {
     id: id,
@@ -1587,6 +1625,7 @@ export function editorState(
     refreshingDependencies: refreshingDependencies,
     colorSwatches: colorSwatches,
     internalClipboard: internalClipboardData,
+    filesModifiedByElsewhere: filesModifiedByElsewhere,
   }
 }
 
@@ -2459,6 +2498,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       styleClipboard: [],
       elements: [],
     },
+    filesModifiedByElsewhere: [],
   }
 }
 
@@ -2830,6 +2870,7 @@ export function editorModelFromPersistentModel(
       styleClipboard: [],
       elements: [],
     },
+    filesModifiedByElsewhere: [],
   }
   return editor
 }
@@ -3242,6 +3283,7 @@ export function modifyParseSuccessAtPath(
   filePath: string,
   editor: EditorState,
   modifyParseSuccess: (parseSuccess: ParseSuccess) => ParseSuccess,
+  throwForErrors: boolean = true,
 ): EditorState {
   const projectFile = getProjectFileByFilePath(editor.projectContents, filePath)
   if (projectFile != null && isTextFile(projectFile)) {
@@ -3267,10 +3309,18 @@ export function modifyParseSuccessAtPath(
         }
       }
     } else {
-      throw new Error(`File ${filePath} is not currently parsed.`)
+      if (throwForErrors) {
+        throw new Error(`File ${filePath} is not currently parsed.`)
+      } else {
+        return editor
+      }
     }
   } else {
-    throw new Error(`No text file found at ${filePath}`)
+    if (throwForErrors) {
+      throw new Error(`No text file found at ${filePath}`)
+    } else {
+      return editor
+    }
   }
 }
 

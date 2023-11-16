@@ -6,6 +6,7 @@ import type {
   JSXElementChild,
   JSXConditionalExpression,
   JSXFragment,
+  TopLevelElement,
 } from '../../core/shared/element-template'
 import { SettableLayoutSystem } from '../../core/shared/element-template'
 import type { KeysPressed, Key } from '../../utils/keyboard'
@@ -60,6 +61,7 @@ import type {
   ThemeSetting,
   ColorSwatch,
   PostActionMenuData,
+  CollabFile,
 } from './store/editor-state'
 import { NavigatorEntry } from './store/editor-state'
 import type { Notice } from '../common/notice'
@@ -1049,6 +1051,18 @@ export interface UpdateProjectServerState {
   serverState: ProjectServerState
 }
 
+export interface ApplyCollabFileUpdate {
+  action: 'APPLY_COLLAB_FILE_UPDATE'
+  fullPath: string
+  update: CollabFile
+}
+
+export interface UpdateTopLevelElements {
+  action: 'UPDATE_TOP_LEVEL_ELEMENTS'
+  fullPath: string
+  topLevelElements: Array<TopLevelElement>
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
@@ -1219,6 +1233,8 @@ export type EditorAction =
   | FromVSCodeAction
   | TruncateHistory
   | UpdateProjectServerState
+  | ApplyCollabFileUpdate
+  | UpdateTopLevelElements
 
 export type DispatchPriority =
   | 'everyone'
