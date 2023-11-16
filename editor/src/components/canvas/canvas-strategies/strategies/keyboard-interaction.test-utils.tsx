@@ -20,7 +20,7 @@ import type {
 } from '../canvas-strategy-types'
 import { defaultCustomStrategyState } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import { createInteractionViaKeyboard, StrategyState } from '../interaction-state'
+import { createInteractionViaKeyboard } from '../interaction-state'
 
 export function pressKeys(
   editorState: EditorState,
@@ -56,6 +56,7 @@ export function pressKeys(
     latestMetadata: metadata,
     latestAllElementProps: null as any,
     latestElementPathTree: null as any,
+    latestVariablesInScope: null as any,
   }
 
   const strategy = strategyFactoryFunction(

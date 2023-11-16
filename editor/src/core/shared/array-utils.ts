@@ -471,3 +471,21 @@ export function isNonEmptyArray<T>(array: T[]): array is NonEmptyArray<T> {
 export function isEmptyArray<T>(array: T[]): array is [] {
   return array.length === 0
 }
+
+export function possiblyUniqueInArray(
+  array: number[],
+  existing: (number | null)[],
+  start: number,
+): number {
+  let index = start
+  while (existing.includes(index)) {
+    index++
+    if (index >= array.length) {
+      index = 0
+    }
+    if (index === start) {
+      return start
+    }
+  }
+  return index
+}

@@ -269,7 +269,7 @@ export function getElementFragmentLikeType(
     return null
   }
 
-  const hasNoWidthAndHeightProps =
+  const hasNoWidthAndHeightProps = // TODO make this information come from the computed style instead of reading the style prop
     elementProps?.['style']?.['width'] == null && elementProps?.['style']?.['height'] == null
 
   const allChildrenAreAbsolute = children.every(MetadataUtils.isPositionAbsolute)

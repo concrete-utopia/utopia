@@ -785,10 +785,16 @@ function editorDispatchInner(
     const spyMetadataChanged =
       storedState.unpatchedEditor.spyMetadata !== result.unpatchedEditor.spyMetadata
     const allElementPropsChanged =
-      storedState.unpatchedEditor._currentAllElementProps_KILLME !==
-      result.unpatchedEditor._currentAllElementProps_KILLME
+      storedState.unpatchedEditor.currentAllElementProps !==
+      result.unpatchedEditor.currentAllElementProps
 
-    const metadataChanged = domMetadataChanged || spyMetadataChanged || allElementPropsChanged
+    const variablesInScopeChanged =
+      storedState.unpatchedEditor.currentVariablesInScope !==
+      result.unpatchedEditor.currentVariablesInScope
+
+    const metadataChanged =
+      domMetadataChanged || spyMetadataChanged || allElementPropsChanged || variablesInScopeChanged
+
     if (metadataChanged) {
       const { metadata, elementPathTree } = reconstructJSXMetadata(result.unpatchedEditor)
       // Cater for the strategies wiping out the metadata on completion.
@@ -817,8 +823,9 @@ function editorDispatchInner(
               interactionSession: {
                 ...result.unpatchedEditor.canvas.interactionSession,
                 latestMetadata: metadata,
-                latestAllElementProps: result.unpatchedEditor._currentAllElementProps_KILLME,
+                latestAllElementProps: result.unpatchedEditor.currentAllElementProps,
                 latestElementPathTree: elementPathTree,
+                latestVariablesInScope: result.unpatchedEditor.currentVariablesInScope,
               },
             },
           },
@@ -830,7 +837,8 @@ function editorDispatchInner(
             ...result.unpatchedEditor,
             jsxMetadata: metadata,
             elementPathTree: elementPathTree,
-            allElementProps: result.unpatchedEditor._currentAllElementProps_KILLME,
+            allElementProps: result.unpatchedEditor.currentAllElementProps,
+            variablesInScope: result.unpatchedEditor.currentVariablesInScope,
             lockedElements: {
               ...result.unpatchedEditor.lockedElements,
               simpleLock: updatedSimpleLocks,
