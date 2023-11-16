@@ -1228,20 +1228,53 @@ describe('computedHugProperty', () => {
 })
 
 describe('record variable values', () => {
-  it('records variable values', async () => {
-    const editor = await renderTestEditorWithCode(
-      TestProjectWithSeveralComponents,
-      'await-first-dom-report',
-    )
-    const { jsxMetadata, spyMetadata } = editor.getEditorState().editor
-
-    for (const metadata of Object.values(spyMetadata)) {
-      expect(metadata.variablesInScope['dummy']).toEqual(12)
-    }
-
-    for (const metadata of Object.values(jsxMetadata)) {
-      expect(metadata.variablesInScope['dummy']).toEqual(12)
-    }
+  it('records variables that are defined inside the component', async () => {
+    const editor = await renderTestEditorWithCode(ProjectWithVariables, 'await-first-dom-report')
+    const { jsxMetadata } = editor.getEditorState().editor
+    expect(
+      MetadataUtils.findElementByElementPath(jsxMetadata, EP.fromString('sb/scene/pg:root'))
+        ?.variablesInScope,
+    ).toEqual({
+      definedInsideNumber: 12,
+      definedInsideObject: {
+        prop: [33],
+      },
+      definedInsideString: 'hello',
+      functionResult: 35,
+    })
+    expect(
+      MetadataUtils.findElementByElementPath(jsxMetadata, EP.fromString('sb/scene/pg:root/111'))
+        ?.variablesInScope,
+    ).toEqual({
+      definedInsideNumber: 12,
+      definedInsideObject: {
+        prop: [33],
+      },
+      definedInsideString: 'hello',
+      functionResult: 35,
+    })
+    expect(
+      MetadataUtils.findElementByElementPath(jsxMetadata, EP.fromString('sb/scene/pg:root/222'))
+        ?.variablesInScope,
+    ).toEqual({
+      definedInsideNumber: 12,
+      definedInsideObject: {
+        prop: [33],
+      },
+      definedInsideString: 'hello',
+      functionResult: 35,
+    })
+    expect(
+      MetadataUtils.findElementByElementPath(jsxMetadata, EP.fromString('sb/scene/pg:root/333'))
+        ?.variablesInScope,
+    ).toEqual({
+      definedInsideNumber: 12,
+      definedInsideObject: {
+        prop: [33],
+      },
+      definedInsideString: 'hello',
+      functionResult: 35,
+    })
   })
 })
 
@@ -1550,6 +1583,91 @@ export var storyboard = (
       <br />
       <br />
     </div>
+  </Storyboard>
+)
+`
+
+const ProjectWithVariables = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+function add(a, b) {
+  return a + b
+}
+
+var Playground = ({ style }) => {
+  const definedInsideString = 'hello'
+  const definedInsideNumber = 12
+  const definedInsideObject = { prop: [33] }
+  const functionResult = add(12, 23)
+
+  return (
+    <div
+      data-uid='root'
+      style={{
+        height: '100%',
+        width: '100%',
+        contain: 'layout',
+        ...style,
+      }}
+    >
+      <div
+        data-uid='111'
+        style={{
+          backgroundColor: '#0074ff',
+          position: 'absolute',
+          left: 123,
+          top: 220,
+          width: 51,
+          height: 48,
+        }}
+      >
+        {definedInsideString}
+      </div>
+      <div
+      data-uid='222'
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 184,
+          top: 220,
+          width: 51,
+          height: 48,
+        }}
+      >
+        {definedInsideNumber}
+      </div>
+      <div
+      data-uid='333'
+        style={{
+          backgroundColor: '#f000ae',
+          position: 'absolute',
+          left: 245,
+          top: 220,
+          width: 51,
+          height: 48,
+        }}
+      >
+        {definedInsideObject.hello}
+      </div>
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      data-uid='scene'
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+    >
+      <Playground style={{}} data-uid='pg' />
+    </Scene>
   </Storyboard>
 )
 `

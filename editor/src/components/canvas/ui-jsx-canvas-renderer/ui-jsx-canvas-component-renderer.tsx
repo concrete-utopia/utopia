@@ -185,6 +185,8 @@ export function createComponentRendererComponent(params: {
       })
     }
 
+    let definedWithinWithValues: MapLike<any> = {}
+
     if (utopiaJsxComponent.arbitraryJSBlock != null) {
       const lookupRenderer = createLookupRender(
         rootElementPath,
@@ -214,7 +216,7 @@ export function createComponentRendererComponent(params: {
         lookupRenderer,
       )
 
-      runBlockUpdatingScope(
+      definedWithinWithValues = runBlockUpdatingScope(
         params.filePath,
         mutableContext.requireResult,
         utopiaJsxComponent.arbitraryJSBlock,
@@ -251,6 +253,7 @@ export function createComponentRendererComponent(params: {
         code,
         highlightBounds,
         rerenderUtopiaContext.editedText,
+        definedWithinWithValues,
       )
 
       if (typeof renderedCoreElement === 'string' || typeof renderedCoreElement === 'number') {
