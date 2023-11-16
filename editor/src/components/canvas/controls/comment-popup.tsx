@@ -4,13 +4,16 @@ import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { isCommentMode } from '../../editor/editor-modes'
 import { ClientSideSuspense } from '@liveblocks/react'
-import { useCreateThread, useThreads } from '../../../../liveblocks.config'
+import { useCreateThread } from '../../../../liveblocks.config'
 import type { ComposerSubmitComment } from '@liveblocks/react-comments'
 import { Comment, Composer } from '@liveblocks/react-comments'
 import { stopPropagation } from '../../inspector/common/inspector-utils'
 import { UtopiaTheme } from '../../../uuiui'
 import { ErrorBoundary } from '../../../utils/react-error-boundary'
-import { useCanvasCommentThread } from '../../../core/commenting/comment-hooks'
+import {
+  useCanvasCommentThread,
+  useMyMultiplayerColorIndex,
+} from '../../../core/commenting/comment-hooks'
 import { isLoggedIn } from '../../editor/action-types'
 
 export const CommentPopup = React.memo(() => {
@@ -57,7 +60,10 @@ interface CommentThreadProps {
 
 function CommentThread({ x, y }: CommentThreadProps) {
   const thread = useCanvasCommentThread(x, y)
+
   const createThread = useCreateThread()
+
+  const colorIndex = useMyMultiplayerColorIndex() ?? -1
 
   // TODO: Unify getting name in different multiplayer components
   const loginState = useEditorState(
@@ -75,10 +81,10 @@ function CommentThread({ x, y }: CommentThreadProps) {
       // Create a new thread
       createThread({
         body,
-        metadata: { type: 'canvas', x: x, y: y, name: name ?? 'Anonymous' },
+        metadata: { type: 'canvas', x: x, y: y, name: name ?? 'Anonymous', colorIndex: colorIndex },
       })
     },
-    [createThread, x, y, name],
+    [createThread, x, y, name, colorIndex],
   )
 
   if (thread == null) {

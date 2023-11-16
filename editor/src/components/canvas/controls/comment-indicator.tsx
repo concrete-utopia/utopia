@@ -12,6 +12,11 @@ import { canvasPoint } from '../../../core/shared/math-utils'
 import { UtopiaTheme } from '../../../uuiui'
 import { ErrorBoundary } from '../../../utils/react-error-boundary'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
+import {
+  multiplayerColorFromIndex,
+  multiplayerInitialsFromName,
+  normalizeMultiplayerName,
+} from '../../../core/shared/multiplayer'
 
 export const CommentIndicator = React.memo(() => {
   const projectId = useEditorState(
@@ -42,7 +47,8 @@ function CommentIndicatorInner() {
       {threads.map((thread) => {
         const point = canvasPoint(thread.metadata)
         // TODO: unify initial handling for multiplayer
-        const initials = getInitials(thread.metadata.name)
+        const initials = multiplayerInitialsFromName(normalizeMultiplayerName(thread.metadata.name))
+        const color = multiplayerColorFromIndex(thread.metadata.colorIndex)
         return (
           <div
             key={thread.id}
@@ -73,8 +79,8 @@ function CommentIndicatorInner() {
                   height: 20,
                   width: 20,
                   borderRadius: 10,
-                  background: '#ff00a7', // TODO: vary colors between users or use avatar
-                  color: 'white',
+                  background: color.background,
+                  color: color.foreground,
                   fontSize: 9,
                   fontWeight: 'bold',
                   display: 'flex',
@@ -91,12 +97,4 @@ function CommentIndicatorInner() {
       })}
     </React.Fragment>
   )
-}
-
-function getInitials(name: string) {
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .slice(0, 2)
 }

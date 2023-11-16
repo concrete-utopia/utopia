@@ -63,7 +63,8 @@ export type ThreadMetadata = {
   type: 'canvas'
   x: number
   y: number
-  name: string // TODO: this maybe unnecessary after we provide a resolveUsers function to liveblocks
+  name: string // TODO: this is maybe unnecessary after we provide a resolveUsers function to liveblocks
+  colorIndex: number
 }
 
 export const {
