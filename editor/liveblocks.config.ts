@@ -18,6 +18,7 @@ export type Presence = {
   canvasScale: number | null
   canvasOffset: CanvasVector | null
   colorIndex: number | null
+  picture: string | null
 }
 
 export function initialPresence(): Presence {
@@ -27,6 +28,7 @@ export function initialPresence(): Presence {
     canvasScale: null,
     canvasOffset: null,
     colorIndex: null,
+    picture: null,
   }
 }
 
