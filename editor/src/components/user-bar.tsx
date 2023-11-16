@@ -53,10 +53,8 @@ const MultiplayerUserBar = React.memo(() => {
   const colorTheme = useColorTheme()
 
   const self = useSelf()
-  const myName = React.useMemo(
-    () => normalizeMultiplayerName(self.presence.name),
-    [self.presence.name],
-  )
+  const myName = normalizeMultiplayerName(self.presence.name)
+
   const others = useOthers((list) =>
     normalizeOthersList(self.id, list).map((other) => ({
       id: other.id,
