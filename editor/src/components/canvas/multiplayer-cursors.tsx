@@ -1,21 +1,27 @@
 import { motion } from 'framer-motion'
 import React from 'react'
-import { useMyPresence, useOthers } from '../../../liveblocks.config'
-import { safeIndex } from '../../core/shared/array-utils'
+import { useOthers, useSelf, useUpdateMyPresence } from '../../../liveblocks.config'
 import type { CanvasPoint } from '../../core/shared/math-utils'
 import { windowPoint } from '../../core/shared/math-utils'
-import { UtopiaTheme, getPreferredColorScheme, useColorTheme } from '../../uuiui'
+import { UtopiaTheme } from '../../uuiui'
 import { isLoggedIn } from '../editor/action-types'
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import { canvasPointToWindowPoint, windowToCanvasCoordinates } from './dom-lookup'
-import { multiplayerCursorColors } from './multiplayer'
+import {
+  multiplayerColorFromIndex,
+  multiplayerColors,
+  normalizeMultiplayerName,
+  normalizeOthersList,
+} from '../../core/shared/multiplayer'
 
 export const MultiplayerCursors = React.memo(() => {
-  const others = useOthers()
-  const [myPresence, setMyPresence] = useMyPresence()
+  const self = useSelf()
+  const others = useOthers((list) => normalizeOthersList(self.id, list))
+  const updateMyPresence = useUpdateMyPresence()
+
   const myColorIndex = React.useMemo(() => {
-    return myPresence.colorIndex ?? Math.floor(Math.random() * multiplayerCursorColors.light.length)
-  }, [myPresence])
+    return self.presence.colorIndex ?? Math.floor(Math.random() * multiplayerColors.light.length)
+  }, [self.presence])
 
   const loginState = useEditorState(
     Substores.userState,
@@ -37,20 +43,19 @@ export const MultiplayerCursors = React.memo(() => {
     if (!isLoggedIn(loginState)) {
       return
     }
-    const name = loginState.user.name ?? 'unknown'
-    setMyPresence({
-      name: name.replace(/@.+/, ''), // in case emails and names get mixed up
+    updateMyPresence({
+      name: normalizeMultiplayerName(loginState.user.name ?? null),
       colorIndex: myColorIndex,
     })
-  }, [loginState, setMyPresence, myColorIndex])
+  }, [loginState, updateMyPresence, myColorIndex])
 
   React.useEffect(() => {
-    setMyPresence({ canvasScale, canvasOffset })
-  }, [canvasScale, canvasOffset, setMyPresence])
+    updateMyPresence({ canvasScale, canvasOffset })
+  }, [canvasScale, canvasOffset, updateMyPresence])
 
   React.useEffect(() => {
     function onMouseMove(e: MouseEvent) {
-      setMyPresence({
+      updateMyPresence({
         cursor: windowPoint({ x: e.clientX, y: e.clientY }),
       })
     }
@@ -58,7 +63,7 @@ export const MultiplayerCursors = React.memo(() => {
     return function () {
       window.removeEventListener('mousemove', onMouseMove)
     }
-  }, [setMyPresence])
+  }, [updateMyPresence])
 
   if (!isLoggedIn(loginState)) {
     return null
@@ -88,7 +93,7 @@ export const MultiplayerCursors = React.memo(() => {
         ).canvasPositionRounded
         return (
           <MultiplayerCursor
-            key={other.id}
+            key={`cursor-${other.id}`}
             name={other.presence.name}
             colorIndex={other.presence.colorIndex}
             position={position}
@@ -98,6 +103,7 @@ export const MultiplayerCursors = React.memo(() => {
     </div>
   )
 })
+MultiplayerCursors.displayName = 'MultiplayerCursors'
 
 const MultiplayerCursor = React.memo(
   ({
@@ -109,8 +115,6 @@ const MultiplayerCursor = React.memo(
     colorIndex: number | null
     position: CanvasPoint
   }) => {
-    const colorTheme = useColorTheme()
-
     const canvasScale = useEditorState(
       Substores.canvasOffset,
       (store) => store.editor.canvas.scale,
@@ -121,10 +125,7 @@ const MultiplayerCursor = React.memo(
       (store) => store.editor.canvas.roundedCanvasOffset,
       'MultiplayerCursor canvasOffset',
     )
-    const color =
-      getPreferredColorScheme() === 'dark'
-        ? safeIndex(multiplayerCursorColors.dark, colorIndex ?? 0)
-        : safeIndex(multiplayerCursorColors.light, colorIndex ?? 0)
+    const color = multiplayerColorFromIndex(colorIndex)
     const windowPosition = canvasPointToWindowPoint(position, canvasScale, canvasOffset)
 
     return (
@@ -149,7 +150,7 @@ const MultiplayerCursor = React.memo(
             height: 0,
             borderTop: `5px solid transparent`,
             borderBottom: `5px solid transparent`,
-            borderRight: `5px solid ${color?.background ?? colorTheme.brandNeonPink.value}`, // brandNeonPink fallback
+            borderRight: `5px solid ${color.background}`,
             transform: 'rotate(45deg)',
             position: 'absolute',
             top: -3,
@@ -158,8 +159,8 @@ const MultiplayerCursor = React.memo(
         />
         <div
           style={{
-            color: color?.foreground ?? '#000', // black fallback
-            backgroundColor: color?.background ?? colorTheme.brandNeonPink.value, // brandNeonPink fallback
+            color: color.foreground,
+            backgroundColor: color.background,
             padding: '0 4px',
             borderRadius: 2,
             boxShadow: UtopiaTheme.panelStyles.shadows.medium,
