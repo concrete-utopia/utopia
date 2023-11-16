@@ -14,6 +14,7 @@ import {
   FlexRow,
   InspectorSectionHeader,
   PopupList,
+  Subdued,
   Tooltip,
   colorTheme,
 } from '../../uuiui'
@@ -47,6 +48,7 @@ import { Substores, useEditorState, useRefEditorState } from '../editor/store/st
 import type { MetadataSubstate } from '../editor/store/store-hook-substore-types'
 import type { SelectOption } from './controls/select-control'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
+import { WarningIcon } from '../../uuiui/warning-icon'
 
 const simpleControlStyles = getControlStyles('simple')
 const disabledControlStyles: ControlStyles = {
@@ -107,7 +109,14 @@ export function groupSectionOption(wrapperType: EditorContract): SelectOption<Ed
     case 'frame':
       return { value: 'frame', label: 'Frame' }
     case 'wrapper-div':
-      return { value: 'wrapper-div', label: 'Wrapper' }
+      return {
+        value: 'wrapper-div',
+        label: (
+          <span style={{ display: 'inline-flex', flexDirection: 'row', alignItems: 'center' }}>
+            Wrapper <WarningIcon style={{ display: 'inline', marginLeft: 4 }} color='subdued' />
+          </span>
+        ),
+      }
     case 'fragment':
       return { value: 'fragment', label: 'Fragment' }
     case 'group':

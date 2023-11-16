@@ -79,10 +79,10 @@ const WrapperElementDisclosureBox = React.memo(() => {
           ['textWrap' as any]: 'balance', // this is an experimental Chrome feature
         }}
       >
-        Element has zero width or height because it only has absolute children.{' '}
+        Element collapsed because it only has absolute children.
         <Tooltip title={'Convert element to Frame'} placement='left'>
           <Link onClick={convertToFrame}>Make it a Frame</Link>
-        </Tooltip>{' '}
+        </Tooltip>
         to style and position it.
       </span>
     </FlexColumn>

@@ -29,7 +29,7 @@ export interface DEPRECATEDSelectControlOptions extends DEPRECATEDGenericControl
 export interface SelectOption<T = any> {
   value: T
   icon?: Omit<IcnProps, 'color' | 'width' | 'height'>
-  label?: string
+  label?: string | React.ReactElement
   style?: React.CSSProperties
   options?: SelectOption<any>[]
   disabled?: boolean
