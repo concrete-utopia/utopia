@@ -38,6 +38,7 @@ import {
 } from '../canvas/grid-panels-state'
 import { NO_OP } from '../../core/shared/utils'
 import type { StoredPanel } from '../canvas/stored-layout'
+import { SinglePlayerUserBar, UserBar } from '../user-bar'
 
 interface ProjectTitleProps {}
 
@@ -261,7 +262,6 @@ export const TitleBarUserProfile = React.memo((props: { panelData: StoredPanel }
     }),
     'TitleBar loginState',
   )
-  const userPicture = useGetUserPicture()
 
   const loggedIn = React.useMemo(() => loginState.type === 'LOGGED_IN', [loginState])
 
@@ -326,12 +326,7 @@ export const TitleBarUserProfile = React.memo((props: { panelData: StoredPanel }
             Sign In To Save
           </Button>,
         )}
-        {when(
-          loggedIn,
-          <a href='/projects' target='_blank'>
-            <Avatar userPicture={userPicture} isLoggedIn={loggedIn} />
-          </a>,
-        )}
+        <UserBar />
       </div>
     </div>
   )
@@ -451,8 +446,6 @@ const TitleBar = React.memo(() => {
     },
     'TitleBar github',
   )
-
-  const userPicture = useGetUserPicture()
 
   const hasUpstreamChanges = React.useMemo(
     () => getGithubFileChangesCount(upstreamChanges) > 0,
@@ -605,23 +598,10 @@ const TitleBar = React.memo(() => {
             Sign In To Save
           </Button>,
         )}
-        {when(
-          loggedIn,
-          <a href='/projects' target='_blank'>
-            <Avatar userPicture={userPicture} isLoggedIn={loggedIn} />
-          </a>,
-        )}
+        <SinglePlayerUserBar />
       </div>
     </SimpleFlexRow>
   )
 })
 
 export default TitleBar
-
-const loginStateSelector = createSelector(
-  (store: EditorStoreShared) => store.userState.loginState,
-  (loginState: LoginState) => getUserPicture(loginState),
-)
-function useGetUserPicture(): string | null {
-  return useEditorState(Substores.restOfStore, loginStateSelector, 'useGetUserPicture')
-}
