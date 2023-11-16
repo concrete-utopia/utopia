@@ -2,42 +2,20 @@ import { multiplayerInitialsFromName } from './multiplayer'
 
 describe('multiplayer', () => {
   describe('multiplayerInitialsFromName', () => {
-    const tests: {
-      name: string
-      input: string
-      want: string
-    }[] = [
-      {
-        name: 'regular name',
-        input: 'Foo Bar',
-        want: 'FB',
-      },
-      {
-        name: 'name with many words',
-        input: 'Foo Bar Baz',
-        want: 'FB',
-      },
-      {
-        name: 'single word',
-        input: 'Bar',
-        want: 'BA',
-      },
-      {
-        name: 'a very short name',
-        input: 'F',
-        want: 'FX',
-      },
-      {
-        name: 'no name at all',
-        input: '',
-        want: 'XX',
-      },
-    ]
-    tests.forEach((test, index) => {
-      it(`${index}/${tests.length + 1} ${test.name}`, async () => {
-        const got = multiplayerInitialsFromName(test.input)
-        expect(got).toEqual(test.want)
-      })
+    it('regular name', () => {
+      expect(multiplayerInitialsFromName('Foo Bar')).toEqual('FB')
+    })
+    it('name with many words', () => {
+      expect(multiplayerInitialsFromName('Foo Bar Baz')).toEqual('FB')
+    })
+    it('single word', () => {
+      expect(multiplayerInitialsFromName('Bar')).toEqual('BA')
+    })
+    it('a very short name', () => {
+      expect(multiplayerInitialsFromName('F')).toEqual('FX')
+    })
+    it('no name at all', () => {
+      expect(multiplayerInitialsFromName('')).toEqual('XX')
     })
   })
 })
