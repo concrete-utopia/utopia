@@ -15,6 +15,7 @@ import {
   formatTestProjectCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
+  renderTestEditorWithProjectContent,
   TestAppUID,
   TestScenePath,
   TestSceneUID,
@@ -25,11 +26,17 @@ import type { Either } from '../shared/either'
 import { isRight } from '../shared/either'
 import { elementPath, fromString, toString } from '../shared/element-path'
 import { canvasRectangle, localRectangle, zeroCanvasRect } from '../shared/math-utils'
-import type { ElementPath } from '../shared/project-file-types'
+import {
+  textFile,
+  type ElementPath,
+  textFileContents,
+  codeFile,
+} from '../shared/project-file-types'
 import { MetadataUtils } from './element-metadata-utils'
 import { elementOnlyHasTextChildren } from './element-template-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from './scene-utils'
 import type { HugPropertyWidthHeight } from '../shared/element-template'
+import { contentsToTree } from '../../components/assets'
 
 describe('Frame calculation for fragments', () => {
   // Components with root fragments do not appear in the DOM, so the dom walker does not find them, and they
@@ -859,6 +866,90 @@ describe('isAutofocusable/isManuallyFocusableComponent', () => {
       'story/scene/app:app-inner-div/inner-app-1: true',
       'story/scene/app:app-inner-div/inner-app-2: true',
     ])
+  })
+
+  it('supports components imported with a file mapped import statement', async () => {
+    const sampleProjectContents = contentsToTree({
+      'jsconfig.json': codeFile(
+        `
+        {
+          "compilerOptions": {
+            "paths": {
+              "~/*": [
+                "app/*"
+              ]
+            }
+          }
+        }
+        `,
+        null,
+      ),
+      '/app/card.js': codeFile(
+        `
+        import * as React from 'react'
+
+        export const Card = (props) => {
+          return (
+            <div style={props.style} data-uid='card-root'>
+              <div
+                style={{
+                  position: 'absolute',
+                  left: 10,
+                  top: 10,
+                }}
+                data-uid='card-root-child'
+              >
+                I am a card
+              </div>
+            </div>
+          )
+        }
+        `,
+        null,
+      ),
+      '/utopia/storyboard.js': codeFile(
+        `
+        import * as React from 'react'
+        import { Storyboard } from 'utopia-api'
+        import { Card } from '~/card'
+
+        export var storyboard = (
+          <Storyboard data-uid='sb'>
+            <Card
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 150,
+                height: 150,
+              }}
+              data-uid='card'
+            />
+          </Storyboard>
+        )
+        `,
+        null,
+      ),
+    })
+    const renderResult = await renderTestEditorWithProjectContent(
+      sampleProjectContents,
+      'await-first-dom-report',
+    )
+    const metadata = renderResult.getEditorState().editor.jsxMetadata
+    const pathTrees = renderResult.getEditorState().editor.elementPathTree
+    const autoFocusedPaths = renderResult.getEditorState().derived.autoFocusedPaths
+    const filePathMappings = renderResult.getEditorState().derived.filePathMappings
+    const targetPath = EP.fromString('sb/card')
+    expect(MetadataUtils.isAutofocusable(metadata, pathTrees, targetPath)).toBeFalsy()
+    expect(
+      MetadataUtils.isManuallyFocusableComponent(
+        targetPath,
+        metadata,
+        autoFocusedPaths,
+        filePathMappings,
+      ),
+    ).toBeTruthy()
   })
 })
 
