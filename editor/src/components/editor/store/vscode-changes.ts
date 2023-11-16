@@ -106,10 +106,15 @@ export function collateProjectChanges(
           const fileMarkedDirtyButNoCodeChangeYet =
             firstUnsavedContent == null && secondUnsavedContent === firstSavedContent
 
+          const revisionStateWarrantWrite =
+            secondContents.content.fileContents.revisionsState === 'BOTH_MATCH' ||
+            secondContents.content.fileContents.revisionsState ===
+              'CODE_AHEAD_BUT_PLEASE_TELL_VSCODE_ABOUT_IT'
+
           const fileShouldBeWritten =
             // This means that we'll only send the code across when it is in sync with the parsed model, rather
             // than sending a stale version of the code across whilst waiting on the new version.
-            secondContents.content.fileContents.revisionsState === 'BOTH_MATCH' &&
+            revisionStateWarrantWrite &&
             // When a parsed model is updated but that change hasn't been reflected in the code yet, we end up with a file
             // that has no code change, so we don't want to write that to the FS for VS Code to act on it until the new code
             // has been generated

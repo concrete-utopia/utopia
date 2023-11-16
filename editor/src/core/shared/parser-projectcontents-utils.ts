@@ -33,6 +33,7 @@ import { emptySet } from '../../core/shared/set-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { codeNeedsPrinting, codeNeedsParsing } from '../../core/workers/common/project-file-utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
+import { isSteganographyEnabled } from './stegano-text'
 
 export function parseResultToWorkerUpdates(fileResult: ParseOrPrintResult): WorkerUpdate {
   switch (fileResult.type) {
@@ -195,7 +196,12 @@ export async function updateProjectContentsWithParseResults(
   const { filesToUpdate, existingUIDs } = getFilesToUpdate(projectContents, [])
 
   // Get the result of parsing or printing the files.
-  const parseResult = await getParseResult(workers, filesToUpdate, existingUIDs)
+  const parseResult = await getParseResult(
+    workers,
+    filesToUpdate,
+    existingUIDs,
+    isSteganographyEnabled(),
+  )
 
   // Convert those results into updates.
   const workerUpdates = parseResult.map(parseResultToWorkerUpdates)

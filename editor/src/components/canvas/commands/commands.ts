@@ -308,7 +308,7 @@ export function foldAndApplyCommands(
     ...priorPatchedState,
 
     // List of parts of the editor state that we already know changed from the last frame, and are not usually affected by Commands
-    _currentAllElementProps_KILLME: editorState._currentAllElementProps_KILLME,
+    currentAllElementProps: editorState.currentAllElementProps,
     jsxMetadata: editorState.jsxMetadata,
     domMetadata: editorState.domMetadata,
     spyMetadata: editorState.spyMetadata,

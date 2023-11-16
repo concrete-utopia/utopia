@@ -62,6 +62,7 @@ function multiselectResizeElements(
       latestMetadata: {},
       latestAllElementProps: {},
       latestElementPathTree: {},
+      latestVariablesInScope: {},
     },
   )!.apply('end-interaction')
 

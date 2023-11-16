@@ -17,6 +17,7 @@ export function appJSFilePreParsed(): TextFile {
     null,
     emptySet(),
     'trim-bounds',
+    'do-not-apply-steganography',
   )
   return textFile(
     textFileContents(appFile.fileContents.code, result, RevisionsState.BothMatch),
@@ -34,6 +35,7 @@ export function getDefaultUIJsFilePreParsed(): TextFile {
     null,
     emptySet(),
     'trim-bounds',
+    'do-not-apply-steganography',
   )
   return textFile(
     textFileContents(uijsFile.fileContents.code, result, RevisionsState.BothMatch),

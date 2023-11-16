@@ -1396,6 +1396,17 @@ export const MetadataUtils = {
       return boundingRectangleArray(nonInfinityFrames)
     }
   },
+  getBoundingRectangleOfChildren(
+    metadata: ElementInstanceMetadataMap,
+    pathTree: ElementPathTrees,
+    path: ElementPath,
+  ): MaybeInfinityCanvasRectangle | null {
+    const aabb = MetadataUtils.getBoundingRectangleInCanvasCoords(
+      MetadataUtils.getChildrenPathsOrdered(metadata, pathTree, path),
+      metadata,
+    )
+    return aabb
+  },
   getFrame(
     path: ElementPath,
     metadata: ElementInstanceMetadataMap,

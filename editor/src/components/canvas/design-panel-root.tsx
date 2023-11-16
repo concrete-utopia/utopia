@@ -2,8 +2,6 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
-import type { ResizeDirection } from 're-resizable'
-import { Resizable } from 're-resizable'
 import React from 'react'
 import * as EditorActions from '../editor/actions/action-creators'
 import { RightMenuTab } from '../editor/store/editor-state'
@@ -15,30 +13,26 @@ import {
   SimpleFlexRow,
   UtopiaTheme,
   SimpleFlexColumn,
-  useColorTheme,
   LargerIcons,
   FlexColumn,
   colorTheme,
 } from '../../uuiui'
 import { ConsoleAndErrorsPane } from '../code-editor/console-and-errors-pane'
-import { InspectorWidthAtom } from '../inspector/common/inspector-atoms'
-import { useAtom } from 'jotai'
 import { CanvasStrategyInspector } from './canvas-strategies/canvas-strategy-inspector'
 import { getQueryParam } from '../../common/env-vars'
-import { unless, when } from '../../utils/react-conditionals'
+import { when } from '../../utils/react-conditionals'
 import { InsertMenuPane } from '../navigator/insert-menu-pane'
 import { useDispatch } from '../editor/store/dispatch-context'
-import { LeftPaneComponent } from '../navigator/left-pane'
 import { GridPanelsContainer } from './grid-panels-container'
-import type { ResizableProps } from '../../uuiui-deps'
-import type { Direction } from 're-resizable/lib/resizer'
-import { isFeatureEnabled } from '../../utils/feature-switches'
 import { TitleBarCode, TitleBarUserProfile } from '../titlebar/title-bar'
 import type { EditorAction } from '../editor/action-types'
 import { SettingsPane } from '../navigator/left-pane/settings-pane'
 import { MenuTab } from '../../uuiui/menu-tab'
 import { FlexRow } from 'utopia-api'
 import type { StoredPanel } from './stored-layout'
+import { MultiplayerCursors } from './multiplayer-cursors'
+import { useStatus } from '../../../liveblocks.config'
+import { ClientSideSuspense } from '@liveblocks/react'
 
 interface NumberSize {
   width: number
@@ -127,6 +121,7 @@ const NothingOpenCard = React.memo(() => {
 })
 
 const DesignPanelRootInner = React.memo(() => {
+  const roomStatus = useStatus()
   return (
     <>
       <SimpleFlexRow
@@ -149,6 +144,12 @@ const DesignPanelRootInner = React.memo(() => {
             }}
           >
             <CanvasWrapperComponent />
+            {when(
+              roomStatus === 'connected',
+              <ClientSideSuspense fallback={<div />}>
+                {() => <MultiplayerCursors />}
+              </ClientSideSuspense>,
+            )}
             <GridPanelsContainer />
           </SimpleFlexColumn>
         }

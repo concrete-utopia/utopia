@@ -2704,7 +2704,7 @@ export var Whatever = (props) => <View>
   <MyComp layout={{left: 100}} />
 </View>
 `
-    const actualResult = parseCode('code.tsx', code, null, emptySet())
+    const actualResult = parseCode('code.tsx', code, null, emptySet(), 'do-not-apply-steganography')
     if (isParseSuccess(actualResult)) {
       expect(actualResult.topLevelElements.filter(isArbitraryJSBlock).length).toEqual(1)
       expect(actualResult.topLevelElements.filter(isUtopiaJSXComponent).length).toEqual(0)
@@ -5276,6 +5276,7 @@ describe('lintAndParse', () => {
       null,
       emptySet(),
       'trim-bounds',
+      'do-not-apply-steganography',
     )
     expect(clearParseResultPassTimes(result)).toMatchSnapshot()
   })
@@ -5353,7 +5354,15 @@ export var App = (props) => {
       ],
     }
     expect(
-      transpileJavascriptFromCode('test.js', file, code, sourceMap, [], false),
+      transpileJavascriptFromCode(
+        'test.js',
+        file,
+        code,
+        sourceMap,
+        [],
+        false,
+        'do-not-apply-steganography',
+      ),
     ).toMatchSnapshot()
   })
 })
