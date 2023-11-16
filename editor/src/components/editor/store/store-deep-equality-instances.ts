@@ -227,6 +227,7 @@ import {
   unionDeepEquality,
   combine13EqualityCalls,
   combine14EqualityCalls,
+  combine15EqualityCalls,
 } from '../../../utils/deep-equality'
 import {
   ElementPathArrayKeepDeepEquality,
@@ -1744,7 +1745,7 @@ const ConditionValueKeepDeepEquality: KeepDeepEqualityCall<ConditionValue> = uni
 )
 
 export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<ElementInstanceMetadata> =
-  combine14EqualityCalls(
+  combine15EqualityCalls(
     (metadata) => metadata.elementPath,
     ElementPathKeepDeepEquality,
     (metadata) => metadata.element,
@@ -1773,6 +1774,8 @@ export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<Eleme
     ConditionValueKeepDeepEquality,
     (metadata) => metadata.textContent,
     nullableDeepEquality(StringKeepDeepEquality),
+    (m) => m.variablesInScope,
+    createCallWithTripleEquals(),
     elementInstanceMetadata,
   )
 

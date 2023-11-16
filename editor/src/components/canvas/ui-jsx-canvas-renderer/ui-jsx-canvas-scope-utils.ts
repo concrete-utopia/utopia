@@ -10,6 +10,7 @@ export function runBlockUpdatingScope(
 ): void {
   const result = resolveParamsAndRunJsCode(filePath, block, requireResult, currentScope)
   for (const within of block.definedWithin) {
+    // console.log(within, result[within])
     currentScope[within] = result[within]
   }
 }

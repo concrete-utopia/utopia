@@ -1227,6 +1227,24 @@ describe('computedHugProperty', () => {
   })
 })
 
+describe('record variable values', () => {
+  it('records variable values', async () => {
+    const editor = await renderTestEditorWithCode(
+      TestProjectWithSeveralComponents,
+      'await-first-dom-report',
+    )
+    const { jsxMetadata, spyMetadata } = editor.getEditorState().editor
+
+    for (const metadata of Object.values(spyMetadata)) {
+      expect(metadata.variablesInScope['dummy']).toEqual(12)
+    }
+
+    for (const metadata of Object.values(jsxMetadata)) {
+      expect(metadata.variablesInScope['dummy']).toEqual(12)
+    }
+  })
+})
+
 const TestProjectWithSeveralComponents = `
 import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'

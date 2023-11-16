@@ -813,6 +813,7 @@ function collectAndCreateMetadataForElement(
       null,
       'not-a-conditional',
       textContentsMaybe,
+      {},
     )
   })
 
@@ -1194,6 +1195,7 @@ function walkCanvasRootFragment(
       null, // this comes from the Spy Wrapper
       'not-a-conditional',
       null,
+      {},
     )
 
     rootMetadata[EP.toString(canvasRootPath)] = metadata

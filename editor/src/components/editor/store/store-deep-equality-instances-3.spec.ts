@@ -548,6 +548,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
     importInfo: createImportedFrom('old', 'old', 'old'),
     conditionValue: 'not-a-conditional',
     textContent: null,
+    variablesInScope: {},
   }
   const newDifferentValue: ElementInstanceMetadata = {
     elementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
@@ -674,6 +675,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
     importInfo: createImportedFrom('old', 'old', 'old'),
     conditionValue: 'not-a-conditional',
     textContent: null,
+    variablesInScope: {},
   }
 
   it('same reference returns the same reference', () => {
@@ -826,6 +828,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
       importInfo: createImportedFrom('old', 'old', 'old'),
       conditionValue: 'not-a-conditional',
       textContent: null,
+      variablesInScope: {},
     },
   }
   const newSameValue: ElementInstanceMetadataMap = {
@@ -954,6 +957,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
       importInfo: createImportedFrom('old', 'old', 'old'),
       conditionValue: 'not-a-conditional',
       textContent: null,
+      variablesInScope: {},
     },
   }
   const newDifferentValue: ElementInstanceMetadataMap = {
@@ -1082,6 +1086,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
       importInfo: createImportedFrom('old', 'old', 'old'),
       conditionValue: 'not-a-conditional',
       textContent: 'hello',
+      variablesInScope: {},
     },
   }
 

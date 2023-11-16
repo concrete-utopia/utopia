@@ -1964,6 +1964,10 @@ export function createNotImported(path: string, variableName: string): ImportInf
 export type ActiveAndDefaultConditionValues = { active: boolean; default: boolean }
 export type ConditionValue = ActiveAndDefaultConditionValues | 'not-a-conditional'
 
+export interface VariablesInScope {
+  [name: string]: unknown
+}
+
 export interface ElementInstanceMetadata {
   elementPath: ElementPath
   element: Either<string, JSXElementChild>
@@ -1979,6 +1983,7 @@ export interface ElementInstanceMetadata {
   importInfo: ImportInfo | null
   conditionValue: ConditionValue
   textContent: string | null
+  variablesInScope: VariablesInScope
 }
 
 export function elementInstanceMetadata(
@@ -1996,6 +2001,7 @@ export function elementInstanceMetadata(
   importInfo: ImportInfo | null,
   conditionValue: ConditionValue,
   textContent: string | null,
+  variablesInScope: VariablesInScope,
 ): ElementInstanceMetadata {
   return {
     elementPath: elementPath,
@@ -2012,6 +2018,7 @@ export function elementInstanceMetadata(
     importInfo: importInfo,
     conditionValue: conditionValue,
     textContent: textContent,
+    variablesInScope: variablesInScope,
   }
 }
 
