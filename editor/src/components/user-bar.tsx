@@ -62,7 +62,7 @@ const MultiplayerUserBar = React.memo(() => {
       id: other.id,
       name: other.presence.name,
       colorIndex: other.presence.colorIndex,
-      picture: other.presence.picture,
+      picture: other.presence.picture, // TODO remove this once able to resolve users
     })),
   )
 
