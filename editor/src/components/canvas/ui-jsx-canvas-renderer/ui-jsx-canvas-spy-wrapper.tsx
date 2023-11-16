@@ -7,7 +7,6 @@ import type {
   JSXElementChild,
   JSXConditionalExpression,
   ConditionValue,
-  VariablesInScope,
 } from '../../../core/shared/element-template'
 import {
   emptyAttributeMetadata,
@@ -17,7 +16,11 @@ import {
 } from '../../../core/shared/element-template'
 import type { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { makeCanvasElementPropsSafe } from '../../../utils/canvas-react-utils'
-import type { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
+import type {
+  DomWalkerInvalidatePathsCtxData,
+  UiJsxCanvasContextData,
+  VariableData,
+} from '../ui-jsx-canvas'
 import * as EP from '../../../core/shared/element-path'
 import { renderComponentUsingJsxFactoryFunction } from './ui-jsx-canvas-element-renderer-utils'
 import { importInfoFromImportDetails } from '../../../core/model/project-file-utils'
@@ -109,7 +112,7 @@ export function buildSpyWrappedElement(
   shouldIncludeCanvasRootInTheSpy: boolean,
   imports: Imports,
   filePath: string,
-  variablesInScope: VariablesInScope,
+  variablesInScope: VariableData,
 ): React.ReactElement {
   const props = {
     ...finalProps,

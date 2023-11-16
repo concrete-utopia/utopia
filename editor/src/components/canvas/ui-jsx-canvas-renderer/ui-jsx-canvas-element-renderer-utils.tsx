@@ -13,7 +13,6 @@ import type {
   ElementsWithin,
   JSExpression,
   JSXElementLike,
-  VariablesInScope,
 } from '../../../core/shared/element-template'
 import {
   isJSXElement,
@@ -40,7 +39,11 @@ import type {
 import { assertNever } from '../../../core/shared/utils'
 import { Utils } from '../../../uuiui-deps'
 import type { UIFileBase64Blobs } from '../../editor/store/editor-state'
-import type { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
+import type {
+  DomWalkerInvalidatePathsCtxData,
+  UiJsxCanvasContextData,
+  VariableData,
+} from '../ui-jsx-canvas'
 import { SceneComponent } from './scene-component'
 import * as PP from '../../../core/shared/property-path'
 import * as EP from '../../../core/shared/element-path'
@@ -183,7 +186,7 @@ export function renderCoreElement(
   code: string,
   highlightBounds: HighlightBoundsForUids | null,
   editedText: ElementPath | null,
-  variablesInScope: VariablesInScope,
+  variablesInScope: VariableData,
 ): React.ReactChild {
   if (codeError != null) {
     throw codeError
@@ -725,7 +728,7 @@ function renderJSXElement(
   code: string,
   highlightBounds: HighlightBoundsForUids | null,
   editedText: ElementPath | null,
-  variablesInScope: VariablesInScope,
+  variablesInScope: VariableData,
 ): React.ReactElement {
   const createChildrenElement = (child: JSXElementChild): React.ReactChild => {
     const childPath = optionalMap((path) => EP.appendToPath(path, getUtopiaID(child)), elementPath)

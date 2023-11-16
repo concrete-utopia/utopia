@@ -1964,10 +1964,6 @@ export function createNotImported(path: string, variableName: string): ImportInf
 export type ActiveAndDefaultConditionValues = { active: boolean; default: boolean }
 export type ConditionValue = ActiveAndDefaultConditionValues | 'not-a-conditional'
 
-export interface VariablesInScope {
-  [name: string]: unknown
-}
-
 export interface ElementInstanceMetadata {
   elementPath: ElementPath
   element: Either<string, JSXElementChild>
