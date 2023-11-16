@@ -255,6 +255,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -395,6 +396,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
@@ -705,6 +707,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/a8d": Object {
     "attributeMetadatada": Object {},
@@ -901,6 +904,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/a8d/bbb~~~1": Object {
     "attributeMetadatada": Object {},
@@ -1040,6 +1044,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/a8d/bbb~~~2": Object {
     "attributeMetadatada": Object {},
@@ -1179,6 +1184,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/a8d/bbb~~~3": Object {
     "attributeMetadatada": Object {},
@@ -1318,6 +1324,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -1562,6 +1569,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -1702,6 +1710,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
@@ -1915,6 +1924,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -2158,6 +2168,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -2298,6 +2309,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:567": Object {
     "attributeMetadatada": Object {},
@@ -2418,6 +2430,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -2679,6 +2692,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -2819,6 +2833,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz": Object {
     "attributeMetadatada": Object {},
@@ -3090,6 +3105,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/4c1": Object {
     "attributeMetadatada": Object {},
@@ -3327,6 +3343,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/4c1/aaa~~~1": Object {
     "attributeMetadatada": Object {},
@@ -3504,6 +3521,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/4c1/aaa~~~1/b6e": Object {
     "attributeMetadatada": Object {},
@@ -3647,6 +3665,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/4c1/aaa~~~2": Object {
     "attributeMetadatada": Object {},
@@ -3824,6 +3843,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/4c1/aaa~~~2/b6e": Object {
     "attributeMetadatada": Object {},
@@ -3967,6 +3987,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/4c1/aaa~~~3": Object {
     "attributeMetadatada": Object {},
@@ -4144,6 +4165,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/4c1/aaa~~~3/b6e": Object {
     "attributeMetadatada": Object {},
@@ -4287,6 +4309,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -4599,6 +4622,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -4739,6 +4763,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz": Object {
     "attributeMetadatada": Object {},
@@ -5134,6 +5159,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80": Object {
     "attributeMetadatada": Object {},
@@ -5495,6 +5521,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~1": Object {
     "attributeMetadatada": Object {},
@@ -5781,6 +5808,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~1/d9d": Object {
     "attributeMetadatada": Object {},
@@ -6033,6 +6061,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~1/d9d/bbb~~~1": Object {
     "attributeMetadatada": Object {},
@@ -6218,6 +6247,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~1/d9d/bbb~~~1/d0c": Object {
     "attributeMetadatada": Object {},
@@ -6369,6 +6399,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~1/d9d/bbb~~~2": Object {
     "attributeMetadatada": Object {},
@@ -6554,6 +6585,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~1/d9d/bbb~~~2/d0c": Object {
     "attributeMetadatada": Object {},
@@ -6705,6 +6737,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~1/d9d/bbb~~~3": Object {
     "attributeMetadatada": Object {},
@@ -6890,6 +6923,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~1/d9d/bbb~~~3/d0c": Object {
     "attributeMetadatada": Object {},
@@ -7041,6 +7075,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~2": Object {
     "attributeMetadatada": Object {},
@@ -7327,6 +7362,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~2/d9d": Object {
     "attributeMetadatada": Object {},
@@ -7579,6 +7615,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~2/d9d/bbb~~~1": Object {
     "attributeMetadatada": Object {},
@@ -7764,6 +7801,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~2/d9d/bbb~~~1/d0c": Object {
     "attributeMetadatada": Object {},
@@ -7915,6 +7953,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~2/d9d/bbb~~~2": Object {
     "attributeMetadatada": Object {},
@@ -8100,6 +8139,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~2/d9d/bbb~~~2/d0c": Object {
     "attributeMetadatada": Object {},
@@ -8251,6 +8291,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~2/d9d/bbb~~~3": Object {
     "attributeMetadatada": Object {},
@@ -8436,6 +8477,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~2/d9d/bbb~~~3/d0c": Object {
     "attributeMetadatada": Object {},
@@ -8587,6 +8629,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~3": Object {
     "attributeMetadatada": Object {},
@@ -8873,6 +8916,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~3/d9d": Object {
     "attributeMetadatada": Object {},
@@ -9125,6 +9169,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~3/d9d/bbb~~~1": Object {
     "attributeMetadatada": Object {},
@@ -9310,6 +9355,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~3/d9d/bbb~~~1/d0c": Object {
     "attributeMetadatada": Object {},
@@ -9461,6 +9507,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~3/d9d/bbb~~~2": Object {
     "attributeMetadatada": Object {},
@@ -9646,6 +9693,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~3/d9d/bbb~~~2/d0c": Object {
     "attributeMetadatada": Object {},
@@ -9797,6 +9845,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~3/d9d/bbb~~~3": Object {
     "attributeMetadatada": Object {},
@@ -9982,6 +10031,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~3/d9d/bbb~~~3/d0c": Object {
     "attributeMetadatada": Object {},
@@ -10133,6 +10183,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -10388,6 +10439,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -10528,6 +10580,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz": Object {
     "attributeMetadatada": Object {},
@@ -10709,6 +10762,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa": Object {
     "attributeMetadatada": Object {},
@@ -10830,6 +10884,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb": Object {
     "attributeMetadatada": Object {},
@@ -10951,6 +11006,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -11194,6 +11250,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -11334,6 +11391,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
@@ -11532,6 +11590,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -11793,6 +11852,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -11933,6 +11993,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
@@ -12215,6 +12276,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/6a7": Object {
     "attributeMetadatada": Object {},
@@ -12462,6 +12524,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/6a7/bbb~~~1": Object {
     "attributeMetadatada": Object {},
@@ -12649,6 +12712,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/6a7/bbb~~~2": Object {
     "attributeMetadatada": Object {},
@@ -12836,6 +12900,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/6a7/bbb~~~3": Object {
     "attributeMetadatada": Object {},
@@ -13023,6 +13088,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -13284,6 +13350,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -13424,6 +13491,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
@@ -13706,6 +13774,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/dad": Object {
     "attributeMetadatada": Object {},
@@ -13953,6 +14022,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/dad/bbb~~~1": Object {
     "attributeMetadatada": Object {},
@@ -14140,6 +14210,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/dad/bbb~~~2": Object {
     "attributeMetadatada": Object {},
@@ -14327,6 +14398,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/dad/bbb~~~3": Object {
     "attributeMetadatada": Object {},
@@ -14514,6 +14586,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -14769,6 +14842,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -14909,6 +14983,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz": Object {
     "attributeMetadatada": Object {},
@@ -15090,6 +15165,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa": Object {
     "attributeMetadatada": Object {},
@@ -15211,6 +15287,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb": Object {
     "attributeMetadatada": Object {},
@@ -15332,6 +15409,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -15587,6 +15665,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -15727,6 +15806,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz": Object {
     "attributeMetadatada": Object {},
@@ -15944,6 +16024,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a97": Object {
     "attributeMetadatada": Object {},
@@ -16127,6 +16208,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a97/aaa~~~1": Object {
     "attributeMetadatada": Object {},
@@ -16249,6 +16331,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a97/aaa~~~2": Object {
     "attributeMetadatada": Object {},
@@ -16371,6 +16454,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -16642,6 +16726,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -16797,6 +16882,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
@@ -17145,6 +17231,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "attributeMetadatada": Object {},
@@ -17355,6 +17442,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -17625,6 +17713,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -17780,6 +17869,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
@@ -18128,6 +18218,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "attributeMetadatada": Object {},
@@ -18338,6 +18429,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -18609,6 +18701,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -18764,6 +18857,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
@@ -19163,6 +19257,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "attributeMetadatada": Object {},
@@ -19424,6 +19519,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -19695,6 +19791,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -19850,6 +19947,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
@@ -20249,6 +20347,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "attributeMetadatada": Object {},
@@ -20510,6 +20609,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -20752,6 +20852,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -20892,6 +20993,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:bbb": Object {
     "attributeMetadatada": Object {},
@@ -21012,6 +21114,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -21377,6 +21480,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -21517,6 +21621,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
@@ -22753,6 +22858,7 @@ export var storyboard = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a": Object {
     "attributeMetadatada": Object {},
@@ -23641,6 +23747,7 @@ export var storyboard = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc": Object {
     "attributeMetadatada": Object {},
@@ -24495,6 +24602,7 @@ export var storyboard = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/834~~~1": Object {
     "attributeMetadatada": Object {},
@@ -24875,6 +24983,7 @@ export var storyboard = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/834~~~1/604": Object {
     "attributeMetadatada": Object {},
@@ -25089,6 +25198,7 @@ export var storyboard = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/834~~~3": Object {
     "attributeMetadatada": Object {},
@@ -25469,6 +25579,7 @@ export var storyboard = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/834~~~3/604": Object {
     "attributeMetadatada": Object {},
@@ -25683,6 +25794,7 @@ export var storyboard = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/834~~~5": Object {
     "attributeMetadatada": Object {},
@@ -26063,6 +26175,7 @@ export var storyboard = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/834~~~5/604": Object {
     "attributeMetadatada": Object {},
@@ -26277,6 +26390,7 @@ export var storyboard = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/999~~~2": Object {
     "attributeMetadatada": Object {},
@@ -26695,6 +26809,7 @@ export var storyboard = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/999~~~2/000": Object {
     "attributeMetadatada": Object {},
@@ -26951,6 +27066,7 @@ export var storyboard = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/999~~~4": Object {
     "attributeMetadatada": Object {},
@@ -27369,6 +27485,7 @@ export var storyboard = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/999~~~4/000": Object {
     "attributeMetadatada": Object {},
@@ -27625,6 +27742,7 @@ export var storyboard = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/999~~~6": Object {
     "attributeMetadatada": Object {},
@@ -28043,6 +28161,7 @@ export var storyboard = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/999~~~6/000": Object {
     "attributeMetadatada": Object {},
@@ -28299,6 +28418,7 @@ export var storyboard = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -28564,6 +28684,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -28704,6 +28825,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz": Object {
     "attributeMetadatada": Object {},
@@ -28919,6 +29041,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa": Object {
     "attributeMetadatada": Object {},
@@ -29057,6 +29180,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb": Object {
     "attributeMetadatada": Object {},
@@ -29195,6 +29319,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -29439,6 +29564,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -29579,6 +29705,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
@@ -29768,6 +29895,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -30011,6 +30139,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -30151,6 +30280,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
@@ -30411,6 +30541,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -30700,6 +30831,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -30840,6 +30972,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
@@ -31088,6 +31221,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59": Object {
     "attributeMetadatada": Object {},
@@ -31285,6 +31419,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59/dd5": Object {
     "attributeMetadatada": Object {},
@@ -31431,6 +31566,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -31702,6 +31838,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -31857,6 +31994,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
@@ -32140,6 +32278,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "attributeMetadatada": Object {},
@@ -32287,6 +32426,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -32711,6 +32851,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -32866,6 +33007,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
@@ -33150,6 +33292,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "attributeMetadatada": Object {},
@@ -33297,6 +33440,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -33652,6 +33796,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -33791,6 +33936,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:b93": Object {
     "attributeMetadatada": Object {},
@@ -34564,6 +34710,7 @@ export var App = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:b93/0cf": Object {
     "attributeMetadatada": Object {},
@@ -34686,6 +34833,7 @@ export var App = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:b93/1a1": Object {
     "attributeMetadatada": Object {},
@@ -34808,6 +34956,7 @@ export var App = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:b93/218": Object {
     "attributeMetadatada": Object {},
@@ -34930,6 +35079,7 @@ export var App = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:b93/2f0": Object {
     "attributeMetadatada": Object {},
@@ -35052,6 +35202,7 @@ export var App = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:b93/301": Object {
     "attributeMetadatada": Object {},
@@ -35174,6 +35325,7 @@ export var App = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:b93/315": Object {
     "attributeMetadatada": Object {},
@@ -35296,6 +35448,7 @@ export var App = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:b93/4cf": Object {
     "attributeMetadatada": Object {},
@@ -35495,6 +35648,7 @@ export var App = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:b93/4cf/477": Object {
     "attributeMetadatada": Object {},
@@ -35655,6 +35809,7 @@ export var App = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:b93/54b": Object {
     "attributeMetadatada": Object {},
@@ -35777,6 +35932,7 @@ export var App = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:b93/59c": Object {
     "attributeMetadatada": Object {},
@@ -35899,6 +36055,7 @@ export var App = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:b93/5b9": Object {
     "attributeMetadatada": Object {},
@@ -36021,6 +36178,7 @@ export var App = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:b93/7d0": Object {
     "attributeMetadatada": Object {},
@@ -36143,6 +36301,7 @@ export var App = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:b93/8aa": Object {
     "attributeMetadatada": Object {},
@@ -36265,6 +36424,7 @@ export var App = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:b93/8ce": Object {
     "attributeMetadatada": Object {},
@@ -36389,6 +36549,7 @@ export var App = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:b93/995": Object {
     "attributeMetadatada": Object {},
@@ -36511,6 +36672,7 @@ export var App = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:b93/a17": Object {
     "attributeMetadatada": Object {},
@@ -36633,6 +36795,7 @@ export var App = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:b93/d00": Object {
     "attributeMetadatada": Object {},
@@ -36755,6 +36918,7 @@ export var App = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:b93/d18": Object {
     "attributeMetadatada": Object {},
@@ -36877,6 +37041,7 @@ export var App = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:b93/d7f": Object {
     "attributeMetadatada": Object {},
@@ -36999,6 +37164,7 @@ export var App = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:b93/f77": Object {
     "attributeMetadatada": Object {},
@@ -37123,6 +37289,7 @@ export var App = (props) => {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -37384,6 +37551,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -37524,6 +37692,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
@@ -37806,6 +37975,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/517": Object {
     "attributeMetadatada": Object {},
@@ -38053,6 +38223,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/517/bbb~~~1": Object {
     "attributeMetadatada": Object {},
@@ -38240,6 +38411,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/517/bbb~~~2": Object {
     "attributeMetadatada": Object {},
@@ -38427,6 +38599,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/517/bbb~~~3": Object {
     "attributeMetadatada": Object {},
@@ -38614,6 +38787,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -38875,6 +39049,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -39015,6 +39190,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
@@ -39298,6 +39474,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/5d8": Object {
     "attributeMetadatada": Object {},
@@ -39546,6 +39723,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/5d8/bbb~~~1": Object {
     "attributeMetadatada": Object {},
@@ -39734,6 +39912,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/5d8/bbb~~~2": Object {
     "attributeMetadatada": Object {},
@@ -39922,6 +40101,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/5d8/bbb~~~3": Object {
     "attributeMetadatada": Object {},
@@ -40110,6 +40290,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -40371,6 +40552,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -40511,6 +40693,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
@@ -40800,6 +40983,37 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {
+      "nestedThings": Array [
+        Object {
+          "a": Object {
+            "b": Object {
+              "c": Array [
+                1,
+              ],
+            },
+          },
+        },
+        Object {
+          "a": Object {
+            "b": Object {
+              "c": Array [
+                2,
+              ],
+            },
+          },
+        },
+        Object {
+          "a": Object {
+            "b": Object {
+              "c": Array [
+                3,
+              ],
+            },
+          },
+        },
+      ],
+    },
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/d7c": Object {
     "attributeMetadatada": Object {},
@@ -41054,6 +41268,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/d7c/bbb~~~1": Object {
     "attributeMetadatada": Object {},
@@ -41241,6 +41456,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/d7c/bbb~~~2": Object {
     "attributeMetadatada": Object {},
@@ -41428,6 +41644,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/d7c/bbb~~~3": Object {
     "attributeMetadatada": Object {},
@@ -41615,6 +41832,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -41882,6 +42100,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -42037,6 +42256,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
@@ -42280,6 +42500,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "attributeMetadatada": Object {},
@@ -42427,6 +42648,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -42672,6 +42894,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -42789,6 +43012,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:fff": Object {
     "attributeMetadatada": Object {},
@@ -42954,6 +43178,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:fff/aaa": Object {
     "attributeMetadatada": Object {},
@@ -43081,6 +43306,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:fff/bbb": Object {
     "attributeMetadatada": Object {},
@@ -43208,6 +43434,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -43443,6 +43670,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "eee/fff/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -43560,6 +43788,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "eee/fff/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
@@ -43849,6 +44078,7 @@ export var storyboard = (
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "eee/fff/app-entity:aaa/bbb": Object {
     "attributeMetadatada": Object {},
@@ -44080,6 +44310,7 @@ export var storyboard = (
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -44300,6 +44531,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "ccc/ddd/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -44417,6 +44649,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "ccc/ddd/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
@@ -44660,6 +44893,11 @@ export var storyboard = (
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {
+      "storeRef": Object {
+        "current": Object {},
+      },
+    },
   },
   "ccc/ddd/app-entity:aaa/bbb": Object {
     "attributeMetadatada": Object {},
@@ -44802,6 +45040,11 @@ export var storyboard = (
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {
+      "storeRef": Object {
+        "current": Object {},
+      },
+    },
   },
 }
 `;
@@ -45022,6 +45265,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "ccc/ddd/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -45139,6 +45383,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "ccc/ddd/app-entity:card": Object {
     "attributeMetadatada": Object {},
@@ -45259,6 +45504,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -45487,6 +45733,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -45604,6 +45851,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
@@ -45802,6 +46050,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "attributeMetadatada": Object {},
@@ -45949,6 +46198,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -46171,6 +46421,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -46288,6 +46539,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
@@ -46577,6 +46829,7 @@ export var storyboard = (
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene/app-entity:aaa/848": Object {
     "attributeMetadatada": Object {},
@@ -46735,6 +46988,7 @@ export var storyboard = (
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene/app-entity:aaa/ada": Object {
     "attributeMetadatada": Object {},
@@ -46893,6 +47147,7 @@ export var storyboard = (
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -47114,6 +47369,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -47231,6 +47487,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene/app-entity:BBB": Object {
     "attributeMetadatada": Object {},
@@ -47368,6 +47625,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -47634,6 +47892,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "eee/fff/app": Object {
     "attributeMetadatada": Object {},
@@ -47774,6 +48033,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "eee/fff/app:aaa": Object {
     "attributeMetadatada": Object {},
@@ -48211,6 +48471,7 @@ export var storyboard = (
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "eee/fff/app:aaa/ddd": Object {
     "attributeMetadatada": Object {},
@@ -48338,6 +48599,7 @@ export var storyboard = (
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "eee/fff/app:aaa/ggg": Object {
     "attributeMetadatada": Object {},
@@ -48579,6 +48841,7 @@ export var storyboard = (
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "eee/fff/app:aaa/ggg/bbb": Object {
     "attributeMetadatada": Object {},
@@ -48818,6 +49081,7 @@ export var storyboard = (
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "eee/fff/app:aaa/ggg/bbb/7fd": Object {
     "attributeMetadatada": Object {},
@@ -48981,6 +49245,7 @@ export var storyboard = (
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "eee/fff/app:aaa/ggg/bbb/7fd/ccc": Object {
     "attributeMetadatada": Object {},
@@ -49142,6 +49407,7 @@ export var storyboard = (
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -49390,6 +49656,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -49530,6 +49797,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
@@ -49699,6 +49967,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb": Object {
     "attributeMetadatada": Object {},
@@ -49837,6 +50106,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -50083,6 +50353,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -50223,6 +50494,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
@@ -50343,6 +50615,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -50619,6 +50892,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -50759,6 +51033,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
@@ -51070,6 +51345,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/f62": Object {
     "attributeMetadatada": Object {},
@@ -51346,6 +51622,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/f62/bbb~~~1": Object {
     "attributeMetadatada": Object {},
@@ -51557,6 +51834,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/f62/bbb~~~1/ccc": Object {
     "attributeMetadatada": Object {},
@@ -51738,6 +52016,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/f62/bbb~~~1/ccc/b6e": Object {
     "attributeMetadatada": Object {},
@@ -51885,6 +52164,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/f62/bbb~~~2": Object {
     "attributeMetadatada": Object {},
@@ -52096,6 +52376,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/f62/bbb~~~2/ccc": Object {
     "attributeMetadatada": Object {},
@@ -52277,6 +52558,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/f62/bbb~~~2/ccc/b6e": Object {
     "attributeMetadatada": Object {},
@@ -52424,6 +52706,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/f62/bbb~~~3": Object {
     "attributeMetadatada": Object {},
@@ -52635,6 +52918,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/f62/bbb~~~3/ccc": Object {
     "attributeMetadatada": Object {},
@@ -52816,6 +53100,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/f62/bbb~~~3/ccc/b6e": Object {
     "attributeMetadatada": Object {},
@@ -52963,6 +53248,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -53208,6 +53494,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -53348,6 +53635,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": Object {},
@@ -53468,6 +53756,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
@@ -53723,6 +54012,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": Object {},
@@ -53863,6 +54153,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz": Object {
     "attributeMetadatada": Object {},
@@ -54051,6 +54342,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cloner": Object {
     "attributeMetadatada": Object {},
@@ -54209,6 +54501,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cloner/cloned": Object {
     "attributeMetadatada": Object {},
@@ -54337,6 +54630,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;

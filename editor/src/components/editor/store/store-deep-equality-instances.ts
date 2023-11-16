@@ -1775,7 +1775,7 @@ export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<Eleme
     (metadata) => metadata.textContent,
     nullableDeepEquality(StringKeepDeepEquality),
     (m) => m.variablesInScope,
-    createCallWithTripleEquals(),
+    createCallWithShallowEquals(),
     elementInstanceMetadata,
   )
 

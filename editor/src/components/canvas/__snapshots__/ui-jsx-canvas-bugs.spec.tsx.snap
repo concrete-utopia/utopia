@@ -214,6 +214,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
   "sb/scene/app": Object {
     "attributeMetadatada": Object {},
@@ -331,6 +332,7 @@ Object {
       "usesParentBounds": false,
     },
     "textContent": null,
+    "variablesInScope": Object {},
   },
 }
 `;
