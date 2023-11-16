@@ -9,7 +9,7 @@ import {
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import { mouseClickAtPoint, pressKey } from '../canvas/event-helpers.test-utils'
 import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
-import { getPrintedUiJsCode } from '../canvas/ui-jsx.test-utils'
+import { TestAppUID, TestSceneUID, getPrintedUiJsCode } from '../canvas/ui-jsx.test-utils'
 import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
@@ -17,6 +17,8 @@ import {
 import { MaxContent } from './inspector-common'
 import { ResizeToFitControlTestId } from './resize-to-fit-control'
 import * as EP from '../../core/shared/element-path'
+import { selectComponents } from '../editor/actions/meta-actions'
+import { BakedInStoryboardUID } from '../../core/model/scene-utils'
 
 describe('Resize to fit control', () => {
   it('resizes to fit', async () => {
@@ -102,6 +104,39 @@ describe('Resize to fit control', () => {
     expect(view.style.flexShrink).toEqual('')
     expect(view.style.flexGrow).toEqual('')
     expect(view.style.flexBasis).toEqual('')
+  })
+  it('when a container div has only absolute children the children bounding box is added as a frame', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div data-uid='component-root'>
+          <div data-uid='container'>
+          <div data-uid='child1' style={{position: 'absolute', left: 50, top: 40, width: 122, height: 112}} />
+          <div data-uid='child2' style={{position: 'absolute', left: 60, top: 30, height: 22}}>hello div</div>
+        </div>
+        </div>
+    `),
+      'await-first-dom-report',
+    )
+    const path = EP.fromString(
+      `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:component-root/container`,
+    )
+    await editor.dispatch(selectComponents([path], false), true)
+    await editor.getDispatchFollowUpActionsFinished()
+
+    await expectSingleUndo2Saves(editor, async () => {
+      await clickResizeTo(editor, ResizeToFitControlTestId)
+    })
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<div data-uid='component-root'>
+          <div data-uid='container' style={{position: 'absolute', top: 30, left: 50, width: 122, height: 122}}>
+            <div data-uid='child1' style={{position: 'absolute', left: 0, top: 10, width: 122, height: 112}} />
+            <div data-uid='child2' style={{position: 'absolute', left: 10, top: 0, height: 22}}>hello div</div>
+          </div>
+        </div>`,
+      ),
+    )
   })
   describe('for groups', () => {
     describe('targeting multiple elements', () => {

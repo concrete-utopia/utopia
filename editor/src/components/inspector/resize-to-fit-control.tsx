@@ -68,7 +68,9 @@ const isApplicableSelector = createCachedSelector(
 
     const children = MetadataUtils.getChildrenOrdered(metadata, pathTrees, firstSelectedView)
     const targetsWithOnlyAbsoluteChildren =
-      children.length > 0 && children.every(MetadataUtils.isPositionAbsolute)
+      children.length > 0 &&
+      children.every(MetadataUtils.isPositionAbsolute) &&
+      !treatElementAsGroupLike(metadata, firstSelectedView)
 
     const isApplicable: boolean =
       targetsWithOnlyAbsoluteChildren ||
