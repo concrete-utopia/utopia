@@ -1,6 +1,6 @@
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import { type ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import type { CanvasCommand } from '../../canvas/commands/commands'
@@ -26,6 +26,8 @@ import {
 import type { InspectorStrategy } from './inspector-strategy'
 import { queueTrueUpElement } from '../../canvas/commands/queue-true-up-command'
 import { trueUpGroupElementChanged } from '../../../components/editor/store/editor-state'
+import type { AllElementProps } from '../../../components/editor/store/editor-state'
+import { convertSizelessDivToFrameCommands } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
 
 const CHILDREN_CONVERTED_TOAST_ID = 'CHILDREN_CONVERTED_TOAST_ID'
 
@@ -104,5 +106,27 @@ export const hugContentsBasicStrategy = (
     }
 
     return elements.flatMap((path) => hugContentsSingleElement(axis, metadata, pathTrees, path))
+  },
+})
+export const hugContentsAbsoluteStrategy = (
+  metadata: ElementInstanceMetadataMap,
+  targets: ElementPath[],
+  pathTrees: ElementPathTrees,
+  allElementProps: AllElementProps,
+): InspectorStrategy => ({
+  name: 'Set to Hug Absolute',
+  strategy: () => {
+    const targetsWithOnlyAbsoluteChildren = targets.filter((target) => {
+      const children = MetadataUtils.getChildrenOrdered(metadata, pathTrees, target)
+      return children.length > 0 && children.every(MetadataUtils.isPositionAbsolute)
+    })
+
+    if (targetsWithOnlyAbsoluteChildren.length === 0) {
+      return null
+    }
+
+    return targetsWithOnlyAbsoluteChildren.flatMap(
+      (path) => convertSizelessDivToFrameCommands(metadata, allElementProps, pathTrees, path) ?? [],
+    )
   },
 })
