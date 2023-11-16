@@ -1,3 +1,5 @@
+/* this should be loaded from @liveblocks/react-comments/styles.css, but we need to fix the webpack build for that */
+
 .lb-root {
   --lb-radius: 0.5em;
   --lb-spacing: 1em;
