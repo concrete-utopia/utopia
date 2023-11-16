@@ -328,7 +328,11 @@ export function isImportedComponent(
   const importInfo = elementInstanceMetadata?.importInfo
   if (importInfo != null && isImportedOrigin(importInfo)) {
     const importKey = importInfo.filePath
-    const isMappedFilePath = filePathMappings.some(([re, _]) => re.test(importKey))
+    const isMappedFilePath = filePathMappings.some(([re, _]) => {
+      const result = re.test(importKey)
+      re.lastIndex = 0 // Reset the regex!
+      return result
+    })
     return !isMappedFilePath && !importKey.startsWith('.') && !importKey.startsWith('/')
   } else {
     return false
@@ -944,7 +948,9 @@ export function applyFilePathMappingsToFilePath(
     // FIXME this is limited to only applying the first mapping, both from the paths object, and from the array of aliased paths
     const [mapFrom, mapToArray] = nextMapping
     const mapTo = mapToArray[0]
-    return working.replace(mapFrom, mapTo)
+    const newWorking = working.replace(mapFrom, mapTo)
+    mapFrom.lastIndex = 0 // Reset the regex!
+    return newWorking
   }, filepath)
 }
 
