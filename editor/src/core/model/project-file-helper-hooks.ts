@@ -7,6 +7,7 @@ import { RevisionsState, textFile, textFileContents } from '../shared/project-fi
 import type { SteganoTextData } from '../shared/stegano-text'
 import { getTextFileByPath } from '../../components/custom-code/code-file.test-utils'
 import type { EditorAction } from '../../components/editor/action-types'
+import { applyPrettier } from 'utopia-vscode-common'
 
 export function useReParseOpenProjectFile(): () => void {
   const dispatch = useDispatch()
@@ -38,7 +39,7 @@ function spliceCode(
   const originalBefore = originalCode.slice(0, originalStringData.startPosition)
   const originalAfter = originalCode.slice(originalStringData.endPosition)
 
-  return '' + originalBefore + updatedString + originalAfter
+  return applyPrettier('' + originalBefore + updatedString + originalAfter, false).formatted
 }
 
 export function useUpdateStringRun(): (

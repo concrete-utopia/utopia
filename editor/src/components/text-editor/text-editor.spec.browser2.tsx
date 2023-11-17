@@ -1751,7 +1751,7 @@ describe('Use the text editor', () => {
 import { Storyboard, Scene } from 'utopia-api'
 
 const StoryboardWrapper = ({ style }) => {
-  const text = " UtopiaHello"
+  const text = ' UtopiaHello'
   return (
     <div
       data-uid='div'
@@ -1832,7 +1832,7 @@ export var storyboard = (
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
 import { Storyboard, Scene } from 'utopia-api'
 
-const variable = "this is not a constant"
+const variable = 'this is not a constant'
 
 const StoryboardWrapper = ({ style, text }) => {
   return (
@@ -1884,7 +1884,7 @@ export var storyboard = (
 import { Storyboard, Scene } from 'utopia-api'
 
 const StoryboardWrapper = ({ style }) => {
-  const text = "\\"quote\\" \'unquote\'\\nfinHello"
+  const text = '"quote" \\'unquote\\'\\nfinHello'
   return (
     <div
       data-uid='div'
@@ -2061,9 +2061,9 @@ export var storyboard = (
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
 import { Storyboard, Scene } from 'utopia-api'
 
-const aaa = "111aaa"
-const bbb = "222bbb"
-const ccc = "333ccc"
+const aaa = '111aaa'
+const bbb = '222bbb'
+const ccc = '333ccc'
 
 export var storyboard = (
   <Storyboard>
