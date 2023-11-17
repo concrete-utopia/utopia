@@ -2063,9 +2063,6 @@ export const UPDATE_FNS = {
     return setModeState(action.mode, editor)
   },
   TOGGLE_CANVAS_IS_LIVE: (editor: EditorModel, derived: DerivedState): EditorModel => {
-    if (editor.multiplayer.following != null) {
-      return editor
-    }
     // same as UPDATE_EDITOR_MODE, but clears the drag state
     if (isLiveMode(editor.mode)) {
       return setModeState(EditorModes.selectMode(editor.mode.controlId, false, 'none'), editor)
