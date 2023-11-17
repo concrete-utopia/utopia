@@ -20,6 +20,7 @@ import CanvasActions from './canvas-actions'
 import { switchEditorMode, updateMultiplayerState } from '../editor/actions/action-creators'
 import { EditorModes } from '../editor/editor-modes'
 import { multiplayerStateFollowing } from '../editor/store/editor-state'
+import { assertNever } from '../../core/shared/utils'
 
 export const MultiplayerPresence = React.memo(() => {
   const dispatch = useDispatch()
@@ -288,10 +289,17 @@ const FollowingOverlay = React.memo(() => {
         case 'live':
           actions.push(switchEditorMode(EditorModes.liveMode(null), undefined, true))
           break
-        default:
+        case 'comment':
+        case 'insert':
+        case 'select':
+        case 'textEdit':
+        case null:
           actions.push(
             switchEditorMode(EditorModes.selectMode(null, false, 'none'), undefined, true),
           )
+          break
+        default:
+          assertNever(followed.presence.mode)
       }
     }
     if (actions.length > 0) {
