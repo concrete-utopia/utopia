@@ -311,7 +311,6 @@ import type {
   UpdateConditionalExpression,
   SetMapCountOverride,
   ScrollToPosition,
-  ApplyCollabFileUpdate,
   UpdateTopLevelElements,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
@@ -5332,16 +5331,6 @@ export const UPDATE_FNS = {
     )
 
     return updatedEditor
-  },
-  APPLY_COLLAB_FILE_UPDATE: (action: ApplyCollabFileUpdate, editor: EditorModel): EditorModel => {
-    return modifyParseSuccessAtPath(
-      action.fullPath,
-      editor,
-      (success) => {
-        return success
-      },
-      false,
-    )
   },
   UPDATE_TOP_LEVEL_ELEMENTS: (action: UpdateTopLevelElements, editor: EditorModel): EditorModel => {
     const updatedEditor = modifyParseSuccessAtPath(

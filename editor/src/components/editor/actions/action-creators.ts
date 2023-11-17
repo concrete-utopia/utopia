@@ -220,7 +220,6 @@ import type {
   WrapInElementWith,
   ScrollToPosition,
   UpdateProjectServerState,
-  ApplyCollabFileUpdate,
   UpdateTopLevelElements,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
@@ -1662,17 +1661,6 @@ export function updateProjectServerState(
   return {
     action: 'UPDATE_PROJECT_SERVER_STATE',
     serverState: projectServerState,
-  }
-}
-
-export function applyCollabFileUpdate(
-  fullPath: string,
-  collabFileUpdate: CollabFile,
-): ApplyCollabFileUpdate {
-  return {
-    action: 'APPLY_COLLAB_FILE_UPDATE',
-    fullPath: fullPath,
-    update: collabFileUpdate,
   }
 }
 

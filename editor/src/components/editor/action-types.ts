@@ -1051,12 +1051,6 @@ export interface UpdateProjectServerState {
   serverState: ProjectServerState
 }
 
-export interface ApplyCollabFileUpdate {
-  action: 'APPLY_COLLAB_FILE_UPDATE'
-  fullPath: string
-  update: CollabFile
-}
-
 export interface UpdateTopLevelElements {
   action: 'UPDATE_TOP_LEVEL_ELEMENTS'
   fullPath: string
@@ -1233,7 +1227,6 @@ export type EditorAction =
   | FromVSCodeAction
   | TruncateHistory
   | UpdateProjectServerState
-  | ApplyCollabFileUpdate
   | UpdateTopLevelElements
 
 export type DispatchPriority =
