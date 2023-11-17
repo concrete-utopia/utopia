@@ -220,7 +220,7 @@ import type {
   WrapInElementWith,
   ScrollToPosition,
   UpdateProjectServerState,
-  UpdateTopLevelElements,
+  UpdateTopLevelElementsFromCollaborationUpdate,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -1664,12 +1664,12 @@ export function updateProjectServerState(
   }
 }
 
-export function updateTopLevelElements(
+export function updateTopLevelElementsFromCollaborationUpdate(
   fullPath: string,
   topLevelElements: Array<TopLevelElement>,
-): UpdateTopLevelElements {
+): UpdateTopLevelElementsFromCollaborationUpdate {
   return {
-    action: 'UPDATE_TOP_LEVEL_ELEMENTS',
+    action: 'UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION_UPDATE',
     fullPath: fullPath,
     topLevelElements: topLevelElements,
   }

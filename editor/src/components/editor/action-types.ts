@@ -1051,8 +1051,8 @@ export interface UpdateProjectServerState {
   serverState: ProjectServerState
 }
 
-export interface UpdateTopLevelElements {
-  action: 'UPDATE_TOP_LEVEL_ELEMENTS'
+export interface UpdateTopLevelElementsFromCollaborationUpdate {
+  action: 'UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION_UPDATE'
   fullPath: string
   topLevelElements: Array<TopLevelElement>
 }
@@ -1227,7 +1227,7 @@ export type EditorAction =
   | FromVSCodeAction
   | TruncateHistory
   | UpdateProjectServerState
-  | UpdateTopLevelElements
+  | UpdateTopLevelElementsFromCollaborationUpdate
 
 export type DispatchPriority =
   | 'everyone'

@@ -388,8 +388,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_CONDITIONAL_EXPRESSION(action, state)
     case 'SWITCH_CONDITIONAL_BRANCHES':
       return UPDATE_FNS.SWITCH_CONDITIONAL_BRANCHES(action, state)
-    case 'UPDATE_TOP_LEVEL_ELEMENTS':
-      return UPDATE_FNS.UPDATE_TOP_LEVEL_ELEMENTS(action, state)
+    case 'UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION_UPDATE':
+      return UPDATE_FNS.UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION_UPDATE(action, state)
     default:
       return state
   }

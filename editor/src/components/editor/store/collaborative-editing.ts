@@ -24,7 +24,7 @@ import type { EditorAction, EditorDispatch } from '../action-types'
 import {
   deleteFile,
   updateProjectContents,
-  updateTopLevelElements,
+  updateTopLevelElementsFromCollaborationUpdate,
 } from '../actions/action-creators'
 import { assertNever, isBrowserEnvironment } from '../../../core/shared/utils'
 import type { ParseSuccess } from '../../../core/shared/project-file-types'
@@ -254,7 +254,7 @@ function updateEntireProjectContents(
       case 'add':
         if (changeEntry.newValue != null) {
           actions.push(
-            updateTopLevelElements(
+            updateTopLevelElementsFromCollaborationUpdate(
               filename,
               (changeEntry.newValue as CollabTextFileTopLevelElements).toArray(),
             ),
@@ -302,7 +302,7 @@ function updateTopLevelElementsOfFile(
       newTopLevelElements.push(...elementsToPush)
     }
 
-    dispatch([updateTopLevelElements(filePath, newTopLevelElements)])
+    dispatch([updateTopLevelElementsFromCollaborationUpdate(filePath, newTopLevelElements)])
   }
 }
 

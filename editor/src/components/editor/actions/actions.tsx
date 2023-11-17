@@ -311,7 +311,7 @@ import type {
   UpdateConditionalExpression,
   SetMapCountOverride,
   ScrollToPosition,
-  UpdateTopLevelElements,
+  UpdateTopLevelElementsFromCollaborationUpdate,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -5332,7 +5332,10 @@ export const UPDATE_FNS = {
 
     return updatedEditor
   },
-  UPDATE_TOP_LEVEL_ELEMENTS: (action: UpdateTopLevelElements, editor: EditorModel): EditorModel => {
+  UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION_UPDATE: (
+    action: UpdateTopLevelElementsFromCollaborationUpdate,
+    editor: EditorModel,
+  ): EditorModel => {
     const updatedEditor = modifyParseSuccessAtPath(
       action.fullPath,
       editor,
