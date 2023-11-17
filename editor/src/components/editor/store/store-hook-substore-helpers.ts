@@ -1,4 +1,4 @@
-import { type EditorState } from './editor-state'
+import type { EditorState } from './editor-state'
 
 export const EmptyEditorStateForKeysOnly: EditorState = {
   id: null,
