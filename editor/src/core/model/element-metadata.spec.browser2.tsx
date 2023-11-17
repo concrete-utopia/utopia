@@ -949,7 +949,7 @@ describe('isAutofocusable/isManuallyFocusableComponent', () => {
         autoFocusedPaths,
         filePathMappings,
       ),
-    ).toBeTruthy()
+    ).toEqual(true)
   })
 })
 
