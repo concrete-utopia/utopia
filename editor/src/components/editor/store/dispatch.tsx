@@ -757,7 +757,7 @@ function applyProjectChangesToEditor(
   frozenEditorState: EditorState,
   projectChanges: ProjectChanges,
 ): void {
-  const updatedFileNames = projectChanges.fileChanges.collabProjectChanges.map(
+  const updatedFileNames = projectChanges.fileChanges.changesForVSCode.map(
     (fileChange) => fileChange.fullPath,
   )
   const updatedAndReverseDepFilenames = getTransitiveReverseDependencies(
