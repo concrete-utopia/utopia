@@ -14,7 +14,9 @@ import { Avatar, Tooltip, useColorTheme } from '../uuiui'
 import { Substores, useEditorState } from './editor/store/store-hook'
 import { unless, when } from '../utils/react-conditionals'
 import { useDispatch } from './editor/store/dispatch-context'
-import { updateMultiplayerState } from './editor/actions/action-creators'
+import { switchEditorMode, updateMultiplayerState } from './editor/actions/action-creators'
+import { EditorModes } from './editor/editor-modes'
+import type { EditorAction } from './editor/action-types'
 
 const MAX_VISIBLE_OTHER_PLAYERS = 4
 
@@ -82,16 +84,26 @@ const MultiplayerUserBar = React.memo(() => {
     (store) => store.editor.multiplayer.following,
     'MultiplayerUserBar following',
   )
+  const followMode = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.multiplayer.followMode,
+    'MultiplayerUserBar followMode',
+  )
 
   const toggleFollowing = React.useCallback(
     (id: string) => () => {
-      dispatch([
+      let actions: EditorAction[] = [
         updateMultiplayerState({
           following: id === following ? null : id,
+          followMode: null,
         }),
-      ])
+      ]
+      if (followMode != null) {
+        actions.push(switchEditorMode(EditorModes.selectMode(null, false, 'none'), undefined, true))
+      }
+      dispatch(actions)
     },
-    [dispatch, following],
+    [dispatch, following, followMode],
   )
 
   if (self.presence.name == null) {

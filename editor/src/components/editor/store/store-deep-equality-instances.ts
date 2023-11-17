@@ -4143,11 +4143,13 @@ export const TrueUpTargetKeepDeepEquality: KeepDeepEqualityCall<TrueUpTarget> = 
 }
 
 export const MultiplayerStateKeepDeepEquality: KeepDeepEqualityCall<MultiplayerState> =
-  combine2EqualityCalls(
+  combine3EqualityCalls(
     (data) => data.roomId,
     NullableStringKeepDeepEquality,
     (data) => data.following,
     NullableStringKeepDeepEquality,
+    (data) => data.followMode,
+    createCallWithTripleEquals(),
     multiplayerState,
   )
 

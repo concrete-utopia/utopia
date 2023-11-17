@@ -1,6 +1,7 @@
 import { createClient } from '@liveblocks/client'
 import { createRoomContext } from '@liveblocks/react'
 import type { CanvasVector, WindowPoint } from './src/core/shared/math-utils'
+import type { MultiplayerStateFollowMode } from './src/components/editor/store/editor-state'
 
 export const liveblocksThrottle = 100 // ms
 
@@ -19,6 +20,7 @@ export type Presence = {
   canvasOffset: CanvasVector | null
   colorIndex: number | null
   picture: string | null // TODO remove this once able to resolve users
+  mode: MultiplayerStateFollowMode | null
 }
 
 export function initialPresence(): Presence {
@@ -29,6 +31,7 @@ export function initialPresence(): Presence {
     canvasOffset: null,
     colorIndex: null,
     picture: null,
+    mode: null,
   }
 }
 

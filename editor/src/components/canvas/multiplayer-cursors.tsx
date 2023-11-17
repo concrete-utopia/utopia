@@ -4,6 +4,7 @@ import { useOthers, useRoom, useSelf, useUpdateMyPresence } from '../../../liveb
 import type { CanvasPoint } from '../../core/shared/math-utils'
 import { pointsEqual, windowPoint } from '../../core/shared/math-utils'
 import { UtopiaTheme, useColorTheme } from '../../uuiui'
+import type { EditorAction } from '../editor/action-types'
 import { isLoggedIn } from '../editor/action-types'
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import { canvasPointToWindowPoint, windowToCanvasCoordinates } from './dom-lookup'
@@ -15,9 +16,9 @@ import {
 } from '../../core/shared/multiplayer'
 import { useKeepShallowReferenceEquality } from '../../utils/react-performance'
 import { useDispatch } from '../editor/store/dispatch-context'
-import type { CanvasAction } from './canvas-types'
 import CanvasActions from './canvas-actions'
-import { updateMultiplayerState } from '../editor/actions/action-creators'
+import { switchEditorMode, updateMultiplayerState } from '../editor/actions/action-creators'
+import { EditorModes } from '../editor/editor-modes'
 
 export const MultiplayerPresence = React.memo(() => {
   const dispatch = useDispatch()
@@ -50,6 +51,11 @@ export const MultiplayerPresence = React.memo(() => {
     (store) => store.editor.canvas.roundedCanvasOffset,
     'MultiplayerPresence canvasOffset',
   )
+  const mode = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.mode,
+    'MultiplayerPresence mode',
+  )
 
   React.useEffect(() => {
     // when the login state changes, update the presence info
@@ -67,9 +73,9 @@ export const MultiplayerPresence = React.memo(() => {
     if (!isLoggedIn(loginState)) {
       return
     }
-    // when the canvas is panned or zoomed, update the presence
-    updateMyPresence({ canvasScale, canvasOffset })
-  }, [canvasScale, canvasOffset, updateMyPresence, loginState])
+    // when the canvas is panned or zoomed or the mde changes, update the presence
+    updateMyPresence({ canvasScale, canvasOffset, mode: mode.type })
+  }, [canvasScale, canvasOffset, updateMyPresence, loginState, mode])
 
   React.useEffect(() => {
     // when the mouse moves over the canvas, update the presence cursor
@@ -85,8 +91,8 @@ export const MultiplayerPresence = React.memo(() => {
   }, [updateMyPresence])
 
   React.useEffect(() => {
-    // when the room changes, reset following
-    dispatch([updateMultiplayerState({ following: null })])
+    // when the room changes, reset
+    dispatch([updateMultiplayerState({ following: null, followMode: null })])
   }, [room.id, dispatch])
 
   if (!isLoggedIn(loginState)) {
@@ -226,17 +232,22 @@ const FollowingOverlay = React.memo(() => {
   const following = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.multiplayer.following,
-    'MultiplayerPresence following',
+    'FollowingOverlay following',
   )
   const canvasScale = useEditorState(
     Substores.canvasOffset,
     (store) => store.editor.canvas.scale,
-    'MultiplayerPresence canvasScale',
+    'FollowingOverlay canvasScale',
   )
   const canvasOffset = useEditorState(
     Substores.canvasOffset,
     (store) => store.editor.canvas.roundedCanvasOffset,
-    'MultiplayerPresence canvasOffset',
+    'FollowingOverlay canvasOffset',
+  )
+  const mode = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.mode,
+    'FollowingOverlay mode',
   )
 
   const followed = React.useMemo(() => {
@@ -247,12 +258,16 @@ const FollowingOverlay = React.memo(() => {
     // when following another player, apply its canvas constraints
     if (followed == null) {
       if (following != null) {
-        dispatch([updateMultiplayerState({ following: null })]) // reset
+        // reset if the other player disconnects
+        dispatch([
+          updateMultiplayerState({ following: null, followMode: null }),
+          switchEditorMode(EditorModes.selectMode(null, false, 'none'), undefined, true),
+        ])
       }
       return
     }
 
-    let actions: CanvasAction[] = []
+    let actions: EditorAction[] = []
     if (followed.presence.canvasScale != null && followed.presence.canvasScale !== canvasScale) {
       actions.push(CanvasActions.zoom(followed.presence.canvasScale, null, true))
     }
@@ -262,10 +277,22 @@ const FollowingOverlay = React.memo(() => {
     ) {
       actions.push(CanvasActions.positionCanvas(followed.presence.canvasOffset, true))
     }
+    if (followed.presence.mode !== mode.type) {
+      actions.push(updateMultiplayerState({ followMode: followed.presence.mode }))
+      switch (followed.presence.mode) {
+        case 'live':
+          actions.push(switchEditorMode(EditorModes.liveMode(null), undefined, true))
+          break
+        default:
+          actions.push(
+            switchEditorMode(EditorModes.selectMode(null, false, 'none'), undefined, true),
+          )
+      }
+    }
     if (actions.length > 0) {
       dispatch(actions)
     }
-  }, [followed, canvasScale, canvasOffset, dispatch, following])
+  }, [followed, canvasScale, canvasOffset, dispatch, following, mode])
 
   if (followed == null) {
     return null
@@ -289,7 +316,7 @@ const FollowingOverlay = React.memo(() => {
       <div
         style={{
           backgroundColor: colorTheme.primary.value,
-          color: colorTheme.fg0.value,
+          color: colorTheme.white.value,
           padding: '2px 10px',
           borderRadius: 10,
           boxShadow: UtopiaTheme.panelStyles.shadows.medium,

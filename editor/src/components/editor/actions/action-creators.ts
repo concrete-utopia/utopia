@@ -327,21 +327,24 @@ export function selectComponents(
   }
 }
 
-export function updateEditorMode(mode: Mode): UpdateEditorMode {
+export function updateEditorMode(mode: Mode, must: boolean = false): UpdateEditorMode {
   return {
     action: 'UPDATE_EDITOR_MODE',
     mode: mode,
+    must: must,
   }
 }
 
 export function switchEditorMode(
   mode: Mode,
   unlessMode?: 'select' | 'live' | 'insert' | 'textEdit',
+  must: boolean = false,
 ): SwitchEditorMode {
   return {
     action: 'SWITCH_EDITOR_MODE',
     mode: mode,
     unlessMode: unlessMode,
+    must: must,
   }
 }
 
