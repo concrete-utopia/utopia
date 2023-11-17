@@ -5749,7 +5749,6 @@ export var storyboard = (
 `),
         )
 
-        expect(1).toEqual(1)
       })
     })
   })
