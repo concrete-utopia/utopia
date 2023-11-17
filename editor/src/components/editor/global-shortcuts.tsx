@@ -31,7 +31,14 @@ import {
   defaultRectangleElement,
   defaultSpanElement,
 } from './defaults'
-import { EditorModes, isInsertMode, isLiveMode, isSelectMode, isTextEditMode } from './editor-modes'
+import {
+  EditorModes,
+  isCommentMode,
+  isInsertMode,
+  isLiveMode,
+  isSelectMode,
+  isTextEditMode,
+} from './editor-modes'
 import { insertImage } from './image-insert'
 import type { ShortcutNamesByKey } from './shortcut-definitions'
 import {
@@ -98,6 +105,7 @@ import {
   OPEN_INSERT_MENU,
   PASTE_TO_REPLACE,
   WRAP_IN_DIV,
+  COMMENT_SHORTCUT,
 } from './shortcut-definitions'
 import type { EditorState, LockedElements, NavigatorEntry } from './store/editor-state'
 import { getOpenFile, RightMenuTab } from './store/editor-state'
@@ -136,6 +144,7 @@ import { isRight } from '../../core/shared/either'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { createPasteToReplacePostActionActions } from '../canvas/canvas-strategies/post-action-options/post-action-options'
 import { wrapInDivStrategy } from './wrap-in-callbacks'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -433,6 +442,12 @@ export function handleKeyDown(
         }
         return []
       },
+      [COMMENT_SHORTCUT]: () => {
+        if (isFeatureEnabled('Commenting')) {
+          return [EditorActions.switchEditorMode(EditorModes.commentMode(null))]
+        }
+        return []
+      },
       [JUMP_TO_PARENT_SHORTCUT]: () => {
         if (isSelectMode(editor.mode)) {
           return jumpToParentActions(
@@ -487,6 +502,9 @@ export function handleKeyDown(
           ]
         }
         if (isTextEditMode(editor.mode)) {
+          return [EditorActions.updateEditorMode(EditorModes.selectMode(null, false, 'none'))]
+        }
+        if (isCommentMode(editor.mode)) {
           return [EditorActions.updateEditorMode(EditorModes.selectMode(null, false, 'none'))]
         }
         return []

@@ -4,6 +4,7 @@ import { useOthers, useSelf, useStatus } from '../../liveblocks.config'
 import { getUserPicture, isLoggedIn } from '../common/user'
 import type { MultiplayerColor } from '../core/shared/multiplayer'
 import {
+  isDefaultAuth0AvatarURL,
   multiplayerColorFromIndex,
   multiplayerInitialsFromName,
   normalizeMultiplayerName,
@@ -11,7 +12,7 @@ import {
 } from '../core/shared/multiplayer'
 import { Avatar, Tooltip, useColorTheme } from '../uuiui'
 import { Substores, useEditorState } from './editor/store/store-hook'
-import { when } from '../utils/react-conditionals'
+import { unless, when } from '../utils/react-conditionals'
 
 const MAX_VISIBLE_OTHER_PLAYERS = 4
 
@@ -61,6 +62,7 @@ const MultiplayerUserBar = React.memo(() => {
       id: other.id,
       name: other.presence.name,
       colorIndex: other.presence.colorIndex,
+      picture: other.presence.picture, // TODO remove this once able to resolve users
     })),
   )
 
@@ -108,6 +110,9 @@ const MultiplayerUserBar = React.memo(() => {
                 name={multiplayerInitialsFromName(name)}
                 tooltip={name}
                 color={multiplayerColorFromIndex(other.colorIndex)}
+                picture={other.picture}
+                border={true}
+                coloredTooltip={true}
               />
             )
           })}
@@ -120,6 +125,7 @@ const MultiplayerUserBar = React.memo(() => {
                 background: colorTheme.fg8.value,
                 foreground: colorTheme.fg0.value,
               }}
+              picture={null}
             />,
           )}
         </div>,
@@ -129,6 +135,7 @@ const MultiplayerUserBar = React.memo(() => {
           name={multiplayerInitialsFromName(myName)}
           tooltip={`${myName} (you)`}
           color={{ background: colorTheme.bg3.value, foreground: colorTheme.fg1.value }}
+          picture={self.presence.picture}
         />
       </a>
     </div>
@@ -137,14 +144,45 @@ const MultiplayerUserBar = React.memo(() => {
 MultiplayerUserBar.displayName = 'MultiplayerUserBar'
 
 const MultiplayerAvatar = React.memo(
-  (props: { name: string; tooltip: string; color: MultiplayerColor; border?: string }) => {
+  (props: {
+    name: string
+    tooltip: string
+    color: MultiplayerColor
+    coloredTooltip?: boolean
+    picture?: string | null
+    border?: boolean
+  }) => {
+    const picture = React.useMemo(() => {
+      return isDefaultAuth0AvatarURL(props.picture ?? null) ? null : props.picture
+    }, [props.picture])
+
+    const [pictureNotFound, setPictureNotFound] = React.useState(false)
+
+    React.useEffect(() => {
+      setPictureNotFound(false)
+    }, [picture])
+
+    const onPictureError = React.useCallback(() => {
+      console.warn('cannot get picture', props.picture)
+      setPictureNotFound(true)
+    }, [props.picture])
+
+    const showPicture = React.useMemo(() => {
+      return picture != null && !pictureNotFound
+    }, [picture, pictureNotFound])
+
     return (
-      <Tooltip title={props.tooltip} placement='bottom'>
+      <Tooltip
+        title={props.tooltip}
+        placement='bottom'
+        backgroundColor={props.coloredTooltip ? props.color.background : undefined}
+        textColor={props.coloredTooltip ? props.color.foreground : undefined}
+      >
         <div
           style={{
             width: 24,
             height: 24,
-            background: props.color.background,
+            backgroundColor: props.color.background,
             color: props.color.foreground,
             display: 'flex',
             alignItems: 'center',
@@ -155,7 +193,21 @@ const MultiplayerAvatar = React.memo(
             cursor: 'pointer',
           }}
         >
-          {props.name}
+          {unless(showPicture, props.name)}
+          {when(
+            showPicture,
+            // Using an img tag instead of using it as backgroundColor above because of potential 403s
+            <img
+              style={{
+                width: props.border === true ? 22 : '100%',
+                height: props.border === true ? 22 : '100%',
+                borderRadius: '100%',
+              }}
+              src={picture ?? ''}
+              referrerPolicy='no-referrer'
+              onError={onPictureError}
+            />,
+          )}
         </div>
       </Tooltip>
     )

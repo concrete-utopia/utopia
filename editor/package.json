@@ -113,6 +113,7 @@
     "@liveblocks/client": "1.7.1",
     "@liveblocks/react": "1.7.1",
     "@liveblocks/yjs": "1.7.1",
+    "@liveblocks/react-comments": "1.7.1",
     "@popperjs/core": "2.4.4",
     "@remix-run/react": "2.0.1",
     "@root/encoding": "1.0.1",

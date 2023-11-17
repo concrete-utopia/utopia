@@ -13,6 +13,8 @@ export interface TooltipProps {
   title: React.ReactElement<any> | string
   placement?: Placement
   disabled?: boolean
+  backgroundColor?: string
+  textColor?: string
 }
 
 function tooltipPropsEqual(
@@ -34,6 +36,8 @@ export class Tooltip extends React.Component<React.PropsWithChildren<TooltipProp
   }
 
   render() {
+    const backgroundColor = this.props.backgroundColor ?? colorTheme.neutralInvertedBackground.value
+    const textColor = this.props.textColor ?? colorTheme.neutralInvertedForeground.value
     return (
       <Tippy
         css={{
@@ -41,22 +45,22 @@ export class Tooltip extends React.Component<React.PropsWithChildren<TooltipProp
           fontSize: 11,
           fontFamily:
             "utopian-inter, -apple-system, BlinkMacSystemFont, Helvetica, 'Segoe UI', Roboto, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'",
-          backgroundColor: `${colorTheme.neutralInvertedBackground.value} !important`,
-          color: `${colorTheme.neutralInvertedForeground.value} !important`,
+          backgroundColor: `${backgroundColor} !important`,
+          color: `${textColor} !important`,
           '& .tippy-content': {
             padding: '4px 8px !important',
           },
           '&[data-placement^=top] .tippy-arrow::before': {
-            borderTopColor: `${colorTheme.neutralInvertedBackground.value} !important`,
+            borderTopColor: `${backgroundColor} !important`,
           },
           '&[data-placement^=right] .tippy-arrow::before': {
-            borderRightColor: `${colorTheme.neutralInvertedBackground.value} !important`,
+            borderRightColor: `${backgroundColor} !important`,
           },
           '&[data-placement^=bottom] .tippy-arrow::before': {
-            borderBottomColor: `${colorTheme.neutralInvertedBackground.value} !important`,
+            borderBottomColor: `${backgroundColor} !important`,
           },
           '&[data-placement^=left] .tippy-arrow::before': {
-            borderLeftColor: `${colorTheme.neutralInvertedBackground.value} !important`,
+            borderLeftColor: `${backgroundColor} !important`,
           },
         }}
         arrow
