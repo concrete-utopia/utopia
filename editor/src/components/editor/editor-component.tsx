@@ -145,11 +145,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 
   const setClearKeyboardInteraction = useClearKeyboardInteraction(editorStoreRef)
 
-  const mode = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.mode,
-    'EditorComponentInner mode',
-  )
+  const mode = useEditorState(Substores.restOfEditor, (store) => store.editor.mode, 'mode')
   React.useEffect(() => {
     setTimeout(() => {
       if (mode.type === 'live') {

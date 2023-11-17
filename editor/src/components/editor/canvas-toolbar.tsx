@@ -328,7 +328,6 @@ export const CanvasToolbar = React.memo(() => {
     (store) => store.editor.mode.type === 'live',
     'TopMenu isLiveMode',
   )
-
   const toggleLiveMode = React.useCallback(() => {
     if (isLiveMode) {
       dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
