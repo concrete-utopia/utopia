@@ -326,8 +326,8 @@ export function calculateArrayChanges<T>(
   }
 
   let deleteFrom: number | null = null
-  if (from.length > from.length) {
-    deleteFrom = into.length
+  if (into.length > from.length) {
+    deleteFrom = from.length
   }
 
   return arrayChanges(updatesAt, deleteFrom)
