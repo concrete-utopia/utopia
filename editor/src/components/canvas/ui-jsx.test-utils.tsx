@@ -717,7 +717,15 @@ function expectUpdatedFilesUpdateTimestamp(
 function expectNoActionsCausedDuplicateUids(
   actionsCausingDuplicateUIDs: ActionsCausingDuplicateUIDs,
 ) {
-  expect(actionsCausingDuplicateUIDs).toHaveLength(0)
+  if (actionsCausingDuplicateUIDs.length > 0) {
+    expect({
+      actionsCausingDuplicateUIDs: actionsCausingDuplicateUIDs,
+      message: 'No actions have introduced duplicate uids',
+    }).toEqual({
+      actionsCausingDuplicateUIDs: actionsCausingDuplicateUIDs,
+      message: 'Some actions have introduced duplicate uids!',
+    })
+  }
 }
 
 export function getPrintedUiJsCode(

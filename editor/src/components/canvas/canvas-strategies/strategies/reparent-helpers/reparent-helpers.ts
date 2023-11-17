@@ -71,6 +71,7 @@ import { mapDropNulls } from '../../../../../core/shared/array-utils'
 import { treatElementAsFragmentLike } from '../fragment-like-helpers'
 import { setProperty } from '../../../commands/set-property-command'
 import type { ReparentTargetForPaste } from '../reparent-utils'
+import { cleanSteganoTextData } from '../../../../../core/shared/stegano-text'
 
 export function isAllowedToReparent(
   projectContents: ProjectContentTreeRoot,
@@ -175,6 +176,13 @@ export function replacePropsWithRuntimeValues<T extends JSXElementChild>(
   )
 }
 
+function sanitizeProp(prop: any): any {
+  if (typeof prop === 'string') {
+    return cleanSteganoTextData(prop).cleaned
+  }
+  return prop
+}
+
 export function collectValuesAtPathToReplace(
   elementProps: ElementProps,
   element: JSXElementChild,
@@ -183,10 +191,14 @@ export function collectValuesAtPathToReplace(
   const paths = getElementReferencesElsewherePathsFromProps(element, PP.create())
 
   // try and get the values from allElementProps, replace everything else with undefined
-  return paths.map((propertyPath) => ({
-    path: propertyPath,
-    value: jsExpressionValue(Utils.path(PP.getElements(propertyPath), elementProps), emptyComments),
-  }))
+  return paths.map((propertyPath) => {
+    const prop = Utils.path(PP.getElements(propertyPath), elementProps)
+
+    return {
+      path: propertyPath,
+      value: jsExpressionValue(sanitizeProp(prop), emptyComments),
+    }
+  })
 }
 
 export function getReplacePropsWithRuntimeValuesCommands(
