@@ -4422,9 +4422,9 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.internalClipboard,
     newValue.internalClipboard,
   )
-  const filesModifiedByElsewhereResults = arrayDeepEquality(StringKeepDeepEquality)(
-    oldValue.filesModifiedByElsewhere,
-    newValue.filesModifiedByElsewhere,
+  const filesModifiedByAnotherUserResults = arrayDeepEquality(StringKeepDeepEquality)(
+    oldValue.filesModifiedByAnotherUser,
+    newValue.filesModifiedByAnotherUser,
   )
 
   const areEqual =
@@ -4504,7 +4504,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     refreshingDependenciesResults.areEqual &&
     colorSwatchesResults.areEqual &&
     internalClipboardResults.areEqual &&
-    filesModifiedByElsewhereResults.areEqual
+    filesModifiedByAnotherUserResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -4587,7 +4587,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       refreshingDependenciesResults.value,
       colorSwatchesResults.value,
       internalClipboardResults.value,
-      filesModifiedByElsewhereResults.value,
+      filesModifiedByAnotherUserResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

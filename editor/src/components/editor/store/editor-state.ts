@@ -1464,7 +1464,7 @@ export interface EditorState {
   refreshingDependencies: boolean
   colorSwatches: Array<ColorSwatch>
   internalClipboard: InternalClipboard
-  filesModifiedByElsewhere: Array<string>
+  filesModifiedByAnotherUser: Array<string>
 }
 
 export function editorState(
@@ -1545,7 +1545,7 @@ export function editorState(
   refreshingDependencies: boolean,
   colorSwatches: Array<ColorSwatch>,
   internalClipboardData: InternalClipboard,
-  filesModifiedByElsewhere: Array<string>,
+  filesModifiedByAnotherUser: Array<string>,
 ): EditorState {
   return {
     id: id,
@@ -1625,7 +1625,7 @@ export function editorState(
     refreshingDependencies: refreshingDependencies,
     colorSwatches: colorSwatches,
     internalClipboard: internalClipboardData,
-    filesModifiedByElsewhere: filesModifiedByElsewhere,
+    filesModifiedByAnotherUser: filesModifiedByAnotherUser,
   }
 }
 
@@ -2498,7 +2498,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       styleClipboard: [],
       elements: [],
     },
-    filesModifiedByElsewhere: [],
+    filesModifiedByAnotherUser: [],
   }
 }
 
@@ -2870,7 +2870,7 @@ export function editorModelFromPersistentModel(
       styleClipboard: [],
       elements: [],
     },
-    filesModifiedByElsewhere: [],
+    filesModifiedByAnotherUser: [],
   }
   return editor
 }

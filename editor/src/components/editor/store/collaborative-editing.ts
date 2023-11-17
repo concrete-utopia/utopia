@@ -186,11 +186,11 @@ function applyFileChangeToMap(
 export function updateCollaborativeProjectContents(
   session: CollaborativeEditingSupportSession,
   projectChanges: ProjectChanges,
-  filesModifiedByElsewhere: Array<string>,
+  filesModifiedByAnotherUser: Array<string>,
 ): void {
   const projectContentsMap = session.projectContents
   for (const change of projectChanges.fileChanges.collabProjectChanges) {
-    if (!filesModifiedByElsewhere.includes(change.fullPath)) {
+    if (!filesModifiedByAnotherUser.includes(change.fullPath)) {
       applyFileChangeToMap(change, projectContentsMap, session.mergeDoc)
     }
   }

@@ -911,7 +911,7 @@ export function restoreEditorState(
     refreshingDependencies: currentEditor.refreshingDependencies,
     colorSwatches: currentEditor.colorSwatches,
     internalClipboard: currentEditor.internalClipboard,
-    filesModifiedByElsewhere: currentEditor.filesModifiedByElsewhere,
+    filesModifiedByAnotherUser: currentEditor.filesModifiedByAnotherUser,
   }
 }
 
@@ -5367,7 +5367,7 @@ export const UPDATE_FNS = {
 
     return {
       ...updatedEditor,
-      filesModifiedByElsewhere: updatedEditor.filesModifiedByElsewhere.concat(action.fullPath),
+      filesModifiedByAnotherUser: updatedEditor.filesModifiedByAnotherUser.concat(action.fullPath),
     }
   },
 }

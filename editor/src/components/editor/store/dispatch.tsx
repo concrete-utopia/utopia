@@ -656,18 +656,18 @@ export function editorDispatchClosingOut(
       updateCollaborativeProjectContents(
         finalStore.collaborativeEditingSupport.session,
         projectChanges,
-        frozenEditorState.filesModifiedByElsewhere,
+        frozenEditorState.filesModifiedByAnotherUser,
       )
     }
     const filesChanged = projectChanges.fileChanges.collabProjectChanges.map((v) => v.fullPath)
-    const updatedFilesModifiedByElsewhere = frozenEditorState.filesModifiedByElsewhere.filter(
+    const updatedFilesModifiedByElsewhere = frozenEditorState.filesModifiedByAnotherUser.filter(
       (v) => !filesChanged.includes(v),
     )
     finalStoreV1Final = {
       ...finalStoreV1Final,
       unpatchedEditor: {
         ...finalStoreV1Final.unpatchedEditor,
-        filesModifiedByElsewhere: updatedFilesModifiedByElsewhere,
+        filesModifiedByAnotherUser: updatedFilesModifiedByElsewhere,
       },
     }
   }
