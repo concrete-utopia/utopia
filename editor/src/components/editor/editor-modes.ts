@@ -5,7 +5,7 @@ import type {
   ImageFile,
 } from '../../core/shared/project-file-types'
 import type { JSXElement } from '../../core/shared/element-template'
-import type { Size } from '../../core/shared/math-utils'
+import type { CanvasPoint, Size } from '../../core/shared/math-utils'
 
 export const DefaultInsertSize: Size = { width: 100, height: 100 }
 
@@ -89,6 +89,11 @@ export interface InsertMode {
   subjects: Array<InsertionSubject>
 }
 
+export interface CommentMode {
+  type: 'comment'
+  location: CanvasPoint | null
+}
+
 export type SelectModeToolbarMode = 'none' | 'pseudo-insert'
 
 export interface SelectMode {
@@ -118,7 +123,7 @@ export interface LiveCanvasMode {
   controlId: string | null
 }
 
-export type Mode = InsertMode | SelectMode | LiveCanvasMode | TextEditMode
+export type Mode = InsertMode | SelectMode | LiveCanvasMode | TextEditMode | CommentMode
 export type PersistedMode = SelectMode | LiveCanvasMode
 
 export const EditorModes = {
@@ -160,6 +165,12 @@ export const EditorModes = {
       selectOnFocus: selectOnFocus,
     }
   },
+  commentMode: function (location: CanvasPoint | null): CommentMode {
+    return {
+      type: 'comment',
+      location: location,
+    }
+  },
 }
 
 export function isInsertMode(value: Mode): value is InsertMode {
@@ -177,6 +188,9 @@ export function isTextEditMode(value: Mode): value is TextEditMode {
 export function isSelectModeWithArea(value: Mode): boolean {
   return value.type === 'select' && value.area
 }
+export function isCommentMode(value: Mode): value is CommentMode {
+  return value.type === 'comment'
+}
 
 export function convertModeToSavedMode(mode: Mode): PersistedMode {
   switch (mode.type) {
@@ -185,6 +199,7 @@ export function convertModeToSavedMode(mode: Mode): PersistedMode {
     case 'select':
     case 'insert':
     case 'textEdit':
+    case 'comment':
       return EditorModes.selectMode(null, false, 'none')
   }
 }

@@ -1,6 +1,6 @@
 import type { User } from '@liveblocks/client'
 import type { Presence, UserMeta } from '../../../liveblocks.config'
-import { safeIndex, uniqBy } from './array-utils'
+import { possiblyUniqueInArray, safeIndex, uniqBy } from './array-utils'
 import { getPreferredColorScheme } from '../../uuiui'
 
 export type MultiplayerColor = {
@@ -33,6 +33,18 @@ export const multiplayerColors = {
     { background: '#FFBA08', foreground: 'black' },
     { background: '#FFFF00', foreground: 'black' },
   ],
+}
+
+function randomMultiplayerColor(): number {
+  return Math.floor(Math.random() * multiplayerColors.light.length)
+}
+
+export function possiblyUniqueColor(existing: (number | null)[]): number {
+  return possiblyUniqueInArray(
+    multiplayerColors.light.map((_, index) => index),
+    existing,
+    randomMultiplayerColor(),
+  )
 }
 
 export function multiplayerColorFromIndex(colorIndex: number | null): MultiplayerColor {
@@ -82,5 +94,15 @@ export function normalizeOthersList(
   return uniqBy(
     others.filter((other) => other.id !== selfId),
     (a, b) => a.id === b.id,
+  )
+}
+
+const reAuth0DefaultAvatarURLEncoded = /https%3A%2F%2Fcdn\.auth0\.com%2Favatars%2F.{2}\.png$/
+const reAuth0DefaultAvatar = /https:\/\/cdn\.auth0\.com\/avatars\/.{2}\.png$/
+
+export function isDefaultAuth0AvatarURL(s: string | null): boolean {
+  return (
+    s != null &&
+    (s.match(reAuth0DefaultAvatarURLEncoded) != null || s.match(reAuth0DefaultAvatar) != null)
   )
 }

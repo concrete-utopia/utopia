@@ -14,6 +14,7 @@ import {
   FlexRow,
   InspectorSectionHeader,
   PopupList,
+  Subdued,
   Tooltip,
   colorTheme,
 } from '../../uuiui'
@@ -47,6 +48,7 @@ import { Substores, useEditorState, useRefEditorState } from '../editor/store/st
 import type { MetadataSubstate } from '../editor/store/store-hook-substore-types'
 import type { SelectOption } from './controls/select-control'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
+import { WarningIcon } from '../../uuiui/warning-icon'
 
 const simpleControlStyles = getControlStyles('simple')
 const disabledControlStyles: ControlStyles = {
@@ -102,10 +104,19 @@ export const allSelectedElementsContractSelector = createSelector(
   },
 )
 
-export function groupSectionOption(wrapperType: 'frame' | 'fragment' | 'group'): SelectOption {
+export function groupSectionOption(wrapperType: EditorContract): SelectOption<EditorContract> {
   switch (wrapperType) {
     case 'frame':
       return { value: 'frame', label: 'Frame' }
+    case 'wrapper-div':
+      return {
+        value: 'wrapper-div',
+        label: (
+          <span style={{ display: 'inline-flex', flexDirection: 'row', alignItems: 'center' }}>
+            Wrapper <WarningIcon style={{ display: 'inline', marginLeft: 4 }} color='subdued' />
+          </span>
+        ),
+      }
     case 'fragment':
       return { value: 'fragment', label: 'Fragment' }
     case 'group':
@@ -117,6 +128,7 @@ export function groupSectionOption(wrapperType: 'frame' | 'fragment' | 'group'):
 
 const FragmentOption = groupSectionOption('fragment')
 const FrameOption = groupSectionOption('frame')
+const WrapperDivOption = groupSectionOption('wrapper-div')
 const GroupOption = groupSectionOption('group')
 
 export const EditorFixProblemsButtonTestId = 'editor-fix-problems-button'
@@ -199,8 +211,12 @@ export const EditorContractDropdown = React.memo(() => {
       return FragmentOption
     } else if (selectedElementContract === 'group') {
       return GroupOption
+    } else if (selectedElementContract === 'frame' || selectedElementContract == null) {
+      return FrameOption
+    } else if (selectedElementContract === 'wrapper-div') {
+      return WrapperDivOption
     }
-    return FrameOption
+    assertNever(selectedElementContract)
   }, [selectedElementContract])
 
   const options = React.useMemo((): Array<SelectOption> => {
@@ -229,6 +245,7 @@ export const EditorContractDropdown = React.memo(() => {
       const view = selectedViews[0]
       switch (currentValue.value) {
         case 'frame':
+        case 'wrapper-div':
           disabledOptions.group = maybeReasonForConversionForbidden(
             getInstanceForFrameToGroupConversion(
               metadataRef.current,
@@ -275,6 +292,8 @@ export const EditorContractDropdown = React.memo(() => {
             ),
           )
           break
+        default:
+          assertNever(currentValue.value)
       }
     }
 
@@ -328,11 +347,7 @@ export const EditorContractDropdown = React.memo(() => {
         value={currentValue}
         options={options}
         onSubmitValue={onChange}
-        controlStyles={
-          selectedElementContract === 'not-quite-frame'
-            ? disabledControlStyles
-            : simpleControlStyles
-        }
+        controlStyles={simpleControlStyles}
         containerMode={'noBorder'}
         style={{ position: 'relative', left: -8 }}
       />

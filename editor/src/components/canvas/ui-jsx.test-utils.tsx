@@ -717,8 +717,14 @@ function expectUpdatedFilesUpdateTimestamp(
 function expectNoActionsCausedDuplicateUids(
   actionsCausingDuplicateUIDs: ActionsCausingDuplicateUIDs,
 ) {
-  if (actionsCausingDuplicateUIDs.length !== 0) {
-    throw new Error('Duplicate uids were introduced into the project')
+  if (actionsCausingDuplicateUIDs.length > 0) {
+    expect({
+      actionsCausingDuplicateUIDs: actionsCausingDuplicateUIDs,
+      message: 'No actions have introduced duplicate uids',
+    }).toEqual({
+      actionsCausingDuplicateUIDs: actionsCausingDuplicateUIDs,
+      message: 'Some actions have introduced duplicate uids!',
+    })
   }
 }
 

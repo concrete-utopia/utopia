@@ -18,6 +18,7 @@ export type Presence = {
   canvasScale: number | null
   canvasOffset: CanvasVector | null
   colorIndex: number | null
+  picture: string | null // TODO remove this once able to resolve users
 }
 
 export function initialPresence(): Presence {
@@ -27,6 +28,7 @@ export function initialPresence(): Presence {
     canvasScale: null,
     canvasOffset: null,
     colorIndex: null,
+    picture: null,
   }
 }
 
@@ -60,6 +62,11 @@ export type ThreadMetadata = {
   // resolved: boolean;
   // quote: string;
   // time: number;
+  type: 'canvas'
+  x: number
+  y: number
+  name: string // TODO: this is maybe unnecessary after we provide a resolveUsers function to liveblocks
+  colorIndex: number
 }
 
 export const {
