@@ -3692,7 +3692,7 @@ export const UPDATE_FNS = {
     builtInDependencies: BuiltInDependencies,
     serverState: ProjectServerState,
   ): EditorModel => {
-    // Prevents updates from from VS Code when the user is not the owner of the project.
+    // Prevents updates from VS Code when the user is not the owner of the project.
     // Also fixes an issue with the collaboration where VS Code is firing one of these updates
     // immediately after it loads which then causes the collaboration update to fail because it's
     // viewed as being "stale".
@@ -5339,7 +5339,6 @@ export const UPDATE_FNS = {
       editor,
       (success) => {
         return success
-        // return action.update.success
       },
       false,
     )

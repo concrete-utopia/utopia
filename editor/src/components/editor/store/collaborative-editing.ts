@@ -67,7 +67,6 @@ export function collateCollaborativeProjectChanges(
           ) {
             // Do nothing, no change.
           } else {
-            const firstRevisionState = firstContents.content.fileContents.revisionsState
             const secondRevisionState = secondContents.content.fileContents.revisionsState
             const revisionStateIsAppropriate = secondRevisionState === 'BOTH_MATCH'
             const fileShouldBeWritten = revisionStateIsAppropriate
@@ -207,7 +206,7 @@ export function addHookForProjectChanges(
       switch (changeEvent.path.length) {
         case 0: {
           if (changeEvent instanceof Y.YMapEvent) {
-            updateEntireProjectContents(session, changeEvent as Y.YMapEvent<any>, dispatch)
+            updateEntireProjectContents(changeEvent as Y.YMapEvent<any>, dispatch)
           } else {
             throw new Error(`Could not treat change event as Y.YMapEvent.`)
           }
@@ -238,7 +237,6 @@ export interface ArrayChanges {
 }
 
 function updateEntireProjectContents(
-  session: CollaborativeEditingSupportSession,
   changeEvent: Y.YMapEvent<any>,
   dispatch: EditorDispatch,
 ): void {
@@ -343,7 +341,6 @@ function synchroniseParseSuccessToCollabFile(
     const changes = calculateArrayChanges(
       success.topLevelElements,
       collabFileTopLevelElements,
-      // Fix this shitshow up
       (l, r) => l != null && r != null && TopLevelElementKeepDeepEquality(l, r).areEqual,
     )
     for (const updateAtIndex of changes.updatesAt) {
