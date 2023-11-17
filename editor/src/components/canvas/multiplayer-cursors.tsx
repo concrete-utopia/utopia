@@ -19,6 +19,7 @@ import { useDispatch } from '../editor/store/dispatch-context'
 import CanvasActions from './canvas-actions'
 import { switchEditorMode, updateMultiplayerState } from '../editor/actions/action-creators'
 import { EditorModes } from '../editor/editor-modes'
+import { multiplayerStateFollowing } from '../editor/store/editor-state'
 
 export const MultiplayerPresence = React.memo(() => {
   const dispatch = useDispatch()
@@ -92,7 +93,7 @@ export const MultiplayerPresence = React.memo(() => {
 
   React.useEffect(() => {
     // when the room changes, reset
-    dispatch([updateMultiplayerState({ following: null, followMode: null })])
+    dispatch([updateMultiplayerState({ following: null })])
   }, [room.id, dispatch])
 
   if (!isLoggedIn(loginState)) {
@@ -251,7 +252,7 @@ const FollowingOverlay = React.memo(() => {
   )
 
   const followed = React.useMemo(() => {
-    return others.find((other) => following != null && other.id === following)
+    return others.find((other) => following != null && other.id === following.id)
   }, [others, following])
 
   React.useEffect(() => {
@@ -260,7 +261,7 @@ const FollowingOverlay = React.memo(() => {
       if (following != null) {
         // reset if the other player disconnects
         dispatch([
-          updateMultiplayerState({ following: null, followMode: null }),
+          updateMultiplayerState({ following: null }),
           switchEditorMode(EditorModes.selectMode(null, false, 'none'), undefined, true),
         ])
       }
@@ -278,7 +279,11 @@ const FollowingOverlay = React.memo(() => {
       actions.push(CanvasActions.positionCanvas(followed.presence.canvasOffset, true))
     }
     if (followed.presence.mode !== mode.type) {
-      actions.push(updateMultiplayerState({ followMode: followed.presence.mode }))
+      actions.push(
+        updateMultiplayerState({
+          following: multiplayerStateFollowing(followed.id, followed.presence.mode),
+        }),
+      )
       switch (followed.presence.mode) {
         case 'live':
           actions.push(switchEditorMode(EditorModes.liveMode(null), undefined, true))

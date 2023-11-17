@@ -17,6 +17,7 @@ import { useDispatch } from './editor/store/dispatch-context'
 import { switchEditorMode, updateMultiplayerState } from './editor/actions/action-creators'
 import { EditorModes } from './editor/editor-modes'
 import type { EditorAction } from './editor/action-types'
+import { multiplayerStateFollowing } from './editor/store/editor-state'
 
 const MAX_VISIBLE_OTHER_PLAYERS = 4
 
@@ -84,26 +85,20 @@ const MultiplayerUserBar = React.memo(() => {
     (store) => store.editor.multiplayer.following,
     'MultiplayerUserBar following',
   )
-  const followMode = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.multiplayer.followMode,
-    'MultiplayerUserBar followMode',
-  )
 
   const toggleFollowing = React.useCallback(
     (id: string) => () => {
       let actions: EditorAction[] = [
         updateMultiplayerState({
-          following: id === following ? null : id,
-          followMode: null,
+          following: id === following?.id ? null : multiplayerStateFollowing(id, null),
         }),
       ]
-      if (followMode != null) {
+      if (following?.mode != null) {
         actions.push(switchEditorMode(EditorModes.selectMode(null, false, 'none'), undefined, true))
       }
       dispatch(actions)
     },
-    [dispatch, following, followMode],
+    [dispatch, following],
   )
 
   if (self.presence.name == null) {
@@ -147,7 +142,7 @@ const MultiplayerUserBar = React.memo(() => {
                 border={true}
                 coloredTooltip={true}
                 onClick={toggleFollowing(other.id)}
-                active={following === other.id}
+                active={following?.id === other.id}
               />
             )
           })}

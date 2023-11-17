@@ -323,6 +323,7 @@ import type {
   InvalidOverrideNavigatorEntry,
   TrueUpHuggingElement,
   MultiplayerState,
+  MultiplayerStateFollowing,
 } from './editor-state'
 import {
   trueUpGroupElementChanged,
@@ -330,6 +331,7 @@ import {
   invalidOverrideNavigatorEntry,
   trueUpHuggingElement,
   multiplayerState,
+  multiplayerStateFollowing,
 } from './editor-state'
 import {
   editorStateNodeModules,
@@ -4142,14 +4144,21 @@ export const TrueUpTargetKeepDeepEquality: KeepDeepEqualityCall<TrueUpTarget> = 
   return keepDeepEqualityResult(newValue, false)
 }
 
+export const MultiplayerStateFollowingKeepDeepEquality: KeepDeepEqualityCall<MultiplayerStateFollowing> =
+  combine2EqualityCalls(
+    (data) => data.id,
+    StringKeepDeepEquality,
+    (data) => data.mode,
+    nullableDeepEquality(createCallWithTripleEquals()),
+    multiplayerStateFollowing,
+  )
+
 export const MultiplayerStateKeepDeepEquality: KeepDeepEqualityCall<MultiplayerState> =
-  combine3EqualityCalls(
+  combine2EqualityCalls(
     (data) => data.roomId,
     NullableStringKeepDeepEquality,
     (data) => data.following,
-    NullableStringKeepDeepEquality,
-    (data) => data.followMode,
-    createCallWithTripleEquals(),
+    nullableDeepEquality(MultiplayerStateFollowingKeepDeepEquality),
     multiplayerState,
   )
 

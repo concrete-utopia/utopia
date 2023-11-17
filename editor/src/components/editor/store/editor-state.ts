@@ -1013,29 +1013,40 @@ export function draggedImageProperties(
 
 export type MultiplayerStateFollowMode = Mode['type']
 
+export type MultiplayerStateFollowing = {
+  id: string
+  mode: MultiplayerStateFollowMode | null
+}
+
+export function multiplayerStateFollowing(
+  id: string,
+  mode: MultiplayerStateFollowMode | null,
+): MultiplayerStateFollowing {
+  return {
+    id: id,
+    mode: mode,
+  }
+}
+
 export type MultiplayerState = {
   roomId: string | null
-  following: string | null
-  followMode: MultiplayerStateFollowMode | null
+  following: MultiplayerStateFollowing | null
 }
 
 export function emptyMultiplayerState(): MultiplayerState {
   return {
     roomId: null,
     following: null,
-    followMode: null,
   }
 }
 
 export function multiplayerState(
   roomId: string | null,
-  following: string | null,
-  followMode: MultiplayerStateFollowMode | null,
+  following: MultiplayerStateFollowing | null,
 ): MultiplayerState {
   return {
     roomId: roomId,
     following: following,
-    followMode: followMode,
   }
 }
 
