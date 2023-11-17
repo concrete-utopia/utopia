@@ -326,7 +326,7 @@ export function calculateArrayChanges<T>(
   }
 
   let deleteFrom: number | null = null
-  if (into.length > from.length) {
+  if (from.length > from.length) {
     deleteFrom = into.length
   }
 

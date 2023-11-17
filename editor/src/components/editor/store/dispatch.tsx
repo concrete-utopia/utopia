@@ -963,8 +963,8 @@ function editorDispatchInner(
       entireUpdateFinished: Promise.all([storedState.entireUpdateFinished]),
       saveCountThisSession: storedState.saveCountThisSession,
       builtInDependencies: storedState.builtInDependencies,
-      projectServerState: storedState.projectServerState,
-      collaborativeEditingSupport: storedState.collaborativeEditingSupport,
+      projectServerState: result.projectServerState,
+      collaborativeEditingSupport: result.collaborativeEditingSupport,
     }
   } else {
     //empty return
