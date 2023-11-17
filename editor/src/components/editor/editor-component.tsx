@@ -150,14 +150,9 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     (store) => store.editor.mode,
     'EditorComponentInner mode',
   )
-  const following = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.multiplayer.following,
-    'EditorComponentInner following',
-  )
   React.useEffect(() => {
     setTimeout(() => {
-      if (mode.type === 'live' && following == null) {
+      if (mode.type === 'live') {
         dispatch([
           EditorActions.showToast(
             notice(
@@ -172,7 +167,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
         dispatch([EditorActions.removeToast(liveModeToastId)])
       }
     }, 0)
-  }, [mode.type, dispatch, following])
+  }, [mode.type, dispatch])
 
   const onWindowKeyDown = React.useCallback(
     (event: KeyboardEvent) => {
