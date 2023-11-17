@@ -718,9 +718,7 @@ function expectNoActionsCausedDuplicateUids(
   actionsCausingDuplicateUIDs: ActionsCausingDuplicateUIDs,
 ) {
   if (actionsCausingDuplicateUIDs.length > 0) {
-    throw new Error(
-      `Actions introduced duplicate uids: ${JSON.stringify(actionsCausingDuplicateUIDs)}`,
-    )
+    expect(actionsCausingDuplicateUIDs).toHaveLength(0)
   }
 }
 
