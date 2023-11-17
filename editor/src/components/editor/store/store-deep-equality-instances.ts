@@ -473,6 +473,7 @@ import type {
   TextEditableElementState,
   InsertionSubjectWrapper,
   SelectModeToolbarMode,
+  CommentMode,
 } from '../editor-modes'
 import {
   EditorModes,
@@ -3237,6 +3238,12 @@ export const TextEditModeKeepDeepEquality: KeepDeepEqualityCall<TextEditMode> =
     EditorModes.textEditMode,
   )
 
+export const CommentModeKeepDeepEquality: KeepDeepEqualityCall<CommentMode> = combine1EqualityCall(
+  (mode) => mode.location,
+  nullableDeepEquality(CanvasPointKeepDeepEquality),
+  EditorModes.commentMode,
+)
+
 export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newValue) => {
   switch (oldValue.type) {
     case 'insert':
@@ -3257,6 +3264,11 @@ export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newVa
     case 'textEdit':
       if (newValue.type === oldValue.type) {
         return TextEditModeKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'comment':
+      if (newValue.type === oldValue.type) {
+        return CommentModeKeepDeepEquality(newValue, oldValue)
       }
       break
     default:
