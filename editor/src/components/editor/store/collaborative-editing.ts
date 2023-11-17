@@ -217,8 +217,7 @@ export function addHookForProjectChanges(
         // Originally thought to be a case that would arise on a new addition of
         // a file, left here to capture this specific case in case it does show up.
         case 1: {
-          console.error(`Unhandled path length of 1: ${changeEvent.path}`)
-          break
+          throw new Error(`Unhandled path length of 1: ${changeEvent.path}`)
         }
         // When a change happens to the `topLevelElements` in a particular file,
         // this case should show up as the path will consist of the filename and
@@ -249,9 +248,7 @@ function updateEntireProjectContents(
 ): void {
   let actions: Array<EditorAction> = []
   const entriesIterator = changeEvent.keys.entries()
-  let entriesIteratorResult = entriesIterator.next()
-  while (!entriesIteratorResult.done) {
-    const [filename, changeEntry] = entriesIteratorResult.value
+  for (const [filename, changeEntry] of entriesIterator) {
     switch (changeEntry.action) {
       case 'update':
       case 'add':
@@ -270,7 +267,6 @@ function updateEntireProjectContents(
       default:
         throw new Error(`Unhandled change entry action: ${changeEntry.action}`)
     }
-    entriesIteratorResult = entriesIterator.next()
   }
   dispatch(actions)
 }
