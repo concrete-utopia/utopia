@@ -88,10 +88,10 @@ const flexCenter: React.CSSProperties = {
 
 const canvas = {
   live: {
-    border: `2px solid ${colorTheme.canvasLiveBorder.value}`,
+    border: `1px solid ${colorTheme.canvasLiveBorder.value}`,
   },
   editing: {
-    border: '2px solid transparent',
+    border: '1px solid transparent',
   },
 }
 
