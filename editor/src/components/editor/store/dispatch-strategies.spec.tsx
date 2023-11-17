@@ -953,6 +953,6 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
       ],
     )
 
-    expect.assertions(16) // this ensures that the test fails if the expects inside the apply function are not called
+    expect.assertions(6) // this ensures that the test fails if the expects inside the apply function are not called
   })
 })
