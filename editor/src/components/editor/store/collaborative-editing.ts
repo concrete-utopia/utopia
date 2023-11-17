@@ -204,6 +204,8 @@ export function addHookForProjectChanges(
     // TODO Check that this is the array change before doing anything
     for (const changeEvent of changeEvents) {
       switch (changeEvent.path.length) {
+        // This case indicates a change at the base of the entire structure, which
+        // appears to arise at least on first connection to sync up the entire value.
         case 0: {
           if (changeEvent instanceof Y.YMapEvent) {
             updateEntireProjectContents(changeEvent as Y.YMapEvent<any>, dispatch)
@@ -212,10 +214,15 @@ export function addHookForProjectChanges(
           }
           break
         }
+        // Originally thought to be a case that would arise on a new addition of
+        // a file, left here to capture this specific case in case it does show up.
         case 1: {
           console.error(`Unhandled path length of 1: ${changeEvent.path}`)
           break
         }
+        // When a change happens to the `topLevelElements` in a particular file,
+        // this case should show up as the path will consist of the filename and
+        // the string `topLevelElements`.
         case 2: {
           const filePath = changeEvent.path[0] as string
           if (changeEvent.path[1] !== 'topLevelElements') {
