@@ -894,6 +894,8 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
 
     // dispatching a no-op change to the interaction session to trigger the strategies
 
+    let testStrategyRan = false
+
     await renderResult.dispatch(
       [
         CanvasActions.updateInteractionSession(
@@ -947,6 +949,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
                 interactionSession.latestAllElementProps[EP.toString(targetElement)].style
                   .backgroundColor,
               ).toBeDefined()
+              testStrategyRan = true
               return strategyApplicationResult([])
             },
           },
@@ -954,6 +957,6 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
       ],
     )
 
-    expect.assertions(16) // this ensures that the test fails if the expects inside the apply function are not called
+    expect(testStrategyRan).toEqual(true)
   })
 })
