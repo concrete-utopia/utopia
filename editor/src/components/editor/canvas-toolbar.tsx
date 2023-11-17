@@ -329,22 +329,13 @@ export const CanvasToolbar = React.memo(() => {
     'TopMenu isLiveMode',
   )
 
-  const following = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.multiplayer.following,
-    'TopMenu following',
-  )
-
   const toggleLiveMode = React.useCallback(() => {
-    if (following != null) {
-      return
-    }
     if (isLiveMode) {
       dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
     } else {
       dispatch([switchEditorMode(EditorModes.liveMode())])
     }
-  }, [dispatch, isLiveMode, following])
+  }, [dispatch, isLiveMode])
 
   const resetRemixApps = useResetRemixApps()
 
