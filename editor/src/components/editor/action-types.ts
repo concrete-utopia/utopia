@@ -60,7 +60,6 @@ import type {
   ThemeSetting,
   ColorSwatch,
   PostActionMenuData,
-  MultiplayerState,
 } from './store/editor-state'
 import { NavigatorEntry } from './store/editor-state'
 import type { Notice } from '../common/notice'
@@ -1050,11 +1049,6 @@ export interface UpdateProjectServerState {
   serverState: ProjectServerState
 }
 
-export interface UpdateMultiplayerState {
-  action: 'UPDATE_MULTIPLAYER_STATE'
-  state: Partial<MultiplayerState>
-}
-
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
@@ -1225,7 +1219,6 @@ export type EditorAction =
   | FromVSCodeAction
   | TruncateHistory
   | UpdateProjectServerState
-  | UpdateMultiplayerState
 
 export type DispatchPriority =
   | 'everyone'

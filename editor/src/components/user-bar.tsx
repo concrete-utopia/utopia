@@ -14,9 +14,9 @@ import { Avatar, Tooltip, useColorTheme } from '../uuiui'
 import { Substores, useEditorState } from './editor/store/store-hook'
 import { unless, when } from '../utils/react-conditionals'
 import { useDispatch } from './editor/store/dispatch-context'
-import { updateMultiplayerState } from './editor/actions/action-creators'
+import { switchEditorMode } from './editor/actions/action-creators'
 import type { EditorAction } from './editor/action-types'
-import { multiplayerStateFollowing } from './editor/store/editor-state'
+import { EditorModes, isFollowMode } from './editor/editor-modes'
 
 const MAX_VISIBLE_OTHER_PLAYERS = 4
 
@@ -56,6 +56,7 @@ export const SinglePlayerUserBar = React.memo(() => {
 SinglePlayerUserBar.displayName = 'SinglePlayerUserBar'
 
 const MultiplayerUserBar = React.memo(() => {
+  const dispatch = useDispatch()
   const colorTheme = useColorTheme()
 
   const self = useSelf()
@@ -77,24 +78,22 @@ const MultiplayerUserBar = React.memo(() => {
     return others.slice(MAX_VISIBLE_OTHER_PLAYERS)
   }, [others])
 
-  const dispatch = useDispatch()
-
-  const following = useEditorState(
+  const mode = useEditorState(
     Substores.restOfEditor,
-    (store) => store.editor.multiplayer.following,
-    'MultiplayerUserBar following',
+    (store) => store.editor.mode,
+    'MultiplayerUserBar mode',
   )
 
   const toggleFollowing = React.useCallback(
     (id: string) => () => {
-      let actions: EditorAction[] = [
-        updateMultiplayerState({
-          following: id === following?.id ? null : multiplayerStateFollowing(id),
-        }),
-      ]
+      const newMode =
+        isFollowMode(mode) && mode.playerId === id
+          ? EditorModes.selectMode(null, false, 'none')
+          : EditorModes.followMode(id)
+      let actions: EditorAction[] = [switchEditorMode(newMode)]
       dispatch(actions)
     },
-    [dispatch, following],
+    [dispatch, mode],
   )
 
   if (self.presence.name == null) {
@@ -138,7 +137,7 @@ const MultiplayerUserBar = React.memo(() => {
                 border={true}
                 coloredTooltip={true}
                 onClick={toggleFollowing(other.id)}
-                active={following?.id === other.id}
+                active={isFollowMode(mode) && mode.playerId === other.id}
               />
             )
           })}

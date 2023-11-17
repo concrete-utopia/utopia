@@ -369,8 +369,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_CONDITIONAL_EXPRESSION(action, state)
     case 'SWITCH_CONDITIONAL_BRANCHES':
       return UPDATE_FNS.SWITCH_CONDITIONAL_BRANCHES(action, state)
-    case 'UPDATE_MULTIPLAYER_STATE':
-      return UPDATE_FNS.UPDATE_MULTIPLAYER_STATE(action, state)
     default:
       return state
   }

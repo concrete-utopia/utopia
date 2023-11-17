@@ -17,7 +17,8 @@ import {
 import { useKeepShallowReferenceEquality } from '../../utils/react-performance'
 import { useDispatch } from '../editor/store/dispatch-context'
 import CanvasActions from './canvas-actions'
-import { updateMultiplayerState } from '../editor/actions/action-creators'
+import { EditorModes, isFollowMode } from '../editor/editor-modes'
+import { switchEditorMode } from '../editor/actions/action-creators'
 
 export const MultiplayerPresence = React.memo(() => {
   const dispatch = useDispatch()
@@ -86,7 +87,7 @@ export const MultiplayerPresence = React.memo(() => {
 
   React.useEffect(() => {
     // when the room changes, reset
-    dispatch([updateMultiplayerState({ following: null })])
+    dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
   }, [room.id, dispatch])
 
   if (!isLoggedIn(loginState)) {
@@ -223,10 +224,10 @@ const FollowingOverlay = React.memo(() => {
   const self = useSelf()
   const others = useOthers((list) => normalizeOthersList(self.id, list))
 
-  const following = useEditorState(
+  const mode = useEditorState(
     Substores.restOfEditor,
-    (store) => store.editor.multiplayer.following,
-    'FollowingOverlay following',
+    (store) => store.editor.mode,
+    'FollowingOverlay mode',
   )
   const canvasScale = useEditorState(
     Substores.canvasOffset,
@@ -240,15 +241,15 @@ const FollowingOverlay = React.memo(() => {
   )
 
   const followed = React.useMemo(() => {
-    return others.find((other) => following != null && other.id === following.id)
-  }, [others, following])
+    return others.find((other) => isFollowMode(mode) && other.id === mode.playerId)
+  }, [others, mode])
 
   React.useEffect(() => {
     // when following another player, apply its canvas constraints
     if (followed == null) {
-      if (following != null) {
+      if (isFollowMode(mode)) {
         // reset if the other player disconnects
-        dispatch([updateMultiplayerState({ following: null })])
+        dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
       }
       return
     }
@@ -266,7 +267,7 @@ const FollowingOverlay = React.memo(() => {
     if (actions.length > 0) {
       dispatch(actions)
     }
-  }, [followed, canvasScale, canvasOffset, dispatch, following])
+  }, [followed, canvasScale, canvasOffset, dispatch, mode])
 
   if (followed == null) {
     return null

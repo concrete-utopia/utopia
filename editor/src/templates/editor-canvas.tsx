@@ -29,7 +29,7 @@ import * as EditorActions from '../components/editor/actions/action-creators'
 import type { HandleInteractionSession } from '../components/editor/actions/meta-actions'
 import { cancelInsertModeActions } from '../components/editor/actions/meta-actions'
 import type { Mode } from '../components/editor/editor-modes'
-import { EditorModes, isLiveMode } from '../components/editor/editor-modes'
+import { EditorModes, isFollowMode, isLiveMode } from '../components/editor/editor-modes'
 import { saveAssets } from '../components/editor/server'
 import type {
   CanvasCursor,
@@ -152,6 +152,8 @@ function getDefaultCursorForMode(mode: Mode): CSSCursor {
       return CSSCursor.Select
     case 'comment':
       return CSSCursor.Insert
+    case 'follow':
+      return CSSCursor.Select
     default:
       const _exhaustiveCheck: never = mode
       throw `Unable to get default cursor for unsupported mode ${(mode as any).type}`
@@ -346,7 +348,7 @@ export function runLocalCanvasAction(
   // TODO BB horrorshow performance
   switch (action.action) {
     case 'SCROLL_CANVAS': {
-      if (!action.must && model.multiplayer.following != null) {
+      if (!action.must && isFollowMode(model.mode)) {
         return model
       }
       const newCanvasOffset = Utils.offsetPoint(
@@ -363,7 +365,7 @@ export function runLocalCanvasAction(
       }
     }
     case 'POSITION_CANVAS':
-      if (!action.must && model.multiplayer.following != null) {
+      if (!action.must && isFollowMode(model.mode)) {
         return model
       }
       return {
@@ -388,7 +390,7 @@ export function runLocalCanvasAction(
       }
       return model
     case 'ZOOM': {
-      if (!action.must && model.multiplayer.following != null) {
+      if (!action.must && isFollowMode(model.mode)) {
         return model
       }
 

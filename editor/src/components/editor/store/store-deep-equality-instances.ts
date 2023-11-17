@@ -322,16 +322,12 @@ import type {
   TrueUpTarget,
   InvalidOverrideNavigatorEntry,
   TrueUpHuggingElement,
-  MultiplayerState,
-  MultiplayerStateFollowing,
 } from './editor-state'
 import {
   trueUpGroupElementChanged,
   trueUpChildrenOfGroupChanged,
   invalidOverrideNavigatorEntry,
   trueUpHuggingElement,
-  multiplayerState,
-  multiplayerStateFollowing,
 } from './editor-state'
 import {
   editorStateNodeModules,
@@ -476,6 +472,7 @@ import type {
   InsertionSubjectWrapper,
   SelectModeToolbarMode,
   CommentMode,
+  FollowMode,
 } from '../editor-modes'
 import {
   EditorModes,
@@ -3246,6 +3243,12 @@ export const CommentModeKeepDeepEquality: KeepDeepEqualityCall<CommentMode> = co
   EditorModes.commentMode,
 )
 
+export const FollowModeKeepDeepEquality: KeepDeepEqualityCall<FollowMode> = combine1EqualityCall(
+  (mode) => mode.playerId,
+  StringKeepDeepEquality,
+  EditorModes.followMode,
+)
+
 export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newValue) => {
   switch (oldValue.type) {
     case 'insert':
@@ -3273,9 +3276,13 @@ export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newVa
         return CommentModeKeepDeepEquality(newValue, oldValue)
       }
       break
+    case 'follow':
+      if (newValue.type === oldValue.type) {
+        return FollowModeKeepDeepEquality(newValue, oldValue)
+      }
+      break
     default:
-      const _exhaustiveCheck: never = oldValue
-      throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
+      assertNever(oldValue)
   }
   return keepDeepEqualityResult(newValue, false)
 }
@@ -4144,18 +4151,6 @@ export const TrueUpTargetKeepDeepEquality: KeepDeepEqualityCall<TrueUpTarget> = 
   return keepDeepEqualityResult(newValue, false)
 }
 
-export const MultiplayerStateFollowingKeepDeepEquality: KeepDeepEqualityCall<MultiplayerStateFollowing> =
-  combine1EqualityCall((data) => data.id, StringKeepDeepEquality, multiplayerStateFollowing)
-
-export const MultiplayerStateKeepDeepEquality: KeepDeepEqualityCall<MultiplayerState> =
-  combine2EqualityCalls(
-    (data) => data.roomId,
-    NullableStringKeepDeepEquality,
-    (data) => data.following,
-    nullableDeepEquality(MultiplayerStateFollowingKeepDeepEquality),
-    multiplayerState,
-  )
-
 export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   oldValue,
   newValue,
@@ -4439,11 +4434,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.internalClipboard,
   )
 
-  const multiplayerStateResults = MultiplayerStateKeepDeepEquality(
-    oldValue.multiplayer,
-    newValue.multiplayer,
-  )
-
   const areEqual =
     idResult.areEqual &&
     vscodeBridgeIdResult.areEqual &&
@@ -4520,8 +4510,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     githubDataResults.areEqual &&
     refreshingDependenciesResults.areEqual &&
     colorSwatchesResults.areEqual &&
-    internalClipboardResults.areEqual &&
-    multiplayerStateResults.areEqual
+    internalClipboardResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -4604,7 +4593,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       refreshingDependenciesResults.value,
       colorSwatchesResults.value,
       internalClipboardResults.value,
-      multiplayerStateResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

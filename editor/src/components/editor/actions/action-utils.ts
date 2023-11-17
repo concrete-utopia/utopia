@@ -130,7 +130,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'START_POST_ACTION_SESSION':
     case 'TRUNCATE_HISTORY':
     case 'UPDATE_PROJECT_SERVER_STATE':
-    case 'UPDATE_MULTIPLAYER_STATE':
       return true
 
     case 'TRUE_UP_ELEMENTS':
