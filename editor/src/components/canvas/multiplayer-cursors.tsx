@@ -50,11 +50,6 @@ export const MultiplayerPresence = React.memo(() => {
     (store) => store.editor.canvas.roundedCanvasOffset,
     'MultiplayerPresence canvasOffset',
   )
-  const mode = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.mode,
-    'MultiplayerPresence mode',
-  )
 
   React.useEffect(() => {
     // when the login state changes, update the presence info
@@ -74,7 +69,7 @@ export const MultiplayerPresence = React.memo(() => {
     }
     // when the canvas is panned or zoomed, update the presence
     updateMyPresence({ canvasScale, canvasOffset })
-  }, [canvasScale, canvasOffset, updateMyPresence, loginState, mode])
+  }, [canvasScale, canvasOffset, updateMyPresence, loginState])
 
   React.useEffect(() => {
     // when the mouse moves over the canvas, update the presence cursor
@@ -243,11 +238,6 @@ const FollowingOverlay = React.memo(() => {
     (store) => store.editor.canvas.roundedCanvasOffset,
     'FollowingOverlay canvasOffset',
   )
-  const mode = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.mode,
-    'FollowingOverlay mode',
-  )
 
   const followed = React.useMemo(() => {
     return others.find((other) => following != null && other.id === following.id)
@@ -276,7 +266,7 @@ const FollowingOverlay = React.memo(() => {
     if (actions.length > 0) {
       dispatch(actions)
     }
-  }, [followed, canvasScale, canvasOffset, dispatch, following, mode])
+  }, [followed, canvasScale, canvasOffset, dispatch, following])
 
   if (followed == null) {
     return null
