@@ -72,5 +72,5 @@ export function useUpdateStringRun(): (
 }
 
 function sanitizeString(s: string): string {
-  return JSON.stringify(s) // get rid of the opening and closing quote marks
+  return JSON.stringify(s)
 }
