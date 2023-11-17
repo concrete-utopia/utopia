@@ -14,8 +14,7 @@ import { Avatar, Tooltip, useColorTheme } from '../uuiui'
 import { Substores, useEditorState } from './editor/store/store-hook'
 import { unless, when } from '../utils/react-conditionals'
 import { useDispatch } from './editor/store/dispatch-context'
-import { switchEditorMode, updateMultiplayerState } from './editor/actions/action-creators'
-import { EditorModes } from './editor/editor-modes'
+import { updateMultiplayerState } from './editor/actions/action-creators'
 import type { EditorAction } from './editor/action-types'
 import { multiplayerStateFollowing } from './editor/store/editor-state'
 
@@ -90,12 +89,9 @@ const MultiplayerUserBar = React.memo(() => {
     (id: string) => () => {
       let actions: EditorAction[] = [
         updateMultiplayerState({
-          following: id === following?.id ? null : multiplayerStateFollowing(id, null),
+          following: id === following?.id ? null : multiplayerStateFollowing(id),
         }),
       ]
-      if (following?.mode != null) {
-        actions.push(switchEditorMode(EditorModes.selectMode(null, false, 'none'), undefined, true))
-      }
       dispatch(actions)
     },
     [dispatch, following],

@@ -164,14 +164,12 @@ export type SelectComponents = {
 export type UpdateEditorMode = {
   action: 'UPDATE_EDITOR_MODE'
   mode: Mode
-  must: boolean
 }
 
 export type SwitchEditorMode = {
   action: 'SWITCH_EDITOR_MODE'
   mode: Mode
   unlessMode?: 'select' | 'live' | 'insert' | 'textEdit'
-  must: boolean
 }
 
 export interface ToggleCanvasIsLive {

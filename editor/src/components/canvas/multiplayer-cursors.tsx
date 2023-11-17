@@ -17,10 +17,7 @@ import {
 import { useKeepShallowReferenceEquality } from '../../utils/react-performance'
 import { useDispatch } from '../editor/store/dispatch-context'
 import CanvasActions from './canvas-actions'
-import { switchEditorMode, updateMultiplayerState } from '../editor/actions/action-creators'
-import { EditorModes } from '../editor/editor-modes'
-import { multiplayerStateFollowing } from '../editor/store/editor-state'
-import { assertNever } from '../../core/shared/utils'
+import { updateMultiplayerState } from '../editor/actions/action-creators'
 
 export const MultiplayerPresence = React.memo(() => {
   const dispatch = useDispatch()
@@ -75,8 +72,8 @@ export const MultiplayerPresence = React.memo(() => {
     if (!isLoggedIn(loginState)) {
       return
     }
-    // when the canvas is panned or zoomed or the mde changes, update the presence
-    updateMyPresence({ canvasScale, canvasOffset, mode: mode.type })
+    // when the canvas is panned or zoomed, update the presence
+    updateMyPresence({ canvasScale, canvasOffset })
   }, [canvasScale, canvasOffset, updateMyPresence, loginState, mode])
 
   React.useEffect(() => {
@@ -261,10 +258,7 @@ const FollowingOverlay = React.memo(() => {
     if (followed == null) {
       if (following != null) {
         // reset if the other player disconnects
-        dispatch([
-          updateMultiplayerState({ following: null }),
-          switchEditorMode(EditorModes.selectMode(null, false, 'none'), undefined, true),
-        ])
+        dispatch([updateMultiplayerState({ following: null })])
       }
       return
     }
@@ -278,29 +272,6 @@ const FollowingOverlay = React.memo(() => {
       !pointsEqual(followed.presence.canvasOffset, canvasOffset)
     ) {
       actions.push(CanvasActions.positionCanvas(followed.presence.canvasOffset, true))
-    }
-    if (followed.presence.mode !== mode.type) {
-      actions.push(
-        updateMultiplayerState({
-          following: multiplayerStateFollowing(followed.id, followed.presence.mode),
-        }),
-      )
-      switch (followed.presence.mode) {
-        case 'live':
-          actions.push(switchEditorMode(EditorModes.liveMode(null), undefined, true))
-          break
-        case 'comment':
-        case 'insert':
-        case 'select':
-        case 'textEdit':
-        case null:
-          actions.push(
-            switchEditorMode(EditorModes.selectMode(null, false, 'none'), undefined, true),
-          )
-          break
-        default:
-          assertNever(followed.presence.mode)
-      }
     }
     if (actions.length > 0) {
       dispatch(actions)

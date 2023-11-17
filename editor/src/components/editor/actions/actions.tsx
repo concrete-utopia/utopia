@@ -2033,9 +2033,6 @@ export const UPDATE_FNS = {
     }
   },
   UPDATE_EDITOR_MODE: (action: UpdateEditorMode, editor: EditorModel): EditorModel => {
-    if (!action.must && editor.multiplayer.following != null) {
-      return editor
-    }
     return setModeState(action.mode, editor)
   },
   SWITCH_EDITOR_MODE: (
@@ -2044,9 +2041,6 @@ export const UPDATE_FNS = {
     derived: DerivedState,
   ): EditorModel => {
     // TODO this should probably be merged with UPDATE_EDITOR_MODE
-    if (!action.must && editor.multiplayer.following != null) {
-      return editor
-    }
     if (action.unlessMode === editor.mode.type) {
       // FIXME: this is a bit unfortunate as this action should just do what its name suggests, without additional flags.
       // For now there's not much more that we can do since the action here can be (and is) evaluated also for transient states
