@@ -116,6 +116,8 @@ module.exports = {
         '\\.[jt]sx?$': 'babel-jest',
       },
       roots: ['src'],
+      // Note yjs and lib0 are included in this as they must be transformed to work
+      // within jest as the type of modules they expose by default are not the kind that it expects.
       transformIgnorePatterns: ['<rootDir>/node_modules/.pnpm/(?!file+..+|yjs|lib0)'],
       setupFiles: ['./jest-setup-beforeall.js'],
     },
