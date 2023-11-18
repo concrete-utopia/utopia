@@ -14,6 +14,7 @@ import {
   possiblyUniqueColor,
 } from '../../core/shared/multiplayer'
 import { useKeepShallowReferenceEquality } from '../../utils/react-performance'
+import { useAddMyselfToCollaborators } from '../../core/commenting/comment-hooks'
 
 export const MultiplayerCursors = React.memo(() => {
   const self = useSelf()
@@ -43,6 +44,8 @@ export const MultiplayerCursors = React.memo(() => {
     (store) => store.editor.canvas.roundedCanvasOffset,
     'MultiplayerCursors canvasOffset',
   )
+
+  useAddMyselfToCollaborators()
 
   React.useEffect(() => {
     if (!isLoggedIn(loginState)) {
