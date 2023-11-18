@@ -453,6 +453,12 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem elementWarningsSelector',
   )
 
+  const filePathMappings = useEditorState(
+    Substores.derived,
+    (store) => store.derived.filePathMappings,
+    'NavigatorItem filePathMappings',
+  )
+
   const isManuallyFocusableComponent = useEditorState(
     Substores.metadata,
     (store) => {
@@ -462,6 +468,7 @@ export const NavigatorItem: React.FunctionComponent<
           navigatorEntry.elementPath,
           store.editor.jsxMetadata,
           autoFocusedPaths,
+          filePathMappings,
         )
       )
     },

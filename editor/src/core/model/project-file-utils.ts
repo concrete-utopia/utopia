@@ -58,7 +58,7 @@ import {
   EmptyUtopiaCanvasComponent,
 } from './scene-utils'
 import { mapDropNulls, pluck } from '../shared/array-utils'
-import { forEachValue } from '../shared/object-utils'
+import { forEachValue, propOrNull } from '../shared/object-utils'
 import type { ProjectContentsTree, ProjectContentTreeRoot } from '../../components/assets'
 import {
   getProjectFileByFilePath,
@@ -73,6 +73,8 @@ import { fastForEach } from '../shared/utils'
 import { foldEither, isRight, maybeEitherToMaybe } from '../shared/either'
 import { memoize } from '../shared/memoize'
 import { filenameFromParts, getFilenameParts } from '../../components/images'
+import globToRegexp from 'glob-to-regexp'
+import { is } from '../shared/equality-utils'
 
 export const sceneMetadata = _sceneMetadata // This is a hotfix for a circular dependency AND a leaking of utopia-api into the workers
 
@@ -314,17 +316,24 @@ export function getFilePathForImportedComponent(
 
 export function isImportedComponentFromProjectFiles(
   element: ElementInstanceMetadata | null,
+  filePathMappings: FilePathMappings,
 ): boolean {
-  return !isImportedComponentNPM(element)
+  return !isImportedComponentNPM(element, filePathMappings)
 }
 
 export function isImportedComponent(
   elementInstanceMetadata: ElementInstanceMetadata | null,
+  filePathMappings: FilePathMappings,
 ): boolean {
   const importInfo = elementInstanceMetadata?.importInfo
   if (importInfo != null && isImportedOrigin(importInfo)) {
     const importKey = importInfo.filePath
-    return !importKey.startsWith('.') && !importKey.startsWith('/')
+    const isMappedFilePath = filePathMappings.some(([re, _]) => {
+      const result = re.test(importKey)
+      re.lastIndex = 0 // Reset the regex!
+      return result
+    })
+    return !isMappedFilePath && !importKey.startsWith('.') && !importKey.startsWith('/')
   } else {
     return false
   }
@@ -364,12 +373,13 @@ export function isIntrinsicHTMLElementMetadata(
 
 export function isImportedComponentNPM(
   elementInstanceMetadata: ElementInstanceMetadata | null,
+  filePathMappings: FilePathMappings,
 ): boolean {
   return (
     (elementInstanceMetadata != null &&
       isIntrinsicElementMetadata(elementInstanceMetadata) &&
       !isIntrinsicHTMLElementMetadata(elementInstanceMetadata)) ||
-    (isImportedComponent(elementInstanceMetadata) &&
+    (isImportedComponent(elementInstanceMetadata, filePathMappings) &&
       elementInstanceMetadata != null &&
       !isUtopiaAPIComponentFromMetadata(elementInstanceMetadata))
   )
@@ -499,7 +509,12 @@ export function canUpdateRevisionsState(
     case RevisionsState.ParsedAhead:
       return updated === RevisionsState.ParsedAhead || updated === RevisionsState.BothMatch
     case RevisionsState.CodeAhead:
-      return updated === RevisionsState.CodeAhead || updated === RevisionsState.BothMatch
+    case RevisionsState.CodeAheadButPleaseTellVSCodeAboutIt:
+      return (
+        updated === RevisionsState.CodeAhead ||
+        updated === RevisionsState.BothMatch ||
+        updated === RevisionsState.CodeAheadButPleaseTellVSCodeAboutIt
+      )
     default:
       const _exhaustiveCheck: never = existing
       throw new Error(`Invalid revisions state ${existing}`)
@@ -928,4 +943,86 @@ export function getTopLevelElementByExportsDetail(
       (t): t is UtopiaJSXComponent => t.type === 'UTOPIA_JSX_COMPONENT' && t.name === nameToLookFor,
     ) ?? null
   )
+}
+
+export function applyFilePathMappingsToFilePath(
+  filepath: string,
+  filePathMappings: FilePathMappings,
+): string {
+  return filePathMappings.reduce((working, nextMapping) => {
+    // FIXME this is limited to only applying the first mapping, both from the paths object, and from the array of aliased paths
+    const [mapFrom, mapToArray] = nextMapping
+    const mapTo = mapToArray[0]
+    const newWorking = working.replace(mapFrom, mapTo)
+    mapFrom.lastIndex = 0 // Reset the regex!
+    return newWorking
+  }, filepath)
+}
+
+type FilePathMapping = [RegExp, Array<string>]
+export type FilePathMappings = Array<FilePathMapping>
+
+export const getFilePathMappings = memoize(getFilePathMappingsImpl, { maxSize: 1, matchesArg: is })
+
+function getFilePathMappingsImpl(projectContents: ProjectContentTreeRoot): FilePathMappings {
+  const jsConfigFile = getProjectFileByFilePath(projectContents, 'jsconfig.json')
+  if (jsConfigFile != null && isTextFile(jsConfigFile)) {
+    return getFilePathMappingsFromConfigFile(jsConfigFile)
+  }
+
+  return []
+}
+
+const getFilePathMappingsFromConfigFile = memoize(getFilePathMappingsFromConfigFileImpl, {
+  maxSize: 1,
+  matchesArg: is,
+})
+
+function getFilePathMappingsFromConfigFileImpl(configFile: TextFile): FilePathMappings {
+  try {
+    const parsedJSON = JSON.parse(configFile.fileContents.code)
+    if (typeof parsedJSON === 'object') {
+      const compilerOptions = propOrNull('compilerOptions', parsedJSON)
+      const paths = propOrNull('paths', compilerOptions)
+      if (paths != null && typeof paths === 'object' && !Array.isArray(paths)) {
+        // The file path mappings are using glob patterns, and are a mapping from a
+        // pattern, to an array of replacements: https://code.visualstudio.com/docs/languages/jsconfig#_using-webpack-aliases
+        const pathEntries = Object.entries(paths)
+        const pathMappings = mapDropNulls(([k, v]) => {
+          if (Array.isArray(v)) {
+            const values = mapDropNulls((s) => {
+              if (typeof s === 'string') {
+                // FIXME These should be relative to the `baseUrl`
+                return `/${replaceAllStarsWithIndexedGroups(s)}`
+              } else {
+                return null
+              }
+            }, v)
+
+            const globRegex = globToRegexp(k, { flags: 'g', globstar: true })
+            const stickyRegex = new RegExp(globRegex, 'y')
+            ;(stickyRegex as any).skipDeepFreeze = true
+
+            return [stickyRegex, values] as FilePathMapping
+          } else {
+            return null
+          }
+        }, pathEntries)
+
+        return pathMappings
+      }
+    }
+  } catch (e) {
+    // Do nothing
+  }
+
+  return []
+}
+
+// This horrorshow function is for turning glob patterns into suitable replacement strings,
+// e.g. 'app/**/*.js' will become 'app/$1$2', which can then be used in a string replacement
+// used by the file mappings containing glob patterns
+function replaceAllStarsWithIndexedGroups(s: string) {
+  let index = 1
+  return s.replace(/\*+\/?/g, () => `$${index++}`)
 }

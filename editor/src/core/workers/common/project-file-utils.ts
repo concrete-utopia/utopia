@@ -18,7 +18,10 @@ export function codeNeedsPrinting(revisionsState: RevisionsStateType): boolean {
 }
 
 export function codeNeedsParsing(revisionsState: RevisionsStateType): boolean {
-  return revisionsState === RevisionsState.CodeAhead
+  return (
+    revisionsState === RevisionsState.CodeAhead ||
+    revisionsState === RevisionsState.CodeAheadButPleaseTellVSCodeAboutIt
+  )
 }
 
 export function emptyImports(): Imports {

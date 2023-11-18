@@ -225,8 +225,8 @@ import {
   NullableNumberKeepDeepEquality,
   combine9EqualityCalls,
   unionDeepEquality,
-  combine13EqualityCalls,
   combine14EqualityCalls,
+  combine11EqualityCalls,
 } from '../../../utils/deep-equality'
 import {
   ElementPathArrayKeepDeepEquality,
@@ -471,6 +471,7 @@ import type {
   TextEditableElementState,
   InsertionSubjectWrapper,
   SelectModeToolbarMode,
+  CommentMode,
 } from '../editor-modes'
 import {
   EditorModes,
@@ -535,6 +536,7 @@ import type { CopyData, ElementPasteWithMetadata } from '../../../utils/clipboar
 import { elementPaste } from '../actions/action-creators'
 import type { ProjectMetadataFromServer, ProjectServerState } from './project-server-state'
 import { projectServerState, projectMetadataFromServer } from './project-server-state'
+import type { VariablesInScope } from '../../canvas/ui-jsx-canvas'
 
 export const ProjectMetadataFromServerKeepDeepEquality: KeepDeepEqualityCall<ProjectMetadataFromServer> =
   combine3EqualityCalls(
@@ -684,7 +686,7 @@ export const NavigatorStateKeepDeepEquality: KeepDeepEqualityCall<NavigatorState
   )
 
 export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedState> {
-  return combine8EqualityCalls(
+  return combine9EqualityCalls(
     (state) => state.navigatorTargets,
     arrayDeepEquality(NavigatorEntryKeepDeepEquality),
     (state) => state.visibleNavigatorTargets,
@@ -701,6 +703,8 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
     nullableDeepEquality(FileChecksumsWithFileKeepDeepEquality),
     (state) => state.remixData,
     createCallWithTripleEquals(),
+    (state) => state.filePathMappings,
+    createCallWithShallowEquals(),
     (
       navigatorTargets,
       visibleNavigatorTargets,
@@ -710,6 +714,7 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
       projectContentsChecksums,
       branchOriginContentsChecksums,
       remixData,
+      filePathMappings,
     ) => {
       return {
         navigatorTargets: navigatorTargets,
@@ -720,6 +725,7 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
         projectContentsChecksums: projectContentsChecksums,
         branchOriginContentsChecksums: branchOriginContentsChecksums,
         remixData: remixData,
+        filePathMappings: filePathMappings,
       }
     },
   )
@@ -2329,8 +2335,11 @@ export function ElementPathTreeKeepDeepEquality(
   )(oldValue, newValue)
 }
 
+export const VariablesInScopeKeepDeepEquality: KeepDeepEqualityCall<VariablesInScope> =
+  objectDeepEquality(objectDeepEquality(createCallFromIntrospectiveKeepDeep()))
+
 export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<InteractionSession> =
-  combine10EqualityCalls(
+  combine11EqualityCalls(
     (session) => session.interactionData,
     InputDataKeepDeepEquality,
     (session) => session.activeControl,
@@ -2345,6 +2354,8 @@ export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<Interactio
     createCallWithTripleEquals(),
     (session) => session.latestAllElementProps,
     createCallFromIntrospectiveKeepDeep(),
+    (session) => session.latestVariablesInScope,
+    VariablesInScopeKeepDeepEquality,
     (session) => session.updatedTargetPaths,
     objectDeepEquality(ElementPathKeepDeepEquality),
     (session) => session.aspectRatioLock,
@@ -3229,6 +3240,12 @@ export const TextEditModeKeepDeepEquality: KeepDeepEqualityCall<TextEditMode> =
     EditorModes.textEditMode,
   )
 
+export const CommentModeKeepDeepEquality: KeepDeepEqualityCall<CommentMode> = combine1EqualityCall(
+  (mode) => mode.location,
+  nullableDeepEquality(CanvasPointKeepDeepEquality),
+  EditorModes.commentMode,
+)
+
 export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newValue) => {
   switch (oldValue.type) {
     case 'insert':
@@ -3249,6 +3266,11 @@ export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newVa
     case 'textEdit':
       if (newValue.type === oldValue.type) {
         return TextEditModeKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'comment':
+      if (newValue.type === oldValue.type) {
+        return CommentModeKeepDeepEquality(newValue, oldValue)
       }
       break
     default:
@@ -4354,10 +4376,21 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.allElementProps,
     newValue.allElementProps,
   )
-  const _currentAllElementProps_KILLME_Results = AllElementPropsKeepDeepEquality(
-    oldValue._currentAllElementProps_KILLME,
-    newValue._currentAllElementProps_KILLME,
+  const currentAllElementPropsResults = AllElementPropsKeepDeepEquality(
+    oldValue.currentAllElementProps,
+    newValue.currentAllElementProps,
   )
+
+  const variablesInScopeResult = VariablesInScopeKeepDeepEquality(
+    oldValue.variablesInScope,
+    newValue.variablesInScope,
+  )
+
+  const currentVariablesInScopeResult = VariablesInScopeKeepDeepEquality(
+    oldValue.currentVariablesInScope,
+    newValue.currentVariablesInScope,
+  )
+
   const githubSettingsResults = ProjectGithubSettingsKeepDeepEquality(
     oldValue.githubSettings,
     newValue.githubSettings,
@@ -4461,7 +4494,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     indexedDBFailedResults.areEqual &&
     forceParseFilesResults.areEqual &&
     allElementPropsResults.areEqual &&
-    _currentAllElementProps_KILLME_Results.areEqual &&
+    currentAllElementPropsResults.areEqual &&
+    variablesInScopeResult.areEqual &&
     githubSettingsResults.areEqual &&
     imageDragSessionStateEqual.areEqual &&
     githubOperationsResults.areEqual &&
@@ -4541,7 +4575,9 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       indexedDBFailedResults.value,
       forceParseFilesResults.value,
       allElementPropsResults.value,
-      _currentAllElementProps_KILLME_Results.value,
+      currentAllElementPropsResults.value,
+      variablesInScopeResult.value,
+      currentVariablesInScopeResult.value,
       githubSettingsResults.value,
       imageDragSessionStateEqual.value,
       githubOperationsResults.value,

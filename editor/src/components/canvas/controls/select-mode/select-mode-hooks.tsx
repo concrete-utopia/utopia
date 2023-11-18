@@ -62,6 +62,7 @@ import { InspectorHoveredCanvasControls } from '../../../inspector/common/inspec
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { getAllLockedElementPaths } from '../../../../core/shared/element-locking'
 import { treatElementAsGroupLike } from '../../canvas-strategies/strategies/group-helpers'
+import { useCommentModeSelectAndHover } from '../comment-mode/comment-mode-hooks'
 
 const DRAG_START_THRESHOLD = 2
 
@@ -688,6 +689,7 @@ function useSelectOrLiveModeSelectAndHover(
             editorStoreRef.current.editor.elementPathTree,
             editorStoreRef.current.editor.jsxMetadata,
             editorStoreRef.current.derived.autoFocusedPaths,
+            editorStoreRef.current.derived.filePathMappings,
           )
           if (isFocusableLeaf) {
             editorActions.push(CanvasActions.clearInteractionSession(false))
@@ -763,11 +765,13 @@ export function useSelectAndHover(
   onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
   onMouseUp: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
 } {
-  const modeType = useEditorState(
+  const mode = useEditorState(
     Substores.restOfEditor,
-    (store) => store.editor.mode.type,
+    (store) => store.editor.mode,
     'useSelectAndHover mode',
   )
+
+  const modeType = mode.type
   const isZoomMode = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.keysPressed['z'] ?? false,
@@ -786,6 +790,9 @@ export function useSelectAndHover(
   )
   const insertModeCallbacks = useInsertModeSelectAndHover(modeType === 'insert', cmdPressed)
   const textEditModeCallbacks = useTextEditModeSelectAndHover(modeType === 'textEdit')
+  const commentModeCallbacks = useCommentModeSelectAndHover(
+    mode?.type === 'comment' ? mode.location : null,
+  )
 
   if (hasInteractionSession) {
     return {
@@ -803,6 +810,8 @@ export function useSelectAndHover(
         return selectModeCallbacks
       case 'textEdit':
         return textEditModeCallbacks
+      case 'comment':
+        return commentModeCallbacks
       default:
         const _exhaustiveCheck: never = modeType
         throw new Error(`Unhandled editor mode ${JSON.stringify(modeType)}`)

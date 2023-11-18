@@ -45,6 +45,7 @@ import {
   useDetectedConstraints,
 } from './simplified-pinning-helpers'
 import { UIGridRow } from './widgets/ui-grid-row'
+import { allSelectedElementsContractSelector } from './editor-contract-section'
 
 export const InspectorSectionConstraintsTestId = 'inspector-section-constraints'
 
@@ -65,12 +66,20 @@ export const ConstraintsSection = React.memo(() => {
     'ConstraintsSection allElementsArePositionedAbsolutely',
   )
 
+  const selectedElementContract = useEditorState(
+    Substores.metadata,
+    allSelectedElementsContractSelector,
+    'EditorContractDropdown selectedElementContract',
+  )
+
   const showSection = React.useMemo(() => {
     return (
+      (selectedElementContract === 'frame' || selectedElementContract === 'group') &&
       allElementsArePositionedAbsolutely &&
       (noGroupOrGroupChildrenSelected || onlyGroupChildrenSelected)
     )
   }, [
+    selectedElementContract,
     noGroupOrGroupChildrenSelected,
     onlyGroupChildrenSelected,
     allElementsArePositionedAbsolutely,

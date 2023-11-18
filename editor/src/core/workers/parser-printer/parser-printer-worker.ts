@@ -1,4 +1,5 @@
 import type { ParseSuccess } from '../../shared/project-file-types'
+import type { SteganographyMode } from './parser-printer'
 import { printCodeOptions, printCode, lintAndParse } from './parser-printer'
 import type {
   ParseFileResult,
@@ -30,6 +31,7 @@ export function handleMessage(
                 file.previousParsed,
                 file.versionNumber,
                 alreadyExistingUIDs_MUTABLE,
+                workerMessage.applySteganography,
               )
             case 'printandreparsefile':
               return getPrintAndReparseCodeResult(
@@ -38,6 +40,7 @@ export function handleMessage(
                 file.stripUIDs,
                 file.versionNumber,
                 alreadyExistingUIDs_MUTABLE,
+                workerMessage.applySteganography,
               )
             default:
               const _exhaustiveCheck: never = file
@@ -60,6 +63,7 @@ function getParseFileResult(
   oldParseResultForUIDComparison: ParseSuccess | null,
   versionNumber: number,
   alreadyExistingUIDs_MUTABLE: Set<string>,
+  applySteganography: SteganographyMode,
 ): ParseFileResult {
   const parseResult = lintAndParse(
     filename,
@@ -67,6 +71,7 @@ function getParseFileResult(
     oldParseResultForUIDComparison,
     alreadyExistingUIDs_MUTABLE,
     'trim-bounds',
+    applySteganography,
   )
   return createParseFileResult(filename, parseResult, versionNumber)
 }
@@ -77,6 +82,7 @@ function getPrintAndReparseCodeResult(
   stripUIDs: boolean,
   versionNumber: number,
   alreadyExistingUIDs: Set<string>,
+  applySteganography: SteganographyMode,
 ): PrintAndReparseResult {
   const printedCode = printCode(
     filename,
@@ -93,6 +99,7 @@ function getPrintAndReparseCodeResult(
     parseSuccess,
     versionNumber,
     alreadyExistingUIDs,
+    applySteganography,
   )
   return createPrintAndReparseResult(filename, parseResult.parseResult, versionNumber, printedCode)
 }

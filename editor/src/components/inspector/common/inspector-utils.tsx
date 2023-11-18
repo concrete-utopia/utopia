@@ -220,7 +220,7 @@ export function useControlModeWithCycle(
   (mode: ControlMode | null, dir: CycleDirection) => void,
   React.DispatchWithoutAction,
 ] {
-  const [controlMode, setControlMode] = React.useState<ControlMode | null>(initialValue)
+  const [controlMode, setControlMode] = usePropControlledStateV2<ControlMode | null>(initialValue)
 
   const cycleToNextMode = React.useCallback(
     (mode: ControlMode | null, direction: CycleDirection) => {
@@ -229,10 +229,10 @@ export function useControlModeWithCycle(
       const index = modes.indexOf(modeToUse) + delta
       setControlMode(modes[wrapValue(index, 0, modes.length - 1)])
     },
-    [initialValue, modes, controlMode],
+    [initialValue, modes, controlMode, setControlMode],
   )
 
-  const resetMode = React.useCallback(() => setControlMode(null), [])
+  const resetMode = React.useCallback(() => setControlMode(null), [setControlMode])
 
   return [controlMode, cycleToNextMode, resetMode]
 }

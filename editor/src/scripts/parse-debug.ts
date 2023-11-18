@@ -28,6 +28,7 @@ async function printOutParseResult(
         initialPrettifiedContents,
         null,
         emptySet(),
+        'do-not-apply-steganography',
       )
       switch (command) {
         case 'print':

@@ -711,6 +711,11 @@ liveblocksAuthenticationEndpoint cookie authBody = requireUser cookie $ \session
   token <- authLiveblocksUser (view (field @"_id") sessionUser) roomID
   pure $ LiveblocksAuthenticationResponse { _token = token }
 
+liveblocksEnabledEndpoint :: ServerMonad Bool
+liveblocksEnabledEndpoint = do
+  liveblocksEnabled <- isLiveblocksEnabled
+  pure liveblocksEnabled
+
 {-|
   Compose together all the individual endpoints into a definition for the whole server.
 -}
@@ -757,6 +762,7 @@ unprotected = authenticate
          :<|> loadProjectFileEndpoint
          :<|> loadProjectFileEndpoint
          :<|> loadProjectThumbnailEndpoint
+         :<|> liveblocksEnabledEndpoint
          :<|> monitoringEndpoint
          :<|> clearBranchCacheEndpoint
          :<|> packagePackagerEndpoint

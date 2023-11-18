@@ -72,6 +72,7 @@ Finally restart your environment, which if running locally might mean running so
 
 ### Liveblocks
 
+You need a Liveblocks account to work on the collaboration features of Utopia. To use commenting, you also need to add the `Comments` add-on to your Liveblocks plan.
 In the project dashboard for your given project, the "API keys" option from the side allows access to the secret key. To utilise this then add that to the environment in `.envrc` with a snippet like the following:
 
 ```

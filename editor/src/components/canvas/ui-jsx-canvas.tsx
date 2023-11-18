@@ -101,9 +101,18 @@ export const ElementsToRerenderGLOBAL: { current: ElementsToRerender } = {
   current: 'rerender-all-elements',
 }
 
+export interface VariableData {
+  [name: string]: unknown
+}
+
+export interface VariablesInScope {
+  [elementPathString: string]: VariableData
+}
+
 export type SpyValues = {
   metadata: ElementInstanceMetadataMap
   allElementProps: AllElementProps
+  variablesInScope: VariablesInScope
 }
 
 export interface UiJsxCanvasContextData {
@@ -118,6 +127,7 @@ export function emptyUiJsxCanvasContextData(): UiJsxCanvasContextData {
       spyValues: {
         metadata: {},
         allElementProps: {},
+        variablesInScope: {},
       },
     },
   }
