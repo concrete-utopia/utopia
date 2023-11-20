@@ -2,6 +2,8 @@ import { LiveObject } from '@liveblocks/client'
 import { createClient } from '@liveblocks/client'
 import { createRoomContext } from '@liveblocks/react'
 import type { CanvasVector, WindowPoint } from './src/core/shared/math-utils'
+import { getProjectID } from './src/common/env-vars'
+import { projectIdToRoomId } from './src/core/shared/multiplayer'
 
 export const liveblocksThrottle = 100 // ms
 
@@ -40,8 +42,10 @@ export function initialPresence(): Presence {
 export type Storage = {
   // author: LiveObject<{ firstName: string, lastName: string }>,
   // ...
-  collaborators: LiveObject<{ [userId: string]: boolean }> // this is an object (and not a list) so we can quickly check if a user is a collaborator, but later we can extend the information by storing something more than a boolean (e.g. a permission level)
+  collaborators: LiveObject<{ [userId: string]: User }> // this is an object (and not a list) so we can quickly check if a user is a collaborator, but later we can extend the information by storing something more than a boolean (e.g. a permission level)
 }
+
+export type User = LiveObject<UserMeta>
 
 export function initialStorage(): Storage {
   return {
@@ -54,7 +58,9 @@ export function initialStorage(): Storage {
 // will not change during a session, like a user's name or avatar.
 export type UserMeta = {
   id: string // Accessible through `user.id`
-  // info?: Json,  // Accessible through `user.info`
+  name: string | null
+  avatar: string | null
+  colorIndex: number | null
 }
 
 // Optionally, the type of custom events broadcast and listened to in this
@@ -73,8 +79,6 @@ export type ThreadMetadata = {
   type: 'canvas'
   x: number
   y: number
-  name: string // TODO: this is maybe unnecessary after we provide a resolveUsers function to liveblocks
-  colorIndex: number
 }
 
 export const {
@@ -119,14 +123,28 @@ export const {
     // Used only for Comments. Return a list of user information retrieved
     // from `userIds`. This info is used in comments, mentions etc.
 
-    // const usersData = await __fetchUsersFromDB__(userIds);
-    //
-    // return usersData.map((userData) => ({
-    //   name: userData.name,
-    //   avatar: userData.avatar.src,
-    // }));
+    // This should be provided by the Utopia backend, but as a quick hack I store the user data in the room storage.
+    // This means we need the room id to get the users, which is not provided to this function, but fortunately we can
+    // recreate that from the project id.
+    const projectId = getProjectID()
+    if (projectId == null) {
+      return []
+    }
 
-    return []
+    const room = liveblocksClient.getRoom(projectIdToRoomId(projectId))
+    if (room == null) {
+      return []
+    }
+
+    const storage = await room.getStorage()
+
+    const collabs = storage.root.get('collaborators') as LiveObject<{ [userId: string]: User }>
+    if (collabs == null) {
+      return []
+    }
+
+    const users = Object.values(collabs.toObject()).map((u) => u.toObject())
+    return users.filter((u) => userIds.includes(u.id))
   },
   async resolveMentionSuggestions({ text, roomId }) {
     // Used only for Comments. Return a list of userIds that match `text`.

@@ -106,3 +106,7 @@ export function isDefaultAuth0AvatarURL(s: string | null): boolean {
     (s.match(reAuth0DefaultAvatarURLEncoded) != null || s.match(reAuth0DefaultAvatar) != null)
   )
 }
+
+export function projectIdToRoomId(projectId: string): string {
+  return `project-room-${projectId}`
+}

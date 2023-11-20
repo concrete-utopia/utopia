@@ -63,17 +63,6 @@ function CommentThread({ x, y }: CommentThreadProps) {
 
   const createThread = useCreateThread()
 
-  const colorIndex = useMyMultiplayerColorIndex() ?? -1
-
-  // TODO: Unify getting name in different multiplayer components
-  const loginState = useEditorState(
-    Substores.userState,
-    (store) => store.userState.loginState,
-    'CommentThread loginState',
-  )
-
-  const name = isLoggedIn(loginState) ? loginState.user.name : null
-
   const onCreateThread = React.useCallback(
     ({ body }: ComposerSubmitComment, event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault()
@@ -81,10 +70,10 @@ function CommentThread({ x, y }: CommentThreadProps) {
       // Create a new thread
       createThread({
         body,
-        metadata: { type: 'canvas', x: x, y: y, name: name ?? 'Anonymous', colorIndex: colorIndex },
+        metadata: { type: 'canvas', x: x, y: y },
       })
     },
-    [createThread, x, y, name, colorIndex],
+    [createThread, x, y],
   )
 
   if (thread == null) {

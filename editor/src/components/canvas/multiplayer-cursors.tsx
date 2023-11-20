@@ -1,20 +1,19 @@
 import type { User } from '@liveblocks/client'
 import { motion } from 'framer-motion'
 import React from 'react'
-import type { Presence, UserMeta } from '../../../liveblocks.config'
 import {
   useOthers,
   useOthersListener,
   useRoom,
   useSelf,
+  useStorage,
   useUpdateMyPresence,
 } from '../../../liveblocks.config'
-import { useAddMyselfToCollaborators } from '../../core/commenting/comment-hooks'
+import type { Presence, UserMeta } from '../../../liveblocks.config'
 import type { CanvasPoint } from '../../core/shared/math-utils'
 import { pointsEqual, windowPoint } from '../../core/shared/math-utils'
 import {
   multiplayerColorFromIndex,
-  normalizeMultiplayerName,
   normalizeOthersList,
   possiblyUniqueColor,
 } from '../../core/shared/multiplayer'
@@ -34,18 +33,8 @@ export const MultiplayerPresence = React.memo(() => {
   const dispatch = useDispatch()
 
   const room = useRoom()
-  const me = useSelf()
-  const others = useOthers((list) => normalizeOthersList(me.id, list))
   const updateMyPresence = useUpdateMyPresence()
 
-  const myColorIndex = React.useMemo(() => me.presence.colorIndex, [me.presence])
-  const otherColorIndices = useKeepShallowReferenceEquality(
-    others.map((other) => other.presence.colorIndex),
-  )
-
-  const getColorIndex = React.useCallback(() => {
-    return myColorIndex ?? possiblyUniqueColor(otherColorIndices)
-  }, [myColorIndex, otherColorIndices])
   const loginState = useEditorState(
     Substores.userState,
     (store) => store.userState.loginState,
@@ -64,17 +53,23 @@ export const MultiplayerPresence = React.memo(() => {
 
   useAddMyselfToCollaborators()
 
-  React.useEffect(() => {
-    // when the login state changes, update the presence info
+  const myUser = useStorage((store) => {
     if (!isLoggedIn(loginState)) {
+      return null
+    }
+    return store.collaborators[loginState.user.userId]
+  })
+
+  React.useEffect(() => {
+    if (myUser == null) {
       return
     }
     updateMyPresence({
-      name: normalizeMultiplayerName(loginState.user.name ?? null),
-      picture: loginState.user.picture ?? null, // TODO remove this once able to resolve users
-      colorIndex: getColorIndex(),
+      name: myUser.name,
+      picture: myUser.avatar,
+      colorIndex: myUser.colorIndex,
     })
-  }, [loginState, updateMyPresence, getColorIndex])
+  }, [myUser, updateMyPresence])
 
   React.useEffect(() => {
     if (!isLoggedIn(loginState)) {
