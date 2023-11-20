@@ -273,6 +273,7 @@ specifiers:
   react-router-dom: 6.16.0
   react-select: 3.1.0
   react-select-event: ^5.5.1
+  react-shadow-root: 6.2.0
   react-spring: 9.0.0-rc.3
   react-syntax-highlighter: 12.2.1
   react-test-renderer: 16.9.0
@@ -441,6 +442,7 @@ dependencies:
   react-router: 6.16.0_react@18.1.0
   react-router-dom: 6.16.0_ef5jwxihqo6n7gxfmzogljlgcm
   react-select: 3.1.0_t5nmcyzy5uxlteq6gsp6gbc254_ef5jwxihqo6n7gxfmzogljlgcm
+  react-shadow-root: 6.2.0_ceyt5bfod5miybgg2gmf5ylbc4
   react-spring: 9.0.0-rc.3_5vzz734aui5gu3jm6wlduec5ym
   react-syntax-highlighter: 12.2.1_react@18.1.0
   react-timeago: 7.1.0_react@18.1.0
@@ -16185,6 +16187,18 @@ packages:
     transitivePeerDependencies:
       - '@babel/core'
       - '@types/react'
+    dev: false
+
+  /react-shadow-root/6.2.0_ceyt5bfod5miybgg2gmf5ylbc4:
+    resolution: {integrity: sha512-ruFCVvbzFjWordVAZnrIcVNZpHz7whpNW2sRrAYBPmRpE9uTyN0Xt/1lkw52ktAmoSUkEptF2hjfISHmPirKTg==}
+    peerDependencies:
+      prop-types: '>=15.6.0'
+      react: '>=16.0.0'
+      react-dom: '>=16.0.0'
+    dependencies:
+      prop-types: 15.6.2
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: false
 
   /react-side-effect/2.1.1_react@18.1.0:

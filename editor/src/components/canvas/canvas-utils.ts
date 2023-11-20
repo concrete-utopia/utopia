@@ -112,7 +112,7 @@ import type {
   EdgePosition,
   PinOrFlexFrameChange,
 } from './canvas-types'
-import { flexResizeChange, pinFrameChange } from './canvas-types'
+import { CanvasContainerShadowRoot, flexResizeChange, pinFrameChange } from './canvas-types'
 import {
   collectParentAndSiblingGuidelines,
   filterGuidelinesStaticAxis,
@@ -2035,4 +2035,8 @@ export function canvasPanelOffsets(): {
     left: (codeEditor?.clientWidth ?? 0) + (leftPane?.clientWidth ?? 0),
     right: inspector?.clientWidth ?? 0,
   }
+}
+
+export function getCanvasShadowRoot(): ShadowRoot | null {
+  return document.getElementById(CanvasContainerShadowRoot)?.shadowRoot ?? null
 }

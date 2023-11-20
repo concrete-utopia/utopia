@@ -60,7 +60,7 @@ import {
   SceneLevelUtopiaCtxAtom,
   UtopiaProjectCtxAtom,
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
-import { CanvasContainerID } from './canvas-types'
+import { CanvasContainerID, CanvasContainerShadowRoot } from './canvas-types'
 import {
   useKeepReferenceEqualityIfPossible,
   useKeepShallowReferenceEquality,
@@ -92,6 +92,7 @@ import { useRefEditorState } from '../editor/store/store-hook'
 import { matchRoutes } from 'react-router'
 import { useAtom } from 'jotai'
 import { RemixNavigationAtom } from './remix/utopia-remix-root-component'
+import ReactShadowRoot from 'react-shadow-root'
 
 applyUIDMonkeyPatch()
 
@@ -567,24 +568,22 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
   ])
 
   return (
-    <div
-      style={{
-        all: 'initial',
-      }}
-    >
-      <Helmet>{parse(linkTags)}</Helmet>
-      <RerenderUtopiaCtxAtom.Provider value={rerenderUtopiaContextValue}>
-        <UtopiaProjectCtxAtom.Provider value={utopiaProjectContextValue}>
-          <CanvasContainer
-            validRootPaths={rootValidPathsArray}
-            canvasRootElementElementPath={storyboardRootElementPath}
-          >
-            <SceneLevelUtopiaCtxAtom.Provider value={sceneLevelUtopiaContextValue}>
-              {StoryboardRoot}
-            </SceneLevelUtopiaCtxAtom.Provider>
-          </CanvasContainer>
-        </UtopiaProjectCtxAtom.Provider>
-      </RerenderUtopiaCtxAtom.Provider>
+    <div id={CanvasContainerShadowRoot} data-testid={CanvasContainerShadowRoot}>
+      <ReactShadowRoot>
+        <Helmet>{parse(linkTags)}</Helmet>
+        <RerenderUtopiaCtxAtom.Provider value={rerenderUtopiaContextValue}>
+          <UtopiaProjectCtxAtom.Provider value={utopiaProjectContextValue}>
+            <CanvasContainer
+              validRootPaths={rootValidPathsArray}
+              canvasRootElementElementPath={storyboardRootElementPath}
+            >
+              <SceneLevelUtopiaCtxAtom.Provider value={sceneLevelUtopiaContextValue}>
+                {StoryboardRoot}
+              </SceneLevelUtopiaCtxAtom.Provider>
+            </CanvasContainer>
+          </UtopiaProjectCtxAtom.Provider>
+        </RerenderUtopiaCtxAtom.Provider>
+      </ReactShadowRoot>
     </div>
   )
 })

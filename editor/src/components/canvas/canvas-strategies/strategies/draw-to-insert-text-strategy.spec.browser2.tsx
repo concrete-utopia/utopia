@@ -19,7 +19,7 @@ describe('draw-to-insert text', () => {
       const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
 
       const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-      const div = editor.renderedDOM.getByTestId('div')
+      const div = editor.renderedCanvas.getByTestId('div')
       const divBounds = div.getBoundingClientRect()
 
       await pressKey('t')
@@ -85,7 +85,7 @@ describe('draw-to-insert text', () => {
       const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
 
       const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-      const div = editor.renderedDOM.getByTestId('div')
+      const div = editor.renderedCanvas.getByTestId('div')
       const divBounds = div.getBoundingClientRect()
 
       await pressKey('t')
@@ -148,7 +148,7 @@ describe('draw-to-insert text', () => {
       const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
 
       const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-      const div = editor.renderedDOM.getByTestId('div')
+      const div = editor.renderedCanvas.getByTestId('div')
       const divBounds = div.getBoundingClientRect()
 
       await pressKey('t')
@@ -224,7 +224,7 @@ describe('draw-to-insert text', () => {
       FOR_TESTS_setNextGeneratedUid(newUID)
 
       const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-      const div = editor.renderedDOM.getByTestId('div')
+      const div = editor.renderedCanvas.getByTestId('div')
       const divBounds = div.getBoundingClientRect()
 
       await pressKey('t')
@@ -289,7 +289,7 @@ describe('draw-to-insert text', () => {
       await pressKey('t')
       await editor.getDispatchFollowUpActionsFinished()
 
-      const canvasRootElement = editor.renderedDOM
+      const canvasRootElement = editor.renderedCanvas
         .getByTestId(CanvasContainerID)
         .getBoundingClientRect()
 

@@ -34,7 +34,7 @@ try {
 }
 
 import type { RenderResult } from '@testing-library/react'
-import { act, render } from '@testing-library/react'
+import { act, render, within, type queries, type BoundFunctions } from '@testing-library/react'
 import * as Prettier from 'prettier/standalone'
 import type {
   ElementPath,
@@ -146,6 +146,7 @@ import type { FeatureName } from '../../utils/feature-switches'
 import { setFeatureEnabled } from '../../utils/feature-switches'
 import { unpatchedCreateRemixDerivedDataMemo } from '../editor/store/remix-derived-data'
 import { emptyProjectServerState } from '../editor/store/project-server-state'
+import { CanvasContainerShadowRoot } from './canvas-types'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -195,6 +196,7 @@ export interface EditorRenderResult {
   getDispatchFollowUpActionsFinished: () => Promise<void>
   getEditorState: () => EditorStorePatched
   renderedDOM: RenderResult
+  renderedCanvas: BoundFunctions<typeof queries>
   getNumberOfCommits: () => number
   getNumberOfRenders: () => number
   clearRenderInfo: () => void
@@ -648,6 +650,8 @@ label {
     })
   })
 
+  const shadowRoot = result.getByTestId(CanvasContainerShadowRoot).shadowRoot!
+
   return {
     dispatch: async (
       actions: ReadonlyArray<EditorAction>,
@@ -659,6 +663,7 @@ label {
     getDispatchFollowUpActionsFinished: getDispatchFollowUpActionsFinished,
     getEditorState: () => storeHook.getState(),
     renderedDOM: result,
+    renderedCanvas: within(shadowRoot as unknown as HTMLElement),
     getNumberOfCommits: () => numberOfCommits,
     getNumberOfRenders: () => renderCount - renderCountBaseline,
     clearRenderInfo: () => (renderInfo.current = []),
