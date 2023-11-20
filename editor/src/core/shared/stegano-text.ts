@@ -6,6 +6,7 @@ export interface SteganoTextData {
   filePath: string
   startPosition: number
   endPosition: number
+  originalString: string
 }
 
 export function encodeSteganoData(text: string, data: SteganoTextData): string {
@@ -22,7 +23,8 @@ export function decodeSteganoData(encodedString: string): SteganoTextData | null
     !isStegoObject(data) ||
     data.endPosition == null ||
     data.filePath == null ||
-    data.startPosition == null
+    data.startPosition == null ||
+    data.originalString == null
   ) {
     return null
   }
@@ -31,6 +33,7 @@ export function decodeSteganoData(encodedString: string): SteganoTextData | null
     filePath: data['filePath'],
     startPosition: data['startPosition'],
     endPosition: data['endPosition'],
+    originalString: data['originalString'],
   }
 
   return steganoData

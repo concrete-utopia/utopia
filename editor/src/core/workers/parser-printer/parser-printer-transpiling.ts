@@ -18,6 +18,7 @@ import infiniteLoopPrevention from './transform-prevent-infinite-loops'
 import type { ElementsWithinInPosition, CodeWithMap } from './parser-printer-utils'
 import { wrapCodeInParens, wrapCodeInParensWithMap } from './parser-printer-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../shared/dom-utils'
+import type { SteganoTextData } from '../../shared/stegano-text'
 import { cleanSteganoTextData, encodeSteganoData } from '../../shared/stegano-text'
 import { SourceMapConsumer } from 'source-map'
 import type { SteganographyMode } from './parser-printer'
@@ -292,10 +293,11 @@ function applySteganographyPlugin(
             column: originalStartPosition.column,
           }) - 1
         const original = cleanSteganoTextData(path.node.value).cleaned
-        const data = {
+        const data: SteganoTextData = {
           filePath: sourceFileName,
           startPosition: absoluteStartPosition,
-          endPosition: absoluteStartPosition + path.node.value.length + 2,
+          endPosition: absoluteStartPosition + original.length + 2,
+          originalString: original,
         }
         path.replaceWith(BabelTypes.stringLiteral(encodeSteganoData(original, data)))
       },
