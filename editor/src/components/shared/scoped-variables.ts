@@ -14,7 +14,6 @@ import {
   jsxAttributesFromMap,
   jsxElementWithoutUID,
   jsxTextBlock,
-  jsxConditionalExpression,
   jsExpressionValue,
   jsxConditionalExpressionWithoutUID,
   emptyComments,
