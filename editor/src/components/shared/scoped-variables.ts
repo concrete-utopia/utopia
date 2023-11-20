@@ -13,11 +13,11 @@ import {
   type TopLevelElement,
   jsxAttributesFromMap,
   jsxElementWithoutUID,
-  jsxTextBlock,
   jsExpressionValue,
   jsxConditionalExpressionWithoutUID,
   emptyComments,
   jsExpressionIdentifier,
+  jsxExpressionGlobalFunctionCall,
 } from '../../core/shared/element-template'
 import { type VariablesInScope } from '../canvas/ui-jsx-canvas'
 import { toComponentId } from '../../core/shared/element-path'
@@ -114,15 +114,15 @@ function getMatchingElementForVariable(variable: Variable) {
   switch (variable.type) {
     case 'string':
       return jsxElementWithoutUID('span', jsxAttributesFromMap({}), [
-        jsExpressionIdentifier(variable.name, emptyComments, undefined),
+        jsExpressionIdentifier(variable.name, emptyComments),
       ])
     case 'number':
       return jsxElementWithoutUID('span', jsxAttributesFromMap({}), [
-        jsExpressionIdentifier(variable.name, emptyComments, undefined),
+        jsExpressionIdentifier(variable.name, emptyComments),
       ])
     case 'boolean':
       return jsxConditionalExpressionWithoutUID(
-        jsExpressionIdentifier(variable.name, emptyComments, undefined),
+        jsExpressionIdentifier(variable.name, emptyComments),
         variable.name,
         jsExpressionValue(null, emptyComments),
         jsExpressionValue(null, emptyComments),
@@ -130,11 +130,17 @@ function getMatchingElementForVariable(variable: Variable) {
       )
     case 'object':
       return jsxElementWithoutUID('span', jsxAttributesFromMap({}), [
-        jsxTextBlock(`{JSON.stringify(${variable.name})}`),
+        jsxExpressionGlobalFunctionCall('JSON.stringify', [
+          jsExpressionIdentifier(variable.name, emptyComments),
+        ]),
       ])
     default:
       return jsxElementWithoutUID('span', jsxAttributesFromMap({}), [
-        jsxTextBlock(`{JSON.stringify(${variable.name})}`),
+        jsxExpressionGlobalFunctionCall(
+          'JSON.stringify',
+          [jsExpressionIdentifier(variable.name, emptyComments)],
+          undefined,
+        ),
       ])
   }
 }

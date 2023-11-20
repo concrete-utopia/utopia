@@ -404,6 +404,21 @@ export interface JSExpressionFunctionCall {
   functionName: string
   parameters: Array<JSExpression>
   uid: string
+  globalFunction?: boolean
+}
+
+export function jsxExpressionGlobalFunctionCall(
+  functionName: string,
+  parameters: Array<JSExpression>,
+  uid: string = UUID(),
+): JSExpressionFunctionCall {
+  return {
+    type: 'ATTRIBUTE_FUNCTION_CALL',
+    functionName: functionName,
+    parameters: parameters,
+    uid: uid,
+    globalFunction: true,
+  }
 }
 
 export function jsExpressionFunctionCall(
