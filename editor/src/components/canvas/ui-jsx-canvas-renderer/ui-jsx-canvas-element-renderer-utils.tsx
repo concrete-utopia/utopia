@@ -293,7 +293,7 @@ export function renderCoreElement(
       }
 
       if (elementIsTextEdited) {
-        const runJSExpressionWrapper = () => {
+        const runJSExpressionLazy = () => {
           const innerRender = createLookupRender(
             elementPath,
             rootScope,
@@ -327,9 +327,7 @@ export function renderCoreElement(
           return runJSExpression(filePath, requireResult, element, blockScope)
         }
 
-        const originalTextContent = isFeatureEnabled('Steganography')
-          ? runJSExpressionWrapper()
-          : null
+        const originalTextContent = isFeatureEnabled('Steganography') ? runJSExpressionLazy() : null
 
         const textContent = trimJoinUnescapeTextFromJSXElements([element])
         const textEditorProps: TextEditorProps = {
@@ -845,7 +843,7 @@ function renderJSXElement(
     validPaths.has(EP.toString(EP.makeLastPartOfPathStatic(elementPath)))
   ) {
     if (elementIsTextEdited) {
-      const runJSExpressionWrapper = () => {
+      const runJSExpressionLazy = () => {
         const innerRender = createLookupRender(
           elementPath,
           rootScope,
@@ -880,9 +878,7 @@ function renderJSXElement(
         return runJSExpression(filePath, requireResult, expressionToEvaluate, blockScope)
       }
 
-      const originalTextContent = isFeatureEnabled('Steganography')
-        ? runJSExpressionWrapper()
-        : null
+      const originalTextContent = isFeatureEnabled('Steganography') ? runJSExpressionLazy() : null
 
       const textContent = trimJoinUnescapeTextFromJSXElements(childrenWithNewTextBlock)
       const textEditorProps: TextEditorProps = {
