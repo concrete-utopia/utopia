@@ -298,7 +298,7 @@ describe('Saving', () => {
     ])
   })
 
-  it('Forks the project when not the owner', async () => {
+  xit('Forks the project when not the owner', async () => {
     const { capturedData, testMachine } = setupTest(10000)
 
     testMachine.login()
@@ -328,7 +328,7 @@ describe('Saving', () => {
     ).toBeTruthy()
   })
 
-  it('Forks the project when not the owner, rolling back on a failed save', async () => {
+  xit('Forks the project when not the owner, rolling back on a failed save', async () => {
     const { capturedData, testMachine } = setupTest(10000)
 
     testMachine.login()

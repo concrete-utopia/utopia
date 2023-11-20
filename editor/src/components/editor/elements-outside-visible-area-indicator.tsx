@@ -9,7 +9,8 @@ import {
 } from '../canvas/controls/elements-outside-visible-area-hooks'
 import { scrollToPosition } from './actions/action-creators'
 import { useDispatch } from './store/dispatch-context'
-import { useRefEditorState } from './store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
+import { isFollowMode } from './editor-modes'
 
 export const ToolbarIndicatorElementsOutsideVisibleAreaId =
   'indicator-elements-outside-visible-area'
@@ -20,11 +21,17 @@ export const ElementsOutsideVisibleAreaIndicator = React.memo(() => {
 
   const target = useElementsOutsideVisibleArea()
 
+  const mode = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.mode,
+    'ElementsOutsideVisibleAreaIndicator mode',
+  )
+
   const scrollTo = React.useCallback(() => {
-    if (target != null) {
+    if (target != null && !isFollowMode(mode)) {
       dispatch([scrollToPosition(target.rect, 'to-center')])
     }
-  }, [dispatch, target])
+  }, [dispatch, target, mode])
 
   if (target == null) {
     return null

@@ -1,4 +1,3 @@
-import { ClientSideSuspense } from '@liveblocks/react'
 import React from 'react'
 import { useOthers, useSelf, useStatus } from '../../liveblocks.config'
 import { getUserPicture, isLoggedIn } from '../common/user'
@@ -13,6 +12,11 @@ import {
 import { Avatar, Tooltip, useColorTheme } from '../uuiui'
 import { Substores, useEditorState } from './editor/store/store-hook'
 import { unless, when } from '../utils/react-conditionals'
+import { MultiplayerWrapper } from '../utils/multiplayer-wrapper'
+import { useDispatch } from './editor/store/dispatch-context'
+import { switchEditorMode } from './editor/actions/action-creators'
+import type { EditorAction } from './editor/action-types'
+import { EditorModes, isFollowMode } from './editor/editor-modes'
 
 const MAX_VISIBLE_OTHER_PLAYERS = 4
 
@@ -31,7 +35,9 @@ export const UserBar = React.memo(() => {
     return <SinglePlayerUserBar />
   } else {
     return (
-      <ClientSideSuspense fallback={<div />}>{() => <MultiplayerUserBar />}</ClientSideSuspense>
+      <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
+        <MultiplayerUserBar />
+      </MultiplayerWrapper>
     )
   }
 })
@@ -52,13 +58,14 @@ export const SinglePlayerUserBar = React.memo(() => {
 SinglePlayerUserBar.displayName = 'SinglePlayerUserBar'
 
 const MultiplayerUserBar = React.memo(() => {
+  const dispatch = useDispatch()
   const colorTheme = useColorTheme()
 
-  const self = useSelf()
-  const myName = normalizeMultiplayerName(self.presence.name)
+  const me = useSelf()
+  const myName = normalizeMultiplayerName(me.presence.name)
 
   const others = useOthers((list) =>
-    normalizeOthersList(self.id, list).map((other) => ({
+    normalizeOthersList(me.id, list).map((other) => ({
       id: other.id,
       name: other.presence.name,
       colorIndex: other.presence.colorIndex,
@@ -73,7 +80,25 @@ const MultiplayerUserBar = React.memo(() => {
     return others.slice(MAX_VISIBLE_OTHER_PLAYERS)
   }, [others])
 
-  if (self.presence.name == null) {
+  const mode = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.mode,
+    'MultiplayerUserBar mode',
+  )
+
+  const toggleFollowing = React.useCallback(
+    (id: string) => () => {
+      const newMode =
+        isFollowMode(mode) && mode.playerId === id
+          ? EditorModes.selectMode(null, false, 'none')
+          : EditorModes.followMode(id)
+      let actions: EditorAction[] = [switchEditorMode(newMode)]
+      dispatch(actions)
+    },
+    [dispatch, mode],
+  )
+
+  if (me.presence.name == null) {
     // it may still be loading, so fallback until it sorts itself out
     return <SinglePlayerUserBar />
   }
@@ -113,6 +138,8 @@ const MultiplayerUserBar = React.memo(() => {
                 picture={other.picture}
                 border={true}
                 coloredTooltip={true}
+                onClick={toggleFollowing(other.id)}
+                active={isFollowMode(mode) && mode.playerId === other.id}
               />
             )
           })}
@@ -135,7 +162,7 @@ const MultiplayerUserBar = React.memo(() => {
           name={multiplayerInitialsFromName(myName)}
           tooltip={`${myName} (you)`}
           color={{ background: colorTheme.bg3.value, foreground: colorTheme.fg1.value }}
-          picture={self.presence.picture}
+          picture={me.presence.picture}
         />
       </a>
     </div>
@@ -151,6 +178,8 @@ const MultiplayerAvatar = React.memo(
     coloredTooltip?: boolean
     picture?: string | null
     border?: boolean
+    onClick?: () => void
+    active?: boolean
   }) => {
     const picture = React.useMemo(() => {
       return isDefaultAuth0AvatarURL(props.picture ?? null) ? null : props.picture
@@ -171,6 +200,7 @@ const MultiplayerAvatar = React.memo(
       return picture != null && !pictureNotFound
     }, [picture, pictureNotFound])
 
+    const colorTheme = useColorTheme()
     return (
       <Tooltip
         title={props.tooltip}
@@ -188,10 +218,14 @@ const MultiplayerAvatar = React.memo(
             alignItems: 'center',
             justifyContent: 'center',
             borderRadius: '100%',
+            border: `3px solid ${props.active === true ? colorTheme.primary.value : 'transparent'}`,
             fontSize: 9,
             fontWeight: 700,
             cursor: 'pointer',
+            boxShadow:
+              props.active === true ? `0px 0px 15px ${colorTheme.primary.value}` : undefined,
           }}
+          onClick={props.onClick}
         >
           {unless(showPicture, props.name)}
           {when(

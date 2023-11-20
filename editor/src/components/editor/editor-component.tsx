@@ -56,9 +56,11 @@ import { EditorCommon } from './editor-component-common'
 import { notice } from '../common/notice'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { ProjectServerStateUpdater } from './store/project-server-state'
-import { RoomProvider, initialPresence } from '../../../liveblocks.config'
+import { RoomProvider, initialPresence, useRoom, initialStorage } from '../../../liveblocks.config'
 import { generateUUID } from '../../utils/utils'
 import { isLiveblocksEnabled } from './liveblocks-utils'
+import type { Storage, Presence, RoomEvent, UserMeta } from '../../../liveblocks.config'
+import LiveblocksProvider from '@liveblocks/yjs'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -92,6 +94,7 @@ function useDelayedValueHook(inputValue: boolean, delayMs: number): boolean {
 }
 
 export const EditorComponentInner = React.memo((props: EditorProps) => {
+  const room = useRoom()
   const dispatch = useDispatch()
   const editorStoreRef = useRefEditorState((store) => store)
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
@@ -307,6 +310,25 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     'EditorComponentInner previewVisible',
   )
 
+  const yDoc = useEditorState(
+    Substores.restOfStore,
+    (store) => store.collaborativeEditingSupport.session?.mergeDoc,
+    'EditorComponentInner yDoc',
+  )
+
+  React.useEffect(() => {
+    if (yDoc != null) {
+      const yProvider = new LiveblocksProvider<Presence, Storage, UserMeta, RoomEvent>(room, yDoc)
+
+      return () => {
+        yDoc.destroy()
+        yProvider.destroy()
+      }
+    }
+
+    return () => {}
+  }, [yDoc, room])
+
   React.useEffect(() => {
     document.title = projectName + ' - Utopia'
   }, [projectName])
@@ -518,6 +540,7 @@ export function EditorComponent(props: EditorProps) {
       id={roomId}
       autoConnect={isLiveblocksEnabled()}
       initialPresence={initialPresence()}
+      initialStorage={initialStorage()}
     >
       <DndProvider backend={HTML5Backend} context={window}>
         <ProjectServerStateUpdater

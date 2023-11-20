@@ -472,6 +472,7 @@ import type {
   InsertionSubjectWrapper,
   SelectModeToolbarMode,
   CommentMode,
+  FollowMode,
 } from '../editor-modes'
 import {
   EditorModes,
@@ -3246,6 +3247,12 @@ export const CommentModeKeepDeepEquality: KeepDeepEqualityCall<CommentMode> = co
   EditorModes.commentMode,
 )
 
+export const FollowModeKeepDeepEquality: KeepDeepEqualityCall<FollowMode> = combine1EqualityCall(
+  (mode) => mode.playerId,
+  StringKeepDeepEquality,
+  EditorModes.followMode,
+)
+
 export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newValue) => {
   switch (oldValue.type) {
     case 'insert':
@@ -3273,9 +3280,13 @@ export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newVa
         return CommentModeKeepDeepEquality(newValue, oldValue)
       }
       break
+    case 'follow':
+      if (newValue.type === oldValue.type) {
+        return FollowModeKeepDeepEquality(newValue, oldValue)
+      }
+      break
     default:
-      const _exhaustiveCheck: never = oldValue
-      throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
+      assertNever(oldValue)
   }
   return keepDeepEqualityResult(newValue, false)
 }
@@ -4426,6 +4437,10 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.internalClipboard,
     newValue.internalClipboard,
   )
+  const filesModifiedByAnotherUserResults = arrayDeepEquality(StringKeepDeepEquality)(
+    oldValue.filesModifiedByAnotherUser,
+    newValue.filesModifiedByAnotherUser,
+  )
 
   const areEqual =
     idResult.areEqual &&
@@ -4503,7 +4518,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     githubDataResults.areEqual &&
     refreshingDependenciesResults.areEqual &&
     colorSwatchesResults.areEqual &&
-    internalClipboardResults.areEqual
+    internalClipboardResults.areEqual &&
+    filesModifiedByAnotherUserResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -4586,6 +4602,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       refreshingDependenciesResults.value,
       colorSwatchesResults.value,
       internalClipboardResults.value,
+      filesModifiedByAnotherUserResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

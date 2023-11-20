@@ -45,9 +45,9 @@ import { assertNever } from '../../core/shared/utils'
 import { notice } from '../common/notice'
 import type { AllElementProps } from '../editor/store/editor-state'
 import { toString } from '../../core/shared/element-path'
+import type { SteganoTextData } from '../../core/shared/stegano-text'
 import { cleanSteganoTextData, decodeSteganoData } from '../../core/shared/stegano-text'
 import { useUpdateStringRun } from '../../core/model/project-file-helper-hooks'
-import { optionalMap } from '../../core/shared/optional-utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 
 export const TextEditorSpanId = 'text-editor'
@@ -291,14 +291,39 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
   )
 })
 
+type TextEditedText =
+  | { type: 'untracked'; contents: string }
+  | { type: 'tracked'; contents: string; data: SteganoTextData; quote: string }
+
+function getTextToUse({
+  text,
+  originalText,
+}: {
+  text: string
+  originalText: string | null
+}): TextEditedText {
+  if (isFeatureEnabled('Steganography') && originalText != null) {
+    const data = decodeSteganoData(originalText)
+    if (data != null) {
+      const { cleaned } = cleanSteganoTextData(originalText)
+      return {
+        type: 'tracked',
+        contents: cleaned,
+        data: data,
+        quote: data.originalString[0],
+      }
+    }
+  }
+  return { type: 'untracked', contents: text }
+}
+
 const TextEditor = React.memo((props: TextEditorProps) => {
   const { elementPath, component, passthroughProps, textProp } = props
 
-  const textToUse = isFeatureEnabled('Steganography')
-    ? props.originalText ?? props.text
-    : props.text
-
-  const stegaData = optionalMap(decodeSteganoData, textToUse)
+  const textToUse = React.useMemo(
+    () => getTextToUse({ text: props.text, originalText: props.originalText }),
+    [props.text, props.originalText],
+  )
 
   const dispatch = useDispatch()
   const cursorPosition = useEditorState(
@@ -333,7 +358,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
   const outlineWidth = 1 / scale
   const outlineColor = colorTheme.textEditableOutline.value
 
-  const [firstTextProp] = React.useState(cleanSteganoTextData(textToUse).cleaned)
+  const [firstTextProp] = React.useState(textToUse.contents)
 
   const myElement = React.useRef<HTMLSpanElement>(null)
 
@@ -374,15 +399,8 @@ const TextEditor = React.memo((props: TextEditorProps) => {
       }
       if (elementState != null && savedContentRef.current !== content) {
         savedContentRef.current = content
-        if (stegaData != null) {
-          requestAnimationFrame(() =>
-            dispatch(
-              updateStringRunCommands(
-                stegaData,
-                singleQuotes(cleanSteganoTextData(content).cleaned),
-              ),
-            ),
-          )
+        if (textToUse.type === 'tracked') {
+          requestAnimationFrame(() => dispatch(updateStringRunCommands(textToUse.data, content)))
         } else {
           requestAnimationFrame(() => dispatch([getSaveAction(elementPath, content, textProp)]))
         }
@@ -404,8 +422,8 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     textProp,
     metadataRef,
     allElementPropsRef,
-    stegaData,
     updateStringRunCommands,
+    textToUse,
   ])
 
   React.useLayoutEffect(() => {
@@ -484,13 +502,10 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     const content = myElement.current?.textContent
     if (content != null && elementState != null && savedContentRef.current !== content) {
       savedContentRef.current = content
-      if (stegaData != null) {
+      if (textToUse.type === 'tracked') {
         requestAnimationFrame(() => {
           dispatch([
-            ...updateStringRunCommands(
-              stegaData,
-              singleQuotes(cleanSteganoTextData(content).cleaned),
-            ),
+            ...updateStringRunCommands(textToUse.data, content),
             updateEditorMode(EditorModes.selectMode(null, false, 'none')),
           ])
         })
@@ -503,7 +518,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     } else {
       dispatch([updateEditorMode(EditorModes.selectMode(null, false, 'none'))])
     }
-  }, [dispatch, elementPath, elementState, stegaData, textProp, updateStringRunCommands])
+  }, [dispatch, elementPath, elementState, textProp, textToUse, updateStringRunCommands])
 
   const editorProps: React.DetailedHTMLProps<
     React.HTMLAttributes<HTMLSpanElement>,
@@ -684,8 +699,4 @@ function canDeleteElementWhenEmpty(
   }
 
   return true
-}
-
-function singleQuotes(text: string): string {
-  return `'${text}'`
 }

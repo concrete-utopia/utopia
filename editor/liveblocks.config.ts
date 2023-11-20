@@ -1,3 +1,4 @@
+import { LiveObject } from '@liveblocks/client'
 import { createClient } from '@liveblocks/client'
 import { createRoomContext } from '@liveblocks/react'
 import type { CanvasVector, WindowPoint } from './src/core/shared/math-utils'
@@ -39,6 +40,13 @@ export function initialPresence(): Presence {
 export type Storage = {
   // author: LiveObject<{ firstName: string, lastName: string }>,
   // ...
+  collaborators: LiveObject<{ [userId: string]: boolean }> // this is an object (and not a list) so we can quickly check if a user is a collaborator, but later we can extend the information by storing something more than a boolean (e.g. a permission level)
+}
+
+export function initialStorage(): Storage {
+  return {
+    collaborators: new LiveObject(),
+  }
 }
 
 // Optionally, UserMeta represents static/readonly metadata on each user, as
@@ -77,6 +85,7 @@ export const {
     useUpdateMyPresence,
     useSelf,
     useOthers,
+    useOthersListener,
     useOthersMapped,
     useOthersConnectionIds,
     useOther,

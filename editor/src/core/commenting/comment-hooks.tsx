@@ -1,6 +1,7 @@
+import React from 'react'
 import type { ThreadData } from '@liveblocks/client'
 import type { ThreadMetadata } from '../../../liveblocks.config'
-import { useSelf, useThreads } from '../../../liveblocks.config'
+import { useMutation, useSelf, useStorage, useThreads } from '../../../liveblocks.config'
 
 export function useCanvasCommentThread(x: number, y: number): ThreadData<ThreadMetadata> | null {
   const { threads } = useThreads()
@@ -9,6 +10,28 @@ export function useCanvasCommentThread(x: number, y: number): ThreadData<ThreadM
 }
 
 export function useMyMultiplayerColorIndex() {
-  const self = useSelf()
-  return self.presence.colorIndex
+  const me = useSelf()
+  return me.presence.colorIndex
+}
+
+export function useAddMyselfToCollaborators() {
+  const addMyselfToCollaborators = useMutation(({ storage, self }) => {
+    const collaborators = storage.get('collaborators')
+
+    if (collaborators.get(self.id) !== true) {
+      collaborators.set(self.id, true)
+    }
+  }, [])
+
+  const collabs = useStorage((store) => store.collaborators)
+
+  React.useEffect(() => {
+    if (collabs != null) {
+      addMyselfToCollaborators()
+    }
+  }, [addMyselfToCollaborators, collabs])
+}
+
+export function useCollaborators() {
+  return useStorage((store) => store.collaborators)
 }

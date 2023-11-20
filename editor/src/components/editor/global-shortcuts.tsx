@@ -34,6 +34,7 @@ import {
 import {
   EditorModes,
   isCommentMode,
+  isFollowMode,
   isInsertMode,
   isLiveMode,
   isSelectMode,
@@ -399,19 +400,23 @@ export function handleKeyDown(
         return isSelectMode(editor.mode) ? [EditorActions.deleteSelected()] : []
       },
       [RESET_CANVAS_ZOOM_SHORTCUT]: () => {
-        return [CanvasActions.zoom(1)]
+        return !isFollowMode(editor.mode) ? [CanvasActions.zoom(1)] : []
       },
       [ZOOM_UI_IN_SHORTCUT]: () => {
         return [CanvasActions.zoomUI(true)]
       },
       [ZOOM_CANVAS_IN_SHORTCUT]: () => {
-        return [CanvasActions.zoom(Utils.increaseScale(editor.canvas.scale))]
+        return !isFollowMode(editor.mode)
+          ? [CanvasActions.zoom(Utils.increaseScale(editor.canvas.scale))]
+          : []
       },
       [ZOOM_UI_OUT_SHORTCUT]: () => {
         return [CanvasActions.zoomUI(false)]
       },
       [ZOOM_CANVAS_OUT_SHORTCUT]: () => {
-        return [CanvasActions.zoom(Utils.decreaseScale(editor.canvas.scale))]
+        return !isFollowMode(editor.mode)
+          ? [CanvasActions.zoom(Utils.decreaseScale(editor.canvas.scale))]
+          : []
       },
       [FIRST_CHILD_OR_EDIT_TEXT_SHORTCUT]: () => {
         if (isSelectMode(editor.mode)) {

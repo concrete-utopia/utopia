@@ -10,7 +10,10 @@ import {
   getPropsForStyleProp,
   makeInspectorHookContextProvider,
 } from './property-path-hooks.test-utils'
-import type { EditorStorePatched } from '../../editor/store/editor-state'
+import {
+  emptyCollaborativeEditingSupport,
+  type EditorStorePatched,
+} from '../../editor/store/editor-state'
 import create, { GetState, Mutate, SetState, StoreApi } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import type { UtopiaStoreAPI } from '../../editor/store/store-hook'
@@ -66,6 +69,7 @@ function getPaddingHookResult<P extends ParsedPropertiesKeys, S extends ParsedPr
       builtInDependencies: [],
       storeName: 'editor-store',
       projectServerState: emptyProjectServerState(),
+      collaborativeEditingSupport: emptyCollaborativeEditingSupport(),
     }
 
     const storeHook: UtopiaStoreAPI = createStoresAndState(initialEditorStore)

@@ -29,7 +29,7 @@ import * as EditorActions from '../components/editor/actions/action-creators'
 import type { HandleInteractionSession } from '../components/editor/actions/meta-actions'
 import { cancelInsertModeActions } from '../components/editor/actions/meta-actions'
 import type { Mode } from '../components/editor/editor-modes'
-import { EditorModes, isLiveMode } from '../components/editor/editor-modes'
+import { EditorModes, isFollowMode, isLiveMode } from '../components/editor/editor-modes'
 import { saveAssets } from '../components/editor/server'
 import type {
   CanvasCursor,
@@ -92,7 +92,7 @@ import { emptyModifiers, Modifier } from '../utils/modifiers'
 import type { MouseButtonsPressed } from '../utils/mouse'
 import RU from '../utils/react-utils'
 import Utils from '../utils/utils'
-import { UtopiaStyles } from '../uuiui'
+import { UtopiaStyles, colorTheme } from '../uuiui'
 import { DropHandlers } from './image-drop'
 import { EditorCommon } from '../components/editor/editor-component-common'
 import { CursorComponent } from '../components/canvas/controls/select-mode/cursor-component'
@@ -152,6 +152,8 @@ function getDefaultCursorForMode(mode: Mode): CSSCursor {
       return CSSCursor.Select
     case 'comment':
       return CSSCursor.Insert
+    case 'follow':
+      return CSSCursor.Select
     default:
       const _exhaustiveCheck: never = mode
       throw `Unable to get default cursor for unsupported mode ${(mode as any).type}`
@@ -309,27 +311,33 @@ function on(
       } else {
         scale = Utils.increaseScale(canvas.scale)
       }
-      return [CanvasActions.zoom(scale, event.canvasPositionRounded)]
+      return !isFollowMode(canvas.editorState.mode)
+        ? [CanvasActions.zoom(scale, event.canvasPositionRounded)]
+        : []
     } else {
       return []
     }
   } else if (event.event === 'WHEEL') {
-    if (event.modifiers.ctrl) {
-      const timeoutLength = canvas.scale === 1 ? 500 : 250
-      if (Date.now() - lastPinchZoomedAt > timeoutLength) {
-        lastPinchZoomedAt = Date.now()
-        if (event.delta.y > 0) {
-          return [
-            CanvasActions.zoom(Utils.decreaseScale(canvas.scale), event.canvasPositionRounded),
-          ]
-        } else {
-          return [
-            CanvasActions.zoom(Utils.increaseScale(canvas.scale), event.canvasPositionRounded),
-          ]
+    if (!isFollowMode(canvas.editorState.mode)) {
+      if (event.modifiers.ctrl) {
+        const timeoutLength = canvas.scale === 1 ? 500 : 250
+        if (Date.now() - lastPinchZoomedAt > timeoutLength) {
+          lastPinchZoomedAt = Date.now()
+          if (event.delta.y > 0) {
+            return [
+              CanvasActions.zoom(Utils.decreaseScale(canvas.scale), event.canvasPositionRounded),
+            ]
+          } else {
+            return [
+              CanvasActions.zoom(Utils.increaseScale(canvas.scale), event.canvasPositionRounded),
+            ]
+          }
         }
+      } else {
+        return [CanvasActions.scrollCanvas(event.delta as any as CanvasVector)]
       }
     } else {
-      return [CanvasActions.scrollCanvas(event.delta as any as CanvasVector)]
+      return []
     }
   }
   // Handle all other cases via the plugins.
@@ -863,6 +871,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         'data-testid': 'canvas-root',
         style: {
           ...canvasLiveEditingStyle,
+          backgroundColor: colorTheme.canvasBackground.value,
           transition: 'all .2s linear',
           position: 'relative',
           overflow: 'hidden',

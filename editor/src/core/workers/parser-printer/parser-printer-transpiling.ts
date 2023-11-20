@@ -18,6 +18,7 @@ import infiniteLoopPrevention from './transform-prevent-infinite-loops'
 import type { ElementsWithinInPosition, CodeWithMap } from './parser-printer-utils'
 import { wrapCodeInParens, wrapCodeInParensWithMap } from './parser-printer-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../shared/dom-utils'
+import type { SteganoTextData } from '../../shared/stegano-text'
 import { cleanSteganoTextData, encodeSteganoData } from '../../shared/stegano-text'
 import { SourceMapConsumer } from 'source-map'
 import type { SteganographyMode } from './parser-printer'
@@ -269,33 +270,40 @@ function applySteganographyPlugin(
   sourceFileName: string,
   mapToUse: RawSourceMap,
   fileLines: string[],
-) {
+): () => {
+  visitor: BabelTraverse.Visitor
+} {
   return () => ({
     visitor: {
-      StringLiteral(path: any) {
+      StringLiteral(path) {
         if (path.node.loc == null) {
           return
         }
 
         // this call somehow messes with the snapshots
         const smc = new SourceMapConsumer(mapToUse)
-        const originalStartPosition = smc.originalPositionFor(path.node.loc.start)
-        const originalEndPosition = smc.originalPositionFor(path.node.loc.end)
-        const original = cleanSteganoTextData(path.node.value).cleaned
-        const data = {
+        const originalStartPosition = smc.originalPositionFor({
+          line: path.node.loc.start.line,
+          column: path.node.loc.start.column,
+        })
+        // https://github.com/mozilla/source-map/issues/359 amazingn't
+        const absoluteStartPosition =
+          getAbsoluteOffsetFromFile(fileLines, {
+            line: originalStartPosition.line,
+            column: originalStartPosition.column,
+          }) - 1
+
+        const original = path.getSource()
+        const data: SteganoTextData = {
           filePath: sourceFileName,
-          originalString: "'" + original + "'",
-          startPosition:
-            getAbsoluteOffsetFromFile(fileLines, {
-              line: originalStartPosition.line,
-              column: originalStartPosition.column,
-            }) - 1,
-          endPosition: getAbsoluteOffsetFromFile(fileLines, {
-            line: originalEndPosition.line,
-            column: originalEndPosition.column,
-          }),
+          startPosition: absoluteStartPosition,
+          endPosition: absoluteStartPosition + original.length,
+          originalString: original,
         }
-        path.node.value = encodeSteganoData(original, data)
+
+        const cleanedNodeValue = cleanSteganoTextData(path.node.value).cleaned
+
+        path.replaceWith(BabelTypes.stringLiteral(encodeSteganoData(cleanedNodeValue, data)))
       },
     },
   })

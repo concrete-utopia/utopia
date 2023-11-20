@@ -11,6 +11,7 @@ import type {
   JSXElementChild,
   JSXConditionalExpression,
   JSXFragment,
+  TopLevelElement,
 } from '../../../core/shared/element-template'
 import type {
   CanvasPoint,
@@ -219,6 +220,7 @@ import type {
   WrapInElementWith,
   ScrollToPosition,
   UpdateProjectServerState,
+  UpdateTopLevelElementsFromCollaborationUpdate,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -241,6 +243,7 @@ import type {
   ThemeSetting,
   ColorSwatch,
   PostActionMenuData,
+  CollabFile,
 } from '../store/editor-state'
 import type { InsertionPath } from '../store/insertion-path'
 import type { TextProp } from '../../text-editor/text-editor'
@@ -1658,5 +1661,16 @@ export function updateProjectServerState(
   return {
     action: 'UPDATE_PROJECT_SERVER_STATE',
     serverState: projectServerState,
+  }
+}
+
+export function updateTopLevelElementsFromCollaborationUpdate(
+  fullPath: string,
+  topLevelElements: Array<TopLevelElement>,
+): UpdateTopLevelElementsFromCollaborationUpdate {
+  return {
+    action: 'UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION_UPDATE',
+    fullPath: fullPath,
+    topLevelElements: topLevelElements,
   }
 }
