@@ -1,4 +1,3 @@
-import { ClientSideSuspense } from '@liveblocks/react'
 import React from 'react'
 import { useOthers, useSelf, useStatus } from '../../liveblocks.config'
 import { getUserPicture, isLoggedIn } from '../common/user'
@@ -13,6 +12,7 @@ import {
 import { Avatar, Tooltip, useColorTheme } from '../uuiui'
 import { Substores, useEditorState } from './editor/store/store-hook'
 import { unless, when } from '../utils/react-conditionals'
+import { MultiplayerWrapper } from '../utils/multiplayer-wrapper'
 import { useDispatch } from './editor/store/dispatch-context'
 import { switchEditorMode } from './editor/actions/action-creators'
 import type { EditorAction } from './editor/action-types'
@@ -35,7 +35,9 @@ export const UserBar = React.memo(() => {
     return <SinglePlayerUserBar />
   } else {
     return (
-      <ClientSideSuspense fallback={<div />}>{() => <MultiplayerUserBar />}</ClientSideSuspense>
+      <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
+        <MultiplayerUserBar />
+      </MultiplayerWrapper>
     )
   }
 })
