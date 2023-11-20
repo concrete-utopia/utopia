@@ -12,10 +12,18 @@ export function useCanvasCommentThread(x: number, y: number): ThreadData<ThreadM
   return thread
 }
 
-export function useMyMultiplayerColorIndex() {
+export function useMyUserAndPresence() {
   const me = useSelf()
   const myUser = useStorage((store) => store.collaborators[me.id])
-  return myUser.colorIndex
+  return {
+    presence: me,
+    user: myUser,
+  }
+}
+
+export function useMyMultiplayerColorIndex() {
+  const me = useMyUserAndPresence()
+  return me.user.colorIndex
 }
 
 export function useAddMyselfToCollaborators() {

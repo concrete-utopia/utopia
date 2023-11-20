@@ -17,6 +17,7 @@ import { useDispatch } from './editor/store/dispatch-context'
 import { switchEditorMode } from './editor/actions/action-creators'
 import type { EditorAction } from './editor/action-types'
 import { EditorModes, isFollowMode } from './editor/editor-modes'
+import { useMyUserAndPresence } from '../core/commenting/comment-hooks'
 
 const MAX_VISIBLE_OTHER_PLAYERS = 4
 
@@ -61,12 +62,11 @@ const MultiplayerUserBar = React.memo(() => {
   const dispatch = useDispatch()
   const colorTheme = useColorTheme()
 
-  const me = useSelf()
-  const myUser = useStorage((store) => store.collaborators[me.id])
+  const { user: myUser } = useMyUserAndPresence()
   const myName = normalizeMultiplayerName(myUser.name)
 
   const others = useOthers((list) =>
-    normalizeOthersList(me.id, list).map((other) => ({
+    normalizeOthersList(myUser.id, list).map((other) => ({
       id: other.id,
       name: myUser.name,
       colorIndex: myUser.colorIndex,
