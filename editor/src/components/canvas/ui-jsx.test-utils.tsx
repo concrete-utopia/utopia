@@ -59,7 +59,7 @@ import {
   FakeWatchdogWorker,
 } from '../../core/workers/test-workers'
 import { UtopiaTsWorkersImplementation } from '../../core/workers/workers'
-import { EditorRoot } from '../../templates/editor'
+import { EditorRoot, runDispatchFlow } from '../../templates/editor'
 import Utils from '../../utils/utils'
 import { getNamedPath } from '../../utils/react-helpers'
 import type {
@@ -322,7 +322,7 @@ export async function renderTestEditorWithModel(
     return Promise.all(editorDispatchPromises).then(NO_OP)
   }
 
-  let workingEditorState: DispatchResult
+  let workingEditorState: EditorStoreFull
 
   const spyCollector = emptyUiJsxCanvasContextData()
 
@@ -331,23 +331,31 @@ export async function renderTestEditorWithModel(
   clearAllRegisteredControls()
   clearListOfEvaluatedFiles()
 
-  const asyncTestDispatch = async (
+  const syncTestDispatch = (
     actions: ReadonlyArray<EditorAction>,
     priority?: DispatchPriority, // priority is not used in the editorDispatch now, but we didn't delete this param yet
     waitForDispatchEntireUpdate = false,
     innerStrategiesToUse: Array<MetaCanvasStrategy> = strategiesToUse,
-  ) => {
+  ): void => {
     recordedActions.push(...actions)
-    const originalEditorState = workingEditorState
-    const result = editorDispatchActionRunner(
-      asyncTestDispatch,
-      actions,
+    const { newStore, entireUpdateFinished } = runDispatchFlow(
+      syncTestDispatch,
       workingEditorState,
+      storeHook,
+      canvasStoreHook,
+      lowPriorityStoreHook,
       spyCollector,
-      innerStrategiesToUse,
+      domWalkerMutableState,
+      actions,
+      priority,
     )
 
-    const duplicateUIDs = getAllUniqueUids(result.patchedEditor.projectContents).duplicateIDs
+    workingEditorState = newStore
+    editorDispatchPromises.push(entireUpdateFinished)
+
+    const duplicateUIDs = getAllUniqueUids(
+      workingEditorState.patchedEditor.projectContents,
+    ).duplicateIDs
     if (Object.keys(duplicateUIDs).length > 0) {
       actionsCausingDuplicateUIDs.push({
         actions: actions,
@@ -373,28 +381,29 @@ export async function renderTestEditorWithModel(
       // reverting to the current unpatched state.
       expectUpdatedFilesUpdateTimestamp(
         workingEditorState.unpatchedEditor.projectContents,
-        result.unpatchedEditor.projectContents,
+        workingEditorState.unpatchedEditor.projectContents,
         actions,
         'unpatched',
       )
       expectUpdatedFilesUpdateTimestamp(
         workingEditorState.unpatchedEditor.projectContents,
-        result.patchedEditor.projectContents,
+        workingEditorState.patchedEditor.projectContents,
         actions,
         'patched',
       )
     }
 
     expectNoActionsCausedDuplicateUids(actionsCausingDuplicateUIDs)
+  }
 
-    editorDispatchPromises.push(result.entireUpdateFinished)
-    invalidateDomWalkerIfNecessary(
-      domWalkerMutableState,
-      workingEditorState.patchedEditor,
-      result.patchedEditor,
-    )
+  const asyncTestDispatch = async (
+    actions: ReadonlyArray<EditorAction>,
+    priority?: DispatchPriority, // priority is not used in the editorDispatch now, but we didn't delete this param yet
+    waitForDispatchEntireUpdate = false,
+    innerStrategiesToUse: Array<MetaCanvasStrategy> = strategiesToUse,
+  ) => {
+    syncTestDispatch(actions, priority, waitForDispatchEntireUpdate, innerStrategiesToUse)
 
-    workingEditorState = result
     if (waitForDispatchEntireUpdate) {
       await Utils.timeLimitPromise(
         getDispatchFollowUpActionsFinished(),
@@ -402,135 +411,6 @@ export async function renderTestEditorWithModel(
         'Follow up actions took too long.',
       )
     }
-
-    flushSync(() => {
-      canvasStoreHook.setState(patchedStoreFromFullStore(workingEditorState, 'canvas-store'))
-    })
-
-    // run dom walker
-
-    {
-      const domWalkerResult = runDomWalker({
-        domWalkerMutableState: domWalkerMutableState,
-        selectedViews: workingEditorState.patchedEditor.selectedViews,
-        elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender,
-        scale: workingEditorState.patchedEditor.canvas.scale,
-        additionalElementsToUpdate:
-          workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
-        rootMetadataInStateRef: {
-          current: workingEditorState.patchedEditor.domMetadata,
-        },
-      })
-
-      if (domWalkerResult != null) {
-        const saveDomReportAction = saveDOMReport(
-          domWalkerResult.metadata,
-          domWalkerResult.cachedPaths,
-          domWalkerResult.invalidatedPaths,
-        )
-        recordedActions.push(saveDomReportAction)
-        const editorWithNewMetadata = editorDispatchActionRunner(
-          asyncTestDispatch,
-          [saveDomReportAction],
-          workingEditorState,
-          spyCollector,
-        )
-        workingEditorState = carryDispatchResultFields(workingEditorState, editorWithNewMetadata)
-      }
-    }
-
-    // true-up groups if needed
-    if (workingEditorState.unpatchedEditor.trueUpElementsAfterDomWalkerRuns.length > 0) {
-      ;(() => {
-        // updated editor with trued up groups
-        const projectContentsBeforeGroupTrueUp = workingEditorState.unpatchedEditor.projectContents
-        const dispatchResultWithTruedUpGroups = editorDispatchActionRunner(
-          asyncTestDispatch,
-          [{ action: 'TRUE_UP_ELEMENTS' }],
-          workingEditorState,
-          spyCollector,
-        )
-        workingEditorState = carryDispatchResultFields(
-          workingEditorState,
-          dispatchResultWithTruedUpGroups,
-        )
-
-        editorDispatchPromises.push(dispatchResultWithTruedUpGroups.entireUpdateFinished)
-
-        if (
-          projectContentsBeforeGroupTrueUp === workingEditorState.unpatchedEditor.projectContents
-        ) {
-          // no group-related re-render / re-measure is needed, bail out
-          return
-        }
-
-        // re-render the canvas
-        {
-          // TODO run fixElementsToRerender and set ElementsToRerenderGLOBAL
-
-          flushSync(() => {
-            canvasStoreHook.setState(patchedStoreFromFullStore(workingEditorState, 'canvas-store'))
-          })
-        }
-
-        // re-run the dom-walker
-        {
-          const domWalkerResult = runDomWalker({
-            domWalkerMutableState: domWalkerMutableState,
-            selectedViews: workingEditorState.patchedEditor.selectedViews,
-            elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender,
-            scale: workingEditorState.patchedEditor.canvas.scale,
-            additionalElementsToUpdate:
-              workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
-            rootMetadataInStateRef: {
-              current: workingEditorState.patchedEditor.domMetadata,
-            },
-          })
-
-          if (domWalkerResult != null) {
-            const saveDomReportAction = saveDOMReport(
-              domWalkerResult.metadata,
-              domWalkerResult.cachedPaths,
-              domWalkerResult.invalidatedPaths,
-            )
-            recordedActions.push(saveDomReportAction)
-            const editorWithNewMetadata = editorDispatchActionRunner(
-              asyncTestDispatch,
-              [saveDomReportAction],
-              workingEditorState,
-              spyCollector,
-            )
-            workingEditorState = carryDispatchResultFields(
-              workingEditorState,
-              editorWithNewMetadata,
-            )
-          }
-        }
-      })()
-    }
-
-    workingEditorState = editorDispatchClosingOut(
-      asyncTestDispatch,
-      actions,
-      originalEditorState,
-      workingEditorState,
-    )
-
-    // update state with new metadata
-
-    flushSync(() => {
-      storeHook.setState(patchedStoreFromFullStore(workingEditorState, 'editor-store'))
-      if (
-        shouldUpdateLowPriorityUI(
-          workingEditorState.strategyState,
-          workingEditorState.patchedEditor.canvas.elementsToRerender,
-        )
-      ) {
-        lowPriorityStoreHook.setState(
-          patchedStoreFromFullStore(workingEditorState, 'low-priority-store'),
-        )
-      }
-    })
   }
 
   const workers = new UtopiaTsWorkersImplementation(
@@ -587,8 +467,6 @@ export async function renderTestEditorWithModel(
   // initializing the local editor state
   workingEditorState = {
     ...initialEditorStore,
-    nothingChanged: true,
-    entireUpdateFinished: Promise.resolve(true),
   }
 
   let numberOfCommits = 0
