@@ -49,8 +49,9 @@ export function getVariablesInScope(
         varsInScope.push(componentScopedVariables)
       }
 
-      const topLevelVariables = getTopLevelVariables(success.topLevelElements, underlyingFilePath)
-      varsInScope.push(topLevelVariables)
+      // for future reference - adding variables from top level
+      // const topLevelVariables = getTopLevelVariables(success.topLevelElements, underlyingFilePath)
+      // varsInScope.push(topLevelVariables)
 
       return varsInScope
     },
