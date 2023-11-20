@@ -106,3 +106,22 @@ export function isDefaultAuth0AvatarURL(s: string | null): boolean {
     (s.match(reAuth0DefaultAvatarURLEncoded) != null || s.match(reAuth0DefaultAvatar) != null)
   )
 }
+
+export function canFollowTarget(
+  selfId: string,
+  targetId: string | null,
+  others: { id: string; following: string | null }[],
+): boolean {
+  let followChain: Set<string> = new Set()
+
+  let id = targetId
+  while (id != null) {
+    if (!followChain.has(id)) {
+      followChain.add(id)
+    }
+    const target = others.find((o) => o.id === id)
+    id = target?.following ?? null
+  }
+
+  return !followChain.has(selfId)
+}

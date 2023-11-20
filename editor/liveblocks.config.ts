@@ -20,6 +20,7 @@ export type Presence = {
   canvasOffset: CanvasVector | null
   colorIndex: number | null
   picture: string | null // TODO remove this once able to resolve users
+  following: string | null
 }
 
 export function initialPresence(): Presence {
@@ -30,6 +31,7 @@ export function initialPresence(): Presence {
     canvasOffset: null,
     colorIndex: null,
     picture: null,
+    following: null,
   }
 }
 

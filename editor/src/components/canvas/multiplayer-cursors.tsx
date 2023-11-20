@@ -52,6 +52,11 @@ export const MultiplayerPresence = React.memo(() => {
     (store) => store.editor.canvas.roundedCanvasOffset,
     'MultiplayerPresence canvasOffset',
   )
+  const mode = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.mode,
+    'MultiplayerPresence mode',
+  )
 
   useAddMyselfToCollaborators()
 
@@ -64,8 +69,9 @@ export const MultiplayerPresence = React.memo(() => {
       name: normalizeMultiplayerName(loginState.user.name ?? null),
       picture: loginState.user.picture ?? null, // TODO remove this once able to resolve users
       colorIndex: getColorIndex(),
+      following: isFollowMode(mode) ? mode.playerId : null,
     })
-  }, [loginState, updateMyPresence, getColorIndex])
+  }, [loginState, updateMyPresence, getColorIndex, mode])
 
   React.useEffect(() => {
     if (!isLoggedIn(loginState)) {
