@@ -212,7 +212,9 @@ function jsxAttributeToExpression(attribute: JSExpression): TS.Expression {
     switch (attribute.type) {
       case 'ATTRIBUTE_VALUE':
         if (typeof attribute.value === 'string') {
-          return TS.createLiteral(attribute.value)
+          return attribute.identifier
+            ? TS.createIdentifier(attribute.value)
+            : TS.createLiteral(attribute.value)
         } else {
           return jsonToExpression(attribute.value)
         }

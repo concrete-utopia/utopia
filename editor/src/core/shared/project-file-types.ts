@@ -773,17 +773,11 @@ export type ProjectContents = { [filepath: string]: ProjectFile }
 
 export type AllVariablesInScope = {
   filePath: string
-  variables: {
-    name: string
-    type:
-      | 'string'
-      | 'number'
-      | 'bigint'
-      | 'boolean'
-      | 'symbol'
-      | 'undefined'
-      | 'object'
-      | 'function'
-    value?: unknown
-  }[]
+  variables: Variable[]
+}
+
+export interface Variable {
+  name: string
+  type: 'string' | 'number' | 'bigint' | 'boolean' | 'symbol' | 'undefined' | 'object' | 'function'
+  value?: unknown
 }

@@ -1,4 +1,8 @@
-import type { ElementPath, AllVariablesInScope } from '../../core/shared/project-file-types'
+import type {
+  ElementPath,
+  AllVariablesInScope,
+  Variable,
+} from '../../core/shared/project-file-types'
 import { withUnderlyingTarget } from '../editor/store/editor-state'
 import type { ProjectContentTreeRoot } from '../assets'
 import {
@@ -7,9 +11,22 @@ import {
   type ArbitraryJSBlock,
   type UtopiaJSXComponent,
   type TopLevelElement,
+  jsxAttributesFromMap,
+  jsxElementWithoutUID,
+  jsxTextBlock,
+  jsxConditionalExpression,
+  jsExpressionValue,
+  jsxConditionalExpressionWithoutUID,
+  emptyComments,
 } from '../../core/shared/element-template'
 import { type VariablesInScope } from '../canvas/ui-jsx-canvas'
 import { toComponentId } from '../../core/shared/element-path'
+import {
+  type InsertableComponentGroup,
+  insertableComponent,
+  insertableComponentGroupProjectComponent,
+} from './project-components'
+import { emptyImports } from '../../core/workers/common/project-file-utils'
 
 export function getVariablesInScope(
   elementPath: ElementPath | null,
@@ -70,5 +87,53 @@ function getVariablesFromComponent(
       value,
       type: typeof value,
     })),
+  }
+}
+
+export function convertVariablesToElements(
+  variableInScope: AllVariablesInScope[],
+): InsertableComponentGroup[] {
+  return variableInScope.map((variableGroup) => {
+    return {
+      source: insertableComponentGroupProjectComponent(variableGroup.filePath),
+      insertableComponents: variableGroup.variables.map((variable) => {
+        return insertableComponent(
+          emptyImports(),
+          () => getMatchingElementForVariable(variable),
+          variable.name,
+          [],
+          null,
+        )
+      }),
+    }
+  })
+}
+
+function getMatchingElementForVariable(variable: Variable) {
+  switch (variable.type) {
+    case 'string':
+      return jsxElementWithoutUID('span', jsxAttributesFromMap({}), [
+        jsxTextBlock(`{${variable.name}}`),
+      ])
+    case 'number':
+      return jsxElementWithoutUID('span', jsxAttributesFromMap({}), [
+        jsxTextBlock(`{${variable.name}}`),
+      ])
+    case 'boolean':
+      return jsxConditionalExpressionWithoutUID(
+        jsExpressionValue(variable.name, emptyComments, undefined, true),
+        variable.name,
+        jsExpressionValue(null, emptyComments),
+        jsExpressionValue(null, emptyComments),
+        emptyComments,
+      )
+    case 'object':
+      return jsxElementWithoutUID('span', jsxAttributesFromMap({}), [
+        jsxTextBlock(`{JSON.stringify(${variable.name})}`),
+      ])
+    default:
+      return jsxElementWithoutUID('span', jsxAttributesFromMap({}), [
+        jsxTextBlock(`{JSON.stringify(${variable.name})}`),
+      ])
   }
 }

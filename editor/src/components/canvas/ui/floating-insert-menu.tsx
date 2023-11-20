@@ -18,20 +18,14 @@ import type {
 import {
   getInsertableGroupLabel,
   getNonEmptyComponentGroups,
-  insertableComponent,
-  insertableComponentGroupProjectComponent,
 } from '../../shared/project-components'
 import { InspectorInputEmotionStyle } from '../../../uuiui/inputs/base-input'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import type { InsertMenuMode } from './floating-insert-menu-helpers'
 import {
-  jsxAttributesFromMap,
-  jsxElementWithoutUID,
-  jsxTextBlock,
-} from '../../../core/shared/element-template'
-import { emptyImports } from '../../../core/workers/common/project-file-utils'
-import type { AllVariablesInScope } from '../../../core/shared/project-file-types'
-import { getVariablesInScope } from '../../../components/shared/scoped-variables'
+  convertVariablesToElements,
+  getVariablesInScope,
+} from '../../../components/shared/scoped-variables'
 
 export const FloatingMenuTestId = 'floating-menu-test-id'
 
@@ -144,28 +138,6 @@ export function useGetInsertableComponents(
   }, [fullPath, scopedVariables])
 
   return insertableComponents.concat(insertableVariables)
-}
-
-function convertVariablesToElements(
-  variableInScope: AllVariablesInScope[],
-): InsertableComponentGroup[] {
-  return variableInScope.map((variableGroup) => {
-    return {
-      source: insertableComponentGroupProjectComponent(variableGroup.filePath),
-      insertableComponents: variableGroup.variables.map((variable) => {
-        return insertableComponent(
-          emptyImports(),
-          () =>
-            jsxElementWithoutUID('span', jsxAttributesFromMap({}), [
-              jsxTextBlock(`{${variable.name}}`),
-            ]),
-          variable.name,
-          [],
-          null,
-        )
-      }),
-    }
-  })
 }
 
 export function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {

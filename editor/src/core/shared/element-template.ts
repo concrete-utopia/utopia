@@ -124,18 +124,21 @@ export interface JSExpressionValue<T> extends WithComments {
   type: 'ATTRIBUTE_VALUE'
   uid: string
   value: T
+  identifier?: boolean
 }
 
 export function jsExpressionValue<T>(
   value: T,
   comments: ParsedComments,
   uid: string = UUID(),
+  identifier: boolean = false,
 ): JSExpressionValue<T> {
   return {
     type: 'ATTRIBUTE_VALUE',
     value: value,
     comments: comments,
     uid: uid,
+    identifier: identifier,
   }
 }
 
