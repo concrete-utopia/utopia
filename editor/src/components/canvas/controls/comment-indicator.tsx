@@ -4,7 +4,7 @@ import { jsx } from '@emotion/react'
 import React from 'react'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { EditorModes } from '../../editor/editor-modes'
-import { useThreads } from '../../../../liveblocks.config'
+import { useStorage, useThreads } from '../../../../liveblocks.config'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { switchEditorMode } from '../../editor/actions/action-creators'
 import { canvasPoint } from '../../../core/shared/math-utils'
@@ -40,14 +40,27 @@ export const CommentIndicator = React.memo(() => {
 function CommentIndicatorInner() {
   const { threads } = useThreads()
   const dispatch = useDispatch()
+  const collabs = useStorage((storage) => storage.collaborators)
 
   return (
     <React.Fragment>
       {threads.map((thread) => {
         const point = canvasPoint(thread.metadata)
-        // TODO: unify initial handling for multiplayer
-        const initials = multiplayerInitialsFromName(normalizeMultiplayerName(thread.metadata.name))
-        const color = multiplayerColorFromIndex(thread.metadata.colorIndex)
+        const { initials, color } = (() => {
+          const firstComment = thread.comments[0]
+          if (firstComment == null) {
+            return { initials: 'AN', color: multiplayerColorFromIndex(null) }
+          }
+          const author = collabs[firstComment.userId]
+          if (author == null) {
+            return { initials: 'AN', color: multiplayerColorFromIndex(null) }
+          }
+          return {
+            initials: multiplayerInitialsFromName(normalizeMultiplayerName(author.name)),
+            color: multiplayerColorFromIndex(author.colorIndex),
+          }
+        })()
+
         return (
           <div
             key={thread.id}
