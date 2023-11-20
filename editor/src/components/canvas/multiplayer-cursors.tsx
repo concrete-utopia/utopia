@@ -1,13 +1,9 @@
 import { motion } from 'framer-motion'
 import React from 'react'
 import { useOthers, useRoom, useSelf, useUpdateMyPresence } from '../../../liveblocks.config'
+import { useAddMyselfToCollaborators } from '../../core/commenting/comment-hooks'
 import type { CanvasPoint } from '../../core/shared/math-utils'
 import { pointsEqual, windowPoint } from '../../core/shared/math-utils'
-import { UtopiaTheme, useColorTheme } from '../../uuiui'
-import type { EditorAction } from '../editor/action-types'
-import { isLoggedIn } from '../editor/action-types'
-import { Substores, useEditorState } from '../editor/store/store-hook'
-import { canvasPointToWindowPoint, windowToCanvasCoordinates } from './dom-lookup'
 import {
   multiplayerColorFromIndex,
   normalizeMultiplayerName,
@@ -15,10 +11,15 @@ import {
   possiblyUniqueColor,
 } from '../../core/shared/multiplayer'
 import { useKeepShallowReferenceEquality } from '../../utils/react-performance'
-import { useDispatch } from '../editor/store/dispatch-context'
-import CanvasActions from './canvas-actions'
-import { EditorModes, isFollowMode } from '../editor/editor-modes'
+import { UtopiaTheme, useColorTheme } from '../../uuiui'
+import type { EditorAction } from '../editor/action-types'
+import { isLoggedIn } from '../editor/action-types'
 import { switchEditorMode } from '../editor/actions/action-creators'
+import { EditorModes, isFollowMode } from '../editor/editor-modes'
+import { useDispatch } from '../editor/store/dispatch-context'
+import { Substores, useEditorState } from '../editor/store/store-hook'
+import CanvasActions from './canvas-actions'
+import { canvasPointToWindowPoint, windowToCanvasCoordinates } from './dom-lookup'
 
 export const MultiplayerPresence = React.memo(() => {
   const dispatch = useDispatch()
@@ -51,6 +52,8 @@ export const MultiplayerPresence = React.memo(() => {
     (store) => store.editor.canvas.roundedCanvasOffset,
     'MultiplayerPresence canvasOffset',
   )
+
+  useAddMyselfToCollaborators()
 
   React.useEffect(() => {
     // when the login state changes, update the presence info

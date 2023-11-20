@@ -89,6 +89,7 @@ specifiers:
   '@types/filesystem': 0.0.29
   '@types/flat': 0.0.28
   '@types/fontfaceobserver': 0.0.6
+  '@types/glob-to-regexp': 0.4.4
   '@types/graphlib': 2.1.4
   '@types/he': 1.1.2
   '@types/hosted-git-info': 3.0.0
@@ -186,6 +187,7 @@ specifiers:
   friendly-words: 1.1.10
   fse: 1.0.1
   fsevents: 2.1.2
+  glob-to-regexp: 0.4.1
   glslCanvas: 0.1.7
   got: 11.8.1
   graphlib: 2.1.1
@@ -384,6 +386,7 @@ dependencies:
   fontfaceobserver: 2.1.0
   framer-motion: 10.16.5_ef5jwxihqo6n7gxfmzogljlgcm
   friendly-words: 1.1.10
+  glob-to-regexp: 0.4.1
   graphlib: 2.1.1
   he: 1.2.0
   hosted-git-info: 3.0.5
@@ -500,6 +503,7 @@ devDependencies:
   '@types/eslint': 7.2.2
   '@types/filesystem': 0.0.29
   '@types/flat': 0.0.28
+  '@types/glob-to-regexp': 0.4.4
   '@types/graphlib': 2.1.4
   '@types/he': 1.1.2
   '@types/hosted-git-info': 3.0.0
@@ -4946,6 +4950,10 @@ packages:
   /@types/fontfaceobserver/0.0.6:
     resolution: {integrity: sha512-QJ1znjr9CDax2L17rgBnDOfNHsC1XtVAMswu+lRWvWb+kANhHA0slUNSSBsG8FVNvM4I4yXlN9doJRot3A2hkQ==}
     dev: false
+
+  /@types/glob-to-regexp/0.4.4:
+    resolution: {integrity: sha512-nDKoaKJYbnn1MZxUY0cA1bPmmgZbg0cTq7Rh13d0KWYNOiKbqoR+2d89SnRPszGh7ROzSwZ/GOjZ4jPbmmZ6Eg==}
+    dev: true
 
   /@types/glob/7.1.4:
     resolution: {integrity: sha512-w+LsMxKyYQm347Otw+IfBXOv9UWVjpHpCDdbBMt8Kz/xbvCYNjP+0qPh91Km3iKfSRLBB0P7fAMf0KHrPu+MyA==}
@@ -10586,7 +10594,6 @@ packages:
 
   /glob-to-regexp/0.4.1:
     resolution: {integrity: sha512-lkX1HJXwyMcprw/5YUZc2s7DrpAiHB21/V+E1rHUrVNokkvB6bqMzT0VfV6/86ZNabt1k14YOIaT7nDvOX3Iiw==}
-    dev: true
 
   /glob/3.1.21:
     resolution: {integrity: sha512-ANhy2V2+tFpRajE3wN4DhkNQ08KDr0Ir1qL12/cUe5+a7STEK8jkW4onUYuY8/06qAFuT5je7mjAqzx0eKI2tQ==}

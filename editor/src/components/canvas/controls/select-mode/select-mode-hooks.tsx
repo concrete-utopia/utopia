@@ -690,6 +690,7 @@ function useSelectOrLiveModeSelectAndHover(
             editorStoreRef.current.editor.elementPathTree,
             editorStoreRef.current.editor.jsxMetadata,
             editorStoreRef.current.derived.autoFocusedPaths,
+            editorStoreRef.current.derived.filePathMappings,
           )
           if (isFocusableLeaf) {
             editorActions.push(CanvasActions.clearInteractionSession(false))
