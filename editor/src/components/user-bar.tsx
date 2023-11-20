@@ -1,5 +1,5 @@
 import React from 'react'
-import { useOthers, useSelf, useStatus } from '../../liveblocks.config'
+import { useOthers, useSelf, useStatus, useStorage } from '../../liveblocks.config'
 import { getUserPicture, isLoggedIn } from '../common/user'
 import type { MultiplayerColor } from '../core/shared/multiplayer'
 import {
@@ -17,6 +17,7 @@ import { useDispatch } from './editor/store/dispatch-context'
 import { switchEditorMode } from './editor/actions/action-creators'
 import type { EditorAction } from './editor/action-types'
 import { EditorModes, isFollowMode } from './editor/editor-modes'
+import { useMyUserAndPresence } from '../core/commenting/comment-hooks'
 
 const MAX_VISIBLE_OTHER_PLAYERS = 4
 
@@ -61,15 +62,15 @@ const MultiplayerUserBar = React.memo(() => {
   const dispatch = useDispatch()
   const colorTheme = useColorTheme()
 
-  const me = useSelf()
-  const myName = normalizeMultiplayerName(me.presence.name)
+  const { user: myUser } = useMyUserAndPresence()
+  const myName = normalizeMultiplayerName(myUser.name)
 
   const others = useOthers((list) =>
-    normalizeOthersList(me.id, list).map((other) => ({
+    normalizeOthersList(myUser.id, list).map((other) => ({
       id: other.id,
-      name: other.presence.name,
-      colorIndex: other.presence.colorIndex,
-      picture: other.presence.picture, // TODO remove this once able to resolve users
+      name: myUser.name,
+      colorIndex: myUser.colorIndex,
+      picture: myUser.avatar,
     })),
   )
 
@@ -98,7 +99,7 @@ const MultiplayerUserBar = React.memo(() => {
     [dispatch, mode],
   )
 
-  if (me.presence.name == null) {
+  if (myUser.name == null) {
     // it may still be loading, so fallback until it sorts itself out
     return <SinglePlayerUserBar />
   }
@@ -162,7 +163,7 @@ const MultiplayerUserBar = React.memo(() => {
           name={multiplayerInitialsFromName(myName)}
           tooltip={`${myName} (you)`}
           color={{ background: colorTheme.bg3.value, foreground: colorTheme.fg1.value }}
-          picture={me.presence.picture}
+          picture={myUser.avatar}
         />
       </a>
     </div>

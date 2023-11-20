@@ -1,7 +1,10 @@
 import React from 'react'
-import type { ThreadData } from '@liveblocks/client'
+import { LiveObject, type ThreadData } from '@liveblocks/client'
 import type { ThreadMetadata } from '../../../liveblocks.config'
-import { useMutation, useSelf, useStorage, useThreads } from '../../../liveblocks.config'
+import { useMutation, useRoom, useSelf, useStorage, useThreads } from '../../../liveblocks.config'
+import { Substores, useEditorState } from '../../components/editor/store/store-hook'
+import { normalizeMultiplayerName, possiblyUniqueColor } from '../shared/multiplayer'
+import { isLoggedIn } from '../../common/user'
 
 export function useCanvasCommentThread(x: number, y: number): ThreadData<ThreadMetadata> | null {
   const { threads } = useThreads()
@@ -9,19 +12,50 @@ export function useCanvasCommentThread(x: number, y: number): ThreadData<ThreadM
   return thread
 }
 
-export function useMyMultiplayerColorIndex() {
+export function useMyUserAndPresence() {
   const me = useSelf()
-  return me.presence.colorIndex
+  const myUser = useStorage((store) => store.collaborators[me.id])
+  return {
+    presence: me,
+    user: myUser,
+  }
+}
+
+export function useMyMultiplayerColorIndex() {
+  const me = useMyUserAndPresence()
+  return me.user.colorIndex
 }
 
 export function useAddMyselfToCollaborators() {
-  const addMyselfToCollaborators = useMutation(({ storage, self }) => {
-    const collaborators = storage.get('collaborators')
+  const loginState = useEditorState(
+    Substores.userState,
+    (store) => store.userState.loginState,
+    'useAddMyselfToCollaborators loginState',
+  )
 
-    if (collaborators.get(self.id) !== true) {
-      collaborators.set(self.id, true)
-    }
-  }, [])
+  const addMyselfToCollaborators = useMutation(
+    ({ storage, self }) => {
+      if (!isLoggedIn(loginState)) {
+        return
+      }
+      const collaborators = storage.get('collaborators')
+
+      const otherColorIndices = Object.values(collaborators).map((u) => u.colorIndex)
+
+      if (collaborators.get(self.id) == null) {
+        collaborators.set(
+          self.id,
+          new LiveObject({
+            id: loginState.user.userId,
+            name: normalizeMultiplayerName(loginState.user.name ?? null),
+            avatar: loginState.user.picture ?? null,
+            colorIndex: possiblyUniqueColor(otherColorIndices),
+          }),
+        )
+      }
+    },
+    [loginState],
+  )
 
   const collabs = useStorage((store) => store.collaborators)
 
