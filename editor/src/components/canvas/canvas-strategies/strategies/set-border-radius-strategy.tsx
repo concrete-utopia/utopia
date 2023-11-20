@@ -75,6 +75,7 @@ import { withUnderlyingTarget } from '../../../editor/store/editor-state'
 import type { ProjectContentTreeRoot } from '../../../assets'
 import { getModifiableJSXAttributeAtPath } from '../../../../core/shared/jsx-attributes'
 import { showToastCommand } from '../../commands/show-toast-command'
+import { setActiveFrames } from '../../commands/set-active-frames-command'
 
 export const SetBorderRadiusStrategyId = 'SET_BORDER_RADIUS_STRATEGY'
 
@@ -157,6 +158,7 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
         ...commands(selectedElement),
         ...getAddOverflowHiddenCommands(selectedElement, canvasState.projectContents),
         setElementsToRerenderCommand(selectedElements),
+        setActiveFrames(selectedElements.map((path) => ({ path, action: 'set-radius' }))),
       ]),
   }
 }

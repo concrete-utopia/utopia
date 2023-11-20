@@ -1,9 +1,10 @@
 import { LiveObject } from '@liveblocks/client'
 import { createClient } from '@liveblocks/client'
 import { createRoomContext } from '@liveblocks/react'
-import type { CanvasVector, WindowPoint } from './src/core/shared/math-utils'
 import { getProjectID } from './src/common/env-vars'
 import { projectIdToRoomId } from './src/core/shared/multiplayer'
+import type { CanvasRectangle, CanvasVector, WindowPoint } from './src/core/shared/math-utils'
+import type { ActiveFrameAction } from './src/components/canvas/commands/set-active-frames-command'
 
 export const liveblocksThrottle = 100 // ms
 
@@ -19,6 +20,7 @@ export type Presence = {
   cursor: WindowPoint | null
   canvasScale: number | null
   canvasOffset: CanvasVector | null
+  shadows?: { action: ActiveFrameAction; frame: CanvasRectangle }[]
 }
 
 export function initialPresence(): Presence {

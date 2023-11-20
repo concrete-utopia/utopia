@@ -70,6 +70,7 @@ import {
   setCssLengthProperty,
   setValueKeepingOriginalUnit,
 } from '../../commands/set-css-length-command'
+import { setActiveFrames } from '../../commands/set-active-frames-command'
 
 export interface MoveCommandsOptions {
   ignoreLocalFrame?: boolean
@@ -134,6 +135,12 @@ export function applyMoveCommon(
         updateHighlightedViews('mid-interaction', []),
         setElementsToRerenderCommand(targets),
         setCursorCommand(CSSCursor.Select),
+        setActiveFrames(
+          commandsForSelectedElements.intendedBounds.map((b) => ({
+            frame: b.frame,
+            action: 'move', // TODO this could also show "duplicate" when applicable
+          })),
+        ),
       ])
     } else {
       const constrainedDragAxis =
@@ -171,6 +178,12 @@ export function applyMoveCommon(
         ),
         setElementsToRerenderCommand([...targets, ...targetsForSnapping]),
         setCursorCommand(CSSCursor.Select),
+        setActiveFrames(
+          commandsForSelectedElements.intendedBounds.map((b) => ({
+            frame: b.frame,
+            action: 'move', // TODO this could also show "duplicate" when applicable
+          })),
+        ),
       ])
     }
   } else {

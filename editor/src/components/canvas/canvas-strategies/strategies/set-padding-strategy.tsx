@@ -76,6 +76,7 @@ import {
   adjustCssLengthProperties,
 } from '../../commands/adjust-css-length-command'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import { setActiveFrames } from '../../commands/set-active-frames-command'
 
 const StylePaddingProp = stylePropPathMappingFn('padding', styleStringInArray)
 const IndividualPaddingProps: Array<CSSPaddingKey> = [
@@ -257,6 +258,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
               value,
             ),
           ),
+          setActiveFrames(selectedElements.map((path) => ({ path, action: 'set-padding' }))),
         ])
       }
 
@@ -273,6 +275,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
             ]),
           ),
           setProperty('always', selectedElement, StylePaddingProp, paddingString),
+          setActiveFrames(selectedElements.map((path) => ({ path, action: 'set-padding' }))),
         ])
       }
 
@@ -291,6 +294,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
             value,
           ),
         ),
+        setActiveFrames(selectedElements.map((path) => ({ path, action: 'set-padding' }))),
       ])
     },
   }

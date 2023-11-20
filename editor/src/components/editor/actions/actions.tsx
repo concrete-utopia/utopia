@@ -911,6 +911,7 @@ export function restoreEditorState(
     colorSwatches: currentEditor.colorSwatches,
     internalClipboard: currentEditor.internalClipboard,
     filesModifiedByAnotherUser: currentEditor.filesModifiedByAnotherUser,
+    activeFrames: currentEditor.activeFrames,
   }
 }
 

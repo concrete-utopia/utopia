@@ -13,6 +13,7 @@ import type { Presence, UserMeta } from '../../../liveblocks.config'
 import type { CanvasPoint } from '../../core/shared/math-utils'
 import { pointsEqual, windowPoint } from '../../core/shared/math-utils'
 import { multiplayerColorFromIndex, normalizeOthersList } from '../../core/shared/multiplayer'
+import { isFiniteRectangle } from '../../core/shared/math-utils'
 import { assertNever } from '../../core/shared/utils'
 import { UtopiaTheme, useColorTheme } from '../../uuiui'
 import type { EditorAction } from '../editor/action-types'
@@ -24,6 +25,9 @@ import { Substores, useEditorState } from '../editor/store/store-hook'
 import CanvasActions from './canvas-actions'
 import { canvasPointToWindowPoint, windowToCanvasCoordinates } from './dom-lookup'
 import { useAddMyselfToCollaborators } from '../../core/commenting/comment-hooks'
+import { mapDropNulls } from '../../core/shared/array-utils'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { activeFrameActionToString } from './commands/set-active-frames-command'
 
 export const MultiplayerPresence = React.memo(() => {
   const dispatch = useDispatch()
@@ -81,8 +85,9 @@ export const MultiplayerPresence = React.memo(() => {
 
   return (
     <>
-      <MultiplayerCursors />
       <FollowingOverlay />
+      <MultiplayerShadows />
+      <MultiplayerCursors />
     </>
   )
 })
@@ -323,3 +328,98 @@ const FollowingOverlay = React.memo(() => {
   )
 })
 FollowingOverlay.displayName = 'FollowingOverlay'
+
+const MultiplayerShadows = React.memo(() => {
+  const me = useSelf()
+  const collabs = useStorage((store) => store.collaborators)
+  const others = useOthers((list) => {
+    const presences = normalizeOthersList(me.id, list)
+    return presences.map((p) => ({
+      presenceInfo: p,
+      userInfo: collabs[p.id],
+    }))
+  })
+  const shadows = React.useMemo(() => {
+    return others.flatMap((other) =>
+      (other.presenceInfo.presence.shadows ?? []).map((shadow) => ({
+        shadow: shadow,
+        colorIndex: other.userInfo.colorIndex,
+      })),
+    )
+  }, [others])
+
+  const updateMyPresence = useUpdateMyPresence()
+
+  const jsxMetadata = useEditorState(Substores.metadata, (store) => store.editor.jsxMetadata, '')
+
+  const activeFrames = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.activeFrames,
+    'MultiplayerShadows activeFrames',
+  )
+
+  const canvasScale = useEditorState(
+    Substores.canvasOffset,
+    (store) => store.editor.canvas.scale,
+    'MultiplayerShadows canvasScale',
+  )
+  const canvasOffset = useEditorState(
+    Substores.canvasOffset,
+    (store) => store.editor.canvas.roundedCanvasOffset,
+    'MultiplayerShadows canvasOffset',
+  )
+
+  React.useEffect(() => {
+    updateMyPresence({
+      shadows: mapDropNulls((activeFrame) => {
+        if (activeFrame.frame != null) {
+          return { frame: activeFrame.frame, action: activeFrame.action }
+        } else if (activeFrame.path != null) {
+          const rect = MetadataUtils.getFrameInCanvasCoords(activeFrame.path, jsxMetadata)
+          return rect != null && isFiniteRectangle(rect)
+            ? { frame: rect, action: activeFrame.action }
+            : null
+        } else {
+          return null
+        }
+      }, activeFrames),
+    })
+  }, [activeFrames, updateMyPresence, jsxMetadata])
+
+  return (
+    <>
+      {shadows.map((shadow, index) => {
+        const { frame, action } = shadow.shadow
+        const color = multiplayerColorFromIndex(shadow.colorIndex)
+        const position = canvasPointToWindowPoint(frame, canvasScale, canvasOffset)
+        return (
+          <motion.div
+            key={`shadow-${index}`}
+            initial={{ x: position.x, y: position.y, width: frame.width, height: frame.height }}
+            animate={{ x: position.x, y: position.y, width: frame.width, height: frame.height }}
+            transition={{
+              type: 'spring',
+              damping: 30,
+              mass: 0.8,
+              stiffness: 350,
+            }}
+            style={{
+              position: 'fixed',
+              pointerEvents: 'none',
+              background: `${color.background}22`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 9,
+              color: color.background,
+              border: `1px solid ${color.background}`,
+            }}
+          >
+            {activeFrameActionToString(action)}
+          </motion.div>
+        )
+      })}
+    </>
+  )
+})
+MultiplayerShadows.displayName = 'MultiplayerShadows'

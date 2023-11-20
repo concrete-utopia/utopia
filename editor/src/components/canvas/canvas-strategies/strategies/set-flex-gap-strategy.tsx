@@ -38,6 +38,7 @@ import {
 import type { InteractionSession } from '../interaction-state'
 import { areAllSiblingsInOneDimensionFlexOrFlow } from './flow-reorder-helpers'
 import { colorTheme } from '../../../../uuiui'
+import { setActiveFrames } from '../../commands/set-active-frames-command'
 
 export const SetFlexGapStrategyId = 'SET_FLEX_GAP_STRATEGY'
 
@@ -170,6 +171,7 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
         ),
         setCursorCommand(cursorFromFlexDirection(flexGap.direction)),
         setElementsToRerenderCommand([...selectedElements, ...children]),
+        setActiveFrames([{ path: selectedElement, action: 'set-gap' }]),
       ])
     },
   }

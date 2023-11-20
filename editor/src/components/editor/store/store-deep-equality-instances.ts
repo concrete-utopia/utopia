@@ -538,6 +538,7 @@ import { elementPaste } from '../actions/action-creators'
 import type { ProjectMetadataFromServer, ProjectServerState } from './project-server-state'
 import { projectServerState, projectMetadataFromServer } from './project-server-state'
 import type { VariablesInScope } from '../../canvas/ui-jsx-canvas'
+import type { ActiveFrame } from '../../canvas/commands/set-active-frames-command'
 
 export const ProjectMetadataFromServerKeepDeepEquality: KeepDeepEqualityCall<ProjectMetadataFromServer> =
   combine3EqualityCalls(
@@ -4155,6 +4156,16 @@ export const TrueUpTargetKeepDeepEquality: KeepDeepEqualityCall<TrueUpTarget> = 
   return keepDeepEqualityResult(newValue, false)
 }
 
+export const FrameOrPathKeepDeepEquality: KeepDeepEqualityCall<ActiveFrame> = combine3EqualityCalls(
+  (data) => data.frame,
+  undefinableDeepEquality(CanvasRectangleKeepDeepEquality),
+  (data) => data.path,
+  undefinableDeepEquality(ElementPathKeepDeepEquality),
+  (data) => data.action,
+  createCallWithTripleEquals(),
+  (frame, path, action) => ({ frame, path, action }),
+)
+
 export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   oldValue,
   newValue,
@@ -4442,6 +4453,11 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.filesModifiedByAnotherUser,
   )
 
+  const activeFramesResults = arrayDeepEquality(FrameOrPathKeepDeepEquality)(
+    oldValue.activeFrames,
+    newValue.activeFrames,
+  )
+
   const areEqual =
     idResult.areEqual &&
     vscodeBridgeIdResult.areEqual &&
@@ -4519,7 +4535,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     refreshingDependenciesResults.areEqual &&
     colorSwatchesResults.areEqual &&
     internalClipboardResults.areEqual &&
-    filesModifiedByAnotherUserResults.areEqual
+    filesModifiedByAnotherUserResults.areEqual &&
+    activeFramesResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -4603,6 +4620,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       colorSwatchesResults.value,
       internalClipboardResults.value,
       filesModifiedByAnotherUserResults.value,
+      activeFramesResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

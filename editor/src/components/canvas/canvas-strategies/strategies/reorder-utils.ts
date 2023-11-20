@@ -5,6 +5,7 @@ import type { CanvasVector } from '../../../../core/shared/math-utils'
 import {
   canvasRectangle,
   CanvasRectangle,
+  isFiniteRectangle,
   isInfinityRectangle,
   offsetPoint,
   rectContainsPoint,
@@ -27,6 +28,7 @@ import {
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
 import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import { setActiveFrames } from '../../commands/set-active-frames-command'
 
 export function isReorderAllowed(siblings: Array<ElementPath>): boolean {
   return siblings.every((sibling) => !isRootOfGeneratedElement(sibling))
@@ -83,10 +85,22 @@ export function applyReorderCommon(
 
     const newIndexFound = newIndex > -1
     const newResultOrLastIndex = newIndexFound ? newIndex : lastReorderIdx
+    const targetFrame =
+      newResultOrLastIndex > -1
+        ? MetadataUtils.getFrameInCanvasCoords(
+            siblings[newResultOrLastIndex],
+            canvasState.startingMetadata,
+          )
+        : MetadataUtils.getFrameInCanvasCoords(target, canvasState.startingMetadata)
 
     if (newResultOrLastIndex === unpatchedIndex) {
       return strategyApplicationResult(
         [
+          setActiveFrames(
+            targetFrame != null && isFiniteRectangle(targetFrame)
+              ? [{ frame: targetFrame, action: 'reorder' }]
+              : [],
+          ),
           updateHighlightedViews('mid-interaction', []),
           setElementsToRerenderCommand(siblings),
           setCursorCommand(CSSCursor.Move),
@@ -98,6 +112,11 @@ export function applyReorderCommon(
     } else {
       return strategyApplicationResult(
         [
+          setActiveFrames(
+            targetFrame != null && isFiniteRectangle(targetFrame)
+              ? [{ frame: targetFrame, action: 'reorder' }]
+              : [],
+          ),
           reorderElement('always', target, absolute(newResultOrLastIndex)),
           setElementsToRerenderCommand(siblings),
           updateHighlightedViews('mid-interaction', []),
