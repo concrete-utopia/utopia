@@ -256,13 +256,13 @@ const FollowingOverlay = React.memo(() => {
 
     let actions: EditorAction[] = []
     if (followed.presence.canvasScale != null && followed.presence.canvasScale !== canvasScale) {
-      actions.push(CanvasActions.zoom(followed.presence.canvasScale, null, true))
+      actions.push(CanvasActions.zoom(followed.presence.canvasScale, null))
     }
     if (
       followed.presence.canvasOffset != null &&
       !pointsEqual(followed.presence.canvasOffset, canvasOffset)
     ) {
-      actions.push(CanvasActions.positionCanvas(followed.presence.canvasOffset, true))
+      actions.push(CanvasActions.positionCanvas(followed.presence.canvasOffset))
     }
     if (actions.length > 0) {
       dispatch(actions)

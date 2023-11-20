@@ -311,27 +311,33 @@ function on(
       } else {
         scale = Utils.increaseScale(canvas.scale)
       }
-      return [CanvasActions.zoom(scale, event.canvasPositionRounded)]
+      return !isFollowMode(canvas.editorState.mode)
+        ? [CanvasActions.zoom(scale, event.canvasPositionRounded)]
+        : []
     } else {
       return []
     }
   } else if (event.event === 'WHEEL') {
-    if (event.modifiers.ctrl) {
-      const timeoutLength = canvas.scale === 1 ? 500 : 250
-      if (Date.now() - lastPinchZoomedAt > timeoutLength) {
-        lastPinchZoomedAt = Date.now()
-        if (event.delta.y > 0) {
-          return [
-            CanvasActions.zoom(Utils.decreaseScale(canvas.scale), event.canvasPositionRounded),
-          ]
-        } else {
-          return [
-            CanvasActions.zoom(Utils.increaseScale(canvas.scale), event.canvasPositionRounded),
-          ]
+    if (!isFollowMode(canvas.editorState.mode)) {
+      if (event.modifiers.ctrl) {
+        const timeoutLength = canvas.scale === 1 ? 500 : 250
+        if (Date.now() - lastPinchZoomedAt > timeoutLength) {
+          lastPinchZoomedAt = Date.now()
+          if (event.delta.y > 0) {
+            return [
+              CanvasActions.zoom(Utils.decreaseScale(canvas.scale), event.canvasPositionRounded),
+            ]
+          } else {
+            return [
+              CanvasActions.zoom(Utils.increaseScale(canvas.scale), event.canvasPositionRounded),
+            ]
+          }
         }
+      } else {
+        return [CanvasActions.scrollCanvas(event.delta as any as CanvasVector)]
       }
     } else {
-      return [CanvasActions.scrollCanvas(event.delta as any as CanvasVector)]
+      return []
     }
   }
   // Handle all other cases via the plugins.
@@ -348,9 +354,6 @@ export function runLocalCanvasAction(
   // TODO BB horrorshow performance
   switch (action.action) {
     case 'SCROLL_CANVAS': {
-      if (!action.must && isFollowMode(model.mode)) {
-        return model
-      }
       const newCanvasOffset = Utils.offsetPoint(
         model.canvas.realCanvasOffset,
         Utils.negate(action.delta),
@@ -365,9 +368,6 @@ export function runLocalCanvasAction(
       }
     }
     case 'POSITION_CANVAS':
-      if (!action.must && isFollowMode(model.mode)) {
-        return model
-      }
       return {
         ...model,
         canvas: {
@@ -390,10 +390,6 @@ export function runLocalCanvasAction(
       }
       return model
     case 'ZOOM': {
-      if (!action.must && isFollowMode(model.mode)) {
-        return model
-      }
-
       const { focusPoint, scale } = action
       const previousScale = model.canvas.scale
       const newCanvasOffset = getCanvasOffset(

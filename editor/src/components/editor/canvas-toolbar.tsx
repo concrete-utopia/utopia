@@ -321,7 +321,17 @@ export const CanvasToolbar = React.memo(() => {
     'CanvasToolbar zoomLevel',
   )
 
-  const zoom100pct = React.useCallback(() => dispatch([CanvasActions.zoom(1)]), [dispatch])
+  const isFollowMode = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.mode.type === 'follow',
+    'TopMenu isFollowMode',
+  )
+
+  const zoom100pct = React.useCallback(() => {
+    if (!isFollowMode) {
+      dispatch([CanvasActions.zoom(1)])
+    }
+  }, [dispatch, isFollowMode])
 
   const isLiveMode = useEditorState(
     Substores.restOfEditor,
