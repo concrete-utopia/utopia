@@ -30,7 +30,7 @@ import {
   jsxTextBlock,
 } from '../../../core/shared/element-template'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
-import type { VariablesInScope } from '../../../core/shared/project-file-types'
+import type { AllVariablesInScope } from '../../../core/shared/project-file-types'
 import { getVariablesInScope } from '../../../components/shared/scoped-variables'
 
 export const FloatingMenuTestId = 'floating-menu-test-id'
@@ -125,8 +125,13 @@ export function useGetInsertableComponents(
   }, [packageStatus, propertyControlsInfo, projectContents, dependencies, fullPath, insertMenuMode])
 
   const scopedVariables = useEditorState(
-    Substores.selectedViews,
-    (store) => getVariablesInScope(store.editor.selectedViews[0], projectContents),
+    Substores.variablesInScope,
+    (store) =>
+      getVariablesInScope(
+        store.editor.selectedViews[0],
+        projectContents,
+        store.editor.variablesInScope,
+      ),
     'useGetInsertableComponents scopedVariables',
   )
 
@@ -142,7 +147,7 @@ export function useGetInsertableComponents(
 }
 
 function convertVariablesToElements(
-  variableInScope: VariablesInScope[],
+  variableInScope: AllVariablesInScope[],
 ): InsertableComponentGroup[] {
   return variableInScope.map((variableGroup) => {
     return {
