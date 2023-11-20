@@ -61,11 +61,11 @@ const MultiplayerUserBar = React.memo(() => {
   const dispatch = useDispatch()
   const colorTheme = useColorTheme()
 
-  const self = useSelf()
-  const myName = normalizeMultiplayerName(self.presence.name)
+  const me = useSelf()
+  const myName = normalizeMultiplayerName(me.presence.name)
 
   const others = useOthers((list) =>
-    normalizeOthersList(self.id, list).map((other) => ({
+    normalizeOthersList(me.id, list).map((other) => ({
       id: other.id,
       name: other.presence.name,
       colorIndex: other.presence.colorIndex,
@@ -98,7 +98,7 @@ const MultiplayerUserBar = React.memo(() => {
     [dispatch, mode],
   )
 
-  if (self.presence.name == null) {
+  if (me.presence.name == null) {
     // it may still be loading, so fallback until it sorts itself out
     return <SinglePlayerUserBar />
   }
@@ -162,7 +162,7 @@ const MultiplayerUserBar = React.memo(() => {
           name={multiplayerInitialsFromName(myName)}
           tooltip={`${myName} (you)`}
           color={{ background: colorTheme.bg3.value, foreground: colorTheme.fg1.value }}
-          picture={self.presence.picture}
+          picture={me.presence.picture}
         />
       </a>
     </div>

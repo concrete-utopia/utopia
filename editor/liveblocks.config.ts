@@ -85,6 +85,7 @@ export const {
     useUpdateMyPresence,
     useSelf,
     useOthers,
+    useOthersListener,
     useOthersMapped,
     useOthersConnectionIds,
     useOther,
