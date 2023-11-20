@@ -292,14 +292,18 @@ function applySteganographyPlugin(
             line: originalStartPosition.line,
             column: originalStartPosition.column,
           }) - 1
-        const original = cleanSteganoTextData(path.node.value).cleaned
+
+        const original = path.getSource()
         const data: SteganoTextData = {
           filePath: sourceFileName,
           startPosition: absoluteStartPosition,
-          endPosition: absoluteStartPosition + original.length + 2,
+          endPosition: absoluteStartPosition + original.length,
           originalString: original,
         }
-        path.replaceWith(BabelTypes.stringLiteral(encodeSteganoData(original, data)))
+
+        const cleanedNodeValue = cleanSteganoTextData(path.node.value).cleaned
+
+        path.replaceWith(BabelTypes.stringLiteral(encodeSteganoData(cleanedNodeValue, data)))
       },
     },
   })

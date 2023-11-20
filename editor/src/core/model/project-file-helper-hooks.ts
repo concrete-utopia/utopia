@@ -43,7 +43,7 @@ function spliceCode(
   if (originalString !== originalStringData.originalString) {
     throw new Error(`Tried to rewrite string but it was not matching the last known value.
   Current value:    >>>${originalString}<<<
-  Last known value: >>>${sanitizeString(originalStringData.originalString)}<<<
+  Last known value: >>>${originalStringData.originalString}<<<
   `)
   }
 
