@@ -10,8 +10,8 @@ export function useCanvasCommentThread(x: number, y: number): ThreadData<ThreadM
 }
 
 export function useMyMultiplayerColorIndex() {
-  const self = useSelf()
-  return self.presence.colorIndex
+  const me = useSelf()
+  return me.presence.colorIndex
 }
 
 export function useAddMyselfToCollaborators() {
