@@ -32,7 +32,7 @@ import { FlexRow } from 'utopia-api'
 import type { StoredPanel } from './stored-layout'
 import { MultiplayerCursors } from './multiplayer-cursors'
 import { useStatus } from '../../../liveblocks.config'
-import { MultiplayerWrap } from '../../utils/multiplayer-wrap'
+import { MultiplayerWrapper } from '../../utils/multiplayer-wrapper'
 
 interface NumberSize {
   width: number
@@ -146,9 +146,9 @@ const DesignPanelRootInner = React.memo(() => {
             <CanvasWrapperComponent />
             {when(
               roomStatus === 'connected',
-              <MultiplayerWrap errorFallback={null} suspenseFallback={null}>
+              <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
                 <MultiplayerCursors />
-              </MultiplayerWrap>,
+              </MultiplayerWrapper>,
             )}
             <GridPanelsContainer />
           </SimpleFlexColumn>

@@ -15,7 +15,7 @@ import {
   multiplayerInitialsFromName,
   normalizeMultiplayerName,
 } from '../../../core/shared/multiplayer'
-import { MultiplayerWrap } from '../../../utils/multiplayer-wrap'
+import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 
 export const CommentIndicator = React.memo(() => {
   const projectId = useEditorState(
@@ -30,9 +30,9 @@ export const CommentIndicator = React.memo(() => {
 
   return (
     <CanvasOffsetWrapper>
-      <MultiplayerWrap errorFallback={null} suspenseFallback={null}>
+      <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
         <CommentIndicatorInner />
-      </MultiplayerWrap>
+      </MultiplayerWrapper>
     </CanvasOffsetWrapper>
   )
 })

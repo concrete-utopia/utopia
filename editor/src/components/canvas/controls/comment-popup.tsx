@@ -13,7 +13,7 @@ import {
   useMyMultiplayerColorIndex,
 } from '../../../core/commenting/comment-hooks'
 import { isLoggedIn } from '../../editor/action-types'
-import { MultiplayerWrap } from '../../../utils/multiplayer-wrap'
+import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 
 export const CommentPopup = React.memo(() => {
   const mode = useEditorState(
@@ -42,12 +42,12 @@ export const CommentPopup = React.memo(() => {
         onKeyUp={stopPropagation}
         onMouseUp={stopPropagation}
       >
-        <MultiplayerWrap
+        <MultiplayerWrapper
           errorFallback={<div>Can not load comments</div>}
           suspenseFallback={<div>Loading…</div>}
         >
           <CommentThread x={location.x} y={location.y} />
-        </MultiplayerWrap>
+        </MultiplayerWrapper>
       </div>
     </CanvasOffsetWrapper>
   )

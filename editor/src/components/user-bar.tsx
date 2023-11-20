@@ -12,7 +12,7 @@ import {
 import { Avatar, Tooltip, useColorTheme } from '../uuiui'
 import { Substores, useEditorState } from './editor/store/store-hook'
 import { unless, when } from '../utils/react-conditionals'
-import { MultiplayerWrap } from '../utils/multiplayer-wrap'
+import { MultiplayerWrapper } from '../utils/multiplayer-wrapper'
 
 const MAX_VISIBLE_OTHER_PLAYERS = 4
 
@@ -31,9 +31,9 @@ export const UserBar = React.memo(() => {
     return <SinglePlayerUserBar />
   } else {
     return (
-      <MultiplayerWrap errorFallback={null} suspenseFallback={null}>
+      <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
         <MultiplayerUserBar />
-      </MultiplayerWrap>
+      </MultiplayerWrapper>
     )
   }
 })
