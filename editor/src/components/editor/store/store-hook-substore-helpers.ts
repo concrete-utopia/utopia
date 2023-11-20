@@ -171,4 +171,5 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
     styleClipboard: [],
     elements: [],
   },
+  filesModifiedByAnotherUser: [],
 }
