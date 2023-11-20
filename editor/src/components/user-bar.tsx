@@ -94,7 +94,7 @@ const MultiplayerUserBar = React.memo(() => {
   const toggleFollowing = React.useCallback(
     (id: string) => () => {
       let actions: EditorAction[] = []
-      if (!canFollowTarget(self.id, id, others)) {
+      if (!canFollowTarget(me.id, id, others)) {
         actions.push(
           showToast(
             notice(
@@ -114,7 +114,7 @@ const MultiplayerUserBar = React.memo(() => {
       }
       dispatch(actions)
     },
-    [dispatch, mode, self, others],
+    [dispatch, mode, me, others],
   )
 
   if (me.presence.name == null) {
