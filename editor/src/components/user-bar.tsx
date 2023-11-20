@@ -13,6 +13,10 @@ import {
 import { Avatar, Tooltip, useColorTheme } from '../uuiui'
 import { Substores, useEditorState } from './editor/store/store-hook'
 import { unless, when } from '../utils/react-conditionals'
+import { useDispatch } from './editor/store/dispatch-context'
+import { switchEditorMode } from './editor/actions/action-creators'
+import type { EditorAction } from './editor/action-types'
+import { EditorModes, isFollowMode } from './editor/editor-modes'
 
 const MAX_VISIBLE_OTHER_PLAYERS = 4
 
@@ -52,6 +56,7 @@ export const SinglePlayerUserBar = React.memo(() => {
 SinglePlayerUserBar.displayName = 'SinglePlayerUserBar'
 
 const MultiplayerUserBar = React.memo(() => {
+  const dispatch = useDispatch()
   const colorTheme = useColorTheme()
 
   const self = useSelf()
@@ -72,6 +77,24 @@ const MultiplayerUserBar = React.memo(() => {
   const hiddenOthers = React.useMemo(() => {
     return others.slice(MAX_VISIBLE_OTHER_PLAYERS)
   }, [others])
+
+  const mode = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.mode,
+    'MultiplayerUserBar mode',
+  )
+
+  const toggleFollowing = React.useCallback(
+    (id: string) => () => {
+      const newMode =
+        isFollowMode(mode) && mode.playerId === id
+          ? EditorModes.selectMode(null, false, 'none')
+          : EditorModes.followMode(id)
+      let actions: EditorAction[] = [switchEditorMode(newMode)]
+      dispatch(actions)
+    },
+    [dispatch, mode],
+  )
 
   if (self.presence.name == null) {
     // it may still be loading, so fallback until it sorts itself out
@@ -113,6 +136,8 @@ const MultiplayerUserBar = React.memo(() => {
                 picture={other.picture}
                 border={true}
                 coloredTooltip={true}
+                onClick={toggleFollowing(other.id)}
+                active={isFollowMode(mode) && mode.playerId === other.id}
               />
             )
           })}
@@ -151,6 +176,8 @@ const MultiplayerAvatar = React.memo(
     coloredTooltip?: boolean
     picture?: string | null
     border?: boolean
+    onClick?: () => void
+    active?: boolean
   }) => {
     const picture = React.useMemo(() => {
       return isDefaultAuth0AvatarURL(props.picture ?? null) ? null : props.picture
@@ -171,6 +198,7 @@ const MultiplayerAvatar = React.memo(
       return picture != null && !pictureNotFound
     }, [picture, pictureNotFound])
 
+    const colorTheme = useColorTheme()
     return (
       <Tooltip
         title={props.tooltip}
@@ -188,10 +216,14 @@ const MultiplayerAvatar = React.memo(
             alignItems: 'center',
             justifyContent: 'center',
             borderRadius: '100%',
+            border: `3px solid ${props.active === true ? colorTheme.primary.value : 'transparent'}`,
             fontSize: 9,
             fontWeight: 700,
             cursor: 'pointer',
+            boxShadow:
+              props.active === true ? `0px 0px 15px ${colorTheme.primary.value}` : undefined,
           }}
+          onClick={props.onClick}
         >
           {unless(showPicture, props.name)}
           {when(
