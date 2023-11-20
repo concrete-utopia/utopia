@@ -21,11 +21,11 @@ export function activeFrameActionToString(action: ActiveFrameAction): string {
     case 'resize':
       return 'Resize'
     case 'set-gap':
-      return 'Set flex gap'
+      return 'Gap'
     case 'set-padding':
-      return 'Set padding'
+      return 'Padding'
     case 'set-radius':
-      return 'Set radius'
+      return 'Radius'
     default:
       assertNever(action)
   }

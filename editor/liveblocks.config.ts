@@ -20,7 +20,12 @@ export type Presence = {
   cursor: WindowPoint | null
   canvasScale: number | null
   canvasOffset: CanvasVector | null
-  shadows?: { action: ActiveFrameAction; frame: CanvasRectangle }[]
+  activeFrames?: PresenceActiveFrame[]
+}
+
+export type PresenceActiveFrame = {
+  action: ActiveFrameAction
+  frame: CanvasRectangle
 }
 
 export function initialPresence(): Presence {

@@ -9,7 +9,7 @@ import {
   useStorage,
   useUpdateMyPresence,
 } from '../../../liveblocks.config'
-import type { Presence, UserMeta } from '../../../liveblocks.config'
+import type { Presence, PresenceActiveFrame, UserMeta } from '../../../liveblocks.config'
 import type { CanvasPoint } from '../../core/shared/math-utils'
 import { pointsEqual, windowPoint } from '../../core/shared/math-utils'
 import { multiplayerColorFromIndex, normalizeOthersList } from '../../core/shared/multiplayer'
@@ -331,6 +331,8 @@ FollowingOverlay.displayName = 'FollowingOverlay'
 
 const MultiplayerShadows = React.memo(() => {
   const me = useSelf()
+  const updateMyPresence = useUpdateMyPresence()
+
   const collabs = useStorage((store) => store.collaborators)
   const others = useOthers((list) => {
     const presences = normalizeOthersList(me.id, list)
@@ -339,20 +341,24 @@ const MultiplayerShadows = React.memo(() => {
       userInfo: collabs[p.id],
     }))
   })
+
   const shadows = React.useMemo(() => {
-    return others.flatMap((other) =>
-      (other.presenceInfo.presence.shadows ?? []).map((shadow) => ({
-        shadow: shadow,
-        colorIndex: other.userInfo.colorIndex,
-      })),
+    return others.flatMap(
+      (other) =>
+        other.presenceInfo.presence.activeFrames?.map((activeFrame) => ({
+          activeFrame: activeFrame,
+          colorIndex: other.userInfo.colorIndex,
+        })) ?? [],
     )
   }, [others])
 
-  const updateMyPresence = useUpdateMyPresence()
+  const jsxMetadata = useEditorState(
+    Substores.metadata,
+    (store) => store.editor.jsxMetadata,
+    'MultiplayerShadows jsxMetadata',
+  )
 
-  const jsxMetadata = useEditorState(Substores.metadata, (store) => store.editor.jsxMetadata, '')
-
-  const activeFrames = useEditorState(
+  const myActiveFrames = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.activeFrames,
     'MultiplayerShadows activeFrames',
@@ -371,25 +377,25 @@ const MultiplayerShadows = React.memo(() => {
 
   React.useEffect(() => {
     updateMyPresence({
-      shadows: mapDropNulls((activeFrame) => {
-        if (activeFrame.frame != null) {
-          return { frame: activeFrame.frame, action: activeFrame.action }
-        } else if (activeFrame.path != null) {
-          const rect = MetadataUtils.getFrameInCanvasCoords(activeFrame.path, jsxMetadata)
-          return rect != null && isFiniteRectangle(rect)
-            ? { frame: rect, action: activeFrame.action }
+      activeFrames: mapDropNulls(({ frame, path, action }): PresenceActiveFrame | null => {
+        if (frame != null) {
+          return { frame, action }
+        } else if (path != null) {
+          const canvasFrame = MetadataUtils.getFrameInCanvasCoords(path, jsxMetadata)
+          return canvasFrame != null && isFiniteRectangle(canvasFrame)
+            ? { frame: canvasFrame, action }
             : null
         } else {
           return null
         }
-      }, activeFrames),
+      }, myActiveFrames),
     })
-  }, [activeFrames, updateMyPresence, jsxMetadata])
+  }, [myActiveFrames, updateMyPresence, jsxMetadata])
 
   return (
     <>
       {shadows.map((shadow, index) => {
-        const { frame, action } = shadow.shadow
+        const { frame, action } = shadow.activeFrame
         const color = multiplayerColorFromIndex(shadow.colorIndex)
         const position = canvasPointToWindowPoint(frame, canvasScale, canvasOffset)
         return (
