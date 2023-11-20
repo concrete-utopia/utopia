@@ -131,14 +131,26 @@ export function jsExpressionValue<T>(
   value: T,
   comments: ParsedComments,
   uid: string = UUID(),
-  identifier: boolean = false,
 ): JSExpressionValue<T> {
   return {
     type: 'ATTRIBUTE_VALUE',
     value: value,
     comments: comments,
     uid: uid,
-    identifier: identifier,
+  }
+}
+
+export function jsExpressionIdentifier<T>(
+  value: T,
+  comments: ParsedComments,
+  uid: string = UUID(),
+): JSExpressionValue<T> {
+  return {
+    type: 'ATTRIBUTE_VALUE',
+    value: value,
+    comments: comments,
+    uid: uid,
+    identifier: true,
   }
 }
 

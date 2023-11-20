@@ -18,6 +18,7 @@ import {
   jsExpressionValue,
   jsxConditionalExpressionWithoutUID,
   emptyComments,
+  jsExpressionIdentifier,
 } from '../../core/shared/element-template'
 import { type VariablesInScope } from '../canvas/ui-jsx-canvas'
 import { toComponentId } from '../../core/shared/element-path'
@@ -113,15 +114,15 @@ function getMatchingElementForVariable(variable: Variable) {
   switch (variable.type) {
     case 'string':
       return jsxElementWithoutUID('span', jsxAttributesFromMap({}), [
-        jsxTextBlock(`{${variable.name}}`),
+        jsExpressionIdentifier(variable.name, emptyComments, undefined),
       ])
     case 'number':
       return jsxElementWithoutUID('span', jsxAttributesFromMap({}), [
-        jsxTextBlock(`{${variable.name}}`),
+        jsExpressionIdentifier(variable.name, emptyComments, undefined),
       ])
     case 'boolean':
       return jsxConditionalExpressionWithoutUID(
-        jsExpressionValue(variable.name, emptyComments, undefined, true),
+        jsExpressionIdentifier(variable.name, emptyComments, undefined),
         variable.name,
         jsExpressionValue(null, emptyComments),
         jsExpressionValue(null, emptyComments),
