@@ -92,9 +92,9 @@ const MultiplayerUserBar = React.memo(() => {
   )
 
   const toggleFollowing = React.useCallback(
-    (id: string) => () => {
+    (targetId: string) => () => {
       let actions: EditorAction[] = []
-      if (!canFollowTarget(me.id, id, others)) {
+      if (!canFollowTarget(me.id, targetId, others)) {
         actions.push(
           showToast(
             notice(
@@ -107,9 +107,9 @@ const MultiplayerUserBar = React.memo(() => {
         )
       } else {
         const newMode =
-          isFollowMode(mode) && mode.playerId === id
+          isFollowMode(mode) && mode.playerId === targetId
             ? EditorModes.selectMode(null, false, 'none')
-            : EditorModes.followMode(id)
+            : EditorModes.followMode(targetId)
         actions.push(switchEditorMode(newMode))
       }
       dispatch(actions)
