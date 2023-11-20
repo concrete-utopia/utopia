@@ -55,7 +55,7 @@ import { EditorCommon } from './editor-component-common'
 import { notice } from '../common/notice'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { ProjectServerStateUpdater } from './store/project-server-state'
-import { RoomProvider, initialPresence } from '../../../liveblocks.config'
+import { RoomProvider, initialPresence, initialStorage } from '../../../liveblocks.config'
 import { generateUUID } from '../../utils/utils'
 import { isLiveblocksEnabled } from './liveblocks-utils'
 
@@ -517,6 +517,7 @@ export function EditorComponent(props: EditorProps) {
       id={roomId}
       autoConnect={isLiveblocksEnabled()}
       initialPresence={initialPresence()}
+      initialStorage={initialStorage()}
     >
       <DndProvider backend={HTML5Backend} context={window}>
         <ProjectServerStateUpdater
