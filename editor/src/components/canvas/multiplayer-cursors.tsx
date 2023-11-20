@@ -94,8 +94,8 @@ const MultiplayerCursors = React.memo(() => {
   const others = useOthers((list) => {
     const presences = normalizeOthersList(me.id, list)
     return presences.map((p) => ({
-      presence: p,
-      user: collabs[p.id],
+      presenceInfo: p,
+      userInfo: collabs[p.id],
     }))
   })
 
@@ -110,22 +110,22 @@ const MultiplayerCursors = React.memo(() => {
     >
       {others.map((other) => {
         if (
-          other.presence.presence.cursor == null ||
-          other.presence.presence.canvasOffset == null ||
-          other.presence.presence.canvasScale == null
+          other.presenceInfo.presence.cursor == null ||
+          other.presenceInfo.presence.canvasOffset == null ||
+          other.presenceInfo.presence.canvasScale == null
         ) {
           return null
         }
         const position = windowToCanvasCoordinates(
-          other.presence.presence.canvasScale,
-          other.presence.presence.canvasOffset,
-          other.presence.presence.cursor,
+          other.presenceInfo.presence.canvasScale,
+          other.presenceInfo.presence.canvasOffset,
+          other.presenceInfo.presence.cursor,
         ).canvasPositionRounded
         return (
           <MultiplayerCursor
-            key={`cursor-${other.presence.id}`}
-            name={other.user.name}
-            colorIndex={other.user.colorIndex}
+            key={`cursor-${other.presenceInfo.id}`}
+            name={other.userInfo.name}
+            colorIndex={other.userInfo.colorIndex}
             position={position}
           />
         )
