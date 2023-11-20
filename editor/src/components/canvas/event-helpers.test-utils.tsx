@@ -1015,8 +1015,8 @@ export async function dragElementWithDNDEvents(
   hoverEvents: 'apply-hover-events' | 'do-not-apply-hover-events',
   midDragCallback: () => Promise<void> = ASYNC_NOOP,
 ): Promise<void> {
-  const dragTarget = renderResult.renderedDOM.getByTestId(dragTargetID)
-  const dropTarget = renderResult.renderedDOM.getByTestId(dropTargetID)
+  const dragTarget = renderResult.renderedCanvas.getByTestId(dragTargetID)
+  const dropTarget = renderResult.renderedCanvas.getByTestId(dropTargetID)
 
   const endPoint = offsetPoint(startPoint, dragDelta)
 

@@ -64,7 +64,7 @@ describe('Storyboard utils', () => {
       )
 
       expectStoryboardFileExists(renderResult)
-      expect(renderResult.renderedDOM.queryByTestId(RemixRootComponentTestId)).not.toBeNull()
+      expect(renderResult.renderedCanvas.queryByTestId(RemixRootComponentTestId)).not.toBeNull()
     })
     it('project with an exported App component', async () => {
       const AppTestId = 'App'
@@ -88,7 +88,7 @@ describe('Storyboard utils', () => {
       )
 
       expectStoryboardFileExists(renderResult)
-      expect(renderResult.renderedDOM.queryAllByTestId(AppTestId)).not.toBeNull()
+      expect(renderResult.renderedCanvas.queryAllByTestId(AppTestId)).not.toBeNull()
     })
     it('project with no main component', async () => {
       const renderResult = await renderTestEditorWithModel(
@@ -210,7 +210,7 @@ describe('Storyboard utils', () => {
       await mock.updateProjectWithBranchContent
 
       expectStoryboardFileExists(renderResult)
-      expect(renderResult.renderedDOM.queryByTestId(RemixRootComponentTestId)).not.toBeNull()
+      expect(renderResult.renderedCanvas.queryByTestId(RemixRootComponentTestId)).not.toBeNull()
     })
   })
 })

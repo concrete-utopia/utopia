@@ -314,7 +314,7 @@ describe('Use the text editor', () => {
     const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
 
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const div = editor.renderedDOM.getByTestId('div')
+    const div = editor.renderedCanvas.getByTestId('div')
     const divBounds = div.getBoundingClientRect()
     const divCorner = {
       x: divBounds.x + 20,
@@ -539,7 +539,7 @@ describe('Use the text editor', () => {
         )
 
         const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-        const div = editor.renderedDOM.getByTestId('first-div')
+        const div = editor.renderedCanvas.getByTestId('first-div')
         const divBounds = div.getBoundingClientRect()
         const divCorner = {
           x: divBounds.x + 20,
@@ -595,7 +595,7 @@ describe('Use the text editor', () => {
         )
 
         const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-        const div = editor.renderedDOM.getByTestId('first-div')
+        const div = editor.renderedCanvas.getByTestId('first-div')
         const divBounds = div.getBoundingClientRect()
         const divCorner = {
           x: divBounds.x + 30,
@@ -1021,7 +1021,7 @@ describe('Use the text editor', () => {
                 </Storyboard>
               )`),
         )
-        expect(editor.renderedDOM.getByTestId('div').innerText).toEqual(t.renderedText)
+        expect(editor.renderedCanvas.getByTestId('div').innerText).toEqual(t.renderedText)
       })
     })
   })
@@ -1051,7 +1051,7 @@ describe('Use the text editor', () => {
           true ? 'hi' : <div data-uid='33d' />
         }`),
       )
-      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('hi')
+      expect(editor.renderedCanvas.getByTestId('div').innerText).toEqual('hi')
     })
     it('editing the active true clause from the selected conditional', async () => {
       const editor = await renderTestEditorWithCode(
@@ -1078,7 +1078,7 @@ describe('Use the text editor', () => {
           true ? 'hi' : <div data-uid='33d' />
         }`),
       )
-      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('hi')
+      expect(editor.renderedCanvas.getByTestId('div').innerText).toEqual('hi')
     })
     it('editing the active true clause with null inside from the selected conditional', async () => {
       const editor = await renderTestEditorWithCode(
@@ -1105,7 +1105,7 @@ describe('Use the text editor', () => {
           true ? 'hi' : <div data-uid='33d' />
         }`),
       )
-      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('hi')
+      expect(editor.renderedCanvas.getByTestId('div').innerText).toEqual('hi')
     })
     it('editing the full conditional from the selected conditional (to a non-conditional)', async () => {
       const editor = await renderTestEditorWithCode(
@@ -1127,7 +1127,7 @@ describe('Use the text editor', () => {
       await wait(50)
 
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(projectWithSnippet('hi'))
-      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('hi')
+      expect(editor.renderedCanvas.getByTestId('div').innerText).toEqual('hi')
     })
     it('editing the full conditional from the selected conditional (keeping it a conditional)', async () => {
       const editor = await renderTestEditorWithCode(
@@ -1157,7 +1157,7 @@ describe('Use the text editor', () => {
           true ? 'hi' : 'utopia'
         }`),
       )
-      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('hi')
+      expect(editor.renderedCanvas.getByTestId('div').innerText).toEqual('hi')
     })
     it('editing is not allowed with siblings', async () => {
       const editor = await renderTestEditorWithCode(
@@ -1198,7 +1198,7 @@ describe('Use the text editor', () => {
           false ? <div data-uid='33d' /> : 'hi'
         }`),
       )
-      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('hi')
+      expect(editor.renderedCanvas.getByTestId('div').innerText).toEqual('hi')
     })
     it('editing the active false clause from the selected conditional', async () => {
       const editor = await renderTestEditorWithCode(
@@ -1225,7 +1225,7 @@ describe('Use the text editor', () => {
           false ? <div data-uid='33d' /> : 'hi'
         }`),
       )
-      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('hi')
+      expect(editor.renderedCanvas.getByTestId('div').innerText).toEqual('hi')
     })
     it('editing expression in the true clause', async () => {
       const editor = await renderTestEditorWithCode(
@@ -1260,7 +1260,7 @@ describe('Use the text editor', () => {
           )
         }`),
       )
-      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('content of myvar2')
+      expect(editor.renderedCanvas.getByTestId('div').innerText).toEqual('content of myvar2')
     })
     it('editing expression in the true clause is not allowed when the expression returns elements', async () => {
       const editor = await renderTestEditorWithCode(
@@ -1325,7 +1325,7 @@ describe('Use the text editor', () => {
           true ? myvar2 : <div data-uid='33d' />
         }`),
       )
-      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('content of myvar2')
+      expect(editor.renderedCanvas.getByTestId('div').innerText).toEqual('content of myvar2')
     })
     it('editing a map expression in the active true clause from the selected conditional', async () => {
       const editor = await renderTestEditorWithCode(
@@ -1352,7 +1352,7 @@ describe('Use the text editor', () => {
           true ? myvar2 : <div data-uid='33d' />
         }`),
       )
-      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('content of myvar2')
+      expect(editor.renderedCanvas.getByTestId('div').innerText).toEqual('content of myvar2')
     })
     it('editing expression in the active true clause from the selected conditional is not allowed when the expression returns elements', async () => {
       const editor = await renderTestEditorWithCode(
@@ -1417,7 +1417,7 @@ describe('Use the text editor', () => {
           )
         }`),
       )
-      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('content of myvar2')
+      expect(editor.renderedCanvas.getByTestId('div').innerText).toEqual('content of myvar2')
     })
     it('editing a map expression in the false clause', async () => {
       const editor = await renderTestEditorWithCode(
@@ -1452,7 +1452,7 @@ describe('Use the text editor', () => {
           )
         }`),
       )
-      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('content of myvar2')
+      expect(editor.renderedCanvas.getByTestId('div').innerText).toEqual('content of myvar2')
     })
 
     it('editing expression in the false clause is not allowed when the expression returns elements', async () => {
@@ -1513,7 +1513,7 @@ describe('Use the text editor', () => {
           false ? <div data-uid='33d' /> : myvar2
         }`),
       )
-      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('content of myvar2')
+      expect(editor.renderedCanvas.getByTestId('div').innerText).toEqual('content of myvar2')
     })
     it('editing a map expression in the false clause from the selected conditional', async () => {
       const editor = await renderTestEditorWithCode(
@@ -1540,7 +1540,7 @@ describe('Use the text editor', () => {
           false ? <div data-uid='33d' /> : myvar2
         }`),
       )
-      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('content of myvar2')
+      expect(editor.renderedCanvas.getByTestId('div').innerText).toEqual('content of myvar2')
     })
     it('editing expression in the false clause from the selected conditional is not allowed when the expression returns elements', async () => {
       const editor = await renderTestEditorWithCode(
@@ -1600,7 +1600,7 @@ describe('Use the text editor', () => {
         ) : <div data-uid='33d' />
       }`),
     )
-    expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('this is just a string')
+    expect(editor.renderedCanvas.getByTestId('div').innerText).toEqual('this is just a string')
   })
   it('editing a map expression (in the true clause) and deleting curly braces converts it to string literal', async () => {
     const editor = await renderTestEditorWithCode(
@@ -1633,7 +1633,7 @@ describe('Use the text editor', () => {
         ): <div data-uid='33d' />
       }`),
     )
-    expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('this is just a string')
+    expect(editor.renderedCanvas.getByTestId('div').innerText).toEqual('this is just a string')
   })
   it('editing expression (in the false clause) and deleting curly braces converts it to string literal', async () => {
     const editor = await renderTestEditorWithCode(
@@ -1666,7 +1666,7 @@ describe('Use the text editor', () => {
         )
       }`),
     )
-    expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('this is just a string')
+    expect(editor.renderedCanvas.getByTestId('div').innerText).toEqual('this is just a string')
   })
   it('editing a map expression (in the false clause) and deleting curly braces converts it to string literal', async () => {
     const editor = await renderTestEditorWithCode(
@@ -1699,7 +1699,7 @@ describe('Use the text editor', () => {
         )
       }`),
     )
-    expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('this is just a string')
+    expect(editor.renderedCanvas.getByTestId('div').innerText).toEqual('this is just a string')
   })
 
   describe('Editing with steganograpy enabled', () => {
@@ -2152,7 +2152,7 @@ async function enterTextEditMode(
   testId: string = 'div',
 ): Promise<void> {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-  const element = editor.renderedDOM.getByTestId(testId)
+  const element = editor.renderedCanvas.getByTestId(testId)
   const bounds = element.getBoundingClientRect()
   const corner = {
     x: bounds.x + (where === 'start' ? 1 : 50),

@@ -570,6 +570,14 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
   return (
     <div id={CanvasContainerShadowRoot} data-testid={CanvasContainerShadowRoot}>
       <ReactShadowRoot>
+        <style>{`div,
+          span,
+          img,
+          ul,
+          li,
+          label {
+            box-sizing: border-box !important;
+          }`}</style>
         <Helmet>{parse(linkTags)}</Helmet>
         <RerenderUtopiaCtxAtom.Provider value={rerenderUtopiaContextValue}>
           <UtopiaProjectCtxAtom.Provider value={utopiaProjectContextValue}>

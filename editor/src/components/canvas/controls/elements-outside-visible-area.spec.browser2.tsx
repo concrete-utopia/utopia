@@ -101,7 +101,9 @@ describe('elements outside visible area', () => {
 
       await mouseClickAtPoint(indicator, { x: indicatorRect.x + 2, y: indicatorRect.y + 2 })
 
-      const canvasRect = renderResult.renderedDOM.getByTestId('canvas-root').getBoundingClientRect()
+      const canvasRect = renderResult.renderedCanvas
+        .getByTestId('canvas-root')
+        .getBoundingClientRect()
       const elementFrame = MetadataUtils.getFrameInCanvasCoords(
         targetPath,
         renderResult.getEditorState().editor.jsxMetadata,

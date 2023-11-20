@@ -19,7 +19,7 @@ describe('HighlightControl', () => {
     )
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const toHighlight = renderResult.renderedDOM.getByTestId('target-to-highlight')
+    const toHighlight = renderResult.renderedCanvas.getByTestId('target-to-highlight')
     const toHighlightCenter = getDomRectCenter(toHighlight.getBoundingClientRect())
     await mouseMoveToPoint(canvasControlsLayer, toHighlightCenter)
     const highlightControls = renderResult.renderedDOM.queryAllByTestId('highlight-control')
@@ -40,7 +40,7 @@ describe('HighlightControl', () => {
     )
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const toHighlight = renderResult.renderedDOM.getByTestId('target-to-highlight')
+    const toHighlight = renderResult.renderedCanvas.getByTestId('target-to-highlight')
     const toHighlightCenter = getDomRectCenter(toHighlight.getBoundingClientRect())
     await mouseMoveToPoint(canvasControlsLayer, toHighlightCenter)
     await mouseClickAtPoint(canvasControlsLayer, toHighlightCenter)

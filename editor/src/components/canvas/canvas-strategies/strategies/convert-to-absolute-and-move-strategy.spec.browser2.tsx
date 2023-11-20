@@ -674,7 +674,7 @@ describe('Convert to Absolute', () => {
     )
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const element = renderResult.renderedDOM.getByTestId('child')
+    const element = renderResult.renderedCanvas.getByTestId('child')
     const elementBounds = element.getBoundingClientRect()
 
     await mouseDownAtPoint(
@@ -738,7 +738,7 @@ describe('Convert to absolute/escape hatch', () => {
       'await-first-dom-report',
     )
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const element = renderResult.renderedDOM.getByTestId('child1')
+    const element = renderResult.renderedCanvas.getByTestId('child1')
     const elementBounds = element.getBoundingClientRect()
 
     await mouseDownAtPoint(
@@ -802,7 +802,7 @@ describe('Convert to absolute/escape hatch', () => {
       'await-first-dom-report',
     )
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const element = renderResult.renderedDOM.getByTestId('child')
+    const element = renderResult.renderedCanvas.getByTestId('child')
     const elementBounds = element.getBoundingClientRect()
 
     await mouseDownAtPoint(
@@ -849,7 +849,7 @@ describe('Convert to absolute/escape hatch', () => {
       )
 
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-      const element = renderResult.renderedDOM.getByTestId('child1')
+      const element = renderResult.renderedCanvas.getByTestId('child1')
       const elementBounds = element.getBoundingClientRect()
 
       await mouseDownAtPoint(
@@ -909,7 +909,7 @@ describe('Convert to absolute/escape hatch', () => {
       )
 
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-      const element = renderResult.renderedDOM.getByTestId('child1')
+      const element = renderResult.renderedCanvas.getByTestId('child1')
       const elementBounds = element.getBoundingClientRect()
 
       await mouseDownAtPoint(
@@ -972,7 +972,7 @@ describe('Convert to absolute/escape hatch', () => {
         )
 
         const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-        const element = renderResult.renderedDOM.getByTestId('child1')
+        const element = renderResult.renderedCanvas.getByTestId('child1')
         const elementBounds = element.getBoundingClientRect()
 
         await mouseDownAtPoint(
@@ -1034,7 +1034,7 @@ describe('Convert to absolute/escape hatch', () => {
         await renderResult.dispatch([selectComponents([groupElementPath], false)], true)
 
         const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-        const element = renderResult.renderedDOM.getByTestId('child2')
+        const element = renderResult.renderedCanvas.getByTestId('child2')
         const elementBounds = element.getBoundingClientRect()
 
         await mouseDownAtPoint(
@@ -1135,7 +1135,7 @@ describe('Convert to absolute/escape hatch', () => {
 
       await selectComponentsForTest(initialEditor, [targetElement])
 
-      const viewBounds = initialEditor.renderedDOM.getByTestId('bbb').getBoundingClientRect()
+      const viewBounds = initialEditor.renderedCanvas.getByTestId('bbb').getBoundingClientRect()
 
       const canvas = initialEditor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -1248,7 +1248,7 @@ describe('Convert to absolute/escape hatch', () => {
 
       await selectComponentsForTest(initialEditor, [targetElement])
 
-      const viewBounds = initialEditor.renderedDOM.getByTestId('bbb').getBoundingClientRect()
+      const viewBounds = initialEditor.renderedCanvas.getByTestId('bbb').getBoundingClientRect()
 
       const canvas = initialEditor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -1357,7 +1357,7 @@ describe('Convert to absolute/escape hatch', () => {
 
       await selectComponentsForTest(initialEditor, [targetElement])
 
-      const viewBounds = initialEditor.renderedDOM.getByTestId('bbb').getBoundingClientRect()
+      const viewBounds = initialEditor.renderedCanvas.getByTestId('bbb').getBoundingClientRect()
 
       const canvas = initialEditor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -1418,7 +1418,7 @@ describe('Convert to absolute/escape hatch', () => {
 
       await selectComponentsForTest(initialEditor, [targetElement])
 
-      const viewBounds = initialEditor.renderedDOM.getByTestId('bbb').getBoundingClientRect()
+      const viewBounds = initialEditor.renderedCanvas.getByTestId('bbb').getBoundingClientRect()
 
       const canvas = initialEditor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -1486,7 +1486,7 @@ describe('Convert to absolute/escape hatch', () => {
 
       await selectComponentsForTest(initialEditor, [targetElement])
 
-      const viewBounds = initialEditor.renderedDOM.getByTestId('bbb').getBoundingClientRect()
+      const viewBounds = initialEditor.renderedCanvas.getByTestId('bbb').getBoundingClientRect()
 
       const canvas = initialEditor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -1591,7 +1591,7 @@ describe('Escape hatch strategy on awkward project', () => {
 
     await selectComponentsForTest(renderResult, [targetElement])
 
-    const targetBounds = renderResult.renderedDOM.getByTestId('drag-me').getBoundingClientRect()
+    const targetBounds = renderResult.renderedCanvas.getByTestId('drag-me').getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
     await mouseDragFromPointWithDelta(

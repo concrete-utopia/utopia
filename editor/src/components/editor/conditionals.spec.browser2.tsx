@@ -307,8 +307,8 @@ describe('conditionals', () => {
         await renderResult.dispatch([deleteSelected()], true)
       })
 
-      const divAAA = (await renderResult.renderedDOM.findByTestId('aaa')).getBoundingClientRect()
-      const divFFF = (await renderResult.renderedDOM.findByTestId('fff')).getBoundingClientRect()
+      const divAAA = (await renderResult.renderedCanvas.findByTestId('aaa')).getBoundingClientRect()
+      const divFFF = (await renderResult.renderedCanvas.findByTestId('fff')).getBoundingClientRect()
       // doing this dance because of possible font render discrepancies between local and CI
       expect(divFFF.height).toBeGreaterThanOrEqual(18)
       expect(divFFF.height).toBeLessThanOrEqual(20)
@@ -1106,7 +1106,7 @@ describe('conditionals', () => {
         'await-first-dom-report',
       )
 
-      const innerMostDiv = editor.renderedDOM.getByTestId('find-me')
+      const innerMostDiv = editor.renderedCanvas.getByTestId('find-me')
       expect(innerMostDiv.textContent?.trim()).toEqual('It works')
     })
   })

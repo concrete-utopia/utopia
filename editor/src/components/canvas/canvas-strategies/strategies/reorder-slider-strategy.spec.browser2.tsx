@@ -369,7 +369,7 @@ describe('Reorder Slider Strategy Control', () => {
     )
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+    const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
     const targetElementRect = targetElement.getBoundingClientRect()
     const targetElementCenter = {
       x: targetElementRect.x + targetElementRect.width / 2,
@@ -401,7 +401,7 @@ describe('Reorder Slider Strategy Control', () => {
     )
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+    const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
     const targetElementRect = targetElement.getBoundingClientRect()
     const targetElementCenter = {
       x: targetElementRect.x + targetElementRect.width / 2,

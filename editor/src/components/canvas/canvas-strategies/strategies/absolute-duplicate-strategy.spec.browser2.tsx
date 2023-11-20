@@ -36,7 +36,7 @@ async function dragElement(
   modifiers: Modifiers,
   midDragCallback: () => void = NO_OP,
 ): Promise<void> {
-  const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
+  const targetElement = renderResult.renderedCanvas.getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
   const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -212,7 +212,7 @@ describe('Absolute Duplicate Strategy', () => {
 
         const dragDelta = windowPoint({ x: 40, y: -25 })
 
-        const targetElement = renderResult.renderedDOM.getByTestId('child')
+        const targetElement = renderResult.renderedCanvas.getByTestId('child')
         const targetElementBounds = targetElement.getBoundingClientRect()
         const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 

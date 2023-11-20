@@ -270,7 +270,7 @@ describe('image drag and drop', () => {
         y: fileItemBounds.y + fileItemBounds.height / 2,
       }
 
-      const target = editor.renderedDOM.getByTestId('scene')
+      const target = editor.renderedCanvas.getByTestId('scene')
       const targetBounds = target.getBoundingClientRect()
 
       const endPoint = {
@@ -357,7 +357,7 @@ describe('image drag and drop', () => {
         y: fileItemBounds.y + fileItemBounds.height / 2,
       }
 
-      const target = editor.renderedDOM.getByTestId('scene')
+      const target = editor.renderedCanvas.getByTestId('scene')
       const targetBounds = target.getBoundingClientRect()
 
       const canvasPoint = {
@@ -419,7 +419,7 @@ describe('image drag and drop', () => {
 
       const file = await makeImageFile(imgBase641x1, 'hello.png')
 
-      const canvasScene = editor.renderedDOM.getByTestId('scene')
+      const canvasScene = editor.renderedCanvas.getByTestId('scene')
       const canvasSceneBounds = canvasScene.getBoundingClientRect()
 
       const canvasPoint = {
@@ -482,7 +482,7 @@ describe('image drag and drop', () => {
 
     const file = await makeImageFile(imgBase641x1, 'chucknorris.png')
 
-    const target = editor.renderedDOM.getByTestId('scene')
+    const target = editor.renderedCanvas.getByTestId('scene')
     const targetBounds = target.getBoundingClientRect()
 
     const endPoint = {
@@ -558,7 +558,7 @@ export var storyboard = (
 
     const file = await makeImageFile(imgBase642x2, 'chucknorris@2x.png')
 
-    const target = editor.renderedDOM.getByTestId('scene')
+    const target = editor.renderedCanvas.getByTestId('scene')
     const targetBounds = target.getBoundingClientRect()
 
     const endPoint = {
@@ -639,7 +639,7 @@ export var storyboard = (
 
     const file = await makeImageFile(imgBase641x1, 'stuff.png')
 
-    const target = editor.renderedDOM.getByTestId('scene')
+    const target = editor.renderedCanvas.getByTestId('scene')
     const targetBounds = target.getBoundingClientRect()
 
     const endPoint = {
@@ -705,7 +705,7 @@ export var storyboard = (
 
     const file = await makeImageFile(imgBase641x1, 'multiplied@2x.png')
 
-    const target = editor.renderedDOM.getByTestId('scene')
+    const target = editor.renderedCanvas.getByTestId('scene')
     const targetBounds = target.getBoundingClientRect()
 
     const endPoint = {
@@ -776,7 +776,7 @@ export var storyboard = (
       await makeImageFile(imgBase641x1, 'brucelee.png'),
     ]
 
-    const target = editor.renderedDOM.getByTestId('scene')
+    const target = editor.renderedCanvas.getByTestId('scene')
     const targetBounds = target.getBoundingClientRect()
 
     const endPoint = {
@@ -874,7 +874,7 @@ export var storyboard = (
       await makeImageFile(imgBase641x1, 'brucelee.png'),
     ]
 
-    const target = editor.renderedDOM.getByTestId('scene')
+    const target = editor.renderedCanvas.getByTestId('scene')
     const targetBounds = target.getBoundingClientRect()
 
     const endPoint = {

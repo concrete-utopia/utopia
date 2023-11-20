@@ -479,7 +479,7 @@ describe('Smart Convert To Flex', () => {
     )
 
     const { top: firstChildTopBeforeFlexConversion, left: firstChildLeftBeforeFlexConversion } =
-      renderResult.renderedDOM.getByTestId('first-child').style
+      renderResult.renderedCanvas.getByTestId('first-child').style
 
     const containerPath = EP.appendNewElementPath(TestScenePath, ['root', 'zero-sized'])
     await selectComponentsForTest(renderResult, [containerPath])
@@ -1512,7 +1512,7 @@ describe('Smart convert to flex centered layout', () => {
     await expectSingleUndo2Saves(editor, () => pressShiftA(editor))
 
     const { alignItems, justifyContent, flexDirection } =
-      editor.renderedDOM.getByTestId('container').style
+      editor.renderedCanvas.getByTestId('container').style
     expect({ alignItems, justifyContent, flexDirection }).toEqual({
       alignItems: 'center',
       justifyContent: 'flex-start',
@@ -1626,7 +1626,7 @@ describe('Smart convert to flex centered layout', () => {
     await expectSingleUndo2Saves(editor, () => pressShiftA(editor))
 
     const { alignItems, justifyContent, flexDirection } =
-      editor.renderedDOM.getByTestId('container').style
+      editor.renderedCanvas.getByTestId('container').style
     expect({ alignItems, justifyContent, flexDirection }).toEqual({
       alignItems: 'center',
       justifyContent: 'flex-start',

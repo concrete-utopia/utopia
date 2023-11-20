@@ -551,7 +551,7 @@ export function setFeatureForUnitTestsUseInDescribeBlockOnly(
 }
 
 function getElementsWithTestId(editor: EditorRenderResult, testId: string): HTMLElement[] {
-  return editor.renderedDOM.queryAllByTestId(testId)
+  return editor.renderedCanvas.queryAllByTestId(testId)
 }
 
 export const expectElementWithTestIdToBeRendered = (
@@ -581,7 +581,7 @@ export function boundingClientRectToCanvasRectangle(
   result: EditorRenderResult,
   elementBounds: DOMRect,
 ) {
-  const canvasRootContainer = result.renderedDOM.getByTestId(CanvasContainerID)
+  const canvasRootContainer = result.renderedCanvas.getByTestId(CanvasContainerID)
   const canvasScale = result.getEditorState().editor.canvas.scale
   const canvasRootRectangle = getCanvasRectangleFromElement(
     canvasRootContainer,

@@ -2435,8 +2435,8 @@ describe('inspector tests with real metadata', () => {
   describe('border radius controls', () => {
     it('applied border radius to the selected element', async () => {
       const editor = await renderTestEditorWithCode(projectWithTwoDivs, 'await-first-dom-report')
-      const one = editor.renderedDOM.getByTestId('one')
-      const two = editor.renderedDOM.getByTestId('two')
+      const one = editor.renderedCanvas.getByTestId('one')
+      const two = editor.renderedCanvas.getByTestId('two')
 
       await selectComponentsForTest(editor, [EP.fromString('sb/one')])
       await selectComponentsForTest(editor, [EP.fromString('sb/two')])
@@ -2535,7 +2535,7 @@ describe('inspector tests with real metadata', () => {
         'await-first-dom-report',
       )
 
-      expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+      expect(renderResult.renderedCanvas.getByTestId('bbb')).not.toBeNull()
 
       const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
       const bbbPath = EP.appendToPath(targetPath, 'bbb')
@@ -2584,8 +2584,8 @@ describe('inspector tests with real metadata', () => {
           [targetPath],
         )
 
-        expect(renderResult.renderedDOM.getByTestId('ccc')).not.toBeNull()
-        expect(renderResult.renderedDOM.queryByTestId('bbb')).toBeNull()
+        expect(renderResult.renderedCanvas.getByTestId('ccc')).not.toBeNull()
+        expect(renderResult.renderedCanvas.queryByTestId('bbb')).toBeNull()
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(`
@@ -2637,8 +2637,8 @@ describe('inspector tests with real metadata', () => {
           targetPath,
         ])
 
-        expect(renderResult.renderedDOM.queryByTestId('ccc')).toBeNull()
-        expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+        expect(renderResult.renderedCanvas.queryByTestId('ccc')).toBeNull()
+        expect(renderResult.renderedCanvas.getByTestId('bbb')).not.toBeNull()
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(`
@@ -2692,8 +2692,8 @@ describe('inspector tests with real metadata', () => {
           targetPath,
         ])
 
-        expect(renderResult.renderedDOM.queryByTestId('ccc')).toBeNull()
-        expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+        expect(renderResult.renderedCanvas.queryByTestId('ccc')).toBeNull()
+        expect(renderResult.renderedCanvas.getByTestId('bbb')).not.toBeNull()
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(`
@@ -2746,8 +2746,8 @@ describe('inspector tests with real metadata', () => {
           targetPath,
         ])
 
-        expect(renderResult.renderedDOM.queryByTestId('ccc')).toBeNull()
-        expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+        expect(renderResult.renderedCanvas.queryByTestId('ccc')).toBeNull()
+        expect(renderResult.renderedCanvas.getByTestId('bbb')).not.toBeNull()
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(`
@@ -2812,7 +2812,7 @@ describe('inspector tests with real metadata', () => {
         'await-first-dom-report',
       )
 
-      expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+      expect(renderResult.renderedCanvas.getByTestId('bbb')).not.toBeNull()
 
       const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
       await act(async () => {
@@ -2871,8 +2871,8 @@ describe('inspector tests with real metadata', () => {
         targetPath,
       ])
 
-      expect(renderResult.renderedDOM.getByTestId('ccc')).not.toBeNull()
-      expect(renderResult.renderedDOM.queryByTestId('bbb')).toBeNull()
+      expect(renderResult.renderedCanvas.getByTestId('ccc')).not.toBeNull()
+      expect(renderResult.renderedCanvas.queryByTestId('bbb')).toBeNull()
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(`
@@ -2917,7 +2917,7 @@ describe('inspector tests with real metadata', () => {
         'await-first-dom-report',
       )
 
-      expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+      expect(renderResult.renderedCanvas.getByTestId('bbb')).not.toBeNull()
 
       const firstConditional = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional1'])
       const secondConditional = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional2'])
@@ -2931,10 +2931,10 @@ describe('inspector tests with real metadata', () => {
         await clickButtonAndSelectTarget(renderResult, ConditionalsControlSectionOpenTestId, [
           firstConditional,
         ])
-        expect(renderResult.renderedDOM.queryByTestId('bbb')).not.toBeNull()
-        expect(renderResult.renderedDOM.queryByTestId('ccc')).toBeNull()
-        expect(renderResult.renderedDOM.queryByTestId('ddd')).not.toBeNull()
-        expect(renderResult.renderedDOM.queryByTestId('eee')).toBeNull()
+        expect(renderResult.renderedCanvas.queryByTestId('bbb')).not.toBeNull()
+        expect(renderResult.renderedCanvas.queryByTestId('ccc')).toBeNull()
+        expect(renderResult.renderedCanvas.queryByTestId('ddd')).not.toBeNull()
+        expect(renderResult.renderedCanvas.queryByTestId('eee')).toBeNull()
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(`
@@ -2974,10 +2974,10 @@ describe('inspector tests with real metadata', () => {
           bothConditionals,
         )
 
-        expect(renderResult.renderedDOM.queryByTestId('bbb')).toBeNull()
-        expect(renderResult.renderedDOM.queryByTestId('ccc')).not.toBeNull()
-        expect(renderResult.renderedDOM.queryByTestId('ddd')).toBeNull()
-        expect(renderResult.renderedDOM.queryByTestId('eee')).not.toBeNull()
+        expect(renderResult.renderedCanvas.queryByTestId('bbb')).toBeNull()
+        expect(renderResult.renderedCanvas.queryByTestId('ccc')).not.toBeNull()
+        expect(renderResult.renderedCanvas.queryByTestId('ddd')).toBeNull()
+        expect(renderResult.renderedCanvas.queryByTestId('eee')).not.toBeNull()
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(`
@@ -3012,10 +3012,10 @@ describe('inspector tests with real metadata', () => {
           bothConditionals,
         )
 
-        expect(renderResult.renderedDOM.queryByTestId('bbb')).not.toBeNull()
-        expect(renderResult.renderedDOM.queryByTestId('ccc')).toBeNull()
-        expect(renderResult.renderedDOM.queryByTestId('ddd')).not.toBeNull()
-        expect(renderResult.renderedDOM.queryByTestId('eee')).toBeNull()
+        expect(renderResult.renderedCanvas.queryByTestId('bbb')).not.toBeNull()
+        expect(renderResult.renderedCanvas.queryByTestId('ccc')).toBeNull()
+        expect(renderResult.renderedCanvas.queryByTestId('ddd')).not.toBeNull()
+        expect(renderResult.renderedCanvas.queryByTestId('eee')).toBeNull()
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(`
@@ -3059,7 +3059,7 @@ describe('inspector tests with real metadata', () => {
         'await-first-dom-report',
       )
 
-      expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+      expect(renderResult.renderedCanvas.getByTestId('bbb')).not.toBeNull()
 
       const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
       await act(async () => {
@@ -3088,7 +3088,7 @@ describe('inspector tests with real metadata', () => {
         'await-first-dom-report',
       )
 
-      expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+      expect(renderResult.renderedCanvas.getByTestId('bbb')).not.toBeNull()
 
       const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
 
@@ -3103,8 +3103,8 @@ describe('inspector tests with real metadata', () => {
       )
       await renderResult.getDispatchFollowUpActionsFinished()
 
-      expect(renderResult.renderedDOM.queryByTestId('bbb')).toBeNull()
-      expect(renderResult.renderedDOM.queryByTestId('ccc')).not.toBeNull()
+      expect(renderResult.renderedCanvas.queryByTestId('bbb')).toBeNull()
+      expect(renderResult.renderedCanvas.queryByTestId('ccc')).not.toBeNull()
 
       const expressionElement = renderResult.renderedDOM.getByTestId(
         ConditionalsControlSectionExpressionTestId,
@@ -3129,7 +3129,7 @@ describe('inspector tests with real metadata', () => {
         'await-first-dom-report',
       )
 
-      expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+      expect(renderResult.renderedCanvas.getByTestId('bbb')).not.toBeNull()
 
       const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
 
@@ -3175,7 +3175,7 @@ describe('inspector tests with real metadata', () => {
         'await-first-dom-report',
       )
 
-      expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+      expect(renderResult.renderedCanvas.getByTestId('bbb')).not.toBeNull()
 
       const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
       await act(async () => {

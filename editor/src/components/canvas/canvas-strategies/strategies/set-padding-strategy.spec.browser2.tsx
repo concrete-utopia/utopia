@@ -65,7 +65,7 @@ describe('Padding resize strategy', () => {
     )
 
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const div = editor.renderedDOM.getByTestId('mydiv')
+    const div = editor.renderedCanvas.getByTestId('mydiv')
     const divBounds = div.getBoundingClientRect()
     const divCorner = {
       x: divBounds.x + 50,
@@ -112,7 +112,7 @@ describe('Padding resize strategy', () => {
     )
 
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const div = editor.renderedDOM.getByTestId('mydiv')
+    const div = editor.renderedCanvas.getByTestId('mydiv')
     const divBounds = div.getBoundingClientRect()
     const divCorner = {
       x: divBounds.x + 25,
@@ -152,7 +152,7 @@ describe('Padding resize strategy', () => {
     )
 
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const div = editor.renderedDOM.getByTestId('mydiv')
+    const div = editor.renderedCanvas.getByTestId('mydiv')
     const divBounds = div.getBoundingClientRect()
     const divCorner = {
       x: divBounds.x + 25,
@@ -187,7 +187,7 @@ describe('Padding resize strategy', () => {
     )
 
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const div = editor.renderedDOM.getByTestId('mydiv')
+    const div = editor.renderedCanvas.getByTestId('mydiv')
     const divBounds = div.getBoundingClientRect()
     const divCorner = {
       x: divBounds.x + 1,
@@ -218,7 +218,7 @@ describe('Padding resize strategy', () => {
     )
 
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const div = editor.renderedDOM.getByTestId('mydiv')
+    const div = editor.renderedCanvas.getByTestId('mydiv')
     const divBounds = div.getBoundingClientRect()
     const divCorner = {
       x: divBounds.x + 5,
@@ -267,7 +267,7 @@ describe('Padding resize strategy', () => {
     )
 
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const div = editor.renderedDOM.getByTestId('mydiv')
+    const div = editor.renderedCanvas.getByTestId('mydiv')
     const divBounds = div.getBoundingClientRect()
     const divCorner = {
       x: divBounds.x + 5,
@@ -298,7 +298,7 @@ describe('Padding resize strategy', () => {
     )
 
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const div = editor.renderedDOM.getByTestId('mydiv')
+    const div = editor.renderedCanvas.getByTestId('mydiv')
     const { x, y, width, height } = div.getBoundingClientRect()
     const divCenter = {
       x: x + width / 2,
@@ -848,7 +848,7 @@ async function testPaddingResizeForEdge(
   mode: PaddingAdjustMode = 'individual',
 ) {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-  const div = editor.renderedDOM.getByTestId('mydiv')
+  const div = editor.renderedCanvas.getByTestId('mydiv')
   const divBounds = div.getBoundingClientRect()
   const divCorner = {
     x: divBounds.x + 5,
@@ -1009,7 +1009,7 @@ function formatPaddingLonghandValues(padding: Partial<CSSPaddingMappedValues<str
 
 async function clickOnMyDiv(editor: EditorRenderResult) {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-  const div = editor.renderedDOM.getByTestId('mydiv')
+  const div = editor.renderedCanvas.getByTestId('mydiv')
   const divBounds = div.getBoundingClientRect()
   const divCorner = {
     x: divBounds.x + 25,

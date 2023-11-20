@@ -248,7 +248,7 @@ const ViewTestId = 'view'
 
 async function selectView(editor: EditorRenderResult, testId: string): Promise<HTMLElement> {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-  const view = editor.renderedDOM.getByTestId(testId)
+  const view = editor.renderedCanvas.getByTestId(testId)
   const viewBounds = view.getBoundingClientRect()
   const viewCorner = {
     x: viewBounds.x + 5,
@@ -261,7 +261,7 @@ async function selectView(editor: EditorRenderResult, testId: string): Promise<H
 }
 
 async function clickResizeTo(editor: EditorRenderResult, testId: string) {
-  const resizeToFitControl = editor.renderedDOM.getByTestId(testId)
+  const resizeToFitControl = editor.renderedCanvas.getByTestId(testId)
 
   await mouseClickAtPoint(resizeToFitControl, { x: 2, y: 2 })
 }

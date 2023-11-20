@@ -168,7 +168,7 @@ const testDrawToInsertImageAspectRatio = async (inputCode: string, expectedCode:
   const renderResult = await setupInsertTest(makeTestProjectCodeWithSnippet(inputCode))
   await enterInsertModeFromInsertMenu(renderResult, 'img')
 
-  const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+  const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
   const targetElementBounds = targetElement.getBoundingClientRect()
   const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -253,7 +253,7 @@ async function drawToInsertTestMaybeAddsFlexGrow(
   const renderResult = await setupInsertTest(flexElementWithChildren())
   await enterInsertModeFromInsertMenu(renderResult)
 
-  const targetElement = renderResult.renderedDOM.getByTestId('bb3')
+  const targetElement = renderResult.renderedCanvas.getByTestId('bb3')
   const targetElementBounds = targetElement.getBoundingClientRect()
   const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -335,7 +335,7 @@ describe('draw-to-insert', () => {
         const renderResult = await setupInsertTest(inputCode)
         await enterInsertModeFromInsertMenu(renderResult)
 
-        const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+        const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
         const targetElementBounds = targetElement.getBoundingClientRect()
         const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -459,7 +459,7 @@ describe('draw-to-insert', () => {
           'false-branch',
         ])
 
-        const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+        const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
         const targetElementBounds = targetElement.getBoundingClientRect()
         const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -556,7 +556,7 @@ describe('draw-to-insert', () => {
         const renderResult = await setupInsertTest(inputCode)
         await enterInsertModeFromInsertMenu(renderResult, 'Fragment')
 
-        const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+        const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
         const targetElementBounds = targetElement.getBoundingClientRect()
         const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -641,7 +641,7 @@ describe('draw-to-insert', () => {
       const renderResult = await setupInsertTest(inputCode)
       await enterInsertModeFromInsertMenu(renderResult)
 
-      const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+      const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -719,7 +719,7 @@ describe('draw-to-insert', () => {
 
     describe('Click to insert with default size', () => {
       async function runClickToInsertTest(renderResult: EditorRenderResult) {
-        const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+        const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
         const targetElementBounds = targetElement.getBoundingClientRect()
         const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -834,7 +834,7 @@ describe('draw-to-insert', () => {
       )
       await enterInsertModeFromInsertMenu(renderResult)
 
-      const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+      const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -899,7 +899,7 @@ describe('draw-to-insert', () => {
       const renderResult = await setupInsertTest(inputCode)
       await enterInsertModeFromInsertMenu(renderResult)
 
-      const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+      const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -978,7 +978,7 @@ describe('draw-to-insert', () => {
     it('when drag ends outside the canvas in insert mode, it is cancelled', async () => {
       const renderResult = await setupInsertTest(inputCode)
 
-      const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+      const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -1026,7 +1026,7 @@ describe('draw-to-insert', () => {
       const renderResult = await setupInsertTest(testCode)
       await enterInsertModeFromInsertMenu(renderResult)
 
-      const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+      const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -1110,7 +1110,7 @@ describe('draw-to-insert', () => {
       const renderResult = await setupInsertTest(testCode)
       await enterInsertModeFromInsertMenu(renderResult)
 
-      const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+      const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -1232,7 +1232,7 @@ describe('draw-to-insert', () => {
       const renderResult = await setupInsertTest(inputWithFragments)
       await enterInsertModeFromInsertMenu(renderResult)
 
-      const targetElement = renderResult.renderedDOM.getByTestId('aaa')
+      const targetElement = renderResult.renderedCanvas.getByTestId('aaa')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -1370,7 +1370,7 @@ describe('draw-to-insert', () => {
       const renderResult = await setupInsertTest(inputCode)
       await enterInsertModeFromInsertMenu(renderResult)
 
-      const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+      const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -1448,7 +1448,7 @@ describe('draw-to-insert', () => {
       const renderResult = await setupInsertTest(inputCode)
       await enterInsertModeFromInsertMenu(renderResult)
 
-      const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+      const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -1562,7 +1562,7 @@ describe('draw-to-insert', () => {
       const renderResult = await setupInsertTest(inputCode)
       await enterInsertModeFromInsertMenu(renderResult)
 
-      const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+      const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -1645,7 +1645,7 @@ describe('draw-to-insert', () => {
       const renderResult = await setupInsertTest(inputCode)
       await enterInsertModeFromInsertMenu(renderResult)
 
-      const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+      const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -1734,7 +1734,7 @@ describe('draw-to-insert', () => {
         'skip7',
         'false-branch',
       ])
-      const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+      const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -1828,7 +1828,7 @@ describe('draw-to-insert', () => {
       const renderResult = await setupInsertTest(inputCode)
       await enterInsertModeFromInsertMenu(renderResult)
 
-      const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+      const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -1912,7 +1912,7 @@ describe('draw-to-insert', () => {
       const renderResult = await setupInsertTest(inputCode)
       await enterInsertModeFromInsertMenu(renderResult)
 
-      const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+      const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -1990,7 +1990,7 @@ describe('draw-to-insert', () => {
       const renderResult = await setupInsertTest(inputCode)
       await enterInsertModeFromInsertMenu(renderResult)
 
-      const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+      const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -2075,7 +2075,7 @@ describe('draw-to-insert', () => {
       const renderResult = await setupInsertTest(inputCode)
       await enterInsertModeFromInsertMenu(renderResult)
 
-      const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+      const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -2152,7 +2152,7 @@ describe('draw-to-insert', () => {
       const renderResult = await setupInsertTest(inputCode)
       await enterInsertModeFromInsertMenu(renderResult)
 
-      const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+      const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -2225,7 +2225,7 @@ describe('draw-to-insert', () => {
       const renderResult = await setupInsertTest(inputCode)
       await enterInsertModeFromInsertMenu(renderResult)
 
-      const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+      const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -2309,7 +2309,7 @@ describe('draw-to-insert', () => {
       const renderResult = await setupInsertTest(inputCode)
       await enterInsertModeFromInsertMenu(renderResult)
 
-      const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+      const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -2459,7 +2459,7 @@ describe('draw-to-insert', () => {
       const renderResult = await setupInsertTest(inputCode)
       await enterInsertModeFromInsertMenu(renderResult)
 
-      const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+      const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -2544,7 +2544,7 @@ describe('draw-to-insert', () => {
       const renderResult = await setupInsertTest(inputCode)
       await enterInsertModeFromInsertMenu(renderResult)
 
-      const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+      const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -2625,7 +2625,7 @@ describe('draw-to-insert', () => {
       const renderResult = await setupInsertTest(inputCode)
       await enterInsertModeFromInsertMenu(renderResult)
 
-      const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+      const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -2711,7 +2711,7 @@ describe('draw-to-insert', () => {
       const renderResult = await setupInsertTest(inputCode)
       await enterInsertModeFromInsertMenu(renderResult)
 
-      const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+      const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -2792,7 +2792,7 @@ describe('draw-to-insert', () => {
       const renderResult = await setupInsertTest(inputCode)
       await enterInsertModeFromInsertMenu(renderResult)
 
-      const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+      const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -3101,7 +3101,7 @@ describe('draw-to-insert', () => {
           const renderResult = await setupInsertTest(inputCode)
           await enterInsertModeFromInsertMenu(renderResult)
 
-          const targetElement = renderResult.renderedDOM.getByTestId('bbb')
+          const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
           const targetElementBounds = targetElement.getBoundingClientRect()
           const canvasControlsLayer =
             renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -3193,7 +3193,7 @@ describe('draw-to-insert', () => {
           const renderResult = await setupInsertTest(inputCode)
           await enterInsertModeFromInsertMenu(renderResult)
 
-          const targetElement = renderResult.renderedDOM.getByTestId('aaa')
+          const targetElement = renderResult.renderedCanvas.getByTestId('aaa')
           const targetElementBounds = targetElement.getBoundingClientRect()
           const canvasControlsLayer =
             renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)

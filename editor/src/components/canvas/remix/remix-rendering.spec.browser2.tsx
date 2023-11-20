@@ -333,9 +333,9 @@ describe('Remix content', () => {
 
     await clickRemixLink(renderResult)
 
-    expect(renderResult.renderedDOM.queryAllByText('404 Not Found')).toHaveLength(1) // default 404 page is rendered
+    expect(renderResult.renderedCanvas.queryAllByText('404 Not Found')).toHaveLength(1) // default 404 page is rendered
     expect(
-      renderResult.renderedDOM.queryAllByTestId(LocationDoesNotMatchRoutesTestId),
+      renderResult.renderedCanvas.queryAllByTestId(LocationDoesNotMatchRoutesTestId),
     ).toHaveLength(1) // location not matching warning is rendered
   })
 
@@ -387,7 +387,7 @@ describe('Remix content', () => {
 
     await clickRemixLink(renderResult)
 
-    expect(renderResult.renderedDOM.queryByText('404 Not Found')).not.toBeNull() // default 404 page is rendered
+    expect(renderResult.renderedCanvas.queryByText('404 Not Found')).not.toBeNull() // default 404 page is rendered
 
     // Make a change to a route, which will in turn update the router
     const newRouteTextContent = 'I have changed!'
@@ -412,7 +412,7 @@ describe('Remix content', () => {
     // Ensure we can still hit the back button and navigate back to the previous route, with the new content
     const pathToRemixScene = EP.fromString('sb/remix-scene')
     await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'back')
-    expect(renderResult.renderedDOM.queryByText(newRouteTextContent)).not.toBeNull()
+    expect(renderResult.renderedCanvas.queryByText(newRouteTextContent)).not.toBeNull()
     expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('(home)')
   })
 
@@ -639,7 +639,7 @@ describe('Remix content', () => {
 
     const renderResult = await renderRemixProject(project)
 
-    const targetElement = renderResult.renderedDOM.getByTestId('remix-div')
+    const targetElement = renderResult.renderedCanvas.getByTestId('remix-div')
     const targetElementBounds = targetElement.getBoundingClientRect()
 
     const clickPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
@@ -699,7 +699,7 @@ describe('Remix content', () => {
 
     const renderResult = await renderRemixProject(project)
 
-    const targetElement = renderResult.renderedDOM.getAllByTestId('remix-div')[1]
+    const targetElement = renderResult.renderedCanvas.getAllByTestId('remix-div')[1]
     const targetElementBounds = targetElement.getBoundingClientRect()
 
     const clickPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
@@ -768,7 +768,7 @@ describe('Remix content', () => {
 
     const renderResult = await renderRemixProject(project)
 
-    const targetElement = renderResult.renderedDOM.getByTestId(DraggedElementId)
+    const targetElement = renderResult.renderedCanvas.getByTestId(DraggedElementId)
     const targetElementBounds = targetElement.getBoundingClientRect()
 
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
@@ -1154,11 +1154,11 @@ describe('Remix navigation', () => {
 
     const renderResult = await renderRemixProject(project)
     await switchToLiveMode(renderResult)
-    expect(renderResult.renderedDOM.queryAllByText('Go')).toHaveLength(1)
+    expect(renderResult.renderedCanvas.queryAllByText('Go')).toHaveLength(1)
 
     for (let i = 1; i < 7; i++) {
       await clickRemixLink(renderResult)
-      expect(renderResult.renderedDOM.queryAllByText(`post id: ${i}`)).toHaveLength(1)
+      expect(renderResult.renderedCanvas.queryAllByText(`post id: ${i}`)).toHaveLength(1)
     }
   })
 
@@ -1173,20 +1173,20 @@ describe('Remix navigation', () => {
 
       await clickRemixLink(renderResult)
 
-      expect(renderResult.renderedDOM.queryAllByText(AboutTextContent)).toHaveLength(1)
+      expect(renderResult.renderedCanvas.queryAllByText(AboutTextContent)).toHaveLength(1)
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
 
       await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'back')
 
-      expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
+      expect(renderResult.renderedCanvas.queryAllByText(RootTextContent)).toHaveLength(1)
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixSceneHomeLabel)
 
       await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'forward')
-      expect(renderResult.renderedDOM.queryAllByText(AboutTextContent)).toHaveLength(1)
+      expect(renderResult.renderedCanvas.queryAllByText(AboutTextContent)).toHaveLength(1)
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
 
       await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'home')
-      expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
+      expect(renderResult.renderedCanvas.queryAllByText(RootTextContent)).toHaveLength(1)
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixSceneHomeLabel)
     })
 
@@ -1200,26 +1200,26 @@ describe('Remix navigation', () => {
 
       await clickRemixLink(renderResult)
 
-      expect(renderResult.renderedDOM.queryAllByText(AboutTextContent)).toHaveLength(1)
+      expect(renderResult.renderedCanvas.queryAllByText(AboutTextContent)).toHaveLength(1)
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
 
       await switchToEditMode(renderResult)
 
       // check that switching modes doesn't change the navigation state
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
-      expect(renderResult.renderedDOM.queryAllByText(AboutTextContent)).toHaveLength(1)
+      expect(renderResult.renderedCanvas.queryAllByText(AboutTextContent)).toHaveLength(1)
 
       await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'back')
 
-      expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
+      expect(renderResult.renderedCanvas.queryAllByText(RootTextContent)).toHaveLength(1)
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixSceneHomeLabel)
 
       await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'forward')
-      expect(renderResult.renderedDOM.queryAllByText(AboutTextContent)).toHaveLength(1)
+      expect(renderResult.renderedCanvas.queryAllByText(AboutTextContent)).toHaveLength(1)
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
 
       await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'home')
-      expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
+      expect(renderResult.renderedCanvas.queryAllByText(RootTextContent)).toHaveLength(1)
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixSceneHomeLabel)
     })
 
@@ -1234,10 +1234,10 @@ describe('Remix navigation', () => {
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene2)).toEqual(RemixSceneHomeLabel)
 
       await clickRemixLink(renderResult)
-      const remixScene1 = renderResult.renderedDOM.getByTestId(Remix1TestId)
+      const remixScene1 = renderResult.renderedCanvas.getByTestId(Remix1TestId)
       expect(within(remixScene1).queryAllByText(AboutTextContent)).toHaveLength(1)
 
-      const remixScene2 = renderResult.renderedDOM.getByTestId(Remix2TestId)
+      const remixScene2 = renderResult.renderedCanvas.getByTestId(Remix2TestId)
       expect(within(remixScene2).queryAllByText(RootTextContent)).toHaveLength(1)
 
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene1)).toEqual('/about')
@@ -1254,20 +1254,20 @@ describe('Remix navigation', () => {
 
       await clickRemixLink(renderResult)
 
-      expect(renderResult.renderedDOM.queryAllByText(AboutTextContent)).toHaveLength(1)
+      expect(renderResult.renderedCanvas.queryAllByText(AboutTextContent)).toHaveLength(1)
       expect(getPathInRemixNavigationBar(renderResult)).toEqual('/about')
 
       await navigateWithRemixNavigationBarButton(renderResult, 'back')
 
-      expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
+      expect(renderResult.renderedCanvas.queryAllByText(RootTextContent)).toHaveLength(1)
       expect(getPathInRemixNavigationBar(renderResult)).toEqual(RemixNavigationBarHomeLabel)
 
       await navigateWithRemixNavigationBarButton(renderResult, 'forward')
-      expect(renderResult.renderedDOM.queryAllByText(AboutTextContent)).toHaveLength(1)
+      expect(renderResult.renderedCanvas.queryAllByText(AboutTextContent)).toHaveLength(1)
       expect(getPathInRemixNavigationBar(renderResult)).toEqual('/about')
 
       await navigateWithRemixNavigationBarButton(renderResult, 'home')
-      expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
+      expect(renderResult.renderedCanvas.queryAllByText(RootTextContent)).toHaveLength(1)
       expect(getPathInRemixNavigationBar(renderResult)).toEqual(RemixNavigationBarHomeLabel)
     })
 
@@ -1279,10 +1279,10 @@ describe('Remix navigation', () => {
 
       await clickRemixLink(renderResult)
 
-      expect(renderResult.renderedDOM.queryAllByText(AboutTextContent)).toHaveLength(1)
+      expect(renderResult.renderedCanvas.queryAllByText(AboutTextContent)).toHaveLength(1)
       expect(getPathInRemixNavigationBar(renderResult)).toEqual('/about')
 
-      const remixScene2 = renderResult.renderedDOM.getByTestId(Remix2TestId)
+      const remixScene2 = renderResult.renderedCanvas.getByTestId(Remix2TestId)
       await mouseClickAtPoint(remixScene2, { x: 10, y: 10 })
 
       expect(getPathInRemixNavigationBar(renderResult)).toEqual(RemixNavigationBarHomeLabel)
@@ -1340,7 +1340,7 @@ describe('Editing Remix content', () => {
     await pressKey('3')
     await pressKey('0')
 
-    const titleElement = renderResult.renderedDOM.getByTestId('title')
+    const titleElement = renderResult.renderedCanvas.getByTestId('title')
     expect(titleElement.style.opacity).toEqual('0.3')
   })
 
@@ -1523,19 +1523,19 @@ describe('Editing Remix content', () => {
     await pressKey('3')
     await pressKey('0')
 
-    const titleElement = renderResult.renderedDOM.getByTestId('title')
+    const titleElement = renderResult.renderedCanvas.getByTestId('title')
     expect(titleElement.style.opacity).toEqual('0.3')
   })
 
   it('delete element from remix scene', async () => {
     const renderResult = await renderRemixProject(remixProjectForEditingTests)
 
-    expect(renderResult.renderedDOM.queryAllByTestId(FlexDivTestId)).toHaveLength(1)
+    expect(renderResult.renderedCanvas.queryAllByTestId(FlexDivTestId)).toHaveLength(1)
 
     await clickElementOnCanvasControlsLayer(renderResult, FlexDivTestId)
     await pressKey('Backspace')
 
-    expect(renderResult.renderedDOM.queryAllByTestId(FlexDivTestId)).toHaveLength(0)
+    expect(renderResult.renderedCanvas.queryAllByTestId(FlexDivTestId)).toHaveLength(0)
 
     expect(getPrintedUiJsCode(renderResult.getEditorState(), IndexJSFIlePath))
       .toEqual(`import * as React from 'react'
@@ -2044,7 +2044,7 @@ async function clickElementOnCanvasControlsLayer(
   renderResult: EditorRenderResult,
   testId: string,
 ): Promise<HTMLElement> {
-  const targetElement = renderResult.renderedDOM.getByTestId(testId)
+  const targetElement = renderResult.renderedCanvas.getByTestId(testId)
   const targetElementBounds = targetElement.getBoundingClientRect()
 
   const clickPoint = windowPoint({ x: targetElementBounds.x + 2, y: targetElementBounds.y + 2 })
@@ -2072,13 +2072,13 @@ async function expectRemixSceneToBeRendered(
   editor: EditorRenderResult,
   textContent: string = DefaultRouteTextContent,
 ) {
-  const [remixScene] = await editor.renderedDOM.findAllByTestId(REMIX_SCENE_TESTID)
+  const [remixScene] = await editor.renderedCanvas.findAllByTestId(REMIX_SCENE_TESTID)
   expect(remixScene).toBeDefined()
 
-  const [rootText] = await editor.renderedDOM.findAllByText(RootTextContent)
+  const [rootText] = await editor.renderedCanvas.findAllByText(RootTextContent)
   expect(rootText).toBeDefined()
 
-  const [indexText] = await editor.renderedDOM.findAllByText(textContent)
+  const [indexText] = await editor.renderedCanvas.findAllByText(textContent)
   expect(indexText).toBeDefined()
 }
 
@@ -2089,7 +2089,7 @@ const switchToEditMode = (editor: EditorRenderResult) =>
   editor.dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))], true)
 
 async function clickLinkWithTestId(editor: EditorRenderResult, testId: string) {
-  const targetElement = editor.renderedDOM.queryAllByTestId(testId)[0]
+  const targetElement = editor.renderedCanvas.queryAllByTestId(testId)[0]
   const targetElementBounds = targetElement.getBoundingClientRect()
 
   const clickPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })

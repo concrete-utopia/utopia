@@ -23,7 +23,7 @@ const setupAndDrag = async (
 ): Promise<EditorRenderResult> => {
   const renderResult = await renderTestEditorWithCode(project, 'await-first-dom-report')
 
-  const targetElement = renderResult.renderedDOM.getByTestId(elementId)
+  const targetElement = renderResult.renderedCanvas.getByTestId(elementId)
   const targetElementBounds = targetElement.getBoundingClientRect()
   const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -142,7 +142,7 @@ describe('Relative move', () => {
 
         const renderResult = await renderTestEditorWithCode(project, 'await-first-dom-report')
 
-        const targetElement = renderResult.renderedDOM.getByTestId('bar')
+        const targetElement = renderResult.renderedCanvas.getByTestId('bar')
         const targetElementBounds = targetElement.getBoundingClientRect()
         const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 

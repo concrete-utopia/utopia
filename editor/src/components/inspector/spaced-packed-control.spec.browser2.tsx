@@ -25,7 +25,7 @@ describe('spaced - packed control', () => {
     const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString(`${StoryboardId}/${SceneId}/${ParentId}`)])
 
-    const div = editor.renderedDOM.getByTestId(ParentId)
+    const div = editor.renderedCanvas.getByTestId(ParentId)
     expect(div.style.gap).toEqual('48px')
 
     await expectSingleUndo2Saves(editor, async () => {
@@ -39,7 +39,7 @@ describe('spaced - packed control', () => {
     const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString(`${StoryboardId}/${SceneId}/${ParentId}`)])
 
-    const div = editor.renderedDOM.getByTestId(ParentId)
+    const div = editor.renderedCanvas.getByTestId(ParentId)
 
     await expectSingleUndo2Saves(editor, () => clickButton(editor, SpacedLabelCopy))
     await expectSingleUndo2Saves(editor, () => clickButton(editor, PackedLabelCopy))

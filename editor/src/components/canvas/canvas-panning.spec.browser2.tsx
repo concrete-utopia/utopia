@@ -44,7 +44,7 @@ describe(`pan while 'space' is held down`, () => {
   it(`start drag first, the drag interaction is still active`, async () => {
     const renderResult = await createExampleProject()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const cardInnerDiv = renderResult.renderedDOM.getByTestId('card-inner-div')
+    const cardInnerDiv = renderResult.renderedCanvas.getByTestId('card-inner-div')
     const cardInnerDivBounds = cardInnerDiv.getBoundingClientRect()
     const startingCanvasPosition = renderResult.getEditorState().editor.canvas.roundedCanvasOffset
 

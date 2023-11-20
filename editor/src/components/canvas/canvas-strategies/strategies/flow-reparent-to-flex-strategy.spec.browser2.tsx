@@ -23,7 +23,7 @@ async function dragElement(
   dragDelta: WindowPoint,
   modifiers: Modifiers,
 ): Promise<void> {
-  const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
+  const targetElement = renderResult.renderedCanvas.getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
   const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -156,13 +156,13 @@ describe('Flow Reparent To Flex Strategy', () => {
       'await-first-dom-report',
     )
 
-    const targetFlowParent = await renderResult.renderedDOM.findByTestId('flexparent1')
+    const targetFlowParent = await renderResult.renderedCanvas.findByTestId('flexparent1')
     const targetFlowParentRect = targetFlowParent.getBoundingClientRect()
     const targetFlowParentEnd = {
       x: targetFlowParentRect.x + targetFlowParentRect.width / 2,
       y: targetFlowParentRect.y + targetFlowParentRect.height - 15,
     }
-    const flowChildToReparent = await renderResult.renderedDOM.findByTestId('flowchild3')
+    const flowChildToReparent = await renderResult.renderedCanvas.findByTestId('flowchild3')
     const flowChildToReparentRect = flowChildToReparent.getBoundingClientRect()
     const flowChildToReparentCenter = {
       x: flowChildToReparentRect.x + flowChildToReparentRect.width / 2,

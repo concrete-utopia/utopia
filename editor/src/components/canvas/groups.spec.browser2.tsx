@@ -404,7 +404,7 @@ describe('Groups', () => {
       // Wrap them in a Group.
       await renderResult.dispatch(selectComponents(testValuePaths, false), true)
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-      const element = renderResult.renderedDOM.getByTestId('div-rect-1')
+      const element = renderResult.renderedCanvas.getByTestId('div-rect-1')
       const elementBounds = element.getBoundingClientRect()
       await openContextMenuAndClickOnItem(
         renderResult,
@@ -517,7 +517,7 @@ describe('Groups', () => {
 
       // Wrap it in a Group.
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-      const element = renderResult.renderedDOM.getByTestId('then-div')
+      const element = renderResult.renderedCanvas.getByTestId('then-div')
       const elementBounds = element.getBoundingClientRect()
       await openContextMenuAndClickOnItem(
         renderResult,
@@ -584,7 +584,7 @@ describe('Groups', () => {
 
       // Wrap it in a Group.
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-      const element = renderResult.renderedDOM.getByTestId('target-div')
+      const element = renderResult.renderedCanvas.getByTestId('target-div')
       const elementBounds = element.getBoundingClientRect()
       FOR_TESTS_setNextGeneratedUid('group')
       await openContextMenuAndClickOnItem(
@@ -681,7 +681,7 @@ describe('Groups', () => {
 
       // Wrap it in a Group.
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-      const element = renderResult.renderedDOM.getByTestId('child-1')
+      const element = renderResult.renderedCanvas.getByTestId('child-1')
       const elementBounds = element.getBoundingClientRect()
       FOR_TESTS_setNextGeneratedUid('group')
       await openContextMenuAndClickOnItem(
@@ -821,7 +821,7 @@ describe('Groups', () => {
 
       // Wrap it in a Group.
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-      const element = renderResult.renderedDOM.getByTestId('child-2')
+      const element = renderResult.renderedCanvas.getByTestId('child-2')
       const elementBounds = element.getBoundingClientRect()
       FOR_TESTS_setNextGeneratedUid('group')
       await openContextMenuAndClickOnItem(
@@ -965,7 +965,7 @@ describe('Groups', () => {
 
       // Wrap it in a Group.
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-      const element = renderResult.renderedDOM.getByTestId('child-2')
+      const element = renderResult.renderedCanvas.getByTestId('child-2')
       const elementBounds = element.getBoundingClientRect()
       FOR_TESTS_setNextGeneratedUid('group')
       await openContextMenuAndClickOnItem(
@@ -1114,7 +1114,7 @@ describe('Groups', () => {
 
       // Wrap it in a Group.
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-      const element = renderResult.renderedDOM.getByTestId('child-2')
+      const element = renderResult.renderedCanvas.getByTestId('child-2')
       const elementBounds = element.getBoundingClientRect()
       FOR_TESTS_setNextGeneratedUid('group')
       await openContextMenuAndClickOnItem(
@@ -1228,7 +1228,7 @@ describe('Groups', () => {
 
       // Wrap it in a Group.
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-      const element = renderResult.renderedDOM.getByTestId('target-div')
+      const element = renderResult.renderedCanvas.getByTestId('target-div')
       const elementBounds = element.getBoundingClientRect()
       FOR_TESTS_setNextGeneratedUid('group')
       await openContextMenuAndClickOnItem(
@@ -1314,7 +1314,7 @@ describe('Groups', () => {
 
       // Wrap it in a Group.
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-      const element = renderResult.renderedDOM.getByTestId('then-div')
+      const element = renderResult.renderedCanvas.getByTestId('then-div')
       const elementBounds = element.getBoundingClientRect()
       FOR_TESTS_setNextGeneratedUid('group')
       await openContextMenuAndClickOnItem(

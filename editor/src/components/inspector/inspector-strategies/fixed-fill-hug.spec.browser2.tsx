@@ -571,7 +571,7 @@ describe('Fixed / Fill / Hug control', () => {
           'await-first-dom-report',
         )
         const parent = await select(editor, 'parent')
-        const child = editor.renderedDOM.getByTestId('child')
+        const child = editor.renderedCanvas.getByTestId('child')
 
         expect(child.style.height).toEqual('149px')
         expect(child.style.width).toEqual('')
@@ -597,7 +597,7 @@ describe('Fixed / Fill / Hug control', () => {
           'await-first-dom-report',
         )
         const parent = await select(editor, 'parent')
-        const child = editor.renderedDOM.getByTestId('child')
+        const child = editor.renderedCanvas.getByTestId('child')
 
         expect(child.style.width).toEqual('149px')
         expect(child.style.height).toEqual('')
@@ -624,7 +624,7 @@ describe('Fixed / Fill / Hug control', () => {
           'await-first-dom-report',
         )
         const parent = await select(editor, 'parent')
-        const child = editor.renderedDOM.getByTestId('child')
+        const child = editor.renderedCanvas.getByTestId('child')
 
         expect(child.style.width).toEqual('302px')
         expect(child.style.height).toEqual('141px')
@@ -650,7 +650,7 @@ describe('Fixed / Fill / Hug control', () => {
           'await-first-dom-report',
         )
         const parent = await select(editor, 'parent')
-        const child = editor.renderedDOM.getByTestId('child')
+        const child = editor.renderedCanvas.getByTestId('child')
 
         expect(child.style.width).toEqual('302px')
         expect(child.style.height).toEqual('141px')
@@ -676,7 +676,7 @@ describe('Fixed / Fill / Hug control', () => {
           'await-first-dom-report',
         )
         const parent = await select(editor, 'parent')
-        const child = editor.renderedDOM.getByTestId('child')
+        const child = editor.renderedCanvas.getByTestId('child')
 
         expect(child.style.width).toEqual(MaxContent)
         expect(child.style.height).toEqual(MaxContent)
@@ -702,7 +702,7 @@ describe('Fixed / Fill / Hug control', () => {
           'await-first-dom-report',
         )
         const parent = await select(editor, 'parent')
-        const child = editor.renderedDOM.getByTestId('child')
+        const child = editor.renderedCanvas.getByTestId('child')
 
         expect(child.style.width).toEqual(MaxContent)
         expect(child.style.height).toEqual(MaxContent)
@@ -1193,8 +1193,8 @@ describe('Fixed / Fill / Hug control', () => {
             'await-first-dom-report',
           )
 
-          const parent = editor.renderedDOM.getByTestId('parent')
-          const child = editor.renderedDOM.getByTestId('child')
+          const parent = editor.renderedCanvas.getByTestId('parent')
+          const child = editor.renderedCanvas.getByTestId('child')
 
           await selectComponentsForTest(editor, [EP.fromString('sb/parent/child')])
 
@@ -1211,8 +1211,8 @@ describe('Fixed / Fill / Hug control', () => {
             'await-first-dom-report',
           )
 
-          const parent = editor.renderedDOM.getByTestId('parent')
-          const child = editor.renderedDOM.getByTestId('child')
+          const parent = editor.renderedCanvas.getByTestId('parent')
+          const child = editor.renderedCanvas.getByTestId('child')
 
           await selectComponentsForTest(editor, [EP.fromString('sb/parent/child')])
 
@@ -1230,8 +1230,8 @@ describe('Fixed / Fill / Hug control', () => {
             'await-first-dom-report',
           )
 
-          const parent = editor.renderedDOM.getByTestId('parent')
-          const child = editor.renderedDOM.getByTestId('child')
+          const parent = editor.renderedCanvas.getByTestId('parent')
+          const child = editor.renderedCanvas.getByTestId('child')
 
           await selectComponentsForTest(editor, [EP.fromString('sb/parent/child')])
 
@@ -1247,8 +1247,8 @@ describe('Fixed / Fill / Hug control', () => {
             'await-first-dom-report',
           )
 
-          const parent = editor.renderedDOM.getByTestId('parent')
-          const child = editor.renderedDOM.getByTestId('child')
+          const parent = editor.renderedCanvas.getByTestId('parent')
+          const child = editor.renderedCanvas.getByTestId('child')
 
           await selectComponentsForTest(editor, [EP.fromString('sb/parent/child')])
 
@@ -1268,8 +1268,8 @@ describe('Fixed / Fill / Hug control', () => {
           'await-first-dom-report',
         )
 
-        const parent = editor.renderedDOM.getByTestId('parent')
-        const child = editor.renderedDOM.getByTestId('child')
+        const parent = editor.renderedCanvas.getByTestId('parent')
+        const child = editor.renderedCanvas.getByTestId('child')
 
         await selectComponentsForTest(editor, [EP.fromString('sb/parent/child')])
 
@@ -1285,8 +1285,8 @@ describe('Fixed / Fill / Hug control', () => {
           'await-first-dom-report',
         )
 
-        const parent = editor.renderedDOM.getByTestId('parent')
-        const child = editor.renderedDOM.getByTestId('child')
+        const parent = editor.renderedCanvas.getByTestId('parent')
+        const child = editor.renderedCanvas.getByTestId('child')
 
         await selectComponentsForTest(editor, [EP.fromString('sb/parent/child')])
 
@@ -1368,7 +1368,7 @@ describe('Fixed / Fill / Hug control', () => {
 
       await selectComponentsForTest(editor, [EP.fromString(GroupPath)])
 
-      const groupDiv = editor.renderedDOM.getByTestId('group')
+      const groupDiv = editor.renderedCanvas.getByTestId('group')
       expect(groupDiv.style.width).toEqual('200px')
 
       const control = editor.renderedDOM.getByTestId('frame-width-number-input')
@@ -1457,7 +1457,7 @@ describe('Fixed / Fill / Hug control', () => {
 
       await selectComponentsForTest(editor, [EP.fromString(TargetPath)])
 
-      const groupDiv = editor.renderedDOM.getByTestId('group')
+      const groupDiv = editor.renderedCanvas.getByTestId('group')
       expect(groupDiv.style.width).toEqual('200px')
 
       const control = editor.renderedDOM.getByTestId('frame-left-number-input')
@@ -1546,7 +1546,7 @@ describe('Fixed / Fill / Hug control', () => {
 
       await selectComponentsForTest(editor, [EP.fromString(InnerGroupPath)])
 
-      const groupDiv = editor.renderedDOM.getByTestId('group')
+      const groupDiv = editor.renderedCanvas.getByTestId('group')
       expect(groupDiv.style.width).toEqual('200px')
 
       const control = editor.renderedDOM.getByTestId('frame-height-number-input')
@@ -1635,7 +1635,7 @@ describe('Fixed / Fill / Hug control', () => {
 
       await selectComponentsForTest(editor, [EP.fromString(InnerChildPath)])
 
-      const groupDiv = editor.renderedDOM.getByTestId('group')
+      const groupDiv = editor.renderedCanvas.getByTestId('group')
       expect(groupDiv.style.width).toEqual('200px')
 
       const control = editor.renderedDOM.getByTestId('frame-width-number-input')
@@ -1726,7 +1726,7 @@ describe('Fixed / Fill / Hug control', () => {
 
       await selectComponentsForTest(editor, [EP.fromString(ChildPath)])
 
-      const groupDiv = editor.renderedDOM.getByTestId('group')
+      const groupDiv = editor.renderedCanvas.getByTestId('group')
       expect(groupDiv.style.width).toEqual('200px')
 
       const widthControl = editor.renderedDOM.getByTestId('frame-width-number-input')
@@ -1805,7 +1805,7 @@ describe('Fixed / Fill / Hug control', () => {
 
       await selectComponentsForTest(editor, [EP.fromString(ChildPath)])
 
-      const groupDiv = editor.renderedDOM.getByTestId('group')
+      const groupDiv = editor.renderedCanvas.getByTestId('group')
       expect(groupDiv.style.width).toEqual('200px')
 
       const control = editor.renderedDOM.getByTestId('frame-width-number-input')
@@ -1956,7 +1956,7 @@ describe('Fixed / Fill / Hug control', () => {
           await mouseClickAtPoint(button, { x: 5, y: 5 })
         })
 
-        const text = editor.renderedDOM.getByTestId('text')
+        const text = editor.renderedCanvas.getByTestId('text')
 
         expect(text.style.width).toEqual('59px')
       }
@@ -1977,7 +1977,7 @@ describe('Fixed / Fill / Hug control', () => {
           await mouseClickAtPoint(button, { x: 5, y: 5 })
         })
 
-        const text = editor.renderedDOM.getByTestId('flex-parent')
+        const text = editor.renderedCanvas.getByTestId('flex-parent')
 
         expect(text.style.width).toEqual('158px')
       }
@@ -2334,7 +2334,7 @@ async function select(
   testId: 'child' | 'parent',
 ): Promise<HTMLElement> {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-  const div = editor.renderedDOM.getByTestId(testId)
+  const div = editor.renderedCanvas.getByTestId(testId)
   const divBounds = div.getBoundingClientRect()
   const divCorner = {
     x: divBounds.x + 5,

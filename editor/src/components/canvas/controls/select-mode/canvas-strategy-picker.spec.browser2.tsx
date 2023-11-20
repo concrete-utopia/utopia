@@ -113,7 +113,7 @@ async function startDraggingDefaultTarget(
   renderResult: EditorRenderResult,
   metaKey: boolean,
 ): Promise<void> {
-  const targetElement = await renderResult.renderedDOM.findByTestId('target')
+  const targetElement = await renderResult.renderedCanvas.findByTestId('target')
   const targetElementRect = targetElement.getBoundingClientRect()
   const canvasControls = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -246,7 +246,7 @@ describe('The strategy picker', () => {
   it('Shows the correct strategy when using a delayed value', async () => {
     const renderResult = await renderFlexModel()
 
-    const absoluteTarget = await renderResult.renderedDOM.findByTestId('absolute-target')
+    const absoluteTarget = await renderResult.renderedCanvas.findByTestId('absolute-target')
     const absoluteTargetElementRect = absoluteTarget.getBoundingClientRect()
 
     const absolutePoint = {
@@ -254,7 +254,7 @@ describe('The strategy picker', () => {
       y: absoluteTargetElementRect.y + absoluteTargetElementRect.height / 2,
     }
 
-    const flexTarget = await renderResult.renderedDOM.findByTestId('flex-target')
+    const flexTarget = await renderResult.renderedCanvas.findByTestId('flex-target')
     const flexTargetElementRect = flexTarget.getBoundingClientRect()
 
     const flexPoint = {

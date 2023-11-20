@@ -1440,8 +1440,8 @@ describe('conditionals in the navigator', () => {
 
     // by default, branches are shown
     {
-      expect(renderResult.renderedDOM.queryByTestId(trueBranchTestId)).not.toBeNull()
-      expect(renderResult.renderedDOM.queryByTestId(falseBranchTestId)).not.toBeNull()
+      expect(renderResult.renderedCanvas.queryByTestId(trueBranchTestId)).not.toBeNull()
+      expect(renderResult.renderedCanvas.queryByTestId(falseBranchTestId)).not.toBeNull()
     }
 
     // clicking once will collapse the item, hiding the contents
@@ -1450,8 +1450,8 @@ describe('conditionals in the navigator', () => {
         await mouseClickAtPoint(collapseButton, collapseButtonCenter)
       })
 
-      expect(renderResult.renderedDOM.queryByTestId(trueBranchTestId)).toBeNull()
-      expect(renderResult.renderedDOM.queryByTestId(falseBranchTestId)).toBeNull()
+      expect(renderResult.renderedCanvas.queryByTestId(trueBranchTestId)).toBeNull()
+      expect(renderResult.renderedCanvas.queryByTestId(falseBranchTestId)).toBeNull()
     }
 
     // clicking again will expand the item, showing the contents again
@@ -1460,8 +1460,8 @@ describe('conditionals in the navigator', () => {
         await mouseClickAtPoint(collapseButton, collapseButtonCenter)
       })
 
-      expect(renderResult.renderedDOM.queryByTestId(trueBranchTestId)).not.toBeNull()
-      expect(renderResult.renderedDOM.queryByTestId(falseBranchTestId)).not.toBeNull()
+      expect(renderResult.renderedCanvas.queryByTestId(trueBranchTestId)).not.toBeNull()
+      expect(renderResult.renderedCanvas.queryByTestId(falseBranchTestId)).not.toBeNull()
     }
   })
 

@@ -112,7 +112,7 @@ async function checkOverlappingElements(
 ): Promise<void> {
   const renderResult = await createExampleProject(positionSetting, elementTopShifts)
 
-  const targetDiv = renderResult.renderedDOM.getByTestId(targetDivId)
+  const targetDiv = renderResult.renderedCanvas.getByTestId(targetDivId)
   const targetDivBounds = targetDiv.getBoundingClientRect()
 
   const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
