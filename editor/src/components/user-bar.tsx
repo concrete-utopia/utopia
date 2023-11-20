@@ -65,14 +65,13 @@ const MultiplayerUserBar = React.memo(() => {
   const { user: myUser } = useMyUserAndPresence()
   const myName = normalizeMultiplayerName(myUser.name)
 
-  const others = useOthers((list) =>
-    normalizeOthersList(myUser.id, list).map((other) => ({
-      id: other.id,
-      name: myUser.name,
-      colorIndex: myUser.colorIndex,
-      picture: myUser.avatar,
-    })),
-  )
+  const collabs = useStorage((store) => store.collaborators)
+
+  const others = useOthers((list) => {
+    return normalizeOthersList(myUser.id, list).map((other) => {
+      return collabs[other.id]
+    })
+  })
 
   const visibleOthers = React.useMemo(() => {
     return others.slice(0, MAX_VISIBLE_OTHER_PLAYERS)
@@ -136,7 +135,7 @@ const MultiplayerUserBar = React.memo(() => {
                 name={multiplayerInitialsFromName(name)}
                 tooltip={name}
                 color={multiplayerColorFromIndex(other.colorIndex)}
-                picture={other.picture}
+                picture={other.avatar}
                 border={true}
                 coloredTooltip={true}
                 onClick={toggleFollowing(other.id)}
