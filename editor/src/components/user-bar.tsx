@@ -1,4 +1,3 @@
-import { ClientSideSuspense } from '@liveblocks/react'
 import React from 'react'
 import { useOthers, useSelf, useStatus } from '../../liveblocks.config'
 import { getUserPicture, isLoggedIn } from '../common/user'
@@ -13,6 +12,7 @@ import {
 import { Avatar, Tooltip, useColorTheme } from '../uuiui'
 import { Substores, useEditorState } from './editor/store/store-hook'
 import { unless, when } from '../utils/react-conditionals'
+import { MultiplayerWrap } from '../utils/multiplayer-wrap'
 
 const MAX_VISIBLE_OTHER_PLAYERS = 4
 
@@ -31,7 +31,9 @@ export const UserBar = React.memo(() => {
     return <SinglePlayerUserBar />
   } else {
     return (
-      <ClientSideSuspense fallback={<div />}>{() => <MultiplayerUserBar />}</ClientSideSuspense>
+      <MultiplayerWrap errorFallback={null} suspenseFallback={null}>
+        <MultiplayerUserBar />
+      </MultiplayerWrap>
     )
   }
 })

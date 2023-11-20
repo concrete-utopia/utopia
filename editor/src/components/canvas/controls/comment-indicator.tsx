@@ -4,19 +4,18 @@ import { jsx } from '@emotion/react'
 import React from 'react'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { EditorModes } from '../../editor/editor-modes'
-import { ClientSideSuspense } from '@liveblocks/react'
 import { useThreads } from '../../../../liveblocks.config'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { switchEditorMode } from '../../editor/actions/action-creators'
 import { canvasPoint } from '../../../core/shared/math-utils'
 import { UtopiaTheme } from '../../../uuiui'
-import { ErrorBoundary } from '../../../utils/react-error-boundary'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import {
   multiplayerColorFromIndex,
   multiplayerInitialsFromName,
   normalizeMultiplayerName,
 } from '../../../core/shared/multiplayer'
+import { MultiplayerWrap } from '../../../utils/multiplayer-wrap'
 
 export const CommentIndicator = React.memo(() => {
   const projectId = useEditorState(
@@ -31,9 +30,9 @@ export const CommentIndicator = React.memo(() => {
 
   return (
     <CanvasOffsetWrapper>
-      <ErrorBoundary fallback={null}>
-        <ClientSideSuspense fallback={null}>{() => <CommentIndicatorInner />}</ClientSideSuspense>
-      </ErrorBoundary>
+      <MultiplayerWrap errorFallback={null} suspenseFallback={null}>
+        <CommentIndicatorInner />
+      </MultiplayerWrap>
     </CanvasOffsetWrapper>
   )
 })

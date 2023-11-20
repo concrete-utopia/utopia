@@ -3,18 +3,17 @@ import React from 'react'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { isCommentMode } from '../../editor/editor-modes'
-import { ClientSideSuspense } from '@liveblocks/react'
 import { useCreateThread } from '../../../../liveblocks.config'
 import type { ComposerSubmitComment } from '@liveblocks/react-comments'
 import { Comment, Composer } from '@liveblocks/react-comments'
 import { stopPropagation } from '../../inspector/common/inspector-utils'
 import { UtopiaTheme } from '../../../uuiui'
-import { ErrorBoundary } from '../../../utils/react-error-boundary'
 import {
   useCanvasCommentThread,
   useMyMultiplayerColorIndex,
 } from '../../../core/commenting/comment-hooks'
 import { isLoggedIn } from '../../editor/action-types'
+import { MultiplayerWrap } from '../../../utils/multiplayer-wrap'
 
 export const CommentPopup = React.memo(() => {
   const mode = useEditorState(
@@ -43,11 +42,12 @@ export const CommentPopup = React.memo(() => {
         onKeyUp={stopPropagation}
         onMouseUp={stopPropagation}
       >
-        <ErrorBoundary fallback={<div>Can not load comments</div>}>
-          <ClientSideSuspense fallback={<div>Loading…</div>}>
-            {() => <CommentThread x={location.x} y={location.y} />}
-          </ClientSideSuspense>
-        </ErrorBoundary>
+        <MultiplayerWrap
+          errorFallback={<div>Can not load comments</div>}
+          suspenseFallback={<div>Loading…</div>}
+        >
+          <CommentThread x={location.x} y={location.y} />
+        </MultiplayerWrap>
       </div>
     </CanvasOffsetWrapper>
   )
