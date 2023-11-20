@@ -36,6 +36,17 @@ function spliceCode(
   originalStringData: SteganoTextData,
   updatedString: string,
 ): string {
+  const originalString = originalCode.slice(
+    originalStringData.startPosition,
+    originalStringData.endPosition,
+  )
+  if (originalString !== originalStringData.originalString) {
+    throw new Error(`Tried to rewrite string but it was not matching the last known value.
+  Current value:    >>>${originalString}<<<
+  Last known value: >>>${sanitizeString(originalStringData.originalString)}<<<
+  `)
+  }
+
   const originalBefore = originalCode.slice(0, originalStringData.startPosition)
   const originalAfter = originalCode.slice(originalStringData.endPosition)
 
