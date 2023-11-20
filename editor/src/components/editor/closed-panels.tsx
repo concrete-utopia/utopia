@@ -4,7 +4,7 @@
 import { jsx } from '@emotion/react'
 import React, { useState } from 'react'
 import type { TooltipProps } from '../../uuiui'
-import { UtopiaTheme, colorTheme } from '../../uuiui'
+import { UtopiaStyles, UtopiaTheme, colorTheme } from '../../uuiui'
 import { FlexColumn, Icn, SquareButton, Tooltip as TooltipWithoutSpanFixme } from '../../uuiui'
 import { useDispatch } from './store/dispatch-context'
 import { Substores, useEditorState } from './store/store-hook'
@@ -151,12 +151,12 @@ export const ClosedPanels = React.memo((props: { side: 'left' | 'right' }) => {
   )
 })
 
-interface InsertModeButtonProps {
+interface ClosedPanelButtonProps {
   iconType: string
   visible?: boolean
   onClick: (event: React.MouseEvent<Element>) => void
 }
-const ClosedPanelButton = React.memo((props: InsertModeButtonProps) => {
+const ClosedPanelButton = React.memo((props: ClosedPanelButtonProps) => {
   const [isHovered, setIsHovered] = useState(false)
   const setIsHoveredTrue = React.useCallback(() => {
     setIsHovered(true)
@@ -171,7 +171,7 @@ const ClosedPanelButton = React.memo((props: InsertModeButtonProps) => {
       style={{
         background: props.visible ? colorTheme.bg1.value : colorTheme.canvasBackground.value,
         overflow: 'hidden',
-        boxShadow: 'inset 0px 1px 3px 0px #ffffff10, 0px 1px 2px 0px rgba(0,0,0,.3)',
+        boxShadow: `inset 0px 1px 3px 0px #ffffff10, ${UtopiaStyles.shadowStyles.low.boxShadow}`,
         pointerEvents: 'initial',
         display: 'flex',
         flexDirection: 'row',

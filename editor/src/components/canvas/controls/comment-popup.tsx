@@ -8,7 +8,7 @@ import { useCreateThread } from '../../../../liveblocks.config'
 import type { ComposerSubmitComment } from '@liveblocks/react-comments'
 import { Comment, Composer } from '@liveblocks/react-comments'
 import { stopPropagation } from '../../inspector/common/inspector-utils'
-import { UtopiaTheme } from '../../../uuiui'
+import { UtopiaStyles, UtopiaTheme } from '../../../uuiui'
 import { ErrorBoundary } from '../../../utils/react-error-boundary'
 import {
   useCanvasCommentThread,
@@ -37,7 +37,7 @@ export const CommentPopup = React.memo(() => {
           left: location.x + 30,
           cursor: 'text',
           minWidth: 250,
-          boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+          boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
         }}
         onKeyDown={stopPropagation}
         onKeyUp={stopPropagation}

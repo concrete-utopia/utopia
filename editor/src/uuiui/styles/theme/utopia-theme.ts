@@ -57,12 +57,27 @@ export const UtopiaTheme = {
   },
   panelStyles: {
     panelBorderRadius: 10,
-    shadows: {
-      // NB this uses black since shadows are always darker than the surrounding area, dark mode or not
-      medium: `rgba(0, 0, 0, 0.3) 0px 1px 3px 0px, rgba(0, 0, 0, 0.06) 0px 1px 2px 0px`,
-    },
   },
 } as const
+
+const shadowStyles = {
+  //scenes directly on the canvas
+  grounded: {
+    boxShadow: '0px 1px 2px 0px #B2B2B290',
+  },
+  low: {
+    boxShadow: '0px 2px 4px 0px #B2B2B290',
+  },
+  mid: {
+    boxShadow: '0px 3px 6px 0px #B2B2B290',
+  },
+  high: {
+    boxShadow: '0px 4px 8px 0px #B2B2B290',
+  },
+  highest: {
+    boxShadow: '0px 6px 12px 0px #B2B2B290',
+  },
+}
 
 const flexRow: React.CSSProperties = {
   display: 'flex',
@@ -99,10 +114,10 @@ const canvas = {
 
 const scene = {
   live: {
-    boxShadow: `0px 0px 1px 0px ${colorTheme.neutralInvertedBackground20.value}`,
+    boxShadow: shadowStyles.grounded.boxShadow,
   },
   editing: {
-    boxShadow: `0px 0px 1px 0px ${colorTheme.neutralInvertedBackground30.value}`,
+    boxShadow: shadowStyles.grounded.boxShadow,
   },
 }
 
@@ -155,18 +170,9 @@ const fontStyles = {
   },
 }
 
-const shadowStyles = {
-  small: {
-    boxShadow: `0px 1p 3px 0px rgba(0,0,0,.2)`,
-  },
-  medium: {
-    boxShadow: '0px 2px 4px 1px rgba(0,0,0,0.2)',
-  },
-}
-
 const popup: React.CSSProperties = {
   background: colorTheme.neutralBackground.value,
-  boxShadow: `0px 0px 0px .5px ${colorTheme.border3.value} , 0px 5px 8px 0px ${colorTheme.border3.value}`,
+  boxShadow: shadowStyles.high.boxShadow,
   paddingTop: 4,
   paddingBottom: 4,
   borderRadius: 4,

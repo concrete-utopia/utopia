@@ -3,7 +3,7 @@ import React from 'react'
 import { useOthers, useSelf, useUpdateMyPresence } from '../../../liveblocks.config'
 import type { CanvasPoint } from '../../core/shared/math-utils'
 import { windowPoint } from '../../core/shared/math-utils'
-import { UtopiaTheme } from '../../uuiui'
+import { UtopiaStyles, UtopiaTheme } from '../../uuiui'
 import { isLoggedIn } from '../editor/action-types'
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import { canvasPointToWindowPoint, windowToCanvasCoordinates } from './dom-lookup'
@@ -169,7 +169,7 @@ const MultiplayerCursor = React.memo(
             backgroundColor: color.background,
             padding: '0 4px',
             borderRadius: 2,
-            boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+            boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
             fontWeight: 'bold',
             fontSize: 9,
             position: 'absolute',
