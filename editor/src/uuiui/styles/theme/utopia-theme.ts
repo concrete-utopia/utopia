@@ -63,19 +63,19 @@ export const UtopiaTheme = {
 const shadowStyles = {
   //scenes directly on the canvas
   grounded: {
-    boxShadow: '0px 1px 2px 0px #B2B2B290',
+    boxShadow: `0px 1px 2px 0px ${colorTheme.shadows.value}`,
   },
   low: {
-    boxShadow: '0px 2px 4px 0px #B2B2B290',
+    boxShadow: `0px 2px 4px 0px ${colorTheme.shadows.value}`,
   },
   mid: {
-    boxShadow: '0px 3px 6px 0px #B2B2B290',
+    boxShadow: `0px 3px 6px 0px ${colorTheme.shadows.value}`,
   },
   high: {
-    boxShadow: '0px 4px 8px 0px #B2B2B290',
+    boxShadow: `0px 4px 8px 0px ${colorTheme.shadows.value}`,
   },
   highest: {
-    boxShadow: '0px 6px 12px 0px #B2B2B290',
+    boxShadow: `0px 6px 12px 0px ${colorTheme.shadows.value}`,
   },
 }
 

@@ -97,6 +97,7 @@ const lightErrorStates = {
 
 // TEMP colors with preset opacity pulled from within the app
 const colorsWithOpacity = {
+  shadows: createUtopiColor('#B2B2B290'),
   fg0Opacity10: createUtopiColor('hsla(0,0%,0%,0.1)'),
   fg6Opacity50: createUtopiColor('hsla(0,0%,0%,0.5)'),
   canvasControlsSizeBoxShadowColor20: createUtopiColor('rgba(0,0,0,0.20)'),
