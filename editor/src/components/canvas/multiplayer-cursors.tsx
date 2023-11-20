@@ -12,13 +12,8 @@ import {
 import type { Presence, UserMeta } from '../../../liveblocks.config'
 import type { CanvasPoint } from '../../core/shared/math-utils'
 import { pointsEqual, windowPoint } from '../../core/shared/math-utils'
-import {
-  multiplayerColorFromIndex,
-  normalizeOthersList,
-  possiblyUniqueColor,
-} from '../../core/shared/multiplayer'
+import { multiplayerColorFromIndex, normalizeOthersList } from '../../core/shared/multiplayer'
 import { assertNever } from '../../core/shared/utils'
-import { useKeepShallowReferenceEquality } from '../../utils/react-performance'
 import { UtopiaTheme, useColorTheme } from '../../uuiui'
 import type { EditorAction } from '../editor/action-types'
 import { isLoggedIn } from '../editor/action-types'
@@ -28,6 +23,7 @@ import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import CanvasActions from './canvas-actions'
 import { canvasPointToWindowPoint, windowToCanvasCoordinates } from './dom-lookup'
+import { useAddMyselfToCollaborators } from '../../core/commenting/comment-hooks'
 
 export const MultiplayerPresence = React.memo(() => {
   const dispatch = useDispatch()

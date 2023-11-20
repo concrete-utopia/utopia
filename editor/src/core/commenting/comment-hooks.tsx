@@ -21,7 +21,7 @@ export function useAddMyselfToCollaborators() {
   const loginState = useEditorState(
     Substores.userState,
     (store) => store.userState.loginState,
-    'MultiplayerCursors loginState',
+    'useAddMyselfToCollaborators loginState',
   )
 
   const addMyselfToCollaborators = useMutation(
