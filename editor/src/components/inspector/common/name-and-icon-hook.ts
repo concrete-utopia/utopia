@@ -20,6 +20,7 @@ import { objectValues } from '../../../core/shared/object-utils'
 import { eitherToMaybe } from '../../../core/shared/either'
 import type { MetadataSubstate } from '../../editor/store/store-hook-substore-types'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import type { FilePathMappings } from '../../../core/model/project-file-utils'
 
 export interface NameAndIconResult {
   path: ElementPath
@@ -37,7 +38,8 @@ const namesAndIconsAllPathsResultSelector = createSelector(
   (store: MetadataSubstate) => store.editor.allElementProps,
   (store: MetadataSubstate) => store.editor.elementPathTree,
   (store: EditorStorePatched) => store.derived.autoFocusedPaths,
-  (metadata, allElementProps, pathTrees, autoFocusedPaths) => {
+  (store: EditorStorePatched) => store.derived.filePathMappings,
+  (metadata, allElementProps, pathTrees, autoFocusedPaths, filePathMappings) => {
     let result: Array<NameAndIconResult> = []
     for (const metadataElement of objectValues(metadata)) {
       const nameAndIconResult = getNameAndIconResult(
@@ -46,6 +48,7 @@ const namesAndIconsAllPathsResultSelector = createSelector(
         metadataElement,
         pathTrees,
         autoFocusedPaths,
+        filePathMappings,
       )
       result.push(nameAndIconResult)
     }
@@ -71,6 +74,7 @@ function getNameAndIconResult(
   elementInstanceMetadata: ElementInstanceMetadata,
   pathTrees: ElementPathTrees,
   autoFocusedPaths: Array<ElementPath>,
+  filePathMappings: FilePathMappings,
 ): NameAndIconResult {
   const elementName = MetadataUtils.getJSXElementName(
     eitherToMaybe(elementInstanceMetadata.element),
@@ -91,6 +95,7 @@ function getNameAndIconResult(
       autoFocusedPaths,
       null,
       allElementProps,
+      filePathMappings,
     ),
   }
 }

@@ -315,7 +315,7 @@ import type {
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
-import { isTextEditMode } from '../editor-modes'
+import { isFollowMode, isTextEditMode } from '../editor-modes'
 import { EditorModes, isLiveMode, isSelectMode } from '../editor-modes'
 import * as History from '../history'
 import type { StateHistory } from '../history'
@@ -934,6 +934,7 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
     projectContentsChecksums: poppedDerived.projectContentsChecksums,
     branchOriginContentsChecksums: poppedDerived.branchOriginContentsChecksums,
     remixData: poppedDerived.remixData,
+    filePathMappings: poppedDerived.filePathMappings,
   }
 }
 
@@ -4534,6 +4535,7 @@ export const UPDATE_FNS = {
         action.focusedElementPath,
         editor.jsxMetadata,
         derived.autoFocusedPaths,
+        derived.filePathMappings,
       )
     ) {
       shouldApplyChange = true
@@ -4662,7 +4664,11 @@ export const UPDATE_FNS = {
       action.target,
       editor.jsxMetadata,
     )
-    if (targetElementCoords != null && isFiniteRectangle(targetElementCoords)) {
+    if (
+      targetElementCoords != null &&
+      isFiniteRectangle(targetElementCoords) &&
+      !isFollowMode(editor.mode)
+    ) {
       return UPDATE_FNS.SCROLL_TO_POSITION(
         scrollToPosition(targetElementCoords, action.behaviour),
         editor,

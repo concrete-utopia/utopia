@@ -40,6 +40,7 @@ import {
   expectSingleUndoNSaves,
   searchInFloatingMenu,
   selectComponentsForTest,
+  setFeatureForBrowserTestsUseInDescribeBlockOnly,
 } from '../../../utils/utils.test-utils'
 import {
   firePasteEvent,
@@ -5671,6 +5672,82 @@ export var storyboard = (
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/abi/aax',
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/abi/abd',
         ])
+      })
+    })
+
+    describe('Pasting with steganography enabled', () => {
+      setFeatureForBrowserTestsUseInDescribeBlockOnly('Steganography', true)
+
+      it('steganography data is cleaned from replaced props', async () => {
+        const editor = await renderTestEditorWithCode(
+          `import * as React from 'react'
+        import { Storyboard, Scene } from 'utopia-api'
+        
+        const MyComponent = ({ title }) => {
+          return <div data-uid='root'>heeeello</div>
+        }
+        
+        const hello = 'hello'
+        
+        export var storyboard = (
+          <Storyboard data-uid='sb'>
+            <Scene
+            data-uid='scene'
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 567,
+                top: 486,
+                width: 288,
+                height: 362,
+              }}
+            >
+              <MyComponent data-uid='component' title={hello} />
+            </Scene>
+          </Storyboard>
+        )
+        `,
+          'await-first-dom-report',
+        )
+
+        await selectComponentsForTest(editor, [EP.fromString('sb/scene/component')])
+        await pressKey('c', { modifiers: cmdModifier })
+        await runPaste(editor)
+
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+          formatTestProjectCode(`import * as React from 'react'
+        import { Storyboard, Scene } from 'utopia-api'
+
+        const MyComponent = ({ title }) => {
+          return <div data-uid='root'>heeeello</div>
+        }
+
+        const hello = 'hello'
+
+        export var storyboard = (
+          <Storyboard data-uid='sb'>
+            <Scene
+              data-uid='scene'
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 567,
+                top: 486,
+                width: 288,
+                height: 362,
+              }}
+            >
+              <MyComponent data-uid='component' title={hello} />
+              <MyComponent
+                data-uid='com'
+                title='hello'
+                style={{ top: 0, left: 0, position: 'absolute' }}
+              />
+            </Scene>
+          </Storyboard>
+        )
+`),
+        )
       })
     })
   })

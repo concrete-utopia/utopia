@@ -1,14 +1,11 @@
 import React from 'react'
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { useColorTheme } from '../../../../uuiui'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
-import type { ThemeObject } from '../../../../uuiui/styles/theme/theme-helpers'
 
 export const MultiSelectOutlineTestId = 'multiselect-outline'
 
@@ -116,30 +113,3 @@ export const OutlineControl = React.memo<OutlineControlProps>((props) => {
   }
   return null
 })
-
-export function getSelectionColor(
-  path: ElementPath,
-  metadata: ElementInstanceMetadataMap,
-  focusedElementPath: ElementPath | null,
-  autoFocusedPaths: Array<ElementPath>,
-  colorTheme: ThemeObject,
-): string {
-  if (
-    EP.isInsideFocusedComponent(path, autoFocusedPaths) &&
-    !MetadataUtils.isContainingComponentRemixSceneOrOutlet(metadata, path)
-  ) {
-    if (MetadataUtils.isAutomaticOrManuallyFocusableComponent(path, metadata, autoFocusedPaths)) {
-      return colorTheme.canvasSelectionFocusableChild.value
-    } else {
-      return colorTheme.canvasSelectionNotFocusableChild.value
-    }
-  } else if (EP.isFocused(focusedElementPath, path)) {
-    return colorTheme.canvasSelectionIsolatedComponent.value
-  } else if (
-    MetadataUtils.isAutomaticOrManuallyFocusableComponent(path, metadata, autoFocusedPaths)
-  ) {
-    return colorTheme.canvasSelectionFocusable.value
-  } else {
-    return colorTheme.canvasSelectionNotFocusable.value
-  }
-}

@@ -1,5 +1,10 @@
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { isAnimatedElement, isImg, isImportedComponent } from '../../core/model/project-file-utils'
+import {
+  type FilePathMappings,
+  isAnimatedElement,
+  isImg,
+  isImportedComponent,
+} from '../../core/model/project-file-utils'
 import type {
   ElementInstanceMetadataMap,
   ElementInstanceMetadata,
@@ -8,7 +13,7 @@ import type {
 import { isJSXElement, isJSXAttributeValue } from '../../core/shared/element-template'
 import * as EP from '../../core/shared/element-path'
 import type { ElementPath } from '../../core/shared/project-file-types'
-import { Substores, useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { isLeft, isRight, maybeEitherToMaybe } from '../../core/shared/either'
 import type { IcnPropsBase } from '../../uuiui'
 import { shallowEqual } from '../../core/shared/equality-utils'
@@ -54,11 +59,22 @@ export function useComponentIcon(navigatorEntry: NavigatorEntry): IcnPropsBase |
     (store) => store.derived.autoFocusedPaths,
     'useComponentIcon autoFocusedPaths',
   )
+  const filePathMappings = useEditorState(
+    Substores.derived,
+    (store) => store.derived.filePathMappings,
+    'useComponentIcon filePathMappings',
+  )
+
   return useEditorState(
     Substores.metadata,
     (store) => {
       const metadata = store.editor.jsxMetadata
-      return createComponentIconProps(navigatorEntry.elementPath, metadata, autoFocusedPaths)
+      return createComponentIconProps(
+        navigatorEntry.elementPath,
+        metadata,
+        autoFocusedPaths,
+        filePathMappings,
+      )
     },
     'useComponentIcon',
   ) // TODO Memoize Icon Result
@@ -71,9 +87,10 @@ export function createComponentOrElementIconProps(
   autoFocusedPaths: Array<ElementPath>,
   navigatorEntry: NavigatorEntry | null,
   allElementProps: AllElementProps,
+  filePathMappings: FilePathMappings,
 ): IcnPropsBase {
   return (
-    createComponentIconProps(elementPath, metadata, autoFocusedPaths) ??
+    createComponentIconProps(elementPath, metadata, autoFocusedPaths, filePathMappings) ??
     createElementIconPropsFromMetadata(
       elementPath,
       metadata,
@@ -388,6 +405,7 @@ function createComponentIconProps(
   path: ElementPath,
   metadata: ElementInstanceMetadataMap,
   autoFocusedPaths: Array<ElementPath>,
+  filePathMappings: FilePathMappings,
 ): IcnPropsBase | null {
   const element = MetadataUtils.findElementByElementPath(metadata, path)
   if (MetadataUtils.isProbablySceneFromMetadata(element)) {
@@ -421,7 +439,7 @@ function createComponentIconProps(
       height: 18,
     }
   }
-  const isImported = isImportedComponent(element)
+  const isImported = isImportedComponent(element, filePathMappings)
   if (isImported) {
     return {
       category: 'component',
@@ -434,6 +452,7 @@ function createComponentIconProps(
     path,
     metadata,
     autoFocusedPaths,
+    filePathMappings,
   )
   if (isComponent) {
     return {

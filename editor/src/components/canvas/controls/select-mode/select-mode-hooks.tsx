@@ -63,6 +63,7 @@ import type { ElementPathTrees } from '../../../../core/shared/element-path-tree
 import { getAllLockedElementPaths } from '../../../../core/shared/element-locking'
 import { treatElementAsGroupLike } from '../../canvas-strategies/strategies/group-helpers'
 import { useCommentModeSelectAndHover } from '../comment-mode/comment-mode-hooks'
+import { useFollowModeSelectAndHover } from '../follow-mode/follow-mode-hooks'
 
 const DRAG_START_THRESHOLD = 2
 
@@ -689,6 +690,7 @@ function useSelectOrLiveModeSelectAndHover(
             editorStoreRef.current.editor.elementPathTree,
             editorStoreRef.current.editor.jsxMetadata,
             editorStoreRef.current.derived.autoFocusedPaths,
+            editorStoreRef.current.derived.filePathMappings,
           )
           if (isFocusableLeaf) {
             editorActions.push(CanvasActions.clearInteractionSession(false))
@@ -792,6 +794,7 @@ export function useSelectAndHover(
   const commentModeCallbacks = useCommentModeSelectAndHover(
     mode?.type === 'comment' ? mode.location : null,
   )
+  const followModeCallbacks = useFollowModeSelectAndHover()
 
   if (hasInteractionSession) {
     return {
@@ -811,6 +814,8 @@ export function useSelectAndHover(
         return textEditModeCallbacks
       case 'comment':
         return commentModeCallbacks
+      case 'follow':
+        return followModeCallbacks
       default:
         const _exhaustiveCheck: never = modeType
         throw new Error(`Unhandled editor mode ${JSON.stringify(modeType)}`)
