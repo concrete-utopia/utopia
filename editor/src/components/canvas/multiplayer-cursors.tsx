@@ -49,24 +49,6 @@ export const MultiplayerPresence = React.memo(() => {
 
   useAddMyselfToCollaborators()
 
-  const myUser = useStorage((store) => {
-    if (!isLoggedIn(loginState)) {
-      return null
-    }
-    return store.collaborators[loginState.user.userId]
-  })
-
-  React.useEffect(() => {
-    if (myUser == null) {
-      return
-    }
-    updateMyPresence({
-      name: myUser.name,
-      picture: myUser.avatar,
-      colorIndex: myUser.colorIndex,
-    })
-  }, [myUser, updateMyPresence])
-
   React.useEffect(() => {
     if (!isLoggedIn(loginState)) {
       return
@@ -108,7 +90,14 @@ MultiplayerPresence.displayName = 'MultiplayerPresence'
 
 const MultiplayerCursors = React.memo(() => {
   const me = useSelf()
-  const others = useOthers((list) => normalizeOthersList(me.id, list))
+  const collabs = useStorage((store) => store.collaborators)
+  const others = useOthers((list) => {
+    const presences = normalizeOthersList(me.id, list)
+    return presences.map((p) => ({
+      presence: p,
+      user: collabs[p.id],
+    }))
+  })
 
   return (
     <div
@@ -121,22 +110,22 @@ const MultiplayerCursors = React.memo(() => {
     >
       {others.map((other) => {
         if (
-          other.presence.cursor == null ||
-          other.presence.canvasOffset == null ||
-          other.presence.canvasScale == null
+          other.presence.presence.cursor == null ||
+          other.presence.presence.canvasOffset == null ||
+          other.presence.presence.canvasScale == null
         ) {
           return null
         }
         const position = windowToCanvasCoordinates(
-          other.presence.canvasScale,
-          other.presence.canvasOffset,
-          other.presence.cursor,
+          other.presence.presence.canvasScale,
+          other.presence.presence.canvasOffset,
+          other.presence.presence.cursor,
         ).canvasPositionRounded
         return (
           <MultiplayerCursor
-            key={`cursor-${other.id}`}
-            name={other.presence.name}
-            colorIndex={other.presence.colorIndex}
+            key={`cursor-${other.presence.id}`}
+            name={other.user.name}
+            colorIndex={other.user.colorIndex}
             position={position}
           />
         )
@@ -257,6 +246,10 @@ const FollowingOverlay = React.memo(() => {
     return room.getOthers().find(isFollowTarget) ?? null
   }, [room, isFollowTarget])
 
+  const followedUser = useStorage((store) =>
+    followed != null ? store.collaborators[followed.id] : null,
+  )
+
   const updateCanvasFromOtherPresence = React.useCallback(
     (presence: Presence) => {
       let actions: EditorAction[] = []
@@ -296,7 +289,7 @@ const FollowingOverlay = React.memo(() => {
     }
   })
 
-  if (followed == null) {
+  if (followed == null || followedUser == null) {
     return null
   }
   return (
@@ -324,7 +317,7 @@ const FollowingOverlay = React.memo(() => {
           boxShadow: UtopiaTheme.panelStyles.shadows.medium,
         }}
       >
-        You're following {followed.presence.name}
+        You're following {followedUser.name}
       </div>
     </div>
   )

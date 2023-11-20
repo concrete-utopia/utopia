@@ -16,22 +16,16 @@ export const liveblocksClient = createClient({
 // and that will automatically be kept in sync. Accessible through the
 // `user.presence` property. Must be JSON-serializable.
 export type Presence = {
-  name: string | null
   cursor: WindowPoint | null
   canvasScale: number | null
   canvasOffset: CanvasVector | null
-  colorIndex: number | null
-  picture: string | null // TODO remove this once able to resolve users
 }
 
 export function initialPresence(): Presence {
   return {
-    name: null,
     cursor: null,
     canvasScale: null,
     canvasOffset: null,
-    colorIndex: null,
-    picture: null,
   }
 }
 
