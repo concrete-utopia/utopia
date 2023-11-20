@@ -1,6 +1,14 @@
+import type { User } from '@liveblocks/client'
 import { motion } from 'framer-motion'
 import React from 'react'
-import { useOthers, useRoom, useSelf, useUpdateMyPresence } from '../../../liveblocks.config'
+import type { Presence, UserMeta } from '../../../liveblocks.config'
+import {
+  useOthers,
+  useOthersListener,
+  useRoom,
+  useSelf,
+  useUpdateMyPresence,
+} from '../../../liveblocks.config'
 import { useAddMyselfToCollaborators } from '../../core/commenting/comment-hooks'
 import type { CanvasPoint } from '../../core/shared/math-utils'
 import { pointsEqual, windowPoint } from '../../core/shared/math-utils'
@@ -10,6 +18,7 @@ import {
   normalizeOthersList,
   possiblyUniqueColor,
 } from '../../core/shared/multiplayer'
+import { assertNever } from '../../core/shared/utils'
 import { useKeepShallowReferenceEquality } from '../../utils/react-performance'
 import { UtopiaTheme, useColorTheme } from '../../uuiui'
 import type { EditorAction } from '../editor/action-types'
@@ -25,18 +34,18 @@ export const MultiplayerPresence = React.memo(() => {
   const dispatch = useDispatch()
 
   const room = useRoom()
-  const self = useSelf()
-  const others = useOthers((list) => normalizeOthersList(self.id, list))
+  const me = useSelf()
+  const others = useOthers((list) => normalizeOthersList(me.id, list))
   const updateMyPresence = useUpdateMyPresence()
 
-  const selfColorIndex = React.useMemo(() => self.presence.colorIndex, [self.presence])
+  const myColorIndex = React.useMemo(() => me.presence.colorIndex, [me.presence])
   const otherColorIndices = useKeepShallowReferenceEquality(
     others.map((other) => other.presence.colorIndex),
   )
 
   const getColorIndex = React.useCallback(() => {
-    return selfColorIndex ?? possiblyUniqueColor(otherColorIndices)
-  }, [selfColorIndex, otherColorIndices])
+    return myColorIndex ?? possiblyUniqueColor(otherColorIndices)
+  }, [myColorIndex, otherColorIndices])
   const loginState = useEditorState(
     Substores.userState,
     (store) => store.userState.loginState,
@@ -107,8 +116,8 @@ export const MultiplayerPresence = React.memo(() => {
 MultiplayerPresence.displayName = 'MultiplayerPresence'
 
 const MultiplayerCursors = React.memo(() => {
-  const self = useSelf()
-  const others = useOthers((list) => normalizeOthersList(self.id, list))
+  const me = useSelf()
+  const others = useOthers((list) => normalizeOthersList(me.id, list))
 
   return (
     <div
@@ -224,8 +233,7 @@ const FollowingOverlay = React.memo(() => {
   const colorTheme = useColorTheme()
   const dispatch = useDispatch()
 
-  const self = useSelf()
-  const others = useOthers((list) => normalizeOthersList(self.id, list))
+  const room = useRoom()
 
   const mode = useEditorState(
     Substores.restOfEditor,
@@ -243,34 +251,59 @@ const FollowingOverlay = React.memo(() => {
     'FollowingOverlay canvasOffset',
   )
 
+  const isFollowTarget = React.useCallback(
+    (other: User<Presence, UserMeta>): boolean => {
+      return isFollowMode(mode) && other.id === mode.playerId
+    },
+    [mode],
+  )
+
+  const resetFollowed = React.useCallback(() => {
+    dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
+  }, [dispatch])
+
   const followed = React.useMemo(() => {
-    return others.find((other) => isFollowMode(mode) && other.id === mode.playerId)
-  }, [others, mode])
+    return room.getOthers().find(isFollowTarget) ?? null
+  }, [room, isFollowTarget])
 
-  React.useEffect(() => {
-    // when following another player, apply its canvas constraints
-    if (followed == null) {
-      if (isFollowMode(mode)) {
-        // reset if the other player disconnects
-        dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
+  const updateCanvasFromOtherPresence = React.useCallback(
+    (presence: Presence) => {
+      let actions: EditorAction[] = []
+      if (presence.canvasScale != null && presence.canvasScale !== canvasScale) {
+        actions.push(CanvasActions.zoom(presence.canvasScale, null))
       }
-      return
-    }
+      if (presence.canvasOffset != null && !pointsEqual(presence.canvasOffset, canvasOffset)) {
+        actions.push(CanvasActions.positionCanvas(presence.canvasOffset))
+      }
+      if (actions.length > 0) {
+        dispatch(actions)
+      }
+    },
+    [dispatch, canvasScale, canvasOffset],
+  )
 
-    let actions: EditorAction[] = []
-    if (followed.presence.canvasScale != null && followed.presence.canvasScale !== canvasScale) {
-      actions.push(CanvasActions.zoom(followed.presence.canvasScale, null))
+  useOthersListener((event) => {
+    if (isFollowMode(mode)) {
+      switch (event.type) {
+        case 'enter':
+        case 'update':
+          if (isFollowTarget(event.user)) {
+            updateCanvasFromOtherPresence(event.user.presence)
+          }
+          break
+        case 'leave':
+          if (isFollowTarget(event.user)) {
+            resetFollowed()
+          }
+          break
+        case 'reset':
+          resetFollowed()
+          break
+        default:
+          assertNever(event)
+      }
     }
-    if (
-      followed.presence.canvasOffset != null &&
-      !pointsEqual(followed.presence.canvasOffset, canvasOffset)
-    ) {
-      actions.push(CanvasActions.positionCanvas(followed.presence.canvasOffset))
-    }
-    if (actions.length > 0) {
-      dispatch(actions)
-    }
-  }, [followed, canvasScale, canvasOffset, dispatch, mode])
+  })
 
   if (followed == null) {
     return null
