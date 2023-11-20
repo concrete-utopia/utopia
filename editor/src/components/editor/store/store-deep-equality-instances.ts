@@ -472,6 +472,7 @@ import type {
   InsertionSubjectWrapper,
   SelectModeToolbarMode,
   CommentMode,
+  FollowMode,
 } from '../editor-modes'
 import {
   EditorModes,
@@ -3246,6 +3247,12 @@ export const CommentModeKeepDeepEquality: KeepDeepEqualityCall<CommentMode> = co
   EditorModes.commentMode,
 )
 
+export const FollowModeKeepDeepEquality: KeepDeepEqualityCall<FollowMode> = combine1EqualityCall(
+  (mode) => mode.playerId,
+  StringKeepDeepEquality,
+  EditorModes.followMode,
+)
+
 export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newValue) => {
   switch (oldValue.type) {
     case 'insert':
@@ -3273,9 +3280,13 @@ export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newVa
         return CommentModeKeepDeepEquality(newValue, oldValue)
       }
       break
+    case 'follow':
+      if (newValue.type === oldValue.type) {
+        return FollowModeKeepDeepEquality(newValue, oldValue)
+      }
+      break
     default:
-      const _exhaustiveCheck: never = oldValue
-      throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
+      assertNever(oldValue)
   }
   return keepDeepEqualityResult(newValue, false)
 }
