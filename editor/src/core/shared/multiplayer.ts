@@ -116,9 +116,11 @@ export function canFollowTarget(
 
   let id = targetId
   while (id != null) {
-    if (!followChain.has(id)) {
-      followChain.add(id)
+    if (followChain.has(id)) {
+      return false
     }
+    followChain.add(id)
+
     const target = others.find((o) => o.id === id)
     id = target?.following ?? null
   }
