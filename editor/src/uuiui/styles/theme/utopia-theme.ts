@@ -110,15 +110,6 @@ const canvas = {
   },
 }
 
-const scene = {
-  live: {
-    boxShadow: shadowStyles.grounded.boxShadow,
-  },
-  editing: {
-    boxShadow: shadowStyles.grounded.boxShadow,
-  },
-}
-
 // see type AlertLevel in editor-state.ts
 
 const noticeStyles: { [styleName: string]: React.CSSProperties } = {
@@ -210,7 +201,6 @@ export const UtopiaStyles = {
   flexRow,
   flexColumn,
   flexCenter,
-  scene,
   canvas,
   fontStyles,
 } as const
