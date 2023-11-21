@@ -46,6 +46,11 @@ export const MultiplayerPresence = React.memo(() => {
     (store) => store.editor.canvas.roundedCanvasOffset,
     'MultiplayerPresence canvasOffset',
   )
+  const mode = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.mode,
+    'MultiplayerPresence mode',
+  )
 
   useAddMyselfToCollaborators()
 
@@ -53,9 +58,12 @@ export const MultiplayerPresence = React.memo(() => {
     if (!isLoggedIn(loginState)) {
       return
     }
-    // when the canvas is panned or zoomed, update the presence
-    updateMyPresence({ canvasScale, canvasOffset })
-  }, [canvasScale, canvasOffset, updateMyPresence, loginState])
+    updateMyPresence({
+      canvasScale,
+      canvasOffset,
+      following: isFollowMode(mode) ? mode.playerId : null,
+    })
+  }, [canvasScale, canvasOffset, updateMyPresence, loginState, mode])
 
   React.useEffect(() => {
     // when the mouse moves over the canvas, update the presence cursor

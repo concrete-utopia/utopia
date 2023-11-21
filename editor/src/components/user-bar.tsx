@@ -3,6 +3,7 @@ import { useOthers, useStatus, useStorage } from '../../liveblocks.config'
 import { getUserPicture, isLoggedIn } from '../common/user'
 import type { MultiplayerColor } from '../core/shared/multiplayer'
 import {
+  canFollowTarget,
   isDefaultAuth0AvatarURL,
   multiplayerColorFromIndex,
   multiplayerInitialsFromName,
@@ -14,12 +15,15 @@ import { Substores, useEditorState } from './editor/store/store-hook'
 import { unless, when } from '../utils/react-conditionals'
 import { MultiplayerWrapper } from '../utils/multiplayer-wrapper'
 import { useDispatch } from './editor/store/dispatch-context'
-import { switchEditorMode } from './editor/actions/action-creators'
+import { showToast, switchEditorMode } from './editor/actions/action-creators'
 import type { EditorAction } from './editor/action-types'
 import { EditorModes, isFollowMode } from './editor/editor-modes'
 import { getCollaborator, useMyUserAndPresence } from '../core/commenting/comment-hooks'
+import { notice } from './common/notice'
 
 const MAX_VISIBLE_OTHER_PLAYERS = 4
+
+export const cannotFollowToastId = 'cannot-follow-toast-id'
 
 export const UserBar = React.memo(() => {
   const loginState = useEditorState(
@@ -67,7 +71,12 @@ const MultiplayerUserBar = React.memo(() => {
   const myName = React.useMemo(() => normalizeMultiplayerName(myUser.name), [myUser])
 
   const others = useOthers((list) =>
-    normalizeOthersList(myUser.id, list).map((other) => getCollaborator(collabs, other)),
+    normalizeOthersList(myUser.id, list).map((other) => {
+      return {
+        ...getCollaborator(collabs, other),
+        following: other.presence.following,
+      }
+    }),
   )
 
   const visibleOthers = React.useMemo(() => {
@@ -84,15 +93,35 @@ const MultiplayerUserBar = React.memo(() => {
   )
 
   const toggleFollowing = React.useCallback(
-    (id: string) => () => {
-      const newMode =
-        isFollowMode(mode) && mode.playerId === id
-          ? EditorModes.selectMode(null, false, 'none')
-          : EditorModes.followMode(id)
-      let actions: EditorAction[] = [switchEditorMode(newMode)]
+    (targetId: string) => () => {
+      let actions: EditorAction[] = []
+      if (
+        !canFollowTarget(
+          myUser.id,
+          targetId,
+          others.map((o) => o),
+        )
+      ) {
+        actions.push(
+          showToast(
+            notice(
+              'Cannot follow this player at the moment.',
+              'WARNING',
+              false,
+              cannotFollowToastId,
+            ),
+          ),
+        )
+      } else {
+        const newMode =
+          isFollowMode(mode) && mode.playerId === targetId
+            ? EditorModes.selectMode(null, false, 'none')
+            : EditorModes.followMode(targetId)
+        actions.push(switchEditorMode(newMode))
+      }
       dispatch(actions)
     },
-    [dispatch, mode],
+    [dispatch, mode, myUser, others],
   )
 
   if (myUser.name == null) {
