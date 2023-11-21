@@ -1,6 +1,7 @@
 import type { User } from '@liveblocks/client'
 import { motion } from 'framer-motion'
 import React from 'react'
+import type { Presence, PresenceActiveFrame, UserMeta } from '../../../liveblocks.config'
 import {
   useOthers,
   useOthersListener,
@@ -9,9 +10,11 @@ import {
   useStorage,
   useUpdateMyPresence,
 } from '../../../liveblocks.config'
-import type { Presence, UserMeta } from '../../../liveblocks.config'
+import { getCollaborator, useAddMyselfToCollaborators } from '../../core/commenting/comment-hooks'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { mapDropNulls } from '../../core/shared/array-utils'
 import type { CanvasPoint } from '../../core/shared/math-utils'
-import { pointsEqual, windowPoint } from '../../core/shared/math-utils'
+import { pointsEqual, windowPoint, zeroRectIfNullOrInfinity } from '../../core/shared/math-utils'
 import { multiplayerColorFromIndex, normalizeOthersList } from '../../core/shared/multiplayer'
 import { assertNever } from '../../core/shared/utils'
 import { UtopiaTheme, useColorTheme } from '../../uuiui'
@@ -20,10 +23,15 @@ import { isLoggedIn } from '../editor/action-types'
 import { switchEditorMode } from '../editor/actions/action-creators'
 import { EditorModes, isFollowMode } from '../editor/editor-modes'
 import { useDispatch } from '../editor/store/dispatch-context'
-import { Substores, useEditorState } from '../editor/store/store-hook'
+import {
+  Substores,
+  useEditorState,
+  useRefEditorState,
+  useSelectorWithCallback,
+} from '../editor/store/store-hook'
 import CanvasActions from './canvas-actions'
+import { activeFrameActionToString } from './commands/set-active-frames-command'
 import { canvasPointToWindowPoint, windowToCanvasCoordinates } from './dom-lookup'
-import { getCollaborator, useAddMyselfToCollaborators } from '../../core/commenting/comment-hooks'
 
 export const MultiplayerPresence = React.memo(() => {
   const dispatch = useDispatch()
@@ -89,8 +97,9 @@ export const MultiplayerPresence = React.memo(() => {
 
   return (
     <>
-      <MultiplayerCursors />
       <FollowingOverlay />
+      <MultiplayerShadows />
+      <MultiplayerCursors />
     </>
   )
 })
@@ -331,3 +340,135 @@ const FollowingOverlay = React.memo(() => {
   )
 })
 FollowingOverlay.displayName = 'FollowingOverlay'
+
+const MultiplayerShadows = React.memo(() => {
+  const me = useSelf()
+  const updateMyPresence = useUpdateMyPresence()
+
+  const collabs = useStorage((store) => store.collaborators)
+  const others = useOthers((list) => {
+    const presences = normalizeOthersList(me.id, list)
+    return presences.map((p) => ({
+      presenceInfo: p,
+      userInfo: collabs[p.id],
+    }))
+  })
+
+  const shadows = React.useMemo(() => {
+    return others.flatMap(
+      (other) =>
+        other.presenceInfo.presence.activeFrames?.map((activeFrame) => ({
+          activeFrame: activeFrame,
+          colorIndex: other.userInfo.colorIndex,
+        })) ?? [],
+    )
+  }, [others])
+
+  const myActiveFrames = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.activeFrames,
+    'MultiplayerShadows activeFrames',
+  )
+
+  const canvasScale = useEditorState(
+    Substores.canvasOffset,
+    (store) => store.editor.canvas.scale,
+    'MultiplayerShadows canvasScale',
+  )
+  const canvasOffset = useEditorState(
+    Substores.canvasOffset,
+    (store) => store.editor.canvas.roundedCanvasOffset,
+    'MultiplayerShadows canvasOffset',
+  )
+
+  const editorRef = useRefEditorState((store) => ({
+    jsxMetadata: store.editor.jsxMetadata,
+  }))
+
+  useSelectorWithCallback(
+    Substores.canvas,
+    (store) => store.editor.canvas.interactionSession?.interactionData,
+    (interactionData) => {
+      if (interactionData?.type === 'DRAG') {
+        updateMyPresence({
+          activeFrames: mapDropNulls(({ target, action, source }): PresenceActiveFrame | null => {
+            const { jsxMetadata } = editorRef.current
+            switch (target.type) {
+              case 'ACTIVE_FRAME_TARGET_RECT':
+                return { frame: target.rect, action, source }
+              case 'ACTIVE_FRAME_TARGET_PATH':
+                const frame = MetadataUtils.getFrameInCanvasCoords(target.path, jsxMetadata)
+                return { frame: zeroRectIfNullOrInfinity(frame), action, source }
+              default:
+                assertNever(target)
+            }
+          }, myActiveFrames),
+        })
+      } else {
+        updateMyPresence({ activeFrames: [] })
+      }
+    },
+    'MultiplayerShadows update presence shadows',
+  )
+
+  return (
+    <>
+      {shadows.map((shadow, index) => {
+        const { frame, action, source } = shadow.activeFrame
+        const color = multiplayerColorFromIndex(shadow.colorIndex)
+        const framePosition = canvasPointToWindowPoint(frame, canvasScale, canvasOffset)
+        const sourcePosition = canvasPointToWindowPoint(source, canvasScale, canvasOffset)
+        return (
+          <React.Fragment key={`shadow-${index}`}>
+            <div
+              style={{
+                position: 'fixed',
+                top: sourcePosition.y,
+                left: sourcePosition.x,
+                width: source.width,
+                height: source.height,
+                pointerEvents: 'none',
+                border: `1px dashed ${color.background}`,
+                opacity: 0.5,
+              }}
+            />
+            <motion.div
+              initial={{
+                x: framePosition.x,
+                y: framePosition.y,
+                width: frame.width,
+                height: frame.height,
+              }}
+              animate={{
+                x: framePosition.x,
+                y: framePosition.y,
+                width: frame.width,
+                height: frame.height,
+              }}
+              transition={{
+                type: 'spring',
+                damping: 30,
+                mass: 0.8,
+                stiffness: 350,
+              }}
+              style={{
+                position: 'fixed',
+                pointerEvents: 'none',
+                background: `${color.background}44`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 9,
+                color: color.background,
+                border: `1px dashed ${color.background}`,
+              }}
+            >
+              {activeFrameActionToString(action)}
+            </motion.div>
+          </React.Fragment>
+        )
+      })}
+    </>
+  )
+})
+MultiplayerShadows.displayName = 'MultiplayerShadows'
