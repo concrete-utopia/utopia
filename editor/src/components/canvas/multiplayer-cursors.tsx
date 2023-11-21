@@ -23,7 +23,7 @@ import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import CanvasActions from './canvas-actions'
 import { canvasPointToWindowPoint, windowToCanvasCoordinates } from './dom-lookup'
-import { useAddMyselfToCollaborators } from '../../core/commenting/comment-hooks'
+import { getCollaborator, useAddMyselfToCollaborators } from '../../core/commenting/comment-hooks'
 
 export const MultiplayerPresence = React.memo(() => {
   const dispatch = useDispatch()
@@ -103,7 +103,7 @@ const MultiplayerCursors = React.memo(() => {
     const presences = normalizeOthersList(me.id, list)
     return presences.map((p) => ({
       presenceInfo: p,
-      userInfo: collabs[p.id],
+      userInfo: getCollaborator(collabs, p),
     }))
   })
 
