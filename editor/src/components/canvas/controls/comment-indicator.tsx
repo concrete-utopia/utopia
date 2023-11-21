@@ -42,11 +42,6 @@ function CommentIndicatorInner() {
   const { threads } = useThreads()
   const dispatch = useDispatch()
   const collabs = useStorage((storage) => storage.collaborators)
-  const [avatarError, setAvatarError] = React.useState(false)
-
-  const onAvatarError = React.useCallback(() => {
-    setAvatarError(true)
-  }, [setAvatarError])
 
   return (
     <React.Fragment>
@@ -108,20 +103,7 @@ function CommentIndicatorInner() {
                   boxShadow: UtopiaTheme.panelStyles.shadows.medium,
                 }}
               >
-                {avatar == null || avatarError ? (
-                  <span>{initials}</span>
-                ) : (
-                  <img
-                    style={{
-                      width: 18,
-                      height: 18,
-                      borderRadius: '100%',
-                    }}
-                    src={avatar}
-                    referrerPolicy='no-referrer'
-                    onError={onAvatarError}
-                  />
-                )}
+                <CommentAvatar url={avatar} initials={initials} />
               </div>
             </div>
           </div>
@@ -130,3 +112,32 @@ function CommentIndicatorInner() {
     </React.Fragment>
   )
 }
+
+interface CommentAvatarProps {
+  url: string | null
+  initials: string
+}
+
+const CommentAvatar = React.memo(({ url, initials }: CommentAvatarProps) => {
+  const [avatarError, setAvatarError] = React.useState(false)
+
+  const onAvatarError = React.useCallback(() => {
+    setAvatarError(true)
+  }, [setAvatarError])
+
+  if (url == null || avatarError) {
+    return <span>{initials}</span>
+  }
+  return (
+    <img
+      style={{
+        width: '100%',
+        height: '100%',
+        borderRadius: '100%',
+      }}
+      src={url}
+      referrerPolicy='no-referrer'
+      onError={onAvatarError}
+    />
+  )
+})
