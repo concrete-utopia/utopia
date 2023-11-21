@@ -5341,31 +5341,40 @@ export const UPDATE_FNS = {
   UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION_UPDATE: (
     action: UpdateTopLevelElementsFromCollaborationUpdate,
     editor: EditorModel,
+    serverState: ProjectServerState,
   ): EditorModel => {
-    const updatedEditor = modifyParseSuccessAtPath(
-      action.fullPath,
-      editor,
-      (parsed) => {
-        const newTopLevelElementsDeepEquals = arrayDeepEquality(TopLevelElementKeepDeepEquality)(
-          parsed.topLevelElements,
-          action.topLevelElements,
-        )
+    // When the current user does own the project...
+    if (serverState.isMyProject === 'yes') {
+      // ...Disallow these updates as they're coming from non-owners.
+      return editor
+    } else {
+      const updatedEditor = modifyParseSuccessAtPath(
+        action.fullPath,
+        editor,
+        (parsed) => {
+          const newTopLevelElementsDeepEquals = arrayDeepEquality(TopLevelElementKeepDeepEquality)(
+            parsed.topLevelElements,
+            action.topLevelElements,
+          )
 
-        if (newTopLevelElementsDeepEquals.areEqual) {
-          return parsed
-        } else {
-          return {
-            ...parsed,
-            topLevelElements: newTopLevelElementsDeepEquals.value,
+          if (newTopLevelElementsDeepEquals.areEqual) {
+            return parsed
+          } else {
+            return {
+              ...parsed,
+              topLevelElements: newTopLevelElementsDeepEquals.value,
+            }
           }
-        }
-      },
-      false,
-    )
+        },
+        false,
+      )
 
-    return {
-      ...updatedEditor,
-      filesModifiedByAnotherUser: updatedEditor.filesModifiedByAnotherUser.concat(action.fullPath),
+      return {
+        ...updatedEditor,
+        filesModifiedByAnotherUser: updatedEditor.filesModifiedByAnotherUser.concat(
+          action.fullPath,
+        ),
+      }
     }
   },
 }

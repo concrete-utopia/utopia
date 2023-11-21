@@ -99,12 +99,11 @@ export type DispatchResult = EditorStoreFull & DispatchResultFields
 
 const cannotUndoRedoToastId = 'cannot-undo-or-redo'
 
-function processAction(
-  dispatchEvent: EditorDispatch,
+function checkIfActionShouldBeProcessed(
   editorStoreUnpatched: EditorStoreUnpatched,
   action: EditorAction,
-  spyCollector: UiJsxCanvasContextData,
-): EditorStoreUnpatched {
+): boolean {
+  // Default to true.
   let shouldProcessAction: boolean = true
   // By default when the current user does not own the project and the action is non-transient prevent actions from running...
   if (editorStoreUnpatched.projectServerState.isMyProject === 'no' && !isTransientAction(action)) {
@@ -114,11 +113,16 @@ function processAction(
       action.action === 'UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION_UPDATE'
     shouldProcessAction = allowedNonOwnerAction
   }
-  // When the current user does own the project...
-  if (editorStoreUnpatched.projectServerState.isMyProject === 'yes') {
-    // ...Disallow these updates as they're coming from non-owners.
-    shouldProcessAction = action.action !== 'UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION_UPDATE'
-  }
+  return shouldProcessAction
+}
+
+function processAction(
+  dispatchEvent: EditorDispatch,
+  editorStoreUnpatched: EditorStoreUnpatched,
+  action: EditorAction,
+  spyCollector: UiJsxCanvasContextData,
+): EditorStoreUnpatched {
+  const shouldProcessAction = checkIfActionShouldBeProcessed(editorStoreUnpatched, action)
 
   let working = editorStoreUnpatched
   if (shouldProcessAction) {
