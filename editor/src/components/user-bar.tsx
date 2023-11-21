@@ -196,7 +196,7 @@ const MultiplayerUserBar = React.memo(() => {
 })
 MultiplayerUserBar.displayName = 'MultiplayerUserBar'
 
-const MultiplayerAvatar = React.memo(
+export const MultiplayerAvatar = React.memo(
   (props: {
     name: string
     tooltip: string
@@ -206,6 +206,7 @@ const MultiplayerAvatar = React.memo(
     border?: boolean
     onClick?: () => void
     active?: boolean
+    size?: number
   }) => {
     const picture = React.useMemo(() => {
       return isDefaultAuth0AvatarURL(props.picture ?? null) ? null : props.picture
@@ -236,8 +237,8 @@ const MultiplayerAvatar = React.memo(
       >
         <div
           style={{
-            width: 24,
-            height: 24,
+            width: props.size ?? 24,
+            height: props.size ?? 24,
             backgroundColor: props.color.background,
             color: props.color.foreground,
             display: 'flex',

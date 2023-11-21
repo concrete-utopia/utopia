@@ -42,6 +42,11 @@ function CommentIndicatorInner() {
   const { threads } = useThreads()
   const dispatch = useDispatch()
   const collabs = useStorage((storage) => storage.collaborators)
+  const [avatarError, setAvatarError] = React.useState(false)
+
+  const onAvatarError = React.useCallback(() => {
+    setAvatarError(true)
+  }, [setAvatarError])
 
   return (
     <React.Fragment>
@@ -103,7 +108,7 @@ function CommentIndicatorInner() {
                   boxShadow: UtopiaTheme.panelStyles.shadows.medium,
                 }}
               >
-                {avatar == null ? (
+                {avatar == null || avatarError ? (
                   <span>{initials}</span>
                 ) : (
                   <img
@@ -114,6 +119,7 @@ function CommentIndicatorInner() {
                     }}
                     src={avatar}
                     referrerPolicy='no-referrer'
+                    onError={onAvatarError}
                   />
                 )}
               </div>
