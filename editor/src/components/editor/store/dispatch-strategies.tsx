@@ -654,12 +654,24 @@ export function handleStrategies(
   if (MeasureDispatchTime) {
     window.performance.mark('strategies_begin')
   }
-  const { unpatchedEditorState, patchedEditorState, newStrategyState } = handleStrategiesInner(
-    strategies,
-    dispatchedActions,
-    storedState,
-    result,
-  )
+  let unpatchedEditorState: EditorState
+  let patchedEditorState: EditorState
+  let newStrategyState: StrategyState
+  if (storedState.projectServerState.isMyProject === 'no') {
+    unpatchedEditorState = result.unpatchedEditor
+    patchedEditorState = result.unpatchedEditor
+    newStrategyState = result.strategyState
+  } else {
+    const strategiesResult = handleStrategiesInner(
+      strategies,
+      dispatchedActions,
+      storedState,
+      result,
+    )
+    unpatchedEditorState = strategiesResult.unpatchedEditorState
+    patchedEditorState = strategiesResult.patchedEditorState
+    newStrategyState = strategiesResult.newStrategyState
+  }
 
   const patchedEditorWithMetadata: EditorState = {
     ...patchedEditorState,
