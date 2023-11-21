@@ -1,23 +1,18 @@
 import type { User } from '@liveblocks/client'
 import { motion } from 'framer-motion'
 import React from 'react'
-import type { Presence, UserMeta } from '../../../liveblocks.config'
 import {
   useOthers,
   useOthersListener,
   useRoom,
   useSelf,
+  useStorage,
   useUpdateMyPresence,
 } from '../../../liveblocks.config'
-import { useAddMyselfToCollaborators } from '../../core/commenting/comment-hooks'
+import type { Presence, UserMeta } from '../../../liveblocks.config'
 import type { CanvasPoint } from '../../core/shared/math-utils'
 import { pointsEqual, windowPoint } from '../../core/shared/math-utils'
-import {
-  multiplayerColorFromIndex,
-  normalizeMultiplayerName,
-  normalizeOthersList,
-  possiblyUniqueColor,
-} from '../../core/shared/multiplayer'
+import { multiplayerColorFromIndex, normalizeOthersList } from '../../core/shared/multiplayer'
 import { assertNever } from '../../core/shared/utils'
 import { useKeepShallowReferenceEquality } from '../../utils/react-performance'
 import { UtopiaStyles, UtopiaTheme, useColorTheme } from '../../uuiui'
@@ -29,23 +24,14 @@ import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import CanvasActions from './canvas-actions'
 import { canvasPointToWindowPoint, windowToCanvasCoordinates } from './dom-lookup'
+import { useAddMyselfToCollaborators } from '../../core/commenting/comment-hooks'
 
 export const MultiplayerPresence = React.memo(() => {
   const dispatch = useDispatch()
 
   const room = useRoom()
-  const me = useSelf()
-  const others = useOthers((list) => normalizeOthersList(me.id, list))
   const updateMyPresence = useUpdateMyPresence()
 
-  const myColorIndex = React.useMemo(() => me.presence.colorIndex, [me.presence])
-  const otherColorIndices = useKeepShallowReferenceEquality(
-    others.map((other) => other.presence.colorIndex),
-  )
-
-  const getColorIndex = React.useCallback(() => {
-    return myColorIndex ?? possiblyUniqueColor(otherColorIndices)
-  }, [myColorIndex, otherColorIndices])
   const loginState = useEditorState(
     Substores.userState,
     (store) => store.userState.loginState,
@@ -63,18 +49,6 @@ export const MultiplayerPresence = React.memo(() => {
   )
 
   useAddMyselfToCollaborators()
-
-  React.useEffect(() => {
-    // when the login state changes, update the presence info
-    if (!isLoggedIn(loginState)) {
-      return
-    }
-    updateMyPresence({
-      name: normalizeMultiplayerName(loginState.user.name ?? null),
-      picture: loginState.user.picture ?? null, // TODO remove this once able to resolve users
-      colorIndex: getColorIndex(),
-    })
-  }, [loginState, updateMyPresence, getColorIndex])
 
   React.useEffect(() => {
     if (!isLoggedIn(loginState)) {
@@ -117,7 +91,14 @@ MultiplayerPresence.displayName = 'MultiplayerPresence'
 
 const MultiplayerCursors = React.memo(() => {
   const me = useSelf()
-  const others = useOthers((list) => normalizeOthersList(me.id, list))
+  const collabs = useStorage((store) => store.collaborators)
+  const others = useOthers((list) => {
+    const presences = normalizeOthersList(me.id, list)
+    return presences.map((p) => ({
+      presenceInfo: p,
+      userInfo: collabs[p.id],
+    }))
+  })
 
   return (
     <div
@@ -130,22 +111,22 @@ const MultiplayerCursors = React.memo(() => {
     >
       {others.map((other) => {
         if (
-          other.presence.cursor == null ||
-          other.presence.canvasOffset == null ||
-          other.presence.canvasScale == null
+          other.presenceInfo.presence.cursor == null ||
+          other.presenceInfo.presence.canvasOffset == null ||
+          other.presenceInfo.presence.canvasScale == null
         ) {
           return null
         }
         const position = windowToCanvasCoordinates(
-          other.presence.canvasScale,
-          other.presence.canvasOffset,
-          other.presence.cursor,
+          other.presenceInfo.presence.canvasScale,
+          other.presenceInfo.presence.canvasOffset,
+          other.presenceInfo.presence.cursor,
         ).canvasPositionRounded
         return (
           <MultiplayerCursor
-            key={`cursor-${other.id}`}
-            name={other.presence.name}
-            colorIndex={other.presence.colorIndex}
+            key={`cursor-${other.presenceInfo.id}`}
+            name={other.userInfo.name}
+            colorIndex={other.userInfo.colorIndex}
             position={position}
           />
         )
@@ -266,6 +247,10 @@ const FollowingOverlay = React.memo(() => {
     return room.getOthers().find(isFollowTarget) ?? null
   }, [room, isFollowTarget])
 
+  const followedUser = useStorage((store) =>
+    followed != null ? store.collaborators[followed.id] : null,
+  )
+
   const updateCanvasFromOtherPresence = React.useCallback(
     (presence: Presence) => {
       let actions: EditorAction[] = []
@@ -305,7 +290,7 @@ const FollowingOverlay = React.memo(() => {
     }
   })
 
-  if (followed == null) {
+  if (followed == null || followedUser == null) {
     return null
   }
   return (
@@ -333,7 +318,7 @@ const FollowingOverlay = React.memo(() => {
           boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
         }}
       >
-        You're following {followed.presence.name}
+        You're following {followedUser.name}
       </div>
     </div>
   )

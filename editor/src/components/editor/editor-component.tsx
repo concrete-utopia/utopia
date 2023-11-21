@@ -35,7 +35,6 @@ import { ConfirmOverwriteDialog } from '../filebrowser/confirm-overwrite-dialog'
 import { ConfirmRevertDialog } from '../filebrowser/confirm-revert-dialog'
 import { ConfirmRevertAllDialog } from '../filebrowser/confirm-revert-all-dialog'
 import { PreviewColumn } from '../preview/preview-pane'
-import TitleBar from '../titlebar/title-bar'
 import * as EditorActions from './actions/action-creators'
 import { FatalIndexedDBErrorComponent } from './fatal-indexeddb-error-component'
 import { editorIsTarget, handleKeyDown, handleKeyUp } from './global-shortcuts'
@@ -48,19 +47,19 @@ import {
 } from './store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
 import { ConfirmDisconnectBranchDialog } from '../filebrowser/confirm-branch-disconnect'
-import { unless, when } from '../../utils/react-conditionals'
+import { when } from '../../utils/react-conditionals'
 import { LowPriorityStoreProvider } from './store/store-context-providers'
 import { useDispatch } from './store/dispatch-context'
 import type { EditorAction } from './action-types'
 import { EditorCommon } from './editor-component-common'
 import { notice } from '../common/notice'
-import { isFeatureEnabled } from '../../utils/feature-switches'
 import { ProjectServerStateUpdater } from './store/project-server-state'
 import { RoomProvider, initialPresence, useRoom, initialStorage } from '../../../liveblocks.config'
 import { generateUUID } from '../../utils/utils'
 import { isLiveblocksEnabled } from './liveblocks-utils'
 import type { Storage, Presence, RoomEvent, UserMeta } from '../../../liveblocks.config'
 import LiveblocksProvider from '@liveblocks/yjs'
+import { projectIdToRoomId } from '../../core/shared/multiplayer'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -73,25 +72,6 @@ function pushProjectURLToBrowserHistory(projectId: string, projectName: string):
 }
 
 export interface EditorProps {}
-
-function useDelayedValueHook(inputValue: boolean, delayMs: number): boolean {
-  const [returnValue, setReturnValue] = React.useState(inputValue)
-  React.useEffect(() => {
-    let timerID: any = undefined
-    if (inputValue) {
-      // we do not delay the toggling if the input value is true
-      setReturnValue(true)
-    } else {
-      timerID = setTimeout(() => {
-        setReturnValue(false)
-      }, delayMs)
-    }
-    return function cleanup() {
-      clearTimeout(timerID)
-    }
-  }, [inputValue, delayMs])
-  return returnValue
-}
 
 export const EditorComponentInner = React.memo((props: EditorProps) => {
   const room = useRoom()
@@ -530,7 +510,7 @@ export function EditorComponent(props: EditorProps) {
   const dispatch = useDispatch()
 
   const roomId = React.useMemo(
-    () => (projectId == null ? generateUUID() : `project-room-${projectId}`),
+    () => (projectId == null ? generateUUID() : projectIdToRoomId(projectId)),
     [projectId],
   )
   return indexedDBFailed ? (
