@@ -205,6 +205,21 @@ export function jsExpressionOtherJavaScript(
   }
 }
 
+export function jsExpressionOtherJavaScriptSimple(
+  javascript: string,
+  definedElsewhere: Array<string>,
+): JSExpressionOtherJavaScript {
+  return jsExpressionOtherJavaScript(
+    javascript,
+    javascript,
+    `return ${javascript}`,
+    definedElsewhere,
+    null,
+    {},
+    emptyComments,
+  )
+}
+
 export interface JSXMapExpression extends WithComments, WithElementsWithin {
   type: 'JSX_MAP_EXPRESSION'
   originalJavascript: string

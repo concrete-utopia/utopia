@@ -1,6 +1,7 @@
 import type { User } from '@liveblocks/client'
 import { motion } from 'framer-motion'
 import React from 'react'
+import type { Presence, PresenceActiveFrame, UserMeta } from '../../../liveblocks.config'
 import {
   useOthers,
   useOthersListener,
@@ -9,11 +10,12 @@ import {
   useStorage,
   useUpdateMyPresence,
 } from '../../../liveblocks.config'
-import type { Presence, PresenceActiveFrame, UserMeta } from '../../../liveblocks.config'
+import { getCollaborator, useAddMyselfToCollaborators } from '../../core/commenting/comment-hooks'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { mapDropNulls } from '../../core/shared/array-utils'
 import type { CanvasPoint } from '../../core/shared/math-utils'
-import { pointsEqual, windowPoint } from '../../core/shared/math-utils'
+import { isFiniteRectangle, pointsEqual, windowPoint } from '../../core/shared/math-utils'
 import { multiplayerColorFromIndex, normalizeOthersList } from '../../core/shared/multiplayer'
-import { isFiniteRectangle } from '../../core/shared/math-utils'
 import { assertNever } from '../../core/shared/utils'
 import { UtopiaTheme, useColorTheme } from '../../uuiui'
 import type { EditorAction } from '../editor/action-types'
@@ -23,11 +25,8 @@ import { EditorModes, isFollowMode } from '../editor/editor-modes'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import CanvasActions from './canvas-actions'
-import { canvasPointToWindowPoint, windowToCanvasCoordinates } from './dom-lookup'
-import { useAddMyselfToCollaborators } from '../../core/commenting/comment-hooks'
-import { mapDropNulls } from '../../core/shared/array-utils'
-import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { activeFrameActionToString } from './commands/set-active-frames-command'
+import { canvasPointToWindowPoint, windowToCanvasCoordinates } from './dom-lookup'
 
 export const MultiplayerPresence = React.memo(() => {
   const dispatch = useDispatch()
@@ -50,6 +49,11 @@ export const MultiplayerPresence = React.memo(() => {
     (store) => store.editor.canvas.roundedCanvasOffset,
     'MultiplayerPresence canvasOffset',
   )
+  const mode = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.mode,
+    'MultiplayerPresence mode',
+  )
 
   useAddMyselfToCollaborators()
 
@@ -57,9 +61,12 @@ export const MultiplayerPresence = React.memo(() => {
     if (!isLoggedIn(loginState)) {
       return
     }
-    // when the canvas is panned or zoomed, update the presence
-    updateMyPresence({ canvasScale, canvasOffset })
-  }, [canvasScale, canvasOffset, updateMyPresence, loginState])
+    updateMyPresence({
+      canvasScale,
+      canvasOffset,
+      following: isFollowMode(mode) ? mode.playerId : null,
+    })
+  }, [canvasScale, canvasOffset, updateMyPresence, loginState, mode])
 
   React.useEffect(() => {
     // when the mouse moves over the canvas, update the presence cursor
@@ -100,7 +107,7 @@ const MultiplayerCursors = React.memo(() => {
     const presences = normalizeOthersList(me.id, list)
     return presences.map((p) => ({
       presenceInfo: p,
-      userInfo: collabs[p.id],
+      userInfo: getCollaborator(collabs, p),
     }))
   })
 

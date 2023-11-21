@@ -21,6 +21,7 @@ export type Presence = {
   canvasScale: number | null
   canvasOffset: CanvasVector | null
   activeFrames?: PresenceActiveFrame[]
+  following: string | null
 }
 
 export type PresenceActiveFrame = {
@@ -33,6 +34,7 @@ export function initialPresence(): Presence {
     cursor: null,
     canvasScale: null,
     canvasOffset: null,
+    following: null,
   }
 }
 
