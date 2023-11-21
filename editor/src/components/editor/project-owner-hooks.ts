@@ -8,38 +8,55 @@ import { assertNever } from '../../core/shared/utils'
 
 const OwnershipToastID = 'project-ownership-toast'
 
+interface OwnershipValues {
+  projectOwnership: ProjectServerState['isMyProject']
+  projectID: string | null
+}
+
 export function useDisplayOwnershipWarning(): void {
   const dispatch = useDispatch()
   const showOrHideWarning = React.useCallback(
-    (projectOwnership: ProjectServerState['isMyProject']) => {
-      switch (projectOwnership) {
-        case 'yes':
-          dispatch([removeToast(OwnershipToastID)])
-          break
-        case 'no':
-          dispatch([
-            showToast(
-              notice(
-                'Viewer Mode: Project is read only in this session.',
-                'INFO',
-                true,
-                OwnershipToastID,
+    (ownershipValues: OwnershipValues) => {
+      // Only once a project has been loaded will the project ID be populated.
+      // Without this check this hook will only fire before the LOAD action
+      // and then the toasts will be cleared before they ever really existed.
+      if (ownershipValues.projectID != null) {
+        switch (ownershipValues.projectOwnership) {
+          case 'yes':
+            // Remove the toast if we switch to a project that the user owns.
+            dispatch([removeToast(OwnershipToastID)])
+            break
+          case 'no':
+            // Add the toast if we switch to a project that the user does not own.
+            dispatch([
+              showToast(
+                notice(
+                  'Viewer Mode: As you are not the owner of this project, it is read-only.',
+                  'NOTICE',
+                  true,
+                  OwnershipToastID,
+                ),
               ),
-            ),
-          ])
-          break
-        case 'unknown':
-          // Do nothing.
-          break
-        default:
-          assertNever(projectOwnership)
+            ])
+            break
+          case 'unknown':
+            // Do nothing.
+            break
+          default:
+            assertNever(ownershipValues.projectOwnership)
+        }
       }
     },
     [dispatch],
   )
   useSelectorWithCallback(
-    Substores.projectServerState,
-    (store) => store.projectServerState.isMyProject,
+    Substores.fullStore,
+    (store) => {
+      return {
+        projectOwnership: store.projectServerState.isMyProject,
+        projectID: store.editor.id,
+      }
+    },
     showOrHideWarning,
     'useDisplayOwnershipWarning useSelectorWithCallback',
   )
