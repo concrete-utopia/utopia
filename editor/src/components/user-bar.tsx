@@ -1,9 +1,9 @@
-import { ClientSideSuspense } from '@liveblocks/react'
 import React from 'react'
-import { useOthers, useSelf, useStatus } from '../../liveblocks.config'
+import { useOthers, useStatus, useStorage } from '../../liveblocks.config'
 import { getUserPicture, isLoggedIn } from '../common/user'
 import type { MultiplayerColor } from '../core/shared/multiplayer'
 import {
+  canFollowTarget,
   isDefaultAuth0AvatarURL,
   multiplayerColorFromIndex,
   multiplayerInitialsFromName,
@@ -13,8 +13,17 @@ import {
 import { Avatar, Tooltip, useColorTheme } from '../uuiui'
 import { Substores, useEditorState } from './editor/store/store-hook'
 import { unless, when } from '../utils/react-conditionals'
+import { MultiplayerWrapper } from '../utils/multiplayer-wrapper'
+import { useDispatch } from './editor/store/dispatch-context'
+import { showToast, switchEditorMode } from './editor/actions/action-creators'
+import type { EditorAction } from './editor/action-types'
+import { EditorModes, isFollowMode } from './editor/editor-modes'
+import { getCollaborator, useMyUserAndPresence } from '../core/commenting/comment-hooks'
+import { notice } from './common/notice'
 
 const MAX_VISIBLE_OTHER_PLAYERS = 4
+
+export const cannotFollowToastId = 'cannot-follow-toast-id'
 
 export const UserBar = React.memo(() => {
   const loginState = useEditorState(
@@ -31,7 +40,9 @@ export const UserBar = React.memo(() => {
     return <SinglePlayerUserBar />
   } else {
     return (
-      <ClientSideSuspense fallback={<div />}>{() => <MultiplayerUserBar />}</ClientSideSuspense>
+      <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
+        <MultiplayerUserBar />
+      </MultiplayerWrapper>
     )
   }
 })
@@ -52,18 +63,20 @@ export const SinglePlayerUserBar = React.memo(() => {
 SinglePlayerUserBar.displayName = 'SinglePlayerUserBar'
 
 const MultiplayerUserBar = React.memo(() => {
+  const dispatch = useDispatch()
   const colorTheme = useColorTheme()
+  const collabs = useStorage((store) => store.collaborators)
 
-  const self = useSelf()
-  const myName = normalizeMultiplayerName(self.presence.name)
+  const { user: myUser } = useMyUserAndPresence()
+  const myName = React.useMemo(() => normalizeMultiplayerName(myUser.name), [myUser])
 
   const others = useOthers((list) =>
-    normalizeOthersList(self.id, list).map((other) => ({
-      id: other.id,
-      name: other.presence.name,
-      colorIndex: other.presence.colorIndex,
-      picture: other.presence.picture, // TODO remove this once able to resolve users
-    })),
+    normalizeOthersList(myUser.id, list).map((other) => {
+      return {
+        ...getCollaborator(collabs, other),
+        following: other.presence.following,
+      }
+    }),
   )
 
   const visibleOthers = React.useMemo(() => {
@@ -73,7 +86,45 @@ const MultiplayerUserBar = React.memo(() => {
     return others.slice(MAX_VISIBLE_OTHER_PLAYERS)
   }, [others])
 
-  if (self.presence.name == null) {
+  const mode = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.mode,
+    'MultiplayerUserBar mode',
+  )
+
+  const toggleFollowing = React.useCallback(
+    (targetId: string) => () => {
+      let actions: EditorAction[] = []
+      if (
+        !canFollowTarget(
+          myUser.id,
+          targetId,
+          others.map((o) => o),
+        )
+      ) {
+        actions.push(
+          showToast(
+            notice(
+              'Cannot follow this player at the moment.',
+              'WARNING',
+              false,
+              cannotFollowToastId,
+            ),
+          ),
+        )
+      } else {
+        const newMode =
+          isFollowMode(mode) && mode.playerId === targetId
+            ? EditorModes.selectMode(null, false, 'none')
+            : EditorModes.followMode(targetId)
+        actions.push(switchEditorMode(newMode))
+      }
+      dispatch(actions)
+    },
+    [dispatch, mode, myUser, others],
+  )
+
+  if (myUser.name == null) {
     // it may still be loading, so fallback until it sorts itself out
     return <SinglePlayerUserBar />
   }
@@ -110,9 +161,11 @@ const MultiplayerUserBar = React.memo(() => {
                 name={multiplayerInitialsFromName(name)}
                 tooltip={name}
                 color={multiplayerColorFromIndex(other.colorIndex)}
-                picture={other.picture}
+                picture={other.avatar}
                 border={true}
                 coloredTooltip={true}
+                onClick={toggleFollowing(other.id)}
+                active={isFollowMode(mode) && mode.playerId === other.id}
               />
             )
           })}
@@ -135,7 +188,7 @@ const MultiplayerUserBar = React.memo(() => {
           name={multiplayerInitialsFromName(myName)}
           tooltip={`${myName} (you)`}
           color={{ background: colorTheme.bg3.value, foreground: colorTheme.fg1.value }}
-          picture={self.presence.picture}
+          picture={myUser.avatar}
         />
       </a>
     </div>
@@ -143,7 +196,7 @@ const MultiplayerUserBar = React.memo(() => {
 })
 MultiplayerUserBar.displayName = 'MultiplayerUserBar'
 
-const MultiplayerAvatar = React.memo(
+export const MultiplayerAvatar = React.memo(
   (props: {
     name: string
     tooltip: string
@@ -151,26 +204,15 @@ const MultiplayerAvatar = React.memo(
     coloredTooltip?: boolean
     picture?: string | null
     border?: boolean
+    onClick?: () => void
+    active?: boolean
+    size?: number
   }) => {
     const picture = React.useMemo(() => {
       return isDefaultAuth0AvatarURL(props.picture ?? null) ? null : props.picture
     }, [props.picture])
 
-    const [pictureNotFound, setPictureNotFound] = React.useState(false)
-
-    React.useEffect(() => {
-      setPictureNotFound(false)
-    }, [picture])
-
-    const onPictureError = React.useCallback(() => {
-      console.warn('cannot get picture', props.picture)
-      setPictureNotFound(true)
-    }, [props.picture])
-
-    const showPicture = React.useMemo(() => {
-      return picture != null && !pictureNotFound
-    }, [picture, pictureNotFound])
-
+    const colorTheme = useColorTheme()
     return (
       <Tooltip
         title={props.tooltip}
@@ -180,37 +222,73 @@ const MultiplayerAvatar = React.memo(
       >
         <div
           style={{
-            width: 24,
-            height: 24,
+            width: props.size ?? 24,
+            height: props.size ?? 24,
             backgroundColor: props.color.background,
             color: props.color.foreground,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             borderRadius: '100%',
+            border: `3px solid ${props.active === true ? colorTheme.primary.value : 'transparent'}`,
             fontSize: 9,
             fontWeight: 700,
             cursor: 'pointer',
+            boxShadow:
+              props.active === true ? `0px 0px 15px ${colorTheme.primary.value}` : undefined,
           }}
+          onClick={props.onClick}
         >
-          {unless(showPicture, props.name)}
-          {when(
-            showPicture,
-            // Using an img tag instead of using it as backgroundColor above because of potential 403s
-            <img
-              style={{
-                width: props.border === true ? 22 : '100%',
-                height: props.border === true ? 22 : '100%',
-                borderRadius: '100%',
-              }}
-              src={picture ?? ''}
-              referrerPolicy='no-referrer'
-              onError={onPictureError}
-            />,
-          )}
+          <AvatarPicture
+            url={picture}
+            size={props.border === true ? 22 : undefined}
+            initials={props.name}
+          />
         </div>
       </Tooltip>
     )
   },
 )
 MultiplayerAvatar.displayName = 'MultiplayerAvatar'
+
+interface AvatarPictureProps {
+  url: string | null | undefined
+  initials: string
+  size?: number
+}
+
+export const AvatarPicture = React.memo((props: AvatarPictureProps) => {
+  const url = React.useMemo(() => {
+    return isDefaultAuth0AvatarURL(props.url ?? null) ? null : props.url
+  }, [props.url])
+
+  const { initials, size } = props
+
+  const [pictureNotFound, setPictureNotFound] = React.useState(false)
+
+  React.useEffect(() => {
+    setPictureNotFound(false)
+  }, [url])
+
+  const onPictureError = React.useCallback(() => {
+    console.warn('cannot get picture', url)
+    setPictureNotFound(true)
+  }, [url])
+
+  if (url == null || pictureNotFound) {
+    return <span>{initials}</span>
+  }
+  return (
+    <img
+      style={{
+        width: size ?? '100%',
+        height: size ?? '100%',
+        borderRadius: '100%',
+      }}
+      src={url}
+      referrerPolicy='no-referrer'
+      onError={onPictureError}
+    />
+  )
+})
+AvatarPicture.displayName = 'AvatarPicture'

@@ -3,18 +3,17 @@ import React from 'react'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { isCommentMode } from '../../editor/editor-modes'
-import { ClientSideSuspense } from '@liveblocks/react'
 import { useCreateThread } from '../../../../liveblocks.config'
 import type { ComposerSubmitComment } from '@liveblocks/react-comments'
 import { Comment, Composer } from '@liveblocks/react-comments'
 import { stopPropagation } from '../../inspector/common/inspector-utils'
 import { UtopiaTheme } from '../../../uuiui'
-import { ErrorBoundary } from '../../../utils/react-error-boundary'
 import {
   useCanvasCommentThread,
   useMyMultiplayerColorIndex,
 } from '../../../core/commenting/comment-hooks'
 import { isLoggedIn } from '../../editor/action-types'
+import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 
 export const CommentPopup = React.memo(() => {
   const mode = useEditorState(
@@ -43,11 +42,12 @@ export const CommentPopup = React.memo(() => {
         onKeyUp={stopPropagation}
         onMouseUp={stopPropagation}
       >
-        <ErrorBoundary fallback={<div>Can not load comments</div>}>
-          <ClientSideSuspense fallback={<div>Loading…</div>}>
-            {() => <CommentThread x={location.x} y={location.y} />}
-          </ClientSideSuspense>
-        </ErrorBoundary>
+        <MultiplayerWrapper
+          errorFallback={<div>Can not load comments</div>}
+          suspenseFallback={<div>Loading…</div>}
+        >
+          <CommentThread x={location.x} y={location.y} />
+        </MultiplayerWrapper>
       </div>
     </CanvasOffsetWrapper>
   )
@@ -63,17 +63,6 @@ function CommentThread({ x, y }: CommentThreadProps) {
 
   const createThread = useCreateThread()
 
-  const colorIndex = useMyMultiplayerColorIndex() ?? -1
-
-  // TODO: Unify getting name in different multiplayer components
-  const loginState = useEditorState(
-    Substores.userState,
-    (store) => store.userState.loginState,
-    'CommentThread loginState',
-  )
-
-  const name = isLoggedIn(loginState) ? loginState.user.name : null
-
   const onCreateThread = React.useCallback(
     ({ body }: ComposerSubmitComment, event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault()
@@ -81,10 +70,10 @@ function CommentThread({ x, y }: CommentThreadProps) {
       // Create a new thread
       createThread({
         body,
-        metadata: { type: 'canvas', x: x, y: y, name: name ?? 'Anonymous', colorIndex: colorIndex },
+        metadata: { type: 'canvas', x: x, y: y },
       })
     },
-    [createThread, x, y, name, colorIndex],
+    [createThread, x, y],
   )
 
   if (thread == null) {

@@ -63,7 +63,9 @@ specifiers:
   '@liveblocks/client': 1.7.1
   '@liveblocks/react': 1.7.1
   '@liveblocks/react-comments': 1.7.1
+  '@liveblocks/yjs': 1.7.1
   '@originjs/vite-plugin-commonjs': 1.0.3
+  '@peculiar/webcrypto': 1.4.3
   '@popperjs/core': 2.4.4
   '@react-three/fiber': 8.0.14
   '@relative-ci/agent': ^2.1.0
@@ -89,6 +91,7 @@ specifiers:
   '@types/filesystem': 0.0.29
   '@types/flat': 0.0.28
   '@types/fontfaceobserver': 0.0.6
+  '@types/glob-to-regexp': 0.4.4
   '@types/graphlib': 2.1.4
   '@types/he': 1.1.2
   '@types/hosted-git-info': 3.0.0
@@ -186,6 +189,7 @@ specifiers:
   friendly-words: 1.1.10
   fse: 1.0.1
   fsevents: 2.1.2
+  glob-to-regexp: 0.4.1
   glslCanvas: 0.1.7
   got: 11.8.1
   graphlib: 2.1.1
@@ -328,6 +332,7 @@ specifiers:
   webpack-merge: 5.9.0
   webpack-node-externals: 3.0.0
   xstate: 4.23.1
+  yjs: 13.6.8
   zustand: 4.1.5
 
 dependencies:
@@ -349,6 +354,7 @@ dependencies:
   '@liveblocks/client': 1.7.1
   '@liveblocks/react': 1.7.1_react@18.1.0
   '@liveblocks/react-comments': 1.7.1_wgqxz3kjpz4ixw4iz4mbg2tk4i
+  '@liveblocks/yjs': 1.7.1_yjs@13.6.8
   '@popperjs/core': 2.4.4
   '@remix-run/react': 2.0.1_njludxb6fcqnim6moy22jieofi
   '@root/encoding': 1.0.1
@@ -385,6 +391,7 @@ dependencies:
   fontfaceobserver: 2.1.0
   framer-motion: 10.16.5_ef5jwxihqo6n7gxfmzogljlgcm
   friendly-words: 1.1.10
+  glob-to-regexp: 0.4.1
   graphlib: 2.1.1
   he: 1.2.0
   hosted-git-info: 3.0.5
@@ -472,6 +479,7 @@ dependencies:
   utopia-vscode-common: file:../utopia-vscode-common
   uuid: 8.3.2
   xstate: 4.23.1
+  yjs: 13.6.8
   zustand: 4.1.5_immer@3.2.0+react@18.1.0
 
 optionalDependencies:
@@ -485,6 +493,7 @@ devDependencies:
   '@babel/preset-typescript': 7.15.0_@babel+core@7.15.5
   '@hot-loader/react-dom': 16.13.0_react@18.1.0
   '@originjs/vite-plugin-commonjs': 1.0.3
+  '@peculiar/webcrypto': 1.4.3
   '@react-three/fiber': 8.0.14_5vzz734aui5gu3jm6wlduec5ym
   '@relative-ci/agent': 2.1.0_webpack@5.88.2
   '@rollup/plugin-node-resolve': 13.1.3
@@ -502,6 +511,7 @@ devDependencies:
   '@types/eslint': 7.2.2
   '@types/filesystem': 0.0.29
   '@types/flat': 0.0.28
+  '@types/glob-to-regexp': 0.4.4
   '@types/graphlib': 2.1.4
   '@types/he': 1.1.2
   '@types/hosted-git-info': 3.0.0
@@ -3509,6 +3519,17 @@ packages:
       use-sync-external-store: 1.2.0_react@18.1.0
     dev: false
 
+  /@liveblocks/yjs/1.7.1_yjs@13.6.8:
+    resolution: {integrity: sha512-2qB7p184GyHUBVNY3mj92RryHbNs2jGD1kEmWzVwLNfx2ghIAVwVTLX0QpeXOLEJcWcKzzUzcJ+th054rx4yEA==}
+    peerDependencies:
+      yjs: ^13.6.1
+    dependencies:
+      '@liveblocks/client': 1.7.1
+      '@liveblocks/core': 1.7.1
+      js-base64: 3.7.5
+      yjs: 13.6.8
+    dev: false
+
   /@mantine/core/6.0.21_zscddymzi65of27qxyxk3p3mzi:
     resolution: {integrity: sha512-Kx4RrRfv0I+cOCIcsq/UA2aWcYLyXgW3aluAuW870OdXnbII6qg7RW28D+r9D76SHPxWFKwIKwmcucAG08Divg==}
     peerDependencies:
@@ -3604,6 +3625,32 @@ packages:
     resolution: {integrity: sha512-KuEXeGPptM2lyxdIEJ4R11+5ztipHoE7hy8ClZt3PYaOVQ/pyngd2alaSrPnwyFeOW1UagRBaQ752aA1dTMdOQ==}
     dependencies:
       esbuild: 0.14.54
+    dev: true
+
+  /@peculiar/asn1-schema/2.3.8:
+    resolution: {integrity: sha512-ULB1XqHKx1WBU/tTFIA+uARuRoBVZ4pNdOA878RDrRbBfBGcSzi5HBkdScC6ZbHn8z7L8gmKCgPC1LHRrP46tA==}
+    dependencies:
+      asn1js: 3.0.5
+      pvtsutils: 1.3.5
+      tslib: 2.6.2
+    dev: true
+
+  /@peculiar/json-schema/1.1.12:
+    resolution: {integrity: sha512-coUfuoMeIB7B8/NMekxaDzLhaYmp0HZNPEjYRm9goRou8UZIC3z21s0sL9AWoCw4EG876QyO3kYrc61WNF9B/w==}
+    engines: {node: '>=8.0.0'}
+    dependencies:
+      tslib: 2.6.2
+    dev: true
+
+  /@peculiar/webcrypto/1.4.3:
+    resolution: {integrity: sha512-VtaY4spKTdN5LjJ04im/d/joXuvLbQdgy5Z4DXF4MFZhQ+MTrejbNMkfZBp1Bs3O5+bFqnJgyGdPuZQflvIa5A==}
+    engines: {node: '>=10.12.0'}
+    dependencies:
+      '@peculiar/asn1-schema': 2.3.8
+      '@peculiar/json-schema': 1.1.12
+      pvtsutils: 1.3.5
+      tslib: 2.6.2
+      webcrypto-core: 1.7.7
     dev: true
 
   /@polka/url/1.0.0-next.20:
@@ -4996,6 +5043,10 @@ packages:
   /@types/fontfaceobserver/0.0.6:
     resolution: {integrity: sha512-QJ1znjr9CDax2L17rgBnDOfNHsC1XtVAMswu+lRWvWb+kANhHA0slUNSSBsG8FVNvM4I4yXlN9doJRot3A2hkQ==}
     dev: false
+
+  /@types/glob-to-regexp/0.4.4:
+    resolution: {integrity: sha512-nDKoaKJYbnn1MZxUY0cA1bPmmgZbg0cTq7Rh13d0KWYNOiKbqoR+2d89SnRPszGh7ROzSwZ/GOjZ4jPbmmZ6Eg==}
+    dev: true
 
   /@types/glob/7.1.4:
     resolution: {integrity: sha512-w+LsMxKyYQm347Otw+IfBXOv9UWVjpHpCDdbBMt8Kz/xbvCYNjP+0qPh91Km3iKfSRLBB0P7fAMf0KHrPu+MyA==}
@@ -6393,6 +6444,15 @@ packages:
       inherits: 2.0.4
       minimalistic-assert: 1.0.1
       safer-buffer: 2.1.2
+    dev: true
+
+  /asn1js/3.0.5:
+    resolution: {integrity: sha512-FVnvrKJwpt9LP2lAMl8qZswRNm3T4q9CON+bxldk2iwk3FFpuwhx2FfinyitizWHsVYyaY+y5JzDR0rCMV5yTQ==}
+    engines: {node: '>=12.0.0'}
+    dependencies:
+      pvtsutils: 1.3.5
+      pvutils: 1.1.3
+      tslib: 2.6.2
     dev: true
 
   /assert/1.3.0:
@@ -10645,7 +10705,6 @@ packages:
 
   /glob-to-regexp/0.4.1:
     resolution: {integrity: sha512-lkX1HJXwyMcprw/5YUZc2s7DrpAiHB21/V+E1rHUrVNokkvB6bqMzT0VfV6/86ZNabt1k14YOIaT7nDvOX3Iiw==}
-    dev: true
 
   /glob/3.1.21:
     resolution: {integrity: sha512-ANhy2V2+tFpRajE3wN4DhkNQ08KDr0Ir1qL12/cUe5+a7STEK8jkW4onUYuY8/06qAFuT5je7mjAqzx0eKI2tQ==}
@@ -11929,6 +11988,10 @@ packages:
       - encoding
     dev: true
 
+  /isomorphic.js/0.2.5:
+    resolution: {integrity: sha512-PIeMbHqMt4DnUP3MA/Flc0HElYjMXArsw1qwJZcm9sqR8mq3l8NYizFMty0pWwE/tzIGH3EKK5+jes5mAr85yw==}
+    dev: false
+
   /istanbul-lib-coverage/3.0.1:
     resolution: {integrity: sha512-GvCYYTxaCPqwMjobtVcVKvSHtAGe48MNhGjpK8LtVF8K0ISX7hCKl85LgtuaSneWVyQmaGcW3iXVV3GaZSLpmQ==}
     engines: {node: '>=8'}
@@ -12642,6 +12705,10 @@ packages:
     resolution: {integrity: sha512-pZe//GGmwJndub7ZghVHz7vjb2LgC1m8B07Au3eYqeqv9emhESByMXxaEgkUkEqJe87oBbSniGYoQNIBklc7IQ==}
     dev: true
 
+  /js-base64/3.7.5:
+    resolution: {integrity: sha512-3MEt5DTINKqfScXKfJFrRbxkrnk2AxPWGBL/ycjz4dK8iqiSJ06UxD8jh8xuh6p10TX4t2+7FsBYVxxQbMg+qA==}
+    dev: false
+
   /js-tokens/3.0.2:
     resolution: {integrity: sha512-RjTcuD4xjtthQkaWH7dFlH85L+QaVtSoOyGdZ3g6HFhS9dFNDfLyqgm2NFe2X6cQpeFmt0452FJjFG5UameExg==}
     dev: true
@@ -13082,6 +13149,14 @@ packages:
     dependencies:
       prelude-ls: 1.2.1
       type-check: 0.4.0
+
+  /lib0/0.2.87:
+    resolution: {integrity: sha512-TbB63XJixvNToW2IHWAFsCJj9tVnajmwjE14p69i51Rx8byOQd2IP4ourE8v4d7vhyO++nVm1sQk3ePslfbucg==}
+    engines: {node: '>=16'}
+    hasBin: true
+    dependencies:
+      isomorphic.js: 0.2.5
+    dev: false
 
   /lie/3.1.1:
     resolution: {integrity: sha512-RiNhHysUjhrDQntfYSfY4MU24coXXdEOgw9WGcKHNeEwffDYbF//u87M1EWaMGzuFoSbqW0C9C6lEEhDOAswfw==}
@@ -15170,6 +15245,17 @@ packages:
 
   /pure-rand/1.7.0:
     resolution: {integrity: sha512-Mpghwu8LvQUpr8NRFmGTgX8mFi8WHqor9oE0cCj2Sk5XjA10lBx880qUXtXQPYzrUL8NVQ87nqZvV7LI6gVdOw==}
+    dev: true
+
+  /pvtsutils/1.3.5:
+    resolution: {integrity: sha512-ARvb14YB9Nm2Xi6nBq1ZX6dAM0FsJnuk+31aUp4TrcZEdKUlSqOqsxJHUPJDNE3qiIp+iUPEIeR6Je/tgV7zsA==}
+    dependencies:
+      tslib: 2.6.2
+    dev: true
+
+  /pvutils/1.1.3:
+    resolution: {integrity: sha512-pMpnA0qRdFp32b1sJl1wOJNxZLQ2cbQx+k6tjNtZ8CpvVhNqEPRgivZ2WOUev2YMajecdH7ctUPDvEe87nariQ==}
+    engines: {node: '>=6.0.0'}
     dev: true
 
   /q/1.5.1:
@@ -18989,6 +19075,16 @@ packages:
       minimalistic-assert: 1.0.1
     dev: true
 
+  /webcrypto-core/1.7.7:
+    resolution: {integrity: sha512-7FjigXNsBfopEj+5DV2nhNpfic2vumtjjgPmeDKk45z+MJwXKKfhPB7118Pfzrmh4jqOMST6Ch37iPAHoImg5g==}
+    dependencies:
+      '@peculiar/asn1-schema': 2.3.8
+      '@peculiar/json-schema': 1.1.12
+      asn1js: 3.0.5
+      pvtsutils: 1.3.5
+      tslib: 2.6.2
+    dev: true
+
   /webidl-conversions/3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
 
@@ -19514,6 +19610,13 @@ packages:
     dependencies:
       buffer-crc32: 0.2.13
       fd-slicer: 1.1.0
+    dev: false
+
+  /yjs/13.6.8:
+    resolution: {integrity: sha512-ZPq0hpJQb6f59B++Ngg4cKexDJTvfOgeiv0sBc4sUm8CaBWH7OQC4kcCgrqbjJ/B2+6vO49exvTmYfdlPtcjbg==}
+    engines: {node: '>=16.0.0', npm: '>=8.0.0'}
+    dependencies:
+      lib0: 0.2.87
     dev: false
 
   /yocto-queue/0.1.0:

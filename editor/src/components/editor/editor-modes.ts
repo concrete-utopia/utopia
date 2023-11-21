@@ -123,7 +123,18 @@ export interface LiveCanvasMode {
   controlId: string | null
 }
 
-export type Mode = InsertMode | SelectMode | LiveCanvasMode | TextEditMode | CommentMode
+export interface FollowMode {
+  type: 'follow'
+  playerId: string // the ID of the followed player
+}
+
+export type Mode =
+  | InsertMode
+  | SelectMode
+  | LiveCanvasMode
+  | TextEditMode
+  | CommentMode
+  | FollowMode
 export type PersistedMode = SelectMode | LiveCanvasMode
 
 export const EditorModes = {
@@ -171,6 +182,12 @@ export const EditorModes = {
       location: location,
     }
   },
+  followMode: function (playerId: string): FollowMode {
+    return {
+      type: 'follow',
+      playerId: playerId,
+    }
+  },
 }
 
 export function isInsertMode(value: Mode): value is InsertMode {
@@ -191,6 +208,9 @@ export function isSelectModeWithArea(value: Mode): boolean {
 export function isCommentMode(value: Mode): value is CommentMode {
   return value.type === 'comment'
 }
+export function isFollowMode(value: Mode): value is FollowMode {
+  return value.type === 'follow'
+}
 
 export function convertModeToSavedMode(mode: Mode): PersistedMode {
   switch (mode.type) {
@@ -200,6 +220,7 @@ export function convertModeToSavedMode(mode: Mode): PersistedMode {
     case 'insert':
     case 'textEdit':
     case 'comment':
+    case 'follow':
       return EditorModes.selectMode(null, false, 'none')
   }
 }

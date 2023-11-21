@@ -7,6 +7,7 @@ import { RevisionsState, textFile, textFileContents } from '../shared/project-fi
 import type { SteganoTextData } from '../shared/stegano-text'
 import { getTextFileByPath } from '../../components/custom-code/code-file.test-utils'
 import type { EditorAction } from '../../components/editor/action-types'
+import { applyPrettier } from 'utopia-vscode-common'
 
 export function useReParseOpenProjectFile(): () => void {
   const dispatch = useDispatch()
@@ -41,15 +42,15 @@ function spliceCode(
   )
   if (originalString !== originalStringData.originalString) {
     throw new Error(`Tried to rewrite string but it was not matching the last known value.
-Current: >>>${originalString}<<<
-Expected: >>>${originalStringData.originalString}<<<
-`)
+  Current value:    >>>${originalString}<<<
+  Last known value: >>>${originalStringData.originalString}<<<
+  `)
   }
 
   const originalBefore = originalCode.slice(0, originalStringData.startPosition)
   const originalAfter = originalCode.slice(originalStringData.endPosition)
 
-  return '' + originalBefore + updatedString + originalAfter
+  return applyPrettier('' + originalBefore + updatedString + originalAfter, false).formatted
 }
 
 export function useUpdateStringRun(): (
@@ -64,7 +65,7 @@ export function useUpdateStringRun(): (
       const updatedCode = spliceCode(
         sourceFile.fileContents.code,
         originalStringData,
-        updatedString,
+        sanitizeString(updatedString),
       )
       const updatedFileCodeAhead = textFile(
         textFileContents(
@@ -80,4 +81,8 @@ export function useUpdateStringRun(): (
     },
     [refEditorState],
   )
+}
+
+function sanitizeString(s: string): string {
+  return JSON.stringify(s)
 }

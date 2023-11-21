@@ -26,6 +26,7 @@ import {
   TestSceneUID,
   getPrintedUiJsCode,
   getPrintedUiJsCodeWithoutUIDs,
+  makeTestProjectCodeWithComponentInnards,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   renderTestEditorWithModel,
@@ -465,6 +466,160 @@ describe('canvas toolbar', () => {
     <div data-uid='a3d' />
     <span style={{ width: 100, height: 100, top: 0, left: 0, position: 'absolute' }} data-uid='sample-text'>Sample text</span>
   </div>`),
+    )
+  })
+
+  it('can insert a span with a variable text', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithComponentInnards(`
+      const myText = 'Hello world'
+      return (
+        <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 57,
+          top: 168,
+          width: 247,
+          height: 402,
+        }}
+        data-uid='container'
+      >
+        <div data-uid='a3d' />
+      </div>
+    )`),
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(editor, [
+      EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
+    ])
+
+    FOR_TESTS_setNextGeneratedUids(['reserved', 'sample-text'])
+
+    await insertViaAddElementPopup(editor, 'myTex')
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithComponentInnards(`
+      const myText = 'Hello world'
+      return (
+        <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 57,
+          top: 168,
+          width: 247,
+          height: 402,
+        }}
+        data-uid='container'
+      >
+        <div data-uid='a3d' />
+        <span style={{ width: 100, height: 100, top: 0, left: 0, position: 'absolute' }} data-uid='sample-text'>{myText}</span>
+  </div>
+  )`),
+    )
+  })
+
+  it('can insert a span with a variable stringified content', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithComponentInnards(`
+      const myObj = { test: 'test' }
+      return (
+        <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 57,
+          top: 168,
+          width: 247,
+          height: 402,
+        }}
+        data-uid='container'
+      >
+        <div data-uid='a3d' />
+      </div>
+    )`),
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(editor, [
+      EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
+    ])
+
+    FOR_TESTS_setNextGeneratedUids(['reserved', 'sample-text'])
+
+    await insertViaAddElementPopup(editor, 'myObj')
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithComponentInnards(`
+      const myObj = { test: 'test' }
+      return (
+        <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 57,
+          top: 168,
+          width: 247,
+          height: 402,
+        }}
+        data-uid='container'
+      >
+        <div data-uid='a3d' />
+        <span style={{ width: 100, height: 100, top: 0, left: 0, position: 'absolute' }} data-uid='sample-text'>{JSON.stringify(myObj)}</span>
+        </div>
+    )`),
+    )
+  })
+
+  it('can insert a conditional variable via the floating insert menu', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithComponentInnards(`
+      const myCondition = true
+      return (
+        <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 57,
+          top: 168,
+          width: 247,
+          height: 402,
+        }}
+        data-uid='container'
+      >
+        <div data-uid='a3d' />
+      </div>
+    )`),
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(editor, [
+      EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
+    ])
+
+    await insertViaAddElementPopup(editor, 'myConditio')
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithComponentInnards(`
+      const myCondition = true
+      return (
+        <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 57,
+          top: 168,
+          width: 247,
+          height: 402,
+        }}
+        data-uid='container'
+      >
+        <div data-uid='a3d' />
+        {myCondition ? null : null}
+      </div>
+    )`),
     )
   })
 

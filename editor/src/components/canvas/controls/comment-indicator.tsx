@@ -4,19 +4,20 @@ import { jsx } from '@emotion/react'
 import React from 'react'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { EditorModes } from '../../editor/editor-modes'
-import { ClientSideSuspense } from '@liveblocks/react'
-import { useThreads } from '../../../../liveblocks.config'
+import { useStorage, useThreads } from '../../../../liveblocks.config'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { switchEditorMode } from '../../editor/actions/action-creators'
 import { canvasPoint } from '../../../core/shared/math-utils'
 import { UtopiaTheme } from '../../../uuiui'
-import { ErrorBoundary } from '../../../utils/react-error-boundary'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import {
   multiplayerColorFromIndex,
   multiplayerInitialsFromName,
   normalizeMultiplayerName,
 } from '../../../core/shared/multiplayer'
+import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
+import { when } from '../../../utils/react-conditionals'
+import { AvatarPicture } from '../../user-bar'
 
 export const CommentIndicator = React.memo(() => {
   const projectId = useEditorState(
@@ -31,9 +32,9 @@ export const CommentIndicator = React.memo(() => {
 
   return (
     <CanvasOffsetWrapper>
-      <ErrorBoundary fallback={null}>
-        <ClientSideSuspense fallback={null}>{() => <CommentIndicatorInner />}</ClientSideSuspense>
-      </ErrorBoundary>
+      <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
+        <CommentIndicatorInner />
+      </MultiplayerWrapper>
     </CanvasOffsetWrapper>
   )
 })
@@ -41,14 +42,28 @@ export const CommentIndicator = React.memo(() => {
 function CommentIndicatorInner() {
   const { threads } = useThreads()
   const dispatch = useDispatch()
+  const collabs = useStorage((storage) => storage.collaborators)
 
   return (
     <React.Fragment>
       {threads.map((thread) => {
         const point = canvasPoint(thread.metadata)
-        // TODO: unify initial handling for multiplayer
-        const initials = multiplayerInitialsFromName(normalizeMultiplayerName(thread.metadata.name))
-        const color = multiplayerColorFromIndex(thread.metadata.colorIndex)
+        const { initials, color, avatar } = (() => {
+          const firstComment = thread.comments[0]
+          if (firstComment == null) {
+            return { initials: 'AN', color: multiplayerColorFromIndex(null), avatar: null }
+          }
+          const author = collabs[firstComment.userId]
+          if (author == null) {
+            return { initials: 'AN', color: multiplayerColorFromIndex(null), avatar: null }
+          }
+          return {
+            initials: multiplayerInitialsFromName(normalizeMultiplayerName(author.name)),
+            color: multiplayerColorFromIndex(author.colorIndex),
+            avatar: author.avatar,
+          }
+        })()
+
         return (
           <div
             key={thread.id}
@@ -89,7 +104,7 @@ function CommentIndicatorInner() {
                   boxShadow: UtopiaTheme.panelStyles.shadows.medium,
                 }}
               >
-                {initials}
+                <AvatarPicture url={avatar} initials={initials} />
               </div>
             </div>
           </div>

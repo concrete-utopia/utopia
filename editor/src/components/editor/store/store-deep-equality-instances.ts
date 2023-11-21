@@ -472,6 +472,7 @@ import type {
   InsertionSubjectWrapper,
   SelectModeToolbarMode,
   CommentMode,
+  FollowMode,
 } from '../editor-modes'
 import {
   EditorModes,
@@ -537,6 +538,12 @@ import { elementPaste } from '../actions/action-creators'
 import type { ProjectMetadataFromServer, ProjectServerState } from './project-server-state'
 import { projectServerState, projectMetadataFromServer } from './project-server-state'
 import type { VariablesInScope } from '../../canvas/ui-jsx-canvas'
+import type {
+  ActiveFrame,
+  ActiveFrameTarget,
+  ActiveFrameTargetPath,
+  ActiveFrameTargetRect,
+} from '../../canvas/commands/set-active-frames-command'
 
 export const ProjectMetadataFromServerKeepDeepEquality: KeepDeepEqualityCall<ProjectMetadataFromServer> =
   combine3EqualityCalls(
@@ -686,7 +693,7 @@ export const NavigatorStateKeepDeepEquality: KeepDeepEqualityCall<NavigatorState
   )
 
 export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedState> {
-  return combine8EqualityCalls(
+  return combine9EqualityCalls(
     (state) => state.navigatorTargets,
     arrayDeepEquality(NavigatorEntryKeepDeepEquality),
     (state) => state.visibleNavigatorTargets,
@@ -703,6 +710,8 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
     nullableDeepEquality(FileChecksumsWithFileKeepDeepEquality),
     (state) => state.remixData,
     createCallWithTripleEquals(),
+    (state) => state.filePathMappings,
+    createCallWithShallowEquals(),
     (
       navigatorTargets,
       visibleNavigatorTargets,
@@ -712,6 +721,7 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
       projectContentsChecksums,
       branchOriginContentsChecksums,
       remixData,
+      filePathMappings,
     ) => {
       return {
         navigatorTargets: navigatorTargets,
@@ -722,6 +732,7 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
         projectContentsChecksums: projectContentsChecksums,
         branchOriginContentsChecksums: branchOriginContentsChecksums,
         remixData: remixData,
+        filePathMappings: filePathMappings,
       }
     },
   )
@@ -3242,6 +3253,12 @@ export const CommentModeKeepDeepEquality: KeepDeepEqualityCall<CommentMode> = co
   EditorModes.commentMode,
 )
 
+export const FollowModeKeepDeepEquality: KeepDeepEqualityCall<FollowMode> = combine1EqualityCall(
+  (mode) => mode.playerId,
+  StringKeepDeepEquality,
+  EditorModes.followMode,
+)
+
 export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newValue) => {
   switch (oldValue.type) {
     case 'insert':
@@ -3269,9 +3286,13 @@ export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newVa
         return CommentModeKeepDeepEquality(newValue, oldValue)
       }
       break
+    case 'follow':
+      if (newValue.type === oldValue.type) {
+        return FollowModeKeepDeepEquality(newValue, oldValue)
+      }
+      break
     default:
-      const _exhaustiveCheck: never = oldValue
-      throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
+      assertNever(oldValue)
   }
   return keepDeepEqualityResult(newValue, false)
 }
@@ -4140,6 +4161,51 @@ export const TrueUpTargetKeepDeepEquality: KeepDeepEqualityCall<TrueUpTarget> = 
   return keepDeepEqualityResult(newValue, false)
 }
 
+export const ActiveFrameTargetPathKeepDeepEquality: KeepDeepEqualityCall<ActiveFrameTargetPath> =
+  combine1EqualityCall(
+    (data) => data.path,
+    ElementPathKeepDeepEquality,
+    (path) => ({ type: 'ACTIVE_FRAME_TARGET_PATH', path }),
+  )
+
+export const ActiveFrameTargetRectKeepDeepEquality: KeepDeepEqualityCall<ActiveFrameTargetRect> =
+  combine1EqualityCall(
+    (data) => data.rect,
+    CanvasRectangleKeepDeepEquality,
+    (rect) => ({ type: 'ACTIVE_FRAME_TARGET_RECT', rect }),
+  )
+
+export const ActiveFrameTargetKeepDeepEquality: KeepDeepEqualityCall<ActiveFrameTarget> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'ACTIVE_FRAME_TARGET_PATH':
+      if (oldValue.type === newValue.type) {
+        return ActiveFrameTargetPathKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'ACTIVE_FRAME_TARGET_RECT':
+      if (oldValue.type === newValue.type) {
+        return ActiveFrameTargetRectKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
+export const FrameOrPathKeepDeepEquality: KeepDeepEqualityCall<ActiveFrame> = combine3EqualityCalls(
+  (data) => data.target,
+  ActiveFrameTargetKeepDeepEquality,
+  (data) => data.action,
+  createCallWithTripleEquals(),
+  (data) => data.source,
+  CanvasRectangleKeepDeepEquality,
+  (target, action, source) => ({ target, action, source }),
+)
+
 export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   oldValue,
   newValue,
@@ -4422,6 +4488,15 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.internalClipboard,
     newValue.internalClipboard,
   )
+  const filesModifiedByAnotherUserResults = arrayDeepEquality(StringKeepDeepEquality)(
+    oldValue.filesModifiedByAnotherUser,
+    newValue.filesModifiedByAnotherUser,
+  )
+
+  const activeFramesResults = arrayDeepEquality(FrameOrPathKeepDeepEquality)(
+    oldValue.activeFrames,
+    newValue.activeFrames,
+  )
 
   const areEqual =
     idResult.areEqual &&
@@ -4499,7 +4574,9 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     githubDataResults.areEqual &&
     refreshingDependenciesResults.areEqual &&
     colorSwatchesResults.areEqual &&
-    internalClipboardResults.areEqual
+    internalClipboardResults.areEqual &&
+    filesModifiedByAnotherUserResults.areEqual &&
+    activeFramesResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -4582,6 +4659,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       refreshingDependenciesResults.value,
       colorSwatchesResults.value,
       internalClipboardResults.value,
+      filesModifiedByAnotherUserResults.value,
+      activeFramesResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

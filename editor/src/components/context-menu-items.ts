@@ -1,4 +1,5 @@
 import { MetadataUtils } from '../core/model/element-metadata-utils'
+import type { FilePathMappings } from '../core/model/project-file-utils'
 import type { Either } from '../core/shared/either'
 import { isRight } from '../core/shared/either'
 import * as EP from '../core/shared/element-path'
@@ -62,6 +63,7 @@ export interface CanvasData {
   selectedViews: Array<ElementPath>
   jsxMetadata: ElementInstanceMetadataMap
   projectContents: ProjectContentTreeRoot
+  filePathMappings: FilePathMappings
   resolve: (importOrigin: string, toImport: string) => Either<string, string>
   hiddenInstances: ElementPath[]
   scale: number
@@ -254,6 +256,7 @@ export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
         view,
         data.jsxMetadata,
         data.autoFocusedPaths,
+        data.filePathMappings,
       )
     })
   },

@@ -1,17 +1,7 @@
-import * as React from 'react'
 import * as TS from 'typescript-for-the-editor'
-import {
-  addUniquely,
-  flatMapArray,
-  uniq,
-  uniqBy,
-  sortBy,
-  findLastIndex,
-} from '../../shared/array-utils'
+import { flatMapArray, uniq, findLastIndex } from '../../shared/array-utils'
 import type { Either } from '../../shared/either'
 import {
-  eitherToMaybe,
-  flatMap2Either,
   flatMapEither,
   isLeft,
   isRight,
@@ -21,9 +11,7 @@ import {
   sequenceEither,
   foldEither,
   forEachLeft,
-  bimapEither,
   forEachRight,
-  traverseEither,
 } from '../../shared/either'
 import type {
   ArbitraryJSBlock,
@@ -59,19 +47,14 @@ import {
   utopiaJSXComponent,
   propNamesForParam,
   jsxElementName,
-  singleLineComment,
-  multiLineComment,
-  WithComments,
-  getJSXAttributeForced,
   importStatement,
   isImportStatement,
   unparsedCode,
   emptyComments,
-  parsedComments,
 } from '../../shared/element-template'
 import { messageisFatal } from '../../shared/error-messages'
 import { memoize } from '../../shared/memoize'
-import { defaultIfNull, maybeToArray, optionalMap } from '../../shared/optional-utils'
+import { maybeToArray, optionalMap } from '../../shared/optional-utils'
 import type {
   HighlightBoundsForUids,
   ImportAlias,
@@ -85,10 +68,8 @@ import type {
 } from '../../shared/project-file-types'
 import {
   importAlias,
-  HighlightBounds,
   mergeExportsDetail,
   EmptyExportsDetail,
-  TextFile,
   reexportWildcard,
   exportVariable,
   reexportVariables,
@@ -105,13 +86,11 @@ import {
   isParseSuccess,
 } from '../../shared/project-file-types'
 import * as PP from '../../shared/property-path'
-import { assertNever, fastForEach, NO_OP } from '../../shared/utils'
+import { assertNever, fastForEach } from '../../shared/utils'
 import { addImport, emptyImports } from '../common/project-file-utils'
-import { UtopiaTsWorkers } from '../common/worker-types'
 import { lintCode } from '../linter/linter'
 import type { FunctionContents, WithParserMetadata } from './parser-printer-parsing'
 import {
-  CanvasMetadataName,
   flattenOutAnnoyingContainers,
   getPropertyNameText,
   liftParsedElementsIntoFunctionContents,
@@ -123,27 +102,20 @@ import {
   isExported,
   expressionTypeForExpression,
   extractPrefixedCode,
-  parseAttributeExpression,
   markedAsExported,
   markedAsDefault,
 } from './parser-printer-parsing'
 import { jsonToExpression } from './json-to-expression'
-import { compareOn, comparePrimitive } from '../../../utils/compare'
-import { difference, emptySet } from '../../shared/set-utils'
-import { addCommentsToNode, getLeadingComments } from './parser-printer-comments'
-import { replaceAll } from '../../shared/string-utils'
+import { difference } from '../../shared/set-utils'
+import { addCommentsToNode } from './parser-printer-comments'
 import { fixParseSuccessUIDs } from './uid-fix'
 import { applyPrettier } from 'utopia-vscode-common'
 import { BakedInStoryboardVariableName } from '../../model/scene-utils'
 import { stripExtension } from '../../../components/custom-code/custom-code-utils'
 import { absolutePathFromRelativePath } from '../../../utils/path-utils'
-import { v4 as UUID } from 'uuid'
 import { fromField } from '../../../core/shared/optics/optic-creators'
 import type { Optic } from '../../../core/shared/optics/optics'
 import { modify } from '../../../core/shared/optics/optic-utilities'
-import { updateHighlightBounds } from '../../../core/shared/uid-utils'
-import type { SteganoTextData } from '../../shared/stegano-text'
-import { cleanSteganoTextData, encodeSteganoData } from '../../shared/stegano-text'
 
 function buildPropertyCallingFunction(
   functionName: string,

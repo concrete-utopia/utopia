@@ -6,8 +6,10 @@ import {
   transformJSXComponentAtPath,
 } from '../../../core/model/element-template-utils'
 import {
+  type FilePathMappings,
   applyToAllUIJSFiles,
   applyUtopiaJSXComponentsChanges,
+  getFilePathMappings,
   getHighlightBoundsForProject,
   getHighlightBoundsFromParseResult,
   getUtopiaJSXComponentsFromSuccess,
@@ -175,6 +177,9 @@ import type { ProjectServerState } from './project-server-state'
 import type { ReparentTargetForPaste } from '../../canvas/canvas-strategies/strategies/reparent-utils'
 import { GridMenuWidth } from '../../canvas/stored-layout'
 import type { VariablesInScope } from '../../canvas/ui-jsx-canvas'
+import * as Y from 'yjs'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
+import type { ActiveFrame } from '../../canvas/commands/set-active-frames-command'
 
 const ObjectPathImmutable: any = OPI
 
@@ -389,6 +394,39 @@ export const defaultUserState: UserState = {
   },
 }
 
+export type CollabTextFileTopLevelElements = Y.Array<TopLevelElement>
+
+export type CollabTextFile = Y.Map<'TEXT_FILE' | CollabTextFileTopLevelElements>
+
+export type CollabFile = CollabTextFile //| CollabImageFileUpdate | CollabAssetFileUpdate | CollabDirectoryFileUpdate
+
+export interface CollaborativeEditingSupportSession {
+  mergeDoc: Y.Doc
+  projectContents: Y.Map<CollabFile>
+}
+
+export interface CollaborativeEditingSupport {
+  session: CollaborativeEditingSupportSession | null
+}
+
+export function emptyCollaborativeEditingSupportSession(): CollaborativeEditingSupportSession {
+  const doc = new Y.Doc()
+  return {
+    mergeDoc: doc,
+    projectContents: doc.getMap('projectContents'),
+  }
+}
+
+export function emptyCollaborativeEditingSupport(): CollaborativeEditingSupport {
+  let session: CollaborativeEditingSupportSession | null = null
+  if (isFeatureEnabled('Collaboration')) {
+    session = emptyCollaborativeEditingSupportSession()
+  }
+  return {
+    session: session,
+  }
+}
+
 export type EditorStoreShared = {
   postActionInteractionSession: PostActionMenuSession | null
   strategyState: StrategyState
@@ -399,6 +437,7 @@ export type EditorStoreShared = {
   builtInDependencies: BuiltInDependencies
   saveCountThisSession: number
   projectServerState: ProjectServerState
+  collaborativeEditingSupport: CollaborativeEditingSupport
 }
 
 export type EditorStoreFull = EditorStoreShared & {
@@ -1428,6 +1467,8 @@ export interface EditorState {
   refreshingDependencies: boolean
   colorSwatches: Array<ColorSwatch>
   internalClipboard: InternalClipboard
+  filesModifiedByAnotherUser: Array<string>
+  activeFrames: ActiveFrame[]
 }
 
 export function editorState(
@@ -1508,6 +1549,8 @@ export function editorState(
   refreshingDependencies: boolean,
   colorSwatches: Array<ColorSwatch>,
   internalClipboardData: InternalClipboard,
+  filesModifiedByAnotherUser: Array<string>,
+  activeFrames: ActiveFrame[],
 ): EditorState {
   return {
     id: id,
@@ -1587,6 +1630,8 @@ export function editorState(
     refreshingDependencies: refreshingDependencies,
     colorSwatches: colorSwatches,
     internalClipboard: internalClipboardData,
+    filesModifiedByAnotherUser: filesModifiedByAnotherUser,
+    activeFrames: activeFrames,
   }
 }
 
@@ -2186,6 +2231,7 @@ export interface DerivedState {
   projectContentsChecksums: FileChecksumsWithFile
   branchOriginContentsChecksums: FileChecksumsWithFile | null
   remixData: RemixDerivedData | null
+  filePathMappings: FilePathMappings
 }
 
 function emptyDerivedState(editor: EditorState): DerivedState {
@@ -2198,6 +2244,7 @@ function emptyDerivedState(editor: EditorState): DerivedState {
     projectContentsChecksums: {},
     branchOriginContentsChecksums: {},
     remixData: null,
+    filePathMappings: [],
   }
 }
 
@@ -2459,6 +2506,8 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       styleClipboard: [],
       elements: [],
     },
+    filesModifiedByAnotherUser: [],
+    activeFrames: [],
   }
 }
 
@@ -2611,6 +2660,8 @@ export function deriveState(
     editor.codeResultCache.curriedResolveFn,
   )
 
+  const filePathMappings = getFilePathMappings(editor.projectContents)
+
   const derived: DerivedState = {
     navigatorTargets: navigatorTargets,
     visibleNavigatorTargets: visibleNavigatorTargets,
@@ -2629,6 +2680,7 @@ export function deriveState(
             oldDerivedState?.branchOriginContentsChecksums ?? {},
           ),
     remixData: remixDerivedData,
+    filePathMappings: filePathMappings,
   }
 
   const sanitizedDerivedState = DerivedStateKeepDeepEquality()(derivedState, derived).value
@@ -2830,6 +2882,8 @@ export function editorModelFromPersistentModel(
       styleClipboard: [],
       elements: [],
     },
+    filesModifiedByAnotherUser: [],
+    activeFrames: [],
   }
   return editor
 }
@@ -3242,6 +3296,7 @@ export function modifyParseSuccessAtPath(
   filePath: string,
   editor: EditorState,
   modifyParseSuccess: (parseSuccess: ParseSuccess) => ParseSuccess,
+  throwForErrors: boolean = true,
 ): EditorState {
   const projectFile = getProjectFileByFilePath(editor.projectContents, filePath)
   if (projectFile != null && isTextFile(projectFile)) {
@@ -3267,10 +3322,18 @@ export function modifyParseSuccessAtPath(
         }
       }
     } else {
-      throw new Error(`File ${filePath} is not currently parsed.`)
+      if (throwForErrors) {
+        throw new Error(`File ${filePath} is not currently parsed.`)
+      } else {
+        return editor
+      }
     }
   } else {
-    throw new Error(`No text file found at ${filePath}`)
+    if (throwForErrors) {
+      throw new Error(`No text file found at ${filePath}`)
+    } else {
+      return editor
+    }
   }
 }
 

@@ -1,4 +1,10 @@
-import type { EditorState, DerivedState, UserState, EditorStoreUnpatched } from './editor-state'
+import type {
+  EditorState,
+  DerivedState,
+  UserState,
+  EditorStoreUnpatched,
+  CollaborativeEditingSupport,
+} from './editor-state'
 import type {
   EditorAction,
   EditorDispatch,
@@ -13,6 +19,7 @@ import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import type { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
+import type { ProjectServerState } from './project-server-state'
 
 export function runLocalEditorAction(
   state: EditorState,
@@ -24,6 +31,8 @@ export function runLocalEditorAction(
   dispatch: EditorDispatch,
   spyCollector: UiJsxCanvasContextData,
   builtInDependencies: BuiltInDependencies,
+  collaborativeEditingSupport: CollaborativeEditingSupport,
+  serverState: ProjectServerState,
 ): EditorState {
   switch (action.action) {
     case 'SET_CANVAS_FRAMES':
@@ -45,6 +54,8 @@ export function runLocalEditorAction(
         dispatch,
         spyCollector,
         builtInDependencies,
+        collaborativeEditingSupport,
+        serverState,
       )
   }
 }
@@ -59,12 +70,14 @@ export function runSimpleLocalEditorAction(
   dispatch: EditorDispatch,
   spyCollector: UiJsxCanvasContextData,
   builtInDependencies: BuiltInDependencies,
+  collaborativeEditingSupport: CollaborativeEditingSupport,
+  serverState: ProjectServerState,
 ): EditorState {
   switch (action.action) {
     case 'NEW':
       return UPDATE_FNS.NEW(action, state, workers, dispatch)
     case 'LOAD':
-      return UPDATE_FNS.LOAD(action, state, dispatch)
+      return UPDATE_FNS.LOAD(action, state, dispatch, collaborativeEditingSupport)
     case 'DUPLICATE_SELECTED':
       return UPDATE_FNS.DUPLICATE_SELECTED(state, dispatch)
     case 'UPDATE_DUPLICATION_STATE':
@@ -214,7 +227,13 @@ export function runSimpleLocalEditorAction(
     case 'UPDATE_FROM_WORKER':
       return UPDATE_FNS.UPDATE_FROM_WORKER(action, state)
     case 'UPDATE_FROM_CODE_EDITOR':
-      return UPDATE_FNS.UPDATE_FROM_CODE_EDITOR(action, state, dispatch, builtInDependencies)
+      return UPDATE_FNS.UPDATE_FROM_CODE_EDITOR(
+        action,
+        state,
+        dispatch,
+        builtInDependencies,
+        serverState,
+      )
     case 'CLEAR_PARSE_OR_PRINT_IN_FLIGHT':
       return UPDATE_FNS.CLEAR_PARSE_OR_PRINT_IN_FLIGHT(action, state)
     case 'ADD_FOLDER':
@@ -369,6 +388,12 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_CONDITIONAL_EXPRESSION(action, state)
     case 'SWITCH_CONDITIONAL_BRANCHES':
       return UPDATE_FNS.SWITCH_CONDITIONAL_BRANCHES(action, state)
+    case 'UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION_UPDATE':
+      return UPDATE_FNS.UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION_UPDATE(
+        action,
+        state,
+        serverState,
+      )
     default:
       return state
   }
