@@ -658,8 +658,12 @@ export async function renderTestEditorWithModel(
     getEditorState: () => storeHook.getState(),
     renderedDOM: result,
     getRenderedCanvas: () => {
-      const shadowRoot = result.getByTestId(CanvasContainerShadowRoot).shadowRoot!
-      return within(shadowRoot as unknown as HTMLElement)
+      const shadowRoot = result.queryByTestId(CanvasContainerShadowRoot)?.shadowRoot
+      if (shadowRoot == null) {
+        return within(result.baseElement)
+      } else {
+        return within(shadowRoot as unknown as HTMLElement)
+      }
     },
     getNumberOfCommits: () => numberOfCommits,
     getNumberOfRenders: () => renderCount - renderCountBaseline,

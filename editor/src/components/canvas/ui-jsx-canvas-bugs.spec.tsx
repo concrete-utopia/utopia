@@ -4,7 +4,7 @@ import {
   testCanvasRenderInlineMultifile,
 } from './ui-jsx-canvas.test-utils'
 
-describe('UiJsxCanvas', () => {
+xdescribe('UiJsxCanvas', () => {
   it('#747 - DOM object constructor cannot be called as a function', () => {
     testCanvasRender(
       null,

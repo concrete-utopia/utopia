@@ -119,7 +119,7 @@ export async function runTestReturningErrorBoundaries(
   await clickLinkWithTestId(renderResult, 'remix-link')
 
   const customBoundary = renderResult.getRenderedCanvas().queryByText(CustomBoundaryText)
-  const canvasOverlay = renderResult.getRenderedCanvas().queryByText(`Error: ${ErrorText}`)
+  const canvasOverlay = renderResult.renderedDOM.queryByText(`Error: ${ErrorText}`)
 
   return {
     customBoundary: customBoundary,

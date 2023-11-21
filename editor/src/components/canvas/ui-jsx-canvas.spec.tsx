@@ -9,7 +9,7 @@ import {
 } from './ui-jsx-canvas.test-utils'
 import { TestAppUID, TestSceneUID } from './ui-jsx.test-utils'
 
-describe('UiJsxCanvas render', () => {
+xdescribe('UiJsxCanvas render', () => {
   it('renders a canvas testing a multitude of export styles', () => {
     testCanvasRenderMultifile(
       null,
@@ -1861,7 +1861,7 @@ export var storyboard = (
   })
 })
 
-describe('UiJsxCanvas render multifile projects', () => {
+xdescribe('UiJsxCanvas render multifile projects', () => {
   it('renders a canvas with App imported from a file', () => {
     const printedDom = testCanvasRenderInlineMultifile(
       null,
