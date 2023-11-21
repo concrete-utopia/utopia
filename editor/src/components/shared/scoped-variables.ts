@@ -16,7 +16,6 @@ import {
   jsExpressionValue,
   jsxConditionalExpressionWithoutUID,
   emptyComments,
-  jsxTextBlock,
   jsExpressionOtherJavaScriptSimple,
 } from '../../core/shared/element-template'
 import { type VariablesInScope } from '../canvas/ui-jsx-canvas'
@@ -114,11 +113,11 @@ function getMatchingElementForVariable(variable: Variable) {
   switch (variable.type) {
     case 'string':
       return jsxElementWithoutUID('span', jsxAttributesFromMap({}), [
-        jsxTextBlock(`{${variable.name}}`),
+        jsExpressionOtherJavaScriptSimple(variable.name, [variable.name]),
       ])
     case 'number':
       return jsxElementWithoutUID('span', jsxAttributesFromMap({}), [
-        jsxTextBlock(`{${variable.name}}`),
+        jsExpressionOtherJavaScriptSimple(variable.name, [variable.name]),
       ])
     case 'boolean':
       return jsxConditionalExpressionWithoutUID(
@@ -130,11 +129,11 @@ function getMatchingElementForVariable(variable: Variable) {
       )
     case 'object':
       return jsxElementWithoutUID('span', jsxAttributesFromMap({}), [
-        jsxTextBlock(`{JSON.stringify(${variable.name})}`),
+        jsExpressionOtherJavaScriptSimple(`JSON.stringify(${variable.name})`, [variable.name]),
       ])
     default:
       return jsxElementWithoutUID('span', jsxAttributesFromMap({}), [
-        jsxTextBlock(`{JSON.stringify(${variable.name})}`),
+        jsExpressionOtherJavaScriptSimple(`JSON.stringify(${variable.name})`, [variable.name]),
       ])
   }
 }
