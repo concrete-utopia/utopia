@@ -4,7 +4,10 @@ import { jsx } from '@emotion/react'
 
 import React from 'react'
 import { useContextSelector } from 'use-context-selector'
-import type { LayoutPinnedPropIncludingCenter } from '../../core/layout/layout-helpers-new'
+import {
+  isHorizontalLayoutPinnedProp,
+  type LayoutPinnedPropIncludingCenter,
+} from '../../core/layout/layout-helpers-new'
 import { NO_OP } from '../../core/shared/utils'
 import { when } from '../../utils/react-conditionals'
 import {
@@ -157,6 +160,9 @@ export const ChildPinControl = React.memo(
   }) => {
     const dispatch = useDispatch()
 
+    const [lastPressedHorizontalPin, setLastPressedHorizontalPin] =
+      React.useState<LayoutPinnedPropIncludingCenter | null>(null)
+
     const propertyTarget = useContextSelector(InspectorPropsContext, (contextData) => {
       return contextData.targetPath
     })
@@ -173,6 +179,113 @@ export const ChildPinControl = React.memo(
       ) => {
         const cmdPressed = event.metaKey
         const requestedPinChange: RequestedPins | 'no-op' = (() => {
+          if (isGroupChild === 'group-child') {
+            switch (frameProp) {
+              case 'left': {
+                if (pins.horizontal === 'left-and-width') {
+                  return 'width'
+                } else if (pins.horizontal === 'left-and-right') {
+                  return 'right'
+                } else if (pins.horizontal === 'right-and-width') {
+                  if (lastPressedHorizontalPin === 'right') {
+                    return 'left-and-right'
+                  } else {
+                    return 'left-and-width'
+                  }
+                } else if (pins.horizontal === 'right') {
+                  return 'left-and-right'
+                } else if (pins.horizontal === 'left') {
+                  return 'scale-horizontal'
+                } else if (pins.horizontal === 'width') {
+                  return 'left-and-width'
+                } else if (pins.horizontal === 'scale-horizontal') {
+                  return 'left'
+                } else {
+                  return 'scale-horizontal'
+                }
+              }
+              case 'right': {
+                if (pins.horizontal === 'left-and-width') {
+                  if (lastPressedHorizontalPin === 'left') {
+                    return 'left-and-right'
+                  } else {
+                    return 'right-and-width'
+                  }
+                } else if (pins.horizontal === 'left-and-right') {
+                  return 'left'
+                } else if (pins.horizontal === 'right-and-width') {
+                  return 'width'
+                } else if (pins.horizontal === 'right') {
+                  return 'scale-horizontal'
+                } else if (pins.horizontal === 'left') {
+                  return 'left-and-right'
+                } else if (pins.horizontal === 'width') {
+                  return 'right-and-width'
+                } else if (pins.horizontal === 'scale-horizontal') {
+                  return 'right'
+                } else {
+                  return 'scale-horizontal'
+                }
+              }
+              case 'width': {
+                if (pins.horizontal === 'left-and-right') {
+                  if (lastPressedHorizontalPin === 'right') {
+                    return 'right-and-width'
+                  } else {
+                    return 'left-and-width'
+                  }
+                } else if (pins.horizontal === 'left-and-width') {
+                  return 'left'
+                } else if (pins.horizontal === 'right-and-width') {
+                  return 'right'
+                } else if (pins.horizontal === 'right') {
+                  return 'right-and-width'
+                } else if (pins.horizontal === 'left') {
+                  return 'left-and-width'
+                } else if (pins.horizontal === 'width') {
+                  return 'scale-horizontal'
+                } else if (pins.horizontal === 'scale-horizontal') {
+                  return 'width'
+                } else {
+                  return 'scale-horizontal'
+                }
+              }
+              // case 'top': {
+              //   if (cmdPressed && pins.vertical === 'bottom-and-height') {
+              //     return 'top-and-bottom'
+              //   } else {
+              //     return 'top-and-height'
+              //   }
+              // }
+              // case 'bottom': {
+              //   if (cmdPressed && pins.vertical === 'top-and-height') {
+              //     return 'top-and-bottom'
+              //   } else {
+              //     return 'bottom-and-height'
+              //   }
+              // }
+              // case 'height': {
+              //   if (pins.vertical.includes('height')) {
+              //     return 'no-op' // if Height is already pressed, we leave it as-is
+              //   }
+              //   return 'top-and-height'
+              // }
+              case 'centerX': {
+                return 'scale-horizontal'
+              }
+              // case 'centerY': {
+              //   if (cmdPressed) {
+              //     return 'scale-vertical'
+              //   } else {
+              //     return 'no-op'
+              //   }
+              // }
+              // default:
+              //   const _exhaustiveCheck: never = frameProp
+              //   throw new Error(`Unhandled frameProp: ${_exhaustiveCheck}`)
+            }
+          }
+
           switch (frameProp) {
             case 'left': {
               if (cmdPressed && pins.horizontal === 'right-and-width') {
@@ -238,9 +351,21 @@ export const ChildPinControl = React.memo(
           // no-op, early return :)
           return
         }
+
+        if (frameProp === 'centerX' || isHorizontalLayoutPinnedProp(frameProp)) {
+          setLastPressedHorizontalPin(frameProp)
+        }
+
         dispatch(
           isGroupChild === 'group-child'
-            ? [] // nothing for Group children yet!!
+            ? getConstraintAndFrameChangeActionsForGroupChild(
+                metadataRef.current,
+                allElementPropsRef.current,
+                elementPathTreesRef.current,
+                propertyTarget,
+                selectedViewsRef.current,
+                requestedPinChange,
+              )
             : getFrameChangeActionsForFrameChild(
                 metadataRef.current,
                 elementPathTreesRef.current,
@@ -259,6 +384,9 @@ export const ChildPinControl = React.memo(
         selectedViewsRef,
         pins.horizontal,
         pins.vertical,
+        allElementPropsRef,
+        lastPressedHorizontalPin,
+        setLastPressedHorizontalPin,
       ],
     )
 
