@@ -20,7 +20,7 @@ import type { Modifiers } from '../../../../utils/modifiers'
 import { cmdModifier, emptyModifiers } from '../../../../utils/modifiers'
 import { selectComponents } from '../../../editor/actions/meta-actions'
 import { RightMenuTab } from '../../../editor/store/editor-state'
-import { CSSCursor } from '../../canvas-types'
+import { CSSCursor, CanvasContainerShadowRoot } from '../../canvas-types'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { getCursorFromEditor } from '../../controls/select-mode/cursor-component'
 import {
@@ -196,9 +196,10 @@ export var ${BakedInStoryboardVariableName} = (
 
 function getElementByDataUID(renderResult: EditorRenderResult, dataUID: string): HTMLElement {
   const queryByDataUID = queryHelpers.queryByAttribute.bind(null, 'data-uid')
+  const shadowRoot = renderResult.renderedDOM.getByTestId(CanvasContainerShadowRoot).shadowRoot!
   return forceNotNull(
     `Could not find element with ${dataUID}`,
-    queryByDataUID(renderResult.renderedDOM.container, dataUID),
+    queryByDataUID(shadowRoot as unknown as HTMLElement, dataUID),
   )
 }
 
