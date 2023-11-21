@@ -11,15 +11,10 @@ import type {
   ElementInstanceMetadataMap,
   JSXElement,
 } from '../../../../core/shared/element-template'
-import type {
-  CanvasPoint,
-  CanvasRectangle,
-  CanvasVector,
-  LocalRectangle,
-} from '../../../../core/shared/math-utils'
+import type { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
 import {
   boundingRectangleArray,
-  canvasRectangleOrZeroRect,
+  zeroRectIfNullOrInfinity,
   canvasRectangleToLocalRectangle,
   canvasVector,
   nullIfInfinity,
@@ -140,7 +135,7 @@ export function applyMoveCommon(
           commandsForSelectedElements.intendedBounds.map((b) => ({
             action: 'move', // TODO this could also show "duplicate" when applicable
             target: activeFrameTargetRect(b.frame),
-            source: canvasRectangleOrZeroRect(
+            source: zeroRectIfNullOrInfinity(
               MetadataUtils.getFrameInCanvasCoords(b.target, canvasState.startingMetadata),
             ),
           })),
@@ -186,7 +181,7 @@ export function applyMoveCommon(
           commandsForSelectedElements.intendedBounds.map((b) => ({
             action: 'move', // TODO this could also show "duplicate" when applicable
             target: activeFrameTargetRect(b.frame),
-            source: canvasRectangleOrZeroRect(
+            source: zeroRectIfNullOrInfinity(
               MetadataUtils.getFrameInCanvasCoords(b.target, canvasState.startingMetadata),
             ),
           })),

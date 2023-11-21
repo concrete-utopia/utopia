@@ -14,7 +14,7 @@ import { getCollaborator, useAddMyselfToCollaborators } from '../../core/comment
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../core/shared/array-utils'
 import type { CanvasPoint } from '../../core/shared/math-utils'
-import { canvasRectangleOrZeroRect, pointsEqual, windowPoint } from '../../core/shared/math-utils'
+import { pointsEqual, windowPoint, zeroRectIfNullOrInfinity } from '../../core/shared/math-utils'
 import { multiplayerColorFromIndex, normalizeOthersList } from '../../core/shared/multiplayer'
 import { assertNever } from '../../core/shared/utils'
 import { UtopiaTheme, useColorTheme } from '../../uuiui'
@@ -396,7 +396,7 @@ const MultiplayerShadows = React.memo(() => {
               return { frame: target.rect, action, source }
             case 'ACTIVE_FRAME_TARGET_PATH':
               const frame = MetadataUtils.getFrameInCanvasCoords(target.path, jsxMetadata)
-              return { frame: canvasRectangleOrZeroRect(frame), action, source }
+              return { frame: zeroRectIfNullOrInfinity(frame), action, source }
             default:
               assertNever(target)
           }

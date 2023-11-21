@@ -48,7 +48,6 @@ import { flattenSelection, getMultiselectBounds } from './shared-move-strategies
 import type { CanvasPoint, CanvasVector } from '../../../../core/shared/math-utils'
 import {
   canvasPoint,
-  canvasRectangleOrZeroRect,
   canvasVector,
   isInfinityRectangle,
   roundTo,
@@ -263,7 +262,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
             selectedElements.map((path) => ({
               action: 'set-padding',
               target: activeFrameTargetPath(path),
-              source: canvasRectangleOrZeroRect(
+              source: zeroRectIfNullOrInfinity(
                 MetadataUtils.getFrameInCanvasCoords(path, canvasState.startingMetadata),
               ),
             })),
@@ -288,7 +287,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
             selectedElements.map((path) => ({
               action: 'set-padding',
               target: activeFrameTargetPath(path),
-              source: canvasRectangleOrZeroRect(
+              source: zeroRectIfNullOrInfinity(
                 MetadataUtils.getFrameInCanvasCoords(path, canvasState.startingMetadata),
               ),
             })),
@@ -315,7 +314,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
           selectedElements.map((path) => ({
             action: 'set-padding',
             target: activeFrameTargetPath(path),
-            source: canvasRectangleOrZeroRect(
+            source: zeroRectIfNullOrInfinity(
               MetadataUtils.getFrameInCanvasCoords(path, canvasState.startingMetadata),
             ),
           })),

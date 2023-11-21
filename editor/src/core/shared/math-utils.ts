@@ -136,12 +136,6 @@ export function forceFiniteRectangle<C extends CoordinateMarker>(
   throw new Error('invariant: we expected a finite Rectangle')
 }
 
-export function canvasRectangleOrZeroRect(
-  rectangle: MaybeInfinityCanvasRectangle | null,
-): CanvasRectangle {
-  return rectangle != null && isFiniteRectangle(rectangle) ? rectangle : zeroCanvasRect
-}
-
 export function canvasRectangle(rectangle: null | undefined): null
 export function canvasRectangle(rectangle: SimpleRectangle): CanvasRectangle
 export function canvasRectangle(

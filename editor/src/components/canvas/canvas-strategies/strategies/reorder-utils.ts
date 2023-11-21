@@ -4,10 +4,10 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import type { CanvasVector } from '../../../../core/shared/math-utils'
 import {
   canvasRectangle,
-  canvasRectangleOrZeroRect,
   isInfinityRectangle,
   offsetPoint,
   rectContainsPoint,
+  zeroRectIfNullOrInfinity,
 } from '../../../../core/shared/math-utils'
 import { absolute } from '../../../../utils/utils'
 import { CSSCursor } from '../../canvas-types'
@@ -78,12 +78,12 @@ export function applyReorderCommon(
       isValidTarget,
     )
 
-    const sourceFrame = canvasRectangleOrZeroRect(
+    const sourceFrame = zeroRectIfNullOrInfinity(
       MetadataUtils.getFrameInCanvasCoords(target, canvasState.startingMetadata) ?? null,
     )
     const newIndexFound = newIndex > -1
     const newResultOrLastIndex = newIndexFound ? newIndex : lastReorderIdx
-    const targetFrame = canvasRectangleOrZeroRect(
+    const targetFrame = zeroRectIfNullOrInfinity(
       newResultOrLastIndex > -1
         ? MetadataUtils.getFrameInCanvasCoords(
             siblings[newResultOrLastIndex],

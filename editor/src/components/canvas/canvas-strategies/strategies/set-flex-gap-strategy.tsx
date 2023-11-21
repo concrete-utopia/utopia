@@ -3,7 +3,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import type { CanvasVector } from '../../../../core/shared/math-utils'
 import {
   canvasPoint,
-  canvasRectangleOrZeroRect,
+  zeroRectIfNullOrInfinity,
   canvasVector,
 } from '../../../../core/shared/math-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
@@ -179,7 +179,7 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
           {
             action: 'set-gap',
             target: activeFrameTargetPath(selectedElement),
-            source: canvasRectangleOrZeroRect(
+            source: zeroRectIfNullOrInfinity(
               MetadataUtils.getFrameInCanvasCoords(selectedElement, canvasState.startingMetadata),
             ),
           },

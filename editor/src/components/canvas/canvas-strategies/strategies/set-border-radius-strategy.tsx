@@ -16,7 +16,6 @@ import {
 } from '../../../../core/shared/element-template'
 import type { CanvasPoint, CanvasVector, Size } from '../../../../core/shared/math-utils'
 import {
-  canvasRectangleOrZeroRect,
   canvasVector,
   clamp,
   product,
@@ -163,7 +162,7 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
           selectedElements.map((path) => ({
             action: 'set-radius',
             target: activeFrameTargetPath(path),
-            source: canvasRectangleOrZeroRect(
+            source: zeroRectIfNullOrInfinity(
               MetadataUtils.getFrameInCanvasCoords(path, canvasState.startingMetadata),
             ),
           })),
