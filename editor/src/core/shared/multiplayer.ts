@@ -127,3 +127,7 @@ export function canFollowTarget(
 
   return !followChain.has(selfId)
 }
+
+export function projectIdToRoomId(projectId: string): string {
+  return `project-room-${projectId}`
+}

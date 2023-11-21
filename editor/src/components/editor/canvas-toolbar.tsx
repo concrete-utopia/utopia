@@ -454,7 +454,7 @@ export const CanvasToolbar = React.memo(() => {
         <Tooltip title='Live Mode' placement='bottom'>
           <InsertModeButton
             testid={PlayModeButtonTestId}
-            iconType={isLiveMode ? 'stop' : 'play'}
+            iconType={'play'}
             iconCategory='tools'
             primary={canvasToolbarMode.primary === 'play'}
             onClick={toggleLiveMode}
