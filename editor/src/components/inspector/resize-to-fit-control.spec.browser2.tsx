@@ -261,7 +261,7 @@ async function selectView(editor: EditorRenderResult, testId: string): Promise<H
 }
 
 async function clickResizeTo(editor: EditorRenderResult, testId: string) {
-  const resizeToFitControl = editor.renderedCanvas.getByTestId(testId)
+  const resizeToFitControl = editor.renderedDOM.getByTestId(testId)
 
   await mouseClickAtPoint(resizeToFitControl, { x: 2, y: 2 })
 }
