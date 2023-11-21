@@ -6,7 +6,8 @@
   border-radius: 10px;
   background-color: var(--utopitheme-bg1);
   box-sizing: border-box;
-  box-shadow: 0px 4px 8px 0px var(--utopitheme-shadows);
+  /* the same as boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow */
+  box-shadow: 0px 3px 6px -2px var(--utopitheme-shadow80), 0px 4px 8px -2px var(--utopitheme-shadow40);
   padding: 4px 0px;
   font-family: 'utopian-inter';
 }
