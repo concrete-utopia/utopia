@@ -19,6 +19,7 @@ export type Presence = {
   cursor: WindowPoint | null
   canvasScale: number | null
   canvasOffset: CanvasVector | null
+  following: string | null
 }
 
 export function initialPresence(): Presence {
@@ -26,6 +27,7 @@ export function initialPresence(): Presence {
     cursor: null,
     canvasScale: null,
     canvasOffset: null,
+    following: null,
   }
 }
 
