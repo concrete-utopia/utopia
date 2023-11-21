@@ -89,7 +89,7 @@ export function applyReorderCommon(
             siblings[newResultOrLastIndex],
             canvasState.startingMetadata,
           )
-        : MetadataUtils.getFrameInCanvasCoords(target, canvasState.startingMetadata),
+        : sourceFrame,
     )
 
     if (newResultOrLastIndex === unpatchedIndex) {
