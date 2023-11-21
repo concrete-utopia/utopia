@@ -335,7 +335,7 @@ describe('Remix content', () => {
 
     expect(renderResult.getRenderedCanvas().queryAllByText('404 Not Found')).toHaveLength(1) // default 404 page is rendered
     expect(
-      renderResult.getRenderedCanvas().queryAllByTestId(LocationDoesNotMatchRoutesTestId),
+      renderResult.renderedDOM.queryAllByTestId(LocationDoesNotMatchRoutesTestId),
     ).toHaveLength(1) // location not matching warning is rendered
   })
 

@@ -162,7 +162,7 @@ describe('Use the text editor', () => {
     const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
 
     await enterTextEditMode(editor)
-    const textEditorElement = document.getElementById(TextEditorSpanId)
+    const textEditorElement = editor.getRenderedCanvas().getByTestId(TextEditorSpanId)
     if (textEditorElement == null) {
       throw new Error('A text editor should exist at this point.')
     }
@@ -284,7 +284,7 @@ describe('Use the text editor', () => {
       const editor = await renderTestEditorWithCode(projectWithoutText, 'await-first-dom-report')
       await prepareTestModifierEditor(editor)
 
-      const textEditorElement = document.getElementById(TextEditorSpanId)
+      const textEditorElement = editor.getRenderedCanvas().getByTestId(TextEditorSpanId)
       expect(textEditorElement).not.toBe(null)
       if (textEditorElement != null) {
         const range = document.createRange()
@@ -363,7 +363,7 @@ describe('Use the text editor', () => {
 
         await enterTextEditMode(editor)
 
-        deleteTypedText()
+        deleteTypedText(editor)
 
         await closeTextEditor()
         await editor.getDispatchFollowUpActionsFinished()
@@ -404,7 +404,7 @@ describe('Use the text editor', () => {
 
         typeText('I will go away')
 
-        deleteTypedText()
+        deleteTypedText(editor)
 
         await closeTextEditor()
         await editor.getDispatchFollowUpActionsFinished()
@@ -451,7 +451,7 @@ describe('Use the text editor', () => {
 
         await enterTextEditMode(editor, 'start', 'span')
 
-        deleteTypedText()
+        deleteTypedText(editor)
 
         await closeTextEditor()
         await editor.getDispatchFollowUpActionsFinished()
@@ -499,7 +499,7 @@ describe('Use the text editor', () => {
 
         await enterTextEditMode(editor, 'start', 'span')
 
-        deleteTypedText()
+        deleteTypedText(editor)
 
         await closeTextEditor()
         await editor.getDispatchFollowUpActionsFinished()
@@ -1990,7 +1990,7 @@ describe('Mouse behavior during text editing', () => {
     )
     await enterTextEditMode(editor)
 
-    const textEditor = editor.renderedDOM.getByTestId(TextEditorSpanId)
+    const textEditor = editor.getRenderedCanvas().getByTestId(TextEditorSpanId)
     const textEditorBounds = textEditor.getBoundingClientRect()
     const textEditorCorner = {
       x: textEditorBounds.x + 20,
@@ -2079,12 +2079,14 @@ function projectWithStyleNoQuotes(prop: string, value: string) {
         )`)
 }
 
-function deleteTypedText() {
+function deleteTypedText(editor: EditorRenderResult) {
   const range = document.createRange()
   const selection = window.getSelection()
   if (selection != null) {
     selection.removeAllRanges()
-    range.selectNodeContents(document.getElementById(TextEditorSpanId) ?? document.body)
+    range.selectNodeContents(
+      editor.getRenderedCanvas().queryByTestId(TextEditorSpanId) ?? document.body,
+    )
     selection.addRange(range)
   }
   typeText('')
@@ -2104,7 +2106,7 @@ async function pressShortcut(
   await expectSingleUndoNSaves(editor, expectFarTooManySaves ? 4 : 2, async () => {
     await pressKey(key, {
       modifiers: mod,
-      targetElement: document.getElementById(TextEditorSpanId) ?? undefined,
+      targetElement: editor.getRenderedCanvas().queryByTestId(TextEditorSpanId) ?? undefined,
     })
   })
   await closeTextEditor()
