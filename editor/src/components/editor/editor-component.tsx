@@ -318,6 +318,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     }
     if (projectId != null) {
       pushProjectURLToBrowserHistory(projectId, projectName)
+      ;(window as any).utopiaProjectID = projectId
     }
   }, [projectName, projectId])
 
