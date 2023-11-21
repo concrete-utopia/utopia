@@ -16,6 +16,7 @@ import {
   normalizeMultiplayerName,
 } from '../../../core/shared/multiplayer'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
+import { when } from '../../../utils/react-conditionals'
 
 export const CommentIndicator = React.memo(() => {
   const projectId = useEditorState(
@@ -46,18 +47,19 @@ function CommentIndicatorInner() {
     <React.Fragment>
       {threads.map((thread) => {
         const point = canvasPoint(thread.metadata)
-        const { initials, color } = (() => {
+        const { initials, color, avatar } = (() => {
           const firstComment = thread.comments[0]
           if (firstComment == null) {
-            return { initials: 'AN', color: multiplayerColorFromIndex(null) }
+            return { initials: 'AN', color: multiplayerColorFromIndex(null), avatar: null }
           }
           const author = collabs[firstComment.userId]
           if (author == null) {
-            return { initials: 'AN', color: multiplayerColorFromIndex(null) }
+            return { initials: 'AN', color: multiplayerColorFromIndex(null), avatar: null }
           }
           return {
             initials: multiplayerInitialsFromName(normalizeMultiplayerName(author.name)),
             color: multiplayerColorFromIndex(author.colorIndex),
+            avatar: author.avatar,
           }
         })()
 
@@ -101,7 +103,19 @@ function CommentIndicatorInner() {
                   boxShadow: UtopiaTheme.panelStyles.shadows.medium,
                 }}
               >
-                {initials}
+                {avatar == null ? (
+                  <span>{initials}</span>
+                ) : (
+                  <img
+                    style={{
+                      width: 18,
+                      height: 18,
+                      borderRadius: '100%',
+                    }}
+                    src={avatar}
+                    referrerPolicy='no-referrer'
+                  />
+                )}
               </div>
             </div>
           </div>
