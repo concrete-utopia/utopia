@@ -23,7 +23,12 @@ import { isLoggedIn } from '../editor/action-types'
 import { switchEditorMode } from '../editor/actions/action-creators'
 import { EditorModes, isFollowMode } from '../editor/editor-modes'
 import { useDispatch } from '../editor/store/dispatch-context'
-import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
+import {
+  Substores,
+  useEditorState,
+  useRefEditorState,
+  useSelectorWithCallback,
+} from '../editor/store/store-hook'
 import CanvasActions from './canvas-actions'
 import { activeFrameActionToString } from './commands/set-active-frames-command'
 import { canvasPointToWindowPoint, windowToCanvasCoordinates } from './dom-lookup'
@@ -376,34 +381,35 @@ const MultiplayerShadows = React.memo(() => {
     'MultiplayerShadows canvasOffset',
   )
 
-  const interactionData = useEditorState(
-    Substores.canvas,
-    (s) => s.editor.canvas.interactionSession?.interactionData,
-    'MultiplayerShadows interactionData',
-  )
-
   const editorRef = useRefEditorState((store) => ({
     jsxMetadata: store.editor.jsxMetadata,
   }))
 
-  React.useEffect(() => {
-    if (interactionData?.type === 'DRAG' || interactionData == null) {
-      updateMyPresence({
-        activeFrames: mapDropNulls(({ target, action, source }): PresenceActiveFrame | null => {
-          const { jsxMetadata } = editorRef.current
-          switch (target.type) {
-            case 'ACTIVE_FRAME_TARGET_RECT':
-              return { frame: target.rect, action, source }
-            case 'ACTIVE_FRAME_TARGET_PATH':
-              const frame = MetadataUtils.getFrameInCanvasCoords(target.path, jsxMetadata)
-              return { frame: zeroRectIfNullOrInfinity(frame), action, source }
-            default:
-              assertNever(target)
-          }
-        }, myActiveFrames),
-      })
-    }
-  }, [myActiveFrames, updateMyPresence, editorRef, interactionData])
+  useSelectorWithCallback(
+    Substores.canvas,
+    (store) => store.editor.canvas.interactionSession?.interactionData,
+    (interactionData) => {
+      if (interactionData?.type === 'DRAG') {
+        updateMyPresence({
+          activeFrames: mapDropNulls(({ target, action, source }): PresenceActiveFrame | null => {
+            const { jsxMetadata } = editorRef.current
+            switch (target.type) {
+              case 'ACTIVE_FRAME_TARGET_RECT':
+                return { frame: target.rect, action, source }
+              case 'ACTIVE_FRAME_TARGET_PATH':
+                const frame = MetadataUtils.getFrameInCanvasCoords(target.path, jsxMetadata)
+                return { frame: zeroRectIfNullOrInfinity(frame), action, source }
+              default:
+                assertNever(target)
+            }
+          }, myActiveFrames),
+        })
+      } else {
+        updateMyPresence({ activeFrames: [] })
+      }
+    },
+    'MultiplayerShadows update presence shadows',
+  )
 
   return (
     <>
