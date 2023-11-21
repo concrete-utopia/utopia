@@ -1,7 +1,6 @@
 import '@liveblocks/react-comments/styles.css'
 import React from 'react'
 import { FlexColumn, FlexRow, InspectorSubsectionHeader } from '../../../uuiui'
-import { ClientSideSuspense } from '@liveblocks/react'
 import { Comment } from '@liveblocks/react-comments'
 import { stopPropagation } from '../common/inspector-utils'
 import type { ThreadMetadata } from '../../../../liveblocks.config'
@@ -11,6 +10,7 @@ import { useDispatch } from '../../editor/store/dispatch-context'
 import { canvasPoint, canvasRectangle } from '../../../core/shared/math-utils'
 import { scrollToPosition, switchEditorMode } from '../../editor/actions/action-creators'
 import { EditorModes } from '../../editor/editor-modes'
+import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 
 export const CommentSection = React.memo(() => {
   return (
@@ -26,9 +26,9 @@ export const CommentSection = React.memo(() => {
           <span>Comments</span>
         </FlexRow>
       </InspectorSubsectionHeader>
-      <ClientSideSuspense fallback={<div>Loading…</div>}>
-        {() => <ThreadPreviews />}
-      </ClientSideSuspense>
+      <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
+        <ThreadPreviews />
+      </MultiplayerWrapper>
     </div>
   )
 })
