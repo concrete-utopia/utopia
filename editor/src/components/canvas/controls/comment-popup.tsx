@@ -8,11 +8,7 @@ import type { ComposerSubmitComment } from '@liveblocks/react-comments'
 import { Comment, Composer } from '@liveblocks/react-comments'
 import { stopPropagation } from '../../inspector/common/inspector-utils'
 import { UtopiaTheme } from '../../../uuiui'
-import {
-  useCanvasCommentThread,
-  useMyMultiplayerColorIndex,
-} from '../../../core/commenting/comment-hooks'
-import { isLoggedIn } from '../../editor/action-types'
+import { useCanvasCommentThread } from '../../../core/commenting/comment-hooks'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 
 export const CommentPopup = React.memo(() => {
@@ -52,13 +48,14 @@ export const CommentPopup = React.memo(() => {
     </CanvasOffsetWrapper>
   )
 })
+CommentPopup.displayName = 'CommentPopup'
 
 interface CommentThreadProps {
   x: number
   y: number
 }
 
-function CommentThread({ x, y }: CommentThreadProps) {
+const CommentThread = React.memo(({ x, y }: CommentThreadProps) => {
   const thread = useCanvasCommentThread(x, y)
 
   const createThread = useCreateThread()
@@ -88,4 +85,5 @@ function CommentThread({ x, y }: CommentThreadProps) {
       <Composer autoFocus threadId={thread.id} />
     </div>
   )
-}
+})
+CommentThread.displayName = 'CommentThread'

@@ -16,7 +16,6 @@ import {
   normalizeMultiplayerName,
 } from '../../../core/shared/multiplayer'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
-import { when } from '../../../utils/react-conditionals'
 import { AvatarPicture } from '../../user-bar'
 
 export const CommentIndicator = React.memo(() => {
@@ -38,8 +37,9 @@ export const CommentIndicator = React.memo(() => {
     </CanvasOffsetWrapper>
   )
 })
+CommentIndicator.displayName = 'CommentIndicator'
 
-function CommentIndicatorInner() {
+const CommentIndicatorInner = React.memo(() => {
   const { threads } = useThreads()
   const dispatch = useDispatch()
   const collabs = useStorage((storage) => storage.collaborators)
@@ -112,4 +112,5 @@ function CommentIndicatorInner() {
       })}
     </React.Fragment>
   )
-}
+})
+CommentIndicatorInner.displayName = 'CommentIndicatorInner'
