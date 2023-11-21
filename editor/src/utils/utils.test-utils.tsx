@@ -551,10 +551,10 @@ export function setFeatureForUnitTestsUseInDescribeBlockOnly(
 }
 
 function getElementsWithTestId(editor: EditorRenderResult, testId: string): HTMLElement[] {
-  return editor.renderedCanvas.queryAllByTestId(testId)
+  return editor.renderedDOM.queryAllByTestId(testId)
 }
 
-export const expectElementWithTestIdToBeRendered = (
+export const expectNonCanvasElementWithTestIdToBeRendered = (
   editor: EditorRenderResult,
   testId: string,
 ): void => {
@@ -563,7 +563,7 @@ export const expectElementWithTestIdToBeRendered = (
   expect(foundElements[0]?.style.display).not.toEqual('none')
 }
 
-export const expectElementWithTestIdToBeRenderedWithDisplayNone = (
+export const expectNonCanvasElementWithTestIdToBeRenderedWithDisplayNone = (
   editor: EditorRenderResult,
   testId: string,
 ): void => {
@@ -572,7 +572,7 @@ export const expectElementWithTestIdToBeRenderedWithDisplayNone = (
   expect(foundElements[0]?.style.display).toEqual('none')
 }
 
-export const expectElementWithTestIdNotToBeRendered = (
+export const expectNonCanvasElementWithTestIdNotToBeRendered = (
   editor: EditorRenderResult,
   testId: string,
 ): void => expect(getElementsWithTestId(editor, testId).length).toEqual(0)

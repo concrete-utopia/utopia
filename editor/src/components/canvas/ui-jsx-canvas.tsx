@@ -568,7 +568,13 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
   ])
 
   return (
-    <div id={CanvasContainerShadowRoot} data-testid={CanvasContainerShadowRoot}>
+    <div
+      style={{
+        all: 'initial',
+      }}
+      id={CanvasContainerShadowRoot}
+      data-testid={CanvasContainerShadowRoot}
+    >
       <ReactShadowRoot>
         <style>{`div,
           span,

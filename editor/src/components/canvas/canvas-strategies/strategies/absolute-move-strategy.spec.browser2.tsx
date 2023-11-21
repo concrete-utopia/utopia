@@ -29,8 +29,8 @@ import {
 } from '../../event-helpers.test-utils'
 import { ImmediateParentOutlinesTestId } from '../../controls/parent-outlines'
 import {
-  expectElementWithTestIdNotToBeRendered,
-  expectElementWithTestIdToBeRendered,
+  expectNonCanvasElementWithTestIdNotToBeRendered,
+  expectNonCanvasElementWithTestIdToBeRendered,
   selectComponentsForTest,
 } from '../../../../utils/utils.test-utils'
 import { ImmediateParentBoundsTestId } from '../../controls/parent-bounds'
@@ -184,7 +184,7 @@ function positioningFromCss(css: CSSStyleDeclaration) {
   return { left: css.left, top: css.top }
 }
 
-/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectElementWithTestIdNotToBeRendered", "expectElementWithTestIdToBeRendered"] }] */
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectNonCanvasElementWithTestIdNotToBeRendered", "expectNonCanvasElementWithTestIdToBeRendered"] }] */
 
 describe('Absolute Move Strategy', () => {
   it('does not activate when drag threshold is not reached', async () => {
@@ -1614,8 +1614,8 @@ describe('Absolute Move Strategy Canvas Controls', () => {
       'await-first-dom-report',
     )
 
-    expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentOutlinesTestId([]))
-    expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentBoundsTestId([]))
+    expectNonCanvasElementWithTestIdNotToBeRendered(renderResult, ImmediateParentOutlinesTestId([]))
+    expectNonCanvasElementWithTestIdNotToBeRendered(renderResult, ImmediateParentBoundsTestId([]))
 
     const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
@@ -1630,8 +1630,14 @@ describe('Absolute Move Strategy Canvas Controls', () => {
       windowPoint({ x: 5, y: 5 }),
       emptyModifiers,
       async () => {
-        expectElementWithTestIdToBeRendered(renderResult, ImmediateParentOutlinesTestId([target]))
-        expectElementWithTestIdToBeRendered(renderResult, ImmediateParentBoundsTestId([target]))
+        expectNonCanvasElementWithTestIdToBeRendered(
+          renderResult,
+          ImmediateParentOutlinesTestId([target]),
+        )
+        expectNonCanvasElementWithTestIdToBeRendered(
+          renderResult,
+          ImmediateParentBoundsTestId([target]),
+        )
       },
     )
   })
@@ -1654,8 +1660,14 @@ describe('Absolute Move Strategy Canvas Controls', () => {
           'await-first-dom-report',
         )
 
-        expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentOutlinesTestId([]))
-        expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentBoundsTestId([]))
+        expectNonCanvasElementWithTestIdNotToBeRendered(
+          renderResult,
+          ImmediateParentOutlinesTestId([]),
+        )
+        expectNonCanvasElementWithTestIdNotToBeRendered(
+          renderResult,
+          ImmediateParentBoundsTestId([]),
+        )
 
         const target = EP.appendNewElementPath(TestScenePath, [
           'container',
@@ -1679,11 +1691,14 @@ describe('Absolute Move Strategy Canvas Controls', () => {
           windowPoint({ x: 5, y: 5 }),
           emptyModifiers,
           async () => {
-            expectElementWithTestIdToBeRendered(
+            expectNonCanvasElementWithTestIdToBeRendered(
               renderResult,
               ImmediateParentOutlinesTestId([target]),
             )
-            expectElementWithTestIdToBeRendered(renderResult, ImmediateParentBoundsTestId([target]))
+            expectNonCanvasElementWithTestIdToBeRendered(
+              renderResult,
+              ImmediateParentBoundsTestId([target]),
+            )
           },
         )
       })
