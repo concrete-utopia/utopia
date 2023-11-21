@@ -43,12 +43,10 @@ export function useApplyCanvasOffsetToStyle(setScaleToo: boolean): React.RefObje
           setScaleToo && scaleRef.current >= 1 ? `${scaleRef.current * 100}%` : '1',
         )
 
-        if (isFollowMode(mode)) {
-          elementRef.current.style.setProperty(
-            'transition',
-            `transform ${liveblocksThrottle}ms linear`,
-          )
-        }
+        elementRef.current.style.setProperty(
+          'transition',
+          isFollowMode(mode) ? `transform ${liveblocksThrottle}ms linear` : 'none',
+        )
       }
     },
     [elementRef, setScaleToo, scaleRef, mode],
