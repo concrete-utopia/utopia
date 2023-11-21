@@ -120,12 +120,12 @@ import { modify } from '../../../core/shared/optics/optic-utilities'
 function buildPropertyCallingFunction(
   functionName: string,
   parameters: JSExpression[],
-  globalFunction: boolean = false,
 ): TS.Expression {
-  const callingFunctionName = globalFunction
-    ? TS.createIdentifier(functionName)
-    : TS.createPropertyAccess(TS.createIdentifier('UtopiaUtils'), TS.createIdentifier(functionName))
-  return TS.createCall(callingFunctionName, undefined, parameters.map(jsxAttributeToExpression))
+  return TS.createCall(
+    TS.createPropertyAccess(TS.createIdentifier('UtopiaUtils'), TS.createIdentifier(functionName)),
+    undefined,
+    parameters.map(jsxAttributeToExpression),
+  )
 }
 
 function getJSXAttributeComments(attribute: JSExpression): ParsedComments {
@@ -184,9 +184,7 @@ function jsxAttributeToExpression(attribute: JSExpression): TS.Expression {
     switch (attribute.type) {
       case 'ATTRIBUTE_VALUE':
         if (typeof attribute.value === 'string') {
-          return attribute.identifier
-            ? TS.createIdentifier(attribute.value)
-            : TS.createLiteral(attribute.value)
+          return TS.createLiteral(attribute.value)
         } else {
           return jsonToExpression(attribute.value)
         }
@@ -237,11 +235,7 @@ function jsxAttributeToExpression(attribute: JSExpression): TS.Expression {
           return TS.factory.createNull()
         }
       case 'ATTRIBUTE_FUNCTION_CALL':
-        return buildPropertyCallingFunction(
-          attribute.functionName,
-          attribute.parameters,
-          attribute.globalFunction,
-        )
+        return buildPropertyCallingFunction(attribute.functionName, attribute.parameters)
       default:
         const _exhaustiveCheck: never = attribute
         throw new Error(`Unhandled prop type ${JSON.stringify(attribute)}`)

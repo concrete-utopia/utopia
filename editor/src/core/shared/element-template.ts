@@ -124,7 +124,6 @@ export interface JSExpressionValue<T> extends WithComments {
   type: 'ATTRIBUTE_VALUE'
   uid: string
   value: T
-  identifier?: boolean
 }
 
 export function jsExpressionValue<T>(
@@ -137,20 +136,6 @@ export function jsExpressionValue<T>(
     value: value,
     comments: comments,
     uid: uid,
-  }
-}
-
-export function jsExpressionIdentifier<T>(
-  value: T,
-  comments: ParsedComments,
-  uid: string = UUID(),
-): JSExpressionValue<T> {
-  return {
-    type: 'ATTRIBUTE_VALUE',
-    value: value,
-    comments: comments,
-    uid: uid,
-    identifier: true,
   }
 }
 
@@ -218,6 +203,21 @@ export function jsExpressionOtherJavaScript(
     comments: comments,
     elementsWithin: elementsWithin,
   }
+}
+
+export function jsExpressionOtherJavaScriptSimple(
+  javascript: string,
+  definedElsewhere: Array<string>,
+): JSExpressionOtherJavaScript {
+  return jsExpressionOtherJavaScript(
+    javascript,
+    javascript,
+    `return ${javascript}`,
+    definedElsewhere,
+    null,
+    {},
+    emptyComments,
+  )
 }
 
 export interface JSXMapExpression extends WithComments, WithElementsWithin {
@@ -404,21 +404,6 @@ export interface JSExpressionFunctionCall {
   functionName: string
   parameters: Array<JSExpression>
   uid: string
-  globalFunction?: boolean
-}
-
-export function jsxExpressionGlobalFunctionCall(
-  functionName: string,
-  parameters: Array<JSExpression>,
-  uid: string = UUID(),
-): JSExpressionFunctionCall {
-  return {
-    type: 'ATTRIBUTE_FUNCTION_CALL',
-    functionName: functionName,
-    parameters: parameters,
-    uid: uid,
-    globalFunction: true,
-  }
 }
 
 export function jsExpressionFunctionCall(
