@@ -212,21 +212,6 @@ export const MultiplayerAvatar = React.memo(
       return isDefaultAuth0AvatarURL(props.picture ?? null) ? null : props.picture
     }, [props.picture])
 
-    const [pictureNotFound, setPictureNotFound] = React.useState(false)
-
-    React.useEffect(() => {
-      setPictureNotFound(false)
-    }, [picture])
-
-    const onPictureError = React.useCallback(() => {
-      console.warn('cannot get picture', props.picture)
-      setPictureNotFound(true)
-    }, [props.picture])
-
-    const showPicture = React.useMemo(() => {
-      return picture != null && !pictureNotFound
-    }, [picture, pictureNotFound])
-
     const colorTheme = useColorTheme()
     return (
       <Tooltip
@@ -254,24 +239,56 @@ export const MultiplayerAvatar = React.memo(
           }}
           onClick={props.onClick}
         >
-          {unless(showPicture, props.name)}
-          {when(
-            showPicture,
-            // Using an img tag instead of using it as backgroundColor above because of potential 403s
-            <img
-              style={{
-                width: props.border === true ? 22 : '100%',
-                height: props.border === true ? 22 : '100%',
-                borderRadius: '100%',
-              }}
-              src={picture ?? ''}
-              referrerPolicy='no-referrer'
-              onError={onPictureError}
-            />,
-          )}
+          <AvatarPicture
+            url={picture}
+            size={props.border === true ? 22 : undefined}
+            initials={props.name}
+          />
         </div>
       </Tooltip>
     )
   },
 )
 MultiplayerAvatar.displayName = 'MultiplayerAvatar'
+
+interface AvatarPictureProps {
+  url: string | null | undefined
+  initials: string
+  size?: number
+}
+
+export const AvatarPicture = React.memo((props: AvatarPictureProps) => {
+  const url = React.useMemo(() => {
+    return isDefaultAuth0AvatarURL(props.url ?? null) ? null : props.url
+  }, [props.url])
+
+  const { initials, size } = props
+
+  const [pictureNotFound, setPictureNotFound] = React.useState(false)
+
+  React.useEffect(() => {
+    setPictureNotFound(false)
+  }, [url])
+
+  const onPictureError = React.useCallback(() => {
+    console.warn('cannot get picture', url)
+    setPictureNotFound(true)
+  }, [url])
+
+  if (url == null || pictureNotFound) {
+    return <span>{initials}</span>
+  }
+  return (
+    <img
+      style={{
+        width: size ?? '100%',
+        height: size ?? '100%',
+        borderRadius: '100%',
+      }}
+      src={url}
+      referrerPolicy='no-referrer'
+      onError={onPictureError}
+    />
+  )
+})
+AvatarPicture.displayName = 'AvatarPicture'

@@ -17,6 +17,7 @@ import {
 } from '../../../core/shared/multiplayer'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { when } from '../../../utils/react-conditionals'
+import { AvatarPicture } from '../../user-bar'
 
 export const CommentIndicator = React.memo(() => {
   const projectId = useEditorState(
@@ -103,7 +104,7 @@ function CommentIndicatorInner() {
                   boxShadow: UtopiaTheme.panelStyles.shadows.medium,
                 }}
               >
-                <CommentAvatar url={avatar} initials={initials} />
+                <AvatarPicture url={avatar} initials={initials} />
               </div>
             </div>
           </div>
@@ -112,32 +113,3 @@ function CommentIndicatorInner() {
     </React.Fragment>
   )
 }
-
-interface CommentAvatarProps {
-  url: string | null
-  initials: string
-}
-
-const CommentAvatar = React.memo(({ url, initials }: CommentAvatarProps) => {
-  const [avatarError, setAvatarError] = React.useState(false)
-
-  const onAvatarError = React.useCallback(() => {
-    setAvatarError(true)
-  }, [setAvatarError])
-
-  if (url == null || avatarError) {
-    return <span>{initials}</span>
-  }
-  return (
-    <img
-      style={{
-        width: '100%',
-        height: '100%',
-        borderRadius: '100%',
-      }}
-      src={url}
-      referrerPolicy='no-referrer'
-      onError={onAvatarError}
-    />
-  )
-})
