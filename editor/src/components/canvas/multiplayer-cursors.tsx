@@ -14,7 +14,7 @@ import { getCollaborator, useAddMyselfToCollaborators } from '../../core/comment
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../core/shared/array-utils'
 import type { CanvasPoint } from '../../core/shared/math-utils'
-import { isFiniteRectangle, pointsEqual, windowPoint } from '../../core/shared/math-utils'
+import { canvasRectangleOrZeroRect, pointsEqual, windowPoint } from '../../core/shared/math-utils'
 import { multiplayerColorFromIndex, normalizeOthersList } from '../../core/shared/multiplayer'
 import { assertNever } from '../../core/shared/utils'
 import { UtopiaTheme, useColorTheme } from '../../uuiui'
@@ -23,7 +23,7 @@ import { isLoggedIn } from '../editor/action-types'
 import { switchEditorMode } from '../editor/actions/action-creators'
 import { EditorModes, isFollowMode } from '../editor/editor-modes'
 import { useDispatch } from '../editor/store/dispatch-context'
-import { Substores, useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import CanvasActions from './canvas-actions'
 import { activeFrameActionToString } from './commands/set-active-frames-command'
 import { canvasPointToWindowPoint, windowToCanvasCoordinates } from './dom-lookup'
@@ -359,12 +359,6 @@ const MultiplayerShadows = React.memo(() => {
     )
   }, [others])
 
-  const jsxMetadata = useEditorState(
-    Substores.metadata,
-    (store) => store.editor.jsxMetadata,
-    'MultiplayerShadows jsxMetadata',
-  )
-
   const myActiveFrames = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.activeFrames,
@@ -382,54 +376,90 @@ const MultiplayerShadows = React.memo(() => {
     'MultiplayerShadows canvasOffset',
   )
 
+  const interactionData = useEditorState(
+    Substores.canvas,
+    (s) => s.editor.canvas.interactionSession?.interactionData,
+    'MultiplayerShadows interactionData',
+  )
+
+  const editorRef = useRefEditorState((store) => ({
+    jsxMetadata: store.editor.jsxMetadata,
+  }))
+
   React.useEffect(() => {
-    updateMyPresence({
-      activeFrames: mapDropNulls(({ frame, path, action }): PresenceActiveFrame | null => {
-        if (frame != null) {
-          return { frame, action }
-        } else if (path != null) {
-          const canvasFrame = MetadataUtils.getFrameInCanvasCoords(path, jsxMetadata)
-          return canvasFrame != null && isFiniteRectangle(canvasFrame)
-            ? { frame: canvasFrame, action }
-            : null
-        } else {
-          return null
-        }
-      }, myActiveFrames),
-    })
-  }, [myActiveFrames, updateMyPresence, jsxMetadata])
+    if (interactionData?.type === 'DRAG' || interactionData == null) {
+      updateMyPresence({
+        activeFrames: mapDropNulls(({ target, action, source }): PresenceActiveFrame | null => {
+          const { jsxMetadata } = editorRef.current
+          switch (target.type) {
+            case 'ACTIVE_FRAME_TARGET_RECT':
+              return { frame: target.rect, action, source }
+            case 'ACTIVE_FRAME_TARGET_PATH':
+              const frame = MetadataUtils.getFrameInCanvasCoords(target.path, jsxMetadata)
+              return { frame: canvasRectangleOrZeroRect(frame), action, source }
+            default:
+              assertNever(target)
+          }
+        }, myActiveFrames),
+      })
+    }
+  }, [myActiveFrames, updateMyPresence, editorRef, interactionData])
 
   return (
     <>
       {shadows.map((shadow, index) => {
-        const { frame, action } = shadow.activeFrame
+        const { frame, action, source } = shadow.activeFrame
         const color = multiplayerColorFromIndex(shadow.colorIndex)
-        const position = canvasPointToWindowPoint(frame, canvasScale, canvasOffset)
+        const framePosition = canvasPointToWindowPoint(frame, canvasScale, canvasOffset)
+        const sourcePosition = canvasPointToWindowPoint(source, canvasScale, canvasOffset)
         return (
-          <motion.div
-            key={`shadow-${index}`}
-            initial={{ x: position.x, y: position.y, width: frame.width, height: frame.height }}
-            animate={{ x: position.x, y: position.y, width: frame.width, height: frame.height }}
-            transition={{
-              type: 'spring',
-              damping: 30,
-              mass: 0.8,
-              stiffness: 350,
-            }}
-            style={{
-              position: 'fixed',
-              pointerEvents: 'none',
-              background: `${color.background}22`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 9,
-              color: color.background,
-              border: `1px solid ${color.background}`,
-            }}
-          >
-            {activeFrameActionToString(action)}
-          </motion.div>
+          <React.Fragment key={`shadow-${index}`}>
+            <div
+              style={{
+                position: 'fixed',
+                top: sourcePosition.y,
+                left: sourcePosition.x,
+                width: source.width,
+                height: source.height,
+                pointerEvents: 'none',
+                border: `1px dashed ${color.background}`,
+                opacity: 0.5,
+              }}
+            />
+            <motion.div
+              initial={{
+                x: framePosition.x,
+                y: framePosition.y,
+                width: frame.width,
+                height: frame.height,
+              }}
+              animate={{
+                x: framePosition.x,
+                y: framePosition.y,
+                width: frame.width,
+                height: frame.height,
+              }}
+              transition={{
+                type: 'spring',
+                damping: 30,
+                mass: 0.8,
+                stiffness: 350,
+              }}
+              style={{
+                position: 'fixed',
+                pointerEvents: 'none',
+                background: `${color.background}44`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 9,
+                color: color.background,
+                border: `1px dashed ${color.background}`,
+              }}
+            >
+              {activeFrameActionToString(action)}
+            </motion.div>
+          </React.Fragment>
         )
       })}
     </>

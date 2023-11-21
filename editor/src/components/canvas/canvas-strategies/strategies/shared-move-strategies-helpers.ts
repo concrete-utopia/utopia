@@ -19,6 +19,7 @@ import type {
 } from '../../../../core/shared/math-utils'
 import {
   boundingRectangleArray,
+  canvasRectangleOrZeroRect,
   canvasRectangleToLocalRectangle,
   canvasVector,
   nullIfInfinity,
@@ -70,7 +71,7 @@ import {
   setCssLengthProperty,
   setValueKeepingOriginalUnit,
 } from '../../commands/set-css-length-command'
-import { setActiveFrames } from '../../commands/set-active-frames-command'
+import { activeFrameTargetRect, setActiveFrames } from '../../commands/set-active-frames-command'
 
 export interface MoveCommandsOptions {
   ignoreLocalFrame?: boolean
@@ -137,8 +138,11 @@ export function applyMoveCommon(
         setCursorCommand(CSSCursor.Select),
         setActiveFrames(
           commandsForSelectedElements.intendedBounds.map((b) => ({
-            frame: b.frame,
             action: 'move', // TODO this could also show "duplicate" when applicable
+            target: activeFrameTargetRect(b.frame),
+            source: canvasRectangleOrZeroRect(
+              MetadataUtils.getFrameInCanvasCoords(b.target, canvasState.startingMetadata),
+            ),
           })),
         ),
       ])
@@ -180,8 +184,11 @@ export function applyMoveCommon(
         setCursorCommand(CSSCursor.Select),
         setActiveFrames(
           commandsForSelectedElements.intendedBounds.map((b) => ({
-            frame: b.frame,
             action: 'move', // TODO this could also show "duplicate" when applicable
+            target: activeFrameTargetRect(b.frame),
+            source: canvasRectangleOrZeroRect(
+              MetadataUtils.getFrameInCanvasCoords(b.target, canvasState.startingMetadata),
+            ),
           })),
         ),
       ])

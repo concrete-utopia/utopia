@@ -1,7 +1,11 @@
 import { styleStringInArray } from '../../../../utils/common-constants'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import type { CanvasVector } from '../../../../core/shared/math-utils'
-import { canvasPoint, canvasVector } from '../../../../core/shared/math-utils'
+import {
+  canvasPoint,
+  canvasRectangleOrZeroRect,
+  canvasVector,
+} from '../../../../core/shared/math-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import type { Modifiers } from '../../../../utils/modifiers'
@@ -38,7 +42,7 @@ import {
 import type { InteractionSession } from '../interaction-state'
 import { areAllSiblingsInOneDimensionFlexOrFlow } from './flow-reorder-helpers'
 import { colorTheme } from '../../../../uuiui'
-import { setActiveFrames } from '../../commands/set-active-frames-command'
+import { activeFrameTargetPath, setActiveFrames } from '../../commands/set-active-frames-command'
 
 export const SetFlexGapStrategyId = 'SET_FLEX_GAP_STRATEGY'
 
@@ -171,7 +175,15 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
         ),
         setCursorCommand(cursorFromFlexDirection(flexGap.direction)),
         setElementsToRerenderCommand([...selectedElements, ...children]),
-        setActiveFrames([{ path: selectedElement, action: 'set-gap' }]),
+        setActiveFrames([
+          {
+            action: 'set-gap',
+            target: activeFrameTargetPath(selectedElement),
+            source: canvasRectangleOrZeroRect(
+              MetadataUtils.getFrameInCanvasCoords(selectedElement, canvasState.startingMetadata),
+            ),
+          },
+        ]),
       ])
     },
   }

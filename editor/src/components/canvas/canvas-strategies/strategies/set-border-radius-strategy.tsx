@@ -16,6 +16,7 @@ import {
 } from '../../../../core/shared/element-template'
 import type { CanvasPoint, CanvasVector, Size } from '../../../../core/shared/math-utils'
 import {
+  canvasRectangleOrZeroRect,
   canvasVector,
   clamp,
   product,
@@ -75,7 +76,7 @@ import { withUnderlyingTarget } from '../../../editor/store/editor-state'
 import type { ProjectContentTreeRoot } from '../../../assets'
 import { getModifiableJSXAttributeAtPath } from '../../../../core/shared/jsx-attributes'
 import { showToastCommand } from '../../commands/show-toast-command'
-import { setActiveFrames } from '../../commands/set-active-frames-command'
+import { activeFrameTargetPath, setActiveFrames } from '../../commands/set-active-frames-command'
 
 export const SetBorderRadiusStrategyId = 'SET_BORDER_RADIUS_STRATEGY'
 
@@ -158,7 +159,15 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
         ...commands(selectedElement),
         ...getAddOverflowHiddenCommands(selectedElement, canvasState.projectContents),
         setElementsToRerenderCommand(selectedElements),
-        setActiveFrames(selectedElements.map((path) => ({ path, action: 'set-radius' }))),
+        setActiveFrames(
+          selectedElements.map((path) => ({
+            action: 'set-radius',
+            target: activeFrameTargetPath(path),
+            source: canvasRectangleOrZeroRect(
+              MetadataUtils.getFrameInCanvasCoords(path, canvasState.startingMetadata),
+            ),
+          })),
+        ),
       ]),
   }
 }

@@ -33,9 +33,47 @@ export function activeFrameActionToString(action: ActiveFrameAction): string {
 
 export type ActiveFrame = {
   action: ActiveFrameAction
-  frame?: CanvasRectangle
-  path?: ElementPath
+  target: ActiveFrameTarget
+  source: CanvasRectangle
 }
+
+export type ActiveFrameTargetRect = {
+  type: 'ACTIVE_FRAME_TARGET_RECT'
+  rect: CanvasRectangle
+}
+
+export function isActiveFrameTargetRect(
+  target: ActiveFrameTarget,
+): target is ActiveFrameTargetRect {
+  return target.type === 'ACTIVE_FRAME_TARGET_RECT'
+}
+
+export function activeFrameTargetRect(rect: CanvasRectangle): ActiveFrameTargetRect {
+  return {
+    type: 'ACTIVE_FRAME_TARGET_RECT',
+    rect: rect,
+  }
+}
+
+export type ActiveFrameTargetPath = {
+  type: 'ACTIVE_FRAME_TARGET_PATH'
+  path: ElementPath
+}
+
+export function isActiveFrameTargetPath(
+  target: ActiveFrameTarget,
+): target is ActiveFrameTargetPath {
+  return target.type === 'ACTIVE_FRAME_TARGET_PATH'
+}
+
+export function activeFrameTargetPath(path: ElementPath): ActiveFrameTargetPath {
+  return {
+    type: 'ACTIVE_FRAME_TARGET_PATH',
+    path: path,
+  }
+}
+
+export type ActiveFrameTarget = ActiveFrameTargetRect | ActiveFrameTargetPath
 
 export interface SetActiveFrames extends BaseCommand {
   type: 'SET_ACTIVE_FRAMES'

@@ -4,8 +4,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import type { CanvasVector } from '../../../../core/shared/math-utils'
 import {
   canvasRectangle,
-  CanvasRectangle,
-  isFiniteRectangle,
+  canvasRectangleOrZeroRect,
   isInfinityRectangle,
   offsetPoint,
   rectContainsPoint,
@@ -21,14 +20,10 @@ import type {
   InteractionCanvasState,
   StrategyApplicationResult,
 } from '../canvas-strategy-types'
-import {
-  emptyStrategyApplicationResult,
-  getTargetPathsFromInteractionTarget,
-  strategyApplicationResult,
-} from '../canvas-strategy-types'
+import { emptyStrategyApplicationResult, strategyApplicationResult } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
 import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
-import { setActiveFrames } from '../../commands/set-active-frames-command'
+import { activeFrameTargetRect, setActiveFrames } from '../../commands/set-active-frames-command'
 
 export function isReorderAllowed(siblings: Array<ElementPath>): boolean {
   return siblings.every((sibling) => !isRootOfGeneratedElement(sibling))
@@ -83,24 +78,26 @@ export function applyReorderCommon(
       isValidTarget,
     )
 
+    const sourceFrame = canvasRectangleOrZeroRect(
+      MetadataUtils.getFrameInCanvasCoords(target, canvasState.startingMetadata) ?? null,
+    )
     const newIndexFound = newIndex > -1
     const newResultOrLastIndex = newIndexFound ? newIndex : lastReorderIdx
-    const targetFrame =
+    const targetFrame = canvasRectangleOrZeroRect(
       newResultOrLastIndex > -1
         ? MetadataUtils.getFrameInCanvasCoords(
             siblings[newResultOrLastIndex],
             canvasState.startingMetadata,
           )
-        : MetadataUtils.getFrameInCanvasCoords(target, canvasState.startingMetadata)
+        : MetadataUtils.getFrameInCanvasCoords(target, canvasState.startingMetadata),
+    )
 
     if (newResultOrLastIndex === unpatchedIndex) {
       return strategyApplicationResult(
         [
-          setActiveFrames(
-            targetFrame != null && isFiniteRectangle(targetFrame)
-              ? [{ frame: targetFrame, action: 'reorder' }]
-              : [],
-          ),
+          setActiveFrames([
+            { action: 'reorder', target: activeFrameTargetRect(targetFrame), source: sourceFrame },
+          ]),
           updateHighlightedViews('mid-interaction', []),
           setElementsToRerenderCommand(siblings),
           setCursorCommand(CSSCursor.Move),
@@ -112,11 +109,9 @@ export function applyReorderCommon(
     } else {
       return strategyApplicationResult(
         [
-          setActiveFrames(
-            targetFrame != null && isFiniteRectangle(targetFrame)
-              ? [{ frame: targetFrame, action: 'reorder' }]
-              : [],
-          ),
+          setActiveFrames([
+            { action: 'reorder', target: activeFrameTargetRect(targetFrame), source: sourceFrame },
+          ]),
           reorderElement('always', target, absolute(newResultOrLastIndex)),
           setElementsToRerenderCommand(siblings),
           updateHighlightedViews('mid-interaction', []),
