@@ -1,5 +1,5 @@
 import React from 'react'
-import { useOthers, useSelf, useStatus, useStorage } from '../../liveblocks.config'
+import { useOthers, useStatus, useStorage } from '../../liveblocks.config'
 import { getUserPicture, isLoggedIn } from '../common/user'
 import type { MultiplayerColor } from '../core/shared/multiplayer'
 import {
@@ -17,7 +17,7 @@ import { useDispatch } from './editor/store/dispatch-context'
 import { switchEditorMode } from './editor/actions/action-creators'
 import type { EditorAction } from './editor/action-types'
 import { EditorModes, isFollowMode } from './editor/editor-modes'
-import { useMyUserAndPresence } from '../core/commenting/comment-hooks'
+import { getCollaborator, useMyUserAndPresence } from '../core/commenting/comment-hooks'
 
 const MAX_VISIBLE_OTHER_PLAYERS = 4
 
@@ -61,17 +61,13 @@ SinglePlayerUserBar.displayName = 'SinglePlayerUserBar'
 const MultiplayerUserBar = React.memo(() => {
   const dispatch = useDispatch()
   const colorTheme = useColorTheme()
+  const collabs = useStorage((store) => store.collaborators)
 
   const { user: myUser } = useMyUserAndPresence()
-  const myName = normalizeMultiplayerName(myUser.name)
+  const myName = React.useMemo(() => normalizeMultiplayerName(myUser.name), [myUser])
 
   const others = useOthers((list) =>
-    normalizeOthersList(myUser.id, list).map((other) => ({
-      id: other.id,
-      name: myUser.name,
-      colorIndex: myUser.colorIndex,
-      picture: myUser.avatar,
-    })),
+    normalizeOthersList(myUser.id, list).map((other) => getCollaborator(collabs, other)),
   )
 
   const visibleOthers = React.useMemo(() => {
@@ -136,7 +132,7 @@ const MultiplayerUserBar = React.memo(() => {
                 name={multiplayerInitialsFromName(name)}
                 tooltip={name}
                 color={multiplayerColorFromIndex(other.colorIndex)}
-                picture={other.picture}
+                picture={other.avatar}
                 border={true}
                 coloredTooltip={true}
                 onClick={toggleFollowing(other.id)}
