@@ -90,7 +90,7 @@ export function wrapCodeInParensWithMap(
   const node = SourceNode.fromStringWithSourceMap(wrappedCode, consumer)
   node.setSourceContent(sourceFileName, sourceFileText)
   const result = node.toStringWithSourceMap({ file: sourceFileName })
-  return { code: result.code, sourceMap: result.map }
+  return { code: result.code, sourceMap: JSON.parse(result.map.toString()) }
 }
 
 export function prependToSourceString(
