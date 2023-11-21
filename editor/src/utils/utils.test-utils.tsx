@@ -581,7 +581,7 @@ export function boundingClientRectToCanvasRectangle(
   result: EditorRenderResult,
   elementBounds: DOMRect,
 ) {
-  const canvasRootContainer = result.renderedCanvas.getByTestId(CanvasContainerID)
+  const canvasRootContainer = result.getRenderedCanvas().getByTestId(CanvasContainerID)
   const canvasScale = result.getEditorState().editor.canvas.scale
   const canvasRootRectangle = getCanvasRectangleFromElement(
     canvasRootContainer,

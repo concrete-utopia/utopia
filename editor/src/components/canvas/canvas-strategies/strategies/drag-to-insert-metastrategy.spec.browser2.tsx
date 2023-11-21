@@ -143,7 +143,7 @@ describe('drag-to-insert', () => {
     it('Should insert a div into an absolute layout', async () => {
       const renderResult = await setupInsertTest(inputCode)
 
-      const targetParentElement = renderResult.renderedCanvas.getByTestId('larger')
+      const targetParentElement = renderResult.getRenderedCanvas().getByTestId('larger')
       const targetParentElementBounds = targetParentElement.getBoundingClientRect()
       const targetPoint = {
         x: targetParentElementBounds.x + targetParentElementBounds.width / 2,
@@ -212,7 +212,7 @@ describe('drag-to-insert', () => {
     it('Should insert into a smaller element', async () => {
       const renderResult = await setupInsertTest(inputCode)
 
-      const targetParentElement = renderResult.renderedCanvas.getByTestId('smaller')
+      const targetParentElement = renderResult.getRenderedCanvas().getByTestId('smaller')
       const targetParentElementBounds = targetParentElement.getBoundingClientRect()
       const targetPoint = {
         x: targetParentElementBounds.x + targetParentElementBounds.width / 2,
@@ -283,7 +283,7 @@ describe('drag-to-insert', () => {
 
       FOR_TESTS_setNextGeneratedUids(['ddd'])
 
-      const targetParentElement = renderResult.renderedCanvas.getByTestId('larger')
+      const targetParentElement = renderResult.getRenderedCanvas().getByTestId('larger')
       const targetParentElementBounds = targetParentElement.getBoundingClientRect()
       const targetPoint = {
         x: targetParentElementBounds.x + targetParentElementBounds.width / 2,
@@ -368,7 +368,7 @@ describe('drag-to-insert', () => {
     it('Should insert a fragment into an absolute layout', async () => {
       const renderResult = await setupInsertTest(inputCode)
 
-      const targetParentElement = renderResult.renderedCanvas.getByTestId('larger')
+      const targetParentElement = renderResult.getRenderedCanvas().getByTestId('larger')
       const targetParentElementBounds = targetParentElement.getBoundingClientRect()
       const targetPoint = {
         x: targetParentElementBounds.x + targetParentElementBounds.width / 2,
@@ -477,7 +477,7 @@ describe('drag-to-insert', () => {
     it('Should insert a div into a flex layout at zero position', async () => {
       const renderResult = await setupInsertTest(inputCode)
 
-      const targetNextSibling = renderResult.renderedCanvas.getByTestId('bbb')
+      const targetNextSibling = renderResult.getRenderedCanvas().getByTestId('bbb')
       const targetNextSiblingBounds = targetNextSibling.getBoundingClientRect()
       // Drag close to the left edge of the target sibling
       const targetPoint = {
@@ -542,7 +542,7 @@ describe('drag-to-insert', () => {
     it('Should insert a wrapped element into a flex layout at zero position', async () => {
       const renderResult = await setupInsertTest(inputCode)
 
-      const targetNextSibling = renderResult.renderedCanvas.getByTestId('bbb')
+      const targetNextSibling = renderResult.getRenderedCanvas().getByTestId('bbb')
       const targetNextSiblingBounds = targetNextSibling.getBoundingClientRect()
       // Drag close to the left edge of the target sibling
       const targetPoint = {
@@ -610,7 +610,7 @@ describe('drag-to-insert', () => {
     it('Should insert a div into a flex layout with absolute positioning', async () => {
       const renderResult = await setupInsertTest(inputCode)
 
-      const targetSibling = renderResult.renderedCanvas.getByTestId('bbb')
+      const targetSibling = renderResult.getRenderedCanvas().getByTestId('bbb')
       const targetSiblingBounds = targetSibling.getBoundingClientRect()
       // Drag close to the right edge of the target sibling
       const targetPoint = {
@@ -675,7 +675,7 @@ describe('drag-to-insert', () => {
     it('Should forcibly insert a div into a flex layout that does not provide bounds with absolute positioning', async () => {
       const renderResult = await setupInsertTest(inputCode)
 
-      const targetParent = renderResult.renderedCanvas.getByTestId('ccc')
+      const targetParent = renderResult.getRenderedCanvas().getByTestId('ccc')
       const targetParentBounds = targetParent.getBoundingClientRect()
 
       const targetPoint = {
@@ -742,7 +742,7 @@ describe('drag-to-insert', () => {
     it('Should insert a div into a flex layout at the next position', async () => {
       const renderResult = await setupInsertTest(inputCode)
 
-      const targetPrevSibling = renderResult.renderedCanvas.getByTestId('bbb')
+      const targetPrevSibling = renderResult.getRenderedCanvas().getByTestId('bbb')
       const targetPrevSiblingBounds = targetPrevSibling.getBoundingClientRect()
       // Drag close to the right edge of the target sibling
       const targetPoint = {
@@ -807,7 +807,7 @@ describe('drag-to-insert', () => {
     it('Should insert a div into a child of a flex layout which provides absolute bounds', async () => {
       const renderResult = await setupInsertTest(inputCode)
 
-      const targetParentElement = renderResult.renderedCanvas.getByTestId('bbb')
+      const targetParentElement = renderResult.getRenderedCanvas().getByTestId('bbb')
       const targetParentElementBounds = targetParentElement.getBoundingClientRect()
 
       const targetPoint = {
@@ -914,7 +914,7 @@ describe('drag-to-insert', () => {
       'await-first-dom-report',
     )
 
-    const targetParentElement = renderResult.renderedCanvas.getByTestId('larger')
+    const targetParentElement = renderResult.getRenderedCanvas().getByTestId('larger')
     const targetParentElementBounds = targetParentElement.getBoundingClientRect()
     const targetPoint = {
       x: targetParentElementBounds.x + targetParentElementBounds.width / 2,

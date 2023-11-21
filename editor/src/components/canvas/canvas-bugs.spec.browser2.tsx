@@ -142,7 +142,7 @@ export var storyboard = (
   it('should be draggable immediately after the mouse down.', async () => {
     async function mouseOperations(renderResult: EditorRenderResult): Promise<void> {
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-      const toClickOn = renderResult.renderedCanvas.getByTestId('to-click-on')
+      const toClickOn = renderResult.getRenderedCanvas().getByTestId('to-click-on')
       const toClickOnCenter = getDomRectCenter(toClickOn.getBoundingClientRect())
       const dragEndPoint = {
         ...toClickOnCenter,
@@ -158,7 +158,7 @@ export var storyboard = (
   it('should be draggable after a full click selection.', async () => {
     async function mouseOperations(renderResult: EditorRenderResult): Promise<void> {
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-      const toClickOn = renderResult.renderedCanvas.getByTestId('to-click-on')
+      const toClickOn = renderResult.getRenderedCanvas().getByTestId('to-click-on')
       const toClickOnCenter = getDomRectCenter(toClickOn.getBoundingClientRect())
       const dragEndPoint = {
         ...toClickOnCenter,
@@ -176,7 +176,7 @@ export var storyboard = (
   it('should be draggable after a click and a mouse movement.', async () => {
     async function mouseOperations(renderResult: EditorRenderResult): Promise<void> {
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-      const toClickOn = renderResult.renderedCanvas.getByTestId('to-click-on')
+      const toClickOn = renderResult.getRenderedCanvas().getByTestId('to-click-on')
       const toClickOnCenter = getDomRectCenter(toClickOn.getBoundingClientRect())
       const dragEndPoint = {
         ...toClickOnCenter,
@@ -196,7 +196,7 @@ export var storyboard = (
   it('should be draggable after two clicks.', async () => {
     async function mouseOperations(renderResult: EditorRenderResult): Promise<void> {
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-      const toClickOn = renderResult.renderedCanvas.getByTestId('to-click-on')
+      const toClickOn = renderResult.getRenderedCanvas().getByTestId('to-click-on')
       const toClickOnCenter = getDomRectCenter(toClickOn.getBoundingClientRect())
       const dragEndPoint = {
         ...toClickOnCenter,

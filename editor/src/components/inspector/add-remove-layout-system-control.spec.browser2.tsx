@@ -60,7 +60,7 @@ describe('add layout system', () => {
     expect(div.style.display).toEqual('flex')
     expect(div.style.flexDirection).toEqual('column')
 
-    const child = editor.renderedCanvas.getByTestId('child')
+    const child = editor.getRenderedCanvas().getByTestId('child')
     expect(child.style.height).toEqual('')
     expect(child.style.flexGrow).toEqual('1')
     expect(child.style.width).toEqual('100px')
@@ -78,7 +78,7 @@ describe('add layout system', () => {
 
     expect(div.style.display).toEqual('flex')
 
-    const child = editor.renderedCanvas.getByTestId('child')
+    const child = editor.getRenderedCanvas().getByTestId('child')
     expect(child.style.height).toEqual('')
     expect(child.style.flexGrow).toEqual('1')
   })
@@ -125,7 +125,7 @@ describe('add layout system', () => {
 
     expect(div.style.display).toEqual('flex')
 
-    const child = editor.renderedCanvas.getByTestId('child')
+    const child = editor.getRenderedCanvas().getByTestId('child')
     expect(child.style.position).toEqual('')
     expect(child.style.top).toEqual('')
     expect(child.style.left).toEqual('')
@@ -175,7 +175,7 @@ describe('add layout system', () => {
 
     expect(div.style.display).toEqual('flex')
 
-    const child = editor.renderedCanvas.getByTestId('child')
+    const child = editor.getRenderedCanvas().getByTestId('child')
 
     // Ensure contain layout was not added
     expect(child.style.contain).toEqual('')
@@ -193,7 +193,7 @@ describe('add layout system', () => {
 
 async function selectDiv(editor: EditorRenderResult): Promise<HTMLElement> {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-  const div = editor.renderedCanvas.getByTestId('mydiv')
+  const div = editor.getRenderedCanvas().getByTestId('mydiv')
   const divBounds = div.getBoundingClientRect()
   const divCorner = {
     x: divBounds.x + 50,

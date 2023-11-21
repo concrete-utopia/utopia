@@ -3645,7 +3645,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
         ])
 
-        const element = editor.renderedCanvas.getByTestId('thing')
+        const element = editor.getRenderedCanvas().getByTestId('thing')
 
         expect(element.style.position).toEqual('')
         expect(element.style.top).toEqual('')
@@ -3700,7 +3700,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
         ])
 
-        const element = editor.renderedCanvas.getByTestId('thing')
+        const element = editor.getRenderedCanvas().getByTestId('thing')
 
         expect(element.style.position).toEqual('')
         expect(element.style.top).toEqual('')
@@ -3755,7 +3755,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
         ])
 
-        const element = editor.renderedCanvas.getByTestId('thing')
+        const element = editor.getRenderedCanvas().getByTestId('thing')
 
         expect(element.style.position).toEqual('')
         expect(element.style.top).toEqual('')
@@ -3985,7 +3985,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex2/aaf',
         ])
 
-        const element = editor.renderedCanvas.getByTestId('flexchild1')
+        const element = editor.getRenderedCanvas().getByTestId('flexchild1')
 
         expect(element.style.position).toEqual('')
         expect(element.style.top).toEqual('')
@@ -4055,7 +4055,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
         ])
 
-        const child1 = editor.renderedCanvas.getByTestId('child1')
+        const child1 = editor.getRenderedCanvas().getByTestId('child1')
 
         expect(child1.style.position).toEqual('')
         expect(child1.style.top).toEqual('')
@@ -4065,7 +4065,7 @@ describe('Navigator', () => {
         expect(child1.style.width).toEqual('217px')
         expect(child1.style.height).toEqual('117.5px')
 
-        const child2 = editor.renderedCanvas.getByTestId('child2')
+        const child2 = editor.getRenderedCanvas().getByTestId('child2')
 
         expect(child2.style.position).toEqual('')
         expect(child2.style.top).toEqual('')
@@ -4153,7 +4153,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/old-container',
         ])
 
-        const element = editor.renderedCanvas.getByTestId('dragme')
+        const element = editor.getRenderedCanvas().getByTestId('dragme')
         const { position, top, left, bottom, right, width, height } = element.style
 
         expect({ position, top, left, bottom, right, width, height }).toEqual({
@@ -4217,7 +4217,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/old-container',
         ])
 
-        const element = editor.renderedCanvas.getByTestId('dragme')
+        const element = editor.getRenderedCanvas().getByTestId('dragme')
         const { position, top, left, bottom, right, width, height } = element.style
 
         expect({ position, top, left, bottom, right, width, height }).toEqual({
@@ -4268,7 +4268,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/dragme',
         ])
 
-        const element = editor.renderedCanvas.getByTestId('dragme')
+        const element = editor.getRenderedCanvas().getByTestId('dragme')
         const { position, top, left, bottom, right, width, height } = element.style
 
         expect({ position, top, left, bottom, right, width, height }).toEqual({
@@ -4319,7 +4319,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/dragme',
         ])
 
-        const element = editor.renderedCanvas.getByTestId('dragme')
+        const element = editor.getRenderedCanvas().getByTestId('dragme')
         const { position, top, left, bottom, right, width, height } = element.style
 
         expect({ position, top, left, bottom, right, width, height }).toEqual({
@@ -4370,7 +4370,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/dragme',
         ])
 
-        const element = editor.renderedCanvas.getByTestId('dragme')
+        const element = editor.getRenderedCanvas().getByTestId('dragme')
         const { position, top, left, bottom, right, width, height } = element.style
 
         expect({ position, top, left, bottom, right, width, height }).toEqual({
@@ -4455,7 +4455,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/dragme',
         ])
 
-        const element = editor.renderedCanvas.getByTestId('dragme')
+        const element = editor.getRenderedCanvas().getByTestId('dragme')
         const { position, top, left, bottom, right, width, height, zIndex } = element.style
 
         expect({ position, top, left, bottom, right, width, height, zIndex }).toEqual({
@@ -4705,7 +4705,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/fragment/child2',
         ])
 
-        const child1 = editor.renderedCanvas.getByTestId('child1')
+        const child1 = editor.getRenderedCanvas().getByTestId('child1')
         expect(child1.style.position).toEqual('absolute')
         expect(child1.style.top).toEqual('84px')
         expect(child1.style.left).toEqual('153px')
@@ -4714,7 +4714,7 @@ describe('Navigator', () => {
         expect(child1.style.width).toEqual('80px')
         expect(child1.style.height).toEqual('60px')
 
-        const child2 = editor.renderedCanvas.getByTestId('child2')
+        const child2 = editor.getRenderedCanvas().getByTestId('child2')
         expect(child2.style.position).toEqual('absolute')
         expect(child2.style.top).toEqual('73px')
         expect(child2.style.left).toEqual('132px')

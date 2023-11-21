@@ -128,7 +128,7 @@ describe('canvas toolbar', () => {
       `),
       'await-first-dom-report',
     )
-    const targetElement = editor.renderedCanvas.getByTestId('bbb')
+    const targetElement = editor.getRenderedCanvas().getByTestId('bbb')
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 

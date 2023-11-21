@@ -186,8 +186,8 @@ describe('Keyboard Absolute Move E2E', () => {
 
         await editor.getDispatchFollowUpActionsFinished()
 
-        const aaa = editor.renderedCanvas.getByTestId('aaa')
-        const bbb = editor.renderedCanvas.getByTestId('bbb')
+        const aaa = editor.getRenderedCanvas().getByTestId('aaa')
+        const bbb = editor.getRenderedCanvas().getByTestId('bbb')
 
         expect(aaa.style.top).toEqual('210px')
         expect(aaa.style.left).toEqual('38px')
@@ -431,8 +431,8 @@ describe('Keyboard switching back and forth between absolute move and absolute r
 
         await editor.getDispatchFollowUpActionsFinished()
 
-        const aaa = editor.renderedCanvas.getByTestId('aaa')
-        const bbb = editor.renderedCanvas.getByTestId('bbb')
+        const aaa = editor.getRenderedCanvas().getByTestId('aaa')
+        const bbb = editor.getRenderedCanvas().getByTestId('bbb')
 
         expect(aaa.style.top).toEqual('210px')
         expect(aaa.style.left).toEqual('8px')
@@ -731,18 +731,21 @@ describe('Keyboard Strategies Undo Behavior', () => {
 })
 
 function elementExists(
-  renderedCanvas: EditorRenderResult['renderedCanvas'],
+  renderedCanvas: ReturnType<EditorRenderResult['getRenderedCanvas']>,
   testId: string,
 ): boolean {
   return renderedCanvas.queryByTestId(testId) != null
 }
 
-function elementLeft(renderedCanvas: EditorRenderResult['renderedCanvas'], testId: string): number {
+function elementLeft(
+  renderedCanvas: ReturnType<EditorRenderResult['getRenderedCanvas']>,
+  testId: string,
+): number {
   return renderedCanvas.getByTestId(testId).getBoundingClientRect().x
 }
 
 function elementWidth(
-  renderedCanvas: EditorRenderResult['renderedCanvas'],
+  renderedCanvas: ReturnType<EditorRenderResult['getRenderedCanvas']>,
   testId: string,
 ): number {
   return renderedCanvas.getByTestId(testId).getBoundingClientRect().width
@@ -757,20 +760,20 @@ async function setupTest(initialBBBProperties: { [key: string]: any }) {
     [selectComponents([EP.fromString('sb/scene/app-instance:aaa/bbb')], false)],
     true,
   )
-  const bbbElementLeftAtStart = elementLeft(renderResult.renderedCanvas, 'element-bbb')
-  const bbbElementWidthAtStart = elementWidth(renderResult.renderedCanvas, 'element-bbb')
+  const bbbElementLeftAtStart = elementLeft(renderResult.getRenderedCanvas(), 'element-bbb')
+  const bbbElementWidthAtStart = elementWidth(renderResult.getRenderedCanvas(), 'element-bbb')
   function expectElementLeftOnScreen(offset: number) {
-    expect(elementLeft(renderResult.renderedCanvas, 'element-bbb')).toEqual(
+    expect(elementLeft(renderResult.getRenderedCanvas(), 'element-bbb')).toEqual(
       bbbElementLeftAtStart + offset,
     )
   }
 
   function expectElementDoesntExist() {
-    expect(elementExists(renderResult.renderedCanvas, 'element-bbb')).toBeFalsy()
+    expect(elementExists(renderResult.getRenderedCanvas(), 'element-bbb')).toBeFalsy()
   }
 
   function expectElementWidthOnScreen(offset: number) {
-    expect(elementWidth(renderResult.renderedCanvas, 'element-bbb')).toEqual(
+    expect(elementWidth(renderResult.getRenderedCanvas(), 'element-bbb')).toEqual(
       bbbElementWidthAtStart + offset,
     )
   }

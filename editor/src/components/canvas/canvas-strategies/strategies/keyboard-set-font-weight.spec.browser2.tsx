@@ -20,7 +20,7 @@ describe('adjust font weight with the keyboard', () => {
         'await-first-dom-report',
       )
 
-      const div = editor.renderedCanvas.getByTestId('div')
+      const div = editor.getRenderedCanvas().getByTestId('div')
       await doSelect(editor)
       await doTestWithDelta(editor, { increaseBy: 1, decreaseBy: 0 })
       await editor.getDispatchFollowUpActionsFinished()
@@ -34,7 +34,7 @@ describe('adjust font weight with the keyboard', () => {
         'await-first-dom-report',
       )
 
-      const div = editor.renderedCanvas.getByTestId('div')
+      const div = editor.getRenderedCanvas().getByTestId('div')
       await doSelect(editor)
       await doTestWithDelta(editor, { increaseBy: 2, decreaseBy: 0 })
       await editor.getDispatchFollowUpActionsFinished()
@@ -48,7 +48,7 @@ describe('adjust font weight with the keyboard', () => {
         'await-first-dom-report',
       )
 
-      const div = editor.renderedCanvas.getByTestId('div')
+      const div = editor.getRenderedCanvas().getByTestId('div')
       await doSelect(editor)
       await doTestWithDelta(editor, { increaseBy: 6, decreaseBy: 0 })
       await editor.getDispatchFollowUpActionsFinished()
@@ -62,7 +62,7 @@ describe('adjust font weight with the keyboard', () => {
         'await-first-dom-report',
       )
 
-      const div = editor.renderedCanvas.getByTestId('div')
+      const div = editor.getRenderedCanvas().getByTestId('div')
       await doSelect(editor)
       await doTestWithDelta(editor, { increaseBy: 0, decreaseBy: 1 })
       await editor.getDispatchFollowUpActionsFinished()
@@ -76,7 +76,7 @@ describe('adjust font weight with the keyboard', () => {
         'await-first-dom-report',
       )
 
-      const div = editor.renderedCanvas.getByTestId('div')
+      const div = editor.getRenderedCanvas().getByTestId('div')
       await doSelect(editor)
       await doTestWithDelta(editor, { increaseBy: 0, decreaseBy: 3 })
       await editor.getDispatchFollowUpActionsFinished()
@@ -90,7 +90,7 @@ describe('adjust font weight with the keyboard', () => {
         'await-first-dom-report',
       )
 
-      const div = editor.renderedCanvas.getByTestId('div')
+      const div = editor.getRenderedCanvas().getByTestId('div')
       await doSelect(editor)
       await doTestWithDelta(editor, { increaseBy: 0, decreaseBy: 9 })
       await editor.getDispatchFollowUpActionsFinished()
@@ -106,7 +106,7 @@ describe('adjust font weight with the keyboard', () => {
         'await-first-dom-report',
       )
 
-      const div = editor.renderedCanvas.getByTestId('div')
+      const div = editor.getRenderedCanvas().getByTestId('div')
       await doSelect(editor)
       await doTestWithDelta(editor, { increaseBy: 1, decreaseBy: 0 })
       await editor.getDispatchFollowUpActionsFinished()
@@ -120,7 +120,7 @@ describe('adjust font weight with the keyboard', () => {
         'await-first-dom-report',
       )
 
-      const div = editor.renderedCanvas.getByTestId('div')
+      const div = editor.getRenderedCanvas().getByTestId('div')
       await doSelect(editor)
       await doTestWithDelta(editor, { increaseBy: 3, decreaseBy: 0 })
       await editor.getDispatchFollowUpActionsFinished()
@@ -134,7 +134,7 @@ describe('adjust font weight with the keyboard', () => {
         'await-first-dom-report',
       )
 
-      const div = editor.renderedCanvas.getByTestId('div')
+      const div = editor.getRenderedCanvas().getByTestId('div')
       await doSelect(editor)
       await doTestWithDelta(editor, { increaseBy: 0, decreaseBy: 1 })
       await editor.getDispatchFollowUpActionsFinished()
@@ -148,7 +148,7 @@ describe('adjust font weight with the keyboard', () => {
         'await-first-dom-report',
       )
 
-      const div = editor.renderedCanvas.getByTestId('div')
+      const div = editor.getRenderedCanvas().getByTestId('div')
       await doSelect(editor)
       await doTestWithDelta(editor, { increaseBy: 0, decreaseBy: 3 })
       await editor.getDispatchFollowUpActionsFinished()
@@ -174,8 +174,8 @@ describe('adjust font weight with the keyboard', () => {
 
         await editor.getDispatchFollowUpActionsFinished()
 
-        const aaa = editor.renderedCanvas.getByTestId('aaa')
-        const bbb = editor.renderedCanvas.getByTestId('bbb')
+        const aaa = editor.getRenderedCanvas().getByTestId('aaa')
+        const bbb = editor.getRenderedCanvas().getByTestId('bbb')
 
         expect(aaa.style.fontWeight).toEqual('500')
         expect(bbb.style.fontWeight).toEqual('500')
@@ -186,7 +186,7 @@ describe('adjust font weight with the keyboard', () => {
 
 async function doSelect(editor: EditorRenderResult) {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-  const div = editor.renderedCanvas.getByTestId('div')
+  const div = editor.getRenderedCanvas().getByTestId('div')
   const divBounds = div.getBoundingClientRect()
   const divCorner = {
     x: divBounds.x + 50,

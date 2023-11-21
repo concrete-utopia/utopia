@@ -35,7 +35,7 @@ async function dragElement(
   click: boolean,
   midDragCallback?: () => Promise<void>,
 ): Promise<void> {
-  const targetElement = renderResult.renderedCanvas.getByTestId(targetTestId)
+  const targetElement = renderResult.getRenderedCanvas().getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
   const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -167,13 +167,15 @@ describe('Flex Reparent To Absolute Strategy', () => {
       'await-first-dom-report',
     )
 
-    const targetAbsoluteParent = await renderResult.renderedCanvas.findByTestId('absolutechild')
+    const targetAbsoluteParent = await renderResult
+      .getRenderedCanvas()
+      .findByTestId('absolutechild')
     const targetAbsoluteParentRect = targetAbsoluteParent.getBoundingClientRect()
     const targetAbsoluteParentCenter = {
       x: targetAbsoluteParentRect.x + targetAbsoluteParentRect.width / 2,
       y: targetAbsoluteParentRect.y + targetAbsoluteParentRect.height / 2,
     }
-    const firstFlexChild = await renderResult.renderedCanvas.findByTestId('flexchild1')
+    const firstFlexChild = await renderResult.getRenderedCanvas().findByTestId('flexchild1')
     const firstFlexChildRect = firstFlexChild.getBoundingClientRect()
     const firstFlexChildCenter = {
       x: firstFlexChildRect.x + firstFlexChildRect.width / 2,
@@ -275,15 +277,15 @@ describe('Flex Reparent To Absolute Strategy', () => {
             'await-first-dom-report',
           )
 
-          const targetAbsoluteParent = await renderResult.renderedCanvas.findByTestId(
-            'absolutechild',
-          )
+          const targetAbsoluteParent = await renderResult
+            .getRenderedCanvas()
+            .findByTestId('absolutechild')
           const targetAbsoluteParentRect = targetAbsoluteParent.getBoundingClientRect()
           const targetAbsoluteParentCenter = {
             x: targetAbsoluteParentRect.x + targetAbsoluteParentRect.width / 2,
             y: targetAbsoluteParentRect.y + targetAbsoluteParentRect.height / 2,
           }
-          const firstFlexChild = await renderResult.renderedCanvas.findByTestId('flexchild1')
+          const firstFlexChild = await renderResult.getRenderedCanvas().findByTestId('flexchild1')
           const firstFlexChildRect = firstFlexChild.getBoundingClientRect()
           const firstFlexChildCenter = {
             x: firstFlexChildRect.x + firstFlexChildRect.width / 2,
@@ -319,15 +321,15 @@ describe('Flex Reparent To Absolute Strategy', () => {
             'await-first-dom-report',
           )
 
-          const targetAbsoluteParent = await renderResult.renderedCanvas.findByTestId(
-            'absolutechild',
-          )
+          const targetAbsoluteParent = await renderResult
+            .getRenderedCanvas()
+            .findByTestId('absolutechild')
           const targetAbsoluteParentRect = targetAbsoluteParent.getBoundingClientRect()
           const targetAbsoluteParentCenter = {
             x: targetAbsoluteParentRect.x + targetAbsoluteParentRect.width / 2,
             y: targetAbsoluteParentRect.y + targetAbsoluteParentRect.height / 2,
           }
-          const firstFlexChild = await renderResult.renderedCanvas.findByTestId('flexchild1')
+          const firstFlexChild = await renderResult.getRenderedCanvas().findByTestId('flexchild1')
           const firstFlexChildRect = firstFlexChild.getBoundingClientRect()
           const firstFlexChildCenter = {
             x: firstFlexChildRect.x + firstFlexChildRect.width / 2,
@@ -354,7 +356,9 @@ describe('Flex Reparent To Absolute Strategy', () => {
           )
           await dragElement(renderResult, 'flexchild1', dragDelta, cmdModifier, false, async () => {
             // mid drag: make sure that flexchild1 is _not_ visible at the original location, even if it's a fragment's child
-            const flexChildOnes = await renderResult.renderedCanvas.getAllByTestId('flexchild1')
+            const flexChildOnes = await renderResult
+              .getRenderedCanvas()
+              .getAllByTestId('flexchild1')
             expect(flexChildOnes.length).toBe(2)
             expect(flexChildOnes[0].style.visibility).not.toEqual('hidden')
             expect(flexChildOnes[1].style.visibility).toEqual('hidden')
@@ -473,13 +477,15 @@ describe('Flex Reparent To Absolute Strategy', () => {
         'await-first-dom-report',
       )
 
-      const targetAbsoluteParent = await renderResult.renderedCanvas.findByTestId('absolutechild')
+      const targetAbsoluteParent = await renderResult
+        .getRenderedCanvas()
+        .findByTestId('absolutechild')
       const targetAbsoluteParentRect = targetAbsoluteParent.getBoundingClientRect()
       const targetAbsoluteParentCenter = {
         x: targetAbsoluteParentRect.x + targetAbsoluteParentRect.width / 2,
         y: targetAbsoluteParentRect.y + targetAbsoluteParentRect.height / 2,
       }
-      const firstFlexChild = await renderResult.renderedCanvas.findByTestId('flexchild1')
+      const firstFlexChild = await renderResult.getRenderedCanvas().findByTestId('flexchild1')
       const firstFlexChildRect = firstFlexChild.getBoundingClientRect()
       const firstFlexChildCenter = {
         x: firstFlexChildRect.x + firstFlexChildRect.width / 2,
@@ -657,13 +663,15 @@ describe('Flex Reparent To Absolute Strategy', () => {
         'await-first-dom-report',
       )
 
-      const targetAbsoluteParent = await renderResult.renderedCanvas.findByTestId('absolutechild')
+      const targetAbsoluteParent = await renderResult
+        .getRenderedCanvas()
+        .findByTestId('absolutechild')
       const targetAbsoluteParentRect = targetAbsoluteParent.getBoundingClientRect()
       const targetAbsoluteParentCenter = {
         x: targetAbsoluteParentRect.x + targetAbsoluteParentRect.width / 2,
         y: targetAbsoluteParentRect.y + targetAbsoluteParentRect.height / 2,
       }
-      const firstFlexChild = await renderResult.renderedCanvas.findByTestId('flexchild1')
+      const firstFlexChild = await renderResult.getRenderedCanvas().findByTestId('flexchild1')
       const firstFlexChildRect = firstFlexChild.getBoundingClientRect()
       const firstFlexChildCenter = {
         x: firstFlexChildRect.x + firstFlexChildRect.width / 2,
@@ -841,13 +849,15 @@ describe('Flex Reparent To Absolute Strategy', () => {
         'await-first-dom-report',
       )
 
-      const targetAbsoluteParent = await renderResult.renderedCanvas.findByTestId('absolutechild')
+      const targetAbsoluteParent = await renderResult
+        .getRenderedCanvas()
+        .findByTestId('absolutechild')
       const targetAbsoluteParentRect = targetAbsoluteParent.getBoundingClientRect()
       const targetAbsoluteParentCenter = {
         x: targetAbsoluteParentRect.x + targetAbsoluteParentRect.width / 2,
         y: targetAbsoluteParentRect.y + targetAbsoluteParentRect.height / 2,
       }
-      const firstFlexChild = await renderResult.renderedCanvas.findByTestId('flexchild1')
+      const firstFlexChild = await renderResult.getRenderedCanvas().findByTestId('flexchild1')
       const firstFlexChildRect = firstFlexChild.getBoundingClientRect()
       const firstFlexChildCenter = {
         x: firstFlexChildRect.x + firstFlexChildRect.width / 2,

@@ -9,7 +9,7 @@ import { CodeElementSectionTestId } from './sections/code-element-section'
 import { InspectorSectionsContainerTestID } from './inspector'
 
 async function clickElementWithTestId(editor: EditorRenderResult, testid: string): Promise<void> {
-  const targetElement = editor.renderedCanvas.getByTestId(testid)
+  const targetElement = editor.getRenderedCanvas().getByTestId(testid)
   const targetElementBounds = targetElement.getBoundingClientRect()
   const targetElementCenter = getDomRectCenter(targetElementBounds)
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)

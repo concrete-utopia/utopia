@@ -53,7 +53,7 @@ async function dragByPixels(
   testid: string,
   modifiers: Modifiers = emptyModifiers,
 ) {
-  const targetElement = editor.renderedCanvas.getByTestId(testid)
+  const targetElement = editor.getRenderedCanvas().getByTestId(testid)
   const targetElementBounds = targetElement.getBoundingClientRect()
   const targetElementCenter = windowPoint(getDomRectCenter(targetElementBounds))
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -618,7 +618,7 @@ describe('Absolute Move Strategy', () => {
       projectDoesHonourPositionProperties(20, 20),
       'await-first-dom-report',
     )
-    const targetElement = renderResult.renderedCanvas.getByTestId('aaa')
+    const targetElement = renderResult.getRenderedCanvas().getByTestId('aaa')
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -648,7 +648,7 @@ describe('Absolute Move Strategy', () => {
       projectDoesHonourPositionProperties(20, 20),
       'await-first-dom-report',
     )
-    const targetElement = renderResult.renderedCanvas.getByTestId('aaa')
+    const targetElement = renderResult.getRenderedCanvas().getByTestId('aaa')
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -669,7 +669,7 @@ describe('Absolute Move Strategy', () => {
       projectDoesHonourPositionProperties(20, 20),
       'await-first-dom-report',
     )
-    const targetElement = renderResult.renderedCanvas.getByTestId('aaa')
+    const targetElement = renderResult.getRenderedCanvas().getByTestId('aaa')
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -696,7 +696,7 @@ describe('Absolute Move Strategy', () => {
       projectDoesNotHonourPositionProperties,
       'await-first-dom-report',
     )
-    const targetElement = renderResult.renderedCanvas.getByTestId('aaa')
+    const targetElement = renderResult.getRenderedCanvas().getByTestId('aaa')
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -726,7 +726,7 @@ describe('Absolute Move Strategy', () => {
       'await-first-dom-report',
     )
 
-    const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
+    const targetElement = renderResult.getRenderedCanvas().getByTestId('bbb')
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -767,7 +767,7 @@ describe('Absolute Move Strategy', () => {
       'await-first-dom-report',
     )
 
-    const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
+    const targetElement = renderResult.getRenderedCanvas().getByTestId('bbb')
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -894,7 +894,7 @@ describe('Absolute Move Strategy', () => {
       true,
     )
 
-    const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
+    const targetElement = renderResult.getRenderedCanvas().getByTestId('bbb')
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -1008,7 +1008,7 @@ describe('Absolute Move Strategy', () => {
       true,
     )
 
-    const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
+    const targetElement = renderResult.getRenderedCanvas().getByTestId('bbb')
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -1083,7 +1083,7 @@ describe('Absolute Move Strategy', () => {
       true,
     )
 
-    const targetElement = renderResult.renderedCanvas.getByTestId('ccc')
+    const targetElement = renderResult.getRenderedCanvas().getByTestId('ccc')
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -1147,7 +1147,7 @@ describe('Absolute Move Strategy', () => {
       true,
     )
 
-    const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
+    const targetElement = renderResult.getRenderedCanvas().getByTestId('bbb')
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -1210,7 +1210,7 @@ describe('Absolute Move Strategy', () => {
       'await-first-dom-report',
     )
 
-    const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
+    const targetElement = renderResult.getRenderedCanvas().getByTestId('bbb')
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -1270,7 +1270,7 @@ describe('Absolute Move Strategy', () => {
       'await-first-dom-report',
     )
 
-    const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
+    const targetElement = renderResult.getRenderedCanvas().getByTestId('bbb')
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -1315,7 +1315,7 @@ describe('Absolute Move Strategy', () => {
       'await-first-dom-report',
     )
 
-    const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
+    const targetElement = renderResult.getRenderedCanvas().getByTestId('bbb')
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -1396,10 +1396,10 @@ describe('Absolute Move Strategy', () => {
         'await-first-dom-report',
       )
 
-      const siblingElement = editor.renderedCanvas.getByTestId('sibling')
+      const siblingElement = editor.getRenderedCanvas().getByTestId('sibling')
       const siblingBounds = siblingElement.getBoundingClientRect()
 
-      const targetElement = editor.renderedCanvas.getByTestId('drag-me')
+      const targetElement = editor.getRenderedCanvas().getByTestId('drag-me')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const targetElementCenter = windowPoint(getDomRectCenter(targetElementBounds))
       const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -1480,10 +1480,10 @@ describe('Absolute Move Strategy', () => {
         'await-first-dom-report',
       )
 
-      const outsideElement = editor.renderedCanvas.getByTestId('element-outside')
+      const outsideElement = editor.getRenderedCanvas().getByTestId('element-outside')
       const outsideElementBounds = outsideElement.getBoundingClientRect()
 
-      const targetElement = editor.renderedCanvas.getByTestId('drag-me')
+      const targetElement = editor.getRenderedCanvas().getByTestId('drag-me')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const targetElementCenter = windowPoint(getDomRectCenter(targetElementBounds))
       const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -1570,10 +1570,10 @@ describe('Absolute Move Strategy', () => {
         'await-first-dom-report',
       )
 
-      const outsideElement = editor.renderedCanvas.getByTestId('element-outside')
+      const outsideElement = editor.getRenderedCanvas().getByTestId('element-outside')
       const outsideElementBounds = outsideElement.getBoundingClientRect()
 
-      const targetElement = editor.renderedCanvas.getByTestId('drag-me')
+      const targetElement = editor.getRenderedCanvas().getByTestId('drag-me')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const targetElementCenter = windowPoint(getDomRectCenter(targetElementBounds))
       const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -1619,7 +1619,7 @@ describe('Absolute Move Strategy Canvas Controls', () => {
 
     const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
-    const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
+    const targetElement = renderResult.getRenderedCanvas().getByTestId('bbb')
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -1676,7 +1676,7 @@ describe('Absolute Move Strategy Canvas Controls', () => {
         ])
         await selectComponentsForTest(renderResult, [target])
 
-        const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
+        const targetElement = renderResult.getRenderedCanvas().getByTestId('bbb')
         const targetElementBounds = targetElement.getBoundingClientRect()
         const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -1754,7 +1754,7 @@ describe('Absolute Move Strategy Canvas Controls', () => {
 
     const dragDelta = windowPoint({ x: 29, y: -23 }) // 'bbb' will snap to bottom right corner of 'ccc'
 
-    const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
+    const targetElement = renderResult.getRenderedCanvas().getByTestId('bbb')
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
@@ -1782,7 +1782,7 @@ describe('Absolute Move Strategy Canvas Controls', () => {
       'await-first-dom-report',
     )
 
-    const targetElement = renderResult.renderedCanvas.getByTestId('bbb')
+    const targetElement = renderResult.getRenderedCanvas().getByTestId('bbb')
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -1878,7 +1878,7 @@ describe('Absolute Move Strategy Group-like behaviors', () => {
     )
 
     // we are dragging aaa/bbb, but we start the drag _over_ 'aaa/bbb/ccc', as aaa/bbb has no intrinsic size
-    const targetElement = renderResult.renderedCanvas.getByTestId('ccc')
+    const targetElement = renderResult.getRenderedCanvas().getByTestId('ccc')
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 

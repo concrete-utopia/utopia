@@ -182,7 +182,7 @@ describe('inspector', () => {
       const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 
       // Click on the element.
-      const targetDiv = editor.renderedCanvas.getByTestId(elementTestId)
+      const targetDiv = editor.getRenderedCanvas().getByTestId(elementTestId)
       const targetDivRect = targetDiv.getBoundingClientRect()
       const targetDivCenter = canvasPoint({
         x: targetDivRect.x + targetDivRect.width / 2,

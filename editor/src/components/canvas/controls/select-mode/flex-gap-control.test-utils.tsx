@@ -59,7 +59,7 @@ export async function checkFlexGapHandlesPositionedCorrectly(
       await renderResult.getDispatchFollowUpActionsFinished()
 
       // Find the element that we're targeting in the canvas.
-      const targetFlexContainer = await renderResult.renderedCanvas.findByTestId(targetTestId)
+      const targetFlexContainer = await renderResult.getRenderedCanvas().findByTestId(targetTestId)
 
       // Get the children of the target element.
       let children = MetadataUtils.getChildrenOrdered(

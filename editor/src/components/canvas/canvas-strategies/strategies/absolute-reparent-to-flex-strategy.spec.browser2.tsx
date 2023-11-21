@@ -36,7 +36,7 @@ async function dragElement(
   modifiers: Modifiers,
   skipMouseUp: boolean = false,
 ): Promise<void> {
-  const targetElements = await renderResult.renderedCanvas.findAllByTestId(targetTestId)
+  const targetElements = await renderResult.getRenderedCanvas().findAllByTestId(targetTestId)
   const targetElement = targetElements[0]
   const targetElementBounds = targetElement.getBoundingClientRect()
   const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -215,13 +215,13 @@ describe('Absolute Reparent To Flex Strategy', () => {
       makeTestProjectCodeWithSnippet(defaultTestCode),
       'await-first-dom-report',
     )
-    const absoluteChild = await renderResult.renderedCanvas.findByTestId('absolutechild')
+    const absoluteChild = await renderResult.getRenderedCanvas().findByTestId('absolutechild')
     const absoluteChildRect = absoluteChild.getBoundingClientRect()
     const absoluteChildCenter = {
       x: absoluteChildRect.x + absoluteChildRect.width / 2,
       y: absoluteChildRect.y + absoluteChildRect.height / 2,
     }
-    const flexParent = await renderResult.renderedCanvas.findByTestId('flexparent')
+    const flexParent = await renderResult.getRenderedCanvas().findByTestId('flexparent')
     const flexParentRect = flexParent.getBoundingClientRect()
     const flexParentEnd = {
       x: flexParentRect.x + flexParentRect.width - 15,
@@ -341,13 +341,13 @@ describe('Absolute Reparent To Flex Strategy', () => {
       'await-first-dom-report',
     )
 
-    const absoluteChild = await renderResult.renderedCanvas.findByTestId('absolutechild')
+    const absoluteChild = await renderResult.getRenderedCanvas().findByTestId('absolutechild')
     const absoluteChildRect = absoluteChild.getBoundingClientRect()
     const absoluteChildCenter = {
       x: absoluteChildRect.x + absoluteChildRect.width / 2,
       y: absoluteChildRect.y + absoluteChildRect.height / 2,
     }
-    const firstFlexChild = await renderResult.renderedCanvas.findByTestId('flexchild1')
+    const firstFlexChild = await renderResult.getRenderedCanvas().findByTestId('flexchild1')
     const firstFlexChildRect = firstFlexChild.getBoundingClientRect()
     const firstFlexChildEnd = {
       x: firstFlexChildRect.x + firstFlexChildRect.width - 5,
@@ -469,16 +469,16 @@ describe('Absolute Reparent To Flex Strategy', () => {
       'await-first-dom-report',
     )
 
-    const generatedAbsolutechildren = await renderResult.renderedCanvas.findAllByTestId(
-      'generatedabsolutechild',
-    )
+    const generatedAbsolutechildren = await renderResult
+      .getRenderedCanvas()
+      .findAllByTestId('generatedabsolutechild')
     const absoluteChild = generatedAbsolutechildren[0]
     const absoluteChildRect = absoluteChild.getBoundingClientRect()
     const absoluteChildCenter = {
       x: absoluteChildRect.x + absoluteChildRect.width / 2,
       y: absoluteChildRect.y + absoluteChildRect.height / 2,
     }
-    const firstFlexChild = await renderResult.renderedCanvas.findByTestId('flexchild1')
+    const firstFlexChild = await renderResult.getRenderedCanvas().findByTestId('flexchild1')
     const firstFlexChildRect = firstFlexChild.getBoundingClientRect()
     const firstFlexChildCenter = {
       x: firstFlexChildRect.x + firstFlexChildRect.width / 2,
@@ -514,9 +514,9 @@ describe('Absolute Reparent To Flex Strategy', () => {
     await renderResult.dispatch([selectComponents([parentPath], false)], false)
     await renderResult.getDispatchFollowUpActionsFinished()
 
-    const generatedAbsolutechildren = await renderResult.renderedCanvas.findAllByTestId(
-      'generatedabsolutechild',
-    )
+    const generatedAbsolutechildren = await renderResult
+      .getRenderedCanvas()
+      .findAllByTestId('generatedabsolutechild')
     const absoluteChild = generatedAbsolutechildren[0]
     const absoluteChildRect = absoluteChild.getBoundingClientRect()
     const absoluteChildCenter = {
@@ -527,7 +527,7 @@ describe('Absolute Reparent To Flex Strategy', () => {
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
     await mouseDoubleClickAtPoint(canvasControlsLayer, absoluteChildCenter)
 
-    const firstFlexChild = await renderResult.renderedCanvas.findByTestId('flexchild1')
+    const firstFlexChild = await renderResult.getRenderedCanvas().findByTestId('flexchild1')
     const firstFlexChildRect = firstFlexChild.getBoundingClientRect()
     const firstFlexChildCenter = {
       x: firstFlexChildRect.x + firstFlexChildRect.width / 2,
@@ -627,13 +627,13 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
       makeTestProjectCodeWithSnippet(complexProject('row')),
       'await-first-dom-report',
     )
-    const absoluteChild = await renderResult.renderedCanvas.findByTestId('targetdiv')
+    const absoluteChild = await renderResult.getRenderedCanvas().findByTestId('targetdiv')
     const absoluteChildRect = absoluteChild.getBoundingClientRect()
     const absoluteChildCenter = {
       x: absoluteChildRect.x + absoluteChildRect.width / 2,
       y: absoluteChildRect.y + absoluteChildRect.height / 2,
     }
-    const flexParent = await renderResult.renderedCanvas.findByTestId('flexcontainer')
+    const flexParent = await renderResult.getRenderedCanvas().findByTestId('flexcontainer')
     const flexParentRect = flexParent.getBoundingClientRect()
     const flexParentEnd = {
       x: flexParentRect.x + flexParentRect.width - PaddingThreshold / 2,
@@ -670,13 +670,13 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
       makeTestProjectCodeWithSnippet(complexProject('row')),
       'await-first-dom-report',
     )
-    const absoluteChild = await renderResult.renderedCanvas.findByTestId('targetdiv')
+    const absoluteChild = await renderResult.getRenderedCanvas().findByTestId('targetdiv')
     const absoluteChildRect = absoluteChild.getBoundingClientRect()
     const absoluteChildCenter = {
       x: absoluteChildRect.x + absoluteChildRect.width / 2,
       y: absoluteChildRect.y + absoluteChildRect.height / 2,
     }
-    const flexSibling = await renderResult.renderedCanvas.findByTestId('child2')
+    const flexSibling = await renderResult.getRenderedCanvas().findByTestId('child2')
     const flexSiblingRect = flexSibling.getBoundingClientRect()
     const flexSiblingCenter = {
       x: flexSiblingRect.x + flexSiblingRect.width / 2,
@@ -713,13 +713,13 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
       makeTestProjectCodeWithSnippet(complexProject('row')),
       'await-first-dom-report',
     )
-    const absoluteChild = await renderResult.renderedCanvas.findByTestId('targetdiv')
+    const absoluteChild = await renderResult.getRenderedCanvas().findByTestId('targetdiv')
     const absoluteChildRect = absoluteChild.getBoundingClientRect()
     const absoluteChildCenter = {
       x: absoluteChildRect.x + absoluteChildRect.width / 2,
       y: absoluteChildRect.y + absoluteChildRect.height / 2,
     }
-    const flexSibling = await renderResult.renderedCanvas.findByTestId('child2')
+    const flexSibling = await renderResult.getRenderedCanvas().findByTestId('child2')
     const flexSiblingRect = flexSibling.getBoundingClientRect()
     const flexSiblingEnd = {
       x: flexSiblingRect.x + flexSiblingRect.width - PaddingThreshold / 2,
@@ -756,13 +756,13 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
       makeTestProjectCodeWithSnippet(complexProject('row')),
       'await-first-dom-report',
     )
-    const absoluteChild = await renderResult.renderedCanvas.findByTestId('targetdiv')
+    const absoluteChild = await renderResult.getRenderedCanvas().findByTestId('targetdiv')
     const absoluteChildRect = absoluteChild.getBoundingClientRect()
     const absoluteChildCenter = {
       x: absoluteChildRect.x + absoluteChildRect.width / 2,
       y: absoluteChildRect.y + absoluteChildRect.height / 2,
     }
-    const flexInnerChild = await renderResult.renderedCanvas.findByTestId('innerchild1')
+    const flexInnerChild = await renderResult.getRenderedCanvas().findByTestId('innerchild1')
     const flexInnerChildRect = flexInnerChild.getBoundingClientRect()
     const flexInnerChildLeft = {
       x: flexInnerChildRect.x + PaddingThreshold / 2,
@@ -798,13 +798,13 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
       makeTestProjectCodeWithSnippet(complexProject('row')),
       'await-first-dom-report',
     )
-    const absoluteChild = await renderResult.renderedCanvas.findByTestId('targetdiv')
+    const absoluteChild = await renderResult.getRenderedCanvas().findByTestId('targetdiv')
     const absoluteChildRect = absoluteChild.getBoundingClientRect()
     const absoluteChildCenter = {
       x: absoluteChildRect.x + absoluteChildRect.width / 2,
       y: absoluteChildRect.y + absoluteChildRect.height / 2,
     }
-    const flexInnerChild = await renderResult.renderedCanvas.findByTestId('innerchild2')
+    const flexInnerChild = await renderResult.getRenderedCanvas().findByTestId('innerchild2')
     const flexInnerChildRect = flexInnerChild.getBoundingClientRect()
     const flexInnerChildCenter = {
       x: flexInnerChildRect.x + flexInnerChildRect.width / 2,
@@ -841,13 +841,13 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
       makeTestProjectCodeWithSnippet(complexProject('row')),
       'await-first-dom-report',
     )
-    const child = await renderResult.renderedCanvas.findByTestId('innerchild2')
+    const child = await renderResult.getRenderedCanvas().findByTestId('innerchild2')
     const childRect = child.getBoundingClientRect()
     const childCenter = {
       x: childRect.x + childRect.width / 2,
       y: childRect.y + childRect.height / 2,
     }
-    const parent = await renderResult.renderedCanvas.findByTestId('child1flex')
+    const parent = await renderResult.getRenderedCanvas().findByTestId('child1flex')
     const parentRect = parent.getBoundingClientRect()
     const parentRightEdge = {
       x: parentRect.x + parentRect.width - PaddingThreshold / 3,
@@ -884,13 +884,13 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
       makeTestProjectCodeWithSnippet(complexProject('row')),
       'await-first-dom-report',
     )
-    const child = await renderResult.renderedCanvas.findByTestId('innerchild2')
+    const child = await renderResult.getRenderedCanvas().findByTestId('innerchild2')
     const childRect = child.getBoundingClientRect()
     const childCenter = {
       x: childRect.x + childRect.width / 2,
       y: childRect.y + childRect.height / 2,
     }
-    const parent = await renderResult.renderedCanvas.findByTestId('child1flex')
+    const parent = await renderResult.getRenderedCanvas().findByTestId('child1flex')
     const parentRect = parent.getBoundingClientRect()
     const parentRightEdge = {
       x: parentRect.x + parentRect.width + PaddingThreshold / 3,
@@ -927,13 +927,13 @@ describe('Absolute Reparent To Flex Strategy with more complex flex layouts', ()
       makeTestProjectCodeWithSnippet(complexProject('row')),
       'await-first-dom-report',
     )
-    const child = await renderResult.renderedCanvas.findByTestId('innerchild2')
+    const child = await renderResult.getRenderedCanvas().findByTestId('innerchild2')
     const childRect = child.getBoundingClientRect()
     const childCenter = {
       x: childRect.x + childRect.width / 2,
       y: childRect.y + childRect.height / 2,
     }
-    const newParentTarget = await renderResult.renderedCanvas.findByTestId('child2')
+    const newParentTarget = await renderResult.getRenderedCanvas().findByTestId('child2')
     const newParentTargetRect = newParentTarget.getBoundingClientRect()
     const newParentTargetCenter = {
       x: newParentTargetRect.x + newParentTargetRect.width / 2,

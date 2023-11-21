@@ -155,7 +155,7 @@ async function dragByPixels(
     skipMouseUp?: boolean
   } = {},
 ) {
-  const targetElement = editor.renderedCanvas.getByTestId(testid)
+  const targetElement = editor.getRenderedCanvas().getByTestId(testid)
   const targetElementBounds = targetElement.getBoundingClientRect()
   const targetElementCenter = getDomRectCenter(targetElementBounds)
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -353,7 +353,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('100px')
         expect(groupDiv.style.height).toBe('100px')
@@ -384,7 +384,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('200px')
         expect(groupDiv.style.height).toBe('200px')
@@ -445,7 +445,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('398px')
         expect(groupDiv.style.height).toBe('260px')
@@ -476,7 +476,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('200px')
         expect(groupDiv.style.height).toBe('200px')
@@ -497,7 +497,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('150px')
         expect(groupDiv.style.height).toBe('150px')
@@ -528,7 +528,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('200px')
         expect(groupDiv.style.height).toBe('200px')
@@ -550,11 +550,11 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
         expect(groupDiv.style.width).toBe('150px')
         expect(groupDiv.style.height).toBe('150px')
 
-        const childDiv = editor.renderedCanvas.getByTestId('child')
+        const childDiv = editor.getRenderedCanvas().getByTestId('child')
         // notice that the child ends up with zero width and height because it was set to auto
         expect(childDiv.getBoundingClientRect().width).toBe(0)
         expect(childDiv.getBoundingClientRect().height).toBe(0)
@@ -587,7 +587,7 @@ describe('Groups behaviors', () => {
             </>
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('200px')
         expect(groupDiv.style.height).toBe('200px')
@@ -619,7 +619,7 @@ describe('Groups behaviors', () => {
           </Group>
         </Group>
       `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('200px')
         expect(groupDiv.style.height).toBe('200px')
@@ -651,7 +651,7 @@ describe('Groups behaviors', () => {
           </Group>
         </Group>
       `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('200px')
         expect(groupDiv.style.height).toBe('200px')
@@ -693,7 +693,7 @@ describe('Groups behaviors', () => {
               </Group>
             </Group>
           `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('250px')
         expect(groupDiv.style.height).toBe('250px')
@@ -724,7 +724,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('100px')
         expect(groupDiv.style.height).toBe('100px')
@@ -755,7 +755,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('100px')
         expect(groupDiv.style.height).toBe('100px')
@@ -781,7 +781,7 @@ describe('Groups behaviors', () => {
             }
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('300px')
         expect(groupDiv.style.height).toBe('300px')
@@ -805,7 +805,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('100px')
         expect(groupDiv.style.height).toBe('100px')
@@ -877,7 +877,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('100px')
         expect(groupDiv.style.height).toBe('100px')
@@ -951,7 +951,7 @@ describe('Groups behaviors', () => {
             </Group>
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('100px')
         expect(groupDiv.style.height).toBe('100px')
@@ -1043,7 +1043,7 @@ describe('Groups behaviors', () => {
             </Group>
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('100px')
         expect(groupDiv.style.height).toBe('100px')
@@ -1144,7 +1144,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('200px')
         expect(groupDiv.style.height).toBe('200px')
@@ -1245,7 +1245,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('200px')
         expect(groupDiv.style.height).toBe('200px')
@@ -1335,7 +1335,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('150px')
         expect(groupDiv.style.height).toBe('150px')
@@ -1418,7 +1418,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('200px')
         expect(groupDiv.style.height).toBe('200px')
@@ -1509,11 +1509,11 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
         expect(groupDiv.style.width).toBe('150px')
         expect(groupDiv.style.height).toBe('150px')
 
-        const childDiv = editor.renderedCanvas.getByTestId('child-1')
+        const childDiv = editor.getRenderedCanvas().getByTestId('child-1')
         // notice that the child ends up with zero width and height because it was set to auto
         expect(childDiv.getBoundingClientRect().width).toBe(0)
         expect(childDiv.getBoundingClientRect().height).toBe(0)
@@ -1590,7 +1590,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('200px')
         expect(groupDiv.style.height).toBe('200px')
@@ -1679,7 +1679,7 @@ describe('Groups behaviors', () => {
             </React.Fragment>
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('200px')
         expect(groupDiv.style.height).toBe('200px')
@@ -1782,7 +1782,7 @@ describe('Groups behaviors', () => {
           </Group>
         </Group>
       `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('200px')
         expect(groupDiv.style.height).toBe('200px')
@@ -1901,7 +1901,7 @@ describe('Groups behaviors', () => {
           </Group>
         </Group>
       `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('200px')
         expect(groupDiv.style.height).toBe('200px')
@@ -2030,7 +2030,7 @@ describe('Groups behaviors', () => {
               </Group>
             </Group>
           `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('250px')
         expect(groupDiv.style.height).toBe('250px')
@@ -2147,7 +2147,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('200px')
         expect(groupDiv.style.height).toBe('250px')
@@ -2252,7 +2252,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('100px')
         expect(groupDiv.style.height).toBe('100px')
@@ -2336,7 +2336,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('100px')
         expect(groupDiv.style.height).toBe('100px')
@@ -2422,7 +2422,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('100px')
         expect(groupDiv.style.height).toBe('100px')
@@ -2507,7 +2507,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('100px')
         expect(groupDiv.style.height).toBe('100px')
@@ -2592,7 +2592,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('100px')
         expect(groupDiv.style.height).toBe('100px')
@@ -2671,7 +2671,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('100px')
         expect(groupDiv.style.height).toBe('100px')
@@ -2754,7 +2754,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('100px')
         expect(groupDiv.style.height).toBe('100px')
@@ -2839,7 +2839,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('150px')
         expect(groupDiv.style.height).toBe('150px')
@@ -2892,7 +2892,7 @@ describe('Groups behaviors', () => {
             </Group>
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('100px')
         expect(groupDiv.style.height).toBe('100px')
@@ -2994,11 +2994,11 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
         expect(groupDiv.style.width).toBe('150px')
         expect(groupDiv.style.height).toBe('150px')
 
-        const childDiv = editor.renderedCanvas.getByTestId('child-1')
+        const childDiv = editor.getRenderedCanvas().getByTestId('child-1')
         // notice that the child ends up with zero width and height because it was set to auto
         expect(childDiv.getBoundingClientRect().width).toBe(0)
         expect(childDiv.getBoundingClientRect().height).toBe(0)
@@ -3087,11 +3087,11 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
         expect(groupDiv.style.width).toBe('150px')
         expect(groupDiv.style.height).toBe('150px')
 
-        const childDiv = editor.renderedCanvas.getByTestId('child-1')
+        const childDiv = editor.getRenderedCanvas().getByTestId('child-1')
         // notice that the child ends up with zero width and height because it was set to auto
         expect(childDiv.getBoundingClientRect().width).toBe(0)
         expect(childDiv.getBoundingClientRect().height).toBe(0)
@@ -3187,11 +3187,11 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
         expect(groupDiv.style.width).toBe('150px')
         expect(groupDiv.style.height).toBe('150px')
 
-        const childDiv = editor.renderedCanvas.getByTestId('child-1')
+        const childDiv = editor.getRenderedCanvas().getByTestId('child-1')
         // notice that the child ends up with zero width and height because it was set to auto
         expect(childDiv.getBoundingClientRect().width).toBe(0)
         expect(childDiv.getBoundingClientRect().height).toBe(0)
@@ -3278,7 +3278,7 @@ describe('Groups behaviors', () => {
             </div>
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('100px')
         expect(groupDiv.style.height).toBe('100px')
@@ -3372,7 +3372,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('100px')
         expect(groupDiv.style.height).toBe('100px')
@@ -3428,7 +3428,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('100px')
         expect(groupDiv.style.height).toBe('100px')
@@ -3483,7 +3483,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('100px')
         expect(groupDiv.style.height).toBe('100px')
@@ -3539,7 +3539,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('100px')
         expect(groupDiv.style.height).toBe('100px')
@@ -3610,7 +3610,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('200px')
         expect(groupDiv.style.height).toBe('200px')
@@ -3693,7 +3693,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('200px')
         expect(groupDiv.style.height).toBe('200px')
@@ -3776,7 +3776,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('200px')
         expect(groupDiv.style.height).toBe('200px')
@@ -3859,7 +3859,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('200px')
         expect(groupDiv.style.height).toBe('200px')
@@ -3942,7 +3942,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('200px')
         expect(groupDiv.style.height).toBe('200px')
@@ -4025,7 +4025,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('200px')
         expect(groupDiv.style.height).toBe('200px')
@@ -4117,7 +4117,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('200px')
         expect(groupDiv.style.height).toBe('200px')
@@ -4202,7 +4202,7 @@ describe('Groups behaviors', () => {
               </React.Fragment>
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('200px')
         expect(groupDiv.style.height).toBe('200px')
@@ -4289,7 +4289,7 @@ describe('Groups behaviors', () => {
               </React.Fragment>
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('200px')
         expect(groupDiv.style.height).toBe('200px')
@@ -4374,12 +4374,12 @@ describe('Groups behaviors', () => {
               </Group>
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('200px')
         expect(groupDiv.style.height).toBe('200px')
 
-        const innerGroupDiv = editor.renderedCanvas.getByTestId('inner-group')
+        const innerGroupDiv = editor.getRenderedCanvas().getByTestId('inner-group')
 
         expect(innerGroupDiv.style.width).toBe('50px')
         expect(innerGroupDiv.style.height).toBe('200px')
@@ -4475,12 +4475,12 @@ describe('Groups behaviors', () => {
               </Group>
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('200px')
         expect(groupDiv.style.height).toBe('200px')
 
-        const innerGroupDiv = editor.renderedCanvas.getByTestId('inner-group')
+        const innerGroupDiv = editor.getRenderedCanvas().getByTestId('inner-group')
 
         expect(innerGroupDiv.style.width).toBe('50px')
         expect(innerGroupDiv.style.height).toBe('200px')
@@ -4591,7 +4591,7 @@ describe('Groups behaviors', () => {
             />
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('200px')
         expect(groupDiv.style.height).toBe('200px')
@@ -4652,7 +4652,7 @@ describe('Groups behaviors', () => {
             </Group>
           </Group>
         `)
-        const groupDiv = editor.renderedCanvas.getByTestId('group')
+        const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
         expect(groupDiv.style.width).toBe('100px')
         expect(groupDiv.style.height).toBe('100px')
@@ -4748,7 +4748,7 @@ describe('Inspector Pins section for group child', () => {
             />
           </Group>
         `)
-    const groupDiv = editor.renderedCanvas.getByTestId('group')
+    const groupDiv = editor.getRenderedCanvas().getByTestId('group')
 
     expect(groupDiv.style.width).toBe('200px')
     expect(groupDiv.style.height).toBe('200px')

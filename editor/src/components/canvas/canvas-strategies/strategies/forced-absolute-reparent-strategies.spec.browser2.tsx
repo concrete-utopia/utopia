@@ -34,7 +34,7 @@ async function dragElement(
   modifiers: Modifiers,
   midDragCallback?: () => Promise<void>,
 ): Promise<void> {
-  const targetElement = renderResult.renderedCanvas.getByTestId(targetTestId)
+  const targetElement = renderResult.getRenderedCanvas().getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
   const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -190,13 +190,13 @@ describe('Fallback Absolute Reparent Strategies', () => {
       { strategiesToUse: [absoluteReparentMetastrategy] },
     )
 
-    const absoluteChild = await renderResult.renderedCanvas.findByTestId('absolutechild')
+    const absoluteChild = await renderResult.getRenderedCanvas().findByTestId('absolutechild')
     const absoluteChildRect = absoluteChild.getBoundingClientRect()
     const absoluteChildCenter = {
       x: absoluteChildRect.x + absoluteChildRect.width / 2,
       y: absoluteChildRect.y + absoluteChildRect.height / 2,
     }
-    const secondFlexChild = await renderResult.renderedCanvas.findByTestId('flexchild2')
+    const secondFlexChild = await renderResult.getRenderedCanvas().findByTestId('flexchild2')
     const secondFlexChildRect = secondFlexChild.getBoundingClientRect()
     const secondFlexChildCenter = {
       x: secondFlexChildRect.x + secondFlexChildRect.width / 2,
@@ -302,13 +302,13 @@ describe('Fallback Absolute Reparent Strategies', () => {
       'await-first-dom-report',
     )
 
-    const absoluteChild = await renderResult.renderedCanvas.findByTestId('absolutechild')
+    const absoluteChild = await renderResult.getRenderedCanvas().findByTestId('absolutechild')
     const absoluteChildRect = absoluteChild.getBoundingClientRect()
     const absoluteChildCenter = {
       x: absoluteChildRect.x + absoluteChildRect.width / 2,
       y: absoluteChildRect.y + absoluteChildRect.height / 2,
     }
-    const secondFlexChild = await renderResult.renderedCanvas.findByTestId('flexchild2')
+    const secondFlexChild = await renderResult.getRenderedCanvas().findByTestId('flexchild2')
     const secondFlexChildRect = secondFlexChild.getBoundingClientRect()
     const secondFlexChildCenter = {
       x: secondFlexChildRect.x + secondFlexChildRect.width / 2,
@@ -421,13 +421,13 @@ describe('Fallback Absolute Reparent Strategies', () => {
       { strategiesToUse: [reparentMetaStrategy] },
     )
 
-    const absoluteChild = await renderResult.renderedCanvas.findByTestId('absolutechild')
+    const absoluteChild = await renderResult.getRenderedCanvas().findByTestId('absolutechild')
     const absoluteChildRect = absoluteChild.getBoundingClientRect()
     const absoluteChildCenter = {
       x: absoluteChildRect.x + absoluteChildRect.width / 2,
       y: absoluteChildRect.y + absoluteChildRect.height / 2,
     }
-    const secondFlexChild = await renderResult.renderedCanvas.findByTestId('flexchild2')
+    const secondFlexChild = await renderResult.getRenderedCanvas().findByTestId('flexchild2')
     const secondFlexChildRect = secondFlexChild.getBoundingClientRect()
     const secondFlexChildCenter = {
       x: secondFlexChildRect.x + secondFlexChildRect.width / 2,
@@ -532,14 +532,14 @@ describe('Fallback Absolute Reparent Strategies', () => {
       'await-first-dom-report',
       { strategiesToUse: [absoluteReparentMetastrategy] },
     )
-    const firstFlexChild = await renderResult.renderedCanvas.findByTestId('flexchild1')
+    const firstFlexChild = await renderResult.getRenderedCanvas().findByTestId('flexchild1')
     const firstFlexChildRect = firstFlexChild.getBoundingClientRect()
     const firstFlexChildCenter = {
       x: firstFlexChildRect.x + firstFlexChildRect.width / 2,
       y: firstFlexChildRect.y + firstFlexChildRect.height / 2,
     }
 
-    const staticParent = await renderResult.renderedCanvas.findByTestId('staticparent')
+    const staticParent = await renderResult.getRenderedCanvas().findByTestId('staticparent')
     const staticParentRect = staticParent.getBoundingClientRect()
     const staticParentCenter = {
       x: staticParentRect.x + staticParentRect.width / 2,
@@ -648,14 +648,14 @@ describe('Fallback Absolute Reparent Strategies', () => {
       'await-first-dom-report',
       { strategiesToUse: [reparentMetaStrategy] },
     )
-    const firstFlexChild = await renderResult.renderedCanvas.findByTestId('flexchild1')
+    const firstFlexChild = await renderResult.getRenderedCanvas().findByTestId('flexchild1')
     const firstFlexChildRect = firstFlexChild.getBoundingClientRect()
     const firstFlexChildCenter = {
       x: firstFlexChildRect.x + firstFlexChildRect.width / 2,
       y: firstFlexChildRect.y + firstFlexChildRect.height / 2,
     }
 
-    const staticParent = await renderResult.renderedCanvas.findByTestId('staticparent')
+    const staticParent = await renderResult.getRenderedCanvas().findByTestId('staticparent')
     const staticParentRect = staticParent.getBoundingClientRect()
     const staticParentCenter = {
       x: staticParentRect.x + staticParentRect.width / 2,
@@ -796,14 +796,14 @@ describe('Fallback Absolute Reparent Strategies', () => {
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
-    const draggedElement = await renderResult.renderedCanvas.findByTestId('ccc')
+    const draggedElement = await renderResult.getRenderedCanvas().findByTestId('ccc')
     const draggedElementRect = draggedElement.getBoundingClientRect()
     const draggedElementRectCenter = {
       x: draggedElementRect.x + draggedElementRect.width / 2,
       y: draggedElementRect.y + draggedElementRect.height / 2,
     }
 
-    const zeroSizeParentTarget = await renderResult.renderedCanvas.findByTestId('bbb')
+    const zeroSizeParentTarget = await renderResult.getRenderedCanvas().findByTestId('bbb')
     const zeroSizeParentTargetRect = zeroSizeParentTarget.getBoundingClientRect()
     const zeroSizeParentTargetCenter = {
       x: zeroSizeParentTargetRect.x + zeroSizeParentTargetRect.width / 2,

@@ -309,7 +309,7 @@ async function doDblClickTest(
   verticalOffset: number = 30,
 ): Promise<HTMLElement> {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-  const div = editor.renderedCanvas.getByTestId('mydiv')
+  const div = editor.getRenderedCanvas().getByTestId('mydiv')
   const divBounds = div.getBoundingClientRect()
   const divCorner = {
     x: divBounds.x + 50,
@@ -1357,7 +1357,9 @@ export var storyboard = (
     await resizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers)
     await renderResult.getDispatchFollowUpActionsFinished()
 
-    const supportsStyleDiv = renderResult.renderedCanvas.getByTestId('supports-style-component')
+    const supportsStyleDiv = renderResult
+      .getRenderedCanvas()
+      .getByTestId('supports-style-component')
     const supportsStyleRect = supportsStyleDiv.getBoundingClientRect()
     expect(supportsStyleRect.width).toEqual(125)
     expect(supportsStyleRect.height).toEqual(125)
@@ -2124,7 +2126,7 @@ export var storyboard = (
           emptyModifiers,
         )
 
-        const span = await renderResult.renderedCanvas.findByTestId('span')
+        const span = await renderResult.getRenderedCanvas().findByTestId('span')
         expect(span.clientWidth).toEqual(68)
         expect(isBetween(span.clientHeight, 18, 19)).toBe(true)
       })
@@ -2159,7 +2161,7 @@ export var storyboard = (
           emptyModifiers,
         )
 
-        const span = await renderResult.renderedCanvas.findByTestId('span')
+        const span = await renderResult.getRenderedCanvas().findByTestId('span')
         expect(span.clientWidth).toEqual(88)
         expect(isBetween(span.clientHeight, 37, 39)).toBe(true)
       })
@@ -2197,7 +2199,7 @@ export var storyboard = (
           emptyModifiers,
         )
 
-        const span = await renderResult.renderedCanvas.findByTestId('span')
+        const span = await renderResult.getRenderedCanvas().findByTestId('span')
         expect(span.clientWidth).toEqual(88)
         expect(isBetween(span.clientHeight, 37, 39)).toBe(true)
       })
@@ -2235,7 +2237,7 @@ export var storyboard = (
           emptyModifiers,
         )
 
-        const span = await renderResult.renderedCanvas.findByTestId('span')
+        const span = await renderResult.getRenderedCanvas().findByTestId('span')
         expect(span.clientWidth).toEqual(88)
         expect(isBetween(span.clientHeight, 37, 39)).toBe(true)
       })
@@ -2273,7 +2275,7 @@ export var storyboard = (
           emptyModifiers,
         )
 
-        const span = await renderResult.renderedCanvas.findByTestId('span')
+        const span = await renderResult.getRenderedCanvas().findByTestId('span')
         expect(span.clientWidth).toEqual(80)
         expect(span.clientHeight).toEqual(28)
       })

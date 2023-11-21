@@ -248,7 +248,7 @@ const ViewTestId = 'view'
 
 async function selectView(editor: EditorRenderResult, testId: string): Promise<HTMLElement> {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-  const view = editor.renderedCanvas.getByTestId(testId)
+  const view = editor.getRenderedCanvas().getByTestId(testId)
   const viewBounds = view.getBoundingClientRect()
   const viewCorner = {
     x: viewBounds.x + 5,

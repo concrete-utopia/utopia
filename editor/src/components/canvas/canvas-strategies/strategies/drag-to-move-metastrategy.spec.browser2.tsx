@@ -46,7 +46,7 @@ describe('Drag To Move Metastrategy', () => {
       'await-first-dom-report',
     )
 
-    const targetElement = renderResult.renderedCanvas.getByTestId('child-1')
+    const targetElement = renderResult.getRenderedCanvas().getByTestId('child-1')
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -69,7 +69,7 @@ describe('Drag To Move Metastrategy', () => {
       'await-first-dom-report',
     )
 
-    const targetElement = renderResult.renderedCanvas.getByTestId('child-1')
+    const targetElement = renderResult.getRenderedCanvas().getByTestId('child-1')
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -98,7 +98,7 @@ describe('Drag To Move Metastrategy', () => {
       'await-first-dom-report',
     )
 
-    const targetElement = renderResult.renderedCanvas.getByTestId('child-1')
+    const targetElement = renderResult.getRenderedCanvas().getByTestId('child-1')
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -132,7 +132,7 @@ describe('Drag To Move Strategy Indicator', () => {
       'await-first-dom-report',
     )
 
-    const targetElement = renderResult.renderedCanvas.getByTestId('child-1')
+    const targetElement = renderResult.getRenderedCanvas().getByTestId('child-1')
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -166,7 +166,7 @@ describe('Drag To Move Strategy Indicator', () => {
       'await-first-dom-report',
     )
 
-    const targetElement = renderResult.renderedCanvas.getByTestId('child-1')
+    const targetElement = renderResult.getRenderedCanvas().getByTestId('child-1')
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -202,7 +202,7 @@ describe('Drag To Move Strategy Indicator', () => {
       'await-first-dom-report',
     )
 
-    const targetElement = renderResult.renderedCanvas.getByTestId('child-1')
+    const targetElement = renderResult.getRenderedCanvas().getByTestId('child-1')
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -247,7 +247,7 @@ describe('Drag To Move Strategy Indicator', () => {
       'await-first-dom-report',
     )
 
-    const targetElement = renderResult.renderedCanvas.getByTestId('child-1')
+    const targetElement = renderResult.getRenderedCanvas().getByTestId('child-1')
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -294,7 +294,7 @@ describe('Drag To Move Strategy Indicator', () => {
       'await-first-dom-report',
     )
 
-    const targetElement = renderResult.renderedCanvas.getByTestId('child-1')
+    const targetElement = renderResult.getRenderedCanvas().getByTestId('child-1')
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 

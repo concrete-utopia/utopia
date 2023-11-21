@@ -26,7 +26,7 @@ async function renderRemixProject(project: PersistentModel) {
 }
 
 async function clickLinkWithTestId(editor: EditorRenderResult, testId: string) {
-  const targetElement = editor.renderedCanvas.getByTestId(testId)
+  const targetElement = editor.getRenderedCanvas().getByTestId(testId)
   const targetElementBounds = targetElement.getBoundingClientRect()
 
   await mouseClickAtPoint(targetElement, {
@@ -118,8 +118,8 @@ export async function runTestReturningErrorBoundaries(
   await renderResult.dispatch([switchEditorMode(EditorModes.liveMode())], true)
   await clickLinkWithTestId(renderResult, 'remix-link')
 
-  const customBoundary = renderResult.renderedCanvas.queryByText(CustomBoundaryText)
-  const canvasOverlay = renderResult.renderedCanvas.queryByText(`Error: ${ErrorText}`)
+  const customBoundary = renderResult.getRenderedCanvas().queryByText(CustomBoundaryText)
+  const canvasOverlay = renderResult.getRenderedCanvas().queryByText(`Error: ${ErrorText}`)
 
   return {
     customBoundary: customBoundary,

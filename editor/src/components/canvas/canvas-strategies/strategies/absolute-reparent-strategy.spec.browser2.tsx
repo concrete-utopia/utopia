@@ -70,7 +70,7 @@ async function dragElement(
   checkCursor: CheckCursor | null,
   midDragCallback: (() => Promise<void>) | null,
 ) {
-  const targetElement = renderResult.renderedCanvas.getByTestId(targetTestId)
+  const targetElement = renderResult.getRenderedCanvas().getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
   const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -99,7 +99,7 @@ async function dragAlreadySelectedElement(
   checkCursor: CheckCursor | null,
   midDragCallback: (() => Promise<void>) | null,
 ) {
-  const targetElement = renderResult.renderedCanvas.getByTestId(targetTestId)
+  const targetElement = renderResult.getRenderedCanvas().getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
   const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -240,7 +240,7 @@ describe('Absolute Reparent Strategy', () => {
       `),
       'await-first-dom-report',
     )
-    const targetElement = renderResult.renderedCanvas.getByTestId('aaa')
+    const targetElement = renderResult.getRenderedCanvas().getByTestId('aaa')
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -1033,7 +1033,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       )
 
       const bbbBounds = (
-        await renderResult.renderedCanvas.findByTestId('bbb')
+        await renderResult.getRenderedCanvas().findByTestId('bbb')
       ).getBoundingClientRect()
       const bbbCenter = {
         x: bbbBounds.x + bbbBounds.width / 2,
@@ -1041,7 +1041,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       }
 
       const cccBounds = (
-        await renderResult.renderedCanvas.findByTestId('ccc')
+        await renderResult.getRenderedCanvas().findByTestId('ccc')
       ).getBoundingClientRect()
       const cccCenter = {
         x: cccBounds.x + cccBounds.width / 2,
@@ -1050,7 +1050,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
 
       const dragDelta = windowPoint({ x: bbbCenter.x - cccCenter.x, y: bbbCenter.y - cccCenter.y })
       await dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, null, async () => {
-        const draggedElement = await renderResult.renderedCanvas.findByTestId('ccc')
+        const draggedElement = await renderResult.getRenderedCanvas().findByTestId('ccc')
         const draggedElementBounds = draggedElement.getBoundingClientRect()
         const draggedElementCanvasBounds = boundingClientRectToCanvasRectangle(
           renderResult,
@@ -1158,7 +1158,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       )
 
       const bbbBounds = (
-        await renderResult.renderedCanvas.findByTestId('bbb')
+        await renderResult.getRenderedCanvas().findByTestId('bbb')
       ).getBoundingClientRect()
       const bbbCenter = {
         x: bbbBounds.x + bbbBounds.width / 2,
@@ -1166,7 +1166,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       }
 
       const cccBounds = (
-        await renderResult.renderedCanvas.findByTestId('ccc')
+        await renderResult.getRenderedCanvas().findByTestId('ccc')
       ).getBoundingClientRect()
       const cccCenter = {
         x: cccBounds.x + cccBounds.width / 2,
@@ -1175,7 +1175,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
 
       const dragDelta = windowPoint({ x: bbbCenter.x - cccCenter.x, y: bbbCenter.y - cccCenter.y })
       await dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, null, async () => {
-        const draggedElement = await renderResult.renderedCanvas.findByTestId('ccc')
+        const draggedElement = await renderResult.getRenderedCanvas().findByTestId('ccc')
         const draggedElementBounds = draggedElement.getBoundingClientRect()
         const draggedElementCanvasBounds = boundingClientRectToCanvasRectangle(
           renderResult,
@@ -1701,7 +1701,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       )
 
       const dragme = (
-        await renderResult.renderedCanvas.findByTestId('child1')
+        await renderResult.getRenderedCanvas().findByTestId('child1')
       ).getBoundingClientRect()
 
       await mouseDragFromPointWithDelta(
@@ -1755,7 +1755,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       )
 
       const dragme = (
-        await renderResult.renderedCanvas.findByTestId('child1')
+        await renderResult.getRenderedCanvas().findByTestId('child1')
       ).getBoundingClientRect()
 
       await mouseDragFromPointWithDelta(
@@ -1805,7 +1805,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       )
 
       const dragme = (
-        await renderResult.renderedCanvas.findByTestId('child1')
+        await renderResult.getRenderedCanvas().findByTestId('child1')
       ).getBoundingClientRect()
 
       await mouseDragFromPointWithDelta(
@@ -2297,7 +2297,7 @@ function testProjectWithUnstyledDivOrFragmentOnCanvas(type: FragmentLikeType): s
 }
 
 function getElementCenterCoords(editor: EditorRenderResult, testId: string): WindowPoint {
-  const element = editor.renderedCanvas.getByTestId(testId)
+  const element = editor.getRenderedCanvas().getByTestId(testId)
   const bounds = element.getBoundingClientRect()
   const center = windowPoint({ x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 })
   return center

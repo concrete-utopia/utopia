@@ -196,7 +196,7 @@ export interface EditorRenderResult {
   getDispatchFollowUpActionsFinished: () => Promise<void>
   getEditorState: () => EditorStorePatched
   renderedDOM: RenderResult
-  renderedCanvas: BoundFunctions<typeof queries>
+  getRenderedCanvas(): BoundFunctions<typeof queries>
   getNumberOfCommits: () => number
   getNumberOfRenders: () => number
   clearRenderInfo: () => void
@@ -641,8 +641,6 @@ export async function renderTestEditorWithModel(
     })
   })
 
-  const shadowRoot = result.getByTestId(CanvasContainerShadowRoot).shadowRoot!
-
   return {
     dispatch: async (
       actions: ReadonlyArray<EditorAction>,
@@ -654,7 +652,10 @@ export async function renderTestEditorWithModel(
     getDispatchFollowUpActionsFinished: getDispatchFollowUpActionsFinished,
     getEditorState: () => storeHook.getState(),
     renderedDOM: result,
-    renderedCanvas: within(shadowRoot as unknown as HTMLElement),
+    getRenderedCanvas: () => {
+      const shadowRoot = result.getByTestId(CanvasContainerShadowRoot).shadowRoot!
+      return within(shadowRoot as unknown as HTMLElement)
+    },
     getNumberOfCommits: () => numberOfCommits,
     getNumberOfRenders: () => renderCount - renderCountBaseline,
     clearRenderInfo: () => (renderInfo.current = []),
