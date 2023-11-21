@@ -93,6 +93,8 @@ import { matchRoutes } from 'react-router'
 import { useAtom } from 'jotai'
 import { RemixNavigationAtom } from './remix/utopia-remix-root-component'
 import ReactShadowRoot from 'react-shadow-root'
+import { CacheProvider, css } from '@emotion/react'
+import createCache from '@emotion/cache'
 
 applyUIDMonkeyPatch()
 
@@ -576,7 +578,8 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
       data-testid={CanvasContainerShadowRoot}
     >
       <ReactShadowRoot>
-        <style>{`div,
+        <EmotionWrapper>
+          <style>{`div,
           span,
           img,
           ul,
@@ -584,20 +587,41 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
           label {
             box-sizing: border-box !important;
           }`}</style>
-        <Helmet>{parse(linkTags)}</Helmet>
-        <RerenderUtopiaCtxAtom.Provider value={rerenderUtopiaContextValue}>
-          <UtopiaProjectCtxAtom.Provider value={utopiaProjectContextValue}>
-            <CanvasContainer
-              validRootPaths={rootValidPathsArray}
-              canvasRootElementElementPath={storyboardRootElementPath}
-            >
-              <SceneLevelUtopiaCtxAtom.Provider value={sceneLevelUtopiaContextValue}>
-                {StoryboardRoot}
-              </SceneLevelUtopiaCtxAtom.Provider>
-            </CanvasContainer>
-          </UtopiaProjectCtxAtom.Provider>
-        </RerenderUtopiaCtxAtom.Provider>
+          <Helmet>{parse(linkTags)}</Helmet>
+          <RerenderUtopiaCtxAtom.Provider value={rerenderUtopiaContextValue}>
+            <UtopiaProjectCtxAtom.Provider value={utopiaProjectContextValue}>
+              <CanvasContainer
+                validRootPaths={rootValidPathsArray}
+                canvasRootElementElementPath={storyboardRootElementPath}
+              >
+                <SceneLevelUtopiaCtxAtom.Provider value={sceneLevelUtopiaContextValue}>
+                  {StoryboardRoot}
+                </SceneLevelUtopiaCtxAtom.Provider>
+              </CanvasContainer>
+            </UtopiaProjectCtxAtom.Provider>
+          </RerenderUtopiaCtxAtom.Provider>
+        </EmotionWrapper>
       </ReactShadowRoot>
+    </div>
+  )
+})
+
+const EmotionWrapper = React.memo(({ children }: { children?: React.ReactNode | undefined }) => {
+  const containerRef = React.useRef<HTMLDivElement | null>(null)
+  const [container, setContainer] = React.useState<HTMLDivElement | null>(null)
+
+  React.useEffect(() => setContainer(containerRef.current), [])
+
+  return (
+    <div ref={containerRef}>
+      <CacheProvider
+        value={createCache({
+          key: 'aaa',
+          container: container ?? undefined,
+        })}
+      >
+        {children}
+      </CacheProvider>
     </div>
   )
 })
