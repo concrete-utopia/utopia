@@ -2,9 +2,12 @@ import React from 'react'
 import type { CanvasVector } from '../../../core/shared/math-utils'
 import {
   Substores,
+  useEditorState,
   useRefEditorState,
   useSelectorWithCallback,
 } from '../../editor/store/store-hook'
+import { isFollowMode } from '../../editor/editor-modes'
+import { liveblocksThrottle } from '../../../../liveblocks.config'
 
 export const CanvasOffsetWrapper = React.memo((props: { children?: React.ReactNode }) => {
   const elementRef = useApplyCanvasOffsetToStyle(false)
@@ -20,6 +23,13 @@ export function useApplyCanvasOffsetToStyle(setScaleToo: boolean): React.RefObje
   const elementRef = React.useRef<HTMLDivElement>(null)
   const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
   const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
+
+  const mode = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.mode,
+    'useApplyCanvasOffsetToStyle mode',
+  )
+
   const applyCanvasOffset = React.useCallback(
     (roundedCanvasOffset: CanvasVector) => {
       if (elementRef.current != null) {
@@ -32,9 +42,16 @@ export function useApplyCanvasOffsetToStyle(setScaleToo: boolean): React.RefObje
           'zoom',
           setScaleToo && scaleRef.current >= 1 ? `${scaleRef.current * 100}%` : '1',
         )
+
+        if (isFollowMode(mode)) {
+          elementRef.current.style.setProperty(
+            'transition',
+            `transform ${liveblocksThrottle}ms linear`,
+          )
+        }
       }
     },
-    [elementRef, setScaleToo, scaleRef],
+    [elementRef, setScaleToo, scaleRef, mode],
   )
 
   useSelectorWithCallback(
