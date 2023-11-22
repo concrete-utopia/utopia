@@ -95,13 +95,6 @@ import { RemixNavigationAtom } from './remix/utopia-remix-root-component'
 import ReactShadowRoot from 'react-shadow-root'
 import { CacheProvider, css } from '@emotion/react'
 import createCache from '@emotion/cache'
-import { IS_JEST_ENVIRONMENT } from '../../common/env-vars'
-
-const isSSR =
-  typeof window === 'undefined' ||
-  // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-  /ServerSideRendering/.test(window.navigator && window.navigator.userAgent) ||
-  IS_JEST_ENVIRONMENT
 
 applyUIDMonkeyPatch()
 
@@ -176,6 +169,7 @@ export interface UiJsxCanvasProps {
   dispatch: EditorDispatch
   domWalkerAdditionalElementsToUpdate: Array<ElementPath>
   editedText: ElementPath | null
+  renderedInSSR: boolean
 }
 
 export interface CanvasReactReportErrorCallback {
@@ -251,6 +245,7 @@ export function pickUiJsxCanvasProps(
       dispatch: dispatch,
       domWalkerAdditionalElementsToUpdate: editor.canvas.domWalkerAdditionalElementsToUpdate,
       editedText: editedText,
+      renderedInSSR: false,
     }
   }
 }
@@ -584,7 +579,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
       id={CanvasContainerShadowRoot}
       data-testid={CanvasContainerShadowRoot}
     >
-      <ReactShadowRoot declarative={isSSR}>
+      <ReactShadowRoot declarative={props.renderedInSSR}>
         <EmotionWrapper>
           <style>{`div,
           span,
