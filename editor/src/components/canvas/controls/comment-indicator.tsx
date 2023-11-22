@@ -4,13 +4,15 @@ import { jsx } from '@emotion/react'
 import React from 'react'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { EditorModes } from '../../editor/editor-modes'
-import { useStorage, useThreads } from '../../../../liveblocks.config'
+import { useSelf, useStorage, useThreads } from '../../../../liveblocks.config'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { switchEditorMode } from '../../editor/actions/action-creators'
 import { canvasPoint } from '../../../core/shared/math-utils'
 import { UtopiaTheme } from '../../../uuiui'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import {
+  isPlayerOnAnotherRemixRoute,
+  maybeRemixPresence,
   multiplayerColorFromIndex,
   multiplayerInitialsFromName,
   normalizeMultiplayerName,
@@ -41,6 +43,7 @@ CommentIndicator.displayName = 'CommentIndicator'
 
 const CommentIndicatorInner = React.memo(() => {
   const { threads } = useThreads()
+  const me = useSelf()
   const dispatch = useDispatch()
   const collabs = useStorage((storage) => storage.collaborators)
 
@@ -64,6 +67,16 @@ const CommentIndicatorInner = React.memo(() => {
           }
         })()
 
+        const remixMetadata = maybeRemixPresence(
+          thread.metadata.remixScene ?? null,
+          thread.metadata.remixLocationPath ?? null,
+        )
+
+        const isOnAnotherRoute = isPlayerOnAnotherRemixRoute(
+          me.presence.remix ?? null,
+          remixMetadata,
+        )
+
         return (
           <div
             key={thread.id}
@@ -71,6 +84,7 @@ const CommentIndicatorInner = React.memo(() => {
               position: 'absolute',
               top: point.y,
               left: point.x,
+              opacity: isOnAnotherRoute ? 0.25 : 1,
               width: 20,
               '&:hover': {
                 transform: 'scale(1.15)',

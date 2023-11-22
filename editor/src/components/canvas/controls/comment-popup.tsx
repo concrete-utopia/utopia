@@ -10,6 +10,7 @@ import { stopPropagation } from '../../inspector/common/inspector-utils'
 import { UtopiaTheme } from '../../../uuiui'
 import { useCanvasCommentThread } from '../../../core/commenting/comment-hooks'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
+import { useRemixPresence } from '../../../core/shared/multiplayer-hooks'
 
 export const CommentPopup = React.memo(() => {
   const mode = useEditorState(
@@ -60,6 +61,8 @@ const CommentThread = React.memo(({ x, y }: CommentThreadProps) => {
 
   const createThread = useCreateThread()
 
+  const remixPresence = useRemixPresence()
+
   const onCreateThread = React.useCallback(
     ({ body }: ComposerSubmitComment, event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault()
@@ -67,10 +70,16 @@ const CommentThread = React.memo(({ x, y }: CommentThreadProps) => {
       // Create a new thread
       createThread({
         body,
-        metadata: { type: 'canvas', x: x, y: y },
+        metadata: {
+          type: 'canvas',
+          x: x,
+          y: y,
+          remixScene: remixPresence?.scene,
+          remixLocationPath: remixPresence?.locationPath ?? undefined,
+        },
       })
     },
-    [createThread, x, y],
+    [createThread, x, y, remixPresence],
   )
 
   if (thread == null) {
