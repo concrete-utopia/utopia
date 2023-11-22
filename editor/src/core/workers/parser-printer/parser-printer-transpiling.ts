@@ -295,6 +295,7 @@ function applySteganographyPlugin(
 
         const original = path.getSource()
         const data: SteganoTextData = {
+          type: 'defined-in-source',
           filePath: sourceFileName,
           startPosition: absoluteStartPosition,
           endPosition: absoluteStartPosition + original.length,
