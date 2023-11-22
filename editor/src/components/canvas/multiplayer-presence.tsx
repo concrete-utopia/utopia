@@ -1,5 +1,6 @@
 import type { User } from '@liveblocks/client'
 import { motion } from 'framer-motion'
+import { useAtom } from 'jotai'
 import React from 'react'
 import type { Presence, PresenceActiveFrame, UserMeta } from '../../../liveblocks.config'
 import {
@@ -13,6 +14,7 @@ import {
 import { getCollaborator, useAddMyselfToCollaborators } from '../../core/commenting/comment-hooks'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../core/shared/array-utils'
+import * as EP from '../../core/shared/element-path'
 import type { CanvasPoint } from '../../core/shared/math-utils'
 import { pointsEqual, windowPoint, zeroRectIfNullOrInfinity } from '../../core/shared/math-utils'
 import {
@@ -22,9 +24,10 @@ import {
 } from '../../core/shared/multiplayer'
 import { assertNever } from '../../core/shared/utils'
 import { UtopiaTheme, useColorTheme } from '../../uuiui'
+import { notice } from '../common/notice'
 import type { EditorAction } from '../editor/action-types'
 import { isLoggedIn } from '../editor/action-types'
-import { switchEditorMode } from '../editor/actions/action-creators'
+import { showToast, switchEditorMode } from '../editor/actions/action-creators'
 import { EditorModes, isFollowMode } from '../editor/editor-modes'
 import { useDispatch } from '../editor/store/dispatch-context'
 import {
@@ -36,6 +39,7 @@ import {
 import CanvasActions from './canvas-actions'
 import { activeFrameActionToString } from './commands/set-active-frames-command'
 import { canvasPointToWindowPoint, windowToCanvasCoordinates } from './dom-lookup'
+import { ActiveRemixSceneAtom, RemixNavigationAtom } from './remix/utopia-remix-root-component'
 import { useRemixPresence } from '../../core/shared/multiplayer-hooks'
 
 export const MultiplayerPresence = React.memo(() => {
@@ -284,6 +288,11 @@ const FollowingOverlay = React.memo(() => {
     followed != null ? store.collaborators[followed.id] : null,
   )
 
+  const remixPresence = useRemixPresence()
+
+  const [, setActiveRemixScene] = useAtom(ActiveRemixSceneAtom)
+  const [remixNavigationState, setRemixNavigationState] = useAtom(RemixNavigationAtom)
+
   const updateCanvasFromOtherPresence = React.useCallback(
     (presence: Presence) => {
       let actions: EditorAction[] = []
@@ -293,11 +302,38 @@ const FollowingOverlay = React.memo(() => {
       if (presence.canvasOffset != null && !pointsEqual(presence.canvasOffset, canvasOffset)) {
         actions.push(CanvasActions.positionCanvas(presence.canvasOffset))
       }
+      if (presence.remix != null && isPlayerOnAnotherRemixRoute(remixPresence, presence.remix)) {
+        const newNavigationState = { ...remixNavigationState }
+        const sceneState = newNavigationState[presence.remix.scene]
+        if (sceneState != null && presence.remix.locationPath != null) {
+          sceneState.location.pathname = presence.remix.locationPath
+          setActiveRemixScene(EP.fromString(presence.remix.scene))
+          setRemixNavigationState(newNavigationState)
+          actions.push(
+            showToast(
+              notice(
+                `The route has been changed to ${presence.remix.locationPath}`,
+                'PRIMARY',
+                false,
+                'follow-changed-scene',
+              ),
+            ),
+          )
+        }
+      }
       if (actions.length > 0) {
         dispatch(actions)
       }
     },
-    [dispatch, canvasScale, canvasOffset],
+    [
+      dispatch,
+      canvasScale,
+      canvasOffset,
+      setActiveRemixScene,
+      setRemixNavigationState,
+      remixPresence,
+      remixNavigationState,
+    ],
   )
 
   useOthersListener((event) => {
