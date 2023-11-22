@@ -35,6 +35,7 @@ import type {
   Substates,
   ThemeSubstate,
   UserStateSubstate,
+  VariablesInScopeSubstate,
 } from './store-hook-substore-types'
 import {
   canvasOffsetSubstateKeys,
@@ -47,6 +48,7 @@ import {
   restOfEditorStateKeys,
   restOfStoreKeys,
   selectedViewsSubstateKeys,
+  variablesInScopeSubstateKeys,
 } from './store-hook-substore-types'
 
 // This is how to officially type the store with a subscribeWithSelector middleware as of Zustand 4.1.5 https://github.com/pmndrs/zustand#using-subscribe-with-selector
@@ -305,6 +307,9 @@ export const Substores = {
   },
   projectServerState: (a: ProjectServerStateSubstate, b: ProjectServerStateSubstate) => {
     return ProjectServerStateKeepDeepEquality(a.projectServerState, b.projectServerState).areEqual
+  },
+  variablesInScope: (a: VariablesInScopeSubstate, b: VariablesInScopeSubstate) => {
+    return keysEquality(variablesInScopeSubstateKeys, a.editor, b.editor)
   },
 } as const
 

@@ -34,6 +34,9 @@ import type { StoredPanel } from './stored-layout'
 import { MultiplayerPresence } from './multiplayer-cursors'
 import { useStatus } from '../../../liveblocks.config'
 import { MultiplayerWrapper } from '../../utils/multiplayer-wrapper'
+import { CommentSection } from '../inspector/sections/comment-section'
+import { isFeatureEnabled } from '../../utils/feature-switches'
+import { CommentsPane } from '../inspector/comments-pane'
 
 interface NumberSize {
   width: number
@@ -209,6 +212,10 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
     onClickTab(RightMenuTab.Insert)
   }, [onClickTab])
 
+  const onClickCommentsTab = React.useCallback(() => {
+    onClickTab(RightMenuTab.Comments)
+  }, [onClickTab])
+
   const onClickInspectorTab = React.useCallback(() => {
     onClickTab(RightMenuTab.Inspector)
   }, [onClickTab])
@@ -233,7 +240,7 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
     >
       <TitleBarUserProfile panelData={props.panelData} />
       <FlexRow
-        style={{ marginBottom: 10, gap: 10, alignSelf: 'stretch', flexShrink: 0 }}
+        style={{ marginBottom: 10, gap: 2, alignSelf: 'stretch', flexShrink: 0 }}
         css={undefined}
       >
         <MenuTab
@@ -246,6 +253,14 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
           selected={selectedTab === RightMenuTab.Insert}
           onClick={onClickInsertTab}
         />
+        {when(
+          isFeatureEnabled('Commenting'),
+          <MenuTab
+            label={'Comments'}
+            selected={selectedTab === RightMenuTab.Comments}
+            onClick={onClickCommentsTab}
+          />,
+        )}
         <MenuTab
           label={'Settings'}
           selected={selectedTab === RightMenuTab.Settings}
@@ -268,6 +283,7 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
         {when(selectedTab === RightMenuTab.Insert, <InsertMenuPane />)}
         {when(selectedTab === RightMenuTab.Inspector, <InspectorEntryPoint />)}
         {when(selectedTab === RightMenuTab.Settings, <SettingsPane />)}
+        {when(selectedTab === RightMenuTab.Comments, <CommentsPane />)}
       </SimpleFlexRow>
       <CanvasStrategyInspector />
     </FlexColumn>
