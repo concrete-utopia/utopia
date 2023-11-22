@@ -247,6 +247,8 @@ const MultiplayerCursor = React.memo(
 )
 MultiplayerCursor.displayName = 'MultiplayerCursor'
 
+const remixRouteChangedToastId = 'follow-changed-scene'
+
 const FollowingOverlay = React.memo(() => {
   const colorTheme = useColorTheme()
   const dispatch = useDispatch()
@@ -315,7 +317,7 @@ const FollowingOverlay = React.memo(() => {
                 `The route has been changed to ${presence.remix.locationPath}`,
                 'PRIMARY',
                 false,
-                'follow-changed-scene',
+                remixRouteChangedToastId,
               ),
             ),
           )
