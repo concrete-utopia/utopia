@@ -67,6 +67,7 @@ import {
   useComponentSelectorStyles,
   useGetInsertableComponents,
 } from '../canvas/ui/floating-insert-menu'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const PlayModeButtonTestId = 'canvas-toolbar-play-mode'
@@ -471,17 +472,20 @@ export const CanvasToolbar = React.memo(() => {
             style={{ width: 36 }}
           />
         </Tooltip>
-        <Tooltip title='Comment Mode' placement='bottom'>
-          <InsertModeButton
-            testid={CommentModeButtonTestId}
-            iconType={'comment'}
-            iconCategory='tools'
-            primary={canvasToolbarMode.primary === 'comment'}
-            onClick={toggleCommentMode}
-            keepActiveInLiveMode
-            style={{ width: 36 }}
-          />
-        </Tooltip>
+        {when(
+          isFeatureEnabled('Commenting'),
+          <Tooltip title='Comment Mode' placement='bottom'>
+            <InsertModeButton
+              testid={CommentModeButtonTestId}
+              iconType={'comment'}
+              iconCategory='tools'
+              primary={canvasToolbarMode.primary === 'comment'}
+              onClick={toggleCommentMode}
+              keepActiveInLiveMode
+              style={{ width: 36 }}
+            />
+          </Tooltip>,
+        )}
         <Separator />
         <Tooltip title='Zoom to 100%' placement='bottom'>
           <SquareButton
