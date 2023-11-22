@@ -10,7 +10,7 @@ import {
   normalizeMultiplayerName,
   normalizeOthersList,
 } from '../core/shared/multiplayer'
-import { Avatar, Tooltip, useColorTheme } from '../uuiui'
+import { Avatar, Icn, Tooltip, useColorTheme } from '../uuiui'
 import { Substores, useEditorState } from './editor/store/store-hook'
 import { when } from '../utils/react-conditionals'
 import { MultiplayerWrapper } from '../utils/multiplayer-wrapper'
@@ -54,9 +54,10 @@ export const SinglePlayerUserBar = React.memo(() => {
     (store) => getUserPicture(store.userState.loginState),
     'SinglePlayerUserBar userPicture',
   )
+  const isOwner = true
   return (
     <a href='/projects' target='_blank'>
-      <Avatar userPicture={userPicture} isLoggedIn={true} />
+      <Avatar userPicture={userPicture} isLoggedIn={true} isOwner={isOwner} />
     </a>
   )
 })
@@ -69,6 +70,8 @@ const MultiplayerUserBar = React.memo(() => {
 
   const { user: myUser } = useMyUserAndPresence()
   const myName = React.useMemo(() => normalizeMultiplayerName(myUser.name), [myUser])
+
+  const isOwner = true
 
   const others = useOthers((list) =>
     normalizeOthersList(myUser.id, list).map((other) => {
@@ -167,6 +170,7 @@ const MultiplayerUserBar = React.memo(() => {
                 onClick={toggleFollowing(other.id)}
                 active={isFollowMode(mode) && mode.playerId === other.id}
                 follower={other.following === myUser.id}
+                isOwner={isOwner}
               />
             )
           })}
@@ -180,6 +184,7 @@ const MultiplayerUserBar = React.memo(() => {
                 foreground: colorTheme.fg0.value,
               }}
               picture={null}
+              isOwner={isOwner}
             />,
           )}
         </div>,
@@ -190,6 +195,7 @@ const MultiplayerUserBar = React.memo(() => {
           tooltip={`${myName} (you)`}
           color={{ background: colorTheme.bg3.value, foreground: colorTheme.fg1.value }}
           picture={myUser.avatar}
+          isOwner={isOwner}
         />
       </a>
     </div>
@@ -209,6 +215,7 @@ const MultiplayerAvatar = React.memo(
     active?: boolean
     size?: number
     follower?: boolean
+    isOwner: boolean
   }) => {
     const picture = React.useMemo(() => {
       return isDefaultAuth0AvatarURL(props.picture ?? null) ? null : props.picture
@@ -247,6 +254,16 @@ const MultiplayerAvatar = React.memo(
             size={props.border === true ? 22 : undefined}
             initials={props.name}
           />
+          {props.isOwner ? (
+            <Icn
+              category='semantic'
+              type={'star'}
+              width={14}
+              height={14}
+              color='main'
+              style={{ position: 'relative', bottom: -13, left: 13, zIndex: 10 }}
+            />
+          ) : null}
           {when(props.follower === true, <FollowerBadge />)}
         </div>
       </Tooltip>
@@ -306,6 +323,7 @@ export const AvatarPicture = React.memo((props: AvatarPictureProps) => {
   if (url == null || pictureNotFound) {
     return <span>{initials}</span>
   }
+
   return (
     <img
       style={{

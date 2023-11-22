@@ -2,11 +2,13 @@ import React from 'react'
 import { LoginState, User } from '../../../uuiui-deps'
 
 import { useColorTheme } from '../../styles/theme'
+import { Icn } from '../../../../src/uuiui/icn'
 
 interface AvatarProps {
   userPicture: string | null
   isLoggedIn: boolean
   size?: number
+  isOwner: boolean
 }
 
 export const Avatar = React.memo((props: AvatarProps) => {
@@ -42,12 +44,23 @@ export const Avatar = React.memo((props: AvatarProps) => {
       style={{
         ...backgroundStyle,
         justifyContent: 'center',
-        overflow: 'hidden',
+        overflow: 'visible',
         width: size,
         height: size,
         borderRadius: size,
         backgroundColor: colorTheme.emphasizedBackground.value,
       }}
-    />
+    >
+      {props.isOwner ? (
+        <Icn
+          category='semantic'
+          type={'star'}
+          width={14}
+          height={14}
+          color='main'
+          style={{ position: 'relative', bottom: -13, left: 13, zIndex: 10 }}
+        />
+      ) : null}
+    </div>
   )
 })
