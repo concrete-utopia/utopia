@@ -25,6 +25,7 @@ import {
   updateText,
   updateEditorMode,
   showToast,
+  resetCanvas,
 } from '../editor/actions/action-creators'
 import type { Coordinates } from '../editor/editor-modes'
 import { EditorModes } from '../editor/editor-modes'
@@ -44,12 +45,13 @@ import { TextRelatedProperties } from '../../core/properties/css-properties'
 import { assertNever } from '../../core/shared/utils'
 import { notice } from '../common/notice'
 import type { AllElementProps } from '../editor/store/editor-state'
-import { toString } from '../../core/shared/element-path'
+import { getClosestRootElement, toString } from '../../core/shared/element-path'
 import type { SteganoData } from '../../core/shared/stegano-text'
 import { cleanSteganoTextData, decodeSteganoData } from '../../core/shared/stegano-text'
 import { useUpdateStringRun } from '../../core/model/project-file-helper-hooks'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { usePopper } from 'react-popper'
+import { setElementsToRerenderCommand } from '../canvas/commands/set-elements-to-rerender-command'
 
 export const TextEditorSpanId = 'text-editor'
 
@@ -434,7 +436,9 @@ const TextEditor = React.memo((props: TextEditorProps) => {
               if (shouldUpdateInPlace) {
                 dispatch([getSaveAction(elementPath, content, textProp)])
               } else {
-                updateJurassicCMS({ key: data.key, updated: content })
+                void updateJurassicCMS({ key: data.key, updated: content }).then(() =>
+                  dispatch([resetCanvas()]),
+                )
               }
             })
           } else {
@@ -559,7 +563,9 @@ const TextEditor = React.memo((props: TextEditorProps) => {
                 updateEditorMode(EditorModes.selectMode(null, false, 'none')),
               ])
             } else {
-              updateJurassicCMS({ key: data.key, updated: content })
+              void updateJurassicCMS({ key: data.key, updated: content }).then(() =>
+                dispatch([resetCanvas()]),
+              )
               dispatch([updateEditorMode(EditorModes.selectMode(null, false, 'none'))])
             }
           })
@@ -808,8 +814,14 @@ function canDeleteElementWhenEmpty(
   return true
 }
 
-function updateJurassicCMS({ key, updated }: { key: string; updated: string }) {
-  void fetch(`http://0.0.0.0:6789/api/${key}`, {
+async function updateJurassicCMS({
+  key,
+  updated,
+}: {
+  key: string
+  updated: string
+}): Promise<void> {
+  await fetch(`http://0.0.0.0:6789/api/${key}`, {
     method: 'POST',
     body: JSON.stringify({ value: updated }),
     mode: 'no-cors',
