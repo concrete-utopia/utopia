@@ -1,7 +1,8 @@
 import React from 'react'
+import type { User } from '@liveblocks/client'
 import { LiveObject, type ThreadData } from '@liveblocks/client'
-import type { ThreadMetadata } from '../../../liveblocks.config'
-import { useMutation, useRoom, useSelf, useStorage, useThreads } from '../../../liveblocks.config'
+import type { Presence, ThreadMetadata, UserMeta } from '../../../liveblocks.config'
+import { useMutation, useSelf, useStorage, useThreads } from '../../../liveblocks.config'
 import { Substores, useEditorState } from '../../components/editor/store/store-hook'
 import { normalizeMultiplayerName, possiblyUniqueColor } from '../shared/multiplayer'
 import { isLoggedIn } from '../../common/user'
@@ -12,12 +13,36 @@ export function useCanvasCommentThread(x: number, y: number): ThreadData<ThreadM
   return thread
 }
 
-export function useMyUserAndPresence() {
+function placeholderUserMeta(user: User<Presence, UserMeta>): UserMeta {
+  return {
+    id: user.id,
+    name: null,
+    avatar: null,
+    colorIndex: null,
+  }
+}
+
+interface Collaborators {
+  [key: string]: UserMeta
+}
+
+export function getCollaborator(
+  collabs: Collaborators,
+  source: User<Presence, UserMeta>,
+): UserMeta {
+  return collabs[source.id] ?? placeholderUserMeta(source)
+}
+
+export function useMyUserAndPresence(): {
+  presence: User<Presence, UserMeta>
+  user: UserMeta
+} {
   const me = useSelf()
-  const myUser = useStorage((store) => store.collaborators[me.id])
+  const collabs = useStorage((store) => store.collaborators)
+  const myUser: UserMeta | null = getCollaborator(collabs, me)
   return {
     presence: me,
-    user: myUser,
+    user: myUser ?? placeholderUserMeta(me),
   }
 }
 
@@ -40,9 +65,11 @@ export function useAddMyselfToCollaborators() {
       }
       const collaborators = storage.get('collaborators')
 
-      const otherColorIndices = Object.values(collaborators).map((u) => u.colorIndex)
-
       if (collaborators.get(self.id) == null) {
+        const otherColorIndices = Object.values(collaborators.toObject()).map((u) =>
+          u.get('colorIndex'),
+        )
+
         collaborators.set(
           self.id,
           new LiveObject({

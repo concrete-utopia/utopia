@@ -16,6 +16,7 @@ import {
   normalizeMultiplayerName,
 } from '../../../core/shared/multiplayer'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
+import { AvatarPicture } from '../../user-bar'
 
 export const CommentIndicator = React.memo(() => {
   const projectId = useEditorState(
@@ -36,8 +37,9 @@ export const CommentIndicator = React.memo(() => {
     </CanvasOffsetWrapper>
   )
 })
+CommentIndicator.displayName = 'CommentIndicator'
 
-function CommentIndicatorInner() {
+const CommentIndicatorInner = React.memo(() => {
   const { threads } = useThreads()
   const dispatch = useDispatch()
   const collabs = useStorage((storage) => storage.collaborators)
@@ -46,18 +48,19 @@ function CommentIndicatorInner() {
     <React.Fragment>
       {threads.map((thread) => {
         const point = canvasPoint(thread.metadata)
-        const { initials, color } = (() => {
+        const { initials, color, avatar } = (() => {
           const firstComment = thread.comments[0]
           if (firstComment == null) {
-            return { initials: 'AN', color: multiplayerColorFromIndex(null) }
+            return { initials: 'AN', color: multiplayerColorFromIndex(null), avatar: null }
           }
           const author = collabs[firstComment.userId]
           if (author == null) {
-            return { initials: 'AN', color: multiplayerColorFromIndex(null) }
+            return { initials: 'AN', color: multiplayerColorFromIndex(null), avatar: null }
           }
           return {
             initials: multiplayerInitialsFromName(normalizeMultiplayerName(author.name)),
             color: multiplayerColorFromIndex(author.colorIndex),
+            avatar: author.avatar,
           }
         })()
 
@@ -101,7 +104,7 @@ function CommentIndicatorInner() {
                   boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
                 }}
               >
-                {initials}
+                <AvatarPicture url={avatar} initials={initials} />
               </div>
             </div>
           </div>
@@ -109,4 +112,5 @@ function CommentIndicatorInner() {
       })}
     </React.Fragment>
   )
-}
+})
+CommentIndicatorInner.displayName = 'CommentIndicatorInner'

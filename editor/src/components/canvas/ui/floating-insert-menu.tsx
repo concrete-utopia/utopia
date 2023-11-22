@@ -22,6 +22,10 @@ import {
 import { InspectorInputEmotionStyle } from '../../../uuiui/inputs/base-input'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import type { InsertMenuMode } from './floating-insert-menu-helpers'
+import {
+  convertVariablesToElements,
+  getVariablesInScope,
+} from '../../../components/shared/scoped-variables'
 
 export const FloatingMenuTestId = 'floating-menu-test-id'
 
@@ -114,7 +118,26 @@ export function useGetInsertableComponents(
     }
   }, [packageStatus, propertyControlsInfo, projectContents, dependencies, fullPath, insertMenuMode])
 
-  return insertableComponents
+  const scopedVariables = useEditorState(
+    Substores.variablesInScope,
+    (store) =>
+      getVariablesInScope(
+        store.editor.selectedViews[0],
+        projectContents,
+        store.editor.variablesInScope,
+      ),
+    'useGetInsertableComponents scopedVariables',
+  )
+
+  const insertableVariables = React.useMemo(() => {
+    if (fullPath == null) {
+      return []
+    } else {
+      return convertInsertableComponentsToFlatList(convertVariablesToElements(scopedVariables))
+    }
+  }, [fullPath, scopedVariables])
+
+  return insertableComponents.concat(insertableVariables)
 }
 
 export function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {

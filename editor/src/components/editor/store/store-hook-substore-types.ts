@@ -28,6 +28,7 @@ export type Substates = {
   builtInDependencies: BuiltInDependenciesSubstate
   userState: UserStateSubstate
   projectServerState: ProjectServerStateSubstate
+  variablesInScope: VariablesInScopeSubstate
 }
 
 export type StoreKey = keyof Substates
@@ -111,6 +112,13 @@ export type CanvasSubstate = typeof emptyCanvasSubstate
 export const canvasSubstateKeys = Object.keys(emptyCanvasSubstate.editor.canvas) as Array<
   keyof CanvasSubstate['editor']['canvas']
 >
+
+// VariablesInScopeSubstate
+export const variablesInScopeSubstateKeys = ['variablesInScope', 'selectedViews'] as const
+const emptyVariablesInScopeSubstate = {
+  editor: pick(variablesInScopeSubstateKeys, EmptyEditorStateForKeysOnly),
+} as const
+export type VariablesInScopeSubstate = typeof emptyVariablesInScopeSubstate
 
 export interface DerivedSubstate {
   derived: DerivedState

@@ -11,14 +11,10 @@ import type {
   ElementInstanceMetadataMap,
   JSXElement,
 } from '../../../../core/shared/element-template'
-import type {
-  CanvasPoint,
-  CanvasRectangle,
-  CanvasVector,
-  LocalRectangle,
-} from '../../../../core/shared/math-utils'
+import type { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
 import {
   boundingRectangleArray,
+  zeroRectIfNullOrInfinity,
   canvasRectangleToLocalRectangle,
   canvasVector,
   nullIfInfinity,
@@ -70,6 +66,7 @@ import {
   setCssLengthProperty,
   setValueKeepingOriginalUnit,
 } from '../../commands/set-css-length-command'
+import { activeFrameTargetRect, setActiveFrames } from '../../commands/set-active-frames-command'
 
 export interface MoveCommandsOptions {
   ignoreLocalFrame?: boolean
@@ -134,6 +131,15 @@ export function applyMoveCommon(
         updateHighlightedViews('mid-interaction', []),
         setElementsToRerenderCommand(targets),
         setCursorCommand(CSSCursor.Select),
+        setActiveFrames(
+          commandsForSelectedElements.intendedBounds.map((b) => ({
+            action: 'move', // TODO this could also show "duplicate" when applicable
+            target: activeFrameTargetRect(b.frame),
+            source: zeroRectIfNullOrInfinity(
+              MetadataUtils.getFrameInCanvasCoords(b.target, canvasState.startingMetadata),
+            ),
+          })),
+        ),
       ])
     } else {
       const constrainedDragAxis =
@@ -171,6 +177,15 @@ export function applyMoveCommon(
         ),
         setElementsToRerenderCommand([...targets, ...targetsForSnapping]),
         setCursorCommand(CSSCursor.Select),
+        setActiveFrames(
+          commandsForSelectedElements.intendedBounds.map((b) => ({
+            action: 'move', // TODO this could also show "duplicate" when applicable
+            target: activeFrameTargetRect(b.frame),
+            source: zeroRectIfNullOrInfinity(
+              MetadataUtils.getFrameInCanvasCoords(b.target, canvasState.startingMetadata),
+            ),
+          })),
+        ),
       ])
     }
   } else {
