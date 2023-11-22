@@ -70,6 +70,7 @@ import {
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const PlayModeButtonTestId = 'canvas-toolbar-play-mode'
+export const CommentModeButtonTestId = 'canvas-toolbar-comment-mode'
 export const InsertConditionalButtonTestId = 'insert-mode-conditional'
 export const CanvasToolbarId = 'canvas-toolbar'
 
@@ -346,6 +347,14 @@ export const CanvasToolbar = React.memo(() => {
     }
   }, [dispatch, isLiveMode])
 
+  const toggleCommentMode = React.useCallback(() => {
+    if (isLiveMode) {
+      dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
+    } else {
+      dispatch([switchEditorMode(EditorModes.commentMode(null))])
+    }
+  }, [dispatch, isLiveMode])
+
   const resetRemixApps = useResetRemixApps()
 
   const resetCanvasCallback = React.useCallback(() => {
@@ -458,6 +467,17 @@ export const CanvasToolbar = React.memo(() => {
             iconCategory='tools'
             primary={canvasToolbarMode.primary === 'play'}
             onClick={toggleLiveMode}
+            keepActiveInLiveMode
+            style={{ width: 36 }}
+          />
+        </Tooltip>
+        <Tooltip title='Comment Mode' placement='bottom'>
+          <InsertModeButton
+            testid={CommentModeButtonTestId}
+            iconType={'comment'}
+            iconCategory='tools'
+            primary={canvasToolbarMode.primary === 'comment'}
+            onClick={toggleCommentMode}
             keepActiveInLiveMode
             style={{ width: 36 }}
           />
