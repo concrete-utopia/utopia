@@ -151,7 +151,7 @@ function getDefaultCursorForMode(mode: Mode): CSSCursor {
     case 'textEdit':
       return CSSCursor.Select
     case 'comment':
-      return CSSCursor.Insert
+      return CSSCursor.Comment
     case 'follow':
       return CSSCursor.Select
     default:
