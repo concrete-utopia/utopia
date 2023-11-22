@@ -247,30 +247,37 @@ const MultiplayerAvatar = React.memo(
             size={props.border === true ? 22 : undefined}
             initials={props.name}
           />
-          {when(
-            props.follower === true,
-            <div
-              style={{
-                position: 'absolute',
-                top: -6,
-                right: -6,
-                borderRadius: '100%',
-                backgroundColor: colorTheme.primary.value,
-                color: colorTheme.white.value,
-                width: 10,
-                height: 10,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            />,
-          )}
+          {when(props.follower === true, <FollowerBadge />)}
         </div>
       </Tooltip>
     )
   },
 )
 MultiplayerAvatar.displayName = 'MultiplayerAvatar'
+
+const FollowerBadge = React.memo(() => {
+  const colorTheme = useColorTheme()
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        top: -5,
+        right: -5,
+        borderRadius: '100%',
+        backgroundColor: colorTheme.primary.value,
+        color: colorTheme.white.value,
+        width: 8,
+        height: 8,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        border: `1px solid ${colorTheme.white.value}`,
+      }}
+    />
+  )
+})
+FollowerBadge.displayName = 'FollowerBadge'
 
 interface AvatarPictureProps {
   url: string | null | undefined
