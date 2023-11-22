@@ -60,6 +60,7 @@ import {
 } from '../shared/project-components'
 import { setFocus } from '../common/actions'
 import type { CanvasStrategyIcon } from '../canvas/canvas-strategies/canvas-strategy-types'
+import { isLoggedIn } from './action-types'
 import type { EditorDispatch } from './action-types'
 import type { InsertMenuItem } from '../canvas/ui/floating-insert-menu'
 import {
@@ -408,6 +409,12 @@ export const CanvasToolbar = React.memo(() => {
     [dispatch],
   )
 
+  const loggedIn = useEditorState(
+    Substores.userState,
+    (store) => isLoggedIn(store.userState.loginState),
+    'TopMenu loggedIn',
+  )
+
   return (
     <FlexColumn
       style={{ alignItems: 'start', justifySelf: 'center' }}
@@ -483,6 +490,7 @@ export const CanvasToolbar = React.memo(() => {
               onClick={toggleCommentMode}
               keepActiveInLiveMode
               style={{ width: 36 }}
+              disabled={!loggedIn}
             />
           </Tooltip>,
         )}
@@ -711,12 +719,14 @@ interface InsertModeButtonProps {
   testid?: string
   onClick: (event: React.MouseEvent<Element>) => void
   size?: number
+  disabled?: boolean
 }
 const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
   const [isHovered, setIsHovered] = useState(false)
   const keepActiveInLiveMode = props.keepActiveInLiveMode ?? false
   const primary = props.primary ?? false
   const secondary = props.secondary ?? false
+  const disabled = props.disabled ?? false
   const canvasInLiveMode = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.mode.type === 'live',
@@ -746,7 +756,7 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
       spotlight={secondary}
       highlight
       onClick={props.onClick}
-      disabled={canvasInLiveMode && !keepActiveInLiveMode}
+      disabled={disabled || (canvasInLiveMode && !keepActiveInLiveMode)}
       overriddenBackground={secondary ? 'transparent' : undefined}
       onMouseEnter={setIsHoveredTrue}
       onMouseLeave={setIsHoveredFalse}
