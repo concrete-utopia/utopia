@@ -33,15 +33,23 @@ export const CanvasFloatingToolbars = React.memo((props: { style: React.CSSPrope
           top: 0,
           alignItems: 'flex-start',
           justifyContent: 'space-between',
-          padding: 10,
+          padding: 6,
           width: '100%',
           height: '100%',
         }}
       >
-        <ClosedPanels side='left' />
-        <FlexRow style={{ width: 250, alignItems: 'flex-start', gap: 10 }}>
-          <CanvasToolbar />
-          <CanvasStrategyPicker />
+        <FlexRow
+          style={{
+            width: 250,
+            alignItems: 'flex-start',
+            height: '100%',
+          }}
+        >
+          <ClosedPanels side='left' />
+          <FlexRow style={{ gap: 10, alignItems: 'flex-start' }}>
+            <CanvasToolbar />
+            <CanvasStrategyPicker />
+          </FlexRow>
         </FlexRow>
         <ClosedPanels side='right' />
       </FlexRow>

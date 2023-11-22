@@ -101,7 +101,6 @@ export const ClosedPanels = React.memo((props: { side: 'left' | 'right' }) => {
         alignItems: props.side === 'left' ? 'flex-start' : 'flex-end',
         justifyContent: 'space-between',
         height: '100%',
-        width: 32,
       }}
     >
       <FlexColumn
@@ -112,7 +111,6 @@ export const ClosedPanels = React.memo((props: { side: 'left' | 'right' }) => {
         style={{
           gap: 10,
           height: 300,
-          width: 32,
           pointerEvents: 'initial',
         }}
         onMouseEnter={setIsVisibleTrue}
@@ -124,6 +122,7 @@ export const ClosedPanels = React.memo((props: { side: 'left' | 'right' }) => {
               iconType='navigator'
               onClick={toggleNavigatorVisible}
               visible={isVisible}
+              side={props.side}
             />
           </Tooltip>
         ) : null}
@@ -133,6 +132,7 @@ export const ClosedPanels = React.memo((props: { side: 'left' | 'right' }) => {
               iconType='cody'
               onClick={toggleCodeEditorVisible}
               visible={isVisible}
+              side={props.side}
             />
           </Tooltip>
         ) : null}
@@ -142,11 +142,13 @@ export const ClosedPanels = React.memo((props: { side: 'left' | 'right' }) => {
               iconType='inspector'
               onClick={toggleInspectorVisible}
               visible={isVisible}
+              side={props.side}
             />
           </Tooltip>
         ) : null}
       </FlexColumn>
-      {props.side === 'left' ? <TestMenu /> : <ToastRenderer />}
+      {/* {props.side === 'left' ? <TestMenu /> : <ToastRenderer />} */}
+      {props.side === 'left' ? null : <ToastRenderer />}
     </FlexColumn>
   )
 })
@@ -154,6 +156,7 @@ export const ClosedPanels = React.memo((props: { side: 'left' | 'right' }) => {
 interface InsertModeButtonProps {
   iconType: string
   visible?: boolean
+  side?: string
   onClick: (event: React.MouseEvent<Element>) => void
 }
 const ClosedPanelButton = React.memo((props: InsertModeButtonProps) => {
@@ -179,6 +182,7 @@ const ClosedPanelButton = React.memo((props: InsertModeButtonProps) => {
         height: 28,
         borderRadius: 28,
         transition: 'all .1s .1s ease-in-out',
+        marginRight: props.side === 'left' ? 10 : 'undefined',
       }}
       onClick={props.onClick}
       onMouseEnter={setIsHoveredTrue}
