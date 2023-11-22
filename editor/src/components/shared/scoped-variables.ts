@@ -1,9 +1,4 @@
-import type {
-  ElementPath,
-  AllVariablesInScope,
-  Variable,
-  VariableUtopiaType,
-} from '../../core/shared/project-file-types'
+import type { ElementPath } from '../../core/shared/project-file-types'
 import { withUnderlyingTarget } from '../editor/store/editor-state'
 import type { ProjectContentTreeRoot } from '../assets'
 import {
@@ -21,7 +16,6 @@ import {
   jsxTextBlock,
   jsxFragmentWithoutUID,
   type JSExpressionOtherJavaScript,
-  simpleAttribute,
 } from '../../core/shared/element-template'
 import { type VariablesInScope } from '../canvas/ui-jsx-canvas'
 import { toComponentId } from '../../core/shared/element-path'
@@ -159,7 +153,7 @@ function getMatchingElementForVariable(variable: Variable) {
   }
 }
 
-function getTypeByValue(value: any): VariableUtopiaType {
+function getTypeByValue(value: any): InsertableType {
   const type = typeof value
   if (type === 'object' && Array.isArray(value)) {
     return 'array'
@@ -171,4 +165,27 @@ function getTypeByValue(value: any): VariableUtopiaType {
 
 function jsIdentifierName(name: string): JSExpressionOtherJavaScript {
   return jsExpressionOtherJavaScriptSimple(name, [name])
+}
+
+type AllVariablesInScope = {
+  filePath: string
+  variables: Variable[]
+}
+
+type InsertableType =
+  | 'string'
+  | 'number'
+  | 'bigint'
+  | 'boolean'
+  | 'symbol'
+  | 'undefined'
+  | 'object'
+  | 'function'
+  | 'array'
+  | 'image'
+
+interface Variable {
+  name: string
+  type: InsertableType
+  value?: unknown
 }

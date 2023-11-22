@@ -770,26 +770,3 @@ export type NodeModules = {
 
 // Key here is the full filename.
 export type ProjectContents = { [filepath: string]: ProjectFile }
-
-export type AllVariablesInScope = {
-  filePath: string
-  variables: Variable[]
-}
-
-export type VariableUtopiaType =
-  | 'string'
-  | 'number'
-  | 'bigint'
-  | 'boolean'
-  | 'symbol'
-  | 'undefined'
-  | 'object'
-  | 'function'
-  | 'array'
-  | 'image'
-
-export interface Variable {
-  name: string
-  type: VariableUtopiaType
-  value?: unknown
-}
