@@ -66,16 +66,16 @@ const shadowStyles = {
     boxShadow: `0px 1px 2px 0px ${colorTheme.shadow90.value}, 0px 2px 4px -1px ${colorTheme.shadow50.value}`,
   },
   low: {
-    boxShadow: `0px 2px 4px -2px ${colorTheme.shadow80.value}, 0px 4px 8px -2px ${colorTheme.shadow40.value}`,
+    boxShadow: `0px 2px 4px -2px ${colorTheme.shadow80.value}, 0px 4px 8px -2px ${colorTheme.shadow45.value}`,
   },
   mid: {
-    boxShadow: `0px 3px 6px -2px ${colorTheme.shadow80.value}, 0px 4px 8px -2px ${colorTheme.shadow40.value}`,
+    boxShadow: `0px 3px 6px -2px ${colorTheme.shadow70.value}, 0px 4px 8px -2px ${colorTheme.shadow40.value}`,
   },
   high: {
-    boxShadow: `0px 4px 8px -2px ${colorTheme.shadow70.value}, 0px 6px 12px -2px ${colorTheme.shadow40.value}`,
+    boxShadow: `0px 4px 8px -2px ${colorTheme.shadow60.value}, 0px 6px 12px -2px ${colorTheme.shadow35.value}`,
   },
   highest: {
-    boxShadow: `0px 6px 12px -2px ${colorTheme.shadow70.value}, 0px 8px 16px -2px ${colorTheme.shadow40.value}`,
+    boxShadow: `0px 6px 12px -2px ${colorTheme.shadow50.value}, 0px 8px 16px -2px ${colorTheme.shadow30.value}`,
   },
 }
 
