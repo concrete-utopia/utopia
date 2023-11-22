@@ -1,4 +1,5 @@
 import '../../../../resources/editor/css/liveblocks-comments.css'
+import '@liveblocks/react-comments/styles/dark/attributes.css'
 import React from 'react'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
@@ -10,6 +11,7 @@ import { stopPropagation } from '../../inspector/common/inspector-utils'
 import { UtopiaTheme } from '../../../uuiui'
 import { useCanvasCommentThread } from '../../../core/commenting/comment-hooks'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
+import { getCurrentTheme } from '../../editor/store/editor-state'
 
 export const CommentPopup = React.memo(() => {
   const mode = useEditorState(
@@ -73,16 +75,22 @@ const CommentThread = React.memo(({ x, y }: CommentThreadProps) => {
     [createThread, x, y],
   )
 
+  const theme = useEditorState(
+    Substores.userState,
+    (store) => getCurrentTheme(store.userState),
+    'CommentThread, theme',
+  )
+
   if (thread == null) {
-    return <Composer autoFocus onComposerSubmit={onCreateThread} />
+    return <Composer data-theme={theme} autoFocus onComposerSubmit={onCreateThread} />
   }
 
   return (
     <div>
       {thread.comments.map((comment) => (
-        <Comment key={comment.id} comment={comment} />
+        <Comment data-theme={theme} key={comment.id} comment={comment} />
       ))}
-      <Composer autoFocus threadId={thread.id} />
+      <Composer data-theme={theme} autoFocus threadId={thread.id} />
     </div>
   )
 })

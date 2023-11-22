@@ -11,6 +11,8 @@ import { canvasPoint, canvasRectangle } from '../../../core/shared/math-utils'
 import { scrollToPosition, switchEditorMode } from '../../editor/actions/action-creators'
 import { EditorModes } from '../../editor/editor-modes'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
+import { getCurrentTheme } from '../../editor/store/editor-state'
 
 export const CommentSection = React.memo(() => {
   return (
@@ -62,13 +64,19 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
     ])
   }, [dispatch, thread.metadata])
 
+  const theme = useEditorState(
+    Substores.userState,
+    (store) => getCurrentTheme(store.userState),
+    'ThreadPreview, theme',
+  )
+
   const comment = thread.comments[0]
   if (comment == null) {
     return null
   }
   return (
     <div key={comment.id} onClick={onClick}>
-      <Comment comment={comment} showActions={false} />
+      <Comment data-theme={theme} comment={comment} showActions={false} />
     </div>
   )
 })
