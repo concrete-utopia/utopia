@@ -173,7 +173,7 @@ export function baseAbsoluteReparentStrategy(
                     ...interactionSession,
                     updatedTargetPaths: updatedTargetPaths,
                   },
-                  defaultCustomStrategyState(),
+                  { ...defaultCustomStrategyState(), action: 'reparent' },
                 )?.strategy.apply(strategyLifecycle).commands ?? []
 
               const elementsToRerender = EP.uniqueElementPaths([
@@ -202,11 +202,10 @@ export function baseAbsoluteReparentStrategy(
               )
             } else {
               const moveCommands =
-                absoluteMoveStrategy(
-                  canvasState,
-                  interactionSession,
-                  defaultCustomStrategyState(),
-                )?.strategy.apply(strategyLifecycle).commands ?? []
+                absoluteMoveStrategy(canvasState, interactionSession, {
+                  ...defaultCustomStrategyState(),
+                  action: 'reparent',
+                })?.strategy.apply(strategyLifecycle).commands ?? []
               return strategyApplicationResult(moveCommands)
             }
           },
