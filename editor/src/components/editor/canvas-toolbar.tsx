@@ -324,23 +324,20 @@ export const CanvasToolbar = React.memo(() => {
     'CanvasToolbar zoomLevel',
   )
 
-  const isFollowMode = useEditorState(
+  const editorMode = useEditorState(
     Substores.restOfEditor,
-    (store) => store.editor.mode.type === 'follow',
-    'TopMenu isFollowMode',
+    (store) => store.editor.mode.type,
+    'TopMenu editorMode',
   )
 
+  const isFollowMode = editorMode === 'follow'
   const zoom100pct = React.useCallback(() => {
     if (!isFollowMode) {
       dispatch([CanvasActions.zoom(1)])
     }
   }, [dispatch, isFollowMode])
 
-  const isLiveMode = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.mode.type === 'live',
-    'TopMenu isLiveMode',
-  )
+  const isLiveMode = editorMode === 'live'
   const toggleLiveMode = React.useCallback(() => {
     if (isLiveMode) {
       dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
@@ -349,13 +346,14 @@ export const CanvasToolbar = React.memo(() => {
     }
   }, [dispatch, isLiveMode])
 
+  const isCommentMode = editorMode === 'comment'
   const toggleCommentMode = React.useCallback(() => {
-    if (isLiveMode) {
+    if (isCommentMode) {
       dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
     } else {
       dispatch([switchEditorMode(EditorModes.commentMode(null))])
     }
-  }, [dispatch, isLiveMode])
+  }, [dispatch, isCommentMode])
 
   const resetRemixApps = useResetRemixApps()
 
