@@ -17,6 +17,7 @@ import {
 import {
   applyToAllUIJSFiles,
   applyUtopiaJSXComponentsChanges,
+  fileExists,
   fileTypeFromFileName,
   getUtopiaJSXComponentsFromSuccess,
   saveFile,
@@ -125,6 +126,7 @@ import {
   imageFile,
   isImageFile,
   isDirectory,
+  parseSuccess,
 } from '../../../core/shared/project-file-types'
 import {
   codeFile,
@@ -312,6 +314,7 @@ import type {
   SetMapCountOverride,
   ScrollToPosition,
   UpdateTopLevelElementsFromCollaborationUpdate,
+  DeleteFileFromCollaboration,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -542,6 +545,7 @@ import { convertToAbsoluteAndReparentToUnwrapStrategy } from '../one-shot-unwrap
 import { addHookForProjectChanges } from '../store/collaborative-editing'
 import { arrayDeepEquality } from '../../../utils/deep-equality'
 import type { ProjectServerState } from '../store/project-server-state'
+import { fixParseSuccessUIDs } from '../../../core/workers/parser-printer/uid-fix'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -960,18 +964,18 @@ function deleteElements(
 
       const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
 
-      function deleteElementFromParseSuccess(parseSuccess: ParseSuccess): ParseSuccess {
-        const utopiaComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
+      function deleteElementFromParseSuccess(success: ParseSuccess): ParseSuccess {
+        const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
         const withTargetRemoved: Array<UtopiaJSXComponent> = removeElementAtPath(
           targetPath,
           utopiaComponents,
         )
-        return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {
+        return modifyParseSuccessWithSimple((simpleSuccess: SimpleParseSuccess) => {
           return {
-            ...success,
+            ...simpleSuccess,
             utopiaComponents: withTargetRemoved,
           }
-        }, parseSuccess)
+        }, success)
       }
       return modifyParseSuccessAtPath(
         targetSuccess.filePath,
@@ -1674,7 +1678,7 @@ export const UPDATE_FNS = {
           updatedProps,
         )
       },
-      (parseSuccess) => parseSuccess,
+      (success) => success,
     )
     if (unsetPropFailedMessage != null) {
       const toastAction = showToast(notice(unsetPropFailedMessage, 'ERROR'))
@@ -1737,7 +1741,7 @@ export const UPDATE_FNS = {
           updatedProps,
         )
       },
-      (parseSuccess) => parseSuccess,
+      (success) => success,
     )
 
     updatedEditor = addToTrueUpElements(updatedEditor, trueUpGroupElementChanged(action.target))
@@ -3781,7 +3785,7 @@ export const UPDATE_FNS = {
     return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(openCodeEditorFile(newFileKey, false), updatedEditor)
   },
   DELETE_FILE: (
-    action: DeleteFile | DeleteFileFromVSCode,
+    action: DeleteFile | DeleteFileFromVSCode | DeleteFileFromCollaboration,
     editor: EditorModel,
     derived: DerivedState,
     userState: UserState,
@@ -5334,7 +5338,7 @@ export const UPDATE_FNS = {
           element.comments,
         )
       },
-      (parseSuccess) => parseSuccess,
+      (success) => success,
     )
 
     return updatedEditor
@@ -5349,26 +5353,45 @@ export const UPDATE_FNS = {
       // ...Disallow these updates as they're coming from non-owners.
       return editor
     } else {
-      const updatedEditor = modifyParseSuccessAtPath(
-        action.fullPath,
-        editor,
-        (parsed) => {
-          const newTopLevelElementsDeepEquals = arrayDeepEquality(TopLevelElementKeepDeepEquality)(
-            parsed.topLevelElements,
-            action.topLevelElements,
-          )
+      let updatedEditor: EditorModel = editor
+      if (fileExists(editor.projectContents, action.fullPath)) {
+        updatedEditor = modifyParseSuccessAtPath(
+          action.fullPath,
+          editor,
+          (parsed) => {
+            const newTopLevelElementsDeepEquals = arrayDeepEquality(
+              TopLevelElementKeepDeepEquality,
+            )(parsed.topLevelElements, action.topLevelElements)
 
-          if (newTopLevelElementsDeepEquals.areEqual) {
-            return parsed
-          } else {
-            return {
-              ...parsed,
-              topLevelElements: newTopLevelElementsDeepEquals.value,
+            if (newTopLevelElementsDeepEquals.areEqual) {
+              return parsed
+            } else {
+              return {
+                ...parsed,
+                topLevelElements: newTopLevelElementsDeepEquals.value,
+              }
             }
-          }
-        },
-        false,
-      )
+          },
+          false,
+        )
+      } else {
+        const newParseSuccess = parseSuccess({}, action.topLevelElements, {}, null, null, [], {})
+        const newFile = textFile(
+          textFileContents('', newParseSuccess, RevisionsState.ParsedAhead),
+          null,
+          null,
+          1,
+        )
+        const updatedProjectContents = addFileToProjectContents(
+          editor.projectContents,
+          action.fullPath,
+          newFile,
+        )
+        updatedEditor = {
+          ...editor,
+          projectContents: updatedProjectContents,
+        }
+      }
 
       return {
         ...updatedEditor,

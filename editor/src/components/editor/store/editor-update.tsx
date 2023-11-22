@@ -240,6 +240,7 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.ADD_FOLDER(action, state)
     case 'DELETE_FILE':
     case 'DELETE_FILE_FROM_VSCODE':
+    case 'DELETE_FILE_FROM_COLLABORATION':
       return UPDATE_FNS.DELETE_FILE(action, state, derivedState, userState)
     case 'ADD_TEXT_FILE':
       return UPDATE_FNS.ADD_TEXT_FILE(action, state)
