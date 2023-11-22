@@ -384,8 +384,9 @@ export const CanvasToolbar = React.memo(() => {
       <FlexRow
         data-testid='canvas-toolbar-submenu'
         style={{
-          marginLeft: 8,
-          height: 32,
+          height: 42,
+          paddingTop: 10,
+          marginTop: -10,
           overflow: 'hidden',
           backgroundColor: colorTheme.bg1subdued.value,
           borderRadius: '0px 10px 10px 10px',
