@@ -54,6 +54,7 @@ export const SinglePlayerUserBar = React.memo(() => {
     (store) => getUserPicture(store.userState.loginState),
     'SinglePlayerUserBar userPicture',
   )
+  // make this real
   const isOwner = true
   return (
     <a href='/projects' target='_blank'>
@@ -71,6 +72,7 @@ const MultiplayerUserBar = React.memo(() => {
   const { user: myUser } = useMyUserAndPresence()
   const myName = React.useMemo(() => normalizeMultiplayerName(myUser.name), [myUser])
 
+  // make this real
   const isOwner = true
 
   const others = useOthers((list) =>
