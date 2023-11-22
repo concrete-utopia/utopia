@@ -45,10 +45,11 @@ import { assertNever } from '../../core/shared/utils'
 import { notice } from '../common/notice'
 import type { AllElementProps } from '../editor/store/editor-state'
 import { toString } from '../../core/shared/element-path'
-import type { SteganoTextData } from '../../core/shared/stegano-text'
+import type { SteganoData } from '../../core/shared/stegano-text'
 import { cleanSteganoTextData, decodeSteganoData } from '../../core/shared/stegano-text'
 import { useUpdateStringRun } from '../../core/model/project-file-helper-hooks'
 import { isFeatureEnabled } from '../../utils/feature-switches'
+import { vercelStegaDecode } from '@vercel/stega'
 
 export const TextEditorSpanId = 'text-editor'
 
@@ -293,7 +294,7 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
 
 type TextEditedText =
   | { type: 'untracked'; contents: string }
-  | { type: 'tracked'; contents: string; data: SteganoTextData; quote: string }
+  | { type: 'tracked'; contents: string; data: SteganoData }
 
 function getTextToUse({
   text,
@@ -302,6 +303,14 @@ function getTextToUse({
   text: string
   originalText: string | null
 }): TextEditedText {
+  // console.log(
+  //   'text',
+  //   vercelStegaDecode(text),
+  //   'originalText',
+  //   originalText,
+  //   'vercelStegaDecode(originalText ?? "")',
+  //   vercelStegaDecode(originalText ?? ''),
+  // )
   if (isFeatureEnabled('Steganography') && originalText != null) {
     const data = decodeSteganoData(originalText)
     if (data != null) {
@@ -310,7 +319,6 @@ function getTextToUse({
         type: 'tracked',
         contents: cleaned,
         data: data,
-        quote: data.originalString[0],
       }
     }
   }
@@ -400,7 +408,14 @@ const TextEditor = React.memo((props: TextEditorProps) => {
       if (elementState != null && savedContentRef.current !== content) {
         savedContentRef.current = content
         if (textToUse.type === 'tracked') {
-          requestAnimationFrame(() => dispatch(updateStringRunCommands(textToUse.data, content)))
+          const data = textToUse.data
+          if (data.type === 'defined-in-source') {
+            requestAnimationFrame(() => dispatch(updateStringRunCommands(data, content)))
+          } else if (data.type === 'from-cms') {
+            requestAnimationFrame(() => updateJurassicCMS({ key: data.key, updated: content }))
+          } else {
+            assertNever(data)
+          }
         } else {
           requestAnimationFrame(() => dispatch([getSaveAction(elementPath, content, textProp)]))
         }
@@ -503,12 +518,22 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     if (content != null && elementState != null && savedContentRef.current !== content) {
       savedContentRef.current = content
       if (textToUse.type === 'tracked') {
-        requestAnimationFrame(() => {
-          dispatch([
-            ...updateStringRunCommands(textToUse.data, content),
-            updateEditorMode(EditorModes.selectMode(null, false, 'none')),
-          ])
-        })
+        const data = textToUse.data
+        if (data.type === 'defined-in-source') {
+          requestAnimationFrame(() => {
+            dispatch([
+              ...updateStringRunCommands(data, content),
+              updateEditorMode(EditorModes.selectMode(null, false, 'none')),
+            ])
+          })
+        } else if (data.type === 'from-cms') {
+          requestAnimationFrame(() => {
+            updateJurassicCMS({ key: data.key, updated: content })
+            dispatch([updateEditorMode(EditorModes.selectMode(null, false, 'none'))])
+          })
+        } else {
+          assertNever(data)
+        }
       } else {
         dispatch([
           getSaveAction(elementPath, content, textProp),
@@ -699,4 +724,12 @@ function canDeleteElementWhenEmpty(
   }
 
   return true
+}
+
+function updateJurassicCMS({ key, updated }: { key: string; updated: string }) {
+  void fetch(`http://0.0.0.0:6789/api/${key}`, {
+    method: 'POST',
+    body: JSON.stringify({ value: updated }),
+    mode: 'no-cors',
+  })
 }

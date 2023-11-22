@@ -2,22 +2,44 @@ import { vercelStegaCombine, vercelStegaDecode, vercelStegaSplit } from '@vercel
 import type { SteganographyMode } from '../workers/parser-printer/parser-printer'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 
+export type SteganoData = SteganoTextData | SteganoDataFromCMS
+
 export interface SteganoTextData {
+  type: 'defined-in-source'
   filePath: string
   startPosition: number
   endPosition: number
   originalString: string
 }
 
-export function encodeSteganoData(text: string, data: SteganoTextData): string {
+// TODO: this is very much tailored to the POC
+export interface SteganoDataFromCMS {
+  type: 'from-cms'
+  key: string
+}
+
+export function encodeSteganoTextData(text: string, data: SteganoTextData): string {
   const { cleaned } = vercelStegaSplit(text)
   return vercelStegaCombine(cleaned, data)
 }
-function isStegoObject(data: unknown): data is Partial<SteganoTextData> {
+
+function isStegoObject(data: unknown): data is Record<string, unknown> {
   return typeof data === 'object' && data != null
 }
 
-export function decodeSteganoData(encodedString: string): SteganoTextData | null {
+function decodeSteganoDataFromCMS(encodedString: string): SteganoDataFromCMS | null {
+  const data = vercelStegaDecode(encodedString)
+  if (!isStegoObject(data) || data.key == null) {
+    return null
+  }
+
+  return {
+    type: 'from-cms',
+    key: data.key as string,
+  }
+}
+
+function decodeSteganoTextData(encodedString: string): SteganoTextData | null {
   const data = vercelStegaDecode(encodedString)
   if (
     !isStegoObject(data) ||
@@ -30,13 +52,18 @@ export function decodeSteganoData(encodedString: string): SteganoTextData | null
   }
 
   const steganoData: SteganoTextData = {
-    filePath: data['filePath'],
-    startPosition: data['startPosition'],
-    endPosition: data['endPosition'],
-    originalString: data['originalString'],
+    type: 'defined-in-source',
+    filePath: data['filePath'] as string,
+    startPosition: data['startPosition'] as number,
+    endPosition: data['endPosition'] as number,
+    originalString: data['originalString'] as string,
   }
 
   return steganoData
+}
+
+export function decodeSteganoData(encodedString: string): SteganoData | null {
+  return decodeSteganoTextData(encodedString) ?? decodeSteganoDataFromCMS(encodedString)
 }
 
 export function cleanSteganoTextData(text: string): { cleaned: string } {
