@@ -60,6 +60,7 @@ import { isLiveblocksEnabled } from './liveblocks-utils'
 import type { Storage, Presence, RoomEvent, UserMeta } from '../../../liveblocks.config'
 import LiveblocksProvider from '@liveblocks/yjs'
 import { projectIdToRoomId } from '../../core/shared/multiplayer'
+import { useDisplayOwnershipWarning } from './project-owner-hooks'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -148,6 +149,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
       }
     }, 0)
   }, [mode.type, dispatch])
+  useDisplayOwnershipWarning()
 
   const onWindowKeyDown = React.useCallback(
     (event: KeyboardEvent) => {

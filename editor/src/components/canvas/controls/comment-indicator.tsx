@@ -67,11 +67,15 @@ const CommentIndicatorInner = React.memo(() => {
         return (
           <div
             key={thread.id}
-            style={{
+            css={{
               position: 'absolute',
               top: point.y,
               left: point.x,
               width: 20,
+              '&:hover': {
+                transform: 'scale(1.15)',
+                transitionDuration: '0.1s',
+              },
             }}
             onClick={() => {
               dispatch([switchEditorMode(EditorModes.commentMode(point))])
