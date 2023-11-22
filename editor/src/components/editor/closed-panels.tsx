@@ -147,7 +147,6 @@ export const ClosedPanels = React.memo((props: { side: 'left' | 'right' }) => {
           </Tooltip>
         ) : null}
       </FlexColumn>
-      {/* {props.side === 'left' ? <TestMenu /> : <ToastRenderer />} */}
       {props.side === 'left' ? null : <ToastRenderer />}
     </FlexColumn>
   )

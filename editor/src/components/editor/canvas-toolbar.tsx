@@ -532,7 +532,7 @@ export const CanvasToolbar = React.memo(() => {
               <FlexRow
                 style={{
                   gap: 25,
-                  padding: '0 18px',
+                  padding: '0 12px',
                   alignSelf: 'stretch',
                 }}
               >
