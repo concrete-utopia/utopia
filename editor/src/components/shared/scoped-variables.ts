@@ -2,6 +2,7 @@ import type {
   ElementPath,
   AllVariablesInScope,
   Variable,
+  VariableUtopiaType,
 } from '../../core/shared/project-file-types'
 import { withUnderlyingTarget } from '../editor/store/editor-state'
 import type { ProjectContentTreeRoot } from '../assets'
@@ -17,6 +18,10 @@ import {
   jsxConditionalExpressionWithoutUID,
   emptyComments,
   jsExpressionOtherJavaScriptSimple,
+  jsxTextBlock,
+  jsxFragmentWithoutUID,
+  type JSExpressionOtherJavaScript,
+  simpleAttribute,
 } from '../../core/shared/element-template'
 import { type VariablesInScope } from '../canvas/ui-jsx-canvas'
 import { toComponentId } from '../../core/shared/element-path'
@@ -26,6 +31,7 @@ import {
   insertableComponentGroupProjectComponent,
 } from './project-components'
 import { emptyImports } from '../../core/workers/common/project-file-utils'
+import { isImage } from '../../core/shared/utils'
 
 export function getVariablesInScope(
   elementPath: ElementPath | null,
@@ -76,17 +82,19 @@ function getVariablesFromComponent(
   topLevelElements: TopLevelElement[],
   elementPath: ElementPath,
   variablesInScopeFromEditorState: VariablesInScope,
-) {
+): AllVariablesInScope {
   const elementPathString = toComponentId(elementPath)
   const jsxComponent = topLevelElements.find((el) => isUtopiaJSXComponent(el)) as UtopiaJSXComponent
   const jsxComponentVariables = variablesInScopeFromEditorState[elementPathString] ?? {}
   return {
     filePath: jsxComponent?.name ?? 'Component',
-    variables: Object.entries(jsxComponentVariables).map(([name, value]) => ({
-      name,
-      value,
-      type: typeof value,
-    })),
+    variables: Object.entries(jsxComponentVariables).map(([name, value]) => {
+      return {
+        name,
+        value,
+        type: getTypeByValue(value),
+      }
+    }),
   }
 }
 
@@ -113,15 +121,15 @@ function getMatchingElementForVariable(variable: Variable) {
   switch (variable.type) {
     case 'string':
       return jsxElementWithoutUID('span', jsxAttributesFromMap({}), [
-        jsExpressionOtherJavaScriptSimple(variable.name, [variable.name]),
+        jsIdentifierName(variable.name),
       ])
     case 'number':
       return jsxElementWithoutUID('span', jsxAttributesFromMap({}), [
-        jsExpressionOtherJavaScriptSimple(variable.name, [variable.name]),
+        jsIdentifierName(variable.name),
       ])
     case 'boolean':
       return jsxConditionalExpressionWithoutUID(
-        jsExpressionOtherJavaScriptSimple(variable.name, [variable.name]),
+        jsIdentifierName(variable.name),
         variable.name,
         jsExpressionValue(null, emptyComments),
         jsExpressionValue(null, emptyComments),
@@ -131,9 +139,36 @@ function getMatchingElementForVariable(variable: Variable) {
       return jsxElementWithoutUID('span', jsxAttributesFromMap({}), [
         jsExpressionOtherJavaScriptSimple(`JSON.stringify(${variable.name})`, [variable.name]),
       ])
+    case 'array':
+      return jsxFragmentWithoutUID(
+        [jsxTextBlock(`{${variable.name}.map((item) => <span>{JSON.stringify(item)}</span>)}`)],
+        true,
+      )
+    case 'image':
+      return jsxElementWithoutUID(
+        'img',
+        jsxAttributesFromMap({
+          src: jsIdentifierName(variable.name),
+        }),
+        [],
+      )
     default:
       return jsxElementWithoutUID('span', jsxAttributesFromMap({}), [
         jsExpressionOtherJavaScriptSimple(`JSON.stringify(${variable.name})`, [variable.name]),
       ])
   }
+}
+
+function getTypeByValue(value: any): VariableUtopiaType {
+  const type = typeof value
+  if (type === 'object' && Array.isArray(value)) {
+    return 'array'
+  } else if (typeof value === 'string' && isImage(value)) {
+    return 'image'
+  }
+  return type
+}
+
+function jsIdentifierName(name: string): JSExpressionOtherJavaScript {
+  return jsExpressionOtherJavaScriptSimple(name, [name])
 }

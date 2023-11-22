@@ -776,8 +776,20 @@ export type AllVariablesInScope = {
   variables: Variable[]
 }
 
+export type VariableUtopiaType =
+  | 'string'
+  | 'number'
+  | 'bigint'
+  | 'boolean'
+  | 'symbol'
+  | 'undefined'
+  | 'object'
+  | 'function'
+  | 'array'
+  | 'image'
+
 export interface Variable {
   name: string
-  type: 'string' | 'number' | 'bigint' | 'boolean' | 'symbol' | 'undefined' | 'object' | 'function'
+  type: VariableUtopiaType
   value?: unknown
 }
