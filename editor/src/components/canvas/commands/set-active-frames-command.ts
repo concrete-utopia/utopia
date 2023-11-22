@@ -11,6 +11,8 @@ export type ActiveFrameAction =
   | 'set-padding'
   | 'set-radius'
   | 'reorder'
+  | 'duplicate'
+  | 'reparent'
 
 export function activeFrameActionToString(action: ActiveFrameAction): string {
   switch (action) {
@@ -26,6 +28,10 @@ export function activeFrameActionToString(action: ActiveFrameAction): string {
       return 'Padding'
     case 'set-radius':
       return 'Radius'
+    case 'duplicate':
+      return 'Duplicate'
+    case 'reparent':
+      return 'Reparent'
     default:
       assertNever(action)
   }
