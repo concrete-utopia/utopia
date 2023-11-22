@@ -1,6 +1,8 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
+import type { CanvasPoint, CanvasVector } from '../../../../core/shared/math-utils'
 import {
+  canvasPoint,
   canvasRectangle,
   zeroCanvasRect,
   zeroRectIfNullOrInfinity,
@@ -34,7 +36,7 @@ import {
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
 } from '../canvas-strategy-types'
-import type { InteractionSession } from '../interaction-state'
+import type { DragInteractionData, InteractionSession } from '../interaction-state'
 import { shouldKeepMovingDraggedGroupChildren } from './absolute-utils'
 import { ifAllowedToReparent } from './reparent-helpers/reparent-helpers'
 import { getStaticReparentPropertyChanges } from './reparent-helpers/reparent-property-changes'
@@ -261,22 +263,32 @@ function applyStaticReparent(
                         canvasState.startingMetadata,
                       ),
                     )
+
+                    function getTargetCoord(
+                      interactionData: DragInteractionData,
+                      axis: 'x' | 'y',
+                    ): number {
+                      return (
+                        interactionData.originalDragStart[axis] +
+                        (interactionData.drag?.[axis] ?? 0) -
+                        (interactionData.originalDragStart[axis] - source[axis])
+                      )
+                    }
+
+                    const targetPosition =
+                      interactionSession.interactionData.type === 'DRAG'
+                        ? canvasPoint({
+                            x: getTargetCoord(interactionSession.interactionData, 'x'),
+                            y: getTargetCoord(interactionSession.interactionData, 'y'),
+                          })
+                        : canvasPoint(source)
+
                     return {
                       action: 'reparent',
                       target: activeFrameTargetRect(
                         canvasRectangle({
-                          x:
-                            interactionSession.interactionData.type === 'DRAG'
-                              ? interactionSession.interactionData.originalDragStart.x +
-                                (interactionSession.interactionData.drag?.x ?? 0) -
-                                (interactionSession.interactionData.originalDragStart.x - source.x)
-                              : source.x,
-                          y:
-                            interactionSession.interactionData.type === 'DRAG'
-                              ? interactionSession.interactionData.originalDragStart.y +
-                                (interactionSession.interactionData.drag?.y ?? 0) -
-                                (interactionSession.interactionData.originalDragStart.y - source.y)
-                              : source.y,
+                          x: targetPosition.x,
+                          y: targetPosition.y,
                           width: source.width,
                           height: source.height,
                         }),
