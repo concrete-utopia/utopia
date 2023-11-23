@@ -13,7 +13,6 @@ import {
   jsxConditionalExpressionWithoutUID,
   emptyComments,
   jsExpressionOtherJavaScriptSimple,
-  jsxTextBlock,
   jsxFragmentWithoutUID,
   type JSExpressionOtherJavaScript,
 } from '../../core/shared/element-template'
@@ -26,6 +25,7 @@ import {
 } from './project-components'
 import { emptyImports } from '../../core/workers/common/project-file-utils'
 import { isImage } from '../../core/shared/utils'
+import { type ComponentElementToInsert } from '../custom-code/code-file'
 
 export function getVariablesInScope(
   elementPath: ElementPath | null,
@@ -111,45 +111,52 @@ export function convertVariablesToElements(
   })
 }
 
-function getMatchingElementForVariable(variable: Variable) {
+function getMatchingElementForVariable(variable: Variable): ComponentElementToInsert {
+  return getMatchingElementForVariableInner(variable).component
+}
+
+function getMatchingElementForVariableInner(variable: Variable): InsertableComponentAndJSX {
   switch (variable.type) {
     case 'string':
-      return jsxElementWithoutUID('span', jsxAttributesFromMap({}), [
-        jsIdentifierName(variable.name),
-      ])
+      return simpleInsertableComponentAndJsx('span', variable.name)
     case 'number':
-      return jsxElementWithoutUID('span', jsxAttributesFromMap({}), [
-        jsIdentifierName(variable.name),
-      ])
+      return simpleInsertableComponentAndJsx('span', variable.name)
     case 'boolean':
-      return jsxConditionalExpressionWithoutUID(
-        jsIdentifierName(variable.name),
-        variable.name,
-        jsExpressionValue(null, emptyComments),
-        jsExpressionValue(null, emptyComments),
-        emptyComments,
+      return insertableComponentAndJSX(
+        jsxConditionalExpressionWithoutUID(
+          jsIdentifierName(variable.name),
+          variable.name,
+          jsExpressionValue(null, emptyComments),
+          jsExpressionValue(null, emptyComments),
+          emptyComments,
+        ),
+        `${variable.name} ? null : null`,
       )
     case 'object':
-      return jsxElementWithoutUID('span', jsxAttributesFromMap({}), [
-        jsExpressionOtherJavaScriptSimple(`JSON.stringify(${variable.name})`, [variable.name]),
-      ])
-    case 'array':
-      return jsxFragmentWithoutUID(
-        [jsxTextBlock(`{${variable.name}.map((item) => <span>{JSON.stringify(item)}</span>)}`)],
-        true,
+      return simpleInsertableComponentAndJsx(
+        'span',
+        `JSON.stringify(${variable.name})`,
+        variable.name,
       )
+    case 'array':
+      return arrayInsertableComponentAndJsx(variable)
     case 'image':
-      return jsxElementWithoutUID(
-        'img',
-        jsxAttributesFromMap({
-          src: jsIdentifierName(variable.name),
-        }),
-        [],
+      return insertableComponentAndJSX(
+        jsxElementWithoutUID(
+          'img',
+          jsxAttributesFromMap({
+            src: jsIdentifierName(variable.name),
+          }),
+          [],
+        ),
+        `<img src={${variable.name}} style={{width: 100, height: 100, contain: 'layout'}}/>`,
       )
     default:
-      return jsxElementWithoutUID('span', jsxAttributesFromMap({}), [
-        jsExpressionOtherJavaScriptSimple(`JSON.stringify(${variable.name})`, [variable.name]),
-      ])
+      return simpleInsertableComponentAndJsx(
+        'span',
+        `JSON.stringify(${variable.name})`,
+        variable.name,
+      )
   }
 }
 
@@ -163,8 +170,56 @@ function getTypeByValue(value: any): InsertableType {
   return type
 }
 
+function arrayInsertableComponentAndJsx(variable: Variable): InsertableComponentAndJSX {
+  const arrayElementsType = getArrayType(variable)
+  const innerElementString = getMatchingElementForVariableInner({
+    name: 'item',
+    type: arrayElementsType,
+  }).jsx
+  const arrayElementString = `${variable.name}.map((item) => ${innerElementString})`
+  const arrayElement = jsxFragmentWithoutUID(
+    [jsExpressionOtherJavaScriptSimple(arrayElementString, [variable.name])],
+    true,
+  )
+  return insertableComponentAndJSX(arrayElement, arrayElementString)
+}
+
 function jsIdentifierName(name: string): JSExpressionOtherJavaScript {
   return jsExpressionOtherJavaScriptSimple(name, [name])
+}
+
+function getArrayType(arrayVariable: Variable): InsertableType {
+  const arr = arrayVariable.value as any[]
+  const types = new Set(arr.map((item) => getTypeByValue(item)))
+  return types.size === 1 ? [...types][0] : 'object'
+}
+
+function insertableComponentAndJSX(
+  component: ComponentElementToInsert,
+  jsx: string,
+): InsertableComponentAndJSX {
+  return {
+    component,
+    jsx,
+  }
+}
+
+function simpleInsertableComponentAndJsx(
+  tag: string,
+  expression: string,
+  variableName: string = expression,
+): InsertableComponentAndJSX {
+  return insertableComponentAndJSX(
+    jsxElementWithoutUID(tag, jsxAttributesFromMap({}), [
+      jsExpressionOtherJavaScriptSimple(expression, [variableName]),
+    ]),
+    `<${tag}>{${expression}}</${tag}>`,
+  )
+}
+
+interface InsertableComponentAndJSX {
+  component: ComponentElementToInsert
+  jsx: string
 }
 
 type AllVariablesInScope = {
