@@ -312,15 +312,8 @@ function getTextToUse({
   text: string
   originalText: string | null
 }): TextEditedText {
-  // console.log(
-  //   'text',
-  //   vercelStegaDecode(text),
-  //   'originalText',
-  //   originalText,
-  //   'vercelStegaDecode(originalText ?? "")',
-  //   vercelStegaDecode(originalText ?? ''),
-  // )
-  if (isFeatureEnabled('Steganography') && originalText != null) {
+  const isFancyTextEnabled = isFeatureEnabled('Steganography') || isFeatureEnabled('Jurassic CMS')
+  if (isFancyTextEnabled && originalText != null) {
     const data = decodeSteganoData(originalText)
     if (data != null) {
       const { cleaned } = cleanSteganoTextData(originalText)

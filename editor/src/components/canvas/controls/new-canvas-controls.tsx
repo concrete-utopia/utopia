@@ -521,7 +521,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         onMouseDown={onMouseDown}
         onMouseUp={onMouseUp}
       >
-        <CMSUpdateLabelControl />
+        {when(isFeatureEnabled('Jurassic CMS'), <CMSUpdateLabelControl />)}
         {when(
           isSelectMode(editorMode),
           <SceneLabelControl

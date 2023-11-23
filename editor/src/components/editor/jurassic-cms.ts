@@ -1,6 +1,7 @@
 import { atom } from 'jotai'
 import * as EP from '../../core/shared/element-path'
 import type { ElementPath } from '../../core/shared/project-file-types'
+import { JURASSIC_CMS_URL } from '../../common/env-vars'
 
 export type CMSUpdateStatus =
   | { type: 'updating'; value: string }
@@ -48,7 +49,7 @@ export async function updateJurassicCMS({
   key: string
   updated: string
 }): Promise<void> {
-  await fetch(`http://0.0.0.0:6789/api/${key}`, {
+  await fetch(`${JURASSIC_CMS_URL}/api/${key}`, {
     method: 'POST',
     body: JSON.stringify({ value: updated }),
     mode: 'no-cors',
