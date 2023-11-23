@@ -140,26 +140,26 @@ export function isRoomId(s: string): boolean {
 
 export type RemixPresence = {
   scene: string
-  locationPath: string | null
+  locationRoute: string | null
 }
 
 export function isPlayerOnAnotherRemixRoute(
   a: RemixPresence | null,
   b: RemixPresence | null,
 ): boolean {
-  return a != null && b != null && (a.scene !== b.scene || a.locationPath !== b.locationPath)
+  return a != null && b != null && (a.scene !== b.scene || a.locationRoute !== b.locationRoute)
 }
 
-export function remixPresence(scene: string, locationPath: string | null): RemixPresence {
+export function remixPresence(scene: string, locationRoute: string | null): RemixPresence {
   return {
     scene: scene,
-    locationPath: locationPath,
+    locationRoute: locationRoute,
   }
 }
 
 export function maybeRemixPresence(
   scene: string | null,
-  locationPath: string | null,
+  locationRoute: string | null,
 ): RemixPresence | null {
-  return scene != null ? remixPresence(scene, locationPath) : null
+  return scene != null ? remixPresence(scene, locationRoute) : null
 }

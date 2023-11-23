@@ -84,7 +84,7 @@ export type ThreadMetadata = {
   type: 'canvas'
   x: number
   y: number
-  remixLocationPath?: string
+  remixLocationRoute?: string
 }
 
 export const {

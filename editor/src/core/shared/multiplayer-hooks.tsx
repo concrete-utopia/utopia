@@ -16,10 +16,10 @@ export function useRemixPresence(): RemixPresence | null {
       return null
     }
     const scene = EP.toString(activeRemixScene)
-    const locationPath = remixNavigationState[scene]?.location.pathname ?? null
+    const locationRoute = remixNavigationState[scene]?.location.pathname ?? null
     return {
       scene: scene,
-      locationPath: locationPath,
+      locationRoute: locationRoute,
     }
   }, [activeRemixScene, remixNavigationState])
 

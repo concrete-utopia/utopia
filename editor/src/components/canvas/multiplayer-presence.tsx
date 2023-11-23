@@ -307,14 +307,14 @@ const FollowingOverlay = React.memo(() => {
       if (presence.remix != null && isPlayerOnAnotherRemixRoute(remixPresence, presence.remix)) {
         const newNavigationState = { ...remixNavigationState }
         const sceneState = newNavigationState[presence.remix.scene]
-        if (sceneState != null && presence.remix.locationPath != null) {
-          sceneState.location.pathname = presence.remix.locationPath
+        if (sceneState != null && presence.remix.locationRoute != null) {
+          sceneState.location.pathname = presence.remix.locationRoute
           setActiveRemixScene(EP.fromString(presence.remix.scene))
           setRemixNavigationState(newNavigationState)
           actions.push(
             showToast(
               notice(
-                `The route has been changed to ${presence.remix.locationPath}`,
+                `The route has been changed to ${presence.remix.locationRoute}`,
                 'PRIMARY',
                 false,
                 remixRouteChangedToastId,

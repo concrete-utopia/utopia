@@ -65,12 +65,12 @@ const CommentIndicatorInner = React.memo(() => {
           }
         })()
 
-        const remixLocationPath = thread.metadata.remixLocationPath ?? null
+        const remixLocationRoute = thread.metadata.remixLocationRoute ?? null
 
         const isOnAnotherRoute =
-          me.presence.remix?.locationPath != null &&
-          remixLocationPath != null &&
-          remixLocationPath !== me.presence.remix.locationPath
+          me.presence.remix?.locationRoute != null &&
+          remixLocationRoute != null &&
+          remixLocationRoute !== me.presence.remix.locationRoute
 
         return (
           <div
