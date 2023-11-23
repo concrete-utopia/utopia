@@ -16,7 +16,6 @@ import { selectComponents, setHighlightedView } from '../../../editor/actions/ac
 import { pressKey, keyDown, keyUp } from '../../event-helpers.test-utils'
 import type { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline'
 import {
-  type EditorRenderResult,
   TestAppUID,
   TestSceneUID,
   formatTestProjectCode,
@@ -186,8 +185,8 @@ describe('Keyboard Absolute Move E2E', () => {
 
         await editor.getDispatchFollowUpActionsFinished()
 
-        const aaa = editor.getRenderedCanvas().getByTestId('aaa')
-        const bbb = editor.getRenderedCanvas().getByTestId('bbb')
+        const aaa = editor.renderedDOM.getByTestId('aaa')
+        const bbb = editor.renderedDOM.getByTestId('bbb')
 
         expect(aaa.style.top).toEqual('210px')
         expect(aaa.style.left).toEqual('38px')
@@ -431,8 +430,8 @@ describe('Keyboard switching back and forth between absolute move and absolute r
 
         await editor.getDispatchFollowUpActionsFinished()
 
-        const aaa = editor.getRenderedCanvas().getByTestId('aaa')
-        const bbb = editor.getRenderedCanvas().getByTestId('bbb')
+        const aaa = editor.renderedDOM.getByTestId('aaa')
+        const bbb = editor.renderedDOM.getByTestId('bbb')
 
         expect(aaa.style.top).toEqual('210px')
         expect(aaa.style.left).toEqual('8px')
@@ -730,25 +729,16 @@ describe('Keyboard Strategies Undo Behavior', () => {
   })
 })
 
-function elementExists(
-  renderedCanvas: ReturnType<EditorRenderResult['getRenderedCanvas']>,
-  testId: string,
-): boolean {
-  return renderedCanvas.queryByTestId(testId) != null
+function elementExists(renderedDom: RenderResult, testId: string): boolean {
+  return renderedDom.queryByTestId(testId) != null
 }
 
-function elementLeft(
-  renderedCanvas: ReturnType<EditorRenderResult['getRenderedCanvas']>,
-  testId: string,
-): number {
-  return renderedCanvas.getByTestId(testId).getBoundingClientRect().x
+function elementLeft(renderedDom: RenderResult, testId: string): number {
+  return renderedDom.getByTestId(testId).getBoundingClientRect().x
 }
 
-function elementWidth(
-  renderedCanvas: ReturnType<EditorRenderResult['getRenderedCanvas']>,
-  testId: string,
-): number {
-  return renderedCanvas.getByTestId(testId).getBoundingClientRect().width
+function elementWidth(renderedDom: RenderResult, testId: string): number {
+  return renderedDom.getByTestId(testId).getBoundingClientRect().width
 }
 
 async function setupTest(initialBBBProperties: { [key: string]: any }) {
@@ -760,20 +750,20 @@ async function setupTest(initialBBBProperties: { [key: string]: any }) {
     [selectComponents([EP.fromString('sb/scene/app-instance:aaa/bbb')], false)],
     true,
   )
-  const bbbElementLeftAtStart = elementLeft(renderResult.getRenderedCanvas(), 'element-bbb')
-  const bbbElementWidthAtStart = elementWidth(renderResult.getRenderedCanvas(), 'element-bbb')
+  const bbbElementLeftAtStart = elementLeft(renderResult.renderedDOM, 'element-bbb')
+  const bbbElementWidthAtStart = elementWidth(renderResult.renderedDOM, 'element-bbb')
   function expectElementLeftOnScreen(offset: number) {
-    expect(elementLeft(renderResult.getRenderedCanvas(), 'element-bbb')).toEqual(
+    expect(elementLeft(renderResult.renderedDOM, 'element-bbb')).toEqual(
       bbbElementLeftAtStart + offset,
     )
   }
 
   function expectElementDoesntExist() {
-    expect(elementExists(renderResult.getRenderedCanvas(), 'element-bbb')).toBeFalsy()
+    expect(elementExists(renderResult.renderedDOM, 'element-bbb')).toBeFalsy()
   }
 
   function expectElementWidthOnScreen(offset: number) {
-    expect(elementWidth(renderResult.getRenderedCanvas(), 'element-bbb')).toEqual(
+    expect(elementWidth(renderResult.renderedDOM, 'element-bbb')).toEqual(
       bbbElementWidthAtStart + offset,
     )
   }

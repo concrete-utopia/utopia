@@ -1266,64 +1266,46 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       `,
     )
     expect(printedDom).toMatchInlineSnapshot(`
-      "<div
-        style=\\"all: initial\\"
-        id=\\"canvas-container-shadow-root\\"
-        data-testid=\\"canvas-container-shadow-root\\"
-      >
-        <template shadowroot=\\"open\\"
-          ><div>
-            <style>
-              div,
-              span,
-              img,
-              ul,
-              li,
-              label {
-                box-sizing: border-box !important;
-              }
-            </style>
-            <div
-              id=\\"canvas-container\\"
-              data-testid=\\"canvas-container\\"
-              style=\\"position: absolute\\"
-              data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
-              data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
-            >
-              <div
-                data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-                style=\\"
-                  overflow: hidden;
-                  position: absolute;
-                  background-color: var(--utopitheme-emphasizedBackground);
-                  box-shadow: 0px 0px 1px 0px
-                    var(--utopitheme-neutralInvertedBackground30);
-                  background-image: conic-gradient(
-                    var(--utopitheme-checkerboardLight) 0.25turn,
-                    var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
-                    var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
-                    var(--utopitheme-checkerboardDark) 0.75turn
-                  );
-                  background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
-                  background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
-                  left: 0;
-                  top: 0;
-                  width: 400px;
-                  height: 400px;
-                \\"
-                data-uid=\\"scene-aaa\\"
-              >
-                <div
-                  data-uid=\\"ccc-unparsed-no-template-path\\"
-                  data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
-                >
-                  hello
-                </div>
-              </div>
-            </div>
-          </div></template
+      "<div style=\\"all: initial\\">
+        <div
+          id=\\"canvas-container\\"
+          data-testid=\\"canvas-container\\"
+          style=\\"position: absolute\\"
+          data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
+          data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
         >
+          <div
+            data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa\\"
+            style=\\"
+              overflow: hidden;
+              position: absolute;
+              background-color: var(--utopitheme-emphasizedBackground);
+              box-shadow: 0px 0px 1px 0px
+                var(--utopitheme-neutralInvertedBackground30);
+              background-image: conic-gradient(
+                var(--utopitheme-checkerboardLight) 0.25turn,
+                var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+                var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+                var(--utopitheme-checkerboardDark) 0.75turn
+              );
+              background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
+              background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
+              left: 0;
+              top: 0;
+              width: 400px;
+              height: 400px;
+            \\"
+            data-uid=\\"scene-aaa\\"
+          >
+            <div
+              data-uid=\\"ccc-unparsed-no-template-path\\"
+              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
+            >
+              hello
+            </div>
+          </div>
+        </div>
       </div>
       "
     `)
@@ -1393,65 +1375,47 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       `,
     )
     expect(printedDom).toMatchInlineSnapshot(`
-      "<div
-        style=\\"all: initial\\"
-        id=\\"canvas-container-shadow-root\\"
-        data-testid=\\"canvas-container-shadow-root\\"
-      >
-        <template shadowroot=\\"open\\"
-          ><div>
-            <style>
-              div,
-              span,
-              img,
-              ul,
-              li,
-              label {
-                box-sizing: border-box !important;
-              }
-            </style>
-            <div
-              id=\\"canvas-container\\"
-              data-testid=\\"canvas-container\\"
-              style=\\"position: absolute\\"
-              data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
-              data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
-            >
-              <div
-                data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-                style=\\"
-                  overflow: hidden;
-                  position: absolute;
-                  background-color: var(--utopitheme-emphasizedBackground);
-                  box-shadow: 0px 0px 1px 0px
-                    var(--utopitheme-neutralInvertedBackground30);
-                  background-image: conic-gradient(
-                    var(--utopitheme-checkerboardLight) 0.25turn,
-                    var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
-                    var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
-                    var(--utopitheme-checkerboardDark) 0.75turn
-                  );
-                  background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
-                  background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
-                  left: 0;
-                  top: 0;
-                  width: 400px;
-                  height: 400px;
-                \\"
-                data-uid=\\"scene-aaa\\"
-              >
-                <div
-                  id=\\"nasty-div\\"
-                  data-uid=\\"aaa\\"
-                  data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
-                >
-                  huha huha
-                </div>
-              </div>
-            </div>
-          </div></template
+      "<div style=\\"all: initial\\">
+        <div
+          id=\\"canvas-container\\"
+          data-testid=\\"canvas-container\\"
+          style=\\"position: absolute\\"
+          data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
+          data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
         >
+          <div
+            data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa\\"
+            style=\\"
+              overflow: hidden;
+              position: absolute;
+              background-color: var(--utopitheme-emphasizedBackground);
+              box-shadow: 0px 0px 1px 0px
+                var(--utopitheme-neutralInvertedBackground30);
+              background-image: conic-gradient(
+                var(--utopitheme-checkerboardLight) 0.25turn,
+                var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+                var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+                var(--utopitheme-checkerboardDark) 0.75turn
+              );
+              background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
+              background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
+              left: 0;
+              top: 0;
+              width: 400px;
+              height: 400px;
+            \\"
+            data-uid=\\"scene-aaa\\"
+          >
+            <div
+              id=\\"nasty-div\\"
+              data-uid=\\"aaa\\"
+              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
+            >
+              huha huha
+            </div>
+          </div>
+        </div>
       </div>
       "
     `)
@@ -1933,69 +1897,51 @@ describe('UiJsxCanvas render multifile projects', () => {
       },
     )
     expect(printedDom).toMatchInlineSnapshot(`
-      "<div
-        style=\\"all: initial\\"
-        id=\\"canvas-container-shadow-root\\"
-        data-testid=\\"canvas-container-shadow-root\\"
-      >
-        <template shadowroot=\\"open\\"
-          ><div>
-            <style>
-              div,
-              span,
-              img,
-              ul,
-              li,
-              label {
-                box-sizing: border-box !important;
-              }
-            </style>
+      "<div style=\\"all: initial\\">
+        <div
+          id=\\"canvas-container\\"
+          data-testid=\\"canvas-container\\"
+          style=\\"position: absolute\\"
+          data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/inner-div\\"
+          data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
+        >
+          <div
+            data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa\\"
+            style=\\"
+              overflow: hidden;
+              position: absolute;
+              background-color: var(--utopitheme-emphasizedBackground);
+              box-shadow: 0px 0px 1px 0px
+                var(--utopitheme-neutralInvertedBackground30);
+              background-image: conic-gradient(
+                var(--utopitheme-checkerboardLight) 0.25turn,
+                var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+                var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+                var(--utopitheme-checkerboardDark) 0.75turn
+              );
+              background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
+              background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
+              height: 200px;
+              left: 59px;
+              width: 200px;
+              top: 79px;
+            \\"
+            data-uid=\\"scene-aaa\\"
+          >
             <div
-              id=\\"canvas-container\\"
-              data-testid=\\"canvas-container\\"
-              style=\\"position: absolute\\"
-              data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/inner-div\\"
-              data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
+              data-uid=\\"app-outer-div\\"
+              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div\\"
             >
               <div
-                data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-                style=\\"
-                  overflow: hidden;
-                  position: absolute;
-                  background-color: var(--utopitheme-emphasizedBackground);
-                  box-shadow: 0px 0px 1px 0px
-                    var(--utopitheme-neutralInvertedBackground30);
-                  background-image: conic-gradient(
-                    var(--utopitheme-checkerboardLight) 0.25turn,
-                    var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
-                    var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
-                    var(--utopitheme-checkerboardDark) 0.75turn
-                  );
-                  background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
-                  background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
-                  height: 200px;
-                  left: 59px;
-                  width: 200px;
-                  top: 79px;
-                \\"
-                data-uid=\\"scene-aaa\\"
+                data-uid=\\"inner-div\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/inner-div\\"
               >
-                <div
-                  data-uid=\\"app-outer-div\\"
-                  data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div\\"
-                >
-                  <div
-                    data-uid=\\"inner-div\\"
-                    data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/inner-div\\"
-                  >
-                    hello
-                  </div>
-                </div>
+                hello
               </div>
             </div>
-          </div></template
-        >
+          </div>
+        </div>
       </div>
       "
     `)
@@ -2046,79 +1992,61 @@ describe('UiJsxCanvas render multifile projects', () => {
       },
     )
     expect(printedDom).toMatchInlineSnapshot(`
-      "<div
-        style=\\"all: initial\\"
-        id=\\"canvas-container-shadow-root\\"
-        data-testid=\\"canvas-container-shadow-root\\"
-      >
-        <template shadowroot=\\"open\\"
-          ><div>
-            <style>
-              div,
-              span,
-              img,
-              ul,
-              li,
-              label {
-                box-sizing: border-box !important;
-              }
-            </style>
+      "<div style=\\"all: initial\\">
+        <div
+          id=\\"canvas-container\\"
+          data-testid=\\"canvas-container\\"
+          style=\\"position: absolute\\"
+          data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance/card-content\\"
+          data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
+        >
+          <div
+            data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa\\"
+            style=\\"
+              overflow: hidden;
+              position: absolute;
+              background-color: var(--utopitheme-emphasizedBackground);
+              box-shadow: 0px 0px 1px 0px
+                var(--utopitheme-neutralInvertedBackground30);
+              background-image: conic-gradient(
+                var(--utopitheme-checkerboardLight) 0.25turn,
+                var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+                var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+                var(--utopitheme-checkerboardDark) 0.75turn
+              );
+              background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
+              background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
+              height: 200px;
+              left: 59px;
+              width: 200px;
+              top: 79px;
+            \\"
+            data-uid=\\"scene-aaa\\"
+          >
             <div
-              id=\\"canvas-container\\"
-              data-testid=\\"canvas-container\\"
-              style=\\"position: absolute\\"
-              data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance/card-content\\"
-              data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
+              data-uid=\\"app-outer-div\\"
+              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div\\"
             >
               <div
-                data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-                style=\\"
-                  overflow: hidden;
-                  position: absolute;
-                  background-color: var(--utopitheme-emphasizedBackground);
-                  box-shadow: 0px 0px 1px 0px
-                    var(--utopitheme-neutralInvertedBackground30);
-                  background-image: conic-gradient(
-                    var(--utopitheme-checkerboardLight) 0.25turn,
-                    var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
-                    var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
-                    var(--utopitheme-checkerboardDark) 0.75turn
-                  );
-                  background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
-                  background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
-                  height: 200px;
-                  left: 59px;
-                  width: 200px;
-                  top: 79px;
-                \\"
-                data-uid=\\"scene-aaa\\"
+                data-uid=\\"card-outer-div\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance:card-outer-div\\"
               >
                 <div
-                  data-uid=\\"app-outer-div\\"
-                  data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div\\"
+                  data-uid=\\"card-header\\"
+                  data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance:card-outer-div/card-header\\"
                 >
-                  <div
-                    data-uid=\\"card-outer-div\\"
-                    data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance:card-outer-div\\"
-                  >
-                    <div
-                      data-uid=\\"card-header\\"
-                      data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance:card-outer-div/card-header\\"
-                    >
-                      Card
-                    </div>
-                    <span
-                      data-uid=\\"card-content\\"
-                      data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance/card-content\\"
-                      >hello
-                    </span>
-                  </div>
+                  Card
                 </div>
+                <span
+                  data-uid=\\"card-content\\"
+                  data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance/card-content\\"
+                  >hello
+                </span>
               </div>
             </div>
-          </div></template
-        >
+          </div>
+        </div>
       </div>
       "
     `)
@@ -2161,64 +2089,46 @@ describe('UiJsxCanvas render multifile projects', () => {
       },
     )
     expect(printedDom).toMatchInlineSnapshot(`
-      "<div
-        style=\\"all: initial\\"
-        id=\\"canvas-container-shadow-root\\"
-        data-testid=\\"canvas-container-shadow-root\\"
-      >
-        <template shadowroot=\\"open\\"
-          ><div>
-            <style>
-              div,
-              span,
-              img,
-              ul,
-              li,
-              label {
-                box-sizing: border-box !important;
-              }
-            </style>
-            <div
-              id=\\"canvas-container\\"
-              data-testid=\\"canvas-container\\"
-              style=\\"position: absolute\\"
-              data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
-              data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
-            >
-              <div
-                data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-                style=\\"
-                  overflow: hidden;
-                  position: absolute;
-                  background-color: var(--utopitheme-emphasizedBackground);
-                  box-shadow: 0px 0px 1px 0px
-                    var(--utopitheme-neutralInvertedBackground30);
-                  background-image: conic-gradient(
-                    var(--utopitheme-checkerboardLight) 0.25turn,
-                    var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
-                    var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
-                    var(--utopitheme-checkerboardDark) 0.75turn
-                  );
-                  background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
-                  background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
-                  height: 200px;
-                  left: 59px;
-                  width: 200px;
-                  top: 79px;
-                \\"
-                data-uid=\\"scene-aaa\\"
-              >
-                <div
-                  data-uid=\\"app-outer-div\\"
-                  data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity\\"
-                >
-                  <div data-uid=\\"inner-div\\">Hi there!</div>
-                </div>
-              </div>
-            </div>
-          </div></template
+      "<div style=\\"all: initial\\">
+        <div
+          id=\\"canvas-container\\"
+          data-testid=\\"canvas-container\\"
+          style=\\"position: absolute\\"
+          data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+          data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
         >
+          <div
+            data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa\\"
+            style=\\"
+              overflow: hidden;
+              position: absolute;
+              background-color: var(--utopitheme-emphasizedBackground);
+              box-shadow: 0px 0px 1px 0px
+                var(--utopitheme-neutralInvertedBackground30);
+              background-image: conic-gradient(
+                var(--utopitheme-checkerboardLight) 0.25turn,
+                var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+                var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+                var(--utopitheme-checkerboardDark) 0.75turn
+              );
+              background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
+              background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
+              height: 200px;
+              left: 59px;
+              width: 200px;
+              top: 79px;
+            \\"
+            data-uid=\\"scene-aaa\\"
+          >
+            <div
+              data-uid=\\"app-outer-div\\"
+              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity\\"
+            >
+              <div data-uid=\\"inner-div\\">Hi there!</div>
+            </div>
+          </div>
+        </div>
       </div>
       "
     `)
@@ -2261,64 +2171,46 @@ describe('UiJsxCanvas render multifile projects', () => {
       },
     )
     expect(printedDom).toMatchInlineSnapshot(`
-      "<div
-        style=\\"all: initial\\"
-        id=\\"canvas-container-shadow-root\\"
-        data-testid=\\"canvas-container-shadow-root\\"
-      >
-        <template shadowroot=\\"open\\"
-          ><div>
-            <style>
-              div,
-              span,
-              img,
-              ul,
-              li,
-              label {
-                box-sizing: border-box !important;
-              }
-            </style>
-            <div
-              id=\\"canvas-container\\"
-              data-testid=\\"canvas-container\\"
-              style=\\"position: absolute\\"
-              data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
-              data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
-            >
-              <div
-                data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-                style=\\"
-                  overflow: hidden;
-                  position: absolute;
-                  background-color: var(--utopitheme-emphasizedBackground);
-                  box-shadow: 0px 0px 1px 0px
-                    var(--utopitheme-neutralInvertedBackground30);
-                  background-image: conic-gradient(
-                    var(--utopitheme-checkerboardLight) 0.25turn,
-                    var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
-                    var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
-                    var(--utopitheme-checkerboardDark) 0.75turn
-                  );
-                  background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
-                  background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
-                  height: 200px;
-                  left: 59px;
-                  width: 200px;
-                  top: 79px;
-                \\"
-                data-uid=\\"scene-aaa\\"
-              >
-                <div
-                  data-uid=\\"app-outer-div\\"
-                  data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity\\"
-                >
-                  <div data-uid=\\"inner-div\\">Hi there!</div>
-                </div>
-              </div>
-            </div>
-          </div></template
+      "<div style=\\"all: initial\\">
+        <div
+          id=\\"canvas-container\\"
+          data-testid=\\"canvas-container\\"
+          style=\\"position: absolute\\"
+          data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+          data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
         >
+          <div
+            data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa\\"
+            style=\\"
+              overflow: hidden;
+              position: absolute;
+              background-color: var(--utopitheme-emphasizedBackground);
+              box-shadow: 0px 0px 1px 0px
+                var(--utopitheme-neutralInvertedBackground30);
+              background-image: conic-gradient(
+                var(--utopitheme-checkerboardLight) 0.25turn,
+                var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+                var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+                var(--utopitheme-checkerboardDark) 0.75turn
+              );
+              background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
+              background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
+              height: 200px;
+              left: 59px;
+              width: 200px;
+              top: 79px;
+            \\"
+            data-uid=\\"scene-aaa\\"
+          >
+            <div
+              data-uid=\\"app-outer-div\\"
+              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity\\"
+            >
+              <div data-uid=\\"inner-div\\">Hi there!</div>
+            </div>
+          </div>
+        </div>
       </div>
       "
     `)
@@ -2374,84 +2266,67 @@ describe('UiJsxCanvas render multifile projects', () => {
       `,
     )
     expect(printedDom).toMatchInlineSnapshot(`
-      "<div
-        style=\\"all: initial\\"
-        id=\\"canvas-container-shadow-root\\"
-        data-testid=\\"canvas-container-shadow-root\\"
-      >
-        <template shadowroot=\\"open\\"
-          ><div>
-            <style>
-              div,
-              span,
-              img,
-              ul,
-              li,
-              label {
-                box-sizing: border-box !important;
-              }
-            </style>
+      "<div style=\\"all: initial\\">
+        <div
+          id=\\"canvas-container\\"
+          data-testid=\\"canvas-container\\"
+          style=\\"position: absolute\\"
+          data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:outer-div utopia-storyboard-uid/scene-aaa/app-entity:outer-div/aaa utopia-storyboard-uid/scene-aaa/app-entity:outer-div/ccc\\"
+          data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
+        >
+          <div
+            data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa\\"
+            style=\\"
+              overflow: hidden;
+              position: absolute;
+              background-color: var(--utopitheme-emphasizedBackground);
+              box-shadow: 0px 0px 1px 0px
+                var(--utopitheme-neutralInvertedBackground30);
+              background-image: conic-gradient(
+                var(--utopitheme-checkerboardLight) 0.25turn,
+                var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+                var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+                var(--utopitheme-checkerboardDark) 0.75turn
+              );
+              background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
+              background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
+              left: 0;
+              top: 0;
+              width: 400px;
+              height: 400px;
+            \\"
+            data-uid=\\"scene-aaa\\"
+          >
             <div
-              id=\\"canvas-container\\"
-              data-testid=\\"canvas-container\\"
-              style=\\"position: absolute\\"
-              data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:outer-div utopia-storyboard-uid/scene-aaa/app-entity:outer-div/aaa utopia-storyboard-uid/scene-aaa/app-entity:outer-div/ccc\\"
-              data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
+              data-uid=\\"outer-div\\"
+              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div\\"
             >
               <div
-                data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa\\"
-                style=\\"
-                  overflow: hidden;
-                  position: absolute;
-                  background-color: var(--utopitheme-emphasizedBackground);
-                  box-shadow: 0px 0px 1px 0px
-                    var(--utopitheme-neutralInvertedBackground30);
-                  background-image: conic-gradient(
-                    var(--utopitheme-checkerboardLight) 0.25turn,
-                    var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
-                    var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
-                    var(--utopitheme-checkerboardDark) 0.75turn
-                  );
-                  background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
-                  background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
-                  left: 0;
-                  top: 0;
-                  width: 400px;
-                  height: 400px;
-                \\"
-                data-uid=\\"scene-aaa\\"
+                data-uid=\\"aaa\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div/aaa\\"
               >
                 <div
-                  data-uid=\\"outer-div\\"
-                  data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div\\"
-                >
-                  <div
-                    data-uid=\\"aaa\\"
-                    data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div/aaa\\"
-                  >
-                    <div
-                      data-uid=\\"bbb~~~1\\"
-                      data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div/aaa/bbb~~~1\\"
-                    ></div>
-                  </div>
-                  <div
-                    data-uid=\\"ccc\\"
-                    data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div/ccc\\"
-                  >
-                    <div
-                      data-uid=\\"ddd~~~1\\"
-                      data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div/ccc/ddd~~~1\\"
-                    ></div>
-                    <div
-                      data-uid=\\"eee~~~2\\"
-                      data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div/ccc/eee~~~2\\"
-                    ></div>
-                  </div>
-                </div>
+                  data-uid=\\"bbb~~~1\\"
+                  data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div/aaa/bbb~~~1\\"
+                ></div>
               </div>
-            </div></div
-        ></template>
+              <div
+                data-uid=\\"ccc\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div/ccc\\"
+              >
+                <div
+                  data-uid=\\"ddd~~~1\\"
+                  data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div/ccc/ddd~~~1\\"
+                ></div>
+                <div
+                  data-uid=\\"eee~~~2\\"
+                  data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div/ccc/eee~~~2\\"
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       "
     `)

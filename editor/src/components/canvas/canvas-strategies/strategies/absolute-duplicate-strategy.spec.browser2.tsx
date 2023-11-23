@@ -15,7 +15,7 @@ import type { Modifiers } from '../../../../utils/modifiers'
 import { altModifier, cmdModifier } from '../../../../utils/modifiers'
 import { mouseClickAtPoint, mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
 import {
-  expectNonCanvasElementWithTestIdNotToBeRendered,
+  expectElementWithTestIdNotToBeRendered,
   selectComponentsForTest,
 } from '../../../../utils/utils.test-utils'
 import * as EP from '../../../../core/shared/element-path'
@@ -36,7 +36,7 @@ async function dragElement(
   modifiers: Modifiers,
   midDragCallback: () => void = NO_OP,
 ): Promise<void> {
-  const targetElement = renderResult.getRenderedCanvas().getByTestId(targetTestId)
+  const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
   const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -65,22 +65,16 @@ describe('Absolute Duplicate Strategy', () => {
       'await-first-dom-report',
     )
 
-    expectNonCanvasElementWithTestIdNotToBeRendered(renderResult, ImmediateParentOutlinesTestId([]))
-    expectNonCanvasElementWithTestIdNotToBeRendered(renderResult, ImmediateParentBoundsTestId([]))
+    expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentOutlinesTestId([]))
+    expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentBoundsTestId([]))
 
     const target = EP.appendNewElementPath(TestScenePath, ['container', 'aaa', 'bbb'])
 
     FOR_TESTS_setNextGeneratedUid('hello')
     const dragDelta = windowPoint({ x: 40, y: -25 })
     await dragElement(renderResult, 'bbb', dragDelta, altModifier, () => {
-      expectNonCanvasElementWithTestIdNotToBeRendered(
-        renderResult,
-        ImmediateParentOutlinesTestId([target]),
-      )
-      expectNonCanvasElementWithTestIdNotToBeRendered(
-        renderResult,
-        ImmediateParentBoundsTestId([target]),
-      )
+      expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentOutlinesTestId([target]))
+      expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentBoundsTestId([target]))
     })
 
     await renderResult.getDispatchFollowUpActionsFinished()
@@ -117,22 +111,16 @@ describe('Absolute Duplicate Strategy', () => {
       'await-first-dom-report',
     )
 
-    expectNonCanvasElementWithTestIdNotToBeRendered(renderResult, ImmediateParentOutlinesTestId([]))
-    expectNonCanvasElementWithTestIdNotToBeRendered(renderResult, ImmediateParentBoundsTestId([]))
+    expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentOutlinesTestId([]))
+    expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentBoundsTestId([]))
 
     const target = EP.appendNewElementPath(TestScenePath, ['container', 'aaa', 'bbb'])
 
     FOR_TESTS_setNextGeneratedUid('hello')
     const dragDelta = windowPoint({ x: 40, y: -25 })
     await dragElement(renderResult, 'bbb', dragDelta, altModifier, () => {
-      expectNonCanvasElementWithTestIdNotToBeRendered(
-        renderResult,
-        ImmediateParentOutlinesTestId([target]),
-      )
-      expectNonCanvasElementWithTestIdNotToBeRendered(
-        renderResult,
-        ImmediateParentBoundsTestId([target]),
-      )
+      expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentOutlinesTestId([target]))
+      expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentBoundsTestId([target]))
     })
 
     await renderResult.getDispatchFollowUpActionsFinished()
@@ -224,7 +212,7 @@ describe('Absolute Duplicate Strategy', () => {
 
         const dragDelta = windowPoint({ x: 40, y: -25 })
 
-        const targetElement = renderResult.getRenderedCanvas().getByTestId('child')
+        const targetElement = renderResult.renderedDOM.getByTestId('child')
         const targetElementBounds = targetElement.getBoundingClientRect()
         const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -235,25 +223,19 @@ describe('Absolute Duplicate Strategy', () => {
         const endPoint = offsetPoint(startPoint, dragDelta)
         const target = EP.fromString(`sb/${FragmentLikeElementUid}`)
 
-        expectNonCanvasElementWithTestIdNotToBeRendered(
-          renderResult,
-          ImmediateParentOutlinesTestId([]),
-        )
-        expectNonCanvasElementWithTestIdNotToBeRendered(
-          renderResult,
-          ImmediateParentBoundsTestId([]),
-        )
+        expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentOutlinesTestId([]))
+        expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentBoundsTestId([]))
 
         await selectComponentsForTest(renderResult, [target])
 
         await mouseDragFromPointToPoint(canvasControlsLayer, startPoint, endPoint, {
           modifiers: altModifier,
           midDragCallback: async () => {
-            expectNonCanvasElementWithTestIdNotToBeRendered(
+            expectElementWithTestIdNotToBeRendered(
               renderResult,
               ImmediateParentOutlinesTestId([target]),
             )
-            expectNonCanvasElementWithTestIdNotToBeRendered(
+            expectElementWithTestIdNotToBeRendered(
               renderResult,
               ImmediateParentBoundsTestId([target]),
             )

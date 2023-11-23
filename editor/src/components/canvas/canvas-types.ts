@@ -28,7 +28,6 @@ import type { CanvasStrategyId } from './canvas-strategies/canvas-strategy-types
 import type { MouseButtonsPressed } from '../../utils/mouse'
 
 export const CanvasContainerID = 'canvas-container'
-export const CanvasContainerShadowRoot = 'canvas-container-shadow-root'
 
 // TODO: this should not be an enum but a const object
 export enum CSSCursor {

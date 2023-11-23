@@ -32,7 +32,7 @@ async function dragElement(
   dragDelta: WindowPoint,
   modifiers: Modifiers,
 ): Promise<void> {
-  const targetElements = await renderResult.getRenderedCanvas().findAllByTestId(targetTestId)
+  const targetElements = await renderResult.renderedDOM.findAllByTestId(targetTestId)
   const targetElement = targetElements[0]
   const targetElementBounds = targetElement.getBoundingClientRect()
   const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -184,13 +184,13 @@ describe('Absolute Reparent To Flow Strategy', () => {
     `),
       'await-first-dom-report',
     )
-    const absoluteChild = await renderResult.getRenderedCanvas().findByTestId('absolutechild')
+    const absoluteChild = await renderResult.renderedDOM.findByTestId('absolutechild')
     const absoluteChildRect = absoluteChild.getBoundingClientRect()
     const absoluteChildCenter = {
       x: absoluteChildRect.x + absoluteChildRect.width / 2,
       y: absoluteChildRect.y + absoluteChildRect.height / 2,
     }
-    const flowParent = await renderResult.getRenderedCanvas().findByTestId('flowparent')
+    const flowParent = await renderResult.renderedDOM.findByTestId('flowparent')
     const flowParentRect = flowParent.getBoundingClientRect()
     const flowParentEnd = {
       x: flowParentRect.x + flowParentRect.width / 2,
@@ -400,13 +400,13 @@ describe('Absolute Reparent To Flow Strategy', () => {
     `),
       'await-first-dom-report',
     )
-    const absoluteChild = await renderResult.getRenderedCanvas().findByTestId('absolutechild')
+    const absoluteChild = await renderResult.renderedDOM.findByTestId('absolutechild')
     const absoluteChildRect = absoluteChild.getBoundingClientRect()
     const absoluteChildCenter = {
       x: absoluteChildRect.x + absoluteChildRect.width / 2,
       y: absoluteChildRect.y + absoluteChildRect.height / 2,
     }
-    const flowParent = await renderResult.getRenderedCanvas().findByTestId('flowparent')
+    const flowParent = await renderResult.renderedDOM.findByTestId('flowparent')
     const flowParentRect = flowParent.getBoundingClientRect()
     const flowParentEnd = {
       x: flowParentRect.x + flowParentRect.width - 25,
@@ -618,13 +618,13 @@ describe('Absolute Reparent To Flow Strategy', () => {
       'await-first-dom-report',
     )
 
-    const absoluteChild = await renderResult.getRenderedCanvas().findByTestId('absolutechild')
+    const absoluteChild = await renderResult.renderedDOM.findByTestId('absolutechild')
     const absoluteChildRect = absoluteChild.getBoundingClientRect()
     const absoluteChildCenter = {
       x: absoluteChildRect.x + absoluteChildRect.width / 2,
       y: absoluteChildRect.y + absoluteChildRect.height / 2,
     }
-    const firstFlowChild = await renderResult.getRenderedCanvas().findByTestId('flowchild1')
+    const firstFlowChild = await renderResult.renderedDOM.findByTestId('flowchild1')
     const firstFlowChildRect = firstFlowChild.getBoundingClientRect()
     const firstFlowChildEnd = {
       x: firstFlowChildRect.x + firstFlowChildRect.width / 2,
@@ -836,16 +836,16 @@ describe('Absolute Reparent To Flow Strategy', () => {
       'await-first-dom-report',
     )
 
-    const generatedAbsolutechildren = await renderResult
-      .getRenderedCanvas()
-      .findAllByTestId('generatedabsolutechild')
+    const generatedAbsolutechildren = await renderResult.renderedDOM.findAllByTestId(
+      'generatedabsolutechild',
+    )
     const absoluteChild = generatedAbsolutechildren[0]
     const absoluteChildRect = absoluteChild.getBoundingClientRect()
     const absoluteChildCenter = {
       x: absoluteChildRect.x + absoluteChildRect.width / 2,
       y: absoluteChildRect.y + absoluteChildRect.height / 2,
     }
-    const firstFlowChild = await renderResult.getRenderedCanvas().findByTestId('flowchild1')
+    const firstFlowChild = await renderResult.renderedDOM.findByTestId('flowchild1')
     const firstFlowChildRect = firstFlowChild.getBoundingClientRect()
     const firstFlowChildCenter = {
       x: firstFlowChildRect.x + firstFlowChildRect.width / 2,
@@ -979,9 +979,9 @@ describe('Absolute Reparent To Flow Strategy', () => {
     await renderResult.dispatch([selectComponents([parentPath], false)], false)
     await renderResult.getDispatchFollowUpActionsFinished()
 
-    const generatedAbsolutechildren = await renderResult
-      .getRenderedCanvas()
-      .findAllByTestId('generatedabsolutechild')
+    const generatedAbsolutechildren = await renderResult.renderedDOM.findAllByTestId(
+      'generatedabsolutechild',
+    )
     const absoluteChild = generatedAbsolutechildren[0]
     const absoluteChildRect = absoluteChild.getBoundingClientRect()
     const absoluteChildCenter = {
@@ -992,7 +992,7 @@ describe('Absolute Reparent To Flow Strategy', () => {
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
     await mouseDoubleClickAtPoint(canvasControlsLayer, absoluteChildCenter)
 
-    const firstFlowChild = await renderResult.getRenderedCanvas().findByTestId('flowchild1')
+    const firstFlowChild = await renderResult.renderedDOM.findByTestId('flowchild1')
     const firstFlowChildRect = firstFlowChild.getBoundingClientRect()
     const firstFlowChildCenter = {
       x: firstFlowChildRect.x + firstFlowChildRect.width / 2,

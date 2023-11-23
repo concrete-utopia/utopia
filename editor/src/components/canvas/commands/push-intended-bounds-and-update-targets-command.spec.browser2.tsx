@@ -34,9 +34,7 @@ describe('push intended bounds', () => {
         )
 
         async function getRect(testId: string) {
-          return (
-            await renderResult.getRenderedCanvas().findByTestId(testId)
-          ).getBoundingClientRect()
+          return (await renderResult.renderedDOM.findByTestId(testId)).getBoundingClientRect()
         }
 
         const originalRect = await getRect('container')
@@ -91,9 +89,7 @@ describe('push intended bounds', () => {
         )
 
         async function getRect(testId: string) {
-          return (
-            await renderResult.getRenderedCanvas().findByTestId(testId)
-          ).getBoundingClientRect()
+          return (await renderResult.renderedDOM.findByTestId(testId)).getBoundingClientRect()
         }
 
         const originalRect = await getRect('container')
@@ -133,9 +129,7 @@ describe('push intended bounds', () => {
         )
 
         async function getRect(testId: string) {
-          return (
-            await renderResult.getRenderedCanvas().findByTestId(testId)
-          ).getBoundingClientRect()
+          return (await renderResult.renderedDOM.findByTestId(testId)).getBoundingClientRect()
         }
 
         const originalRect = await getRect('container')

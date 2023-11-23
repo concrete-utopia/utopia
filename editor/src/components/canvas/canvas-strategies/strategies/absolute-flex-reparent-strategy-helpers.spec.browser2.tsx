@@ -38,7 +38,7 @@ async function dragElement(
   includeMouseUp: boolean,
   midDragCallback?: () => Promise<void>,
 ): Promise<void> {
-  const targetElement = renderResult.getRenderedCanvas().getByTestId(targetTestId)
+  const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
   const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -2251,10 +2251,10 @@ describe('Reparent indicators', () => {
     await renderResult.getDispatchFollowUpActionsFinished()
 
     // Start dragging the target.
-    const targetElement = renderResult.getRenderedCanvas().getByTestId('seconddiv')
+    const targetElement = renderResult.renderedDOM.getByTestId('seconddiv')
     const targetElementBounds = targetElement.getBoundingClientRect()
 
-    const flexContainer = renderResult.getRenderedCanvas().getByTestId('parentsibling')
+    const flexContainer = renderResult.renderedDOM.getByTestId('parentsibling')
     const flexContainerBounds = flexContainer.getBoundingClientRect()
 
     const startPoint = { x: targetElementBounds.x + 20, y: targetElementBounds.y + 20 }
@@ -2297,10 +2297,10 @@ describe('Reparent indicators', () => {
     await renderResult.getDispatchFollowUpActionsFinished()
 
     // Start dragging the target.
-    const targetElement = renderResult.getRenderedCanvas().getByTestId('seconddiv')
+    const targetElement = renderResult.renderedDOM.getByTestId('seconddiv')
     const targetElementBounds = targetElement.getBoundingClientRect()
 
-    const flexContainer = renderResult.getRenderedCanvas().getByTestId('parentsibling')
+    const flexContainer = renderResult.renderedDOM.getByTestId('parentsibling')
     const flexContainerBounds = flexContainer.getBoundingClientRect()
 
     const startPoint = { x: targetElementBounds.x + 20, y: targetElementBounds.y + 20 }
@@ -2340,10 +2340,10 @@ describe('Reparent indicators', () => {
     await renderResult.getDispatchFollowUpActionsFinished()
 
     // Start dragging the target.
-    const targetElement = renderResult.getRenderedCanvas().getByTestId('seconddiv')
+    const targetElement = renderResult.renderedDOM.getByTestId('seconddiv')
     const targetElementBounds = targetElement.getBoundingClientRect()
 
-    const flexContainer = renderResult.getRenderedCanvas().getByTestId('parentsibling')
+    const flexContainer = renderResult.renderedDOM.getByTestId('parentsibling')
     const flexContainerBounds = flexContainer.getBoundingClientRect()
 
     const startPoint = { x: targetElementBounds.x + 20, y: targetElementBounds.y + 20 }
@@ -2383,10 +2383,10 @@ describe('Reparent indicators', () => {
     await renderResult.getDispatchFollowUpActionsFinished()
 
     // Start dragging the target.
-    const targetElement = renderResult.getRenderedCanvas().getByTestId('seconddiv')
+    const targetElement = renderResult.renderedDOM.getByTestId('seconddiv')
     const targetElementBounds = targetElement.getBoundingClientRect()
 
-    const flexContainer = renderResult.getRenderedCanvas().getByTestId('parentsibling')
+    const flexContainer = renderResult.renderedDOM.getByTestId('parentsibling')
     const flexContainerBounds = flexContainer.getBoundingClientRect()
 
     const startPoint = { x: targetElementBounds.x + 20, y: targetElementBounds.y + 20 }
@@ -2427,10 +2427,10 @@ describe('Reparent indicators', () => {
     await renderResult.getDispatchFollowUpActionsFinished()
 
     // Start dragging the target.
-    const targetElement = renderResult.getRenderedCanvas().getByTestId('absolutechild')
+    const targetElement = renderResult.renderedDOM.getByTestId('absolutechild')
     const targetElementBounds = targetElement.getBoundingClientRect()
 
-    const flexContainer = renderResult.getRenderedCanvas().getByTestId('flexcontainer')
+    const flexContainer = renderResult.renderedDOM.getByTestId('flexcontainer')
     const flexContainerBounds = flexContainer.getBoundingClientRect()
 
     const startPoint = { x: targetElementBounds.x + 20, y: targetElementBounds.y + 20 }
@@ -2471,10 +2471,10 @@ describe('Reparent indicators', () => {
     await renderResult.getDispatchFollowUpActionsFinished()
 
     // Start dragging the target.
-    const targetElement = renderResult.getRenderedCanvas().getByTestId('absolutechild')
+    const targetElement = renderResult.renderedDOM.getByTestId('absolutechild')
     const targetElementBounds = targetElement.getBoundingClientRect()
 
-    const flexContainer = renderResult.getRenderedCanvas().getByTestId('flexcontainer')
+    const flexContainer = renderResult.renderedDOM.getByTestId('flexcontainer')
     const flexContainerBounds = flexContainer.getBoundingClientRect()
 
     const startPoint = { x: targetElementBounds.x + 20, y: targetElementBounds.y + 20 }
@@ -2515,10 +2515,10 @@ describe('Reparent indicators', () => {
     await renderResult.getDispatchFollowUpActionsFinished()
 
     // Start dragging the target.
-    const targetElement = renderResult.getRenderedCanvas().getByTestId('absolutechild')
+    const targetElement = renderResult.renderedDOM.getByTestId('absolutechild')
     const targetElementBounds = targetElement.getBoundingClientRect()
 
-    const flexContainer = renderResult.getRenderedCanvas().getByTestId('flexcontainer')
+    const flexContainer = renderResult.renderedDOM.getByTestId('flexcontainer')
     const flexContainerBounds = flexContainer.getBoundingClientRect()
 
     const startPoint = { x: targetElementBounds.x + 20, y: targetElementBounds.y + 20 }
@@ -2559,10 +2559,10 @@ describe('Reparent indicators', () => {
     await renderResult.getDispatchFollowUpActionsFinished()
 
     // Start dragging the target.
-    const targetElement = renderResult.getRenderedCanvas().getByTestId('absolutechild')
+    const targetElement = renderResult.renderedDOM.getByTestId('absolutechild')
     const targetElementBounds = targetElement.getBoundingClientRect()
 
-    const flexContainer = renderResult.getRenderedCanvas().getByTestId('flexcontainer')
+    const flexContainer = renderResult.renderedDOM.getByTestId('flexcontainer')
     const flexContainerBounds = flexContainer.getBoundingClientRect()
 
     const startPoint = { x: targetElementBounds.x + 20, y: targetElementBounds.y + 20 }
@@ -2639,10 +2639,10 @@ describe('Reparent indicators', () => {
     await renderResult.getDispatchFollowUpActionsFinished()
 
     // Start dragging the target.
-    const targetElement = renderResult.getRenderedCanvas().getByTestId('absolutechild')
+    const targetElement = renderResult.renderedDOM.getByTestId('absolutechild')
     const targetElementBounds = targetElement.getBoundingClientRect()
 
-    const flexContainer = renderResult.getRenderedCanvas().getByTestId('flowcontainer')
+    const flexContainer = renderResult.renderedDOM.getByTestId('flowcontainer')
     const flexContainerBounds = flexContainer.getBoundingClientRect()
 
     const startPoint = { x: targetElementBounds.x + 20, y: targetElementBounds.y + 20 }
@@ -2737,10 +2737,10 @@ describe('Reparent indicators', () => {
     await renderResult.getDispatchFollowUpActionsFinished()
 
     // Start dragging the target.
-    const targetElement = renderResult.getRenderedCanvas().getByTestId('absolutechild')
+    const targetElement = renderResult.renderedDOM.getByTestId('absolutechild')
     const targetElementBounds = targetElement.getBoundingClientRect()
 
-    const flexContainer = renderResult.getRenderedCanvas().getByTestId('flowcontainer')
+    const flexContainer = renderResult.renderedDOM.getByTestId('flowcontainer')
     const flexContainerBounds = flexContainer.getBoundingClientRect()
 
     const startPoint = { x: targetElementBounds.x + 20, y: targetElementBounds.y + 20 }

@@ -33,7 +33,7 @@ describe('set border radius strategy', () => {
     )
 
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const div = editor.getRenderedCanvas().getByTestId('mydiv')
+    const div = editor.renderedDOM.getByTestId('mydiv')
     const divBounds = div.getBoundingClientRect()
     const divCorner = {
       x: divBounds.x + 50,
@@ -53,7 +53,7 @@ describe('set border radius strategy', () => {
     const editor = await renderTestEditorWithCode(codeForDragTest(``), 'await-first-dom-report')
 
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const div = editor.getRenderedCanvas().getByTestId('mydiv')
+    const div = editor.renderedDOM.getByTestId('mydiv')
     const divBounds = div.getBoundingClientRect()
     const divCorner = {
       x: divBounds.x + 50,
@@ -76,7 +76,7 @@ describe('set border radius strategy', () => {
     )
 
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const div = editor.getRenderedCanvas().getByTestId('mydiv')
+    const div = editor.renderedDOM.getByTestId('mydiv')
     const divBounds = div.getBoundingClientRect()
     const divCorner = {
       x: divBounds.x + 1,
@@ -149,7 +149,7 @@ describe('set border radius strategy', () => {
       )
 
       const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-      const div = editor.getRenderedCanvas().getByTestId('mydiv')
+      const div = editor.renderedDOM.getByTestId('mydiv')
       const divBounds = div.getBoundingClientRect()
       const divCorner = {
         x: divBounds.x + Math.floor(divBounds.width / 2),
@@ -468,7 +468,7 @@ async function doDragTest(
   modifiers: Modifiers,
 ) {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-  const div = editor.getRenderedCanvas().getByTestId('mydiv')
+  const div = editor.renderedDOM.getByTestId('mydiv')
   const divBounds = div.getBoundingClientRect()
   const divCorner = {
     x: divBounds.x + Math.floor(divBounds.width / 2),
@@ -537,7 +537,7 @@ async function resizeElement(
 
 async function clickOnMyDiv(editor: EditorRenderResult) {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-  const div = editor.getRenderedCanvas().getByTestId('mydiv')
+  const div = editor.renderedDOM.getByTestId('mydiv')
   const divBounds = div.getBoundingClientRect()
   const divCorner = {
     x: divBounds.x + 25,

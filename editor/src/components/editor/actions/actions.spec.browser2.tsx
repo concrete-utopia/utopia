@@ -2091,7 +2091,7 @@ export var storyboard = (
 
       await selectComponentsForTest(editor, [EP.fromString(`sb/container`)])
       const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-      const div = editor.getRenderedCanvas().getByTestId('container')
+      const div = editor.renderedDOM.getByTestId('container')
       const divBounds = div.getBoundingClientRect()
       const divCorner = {
         x: divBounds.x + 5,
@@ -3371,7 +3371,7 @@ export var storyboard = (props) => {
               `),
           )
 
-          const img = renderResult.getRenderedCanvas().getByTestId('bbb')
+          const img = renderResult.renderedDOM.getByTestId('bbb')
           const { top, left, position } = img.style
           expect({ top, left, position }).toEqual({ left: '', top: '', position: '' })
         })
@@ -4057,7 +4057,7 @@ export var storyboard = (props) => {
 
         await runPaste(editor)
 
-        const pastedElement = editor.getRenderedCanvas().getByTestId('paste-me')
+        const pastedElement = editor.renderedDOM.getByTestId('paste-me')
         const { top, left, position, width, height } = pastedElement.style
         expect({ top, left, position, width, height }).toEqual({
           height: '35px',
@@ -4106,7 +4106,7 @@ export var storyboard = (props) => {
 
         await runPaste(editor)
 
-        const pastedElement = editor.getRenderedCanvas().getByTestId('paste-me')
+        const pastedElement = editor.renderedDOM.getByTestId('paste-me')
         const { top, left, position, width, height } = pastedElement.style
         expect({ top, left, position, width, height }).toEqual({
           height: '35px',
@@ -4215,9 +4215,8 @@ export var storyboard = (props) => {
         await runPaste(editor)
 
         {
-          const { position, top, left, width, height } = editor
-            .getRenderedCanvas()
-            .getByTestId(Child1TestId).style
+          const { position, top, left, width, height } =
+            editor.renderedDOM.getByTestId(Child1TestId).style
           expect({ position, top, left, width, height }).toEqual({
             height: '112px',
             left: '15px',
@@ -4228,9 +4227,8 @@ export var storyboard = (props) => {
         }
 
         {
-          const { position, top, left, width, height } = editor
-            .getRenderedCanvas()
-            .getByTestId(Child2TestId).style
+          const { position, top, left, width, height } =
+            editor.renderedDOM.getByTestId(Child2TestId).style
           expect({ position, top, left, width, height }).toEqual({
             height: '112px',
             left: '196px',
@@ -4282,9 +4280,8 @@ export var storyboard = (props) => {
         await runPaste(editor)
 
         {
-          const { position, top, left, width, height } = editor
-            .getRenderedCanvas()
-            .getByTestId(Child1TestId).style
+          const { position, top, left, width, height } =
+            editor.renderedDOM.getByTestId(Child1TestId).style
           expect({ position, top, left, width, height }).toEqual({
             height: '112px',
             left: '',
@@ -4295,9 +4292,8 @@ export var storyboard = (props) => {
         }
 
         {
-          const { position, top, left, width, height } = editor
-            .getRenderedCanvas()
-            .getByTestId(Child2TestId).style
+          const { position, top, left, width, height } =
+            editor.renderedDOM.getByTestId(Child2TestId).style
           expect({ position, top, left, width, height }).toEqual({
             height: '112px',
             left: '',
@@ -4405,9 +4401,8 @@ export var storyboard = (props) => {
         await runPaste(editor)
 
         {
-          const { position, top, left, width, height } = editor
-            .getRenderedCanvas()
-            .getByTestId(Child1TestId).style
+          const { position, top, left, width, height } =
+            editor.renderedDOM.getByTestId(Child1TestId).style
           expect({ position, top, left, width, height }).toEqual({
             height: '48px',
             left: '46px',
@@ -4418,9 +4413,8 @@ export var storyboard = (props) => {
         }
 
         {
-          const { position, top, left, width, height } = editor
-            .getRenderedCanvas()
-            .getByTestId(Child2TestId).style
+          const { position, top, left, width, height } =
+            editor.renderedDOM.getByTestId(Child2TestId).style
           expect({ position, top, left, width, height }).toEqual({
             height: '73px',
             left: '194px',
@@ -5778,7 +5772,7 @@ export var storyboard = (
       await pressKey('c', { modifiers: cmdModifier })
 
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-      const element = renderResult.getRenderedCanvas().getByTestId('aaa')
+      const element = renderResult.renderedDOM.getByTestId('aaa')
       const elementBounds = element.getBoundingClientRect()
 
       await mouseClickAtPoint(canvasControlsLayer, elementBounds)
@@ -5844,7 +5838,7 @@ export var storyboard = (
 
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-      const element = renderResult.getRenderedCanvas().getByTestId('ddd')
+      const element = renderResult.renderedDOM.getByTestId('ddd')
       const elementCenter = getDomRectCenter(element.getBoundingClientRect())
       await mouseClickAtPoint(canvasControlsLayer, elementCenter)
 
@@ -5926,7 +5920,7 @@ export var storyboard = (
       await pressKey('c', { modifiers: cmdModifier })
 
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-      const element = renderResult.getRenderedCanvas().getByTestId('ddd')
+      const element = renderResult.renderedDOM.getByTestId('ddd')
       const elementBounds = element.getBoundingClientRect()
 
       await mouseClickAtPoint(canvasControlsLayer, elementBounds)
@@ -6035,7 +6029,7 @@ export var storyboard = (
         await selectComponentsForTest(editor, [])
 
         const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-        const element = editor.getRenderedCanvas().getByTestId('scene')
+        const element = editor.renderedDOM.getByTestId('scene')
         const elementBounds = element.getBoundingClientRect()
 
         await mouseClickAtPoint(canvasControlsLayer, elementBounds)

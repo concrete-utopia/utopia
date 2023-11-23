@@ -23,7 +23,7 @@ async function dragElement(
   dragDelta: WindowPoint,
   modifiers: Modifiers,
 ): Promise<void> {
-  const targetElement = renderResult.getRenderedCanvas().getByTestId(targetTestId)
+  const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
   const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -148,15 +148,13 @@ describe('Flow Reparent To Absolute Strategy', () => {
       'await-first-dom-report',
     )
 
-    const targetAbsoluteParent = await renderResult
-      .getRenderedCanvas()
-      .findByTestId('absolutechild')
+    const targetAbsoluteParent = await renderResult.renderedDOM.findByTestId('absolutechild')
     const targetAbsoluteParentRect = targetAbsoluteParent.getBoundingClientRect()
     const targetAbsoluteParentCenter = {
       x: targetAbsoluteParentRect.x + targetAbsoluteParentRect.width / 2,
       y: targetAbsoluteParentRect.y + targetAbsoluteParentRect.height / 2,
     }
-    const firstFlowChild = await renderResult.getRenderedCanvas().findByTestId('flowchild1')
+    const firstFlowChild = await renderResult.renderedDOM.findByTestId('flowchild1')
     const firstFlowChildRect = firstFlowChild.getBoundingClientRect()
     const firstFlowChildCenter = {
       x: firstFlowChildRect.x + firstFlowChildRect.width / 2,
@@ -325,15 +323,13 @@ describe('Flow Reparent To Absolute Strategy', () => {
         'await-first-dom-report',
       )
 
-      const targetAbsoluteParent = await renderResult
-        .getRenderedCanvas()
-        .findByTestId('absolutechild')
+      const targetAbsoluteParent = await renderResult.renderedDOM.findByTestId('absolutechild')
       const targetAbsoluteParentRect = targetAbsoluteParent.getBoundingClientRect()
       const targetAbsoluteParentCenter = {
         x: targetAbsoluteParentRect.x + targetAbsoluteParentRect.width / 2,
         y: targetAbsoluteParentRect.y + targetAbsoluteParentRect.height / 2,
       }
-      const firstFlowChild = await renderResult.getRenderedCanvas().findByTestId('flowchild1')
+      const firstFlowChild = await renderResult.renderedDOM.findByTestId('flowchild1')
       const firstFlowChildRect = firstFlowChild.getBoundingClientRect()
       const firstFlowChildCenter = {
         x: firstFlowChildRect.x + firstFlowChildRect.width / 2,
@@ -507,15 +503,13 @@ describe('Flow Reparent To Absolute Strategy', () => {
         'await-first-dom-report',
       )
 
-      const targetAbsoluteParent = await renderResult
-        .getRenderedCanvas()
-        .findByTestId('absolutechild')
+      const targetAbsoluteParent = await renderResult.renderedDOM.findByTestId('absolutechild')
       const targetAbsoluteParentRect = targetAbsoluteParent.getBoundingClientRect()
       const targetAbsoluteParentCenter = {
         x: targetAbsoluteParentRect.x + targetAbsoluteParentRect.width / 2,
         y: targetAbsoluteParentRect.y + targetAbsoluteParentRect.height / 2,
       }
-      const firstFlowChild = await renderResult.getRenderedCanvas().findByTestId('flowchild1')
+      const firstFlowChild = await renderResult.renderedDOM.findByTestId('flowchild1')
       const firstFlowChildRect = firstFlowChild.getBoundingClientRect()
       const firstFlowChildCenter = {
         x: firstFlowChildRect.x + firstFlowChildRect.width / 2,
@@ -689,15 +683,13 @@ describe('Flow Reparent To Absolute Strategy', () => {
         'await-first-dom-report',
       )
 
-      const targetAbsoluteParent = await renderResult
-        .getRenderedCanvas()
-        .findByTestId('absolutechild')
+      const targetAbsoluteParent = await renderResult.renderedDOM.findByTestId('absolutechild')
       const targetAbsoluteParentRect = targetAbsoluteParent.getBoundingClientRect()
       const targetAbsoluteParentCenter = {
         x: targetAbsoluteParentRect.x + targetAbsoluteParentRect.width / 2,
         y: targetAbsoluteParentRect.y + targetAbsoluteParentRect.height / 2,
       }
-      const firstFlowChild = await renderResult.getRenderedCanvas().findByTestId('flowchild1')
+      const firstFlowChild = await renderResult.renderedDOM.findByTestId('flowchild1')
       const firstFlowChildRect = firstFlowChild.getBoundingClientRect()
       const firstFlowChildCenter = {
         x: firstFlowChildRect.x + firstFlowChildRect.width / 2,
