@@ -581,6 +581,13 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     >
       <ReactShadowRoot declarative={props.renderedInSSR}>
         <EmotionWrapper>
+          {/*
+            FIXME The below styling is required for certain editor operations that rely on the
+            frame size as measured when box-sizing is set to border-box. We shouldn't be doing this,
+            as this is changing the styling of the user's project. This only exists here because it
+            was an inbuilt assumption based on the existing editor's CSS, which was no longer being
+            applied inside the canvas with the introduction of the shadow root.
+           */}
           <style>{`div,
           span,
           img,
@@ -608,6 +615,8 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
   )
 })
 
+// As emotion appends style tags into the document's head by default, we use this wrapper component
+// to direct emotion to instead inject those style tags into a container div inside the shadow root
 const EmotionWrapper = React.memo(({ children }: { children?: React.ReactNode | undefined }) => {
   const containerRef = React.useRef<HTMLDivElement | null>(null)
   const [container, setContainer] = React.useState<HTMLDivElement | null>(null)
