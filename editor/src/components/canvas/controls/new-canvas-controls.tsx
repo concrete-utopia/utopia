@@ -70,6 +70,7 @@ import { NO_OP } from '../../../core/shared/utils'
 import { CommentPopup } from './comment-popup'
 import { CommentIndicator } from './comment-indicator'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { CMSUpdateLabelControl } from './text-edit-mode/cms-update-label'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -520,6 +521,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         onMouseDown={onMouseDown}
         onMouseUp={onMouseUp}
       >
+        <CMSUpdateLabelControl />
         {when(
           isSelectMode(editorMode),
           <SceneLabelControl

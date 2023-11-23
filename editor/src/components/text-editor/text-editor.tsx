@@ -53,6 +53,12 @@ import { isFeatureEnabled } from '../../utils/feature-switches'
 import { useAtomCallback } from 'jotai/utils'
 import { useSetAtom } from 'jotai'
 import { ShouldUpdateInPlaceAtom } from '../canvas/controls/text-edit-mode/update-in-place-control'
+import {
+  CMSUpdateStateAtom,
+  setCMSUpdateStateForElementPath,
+  unsetCMSUpdateStateForElementPath,
+  updateJurassicCMS,
+} from '../editor/jurassic-cms'
 
 export const TextEditorSpanId = 'text-editor'
 
@@ -375,9 +381,33 @@ const TextEditor = React.memo((props: TextEditorProps) => {
 
   const updateStringRunCommands = useUpdateStringRun()
 
+  const setCMSUpdateState = useSetAtom(CMSUpdateStateAtom)
   const setShouldUpdateInPlace = useSetAtom(ShouldUpdateInPlaceAtom)
   const shouldUpdateInPlaceRef = useAtomCallback(
     React.useCallback((get) => get(ShouldUpdateInPlaceAtom), []),
+  )
+
+  const callJurassicCMSUpdate = React.useCallback(
+    ({ key, updated }: { key: string; updated: string }) => {
+      setCMSUpdateState(setCMSUpdateStateForElementPath(props.elementPath, { type: 'updating' }))
+      void updateJurassicCMS({ key, updated })
+        .then(() => {
+          setCMSUpdateState(setCMSUpdateStateForElementPath(props.elementPath, { type: 'ok' }))
+          setTimeout(() => {
+            setCMSUpdateState(unsetCMSUpdateStateForElementPath(props.elementPath))
+          }, 1000)
+        })
+        .catch(() =>
+          setCMSUpdateState(
+            setCMSUpdateStateForElementPath(props.elementPath, {
+              type: 'error',
+              message: 'Update failed',
+            }),
+          ),
+        )
+        .finally(() => dispatch([resetCanvas()]))
+    },
+    [dispatch, props.elementPath, setCMSUpdateState],
   )
 
   React.useEffect(() => {
@@ -412,7 +442,6 @@ const TextEditor = React.memo((props: TextEditorProps) => {
 
     return () => {
       const content = currentElement.textContent
-      setShouldUpdateInPlace('not-applicable')
       if (content == null) {
         return
       }
@@ -427,11 +456,10 @@ const TextEditor = React.memo((props: TextEditorProps) => {
           if (data.type === 'defined-in-source') {
             requestAnimationFrame(() => dispatch(updateStringRunCommands(data, content)))
           } else if (data.type === 'from-cms') {
+            const shouldUpdateInPlaceState = shouldUpdateInPlaceRef()
             requestAnimationFrame(() => {
-              if (shouldUpdateInPlaceRef() === 'update-in-cms') {
-                void updateJurassicCMS({ key: data.key, updated: content }).then(() =>
-                  dispatch([resetCanvas()]),
-                )
+              if (shouldUpdateInPlaceState === 'update-in-cms') {
+                callJurassicCMSUpdate({ key: data.key, updated: content })
               } else {
                 dispatch([getSaveAction(elementPath, content, textProp)])
               }
@@ -453,6 +481,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
         requestAnimationFrame(() => dispatch([deleteView(elementPath)]))
       }
     }
+    setShouldUpdateInPlace('not-applicable')
   }, [
     dispatch,
     elementPath,
@@ -464,6 +493,8 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     textToUse,
     shouldUpdateInPlaceRef,
     setShouldUpdateInPlace,
+    props.elementPath,
+    callJurassicCMSUpdate,
   ])
 
   React.useLayoutEffect(() => {
@@ -540,7 +571,6 @@ const TextEditor = React.memo((props: TextEditorProps) => {
 
   const onBlur = React.useCallback(() => {
     const content = myElement.current?.textContent
-    setShouldUpdateInPlace('not-applicable')
     if (content != null && elementState != null && savedContentRef.current !== content) {
       savedContentRef.current = content
       if (textToUse.type === 'tracked') {
@@ -553,11 +583,10 @@ const TextEditor = React.memo((props: TextEditorProps) => {
             ])
           })
         } else if (data.type === 'from-cms') {
+          const shouldUpdateInPlaceState = shouldUpdateInPlaceRef()
           requestAnimationFrame(() => {
-            if (shouldUpdateInPlaceRef() === 'update-in-cms') {
-              void updateJurassicCMS({ key: data.key, updated: content }).then(() =>
-                dispatch([resetCanvas()]),
-              )
+            if (shouldUpdateInPlaceState === 'update-in-cms') {
+              callJurassicCMSUpdate({ key: data.key, updated: content })
               dispatch([updateEditorMode(EditorModes.selectMode(null, false, 'none'))])
             } else {
               dispatch([
@@ -578,7 +607,9 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     } else {
       dispatch([updateEditorMode(EditorModes.selectMode(null, false, 'none'))])
     }
+    setShouldUpdateInPlace('not-applicable')
   }, [
+    callJurassicCMSUpdate,
     dispatch,
     elementPath,
     elementState,
@@ -768,18 +799,4 @@ function canDeleteElementWhenEmpty(
   }
 
   return true
-}
-
-async function updateJurassicCMS({
-  key,
-  updated,
-}: {
-  key: string
-  updated: string
-}): Promise<void> {
-  await fetch(`http://0.0.0.0:6789/api/${key}`, {
-    method: 'POST',
-    body: JSON.stringify({ value: updated }),
-    mode: 'no-cors',
-  })
 }
