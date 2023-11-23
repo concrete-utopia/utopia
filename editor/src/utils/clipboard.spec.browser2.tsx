@@ -87,7 +87,7 @@ describe('Pasting an image onto the canvas', () => {
 
     const imagesToPaste = [await makeImageFile(imgBase641x1, 'chucknorris.png')]
 
-    const container = editor.getRenderedCanvas().getByTestId('container')
+    const container = editor.renderedDOM.getByTestId('container')
     const containerBounds = container.getBoundingClientRect()
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
 

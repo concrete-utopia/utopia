@@ -240,7 +240,6 @@ export function renderCanvasReturnResultAndError(
       dispatch: NO_OP,
       domWalkerAdditionalElementsToUpdate: [],
       editedText: null,
-      renderedInSSR: true,
     }
   } else {
     canvasProps = {
@@ -264,7 +263,6 @@ export function renderCanvasReturnResultAndError(
       dispatch: NO_OP,
       domWalkerAdditionalElementsToUpdate: [],
       editedText: null,
-      renderedInSSR: true,
     }
   }
 

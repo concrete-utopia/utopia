@@ -88,7 +88,7 @@ describe('Github integration', () => {
     await clickTextOnScreen(renderResult, 'Yes, Load from this Branch.')
     await mock.updateProjectWithBranchContent
 
-    expect(renderResult.getRenderedCanvas().getByText('Editor from Github')).toBeDefined()
+    expect(renderResult.renderedDOM.getByText('Editor from Github')).toBeDefined()
   })
 })
 

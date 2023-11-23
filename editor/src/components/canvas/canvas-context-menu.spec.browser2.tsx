@@ -97,7 +97,7 @@ describe('canvas context menu', () => {
     await renderResult.getDispatchFollowUpActionsFinished()
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const element = renderResult.getRenderedCanvas().getByTestId('ccc')
+    const element = renderResult.renderedDOM.getByTestId('ccc')
     const elementCenter = getDomRectCenter(element.getBoundingClientRect())
     await mouseClickAtPoint(canvasControlsLayer, elementCenter)
     await renderResult.getDispatchFollowUpActionsFinished()
@@ -155,7 +155,7 @@ describe('canvas context menu', () => {
     await renderResult.getDispatchFollowUpActionsFinished()
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const element = renderResult.getRenderedCanvas().getByTestId('ccc')
+    const element = renderResult.renderedDOM.getByTestId('ccc')
     const elementCenter = getDomRectCenter(element.getBoundingClientRect())
     await mouseClickAtPoint(canvasControlsLayer, elementCenter)
     await renderResult.getDispatchFollowUpActionsFinished()
@@ -307,7 +307,7 @@ describe('canvas context menu', () => {
       describe('context menu', () => {
         const contextMenuTrigger = async (e: EditorRenderResult, testid: string) => {
           const canvasControlsLayer = e.renderedDOM.getByTestId(CanvasControlsContainerID)
-          const element = e.getRenderedCanvas().getByTestId(testid)
+          const element = e.renderedDOM.getByTestId(testid)
           const elementCenter = getDomRectCenter(element.getBoundingClientRect())
 
           await openContextMenuAndClickOnItem(
@@ -417,7 +417,7 @@ describe('canvas context menu', () => {
             testCaseElementInBack,
             async (e: EditorRenderResult, testid: string) => {
               const canvasControlsLayer = e.renderedDOM.getByTestId(CanvasControlsContainerID)
-              const element = e.getRenderedCanvas().getByTestId(testid)
+              const element = e.renderedDOM.getByTestId(testid)
               const elementBounds = element.getBoundingClientRect()
               await openContextMenuAndClickOnItem(
                 e,
@@ -434,7 +434,7 @@ describe('canvas context menu', () => {
             testCaseElementOnTop,
             async (e: EditorRenderResult, testid: string) => {
               const canvasControlsLayer = e.renderedDOM.getByTestId(CanvasControlsContainerID)
-              const element = e.getRenderedCanvas().getByTestId(testid)
+              const element = e.renderedDOM.getByTestId(testid)
               const elementBounds = element.getBoundingClientRect()
               await openContextMenuAndClickOnItem(
                 e,
@@ -451,7 +451,7 @@ describe('canvas context menu', () => {
             testCaseElementInConditional,
             async (e: EditorRenderResult, testid: string) => {
               const canvasControlsLayer = e.renderedDOM.getByTestId(CanvasControlsContainerID)
-              const element = e.getRenderedCanvas().getByTestId(testid)
+              const element = e.renderedDOM.getByTestId(testid)
               const elementBounds = element.getBoundingClientRect()
               await openContextMenuAndClickOnItem(
                 e,
@@ -558,7 +558,7 @@ describe('canvas context menu', () => {
             testCaseElementInFront,
             async (e: EditorRenderResult, testid: string) => {
               const canvasControlsLayer = e.renderedDOM.getByTestId(CanvasControlsContainerID)
-              const element = e.getRenderedCanvas().getByTestId(testid)
+              const element = e.renderedDOM.getByTestId(testid)
               const elementBounds = element.getBoundingClientRect()
               await openContextMenuAndClickOnItem(
                 e,
@@ -575,7 +575,7 @@ describe('canvas context menu', () => {
             testCaseElementInBack,
             async (e: EditorRenderResult, testid: string) => {
               const canvasControlsLayer = e.renderedDOM.getByTestId(CanvasControlsContainerID)
-              const element = e.getRenderedCanvas().getByTestId(testid)
+              const element = e.renderedDOM.getByTestId(testid)
               const elementBounds = element.getBoundingClientRect()
               await openContextMenuAndClickOnItem(
                 e,
@@ -592,7 +592,7 @@ describe('canvas context menu', () => {
             testCaseElementInConditional,
             async (e: EditorRenderResult, testid: string) => {
               const canvasControlsLayer = e.renderedDOM.getByTestId(CanvasControlsContainerID)
-              const element = e.getRenderedCanvas().getByTestId(testid)
+              const element = e.renderedDOM.getByTestId(testid)
               const elementBounds = element.getBoundingClientRect()
               await openContextMenuAndClickOnItem(
                 e,
@@ -699,7 +699,7 @@ describe('canvas context menu', () => {
             testCaseElementInBack,
             async (e: EditorRenderResult, testid: string) => {
               const canvasControlsLayer = e.renderedDOM.getByTestId(CanvasControlsContainerID)
-              const element = e.getRenderedCanvas().getByTestId(testid)
+              const element = e.renderedDOM.getByTestId(testid)
               const elementBounds = element.getBoundingClientRect()
               await openContextMenuAndClickOnItem(
                 e,
@@ -716,7 +716,7 @@ describe('canvas context menu', () => {
             testCaseElementInFront,
             async (e: EditorRenderResult, testid: string) => {
               const canvasControlsLayer = e.renderedDOM.getByTestId(CanvasControlsContainerID)
-              const element = e.getRenderedCanvas().getByTestId(testid)
+              const element = e.renderedDOM.getByTestId(testid)
               const elementBounds = element.getBoundingClientRect()
               await openContextMenuAndClickOnItem(
                 e,
@@ -733,7 +733,7 @@ describe('canvas context menu', () => {
             testCaseElementInConditional,
             async (e: EditorRenderResult, testid: string) => {
               const canvasControlsLayer = e.renderedDOM.getByTestId(CanvasControlsContainerID)
-              const element = e.getRenderedCanvas().getByTestId(testid)
+              const element = e.renderedDOM.getByTestId(testid)
               const elementBounds = element.getBoundingClientRect()
               await openContextMenuAndClickOnItem(
                 e,

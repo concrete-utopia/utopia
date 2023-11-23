@@ -84,9 +84,9 @@ async function createAndRenderProject() {
 
 describe('Updating a transitive dependency', () => {
   it('Updates the rendered result', async () => {
-    const { dispatch, getEditorState, getRenderedCanvas } = await createAndRenderProject()
+    const { dispatch, getEditorState, renderedDOM } = await createAndRenderProject()
 
-    const appRootDivBefore = getRenderedCanvas().getByTestId('app-root-div')
+    const appRootDivBefore = renderedDOM.getByTestId('app-root-div')
     expect(appRootDivBefore.innerText).toEqual(
       `IndirectDependencyValue: ${indirectDependencyValueBefore}`,
     )
@@ -121,7 +121,7 @@ describe('Updating a transitive dependency', () => {
 
     await dispatch([updateFile(indirectFilePath, updatedIndirectFile, false)], true)
 
-    const appRootDivAfter = getRenderedCanvas().getByTestId('app-root-div')
+    const appRootDivAfter = renderedDOM.getByTestId('app-root-div')
     expect(appRootDivAfter.innerText).toEqual(
       `IndirectDependencyValue: ${indirectDependencyValueAfter}`,
     )
@@ -133,7 +133,7 @@ describe('Re-mounting is avoided when', () => {
     editor.dispatch([switchEditorMode(EditorModes.liveMode())], true)
 
   const clickButton = async (editor: EditorRenderResult) => {
-    const targetElement = editor.getRenderedCanvas().getByTestId('clicky')
+    const targetElement = editor.renderedDOM.getByTestId('clicky')
     const targetElementBounds = targetElement.getBoundingClientRect()
 
     const clickPoint = { x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 }
@@ -209,12 +209,12 @@ describe('Re-mounting is avoided when', () => {
     await switchToLiveMode(renderResult)
 
     // Ensure we can find the original text
-    expect(renderResult.getRenderedCanvas().queryByText('Clicked 0 times')).not.toBeNull()
+    expect(renderResult.renderedDOM.queryByText('Clicked 0 times')).not.toBeNull()
 
     await clickButton(renderResult)
 
     // Ensure it has been updated
-    expect(renderResult.getRenderedCanvas().queryByText('Clicked 1 times')).not.toBeNull()
+    expect(renderResult.renderedDOM.queryByText('Clicked 1 times')).not.toBeNull()
 
     // Update the top level arbitrary JS block
     await updateCode(
@@ -224,7 +224,7 @@ describe('Re-mounting is avoided when', () => {
     )
 
     // Check that it has updated without resetting the state
-    expect(renderResult.getRenderedCanvas().queryByText('Clicked: 1 times')).not.toBeNull()
+    expect(renderResult.renderedDOM.queryByText('Clicked: 1 times')).not.toBeNull()
 
     // Update the component itself
     await updateCode(
@@ -234,7 +234,7 @@ describe('Re-mounting is avoided when', () => {
     )
 
     // Check again that it has updated without resetting the state
-    expect(renderResult.getRenderedCanvas().queryByText('Clicked: 1 times!')).not.toBeNull()
+    expect(renderResult.renderedDOM.queryByText('Clicked: 1 times!')).not.toBeNull()
   })
 
   it('arbitrary JS or a component is edited in a remix project', async () => {
@@ -277,12 +277,12 @@ describe('Re-mounting is avoided when', () => {
     await switchToLiveMode(renderResult)
 
     // Ensure we can find the original text
-    expect(renderResult.getRenderedCanvas().queryByText('Clicked 0 times')).not.toBeNull()
+    expect(renderResult.renderedDOM.queryByText('Clicked 0 times')).not.toBeNull()
 
     await clickButton(renderResult)
 
     // Ensure it has been updated
-    expect(renderResult.getRenderedCanvas().queryByText('Clicked 1 times')).not.toBeNull()
+    expect(renderResult.renderedDOM.queryByText('Clicked 1 times')).not.toBeNull()
 
     // Update the top level arbitrary JS block
     await updateCode(
@@ -292,7 +292,7 @@ describe('Re-mounting is avoided when', () => {
     )
 
     // Check that it has updated without resetting the state
-    expect(renderResult.getRenderedCanvas().queryByText('Clicked: 1 times')).not.toBeNull()
+    expect(renderResult.renderedDOM.queryByText('Clicked: 1 times')).not.toBeNull()
 
     // Update the component itself
     await updateCode(
@@ -302,6 +302,6 @@ describe('Re-mounting is avoided when', () => {
     )
 
     // Check again that it has updated without resetting the state
-    expect(renderResult.getRenderedCanvas().queryByText('Clicked: 1 times!')).not.toBeNull()
+    expect(renderResult.renderedDOM.queryByText('Clicked: 1 times!')).not.toBeNull()
   })
 })

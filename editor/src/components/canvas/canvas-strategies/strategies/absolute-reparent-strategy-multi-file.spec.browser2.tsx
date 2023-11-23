@@ -243,13 +243,13 @@ describe('Absolute Reparent Strategy (Multi-File)', () => {
       )
     })
 
-    const absoluteChild = await renderResult.getRenderedCanvas().findByTestId('absolutechild')
+    const absoluteChild = await renderResult.renderedDOM.findByTestId('absolutechild')
     const absoluteChildRect = absoluteChild.getBoundingClientRect()
     const absoluteChildCenter = {
       x: absoluteChildRect.x + absoluteChildRect.width / 2,
       y: absoluteChildRect.y + absoluteChildRect.height / 2,
     }
-    const flexParent = await renderResult.getRenderedCanvas().findByTestId('flexparent')
+    const flexParent = await renderResult.renderedDOM.findByTestId('flexparent')
     const flexParentRect = flexParent.getBoundingClientRect()
     const dropTargetPoint = {
       x: flexParentRect.x - 10,

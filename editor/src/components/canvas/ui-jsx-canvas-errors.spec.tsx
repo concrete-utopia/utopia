@@ -686,31 +686,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
 `,
     )
     expect(result).toMatchInlineSnapshot(`
-      "<div
-        style=\\"all: initial\\"
-        id=\\"canvas-container-shadow-root\\"
-        data-testid=\\"canvas-container-shadow-root\\"
-      >
-        <template shadowroot=\\"open\\"
-          ><div>
-            <style>
-              div,
-              span,
-              img,
-              ul,
-              li,
-              label {
-                box-sizing: border-box !important;
-              }
-            </style>
-            <div
-              id=\\"canvas-container\\"
-              data-testid=\\"canvas-container\\"
-              style=\\"position: absolute\\"
-              data-utopia-valid-paths=\\"\\"
-              data-utopia-root-element-path=\\"\\"
-            ></div></div
-        ></template>
+      "<div style=\\"all: initial\\">
+        <div
+          id=\\"canvas-container\\"
+          data-testid=\\"canvas-container\\"
+          style=\\"position: absolute\\"
+          data-utopia-valid-paths=\\"\\"
+          data-utopia-root-element-path=\\"\\"
+        ></div>
       </div>
       "
     `)

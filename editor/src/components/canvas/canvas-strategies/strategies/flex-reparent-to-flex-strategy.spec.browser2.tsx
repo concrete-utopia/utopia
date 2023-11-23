@@ -26,7 +26,7 @@ async function dragElement(
   dragDelta: WindowPoint,
   modifiers: Modifiers,
 ): Promise<void> {
-  const targetElement = renderResult.getRenderedCanvas().getByTestId(targetTestId)
+  const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
   const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -261,13 +261,13 @@ describe('Flex Reparent To Flex Strategy', () => {
       'await-first-dom-report',
     )
 
-    const targetFlexParent = await renderResult.getRenderedCanvas().findByTestId('flexparent1')
+    const targetFlexParent = await renderResult.renderedDOM.findByTestId('flexparent1')
     const targetFlexParentRect = targetFlexParent.getBoundingClientRect()
     const targetFlexParentEnd = {
       x: targetFlexParentRect.x + targetFlexParentRect.width - 15,
       y: targetFlexParentRect.y + targetFlexParentRect.height / 2,
     }
-    const flexChildToReparent = await renderResult.getRenderedCanvas().findByTestId('flexchild3')
+    const flexChildToReparent = await renderResult.renderedDOM.findByTestId('flexchild3')
     const flexChildToReparentRect = flexChildToReparent.getBoundingClientRect()
     const flexChildToReparentCenter = {
       x: flexChildToReparentRect.x + flexChildToReparentRect.width / 2,
@@ -372,16 +372,14 @@ describe('Flex Reparent To Flex Strategy', () => {
         'await-first-dom-report',
       )
 
-      const targetFlexParent = await renderResult.getRenderedCanvas().findByTestId('parent2')
+      const targetFlexParent = await renderResult.renderedDOM.findByTestId('parent2')
       const targetFlexParentRect = targetFlexParent.getBoundingClientRect()
       const targetFlexParentEnd = {
         x: targetFlexParentRect.x + targetFlexParentRect.width - 15,
         y: targetFlexParentRect.y + targetFlexParentRect.height / 2,
       }
 
-      const flexChildToReparent = await renderResult
-        .getRenderedCanvas()
-        .findByTestId('fragment-child1')
+      const flexChildToReparent = await renderResult.renderedDOM.findByTestId('fragment-child1')
       const flexChildToReparentRect = flexChildToReparent.getBoundingClientRect()
       const flexChildToReparentCenter = {
         x: flexChildToReparentRect.x + flexChildToReparentRect.width / 2,
@@ -426,13 +424,13 @@ describe('Flex Reparent To Flex Strategy', () => {
       'await-first-dom-report',
     )
 
-    const targetFlexChild = await renderResult.getRenderedCanvas().findByTestId('flexchild1')
+    const targetFlexChild = await renderResult.renderedDOM.findByTestId('flexchild1')
     const targetFlexChildRect = targetFlexChild.getBoundingClientRect()
     const targetFlexChildCenter = {
       x: targetFlexChildRect.x + 10,
       y: targetFlexChildRect.y + targetFlexChildRect.height / 2,
     }
-    const flexChildToReparent = await renderResult.getRenderedCanvas().findByTestId('flexchild3')
+    const flexChildToReparent = await renderResult.renderedDOM.findByTestId('flexchild3')
     const flexChildToReparentRect = flexChildToReparent.getBoundingClientRect()
     const flexChildToReparentCenter = {
       x: flexChildToReparentRect.x + flexChildToReparentRect.width / 2,
@@ -600,13 +598,13 @@ describe('Flex Reparent To Flex Strategy', () => {
         'await-first-dom-report',
       )
 
-      const targetFlexParent = await renderResult.getRenderedCanvas().findByTestId('flexparent1')
+      const targetFlexParent = await renderResult.renderedDOM.findByTestId('flexparent1')
       const targetFlexParentRect = targetFlexParent.getBoundingClientRect()
       const targetFlexParentEnd = {
         x: targetFlexParentRect.x + targetFlexParentRect.width - 15,
         y: targetFlexParentRect.y + targetFlexParentRect.height / 2,
       }
-      const flexChildToReparent = await renderResult.getRenderedCanvas().findByTestId('flexchild3')
+      const flexChildToReparent = await renderResult.renderedDOM.findByTestId('flexchild3')
       const flexChildToReparentRect = flexChildToReparent.getBoundingClientRect()
       const flexChildToReparentCenter = {
         x: flexChildToReparentRect.x + flexChildToReparentRect.width / 2,

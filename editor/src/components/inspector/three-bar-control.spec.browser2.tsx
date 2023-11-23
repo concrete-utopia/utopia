@@ -62,7 +62,7 @@ describe('three bar control', () => {
 async function doTest(editor: EditorRenderResult, controlId: string): Promise<HTMLElement> {
   await selectComponentsForTest(editor, [EP.fromString(`${StoryboardId}/${SceneId}/${ParentId}`)])
 
-  const div = editor.getRenderedCanvas().getByTestId(ParentId)
+  const div = editor.renderedDOM.getByTestId(ParentId)
   const control = editor.renderedDOM.getByTestId(controlId)
   const controlBounds = control.getBoundingClientRect()
   await expectSingleUndo2Saves(editor, async () => {

@@ -204,7 +204,7 @@ describe('Flex Reorder Strategy', () => {
         'await-first-dom-report',
       )
 
-      const targetElement = renderResult.getRenderedCanvas().getByTestId('child-1')
+      const targetElement = renderResult.renderedDOM.getByTestId('child-1')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -231,7 +231,7 @@ describe('Flex Reorder Strategy', () => {
         'await-first-dom-report',
       )
 
-      const targetElement = renderResult.getRenderedCanvas().getByTestId('child-1')
+      const targetElement = renderResult.renderedDOM.getByTestId('child-1')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -305,7 +305,7 @@ describe('Flex Reorder Strategy', () => {
         'await-first-dom-report',
       )
 
-      const targetElement = renderResult.getRenderedCanvas().getByTestId('child-1')
+      const targetElement = renderResult.renderedDOM.getByTestId('child-1')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -381,7 +381,7 @@ describe('Flex Reorder Strategy', () => {
         'await-first-dom-report',
       )
 
-      const targetElement = renderResult.getRenderedCanvas().getByTestId('child-1')
+      const targetElement = renderResult.renderedDOM.getByTestId('child-1')
       const targetElementBounds = targetElement.getBoundingClientRect()
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -467,7 +467,7 @@ describe('Flex Reorder Strategy', () => {
             'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-3', // <- child-3 starts out as the last element
           ])
 
-          const targetElement = renderResult.getRenderedCanvas().getByTestId('child-3')
+          const targetElement = renderResult.renderedDOM.getByTestId('child-3')
           const targetElementBounds = targetElement.getBoundingClientRect()
           const canvasControlsLayer =
             renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -511,7 +511,7 @@ describe('Flex Reorder Strategy', () => {
             'await-first-dom-report',
           )
 
-          const targetElement = renderResult.getRenderedCanvas().getByTestId('child-3')
+          const targetElement = renderResult.renderedDOM.getByTestId('child-3')
           const targetElementBounds = targetElement.getBoundingClientRect()
           const canvasControlsLayer =
             renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -557,7 +557,7 @@ describe('Flex Reorder Strategy', () => {
             'await-first-dom-report',
           )
 
-          const targetElement = renderResult.getRenderedCanvas().getByTestId('child-3')
+          const targetElement = renderResult.renderedDOM.getByTestId('child-3')
           const targetElementBounds = targetElement.getBoundingClientRect()
           const canvasControlsLayer =
             renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -609,7 +609,7 @@ describe('Flex Reorder Strategy', () => {
             'await-first-dom-report',
           )
 
-          const targetElement = renderResult.getRenderedCanvas().getByTestId('fragment-child-2')
+          const targetElement = renderResult.renderedDOM.getByTestId('fragment-child-2')
           const targetElementBounds = targetElement.getBoundingClientRect()
           const canvasControlsLayer =
             renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -642,7 +642,7 @@ describe('Flex Reorder Strategy', () => {
             'await-first-dom-report',
           )
 
-          const targetElement = renderResult.getRenderedCanvas().getByTestId('fragment-child-2')
+          const targetElement = renderResult.renderedDOM.getByTestId('fragment-child-2')
           const targetElementBounds = targetElement.getBoundingClientRect()
           const canvasControlsLayer =
             renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -699,7 +699,7 @@ describe('Flex Reorder Strategy', () => {
             'await-first-dom-report',
           )
 
-          const targetElement = renderResult.getRenderedCanvas().getByTestId('fragment-child-2')
+          const targetElement = renderResult.renderedDOM.getByTestId('fragment-child-2')
           const targetElementBounds = targetElement.getBoundingClientRect()
           const canvasControlsLayer =
             renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -757,7 +757,7 @@ describe('Flex Reorder Strategy', () => {
             'await-first-dom-report',
           )
 
-          const targetElement = renderResult.getRenderedCanvas().getByTestId('fragment-child-2')
+          const targetElement = renderResult.renderedDOM.getByTestId('fragment-child-2')
           const targetElementBounds = targetElement.getBoundingClientRect()
           const canvasControlsLayer =
             renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -814,7 +814,7 @@ describe('Flex Reorder Strategy', () => {
             'await-first-dom-report',
           )
 
-          const targetElement = renderResult.getRenderedCanvas().getByTestId('fragment-child-2')
+          const targetElement = renderResult.renderedDOM.getByTestId('fragment-child-2')
           const targetElementBounds = targetElement.getBoundingClientRect()
           const canvasControlsLayer =
             renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)

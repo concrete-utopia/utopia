@@ -213,7 +213,7 @@ describe('Constraints Section', () => {
             'Width',
             'Width',
           )
-          const target = await renderResult.getRenderedCanvas().findByTestId('target')
+          const target = await renderResult.renderedDOM.findByTestId('target')
           expect(target.style.width).toBe('max-content')
         },
       }),
