@@ -718,7 +718,7 @@ describe('canvas toolbar', () => {
         data-uid='container'
       >
         <div data-uid='a3d' />
-        <img src={myImage} style={{width: 100, height: 100, top:0, left: 0, position: ''}} data-uid='ele'/>
+        <img src={myImage} style={{width: 100, height: 100, top:0, left: 0, position: 'absolute'}} data-uid='ele'/>
       </div>
     )`),
     )
