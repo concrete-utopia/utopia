@@ -39,7 +39,7 @@ import {
   toggleTextStrikeThrough,
   toggleTextUnderline,
 } from './text-editor-shortcut-helpers'
-import { FlexRow, useColorTheme } from '../../uuiui'
+import { useColorTheme } from '../../uuiui'
 import { mapArrayToDictionary } from '../../core/shared/array-utils'
 import { TextRelatedProperties } from '../../core/properties/css-properties'
 import { assertNever } from '../../core/shared/utils'
@@ -50,7 +50,9 @@ import type { SteganoData } from '../../core/shared/stegano-text'
 import { cleanSteganoTextData, decodeSteganoData } from '../../core/shared/stegano-text'
 import { useUpdateStringRun } from '../../core/model/project-file-helper-hooks'
 import { isFeatureEnabled } from '../../utils/feature-switches'
-import { usePopper } from 'react-popper'
+import { useAtomCallback } from 'jotai/utils'
+import { ShouldUpdateInPlaceAtom } from '../canvas/controls/select-mode/post-action-menu'
+import { useSetAtom } from 'jotai'
 
 export const TextEditorSpanId = 'text-editor'
 
@@ -369,32 +371,25 @@ const TextEditor = React.memo((props: TextEditorProps) => {
 
   const [firstTextProp] = React.useState(textToUse.contents)
 
-  const [shouldUpdateInPlace, setShouldUpdateInPlace] = React.useState(
-    textToUse.type === 'tracked' && textToUse.data.type === 'defined-in-source',
-  )
-
-  const setUpdateInPlace = React.useCallback((e: React.MouseEvent) => {
-    e.stopPropagation()
-    e.preventDefault()
-    setShouldUpdateInPlace(true)
-  }, [])
-  const setUpdateInCMS = React.useCallback((e: React.MouseEvent) => {
-    e.stopPropagation()
-    e.preventDefault()
-    setShouldUpdateInPlace(false)
-  }, [])
-
   const myElement = React.useRef<HTMLSpanElement>(null)
-  const popupElement = React.useRef<HTMLDivElement>(null)
-
-  const { styles, attributes } = usePopper(myElement.current, popupElement.current)
 
   const updateStringRunCommands = useUpdateStringRun()
+
+  const setShouldUpdateInPlace = useSetAtom(ShouldUpdateInPlaceAtom)
+  const shouldUpdateInPlaceRef = useAtomCallback(
+    React.useCallback((get) => get(ShouldUpdateInPlaceAtom), []),
+  )
 
   React.useEffect(() => {
     const currentElement = myElement.current
     if (currentElement == null) {
       return
+    }
+
+    if (textToUse.type === 'tracked' && textToUse.data.type === 'from-cms') {
+      setShouldUpdateInPlace('update-in-cms')
+    } else {
+      setShouldUpdateInPlace('not-applicable')
     }
 
     currentElement.focus()
@@ -417,6 +412,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
 
     return () => {
       const content = currentElement.textContent
+      setShouldUpdateInPlace('not-applicable')
       if (content == null) {
         return
       }
@@ -432,12 +428,12 @@ const TextEditor = React.memo((props: TextEditorProps) => {
             requestAnimationFrame(() => dispatch(updateStringRunCommands(data, content)))
           } else if (data.type === 'from-cms') {
             requestAnimationFrame(() => {
-              if (shouldUpdateInPlace) {
-                dispatch([getSaveAction(elementPath, content, textProp)])
-              } else {
+              if (shouldUpdateInPlaceRef() === 'update-in-cms') {
                 void updateJurassicCMS({ key: data.key, updated: content }).then(() =>
                   dispatch([resetCanvas()]),
                 )
+              } else {
+                dispatch([getSaveAction(elementPath, content, textProp)])
               }
             })
           } else {
@@ -466,7 +462,8 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     allElementPropsRef,
     updateStringRunCommands,
     textToUse,
-    shouldUpdateInPlace,
+    shouldUpdateInPlaceRef,
+    setShouldUpdateInPlace,
   ])
 
   React.useLayoutEffect(() => {
@@ -543,6 +540,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
 
   const onBlur = React.useCallback(() => {
     const content = myElement.current?.textContent
+    setShouldUpdateInPlace('not-applicable')
     if (content != null && elementState != null && savedContentRef.current !== content) {
       savedContentRef.current = content
       if (textToUse.type === 'tracked') {
@@ -556,16 +554,16 @@ const TextEditor = React.memo((props: TextEditorProps) => {
           })
         } else if (data.type === 'from-cms') {
           requestAnimationFrame(() => {
-            if (shouldUpdateInPlace) {
-              dispatch([
-                getSaveAction(elementPath, content, textProp),
-                updateEditorMode(EditorModes.selectMode(null, false, 'none')),
-              ])
-            } else {
+            if (shouldUpdateInPlaceRef() === 'update-in-cms') {
               void updateJurassicCMS({ key: data.key, updated: content }).then(() =>
                 dispatch([resetCanvas()]),
               )
               dispatch([updateEditorMode(EditorModes.selectMode(null, false, 'none'))])
+            } else {
+              dispatch([
+                getSaveAction(elementPath, content, textProp),
+                updateEditorMode(EditorModes.selectMode(null, false, 'none')),
+              ])
             }
           })
         } else {
@@ -584,7 +582,8 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     dispatch,
     elementPath,
     elementState,
-    shouldUpdateInPlace,
+    setShouldUpdateInPlace,
+    shouldUpdateInPlaceRef,
     textProp,
     textToUse,
     updateStringRunCommands,
@@ -638,51 +637,9 @@ const TextEditor = React.memo((props: TextEditorProps) => {
 
   const filteredPassthroughProps = filterEventHandlerProps(passthroughProps)
 
-  const withPopup = (e: any) => (
-    <>
-      <div ref={popupElement} style={styles.popper} {...attributes.popper}>
-        <FlexRow style={{ backgroundColor: colorTheme.bg0.value, gap: 4 }}>
-          <div
-            onClick={setUpdateInPlace}
-            style={{
-              cursor: 'pointer',
-              backgroundColor: shouldUpdateInPlace
-                ? colorTheme.lightDenimBlue.value
-                : colorTheme.bg0.value,
-              border: '1px solid black',
-              color: shouldUpdateInPlace
-                ? colorTheme.tabSelectedForeground.value
-                : colorTheme.fg0.value,
-            }}
-          >
-            Overwrite
-          </div>
-          <div
-            onClick={setUpdateInCMS}
-            style={{
-              cursor: 'pointer',
-              backgroundColor: shouldUpdateInPlace
-                ? colorTheme.bg0.value
-                : colorTheme.lightDenimBlue.value,
-              border: '1px solid black',
-              color: shouldUpdateInPlace
-                ? colorTheme.fg0.value
-                : colorTheme.tabSelectedForeground.value,
-            }}
-          >
-            Update
-          </div>
-        </FlexRow>
-      </div>
-      {e}
-    </>
-  )
-
   return React.createElement(
     component,
     filteredPassthroughProps,
-    // TODO I couldn't figure out how to put this on the topmost layer, maybe it should be a canvas control
-    // withPopup(<span data-testid={TextEditorSpanId} {...editorProps} />)
     <span data-testid={TextEditorSpanId} {...editorProps} />,
   )
 })

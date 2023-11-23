@@ -18,7 +18,10 @@ import {
 } from '../editor/store/editor-state'
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import { shouldShowErrorOverlay } from './canvas-utils'
-import { FloatingPostActionMenu } from './controls/select-mode/post-action-menu'
+import {
+  FloatingPostActionMenu,
+  FloatingTextEditControls,
+} from './controls/select-mode/post-action-menu'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
@@ -143,6 +146,7 @@ export const CanvasWrapperComponent = React.memo(() => {
           }}
         >
           <FloatingPostActionMenu errorOverlayShown={errorOverlayShown} />
+          <FloatingTextEditControls />
         </div>
       </FlexRow>
     </FlexColumn>
