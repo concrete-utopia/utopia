@@ -6,6 +6,7 @@ export type LeftMenuPanel =
   | 'genericExternalResources'
   | 'googleFontsResources'
   | 'insertmenu'
+  | 'variablesmenu'
   | 'projectsettings'
   | 'githuboptions'
 

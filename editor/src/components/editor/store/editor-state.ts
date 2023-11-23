@@ -201,6 +201,7 @@ export enum RightMenuTab {
   Inspector = 'inspector',
   Settings = 'settings',
   Comments = 'comments',
+  Variables = 'variables',
 }
 
 // TODO: this should just contain an NpmDependency and a status
