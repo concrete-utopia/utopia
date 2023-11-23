@@ -315,7 +315,7 @@ import type {
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
-import { isFollowMode, isTextEditMode } from '../editor-modes'
+import { isCommentMode, isFollowMode, isTextEditMode } from '../editor-modes'
 import { EditorModes, isLiveMode, isSelectMode } from '../editor-modes'
 import * as History from '../history'
 import type { StateHistory } from '../history'
@@ -2054,7 +2054,7 @@ export const UPDATE_FNS = {
   SWITCH_EDITOR_MODE: (
     action: SwitchEditorMode,
     editor: EditorModel,
-    derived: DerivedState,
+    userState: UserState,
   ): EditorModel => {
     // TODO this should probably be merged with UPDATE_EDITOR_MODE
     if (action.unlessMode === editor.mode.type) {
@@ -2075,6 +2075,9 @@ export const UPDATE_FNS = {
         console.error(`Invalid target for text edit mode: ${EP.toString(action.mode.editedText)}`)
         return editor
       }
+    }
+    if (isCommentMode(action.mode) && !isLoggedIn(userState.loginState)) {
+      return editor
     }
     return setModeState(action.mode, editor)
   },
@@ -3078,7 +3081,6 @@ export const UPDATE_FNS = {
   SAVE_ASSET: (
     action: SaveAsset,
     editor: EditorModel,
-    derived: DerivedState,
     dispatch: EditorDispatch,
     userState: UserState,
   ): EditorModel => {
@@ -3220,7 +3222,7 @@ export const UPDATE_FNS = {
           const editorInsertEnabled = UPDATE_FNS.SWITCH_EDITOR_MODE(
             switchMode,
             editorWithToast,
-            derived,
+            userState,
           )
           return {
             ...editorInsertEnabled,
@@ -3302,7 +3304,7 @@ export const UPDATE_FNS = {
   INSERT_IMAGE_INTO_UI: (
     action: InsertImageIntoUI,
     editor: EditorModel,
-    derived: DerivedState,
+    userState: UserState,
   ): EditorModel => {
     const possiblyAnImage = getProjectFileByFilePath(editor.projectContents, action.imagePath)
     if (possiblyAnImage != null && isImageFile(possiblyAnImage)) {
@@ -3332,7 +3334,7 @@ export const UPDATE_FNS = {
       )
       const size = width != null && height != null ? { width: width, height: height } : null
       const switchMode = enableInsertModeForJSXElement(imageElement, newUID, {}, size)
-      return UPDATE_FNS.SWITCH_EDITOR_MODE(switchMode, editor, derived)
+      return UPDATE_FNS.SWITCH_EDITOR_MODE(switchMode, editor, userState)
     } else {
       return editor
     }

@@ -26,6 +26,7 @@ type ToolbarMode =
       }
     }
   | { primary: 'play' }
+  | { primary: 'comment' }
   | { primary: 'zoom' }
 
 export function useToolbarMode(): ToolbarMode {
@@ -69,6 +70,11 @@ export function useToolbarMode(): ToolbarMode {
   // Live Mode
   if (editorMode.type === 'live') {
     return { primary: 'play' }
+  }
+
+  // Comment Mode
+  if (editorMode.type === 'comment') {
+    return { primary: 'comment' }
   }
 
   // Text Edit Mode (info partially stored in editor.mode InsertMode)

@@ -189,6 +189,7 @@ describe('interactionStart', () => {
         "currentStrategyFitness": 0,
         "currentStrategyIcon": null,
         "customStrategyState": Object {
+          "action": null,
           "duplicatedElementNewUids": Object {},
           "elementsToRerender": Array [],
           "escapeHatchActivated": false,
@@ -250,6 +251,7 @@ describe('interactionStart', () => {
         "currentStrategyFitness": 0,
         "currentStrategyIcon": null,
         "customStrategyState": Object {
+          "action": null,
           "duplicatedElementNewUids": Object {},
           "elementsToRerender": Array [],
           "escapeHatchActivated": false,
@@ -331,6 +333,7 @@ describe('interactionUpdate', () => {
           "type": "magic-large",
         },
         "customStrategyState": Object {
+          "action": null,
           "duplicatedElementNewUids": Object {},
           "elementsToRerender": Array [],
           "escapeHatchActivated": false,
@@ -412,6 +415,7 @@ describe('interactionUpdate', () => {
         "currentStrategyFitness": 0,
         "currentStrategyIcon": null,
         "customStrategyState": Object {
+          "action": null,
           "duplicatedElementNewUids": Object {},
           "elementsToRerender": Array [],
           "escapeHatchActivated": false,
@@ -487,6 +491,7 @@ describe('interactionHardReset', () => {
           "type": "magic-large",
         },
         "customStrategyState": Object {
+          "action": null,
           "duplicatedElementNewUids": Object {},
           "elementsToRerender": Array [],
           "escapeHatchActivated": false,
@@ -570,6 +575,7 @@ describe('interactionHardReset', () => {
         "currentStrategyFitness": 0,
         "currentStrategyIcon": null,
         "customStrategyState": Object {
+          "action": null,
           "duplicatedElementNewUids": Object {},
           "elementsToRerender": Array [],
           "escapeHatchActivated": false,
@@ -659,6 +665,7 @@ describe('interactionUpdate with user changed strategy', () => {
           "type": "magic-large",
         },
         "customStrategyState": Object {
+          "action": null,
           "duplicatedElementNewUids": Object {},
           "elementsToRerender": Array [],
           "escapeHatchActivated": false,
@@ -743,6 +750,7 @@ describe('interactionUpdate with user changed strategy', () => {
         "currentStrategyFitness": 0,
         "currentStrategyIcon": null,
         "customStrategyState": Object {
+          "action": null,
           "duplicatedElementNewUids": Object {},
           "elementsToRerender": Array [],
           "escapeHatchActivated": false,

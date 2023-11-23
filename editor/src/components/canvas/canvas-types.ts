@@ -63,6 +63,7 @@ export enum CSSCursor {
   PaddingSouth = "-webkit-image-set( url( '/editor/cursors/cursor-padding-south.png ') 1x, url( '/editor/cursors/cursor-padding-south@2x.png ') 2x ) 9 4, ns-resize",
   GapNS = "-webkit-image-set( url( '/editor/cursors/cursor-gap-ns.png ') 1x, url( '/editor/cursors/cursor-gap-ns@2x.png ') 2x ) 8 8, ns-resize",
   GapEW = "-webkit-image-set( url( '/editor/cursors/cursor-gap-ew.png ') 1x, url( '/editor/cursors/cursor-gap-ew@2x.png ') 2x ) 8 8, ew-resize",
+  Comment = "-webkit-image-set( url( '/editor/cursors/cursor-comment.png ') 1x, url( '/editor/cursors/cursor-comment@2x.png ') 2x ) 8 8, default",
 }
 
 export type VerticalRectangles = {
