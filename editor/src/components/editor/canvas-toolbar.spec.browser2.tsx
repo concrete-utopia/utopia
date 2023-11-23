@@ -623,6 +623,107 @@ describe('canvas toolbar', () => {
     )
   })
 
+  it('can insert an array via the floating insert menu', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithComponentInnards(`
+      const myArray = ['one', 'two', 'three']
+      return (
+        <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 57,
+          top: 168,
+          width: 247,
+          height: 402,
+        }}
+        data-uid='container'
+      >
+        <div data-uid='a3d' />
+      </div>
+    )`),
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(editor, [
+      EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
+    ])
+
+    await insertViaAddElementPopup(editor, 'myArra')
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithComponentInnards(`
+      const myArray = ['one', 'two', 'three']
+      return (
+        <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 57,
+          top: 168,
+          width: 247,
+          height: 402,
+        }}
+        data-uid='container'
+      >
+        <div data-uid='a3d' />
+        <React.Fragment>{myArray.map((item) => (<span>{item}</span>))}</React.Fragment>
+      </div>
+    )`),
+    )
+  })
+
+  it('can insert an image via the floating insert menu', async () => {
+    FOR_TESTS_setNextGeneratedUids(['myImage'])
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithComponentInnards(`
+      const myImage = 'test.png?raw=true'
+      return (
+        <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 57,
+          top: 168,
+          width: 247,
+          height: 402,
+        }}
+        data-uid='container'
+      >
+        <div data-uid='a3d' />
+      </div>
+    )`),
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(editor, [
+      EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
+    ])
+
+    await insertViaAddElementPopup(editor, 'myImag')
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithComponentInnards(`
+      const myImage = 'test.png?raw=true'
+      return (
+        <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 57,
+          top: 168,
+          width: 247,
+          height: 402,
+        }}
+        data-uid='container'
+      >
+        <div data-uid='a3d' />
+        <img src={myImage} style={{width: 100, height: 100, top:0, left: 0, position: 'absolute'}} data-uid='ele'/>
+      </div>
+    )`),
+    )
+  })
+
   it('can search for and insert default exported component', async () => {
     const editor = await renderTestEditorWithModel(
       createTestProjectWithMultipleFiles({
