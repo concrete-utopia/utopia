@@ -160,7 +160,7 @@ function getMatchingElementForVariableInner(variable: Variable): InsertableCompo
   }
 }
 
-function getTypeByValue(value: any): InsertableType {
+function getTypeByValue(value: unknown): InsertableType {
   const type = typeof value
   if (type === 'object' && Array.isArray(value)) {
     return 'array'
@@ -189,7 +189,7 @@ function jsIdentifierName(name: string): JSExpressionOtherJavaScript {
 }
 
 function getArrayType(arrayVariable: Variable): InsertableType {
-  const arr = arrayVariable.value as any[]
+  const arr = arrayVariable.value as unknown[]
   const types = new Set(arr.map((item) => getTypeByValue(item)))
   return types.size === 1 ? [...types][0] : 'object'
 }
