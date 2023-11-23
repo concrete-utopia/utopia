@@ -205,6 +205,7 @@ specifiers:
   immer: 3.2.0
   immutability-helper: 3.1.1
   immutable: 3.8.1
+  isomorphic-fetch: 3.0.0
   istextorbinary: 5.11.0
   jStat: 1.5.3
   jest: 27.2.2
@@ -588,6 +589,7 @@ devDependencies:
   husky: 7.0.2
   ignore-styles: 5.0.1
   immutable: 3.8.1
+  isomorphic-fetch: 3.0.0
   jStat: 1.5.3
   jest: 27.2.2
   jest-clean-console-reporter: 0.3.0_jest@27.2.2
@@ -12045,7 +12047,7 @@ packages:
     engines: {node: '>=0.10.0'}
 
   /isomorphic-fetch/2.2.1:
-    resolution: {integrity: sha1-YRrhrPFPXoH3KVB0coGf6XM1WKk=}
+    resolution: {integrity: sha512-9c4TNAKYXM5PRyVcwUZrF3W09nQ+sO7+jydgs4ZGW9dhsLG2VOlISJABombdQqQRXCwuYG3sYV/puGf5rp0qmA==}
     dependencies:
       node-fetch: 1.7.3
       whatwg-fetch: 3.6.2
