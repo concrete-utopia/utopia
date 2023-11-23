@@ -151,7 +151,7 @@ function getDefaultCursorForMode(mode: Mode): CSSCursor {
     case 'textEdit':
       return CSSCursor.Select
     case 'comment':
-      if (mode.location == null) {
+      if (mode.location == null && !mode.isDragging) {
         return CSSCursor.Comment
       }
       return CSSCursor.Select

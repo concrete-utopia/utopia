@@ -3247,9 +3247,11 @@ export const TextEditModeKeepDeepEquality: KeepDeepEqualityCall<TextEditMode> =
     EditorModes.textEditMode,
   )
 
-export const CommentModeKeepDeepEquality: KeepDeepEqualityCall<CommentMode> = combine1EqualityCall(
+export const CommentModeKeepDeepEquality: KeepDeepEqualityCall<CommentMode> = combine2EqualityCalls(
   (mode) => mode.location,
   nullableDeepEquality(CanvasPointKeepDeepEquality),
+  (mode) => mode.isDragging,
+  BooleanKeepDeepEquality,
   EditorModes.commentMode,
 )
 
