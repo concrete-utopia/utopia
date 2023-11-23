@@ -7,7 +7,7 @@ import {
 import type { RemixPresence } from './multiplayer'
 import * as EP from './element-path'
 
-export function useRemixPresence() {
+export function useRemixPresence(): RemixPresence | null {
   const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
   const [remixNavigationState] = useAtom(RemixNavigationAtom)
 
