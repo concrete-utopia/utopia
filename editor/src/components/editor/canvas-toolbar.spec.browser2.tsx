@@ -667,7 +667,7 @@ describe('canvas toolbar', () => {
         data-uid='container'
       >
         <div data-uid='a3d' />
-        <React.Fragment>{myArray.map((item) => (<span>{JSON.stringify(item)}</span>))}</React.Fragment>
+        <React.Fragment>{myArray.map((item) => (<span>{item}</span>))}</React.Fragment>
       </div>
     )`),
     )

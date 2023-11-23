@@ -15,6 +15,7 @@ import {
   jsExpressionOtherJavaScriptSimple,
   jsxFragmentWithoutUID,
   type JSExpressionOtherJavaScript,
+  jsxTextBlock,
 } from '../../core/shared/element-template'
 import { type VariablesInScope } from '../canvas/ui-jsx-canvas'
 import { toComponentId } from '../../core/shared/element-path'
@@ -176,11 +177,8 @@ function arrayInsertableComponentAndJsx(variable: Variable): InsertableComponent
     name: 'item',
     type: arrayElementsType,
   }).jsx
-  const arrayElementString = `${variable.name}.map((item) => ${innerElementString})`
-  const arrayElement = jsxFragmentWithoutUID(
-    [jsExpressionOtherJavaScriptSimple(arrayElementString, [variable.name])],
-    true,
-  )
+  const arrayElementString = `${variable.name}.map((item) => (${innerElementString}))`
+  const arrayElement = jsxFragmentWithoutUID([jsxTextBlock(`{${arrayElementString}}`)], true)
   return insertableComponentAndJSX(arrayElement, arrayElementString)
 }
 
