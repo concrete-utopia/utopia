@@ -1,3 +1,4 @@
+import { CanvasContainerShadowRoot } from '../../components/canvas/canvas-types'
 import type { LoadModule, MatchFile, ModuleLoader } from './loader-types'
 import { loadModuleResult } from './loader-types'
 
@@ -29,14 +30,22 @@ const loadModule: LoadModule = (filename: string, contents: string) => {
           styleTag.type = "text/css";
           styleTag.id = elementId;
           styleTag.appendChild(document.createTextNode(content));
-          document.querySelector("head").appendChild(styleTag);
+
+          // If the canvas container doesn't yet exist, wait for the next frame
+          const canvasContainer = document.getElementById("${CanvasContainerShadowRoot}")
+          if (canvasContainer == null) {
+            requestAnimationFrame(() => {
+              document.getElementById("${CanvasContainerShadowRoot}")?.shadowRoot?.appendChild(styleTag);
+            })
+          } else {
+            canvasContainer.shadowRoot?.appendChild(styleTag);
+          }
         })();
         return {};
       },
     })
   `
 
-  // FIXME Replace CSS custom evaluation from evaluator.ts with this
   return loadModuleResult(filename + '.js', loadedContents)
 }
 

@@ -1,4 +1,6 @@
+import { within } from '@testing-library/react'
 import { getProjectFileByFilePath } from '../../components/assets'
+import { CanvasContainerShadowRoot } from '../../components/canvas/canvas-types'
 import { mouseClickAtPoint } from '../../components/canvas/event-helpers.test-utils'
 import type { EditorRenderResult } from '../../components/canvas/ui-jsx.test-utils'
 import {
@@ -64,7 +66,9 @@ describe('Storyboard utils', () => {
       )
 
       expectStoryboardFileExists(renderResult)
-      expect(renderResult.renderedDOM.queryByTestId(RemixRootComponentTestId)).not.toBeNull()
+      expect(
+        renderResult.getRenderedCanvas().queryByTestId(RemixRootComponentTestId),
+      ).not.toBeNull()
     })
     it('project with an exported App component', async () => {
       const AppTestId = 'App'
@@ -88,7 +92,7 @@ describe('Storyboard utils', () => {
       )
 
       expectStoryboardFileExists(renderResult)
-      expect(renderResult.renderedDOM.queryAllByTestId(AppTestId)).not.toBeNull()
+      expect(renderResult.getRenderedCanvas().queryAllByTestId(AppTestId)).not.toBeNull()
     })
     it('project with no main component', async () => {
       const renderResult = await renderTestEditorWithModel(
@@ -210,7 +214,9 @@ describe('Storyboard utils', () => {
       await mock.updateProjectWithBranchContent
 
       expectStoryboardFileExists(renderResult)
-      expect(renderResult.renderedDOM.queryByTestId(RemixRootComponentTestId)).not.toBeNull()
+      expect(
+        renderResult.getRenderedCanvas().queryByTestId(RemixRootComponentTestId),
+      ).not.toBeNull()
     })
   })
 })

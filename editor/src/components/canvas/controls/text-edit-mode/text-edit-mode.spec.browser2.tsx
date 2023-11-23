@@ -402,7 +402,7 @@ async function clickOnElement(
   singleOrDoubleClick: 'single-click' | 'double-click' = 'single-click',
 ) {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-  const div = editor.renderedDOM.getByTestId(testId)
+  const div = editor.getRenderedCanvas().getByTestId(testId)
   const divBounds = div.getBoundingClientRect()
   const divCorner = {
     x: divBounds.x + 10,

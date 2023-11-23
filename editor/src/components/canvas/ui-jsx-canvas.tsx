@@ -60,7 +60,7 @@ import {
   SceneLevelUtopiaCtxAtom,
   UtopiaProjectCtxAtom,
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
-import { CanvasContainerID } from './canvas-types'
+import { CanvasContainerID, CanvasContainerShadowRoot } from './canvas-types'
 import {
   useKeepReferenceEqualityIfPossible,
   useKeepShallowReferenceEquality,
@@ -92,6 +92,9 @@ import { useRefEditorState } from '../editor/store/store-hook'
 import { matchRoutes } from 'react-router'
 import { useAtom } from 'jotai'
 import { RemixNavigationAtom } from './remix/utopia-remix-root-component'
+import ReactShadowRoot from 'react-shadow-root'
+import { CacheProvider, css } from '@emotion/react'
+import createCache from '@emotion/cache'
 
 applyUIDMonkeyPatch()
 
@@ -166,6 +169,7 @@ export interface UiJsxCanvasProps {
   dispatch: EditorDispatch
   domWalkerAdditionalElementsToUpdate: Array<ElementPath>
   editedText: ElementPath | null
+  renderedInSSR: boolean
 }
 
 export interface CanvasReactReportErrorCallback {
@@ -241,6 +245,7 @@ export function pickUiJsxCanvasProps(
       dispatch: dispatch,
       domWalkerAdditionalElementsToUpdate: editor.canvas.domWalkerAdditionalElementsToUpdate,
       editedText: editedText,
+      renderedInSSR: false,
     }
   }
 }
@@ -571,20 +576,63 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
       style={{
         all: 'initial',
       }}
+      id={CanvasContainerShadowRoot}
+      data-testid={CanvasContainerShadowRoot}
     >
-      <Helmet>{parse(linkTags)}</Helmet>
-      <RerenderUtopiaCtxAtom.Provider value={rerenderUtopiaContextValue}>
-        <UtopiaProjectCtxAtom.Provider value={utopiaProjectContextValue}>
-          <CanvasContainer
-            validRootPaths={rootValidPathsArray}
-            canvasRootElementElementPath={storyboardRootElementPath}
-          >
-            <SceneLevelUtopiaCtxAtom.Provider value={sceneLevelUtopiaContextValue}>
-              {StoryboardRoot}
-            </SceneLevelUtopiaCtxAtom.Provider>
-          </CanvasContainer>
-        </UtopiaProjectCtxAtom.Provider>
-      </RerenderUtopiaCtxAtom.Provider>
+      <ReactShadowRoot declarative={props.renderedInSSR}>
+        <EmotionWrapper>
+          {/*
+            FIXME The below styling is required for certain editor operations that rely on the
+            frame size as measured when box-sizing is set to border-box. We shouldn't be doing this,
+            as this is changing the styling of the user's project. This only exists here because it
+            was an inbuilt assumption based on the existing editor's CSS, which was no longer being
+            applied inside the canvas with the introduction of the shadow root.
+           */}
+          <style>{`div,
+          span,
+          img,
+          ul,
+          li,
+          label {
+            box-sizing: border-box !important;
+          }`}</style>
+          <Helmet>{parse(linkTags)}</Helmet>
+          <RerenderUtopiaCtxAtom.Provider value={rerenderUtopiaContextValue}>
+            <UtopiaProjectCtxAtom.Provider value={utopiaProjectContextValue}>
+              <CanvasContainer
+                validRootPaths={rootValidPathsArray}
+                canvasRootElementElementPath={storyboardRootElementPath}
+              >
+                <SceneLevelUtopiaCtxAtom.Provider value={sceneLevelUtopiaContextValue}>
+                  {StoryboardRoot}
+                </SceneLevelUtopiaCtxAtom.Provider>
+              </CanvasContainer>
+            </UtopiaProjectCtxAtom.Provider>
+          </RerenderUtopiaCtxAtom.Provider>
+        </EmotionWrapper>
+      </ReactShadowRoot>
+    </div>
+  )
+})
+
+// As emotion appends style tags into the document's head by default, we use this wrapper component
+// to direct emotion to instead inject those style tags into a container div inside the shadow root
+const EmotionWrapper = React.memo(({ children }: { children?: React.ReactNode | undefined }) => {
+  const containerRef = React.useRef<HTMLDivElement | null>(null)
+  const [container, setContainer] = React.useState<HTMLDivElement | null>(null)
+
+  React.useEffect(() => setContainer(containerRef.current), [])
+
+  return (
+    <div ref={containerRef}>
+      <CacheProvider
+        value={createCache({
+          key: 'aaa',
+          container: container ?? undefined,
+        })}
+      >
+        {children}
+      </CacheProvider>
     </div>
   )
 })

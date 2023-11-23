@@ -554,7 +554,7 @@ function getElementsWithTestId(editor: EditorRenderResult, testId: string): HTML
   return editor.renderedDOM.queryAllByTestId(testId)
 }
 
-export const expectElementWithTestIdToBeRendered = (
+export const expectNonCanvasElementWithTestIdToBeRendered = (
   editor: EditorRenderResult,
   testId: string,
 ): void => {
@@ -563,7 +563,7 @@ export const expectElementWithTestIdToBeRendered = (
   expect(foundElements[0]?.style.display).not.toEqual('none')
 }
 
-export const expectElementWithTestIdToBeRenderedWithDisplayNone = (
+export const expectNonCanvasElementWithTestIdToBeRenderedWithDisplayNone = (
   editor: EditorRenderResult,
   testId: string,
 ): void => {
@@ -572,7 +572,7 @@ export const expectElementWithTestIdToBeRenderedWithDisplayNone = (
   expect(foundElements[0]?.style.display).toEqual('none')
 }
 
-export const expectElementWithTestIdNotToBeRendered = (
+export const expectNonCanvasElementWithTestIdNotToBeRendered = (
   editor: EditorRenderResult,
   testId: string,
 ): void => expect(getElementsWithTestId(editor, testId).length).toEqual(0)
@@ -581,7 +581,7 @@ export function boundingClientRectToCanvasRectangle(
   result: EditorRenderResult,
   elementBounds: DOMRect,
 ) {
-  const canvasRootContainer = result.renderedDOM.getByTestId(CanvasContainerID)
+  const canvasRootContainer = result.getRenderedCanvas().getByTestId(CanvasContainerID)
   const canvasScale = result.getEditorState().editor.canvas.scale
   const canvasRootRectangle = getCanvasRectangleFromElement(
     canvasRootContainer,

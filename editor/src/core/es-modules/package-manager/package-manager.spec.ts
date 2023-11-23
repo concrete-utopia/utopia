@@ -33,6 +33,7 @@ import { svgToBase64 } from '../../shared/file-utils'
 import { createBuiltInDependenciesList } from './built-in-dependencies-list'
 import * as moduleResolutionExamples from '../test-cases/module-resolution-examples.json'
 import { createNodeModules } from './test-utils'
+import { CanvasContainerShadowRoot } from '../../../components/canvas/canvas-types'
 
 require('jest-fetch-mock').enableMocks()
 
@@ -350,6 +351,13 @@ describe('ES Dependency Manager — Downloads extra files as-needed', () => {
         }
       },
     )
+
+    // Create the shadowroot here so that the CSS file import can write its result somewhere
+    const container = document.createElement('div')
+    container.setAttribute('id', CanvasContainerShadowRoot)
+    const shadowRoot = container.attachShadow({ mode: 'open' })
+    document.body.appendChild(container)
+
     void fetchNodeModules(
       [requestedNpmDependency('mypackage', '0.0.1')],
       createBuiltInDependenciesList(null),
@@ -375,7 +383,7 @@ describe('ES Dependency Manager — Downloads extra files as-needed', () => {
         updatedReq('/src/index.js', 'mypackage/dist/style.css')
 
         // our CSS side effect code ran by now, so we should be able to find the relevant style tag on the JSDOM
-        const styleTag = document.getElementById(
+        const styleTag = shadowRoot.getElementById(
           `${InjectedCSSFilePrefix}/node_modules/mypackage/dist/style.css`,
         )
         expect(styleTag?.innerHTML).toEqual(simpleCssContent)

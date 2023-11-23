@@ -89,6 +89,7 @@ import { getFlexAlignment, getFlexJustifyContent, MaxContent } from '../inspecto
 import type { EditorDispatch } from '../editor/action-types'
 import { runDOMWalker } from '../editor/actions/action-creators'
 import { isLiveMode } from '../editor/editor-modes'
+import { getCanvasShadowRoot } from './canvas-utils'
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
 const ObserversAvailable = (window as any).MutationObserver != null && ResizeObserver != null
@@ -347,8 +348,8 @@ function runSelectiveDomWalker(
 ): { metadata: ElementInstanceMetadataMap; cachedPaths: ElementPath[] } {
   let workingMetadata: ElementInstanceMetadataMap = {}
 
-  const canvasRootContainer = document.getElementById(CanvasContainerID)
-  if (canvasRootContainer != null) {
+  const shadowRoot = getCanvasShadowRoot()
+  if (shadowRoot != null) {
     const parentPoint = canvasPoint({ x: 0, y: 0 })
 
     elementsToFocusOn.forEach((path) => {
@@ -359,7 +360,7 @@ function runSelectiveDomWalker(
        * The assumption is that querySelector will return the "topmost" DOM-element with the matching prefix,
        * which is the same as the "rootest" element we are looking for
        */
-      const foundElement = document.querySelector(
+      const foundElement = shadowRoot.querySelector(
         `[${UTOPIA_PATH_KEY}^="${EP.toString(path)}"]`,
       ) as HTMLElement | null
 
@@ -447,9 +448,10 @@ export function runDomWalker({
       isFeatureEnabled('Debug – Performance Marks (Slow)')) &&
     PERFORMANCE_MARKS_ALLOWED
 
-  const canvasRootContainer = document.getElementById(CanvasContainerID)
+  const shadowRoot = getCanvasShadowRoot()
+  const canvasRootContainer = shadowRoot?.getElementById(CanvasContainerID)
 
-  if (canvasRootContainer != null) {
+  if (shadowRoot != null && canvasRootContainer != null) {
     if (LogDomWalkerPerformance) {
       performance.mark('DOM_WALKER_START')
     }
@@ -462,7 +464,7 @@ export function runDomWalker({
       domWalkerMutableState.resizeObserver != null &&
       domWalkerMutableState.mutationObserver != null
     ) {
-      document.querySelectorAll(`#${CanvasContainerID} *`).forEach((elem) => {
+      shadowRoot.querySelectorAll(`#${CanvasContainerID} *`).forEach((elem) => {
         domWalkerMutableState.resizeObserver.observe(elem)
       })
       domWalkerMutableState.mutationObserver.observe(canvasRootContainer, MutationObserverConfig)

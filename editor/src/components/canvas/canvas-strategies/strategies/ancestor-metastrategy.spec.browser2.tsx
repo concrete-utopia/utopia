@@ -517,7 +517,7 @@ async function runTest(
 
   await editor.dispatch(selectComponents([targetPath], false), true)
 
-  const divToBeDragged = editor.renderedDOM.queryByTestId(DraggedDivId)
+  const divToBeDragged = editor.getRenderedCanvas().queryByTestId(DraggedDivId)
   if (divToBeDragged == null) {
     throw new Error(`div with id ${DraggedDivId} should be there`)
   }

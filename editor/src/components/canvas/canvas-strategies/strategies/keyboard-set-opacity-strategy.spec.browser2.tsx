@@ -17,7 +17,7 @@ describe('adjust opacity with the keyboard', () => {
     it('entering characters', async () => {
       const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
 
-      const div = editor.renderedDOM.getByTestId('div')
+      const div = editor.getRenderedCanvas().getByTestId('div')
       await doSelect(editor)
       await pressKey('a')
       await pressKey('b')
@@ -29,7 +29,7 @@ describe('adjust opacity with the keyboard', () => {
     it('entering character and digit', async () => {
       const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
 
-      const div = editor.renderedDOM.getByTestId('div')
+      const div = editor.getRenderedCanvas().getByTestId('div')
       await doSelect(editor)
       await pressKey('u')
       await pressKey('4')
@@ -41,7 +41,7 @@ describe('adjust opacity with the keyboard', () => {
     it('entering digit and character', async () => {
       const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
 
-      const div = editor.renderedDOM.getByTestId('div')
+      const div = editor.getRenderedCanvas().getByTestId('div')
       await doSelect(editor)
       await pressKey('4')
       await pressKey('u')
@@ -53,7 +53,7 @@ describe('adjust opacity with the keyboard', () => {
     it('entering 3-4', async () => {
       const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
 
-      const div = editor.renderedDOM.getByTestId('div')
+      const div = editor.getRenderedCanvas().getByTestId('div')
       await doSelect(editor)
       await pressKey('3')
       await pressKey('4')
@@ -65,7 +65,7 @@ describe('adjust opacity with the keyboard', () => {
     it('entering 3-0', async () => {
       const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
 
-      const div = editor.renderedDOM.getByTestId('div')
+      const div = editor.getRenderedCanvas().getByTestId('div')
       await doSelect(editor)
       await pressKey('3')
       await pressKey('0')
@@ -77,7 +77,7 @@ describe('adjust opacity with the keyboard', () => {
     it('entering 0-0', async () => {
       const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
 
-      const div = editor.renderedDOM.getByTestId('div')
+      const div = editor.getRenderedCanvas().getByTestId('div')
       await doSelect(editor)
       await pressKey('0')
       await pressKey('0')
@@ -89,7 +89,7 @@ describe('adjust opacity with the keyboard', () => {
     it('entering 1-0-0', async () => {
       const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
 
-      const div = editor.renderedDOM.getByTestId('div')
+      const div = editor.getRenderedCanvas().getByTestId('div')
       await doSelect(editor)
       await pressKey('1')
       await pressKey('0')
@@ -102,7 +102,7 @@ describe('adjust opacity with the keyboard', () => {
     it('enter 4-2-0', async () => {
       const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
 
-      const div = editor.renderedDOM.getByTestId('div')
+      const div = editor.getRenderedCanvas().getByTestId('div')
       await doSelect(editor)
       await pressKey('4')
       await pressKey('2')
@@ -126,8 +126,8 @@ describe('adjust opacity with the keyboard', () => {
         await pressKey('0')
         await editor.getDispatchFollowUpActionsFinished()
 
-        const aaa = editor.renderedDOM.getByTestId('aaa')
-        const bbb = editor.renderedDOM.getByTestId('bbb')
+        const aaa = editor.getRenderedCanvas().getByTestId('aaa')
+        const bbb = editor.getRenderedCanvas().getByTestId('bbb')
 
         expect(aaa.style.opacity).toEqual('0.3')
         expect(bbb.style.opacity).toEqual('0.3')
@@ -138,7 +138,7 @@ describe('adjust opacity with the keyboard', () => {
 
 async function doSelect(editor: EditorRenderResult) {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-  const div = editor.renderedDOM.getByTestId('div')
+  const div = editor.getRenderedCanvas().getByTestId('div')
   const divBounds = div.getBoundingClientRect()
   const divCorner = {
     x: divBounds.x + 50,

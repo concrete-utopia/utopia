@@ -34,7 +34,7 @@ try {
 }
 
 import type { RenderResult } from '@testing-library/react'
-import { act, render } from '@testing-library/react'
+import { act, render, within, type queries, type BoundFunctions } from '@testing-library/react'
 import * as Prettier from 'prettier/standalone'
 import type {
   ElementPath,
@@ -147,6 +147,7 @@ import type { FeatureName } from '../../utils/feature-switches'
 import { setFeatureEnabled } from '../../utils/feature-switches'
 import { unpatchedCreateRemixDerivedDataMemo } from '../editor/store/remix-derived-data'
 import { emptyProjectServerState } from '../editor/store/project-server-state'
+import { CanvasContainerShadowRoot } from './canvas-types'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -196,6 +197,7 @@ export interface EditorRenderResult {
   getDispatchFollowUpActionsFinished: () => Promise<void>
   getEditorState: () => EditorStorePatched
   renderedDOM: RenderResult
+  getRenderedCanvas(): BoundFunctions<typeof queries>
   getNumberOfCommits: () => number
   getNumberOfRenders: () => number
   clearRenderInfo: () => void
@@ -603,15 +605,6 @@ export async function renderTestEditorWithModel(
     >
       <div id={CanvasContextMenuPortalTargetID}></div>
       {failOnCanvasError ? <FailJestOnCanvasError /> : null}
-      <style>{`
-div,
-span,
-img,
-ul,
-li,
-label {
-  box-sizing: border-box !important;
-}`}</style>
       <EditorRoot
         dispatch={asyncTestDispatch as EditorDispatch}
         mainStore={storeHook}
@@ -664,6 +657,14 @@ label {
     getDispatchFollowUpActionsFinished: getDispatchFollowUpActionsFinished,
     getEditorState: () => storeHook.getState(),
     renderedDOM: result,
+    getRenderedCanvas: () => {
+      const shadowRoot = result.queryByTestId(CanvasContainerShadowRoot)?.shadowRoot
+      if (shadowRoot == null) {
+        return within(result.baseElement)
+      } else {
+        return within(shadowRoot as unknown as HTMLElement)
+      }
+    },
     getNumberOfCommits: () => numberOfCommits,
     getNumberOfRenders: () => renderCount - renderCountBaseline,
     clearRenderInfo: () => (renderInfo.current = []),

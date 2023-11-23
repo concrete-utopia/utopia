@@ -1,43 +1,61 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`UiJsxCanvas #747 - DOM object constructor cannot be called as a function 1`] = `
-"<div style=\\"all: initial\\">
-  <div
-    id=\\"canvas-container\\"
-    data-testid=\\"canvas-container\\"
-    style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"sb sb/scene sb/scene/app\\"
-    data-utopia-root-element-path=\\"sb\\"
-  >
-    <div
-      data-utopia-scene-id=\\"sb/scene\\"
-      data-path=\\"sb/scene\\"
-      style=\\"
-        overflow: hidden;
-        position: absolute;
-        background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
-        background-image: conic-gradient(
-          var(--utopitheme-checkerboardLight) 0.25turn,
-          var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
-          var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
-          var(--utopitheme-checkerboardDark) 0.75turn
-        );
-        background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
-        background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
-        left: 0;
-        top: 0;
-        width: 375px;
-        height: 812px;
-      \\"
-      data-uid=\\"scene\\"
-    >
-      <div data-uid=\\"comment-root\\" data-path=\\"sb/scene/app:comment-root\\">
-        hat
+"<div
+  style=\\"all: initial\\"
+  id=\\"canvas-container-shadow-root\\"
+  data-testid=\\"canvas-container-shadow-root\\"
+>
+  <template shadowroot=\\"open\\"
+    ><div>
+      <style>
+        div,
+        span,
+        img,
+        ul,
+        li,
+        label {
+          box-sizing: border-box !important;
+        }
+      </style>
+      <div
+        id=\\"canvas-container\\"
+        data-testid=\\"canvas-container\\"
+        style=\\"position: absolute\\"
+        data-utopia-valid-paths=\\"sb sb/scene sb/scene/app\\"
+        data-utopia-root-element-path=\\"sb\\"
+      >
+        <div
+          data-utopia-scene-id=\\"sb/scene\\"
+          data-path=\\"sb/scene\\"
+          style=\\"
+            overflow: hidden;
+            position: absolute;
+            background-color: var(--utopitheme-emphasizedBackground);
+            box-shadow: 0px 0px 1px 0px
+              var(--utopitheme-neutralInvertedBackground30);
+            background-image: conic-gradient(
+              var(--utopitheme-checkerboardLight) 0.25turn,
+              var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
+              var(--utopitheme-checkerboardLight) 0.5turn 0.75turn,
+              var(--utopitheme-checkerboardDark) 0.75turn
+            );
+            background-size: 12px 12px, 12px 12px, 12px 12px, 12px 12px;
+            background-position: -9px 0px, -3px -6px, 3px 6px, -3px 0;
+            left: 0;
+            top: 0;
+            width: 375px;
+            height: 812px;
+          \\"
+          data-uid=\\"scene\\"
+        >
+          <div data-uid=\\"comment-root\\" data-path=\\"sb/scene/app:comment-root\\">
+            hat
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
+    </div></template
+  >
 </div>
 "
 `;

@@ -57,7 +57,7 @@ async function doTest(
   alignItems: StartCenterEnd,
 ): Promise<HTMLElement> {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-  const div = editor.renderedDOM.getByTestId('mydiv')
+  const div = editor.getRenderedCanvas().getByTestId('mydiv')
   const divBounds = div.getBoundingClientRect()
   const divCorner = {
     x: divBounds.x + 50,

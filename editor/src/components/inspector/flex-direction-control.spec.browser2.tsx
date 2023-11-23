@@ -78,19 +78,19 @@ describe('set flex direction', () => {
 
     expect(div.style.flexDirection).toEqual('column')
 
-    const blue = editor.renderedDOM.getByTestId('blue')
+    const blue = editor.getRenderedCanvas().getByTestId('blue')
     expect(blue.style.flex).toEqual('')
     expect(blue.style.height).toEqual('')
     expect(blue.style.width).toEqual('170px')
     expect(blue.style.flexGrow).toEqual('1')
 
-    const red = editor.renderedDOM.getByTestId('red')
+    const red = editor.getRenderedCanvas().getByTestId('red')
     expect(red.style.flex).toEqual('')
     expect(red.style.height).toEqual('')
     expect(red.style.width).toEqual('211px')
     expect(red.style.flexGrow).toEqual('1')
 
-    const green = editor.renderedDOM.getByTestId('green')
+    const green = editor.getRenderedCanvas().getByTestId('green')
     expect(green.style.flex).toEqual('')
     expect(green.style.height).toEqual('')
     expect(green.style.width).toEqual('188px')
@@ -115,7 +115,7 @@ describe('set flex direction', () => {
 
 async function selectDiv(editor: EditorRenderResult): Promise<HTMLElement> {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-  const div = editor.renderedDOM.getByTestId('mydiv')
+  const div = editor.getRenderedCanvas().getByTestId('mydiv')
   const divBounds = div.getBoundingClientRect()
   const divCorner = {
     x: divBounds.x + 50,

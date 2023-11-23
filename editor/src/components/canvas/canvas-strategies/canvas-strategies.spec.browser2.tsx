@@ -122,7 +122,7 @@ async function startElementDragNoMouseUp(
   dragDelta: WindowPoint,
   modifiers: Modifiers,
 ): Promise<void> {
-  const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
+  const targetElement = renderResult.getRenderedCanvas().getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
   const canvasControl = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 

@@ -23,7 +23,7 @@ async function selectTargetAndDoubleClickOnZeroSizeControl(
   await renderResult.dispatch(selectComponents([target], false), true)
 
   const zeroSizeControl = renderResult.renderedDOM.getByTestId(ZeroSizedEventsControlTestID)
-  const element = renderResult.renderedDOM.getByTestId(testID)
+  const element = renderResult.getRenderedCanvas().getByTestId(testID)
   const elementBounds = element.getBoundingClientRect()
 
   const targetPoint = {

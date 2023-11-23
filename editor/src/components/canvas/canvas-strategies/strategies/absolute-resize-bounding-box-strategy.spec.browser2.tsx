@@ -31,9 +31,9 @@ import {
   EdgePositionBottomLeft,
 } from '../../canvas-types'
 import {
-  expectElementWithTestIdNotToBeRendered,
-  expectElementWithTestIdToBeRendered,
-  expectElementWithTestIdToBeRenderedWithDisplayNone,
+  expectNonCanvasElementWithTestIdNotToBeRendered,
+  expectNonCanvasElementWithTestIdToBeRendered,
+  expectNonCanvasElementWithTestIdToBeRenderedWithDisplayNone,
   selectComponentsForTest,
   wait,
 } from '../../../../utils/utils.test-utils'
@@ -309,7 +309,7 @@ async function doDblClickTest(
   verticalOffset: number = 30,
 ): Promise<HTMLElement> {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-  const div = editor.renderedDOM.getByTestId('mydiv')
+  const div = editor.getRenderedCanvas().getByTestId('mydiv')
   const divBounds = div.getBoundingClientRect()
   const divCorner = {
     x: divBounds.x + 50,
@@ -637,7 +637,7 @@ export var storyboard = (
 )
 `
 
-/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectElementWithTestIdNotToBeRendered", "expectElementWithTestIdToBeRendered"] }] */
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectNonCanvasElementWithTestIdNotToBeRendered", "expectNonCanvasElementWithTestIdToBeRendered"] }] */
 
 describe('Absolute Resize Strategy', () => {
   it('the size label is not shown when an empty fragment is selected', async () => {
@@ -1357,7 +1357,9 @@ export var storyboard = (
     await resizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers)
     await renderResult.getDispatchFollowUpActionsFinished()
 
-    const supportsStyleDiv = renderResult.renderedDOM.getByTestId('supports-style-component')
+    const supportsStyleDiv = renderResult
+      .getRenderedCanvas()
+      .getByTestId('supports-style-component')
     const supportsStyleRect = supportsStyleDiv.getBoundingClientRect()
     expect(supportsStyleRect.width).toEqual(125)
     expect(supportsStyleRect.height).toEqual(125)
@@ -2124,7 +2126,7 @@ export var storyboard = (
           emptyModifiers,
         )
 
-        const span = await renderResult.renderedDOM.findByTestId('span')
+        const span = await renderResult.getRenderedCanvas().findByTestId('span')
         expect(span.clientWidth).toEqual(68)
         expect(isBetween(span.clientHeight, 18, 19)).toBe(true)
       })
@@ -2159,7 +2161,7 @@ export var storyboard = (
           emptyModifiers,
         )
 
-        const span = await renderResult.renderedDOM.findByTestId('span')
+        const span = await renderResult.getRenderedCanvas().findByTestId('span')
         expect(span.clientWidth).toEqual(88)
         expect(isBetween(span.clientHeight, 37, 39)).toBe(true)
       })
@@ -2197,7 +2199,7 @@ export var storyboard = (
           emptyModifiers,
         )
 
-        const span = await renderResult.renderedDOM.findByTestId('span')
+        const span = await renderResult.getRenderedCanvas().findByTestId('span')
         expect(span.clientWidth).toEqual(88)
         expect(isBetween(span.clientHeight, 37, 39)).toBe(true)
       })
@@ -2235,7 +2237,7 @@ export var storyboard = (
           emptyModifiers,
         )
 
-        const span = await renderResult.renderedDOM.findByTestId('span')
+        const span = await renderResult.getRenderedCanvas().findByTestId('span')
         expect(span.clientWidth).toEqual(88)
         expect(isBetween(span.clientHeight, 37, 39)).toBe(true)
       })
@@ -2273,7 +2275,7 @@ export var storyboard = (
           emptyModifiers,
         )
 
-        const span = await renderResult.renderedDOM.findByTestId('span')
+        const span = await renderResult.getRenderedCanvas().findByTestId('span')
         expect(span.clientWidth).toEqual(80)
         expect(span.clientHeight).toEqual(28)
       })
@@ -2827,13 +2829,16 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
       'await-first-dom-report',
     )
 
-    expectElementWithTestIdNotToBeRendered(renderResult, AbsoluteResizeControlTestId([]))
+    expectNonCanvasElementWithTestIdNotToBeRendered(renderResult, AbsoluteResizeControlTestId([]))
 
     const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
     await renderResult.dispatch([selectComponents([target], false)], true)
     await renderResult.getDispatchFollowUpActionsFinished()
 
-    expectElementWithTestIdToBeRendered(renderResult, AbsoluteResizeControlTestId([target]))
+    expectNonCanvasElementWithTestIdToBeRendered(
+      renderResult,
+      AbsoluteResizeControlTestId([target]),
+    )
   })
 
   it('when a condition is overriden to one without an element, the bounding box disappears (when the conditional has siblings)', async () => {
@@ -2856,7 +2861,7 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
       'await-first-dom-report',
     )
 
-    expectElementWithTestIdNotToBeRendered(renderResult, AbsoluteResizeControlTestId([]))
+    expectNonCanvasElementWithTestIdNotToBeRendered(renderResult, AbsoluteResizeControlTestId([]))
 
     const conditional = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
     await renderResult.dispatch([selectComponents([conditional], false)], true)
@@ -2864,24 +2869,30 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
 
     const childOfConditional = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional', 'bbb'])
 
-    expectElementWithTestIdNotToBeRendered(renderResult, AbsoluteResizeControlTestId([conditional]))
-    expectElementWithTestIdToBeRendered(
+    expectNonCanvasElementWithTestIdNotToBeRendered(
+      renderResult,
+      AbsoluteResizeControlTestId([conditional]),
+    )
+    expectNonCanvasElementWithTestIdToBeRendered(
       renderResult,
       AbsoluteResizeControlTestId([childOfConditional]),
     )
 
     await renderResult.dispatch([setConditionalOverriddenCondition(conditional, false)], true)
     await renderResult.getDispatchFollowUpActionsFinished()
-    expectElementWithTestIdNotToBeRendered(
+    expectNonCanvasElementWithTestIdNotToBeRendered(
       renderResult,
       AbsoluteResizeControlTestId([childOfConditional]),
     )
 
-    expectElementWithTestIdNotToBeRendered(
+    expectNonCanvasElementWithTestIdNotToBeRendered(
       renderResult,
       AbsoluteResizeControlTestId([childOfConditional]),
     )
-    expectElementWithTestIdNotToBeRendered(renderResult, AbsoluteResizeControlTestId([conditional]))
+    expectNonCanvasElementWithTestIdNotToBeRendered(
+      renderResult,
+      AbsoluteResizeControlTestId([conditional]),
+    )
   })
 
   it('when an absolute positioned element is resized the parent outlines become visible', async () => {
@@ -2898,17 +2909,26 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
       'await-first-dom-report',
     )
 
-    expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentOutlinesTestId([]))
-    expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentBoundsTestId([]))
-    expectElementWithTestIdNotToBeRendered(renderResult, AbsoluteResizeControlTestId([]))
+    expectNonCanvasElementWithTestIdNotToBeRendered(renderResult, ImmediateParentOutlinesTestId([]))
+    expectNonCanvasElementWithTestIdNotToBeRendered(renderResult, ImmediateParentBoundsTestId([]))
+    expectNonCanvasElementWithTestIdNotToBeRendered(renderResult, AbsoluteResizeControlTestId([]))
 
     const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
     await startDragUsingActions(renderResult, target, EdgePositionLeft, canvasPoint({ x: 5, y: 5 }))
 
     await wait(ControlDelay + 10)
-    expectElementWithTestIdToBeRendered(renderResult, ImmediateParentOutlinesTestId([target]))
-    expectElementWithTestIdToBeRendered(renderResult, ImmediateParentBoundsTestId([target]))
-    expectElementWithTestIdToBeRendered(renderResult, AbsoluteResizeControlTestId([target]))
+    expectNonCanvasElementWithTestIdToBeRendered(
+      renderResult,
+      ImmediateParentOutlinesTestId([target]),
+    )
+    expectNonCanvasElementWithTestIdToBeRendered(
+      renderResult,
+      ImmediateParentBoundsTestId([target]),
+    )
+    expectNonCanvasElementWithTestIdToBeRendered(
+      renderResult,
+      AbsoluteResizeControlTestId([target]),
+    )
   })
 
   describe('when a fragment-like element is resized the parent outlines become visible', () => {
@@ -2929,9 +2949,18 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
           'await-first-dom-report',
         )
 
-        expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentOutlinesTestId([]))
-        expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentBoundsTestId([]))
-        expectElementWithTestIdNotToBeRendered(renderResult, AbsoluteResizeControlTestId([]))
+        expectNonCanvasElementWithTestIdNotToBeRendered(
+          renderResult,
+          ImmediateParentOutlinesTestId([]),
+        )
+        expectNonCanvasElementWithTestIdNotToBeRendered(
+          renderResult,
+          ImmediateParentBoundsTestId([]),
+        )
+        expectNonCanvasElementWithTestIdNotToBeRendered(
+          renderResult,
+          AbsoluteResizeControlTestId([]),
+        )
 
         const target = EP.appendNewElementPath(TestScenePath, ['container', FragmentLikeElementUid])
         await startDragUsingActions(
@@ -2942,10 +2971,16 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
         )
 
         await wait(ControlDelay + 10)
-        expectElementWithTestIdToBeRendered(renderResult, ImmediateParentOutlinesTestId([target]))
-        expectElementWithTestIdToBeRendered(renderResult, ImmediateParentBoundsTestId([target]))
+        expectNonCanvasElementWithTestIdToBeRendered(
+          renderResult,
+          ImmediateParentOutlinesTestId([target]),
+        )
+        expectNonCanvasElementWithTestIdToBeRendered(
+          renderResult,
+          ImmediateParentBoundsTestId([target]),
+        )
         // FIXME Does this imply these tests are actually broken, or that this was the actual expectation all along?
-        expectElementWithTestIdToBeRenderedWithDisplayNone(
+        expectNonCanvasElementWithTestIdToBeRenderedWithDisplayNone(
           renderResult,
           AbsoluteResizeControlTestId([target]),
         )

@@ -306,7 +306,7 @@ async function dragElement(
   modifiers: Modifiers,
   expectedNavigatorTargetsDuringMove: Array<string>,
 ): Promise<void> {
-  const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
+  const targetElement = renderResult.getRenderedCanvas().getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
   const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -327,7 +327,7 @@ async function startDraggingAnElement(
   targetTestId: string,
   dragDelta: WindowPoint,
 ): Promise<void> {
-  const targetElement = renderResult.renderedDOM.getByTestId(targetTestId)
+  const targetElement = renderResult.getRenderedCanvas().getByTestId(targetTestId)
   const targetElementBounds = targetElement.getBoundingClientRect()
   const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 

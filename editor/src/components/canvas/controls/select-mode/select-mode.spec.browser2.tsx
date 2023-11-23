@@ -136,7 +136,7 @@ describe('Select Mode Selection', () => {
       'await-first-dom-report',
     )
 
-    const areaControl = renderResult.renderedDOM.getByTestId('targetdiv')
+    const areaControl = renderResult.getRenderedCanvas().getByTestId('targetdiv')
     const areaControlBounds = areaControl.getBoundingClientRect()
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -240,7 +240,7 @@ describe('Select Mode Selection', () => {
       true,
     )
 
-    const areaControl = renderResult.renderedDOM.getByTestId('aaa')
+    const areaControl = renderResult.getRenderedCanvas().getByTestId('aaa')
     const areaControlBounds = areaControl.getBoundingClientRect()
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -264,7 +264,7 @@ describe('Select Mode Advanced Cases', () => {
       'await-first-dom-report',
     )
 
-    const cardSceneRoot = renderResult.renderedDOM.getByTestId('card-scene')
+    const cardSceneRoot = renderResult.getRenderedCanvas().getByTestId('card-scene')
     const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -308,7 +308,7 @@ describe('Select Mode Clicking', () => {
       'await-first-dom-report',
     )
 
-    const cardSceneRoot = renderResult.renderedDOM.getByTestId('card-scene')
+    const cardSceneRoot = renderResult.getRenderedCanvas().getByTestId('card-scene')
     const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -339,7 +339,7 @@ describe('Select Mode Clicking', () => {
       'await-first-dom-report',
     )
 
-    const cardSceneRoot = renderResult.renderedDOM.getByTestId('card-scene')
+    const cardSceneRoot = renderResult.getRenderedCanvas().getByTestId('card-scene')
     const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -383,7 +383,7 @@ describe('Select Mode Clicking', () => {
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const cardSceneRoot = renderResult.renderedDOM.getByTestId('generated-card-1')
+    const cardSceneRoot = renderResult.getRenderedCanvas().getByTestId('generated-card-1')
     const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
 
     const doubleClick = createDoubleClicker(
@@ -435,7 +435,7 @@ describe('Select Mode Clicking', () => {
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const cardSceneRoot = renderResult.renderedDOM.getByTestId('generated-card-1')
+    const cardSceneRoot = renderResult.getRenderedCanvas().getByTestId('generated-card-1')
     const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
 
     const doubleClick = createDoubleClicker(
@@ -488,7 +488,7 @@ describe('Select Mode Clicking', () => {
       'await-first-dom-report',
     )
 
-    const playgroundRoot = renderResult.renderedDOM.getByTestId('pg-root')
+    const playgroundRoot = renderResult.getRenderedCanvas().getByTestId('pg-root')
     const playgroundRootBounds = playgroundRoot.getBoundingClientRect()
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -543,7 +543,7 @@ describe('Select Mode Clicking', () => {
       'await-first-dom-report',
     )
 
-    const playgroundRoot = renderResult.renderedDOM.getByTestId('pg-root')
+    const playgroundRoot = renderResult.getRenderedCanvas().getByTestId('pg-root')
     const playgroundRootBounds = playgroundRoot.getBoundingClientRect()
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -582,7 +582,7 @@ describe('Select Mode Clicking', () => {
       'await-first-dom-report',
     )
 
-    const playgroundRoot = renderResult.renderedDOM.getByTestId('pg-root')
+    const playgroundRoot = renderResult.getRenderedCanvas().getByTestId('pg-root')
     const playgroundRootBounds = playgroundRoot.getBoundingClientRect()
 
     // Unlock the playground root so that we can click to select it
@@ -684,7 +684,7 @@ describe('Select Mode Double Clicking With Fragments', () => {
       'await-first-dom-report',
     )
 
-    const cardSceneRoot = renderResult.renderedDOM.getByTestId('card-scene')
+    const cardSceneRoot = renderResult.getRenderedCanvas().getByTestId('card-scene')
     const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -721,7 +721,7 @@ describe('Select Mode Double Clicking With Fragments', () => {
       'await-first-dom-report',
     )
 
-    const cardSceneRoot = renderResult.renderedDOM.getByTestId('card-scene')
+    const cardSceneRoot = renderResult.getRenderedCanvas().getByTestId('card-scene')
     const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -765,7 +765,7 @@ describe('Select Mode Double Clicking With Fragments', () => {
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const cardSceneRoot = renderResult.renderedDOM.getByTestId('generated-card-1')
+    const cardSceneRoot = renderResult.getRenderedCanvas().getByTestId('generated-card-1')
     const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
 
     const doubleClick = createDoubleClicker(
@@ -817,7 +817,7 @@ describe('Select Mode Double Clicking With Fragments', () => {
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const cardSceneRoot = renderResult.renderedDOM.getByTestId('generated-card-1')
+    const cardSceneRoot = renderResult.getRenderedCanvas().getByTestId('generated-card-1')
     const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
 
     const doubleClick = createDoubleClicker(
@@ -879,7 +879,7 @@ describe('Select Mode Double Clicking With Fragments', () => {
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    const cardSceneRoot = renderResult.renderedDOM.getByTestId('generated-card-1')
+    const cardSceneRoot = renderResult.getRenderedCanvas().getByTestId('generated-card-1')
     const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
 
     const doubleClick = createDoubleClicker(
@@ -937,7 +937,7 @@ describe('Select Mode Double Clicking With conditionals', () => {
       'await-first-dom-report',
     )
 
-    const cardSceneRoot = renderResult.renderedDOM.getByTestId('card-scene')
+    const cardSceneRoot = renderResult.getRenderedCanvas().getByTestId('card-scene')
     const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -982,7 +982,7 @@ describe('Select Mode Double Clicking With conditionals', () => {
       'await-first-dom-report',
     )
 
-    const cardSceneRoot = renderResult.renderedDOM.getByTestId('card-scene')
+    const cardSceneRoot = renderResult.getRenderedCanvas().getByTestId('card-scene')
     const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -1040,7 +1040,7 @@ describe('Selection with locked elements', () => {
       true,
     )
 
-    const cardSceneRoot = renderResult.renderedDOM.getByTestId('card-scene')
+    const cardSceneRoot = renderResult.getRenderedCanvas().getByTestId('card-scene')
     const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -1080,7 +1080,7 @@ describe('Selection with locked elements', () => {
       true,
     )
 
-    const cardSceneRoot = renderResult.renderedDOM.getByTestId('card-scene')
+    const cardSceneRoot = renderResult.getRenderedCanvas().getByTestId('card-scene')
     const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -1117,7 +1117,7 @@ describe('Storyboard auto-focusing', () => {
       'await-first-dom-report',
     )
 
-    const appSpan = renderResult.renderedDOM.getByTestId('app-span')
+    const appSpan = renderResult.getRenderedCanvas().getByTestId('app-span')
     const appSpanBounds = appSpan.getBoundingClientRect()
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -1142,7 +1142,7 @@ describe('Storyboard auto-focusing', () => {
       'await-first-dom-report',
     )
 
-    const cardSpan1 = renderResult.renderedDOM.getByTestId('card-span-1')
+    const cardSpan1 = renderResult.getRenderedCanvas().getByTestId('card-span-1')
     const cardSpan1Bounds = cardSpan1.getBoundingClientRect()
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -1157,7 +1157,7 @@ describe('Storyboard auto-focusing', () => {
     checkFocusedPath(renderResult, null)
     checkSelectedPaths(renderResult, [desiredPaths[0]])
 
-    const cardSpan2 = renderResult.renderedDOM.getByTestId('card-span-2')
+    const cardSpan2 = renderResult.getRenderedCanvas().getByTestId('card-span-2')
     const cardSpan2Bounds = cardSpan2.getBoundingClientRect()
 
     await fireSingleClickEvents(
@@ -1183,7 +1183,7 @@ describe('Storyboard auto-focusing', () => {
       'await-first-dom-report',
     )
 
-    const generatedSpan1 = renderResult.renderedDOM.getByTestId('generated-span-1')
+    const generatedSpan1 = renderResult.getRenderedCanvas().getByTestId('generated-span-1')
     const generatedSpan1Bounds = generatedSpan1.getBoundingClientRect()
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -1198,7 +1198,7 @@ describe('Storyboard auto-focusing', () => {
     checkFocusedPath(renderResult, null)
     checkSelectedPaths(renderResult, [desiredPaths[0]])
 
-    const generatedSpan2 = renderResult.renderedDOM.getByTestId('generated-span-2')
+    const generatedSpan2 = renderResult.getRenderedCanvas().getByTestId('generated-span-2')
     const generatedSpan2Bounds = generatedSpan2.getBoundingClientRect()
 
     await fireSingleClickEvents(
@@ -1221,7 +1221,7 @@ describe('Storyboard auto-focusing', () => {
       'await-first-dom-report',
     )
 
-    const sbChildSpan = renderResult.renderedDOM.getByTestId('sbchild-span')
+    const sbChildSpan = renderResult.getRenderedCanvas().getByTestId('sbchild-span')
     const sbChildSpanBounds = sbChildSpan.getBoundingClientRect()
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -1245,7 +1245,7 @@ describe('Select mode focusing and un-focusing', () => {
       'await-first-dom-report',
     )
 
-    const cardSpan1 = renderResult.renderedDOM.getByTestId('card-span-1')
+    const cardSpan1 = renderResult.getRenderedCanvas().getByTestId('card-span-1')
     const cardSpan1Bounds = cardSpan1.getBoundingClientRect()
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -1267,7 +1267,7 @@ describe('Select mode focusing and un-focusing', () => {
       'await-first-dom-report',
     )
 
-    const cardSpan1 = renderResult.renderedDOM.getByTestId('card-span-1')
+    const cardSpan1 = renderResult.getRenderedCanvas().getByTestId('card-span-1')
     const cardSpan1Bounds = cardSpan1.getBoundingClientRect()
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -1300,7 +1300,7 @@ describe('Select mode focusing and un-focusing', () => {
       'await-first-dom-report',
     )
 
-    const cardSpan1 = renderResult.renderedDOM.getByTestId('card-span-1')
+    const cardSpan1 = renderResult.getRenderedCanvas().getByTestId('card-span-1')
     const cardSpan1Bounds = cardSpan1.getBoundingClientRect()
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -1316,7 +1316,7 @@ describe('Select mode focusing and un-focusing', () => {
     checkSelectedPaths(renderResult, [EP.fromString('sb/sc-cards/card1:card1-root/card1-div')])
 
     // Select a different element
-    const cardSpan2 = renderResult.renderedDOM.getByTestId('card-span-2')
+    const cardSpan2 = renderResult.getRenderedCanvas().getByTestId('card-span-2')
     const cardSpan2Bounds = cardSpan2.getBoundingClientRect()
 
     await fireSingleClickEvents(
@@ -1344,7 +1344,7 @@ describe('Select mode focusing and un-focusing', () => {
       'await-first-dom-report',
     )
 
-    const cardSpan1 = renderResult.renderedDOM.getByTestId('card-span-1')
+    const cardSpan1 = renderResult.getRenderedCanvas().getByTestId('card-span-1')
     const cardSpan1Bounds = cardSpan1.getBoundingClientRect()
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -1380,7 +1380,7 @@ describe('Select mode focusing and un-focusing', () => {
       'await-first-dom-report',
     )
 
-    const cardSpan1 = renderResult.renderedDOM.getByTestId('card-span-1')
+    const cardSpan1 = renderResult.getRenderedCanvas().getByTestId('card-span-1')
     const cardSpan1Bounds = cardSpan1.getBoundingClientRect()
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -1416,7 +1416,7 @@ describe('Select mode focusing and un-focusing', () => {
       'await-first-dom-report',
     )
 
-    const cardSpan1 = renderResult.renderedDOM.getByTestId('card-span-1')
+    const cardSpan1 = renderResult.getRenderedCanvas().getByTestId('card-span-1')
     const cardSpan1Bounds = cardSpan1.getBoundingClientRect()
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -1432,7 +1432,7 @@ describe('Select mode focusing and un-focusing', () => {
     checkSelectedPaths(renderResult, [EP.fromString('sb/sc-cards/card1:card1-root/card1-div')])
 
     // Select a different element
-    const cardSpan2 = renderResult.renderedDOM.getByTestId('card-span-2')
+    const cardSpan2 = renderResult.getRenderedCanvas().getByTestId('card-span-2')
     const cardSpan2Bounds = cardSpan2.getBoundingClientRect()
 
     await fireSingleClickEvents(
@@ -1460,7 +1460,7 @@ describe('Select mode focusing and un-focusing', () => {
       'await-first-dom-report',
     )
 
-    const cardSpan1 = renderResult.renderedDOM.getByTestId('card-span-1')
+    const cardSpan1 = renderResult.getRenderedCanvas().getByTestId('card-span-1')
     const cardSpan1Bounds = cardSpan1.getBoundingClientRect()
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
@@ -1546,7 +1546,7 @@ describe('mouseup selection', () => {
   ])
 
   async function getElementRect(testId: string, renderResult: EditorRenderResult) {
-    const targetElement = await renderResult.renderedDOM.findByTestId(testId)
+    const targetElement = await renderResult.getRenderedCanvas().findByTestId(testId)
     return targetElement.getBoundingClientRect()
   }
 
@@ -1673,7 +1673,7 @@ describe('mouseup selection', () => {
         'await-first-dom-report',
       )
 
-      const overflownText = renderResult.renderedDOM.getByTestId('pg-div')
+      const overflownText = renderResult.getRenderedCanvas().getByTestId('pg-div')
       const overflownTextBounds = overflownText.getBoundingClientRect()
 
       const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)

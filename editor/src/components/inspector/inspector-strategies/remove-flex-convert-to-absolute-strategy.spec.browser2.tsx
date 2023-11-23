@@ -23,14 +23,14 @@ describe('remove-flex-convert-to-absolute strategy', () => {
     expect(root.style.width).toEqual('548px')
     expect(root.style.height).toEqual('462px')
 
-    const left = editor.renderedDOM.getByTestId('left')
+    const left = editor.getRenderedCanvas().getByTestId('left')
     expect(left.style.position).toEqual('absolute')
     expect(left.style.left).toEqual('0px')
     expect(left.style.top).toEqual('135px')
     expect(left.style.height).toEqual('173px')
     expect(left.style.width).toEqual('259px')
 
-    const right = editor.renderedDOM.getByTestId('right')
+    const right = editor.getRenderedCanvas().getByTestId('right')
     expect(right.style.position).toEqual('absolute')
     expect(right.style.left).toEqual('289px')
     expect(right.style.top).toEqual('40px')
@@ -41,7 +41,7 @@ describe('remove-flex-convert-to-absolute strategy', () => {
 
 async function selectDiv(editor: EditorRenderResult): Promise<HTMLElement> {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-  const div = editor.renderedDOM.getByTestId('root')
+  const div = editor.getRenderedCanvas().getByTestId('root')
   const divBounds = div.getBoundingClientRect()
   const divCorner = {
     x: divBounds.x + 50,

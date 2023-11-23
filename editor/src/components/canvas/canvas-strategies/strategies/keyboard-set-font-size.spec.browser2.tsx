@@ -23,7 +23,7 @@ describe('adjust font size with the keyboard', () => {
     it('increase font size', async () => {
       const editor = await renderTestEditorWithCode(projectWithNoFontSize, 'await-first-dom-report')
 
-      const div = editor.renderedDOM.getByTestId('div')
+      const div = editor.getRenderedCanvas().getByTestId('div')
       await doSelect(editor)
       await doTestWithDelta(editor, { increaseBy: 1, decreaseBy: 0 })
       await editor.getDispatchFollowUpActionsFinished()
@@ -34,7 +34,7 @@ describe('adjust font size with the keyboard', () => {
     it('increase font size multiple times', async () => {
       const editor = await renderTestEditorWithCode(projectWithNoFontSize, 'await-first-dom-report')
 
-      const div = editor.renderedDOM.getByTestId('div')
+      const div = editor.getRenderedCanvas().getByTestId('div')
       await doSelect(editor)
       await doTestWithDelta(editor, { increaseBy: 5, decreaseBy: 0 })
       await editor.getDispatchFollowUpActionsFinished()
@@ -45,7 +45,7 @@ describe('adjust font size with the keyboard', () => {
     it('decrease font size', async () => {
       const editor = await renderTestEditorWithCode(projectWithNoFontSize, 'await-first-dom-report')
 
-      const div = editor.renderedDOM.getByTestId('div')
+      const div = editor.getRenderedCanvas().getByTestId('div')
       await doSelect(editor)
       await doTestWithDelta(editor, { increaseBy: 0, decreaseBy: 1 })
       await editor.getDispatchFollowUpActionsFinished()
@@ -56,7 +56,7 @@ describe('adjust font size with the keyboard', () => {
     it('decrease font size multiple times', async () => {
       const editor = await renderTestEditorWithCode(projectWithNoFontSize, 'await-first-dom-report')
 
-      const div = editor.renderedDOM.getByTestId('div')
+      const div = editor.getRenderedCanvas().getByTestId('div')
       await doSelect(editor)
       await doTestWithDelta(editor, { increaseBy: 0, decreaseBy: 5 })
       await editor.getDispatchFollowUpActionsFinished()
@@ -67,7 +67,7 @@ describe('adjust font size with the keyboard', () => {
     it('increase font size, in a hierarchy', async () => {
       const editor = await renderTestEditorWithCode(projectWithHierarchy, 'await-first-dom-report')
 
-      const div = editor.renderedDOM.getByTestId('div')
+      const div = editor.getRenderedCanvas().getByTestId('div')
       await doSelect(editor, 'double')
       await doTestWithDelta(editor, { increaseBy: 1, decreaseBy: 0 })
       await editor.getDispatchFollowUpActionsFinished()
@@ -82,7 +82,7 @@ describe('adjust font size with the keyboard', () => {
         'await-first-dom-report',
       )
 
-      const div = editor.renderedDOM.getByTestId('div')
+      const div = editor.getRenderedCanvas().getByTestId('div')
       await doSelect(editor)
       await doTestWithDelta(editor, { increaseBy: 1, decreaseBy: 0 })
       await editor.getDispatchFollowUpActionsFinished()
@@ -96,7 +96,7 @@ describe('adjust font size with the keyboard', () => {
         'await-first-dom-report',
       )
 
-      const div = editor.renderedDOM.getByTestId('div')
+      const div = editor.getRenderedCanvas().getByTestId('div')
       await doSelect(editor)
       await doTestWithDelta(editor, { increaseBy: 5, decreaseBy: 0 })
       await editor.getDispatchFollowUpActionsFinished()
@@ -110,7 +110,7 @@ describe('adjust font size with the keyboard', () => {
         'await-first-dom-report',
       )
 
-      const div = editor.renderedDOM.getByTestId('div')
+      const div = editor.getRenderedCanvas().getByTestId('div')
       await doSelect(editor)
       await doTestWithDelta(editor, { increaseBy: 0, decreaseBy: 1 })
       await editor.getDispatchFollowUpActionsFinished()
@@ -124,7 +124,7 @@ describe('adjust font size with the keyboard', () => {
         'await-first-dom-report',
       )
 
-      const div = editor.renderedDOM.getByTestId('div')
+      const div = editor.getRenderedCanvas().getByTestId('div')
       await doSelect(editor)
       await doTestWithDelta(editor, { increaseBy: 0, decreaseBy: 5 })
       await editor.getDispatchFollowUpActionsFinished()
@@ -139,7 +139,7 @@ describe('adjust font size with the keyboard', () => {
         'await-first-dom-report',
       )
 
-      const div = editor.renderedDOM.getByTestId('div')
+      const div = editor.getRenderedCanvas().getByTestId('div')
       await doSelect(editor)
       await doTestWithDelta(editor, { increaseBy: 1, decreaseBy: 0 })
       await editor.getDispatchFollowUpActionsFinished()
@@ -153,7 +153,7 @@ describe('adjust font size with the keyboard', () => {
         'await-first-dom-report',
       )
 
-      const div = editor.renderedDOM.getByTestId('div')
+      const div = editor.getRenderedCanvas().getByTestId('div')
       await doSelect(editor)
       await doTestWithDelta(editor, { increaseBy: 0, decreaseBy: 1 })
       await editor.getDispatchFollowUpActionsFinished()
@@ -180,8 +180,8 @@ describe('adjust font size with the keyboard', () => {
 
         await editor.getDispatchFollowUpActionsFinished()
 
-        const aaa = editor.renderedDOM.getByTestId('aaa')
-        const bbb = editor.renderedDOM.getByTestId('bbb')
+        const aaa = editor.getRenderedCanvas().getByTestId('aaa')
+        const bbb = editor.getRenderedCanvas().getByTestId('bbb')
 
         expect(aaa.style.fontSize).toEqual('17px')
         expect(bbb.style.fontSize).toEqual('17px')
@@ -198,8 +198,8 @@ describe('adjust font size with the keyboard', () => {
         await doTestWithDelta(editor, { increaseBy: 0, decreaseBy: 2 })
         await editor.getDispatchFollowUpActionsFinished()
 
-        const aaa = editor.renderedDOM.getByTestId('aaa')
-        const bbb = editor.renderedDOM.getByTestId('bbb')
+        const aaa = editor.getRenderedCanvas().getByTestId('aaa')
+        const bbb = editor.getRenderedCanvas().getByTestId('bbb')
 
         expect(aaa.style.fontSize).toEqual('29px')
         expect(bbb.style.fontSize).toEqual('29px')
@@ -210,7 +210,7 @@ describe('adjust font size with the keyboard', () => {
 
 async function doSelect(editor: EditorRenderResult, type: 'single' | 'double' = 'single') {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-  const div = editor.renderedDOM.getByTestId('div')
+  const div = editor.getRenderedCanvas().getByTestId('div')
   const divBounds = div.getBoundingClientRect()
   const divCorner = {
     x: divBounds.x + 50,

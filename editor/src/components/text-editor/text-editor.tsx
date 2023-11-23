@@ -540,6 +540,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
       width: '100%',
       height: '100%',
       // text editor outline
+      outline: 'none',
       boxShadow: `0px 0px 0px ${outlineWidth}px ${outlineColor}`,
       // Prevent double applying these properties:
       opacity: 1,

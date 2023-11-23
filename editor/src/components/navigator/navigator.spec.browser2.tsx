@@ -25,7 +25,7 @@ import {
 import * as EP from '../../core/shared/element-path'
 import {
   dispatchMouseClickEventAtPoint,
-  dragElementWithDNDEvents,
+  dragNonCanvasElementWithDNDEvents,
   mouseClickAtPoint,
   mouseDoubleClickAtPoint,
 } from '../canvas/event-helpers.test-utils'
@@ -938,7 +938,7 @@ describe('Navigator', () => {
     await selectComponentsForTest(editor, [dragMeElementPath])
 
     await act(async () =>
-      dragElementWithDNDEvents(
+      dragNonCanvasElementWithDNDEvents(
         editor,
         DragItemTestId(varSafeNavigatorEntryToKey(regularNavigatorEntry(dragMeElementPath))),
         dropTarget(varSafeNavigatorEntryToKey(regularNavigatorEntry(targetElementPath))),
@@ -986,7 +986,7 @@ describe('Navigator', () => {
     await selectComponentsForTest(editor, dragMeElementPaths)
 
     await act(async () =>
-      dragElementWithDNDEvents(
+      dragNonCanvasElementWithDNDEvents(
         editor,
         DragItemTestId(varSafeNavigatorEntryToKey(regularNavigatorEntry(dragMeElementPaths[0]))),
         dropTarget(varSafeNavigatorEntryToKey(regularNavigatorEntry(targetElementPath))),
@@ -1231,7 +1231,7 @@ describe('Navigator', () => {
       const targetElement = EP.fromString('utopia-storyboard-uid/scene-aaa/sceneroot/dragme')
       await selectComponentsForTest(renderResult, [targetElement])
 
-      await dragElementWithDNDEvents(
+      await dragNonCanvasElementWithDNDEvents(
         renderResult,
         `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
         `navigator-item-drop-before-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
@@ -1305,7 +1305,7 @@ describe('Navigator', () => {
         await dispatchDone
       })
 
-      await dragElementWithDNDEvents(
+      await dragNonCanvasElementWithDNDEvents(
         renderResult,
         `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
         `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
@@ -1379,7 +1379,7 @@ describe('Navigator', () => {
         await dispatchDone
       })
 
-      await dragElementWithDNDEvents(
+      await dragNonCanvasElementWithDNDEvents(
         renderResult,
         `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
         `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
@@ -1456,7 +1456,7 @@ describe('Navigator', () => {
       })
 
       await act(async () =>
-        dragElementWithDNDEvents(
+        dragNonCanvasElementWithDNDEvents(
           renderResult,
           `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
           `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
@@ -1528,7 +1528,7 @@ describe('Navigator', () => {
         await dispatchDone
       })
 
-      await dragElementWithDNDEvents(
+      await dragNonCanvasElementWithDNDEvents(
         renderResult,
         `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
         `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/thirddiv`,
@@ -1582,7 +1582,7 @@ describe('Navigator', () => {
         await dispatchDone
       })
       await act(async () =>
-        dragElementWithDNDEvents(
+        dragNonCanvasElementWithDNDEvents(
           renderResult,
           `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
           `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
@@ -1661,7 +1661,7 @@ describe('Navigator', () => {
       })
 
       await act(async () =>
-        dragElementWithDNDEvents(
+        dragNonCanvasElementWithDNDEvents(
           renderResult,
           `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
           `navigator-item-regular_utopia_storyboard_uid/scene_aaa/parentsibling`,
@@ -1723,7 +1723,7 @@ describe('Navigator', () => {
         await dispatchDone
       })
       await act(async () =>
-        dragElementWithDNDEvents(
+        dragNonCanvasElementWithDNDEvents(
           renderResult,
           `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
           `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/parentsibling`,
@@ -1788,7 +1788,7 @@ describe('Navigator', () => {
         await dispatchDone
       })
       await act(async () =>
-        dragElementWithDNDEvents(
+        dragNonCanvasElementWithDNDEvents(
           renderResult,
           `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/parentsibling`,
           `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/parentsibling`,
@@ -1868,7 +1868,7 @@ describe('Navigator', () => {
       })
 
       await act(async () =>
-        dragElementWithDNDEvents(
+        dragNonCanvasElementWithDNDEvents(
           renderResult,
           `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
           `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/parentsibling`,
@@ -1937,7 +1937,7 @@ describe('Navigator', () => {
       })
 
       await act(async () =>
-        dragElementWithDNDEvents(
+        dragNonCanvasElementWithDNDEvents(
           renderResult,
           `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
           `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
@@ -1993,7 +1993,7 @@ describe('Navigator', () => {
       await selectComponentsForTest(renderResult, [EP.fromString('sb/parent1')])
 
       await act(async () =>
-        dragElementWithDNDEvents(
+        dragNonCanvasElementWithDNDEvents(
           renderResult,
           `navigator-item-drag-regular_sb/parent1`,
           `navigator-item-regular_sb/parent2`,
@@ -2049,7 +2049,7 @@ describe('Navigator', () => {
       await selectComponentsForTest(renderResult, [EP.fromString('sb/parent1')])
 
       await act(async () =>
-        dragElementWithDNDEvents(
+        dragNonCanvasElementWithDNDEvents(
           renderResult,
           `navigator-item-drag-regular_sb/parent1`,
           `navigator-item-regular_sb/parent1/child1`,
@@ -2102,7 +2102,7 @@ describe('Navigator', () => {
       await selectComponentsForTest(renderResult, [EP.fromString('sb/parent1')])
 
       await act(async () =>
-        dragElementWithDNDEvents(
+        dragNonCanvasElementWithDNDEvents(
           renderResult,
           `navigator-item-drag-regular_sb/parent1`,
           `navigator-item-regular_sb/text`,
@@ -2235,7 +2235,7 @@ describe('Navigator', () => {
       await selectComponentsForTest(renderResult, [EP.fromString('sb/parent1/child1')])
 
       await act(async () =>
-        dragElementWithDNDEvents(
+        dragNonCanvasElementWithDNDEvents(
           renderResult,
           DragItemTestId('regular_sb/parent1/child1'),
           BottomDropTargetLineTestId('regular_sb/parent1/755'),
@@ -2629,7 +2629,7 @@ describe('Navigator', () => {
         await dispatchDone
       })
 
-      await dragElementWithDNDEvents(
+      await dragNonCanvasElementWithDNDEvents(
         renderResult,
         `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/e46`,
         `navigator-item-drop-before-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
@@ -2707,7 +2707,7 @@ describe('Navigator', () => {
         await dispatchDone
       })
 
-      await dragElementWithDNDEvents(
+      await dragNonCanvasElementWithDNDEvents(
         renderResult,
         `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/e46`,
         `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
@@ -2785,7 +2785,7 @@ describe('Navigator', () => {
         await dispatchDone
       })
 
-      await dragElementWithDNDEvents(
+      await dragNonCanvasElementWithDNDEvents(
         renderResult,
         `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/e46`,
         `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
@@ -2866,7 +2866,7 @@ describe('Navigator', () => {
       })
 
       await act(async () =>
-        dragElementWithDNDEvents(
+        dragNonCanvasElementWithDNDEvents(
           renderResult,
           `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/e46`,
           `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
@@ -2955,7 +2955,7 @@ describe('Navigator', () => {
       })
 
       await act(async () =>
-        dragElementWithDNDEvents(
+        dragNonCanvasElementWithDNDEvents(
           renderResult,
           `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
           `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/e46`,
@@ -3021,7 +3021,7 @@ describe('Navigator', () => {
       })
 
       await act(async () =>
-        dragElementWithDNDEvents(
+        dragNonCanvasElementWithDNDEvents(
           renderResult,
           `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
           `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/e46/202~~~3`,
@@ -3086,7 +3086,7 @@ describe('Navigator', () => {
         await dispatchDone
       })
 
-      await dragElementWithDNDEvents(
+      await dragNonCanvasElementWithDNDEvents(
         renderResult,
         `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/b62`,
         `navigator-item-drop-before-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
@@ -3161,7 +3161,7 @@ describe('Navigator', () => {
         await dispatchDone
       })
 
-      await dragElementWithDNDEvents(
+      await dragNonCanvasElementWithDNDEvents(
         renderResult,
         `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/b62`,
         `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
@@ -3236,7 +3236,7 @@ describe('Navigator', () => {
         await dispatchDone
       })
 
-      await dragElementWithDNDEvents(
+      await dragNonCanvasElementWithDNDEvents(
         renderResult,
         `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/b62`,
         `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
@@ -3314,7 +3314,7 @@ describe('Navigator', () => {
       })
 
       await act(async () =>
-        dragElementWithDNDEvents(
+        dragNonCanvasElementWithDNDEvents(
           renderResult,
           `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/b62`,
           `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
@@ -3400,7 +3400,7 @@ describe('Navigator', () => {
       })
 
       await act(async () =>
-        dragElementWithDNDEvents(
+        dragNonCanvasElementWithDNDEvents(
           renderResult,
           `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
           `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/b62`,
@@ -3463,7 +3463,7 @@ describe('Navigator', () => {
       })
 
       await act(async () =>
-        dragElementWithDNDEvents(
+        dragNonCanvasElementWithDNDEvents(
           renderResult,
           `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
           `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/b62/c68~~~1`,
@@ -3645,7 +3645,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
         ])
 
-        const element = editor.renderedDOM.getByTestId('thing')
+        const element = editor.getRenderedCanvas().getByTestId('thing')
 
         expect(element.style.position).toEqual('')
         expect(element.style.top).toEqual('')
@@ -3700,7 +3700,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
         ])
 
-        const element = editor.renderedDOM.getByTestId('thing')
+        const element = editor.getRenderedCanvas().getByTestId('thing')
 
         expect(element.style.position).toEqual('')
         expect(element.style.top).toEqual('')
@@ -3755,7 +3755,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
         ])
 
-        const element = editor.renderedDOM.getByTestId('thing')
+        const element = editor.getRenderedCanvas().getByTestId('thing')
 
         expect(element.style.position).toEqual('')
         expect(element.style.top).toEqual('')
@@ -3985,7 +3985,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex2/aaf',
         ])
 
-        const element = editor.renderedDOM.getByTestId('flexchild1')
+        const element = editor.getRenderedCanvas().getByTestId('flexchild1')
 
         expect(element.style.position).toEqual('')
         expect(element.style.top).toEqual('')
@@ -4055,7 +4055,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
         ])
 
-        const child1 = editor.renderedDOM.getByTestId('child1')
+        const child1 = editor.getRenderedCanvas().getByTestId('child1')
 
         expect(child1.style.position).toEqual('')
         expect(child1.style.top).toEqual('')
@@ -4065,7 +4065,7 @@ describe('Navigator', () => {
         expect(child1.style.width).toEqual('217px')
         expect(child1.style.height).toEqual('117.5px')
 
-        const child2 = editor.renderedDOM.getByTestId('child2')
+        const child2 = editor.getRenderedCanvas().getByTestId('child2')
 
         expect(child2.style.position).toEqual('')
         expect(child2.style.top).toEqual('')
@@ -4153,7 +4153,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/old-container',
         ])
 
-        const element = editor.renderedDOM.getByTestId('dragme')
+        const element = editor.getRenderedCanvas().getByTestId('dragme')
         const { position, top, left, bottom, right, width, height } = element.style
 
         expect({ position, top, left, bottom, right, width, height }).toEqual({
@@ -4217,7 +4217,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/old-container',
         ])
 
-        const element = editor.renderedDOM.getByTestId('dragme')
+        const element = editor.getRenderedCanvas().getByTestId('dragme')
         const { position, top, left, bottom, right, width, height } = element.style
 
         expect({ position, top, left, bottom, right, width, height }).toEqual({
@@ -4268,7 +4268,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/dragme',
         ])
 
-        const element = editor.renderedDOM.getByTestId('dragme')
+        const element = editor.getRenderedCanvas().getByTestId('dragme')
         const { position, top, left, bottom, right, width, height } = element.style
 
         expect({ position, top, left, bottom, right, width, height }).toEqual({
@@ -4319,7 +4319,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/dragme',
         ])
 
-        const element = editor.renderedDOM.getByTestId('dragme')
+        const element = editor.getRenderedCanvas().getByTestId('dragme')
         const { position, top, left, bottom, right, width, height } = element.style
 
         expect({ position, top, left, bottom, right, width, height }).toEqual({
@@ -4370,7 +4370,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/dragme',
         ])
 
-        const element = editor.renderedDOM.getByTestId('dragme')
+        const element = editor.getRenderedCanvas().getByTestId('dragme')
         const { position, top, left, bottom, right, width, height } = element.style
 
         expect({ position, top, left, bottom, right, width, height }).toEqual({
@@ -4455,7 +4455,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/dragme',
         ])
 
-        const element = editor.renderedDOM.getByTestId('dragme')
+        const element = editor.getRenderedCanvas().getByTestId('dragme')
         const { position, top, left, bottom, right, width, height, zIndex } = element.style
 
         expect({ position, top, left, bottom, right, width, height, zIndex }).toEqual({
@@ -4705,7 +4705,7 @@ describe('Navigator', () => {
           'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/fragment/child2',
         ])
 
-        const child1 = editor.renderedDOM.getByTestId('child1')
+        const child1 = editor.getRenderedCanvas().getByTestId('child1')
         expect(child1.style.position).toEqual('absolute')
         expect(child1.style.top).toEqual('84px')
         expect(child1.style.left).toEqual('153px')
@@ -4714,7 +4714,7 @@ describe('Navigator', () => {
         expect(child1.style.width).toEqual('80px')
         expect(child1.style.height).toEqual('60px')
 
-        const child2 = editor.renderedDOM.getByTestId('child2')
+        const child2 = editor.getRenderedCanvas().getByTestId('child2')
         expect(child2.style.position).toEqual('absolute')
         expect(child2.style.top).toEqual('73px')
         expect(child2.style.left).toEqual('132px')
@@ -4779,7 +4779,7 @@ describe('Navigator', () => {
       await selectComponentsForTest(renderResult, [EP.fromString('sb/offsetparent/offsetchild')])
 
       await act(async () =>
-        dragElementWithDNDEvents(
+        dragNonCanvasElementWithDNDEvents(
           renderResult,
           `navigator-item-drag-regular_sb/offsetparent/offsetchild`,
           `navigator-item-drop-before-regular_sb/fragment/fragmentchild`,
@@ -4832,7 +4832,7 @@ describe('Navigator', () => {
       await selectComponentsForTest(renderResult, [EP.fromString('sb/offsetparent/offsetchild')])
 
       await act(async () =>
-        dragElementWithDNDEvents(
+        dragNonCanvasElementWithDNDEvents(
           renderResult,
           `navigator-item-drag-regular_sb/offsetparent/offsetchild`,
           `navigator-item-drop-before-regular_sb/nonoffsetparent/nonoffsetchild`,

@@ -27,6 +27,7 @@ import Utils from '../../utils/utils'
 import { memoize } from '../../core/shared/memoize'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { getCanvasShadowRoot } from './canvas-utils'
 
 type FindParentSceneValidPathsCache = Map<Element, Array<ElementPath> | null>
 
@@ -217,7 +218,7 @@ export function getValidTargetAtPoint(
   if (point == null) {
     return null
   }
-  const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
+  const elementsUnderPoint = getCanvasShadowRoot()?.elementsFromPoint(point.x, point.y) ?? []
   const parentSceneValidPathsCache = new Map()
   const pointOnCanvas = windowToCanvasCoordinates(
     canvasScale,
@@ -243,7 +244,7 @@ export function getAllTargetsAtPoint(
   if (point == null) {
     return []
   }
-  const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
+  const elementsUnderPoint = getCanvasShadowRoot()?.elementsFromPoint(point.x, point.y) ?? []
   const pointOnCanvas = windowToCanvasCoordinates(
     canvasScale,
     canvasOffset,
@@ -391,7 +392,7 @@ function getSelectionOrFirstTargetAtPoint(
   }
 
   const parentSceneValidPathsCache = new Map()
-  const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
+  const elementsUnderPoint = getCanvasShadowRoot()?.elementsFromPoint(point.x, point.y) ?? []
   const validPathsSet =
     validElementPathsForLookup === 'no-filter'
       ? 'no-filter'

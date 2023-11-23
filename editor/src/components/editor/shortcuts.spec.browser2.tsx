@@ -41,7 +41,7 @@ describe('shortcuts', () => {
       const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
 
       const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-      const div = editor.renderedDOM.getByTestId(TestIdOne)
+      const div = editor.getRenderedCanvas().getByTestId(TestIdOne)
       const divBounds = div.getBoundingClientRect()
       const divCorner = {
         x: divBounds.x + 50,
@@ -58,7 +58,7 @@ describe('shortcuts', () => {
 
       await wait(5000)
 
-      const div2 = editor.renderedDOM.getByTestId(TestIdTwo)
+      const div2 = editor.getRenderedCanvas().getByTestId(TestIdTwo)
       const div2Bounds = div2.getBoundingClientRect()
       const div2Corner = {
         x: div2Bounds.x + 50,
@@ -80,7 +80,7 @@ describe('shortcuts', () => {
     it('when `position: absolute` is set on the selected element, positioning props are removed', async () => {
       const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
 
-      const div = editor.renderedDOM.getByTestId(TestIdOne)
+      const div = editor.getRenderedCanvas().getByTestId(TestIdOne)
 
       await selectComponentsForTest(editor, [EP.fromString(`${StoryBoardId}/${TestIdOne}`)])
 
@@ -98,7 +98,7 @@ describe('shortcuts', () => {
     it('when `position: absolute` is set on the selected element, do not remove positioning props if the parent is a group', async () => {
       const editor = await renderTestEditorWithCode(projectWithGroup, 'await-first-dom-report')
 
-      const div = editor.renderedDOM.getByTestId(TestIdOne)
+      const div = editor.getRenderedCanvas().getByTestId(TestIdOne)
 
       await selectComponentsForTest(editor, [EP.fromString(`${StoryBoardId}/group/${TestIdOne}`)])
 
@@ -124,7 +124,7 @@ describe('shortcuts', () => {
         'await-first-dom-report',
       )
 
-      const div = editor.renderedDOM.getByTestId(TestIdOne)
+      const div = editor.getRenderedCanvas().getByTestId(TestIdOne)
 
       await selectComponentsForTest(editor, [
         EP.fromString(`${StoryBoardId}/${ParentId}/${TestIdOne}`),
@@ -146,7 +146,7 @@ describe('shortcuts', () => {
     it('does not convert spans to zero-sized elements', async () => {
       const editor = await renderTestEditorWithCode(projectWithSpan, 'await-first-dom-report')
 
-      const div = editor.renderedDOM.getByTestId(TestIdOne)
+      const div = editor.getRenderedCanvas().getByTestId(TestIdOne)
 
       await selectComponentsForTest(editor, [EP.fromString('sb/span')])
 
@@ -246,7 +246,7 @@ describe('shortcuts', () => {
         await pressKey('x')
       })
 
-      const div = editor.renderedDOM.getByTestId('container')
+      const div = editor.getRenderedCanvas().getByTestId('container')
       expect(div.style.position).toEqual('')
       expect(div.style.top).toEqual('')
       expect(div.style.bottom).toEqual('')
@@ -1430,7 +1430,7 @@ async function doGroup(editor: EditorRenderResult) {
 }
 
 function expectBoundsToEqual(editor: EditorRenderResult, testId: string, bounds: CanvasRectangle) {
-  const element = editor.renderedDOM.getByTestId(testId)
+  const element = editor.getRenderedCanvas().getByTestId(testId)
   expect(element.style.position).toEqual('absolute')
   expect(element.style.top).toEqual(`${bounds.y}px`)
   expect(element.style.left).toEqual(`${bounds.x}px`)
@@ -1439,7 +1439,7 @@ function expectBoundsToEqual(editor: EditorRenderResult, testId: string, bounds:
 }
 
 function expectElementToBeSizelessDiv(editor: EditorRenderResult, testId: string) {
-  const element = editor.renderedDOM.getByTestId(testId)
+  const element = editor.getRenderedCanvas().getByTestId(testId)
   expect(element.style.position).toEqual('')
   expect(element.style.width).toEqual('')
   expect(element.style.height).toEqual('')
