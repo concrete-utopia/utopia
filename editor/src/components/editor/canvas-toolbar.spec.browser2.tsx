@@ -673,7 +673,7 @@ describe('canvas toolbar', () => {
     )
   })
 
-  it.skip('can insert an image via the floating insert menu', async () => {
+  it('can insert an image via the floating insert menu', async () => {
     FOR_TESTS_setNextGeneratedUids(['myImage'])
     const editor = await renderTestEditorWithCode(
       makeTestProjectCodeWithComponentInnards(`
