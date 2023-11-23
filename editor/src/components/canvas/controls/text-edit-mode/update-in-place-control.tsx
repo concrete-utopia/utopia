@@ -12,7 +12,7 @@ type UpdateInPlaceSetting = 'update-in-place' | 'update-in-cms' | 'not-applicabl
 export const ShouldUpdateInPlaceAtom = atom<UpdateInPlaceSetting>('not-applicable')
 
 // eslint-disable-next-line no-shadow-restricted-names
-const Infinity = 100000 // the built-in Infinity is not a valid CSS positioning prop
+const Infinity = 100000 // the built-in Infinity is not a valid CSS positioning value
 
 export const FloatingTextEditControls = React.memo(() => {
   const scale = useEditorState(
@@ -90,6 +90,7 @@ export const FloatingTextEditControls = React.memo(() => {
           left: positioningProps.x,
           width: positioningProps.width,
           fontSize: 12 / scale,
+          fontWeight: 400,
         }}
         onMouseDown={(e) => {
           e.preventDefault()
@@ -100,7 +101,6 @@ export const FloatingTextEditControls = React.memo(() => {
           style={{
             backgroundColor: colorTheme.bg0.value,
             gap: 4,
-            fontSize: 9,
           }}
         >
           <div
