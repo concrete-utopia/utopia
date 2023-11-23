@@ -11,8 +11,6 @@ import { canvasPoint } from '../../../core/shared/math-utils'
 import { UtopiaTheme } from '../../../uuiui'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import {
-  isPlayerOnAnotherRemixRoute,
-  maybeRemixPresence,
   multiplayerColorFromIndex,
   multiplayerInitialsFromName,
   normalizeMultiplayerName,
@@ -67,15 +65,12 @@ const CommentIndicatorInner = React.memo(() => {
           }
         })()
 
-        const remixMetadata = maybeRemixPresence(
-          thread.metadata.remixScene ?? null,
-          thread.metadata.remixLocationPath ?? null,
-        )
+        const remixLocationPath = thread.metadata.remixLocationPath ?? null
 
-        const isOnAnotherRoute = isPlayerOnAnotherRemixRoute(
-          me.presence.remix ?? null,
-          remixMetadata,
-        )
+        const isOnAnotherRoute =
+          me.presence.remix?.locationPath != null &&
+          remixLocationPath != null &&
+          remixLocationPath !== me.presence.remix.locationPath
 
         return (
           <div

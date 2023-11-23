@@ -84,7 +84,6 @@ export type ThreadMetadata = {
   type: 'canvas'
   x: number
   y: number
-  remixScene?: string // It would have been nice to have this use the RemixPresence type above, but unfortunately ThreadMetadata only supports strings, bools, and numbers :(
   remixLocationPath?: string
 }
 

@@ -74,7 +74,6 @@ const CommentThread = React.memo(({ x, y }: CommentThreadProps) => {
           type: 'canvas',
           x: x,
           y: y,
-          remixScene: remixPresence?.scene,
           remixLocationPath: remixPresence?.locationPath ?? undefined,
         },
       })
