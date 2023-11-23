@@ -18,10 +18,8 @@ import {
 } from '../editor/store/editor-state'
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import { shouldShowErrorOverlay } from './canvas-utils'
-import {
-  FloatingPostActionMenu,
-  FloatingTextEditControls,
-} from './controls/select-mode/post-action-menu'
+import { FloatingPostActionMenu } from './controls/select-mode/post-action-menu'
+import { FloatingTextEditControls } from './controls/text-edit-mode/update-in-place-control'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}

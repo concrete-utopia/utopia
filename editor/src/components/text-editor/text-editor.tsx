@@ -51,8 +51,8 @@ import { cleanSteganoTextData, decodeSteganoData } from '../../core/shared/stega
 import { useUpdateStringRun } from '../../core/model/project-file-helper-hooks'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { useAtomCallback } from 'jotai/utils'
-import { ShouldUpdateInPlaceAtom } from '../canvas/controls/select-mode/post-action-menu'
 import { useSetAtom } from 'jotai'
+import { ShouldUpdateInPlaceAtom } from '../canvas/controls/text-edit-mode/update-in-place-control'
 
 export const TextEditorSpanId = 'text-editor'
 
