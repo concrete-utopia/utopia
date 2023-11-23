@@ -389,7 +389,9 @@ const TextEditor = React.memo((props: TextEditorProps) => {
 
   const callJurassicCMSUpdate = React.useCallback(
     ({ key, updated }: { key: string; updated: string }) => {
-      setCMSUpdateState(setCMSUpdateStateForElementPath(props.elementPath, { type: 'updating' }))
+      setCMSUpdateState(
+        setCMSUpdateStateForElementPath(props.elementPath, { type: 'updating', value: updated }),
+      )
       void updateJurassicCMS({ key, updated })
         .then(() => {
           setCMSUpdateState(setCMSUpdateStateForElementPath(props.elementPath, { type: 'ok' }))

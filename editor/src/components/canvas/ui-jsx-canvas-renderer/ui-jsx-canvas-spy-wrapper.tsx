@@ -25,6 +25,7 @@ import * as EP from '../../../core/shared/element-path'
 import { renderComponentUsingJsxFactoryFunction } from './ui-jsx-canvas-element-renderer-utils'
 import { importInfoFromImportDetails } from '../../../core/model/project-file-utils'
 import { getUtopiaID } from '../../../core/shared/uid-utils'
+import { CMSOptimisticValues_GLOBAL } from '../../editor/jurassic-cms'
 
 // Should the condition value of conditional expression change (which maybe be done by overriding it),
 // then the values we have accumulated in the spy metadata may need to be cleaned up.
@@ -160,6 +161,10 @@ export function buildSpyWrappedElement(
     jsxFactoryFunctionName: jsxFactoryFunctionName,
     $$utopiaElementPath: elementPath,
   }
+
+  const optimisticValueFromCMS = CMSOptimisticValues_GLOBAL[EP.toString(elementPath)]
+  const children = optimisticValueFromCMS != null ? [optimisticValueFromCMS] : childrenElements
+
   return renderComponentUsingJsxFactoryFunction(
     inScope,
     jsxFactoryFunctionName,
@@ -168,7 +173,7 @@ export function buildSpyWrappedElement(
       ...props,
       ...spyWrapperProps,
     },
-    ...childrenElements,
+    ...children,
   )
 }
 
