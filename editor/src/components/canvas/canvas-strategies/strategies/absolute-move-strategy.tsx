@@ -29,7 +29,7 @@ export type ShouldRunApplicabilityCheck =
 export function absoluteMoveStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
-  _: CustomStrategyState,
+  customStrategyState: CustomStrategyState,
   runApplicabilityCheck: ShouldRunApplicabilityCheck = 'run-applicability-check',
 ): MoveStrategy | null {
   const originalTargets = flattenSelection(
@@ -102,6 +102,7 @@ export function absoluteMoveStrategy(
             canvasState,
             interactionSession,
             getAdjustMoveCommands(retargetedTargets, canvasState, interactionSession),
+            customStrategyState.action ?? 'move',
           )
         }
         // Fallback for when the checks above are not satisfied.

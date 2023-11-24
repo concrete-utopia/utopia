@@ -65,9 +65,11 @@ export function useAddMyselfToCollaborators() {
       }
       const collaborators = storage.get('collaborators')
 
-      const otherColorIndices = Object.values(collaborators).map((u) => u.colorIndex)
-
       if (collaborators.get(self.id) == null) {
+        const otherColorIndices = Object.values(collaborators.toObject()).map((u) =>
+          u.get('colorIndex'),
+        )
+
         collaborators.set(
           self.id,
           new LiveObject({

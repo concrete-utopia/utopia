@@ -17,6 +17,7 @@ import {
 import {
   applyToAllUIJSFiles,
   applyUtopiaJSXComponentsChanges,
+  fileExists,
   fileTypeFromFileName,
   getUtopiaJSXComponentsFromSuccess,
   saveFile,
@@ -125,6 +126,7 @@ import {
   imageFile,
   isImageFile,
   isDirectory,
+  parseSuccess,
 } from '../../../core/shared/project-file-types'
 import {
   codeFile,
@@ -312,10 +314,11 @@ import type {
   SetMapCountOverride,
   ScrollToPosition,
   UpdateTopLevelElementsFromCollaborationUpdate,
+  DeleteFileFromCollaboration,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
-import { isFollowMode, isTextEditMode } from '../editor-modes'
+import { isCommentMode, isFollowMode, isTextEditMode } from '../editor-modes'
 import { EditorModes, isLiveMode, isSelectMode } from '../editor-modes'
 import * as History from '../history'
 import type { StateHistory } from '../history'
@@ -542,6 +545,7 @@ import { convertToAbsoluteAndReparentToUnwrapStrategy } from '../one-shot-unwrap
 import { addHookForProjectChanges } from '../store/collaborative-editing'
 import { arrayDeepEquality } from '../../../utils/deep-equality'
 import type { ProjectServerState } from '../store/project-server-state'
+import { fixParseSuccessUIDs } from '../../../core/workers/parser-printer/uid-fix'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -911,6 +915,7 @@ export function restoreEditorState(
     colorSwatches: currentEditor.colorSwatches,
     internalClipboard: currentEditor.internalClipboard,
     filesModifiedByAnotherUser: currentEditor.filesModifiedByAnotherUser,
+    activeFrames: currentEditor.activeFrames,
   }
 }
 
@@ -959,18 +964,18 @@ function deleteElements(
 
       const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
 
-      function deleteElementFromParseSuccess(parseSuccess: ParseSuccess): ParseSuccess {
-        const utopiaComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
+      function deleteElementFromParseSuccess(success: ParseSuccess): ParseSuccess {
+        const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
         const withTargetRemoved: Array<UtopiaJSXComponent> = removeElementAtPath(
           targetPath,
           utopiaComponents,
         )
-        return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {
+        return modifyParseSuccessWithSimple((simpleSuccess: SimpleParseSuccess) => {
           return {
-            ...success,
+            ...simpleSuccess,
             utopiaComponents: withTargetRemoved,
           }
-        }, parseSuccess)
+        }, success)
       }
       return modifyParseSuccessAtPath(
         targetSuccess.filePath,
@@ -1673,7 +1678,7 @@ export const UPDATE_FNS = {
           updatedProps,
         )
       },
-      (parseSuccess) => parseSuccess,
+      (success) => success,
     )
     if (unsetPropFailedMessage != null) {
       const toastAction = showToast(notice(unsetPropFailedMessage, 'ERROR'))
@@ -1736,7 +1741,7 @@ export const UPDATE_FNS = {
           updatedProps,
         )
       },
-      (parseSuccess) => parseSuccess,
+      (success) => success,
     )
 
     updatedEditor = addToTrueUpElements(updatedEditor, trueUpGroupElementChanged(action.target))
@@ -2053,7 +2058,7 @@ export const UPDATE_FNS = {
   SWITCH_EDITOR_MODE: (
     action: SwitchEditorMode,
     editor: EditorModel,
-    derived: DerivedState,
+    userState: UserState,
   ): EditorModel => {
     // TODO this should probably be merged with UPDATE_EDITOR_MODE
     if (action.unlessMode === editor.mode.type) {
@@ -2074,6 +2079,9 @@ export const UPDATE_FNS = {
         console.error(`Invalid target for text edit mode: ${EP.toString(action.mode.editedText)}`)
         return editor
       }
+    }
+    if (isCommentMode(action.mode) && !isLoggedIn(userState.loginState)) {
+      return editor
     }
     return setModeState(action.mode, editor)
   },
@@ -3077,7 +3085,6 @@ export const UPDATE_FNS = {
   SAVE_ASSET: (
     action: SaveAsset,
     editor: EditorModel,
-    derived: DerivedState,
     dispatch: EditorDispatch,
     userState: UserState,
   ): EditorModel => {
@@ -3219,7 +3226,7 @@ export const UPDATE_FNS = {
           const editorInsertEnabled = UPDATE_FNS.SWITCH_EDITOR_MODE(
             switchMode,
             editorWithToast,
-            derived,
+            userState,
           )
           return {
             ...editorInsertEnabled,
@@ -3301,7 +3308,7 @@ export const UPDATE_FNS = {
   INSERT_IMAGE_INTO_UI: (
     action: InsertImageIntoUI,
     editor: EditorModel,
-    derived: DerivedState,
+    userState: UserState,
   ): EditorModel => {
     const possiblyAnImage = getProjectFileByFilePath(editor.projectContents, action.imagePath)
     if (possiblyAnImage != null && isImageFile(possiblyAnImage)) {
@@ -3331,7 +3338,7 @@ export const UPDATE_FNS = {
       )
       const size = width != null && height != null ? { width: width, height: height } : null
       const switchMode = enableInsertModeForJSXElement(imageElement, newUID, {}, size)
-      return UPDATE_FNS.SWITCH_EDITOR_MODE(switchMode, editor, derived)
+      return UPDATE_FNS.SWITCH_EDITOR_MODE(switchMode, editor, userState)
     } else {
       return editor
     }
@@ -3780,7 +3787,7 @@ export const UPDATE_FNS = {
     return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(openCodeEditorFile(newFileKey, false), updatedEditor)
   },
   DELETE_FILE: (
-    action: DeleteFile | DeleteFileFromVSCode,
+    action: DeleteFile | DeleteFileFromVSCode | DeleteFileFromCollaboration,
     editor: EditorModel,
     derived: DerivedState,
     userState: UserState,
@@ -5333,7 +5340,7 @@ export const UPDATE_FNS = {
           element.comments,
         )
       },
-      (parseSuccess) => parseSuccess,
+      (success) => success,
     )
 
     return updatedEditor
@@ -5341,31 +5348,59 @@ export const UPDATE_FNS = {
   UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION_UPDATE: (
     action: UpdateTopLevelElementsFromCollaborationUpdate,
     editor: EditorModel,
+    serverState: ProjectServerState,
   ): EditorModel => {
-    const updatedEditor = modifyParseSuccessAtPath(
-      action.fullPath,
-      editor,
-      (parsed) => {
-        const newTopLevelElementsDeepEquals = arrayDeepEquality(TopLevelElementKeepDeepEquality)(
-          parsed.topLevelElements,
-          action.topLevelElements,
+    // When the current user does own the project...
+    if (serverState.isMyProject === 'yes') {
+      // ...Disallow these updates as they're coming from non-owners.
+      return editor
+    } else {
+      let updatedEditor: EditorModel = editor
+      if (fileExists(editor.projectContents, action.fullPath)) {
+        updatedEditor = modifyParseSuccessAtPath(
+          action.fullPath,
+          editor,
+          (parsed) => {
+            const newTopLevelElementsDeepEquals = arrayDeepEquality(
+              TopLevelElementKeepDeepEquality,
+            )(parsed.topLevelElements, action.topLevelElements)
+
+            if (newTopLevelElementsDeepEquals.areEqual) {
+              return parsed
+            } else {
+              return {
+                ...parsed,
+                topLevelElements: newTopLevelElementsDeepEquals.value,
+              }
+            }
+          },
+          false,
         )
-
-        if (newTopLevelElementsDeepEquals.areEqual) {
-          return parsed
-        } else {
-          return {
-            ...parsed,
-            topLevelElements: newTopLevelElementsDeepEquals.value,
-          }
+      } else {
+        const newParseSuccess = parseSuccess({}, action.topLevelElements, {}, null, null, [], {})
+        const newFile = textFile(
+          textFileContents('', newParseSuccess, RevisionsState.ParsedAhead),
+          null,
+          null,
+          1,
+        )
+        const updatedProjectContents = addFileToProjectContents(
+          editor.projectContents,
+          action.fullPath,
+          newFile,
+        )
+        updatedEditor = {
+          ...editor,
+          projectContents: updatedProjectContents,
         }
-      },
-      false,
-    )
+      }
 
-    return {
-      ...updatedEditor,
-      filesModifiedByAnotherUser: updatedEditor.filesModifiedByAnotherUser.concat(action.fullPath),
+      return {
+        ...updatedEditor,
+        filesModifiedByAnotherUser: updatedEditor.filesModifiedByAnotherUser.concat(
+          action.fullPath,
+        ),
+      }
     }
   },
 }

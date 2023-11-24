@@ -179,6 +179,7 @@ import { GridMenuWidth } from '../../canvas/stored-layout'
 import type { VariablesInScope } from '../../canvas/ui-jsx-canvas'
 import * as Y from 'yjs'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+import type { ActiveFrame } from '../../canvas/commands/set-active-frames-command'
 
 const ObjectPathImmutable: any = OPI
 
@@ -199,6 +200,7 @@ export enum RightMenuTab {
   Insert = 'insert',
   Inspector = 'inspector',
   Settings = 'settings',
+  Comments = 'comments',
 }
 
 // TODO: this should just contain an NpmDependency and a status
@@ -1467,6 +1469,7 @@ export interface EditorState {
   colorSwatches: Array<ColorSwatch>
   internalClipboard: InternalClipboard
   filesModifiedByAnotherUser: Array<string>
+  activeFrames: ActiveFrame[]
 }
 
 export function editorState(
@@ -1548,6 +1551,7 @@ export function editorState(
   colorSwatches: Array<ColorSwatch>,
   internalClipboardData: InternalClipboard,
   filesModifiedByAnotherUser: Array<string>,
+  activeFrames: ActiveFrame[],
 ): EditorState {
   return {
     id: id,
@@ -1628,6 +1632,7 @@ export function editorState(
     colorSwatches: colorSwatches,
     internalClipboard: internalClipboardData,
     filesModifiedByAnotherUser: filesModifiedByAnotherUser,
+    activeFrames: activeFrames,
   }
 }
 
@@ -2503,6 +2508,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       elements: [],
     },
     filesModifiedByAnotherUser: [],
+    activeFrames: [],
   }
 }
 
@@ -2878,6 +2884,7 @@ export function editorModelFromPersistentModel(
       elements: [],
     },
     filesModifiedByAnotherUser: [],
+    activeFrames: [],
   }
   return editor
 }

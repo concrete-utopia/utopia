@@ -1,8 +1,9 @@
-import { LiveObject } from '@liveblocks/client'
-import { createClient } from '@liveblocks/client'
+import { LiveObject, createClient } from '@liveblocks/client'
 import { createRoomContext } from '@liveblocks/react'
-import type { CanvasVector, WindowPoint } from './src/core/shared/math-utils'
 import { getProjectID } from './src/common/env-vars'
+import type { ActiveFrameAction } from './src/components/canvas/commands/set-active-frames-command'
+import type { CanvasRectangle, CanvasVector, WindowPoint } from './src/core/shared/math-utils'
+import type { RemixPresence } from './src/core/shared/multiplayer'
 import { projectIdToRoomId } from './src/core/shared/multiplayer'
 
 export const liveblocksThrottle = 100 // ms
@@ -19,7 +20,15 @@ export type Presence = {
   cursor: WindowPoint | null
   canvasScale: number | null
   canvasOffset: CanvasVector | null
+  activeFrames?: PresenceActiveFrame[]
   following: string | null
+  remix?: RemixPresence | null
+}
+
+export type PresenceActiveFrame = {
+  action: ActiveFrameAction
+  frame: CanvasRectangle
+  source: CanvasRectangle
 }
 
 export function initialPresence(): Presence {
@@ -75,6 +84,7 @@ export type ThreadMetadata = {
   type: 'canvas'
   x: number
   y: number
+  remixLocationRoute?: string
 }
 
 export const {
@@ -127,42 +137,46 @@ export const {
       return []
     }
 
-    const room = liveblocksClient.getRoom(projectIdToRoomId(projectId))
-    if (room == null) {
-      return []
-    }
-
-    const storage = await room.getStorage()
-
-    const collabs = storage.root.get('collaborators') as LiveObject<{ [userId: string]: User }>
-    if (collabs == null) {
-      return []
-    }
-
-    const users = Object.values(collabs.toObject()).map((u) => u.toObject())
+    const users = await getAllUsersFromRoom(projectIdToRoomId(projectId))
     return users.filter((u) => userIds.includes(u.id))
   },
   async resolveMentionSuggestions({ text, roomId }) {
-    // Used only for Comments. Return a list of userIds that match `text`.
+    // Used only for Comments. Return a list of userIds where the name matches `text`.
     // These userIds are used to create a mention list when typing in the
     // composer.
     //
     // For example when you type "@jo", `text` will be `"jo"`, and
-    // you should to return an array with John and Joanna's userIds:
-    // ["john@example.com", "joanna@example.com"]
+    // you should to return an array with John and Joanna's userIds.
 
-    // const userIds = await __fetchAllUserIdsFromDB__(roomId);
-    //
-    // Return all userIds if no `text`
-    // if (!text) {
-    //   return userIds;
-    // }
-    //
-    // Otherwise, filter userIds for the search `text` and return
-    // return userIds.filter((userId) =>
-    //   userId.toLowerCase().includes(text.toLowerCase())
-    // );
+    const users = await getAllUsersFromRoom(roomId)
 
-    return []
+    if (text == null) {
+      return users.map((u) => u.id)
+    }
+
+    // Otherwise, filter user names for the search `text` and return
+    return users
+      .filter((u) => {
+        if (u.name == null) {
+          return false
+        }
+        return u.name.toLowerCase().includes(text.toLowerCase())
+      })
+      .map((u) => u.id)
   },
 })
+
+async function getAllUsersFromRoom(roomId: string) {
+  const room = liveblocksClient.getRoom(roomId)
+  if (room == null) {
+    return []
+  }
+
+  const storage = await room.getStorage()
+
+  const collabs = storage.root.get('collaborators') as LiveObject<{ [userId: string]: User }>
+  if (collabs == null) {
+    return []
+  }
+  return Object.values(collabs.toObject()).map((u) => u.toObject())
+}

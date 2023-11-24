@@ -12,7 +12,7 @@ import {
 } from '../core/shared/multiplayer'
 import { Avatar, Tooltip, useColorTheme } from '../uuiui'
 import { Substores, useEditorState } from './editor/store/store-hook'
-import { unless, when } from '../utils/react-conditionals'
+import { when } from '../utils/react-conditionals'
 import { MultiplayerWrapper } from '../utils/multiplayer-wrapper'
 import { useDispatch } from './editor/store/dispatch-context'
 import { showToast, switchEditorMode } from './editor/actions/action-creators'
@@ -166,6 +166,7 @@ const MultiplayerUserBar = React.memo(() => {
                 coloredTooltip={true}
                 onClick={toggleFollowing(other.id)}
                 active={isFollowMode(mode) && mode.playerId === other.id}
+                follower={other.following === myUser.id}
               />
             )
           })}
@@ -206,38 +207,25 @@ const MultiplayerAvatar = React.memo(
     border?: boolean
     onClick?: () => void
     active?: boolean
+    size?: number
+    follower?: boolean
   }) => {
     const picture = React.useMemo(() => {
       return isDefaultAuth0AvatarURL(props.picture ?? null) ? null : props.picture
     }, [props.picture])
 
-    const [pictureNotFound, setPictureNotFound] = React.useState(false)
-
-    React.useEffect(() => {
-      setPictureNotFound(false)
-    }, [picture])
-
-    const onPictureError = React.useCallback(() => {
-      console.warn('cannot get picture', props.picture)
-      setPictureNotFound(true)
-    }, [props.picture])
-
-    const showPicture = React.useMemo(() => {
-      return picture != null && !pictureNotFound
-    }, [picture, pictureNotFound])
-
     const colorTheme = useColorTheme()
     return (
       <Tooltip
-        title={props.tooltip}
+        title={`${props.tooltip}${props.follower === true ? ' (following you)' : ''}`}
         placement='bottom'
         backgroundColor={props.coloredTooltip ? props.color.background : undefined}
         textColor={props.coloredTooltip ? props.color.foreground : undefined}
       >
         <div
           style={{
-            width: 24,
-            height: 24,
+            width: props.size ?? 24,
+            height: props.size ?? 24,
             backgroundColor: props.color.background,
             color: props.color.foreground,
             display: 'flex',
@@ -250,27 +238,85 @@ const MultiplayerAvatar = React.memo(
             cursor: 'pointer',
             boxShadow:
               props.active === true ? `0px 0px 15px ${colorTheme.primary.value}` : undefined,
+            position: 'relative',
           }}
           onClick={props.onClick}
         >
-          {unless(showPicture, props.name)}
-          {when(
-            showPicture,
-            // Using an img tag instead of using it as backgroundColor above because of potential 403s
-            <img
-              style={{
-                width: props.border === true ? 22 : '100%',
-                height: props.border === true ? 22 : '100%',
-                borderRadius: '100%',
-              }}
-              src={picture ?? ''}
-              referrerPolicy='no-referrer'
-              onError={onPictureError}
-            />,
-          )}
+          <AvatarPicture
+            url={picture}
+            size={props.border === true ? 22 : undefined}
+            initials={props.name}
+          />
+          {when(props.follower === true, <FollowerBadge />)}
         </div>
       </Tooltip>
     )
   },
 )
 MultiplayerAvatar.displayName = 'MultiplayerAvatar'
+
+const FollowerBadge = React.memo(() => {
+  const colorTheme = useColorTheme()
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        top: -5,
+        right: -5,
+        borderRadius: '100%',
+        backgroundColor: colorTheme.primary.value,
+        color: colorTheme.white.value,
+        width: 8,
+        height: 8,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        border: `1px solid ${colorTheme.white.value}`,
+      }}
+    />
+  )
+})
+FollowerBadge.displayName = 'FollowerBadge'
+
+interface AvatarPictureProps {
+  url: string | null | undefined
+  initials: string
+  size?: number
+}
+
+export const AvatarPicture = React.memo((props: AvatarPictureProps) => {
+  const url = React.useMemo(() => {
+    return isDefaultAuth0AvatarURL(props.url ?? null) ? null : props.url
+  }, [props.url])
+
+  const { initials, size } = props
+
+  const [pictureNotFound, setPictureNotFound] = React.useState(false)
+
+  React.useEffect(() => {
+    setPictureNotFound(false)
+  }, [url])
+
+  const onPictureError = React.useCallback(() => {
+    console.warn('cannot get picture', url)
+    setPictureNotFound(true)
+  }, [url])
+
+  if (url == null || pictureNotFound) {
+    return <span>{initials}</span>
+  }
+  return (
+    <img
+      style={{
+        width: size ?? '100%',
+        height: size ?? '100%',
+        borderRadius: '100%',
+      }}
+      src={url}
+      referrerPolicy='no-referrer'
+      onError={onPictureError}
+    />
+  )
+})
+AvatarPicture.displayName = 'AvatarPicture'

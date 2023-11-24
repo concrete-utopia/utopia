@@ -163,7 +163,7 @@ function runMoveStrategy(
     absoluteMoveStrategy(
       canvasState,
       interactionSession,
-      defaultCustomStrategyState(),
+      { ...defaultCustomStrategyState(), action: 'duplicate' },
       'do-not-run-applicability-check',
     )?.strategy.apply(strategyLifecycle).commands ?? []
 

@@ -42,7 +42,7 @@ export function runLocalEditorAction(
     case 'DISTRIBUTE_SELECTED_VIEWS':
       return UPDATE_FNS.DISTRIBUTE_SELECTED_VIEWS(action, state)
     case 'SAVE_ASSET':
-      return UPDATE_FNS.SAVE_ASSET(action, state, derivedState, dispatch, userState)
+      return UPDATE_FNS.SAVE_ASSET(action, state, dispatch, userState)
     default:
       return runSimpleLocalEditorAction(
         state,
@@ -105,7 +105,7 @@ export function runSimpleLocalEditorAction(
     case 'UPDATE_EDITOR_MODE':
       return UPDATE_FNS.UPDATE_EDITOR_MODE(action, state)
     case 'SWITCH_EDITOR_MODE':
-      return UPDATE_FNS.SWITCH_EDITOR_MODE(action, state, derivedState)
+      return UPDATE_FNS.SWITCH_EDITOR_MODE(action, state, userState)
     case 'TOGGLE_HIDDEN':
       return UPDATE_FNS.TOGGLE_HIDDEN(action, state)
     case 'RENAME_COMPONENT':
@@ -240,6 +240,7 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.ADD_FOLDER(action, state)
     case 'DELETE_FILE':
     case 'DELETE_FILE_FROM_VSCODE':
+    case 'DELETE_FILE_FROM_COLLABORATION':
       return UPDATE_FNS.DELETE_FILE(action, state, derivedState, userState)
     case 'ADD_TEXT_FILE':
       return UPDATE_FNS.ADD_TEXT_FILE(action, state)
@@ -274,7 +275,7 @@ export function runSimpleLocalEditorAction(
     case 'UNWRAP_ELEMENTS':
       return UPDATE_FNS.UNWRAP_ELEMENTS(action, state, dispatch, builtInDependencies)
     case 'INSERT_IMAGE_INTO_UI':
-      return UPDATE_FNS.INSERT_IMAGE_INTO_UI(action, state, derivedState)
+      return UPDATE_FNS.INSERT_IMAGE_INTO_UI(action, state, userState)
     case 'UPDATE_JSX_ELEMENT_NAME':
       return UPDATE_FNS.UPDATE_JSX_ELEMENT_NAME(action, state)
     case 'ADD_IMPORTS':
@@ -389,7 +390,11 @@ export function runSimpleLocalEditorAction(
     case 'SWITCH_CONDITIONAL_BRANCHES':
       return UPDATE_FNS.SWITCH_CONDITIONAL_BRANCHES(action, state)
     case 'UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION_UPDATE':
-      return UPDATE_FNS.UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION_UPDATE(action, state)
+      return UPDATE_FNS.UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION_UPDATE(
+        action,
+        state,
+        serverState,
+      )
     default:
       return state
   }
