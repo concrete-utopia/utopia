@@ -12,7 +12,7 @@ import * as UUIUI from '../../../uuiui'
 import * as UUIUIDeps from '../../../uuiui-deps'
 import * as RemixServerBuild from './built-in-third-party-dependencies/remix-server-build'
 import * as RemixOxygen from '@shopify/remix-oxygen'
-import { createRequestHandler as remixOxygenCreateRequestHandler } from './remix-oxygen'
+import { createRequestHandler as remixOxygenCreateRequestHandler } from './hydrogen-oxygen-support'
 import { SafeLink, SafeOutlet } from './canvas-safe-remix'
 import { UtopiaApiGroup } from './group-component'
 

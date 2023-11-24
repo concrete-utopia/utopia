@@ -19,6 +19,7 @@ import { CreateRemixDerivedDataRefsGLOBAL } from '../../editor/store/remix-deriv
 import { type ProjectContentTreeRoot } from '../../assets'
 import { type CanvasBase64Blobs } from '../../editor/store/editor-state'
 import { type AppLoadContext } from '@remix-run/server-runtime'
+import { patchServerJSContextIntoArgs } from '../../../core/es-modules/package-manager/hydrogen-oxygen-support'
 
 type RouteModule = RouteModules[keyof RouteModules]
 type RouterType = ReturnType<typeof createMemoryRouter>
@@ -153,7 +154,7 @@ function useGetRoutes() {
       return routes
     }
 
-    const customServerCreator = remixDerivedDataRef.current.customServerCreator
+    const customServerJSExecutor = remixDerivedDataRef.current.customServerJSExecutor
     const creators = remixDerivedDataRef.current.routeModuleCreators
 
     function addExportsToRoutes(innerRoutes: DataRouteObject[]) {
@@ -162,23 +163,11 @@ function useGetRoutes() {
         if (creatorForRoute != null) {
           for (const routeExport of RouteExportsForRouteObject) {
             route[routeExport] = async (args: any) => {
-              const { context: requestContext } = await getContextFromCustomServer(
-                customServerCreator,
+              const patchedArgs = await patchServerJSContextIntoArgs(
+                customServerJSExecutor,
                 projectContentsRef.current,
-                fileBlobsRef.current,
-                hiddenInstancesRef.current,
-                displayNoneInstancesRef.current,
-                metadataContext,
-                args.request,
+                args,
               )
-
-              const patchedArgs = {
-                ...args,
-                context: {
-                  ...args.context,
-                  ...requestContext,
-                },
-              }
 
               return (
                 creatorForRoute

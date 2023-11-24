@@ -29,6 +29,7 @@ import type { CurriedUtopiaRequireFn, CurriedResolveFn } from '../../custom-code
 import { memoize } from '../../../core/shared/memoize'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { evaluator } from '../../../core/es-modules/evaluator/evaluator'
+import { type CustomServerJSExecutor } from '../../../core/es-modules/package-manager/hydrogen-oxygen-support'
 
 export interface RemixRoutingTable {
   [rootElementUid: string]: string /* file path */
@@ -41,7 +42,7 @@ export interface RemixDerivedData {
   routeModulesToRelativePaths: RouteModulesWithRelativePaths
   routes: Array<DataRouteObject>
   routingTable: RemixRoutingTable
-  customServerCreator: ExecutionScopeCreator | null
+  customServerJSExecutor: CustomServerJSExecutor | null
 }
 
 export const CreateRemixDerivedDataRefsGLOBAL: {
@@ -119,7 +120,7 @@ export function createRemixDerivedData(
     routes,
     routeModulesToRelativePaths,
     routingTable,
-    customServerCreator,
+    customServerJSExecutor,
   } = routesAndModulesFromManifestResult
 
   return {
@@ -129,7 +130,7 @@ export function createRemixDerivedData(
     routeModuleCreators: routeModuleCreators,
     routeModulesToRelativePaths: routeModulesToRelativePaths,
     routingTable: routingTable,
-    customServerCreator: customServerCreator,
+    customServerJSExecutor: customServerJSExecutor,
   }
 }
 

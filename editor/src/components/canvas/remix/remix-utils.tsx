@@ -41,6 +41,10 @@ import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { safeIndex } from '../../../core/shared/array-utils'
 import { createClientRoutes, groupRoutesByParentId } from '../../../third-party/remix/client-routes'
 import path from 'path'
+import {
+  type CustomServerJSExecutor,
+  getCustomServerJSExecutor,
+} from '../../../core/es-modules/package-manager/hydrogen-oxygen-support'
 
 export const OutletPathContext = React.createContext<ElementPath | null>(null)
 
@@ -165,7 +169,7 @@ interface GetRoutesAndModulesFromManifestResult {
   routes: Array<DataRouteObject>
   routeModulesToRelativePaths: RouteModulesWithRelativePaths
   routingTable: RemixRoutingTable
-  customServerCreator: ExecutionScopeCreator | null
+  customServerJSExecutor: CustomServerJSExecutor | null
 }
 
 function getRouteModulesWithPaths(
@@ -423,17 +427,14 @@ export function getRoutesAndModulesFromManifest(
     routingTable[rootComponentUid] = route.module
   })
 
-  const hasCustomServer = getProjectFileByFilePath(projectContents, '/server.js') != null
-  const customServerCreator: ExecutionScopeCreator | null = hasCustomServer
-    ? createExecutionScopeCreator('/server.js', curriedRequireFn, curriedResolveFn)
-    : null
+  const customServerJSExecutor = getCustomServerJSExecutor(projectContents, curriedRequireFn)
 
   return {
     routeModuleCreators,
     routes,
     routeModulesToRelativePaths,
     routingTable,
-    customServerCreator,
+    customServerJSExecutor,
   }
 }
 

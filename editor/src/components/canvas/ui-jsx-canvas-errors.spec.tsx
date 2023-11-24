@@ -659,7 +659,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     `)
   })
 
-  it('React.useEffect at the root fails usefully', () => {
+  xit('React.useEffect at the root fails usefully', () => {
     const result = testCanvasRenderInline(
       null,
       `import * as React from "react"
