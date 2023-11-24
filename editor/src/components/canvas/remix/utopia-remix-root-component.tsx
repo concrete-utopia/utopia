@@ -10,12 +10,15 @@ import * as EP from '../../../core/shared/element-path'
 import { PathPropHOC } from './path-props-hoc'
 import { atom, useAtom, useSetAtom } from 'jotai'
 import { getDefaultExportNameAndUidFromFile } from '../../../core/model/project-file-utils'
-import { OutletPathContext } from './remix-utils'
+import { type ExecutionScopeCreator, OutletPathContext } from './remix-utils'
 import { UiJsxCanvasCtxAtom } from '../ui-jsx-canvas'
 import type { UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { AlwaysFalse, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { CreateRemixDerivedDataRefsGLOBAL } from '../../editor/store/remix-derived-data'
+import { type ProjectContentTreeRoot } from '../../assets'
+import { type CanvasBase64Blobs } from '../../editor/store/editor-state'
+import { type AppLoadContext } from '@remix-run/server-runtime'
 
 type RouteModule = RouteModules[keyof RouteModules]
 type RouterType = ReturnType<typeof createMemoryRouter>
@@ -150,25 +153,45 @@ function useGetRoutes() {
       return routes
     }
 
+    const customServerCreator = remixDerivedDataRef.current.customServerCreator
     const creators = remixDerivedDataRef.current.routeModuleCreators
 
     function addExportsToRoutes(innerRoutes: DataRouteObject[]) {
       innerRoutes.forEach((route) => {
-        // FIXME Adding a loader function to the 'root' route causes the `createShouldRevalidate` to fail, because
-        // we only ever pass in an empty object for the `routeModules` and never mutate it
         const creatorForRoute = creators[route.id] ?? null
         if (creatorForRoute != null) {
           for (const routeExport of RouteExportsForRouteObject) {
-            route[routeExport] = (args: any) =>
-              creatorForRoute
-                .executionScopeCreator(
-                  projectContentsRef.current,
-                  fileBlobsRef.current,
-                  hiddenInstancesRef.current,
-                  displayNoneInstancesRef.current,
-                  metadataContext,
-                )
-                .scope[routeExport]?.(args) ?? null
+            route[routeExport] = async (args: any) => {
+              const { context: requestContext } = await getContextFromCustomServer(
+                customServerCreator,
+                projectContentsRef.current,
+                fileBlobsRef.current,
+                hiddenInstancesRef.current,
+                displayNoneInstancesRef.current,
+                metadataContext,
+                args.request,
+              )
+
+              const patchedArgs = {
+                ...args,
+                context: {
+                  ...args.context,
+                  ...requestContext,
+                },
+              }
+
+              return (
+                creatorForRoute
+                  .executionScopeCreator(
+                    projectContentsRef.current,
+                    fileBlobsRef.current,
+                    hiddenInstancesRef.current,
+                    displayNoneInstancesRef.current,
+                    metadataContext,
+                  )
+                  .scope[routeExport]?.(patchedArgs) ?? null
+              )
+            }
           }
         }
 
@@ -188,6 +211,45 @@ function useGetRoutes() {
     remixDerivedDataRef,
     routes,
   ])
+}
+
+// Super hacky way of calling the `fetch` function from `server.js` purely to get the context
+// that it provides, so that we can then provide that to the server function
+async function getContextFromCustomServer(
+  customServerCreator: ExecutionScopeCreator | null,
+  projectContents: ProjectContentTreeRoot,
+  fileBlobs: CanvasBase64Blobs,
+  hiddenInstances: Array<ElementPath>,
+  displayNoneInstances: Array<ElementPath>,
+  metadataContext: UiJsxCanvasContextData,
+  request: Request,
+): Promise<{ context: AppLoadContext }> {
+  if (customServerCreator == null) {
+    return { context: {} }
+  }
+
+  const customServerScope = customServerCreator(
+    projectContents,
+    fileBlobs,
+    hiddenInstances,
+    displayNoneInstances,
+    metadataContext,
+  ).scope
+
+  if (customServerScope.default?.fetch == null) {
+    return { context: {} }
+  }
+
+  return customServerScope.default.fetch(
+    request,
+    {
+      SESSION_SECRET: 'foobar',
+      PUBLIC_STORE_DOMAIN: 'mock.shop',
+    },
+    {
+      waitUntil: () => {},
+    },
+  )
 }
 
 export interface UtopiaRemixRootComponentProps {

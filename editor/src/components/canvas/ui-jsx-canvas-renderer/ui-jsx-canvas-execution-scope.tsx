@@ -67,8 +67,30 @@ export function createExecutionScope(
 
   const fileBlobsForFile = defaultIfNull(emptyFileBlobs, fileBlobs[filePath])
 
-  const { topLevelElements, imports, jsxFactoryFunction, combinedTopLevelArbitraryBlock } =
-    getParseSuccessForFilePath(filePath, projectContents)
+  const projectFile = getProjectFileByFilePath(projectContents, filePath)
+  if (projectFile == null || !isTextFile(projectFile)) {
+    return {
+      scope: {},
+      topLevelJsxComponents: new Map(),
+      requireResult: {},
+    }
+  }
+
+  // If this is a parse failure we should still execute it
+  if (!isParseSuccess(projectFile.fileContents.parsed)) {
+    const scope = customRequire('.', filePath)
+    return {
+      scope: scope,
+      topLevelJsxComponents: new Map(),
+      requireResult: {},
+    }
+  }
+
+  const parseSuccess = projectFile.fileContents.parsed
+  const topLevelElements = parseSuccess.topLevelElements
+  const imports = parseSuccess.imports
+  const jsxFactoryFunction = parseSuccess.jsxFactoryFunction
+  const combinedTopLevelArbitraryBlock = parseSuccess.combinedTopLevelArbitraryBlock
   const requireResult: MapLike<any> = importResultFromImports(filePath, imports, customRequire)
 
   const userRequireFn = (toImport: string) => customRequire(filePath, toImport) // TODO this was a React usecallback

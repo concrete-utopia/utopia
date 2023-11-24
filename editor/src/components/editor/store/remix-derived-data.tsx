@@ -14,6 +14,7 @@ import {
 } from '../../assets'
 import type { ProjectContentTreeRoot } from '../../assets'
 import type {
+  ExecutionScopeCreator,
   RouteIdsToModuleCreators,
   RouteModulesWithRelativePaths,
 } from '../../canvas/remix/remix-utils'
@@ -40,6 +41,7 @@ export interface RemixDerivedData {
   routeModulesToRelativePaths: RouteModulesWithRelativePaths
   routes: Array<DataRouteObject>
   routingTable: RemixRoutingTable
+  customServerCreator: ExecutionScopeCreator | null
 }
 
 export const CreateRemixDerivedDataRefsGLOBAL: {
@@ -112,8 +114,13 @@ export function createRemixDerivedData(
     return null
   }
 
-  const { routeModuleCreators, routes, routeModulesToRelativePaths, routingTable } =
-    routesAndModulesFromManifestResult
+  const {
+    routeModuleCreators,
+    routes,
+    routeModulesToRelativePaths,
+    routingTable,
+    customServerCreator,
+  } = routesAndModulesFromManifestResult
 
   return {
     futureConfig: DefaultFutureConfig,
@@ -122,6 +129,7 @@ export function createRemixDerivedData(
     routeModuleCreators: routeModuleCreators,
     routeModulesToRelativePaths: routeModulesToRelativePaths,
     routingTable: routingTable,
+    customServerCreator: customServerCreator,
   }
 }
 

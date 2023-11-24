@@ -165,6 +165,7 @@ interface GetRoutesAndModulesFromManifestResult {
   routes: Array<DataRouteObject>
   routeModulesToRelativePaths: RouteModulesWithRelativePaths
   routingTable: RemixRoutingTable
+  customServerCreator: ExecutionScopeCreator | null
 }
 
 function getRouteModulesWithPaths(
@@ -234,28 +235,24 @@ export type ExecutionScopeCreator = (
   metadataContext: UiJsxCanvasContextData,
 ) => ExecutionScope
 
-function getRemixExportsOfModule(
+function createExecutionScopeCreator(
   filename: string,
   curriedRequireFn: CurriedUtopiaRequireFn,
   curriedResolveFn: CurriedResolveFn,
-  projectContents: ProjectContentTreeRoot,
-): {
-  executionScopeCreator: ExecutionScopeCreator
-  rootComponentUid: string
-} {
+): ExecutionScopeCreator {
   let mutableContextRef: { current: MutableUtopiaCtxRefData } = { current: {} }
   let topLevelComponentRendererComponents: {
     current: MapLike<MapLike<ComponentRendererComponent>>
   } = { current: {} }
 
-  const executionScopeCreator = (
+  return (
     innerProjectContents: ProjectContentTreeRoot,
     fileBlobs: CanvasBase64Blobs,
     hiddenInstances: Array<ElementPath>,
     displayNoneInstances: Array<ElementPath>,
     metadataContext: UiJsxCanvasContextData,
   ) => {
-    let resolvedFiles: MapLike<Array<string>> = {}
+    let resolvedFiles: MapLike<MapLike<any>> = {}
     let resolvedFileNames: Array<string> = [filename]
 
     const requireFn = curriedRequireFn(innerProjectContents)
@@ -267,11 +264,12 @@ function getRemixExportsOfModule(
       }
       let resolvedFromThisOrigin = resolvedFiles[importOrigin]
 
-      const alreadyResolved = resolvedFromThisOrigin.includes(toImport) // We're inside a cyclic dependency, so trigger the below fallback     const filePathResolveResult = alreadyResolved
+      const alreadyResolved = resolvedFromThisOrigin[toImport] !== undefined
+      const filePathResolveResult = alreadyResolved
         ? left<string, string>('Already resolved')
         : resolve(importOrigin, toImport)
 
-      forEachRight(alreadyResolved, (filepath) => resolvedFileNames.push(filepath))
+      forEachRight(filePathResolveResult, (filepath) => resolvedFileNames.push(filepath))
 
       const resolvedParseSuccess: Either<string, MapLike<any>> = attemptToResolveParsedComponents(
         resolvedFromThisOrigin,
@@ -287,7 +285,7 @@ function getRemixExportsOfModule(
         metadataContext,
         NO_OP,
         false,
-        alreadyResolved,
+        filePathResolveResult,
         null,
       )
       return foldEither(
@@ -318,7 +316,22 @@ function getRemixExportsOfModule(
       null,
     )
   }
+}
 
+function getRemixExportsOfModule(
+  filename: string,
+  curriedRequireFn: CurriedUtopiaRequireFn,
+  curriedResolveFn: CurriedResolveFn,
+  projectContents: ProjectContentTreeRoot,
+): {
+  executionScopeCreator: ExecutionScopeCreator
+  rootComponentUid: string
+} {
+  const executionScopeCreator = createExecutionScopeCreator(
+    filename,
+    curriedRequireFn,
+    curriedResolveFn,
+  )
   const nameAndUid = getDefaultExportNameAndUidFromFile(projectContents, filename)
 
   return {
@@ -410,11 +423,17 @@ export function getRoutesAndModulesFromManifest(
     routingTable[rootComponentUid] = route.module
   })
 
+  const hasCustomServer = getProjectFileByFilePath(projectContents, '/server.js') != null
+  const customServerCreator: ExecutionScopeCreator | null = hasCustomServer
+    ? createExecutionScopeCreator('/server.js', curriedRequireFn, curriedResolveFn)
+    : null
+
   return {
     routeModuleCreators,
     routes,
     routeModulesToRelativePaths,
     routingTable,
+    customServerCreator,
   }
 }
 
