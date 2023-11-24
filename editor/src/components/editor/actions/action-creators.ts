@@ -221,6 +221,7 @@ import type {
   ScrollToPosition,
   UpdateProjectServerState,
   UpdateTopLevelElementsFromCollaborationUpdate,
+  DeleteFileFromCollaboration,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -957,6 +958,13 @@ export function updateFilePath(oldPath: string, newPath: string): UpdateFilePath
 export function deleteFile(filename: string): DeleteFile {
   return {
     action: 'DELETE_FILE',
+    filename: filename,
+  }
+}
+
+export function deleteFileFromCollaboration(filename: string): DeleteFileFromCollaboration {
+  return {
+    action: 'DELETE_FILE_FROM_COLLABORATION',
     filename: filename,
   }
 }

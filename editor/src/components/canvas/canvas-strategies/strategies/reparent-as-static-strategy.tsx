@@ -1,11 +1,18 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import { zeroCanvasRect } from '../../../../core/shared/math-utils'
+import type { CanvasPoint, CanvasVector } from '../../../../core/shared/math-utils'
+import {
+  canvasPoint,
+  canvasRectangle,
+  zeroCanvasRect,
+  zeroRectIfNullOrInfinity,
+} from '../../../../core/shared/math-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { absolute } from '../../../../utils/utils'
 import { CSSCursor } from '../../canvas-types'
 import type { CanvasCommand } from '../../commands/commands'
 import { reorderElement } from '../../commands/reorder-element-command'
+import { activeFrameTargetRect, setActiveFrames } from '../../commands/set-active-frames-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { showReorderIndicator } from '../../commands/show-reorder-indicator-command'
@@ -29,7 +36,7 @@ import {
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
 } from '../canvas-strategy-types'
-import type { InteractionSession } from '../interaction-state'
+import type { DragInteractionData, InteractionSession } from '../interaction-state'
 import { shouldKeepMovingDraggedGroupChildren } from './absolute-utils'
 import { ifAllowedToReparent } from './reparent-helpers/reparent-helpers'
 import { getStaticReparentPropertyChanges } from './reparent-helpers/reparent-property-changes'
@@ -246,6 +253,51 @@ function applyStaticReparent(
                 ...placeholderResult.commands,
               ]
               duplicatedElementNewUids = placeholderResult.duplicatedElementNewUids
+
+              commonPatches.push(
+                setActiveFrames(
+                  filteredSelectedElements.map((path) => {
+                    const source = zeroRectIfNullOrInfinity(
+                      MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+                        path,
+                        canvasState.startingMetadata,
+                      ),
+                    )
+
+                    function getTargetCoord(
+                      interactionData: DragInteractionData,
+                      axis: 'x' | 'y',
+                    ): number {
+                      return (
+                        interactionData.originalDragStart[axis] +
+                        (interactionData.drag?.[axis] ?? 0) -
+                        (interactionData.originalDragStart[axis] - source[axis])
+                      )
+                    }
+
+                    const targetPosition =
+                      interactionSession.interactionData.type === 'DRAG'
+                        ? canvasPoint({
+                            x: getTargetCoord(interactionSession.interactionData, 'x'),
+                            y: getTargetCoord(interactionSession.interactionData, 'y'),
+                          })
+                        : canvasPoint(source)
+
+                    return {
+                      action: 'reparent',
+                      target: activeFrameTargetRect(
+                        canvasRectangle({
+                          x: targetPosition.x,
+                          y: targetPosition.y,
+                          width: source.width,
+                          height: source.height,
+                        }),
+                      ),
+                      source: source,
+                    }
+                  }),
+                ),
+              )
 
               if (shouldShowPositionIndicator) {
                 return [

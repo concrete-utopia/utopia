@@ -172,4 +172,5 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
     elements: [],
   },
   filesModifiedByAnotherUser: [],
+  activeFrames: [],
 }

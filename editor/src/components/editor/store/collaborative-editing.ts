@@ -1,47 +1,37 @@
+import * as Y from 'yjs'
+import type { ProjectContentsTree } from '../../../components/assets'
+import {
+  getProjectFileFromTree,
+  isProjectContentFile,
+  zipContentsTree,
+  type ProjectContentTreeRoot,
+} from '../../../components/assets'
+import type { TopLevelElement } from '../../../core/shared/element-template'
+import type { ParseSuccess } from '../../../core/shared/project-file-types'
+import { isTextFile } from '../../../core/shared/project-file-types'
+import { assertNever, isBrowserEnvironment } from '../../../core/shared/utils'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
+import type { EditorAction, EditorDispatch } from '../action-types'
+import {
+  deleteFileFromCollaboration,
+  updateTopLevelElementsFromCollaborationUpdate,
+} from '../actions/action-creators'
 import type {
   CollabTextFile,
   CollabTextFileTopLevelElements,
   CollaborativeEditingSupportSession,
 } from './editor-state'
-import { type CollaborativeEditingSupport } from './editor-state'
-import {
-  writeProjectFileChange,
-  type ProjectChanges,
-  type ProjectFileChange,
-  deletePathChange,
-  ensureDirectoryExistsChange,
-} from './vscode-changes'
-import type { ProjectContentsTree } from '../../../components/assets'
-import {
-  walkContentsTree,
-  type ProjectContentTreeRoot,
-  getProjectFileFromTree,
-  isProjectContentFile,
-  zipContentsTree,
-  addFileToProjectContents,
-} from '../../../components/assets'
-import type { EditorAction, EditorDispatch } from '../action-types'
-import {
-  deleteFile,
-  updateProjectContents,
-  updateTopLevelElementsFromCollaborationUpdate,
-} from '../actions/action-creators'
-import { assertNever, isBrowserEnvironment } from '../../../core/shared/utils'
-import type { ParseSuccess } from '../../../core/shared/project-file-types'
-import {
-  RevisionsState,
-  isTextFile,
-  parseSuccess,
-  textFile,
-  textFileContents,
-} from '../../../core/shared/project-file-types'
 import {
   ParsedTextFileKeepDeepEquality,
   TopLevelElementKeepDeepEquality,
 } from './store-deep-equality-instances'
-import * as Y from 'yjs'
-import type { TopLevelElement } from '../../../core/shared/element-template'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
+import {
+  deletePathChange,
+  ensureDirectoryExistsChange,
+  writeProjectFileChange,
+  type ProjectChanges,
+  type ProjectFileChange,
+} from './vscode-changes'
 
 export function collateCollaborativeProjectChanges(
   oldContents: ProjectContentTreeRoot,
@@ -138,10 +128,7 @@ function applyFileChangeToMap(
 ): void {
   switch (change.type) {
     case 'DELETE_PATH':
-      const keyIterator = projectContentsMap.keys()
-      let keyIteratorValue = keyIterator.next()
-      while (!keyIteratorValue.done) {
-        const key = keyIteratorValue.value
+      for (const key of projectContentsMap.keys()) {
         if (
           key === change.fullPath ||
           (change.recursive && key.startsWith(`${change.fullPath}/`))
@@ -262,7 +249,7 @@ function updateEntireProjectContents(
         }
         break
       case 'delete':
-        actions.push(deleteFile(filename))
+        actions.push(deleteFileFromCollaboration(filename))
         break
       default:
         throw new Error(`Unhandled change entry action: ${changeEntry.action}`)
@@ -278,32 +265,25 @@ function updateTopLevelElementsOfFile(
   dispatch: EditorDispatch,
 ): void {
   const file = session.projectContents.get(filePath)
-  if (file != null) {
-    const oldTopLevelElements = file.get('topLevelElements') as CollabTextFileTopLevelElements
-    let newTopLevelElements: Array<TopLevelElement> = []
-    let readIndex = 0
-    for (const delta of changeEvent.delta) {
-      if (delta.retain != undefined) {
-        const elementsToPush = oldTopLevelElements.slice(readIndex, readIndex + delta.retain)
-        newTopLevelElements.push(...elementsToPush)
-        readIndex += delta.retain
-      }
-      if (delta.insert != null && Array.isArray(delta.insert)) {
-        newTopLevelElements.push(...delta.insert)
-      }
-      if (delta.delete != undefined) {
-        readIndex += delta.delete
-      }
-    }
-
-    if (readIndex < oldTopLevelElements.length) {
-      // There is an implicit retain for the remainder of the items
-      const elementsToPush = oldTopLevelElements.slice(readIndex)
+  const oldTopLevelElements: CollabTextFileTopLevelElements =
+    (file?.get('topLevelElements') as CollabTextFileTopLevelElements) ?? []
+  let newTopLevelElements: Array<TopLevelElement> = []
+  let readIndex = 0
+  for (const delta of changeEvent.delta) {
+    if (delta.retain != undefined) {
+      const elementsToPush = oldTopLevelElements.slice(readIndex, readIndex + delta.retain)
       newTopLevelElements.push(...elementsToPush)
+      readIndex += delta.retain
     }
-
-    dispatch([updateTopLevelElementsFromCollaborationUpdate(filePath, newTopLevelElements)])
+    if (delta.insert != null && Array.isArray(delta.insert)) {
+      newTopLevelElements.push(...delta.insert)
+    }
+    if (delta.delete != undefined) {
+      readIndex += delta.delete
+    }
   }
+
+  dispatch([updateTopLevelElementsFromCollaborationUpdate(filePath, newTopLevelElements)])
 }
 
 function arrayChanges(updatesAt: Array<number>, deleteFrom: number | null): ArrayChanges {

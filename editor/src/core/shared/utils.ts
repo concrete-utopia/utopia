@@ -206,3 +206,10 @@ export function contentsJSONURLFromProjectURL(
     return left(`Invalid value passed that isn't a URL.`)
   }
 }
+
+const imgPattern = /\.(jpe?g|png|gif|bmp|svg)(\?.*)?$/i
+
+export function isImage(str: string): boolean {
+  const lowerCaseStr = str.toLowerCase()
+  return imgPattern.test(lowerCaseStr) || lowerCaseStr.startsWith('data:image/')
+}

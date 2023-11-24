@@ -1,23 +1,26 @@
+import * as EmotionReact from '@emotion/react'
+import * as EmotionStyled from '@emotion/styled'
+import * as RemixRunReact from '@remix-run/react'
+import * as RemixServerRuntime from '@remix-run/server-runtime'
+import * as Hydrogen from '@shopify/hydrogen'
+import React from 'react' // this is imported like this so that the monkey patching will run
+import * as ReactDOM from 'react-dom'
+import * as ReactRouter from 'react-router'
+import * as ReactJsxRuntime from 'react/jsx-runtime'
 import * as UtopiaAPI from 'utopia-api'
 import * as UUIUI from '../../../uuiui'
 import * as UUIUIDeps from '../../../uuiui-deps'
-import * as ReactJsxRuntime from 'react/jsx-runtime'
-import React from 'react' // this is imported like this so that the monkey patching will run
-import * as ReactDOM from 'react-dom'
-import * as EmotionReact from '@emotion/react'
-import * as EmotionStyled from '@emotion/styled'
+import * as RemixServerBuild from './built-in-third-party-dependencies/remix-server-build'
+import { SafeLink, SafeOutlet } from './canvas-safe-remix'
+import { UtopiaApiGroup } from './group-component'
 
-import editorPackageJSON from '../../../../package.json'
 import utopiaAPIPackageJSON from '../../../../../utopia-api/package.json'
+import editorPackageJSON from '../../../../package.json'
 import { applyUIDMonkeyPatch } from '../../../utils/canvas-react-utils'
 import { createRegisterModuleFunction } from '../../property-controls/property-controls-local'
-import type { EditorDispatch } from '../../../components/editor/action-types'
-import type { EditorState } from '../../../components/editor/store/editor-state'
 import type { UtopiaTsWorkers } from '../../workers/common/worker-types'
-import { UtopiaApiGroup } from './group-component'
-import * as RemixRunReact from '@remix-run/react'
-import * as ReactRouter from 'react-router'
-import { SafeLink, SafeOutlet } from './canvas-safe-remix'
+
+const Stub = {}
 
 applyUIDMonkeyPatch()
 
@@ -88,6 +91,8 @@ export function createBuiltInDependenciesList(
       EmotionStyled,
       editorPackageJSON.dependencies['@emotion/styled'],
     ),
+
+    // Remix support
     builtInDependency(
       '@remix-run/react',
       {
@@ -98,5 +103,22 @@ export function createBuiltInDependenciesList(
       editorPackageJSON.dependencies['@remix-run/react'],
     ),
     builtInDependency('react-router', ReactRouter, editorPackageJSON.dependencies['react-router']),
+
+    // Dependencies to make loading hydrogen projects faster
+    builtInDependency(
+      '@remix-run/server-runtime',
+      RemixServerRuntime,
+      editorPackageJSON.dependencies['@remix-run/server-runtime'],
+    ),
+    builtInDependency(
+      '@shopify/hydrogen',
+      Hydrogen,
+      editorPackageJSON.dependencies['@shopify/hydrogen'],
+    ),
+
+    // Stubs for the hydrogen projects. this is here to prevent our backend from downloading a massive amount of files into the editor
+    builtInDependency('@remix-run/dev/server-build', RemixServerBuild, '1.19.1'),
+    builtInDependency('@shopify/cli', Stub, '3.49.2'),
+    builtInDependency('@shopify/cli-hydrogen', Stub, '5.4.2'),
   ]
 }

@@ -4,7 +4,7 @@ import { jsx } from '@emotion/react'
 import React from 'react'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { EditorModes } from '../../editor/editor-modes'
-import { useStorage, useThreads } from '../../../../liveblocks.config'
+import { useSelf, useStorage, useThreads } from '../../../../liveblocks.config'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { switchEditorMode } from '../../editor/actions/action-creators'
 import { canvasPoint } from '../../../core/shared/math-utils'
@@ -16,6 +16,7 @@ import {
   normalizeMultiplayerName,
 } from '../../../core/shared/multiplayer'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
+import { AvatarPicture } from '../../user-bar'
 
 export const CommentIndicator = React.memo(() => {
   const projectId = useEditorState(
@@ -36,9 +37,11 @@ export const CommentIndicator = React.memo(() => {
     </CanvasOffsetWrapper>
   )
 })
+CommentIndicator.displayName = 'CommentIndicator'
 
-function CommentIndicatorInner() {
+const CommentIndicatorInner = React.memo(() => {
   const { threads } = useThreads()
+  const me = useSelf()
   const dispatch = useDispatch()
   const collabs = useStorage((storage) => storage.collaborators)
 
@@ -46,29 +49,42 @@ function CommentIndicatorInner() {
     <React.Fragment>
       {threads.map((thread) => {
         const point = canvasPoint(thread.metadata)
-        const { initials, color } = (() => {
+        const { initials, color, avatar } = (() => {
           const firstComment = thread.comments[0]
           if (firstComment == null) {
-            return { initials: 'AN', color: multiplayerColorFromIndex(null) }
+            return { initials: 'AN', color: multiplayerColorFromIndex(null), avatar: null }
           }
           const author = collabs[firstComment.userId]
           if (author == null) {
-            return { initials: 'AN', color: multiplayerColorFromIndex(null) }
+            return { initials: 'AN', color: multiplayerColorFromIndex(null), avatar: null }
           }
           return {
             initials: multiplayerInitialsFromName(normalizeMultiplayerName(author.name)),
             color: multiplayerColorFromIndex(author.colorIndex),
+            avatar: author.avatar,
           }
         })()
+
+        const remixLocationRoute = thread.metadata.remixLocationRoute ?? null
+
+        const isOnAnotherRoute =
+          me.presence.remix?.locationRoute != null &&
+          remixLocationRoute != null &&
+          remixLocationRoute !== me.presence.remix.locationRoute
 
         return (
           <div
             key={thread.id}
-            style={{
+            css={{
               position: 'absolute',
               top: point.y,
               left: point.x,
+              opacity: isOnAnotherRoute ? 0.25 : 1,
               width: 20,
+              '&:hover': {
+                transform: 'scale(1.15)',
+                transitionDuration: '0.1s',
+              },
             }}
             onClick={() => {
               dispatch([switchEditorMode(EditorModes.commentMode(point))])
@@ -101,7 +117,7 @@ function CommentIndicatorInner() {
                   boxShadow: UtopiaTheme.panelStyles.shadows.medium,
                 }}
               >
-                {initials}
+                <AvatarPicture url={avatar} initials={initials} />
               </div>
             </div>
           </div>
@@ -109,4 +125,5 @@ function CommentIndicatorInner() {
       })}
     </React.Fragment>
   )
-}
+})
+CommentIndicatorInner.displayName = 'CommentIndicatorInner'

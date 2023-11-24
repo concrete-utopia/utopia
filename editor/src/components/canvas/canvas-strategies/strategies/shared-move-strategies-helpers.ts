@@ -11,20 +11,17 @@ import type {
   ElementInstanceMetadataMap,
   JSXElement,
 } from '../../../../core/shared/element-template'
-import type {
-  CanvasPoint,
-  CanvasRectangle,
-  CanvasVector,
-  LocalRectangle,
-} from '../../../../core/shared/math-utils'
+import type { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
 import {
   boundingRectangleArray,
+  zeroRectIfNullOrInfinity,
   canvasRectangleToLocalRectangle,
   canvasVector,
   nullIfInfinity,
   offsetRect,
   roundRectangleToNearestWhole,
   zeroCanvasPoint,
+  zeroCanvasRect,
 } from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 
@@ -70,6 +67,8 @@ import {
   setCssLengthProperty,
   setValueKeepingOriginalUnit,
 } from '../../commands/set-css-length-command'
+import type { ActiveFrame, ActiveFrameAction } from '../../commands/set-active-frames-command'
+import { activeFrameTargetRect, setActiveFrames } from '../../commands/set-active-frames-command'
 
 export interface MoveCommandsOptions {
   ignoreLocalFrame?: boolean
@@ -114,6 +113,7 @@ export function applyMoveCommon(
     commands: Array<CanvasCommand>
     intendedBounds: Array<CanvasFrameAndTarget>
   },
+  action: ActiveFrameAction,
 ): StrategyApplicationResult {
   if (
     interactionSession.interactionData.type === 'DRAG' &&
@@ -122,6 +122,24 @@ export function applyMoveCommon(
     const drag = interactionSession.interactionData.drag
     const shiftKeyPressed = interactionSession.interactionData.modifiers.shift
     const cmdKeyPressed = interactionSession.interactionData.modifiers.cmd
+
+    function getActiveFrames(intendedBounds: CanvasFrameAndTarget[]): ActiveFrame[] {
+      return intendedBounds.map((b) => {
+        const originalTarget = targets.find((t) => EP.toUid(t) === EP.toUid(b.target))
+        const source =
+          originalTarget != null
+            ? zeroRectIfNullOrInfinity(
+                MetadataUtils.getFrameInCanvasCoords(originalTarget, canvasState.startingMetadata),
+              )
+            : zeroCanvasRect
+        return {
+          action: action,
+          target: activeFrameTargetRect(b.frame),
+          source: source,
+        }
+      })
+    }
+
     if (cmdKeyPressed) {
       const commandsForSelectedElements = getMoveCommands(drag)
 
@@ -134,6 +152,7 @@ export function applyMoveCommon(
         updateHighlightedViews('mid-interaction', []),
         setElementsToRerenderCommand(targets),
         setCursorCommand(CSSCursor.Select),
+        setActiveFrames(getActiveFrames(commandsForSelectedElements.intendedBounds)),
       ])
     } else {
       const constrainedDragAxis =
@@ -171,6 +190,7 @@ export function applyMoveCommon(
         ),
         setElementsToRerenderCommand([...targets, ...targetsForSnapping]),
         setCursorCommand(CSSCursor.Select),
+        setActiveFrames(getActiveFrames(commandsForSelectedElements.intendedBounds)),
       ])
     }
   } else {

@@ -70,10 +70,15 @@ async function renderRemixProject(project: PersistentModel) {
 }
 
 describe('Remix content', () => {
-  it('Renders the remix container with actual content', async () => {
+  it('Renders the remix container with actual content and a cyclic dependency', async () => {
     const project = createModifiedProject({
       [StoryboardFilePath]: `import * as React from 'react'
       import { RemixScene, Storyboard } from 'utopia-api'
+      import { Card } from '/app/components/card'
+
+      export function gimmeData() {
+        return '${DefaultRouteTextContent}'
+      }
       
       export var storyboard = (
         <Storyboard>
@@ -90,6 +95,16 @@ describe('Remix content', () => {
         </Storyboard>
       )
       `,
+      ['/app/components/card.js']: `import * as React from 'react'
+      import { gimmeData } from '${StoryboardFilePath}'
+
+      export const Card = (props) => {
+        const data = gimmeData()
+        return (
+          <h1>{data}</h1>
+        )
+      }
+      `,
       ['/app/root.js']: `import React from 'react'
       import { Outlet } from '@remix-run/react'
       
@@ -103,9 +118,10 @@ describe('Remix content', () => {
       }
       `,
       ['/app/routes/_index.js']: `import React from 'react'
+      import { Card } from '/app/components/card'
 
       export default function Index() {
-        return <h1>${DefaultRouteTextContent}</h1>
+        return <Card />
       }
       `,
     })

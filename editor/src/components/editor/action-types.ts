@@ -676,6 +676,11 @@ export interface DeleteFile {
   filename: string
 }
 
+export interface DeleteFileFromCollaboration {
+  action: 'DELETE_FILE_FROM_COLLABORATION'
+  filename: string
+}
+
 export interface AddTextFile {
   action: 'ADD_TEXT_FILE'
   fileName: string
@@ -1154,6 +1159,7 @@ export type EditorAction =
   | ClearImageFileBlob
   | AddFolder
   | DeleteFile
+  | DeleteFileFromCollaboration
   | AddTextFile
   | SetMainUIFile
   | SetCodeEditorBuildErrors
