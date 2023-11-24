@@ -183,6 +183,11 @@ const MultiplayerCursor = React.memo(
     position: CanvasPoint
     opacity: number
   }) => {
+    const canvasScale = useEditorState(
+      Substores.canvasOffset,
+      (store) => store.editor.canvas.scale,
+      'MultiplayerCursor canvasScale',
+    )
     const color = multiplayerColorFromIndex(colorIndex)
 
     return (
@@ -200,6 +205,7 @@ const MultiplayerCursor = React.memo(
             position: 'fixed',
             pointerEvents: 'none',
             opacity: opacity,
+            scale: canvasScale <= 1 ? 1 / canvasScale : 1,
           }}
         >
           {/* This is a temporary placeholder for a good pointer icon */}
@@ -214,6 +220,7 @@ const MultiplayerCursor = React.memo(
               position: 'absolute',
               top: -3,
               left: -1,
+              zoom: canvasScale > 1 ? 1 / canvasScale : 1,
             }}
           />
           <div
@@ -228,6 +235,7 @@ const MultiplayerCursor = React.memo(
               position: 'absolute',
               left: 5,
               top: 5,
+              zoom: canvasScale > 1 ? 1 / canvasScale : 1,
             }}
           >
             {name}
