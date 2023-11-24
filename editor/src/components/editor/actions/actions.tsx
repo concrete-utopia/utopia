@@ -315,6 +315,8 @@ import type {
   ScrollToPosition,
   UpdateTopLevelElementsFromCollaborationUpdate,
   DeleteFileFromCollaboration,
+  UpdateExportsDetailFromCollaborationUpdate,
+  UpdateImportsFromCollaborationUpdate,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -424,6 +426,8 @@ import {
 } from '../../../core/vscode/vscode-bridge'
 import { createClipboardDataFromSelection, Clipboard } from '../../../utils/clipboard'
 import {
+  ExportDetailKeepDeepEquality,
+  ImportDetailsKeepDeepEquality,
   NavigatorStateKeepDeepEquality,
   TopLevelElementKeepDeepEquality,
 } from '../store/store-deep-equality-instances'
@@ -543,7 +547,7 @@ import { resultForFirstApplicableStrategy } from '../../inspector/inspector-stra
 import { reparentToUnwrapAsAbsoluteStrategy } from '../one-shot-unwrap-strategies/reparent-to-unwrap-as-absolute-strategy'
 import { convertToAbsoluteAndReparentToUnwrapStrategy } from '../one-shot-unwrap-strategies/convert-to-absolute-and-reparent-to-unwrap'
 import { addHookForProjectChanges } from '../store/collaborative-editing'
-import { arrayDeepEquality } from '../../../utils/deep-equality'
+import { arrayDeepEquality, objectDeepEquality } from '../../../utils/deep-equality'
 import type { ProjectServerState } from '../store/project-server-state'
 import { fixParseSuccessUIDs } from '../../../core/workers/parser-printer/uid-fix'
 
@@ -5378,6 +5382,124 @@ export const UPDATE_FNS = {
         )
       } else {
         const newParseSuccess = parseSuccess({}, action.topLevelElements, {}, null, null, [], {})
+        const newFile = textFile(
+          textFileContents('', newParseSuccess, RevisionsState.ParsedAhead),
+          null,
+          null,
+          1,
+        )
+        const updatedProjectContents = addFileToProjectContents(
+          editor.projectContents,
+          action.fullPath,
+          newFile,
+        )
+        updatedEditor = {
+          ...editor,
+          projectContents: updatedProjectContents,
+        }
+      }
+
+      return {
+        ...updatedEditor,
+        filesModifiedByAnotherUser: updatedEditor.filesModifiedByAnotherUser.concat(
+          action.fullPath,
+        ),
+      }
+    }
+  },
+  UPDATE_EXPORTS_DETAIL_FROM_COLLABORATION_UPDATE: (
+    action: UpdateExportsDetailFromCollaborationUpdate,
+    editor: EditorModel,
+    serverState: ProjectServerState,
+  ): EditorModel => {
+    // When the current user does own the project...
+    if (serverState.isMyProject === 'yes') {
+      // ...Disallow these updates as they're coming from non-owners.
+      return editor
+    } else {
+      let updatedEditor: EditorModel = editor
+      if (fileExists(editor.projectContents, action.fullPath)) {
+        updatedEditor = modifyParseSuccessAtPath(
+          action.fullPath,
+          editor,
+          (parsed) => {
+            const newExportsDetailsDeepEquals = arrayDeepEquality(ExportDetailKeepDeepEquality)(
+              parsed.exportsDetail,
+              action.exportsDetail,
+            )
+
+            if (newExportsDetailsDeepEquals.areEqual) {
+              return parsed
+            } else {
+              return {
+                ...parsed,
+                exportsDetail: newExportsDetailsDeepEquals.value,
+              }
+            }
+          },
+          false,
+        )
+      } else {
+        const newParseSuccess = parseSuccess({}, [], {}, null, null, action.exportsDetail, {})
+        const newFile = textFile(
+          textFileContents('', newParseSuccess, RevisionsState.ParsedAhead),
+          null,
+          null,
+          1,
+        )
+        const updatedProjectContents = addFileToProjectContents(
+          editor.projectContents,
+          action.fullPath,
+          newFile,
+        )
+        updatedEditor = {
+          ...editor,
+          projectContents: updatedProjectContents,
+        }
+      }
+
+      return {
+        ...updatedEditor,
+        filesModifiedByAnotherUser: updatedEditor.filesModifiedByAnotherUser.concat(
+          action.fullPath,
+        ),
+      }
+    }
+  },
+  UPDATE_IMPORTS_FROM_COLLABORATION_UPDATE: (
+    action: UpdateImportsFromCollaborationUpdate,
+    editor: EditorModel,
+    serverState: ProjectServerState,
+  ): EditorModel => {
+    // When the current user does own the project...
+    if (serverState.isMyProject === 'yes') {
+      // ...Disallow these updates as they're coming from non-owners.
+      return editor
+    } else {
+      let updatedEditor: EditorModel = editor
+      if (fileExists(editor.projectContents, action.fullPath)) {
+        updatedEditor = modifyParseSuccessAtPath(
+          action.fullPath,
+          editor,
+          (parsed) => {
+            const newImportsDeepEquals = objectDeepEquality(ImportDetailsKeepDeepEquality)(
+              parsed.imports,
+              action.imports,
+            )
+
+            if (newImportsDeepEquals.areEqual) {
+              return parsed
+            } else {
+              return {
+                ...parsed,
+                imports: newImportsDeepEquals.value,
+              }
+            }
+          },
+          false,
+        )
+      } else {
+        const newParseSuccess = parseSuccess(action.imports, [], {}, null, null, [], {})
         const newFile = textFile(
           textFileContents('', newParseSuccess, RevisionsState.ParsedAhead),
           null,
