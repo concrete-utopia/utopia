@@ -28,7 +28,9 @@ export function useCommentModeSelectAndHover(location: CanvasPoint | null): Mous
           storeRef.current.canvasOffset,
           windowPoint({ x: event.clientX, y: event.clientY }),
         )
-        dispatch([switchEditorMode(EditorModes.commentMode(loc.canvasPositionRounded))])
+        dispatch([
+          switchEditorMode(EditorModes.commentMode(loc.canvasPositionRounded, 'not-dragging')),
+        ])
       } else {
         dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
       }

@@ -57,7 +57,7 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
     const point = canvasPoint(thread.metadata)
     const rect = canvasRectangle({ x: point.x, y: point.y, width: 25, height: 25 })
     dispatch([
-      switchEditorMode(EditorModes.commentMode(point)),
+      switchEditorMode(EditorModes.commentMode(point, 'not-dragging')),
       scrollToPosition(rect, 'to-center'),
     ])
   }, [dispatch, thread.metadata])
