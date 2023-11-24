@@ -1,16 +1,19 @@
-import '../../../../resources/editor/css/liveblocks-comments.css'
-import React from 'react'
-import { Substores, useEditorState } from '../../editor/store/store-hook'
-import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
-import { isCommentMode } from '../../editor/editor-modes'
-import { useCreateThread } from '../../../../liveblocks.config'
+import type { CommentData } from '@liveblocks/client'
 import type { ComposerSubmitComment } from '@liveblocks/react-comments'
 import { Comment, Composer } from '@liveblocks/react-comments'
-import { stopPropagation } from '../../inspector/common/inspector-utils'
-import { UtopiaTheme } from '../../../uuiui'
+import React from 'react'
+import { useCreateThread } from '../../../../liveblocks.config'
+import '../../../../resources/editor/css/liveblocks-comments.css'
 import { useCanvasCommentThread } from '../../../core/commenting/comment-hooks'
-import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { useRemixPresence } from '../../../core/shared/multiplayer-hooks'
+import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
+import { UtopiaTheme } from '../../../uuiui'
+import { switchEditorMode } from '../../editor/actions/action-creators'
+import { EditorModes, isCommentMode } from '../../editor/editor-modes'
+import { useDispatch } from '../../editor/store/dispatch-context'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
+import { stopPropagation } from '../../inspector/common/inspector-utils'
+import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
 export const CommentPopup = React.memo(() => {
   const mode = useEditorState(
@@ -57,7 +60,12 @@ interface CommentThreadProps {
 }
 
 const CommentThread = React.memo(({ x, y }: CommentThreadProps) => {
+  const dispatch = useDispatch()
   const thread = useCanvasCommentThread(x, y)
+  const commentsCount = React.useMemo(
+    () => thread?.comments.filter((c) => c.deletedAt == null).length ?? 0,
+    [thread],
+  )
 
   const createThread = useCreateThread()
 
@@ -81,6 +89,15 @@ const CommentThread = React.memo(({ x, y }: CommentThreadProps) => {
     [createThread, x, y, remixPresence],
   )
 
+  const onCommentDelete = React.useCallback(
+    (_deleted: CommentData) => {
+      if (commentsCount - 1 <= 0) {
+        dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
+      }
+    },
+    [commentsCount, dispatch],
+  )
+
   if (thread == null) {
     return <Composer autoFocus onComposerSubmit={onCreateThread} />
   }
@@ -88,7 +105,7 @@ const CommentThread = React.memo(({ x, y }: CommentThreadProps) => {
   return (
     <div>
       {thread.comments.map((comment) => (
-        <Comment key={comment.id} comment={comment} />
+        <Comment key={comment.id} comment={comment} onCommentDelete={onCommentDelete} />
       ))}
       <Composer autoFocus threadId={thread.id} />
     </div>
