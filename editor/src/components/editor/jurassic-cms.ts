@@ -43,15 +43,21 @@ export function unsetCMSUpdateStateForElementPath(
 }
 
 export async function updateJurassicCMS({
+  project_id,
   key,
   updated,
 }: {
+  project_id: string
   key: string
   updated: string
 }): Promise<void> {
-  await fetch(`${JURASSIC_CMS_URL}/api/${key}`, {
+  const response = await fetch(`http://${JURASSIC_CMS_URL}/api/${project_id}/${key}`, {
     method: 'POST',
+    headers: new Headers({ 'content-type': 'application/json' }),
     body: JSON.stringify({ value: updated }),
     mode: 'no-cors',
   })
+  if (!response.ok) {
+    throw new Error(response.statusText)
+  }
 }

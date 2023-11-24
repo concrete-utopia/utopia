@@ -12,9 +12,10 @@ export interface SteganoTextData {
   originalString: string
 }
 
-// TODO: this is very much tailored to the POC
+// TODO: this is very much tailored to Jurassic
 export interface SteganoDataFromCMS {
   type: 'from-cms'
+  project_id: string
   key: string
 }
 
@@ -35,6 +36,7 @@ function decodeSteganoDataFromCMS(encodedString: string): SteganoDataFromCMS | n
 
   return {
     type: 'from-cms',
+    project_id: data.project_id as string,
     key: data.key as string,
   }
 }

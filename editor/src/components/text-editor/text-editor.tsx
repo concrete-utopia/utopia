@@ -381,28 +381,26 @@ const TextEditor = React.memo((props: TextEditorProps) => {
   )
 
   const callJurassicCMSUpdate = React.useCallback(
-    ({ key, updated }: { key: string; updated: string }) => {
+    async ({ project_id, key, updated }: { project_id: string; key: string; updated: string }) => {
       setCMSUpdateState(
         setCMSUpdateStateForElementPath(props.elementPath, { type: 'updating', value: updated }),
       )
-      void updateJurassicCMS({ key, updated })
-        .then(() => {
-          setCMSUpdateState(setCMSUpdateStateForElementPath(props.elementPath, { type: 'ok' }))
-          setTimeout(() => {
-            setCMSUpdateState(unsetCMSUpdateStateForElementPath(props.elementPath))
-          }, 1000)
-        })
-        .catch(() =>
-          setCMSUpdateState(
-            setCMSUpdateStateForElementPath(props.elementPath, {
-              type: 'error',
-              message: 'Update failed',
-            }),
-          ),
+      try {
+        await updateJurassicCMS({ project_id, key, updated })
+        setCMSUpdateState(setCMSUpdateStateForElementPath(props.elementPath, { type: 'ok' }))
+      } catch (e) {
+        setCMSUpdateState(
+          setCMSUpdateStateForElementPath(props.elementPath, {
+            type: 'error',
+            message: 'Update failed',
+          }),
         )
-        .finally(() => dispatch([resetCanvas()]))
+      }
+      setTimeout(() => {
+        setCMSUpdateState(unsetCMSUpdateStateForElementPath(props.elementPath))
+      }, 1000)
     },
-    [dispatch, props.elementPath, setCMSUpdateState],
+    [props.elementPath, setCMSUpdateState],
   )
 
   React.useEffect(() => {
@@ -454,7 +452,11 @@ const TextEditor = React.memo((props: TextEditorProps) => {
             const shouldUpdateInPlaceState = shouldUpdateInPlaceRef()
             requestAnimationFrame(() => {
               if (shouldUpdateInPlaceState === 'update-in-cms') {
-                callJurassicCMSUpdate({ key: data.key, updated: content })
+                void callJurassicCMSUpdate({
+                  project_id: data.project_id,
+                  key: data.key,
+                  updated: content,
+                })
               } else {
                 dispatch([getSaveAction(elementPath, content, textProp)])
               }
@@ -581,7 +583,11 @@ const TextEditor = React.memo((props: TextEditorProps) => {
           const shouldUpdateInPlaceState = shouldUpdateInPlaceRef()
           requestAnimationFrame(() => {
             if (shouldUpdateInPlaceState === 'update-in-cms') {
-              callJurassicCMSUpdate({ key: data.key, updated: content })
+              void callJurassicCMSUpdate({
+                project_id: data.project_id,
+                key: data.key,
+                updated: content,
+              })
               dispatch([updateEditorMode(EditorModes.selectMode(null, false, 'none'))])
             } else {
               dispatch([
