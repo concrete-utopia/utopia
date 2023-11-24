@@ -27,6 +27,8 @@ import { AvatarPicture } from '../../user-bar'
 import type { ThreadData } from '@liveblocks/client'
 import { windowToCanvasCoordinates } from '../dom-lookup'
 
+const IndicatorSize = 20
+
 export const CommentIndicators = React.memo(() => {
   const projectId = useEditorState(
     Substores.restOfEditor,
@@ -108,7 +110,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
         top: dragPosition?.y ?? position.y,
         left: dragPosition?.x ?? position.x,
         opacity: isOnAnotherRoute ? 0.25 : 1,
-        width: 20,
+        width: IndicatorSize,
         '&:hover': {
           transform: 'scale(1.15)',
           transitionDuration: '0.1s',
@@ -163,7 +165,7 @@ function useDragging(thread: ThreadData<ThreadMetadata>) {
   const onMouseMove = React.useCallback(
     (event: MouseEvent) => {
       event.stopPropagation()
-      const newCanvasPoint = windowPositionToCanvasPosition(
+      const newCanvasPoint = mousePositionToIndicatorPosition(
         canvasScaleRef.current,
         canvasOffsetRef.current,
         windowPoint({ x: event.clientX, y: event.clientY }),
@@ -176,7 +178,7 @@ function useDragging(thread: ThreadData<ThreadMetadata>) {
   const onMouseUp = React.useCallback(
     (event: MouseEvent) => {
       event.stopPropagation()
-      const newCanvasPosition = windowPositionToCanvasPosition(
+      const newCanvasPosition = mousePositionToIndicatorPosition(
         canvasScaleRef.current,
         canvasOffsetRef.current,
         windowPoint({ x: event.clientX, y: event.clientY }),
@@ -209,7 +211,7 @@ function useDragging(thread: ThreadData<ThreadMetadata>) {
   return { onMouseDown, dragPosition }
 }
 
-function windowPositionToCanvasPosition(
+function mousePositionToIndicatorPosition(
   canvasScale: number,
   canvasOffset: CanvasVector,
   windowPosition: WindowPoint,
@@ -220,6 +222,6 @@ function windowPositionToCanvasPosition(
       canvasOffset,
       windowPoint({ x: windowPosition.x, y: windowPosition.y }),
     ).canvasPositionRounded,
-    canvasPoint({ x: -10, y: -10 }),
+    canvasPoint({ x: -IndicatorSize / 2, y: -IndicatorSize / 2 }),
   )
 }
