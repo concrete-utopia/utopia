@@ -24,6 +24,8 @@ export function setCMSUpdateStateForElementPath(
 ): (_: CMSUpdateState) => CMSUpdateState {
   if (status.type === 'updating') {
     CMSOptimisticValues_GLOBAL[EP.toString(elementPath)] = status.value
+  } else {
+    delete CMSOptimisticValues_GLOBAL[EP.toString(elementPath)]
   }
   return (state: CMSUpdateState) => ({
     ...state,
@@ -53,9 +55,8 @@ export async function updateJurassicCMS({
 }): Promise<void> {
   const response = await fetch(`http://${JURASSIC_CMS_URL}/api/${project_id}/${key}`, {
     method: 'POST',
-    headers: new Headers({ 'content-type': 'application/json' }),
+    headers: new Headers({ Accept: 'application/json', 'Content-Type': 'application/json' }),
     body: JSON.stringify({ value: updated }),
-    mode: 'no-cors',
   })
   if (!response.ok) {
     throw new Error(response.statusText)

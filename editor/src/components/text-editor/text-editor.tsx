@@ -396,11 +396,12 @@ const TextEditor = React.memo((props: TextEditorProps) => {
           }),
         )
       }
+      dispatch([resetCanvas()])
       setTimeout(() => {
         setCMSUpdateState(unsetCMSUpdateStateForElementPath(props.elementPath))
       }, 1000)
     },
-    [props.elementPath, setCMSUpdateState],
+    [dispatch, props.elementPath, setCMSUpdateState],
   )
 
   React.useEffect(() => {
