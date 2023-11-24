@@ -75,7 +75,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
   const position = canvasPoint(thread.metadata)
 
   const onClick = React.useCallback(() => {
-    dispatch([switchEditorMode(EditorModes.commentMode(position, false))])
+    dispatch([switchEditorMode(EditorModes.commentMode(position, 'not-dragging'))])
   }, [dispatch, position])
 
   const { initials, color, avatar } = (() => {
@@ -201,7 +201,7 @@ function useDragging(thread: ThreadData<ThreadMetadata>) {
   const onMouseDown = React.useCallback(
     (event: React.MouseEvent) => {
       event.stopPropagation()
-      dispatch([switchEditorMode(EditorModes.commentMode(null, true))])
+      dispatch([switchEditorMode(EditorModes.commentMode(null, 'dragging'))])
       window.addEventListener('mousemove', onMouseMove)
       window.addEventListener('mouseup', onMouseUp)
     },

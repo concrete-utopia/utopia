@@ -462,6 +462,7 @@ import type {
   ImageInsertionSubject,
   InsertionSubject,
   InsertMode,
+  IsDragging,
   LiveCanvasMode,
   Mode,
   SelectMode,
@@ -3251,7 +3252,7 @@ export const CommentModeKeepDeepEquality: KeepDeepEqualityCall<CommentMode> = co
   (mode) => mode.location,
   nullableDeepEquality(CanvasPointKeepDeepEquality),
   (mode) => mode.isDragging,
-  BooleanKeepDeepEquality,
+  createCallWithTripleEquals<IsDragging>(),
   EditorModes.commentMode,
 )
 

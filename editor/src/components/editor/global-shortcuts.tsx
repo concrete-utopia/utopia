@@ -449,7 +449,7 @@ export function handleKeyDown(
       },
       [COMMENT_SHORTCUT]: () => {
         if (isFeatureEnabled('Commenting')) {
-          return [EditorActions.switchEditorMode(EditorModes.commentMode(null, false))]
+          return [EditorActions.switchEditorMode(EditorModes.commentMode(null, 'not-dragging'))]
         }
         return []
       },

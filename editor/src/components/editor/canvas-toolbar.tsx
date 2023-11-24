@@ -351,7 +351,7 @@ export const CanvasToolbar = React.memo(() => {
     if (isCommentMode) {
       dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
     } else {
-      dispatch([switchEditorMode(EditorModes.commentMode(null, false))])
+      dispatch([switchEditorMode(EditorModes.commentMode(null, 'not-dragging'))])
     }
   }, [dispatch, isCommentMode])
 
