@@ -41,6 +41,7 @@ import { activeFrameActionToString } from './commands/set-active-frames-command'
 import { canvasPointToWindowPoint, windowToCanvasCoordinates } from './dom-lookup'
 import { ActiveRemixSceneAtom, RemixNavigationAtom } from './remix/utopia-remix-root-component'
 import { useRemixPresence } from '../../core/shared/multiplayer-hooks'
+import { CanvasOffsetWrapper } from './controls/canvas-offset-wrapper'
 
 export const MultiplayerPresence = React.memo(() => {
   const dispatch = useDispatch()
@@ -187,61 +188,60 @@ const MultiplayerCursor = React.memo(
       (store) => store.editor.canvas.scale,
       'MultiplayerCursor canvasScale',
     )
-    const canvasOffset = useEditorState(
-      Substores.canvasOffset,
-      (store) => store.editor.canvas.roundedCanvasOffset,
-      'MultiplayerCursor canvasOffset',
-    )
     const color = multiplayerColorFromIndex(colorIndex)
-    const windowPosition = canvasPointToWindowPoint(position, canvasScale, canvasOffset)
 
     return (
-      <motion.div
-        initial={windowPosition}
-        animate={windowPosition}
-        transition={{
-          type: 'spring',
-          damping: 30,
-          mass: 0.8,
-          stiffness: 350,
-        }}
-        style={{
-          position: 'fixed',
-          pointerEvents: 'none',
-          opacity: opacity,
-        }}
-      >
-        {/* This is a temporary placeholder for a good pointer icon */}
-        <div
-          style={{
-            width: 0,
-            height: 0,
-            borderTop: `5px solid transparent`,
-            borderBottom: `5px solid transparent`,
-            borderRight: `5px solid ${color.background}`,
-            transform: 'rotate(45deg)',
-            position: 'absolute',
-            top: -3,
-            left: -1,
+      <CanvasOffsetWrapper setScaleToo={true}>
+        <motion.div
+          initial={position}
+          animate={position}
+          transition={{
+            type: 'spring',
+            damping: 30,
+            mass: 0.8,
+            stiffness: 350,
           }}
-        />
-        <div
           style={{
-            color: color.foreground,
-            backgroundColor: color.background,
-            padding: '0 4px',
-            borderRadius: 2,
-            boxShadow: UtopiaTheme.panelStyles.shadows.medium,
-            fontWeight: 'bold',
-            fontSize: 9,
-            position: 'absolute',
-            left: 5,
-            top: 5,
+            position: 'fixed',
+            pointerEvents: 'none',
+            opacity: opacity,
+            scale: canvasScale <= 1 ? 1 / canvasScale : 1,
           }}
         >
-          {name}
-        </div>
-      </motion.div>
+          {/* This is a temporary placeholder for a good pointer icon */}
+          <div
+            style={{
+              width: 0,
+              height: 0,
+              borderTop: `5px solid transparent`,
+              borderBottom: `5px solid transparent`,
+              borderRight: `5px solid ${color.background}`,
+              transform: 'rotate(45deg)',
+              position: 'absolute',
+              top: -3,
+              left: -1,
+              zoom: canvasScale > 1 ? 1 / canvasScale : 1,
+            }}
+          />
+          <div
+            style={{
+              color: color.foreground,
+              backgroundColor: color.background,
+              padding: '0 4px',
+              borderRadius: 2,
+              boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+              fontWeight: 'bold',
+              fontSize: 9,
+              position: 'absolute',
+              left: 5,
+              top: 5,
+              zoom: canvasScale > 1 ? 1 / canvasScale : 1,
+            }}
+          >
+            {name}
+          </div>
+        </motion.div>
+      </CanvasOffsetWrapper>
     )
   },
 )
