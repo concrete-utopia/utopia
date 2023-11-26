@@ -261,27 +261,41 @@ function updateEntireProjectContents(changeEvent: Y.YMapEvent<any>): Array<Edito
   let actions: Array<EditorAction> = []
   // Map from filename to the restricted file contents.
   const targetMap = changeEvent.currentTarget as Y.Map<CollabFile>
-  for (const [filename, mapEntry] of targetMap.entries()) {
-    // Mysteriously the type doesn't really carry over.
-    const entryFile = mapEntry as CollabFile
-    // Handle `topLevelElements`.
-    const topLevelElements = entryFile.get(TopLevelElementsKey) as
-      | CollabTextFileTopLevelElements
-      | undefined
-    if (topLevelElements != null) {
-      actions.push(
-        updateTopLevelElementsFromCollaborationUpdate(filename, topLevelElements.toArray()),
-      )
-    }
-    // Handle `exportsDetail`.
-    const exportsDetail = entryFile.get(ExportsDetailKey) as CollabTextFileExportsDetail | undefined
-    if (exportsDetail != null) {
-      actions.push(updateExportsDetailFromCollaborationUpdate(filename, exportsDetail.toArray()))
-    }
-    // Handle `imports`.
-    const imports = entryFile.get(ImportsKey) as CollabTextFileImports | undefined
-    if (imports != null) {
-      actions.push(updateImportsFromCollaborationUpdate(filename, imports.toJSON()))
+  for (const [filename, change] of changeEvent.keys.entries()) {
+    switch (change.action) {
+      case 'delete':
+        actions.push(deleteFileFromCollaboration(filename))
+        break
+      case 'add':
+      case 'update':
+        // Mysteriously the type doesn't really carry over.
+        const entryFile = targetMap.get(filename) as CollabFile
+        // Handle `topLevelElements`.
+        const topLevelElements = entryFile.get(TopLevelElementsKey) as
+          | CollabTextFileTopLevelElements
+          | undefined
+        if (topLevelElements != null) {
+          actions.push(
+            updateTopLevelElementsFromCollaborationUpdate(filename, topLevelElements.toArray()),
+          )
+        }
+        // Handle `exportsDetail`.
+        const exportsDetail = entryFile.get(ExportsDetailKey) as
+          | CollabTextFileExportsDetail
+          | undefined
+        if (exportsDetail != null) {
+          actions.push(
+            updateExportsDetailFromCollaborationUpdate(filename, exportsDetail.toArray()),
+          )
+        }
+        // Handle `imports`.
+        const imports = entryFile.get(ImportsKey) as CollabTextFileImports | undefined
+        if (imports != null) {
+          actions.push(updateImportsFromCollaborationUpdate(filename, imports.toJSON()))
+        }
+        break
+      default:
+        assertNever(change.action)
     }
   }
 
