@@ -50,9 +50,11 @@ import { isFiniteRectangle, size } from '../../../core/shared/math-utils'
 import type { PackageStatus, PackageStatusMap } from '../../../core/shared/npm-dependency-types'
 import type {
   ElementPath,
+  ExportDetail,
   HighlightBoundsForUids,
   HighlightBoundsWithFile,
   HighlightBoundsWithFileForUids,
+  ImportDetails,
   Imports,
   NodeModules,
   ParseSuccess,
@@ -397,7 +399,13 @@ export const defaultUserState: UserState = {
 
 export type CollabTextFileTopLevelElements = Y.Array<TopLevelElement>
 
-export type CollabTextFile = Y.Map<'TEXT_FILE' | CollabTextFileTopLevelElements>
+export type CollabTextFileExportsDetail = Y.Array<ExportDetail>
+
+export type CollabTextFileImports = Y.Map<ImportDetails>
+
+export type CollabTextFile = Y.Map<
+  'TEXT_FILE' | CollabTextFileTopLevelElements | CollabTextFileExportsDetail | CollabTextFileImports
+>
 
 export type CollabFile = CollabTextFile //| CollabImageFileUpdate | CollabAssetFileUpdate | CollabDirectoryFileUpdate
 

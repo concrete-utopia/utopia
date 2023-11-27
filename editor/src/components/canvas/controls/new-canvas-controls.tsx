@@ -68,7 +68,7 @@ import { useSelectionArea } from './selection-area-hooks'
 import { RemixSceneLabelControl } from './select-mode/remix-scene-label'
 import { NO_OP } from '../../../core/shared/utils'
 import { CommentPopup } from './comment-popup'
-import { CommentIndicator } from './comment-indicator'
+import { CommentIndicators } from './comment-indicator'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
@@ -551,7 +551,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
             {when(isSelectMode(editorMode), <AbsoluteChildrenOutline />)}
             <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />
             <ZeroSizedElementControls.control showAllPossibleElements={false} />
-            {when(isFeatureEnabled('Commenting'), <CommentIndicator />)}
+            {when(isFeatureEnabled('Commenting'), <CommentIndicators />)}
             {when(isCommentMode(editorMode) && editorMode.location != null, <CommentPopup />)}
             {when(
               isSelectOrInsertMode(editorMode) &&

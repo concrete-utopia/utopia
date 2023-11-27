@@ -33,6 +33,7 @@ import type {
   StaticElementPathPart,
   ElementPath,
   ImageFile,
+  ExportDetail,
 } from '../../../core/shared/project-file-types'
 import type { BuildType } from '../../../core/workers/common/worker-types'
 import type { Key, KeysPressed } from '../../../utils/keyboard'
@@ -222,6 +223,8 @@ import type {
   UpdateProjectServerState,
   UpdateTopLevelElementsFromCollaborationUpdate,
   DeleteFileFromCollaboration,
+  UpdateExportsDetailFromCollaborationUpdate,
+  UpdateImportsFromCollaborationUpdate,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -1680,5 +1683,27 @@ export function updateTopLevelElementsFromCollaborationUpdate(
     action: 'UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION_UPDATE',
     fullPath: fullPath,
     topLevelElements: topLevelElements,
+  }
+}
+
+export function updateExportsDetailFromCollaborationUpdate(
+  fullPath: string,
+  exportsDetail: Array<ExportDetail>,
+): UpdateExportsDetailFromCollaborationUpdate {
+  return {
+    action: 'UPDATE_EXPORTS_DETAIL_FROM_COLLABORATION_UPDATE',
+    fullPath: fullPath,
+    exportsDetail: exportsDetail,
+  }
+}
+
+export function updateImportsFromCollaborationUpdate(
+  fullPath: string,
+  imports: Imports,
+): UpdateImportsFromCollaborationUpdate {
+  return {
+    action: 'UPDATE_IMPORTS_FROM_COLLABORATION_UPDATE',
+    fullPath: fullPath,
+    imports: imports,
   }
 }

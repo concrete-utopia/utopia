@@ -198,6 +198,8 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_CONIDTIONAL_EXPRESSION':
     case 'CUT_SELECTION_TO_CLIPBOARD':
     case 'UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION_UPDATE':
+    case 'UPDATE_EXPORTS_DETAIL_FROM_COLLABORATION_UPDATE':
+    case 'UPDATE_IMPORTS_FROM_COLLABORATION_UPDATE':
       return false
     case 'SAVE_ASSET':
       return (

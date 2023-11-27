@@ -9,15 +9,17 @@ import {
 import { isFollowMode } from '../../editor/editor-modes'
 import { liveblocksThrottle } from '../../../../liveblocks.config'
 
-export const CanvasOffsetWrapper = React.memo((props: { children?: React.ReactNode }) => {
-  const elementRef = useApplyCanvasOffsetToStyle(false)
+export const CanvasOffsetWrapper = React.memo(
+  (props: { children?: React.ReactNode; setScaleToo?: boolean }) => {
+    const elementRef = useApplyCanvasOffsetToStyle(props.setScaleToo ?? false)
 
-  return (
-    <div ref={elementRef} style={{ position: 'absolute' }}>
-      {props.children}
-    </div>
-  )
-})
+    return (
+      <div ref={elementRef} style={{ position: 'absolute' }}>
+        {props.children}
+      </div>
+    )
+  },
+)
 
 export function useApplyCanvasOffsetToStyle(setScaleToo: boolean): React.RefObject<HTMLDivElement> {
   const elementRef = React.useRef<HTMLDivElement>(null)

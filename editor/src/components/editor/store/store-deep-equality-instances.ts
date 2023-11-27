@@ -462,6 +462,7 @@ import type {
   ImageInsertionSubject,
   InsertionSubject,
   InsertMode,
+  IsDragging,
   LiveCanvasMode,
   Mode,
   SelectMode,
@@ -3247,9 +3248,11 @@ export const TextEditModeKeepDeepEquality: KeepDeepEqualityCall<TextEditMode> =
     EditorModes.textEditMode,
   )
 
-export const CommentModeKeepDeepEquality: KeepDeepEqualityCall<CommentMode> = combine1EqualityCall(
+export const CommentModeKeepDeepEquality: KeepDeepEqualityCall<CommentMode> = combine2EqualityCalls(
   (mode) => mode.location,
   nullableDeepEquality(CanvasPointKeepDeepEquality),
+  (mode) => mode.isDragging,
+  createCallWithTripleEquals<IsDragging>(),
   EditorModes.commentMode,
 )
 

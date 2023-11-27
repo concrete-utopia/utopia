@@ -316,6 +316,7 @@ export const AvatarPicture = React.memo((props: AvatarPictureProps) => {
       src={url}
       referrerPolicy='no-referrer'
       onError={onPictureError}
+      draggable={false}
     />
   )
 })
