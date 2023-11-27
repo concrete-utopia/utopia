@@ -77,14 +77,20 @@ export function insertableComponent(
   defaultSize: Size | null,
   metadata?: Record<string, any>,
 ): InsertableComponent {
-  return {
+  const component = {
     importsToAdd: importsToAdd,
     element: element,
     name: name,
     stylePropOptions: stylePropOptions,
     defaultSize: defaultSize,
-    metadata: metadata,
   }
+  if (metadata != null) {
+    return {
+      ...component,
+      metadata: metadata,
+    }
+  }
+  return component
 }
 
 export function clearInsertableComponentUniqueIDs(

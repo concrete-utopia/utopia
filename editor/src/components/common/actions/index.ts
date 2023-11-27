@@ -44,6 +44,8 @@ export function paneForPanel(panel: EditorPanel | null): EditorPane | null {
       return 'leftmenu'
     case 'insertmenu':
       return 'rightmenu'
+    case 'variablesmenu':
+      return 'rightmenu'
     case 'projectsettings':
       return 'leftmenu'
     case 'navigator':
