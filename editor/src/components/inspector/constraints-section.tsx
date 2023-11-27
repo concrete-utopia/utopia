@@ -228,15 +228,12 @@ export const ChildPinControl = React.memo(
 
     const requestedGroupPinChanges = React.useCallback(
       (frameProp: LayoutPinnedPropIncludingCenter): RequestedPins | 'no-op' => {
-        if (
-          frameProp !== 'centerY' &&
-          (frameProp === 'centerX' || isHorizontalLayoutPinnedProp(frameProp))
-        ) {
+        if (frameProp === 'centerY' || frameProp === 'centerX') {
+          // for groups the center pins are hidden
+          return 'no-op'
+        }
+        if (isHorizontalLayoutPinnedProp(frameProp)) {
           const newActivePins = (() => {
-            if (frameProp === 'centerX') {
-              // clicking on scale-horizontal resets the array
-              return []
-            }
             const pinIndex = activeHorizontalPins.indexOf(frameProp)
             if (pinIndex === -1) {
               const updatedActivePins = [...activeHorizontalPins, frameProp]
@@ -271,10 +268,6 @@ export const ChildPinControl = React.memo(
           return 'no-op'
         } else {
           const newActivePins = (() => {
-            if (frameProp === 'centerY') {
-              // clicking on scale-vertical resets the array
-              return []
-            }
             const pinIndex = activeVerticalPins.indexOf(frameProp)
             if (pinIndex === -1) {
               const updatedActivePins = [...activeVerticalPins, frameProp]
@@ -427,6 +420,7 @@ export const ChildPinControl = React.memo(
         handlePinMouseDown={onPinControlMouseDown}
         pins={pins}
         framePinsInfo={framePinsInfo}
+        exclude={{ center: isGroupChild === 'group-child' }}
       />
     )
   },

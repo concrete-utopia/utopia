@@ -329,6 +329,7 @@ export interface CombinedPinControlProps {
     frameProp: LayoutPinnedPropIncludingCenter,
     event: React.MouseEvent<Element, MouseEvent>,
   ) => void
+  exclude?: ExcludePinControls
 }
 
 export const CombinedPinControl = React.memo((props: CombinedPinControlProps) => {
@@ -340,6 +341,7 @@ export const CombinedPinControl = React.memo((props: CombinedPinControlProps) =>
         controlStatus={'simple'}
         framePoints={props.framePinsInfo}
         regularBorder={false}
+        exclude={props.exclude}
       />
       <FlexCol
         css={{
