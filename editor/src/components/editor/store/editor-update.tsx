@@ -395,6 +395,10 @@ export function runSimpleLocalEditorAction(
         state,
         serverState,
       )
+    case 'UPDATE_EXPORTS_DETAIL_FROM_COLLABORATION_UPDATE':
+      return UPDATE_FNS.UPDATE_EXPORTS_DETAIL_FROM_COLLABORATION_UPDATE(action, state, serverState)
+    case 'UPDATE_IMPORTS_FROM_COLLABORATION_UPDATE':
+      return UPDATE_FNS.UPDATE_IMPORTS_FROM_COLLABORATION_UPDATE(action, state, serverState)
     default:
       return state
   }
