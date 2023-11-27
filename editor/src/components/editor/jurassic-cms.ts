@@ -53,7 +53,7 @@ export async function updateJurassicCMS({
   key: string
   updated: string
 }): Promise<void> {
-  const response = await fetch(`http://${JURASSIC_CMS_URL}/api/${project_id}/${key}`, {
+  const response = await fetch(`${JURASSIC_CMS_URL}/api/${project_id}/${key}`, {
     method: 'POST',
     headers: new Headers({ Accept: 'application/json', 'Content-Type': 'application/json' }),
     body: JSON.stringify({ value: updated }),
