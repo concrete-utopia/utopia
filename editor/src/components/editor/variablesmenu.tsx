@@ -44,10 +44,7 @@ export const VariablesMenu = React.memo(() => {
     Substores.restOfEditor,
     (store) => {
       return {
-        lastFontSettings: store.editor.lastUsedFont,
         mode: store.editor.mode,
-        packageStatus: store.editor.nodeModules.packageStatus,
-        propertyControlsInfo: store.editor.propertyControlsInfo,
       }
     },
     'VariablesMenu restOfEditorProps',
