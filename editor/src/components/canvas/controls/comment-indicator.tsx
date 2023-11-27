@@ -25,6 +25,9 @@ import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { AvatarPicture } from '../../user-bar'
 import type { ThreadData } from '@liveblocks/client'
 import { canvasPointToWindowPoint, windowToCanvasCoordinates } from '../dom-lookup'
+import { useAtom } from 'jotai'
+import { RemixNavigationAtom } from '../remix/utopia-remix-root-component'
+import { useIsOnAnotherRemixRoute } from '../../../core/commenting/comment-hooks'
 
 const IndicatorSize = 20
 
@@ -80,11 +83,27 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
     'CommentIndicator canvasOffset',
   )
 
+  const [remixNavigationState] = useAtom(RemixNavigationAtom)
+
   const point = canvasPoint(thread.metadata)
 
+  const remixLocationRoute = thread.metadata.remixLocationRoute ?? null
+
+  const isOnAnotherRoute = useIsOnAnotherRemixRoute(remixLocationRoute)
+
   const onClick = React.useCallback(() => {
+    if (isOnAnotherRoute && remixLocationRoute != null) {
+      // TODO: after we have scene identifier in the comment metadata we should only navigate the scene with the comment
+      Object.keys(remixNavigationState).forEach((scene) => {
+        const remixState = remixNavigationState[scene]
+        if (remixState == null) {
+          return
+        }
+        remixState.navigate(remixLocationRoute)
+      })
+    }
     dispatch([switchEditorMode(EditorModes.commentMode(point, 'not-dragging'))])
-  }, [dispatch, point])
+  }, [dispatch, point, remixNavigationState, remixLocationRoute, isOnAnotherRoute])
 
   const { initials, color, avatar } = (() => {
     const firstComment = thread.comments[0]
@@ -101,13 +120,6 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
       avatar: author.avatar,
     }
   })()
-
-  const remixLocationRoute = thread.metadata.remixLocationRoute ?? null
-
-  const isOnAnotherRoute =
-    me.presence.remix?.locationRoute != null &&
-    remixLocationRoute != null &&
-    remixLocationRoute !== me.presence.remix.locationRoute
 
   const { onMouseDown, dragPosition } = useDragging(thread)
   const position = React.useMemo(
