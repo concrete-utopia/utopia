@@ -89,7 +89,7 @@ function getVariablesFromComponent(
         return Object.entries(value as Record<string, unknown>).map(([key, innerValue]) => {
           return {
             name: `${name}.${key}`,
-            value,
+            value: innerValue,
             type: getTypeByValue(innerValue),
           }
         })
