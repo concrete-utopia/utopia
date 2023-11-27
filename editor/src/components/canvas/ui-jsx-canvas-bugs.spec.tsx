@@ -86,8 +86,8 @@ export var storyboard = (
               overflow: hidden;
               position: absolute;
               background-color: var(--utopitheme-emphasizedBackground);
-              box-shadow: 0px 0px 1px 0px
-                var(--utopitheme-neutralInvertedBackground30);
+              box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+                0px 2px 4px -1px var(--utopitheme-shadow50);
               background-image: conic-gradient(
                 var(--utopitheme-checkerboardLight) 0.25turn,
                 var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -161,8 +161,8 @@ export default function App(props) {
               overflow: hidden;
               position: absolute;
               background-color: var(--utopitheme-emphasizedBackground);
-              box-shadow: 0px 0px 1px 0px
-                var(--utopitheme-neutralInvertedBackground30);
+              box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+                0px 2px 4px -1px var(--utopitheme-shadow50);
               background-image: conic-gradient(
                 var(--utopitheme-checkerboardLight) 0.25turn,
                 var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -269,8 +269,8 @@ export default function App(props) {
               overflow: hidden;
               position: absolute;
               background-color: var(--utopitheme-emphasizedBackground);
-              box-shadow: 0px 0px 1px 0px
-                var(--utopitheme-neutralInvertedBackground30);
+              box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+                0px 2px 4px -1px var(--utopitheme-shadow50);
               background-image: conic-gradient(
                 var(--utopitheme-checkerboardLight) 0.25turn,
                 var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -301,8 +301,8 @@ export default function App(props) {
               overflow: hidden;
               position: absolute;
               background-color: var(--utopitheme-emphasizedBackground);
-              box-shadow: 0px 0px 1px 0px
-                var(--utopitheme-neutralInvertedBackground30);
+              box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+                0px 2px 4px -1px var(--utopitheme-shadow50);
               background-image: conic-gradient(
                 var(--utopitheme-checkerboardLight) 0.25turn,
                 var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -445,8 +445,8 @@ export default function () {
               overflow: hidden;
               position: absolute;
               background-color: var(--utopitheme-emphasizedBackground);
-              box-shadow: 0px 0px 1px 0px
-                var(--utopitheme-neutralInvertedBackground30);
+              box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+                0px 2px 4px -1px var(--utopitheme-shadow50);
               background-image: conic-gradient(
                 var(--utopitheme-checkerboardLight) 0.25turn,
                 var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,

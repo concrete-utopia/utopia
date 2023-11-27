@@ -318,7 +318,6 @@ export const CodeEditorTabPane = React.memo<CodeEditorTabPaneProps>(
         style={{
           backgroundColor: colorTheme.neutralBackground.value,
           flexGrow: 0,
-          boxShadow: `0px 1px 0px 0px ${colorTheme.subduedBorder.value}`,
         }}
       >
         <UIRow

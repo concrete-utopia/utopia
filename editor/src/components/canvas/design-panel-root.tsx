@@ -16,6 +16,7 @@ import {
   LargerIcons,
   FlexColumn,
   colorTheme,
+  UtopiaStyles,
 } from '../../uuiui'
 import { ConsoleAndErrorsPane } from '../code-editor/console-and-errors-pane'
 import { CanvasStrategyInspector } from './canvas-strategies/canvas-strategy-inspector'
@@ -239,7 +240,7 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
         overflow: 'hidden',
         backgroundColor: colorTheme.inspectorBackground.value,
         borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
-        boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+        boxShadow: UtopiaStyles.shadowStyles.low.boxShadow,
       }}
     >
       <TitleBarUserProfile panelData={props.panelData} />
@@ -316,7 +317,7 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
         contain: 'layout',
         overflow: 'hidden',
         borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
-        boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+        boxShadow: UtopiaStyles.shadowStyles.low.boxShadow,
         background: colorTheme.bg1.value,
       }}
     >

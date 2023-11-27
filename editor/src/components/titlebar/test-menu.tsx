@@ -3,7 +3,7 @@
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 import React from 'react'
-import { colorTheme } from '../../uuiui'
+import { UtopiaStyles, colorTheme } from '../../uuiui'
 import {
   useTriggerAbsoluteMoveLargePerformanceTest,
   useTriggerAbsoluteMoveSmallPerformanceTest,
@@ -93,6 +93,7 @@ export const TestMenu = React.memo(() => {
   return (
     <div
       style={{
+        boxShadow: UtopiaStyles.shadowStyles.low.boxShadow,
         borderRadius: '15px',
         paddingLeft: 8,
         paddingRight: 8,

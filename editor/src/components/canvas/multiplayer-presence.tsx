@@ -1,6 +1,6 @@
 import type { User } from '@liveblocks/client'
 import { motion } from 'framer-motion'
-import { useAtom } from 'jotai'
+import { useAtom, useSetAtom } from 'jotai'
 import React from 'react'
 import type { Presence, PresenceActiveFrame, UserMeta } from '../../../liveblocks.config'
 import {
@@ -23,7 +23,8 @@ import {
   normalizeOthersList,
 } from '../../core/shared/multiplayer'
 import { assertNever } from '../../core/shared/utils'
-import { UtopiaTheme, useColorTheme } from '../../uuiui'
+import { useKeepShallowReferenceEquality } from '../../utils/react-performance'
+import { UtopiaStyles, UtopiaTheme, useColorTheme } from '../../uuiui'
 import { notice } from '../common/notice'
 import type { EditorAction } from '../editor/action-types'
 import { isLoggedIn } from '../editor/action-types'
@@ -101,7 +102,7 @@ export const MultiplayerPresence = React.memo(() => {
 
   React.useEffect(() => {
     // when the room changes, reset
-    dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
+    setTimeout(() => dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))]), 0)
   }, [room.id, dispatch])
 
   if (!isLoggedIn(loginState)) {
@@ -202,6 +203,15 @@ const MultiplayerCursor = React.memo(
             stiffness: 350,
           }}
           style={{
+            color: color.foreground,
+            backgroundColor: color.background,
+            padding: '0 4px',
+            borderRadius: 2,
+            boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
+            fontWeight: 'bold',
+            fontSize: 9,
+            left: 5,
+            top: 5,
             position: 'fixed',
             pointerEvents: 'none',
             opacity: opacity,
@@ -229,7 +239,7 @@ const MultiplayerCursor = React.memo(
               backgroundColor: color.background,
               padding: '0 4px',
               borderRadius: 2,
-              boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+              boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
               fontWeight: 'bold',
               fontSize: 9,
               position: 'absolute',
@@ -292,8 +302,8 @@ const FollowingOverlay = React.memo(() => {
 
   const remixPresence = useRemixPresence()
 
-  const [, setActiveRemixScene] = useAtom(ActiveRemixSceneAtom)
-  const [remixNavigationState, setRemixNavigationState] = useAtom(RemixNavigationAtom)
+  const setActiveRemixScene = useSetAtom(ActiveRemixSceneAtom)
+  const [remixNavigationState] = useAtom(RemixNavigationAtom)
 
   const updateCanvasFromOtherPresence = React.useCallback(
     (presence: Presence) => {
@@ -305,12 +315,10 @@ const FollowingOverlay = React.memo(() => {
         actions.push(CanvasActions.positionCanvas(presence.canvasOffset))
       }
       if (presence.remix != null && isPlayerOnAnotherRemixRoute(remixPresence, presence.remix)) {
-        const newNavigationState = { ...remixNavigationState }
-        const sceneState = newNavigationState[presence.remix.scene]
+        const sceneState = remixNavigationState[presence.remix.scene]
         if (sceneState != null && presence.remix.locationRoute != null) {
-          sceneState.location.pathname = presence.remix.locationRoute
           setActiveRemixScene(EP.fromString(presence.remix.scene))
-          setRemixNavigationState(newNavigationState)
+          sceneState.navigate(presence.remix.locationRoute)
           actions.push(
             showToast(
               notice(
@@ -327,15 +335,7 @@ const FollowingOverlay = React.memo(() => {
         dispatch(actions)
       }
     },
-    [
-      dispatch,
-      canvasScale,
-      canvasOffset,
-      setActiveRemixScene,
-      setRemixNavigationState,
-      remixPresence,
-      remixNavigationState,
-    ],
+    [dispatch, canvasScale, canvasOffset, setActiveRemixScene, remixPresence, remixNavigationState],
   )
 
   useOthersListener((event) => {
@@ -386,7 +386,7 @@ const FollowingOverlay = React.memo(() => {
           color: colorTheme.white.value,
           padding: '2px 10px',
           borderRadius: 10,
-          boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+          boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
         }}
       >
         You're following {followedUser.name}

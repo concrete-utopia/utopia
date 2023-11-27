@@ -3,10 +3,11 @@
   position: fixed;
   opacity: 0;
   user-select: none;
-  border-radius: 1px;
-  background-color: var(--utopitheme-contextMenuBackground);
+  border-radius: 3px;
+  background-color: var(--utopitheme-bg1);
   box-sizing: border-box;
-  box-shadow: 3px 4px 10px 0px rgba(0,0,0, .3);
+  /* the same as boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow */
+  box-shadow: 0px 3px 6px -2px var(--utopitheme-shadow80), 0px 4px 8px -2px var(--utopitheme-shadow40);
   padding: 4px 0px;
   font-family: 'utopian-inter';
 }
