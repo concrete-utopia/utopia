@@ -86,13 +86,11 @@ function getVariablesFromComponent(
     variables: Object.entries(jsxComponentVariables).flatMap(([name, value]) => {
       const type = getTypeByValue(value)
       if (type === 'object' && value != null) {
-        return Object.entries(value as Record<string, unknown>).map(([key, innerValue]) => {
-          return {
-            name: `${name}.${key}`,
-            value: innerValue,
-            type: getTypeByValue(innerValue),
-          }
-        })
+        return Object.entries(value).map(([key, innerValue]) => ({
+          name: `${name}.${key}`,
+          value: innerValue,
+          type: getTypeByValue(innerValue),
+        }))
       } else {
         return {
           name,
