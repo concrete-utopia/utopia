@@ -1,6 +1,6 @@
 import type { User } from '@liveblocks/client'
 import { motion } from 'framer-motion'
-import { useAtom } from 'jotai'
+import { useAtom, useSetAtom } from 'jotai'
 import React from 'react'
 import type { Presence, PresenceActiveFrame, UserMeta } from '../../../liveblocks.config'
 import {
@@ -102,7 +102,7 @@ export const MultiplayerPresence = React.memo(() => {
 
   React.useEffect(() => {
     // when the room changes, reset
-    dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
+    setTimeout(() => dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))]), 0)
   }, [room.id, dispatch])
 
   if (!isLoggedIn(loginState)) {
@@ -302,8 +302,8 @@ const FollowingOverlay = React.memo(() => {
 
   const remixPresence = useRemixPresence()
 
-  const [, setActiveRemixScene] = useAtom(ActiveRemixSceneAtom)
-  const [remixNavigationState, setRemixNavigationState] = useAtom(RemixNavigationAtom)
+  const setActiveRemixScene = useSetAtom(ActiveRemixSceneAtom)
+  const [remixNavigationState] = useAtom(RemixNavigationAtom)
 
   const updateCanvasFromOtherPresence = React.useCallback(
     (presence: Presence) => {
@@ -315,12 +315,10 @@ const FollowingOverlay = React.memo(() => {
         actions.push(CanvasActions.positionCanvas(presence.canvasOffset))
       }
       if (presence.remix != null && isPlayerOnAnotherRemixRoute(remixPresence, presence.remix)) {
-        const newNavigationState = { ...remixNavigationState }
-        const sceneState = newNavigationState[presence.remix.scene]
+        const sceneState = remixNavigationState[presence.remix.scene]
         if (sceneState != null && presence.remix.locationRoute != null) {
-          sceneState.location.pathname = presence.remix.locationRoute
           setActiveRemixScene(EP.fromString(presence.remix.scene))
-          setRemixNavigationState(newNavigationState)
+          sceneState.navigate(presence.remix.locationRoute)
           actions.push(
             showToast(
               notice(
@@ -337,15 +335,7 @@ const FollowingOverlay = React.memo(() => {
         dispatch(actions)
       }
     },
-    [
-      dispatch,
-      canvasScale,
-      canvasOffset,
-      setActiveRemixScene,
-      setRemixNavigationState,
-      remixPresence,
-      remixNavigationState,
-    ],
+    [dispatch, canvasScale, canvasOffset, setActiveRemixScene, remixPresence, remixNavigationState],
   )
 
   useOthersListener((event) => {
