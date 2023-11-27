@@ -94,6 +94,34 @@ export const JurassicCMSPanel = React.memo(() => {
     void fetchConfig()
   }, [fetchConfig])
 
+  const [newKey, setNewKey] = React.useState<string>('')
+  const [newValue, setNewValue] = React.useState<string>('')
+
+  const updateNewKey = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setNewKey(e.target.value),
+    [],
+  )
+  const updateNewValue = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setNewValue(e.target.value),
+    [],
+  )
+
+  const addNewKey = React.useCallback(() => {
+    setOptimisticUpdateCache((cache) => ({
+      ...cache,
+      [newKey]: newValue,
+    }))
+
+    void updateJurassicCMS({
+      key: newKey,
+      updated: newValue,
+      project_id: projectId,
+    }).finally(() => {
+      setNewKey('')
+      setNewValue('')
+    })
+  }, [newKey, newValue, projectId])
+
   return (
     <FlexColumn
       style={{
@@ -122,8 +150,39 @@ export const JurassicCMSPanel = React.memo(() => {
           ))}
         </FlexColumn>
       )}
-      <Button outline={false} highlight spotlight onClick={refresh} style={{ marginTop: 12 }}>
+      <Button
+        outline={false}
+        highlight
+        spotlight
+        onClick={refresh}
+        style={{ marginTop: 12, marginLeft: 8, marginRight: 8 }}
+      >
         Refresh
+      </Button>
+      <FlexRow style={{ marginTop: 12, marginLeft: 8, marginRight: 8, gap: 12 }}>
+        <StringInput
+          testId=''
+          value={newKey}
+          onKeyDown={NO_OP}
+          onChange={updateNewKey}
+          onBlur={NO_OP}
+        />
+        <StringInput
+          testId=''
+          value={newValue}
+          onKeyDown={NO_OP}
+          onChange={updateNewValue}
+          onBlur={NO_OP}
+        />
+      </FlexRow>
+      <Button
+        outline={false}
+        highlight
+        spotlight
+        onClick={addNewKey}
+        style={{ marginTop: 12, marginLeft: 8, marginRight: 8 }}
+      >
+        Add new key
       </Button>
     </FlexColumn>
   )
