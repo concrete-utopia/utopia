@@ -23,7 +23,8 @@ import {
   normalizeOthersList,
 } from '../../core/shared/multiplayer'
 import { assertNever } from '../../core/shared/utils'
-import { UtopiaTheme, useColorTheme } from '../../uuiui'
+import { useKeepShallowReferenceEquality } from '../../utils/react-performance'
+import { UtopiaStyles, UtopiaTheme, useColorTheme } from '../../uuiui'
 import { notice } from '../common/notice'
 import type { EditorAction } from '../editor/action-types'
 import { isLoggedIn } from '../editor/action-types'
@@ -202,6 +203,15 @@ const MultiplayerCursor = React.memo(
             stiffness: 350,
           }}
           style={{
+            color: color.foreground,
+            backgroundColor: color.background,
+            padding: '0 4px',
+            borderRadius: 2,
+            boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
+            fontWeight: 'bold',
+            fontSize: 9,
+            left: 5,
+            top: 5,
             position: 'fixed',
             pointerEvents: 'none',
             opacity: opacity,
@@ -229,7 +239,7 @@ const MultiplayerCursor = React.memo(
               backgroundColor: color.background,
               padding: '0 4px',
               borderRadius: 2,
-              boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+              boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
               fontWeight: 'bold',
               fontSize: 9,
               position: 'absolute',
@@ -386,7 +396,7 @@ const FollowingOverlay = React.memo(() => {
           color: colorTheme.white.value,
           padding: '2px 10px',
           borderRadius: 10,
-          boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+          boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
         }}
       >
         You're following {followedUser.name}

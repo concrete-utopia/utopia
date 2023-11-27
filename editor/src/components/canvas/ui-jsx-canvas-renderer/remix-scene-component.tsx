@@ -24,9 +24,7 @@ export const RemixSceneComponent = React.memo((props: React.PropsWithChildren<Re
   const sceneStyle: React.CSSProperties = {
     position: 'relative',
     backgroundColor: colorTheme.emphasizedBackground.value,
-    boxShadow: canvasIsLive
-      ? UtopiaStyles.scene.live.boxShadow
-      : UtopiaStyles.scene.editing.boxShadow,
+    boxShadow: UtopiaStyles.shadowStyles.grounded.boxShadow,
     ...UtopiaStyles.backgrounds.checkerboardBackground,
     ...style,
   }

@@ -76,8 +76,7 @@ export const Toast: React.FunctionComponent<React.PropsWithChildren<NoticeProps>
       style={{
         ...getStylesForLevel(props.level ?? 'INFO'),
         borderRadius: 6,
-        boxShadow:
-          '0px 0px .5px rgba(0, 0, 0, .12), 0px 10px 16px rgba(0, 0, 0, .12), 0px 2px 5px rgba(0, 0, 0, .15), 0px 2px 14px rgba(0, 0, 0, .15), 0px 0px 0px 0.5px rgba(0, 0, 0, .2)',
+        boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
         color: 'white',
         maxWidth: 300,
         fontSize: 11,

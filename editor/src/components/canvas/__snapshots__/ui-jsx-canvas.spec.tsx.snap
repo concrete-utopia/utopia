@@ -16,8 +16,8 @@ exports[`UiJsxCanvas render Label carried through for generated elements 1`] = `
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -1338,8 +1338,8 @@ exports[`UiJsxCanvas render Label carried through for normal elements 1`] = `
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -1935,8 +1935,8 @@ exports[`UiJsxCanvas render Renders input tag without errors 1`] = `
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -2438,8 +2438,8 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -4307,8 +4307,8 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -10153,8 +10153,8 @@ exports[`UiJsxCanvas render class component is available from arbitrary block in
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -10971,8 +10971,8 @@ exports[`UiJsxCanvas render console logging does not do anything bizarre 1`] = `
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -11552,8 +11552,8 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are not the ap
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -13043,8 +13043,8 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -14534,8 +14534,8 @@ exports[`UiJsxCanvas render function component is available from arbitrary block
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -15352,8 +15352,8 @@ exports[`UiJsxCanvas render function component works inside a map 1`] = `
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -16391,8 +16391,8 @@ exports[`UiJsxCanvas render handles a component that destructures its props obje
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -17375,8 +17375,8 @@ exports[`UiJsxCanvas render handles a component that renames its props object 1`
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -18358,8 +18358,8 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -19444,8 +19444,8 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -20530,8 +20530,8 @@ exports[`UiJsxCanvas render handles chaining dependencies into the appropriate o
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -21032,8 +21032,8 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -28329,8 +28329,8 @@ exports[`UiJsxCanvas render props can be accessed inside the arbitrary js block 
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -29215,8 +29215,8 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a class 
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -29788,8 +29788,8 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a functi
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -30431,8 +30431,8 @@ exports[`UiJsxCanvas render renders a 1st party component with uids correctly, u
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -31451,8 +31451,8 @@ exports[`UiJsxCanvas render renders a canvas defined by a utopia storyboard comp
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -32307,8 +32307,8 @@ exports[`UiJsxCanvas render renders a canvas reliant on another file that uses m
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -33317,8 +33317,8 @@ exports[`UiJsxCanvas render renders a canvas testing a multitude of export style
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -37143,8 +37143,8 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -38634,8 +38634,8 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -40130,8 +40130,8 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block with 
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -41635,8 +41635,8 @@ exports[`UiJsxCanvas render renders a component using the spread operator 1`] = 
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -42447,8 +42447,8 @@ exports[`UiJsxCanvas render renders a component with a fragment at the root 1`] 
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -43228,8 +43228,8 @@ exports[`UiJsxCanvas render renders correctly when a component is passed in via 
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -44100,8 +44100,8 @@ exports[`UiJsxCanvas render renders correctly with a context 1`] = `
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -44822,8 +44822,8 @@ exports[`UiJsxCanvas render renders correctly with a nested context in another c
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -45279,8 +45279,8 @@ exports[`UiJsxCanvas render renders fine with a valid registerModule call 1`] = 
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -45969,8 +45969,8 @@ exports[`UiJsxCanvas render renders fine with two circularly referencing arbitra
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -46913,8 +46913,8 @@ exports[`UiJsxCanvas render renders fine with two components that reference each
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -47388,8 +47388,8 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -49162,8 +49162,8 @@ exports[`UiJsxCanvas render renders img tag 1`] = `
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -49858,8 +49858,8 @@ exports[`UiJsxCanvas render respects a jsx pragma 1`] = `
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -50363,8 +50363,8 @@ exports[`UiJsxCanvas render supports passing down the scope to children of compo
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -52983,8 +52983,8 @@ exports[`UiJsxCanvas render the canvas supports emotion CSS prop 1`] = `
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,
@@ -53488,8 +53488,8 @@ exports[`UiJsxCanvas render the spy wrapper is compatible with React.cloneElemen
         overflow: hidden;
         position: absolute;
         background-color: var(--utopitheme-emphasizedBackground);
-        box-shadow: 0px 0px 1px 0px
-          var(--utopitheme-neutralInvertedBackground30);
+        box-shadow: 0px 1px 2px 0px var(--utopitheme-shadow90),
+          0px 2px 4px -1px var(--utopitheme-shadow50);
         background-image: conic-gradient(
           var(--utopitheme-checkerboardLight) 0.25turn,
           var(--utopitheme-checkerboardDark) 0.25turn 0.5turn,

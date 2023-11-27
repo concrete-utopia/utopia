@@ -12,9 +12,9 @@ import {
 } from '../../../../liveblocks.config'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { switchEditorMode } from '../../editor/actions/action-creators'
+import { UtopiaStyles, UtopiaTheme } from '../../../uuiui'
 import type { CanvasPoint, CanvasVector, WindowPoint } from '../../../core/shared/math-utils'
 import { canvasPoint, offsetPoint, windowPoint } from '../../../core/shared/math-utils'
-import { UtopiaTheme } from '../../../uuiui'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import {
   multiplayerColorFromIndex,
@@ -156,7 +156,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+            boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
           }}
         >
           <AvatarPicture url={avatar} initials={initials} />
