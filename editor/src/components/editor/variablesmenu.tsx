@@ -149,7 +149,10 @@ type ComponentOptionItem = {
   value: InsertableComponent
 }
 
-function useSelectStyles(hasResults: boolean): StylesConfig<GroupOptionItem, false> {
+function useSelectStyles(
+  hasResults: boolean,
+  hasOptions: boolean,
+): StylesConfig<GroupOptionItem, false> {
   const colorTheme = useColorTheme()
   return React.useMemo(
     () => ({
@@ -200,7 +203,7 @@ function useSelectStyles(hasResults: boolean): StylesConfig<GroupOptionItem, fal
         return {
           ...(InspectorInputEmotionStyle({
             hasLabel: false,
-            controlStyles: getControlStyles('simple'),
+            controlStyles: getControlStyles(hasOptions ? 'simple' : 'disabled'),
           }) as CSSObject),
           paddingLeft: 4,
           backgroundColor: colorTheme.bg2.value,
@@ -208,7 +211,7 @@ function useSelectStyles(hasResults: boolean): StylesConfig<GroupOptionItem, fal
           display: 'flex',
           alignItems: 'center',
           cursor: 'text',
-          border: `1px solid ${hasResults ? 'transparent' : colorTheme.error.value}`,
+          border: `1px solid ${hasOptions && !hasResults ? colorTheme.error.value : 'transparent'}`,
         }
       },
       placeholder: (styles): CSSObject => {
@@ -234,7 +237,7 @@ function useSelectStyles(hasResults: boolean): StylesConfig<GroupOptionItem, fal
         }
       },
     }),
-    [colorTheme, hasResults],
+    [colorTheme.bg2.value, colorTheme.error.value, hasOptions, hasResults],
   )
 }
 
@@ -308,6 +311,12 @@ const VariablesMenuInner = React.memo((props: VariablesMenuProps) => {
     }
   }, [insertableVariables, filterOption, filter])
 
+  const { hasOptions } = React.useMemo(() => {
+    return {
+      hasOptions: insertableVariables.some((g) => g.options.length > 0),
+    }
+  }, [insertableVariables])
+
   function onFilterChange(newValue: string, actionMeta: InputActionMeta) {
     if (actionMeta.action !== 'input-blur' && actionMeta.action !== 'menu-close') {
       setFilter(newValue.trim())
@@ -336,7 +345,11 @@ const VariablesMenuInner = React.memo((props: VariablesMenuProps) => {
     return true
   }
 
-  const styles = useSelectStyles(hasResults)
+  function noVariablesMessage() {
+    return 'No variables in scope'
+  }
+
+  const styles = useSelectStyles(hasResults, hasOptions)
 
   const [isActive, setIsActive] = React.useState(true)
   function onMouseLeave() {
@@ -360,6 +373,7 @@ const VariablesMenuInner = React.memo((props: VariablesMenuProps) => {
         options={insertableVariables}
         onKeyDown={onKeyDown}
         mode={props.mode}
+        noOptionsMessage={noVariablesMessage}
         components={{
           Option: Option,
           Input: Input,
@@ -369,6 +383,7 @@ const VariablesMenuInner = React.memo((props: VariablesMenuProps) => {
         onChange={onChange}
         styles={styles}
         filterOption={!hasResults ? alwaysTrue : filterOption}
+        isDisabled={!hasOptions}
       />
     </div>
   )
