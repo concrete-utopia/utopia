@@ -66,6 +66,7 @@ export interface InsertableComponent {
   name: string
   stylePropOptions: Array<StylePropOption>
   defaultSize: Size | null
+  metadata?: Record<string, any>
 }
 
 export function insertableComponent(
@@ -74,6 +75,7 @@ export function insertableComponent(
   name: string,
   stylePropOptions: Array<StylePropOption>,
   defaultSize: Size | null,
+  metadata?: Record<string, any>,
 ): InsertableComponent {
   return {
     importsToAdd: importsToAdd,
@@ -81,6 +83,7 @@ export function insertableComponent(
     name: name,
     stylePropOptions: stylePropOptions,
     defaultSize: defaultSize,
+    metadata: metadata,
   }
 }
 

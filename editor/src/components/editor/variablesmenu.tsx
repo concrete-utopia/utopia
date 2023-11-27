@@ -12,12 +12,10 @@ import type {
 } from 'react-windowed-select'
 import WindowedSelect, { components, createFilter } from 'react-windowed-select'
 import { RightMenuTab } from './store/editor-state'
-import type { PackageStatus } from '../../core/shared/npm-dependency-types'
-import { Icn, InspectorSubsectionHeader, UIRow, UtopiaTheme, useColorTheme } from '../../uuiui'
+import { Icn, UIRow, UtopiaTheme, useColorTheme } from '../../uuiui'
 import { getControlStyles } from '../../uuiui-deps'
 import { InspectorInputEmotionStyle } from '../../uuiui/inputs/base-input'
 import type { ProjectContentTreeRoot } from '../assets'
-import { NpmDependencyVersionAndStatusIndicator } from '../navigator/dependecy-version-status-indicator'
 import type { InsertableComponent, InsertableComponentGroup } from '../shared/project-components'
 import { getInsertableGroupLabel } from '../shared/project-components'
 import { setRightMenuTab } from './actions/action-creators'
@@ -94,6 +92,20 @@ const Input = (props: InputProps) => {
   return <components.Input {...props} data-testid={VariablesMenuFilterTestId} />
 }
 
+const iconByType = (insertMenuItem: InsertMenuItem): string => {
+  const variableType = insertMenuItem.value.metadata?.variableType as string
+
+  const iconsByType: Record<string, string> = {
+    string: 'text',
+    number: 'text',
+    boolean: 'conditional',
+    object: 'text-generated',
+    array: 'lists',
+    image: 'image',
+  }
+  return iconsByType[variableType] ?? 'component'
+}
+
 const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
   const colorTheme = useColorTheme()
   const [isHovered, setIsHovered] = useState(false)
@@ -123,7 +135,7 @@ const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
       >
         <Icn
           category='element'
-          type='component'
+          type={iconByType(props.data as InsertMenuItem)}
           color={isHovered ? 'dynamic' : 'main'}
           width={18}
           height={18}
@@ -207,8 +219,9 @@ function useSelectStyles(
           flexGrow: 1,
           display: 'flex',
           alignItems: 'center',
-          cursor: 'text',
+          cursor: hasOptions ? 'text' : 'default',
           border: `1px solid ${hasOptions && !hasResults ? colorTheme.error.value : 'transparent'}`,
+          opacity: hasOptions ? 1 : 0.5,
         }
       },
       placeholder: (styles): CSSObject => {
@@ -343,7 +356,7 @@ const VariablesMenuInner = React.memo((props: VariablesMenuProps) => {
   }
 
   function noVariablesMessage() {
-    return 'No variables in scope'
+    return hasOptions ? 'No results' : 'No variables in scope'
   }
 
   const styles = useSelectStyles(hasResults, hasOptions)
@@ -385,40 +398,3 @@ const VariablesMenuInner = React.memo((props: VariablesMenuProps) => {
     </div>
   )
 })
-
-interface InsertGroupProps {
-  label: string
-  subLabel?: string
-  dependencyStatus: PackageStatus
-  dependencyVersion: string | null
-}
-
-export const InsertGroup: React.FunctionComponent<React.PropsWithChildren<InsertGroupProps>> =
-  React.memo((props) => {
-    const colorTheme = useColorTheme()
-    return (
-      <div style={{ paddingBottom: 12 }}>
-        <UIRow rowHeight={'normal'}>
-          <InspectorSubsectionHeader>
-            <div style={{ color: colorTheme.emphasizedForeground.value, fontWeight: 500 }}>
-              {props.label}
-            </div>
-            {props.subLabel == null ? null : (
-              <div style={{ color: colorTheme.subduedForeground.value, paddingLeft: 10 }}>
-                {props.subLabel}
-              </div>
-            )}
-          </InspectorSubsectionHeader>
-          <div style={{ flexGrow: 1, textAlign: 'right' }}>
-            <NpmDependencyVersionAndStatusIndicator
-              status={props.dependencyStatus}
-              version={props.dependencyVersion}
-            />
-          </div>
-        </UIRow>
-        <div style={{ padding: 8, color: colorTheme.subduedForeground.value }}>
-          {props.children}
-        </div>
-      </div>
-    )
-  })

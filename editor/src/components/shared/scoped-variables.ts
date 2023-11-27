@@ -106,6 +106,7 @@ export function convertVariablesToElements(
           variable.name,
           [],
           null,
+          { variableType: variable.type },
         )
       }),
     }
