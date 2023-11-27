@@ -220,7 +220,7 @@ interface InsertableComponentAndJSX {
   jsx: string
 }
 
-type AllVariablesInScope = {
+export type AllVariablesInScope = {
   filePath: string
   variables: Variable[]
 }

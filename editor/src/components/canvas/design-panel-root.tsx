@@ -290,7 +290,7 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
         }}
       >
         {when(selectedTab === RightMenuTab.Insert, <InsertMenuPane />)}
-        {when(selectedTab === RightMenuTab.Insert, <VariablesMenuPane />)}
+        {when(selectedTab === RightMenuTab.Variables, <VariablesMenuPane />)}
         {when(selectedTab === RightMenuTab.Inspector, <InspectorEntryPoint />)}
         {when(selectedTab === RightMenuTab.Settings, <SettingsPane />)}
         {when(selectedTab === RightMenuTab.Comments, <CommentsPane />)}

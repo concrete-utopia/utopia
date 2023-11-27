@@ -6,7 +6,7 @@ import React from 'react'
 import { Section, SectionBodyArea } from '../../uuiui'
 import { setFocus } from '../common/actions'
 import type { EditorDispatch, LoginState } from '../editor/action-types'
-import { InsertMenu } from '../editor/insertmenu'
+import { VariablesMenu } from '../editor/variablesmenu'
 import { useDispatch } from '../editor/store/dispatch-context'
 import type { DerivedState, EditorState } from '../editor/store/editor-state'
 import { RightMenuTab } from '../editor/store/editor-state'
@@ -53,7 +53,7 @@ export const VariablesMenuPane = React.memo(() => {
       style={{ width: '100%', height: '100%' }}
     >
       <SectionBodyArea minimised={false} style={{ height: '100%' }}>
-        <InsertMenu />
+        <VariablesMenu />
       </SectionBodyArea>
     </Section>
   )
