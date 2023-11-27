@@ -1,47 +1,59 @@
+import {
+  deleteFileFromCollaboration,
+  updateExportsDetailFromCollaborationUpdate,
+  updateImportsFromCollaborationUpdate,
+} from '../actions/action-creators'
 import type {
+  CollabFile,
   CollabTextFile,
+  CollabTextFileExportsDetail,
+  CollabTextFileImports,
   CollabTextFileTopLevelElements,
   CollaborativeEditingSupportSession,
 } from './editor-state'
-import { type CollaborativeEditingSupport } from './editor-state'
-import {
-  writeProjectFileChange,
-  type ProjectChanges,
-  type ProjectFileChange,
-  deletePathChange,
-  ensureDirectoryExistsChange,
-} from './vscode-changes'
 import type { ProjectContentsTree } from '../../../components/assets'
 import {
-  walkContentsTree,
   type ProjectContentTreeRoot,
   getProjectFileFromTree,
   isProjectContentFile,
   zipContentsTree,
-  addFileToProjectContents,
 } from '../../../components/assets'
 import type { EditorAction, EditorDispatch } from '../action-types'
-import {
-  deleteFile,
-  updateProjectContents,
-  updateTopLevelElementsFromCollaborationUpdate,
-} from '../actions/action-creators'
+import { updateTopLevelElementsFromCollaborationUpdate } from '../actions/action-creators'
 import { assertNever, isBrowserEnvironment } from '../../../core/shared/utils'
-import type { ParseSuccess } from '../../../core/shared/project-file-types'
-import {
-  RevisionsState,
-  isTextFile,
-  parseSuccess,
-  textFile,
-  textFileContents,
+import type {
+  ExportDetail,
+  ImportDetails,
+  ParseSuccess,
 } from '../../../core/shared/project-file-types'
+import { isTextFile } from '../../../core/shared/project-file-types'
 import {
+  ExportDetailKeepDeepEquality,
+  ImportDetailsKeepDeepEquality,
   ParsedTextFileKeepDeepEquality,
   TopLevelElementKeepDeepEquality,
 } from './store-deep-equality-instances'
+import {
+  deletePathChange,
+  ensureDirectoryExistsChange,
+  writeProjectFileChange,
+  type ProjectChanges,
+  type ProjectFileChange,
+} from './vscode-changes'
 import * as Y from 'yjs'
 import type { TopLevelElement } from '../../../core/shared/element-template'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+import type { KeepDeepEqualityCall } from '../../../utils/deep-equality'
+import type { MapLike } from 'typescript'
+
+const TopLevelElementsKey = 'topLevelElements'
+const ExportsDetailKey = 'exportsDetail'
+const ImportsKey = 'imports'
+
+// FIXME: This is very slow an inefficient, but is a stopgap measure for right now.
+function removeSourceMaps(topLevelElements: Array<TopLevelElement>): Array<TopLevelElement> {
+  return JSON.parse(JSON.stringify(topLevelElements, (k, v) => (k === 'sourceMap' ? null : v)))
+}
 
 export function collateCollaborativeProjectChanges(
   oldContents: ProjectContentTreeRoot,
@@ -138,10 +150,7 @@ function applyFileChangeToMap(
 ): void {
   switch (change.type) {
     case 'DELETE_PATH':
-      const keyIterator = projectContentsMap.keys()
-      let keyIteratorValue = keyIterator.next()
-      while (!keyIteratorValue.done) {
-        const key = keyIteratorValue.value
+      for (const key of projectContentsMap.keys()) {
         if (
           key === change.fullPath ||
           (change.recursive && key.startsWith(`${change.fullPath}/`))
@@ -164,7 +173,11 @@ function applyFileChangeToMap(
           collabFile = new Y.Map()
           collabFile.set('type', 'TEXT_FILE')
           const topLevelElementsArray = new Y.Array<TopLevelElement>()
-          collabFile.set('topLevelElements', topLevelElementsArray)
+          collabFile.set(TopLevelElementsKey, topLevelElementsArray)
+          const exportsDetailArray = new Y.Array<ExportDetail>()
+          collabFile.set(ExportsDetailKey, exportsDetailArray)
+          const importsMap = new Y.Map<ImportDetails>()
+          collabFile.set(ImportsKey, importsMap)
         }
 
         mergeDoc.transact(() => {
@@ -201,6 +214,7 @@ export function addHookForProjectChanges(
   dispatch: EditorDispatch,
 ): void {
   session.projectContents.observeDeep((changeEvents) => {
+    let actionsToDispatch: Array<EditorAction> = []
     // TODO Check that this is the array change before doing anything
     for (const changeEvent of changeEvents) {
       switch (changeEvent.path.length) {
@@ -208,7 +222,7 @@ export function addHookForProjectChanges(
         // appears to arise at least on first connection to sync up the entire value.
         case 0: {
           if (changeEvent instanceof Y.YMapEvent) {
-            updateEntireProjectContents(changeEvent as Y.YMapEvent<any>, dispatch)
+            actionsToDispatch.push(...updateEntireProjectContents(changeEvent as Y.YMapEvent<any>))
           } else {
             throw new Error(`Could not treat change event as Y.YMapEvent.`)
           }
@@ -224,136 +238,278 @@ export function addHookForProjectChanges(
         // the string `topLevelElements`.
         case 2: {
           const filePath = changeEvent.path[0] as string
-          if (changeEvent.path[1] !== 'topLevelElements') {
-            throw new Error(`Unexpected second part of change path: ${changeEvent.path[1]}`)
+          const targetProperty = changeEvent.path[1]
+          switch (targetProperty) {
+            case TopLevelElementsKey:
+              actionsToDispatch.push(updateTopLevelElementsOfFile(session, filePath))
+              break
+            case ExportsDetailKey:
+              actionsToDispatch.push(updateExportsDetailOfFile(session, filePath))
+              break
+            case ImportsKey:
+              actionsToDispatch.push(updateImportsOfFile(session, filePath))
+              break
+            default:
+              throw new Error(`Unexpected second part of change path: ${targetProperty}`)
           }
-          updateTopLevelElementsOfFile(session, filePath, changeEvent, dispatch)
           break
         }
         default:
           throw new Error(`Unexpected change path: ${JSON.stringify(changeEvent.path)}`)
       }
     }
+    dispatch(actionsToDispatch)
   })
 }
 
-export interface ArrayChanges {
-  updatesAt: Array<number>
-  deleteFrom: number | null
-}
-
-function updateEntireProjectContents(
-  changeEvent: Y.YMapEvent<any>,
-  dispatch: EditorDispatch,
-): void {
+function updateEntireProjectContents(changeEvent: Y.YMapEvent<any>): Array<EditorAction> {
   let actions: Array<EditorAction> = []
-  const entriesIterator = changeEvent.keys.entries()
-  for (const [filename, changeEntry] of entriesIterator) {
-    switch (changeEntry.action) {
-      case 'update':
+  // Map from filename to the restricted file contents.
+  const targetMap = changeEvent.currentTarget as Y.Map<CollabFile>
+  for (const [filename, change] of changeEvent.keys.entries()) {
+    switch (change.action) {
+      case 'delete':
+        actions.push(deleteFileFromCollaboration(filename))
+        break
       case 'add':
-        if (changeEntry.newValue != null) {
+      case 'update':
+        // Mysteriously the type doesn't really carry over.
+        const entryFile = targetMap.get(filename) as CollabFile
+        // Handle `topLevelElements`.
+        const topLevelElements = entryFile.get(TopLevelElementsKey) as
+          | CollabTextFileTopLevelElements
+          | undefined
+        if (topLevelElements != null) {
           actions.push(
-            updateTopLevelElementsFromCollaborationUpdate(
-              filename,
-              (changeEntry.newValue as CollabTextFileTopLevelElements).toArray(),
-            ),
+            updateTopLevelElementsFromCollaborationUpdate(filename, topLevelElements.toArray()),
           )
         }
-        break
-      case 'delete':
-        actions.push(deleteFile(filename))
+        // Handle `exportsDetail`.
+        const exportsDetail = entryFile.get(ExportsDetailKey) as
+          | CollabTextFileExportsDetail
+          | undefined
+        if (exportsDetail != null) {
+          actions.push(
+            updateExportsDetailFromCollaborationUpdate(filename, exportsDetail.toArray()),
+          )
+        }
+        // Handle `imports`.
+        const imports = entryFile.get(ImportsKey) as CollabTextFileImports | undefined
+        if (imports != null) {
+          actions.push(updateImportsFromCollaborationUpdate(filename, imports.toJSON()))
+        }
         break
       default:
-        throw new Error(`Unhandled change entry action: ${changeEntry.action}`)
+        assertNever(change.action)
     }
   }
-  dispatch(actions)
+
+  // Return the accumulated editor actions.
+  return actions
+}
+
+function updateEditorWithArrayChanges<T>(
+  session: CollaborativeEditingSupportSession,
+  filePath: string,
+  fileKey: string,
+  makeUpdateAction: (filePath: string, newElements: Array<T>) => EditorAction,
+): EditorAction {
+  const file = session.projectContents.get(filePath)
+  const yjsValue: Y.Array<T> = (file?.get(fileKey) as any as Y.Array<T>) ?? new Y.Array()
+  let editorValue: Array<T> = yjsValue.toArray()
+  return makeUpdateAction(filePath, editorValue)
+}
+
+function updateEditorWithMapChanges<T>(
+  session: CollaborativeEditingSupportSession,
+  filePath: string,
+  fileKey: string,
+  makeUpdateAction: (filePath: string, newValue: MapLike<T>) => EditorAction,
+): EditorAction {
+  const file = session.projectContents.get(filePath)
+  const yjsValue: Y.Map<T> = (file?.get(fileKey) as any as Y.Map<T>) ?? new Y.Map()
+  const editorValue = yjsValue.toJSON()
+  return makeUpdateAction(filePath, editorValue)
 }
 
 function updateTopLevelElementsOfFile(
   session: CollaborativeEditingSupportSession,
   filePath: string,
-  changeEvent: Y.YEvent<any>,
-  dispatch: EditorDispatch,
-): void {
-  const file = session.projectContents.get(filePath)
-  if (file != null) {
-    const oldTopLevelElements = file.get('topLevelElements') as CollabTextFileTopLevelElements
-    let newTopLevelElements: Array<TopLevelElement> = []
-    let readIndex = 0
-    for (const delta of changeEvent.delta) {
-      if (delta.retain != undefined) {
-        const elementsToPush = oldTopLevelElements.slice(readIndex, readIndex + delta.retain)
-        newTopLevelElements.push(...elementsToPush)
-        readIndex += delta.retain
-      }
-      if (delta.insert != null && Array.isArray(delta.insert)) {
-        newTopLevelElements.push(...delta.insert)
-      }
-      if (delta.delete != undefined) {
-        readIndex += delta.delete
-      }
-    }
-
-    if (readIndex < oldTopLevelElements.length) {
-      // There is an implicit retain for the remainder of the items
-      const elementsToPush = oldTopLevelElements.slice(readIndex)
-      newTopLevelElements.push(...elementsToPush)
-    }
-
-    dispatch([updateTopLevelElementsFromCollaborationUpdate(filePath, newTopLevelElements)])
-  }
+): EditorAction {
+  return updateEditorWithArrayChanges(
+    session,
+    filePath,
+    TopLevelElementsKey,
+    updateTopLevelElementsFromCollaborationUpdate,
+  )
 }
 
-function arrayChanges(updatesAt: Array<number>, deleteFrom: number | null): ArrayChanges {
+function updateExportsDetailOfFile(
+  session: CollaborativeEditingSupportSession,
+  filePath: string,
+): EditorAction {
+  return updateEditorWithArrayChanges(
+    session,
+    filePath,
+    ExportsDetailKey,
+    updateExportsDetailFromCollaborationUpdate,
+  )
+}
+
+function updateImportsOfFile(
+  session: CollaborativeEditingSupportSession,
+  filePath: string,
+): EditorAction {
+  return updateEditorWithMapChanges(
+    session,
+    filePath,
+    ImportsKey,
+    updateImportsFromCollaborationUpdate,
+  )
+}
+
+interface NoChange {
+  type: 'NO_CHANGE'
+}
+
+const noChange: NoChange = {
+  type: 'NO_CHANGE',
+}
+
+interface ChangeHere<T> {
+  type: 'CHANGE_HERE'
+  updatedValue: T
+}
+
+function changeHere<T>(updatedValue: T): ChangeHere<T> {
   return {
-    updatesAt: updatesAt,
-    deleteFrom: deleteFrom,
+    type: 'CHANGE_HERE',
+    updatedValue: updatedValue,
   }
 }
+
+interface Deleted {
+  type: 'DELETED'
+}
+
+const deleted: Deleted = {
+  type: 'DELETED',
+}
+
+type ArrayChange<T> = NoChange | ChangeHere<T> | Deleted
+
+type ArrayChanges<T> = Array<ArrayChange<T>>
 
 export function calculateArrayChanges<T>(
   from: Array<T>,
   into: Y.Array<T>,
   equals: (from: T, into: T) => boolean = (fromToCheck, intoToCheck) => fromToCheck === intoToCheck,
-): ArrayChanges {
-  let updatesAt: Array<number> = []
+): ArrayChanges<T> {
+  let arrayChanges: ArrayChanges<T> = []
+
   for (let index: number = 0; index < Math.max(from.length, into.length); index++) {
-    if (!equals(from[index], into.get(index))) {
-      updatesAt.push(index)
+    if (index > from.length - 1) {
+      arrayChanges.push(deleted)
+    } else if (index > into.length - 1) {
+      arrayChanges.push(changeHere(from[index]))
+    } else if (!equals(from[index], into.get(index))) {
+      arrayChanges.push(changeHere(from[index]))
+    } else {
+      arrayChanges.push(noChange)
     }
   }
 
-  let deleteFrom: number | null = null
-  if (into.length > from.length) {
-    deleteFrom = from.length
-  }
+  return arrayChanges
+}
 
-  return arrayChanges(updatesAt, deleteFrom)
+function syncArrayChanges<T>(
+  fromArray: Array<T>,
+  collabFile: CollabTextFile,
+  fileKey: string,
+  keepDeep: KeepDeepEqualityCall<T>,
+): void {
+  const againstArray = collabFile.get(fileKey) as any as Y.Array<T>
+  const elementChanges = calculateArrayChanges(
+    fromArray,
+    againstArray,
+    (l, r) => l != null && r != null && keepDeep(l, r).areEqual,
+  )
+  let index: number = 0
+  elementChanges.forEach((change) => {
+    switch (change.type) {
+      case 'DELETED':
+        againstArray.delete(index, 1)
+        break
+      case 'CHANGE_HERE':
+        if (againstArray.length > index) {
+          againstArray.delete(index, 1)
+        }
+        againstArray.insert(index, [change.updatedValue])
+        index += 1
+        break
+      case 'NO_CHANGE':
+        index += 1
+        break
+    }
+  })
+}
+
+function syncMapChanges<T>(
+  fromMap: MapLike<T>,
+  collabFile: CollabTextFile,
+  fileKey: string,
+  keepDeep: KeepDeepEqualityCall<T>,
+): void {
+  const againstMap = collabFile.get(fileKey) as any as Y.Map<T>
+  let keysChecked: Set<string> = new Set()
+  for (const [keyFromMap, valueFromMap] of Object.entries(fromMap)) {
+    keysChecked.add(keyFromMap)
+    if (againstMap.has(keyFromMap)) {
+      // Value exists in both maps, but has changed.
+      if (!keepDeep(valueFromMap, againstMap.get(keyFromMap)!).areEqual) {
+        againstMap.set(keyFromMap, valueFromMap)
+      }
+    } else {
+      // Value does not exist in against map, so should be added.
+      againstMap.set(keyFromMap, valueFromMap)
+    }
+  }
+  // For any key that we haven't seen in the from map,
+  // it should be deleted from the against map.
+  for (const keyAgainstMap of againstMap.keys()) {
+    if (!keysChecked.has(keyAgainstMap)) {
+      againstMap.delete(keyAgainstMap)
+    }
+  }
 }
 
 function synchroniseParseSuccessToCollabFile(
   success: ParseSuccess,
   collabFile: CollabTextFile,
 ): void {
-  const collabFileTopLevelElements = collabFile.get('topLevelElements')
-  if (collabFileTopLevelElements === 'TEXT_FILE' || collabFileTopLevelElements === undefined) {
-    throw new Error('Invalid value for topLevelElements.')
-  } else {
-    const changes = calculateArrayChanges(
-      success.topLevelElements,
-      collabFileTopLevelElements,
-      (l, r) => l != null && r != null && TopLevelElementKeepDeepEquality(l, r).areEqual,
-    )
-    for (const updateAtIndex of changes.updatesAt) {
-      if (collabFileTopLevelElements.length > updateAtIndex) {
-        collabFileTopLevelElements.delete(updateAtIndex, 1)
-      }
-      collabFileTopLevelElements.insert(updateAtIndex, [success.topLevelElements[updateAtIndex]])
-    }
-    if (changes.deleteFrom != null) {
-      collabFileTopLevelElements.delete(changes.deleteFrom)
-    }
-  }
+  // Source maps tend to bloat the data but are not necessary.
+  const strippedTopLevelElements = removeSourceMaps(success.topLevelElements)
+  // Updates to the `topLevelElements`.
+  syncArrayChanges<TopLevelElement>(
+    strippedTopLevelElements,
+    collabFile,
+    TopLevelElementsKey,
+    TopLevelElementKeepDeepEquality,
+  )
+
+  // Updates to the `exportsDetail`.
+  syncArrayChanges<ExportDetail>(
+    success.exportsDetail,
+    collabFile,
+    ExportsDetailKey,
+    ExportDetailKeepDeepEquality,
+  )
+
+  // Updates to the `imports`.
+  syncMapChanges<ImportDetails>(
+    success.imports,
+    collabFile,
+    ImportsKey,
+    ImportDetailsKeepDeepEquality,
+  )
 }

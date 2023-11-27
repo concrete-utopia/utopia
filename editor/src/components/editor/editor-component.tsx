@@ -59,7 +59,7 @@ import { generateUUID } from '../../utils/utils'
 import { isLiveblocksEnabled } from './liveblocks-utils'
 import type { Storage, Presence, RoomEvent, UserMeta } from '../../../liveblocks.config'
 import LiveblocksProvider from '@liveblocks/yjs'
-import { projectIdToRoomId } from '../../core/shared/multiplayer'
+import { isRoomId, projectIdToRoomId } from '../../core/shared/multiplayer'
 import { useDisplayOwnershipWarning } from './project-owner-hooks'
 
 const liveModeToastId = 'play-mode-toast'
@@ -299,11 +299,10 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
   )
 
   React.useEffect(() => {
-    if (yDoc != null) {
+    if (yDoc != null && isRoomId(room.id)) {
       const yProvider = new LiveblocksProvider<Presence, Storage, UserMeta, RoomEvent>(room, yDoc)
 
       return () => {
-        yDoc.destroy()
         yProvider.destroy()
       }
     }

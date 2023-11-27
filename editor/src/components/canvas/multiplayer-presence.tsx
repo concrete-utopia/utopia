@@ -1,5 +1,6 @@
 import type { User } from '@liveblocks/client'
 import { motion } from 'framer-motion'
+import { useAtom } from 'jotai'
 import React from 'react'
 import type { Presence, PresenceActiveFrame, UserMeta } from '../../../liveblocks.config'
 import {
@@ -13,15 +14,21 @@ import {
 import { getCollaborator, useAddMyselfToCollaborators } from '../../core/commenting/comment-hooks'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../core/shared/array-utils'
+import * as EP from '../../core/shared/element-path'
 import type { CanvasPoint } from '../../core/shared/math-utils'
 import { pointsEqual, windowPoint, zeroRectIfNullOrInfinity } from '../../core/shared/math-utils'
-import { multiplayerColorFromIndex, normalizeOthersList } from '../../core/shared/multiplayer'
+import {
+  isPlayerOnAnotherRemixRoute,
+  multiplayerColorFromIndex,
+  normalizeOthersList,
+} from '../../core/shared/multiplayer'
 import { assertNever } from '../../core/shared/utils'
 import { useKeepShallowReferenceEquality } from '../../utils/react-performance'
 import { UtopiaStyles, UtopiaTheme, useColorTheme } from '../../uuiui'
+import { notice } from '../common/notice'
 import type { EditorAction } from '../editor/action-types'
 import { isLoggedIn } from '../editor/action-types'
-import { switchEditorMode } from '../editor/actions/action-creators'
+import { showToast, switchEditorMode } from '../editor/actions/action-creators'
 import { EditorModes, isFollowMode } from '../editor/editor-modes'
 import { useDispatch } from '../editor/store/dispatch-context'
 import {
@@ -33,6 +40,9 @@ import {
 import CanvasActions from './canvas-actions'
 import { activeFrameActionToString } from './commands/set-active-frames-command'
 import { canvasPointToWindowPoint, windowToCanvasCoordinates } from './dom-lookup'
+import { ActiveRemixSceneAtom, RemixNavigationAtom } from './remix/utopia-remix-root-component'
+import { useRemixPresence } from '../../core/shared/multiplayer-hooks'
+import { CanvasOffsetWrapper } from './controls/canvas-offset-wrapper'
 
 export const MultiplayerPresence = React.memo(() => {
   const dispatch = useDispatch()
@@ -63,6 +73,8 @@ export const MultiplayerPresence = React.memo(() => {
 
   useAddMyselfToCollaborators()
 
+  const remixPresence = useRemixPresence()
+
   React.useEffect(() => {
     if (!isLoggedIn(loginState)) {
       return
@@ -71,8 +83,9 @@ export const MultiplayerPresence = React.memo(() => {
       canvasScale,
       canvasOffset,
       following: isFollowMode(mode) ? mode.playerId : null,
+      remix: remixPresence,
     })
-  }, [canvasScale, canvasOffset, updateMyPresence, loginState, mode])
+  }, [canvasScale, canvasOffset, updateMyPresence, loginState, mode, remixPresence])
 
   React.useEffect(() => {
     // when the mouse moves over the canvas, update the presence cursor
@@ -116,6 +129,7 @@ const MultiplayerCursors = React.memo(() => {
       userInfo: getCollaborator(collabs, p),
     }))
   })
+  const myRemixPresence = me.presence.remix ?? null
 
   return (
     <div
@@ -127,6 +141,10 @@ const MultiplayerCursors = React.memo(() => {
       }}
     >
       {others.map((other) => {
+        const isOnAnotherRoute = isPlayerOnAnotherRemixRoute(
+          myRemixPresence,
+          other.presenceInfo.presence.remix ?? null,
+        )
         if (
           other.presenceInfo.presence.cursor == null ||
           other.presenceInfo.presence.canvasOffset == null ||
@@ -145,6 +163,7 @@ const MultiplayerCursors = React.memo(() => {
             name={other.userInfo.name}
             colorIndex={other.userInfo.colorIndex}
             position={position}
+            opacity={isOnAnotherRoute ? 0.25 : 1}
           />
         )
       })}
@@ -158,54 +177,31 @@ const MultiplayerCursor = React.memo(
     name,
     colorIndex,
     position,
+    opacity,
   }: {
     name: string | null
     colorIndex: number | null
     position: CanvasPoint
+    opacity: number
   }) => {
     const canvasScale = useEditorState(
       Substores.canvasOffset,
       (store) => store.editor.canvas.scale,
       'MultiplayerCursor canvasScale',
     )
-    const canvasOffset = useEditorState(
-      Substores.canvasOffset,
-      (store) => store.editor.canvas.roundedCanvasOffset,
-      'MultiplayerCursor canvasOffset',
-    )
     const color = multiplayerColorFromIndex(colorIndex)
-    const windowPosition = canvasPointToWindowPoint(position, canvasScale, canvasOffset)
 
     return (
-      <motion.div
-        initial={windowPosition}
-        animate={windowPosition}
-        transition={{
-          type: 'spring',
-          damping: 30,
-          mass: 0.8,
-          stiffness: 350,
-        }}
-        style={{
-          position: 'fixed',
-          pointerEvents: 'none',
-        }}
-      >
-        {/* This is a temporary placeholder for a good pointer icon */}
-        <div
-          style={{
-            width: 0,
-            height: 0,
-            borderTop: `5px solid transparent`,
-            borderBottom: `5px solid transparent`,
-            borderRight: `5px solid ${color.background}`,
-            transform: 'rotate(45deg)',
-            position: 'absolute',
-            top: -3,
-            left: -1,
+      <CanvasOffsetWrapper setScaleToo={true}>
+        <motion.div
+          initial={position}
+          animate={position}
+          transition={{
+            type: 'spring',
+            damping: 30,
+            mass: 0.8,
+            stiffness: 350,
           }}
-        />
-        <div
           style={{
             color: color.foreground,
             backgroundColor: color.background,
@@ -217,15 +213,52 @@ const MultiplayerCursor = React.memo(
             position: 'absolute',
             left: 5,
             top: 5,
+            position: 'fixed',
+            pointerEvents: 'none',
+            opacity: opacity,
+            scale: canvasScale <= 1 ? 1 / canvasScale : 1,
           }}
         >
-          {name}
-        </div>
-      </motion.div>
+          {/* This is a temporary placeholder for a good pointer icon */}
+          <div
+            style={{
+              width: 0,
+              height: 0,
+              borderTop: `5px solid transparent`,
+              borderBottom: `5px solid transparent`,
+              borderRight: `5px solid ${color.background}`,
+              transform: 'rotate(45deg)',
+              position: 'absolute',
+              top: -3,
+              left: -1,
+              zoom: canvasScale > 1 ? 1 / canvasScale : 1,
+            }}
+          />
+          <div
+            style={{
+              color: color.foreground,
+              backgroundColor: color.background,
+              padding: '0 4px',
+              borderRadius: 2,
+              boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+              fontWeight: 'bold',
+              fontSize: 9,
+              position: 'absolute',
+              left: 5,
+              top: 5,
+              zoom: canvasScale > 1 ? 1 / canvasScale : 1,
+            }}
+          >
+            {name}
+          </div>
+        </motion.div>
+      </CanvasOffsetWrapper>
     )
   },
 )
 MultiplayerCursor.displayName = 'MultiplayerCursor'
+
+const remixRouteChangedToastId = 'follow-changed-scene'
 
 const FollowingOverlay = React.memo(() => {
   const colorTheme = useColorTheme()
@@ -268,6 +301,11 @@ const FollowingOverlay = React.memo(() => {
     followed != null ? store.collaborators[followed.id] : null,
   )
 
+  const remixPresence = useRemixPresence()
+
+  const [, setActiveRemixScene] = useAtom(ActiveRemixSceneAtom)
+  const [remixNavigationState, setRemixNavigationState] = useAtom(RemixNavigationAtom)
+
   const updateCanvasFromOtherPresence = React.useCallback(
     (presence: Presence) => {
       let actions: EditorAction[] = []
@@ -277,11 +315,38 @@ const FollowingOverlay = React.memo(() => {
       if (presence.canvasOffset != null && !pointsEqual(presence.canvasOffset, canvasOffset)) {
         actions.push(CanvasActions.positionCanvas(presence.canvasOffset))
       }
+      if (presence.remix != null && isPlayerOnAnotherRemixRoute(remixPresence, presence.remix)) {
+        const newNavigationState = { ...remixNavigationState }
+        const sceneState = newNavigationState[presence.remix.scene]
+        if (sceneState != null && presence.remix.locationRoute != null) {
+          sceneState.location.pathname = presence.remix.locationRoute
+          setActiveRemixScene(EP.fromString(presence.remix.scene))
+          setRemixNavigationState(newNavigationState)
+          actions.push(
+            showToast(
+              notice(
+                `The route has been changed to ${presence.remix.locationRoute}`,
+                'PRIMARY',
+                false,
+                remixRouteChangedToastId,
+              ),
+            ),
+          )
+        }
+      }
       if (actions.length > 0) {
         dispatch(actions)
       }
     },
-    [dispatch, canvasScale, canvasOffset],
+    [
+      dispatch,
+      canvasScale,
+      canvasOffset,
+      setActiveRemixScene,
+      setRemixNavigationState,
+      remixPresence,
+      remixNavigationState,
+    ],
   )
 
   useOthersListener((event) => {

@@ -27,6 +27,8 @@ import type {
   Imports,
   ParsedTextFile,
   ImageFile,
+  ExportDetail,
+  ImportDetails,
 } from '../../core/shared/project-file-types'
 import { StaticElementPathPart } from '../../core/shared/project-file-types'
 import type { CodeResultCache, PropertyControlsInfo } from '../custom-code/code-file'
@@ -79,6 +81,7 @@ import type { PostActionChoice } from '../canvas/canvas-strategies/post-action-o
 import type { FromVSCodeAction } from './actions/actions-from-vscode'
 import type { ProjectServerState } from './store/project-server-state'
 import type { SetHuggingParentToFixed } from '../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
+import type { MapLike } from 'typescript'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -676,6 +679,11 @@ export interface DeleteFile {
   filename: string
 }
 
+export interface DeleteFileFromCollaboration {
+  action: 'DELETE_FILE_FROM_COLLABORATION'
+  filename: string
+}
+
 export interface AddTextFile {
   action: 'ADD_TEXT_FILE'
   fileName: string
@@ -1057,6 +1065,18 @@ export interface UpdateTopLevelElementsFromCollaborationUpdate {
   topLevelElements: Array<TopLevelElement>
 }
 
+export interface UpdateExportsDetailFromCollaborationUpdate {
+  action: 'UPDATE_EXPORTS_DETAIL_FROM_COLLABORATION_UPDATE'
+  fullPath: string
+  exportsDetail: Array<ExportDetail>
+}
+
+export interface UpdateImportsFromCollaborationUpdate {
+  action: 'UPDATE_IMPORTS_FROM_COLLABORATION_UPDATE'
+  fullPath: string
+  imports: MapLike<ImportDetails>
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
@@ -1154,6 +1174,7 @@ export type EditorAction =
   | ClearImageFileBlob
   | AddFolder
   | DeleteFile
+  | DeleteFileFromCollaboration
   | AddTextFile
   | SetMainUIFile
   | SetCodeEditorBuildErrors
@@ -1228,6 +1249,8 @@ export type EditorAction =
   | TruncateHistory
   | UpdateProjectServerState
   | UpdateTopLevelElementsFromCollaborationUpdate
+  | UpdateExportsDetailFromCollaborationUpdate
+  | UpdateImportsFromCollaborationUpdate
 
 export type DispatchPriority =
   | 'everyone'

@@ -89,9 +89,12 @@ export interface InsertMode {
   subjects: Array<InsertionSubject>
 }
 
+export type IsDragging = 'dragging' | 'not-dragging'
+
 export interface CommentMode {
   type: 'comment'
   location: CanvasPoint | null
+  isDragging: IsDragging
 }
 
 export type SelectModeToolbarMode = 'none' | 'pseudo-insert'
@@ -176,10 +179,11 @@ export const EditorModes = {
       selectOnFocus: selectOnFocus,
     }
   },
-  commentMode: function (location: CanvasPoint | null): CommentMode {
+  commentMode: function (location: CanvasPoint | null, isDragging: IsDragging): CommentMode {
     return {
       type: 'comment',
       location: location,
+      isDragging: isDragging,
     }
   },
   followMode: function (playerId: string): FollowMode {

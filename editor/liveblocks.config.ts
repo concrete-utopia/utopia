@@ -3,6 +3,7 @@ import { createRoomContext } from '@liveblocks/react'
 import { getProjectID } from './src/common/env-vars'
 import type { ActiveFrameAction } from './src/components/canvas/commands/set-active-frames-command'
 import type { CanvasRectangle, CanvasVector, WindowPoint } from './src/core/shared/math-utils'
+import type { RemixPresence } from './src/core/shared/multiplayer'
 import { projectIdToRoomId } from './src/core/shared/multiplayer'
 
 export const liveblocksThrottle = 100 // ms
@@ -21,6 +22,7 @@ export type Presence = {
   canvasOffset: CanvasVector | null
   activeFrames?: PresenceActiveFrame[]
   following: string | null
+  remix?: RemixPresence | null
 }
 
 export type PresenceActiveFrame = {
@@ -82,6 +84,7 @@ export type ThreadMetadata = {
   type: 'canvas'
   x: number
   y: number
+  remixLocationRoute?: string
 }
 
 export const {

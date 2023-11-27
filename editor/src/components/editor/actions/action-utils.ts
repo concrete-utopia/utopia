@@ -167,6 +167,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'ADD_FOLDER':
     case 'DELETE_FILE':
     case 'DELETE_FILE_FROM_VSCODE':
+    case 'DELETE_FILE_FROM_COLLABORATION':
     case 'ADD_TEXT_FILE':
     case 'UPDATE_FILE':
     case 'UPDATE_PROJECT_CONTENTS':
@@ -197,6 +198,8 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_CONIDTIONAL_EXPRESSION':
     case 'CUT_SELECTION_TO_CLIPBOARD':
     case 'UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION_UPDATE':
+    case 'UPDATE_EXPORTS_DETAIL_FROM_COLLABORATION_UPDATE':
+    case 'UPDATE_IMPORTS_FROM_COLLABORATION_UPDATE':
       return false
     case 'SAVE_ASSET':
       return (
