@@ -86,6 +86,7 @@ function getVariablesFromComponent(
     variables: Object.entries(jsxComponentVariables).flatMap(([name, value]) => {
       const type = getTypeByValue(value)
       if (type === 'object' && value != null) {
+        // iterate only first-level keys of object
         return Object.entries(value).map(([key, innerValue]) => ({
           name: `${name}.${key}`,
           value: innerValue,
