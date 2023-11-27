@@ -2,7 +2,6 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { EditorModes } from '../../editor/editor-modes'
 import type { ThreadMetadata } from '../../../../liveblocks.config'
 import {
@@ -25,7 +24,7 @@ import {
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { AvatarPicture } from '../../user-bar'
 import type { ThreadData } from '@liveblocks/client'
-import { windowToCanvasCoordinates } from '../dom-lookup'
+import { canvasPointToWindowPoint, windowToCanvasCoordinates } from '../dom-lookup'
 
 const IndicatorSize = 20
 
@@ -41,11 +40,9 @@ export const CommentIndicators = React.memo(() => {
   }
 
   return (
-    <CanvasOffsetWrapper>
-      <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
-        <CommentIndicatorsInner />
-      </MultiplayerWrapper>
-    </CanvasOffsetWrapper>
+    <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
+      <CommentIndicatorsInner />
+    </MultiplayerWrapper>
   )
 })
 CommentIndicators.displayName = 'CommentIndicators'
@@ -72,11 +69,22 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
   const dispatch = useDispatch()
   const collabs = useStorage((storage) => storage.collaborators)
 
-  const position = canvasPoint(thread.metadata)
+  const canvasScale = useEditorState(
+    Substores.canvasOffset,
+    (store) => store.editor.canvas.scale,
+    'CommentIndicator canvasScale',
+  )
+  const canvasOffset = useEditorState(
+    Substores.canvasOffset,
+    (store) => store.editor.canvas.roundedCanvasOffset,
+    'CommentIndicator canvasOffset',
+  )
+
+  const point = canvasPoint(thread.metadata)
 
   const onClick = React.useCallback(() => {
-    dispatch([switchEditorMode(EditorModes.commentMode(position, 'not-dragging'))])
-  }, [dispatch, position])
+    dispatch([switchEditorMode(EditorModes.commentMode(point, 'not-dragging'))])
+  }, [dispatch, point])
 
   const { initials, color, avatar } = (() => {
     const firstComment = thread.comments[0]
@@ -102,18 +110,23 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
     remixLocationRoute !== me.presence.remix.locationRoute
 
   const { onMouseDown, dragPosition } = useDragging(thread)
+  const position = React.useMemo(
+    () => canvasPointToWindowPoint(dragPosition ?? point, canvasScale, canvasOffset),
+    [point, canvasScale, canvasOffset, dragPosition],
+  )
 
   return (
     <div
       css={{
-        position: 'absolute',
-        top: dragPosition?.y ?? position.y,
-        left: dragPosition?.x ?? position.x,
+        position: 'fixed',
+        top: position.y,
+        left: position.x,
         opacity: isOnAnotherRoute ? 0.25 : 1,
         width: IndicatorSize,
+        zoom: 1 / canvasScale,
         '&:hover': {
           transform: 'scale(1.15)',
-          transitionDuration: '0.1s',
+          transitionDuration: 'transform 0.1s',
         },
       }}
       onClick={onClick}
