@@ -50,6 +50,11 @@ const TopLevelElementsKey = 'topLevelElements'
 const ExportsDetailKey = 'exportsDetail'
 const ImportsKey = 'imports'
 
+// FIXME: This is very slow an inefficient, but is a stopgap measure for right now.
+function removeSourceMaps(topLevelElements: Array<TopLevelElement>): Array<TopLevelElement> {
+  return JSON.parse(JSON.stringify(topLevelElements, (k, v) => (k === 'sourceMap' ? null : v)))
+}
+
 export function collateCollaborativeProjectChanges(
   oldContents: ProjectContentTreeRoot,
   newContents: ProjectContentTreeRoot,
@@ -482,9 +487,11 @@ function synchroniseParseSuccessToCollabFile(
   success: ParseSuccess,
   collabFile: CollabTextFile,
 ): void {
+  // Source maps tend to bloat the data but are not necessary.
+  const strippedTopLevelElements = removeSourceMaps(success.topLevelElements)
   // Updates to the `topLevelElements`.
   syncArrayChanges<TopLevelElement>(
-    success.topLevelElements,
+    strippedTopLevelElements,
     collabFile,
     TopLevelElementsKey,
     TopLevelElementKeepDeepEquality,
