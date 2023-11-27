@@ -501,7 +501,7 @@ describe('Observing runtime changes', () => {
 
     const recordedActionsBefore = [...renderResult.getRecordedActions()]
 
-    const buttonToClick = renderResult.getRenderedCanvas().getByTestId('click-me')
+    const buttonToClick = renderResult.renderedDOM.getByTestId('click-me')
     const buttonToClickBounds = buttonToClick.getBoundingClientRect()
     const clickPoint = {
       x: buttonToClickBounds.width / 2,
@@ -543,7 +543,7 @@ describe('Observing runtime changes', () => {
 
     const recordedActionsBefore = [...renderResult.getRecordedActions()]
 
-    const buttonToClick = renderResult.getRenderedCanvas().getByTestId('click-me')
+    const buttonToClick = renderResult.renderedDOM.getByTestId('click-me')
     const buttonToClickBounds = buttonToClick.getBoundingClientRect()
     const clickPoint = {
       x: buttonToClickBounds.width / 2,

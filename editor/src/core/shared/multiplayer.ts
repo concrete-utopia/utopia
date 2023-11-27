@@ -137,3 +137,29 @@ export function projectIdToRoomId(projectId: string): string {
 export function isRoomId(s: string): boolean {
   return s.startsWith(roomIdPrefix)
 }
+
+export type RemixPresence = {
+  scene: string
+  locationRoute: string | null
+}
+
+export function isPlayerOnAnotherRemixRoute(
+  a: RemixPresence | null,
+  b: RemixPresence | null,
+): boolean {
+  return a != null && b != null && (a.scene !== b.scene || a.locationRoute !== b.locationRoute)
+}
+
+export function remixPresence(scene: string, locationRoute: string | null): RemixPresence {
+  return {
+    scene: scene,
+    locationRoute: locationRoute,
+  }
+}
+
+export function maybeRemixPresence(
+  scene: string | null,
+  locationRoute: string | null,
+): RemixPresence | null {
+  return scene != null ? remixPresence(scene, locationRoute) : null
+}

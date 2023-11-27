@@ -36,7 +36,6 @@ import { isHooksErrorMessage } from '../../utils/canvas-react-utils'
 import { useApplyCanvasOffsetToStyle } from './controls/canvas-offset-wrapper'
 import { when } from '../../utils/react-conditionals'
 import { useDispatch } from '../editor/store/dispatch-context'
-import { CanvasContainerShadowRoot } from './canvas-types'
 
 interface CanvasComponentEntryProps {}
 

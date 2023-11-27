@@ -126,7 +126,7 @@ describe('insert menu', () => {
       fireEvent.keyDown(filterBox, { key: 'Enter', keycode: 13 })
     })
 
-    const targetElement = renderResult.getRenderedCanvas().getByTestId('root')
+    const targetElement = renderResult.renderedDOM.getByTestId('root')
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 

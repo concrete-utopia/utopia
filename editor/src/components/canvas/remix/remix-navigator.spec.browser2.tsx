@@ -13,7 +13,7 @@ import {
 import type { PersistentModel } from '../../editor/store/editor-state'
 import { NavigatorItemTestId } from '../../navigator/navigator-item/navigator-item'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
-import { dragNonCanvasElementWithDNDEvents } from '../event-helpers.test-utils'
+import { dragElementWithDNDEvents } from '../event-helpers.test-utils'
 import { windowPoint } from '../../../core/shared/math-utils'
 
 const DefaultRouteTextContent = 'Hello Remix!'
@@ -373,7 +373,7 @@ describe('Reparenting in Remix projects in the navigator', () => {
       await dispatchDone
     })
 
-    await dragNonCanvasElementWithDNDEvents(
+    await dragElementWithDNDEvents(
       renderResult,
       dragElementTestId,
       dropElementTestId,
@@ -486,7 +486,7 @@ describe('Reparenting in Remix projects in the navigator', () => {
       await dispatchDone
     })
 
-    await dragNonCanvasElementWithDNDEvents(
+    await dragElementWithDNDEvents(
       renderResult,
       dragElementTestId,
       dropElementTestId,

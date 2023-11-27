@@ -1006,7 +1006,7 @@ export async function openContextMenuAndClickOnItem(
 
 const ASYNC_NOOP = async () => NO_OP()
 
-export async function dragNonCanvasElementWithDNDEvents(
+export async function dragElementWithDNDEvents(
   renderResult: EditorRenderResult,
   dragTargetID: string,
   dropTargetID: string,

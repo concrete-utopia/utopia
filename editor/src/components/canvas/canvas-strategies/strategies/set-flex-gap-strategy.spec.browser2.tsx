@@ -48,7 +48,7 @@ export var storyboard = (
     )
 
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const div = editor.getRenderedCanvas().getByTestId(DivTestId)
+    const div = editor.renderedDOM.getByTestId(DivTestId)
     const divBounds = div.getBoundingClientRect()
     await mouseClickAtPoint(canvasControlsLayer, {
       x: divBounds.x + 5,
@@ -110,7 +110,7 @@ export var storyboard = (
     )
 
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const div = editor.getRenderedCanvas().getByTestId(DivTestId)
+    const div = editor.renderedDOM.getByTestId(DivTestId)
     const divBounds = div.getBoundingClientRect()
     await mouseClickAtPoint(canvasControlsLayer, {
       x: divBounds.x + 5,
@@ -166,7 +166,7 @@ export var storyboard = (
     )
 
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const div = editor.getRenderedCanvas().getByTestId(DivTestId)
+    const div = editor.renderedDOM.getByTestId(DivTestId)
     const divBounds = div.getBoundingClientRect()
     await mouseClickAtPoint(canvasControlsLayer, {
       x: divBounds.x + 5,
@@ -187,7 +187,7 @@ export var storyboard = (
     )
 
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const div = editor.getRenderedCanvas().getByTestId(DivTestId)
+    const div = editor.renderedDOM.getByTestId(DivTestId)
     const divBounds = div.getBoundingClientRect()
     await mouseClickAtPoint(canvasControlsLayer, {
       x: divBounds.x + 5,
@@ -211,7 +211,7 @@ export var storyboard = (
     )
 
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const div = editor.getRenderedCanvas().getByTestId(DivTestId)
+    const div = editor.renderedDOM.getByTestId(DivTestId)
     const divBounds = div.getBoundingClientRect()
     await mouseClickAtPoint(canvasControlsLayer, {
       x: divBounds.x + 5,
@@ -237,7 +237,7 @@ export var storyboard = (
     )
 
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const div = editor.getRenderedCanvas().getByTestId(DivTestId)
+    const div = editor.renderedDOM.getByTestId(DivTestId)
     const divBounds = div.getBoundingClientRect()
 
     await mouseClickAtPoint(canvasControlsLayer, {
@@ -282,7 +282,7 @@ export var storyboard = (
     )
 
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const div = editor.getRenderedCanvas().getByTestId(DivTestId)
+    const div = editor.renderedDOM.getByTestId(DivTestId)
     const divBounds = div.getBoundingClientRect()
 
     await mouseClickAtPoint(canvasControlsLayer, {
@@ -324,7 +324,7 @@ export var storyboard = (
     )
 
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const div = editor.getRenderedCanvas().getByTestId(DivTestId)
+    const div = editor.renderedDOM.getByTestId(DivTestId)
     const divBounds = div.getBoundingClientRect()
 
     await mouseClickAtPoint(canvasControlsLayer, {
@@ -367,7 +367,7 @@ export var storyboard = (
     )
 
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const div = editor.getRenderedCanvas().getByTestId(DivTestId)
+    const div = editor.renderedDOM.getByTestId(DivTestId)
     const divBounds = div.getBoundingClientRect()
 
     await mouseClickAtPoint(canvasControlsLayer, {
@@ -407,7 +407,7 @@ export var storyboard = (
     )
 
     const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-    const div = editor.getRenderedCanvas().getByTestId(DivTestId)
+    const div = editor.renderedDOM.getByTestId(DivTestId)
     const divBounds = div.getBoundingClientRect()
 
     await mouseClickAtPoint(canvasControlsLayer, {
@@ -951,7 +951,7 @@ export var storyboard = (
 
 async function doGapResize(editor: EditorRenderResult, delta: CanvasPoint) {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-  const div = editor.getRenderedCanvas().getByTestId(DivTestId)
+  const div = editor.renderedDOM.getByTestId(DivTestId)
   const divBounds = div.getBoundingClientRect()
 
   await mouseClickAtPoint(canvasControlsLayer, {
