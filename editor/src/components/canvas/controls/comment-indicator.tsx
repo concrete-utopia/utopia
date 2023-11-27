@@ -13,7 +13,7 @@ import {
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { switchEditorMode } from '../../editor/actions/action-creators'
 import type { CanvasPoint, CanvasVector, WindowPoint } from '../../../core/shared/math-utils'
-import { canvasPoint, offsetPoint, windowPoint } from '../../../core/shared/math-utils'
+import { canvasPoint, distance, offsetPoint, windowPoint } from '../../../core/shared/math-utils'
 import { UtopiaTheme } from '../../../uuiui'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import {
@@ -167,6 +167,8 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
 })
 CommentIndicator.displayName = 'CommentIndicator'
 
+const COMMENT_DRAG_THRESHOLD = 5 // square px
+
 function useDragging(thread: ThreadData<ThreadMetadata>) {
   const editThreadMetadata = useEditThreadMetadata()
   const dispatch = useDispatch()
@@ -175,50 +177,58 @@ function useDragging(thread: ThreadData<ThreadMetadata>) {
   const canvasScaleRef = useRefEditorState((store) => store.editor.canvas.scale)
   const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.realCanvasOffset)
 
-  const onMouseMove = React.useCallback(
-    (event: MouseEvent) => {
-      event.stopPropagation()
-      const newCanvasPoint = mousePositionToIndicatorPosition(
-        canvasScaleRef.current,
-        canvasOffsetRef.current,
-        windowPoint({ x: event.clientX, y: event.clientY }),
-      )
-      setDragPosition(newCanvasPoint)
-    },
-    [canvasOffsetRef, canvasScaleRef],
-  )
-
-  const onMouseUp = React.useCallback(
-    (event: MouseEvent) => {
-      event.stopPropagation()
-      const newCanvasPosition = mousePositionToIndicatorPosition(
-        canvasScaleRef.current,
-        canvasOffsetRef.current,
-        windowPoint({ x: event.clientX, y: event.clientY }),
-      )
-      setDragPosition(null)
-
-      editThreadMetadata({
-        threadId: thread.id,
-        metadata: {
-          x: newCanvasPosition.x,
-          y: newCanvasPosition.y,
-        },
-      })
-      window.removeEventListener('mousemove', onMouseMove)
-      window.removeEventListener('mouseup', onMouseUp)
-    },
-    [onMouseMove, canvasOffsetRef, canvasScaleRef, editThreadMetadata, thread.id],
-  )
-
   const onMouseDown = React.useCallback(
     (event: React.MouseEvent) => {
+      const mouseDownPoint = windowPoint({ x: event.clientX, y: event.clientY })
+
+      let draggedPastThreshold = false
+      function onMouseMove(moveEvent: MouseEvent) {
+        moveEvent.stopPropagation()
+        const mouseMovePoint = windowPoint({ x: moveEvent.clientX, y: moveEvent.clientY })
+
+        draggedPastThreshold ||= distance(mouseDownPoint, mouseMovePoint) > COMMENT_DRAG_THRESHOLD
+
+        if (draggedPastThreshold) {
+          const newCanvasPoint = mousePositionToIndicatorPosition(
+            canvasScaleRef.current,
+            canvasOffsetRef.current,
+            mouseMovePoint,
+          )
+          setDragPosition(newCanvasPoint)
+        }
+      }
+
+      function onMouseUp(upEvent: MouseEvent) {
+        upEvent.stopPropagation()
+        window.removeEventListener('mousemove', onMouseMove)
+        window.removeEventListener('mouseup', onMouseUp)
+
+        const mouseUpPoint = windowPoint({ x: upEvent.clientX, y: upEvent.clientY })
+
+        if (draggedPastThreshold) {
+          const newCanvasPosition = mousePositionToIndicatorPosition(
+            canvasScaleRef.current,
+            canvasOffsetRef.current,
+            mouseUpPoint,
+          )
+          setDragPosition(null)
+
+          editThreadMetadata({
+            threadId: thread.id,
+            metadata: {
+              x: newCanvasPosition.x,
+              y: newCanvasPosition.y,
+            },
+          })
+        }
+      }
+
       event.stopPropagation()
       dispatch([switchEditorMode(EditorModes.commentMode(null, 'dragging'))])
       window.addEventListener('mousemove', onMouseMove)
       window.addEventListener('mouseup', onMouseUp)
     },
-    [onMouseMove, onMouseUp, dispatch],
+    [dispatch, canvasOffsetRef, canvasScaleRef, editThreadMetadata, thread.id],
   )
 
   return { onMouseDown, dragPosition }
