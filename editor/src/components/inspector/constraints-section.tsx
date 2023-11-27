@@ -4,7 +4,11 @@ import { jsx } from '@emotion/react'
 
 import React from 'react'
 import { useContextSelector } from 'use-context-selector'
-import type { LayoutPinnedPropIncludingCenter } from '../../core/layout/layout-helpers-new'
+import {
+  isHorizontalLayoutPinnedProp,
+  type LayoutPinnedProp,
+  type LayoutPinnedPropIncludingCenter,
+} from '../../core/layout/layout-helpers-new'
 import { NO_OP } from '../../core/shared/utils'
 import { when } from '../../utils/react-conditionals'
 import {
@@ -46,6 +50,7 @@ import {
 } from './simplified-pinning-helpers'
 import { UIGridRow } from './widgets/ui-grid-row'
 import { allSelectedElementsContractSelector } from './editor-contract-section'
+import * as EP from '../../core/shared/element-path'
 
 export const InspectorSectionConstraintsTestId = 'inspector-section-constraints'
 
@@ -112,11 +117,21 @@ ConstraintsSection.displayName = 'ConstraintsSection'
 const GroupChildConstraintsSection = React.memo(() => {
   const pins = useDetectedConstraints('group-child')
   const framePinsInfo: FramePinsInfo = React.useMemo(() => getFixedPointsForPinning(pins), [pins])
+  const selectedViews = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews,
+    'FrameChildConstraintsSection selectedViews',
+  )
 
   return (
     <FlexColumn css={{ paddingBottom: UtopiaTheme.layout.rowHorizontalPadding }}>
       <UIGridRow padded variant='<-auto-><----------1fr--------->'>
-        <ChildPinControl isGroupChild='group-child' pins={pins} framePinsInfo={framePinsInfo} />
+        <ChildPinControl
+          key={selectedViews.map(EP.toString).join('-')}
+          isGroupChild='group-child'
+          pins={pins}
+          framePinsInfo={framePinsInfo}
+        />
         <FlexColumn css={{ gap: 8 }}>
           <ChildConstraintSelect isGroupChild='group-child' dimension={'width'} />
           <ChildConstraintSelect isGroupChild='group-child' dimension={'height'} />
@@ -145,6 +160,44 @@ const FrameChildConstraintsSection = React.memo(() => {
 })
 FrameChildConstraintsSection.displayName = 'FrameChildConstraintsSection'
 
+function detectedPinsToDefaultActivePins(detectedPins: DetectedPins): {
+  horizontal: Array<LayoutPinnedPropIncludingCenter>
+  vertical: Array<LayoutPinnedPropIncludingCenter>
+} {
+  const horizontalActivePins = (() => {
+    let defaultActivePins: Array<LayoutPinnedProp> = []
+    if (detectedPins.horizontal.includes('right')) {
+      defaultActivePins.push('right')
+    }
+    if (detectedPins.horizontal.includes('width')) {
+      defaultActivePins.push('width')
+    }
+    if (detectedPins.horizontal.includes('left')) {
+      defaultActivePins.push('left')
+    }
+    return defaultActivePins
+  })()
+
+  const verticalActivePins = (() => {
+    let defaultActivePins: Array<LayoutPinnedProp> = []
+    if (detectedPins.vertical.includes('bottom')) {
+      defaultActivePins.push('bottom')
+    }
+    if (detectedPins.vertical.includes('height')) {
+      defaultActivePins.push('height')
+    }
+    if (detectedPins.vertical.includes('top')) {
+      defaultActivePins.push('top')
+    }
+    return defaultActivePins
+  })()
+
+  return {
+    horizontal: horizontalActivePins,
+    vertical: verticalActivePins,
+  }
+}
+
 export const ChildPinControl = React.memo(
   ({
     isGroupChild,
@@ -157,6 +210,13 @@ export const ChildPinControl = React.memo(
   }) => {
     const dispatch = useDispatch()
 
+    const [activeHorizontalPins, setActiveHorizontalPins] = React.useState<
+      Array<LayoutPinnedPropIncludingCenter>
+    >(detectedPinsToDefaultActivePins(pins).horizontal)
+    const [activeVerticalPins, setActiveVerticalPins] = React.useState<
+      Array<LayoutPinnedPropIncludingCenter>
+    >(detectedPinsToDefaultActivePins(pins).vertical)
+
     const propertyTarget = useContextSelector(InspectorPropsContext, (contextData) => {
       return contextData.targetPath
     })
@@ -166,6 +226,85 @@ export const ChildPinControl = React.memo(
     const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
     const elementPathTreesRef = useRefEditorState((store) => store.editor.elementPathTree)
 
+    const requestedGroupPinChanges = React.useCallback(
+      (frameProp: LayoutPinnedPropIncludingCenter): RequestedPins | 'no-op' => {
+        if (frameProp === 'centerY' || frameProp === 'centerX') {
+          // for groups the center pins are hidden
+          return 'no-op'
+        }
+        if (isHorizontalLayoutPinnedProp(frameProp)) {
+          const newActivePins = (() => {
+            const pinIndex = activeHorizontalPins.indexOf(frameProp)
+            if (pinIndex === -1) {
+              const updatedActivePins = [...activeHorizontalPins, frameProp]
+
+              // If more than two of 'left', 'width', 'right' are active, discard the oldest one
+              if (updatedActivePins.length === 3) {
+                updatedActivePins.shift()
+              }
+              return updatedActivePins
+            } else {
+              // Pin is active, deactivate it
+              const updatedHorizontalPins = [...activeHorizontalPins]
+              updatedHorizontalPins.splice(pinIndex, 1)
+              return updatedHorizontalPins
+            }
+          })()
+
+          setActiveHorizontalPins(newActivePins)
+
+          const hasLeft = newActivePins.includes('left')
+          const hasWidth = newActivePins.includes('width')
+          const hasRight = newActivePins.includes('right')
+          const isEmpty = newActivePins.length === 0
+
+          if (isEmpty) return 'scale-horizontal'
+          if (hasLeft && hasRight) return 'left-and-right'
+          if (hasLeft && hasWidth) return 'left-and-width'
+          if (hasRight && hasWidth) return 'right-and-width'
+          if (hasLeft) return 'left'
+          if (hasRight) return 'right'
+          if (hasWidth) return 'width'
+          return 'no-op'
+        } else {
+          const newActivePins = (() => {
+            const pinIndex = activeVerticalPins.indexOf(frameProp)
+            if (pinIndex === -1) {
+              const updatedActivePins = [...activeVerticalPins, frameProp]
+
+              // If more than two of 'top', 'height', 'bottom' are active, discard the oldest one
+              if (updatedActivePins.length === 3) {
+                updatedActivePins.shift()
+              }
+              return updatedActivePins
+            } else {
+              // Pin is active, deactivate it
+              const updatedVerticalPins = [...activeVerticalPins]
+              updatedVerticalPins.splice(pinIndex, 1)
+              return updatedVerticalPins
+            }
+          })()
+
+          setActiveVerticalPins(newActivePins)
+
+          const hasTop = newActivePins.includes('top')
+          const hasHeight = newActivePins.includes('height')
+          const hasBottom = newActivePins.includes('bottom')
+          const isEmpty = newActivePins.length === 0
+
+          if (isEmpty) return 'scale-vertical'
+          if (hasTop && hasBottom) return 'top-and-bottom'
+          if (hasTop && hasHeight) return 'top-and-height'
+          if (hasBottom && hasHeight) return 'bottom-and-height'
+          if (hasTop) return 'top'
+          if (hasBottom) return 'bottom'
+          if (hasHeight) return 'height'
+          return 'no-op'
+        }
+      },
+      [activeHorizontalPins, setActiveHorizontalPins, activeVerticalPins, setActiveVerticalPins],
+    )
+
     const onPinControlMouseDown = React.useCallback(
       (
         frameProp: LayoutPinnedPropIncludingCenter,
@@ -173,6 +312,10 @@ export const ChildPinControl = React.memo(
       ) => {
         const cmdPressed = event.metaKey
         const requestedPinChange: RequestedPins | 'no-op' = (() => {
+          if (isGroupChild === 'group-child') {
+            return requestedGroupPinChanges(frameProp)
+          }
+
           switch (frameProp) {
             case 'left': {
               if (cmdPressed && pins.horizontal === 'right-and-width') {
@@ -238,9 +381,17 @@ export const ChildPinControl = React.memo(
           // no-op, early return :)
           return
         }
+
         dispatch(
           isGroupChild === 'group-child'
-            ? [] // nothing for Group children yet!!
+            ? getConstraintAndFrameChangeActionsForGroupChild(
+                metadataRef.current,
+                allElementPropsRef.current,
+                elementPathTreesRef.current,
+                propertyTarget,
+                selectedViewsRef.current,
+                requestedPinChange,
+              )
             : getFrameChangeActionsForFrameChild(
                 metadataRef.current,
                 elementPathTreesRef.current,
@@ -259,6 +410,8 @@ export const ChildPinControl = React.memo(
         selectedViewsRef,
         pins.horizontal,
         pins.vertical,
+        allElementPropsRef,
+        requestedGroupPinChanges,
       ],
     )
 
@@ -267,6 +420,7 @@ export const ChildPinControl = React.memo(
         handlePinMouseDown={onPinControlMouseDown}
         pins={pins}
         framePinsInfo={framePinsInfo}
+        isGroupChild={isGroupChild}
       />
     )
   },

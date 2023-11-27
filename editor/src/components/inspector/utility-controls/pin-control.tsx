@@ -46,9 +46,18 @@ function getStrokeColor(
   framePoints: FramePinsInfo,
   mixed: boolean | undefined,
   point: FramePoint,
+  isGroupChild?: 'group-child' | 'frame-child',
 ) {
   const isPrimary = Utils.propOr(false, 'isPrimaryPosition', framePoints[point])
 
+  if (isGroupChild === 'group-child') {
+    // only set width/height is using main color
+    const isRelative = Utils.propOr(false, 'isRelativePosition', framePoints[point])
+
+    return (isPrimary && isRelative) || !isPrimary
+      ? controlStyles.secondaryColor
+      : controlStyles.mainColor
+  }
   if (isPrimary && !mixed) {
     return controlStyles.mainColor
   } else {
@@ -60,7 +69,13 @@ function getStrokeDashArray(
   framePoints: FramePinsInfo,
   mixed: boolean | undefined,
   point: FramePoint,
+  isGroupChild?: 'group-child' | 'frame-child',
 ) {
+  // unset width/height for group children are not using dashed style
+  if (isGroupChild === 'group-child') {
+    return '0'
+  }
+
   const isRelative = Utils.propOr(false, 'isRelativePosition', framePoints[point])
 
   if (isRelative && !mixed) {
@@ -245,6 +260,7 @@ interface PinWidthControlProps {
     frameProp: LayoutPinnedPropIncludingCenter,
     event: React.MouseEvent<Element, MouseEvent>,
   ) => void
+  isGroupChild: 'group-child' | 'frame-child'
 }
 
 export const PinWidthSVG = React.memo(() => {
@@ -325,7 +341,13 @@ export const PinWidthControl = React.memo((props: PinWidthControlProps) => {
       <svg width='20' height='20'>
         <g
           id='dimensioncontrols-pin-width'
-          stroke={getStrokeColor(controlStyles, props.framePins, props.mixed, FramePoint.Width)}
+          stroke={getStrokeColor(
+            controlStyles,
+            props.framePins,
+            props.mixed,
+            FramePoint.Width,
+            props.isGroupChild,
+          )}
         >
           <path
             d={`M${DimensionStart},${VerticalDimensionButtStart} l0,${DimensionButt}`}
@@ -340,7 +362,12 @@ export const PinWidthControl = React.memo((props: PinWidthControlProps) => {
           <path
             d={`M${DimensionStart},${DimensionVerticalMid} L${HorizontalDimensionEnd},${DimensionVerticalMid}`}
             id='dimensioncontrols-pin-width-line'
-            strokeDasharray={getStrokeDashArray(props.framePins, props.mixed, FramePoint.Width)}
+            strokeDasharray={getStrokeDashArray(
+              props.framePins,
+              props.mixed,
+              FramePoint.Width,
+              props.isGroupChild,
+            )}
             strokeLinecap='round'
           />
           <path
@@ -364,6 +391,7 @@ interface PinHeightControlProps {
     frameProp: LayoutPinnedPropIncludingCenter,
     event: React.MouseEvent<Element, MouseEvent>,
   ) => void
+  isGroupChild: 'group-child' | 'frame-child'
 }
 
 export const PinHeightControl = React.memo((props: PinHeightControlProps) => {
@@ -382,7 +410,13 @@ export const PinHeightControl = React.memo((props: PinHeightControlProps) => {
       <svg width='20' height='20'>
         <g
           id='dimensioncontrols-pin-height'
-          stroke={getStrokeColor(controlStyles, props.framePins, props.mixed, FramePoint.Height)}
+          stroke={getStrokeColor(
+            controlStyles,
+            props.framePins,
+            props.mixed,
+            FramePoint.Height,
+            props.isGroupChild,
+          )}
         >
           <path
             d={`M${HorizontalDimensionButtStart},${DimensionStart} l${DimensionButt},0`}
@@ -397,7 +431,12 @@ export const PinHeightControl = React.memo((props: PinHeightControlProps) => {
           <path
             d={`M${DimensionHorizontalMid},${DimensionStart} L${DimensionHorizontalMid},${VerticalDimensionEnd}`}
             id='dimensioncontrols-pin-height-line'
-            strokeDasharray={getStrokeDashArray(props.framePins, props.mixed, FramePoint.Height)}
+            strokeDasharray={getStrokeDashArray(
+              props.framePins,
+              props.mixed,
+              FramePoint.Height,
+              props.isGroupChild,
+            )}
             strokeLinecap='round'
           />
           <path
