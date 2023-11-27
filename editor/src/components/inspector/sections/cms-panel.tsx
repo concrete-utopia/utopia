@@ -107,6 +107,7 @@ export const JurassicCMSPanel = React.memo(() => {
   )
 
   const addNewKey = React.useCallback(() => {
+    setConfigData((data) => (data == null ? null : [...data, { key: newKey, value: newValue }]))
     setOptimisticUpdateCache((cache) => ({
       ...cache,
       [newKey]: newValue,
