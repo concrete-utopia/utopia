@@ -142,4 +142,4 @@ export const PERFORMANCE_MARKS_ALLOWED =
 export const JURASSIC_CMS_URL =
   BARE_HOST === 'localhost:8000' || BARE_HOST === 'localhost:8001'
     ? '0.0.0.0:6789'
-    : 'not implemented yet'
+    : 'https://jurassic-cms-weathered-forest-3796.fly.dev'
