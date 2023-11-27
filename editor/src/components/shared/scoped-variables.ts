@@ -83,11 +83,22 @@ function getVariablesFromComponent(
   const jsxComponentVariables = variablesInScopeFromEditorState[elementPathString] ?? {}
   return {
     filePath: jsxComponent?.name ?? 'Component',
-    variables: Object.entries(jsxComponentVariables).map(([name, value]) => {
-      return {
-        name,
-        value,
-        type: getTypeByValue(value),
+    variables: Object.entries(jsxComponentVariables).flatMap(([name, value]) => {
+      const type = getTypeByValue(value)
+      if (type === 'object' && value != null) {
+        return Object.entries(value as Record<string, unknown>).map(([key, innerValue]) => {
+          return {
+            name: `${name}.${key}`,
+            value,
+            type: getTypeByValue(innerValue),
+          }
+        })
+      } else {
+        return {
+          name,
+          value,
+          type: getTypeByValue(value),
+        }
       }
     }),
   }
