@@ -95,7 +95,7 @@ function getVariablesFromComponent(
         return {
           name,
           value,
-          type: getTypeByValue(value),
+          type,
         }
       }
     }),
