@@ -156,7 +156,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+            boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
           }}
         >
           <AvatarPicture url={avatar} initials={initials} />
