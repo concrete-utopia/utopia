@@ -410,7 +410,13 @@ export const PinHeightControl = React.memo((props: PinHeightControlProps) => {
       <svg width='20' height='20'>
         <g
           id='dimensioncontrols-pin-height'
-          stroke={getStrokeColor(controlStyles, props.framePins, props.mixed, FramePoint.Height)}
+          stroke={getStrokeColor(
+            controlStyles,
+            props.framePins,
+            props.mixed,
+            FramePoint.Height,
+            props.isGroupChild,
+          )}
         >
           <path
             d={`M${HorizontalDimensionButtStart},${DimensionStart} l${DimensionButt},0`}
@@ -425,7 +431,12 @@ export const PinHeightControl = React.memo((props: PinHeightControlProps) => {
           <path
             d={`M${DimensionHorizontalMid},${DimensionStart} L${DimensionHorizontalMid},${VerticalDimensionEnd}`}
             id='dimensioncontrols-pin-height-line'
-            strokeDasharray={getStrokeDashArray(props.framePins, props.mixed, FramePoint.Height)}
+            strokeDasharray={getStrokeDashArray(
+              props.framePins,
+              props.mixed,
+              FramePoint.Height,
+              props.isGroupChild,
+            )}
             strokeLinecap='round'
           />
           <path
