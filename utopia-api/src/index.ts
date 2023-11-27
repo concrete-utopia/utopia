@@ -10,3 +10,4 @@ export * from './primitives/storyboard'
 
 export * from './helpers/helper-functions'
 export * from './property-controls/factories'
+export * from './jurassic-cms'

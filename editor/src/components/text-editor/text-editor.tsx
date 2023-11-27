@@ -55,6 +55,7 @@ import { useSetAtom } from 'jotai'
 import { ShouldUpdateInPlaceAtom } from '../canvas/controls/text-edit-mode/update-in-place-control'
 import {
   CMSUpdateStateAtom,
+  JURASSIC_CMS_UPDATE_GLOBAL,
   setCMSUpdateStateForElementPath,
   unsetCMSUpdateStateForElementPath,
   updateJurassicCMS,
@@ -382,6 +383,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
 
   const callJurassicCMSUpdate = React.useCallback(
     async ({ project_id, key, updated }: { project_id: string; key: string; updated: string }) => {
+      JURASSIC_CMS_UPDATE_GLOBAL[key]?.(updated)
       setCMSUpdateState(
         setCMSUpdateStateForElementPath(props.elementPath, { type: 'updating', value: updated }),
       )
@@ -396,12 +398,11 @@ const TextEditor = React.memo((props: TextEditorProps) => {
           }),
         )
       }
-      dispatch([resetCanvas()])
       setTimeout(() => {
         setCMSUpdateState(unsetCMSUpdateStateForElementPath(props.elementPath))
       }, 1000)
     },
-    [dispatch, props.elementPath, setCMSUpdateState],
+    [props.elementPath, setCMSUpdateState],
   )
 
   React.useEffect(() => {

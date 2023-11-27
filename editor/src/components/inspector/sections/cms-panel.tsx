@@ -5,7 +5,7 @@ import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { PropertyLabel } from '../widgets/property-label'
 import { NO_OP } from '../../../core/shared/utils'
-import { updateJurassicCMS } from '../../editor/jurassic-cms'
+import { JURASSIC_CMS_UPDATE_GLOBAL, updateJurassicCMS } from '../../editor/jurassic-cms'
 import invariant from '../../../third-party/remix/invariant'
 
 type ConfigData = Array<{ key: string; value: string }>
@@ -66,15 +66,19 @@ export const JurassicCMSPanel = React.memo(() => {
     void fetchConfig()
   }, [fetchConfig])
 
-  // todo: debounce
+  // TODO: debounce
   const updateConfig = React.useCallback(
     (key: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      const updated = e.target.value
       setOptimisticUpdateCache((cache) => ({
         ...cache,
-        [key]: e.target.value,
+        [key]: updated,
       }))
 
-      void updateJurassicCMS({ key: key, updated: e.target.value, project_id: projectId }).catch(
+      // TODO: save original key
+      JURASSIC_CMS_UPDATE_GLOBAL[key]?.(updated)
+
+      void updateJurassicCMS({ key: key, updated: updated, project_id: projectId }).catch(
         (error) => {
           console.error(error)
           setOptimisticUpdateCache((cache) => {
