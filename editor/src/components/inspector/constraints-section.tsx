@@ -420,7 +420,7 @@ export const ChildPinControl = React.memo(
         handlePinMouseDown={onPinControlMouseDown}
         pins={pins}
         framePinsInfo={framePinsInfo}
-        exclude={{ center: isGroupChild === 'group-child' }}
+        isGroupChild={isGroupChild}
       />
     )
   },

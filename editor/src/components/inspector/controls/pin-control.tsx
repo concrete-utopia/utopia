@@ -329,7 +329,7 @@ export interface CombinedPinControlProps {
     frameProp: LayoutPinnedPropIncludingCenter,
     event: React.MouseEvent<Element, MouseEvent>,
   ) => void
-  exclude?: ExcludePinControls
+  isGroupChild: 'group-child' | 'frame-child'
 }
 
 export const CombinedPinControl = React.memo((props: CombinedPinControlProps) => {
@@ -341,7 +341,7 @@ export const CombinedPinControl = React.memo((props: CombinedPinControlProps) =>
         controlStatus={'simple'}
         framePoints={props.framePinsInfo}
         regularBorder={false}
-        exclude={props.exclude}
+        exclude={{ center: props.isGroupChild === 'group-child' }}
       />
       <FlexCol
         css={{
@@ -354,6 +354,7 @@ export const CombinedPinControl = React.memo((props: CombinedPinControlProps) =>
             controlStatus={'simple'}
             framePins={props.framePinsInfo}
             handlePinMouseDown={props.handlePinMouseDown}
+            isGroupChild={props.isGroupChild}
           />
         </FlexRow>
         <FlexRow css={{ flexGrow: 1, alignItems: 'center' }}>
@@ -361,6 +362,7 @@ export const CombinedPinControl = React.memo((props: CombinedPinControlProps) =>
             controlStatus={'simple'}
             framePins={props.framePinsInfo}
             handlePinMouseDown={props.handlePinMouseDown}
+            isGroupChild={props.isGroupChild}
           />
         </FlexRow>
       </FlexCol>
