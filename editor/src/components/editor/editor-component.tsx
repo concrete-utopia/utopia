@@ -20,6 +20,7 @@ import {
   TabComponent,
   useColorTheme,
   UtopiaTheme,
+  UtopiaStyles,
 } from '../../uuiui'
 import CanvasActions from '../canvas/canvas-actions'
 import {
@@ -650,7 +651,7 @@ const LockedOverlay = React.memo(() => {
             border: `1px solid ${colorTheme.neutralBorder.value}`,
             padding: 30,
             borderRadius: 2,
-            boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+            boxShadow: UtopiaStyles.shadowStyles.high.boxShadow,
           }}
         >
           {dialogContent}

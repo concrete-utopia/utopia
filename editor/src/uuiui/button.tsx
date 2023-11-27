@@ -105,7 +105,7 @@ export const FormButton = styled.button<ButtonProps>((props: ButtonProps) => ({
     ? props.danger
       ? colorTheme.errorForeground.value
       : colorTheme.primary.value
-    : colorTheme.emphasizedBackgroundPop.value,
+    : colorTheme.bg1.value,
 
   color: props.primary ? 'white' : props.danger ? colorTheme.errorForeground.value : 'inherit',
 
@@ -114,7 +114,7 @@ export const FormButton = styled.button<ButtonProps>((props: ButtonProps) => ({
       ? colorTheme.errorForeground.value
       : props.primary
       ? colorTheme.denimBlue.value
-      : colorTheme.neutralBorder.value
+      : colorTheme.bg3.value
   }`,
   transition: 'all .10s ease-in-out',
   // regular background in hover state
@@ -123,7 +123,7 @@ export const FormButton = styled.button<ButtonProps>((props: ButtonProps) => ({
       ? props.danger
         ? colorTheme.errorForeground.value
         : colorTheme.denimBlue.value
-      : colorTheme.emphasizedBackground.value,
+      : colorTheme.bg1.value,
   },
   '&:focus': {
     outline: 'none',
@@ -143,6 +143,6 @@ export const FormButton = styled.button<ButtonProps>((props: ButtonProps) => ({
       ? props.danger
         ? colorTheme.errorForegroundEmphasized.value
         : colorTheme.primary.value
-      : colorTheme.emphasizedBackgroundReduced.value,
+      : colorTheme.bg2.value,
   },
 }))

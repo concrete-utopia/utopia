@@ -1,8 +1,9 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
+import type { ThreadData } from '@liveblocks/client'
+import { useAtom } from 'jotai'
 import React from 'react'
-import { EditorModes } from '../../editor/editor-modes'
 import type { ThreadMetadata } from '../../../../liveblocks.config'
 import {
   useEditThreadMetadata,
@@ -10,21 +11,23 @@ import {
   useStorage,
   useThreads,
 } from '../../../../liveblocks.config'
-import { useDispatch } from '../../editor/store/dispatch-context'
-import { switchEditorMode } from '../../editor/actions/action-creators'
+import { useIsOnAnotherRemixRoute } from '../../../core/commenting/comment-hooks'
 import type { CanvasPoint, CanvasVector, WindowPoint } from '../../../core/shared/math-utils'
 import { canvasPoint, distance, offsetPoint, windowPoint } from '../../../core/shared/math-utils'
-import { UtopiaTheme } from '../../../uuiui'
-import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import {
   multiplayerColorFromIndex,
   multiplayerInitialsFromName,
   normalizeMultiplayerName,
 } from '../../../core/shared/multiplayer'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
+import { UtopiaStyles } from '../../../uuiui'
+import { switchEditorMode } from '../../editor/actions/action-creators'
+import { EditorModes } from '../../editor/editor-modes'
+import { useDispatch } from '../../editor/store/dispatch-context'
+import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { AvatarPicture } from '../../user-bar'
-import type { ThreadData } from '@liveblocks/client'
 import { canvasPointToWindowPoint, windowToCanvasCoordinates } from '../dom-lookup'
+import { RemixNavigationAtom } from '../remix/utopia-remix-root-component'
 
 const IndicatorSize = 20
 
@@ -80,11 +83,27 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
     'CommentIndicator canvasOffset',
   )
 
+  const [remixNavigationState] = useAtom(RemixNavigationAtom)
+
   const point = canvasPoint(thread.metadata)
 
+  const remixLocationRoute = thread.metadata.remixLocationRoute ?? null
+
+  const isOnAnotherRoute = useIsOnAnotherRemixRoute(remixLocationRoute)
+
   const onClick = React.useCallback(() => {
+    if (isOnAnotherRoute && remixLocationRoute != null) {
+      // TODO: after we have scene identifier in the comment metadata we should only navigate the scene with the comment
+      Object.keys(remixNavigationState).forEach((scene) => {
+        const remixState = remixNavigationState[scene]
+        if (remixState == null) {
+          return
+        }
+        remixState.navigate(remixLocationRoute)
+      })
+    }
     dispatch([switchEditorMode(EditorModes.commentMode(point, 'not-dragging'))])
-  }, [dispatch, point])
+  }, [dispatch, point, remixNavigationState, remixLocationRoute, isOnAnotherRoute])
 
   const { initials, color, avatar } = (() => {
     const firstComment = thread.comments[0]
@@ -101,13 +120,6 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
       avatar: author.avatar,
     }
   })()
-
-  const remixLocationRoute = thread.metadata.remixLocationRoute ?? null
-
-  const isOnAnotherRoute =
-    me.presence.remix?.locationRoute != null &&
-    remixLocationRoute != null &&
-    remixLocationRoute !== me.presence.remix.locationRoute
 
   const { onMouseDown, dragPosition } = useDragging(thread)
   const position = React.useMemo(
@@ -156,7 +168,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+            boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
           }}
         >
           <AvatarPicture url={avatar} initials={initials} />

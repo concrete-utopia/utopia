@@ -1,18 +1,18 @@
 import type { CommentData } from '@liveblocks/client'
 import type { ComposerSubmitComment } from '@liveblocks/react-comments'
 import { Comment, Composer } from '@liveblocks/react-comments'
+import { stopPropagation } from '../../inspector/common/inspector-utils'
+import { UtopiaStyles, UtopiaTheme } from '../../../uuiui'
 import React from 'react'
 import { useCreateThread } from '../../../../liveblocks.config'
 import '../../../../resources/editor/css/liveblocks-comments.css'
 import { useCanvasCommentThread } from '../../../core/commenting/comment-hooks'
 import { useRemixPresence } from '../../../core/shared/multiplayer-hooks'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
-import { UtopiaTheme } from '../../../uuiui'
 import { switchEditorMode } from '../../editor/actions/action-creators'
 import { EditorModes, isCommentMode } from '../../editor/editor-modes'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
-import { stopPropagation } from '../../inspector/common/inspector-utils'
 import { canvasPointToWindowPoint } from '../dom-lookup'
 
 export const CommentPopup = React.memo(() => {
@@ -48,7 +48,7 @@ export const CommentPopup = React.memo(() => {
         left: point.x + 30,
         cursor: 'text',
         minWidth: 250,
-        boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+        boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
         zoom: 1 / canvasScale,
       }}
       onKeyDown={stopPropagation}

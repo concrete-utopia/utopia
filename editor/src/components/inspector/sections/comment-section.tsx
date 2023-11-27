@@ -11,6 +11,9 @@ import { canvasPoint, canvasRectangle } from '../../../core/shared/math-utils'
 import { scrollToPosition, switchEditorMode } from '../../editor/actions/action-creators'
 import { EditorModes } from '../../editor/editor-modes'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
+import { useAtom } from 'jotai'
+import { RemixNavigationAtom } from '../../canvas/remix/utopia-remix-root-component'
+import { useIsOnAnotherRemixRoute } from '../../../core/commenting/comment-hooks'
 
 export const CommentSection = React.memo(() => {
   return (
@@ -53,14 +56,31 @@ interface ThreadPreviewProps {
 
 const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
   const dispatch = useDispatch()
+  const [remixNavigationState] = useAtom(RemixNavigationAtom)
+
+  const { remixLocationRoute } = thread.metadata
+  const point = canvasPoint(thread.metadata)
+
+  const isOnAnotherRoute = useIsOnAnotherRemixRoute(remixLocationRoute ?? null)
+
   const onClick = React.useCallback(() => {
-    const point = canvasPoint(thread.metadata)
     const rect = canvasRectangle({ x: point.x, y: point.y, width: 25, height: 25 })
+
+    if (isOnAnotherRoute && remixLocationRoute != null) {
+      // TODO: after we have scene identifier in the comment metadata we should only navigate the scene with the comment
+      Object.keys(remixNavigationState).forEach((scene) => {
+        const remixState = remixNavigationState[scene]
+        if (remixState == null) {
+          return
+        }
+        remixState.navigate(remixLocationRoute)
+      })
+    }
     dispatch([
       switchEditorMode(EditorModes.commentMode(point, 'not-dragging')),
       scrollToPosition(rect, 'to-center'),
     ])
-  }, [dispatch, thread.metadata])
+  }, [dispatch, remixNavigationState, isOnAnotherRoute, remixLocationRoute, point])
 
   const comment = thread.comments[0]
   if (comment == null) {
