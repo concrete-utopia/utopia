@@ -3,7 +3,7 @@ import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import type { CanvasRectangle } from '../../../../core/shared/math-utils'
 import { canvasRectangle, nullIfInfinity } from '../../../../core/shared/math-utils'
-import { FlexRow, useColorTheme, UtopiaTheme } from '../../../../uuiui'
+import { FlexRow, useColorTheme, UtopiaStyles, UtopiaTheme } from '../../../../uuiui'
 import { useEditorState, Substores } from '../../../editor/store/store-hook'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 
@@ -109,7 +109,7 @@ export const FloatingTextEditControls = React.memo(() => {
               cursor: 'pointer',
               padding: 6 / scale,
               borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
-              boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+              boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
               backgroundColor:
                 shouldUpdateInPlace === 'update-in-place'
                   ? colorTheme.denimBlue.value
@@ -125,7 +125,7 @@ export const FloatingTextEditControls = React.memo(() => {
               cursor: 'pointer',
               padding: 6 / scale,
               borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
-              boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+              boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
               backgroundColor:
                 shouldUpdateInPlace === 'update-in-cms'
                   ? colorTheme.denimBlue.value
