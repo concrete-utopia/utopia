@@ -8,7 +8,6 @@ import {
   Dialog,
   FormButton,
   SquareButton,
-  Icn,
   Icons,
 } from '../../../uuiui'
 import { JURASSIC_CMS_URL } from '../../../common/env-vars'
@@ -118,6 +117,7 @@ export const JurassicCMSPanel = React.memo(() => {
         delete next[key]
         return next
       })
+      setConfigData((data) => (data == null ? null : data.filter((kv) => kv.key !== key)))
       void deleteJurassicCMSKey({ project_id: projectId, key: key }).catch((e) => {
         showError(e)
         setOptimisticUpdateCache((cache) => ({ ...cache, [key]: original }))
