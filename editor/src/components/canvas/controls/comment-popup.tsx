@@ -2,7 +2,7 @@ import type { CommentData } from '@liveblocks/client'
 import type { ComposerSubmitComment } from '@liveblocks/react-comments'
 import { Comment, Composer } from '@liveblocks/react-comments'
 import { stopPropagation } from '../../inspector/common/inspector-utils'
-import { UtopiaStyles, UtopiaTheme } from '../../../uuiui'
+import { UtopiaStyles } from '../../../uuiui'
 import React from 'react'
 import { useCreateThread } from '../../../../liveblocks.config'
 import '../../../../resources/editor/css/liveblocks-comments.css'
@@ -49,7 +49,6 @@ export const CommentPopup = React.memo(() => {
         cursor: 'text',
         minWidth: 250,
         boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
-        zoom: 1 / canvasScale,
       }}
       onKeyDown={stopPropagation}
       onKeyUp={stopPropagation}

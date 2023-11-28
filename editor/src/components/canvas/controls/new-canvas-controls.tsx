@@ -23,7 +23,6 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementContextMenu } from '../../element-context-menu'
 import type { Mode } from '../../editor/editor-modes'
 import {
-  isCommentMode,
   isLiveMode,
   isSelectMode,
   isSelectModeWithArea,
@@ -67,9 +66,6 @@ import {
 import { useSelectionArea } from './selection-area-hooks'
 import { RemixSceneLabelControl } from './select-mode/remix-scene-label'
 import { NO_OP } from '../../../core/shared/utils'
-import { CommentPopup } from './comment-popup'
-import { CommentIndicators } from './comment-indicator'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -551,8 +547,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
             {when(isSelectMode(editorMode), <AbsoluteChildrenOutline />)}
             <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />
             <ZeroSizedElementControls.control showAllPossibleElements={false} />
-            {when(isFeatureEnabled('Commenting'), <CommentIndicators />)}
-            {when(isCommentMode(editorMode) && editorMode.location != null, <CommentPopup />)}
             {when(
               isSelectOrInsertMode(editorMode) &&
                 !EP.multiplePathsAllWithTheSameUID(localSelectedViews),
