@@ -60,6 +60,7 @@ import {
   unsetCMSUpdateStateForElementPath,
   updateJurassicCMSKey,
 } from '../editor/jurassic-cms'
+import { useUpdateCMSCache } from '../inspector/sections/cms-panel'
 
 export const TextEditorSpanId = 'text-editor'
 
@@ -381,9 +382,12 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     React.useCallback((get) => get(ShouldUpdateInPlaceAtom), []),
   )
 
+  const updateJurassicCache = useUpdateCMSCache()
+
   const callJurassicCMSUpdate = React.useCallback(
     async ({ project_id, key, updated }: { project_id: string; key: string; updated: string }) => {
       JURASSIC_CMS_UPDATE_GLOBAL[key]?.(updated)
+      const originalValue = updateJurassicCache(key, updated)
       setCMSUpdateState(
         setCMSUpdateStateForElementPath(props.elementPath, { type: 'updating', value: updated }),
       )
@@ -391,6 +395,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
         await updateJurassicCMSKey({ project_id, key, updated })
         setCMSUpdateState(setCMSUpdateStateForElementPath(props.elementPath, { type: 'ok' }))
       } catch (e) {
+        updateJurassicCache(key, originalValue)
         setCMSUpdateState(
           setCMSUpdateStateForElementPath(props.elementPath, {
             type: 'error',
@@ -402,7 +407,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
         setCMSUpdateState(unsetCMSUpdateStateForElementPath(props.elementPath))
       }, 1000)
     },
-    [props.elementPath, setCMSUpdateState],
+    [props.elementPath, setCMSUpdateState, updateJurassicCache],
   )
 
   React.useEffect(() => {

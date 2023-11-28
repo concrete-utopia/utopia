@@ -24,8 +24,25 @@ import invariant from '../../../third-party/remix/invariant'
 import type { EditorDispatch } from '../../editor/action-types'
 import { hideModal, showModal } from '../../editor/actions/action-creators'
 import { useDispatch } from '../../editor/store/dispatch-context'
+import { atom, useAtom, useSetAtom } from 'jotai'
+import { useAtomCallback } from 'jotai/utils'
 
 type ConfigData = Array<{ key: string; value: string }>
+
+const CMSPanelOptimisticUpdateCache = atom<Record<string, string>>({})
+export function useUpdateCMSCache() {
+  const cacheRef = useAtomCallback(
+    React.useCallback((get) => get(CMSPanelOptimisticUpdateCache), []),
+  )
+  const setOptimisticUpdateCache = useSetAtom(CMSPanelOptimisticUpdateCache)
+  return React.useCallback(
+    (key: string, value: string) => {
+      setOptimisticUpdateCache((c) => ({ ...c, [key]: value }))
+      return cacheRef()[key]
+    },
+    [cacheRef, setOptimisticUpdateCache],
+  )
+}
 
 export const JurassicCMSPanel = React.memo(() => {
   const projectId = useEditorState(
@@ -39,9 +56,7 @@ export const JurassicCMSPanel = React.memo(() => {
   const dispatch = useDispatch()
 
   const [configData, setConfigData] = React.useState<ConfigData | null>(null)
-  const [optimisticUpdateCache, setOptimisticUpdateCache] = React.useState<Record<string, string>>(
-    {},
-  )
+  const [optimisticUpdateCache, setOptimisticUpdateCache] = useAtom(CMSPanelOptimisticUpdateCache)
 
   const mergedData: ConfigData | null = React.useMemo(() => {
     const keysToValues: Record<string, string> = {}
@@ -107,7 +122,7 @@ export const JurassicCMSPanel = React.memo(() => {
         },
       )
     },
-    [projectId],
+    [projectId, setOptimisticUpdateCache],
   )
 
   const deleteKey = React.useCallback(
@@ -123,7 +138,7 @@ export const JurassicCMSPanel = React.memo(() => {
         setOptimisticUpdateCache((cache) => ({ ...cache, [key]: original }))
       })
     },
-    [projectId],
+    [projectId, setOptimisticUpdateCache],
   )
 
   const showConfirmDeleteModal = React.useCallback(
@@ -142,7 +157,7 @@ export const JurassicCMSPanel = React.memo(() => {
     setOptimisticUpdateCache({})
     setConfigData(null)
     void fetchConfig()
-  }, [fetchConfig])
+  }, [fetchConfig, setOptimisticUpdateCache])
 
   const [newKey, setNewKey] = React.useState<string>('')
   const [newValue, setNewValue] = React.useState<string>('')
@@ -175,7 +190,7 @@ export const JurassicCMSPanel = React.memo(() => {
       setNewKey('')
       setNewValue('')
     })
-  }, [newKey, newValue, projectId])
+  }, [newKey, newValue, projectId, setOptimisticUpdateCache])
 
   return (
     <FlexColumn
