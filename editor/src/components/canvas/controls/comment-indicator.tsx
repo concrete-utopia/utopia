@@ -1,8 +1,9 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
+import type { ThreadData } from '@liveblocks/client'
+import { useAtom } from 'jotai'
 import React from 'react'
-import { EditorModes } from '../../editor/editor-modes'
 import type { ThreadMetadata } from '../../../../liveblocks.config'
 import {
   useEditThreadMetadata,
@@ -10,24 +11,23 @@ import {
   useStorage,
   useThreads,
 } from '../../../../liveblocks.config'
-import { useDispatch } from '../../editor/store/dispatch-context'
-import { switchEditorMode } from '../../editor/actions/action-creators'
-import { UtopiaStyles, UtopiaTheme } from '../../../uuiui'
+import { useIsOnAnotherRemixRoute } from '../../../core/commenting/comment-hooks'
 import type { CanvasPoint, CanvasVector, WindowPoint } from '../../../core/shared/math-utils'
-import { canvasPoint, offsetPoint, windowPoint } from '../../../core/shared/math-utils'
-import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import { canvasPoint, distance, offsetPoint, windowPoint } from '../../../core/shared/math-utils'
 import {
   multiplayerColorFromIndex,
   multiplayerInitialsFromName,
   normalizeMultiplayerName,
 } from '../../../core/shared/multiplayer'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
+import { UtopiaStyles } from '../../../uuiui'
+import { switchEditorMode } from '../../editor/actions/action-creators'
+import { EditorModes } from '../../editor/editor-modes'
+import { useDispatch } from '../../editor/store/dispatch-context'
+import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { AvatarPicture } from '../../user-bar'
-import type { ThreadData } from '@liveblocks/client'
 import { canvasPointToWindowPoint, windowToCanvasCoordinates } from '../dom-lookup'
-import { useAtom } from 'jotai'
 import { RemixNavigationAtom } from '../remix/utopia-remix-root-component'
-import { useIsOnAnotherRemixRoute } from '../../../core/commenting/comment-hooks'
 
 const IndicatorSize = 20
 
@@ -179,6 +179,8 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
 })
 CommentIndicator.displayName = 'CommentIndicator'
 
+const COMMENT_DRAG_THRESHOLD = 5 // square px
+
 function useDragging(thread: ThreadData<ThreadMetadata>) {
   const editThreadMetadata = useEditThreadMetadata()
   const dispatch = useDispatch()
@@ -187,50 +189,58 @@ function useDragging(thread: ThreadData<ThreadMetadata>) {
   const canvasScaleRef = useRefEditorState((store) => store.editor.canvas.scale)
   const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.realCanvasOffset)
 
-  const onMouseMove = React.useCallback(
-    (event: MouseEvent) => {
-      event.stopPropagation()
-      const newCanvasPoint = mousePositionToIndicatorPosition(
-        canvasScaleRef.current,
-        canvasOffsetRef.current,
-        windowPoint({ x: event.clientX, y: event.clientY }),
-      )
-      setDragPosition(newCanvasPoint)
-    },
-    [canvasOffsetRef, canvasScaleRef],
-  )
-
-  const onMouseUp = React.useCallback(
-    (event: MouseEvent) => {
-      event.stopPropagation()
-      const newCanvasPosition = mousePositionToIndicatorPosition(
-        canvasScaleRef.current,
-        canvasOffsetRef.current,
-        windowPoint({ x: event.clientX, y: event.clientY }),
-      )
-      setDragPosition(null)
-
-      editThreadMetadata({
-        threadId: thread.id,
-        metadata: {
-          x: newCanvasPosition.x,
-          y: newCanvasPosition.y,
-        },
-      })
-      window.removeEventListener('mousemove', onMouseMove)
-      window.removeEventListener('mouseup', onMouseUp)
-    },
-    [onMouseMove, canvasOffsetRef, canvasScaleRef, editThreadMetadata, thread.id],
-  )
-
   const onMouseDown = React.useCallback(
     (event: React.MouseEvent) => {
+      const mouseDownPoint = windowPoint({ x: event.clientX, y: event.clientY })
+
+      let draggedPastThreshold = false
+      function onMouseMove(moveEvent: MouseEvent) {
+        moveEvent.stopPropagation()
+        const mouseMovePoint = windowPoint({ x: moveEvent.clientX, y: moveEvent.clientY })
+
+        draggedPastThreshold ||= distance(mouseDownPoint, mouseMovePoint) > COMMENT_DRAG_THRESHOLD
+
+        if (draggedPastThreshold) {
+          const newCanvasPoint = mousePositionToIndicatorPosition(
+            canvasScaleRef.current,
+            canvasOffsetRef.current,
+            mouseMovePoint,
+          )
+          setDragPosition(newCanvasPoint)
+        }
+      }
+
+      function onMouseUp(upEvent: MouseEvent) {
+        upEvent.stopPropagation()
+        window.removeEventListener('mousemove', onMouseMove)
+        window.removeEventListener('mouseup', onMouseUp)
+
+        const mouseUpPoint = windowPoint({ x: upEvent.clientX, y: upEvent.clientY })
+
+        if (draggedPastThreshold) {
+          const newCanvasPosition = mousePositionToIndicatorPosition(
+            canvasScaleRef.current,
+            canvasOffsetRef.current,
+            mouseUpPoint,
+          )
+          setDragPosition(null)
+
+          editThreadMetadata({
+            threadId: thread.id,
+            metadata: {
+              x: newCanvasPosition.x,
+              y: newCanvasPosition.y,
+            },
+          })
+        }
+      }
+
       event.stopPropagation()
       dispatch([switchEditorMode(EditorModes.commentMode(null, 'dragging'))])
       window.addEventListener('mousemove', onMouseMove)
       window.addEventListener('mouseup', onMouseUp)
     },
-    [onMouseMove, onMouseUp, dispatch],
+    [dispatch, canvasOffsetRef, canvasScaleRef, editThreadMetadata, thread.id],
   )
 
   return { onMouseDown, dragPosition }
