@@ -85,19 +85,21 @@ function getVariablesFromComponent(
     filePath: jsxComponent?.name ?? 'Component',
     variables: Object.entries(jsxComponentVariables).flatMap(([name, value]) => {
       const type = getTypeByValue(value)
+      const variable = {
+        name,
+        value,
+        type,
+      }
       if (type === 'object' && value != null) {
         // iterate only first-level keys of object
         return Object.entries(value).map(([key, innerValue]) => ({
           name: `${name}.${key}`,
           value: innerValue,
           type: getTypeByValue(innerValue),
+          parent: variable,
         }))
       } else {
-        return {
-          name,
-          value,
-          type,
-        }
+        return variable
       }
     }),
   }
@@ -128,11 +130,12 @@ function getMatchingElementForVariable(variable: Variable): ComponentElementToIn
 }
 
 function getMatchingElementForVariableInner(variable: Variable): InsertableComponentAndJSX {
+  const originalVariableName = variable.parent != null ? variable.parent.name : variable.name
   switch (variable.type) {
     case 'string':
-      return simpleInsertableComponentAndJsx('span', variable.name)
+      return simpleInsertableComponentAndJsx('span', variable.name, originalVariableName)
     case 'number':
-      return simpleInsertableComponentAndJsx('span', variable.name)
+      return simpleInsertableComponentAndJsx('span', variable.name, originalVariableName)
     case 'boolean':
       return insertableComponentAndJSX(
         jsxConditionalExpressionWithoutUID(
@@ -148,7 +151,7 @@ function getMatchingElementForVariableInner(variable: Variable): InsertableCompo
       return simpleInsertableComponentAndJsx(
         'span',
         `JSON.stringify(${variable.name})`,
-        variable.name,
+        originalVariableName,
       )
     case 'array':
       return arrayInsertableComponentAndJsx(variable)
@@ -167,7 +170,7 @@ function getMatchingElementForVariableInner(variable: Variable): InsertableCompo
       return simpleInsertableComponentAndJsx(
         'span',
         `JSON.stringify(${variable.name})`,
-        variable.name,
+        originalVariableName,
       )
   }
 }
@@ -252,4 +255,5 @@ interface Variable {
   name: string
   type: InsertableType
   value?: unknown
+  parent?: Variable
 }
