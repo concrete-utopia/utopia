@@ -83,11 +83,23 @@ function getVariablesFromComponent(
   const jsxComponentVariables = variablesInScopeFromEditorState[elementPathString] ?? {}
   return {
     filePath: jsxComponent?.name ?? 'Component',
-    variables: Object.entries(jsxComponentVariables).map(([name, value]) => {
-      return {
+    variables: Object.entries(jsxComponentVariables).flatMap(([name, value]) => {
+      const type = getTypeByValue(value)
+      const variable = {
         name,
         value,
-        type: getTypeByValue(value),
+        type,
+      }
+      if (type === 'object' && value != null) {
+        // iterate only first-level keys of object
+        return Object.entries(value).map(([key, innerValue]) => ({
+          name: `${name}.${key}`,
+          value: innerValue,
+          type: getTypeByValue(innerValue),
+          parent: variable,
+        }))
+      } else {
+        return variable
       }
     }),
   }
@@ -106,6 +118,7 @@ export function convertVariablesToElements(
           variable.name,
           [],
           null,
+          { variableType: variable.type },
         )
       }),
     }
@@ -117,15 +130,16 @@ function getMatchingElementForVariable(variable: Variable): ComponentElementToIn
 }
 
 function getMatchingElementForVariableInner(variable: Variable): InsertableComponentAndJSX {
+  const originalVariableName = variable.parent != null ? variable.parent.name : variable.name
   switch (variable.type) {
     case 'string':
-      return simpleInsertableComponentAndJsx('span', variable.name)
+      return simpleInsertableComponentAndJsx('span', variable.name, originalVariableName)
     case 'number':
-      return simpleInsertableComponentAndJsx('span', variable.name)
+      return simpleInsertableComponentAndJsx('span', variable.name, originalVariableName)
     case 'boolean':
       return insertableComponentAndJSX(
         jsxConditionalExpressionWithoutUID(
-          jsIdentifierName(variable.name),
+          jsExpressionOtherJavaScriptSimple(variable.name, [originalVariableName]),
           variable.name,
           jsExpressionValue(null, emptyComments),
           jsExpressionValue(null, emptyComments),
@@ -137,7 +151,7 @@ function getMatchingElementForVariableInner(variable: Variable): InsertableCompo
       return simpleInsertableComponentAndJsx(
         'span',
         `JSON.stringify(${variable.name})`,
-        variable.name,
+        originalVariableName,
       )
     case 'array':
       return arrayInsertableComponentAndJsx(variable)
@@ -146,7 +160,7 @@ function getMatchingElementForVariableInner(variable: Variable): InsertableCompo
         jsxElementWithoutUID(
           'img',
           jsxAttributesFromMap({
-            src: jsIdentifierName(variable.name),
+            src: jsExpressionOtherJavaScriptSimple(variable.name, [originalVariableName]),
           }),
           [],
         ),
@@ -156,7 +170,7 @@ function getMatchingElementForVariableInner(variable: Variable): InsertableCompo
       return simpleInsertableComponentAndJsx(
         'span',
         `JSON.stringify(${variable.name})`,
-        variable.name,
+        originalVariableName,
       )
   }
 }
@@ -180,10 +194,6 @@ function arrayInsertableComponentAndJsx(variable: Variable): InsertableComponent
   const arrayElementString = `${variable.name}.map((item) => (${innerElementString}))`
   const arrayElement = jsxFragmentWithoutUID([jsxTextBlock(`{${arrayElementString}}`)], true)
   return insertableComponentAndJSX(arrayElement, arrayElementString)
-}
-
-function jsIdentifierName(name: string): JSExpressionOtherJavaScript {
-  return jsExpressionOtherJavaScriptSimple(name, [name])
 }
 
 function getArrayType(arrayVariable: Variable): InsertableType {
@@ -220,7 +230,7 @@ interface InsertableComponentAndJSX {
   jsx: string
 }
 
-type AllVariablesInScope = {
+export type AllVariablesInScope = {
   filePath: string
   variables: Variable[]
 }
@@ -241,4 +251,5 @@ interface Variable {
   name: string
   type: InsertableType
   value?: unknown
+  parent?: Variable
 }

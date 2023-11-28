@@ -549,7 +549,7 @@ describe('canvas toolbar', () => {
 
     FOR_TESTS_setNextGeneratedUids(['reserved', 'sample-text'])
 
-    await insertViaAddElementPopup(editor, 'myObj')
+    await insertViaAddElementPopup(editor, 'myObj.test')
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       makeTestProjectCodeWithComponentInnards(`
@@ -567,7 +567,7 @@ describe('canvas toolbar', () => {
         data-uid='container'
       >
         <div data-uid='a3d' />
-        <span style={{ width: 100, height: 100, top: 0, left: 0, position: 'absolute' }} data-uid='sample-text'>{JSON.stringify(myObj)}</span>
+        <span style={{ width: 100, height: 100, top: 0, left: 0, position: 'absolute' }} data-uid='sample-text'>{myObj.test}</span>
         </div>
     )`),
     )
