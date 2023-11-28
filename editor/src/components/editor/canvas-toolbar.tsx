@@ -5,7 +5,7 @@ import type { CSSObject } from '@emotion/react'
 import { jsx } from '@emotion/react'
 import React, { useState } from 'react'
 import type { TooltipProps } from '../../uuiui'
-import { Tile } from '../../uuiui'
+import { Tile, UtopiaStyles } from '../../uuiui'
 import { UtopiaTheme } from '../../uuiui'
 import {
   colorTheme,
@@ -152,7 +152,7 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
               height: 'auto',
               backgroundColor: theme.bg1subdued.value,
               borderRadius: '0px 10px 10px 10px',
-              boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+              boxShadow: UtopiaStyles.shadowStyles.low.boxShadow,
               pointerEvents: 'initial',
             }
           },
@@ -389,7 +389,7 @@ export const CanvasToolbar = React.memo(() => {
           overflow: 'hidden',
           backgroundColor: colorTheme.bg1subdued.value,
           borderRadius: '0px 10px 10px 10px',
-          boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+          boxShadow: UtopiaStyles.shadowStyles.low.boxShadow,
           pointerEvents: 'initial',
           zIndex: -1, // it sits below the main menu row, but we want the main menu's shadow to cast over this one
         }}
@@ -427,7 +427,7 @@ export const CanvasToolbar = React.memo(() => {
           backgroundColor: theme.inspectorBackground.value,
           borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
           overflow: 'hidden',
-          boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+          boxShadow: UtopiaStyles.shadowStyles.low.boxShadow,
           pointerEvents: 'initial',
           display: 'flex',
           flexDirection: 'row',

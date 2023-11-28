@@ -3,7 +3,8 @@ import React from 'react'
 import { Isolator } from './isolator'
 import { FlexColumn } from './widgets/layout/flex-column'
 import { FlexRow } from './widgets/layout/flex-row'
-import { useColorTheme } from './styles/theme'
+import { UtopiaStyles, UtopiaTheme, useColorTheme } from './styles/theme'
+import { color } from './styles/utopitrons'
 
 interface DialogProps {
   title: string
@@ -28,10 +29,11 @@ export const Dialog = (props: DialogProps) => {
             width: '450px',
             height: '220px',
             transform: 'translateY(-150px)',
-            backgroundColor: colorTheme.emphasizedBackground.value,
+            backgroundColor: colorTheme.bg1.value,
+            color: colorTheme.fg1.value,
             overflow: 'hidden',
-            borderRadius: '4px',
-            boxShadow: '0px 10px 30px 0px hsla(0,0%,30%,.5)',
+            borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
+            boxShadow: UtopiaStyles.shadowStyles.high.boxShadow,
           }}
         >
           <FlexColumn
@@ -53,7 +55,6 @@ export const Dialog = (props: DialogProps) => {
                 style={{
                   fontSize: '14px',
                   fontWeight: 600,
-                  color: colorTheme.emphasizedForeground.value,
                 }}
               >
                 {props.title}

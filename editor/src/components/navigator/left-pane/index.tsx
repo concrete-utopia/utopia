@@ -3,7 +3,7 @@
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import { FlexColumn, FlexRow, UtopiaTheme, colorTheme } from '../../../uuiui'
+import { FlexColumn, FlexRow, UtopiaStyles, UtopiaTheme, colorTheme } from '../../../uuiui'
 import { MenuTab } from '../../../uuiui/menu-tab'
 import type { EditorAction, EditorDispatch, LoginState } from '../../editor/action-types'
 import { setLeftMenuTab } from '../../editor/actions/action-creators'
@@ -70,7 +70,7 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
           overscrollBehavior: 'contain',
           backgroundColor: colorTheme.leftPaneBackground.value,
           borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
-          boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+          boxShadow: UtopiaStyles.shadowStyles.low.boxShadow,
           overflow: 'hidden',
           flex: 1,
         }}
