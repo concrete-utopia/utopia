@@ -97,12 +97,7 @@ export const FloatingTextEditControls = React.memo(() => {
           e.stopPropagation()
         }}
       >
-        <FlexRow
-          style={{
-            backgroundColor: colorTheme.bg0.value,
-            gap: 4,
-          }}
-        >
+        <FlexRow style={{ gap: 4 }}>
           <div
             onClick={setUpdateInPlace}
             style={{
@@ -117,7 +112,7 @@ export const FloatingTextEditControls = React.memo(() => {
               color: colorTheme.fg0.value,
             }}
           >
-            Overwrite
+            Overwrite in code
           </div>
           <div
             onClick={setUpdateInCMS}
@@ -133,7 +128,7 @@ export const FloatingTextEditControls = React.memo(() => {
               color: colorTheme.fg0.value,
             }}
           >
-            Update
+            Update in CMS
           </div>
         </FlexRow>
       </div>
