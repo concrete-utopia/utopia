@@ -25,21 +25,20 @@ export const JurassicCMSPanel = React.memo(() => {
   )
 
   const mergedData: ConfigData | null = React.useMemo(() => {
-    if (configData == null) {
-      return null
-    }
     const keysToValues: Record<string, string> = {}
-    const keysInOrder: string[] = []
-    for (const { key, value } of configData) {
-      keysToValues[key] = value
-      keysInOrder.push(key)
+    if (configData != null) {
+      for (const { key, value } of configData) {
+        keysToValues[key] = value
+      }
     }
 
     for (const [key, value] of Object.entries(optimisticUpdateCache)) {
       keysToValues[key] = value
     }
 
-    return keysInOrder.map((key) => ({ key: key, value: keysToValues[key] }))
+    return Object.entries(keysToValues)
+      .map(([key, value]) => ({ key: key, value: value }))
+      .sort((left, right) => left.key.localeCompare(right.key))
   }, [configData, optimisticUpdateCache])
 
   const fetchConfig = React.useCallback(async () => {
