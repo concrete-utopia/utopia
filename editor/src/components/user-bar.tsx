@@ -54,11 +54,16 @@ export const SinglePlayerUserBar = React.memo(() => {
     (store) => getUserPicture(store.userState.loginState),
     'SinglePlayerUserBar userPicture',
   )
-  // make this real
-  const isOwner = true
+
+  const isOwner = useEditorState(
+    Substores.projectServerState,
+    (store) => store.projectServerState.isMyProject,
+    'SettingsPane isMyProject',
+  )
+
   return (
     <a href='/projects' target='_blank'>
-      <Avatar userPicture={userPicture} isLoggedIn={true} isOwner={isOwner} />
+      <Avatar userPicture={userPicture} isLoggedIn={true} isOwner={isOwner === 'yes'} />
     </a>
   )
 })
@@ -72,8 +77,11 @@ const MultiplayerUserBar = React.memo(() => {
   const { user: myUser } = useMyUserAndPresence()
   const myName = React.useMemo(() => normalizeMultiplayerName(myUser.name), [myUser])
 
-  // make this real
-  const isOwner = true
+  const isOwner = useEditorState(
+    Substores.projectServerState,
+    (store) => store.projectServerState.isMyProject,
+    'SettingsPane isMyProject',
+  )
 
   const others = useOthers((list) =>
     normalizeOthersList(myUser.id, list).map((other) => {
@@ -172,7 +180,7 @@ const MultiplayerUserBar = React.memo(() => {
                 onClick={toggleFollowing(other.id)}
                 active={isFollowMode(mode) && mode.playerId === other.id}
                 follower={other.following === myUser.id}
-                isOwner={isOwner}
+                isOwner={isOwner === 'yes'}
               />
             )
           })}
@@ -186,7 +194,7 @@ const MultiplayerUserBar = React.memo(() => {
                 foreground: colorTheme.fg0.value,
               }}
               picture={null}
-              isOwner={isOwner}
+              isOwner={isOwner === 'yes'}
             />,
           )}
         </div>,
@@ -197,7 +205,7 @@ const MultiplayerUserBar = React.memo(() => {
           tooltip={`${myName} (you)`}
           color={{ background: colorTheme.bg3.value, foreground: colorTheme.fg1.value }}
           picture={myUser.avatar}
-          isOwner={isOwner}
+          isOwner={isOwner === 'yes'}
         />
       </a>
     </div>

@@ -8,7 +8,7 @@ interface AvatarProps {
   userPicture: string | null
   isLoggedIn: boolean
   size?: number
-  isOwner: boolean
+  isOwner?: boolean
 }
 
 export const Avatar = React.memo((props: AvatarProps) => {
