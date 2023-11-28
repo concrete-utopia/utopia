@@ -7,7 +7,7 @@ import React from 'react'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { IS_BROWSER_TEST_DEBUG } from '../../common/env-vars'
-import { projectURLForProject } from '../../core/shared/utils'
+import { assertNever, projectURLForProject } from '../../core/shared/utils'
 import Keyboard from '../../utils/keyboard'
 import { Modifier } from '../../utils/modifiers'
 import {
@@ -61,6 +61,7 @@ import type { Storage, Presence, RoomEvent, UserMeta } from '../../../liveblocks
 import LiveblocksProvider from '@liveblocks/yjs'
 import { isRoomId, projectIdToRoomId } from '../../core/shared/multiplayer'
 import { useDisplayOwnershipWarning } from './project-owner-hooks'
+import { ConfirmCMSKeyDeleteDialog } from '../inspector/sections/cms-panel'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -485,6 +486,16 @@ const ModalComponent = React.memo((): React.ReactElement<any> | null => {
           return <ConfirmDisconnectBranchDialog dispatch={dispatch} branchName={currentBranch} />
         }
         break
+      case 'confirm-cms-key-delete':
+        return (
+          <ConfirmCMSKeyDeleteDialog
+            dispatch={dispatch}
+            key={modal.key}
+            onDeleteClick={modal.onDeleteClick}
+          />
+        )
+      default:
+        assertNever(modal)
     }
   }
   return null

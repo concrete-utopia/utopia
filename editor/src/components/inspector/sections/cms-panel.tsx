@@ -1,12 +1,30 @@
 import React from 'react'
-import { FlexRow, H2, FlexColumn, StringInput, Button } from '../../../uuiui'
+import {
+  FlexRow,
+  H2,
+  FlexColumn,
+  StringInput,
+  Button,
+  Dialog,
+  FormButton,
+  SquareButton,
+  Icn,
+  Icons,
+} from '../../../uuiui'
 import { JURASSIC_CMS_URL } from '../../../common/env-vars'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { PropertyLabel } from '../widgets/property-label'
 import { NO_OP } from '../../../core/shared/utils'
-import { JURASSIC_CMS_UPDATE_GLOBAL, updateJurassicCMS } from '../../editor/jurassic-cms'
+import {
+  JURASSIC_CMS_UPDATE_GLOBAL,
+  deleteJurassicCMSKey,
+  updateJurassicCMSKey,
+} from '../../editor/jurassic-cms'
 import invariant from '../../../third-party/remix/invariant'
+import type { EditorDispatch } from '../../editor/action-types'
+import { hideModal, showModal } from '../../editor/actions/action-creators'
+import { useDispatch } from '../../editor/store/dispatch-context'
 
 type ConfigData = Array<{ key: string; value: string }>
 
@@ -18,6 +36,8 @@ export const JurassicCMSPanel = React.memo(() => {
   )
 
   invariant(projectId, 'Project id cannot be null')
+
+  const dispatch = useDispatch()
 
   const [configData, setConfigData] = React.useState<ConfigData | null>(null)
   const [optimisticUpdateCache, setOptimisticUpdateCache] = React.useState<Record<string, string>>(
@@ -77,9 +97,9 @@ export const JurassicCMSPanel = React.memo(() => {
       // TODO: save original key
       JURASSIC_CMS_UPDATE_GLOBAL[key]?.(updated)
 
-      void updateJurassicCMS({ key: key, updated: updated, project_id: projectId }).catch(
+      void updateJurassicCMSKey({ key: key, updated: updated, project_id: projectId }).catch(
         (error) => {
-          console.error(error)
+          showError(error)
           setOptimisticUpdateCache((cache) => {
             const next = { ...cache }
             delete next[key]
@@ -89,6 +109,33 @@ export const JurassicCMSPanel = React.memo(() => {
       )
     },
     [projectId],
+  )
+
+  const deleteKey = React.useCallback(
+    (key: string, original: string) => {
+      setOptimisticUpdateCache((cache) => {
+        const next = { ...cache }
+        delete next[key]
+        return next
+      })
+      void deleteJurassicCMSKey({ project_id: projectId, key: key }).catch((e) => {
+        showError(e)
+        setOptimisticUpdateCache((cache) => ({ ...cache, [key]: original }))
+      })
+    },
+    [projectId],
+  )
+
+  const showConfirmDeleteModal = React.useCallback(
+    (key: string, original: string) => () =>
+      dispatch([
+        showModal({
+          type: 'confirm-cms-key-delete',
+          key: key,
+          onDeleteClick: () => deleteKey(key, original),
+        }),
+      ]),
+    [deleteKey, dispatch],
   )
 
   const refresh = React.useCallback(() => {
@@ -110,13 +157,17 @@ export const JurassicCMSPanel = React.memo(() => {
   )
 
   const addNewKey = React.useCallback(() => {
+    if (newKey === '' || newValue === '') {
+      return
+    }
+
     setConfigData((data) => (data == null ? null : [...data, { key: newKey, value: newValue }]))
     setOptimisticUpdateCache((cache) => ({
       ...cache,
       [newKey]: newValue,
     }))
 
-    void updateJurassicCMS({
+    void updateJurassicCMSKey({
       key: newKey,
       updated: newValue,
       project_id: projectId,
@@ -143,13 +194,22 @@ export const JurassicCMSPanel = React.memo(() => {
           {mergedData.map(({ key, value }, idx) => (
             <FlexRow style={{ justifyContent: 'space-between' }} key={key}>
               <PropertyLabel target={[]}>{key}</PropertyLabel>
-              <StringInput
-                testId=''
-                value={value}
-                onKeyDown={NO_OP}
-                onChange={updateConfig(key)}
-                onBlur={NO_OP}
-              />
+              <FlexRow style={{ justifyContent: 'flex-end' }}>
+                <StringInput
+                  testId=''
+                  value={value}
+                  onKeyDown={NO_OP}
+                  onChange={updateConfig(key)}
+                  onBlur={NO_OP}
+                />
+                <SquareButton
+                  style={{ height: 18, width: 18 }}
+                  highlight
+                  onClick={showConfirmDeleteModal(key, value)}
+                >
+                  <Icons.CrossSmall />
+                </SquareButton>
+              </FlexRow>
             </FlexRow>
           ))}
         </FlexColumn>
@@ -170,6 +230,7 @@ export const JurassicCMSPanel = React.memo(() => {
           onKeyDown={NO_OP}
           onChange={updateNewKey}
           onBlur={NO_OP}
+          placeholder='Key'
         />
         <StringInput
           testId=''
@@ -177,6 +238,7 @@ export const JurassicCMSPanel = React.memo(() => {
           onKeyDown={NO_OP}
           onChange={updateNewValue}
           onBlur={NO_OP}
+          placeholder='Value'
         />
       </FlexRow>
       <Button
@@ -191,3 +253,67 @@ export const JurassicCMSPanel = React.memo(() => {
     </FlexColumn>
   )
 })
+
+interface ConfirmCMSKeyDeleteDialogProps {
+  dispatch: EditorDispatch
+  key: string
+  onDeleteClick: () => void
+}
+
+export const ConfirmCMSKeyDeleteDialog: React.FunctionComponent<
+  React.PropsWithChildren<ConfirmCMSKeyDeleteDialogProps>
+> = (props) => {
+  const hide = React.useCallback(() => {
+    props.dispatch([hideModal()], 'everyone')
+  }, [props])
+  return (
+    <Dialog
+      title='Delete key'
+      content={<DialogBody {...props} />}
+      defaultButton={<AcceptButton {...props} />}
+      secondaryButton={<CancelButton {...props} />}
+      closeCallback={hide}
+    />
+  )
+}
+
+const DialogBody: React.FunctionComponent<
+  React.PropsWithChildren<ConfirmCMSKeyDeleteDialogProps>
+> = (props) => (
+  <React.Fragment>
+    <p>
+      Are you sure you want to delete <span>{props.key}</span>?
+    </p>
+    <p>Deleted files are permanently removed.</p>
+  </React.Fragment>
+)
+
+const AcceptButton: React.FunctionComponent<
+  React.PropsWithChildren<ConfirmCMSKeyDeleteDialogProps>
+> = ({ dispatch, onDeleteClick }) => {
+  const clickButton = React.useCallback(() => {
+    onDeleteClick()
+    dispatch([hideModal()], 'everyone')
+  }, [dispatch, onDeleteClick])
+
+  return (
+    <FormButton primary danger onClick={clickButton}>
+      Delete
+    </FormButton>
+  )
+}
+
+const CancelButton: React.FunctionComponent<
+  React.PropsWithChildren<ConfirmCMSKeyDeleteDialogProps>
+> = ({ dispatch }) => {
+  const clickButton = React.useCallback(() => {
+    dispatch([hideModal()], 'everyone')
+  }, [dispatch])
+
+  return <FormButton onClick={clickButton}>Cancel</FormButton>
+}
+
+function showError(e: any) {
+  // TODO: pop a toast
+  console.error(e)
+}

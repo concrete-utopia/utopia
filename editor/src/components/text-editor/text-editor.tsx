@@ -58,7 +58,7 @@ import {
   JURASSIC_CMS_UPDATE_GLOBAL,
   setCMSUpdateStateForElementPath,
   unsetCMSUpdateStateForElementPath,
-  updateJurassicCMS,
+  updateJurassicCMSKey,
 } from '../editor/jurassic-cms'
 
 export const TextEditorSpanId = 'text-editor'
@@ -388,7 +388,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
         setCMSUpdateStateForElementPath(props.elementPath, { type: 'updating', value: updated }),
       )
       try {
-        await updateJurassicCMS({ project_id, key, updated })
+        await updateJurassicCMSKey({ project_id, key, updated })
         setCMSUpdateState(setCMSUpdateStateForElementPath(props.elementPath, { type: 'ok' }))
       } catch (e) {
         setCMSUpdateState(

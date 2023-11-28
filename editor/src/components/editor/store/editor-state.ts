@@ -490,6 +490,12 @@ export function fileDeleteModal(filePath: string): FileDeleteModal {
   }
 }
 
+export interface ConfirmCMSKeyDeleteDialog {
+  type: 'confirm-cms-key-delete'
+  key: string
+  onDeleteClick: () => void
+}
+
 export interface FileRevertModal {
   type: 'file-revert'
   filePath: string
@@ -557,6 +563,7 @@ export type ModalDialog =
   | FileRevertModal
   | FileRevertAllModal
   | DisconnectGithubProjectModal
+  | ConfirmCMSKeyDeleteDialog
 
 export type CursorImportanceLevel = 'fixed' | 'mouseOver' // only one fixed cursor can exist, mouseover is a bit less important
 export interface CursorStackItem {

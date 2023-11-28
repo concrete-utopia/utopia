@@ -44,7 +44,7 @@ export function unsetCMSUpdateStateForElementPath(
   }
 }
 
-export async function updateJurassicCMS({
+export async function updateJurassicCMSKey({
   project_id,
   key,
   updated,
@@ -57,6 +57,22 @@ export async function updateJurassicCMS({
     method: 'POST',
     headers: new Headers({ Accept: 'application/json', 'Content-Type': 'application/json' }),
     body: JSON.stringify({ value: updated }),
+  })
+  if (!response.ok) {
+    throw new Error(response.statusText)
+  }
+}
+
+export async function deleteJurassicCMSKey({
+  project_id,
+  key,
+}: {
+  project_id: string
+  key: string
+}): Promise<void> {
+  const response = await fetch(`${JURASSIC_CMS_URL}/api/${project_id}/${key}`, {
+    method: 'DELETE',
+    headers: new Headers({ Accept: 'application/json', 'Content-Type': 'application/json' }),
   })
   if (!response.ok) {
     throw new Error(response.statusText)
