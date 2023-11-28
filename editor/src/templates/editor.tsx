@@ -800,7 +800,7 @@ const ProjectLoadError = ({ error }: { error: string }) => {
   return (
     <div
       style={{
-        boxShadow: UtopiaStyles.shadowStyles.medium.boxShadow,
+        boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
         borderRadius: 3,
         overflowWrap: 'break-word',
         wordWrap: 'break-word',

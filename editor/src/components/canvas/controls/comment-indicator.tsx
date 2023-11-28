@@ -1,9 +1,9 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
+import type { ThreadData } from '@liveblocks/client'
+import { useAtom } from 'jotai'
 import React from 'react'
-import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
-import { EditorModes } from '../../editor/editor-modes'
 import type { ThreadMetadata } from '../../../../liveblocks.config'
 import {
   useEditThreadMetadata,
@@ -11,21 +11,23 @@ import {
   useStorage,
   useThreads,
 } from '../../../../liveblocks.config'
-import { useDispatch } from '../../editor/store/dispatch-context'
-import { switchEditorMode } from '../../editor/actions/action-creators'
+import { useIsOnAnotherRemixRoute } from '../../../core/commenting/comment-hooks'
 import type { CanvasPoint, CanvasVector, WindowPoint } from '../../../core/shared/math-utils'
-import { canvasPoint, offsetPoint, windowPoint } from '../../../core/shared/math-utils'
-import { UtopiaTheme } from '../../../uuiui'
-import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
+import { canvasPoint, distance, offsetPoint, windowPoint } from '../../../core/shared/math-utils'
 import {
   multiplayerColorFromIndex,
   multiplayerInitialsFromName,
   normalizeMultiplayerName,
 } from '../../../core/shared/multiplayer'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
+import { UtopiaStyles } from '../../../uuiui'
+import { switchEditorMode } from '../../editor/actions/action-creators'
+import { EditorModes } from '../../editor/editor-modes'
+import { useDispatch } from '../../editor/store/dispatch-context'
+import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { AvatarPicture } from '../../user-bar'
-import type { ThreadData } from '@liveblocks/client'
-import { windowToCanvasCoordinates } from '../dom-lookup'
+import { canvasPointToWindowPoint, windowToCanvasCoordinates } from '../dom-lookup'
+import { RemixNavigationAtom } from '../remix/utopia-remix-root-component'
 
 const IndicatorSize = 20
 
@@ -41,11 +43,9 @@ export const CommentIndicators = React.memo(() => {
   }
 
   return (
-    <CanvasOffsetWrapper>
-      <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
-        <CommentIndicatorsInner />
-      </MultiplayerWrapper>
-    </CanvasOffsetWrapper>
+    <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
+      <CommentIndicatorsInner />
+    </MultiplayerWrapper>
   )
 })
 CommentIndicators.displayName = 'CommentIndicators'
@@ -72,11 +72,38 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
   const dispatch = useDispatch()
   const collabs = useStorage((storage) => storage.collaborators)
 
-  const position = canvasPoint(thread.metadata)
+  const canvasScale = useEditorState(
+    Substores.canvasOffset,
+    (store) => store.editor.canvas.scale,
+    'CommentIndicator canvasScale',
+  )
+  const canvasOffset = useEditorState(
+    Substores.canvasOffset,
+    (store) => store.editor.canvas.roundedCanvasOffset,
+    'CommentIndicator canvasOffset',
+  )
+
+  const [remixNavigationState] = useAtom(RemixNavigationAtom)
+
+  const point = canvasPoint(thread.metadata)
+
+  const remixLocationRoute = thread.metadata.remixLocationRoute ?? null
+
+  const isOnAnotherRoute = useIsOnAnotherRemixRoute(remixLocationRoute)
 
   const onClick = React.useCallback(() => {
-    dispatch([switchEditorMode(EditorModes.commentMode(position, 'not-dragging'))])
-  }, [dispatch, position])
+    if (isOnAnotherRoute && remixLocationRoute != null) {
+      // TODO: after we have scene identifier in the comment metadata we should only navigate the scene with the comment
+      Object.keys(remixNavigationState).forEach((scene) => {
+        const remixState = remixNavigationState[scene]
+        if (remixState == null) {
+          return
+        }
+        remixState.navigate(remixLocationRoute)
+      })
+    }
+    dispatch([switchEditorMode(EditorModes.commentMode(point, 'not-dragging'))])
+  }, [dispatch, point, remixNavigationState, remixLocationRoute, isOnAnotherRoute])
 
   const { initials, color, avatar } = (() => {
     const firstComment = thread.comments[0]
@@ -94,26 +121,24 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
     }
   })()
 
-  const remixLocationRoute = thread.metadata.remixLocationRoute ?? null
-
-  const isOnAnotherRoute =
-    me.presence.remix?.locationRoute != null &&
-    remixLocationRoute != null &&
-    remixLocationRoute !== me.presence.remix.locationRoute
-
   const { onMouseDown, dragPosition } = useDragging(thread)
+  const position = React.useMemo(
+    () => canvasPointToWindowPoint(dragPosition ?? point, canvasScale, canvasOffset),
+    [point, canvasScale, canvasOffset, dragPosition],
+  )
 
   return (
     <div
       css={{
-        position: 'absolute',
-        top: dragPosition?.y ?? position.y,
-        left: dragPosition?.x ?? position.x,
+        position: 'fixed',
+        top: position.y,
+        left: position.x,
         opacity: isOnAnotherRoute ? 0.25 : 1,
         width: IndicatorSize,
+        zoom: 1 / canvasScale,
         '&:hover': {
           transform: 'scale(1.15)',
-          transitionDuration: '0.1s',
+          transitionDuration: 'transform 0.1s',
         },
       }}
       onClick={onClick}
@@ -143,7 +168,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+            boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
           }}
         >
           <AvatarPicture url={avatar} initials={initials} />
@@ -154,6 +179,8 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
 })
 CommentIndicator.displayName = 'CommentIndicator'
 
+const COMMENT_DRAG_THRESHOLD = 5 // square px
+
 function useDragging(thread: ThreadData<ThreadMetadata>) {
   const editThreadMetadata = useEditThreadMetadata()
   const dispatch = useDispatch()
@@ -162,50 +189,58 @@ function useDragging(thread: ThreadData<ThreadMetadata>) {
   const canvasScaleRef = useRefEditorState((store) => store.editor.canvas.scale)
   const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.realCanvasOffset)
 
-  const onMouseMove = React.useCallback(
-    (event: MouseEvent) => {
-      event.stopPropagation()
-      const newCanvasPoint = mousePositionToIndicatorPosition(
-        canvasScaleRef.current,
-        canvasOffsetRef.current,
-        windowPoint({ x: event.clientX, y: event.clientY }),
-      )
-      setDragPosition(newCanvasPoint)
-    },
-    [canvasOffsetRef, canvasScaleRef],
-  )
-
-  const onMouseUp = React.useCallback(
-    (event: MouseEvent) => {
-      event.stopPropagation()
-      const newCanvasPosition = mousePositionToIndicatorPosition(
-        canvasScaleRef.current,
-        canvasOffsetRef.current,
-        windowPoint({ x: event.clientX, y: event.clientY }),
-      )
-      setDragPosition(null)
-
-      editThreadMetadata({
-        threadId: thread.id,
-        metadata: {
-          x: newCanvasPosition.x,
-          y: newCanvasPosition.y,
-        },
-      })
-      window.removeEventListener('mousemove', onMouseMove)
-      window.removeEventListener('mouseup', onMouseUp)
-    },
-    [onMouseMove, canvasOffsetRef, canvasScaleRef, editThreadMetadata, thread.id],
-  )
-
   const onMouseDown = React.useCallback(
     (event: React.MouseEvent) => {
+      const mouseDownPoint = windowPoint({ x: event.clientX, y: event.clientY })
+
+      let draggedPastThreshold = false
+      function onMouseMove(moveEvent: MouseEvent) {
+        moveEvent.stopPropagation()
+        const mouseMovePoint = windowPoint({ x: moveEvent.clientX, y: moveEvent.clientY })
+
+        draggedPastThreshold ||= distance(mouseDownPoint, mouseMovePoint) > COMMENT_DRAG_THRESHOLD
+
+        if (draggedPastThreshold) {
+          const newCanvasPoint = mousePositionToIndicatorPosition(
+            canvasScaleRef.current,
+            canvasOffsetRef.current,
+            mouseMovePoint,
+          )
+          setDragPosition(newCanvasPoint)
+        }
+      }
+
+      function onMouseUp(upEvent: MouseEvent) {
+        upEvent.stopPropagation()
+        window.removeEventListener('mousemove', onMouseMove)
+        window.removeEventListener('mouseup', onMouseUp)
+
+        const mouseUpPoint = windowPoint({ x: upEvent.clientX, y: upEvent.clientY })
+
+        if (draggedPastThreshold) {
+          const newCanvasPosition = mousePositionToIndicatorPosition(
+            canvasScaleRef.current,
+            canvasOffsetRef.current,
+            mouseUpPoint,
+          )
+          setDragPosition(null)
+
+          editThreadMetadata({
+            threadId: thread.id,
+            metadata: {
+              x: newCanvasPosition.x,
+              y: newCanvasPosition.y,
+            },
+          })
+        }
+      }
+
       event.stopPropagation()
       dispatch([switchEditorMode(EditorModes.commentMode(null, 'dragging'))])
       window.addEventListener('mousemove', onMouseMove)
       window.addEventListener('mouseup', onMouseUp)
     },
-    [onMouseMove, onMouseUp, dispatch],
+    [dispatch, canvasOffsetRef, canvasScaleRef, editThreadMetadata, thread.id],
   )
 
   return { onMouseDown, dragPosition }

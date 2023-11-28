@@ -23,9 +23,7 @@ export const SceneComponent = React.memo(
     const sceneStyle: React.CSSProperties = {
       position: 'relative',
       backgroundColor: colorTheme.emphasizedBackground.value,
-      boxShadow: canvasIsLive
-        ? UtopiaStyles.scene.live.boxShadow
-        : UtopiaStyles.scene.editing.boxShadow,
+      boxShadow: UtopiaStyles.shadowStyles.grounded.boxShadow,
       ...UtopiaStyles.backgrounds.checkerboardBackground,
       ...style,
     }

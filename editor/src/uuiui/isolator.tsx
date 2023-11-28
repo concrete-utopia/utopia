@@ -33,8 +33,9 @@ export const Isolator: React.FunctionComponent<React.PropsWithChildren<IsolatorP
         top: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'hsla(0,100%,100%, .6)',
-        backdropFilter: 'blur(1px)',
+        backgroundColor: '#ffffff01',
+        backdropFilter: 'blur(3px)',
+        transition: 'all .1s ease-in-out',
       }}
       onClick={() => props.onAbandonIntent()}
     >

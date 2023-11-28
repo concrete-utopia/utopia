@@ -28,6 +28,7 @@ interface RemixNavigationContext {
   forward: () => void
   back: () => void
   home: () => void
+  navigate: (loc: string) => void
   location: Location
   entries: Array<Location>
 }
@@ -295,6 +296,7 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
             forward: () => void innerRouter.navigate(1),
             back: () => void innerRouter.navigate(-1),
             home: () => void innerRouter.navigate('/'),
+            navigate: (loc: string) => void innerRouter.navigate(loc),
             location: location,
             entries: updatedEntries,
           },

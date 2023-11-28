@@ -388,7 +388,7 @@ export const FloatingPostActionMenu = React.memo(
               padding: 4,
               background: colorTheme.bg0.value,
               borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
-              boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+              boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
               cursor: open ? undefined : 'pointer',
               fontSize: 10,
             }}
