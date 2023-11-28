@@ -40,11 +40,11 @@ import {
   type ProjectChanges,
   type ProjectFileChange,
 } from './vscode-changes'
-import * as Y from 'yjs'
 import type { TopLevelElement } from '../../../core/shared/element-template'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import type { KeepDeepEqualityCall } from '../../../utils/deep-equality'
 import type { MapLike } from 'typescript'
+import { Y } from '../../../core/shared/yjs'
 
 const TopLevelElementsKey = 'topLevelElements'
 const ExportsDetailKey = 'exportsDetail'
