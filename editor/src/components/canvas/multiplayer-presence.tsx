@@ -23,13 +23,12 @@ import {
   normalizeOthersList,
 } from '../../core/shared/multiplayer'
 import { assertNever } from '../../core/shared/utils'
-import { useKeepShallowReferenceEquality } from '../../utils/react-performance'
-import { UtopiaStyles, UtopiaTheme, useColorTheme } from '../../uuiui'
+import { UtopiaStyles, useColorTheme } from '../../uuiui'
 import { notice } from '../common/notice'
 import type { EditorAction } from '../editor/action-types'
 import { isLoggedIn } from '../editor/action-types'
 import { showToast, switchEditorMode } from '../editor/actions/action-creators'
-import { EditorModes, isFollowMode } from '../editor/editor-modes'
+import { EditorModes, isCommentMode, isFollowMode } from '../editor/editor-modes'
 import { useDispatch } from '../editor/store/dispatch-context'
 import {
   Substores,
@@ -43,6 +42,10 @@ import { canvasPointToWindowPoint, windowToCanvasCoordinates } from './dom-looku
 import { ActiveRemixSceneAtom, RemixNavigationAtom } from './remix/utopia-remix-root-component'
 import { useRemixPresence } from '../../core/shared/multiplayer-hooks'
 import { CanvasOffsetWrapper } from './controls/canvas-offset-wrapper'
+import { when } from '../../utils/react-conditionals'
+import { isFeatureEnabled } from '../../utils/feature-switches'
+import { CommentIndicators } from './controls/comment-indicator'
+import { CommentPopup } from './controls/comment-popup'
 
 export const MultiplayerPresence = React.memo(() => {
   const dispatch = useDispatch()
@@ -113,7 +116,9 @@ export const MultiplayerPresence = React.memo(() => {
     <>
       <FollowingOverlay />
       <MultiplayerShadows />
+      {when(isFeatureEnabled('Commenting'), <CommentIndicators />)}
       <MultiplayerCursors />
+      {when(isCommentMode(mode) && mode.location != null, <CommentPopup />)}
     </>
   )
 })
