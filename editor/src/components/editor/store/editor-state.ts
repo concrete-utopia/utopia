@@ -179,9 +179,9 @@ import type { ProjectServerState } from './project-server-state'
 import type { ReparentTargetForPaste } from '../../canvas/canvas-strategies/strategies/reparent-utils'
 import { GridMenuWidth } from '../../canvas/stored-layout'
 import type { VariablesInScope } from '../../canvas/ui-jsx-canvas'
-import * as Y from 'yjs'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import type { ActiveFrame } from '../../canvas/commands/set-active-frames-command'
+import { Y } from '../../../core/shared/yjs'
 
 const ObjectPathImmutable: any = OPI
 
