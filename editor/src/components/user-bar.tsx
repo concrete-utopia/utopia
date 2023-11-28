@@ -271,7 +271,7 @@ const MultiplayerAvatar = React.memo(
               width={14}
               height={14}
               color='main'
-              style={{ position: 'relative', bottom: -13, left: 13, zIndex: 10 }}
+              // style={{ position: 'relative', bottom: -13, left: 13, zIndex: 10 }}
             />
           ) : null}
           {when(props.follower === true, <FollowerBadge />)}
