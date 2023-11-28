@@ -139,7 +139,7 @@ function getMatchingElementForVariableInner(variable: Variable): InsertableCompo
     case 'boolean':
       return insertableComponentAndJSX(
         jsxConditionalExpressionWithoutUID(
-          jsIdentifierName(variable.name),
+          jsExpressionOtherJavaScriptSimple(variable.name, [originalVariableName]),
           variable.name,
           jsExpressionValue(null, emptyComments),
           jsExpressionValue(null, emptyComments),
@@ -160,7 +160,7 @@ function getMatchingElementForVariableInner(variable: Variable): InsertableCompo
         jsxElementWithoutUID(
           'img',
           jsxAttributesFromMap({
-            src: jsIdentifierName(variable.name),
+            src: jsExpressionOtherJavaScriptSimple(variable.name, [originalVariableName]),
           }),
           [],
         ),
@@ -194,10 +194,6 @@ function arrayInsertableComponentAndJsx(variable: Variable): InsertableComponent
   const arrayElementString = `${variable.name}.map((item) => (${innerElementString}))`
   const arrayElement = jsxFragmentWithoutUID([jsxTextBlock(`{${arrayElementString}}`)], true)
   return insertableComponentAndJSX(arrayElement, arrayElementString)
-}
-
-function jsIdentifierName(name: string): JSExpressionOtherJavaScript {
-  return jsExpressionOtherJavaScriptSimple(name, [name])
 }
 
 function getArrayType(arrayVariable: Variable): InsertableType {
