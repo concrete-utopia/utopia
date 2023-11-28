@@ -3,7 +3,14 @@
 /* @jsxFrag */
 import React from 'react'
 import { jsx } from '@emotion/react'
-import { FlexColumn, FlexRow, Icn, UtopiaTheme, useColorTheme } from '../../../../uuiui'
+import {
+  FlexColumn,
+  FlexRow,
+  Icn,
+  UtopiaStyles,
+  UtopiaTheme,
+  useColorTheme,
+} from '../../../../uuiui'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { stopPropagation } from '../../../inspector/common/inspector-utils'
 import type { PostActionChoice } from '../../canvas-strategies/post-action-options/post-action-options'
