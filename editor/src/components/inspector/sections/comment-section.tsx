@@ -9,7 +9,7 @@ import type { ThreadData } from '@liveblocks/client'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { canvasPoint, canvasRectangle } from '../../../core/shared/math-utils'
 import { scrollToPosition, switchEditorMode } from '../../editor/actions/action-creators'
-import { EditorModes } from '../../editor/editor-modes'
+import { EditorModes, existingComment } from '../../editor/editor-modes'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { useAtom } from 'jotai'
 import { RemixNavigationAtom } from '../../canvas/remix/utopia-remix-root-component'
@@ -77,10 +77,10 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
       })
     }
     dispatch([
-      switchEditorMode(EditorModes.commentMode(point, 'not-dragging')),
+      switchEditorMode(EditorModes.commentMode(existingComment(thread.id), 'not-dragging')),
       scrollToPosition(rect, 'to-center'),
     ])
-  }, [dispatch, remixNavigationState, isOnAnotherRoute, remixLocationRoute, point])
+  }, [dispatch, remixNavigationState, isOnAnotherRoute, remixLocationRoute, point, thread.id])
 
   const comment = thread.comments[0]
   if (comment == null) {

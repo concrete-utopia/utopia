@@ -474,12 +474,17 @@ import type {
   SelectModeToolbarMode,
   CommentMode,
   FollowMode,
+  CommentId,
+  NewComment,
+  ExistingComment,
 } from '../editor-modes'
 import {
   EditorModes,
   insertionSubject,
   targetedInsertionParent,
   imageInsertionSubject,
+  newComment,
+  existingComment,
 } from '../editor-modes'
 import type { EditorPanel } from '../../common/actions'
 import type { Notice, NoticeLevel } from '../../common/notice'
@@ -765,16 +770,13 @@ export const SingleLineCommentKeepDeepEqualityCall: KeepDeepEqualityCall<SingleL
     singleLineComment,
   )
 
-export const CommentKeepDeepEqualityCall: KeepDeepEqualityCall<Comment> = (
-  oldComment,
-  newComment,
-) => {
-  if (isMultiLineComment(oldComment) && isMultiLineComment(newComment)) {
-    return MultiLineCommentKeepDeepEqualityCall(oldComment, newComment)
-  } else if (isSingleLineComment(oldComment) && isSingleLineComment(newComment)) {
-    return SingleLineCommentKeepDeepEqualityCall(oldComment, newComment)
+export const CommentKeepDeepEqualityCall: KeepDeepEqualityCall<Comment> = (oldValue, newValue) => {
+  if (isMultiLineComment(oldValue) && isMultiLineComment(newValue)) {
+    return MultiLineCommentKeepDeepEqualityCall(oldValue, newValue)
+  } else if (isSingleLineComment(oldValue) && isSingleLineComment(newValue)) {
+    return SingleLineCommentKeepDeepEqualityCall(oldValue, newValue)
   } else {
-    return keepDeepEqualityResult(newComment, false)
+    return keepDeepEqualityResult(newValue, false)
   }
 }
 
@@ -3248,9 +3250,36 @@ export const TextEditModeKeepDeepEquality: KeepDeepEqualityCall<TextEditMode> =
     EditorModes.textEditMode,
   )
 
-export const CommentModeKeepDeepEquality: KeepDeepEqualityCall<CommentMode> = combine2EqualityCalls(
+export const NewCommentKeepDeepEquality: KeepDeepEqualityCall<NewComment> = combine1EqualityCall(
   (mode) => mode.location,
-  nullableDeepEquality(CanvasPointKeepDeepEquality),
+  CanvasPointKeepDeepEquality,
+  newComment,
+)
+
+export const ExistingCommentKeepDeepEquality: KeepDeepEqualityCall<ExistingComment> =
+  combine1EqualityCall((mode) => mode.threadId, StringKeepDeepEquality, existingComment)
+
+export const CommentIdKeepDeepEquality: KeepDeepEqualityCall<CommentId> = (oldValue, newValue) => {
+  switch (oldValue.type) {
+    case 'new':
+      if (newValue.type === oldValue.type) {
+        return NewCommentKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'existing':
+      if (newValue.type === oldValue.type) {
+        return ExistingCommentKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
+export const CommentModeKeepDeepEquality: KeepDeepEqualityCall<CommentMode> = combine2EqualityCalls(
+  (mode) => mode.comment,
+  nullableDeepEquality(CommentIdKeepDeepEquality),
   (mode) => mode.isDragging,
   createCallWithTripleEquals<IsDragging>(),
   EditorModes.commentMode,

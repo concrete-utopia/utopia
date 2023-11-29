@@ -6,13 +6,43 @@ import { useMutation, useSelf, useStorage, useThreads } from '../../../liveblock
 import { Substores, useEditorState } from '../../components/editor/store/store-hook'
 import { normalizeMultiplayerName, possiblyUniqueColor } from '../shared/multiplayer'
 import { isLoggedIn } from '../../common/user'
-import { useAtom } from 'jotai'
-import { RemixNavigationAtom } from '../../components/canvas/remix/utopia-remix-root-component'
+import type { CommentId } from '../../components/editor/editor-modes'
+import { assertNever } from '../shared/utils'
+import type { CanvasPoint } from '../shared/math-utils'
+import { canvasPoint } from '../shared/math-utils'
 
-export function useCanvasCommentThread(x: number, y: number): ThreadData<ThreadMetadata> | null {
+export function useCanvasCommentThreadAndLocation(comment: CommentId): {
+  location: CanvasPoint | null
+  thread: ThreadData<ThreadMetadata> | null
+} {
   const { threads } = useThreads()
-  const thread = threads.find((t) => t.metadata.x === x && t.metadata.y === y) ?? null
-  return thread
+
+  const thread = React.useMemo(() => {
+    switch (comment.type) {
+      case 'new':
+        return null
+      case 'existing':
+        return threads.find((t) => t.id === comment.threadId) ?? null
+      default:
+        assertNever(comment)
+    }
+  }, [threads, comment])
+
+  const location = React.useMemo(() => {
+    switch (comment.type) {
+      case 'new':
+        return comment.location
+      case 'existing':
+        if (thread == null) {
+          return null
+        }
+        return canvasPoint(thread.metadata)
+      default:
+        assertNever(comment)
+    }
+  }, [comment, thread])
+
+  return { location, thread }
 }
 
 function placeholderUserMeta(user: User<Presence, UserMeta>): UserMeta {

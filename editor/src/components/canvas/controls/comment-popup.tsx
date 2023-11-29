@@ -6,11 +6,17 @@ import { UtopiaStyles } from '../../../uuiui'
 import React from 'react'
 import { useCreateThread } from '../../../../liveblocks.config'
 import '../../../../resources/editor/css/liveblocks-comments.css'
-import { useCanvasCommentThread } from '../../../core/commenting/comment-hooks'
+import { useCanvasCommentThreadAndLocation } from '../../../core/commenting/comment-hooks'
 import { useRemixPresence } from '../../../core/shared/multiplayer-hooks'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { switchEditorMode } from '../../editor/actions/action-creators'
-import { EditorModes, isCommentMode } from '../../editor/editor-modes'
+import type { CommentId } from '../../editor/editor-modes'
+import {
+  EditorModes,
+  existingComment,
+  isCommentMode,
+  isNewComment,
+} from '../../editor/editor-modes'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { canvasPointToWindowPoint } from '../dom-lookup'
@@ -20,6 +26,72 @@ export const CommentPopup = React.memo(() => {
     Substores.restOfEditor,
     (store) => store.editor.mode,
     'CommentPopup mode',
+  )
+
+  if (!isCommentMode(mode) || mode.comment == null) {
+    return null
+  }
+
+  return (
+    <MultiplayerWrapper
+      errorFallback={<div>Can not load comments</div>}
+      suspenseFallback={<div>Loading…</div>}
+    >
+      <CommentThread comment={mode.comment} />
+    </MultiplayerWrapper>
+  )
+})
+CommentPopup.displayName = 'CommentPopup'
+
+interface CommentThreadProps {
+  comment: CommentId
+}
+
+const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
+  const dispatch = useDispatch()
+
+  const { location, thread } = useCanvasCommentThreadAndLocation(comment)
+
+  const commentsCount = React.useMemo(
+    () => thread?.comments.filter((c) => c.deletedAt == null).length ?? 0,
+    [thread],
+  )
+
+  const createThread = useCreateThread()
+
+  const remixPresence = useRemixPresence()
+
+  const onCreateThread = React.useCallback(
+    ({ body }: ComposerSubmitComment, event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+
+      if (!isNewComment(comment)) {
+        return
+      }
+      // Create a new thread
+      const newThread = createThread({
+        body,
+        metadata: {
+          type: 'canvas',
+          x: comment.location.x,
+          y: comment.location.y,
+          remixLocationRoute: remixPresence?.locationRoute ?? undefined,
+        },
+      })
+      dispatch([
+        switchEditorMode(EditorModes.commentMode(existingComment(newThread.id), 'not-dragging')),
+      ])
+    },
+    [createThread, comment, remixPresence, dispatch],
+  )
+
+  const onCommentDelete = React.useCallback(
+    (_deleted: CommentData) => {
+      if (commentsCount - 1 <= 0) {
+        dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
+      }
+    },
+    [commentsCount, dispatch],
   )
 
   const canvasScale = useEditorState(
@@ -33,10 +105,9 @@ export const CommentPopup = React.memo(() => {
     'CommentPopup canvasScale',
   )
 
-  if (!isCommentMode(mode) || mode.location == null) {
+  if (location == null) {
     return null
   }
-  const { location } = mode
 
   const point = canvasPointToWindowPoint(location, canvasScale, canvasOffset)
 
@@ -54,71 +125,16 @@ export const CommentPopup = React.memo(() => {
       onKeyUp={stopPropagation}
       onMouseUp={stopPropagation}
     >
-      <MultiplayerWrapper
-        errorFallback={<div>Can not load comments</div>}
-        suspenseFallback={<div>Loading…</div>}
-      >
-        <CommentThread x={location.x} y={location.y} />
-      </MultiplayerWrapper>
-    </div>
-  )
-})
-CommentPopup.displayName = 'CommentPopup'
-
-interface CommentThreadProps {
-  x: number
-  y: number
-}
-
-const CommentThread = React.memo(({ x, y }: CommentThreadProps) => {
-  const dispatch = useDispatch()
-  const thread = useCanvasCommentThread(x, y)
-  const commentsCount = React.useMemo(
-    () => thread?.comments.filter((c) => c.deletedAt == null).length ?? 0,
-    [thread],
-  )
-
-  const createThread = useCreateThread()
-
-  const remixPresence = useRemixPresence()
-
-  const onCreateThread = React.useCallback(
-    ({ body }: ComposerSubmitComment, event: React.FormEvent<HTMLFormElement>) => {
-      event.preventDefault()
-
-      // Create a new thread
-      createThread({
-        body,
-        metadata: {
-          type: 'canvas',
-          x: x,
-          y: y,
-          remixLocationRoute: remixPresence?.locationRoute ?? undefined,
-        },
-      })
-    },
-    [createThread, x, y, remixPresence],
-  )
-
-  const onCommentDelete = React.useCallback(
-    (_deleted: CommentData) => {
-      if (commentsCount - 1 <= 0) {
-        dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
-      }
-    },
-    [commentsCount, dispatch],
-  )
-
-  if (thread == null) {
-    return <Composer autoFocus onComposerSubmit={onCreateThread} />
-  }
-
-  return (
-    <div>
-      {thread.comments.map((comment) => (
-        <Comment key={comment.id} comment={comment} onCommentDelete={onCommentDelete} />
-      ))}
-      <Composer autoFocus threadId={thread.id} />
+      {thread == null ? (
+        <Composer autoFocus onComposerSubmit={onCreateThread} />
+      ) : (
+        <>
+          {thread.comments.map((c) => (
+            <Comment key={c.id} comment={c} onCommentDelete={onCommentDelete} />
+          ))}
+          <Composer autoFocus threadId={thread.id} />
+        </>
+      )}
     </div>
   )
 })

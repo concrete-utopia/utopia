@@ -17,7 +17,7 @@ import {
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { UtopiaStyles } from '../../../uuiui'
 import { switchEditorMode } from '../../editor/actions/action-creators'
-import { EditorModes } from '../../editor/editor-modes'
+import { EditorModes, existingComment } from '../../editor/editor-modes'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { AvatarPicture } from '../../user-bar'
@@ -96,8 +96,10 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
         remixState.navigate(remixLocationRoute)
       })
     }
-    dispatch([switchEditorMode(EditorModes.commentMode(point, 'not-dragging'))])
-  }, [dispatch, point, remixNavigationState, remixLocationRoute, isOnAnotherRoute])
+    dispatch([
+      switchEditorMode(EditorModes.commentMode(existingComment(thread.id), 'not-dragging')),
+    ])
+  }, [dispatch, thread.id, remixNavigationState, remixLocationRoute, isOnAnotherRoute])
 
   const { initials, color, avatar } = (() => {
     const firstComment = thread.comments[0]
