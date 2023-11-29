@@ -134,7 +134,7 @@ export function collateCollaborativeProjectChanges(
       }
     }
   }
-  if (isBrowserEnvironment && isFeatureEnabled('Collaboration')) {
+  if (isFeatureEnabled('Collaboration')) {
     if (oldContents != newContents) {
       zipContentsTree(oldContents, newContents, onElement)
     }
@@ -198,11 +198,11 @@ function applyFileChangeToMap(
 
 export function updateCollaborativeProjectContents(
   session: CollaborativeEditingSupportSession,
-  projectChanges: ProjectChanges,
+  collabProjectChanges: Array<ProjectFileChange>,
   filesModifiedByAnotherUser: Array<string>,
 ): void {
   const projectContentsMap = session.projectContents
-  for (const change of projectChanges.fileChanges.collabProjectChanges) {
+  for (const change of collabProjectChanges) {
     if (!filesModifiedByAnotherUser.includes(change.fullPath)) {
       applyFileChangeToMap(change, projectContentsMap, session.mergeDoc)
     }
@@ -233,9 +233,9 @@ export function addHookForProjectChanges(
         case 1: {
           throw new Error(`Unhandled path length of 1: ${changeEvent.path}`)
         }
-        // When a change happens to the `topLevelElements` in a particular file,
+        // When a change happens to one or more of the fields in a particular file,
         // this case should show up as the path will consist of the filename and
-        // the string `topLevelElements`.
+        // the field name.
         case 2: {
           const filePath = changeEvent.path[0] as string
           const targetProperty = changeEvent.path[1]
@@ -432,7 +432,7 @@ function syncArrayChanges<T>(
   const elementChanges = calculateArrayChanges(
     fromArray,
     againstArray,
-    (l, r) => l != null && r != null && keepDeep(l, r).areEqual,
+    (l, r) => keepDeep(l, r).areEqual,
   )
   let index: number = 0
   elementChanges.forEach((change) => {

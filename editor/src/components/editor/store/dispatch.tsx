@@ -692,7 +692,7 @@ export function editorDispatchClosingOut(
     ) {
       updateCollaborativeProjectContents(
         finalStore.collaborativeEditingSupport.session,
-        projectChanges,
+        projectChanges.fileChanges.collabProjectChanges,
         frozenEditorState.filesModifiedByAnotherUser,
       )
     }
