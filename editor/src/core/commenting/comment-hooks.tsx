@@ -11,7 +11,22 @@ import { RemixNavigationAtom } from '../../components/canvas/remix/utopia-remix-
 
 export function useCanvasCommentThread(x: number, y: number): ThreadData<ThreadMetadata> | null {
   const { threads } = useThreads()
-  const thread = threads.find((t) => t.metadata.x === x && t.metadata.y === y) ?? null
+  const [threadId, setThreadId] = React.useState<string | null>(null)
+
+  const thread = React.useMemo(() => {
+    if (threadId != null) {
+      const originalThread = threads.find((t) => t.id === threadId) ?? null
+      if (originalThread != null) {
+        return originalThread
+      }
+    }
+    const threadFromLocation = threads.find((t) => t.metadata.x === x && t.metadata.y === y) ?? null
+    if (threadFromLocation != null) {
+      setThreadId(threadFromLocation.id)
+    }
+    return threadFromLocation
+  }, [threadId, threads, x, y])
+
   return thread
 }
 
