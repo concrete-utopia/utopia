@@ -111,26 +111,6 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
 
   const point = canvasPointToWindowPoint(location, canvasScale, canvasOffset)
 
-  if (thread == null) {
-    return (
-      <div
-        style={{
-          position: 'fixed',
-          top: point.y,
-          left: point.x + 30,
-          cursor: 'text',
-          minWidth: 250,
-          boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
-        }}
-        onKeyDown={stopPropagation}
-        onKeyUp={stopPropagation}
-        onMouseUp={stopPropagation}
-      >
-        <Composer autoFocus onComposerSubmit={onCreateThread} />
-      </div>
-    )
-  }
-
   return (
     <div
       style={{
@@ -145,10 +125,16 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
       onKeyUp={stopPropagation}
       onMouseUp={stopPropagation}
     >
-      {thread.comments.map((c) => (
-        <Comment key={c.id} comment={c} onCommentDelete={onCommentDelete} />
-      ))}
-      <Composer autoFocus threadId={thread.id} />
+      {thread == null ? (
+        <Composer autoFocus onComposerSubmit={onCreateThread} />
+      ) : (
+        <>
+          {thread.comments.map((c) => (
+            <Comment key={c.id} comment={c} onCommentDelete={onCommentDelete} />
+          ))}
+          <Composer autoFocus threadId={thread.id} />
+        </>
+      )}
     </div>
   )
 })
