@@ -686,10 +686,13 @@ export function editorDispatchClosingOut(
       updatedFromVSCodeOrParsedAfterCodeChange,
     )
     applyProjectChangesToVSCode(frozenEditorState, projectChanges)
-    if (finalStore.collaborativeEditingSupport.session != null) {
+    if (
+      finalStore.collaborativeEditingSupport.session != null &&
+      finalStore.projectServerState.isMyProject === 'yes'
+    ) {
       updateCollaborativeProjectContents(
         finalStore.collaborativeEditingSupport.session,
-        projectChanges,
+        projectChanges.fileChanges.collabProjectChanges,
         frozenEditorState.filesModifiedByAnotherUser,
       )
     }

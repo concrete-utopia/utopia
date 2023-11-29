@@ -2653,6 +2653,7 @@ export const UPDATE_FNS = {
       case 'canvas':
       case 'center':
       case 'insertmenu':
+      case 'variablesmenu':
       case 'projectsettings':
       case 'githuboptions':
         return editor
@@ -2759,6 +2760,7 @@ export const UPDATE_FNS = {
       case 'misccodeeditor':
       case 'center':
       case 'insertmenu':
+      case 'variablesmenu':
       case 'githuboptions':
         return editor
       default:

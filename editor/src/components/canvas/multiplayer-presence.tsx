@@ -16,20 +16,24 @@ import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../core/shared/array-utils'
 import * as EP from '../../core/shared/element-path'
 import type { CanvasPoint } from '../../core/shared/math-utils'
-import { pointsEqual, windowPoint, zeroRectIfNullOrInfinity } from '../../core/shared/math-utils'
+import {
+  pointsEqual,
+  scaleRect,
+  windowPoint,
+  zeroRectIfNullOrInfinity,
+} from '../../core/shared/math-utils'
 import {
   isPlayerOnAnotherRemixRoute,
   multiplayerColorFromIndex,
   normalizeOthersList,
 } from '../../core/shared/multiplayer'
 import { assertNever } from '../../core/shared/utils'
-import { useKeepShallowReferenceEquality } from '../../utils/react-performance'
-import { UtopiaStyles, UtopiaTheme, useColorTheme } from '../../uuiui'
+import { UtopiaStyles, useColorTheme } from '../../uuiui'
 import { notice } from '../common/notice'
 import type { EditorAction } from '../editor/action-types'
 import { isLoggedIn } from '../editor/action-types'
 import { showToast, switchEditorMode } from '../editor/actions/action-creators'
-import { EditorModes, isFollowMode } from '../editor/editor-modes'
+import { EditorModes, isCommentMode, isFollowMode } from '../editor/editor-modes'
 import { useDispatch } from '../editor/store/dispatch-context'
 import {
   Substores,
@@ -43,6 +47,10 @@ import { canvasPointToWindowPoint, windowToCanvasCoordinates } from './dom-looku
 import { ActiveRemixSceneAtom, RemixNavigationAtom } from './remix/utopia-remix-root-component'
 import { useRemixPresence } from '../../core/shared/multiplayer-hooks'
 import { CanvasOffsetWrapper } from './controls/canvas-offset-wrapper'
+import { when } from '../../utils/react-conditionals'
+import { isFeatureEnabled } from '../../utils/feature-switches'
+import { CommentIndicators } from './controls/comment-indicator'
+import { CommentPopup } from './controls/comment-popup'
 
 export const MultiplayerPresence = React.memo(() => {
   const dispatch = useDispatch()
@@ -113,7 +121,9 @@ export const MultiplayerPresence = React.memo(() => {
     <>
       <FollowingOverlay />
       <MultiplayerShadows />
+      {when(isFeatureEnabled('Commenting'), <CommentIndicators />)}
       <MultiplayerCursors />
+      {when(isCommentMode(mode) && mode.location != null, <CommentPopup />)}
     </>
   )
 })
@@ -471,8 +481,13 @@ const MultiplayerShadows = React.memo(() => {
       {shadows.map((shadow, index) => {
         const { frame, action, source } = shadow.activeFrame
         const color = multiplayerColorFromIndex(shadow.colorIndex)
+
         const framePosition = canvasPointToWindowPoint(frame, canvasScale, canvasOffset)
+        const scaledFrame = scaleRect(frame, canvasScale)
+
         const sourcePosition = canvasPointToWindowPoint(source, canvasScale, canvasOffset)
+        const scaledSource = scaleRect(source, canvasScale)
+
         return (
           <React.Fragment key={`shadow-${index}`}>
             <div
@@ -480,8 +495,8 @@ const MultiplayerShadows = React.memo(() => {
                 position: 'fixed',
                 top: sourcePosition.y,
                 left: sourcePosition.x,
-                width: source.width,
-                height: source.height,
+                width: scaledSource.width,
+                height: scaledSource.height,
                 pointerEvents: 'none',
                 border: `1px dashed ${color.background}`,
                 opacity: 0.5,
@@ -491,14 +506,14 @@ const MultiplayerShadows = React.memo(() => {
               initial={{
                 x: framePosition.x,
                 y: framePosition.y,
-                width: frame.width,
-                height: frame.height,
+                width: scaledFrame.width,
+                height: scaledFrame.height,
               }}
               animate={{
                 x: framePosition.x,
                 y: framePosition.y,
-                width: frame.width,
-                height: frame.height,
+                width: scaledFrame.width,
+                height: scaledFrame.height,
               }}
               transition={{
                 type: 'spring',

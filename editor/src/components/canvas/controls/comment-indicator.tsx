@@ -5,12 +5,7 @@ import type { ThreadData } from '@liveblocks/client'
 import { useAtom } from 'jotai'
 import React from 'react'
 import type { ThreadMetadata } from '../../../../liveblocks.config'
-import {
-  useEditThreadMetadata,
-  useSelf,
-  useStorage,
-  useThreads,
-} from '../../../../liveblocks.config'
+import { useEditThreadMetadata, useStorage, useThreads } from '../../../../liveblocks.config'
 import { useIsOnAnotherRemixRoute } from '../../../core/commenting/comment-hooks'
 import type { CanvasPoint, CanvasVector, WindowPoint } from '../../../core/shared/math-utils'
 import { canvasPoint, distance, offsetPoint, windowPoint } from '../../../core/shared/math-utils'
@@ -68,7 +63,6 @@ interface CommentIndicatorProps {
 }
 
 const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
-  const me = useSelf()
   const dispatch = useDispatch()
   const collabs = useStorage((storage) => storage.collaborators)
 
@@ -135,7 +129,6 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
         left: position.x,
         opacity: isOnAnotherRoute ? 0.25 : 1,
         width: IndicatorSize,
-        zoom: 1 / canvasScale,
         '&:hover': {
           transform: 'scale(1.15)',
           transitionDuration: 'transform 0.1s',
