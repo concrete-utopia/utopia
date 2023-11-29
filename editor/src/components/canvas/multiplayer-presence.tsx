@@ -16,7 +16,12 @@ import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../core/shared/array-utils'
 import * as EP from '../../core/shared/element-path'
 import type { CanvasPoint } from '../../core/shared/math-utils'
-import { pointsEqual, windowPoint, zeroRectIfNullOrInfinity } from '../../core/shared/math-utils'
+import {
+  pointsEqual,
+  scaleRect,
+  windowPoint,
+  zeroRectIfNullOrInfinity,
+} from '../../core/shared/math-utils'
 import {
   isPlayerOnAnotherRemixRoute,
   multiplayerColorFromIndex,
@@ -476,8 +481,13 @@ const MultiplayerShadows = React.memo(() => {
       {shadows.map((shadow, index) => {
         const { frame, action, source } = shadow.activeFrame
         const color = multiplayerColorFromIndex(shadow.colorIndex)
+
         const framePosition = canvasPointToWindowPoint(frame, canvasScale, canvasOffset)
+        const scaledFrame = scaleRect(frame, canvasScale)
+
         const sourcePosition = canvasPointToWindowPoint(source, canvasScale, canvasOffset)
+        const scaledSource = scaleRect(source, canvasScale)
+
         return (
           <React.Fragment key={`shadow-${index}`}>
             <div
@@ -485,8 +495,8 @@ const MultiplayerShadows = React.memo(() => {
                 position: 'fixed',
                 top: sourcePosition.y,
                 left: sourcePosition.x,
-                width: source.width,
-                height: source.height,
+                width: scaledSource.width,
+                height: scaledSource.height,
                 pointerEvents: 'none',
                 border: `1px dashed ${color.background}`,
                 opacity: 0.5,
@@ -496,14 +506,14 @@ const MultiplayerShadows = React.memo(() => {
               initial={{
                 x: framePosition.x,
                 y: framePosition.y,
-                width: frame.width,
-                height: frame.height,
+                width: scaledFrame.width,
+                height: scaledFrame.height,
               }}
               animate={{
                 x: framePosition.x,
                 y: framePosition.y,
-                width: frame.width,
-                height: frame.height,
+                width: scaledFrame.width,
+                height: scaledFrame.height,
               }}
               transition={{
                 type: 'spring',
