@@ -6,8 +6,6 @@ import { useMutation, useSelf, useStorage, useThreads } from '../../../liveblock
 import { Substores, useEditorState } from '../../components/editor/store/store-hook'
 import { normalizeMultiplayerName, possiblyUniqueColor } from '../shared/multiplayer'
 import { isLoggedIn } from '../../common/user'
-import { useAtom } from 'jotai'
-import { RemixNavigationAtom } from '../../components/canvas/remix/utopia-remix-root-component'
 
 export function useCanvasCommentThread(x: number, y: number): ThreadData<ThreadMetadata> | null {
   const { threads } = useThreads()
