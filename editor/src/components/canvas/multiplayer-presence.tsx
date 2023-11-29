@@ -123,7 +123,7 @@ export const MultiplayerPresence = React.memo(() => {
       <MultiplayerShadows />
       {when(isFeatureEnabled('Commenting'), <CommentIndicators />)}
       <MultiplayerCursors />
-      {when(isCommentMode(mode) && mode.location != null, <CommentPopup />)}
+      {when(isCommentMode(mode) && mode.comment != null, <CommentPopup />)}
     </>
   )
 })

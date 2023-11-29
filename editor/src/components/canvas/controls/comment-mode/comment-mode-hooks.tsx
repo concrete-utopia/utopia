@@ -4,13 +4,13 @@ import { NO_OP } from '../../../../core/shared/utils'
 import { useKeepShallowReferenceEquality } from '../../../../utils/react-performance'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { switchEditorMode } from '../../../editor/actions/action-creators'
-import { EditorModes } from '../../../editor/editor-modes'
+import type { CommentId } from '../../../editor/editor-modes'
+import { EditorModes, newComment } from '../../../editor/editor-modes'
 import { useRefEditorState } from '../../../editor/store/store-hook'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
-import type { CanvasPoint } from '../../../../core/shared/math-utils'
 import { windowPoint } from '../../../../core/shared/math-utils'
 
-export function useCommentModeSelectAndHover(location: CanvasPoint | null): MouseCallbacks {
+export function useCommentModeSelectAndHover(comment: CommentId | null): MouseCallbacks {
   const dispatch = useDispatch()
 
   const storeRef = useRefEditorState((store) => {
@@ -22,20 +22,22 @@ export function useCommentModeSelectAndHover(location: CanvasPoint | null): Mous
 
   const onMouseUp = React.useCallback(
     (event: React.MouseEvent) => {
-      if (location == null) {
+      if (comment == null) {
         const loc = windowToCanvasCoordinates(
           storeRef.current.scale,
           storeRef.current.canvasOffset,
           windowPoint({ x: event.clientX, y: event.clientY }),
         )
         dispatch([
-          switchEditorMode(EditorModes.commentMode(loc.canvasPositionRounded, 'not-dragging')),
+          switchEditorMode(
+            EditorModes.commentMode(newComment(loc.canvasPositionRounded), 'not-dragging'),
+          ),
         ])
       } else {
         dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
       }
     },
-    [dispatch, location, storeRef],
+    [dispatch, comment, storeRef],
   )
 
   return useKeepShallowReferenceEquality({
