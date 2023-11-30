@@ -5,6 +5,7 @@ import { fetchProjectMetadata } from '../../../common/server'
 import type { EditorDispatch } from '../action-types'
 import { updateProjectServerState } from '../actions/action-creators'
 import { checkProjectOwned } from '../persistence/persistence-backend'
+import type { ProjectOwnership } from '../persistence/generic/persistence-types'
 
 export interface ProjectMetadataFromServer {
   title: string
@@ -67,6 +68,15 @@ function projectListingToProjectMetadataFromServer(
   }
 }
 
+async function getOwnership(projectId: string | null): Promise<ProjectOwnership> {
+  if (projectId == null) {
+    return { isOwner: true, ownerId: null }
+  }
+
+  const { isOwner, ownerId } = await checkProjectOwned(projectId)
+  return { isOwner, ownerId }
+}
+
 export async function getProjectServerState(
   projectId: string | null,
   forkedFromProjectId: string | null,
@@ -77,11 +87,12 @@ export async function getProjectServerState(
     const projectListing = projectId == null ? null : await fetchProjectMetadata(projectId)
     const forkedFromProjectListing =
       forkedFromProjectId == null ? null : await fetchProjectMetadata(forkedFromProjectId)
-    const ownership = projectId == null ? null : await checkProjectOwned(projectId)
-    const isMyProject = ownership == null || ownership.isOwner ? 'yes' : 'no'
+
+    const ownership = await getOwnership(projectId)
+
     return {
-      isMyProject: isMyProject,
-      ownerId: ownership?.ownerId ?? null,
+      isMyProject: ownership.isOwner ? 'yes' : 'no',
+      ownerId: ownership.ownerId,
       projectData: projectListingToProjectMetadataFromServer(projectListing),
       forkedFromProjectData: projectListingToProjectMetadataFromServer(forkedFromProjectListing),
     }
