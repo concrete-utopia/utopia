@@ -78,7 +78,7 @@ export async function getProjectServerState(
     const forkedFromProjectListing =
       forkedFromProjectId == null ? null : await fetchProjectMetadata(forkedFromProjectId)
     const ownership = projectId == null ? null : await checkProjectOwned(projectId)
-    const isMyProject = ownership == null || ownership.owned ? 'yes' : 'no'
+    const isMyProject = ownership == null || ownership.isOwner ? 'yes' : 'no'
     return {
       isMyProject: isMyProject,
       ownerId: ownership?.ownerId ?? null,
