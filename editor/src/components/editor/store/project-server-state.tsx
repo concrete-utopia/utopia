@@ -5,6 +5,7 @@ import { fetchProjectMetadata } from '../../../common/server'
 import type { EditorDispatch } from '../action-types'
 import { updateProjectServerState } from '../actions/action-creators'
 import { checkProjectOwned } from '../persistence/persistence-backend'
+import type { ProjectOwnership } from '../persistence/generic/persistence-types'
 
 export interface ProjectMetadataFromServer {
   title: string
@@ -26,24 +27,27 @@ export function projectMetadataFromServer(
 
 export interface ProjectServerState {
   isMyProject: 'yes' | 'no' | 'unknown'
+  ownerId: string | null
   projectData: ProjectMetadataFromServer | null
   forkedFromProjectData: ProjectMetadataFromServer | null
 }
 
 export function projectServerState(
   isMyProject: ProjectServerState['isMyProject'],
+  ownerId: string | null,
   projectData: ProjectMetadataFromServer | null,
   forkedFromProjectData: ProjectMetadataFromServer | null,
 ): ProjectServerState {
   return {
     isMyProject: isMyProject,
+    ownerId: ownerId,
     projectData: projectData,
     forkedFromProjectData: forkedFromProjectData,
   }
 }
 
 export function emptyProjectServerState(): ProjectServerState {
-  return projectServerState('unknown', null, null)
+  return projectServerState('unknown', null, null, null)
 }
 
 export const ProjectServerStateContext = React.createContext<ProjectServerState>(
@@ -74,14 +78,19 @@ export async function getProjectServerState(
     const projectListing = projectId == null ? null : await fetchProjectMetadata(projectId)
     const forkedFromProjectListing =
       forkedFromProjectId == null ? null : await fetchProjectMetadata(forkedFromProjectId)
-    const isMyProject =
-      projectId == null
-        ? 'yes'
-        : await checkProjectOwned(projectId).then((isMyProjectFromServer) => {
-            return isMyProjectFromServer ? 'yes' : 'no'
-          })
+
+    async function getOwnership(): Promise<ProjectOwnership> {
+      if (projectId == null) {
+        return { isOwner: true, ownerId: null }
+      }
+      const { isOwner, ownerId } = await checkProjectOwned(projectId)
+      return { isOwner, ownerId }
+    }
+    const ownership = await getOwnership()
+
     return {
-      isMyProject: isMyProject,
+      isMyProject: ownership.isOwner ? 'yes' : 'no',
+      ownerId: ownership.ownerId,
       projectData: projectListingToProjectMetadataFromServer(projectListing),
       forkedFromProjectData: projectListingToProjectMetadataFromServer(forkedFromProjectListing),
     }

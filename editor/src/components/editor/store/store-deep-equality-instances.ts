@@ -563,9 +563,11 @@ export const ProjectMetadataFromServerKeepDeepEquality: KeepDeepEqualityCall<Pro
   )
 
 export const ProjectServerStateKeepDeepEquality: KeepDeepEqualityCall<ProjectServerState> =
-  combine3EqualityCalls(
+  combine4EqualityCalls(
     (entry) => entry.isMyProject,
     createCallWithTripleEquals<ProjectServerState['isMyProject']>(),
+    (entry) => entry.ownerId,
+    NullableStringKeepDeepEquality,
     (entry) => entry.projectData,
     nullableDeepEquality(ProjectMetadataFromServerKeepDeepEquality),
     (entry) => entry.forkedFromProjectData,
