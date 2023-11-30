@@ -68,15 +68,6 @@ function projectListingToProjectMetadataFromServer(
   }
 }
 
-async function getOwnership(projectId: string | null): Promise<ProjectOwnership> {
-  if (projectId == null) {
-    return { isOwner: true, ownerId: null }
-  }
-
-  const { isOwner, ownerId } = await checkProjectOwned(projectId)
-  return { isOwner, ownerId }
-}
-
 export async function getProjectServerState(
   projectId: string | null,
   forkedFromProjectId: string | null,
@@ -88,7 +79,14 @@ export async function getProjectServerState(
     const forkedFromProjectListing =
       forkedFromProjectId == null ? null : await fetchProjectMetadata(forkedFromProjectId)
 
-    const ownership = await getOwnership(projectId)
+    async function getOwnership(): Promise<ProjectOwnership> {
+      if (projectId == null) {
+        return { isOwner: true, ownerId: null }
+      }
+      const { isOwner, ownerId } = await checkProjectOwned(projectId)
+      return { isOwner, ownerId }
+    }
+    const ownership = await getOwnership()
 
     return {
       isMyProject: ownership.isOwner ? 'yes' : 'no',
