@@ -66,13 +66,19 @@ async function getNewProjectId(): Promise<string> {
   return createNewProjectID()
 }
 
-export async function checkProjectOwned(projectId: string): Promise<boolean> {
+export async function checkProjectOwned(
+  projectId: string,
+): Promise<{ ownerId: string | null; owned: boolean }> {
   const existsLocally = await projectIsStoredLocally(projectId)
   if (existsLocally) {
-    return true
+    return { ownerId: null, owned: true }
   } else {
     const ownerState = await checkProjectOwnership(projectId)
-    return ownerState === 'unowned' || ownerState.isOwner
+    if (ownerState === 'unowned') {
+      return { ownerId: null, owned: false }
+    } else {
+      return { ownerId: ownerState.ownerId, owned: ownerState.isOwner }
+    }
   }
 }
 

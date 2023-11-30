@@ -70,7 +70,7 @@ export function projectWithFileChanges<ModelType, FileType>(
 
 export interface PersistenceBackendAPI<ModelType, FileType> {
   getNewProjectId: () => Promise<string>
-  checkProjectOwned: (projectId: string) => Promise<boolean>
+  checkProjectOwned: (projectId: string) => Promise<{ ownerId: string | null; owned: boolean }>
   loadProject: (projectId: string) => Promise<ProjectLoadResult<ModelType>>
   saveProjectToServer: (
     projectId: string,

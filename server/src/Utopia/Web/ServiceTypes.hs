@@ -170,6 +170,7 @@ $(makeFieldsNoPrefix ''ProjectListResponse)
 
 data ProjectOwnerResponse = ProjectOwnerResponse
                           { _isOwner :: Bool
+                          , _ownerId :: Text
                           } deriving (Eq, Show, Generic)
 
 $(makeFieldsNoPrefix ''ProjectOwnerResponse)

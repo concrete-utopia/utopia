@@ -27,6 +27,7 @@ export const HEADERS = {
 
 export interface ProjectOwnerResponse {
   isOwner: boolean
+  ownerId: string | null
 }
 
 export type ProjectOwnerState = ProjectOwnerResponse | 'unowned'
@@ -168,6 +169,7 @@ export async function checkProjectOwnership(projectId: string): Promise<ProjectO
     console.error(`server responded with ${response.status} ${response.statusText}`)
     return {
       isOwner: false,
+      ownerId: null,
     }
   }
 }

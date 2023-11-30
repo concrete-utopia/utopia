@@ -26,24 +26,27 @@ export function projectMetadataFromServer(
 
 export interface ProjectServerState {
   isMyProject: 'yes' | 'no' | 'unknown'
+  ownerId: string | null
   projectData: ProjectMetadataFromServer | null
   forkedFromProjectData: ProjectMetadataFromServer | null
 }
 
 export function projectServerState(
   isMyProject: ProjectServerState['isMyProject'],
+  ownerId: string | null,
   projectData: ProjectMetadataFromServer | null,
   forkedFromProjectData: ProjectMetadataFromServer | null,
 ): ProjectServerState {
   return {
     isMyProject: isMyProject,
+    ownerId: ownerId,
     projectData: projectData,
     forkedFromProjectData: forkedFromProjectData,
   }
 }
 
 export function emptyProjectServerState(): ProjectServerState {
-  return projectServerState('unknown', null, null)
+  return projectServerState('unknown', null, null, null)
 }
 
 export const ProjectServerStateContext = React.createContext<ProjectServerState>(
@@ -74,14 +77,11 @@ export async function getProjectServerState(
     const projectListing = projectId == null ? null : await fetchProjectMetadata(projectId)
     const forkedFromProjectListing =
       forkedFromProjectId == null ? null : await fetchProjectMetadata(forkedFromProjectId)
-    const isMyProject =
-      projectId == null
-        ? 'yes'
-        : await checkProjectOwned(projectId).then((isMyProjectFromServer) => {
-            return isMyProjectFromServer ? 'yes' : 'no'
-          })
+    const ownership = projectId == null ? null : await checkProjectOwned(projectId)
+    const isMyProject = ownership == null || ownership.owned ? 'yes' : 'no'
     return {
       isMyProject: isMyProject,
+      ownerId: ownership?.ownerId ?? null,
       projectData: projectListingToProjectMetadataFromServer(projectListing),
       forkedFromProjectData: projectListingToProjectMetadataFromServer(forkedFromProjectListing),
     }
