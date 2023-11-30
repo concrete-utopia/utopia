@@ -16,6 +16,7 @@ export type FeatureName =
   | 'Debug - Print UIDs'
   | 'Steganography'
   | 'Collaboration'
+  | 'Jurassic CMS'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -31,6 +32,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Commenting',
   'Debug - Print UIDs',
   'Steganography',
+  'Jurassic CMS',
   'Collaboration',
 ]
 
@@ -47,6 +49,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   Commenting: false,
   'Debug - Print UIDs': false,
   Steganography: false,
+  'Jurassic CMS': false,
   Collaboration: false,
 }
 

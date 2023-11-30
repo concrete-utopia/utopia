@@ -19,7 +19,7 @@ import type { ElementsWithinInPosition, CodeWithMap } from './parser-printer-uti
 import { wrapCodeInParens, wrapCodeInParensWithMap } from './parser-printer-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../shared/dom-utils'
 import type { SteganoTextData } from '../../shared/stegano-text'
-import { cleanSteganoTextData, encodeSteganoData } from '../../shared/stegano-text'
+import { cleanSteganoTextData, encodeSteganoTextData } from '../../shared/stegano-text'
 import { SourceMapConsumer } from 'source-map'
 import type { SteganographyMode } from './parser-printer'
 
@@ -295,6 +295,7 @@ function applySteganographyPlugin(
 
         const original = path.getSource()
         const data: SteganoTextData = {
+          type: 'defined-in-source',
           filePath: sourceFileName,
           startPosition: absoluteStartPosition,
           endPosition: absoluteStartPosition + original.length,
@@ -303,7 +304,7 @@ function applySteganographyPlugin(
 
         const cleanedNodeValue = cleanSteganoTextData(path.node.value).cleaned
 
-        path.replaceWith(BabelTypes.stringLiteral(encodeSteganoData(cleanedNodeValue, data)))
+        path.replaceWith(BabelTypes.stringLiteral(encodeSteganoTextData(cleanedNodeValue, data)))
       },
     },
   })

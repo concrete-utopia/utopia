@@ -81,6 +81,7 @@ import { strictEvery } from '../../core/shared/array-utils'
 import { SimplifiedLayoutSubsection } from './sections/layout-section/self-layout-subsection/simplified-layout-subsection'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { ConstraintsSection } from './constraints-section'
+import { JurassicCMSPanel } from './sections/cms-panel'
 
 export interface ElementPathElement {
   name?: string
@@ -345,6 +346,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           }}
         >
           <SettingsPanel />
+          <JurassicCMSPanel />
         </div>
         <div
           style={{

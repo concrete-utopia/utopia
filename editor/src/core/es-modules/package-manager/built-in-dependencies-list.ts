@@ -19,6 +19,7 @@ import editorPackageJSON from '../../../../package.json'
 import { applyUIDMonkeyPatch } from '../../../utils/canvas-react-utils'
 import { createRegisterModuleFunction } from '../../property-controls/property-controls-local'
 import type { UtopiaTsWorkers } from '../../workers/common/worker-types'
+import { useJurassicKey } from '../../../components/editor/jurassic-cms'
 
 const Stub = {}
 
@@ -65,6 +66,7 @@ export function createBuiltInDependenciesList(
     ...UtopiaAPI,
     registerModule: createRegisterModuleFunction(workers),
     Group: UtopiaApiGroup,
+    useJurassicKey: useJurassicKey,
   }
 
   // Ensure this is kept up to date with:

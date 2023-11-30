@@ -3824,6 +3824,12 @@ export const ModalDialogKeepDeepEquality: KeepDeepEqualityCall<ModalDialog> = (
         return keepDeepEqualityResult(newValue, false)
       }
       break
+    case 'confirm-cms-key-delete':
+      if (newValue.type === oldValue.type) {
+        return keepDeepEqualityResult(oldValue, true)
+      } else {
+        return keepDeepEqualityResult(newValue, false)
+      }
     default:
       assertNever(oldValue)
   }

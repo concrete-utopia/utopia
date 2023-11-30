@@ -25,6 +25,7 @@ import {
   updateText,
   updateEditorMode,
   showToast,
+  resetCanvas,
 } from '../editor/actions/action-creators'
 import type { Coordinates } from '../editor/editor-modes'
 import { EditorModes } from '../editor/editor-modes'
@@ -45,10 +46,21 @@ import { assertNever } from '../../core/shared/utils'
 import { notice } from '../common/notice'
 import type { AllElementProps } from '../editor/store/editor-state'
 import { toString } from '../../core/shared/element-path'
-import type { SteganoTextData } from '../../core/shared/stegano-text'
+import type { SteganoData } from '../../core/shared/stegano-text'
 import { cleanSteganoTextData, decodeSteganoData } from '../../core/shared/stegano-text'
 import { useUpdateStringRun } from '../../core/model/project-file-helper-hooks'
 import { isFeatureEnabled } from '../../utils/feature-switches'
+import { useAtomCallback } from 'jotai/utils'
+import { useSetAtom } from 'jotai'
+import { ShouldUpdateInPlaceAtom } from '../canvas/controls/text-edit-mode/update-in-place-control'
+import {
+  CMSUpdateStateAtom,
+  JURASSIC_CMS_UPDATE_GLOBAL,
+  setCMSUpdateStateForElementPath,
+  unsetCMSUpdateStateForElementPath,
+  updateJurassicCMSKey,
+} from '../editor/jurassic-cms'
+import { useUpdateCMSCache } from '../inspector/sections/cms-panel'
 
 export const TextEditorSpanId = 'text-editor'
 
@@ -293,7 +305,7 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
 
 type TextEditedText =
   | { type: 'untracked'; contents: string }
-  | { type: 'tracked'; contents: string; data: SteganoTextData; quote: string }
+  | { type: 'tracked'; contents: string; data: SteganoData }
 
 function getTextToUse({
   text,
@@ -302,7 +314,8 @@ function getTextToUse({
   text: string
   originalText: string | null
 }): TextEditedText {
-  if (isFeatureEnabled('Steganography') && originalText != null) {
+  const isFancyTextEnabled = isFeatureEnabled('Steganography') || isFeatureEnabled('Jurassic CMS')
+  if (isFancyTextEnabled && originalText != null) {
     const data = decodeSteganoData(originalText)
     if (data != null) {
       const { cleaned } = cleanSteganoTextData(originalText)
@@ -310,7 +323,6 @@ function getTextToUse({
         type: 'tracked',
         contents: cleaned,
         data: data,
-        quote: data.originalString[0],
       }
     }
   }
@@ -364,10 +376,50 @@ const TextEditor = React.memo((props: TextEditorProps) => {
 
   const updateStringRunCommands = useUpdateStringRun()
 
+  const setCMSUpdateState = useSetAtom(CMSUpdateStateAtom)
+  const setShouldUpdateInPlace = useSetAtom(ShouldUpdateInPlaceAtom)
+  const shouldUpdateInPlaceRef = useAtomCallback(
+    React.useCallback((get) => get(ShouldUpdateInPlaceAtom), []),
+  )
+
+  const updateJurassicCache = useUpdateCMSCache()
+
+  const callJurassicCMSUpdate = React.useCallback(
+    async ({ project_id, key, updated }: { project_id: string; key: string; updated: string }) => {
+      JURASSIC_CMS_UPDATE_GLOBAL[key]?.(updated)
+      const originalValue = updateJurassicCache(key, updated)
+      setCMSUpdateState(
+        setCMSUpdateStateForElementPath(props.elementPath, { type: 'updating', value: updated }),
+      )
+      try {
+        await updateJurassicCMSKey({ project_id, key, updated })
+        setCMSUpdateState(setCMSUpdateStateForElementPath(props.elementPath, { type: 'ok' }))
+      } catch (e) {
+        updateJurassicCache(key, originalValue)
+        setCMSUpdateState(
+          setCMSUpdateStateForElementPath(props.elementPath, {
+            type: 'error',
+            message: 'Update failed',
+          }),
+        )
+      }
+      setTimeout(() => {
+        setCMSUpdateState(unsetCMSUpdateStateForElementPath(props.elementPath))
+      }, 1000)
+    },
+    [props.elementPath, setCMSUpdateState, updateJurassicCache],
+  )
+
   React.useEffect(() => {
     const currentElement = myElement.current
     if (currentElement == null) {
       return
+    }
+
+    if (textToUse.type === 'tracked' && textToUse.data.type === 'from-cms') {
+      setShouldUpdateInPlace('update-in-cms')
+    } else {
+      setShouldUpdateInPlace('not-applicable')
     }
 
     currentElement.focus()
@@ -400,7 +452,25 @@ const TextEditor = React.memo((props: TextEditorProps) => {
       if (elementState != null && savedContentRef.current !== content) {
         savedContentRef.current = content
         if (textToUse.type === 'tracked') {
-          requestAnimationFrame(() => dispatch(updateStringRunCommands(textToUse.data, content)))
+          const data = textToUse.data
+          if (data.type === 'defined-in-source') {
+            requestAnimationFrame(() => dispatch(updateStringRunCommands(data, content)))
+          } else if (data.type === 'from-cms') {
+            const shouldUpdateInPlaceState = shouldUpdateInPlaceRef()
+            requestAnimationFrame(() => {
+              if (shouldUpdateInPlaceState === 'update-in-cms') {
+                void callJurassicCMSUpdate({
+                  project_id: data.project_id,
+                  key: data.key,
+                  updated: content,
+                })
+              } else {
+                dispatch([getSaveAction(elementPath, content, textProp)])
+              }
+            })
+          } else {
+            assertNever(data)
+          }
         } else {
           requestAnimationFrame(() => dispatch([getSaveAction(elementPath, content, textProp)]))
         }
@@ -415,6 +485,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
         requestAnimationFrame(() => dispatch([deleteView(elementPath)]))
       }
     }
+    setShouldUpdateInPlace('not-applicable')
   }, [
     dispatch,
     elementPath,
@@ -424,6 +495,10 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     allElementPropsRef,
     updateStringRunCommands,
     textToUse,
+    shouldUpdateInPlaceRef,
+    setShouldUpdateInPlace,
+    props.elementPath,
+    callJurassicCMSUpdate,
   ])
 
   React.useLayoutEffect(() => {
@@ -503,12 +578,34 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     if (content != null && elementState != null && savedContentRef.current !== content) {
       savedContentRef.current = content
       if (textToUse.type === 'tracked') {
-        requestAnimationFrame(() => {
-          dispatch([
-            ...updateStringRunCommands(textToUse.data, content),
-            updateEditorMode(EditorModes.selectMode(null, false, 'none')),
-          ])
-        })
+        const data = textToUse.data
+        if (data.type === 'defined-in-source') {
+          requestAnimationFrame(() => {
+            dispatch([
+              ...updateStringRunCommands(data, content),
+              updateEditorMode(EditorModes.selectMode(null, false, 'none')),
+            ])
+          })
+        } else if (data.type === 'from-cms') {
+          const shouldUpdateInPlaceState = shouldUpdateInPlaceRef()
+          requestAnimationFrame(() => {
+            if (shouldUpdateInPlaceState === 'update-in-cms') {
+              void callJurassicCMSUpdate({
+                project_id: data.project_id,
+                key: data.key,
+                updated: content,
+              })
+              dispatch([updateEditorMode(EditorModes.selectMode(null, false, 'none'))])
+            } else {
+              dispatch([
+                getSaveAction(elementPath, content, textProp),
+                updateEditorMode(EditorModes.selectMode(null, false, 'none')),
+              ])
+            }
+          })
+        } else {
+          assertNever(data)
+        }
       } else {
         dispatch([
           getSaveAction(elementPath, content, textProp),
@@ -518,7 +615,18 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     } else {
       dispatch([updateEditorMode(EditorModes.selectMode(null, false, 'none'))])
     }
-  }, [dispatch, elementPath, elementState, textProp, textToUse, updateStringRunCommands])
+    setShouldUpdateInPlace('not-applicable')
+  }, [
+    callJurassicCMSUpdate,
+    dispatch,
+    elementPath,
+    elementState,
+    setShouldUpdateInPlace,
+    shouldUpdateInPlaceRef,
+    textProp,
+    textToUse,
+    updateStringRunCommands,
+  ])
 
   const editorProps: React.DetailedHTMLProps<
     React.HTMLAttributes<HTMLSpanElement>,

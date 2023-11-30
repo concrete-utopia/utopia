@@ -327,7 +327,7 @@ export function renderCoreElement(
           return runJSExpression(filePath, requireResult, element, blockScope)
         }
 
-        const originalTextContent = isFeatureEnabled('Steganography') ? runJSExpressionLazy() : null
+        const originalTextContent = isAnyCMSFeatureFlagEnabled() ? runJSExpressionLazy() : null
 
         const textContent = trimJoinUnescapeTextFromJSXElements([element])
         const textEditorProps: TextEditorProps = {
@@ -878,7 +878,7 @@ function renderJSXElement(
         return runJSExpression(filePath, requireResult, expressionToEvaluate, blockScope)
       }
 
-      const originalTextContent = isFeatureEnabled('Steganography') ? runJSExpressionLazy() : null
+      const originalTextContent = isAnyCMSFeatureFlagEnabled() ? runJSExpressionLazy() : null
 
       const textContent = trimJoinUnescapeTextFromJSXElements(childrenWithNewTextBlock)
       const textEditorProps: TextEditorProps = {
@@ -1106,4 +1106,8 @@ function streamlineInFileBlobs(props: any, fileBlobs: UIFileBase64Blobs): any {
   } else {
     return props
   }
+}
+
+function isAnyCMSFeatureFlagEnabled() {
+  return isFeatureEnabled('Steganography') || isFeatureEnabled('Jurassic CMS')
 }

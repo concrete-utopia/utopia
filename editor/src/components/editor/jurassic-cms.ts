@@ -1,0 +1,98 @@
+import { atom } from 'jotai'
+import * as EP from '../../core/shared/element-path'
+import type { ElementPath } from '../../core/shared/project-file-types'
+import { JURASSIC_CMS_URL } from '../../common/env-vars'
+
+export type CMSUpdateStatus =
+  | { type: 'updating'; value: string }
+  | { type: 'error'; message: string }
+  | { type: 'ok' }
+
+export const CMSOptimisticValues_GLOBAL: {
+  [elementPathString: string]: string
+} = {}
+
+interface CMSUpdateState {
+  [elementPathString: string]: CMSUpdateStatus
+}
+
+export const CMSUpdateStateAtom = atom<CMSUpdateState>({})
+
+export function setCMSUpdateStateForElementPath(
+  elementPath: ElementPath,
+  status: CMSUpdateStatus,
+): (_: CMSUpdateState) => CMSUpdateState {
+  if (status.type === 'updating') {
+    CMSOptimisticValues_GLOBAL[EP.toString(elementPath)] = status.value
+  } else {
+    delete CMSOptimisticValues_GLOBAL[EP.toString(elementPath)]
+  }
+  return (state: CMSUpdateState) => ({
+    ...state,
+    [EP.toString(elementPath)]: status,
+  })
+}
+
+export function unsetCMSUpdateStateForElementPath(
+  elementPath: ElementPath,
+): (_: CMSUpdateState) => CMSUpdateState {
+  delete CMSOptimisticValues_GLOBAL[EP.toString(elementPath)]
+  return (state: CMSUpdateState) => {
+    const nextState = { ...state }
+    delete nextState[EP.toString(elementPath)]
+    return nextState
+  }
+}
+
+export async function updateJurassicCMSKey({
+  project_id,
+  key,
+  updated,
+}: {
+  project_id: string
+  key: string
+  updated: string
+}): Promise<void> {
+  const response = await fetch(`${JURASSIC_CMS_URL}/api/${project_id}/${key}`, {
+    method: 'POST',
+    headers: new Headers({ Accept: 'application/json', 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ value: updated }),
+  })
+  if (!response.ok) {
+    throw new Error(response.statusText)
+  }
+}
+
+export async function deleteJurassicCMSKey({
+  project_id,
+  key,
+}: {
+  project_id: string
+  key: string
+}): Promise<void> {
+  const response = await fetch(`${JURASSIC_CMS_URL}/api/${project_id}/${key}`, {
+    method: 'DELETE',
+    headers: new Headers({ Accept: 'application/json', 'Content-Type': 'application/json' }),
+  })
+  if (!response.ok) {
+    throw new Error(response.statusText)
+  }
+}
+
+export const JURASSIC_CMS_UPDATE_GLOBAL: { [key: string]: (_: string) => void } = {}
+
+export async function useJurassicKey({
+  jurassicBaseUrl,
+  projectId,
+  key,
+  cb,
+}: {
+  jurassicBaseUrl: string
+  projectId: string
+  key: string
+  cb: (_: string) => void
+}) {
+  const result = await fetch(`${jurassicBaseUrl}/api/${projectId}/${key}`).then((r) => r.text())
+  JURASSIC_CMS_UPDATE_GLOBAL[key] = cb
+  cb(result)
+}

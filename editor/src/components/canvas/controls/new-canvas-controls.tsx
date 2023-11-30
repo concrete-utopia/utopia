@@ -66,6 +66,8 @@ import {
 import { useSelectionArea } from './selection-area-hooks'
 import { RemixSceneLabelControl } from './select-mode/remix-scene-label'
 import { NO_OP } from '../../../core/shared/utils'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { CMSUpdateLabelControl } from './text-edit-mode/cms-update-label'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -516,6 +518,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         onMouseDown={onMouseDown}
         onMouseUp={onMouseUp}
       >
+        {when(isFeatureEnabled('Jurassic CMS'), <CMSUpdateLabelControl />)}
         {when(
           isSelectMode(editorMode),
           <SceneLabelControl

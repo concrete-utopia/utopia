@@ -7,10 +7,9 @@ import {
   FlexColumn,
   FlexRow,
   Icn,
-  InspectorSubsectionHeader,
   UtopiaStyles,
   UtopiaTheme,
-  colorTheme,
+  useColorTheme,
 } from '../../../../uuiui'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { stopPropagation } from '../../../inspector/common/inspector-utils'
@@ -56,6 +55,8 @@ export const PostActionMenu = React.memo(
     )
 
     const dispatch = useDispatch()
+
+    const colorTheme = useColorTheme()
 
     const onSetPostActionChoice = React.useCallback(
       (index: number) => {
@@ -305,6 +306,7 @@ export const FloatingPostActionMenu = React.memo(
     }, [postActionSessionChoices])
 
     const dispatch = useDispatch()
+    const colorTheme = useColorTheme()
 
     React.useEffect(() => {
       function handleKeyDown(event: KeyboardEvent) {
@@ -404,4 +406,5 @@ export const FloatingPostActionMenu = React.memo(
     )
   },
 )
+
 FloatingPostActionMenu.displayName = 'FloatingPostActionMenu'
