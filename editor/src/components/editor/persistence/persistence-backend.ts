@@ -77,7 +77,7 @@ export async function checkProjectOwned(projectId: string): Promise<ProjectOwner
   } else {
     const ownerState = await checkProjectOwnership(projectId)
     return ownerState === 'unowned'
-      ? { ownerId: null, isOwner: false }
+      ? { ownerId: null, isOwner: true }
       : { ownerId: ownerState.ownerId, isOwner: ownerState.isOwner }
   }
 }
