@@ -14,7 +14,6 @@ import {
   isNotNullFiniteRectangle,
   offsetPoint,
   pointDifference,
-  scalePoint,
   windowPoint,
 } from '../../../core/shared/math-utils'
 import {
@@ -32,7 +31,6 @@ import { AvatarPicture } from '../../user-bar'
 import { canvasPointToWindowPoint, windowToCanvasCoordinates } from '../dom-lookup'
 import { RemixNavigationAtom } from '../remix/utopia-remix-root-component'
 import { getIdOfScene } from './comment-mode/comment-mode-hooks'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 
 const IndicatorSize = 20
 

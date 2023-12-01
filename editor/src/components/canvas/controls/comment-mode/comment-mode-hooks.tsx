@@ -11,18 +11,14 @@ import {
   newComment,
   sceneCommentLocation,
 } from '../../../editor/editor-modes'
-import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import { useRefEditorState } from '../../../editor/store/store-hook'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 import {
-  canvasPoint,
   getLocalPointInNewParentContext,
   isNotNullFiniteRectangle,
-  offsetPoint,
-  pointDifference,
   rectContainsPoint,
   windowPoint,
 } from '../../../../core/shared/math-utils'
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { isLeft } from '../../../../core/shared/either'
 import type { ElementInstanceMetadata } from '../../../../core/shared/element-template'
 import { isJSXElement } from '../../../../core/shared/element-template'

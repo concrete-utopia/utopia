@@ -14,7 +14,6 @@ import {
   getCanvasPointWithCanvasOffset,
   isNotNullFiniteRectangle,
   localPoint,
-  offsetPoint,
   zeroCanvasPoint,
 } from '../shared/math-utils'
 import { MetadataUtils } from '../model/element-metadata-utils'
