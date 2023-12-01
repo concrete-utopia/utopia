@@ -1,6 +1,6 @@
 import '@liveblocks/react-comments/styles.css'
 import React from 'react'
-import { FlexColumn, FlexRow, InspectorSubsectionHeader } from '../../../uuiui'
+import { FlexColumn, FlexRow, InspectorSubsectionHeader, useColorTheme } from '../../../uuiui'
 import { Comment } from '@liveblocks/react-comments'
 import { stopPropagation } from '../common/inspector-utils'
 import type { ThreadMetadata } from '../../../../liveblocks.config'
@@ -9,11 +9,18 @@ import type { ThreadData } from '@liveblocks/client'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { canvasPoint, canvasRectangle } from '../../../core/shared/math-utils'
 import { scrollToPosition, switchEditorMode } from '../../editor/actions/action-creators'
-import { EditorModes, existingComment } from '../../editor/editor-modes'
+import {
+  EditorModes,
+  existingComment,
+  isCommentMode,
+  isExistingComment,
+} from '../../editor/editor-modes'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { useAtom } from 'jotai'
 import { RemixNavigationAtom } from '../../canvas/remix/utopia-remix-root-component'
 import { useIsOnAnotherRemixRoute } from '../../../core/commenting/comment-hooks'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
+import { when } from '../../../utils/react-conditionals'
 
 export const CommentSection = React.memo(() => {
   return (
@@ -56,12 +63,23 @@ interface ThreadPreviewProps {
 
 const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
   const dispatch = useDispatch()
+  const colorTheme = useColorTheme()
   const [remixNavigationState] = useAtom(RemixNavigationAtom)
 
   const { remixLocationRoute } = thread.metadata
   const point = canvasPoint(thread.metadata)
 
   const isOnAnotherRoute = useIsOnAnotherRemixRoute(remixLocationRoute ?? null)
+
+  const isSelected = useEditorState(
+    Substores.restOfEditor,
+    (store) =>
+      isCommentMode(store.editor.mode) &&
+      store.editor.mode.comment != null &&
+      isExistingComment(store.editor.mode.comment) &&
+      store.editor.mode.comment.threadId === thread.id,
+    'ThreadPreview isSelected',
+  )
 
   const onClick = React.useCallback(() => {
     const rect = canvasRectangle({ x: point.x, y: point.y, width: 25, height: 25 })
@@ -86,9 +104,29 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
   if (comment == null) {
     return null
   }
+
+  const repliesCount = thread.comments.length - 1
   return (
-    <div key={comment.id} onClick={onClick}>
-      <Comment comment={comment} showActions={false} />
+    <div
+      key={comment.id}
+      onClick={onClick}
+      style={{ backgroundColor: isSelected ? `${colorTheme.primary10.value}` : 'transparent' }}
+    >
+      <Comment comment={comment} showActions={false} style={{ backgroundColor: 'transparent' }} />
+      {when(
+        repliesCount > 0,
+        <div
+          style={{
+            paddingBottom: 10,
+            paddingLeft: 44,
+            fontSize: 9,
+            color: colorTheme.fg6.value,
+            marginTop: -5,
+          }}
+        >
+          {repliesCount} {repliesCount > 1 ? 'replies' : 'reply'}
+        </div>,
+      )}
     </div>
   )
 })
