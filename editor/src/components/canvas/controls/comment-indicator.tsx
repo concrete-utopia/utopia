@@ -92,7 +92,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
   const scenes = useEditorState(
     Substores.metadata,
     (store) => MetadataUtils.getScenesMetadata(store.editor.jsxMetadata),
-    'useCommentModeSelectAndHover scenes',
+    'CommentIndicator scenes',
   )
 
   const canvasLocation = (() => {
