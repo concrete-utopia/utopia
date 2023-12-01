@@ -5,7 +5,7 @@ import type {
   ImageFile,
 } from '../../core/shared/project-file-types'
 import type { JSXElement } from '../../core/shared/element-template'
-import type { CanvasPoint, Size } from '../../core/shared/math-utils'
+import type { CanvasPoint, LocalPoint, Size } from '../../core/shared/math-utils'
 
 export const DefaultInsertSize: Size = { width: 100, height: 100 }
 
@@ -95,10 +95,38 @@ export type CommentId = NewComment | ExistingComment
 
 export interface NewComment {
   type: 'new'
-  location: CanvasPoint
+  location: NewCommentLocation
 }
 
-export function newComment(location: CanvasPoint): NewComment {
+export type NewCommentLocation = CanvasCommentLocation | SceneCommentLocation
+
+export interface CanvasCommentLocation {
+  type: 'canvas'
+  position: CanvasPoint
+}
+
+export function canvasCommentLocation(canvasPoint: CanvasPoint): CanvasCommentLocation {
+  return {
+    type: 'canvas',
+    position: canvasPoint,
+  }
+}
+
+export interface SceneCommentLocation {
+  type: 'scene'
+  sceneId: string
+  offset: LocalPoint
+}
+
+export function sceneCommentLocation(sceneId: string, offset: LocalPoint): SceneCommentLocation {
+  return {
+    type: 'scene',
+    sceneId: sceneId,
+    offset: offset,
+  }
+}
+
+export function newComment(location: NewCommentLocation): NewComment {
   return {
     type: 'new',
     location: location,

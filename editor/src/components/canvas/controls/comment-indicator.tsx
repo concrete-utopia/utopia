@@ -6,9 +6,18 @@ import { useAtom } from 'jotai'
 import React from 'react'
 import type { ThreadMetadata } from '../../../../liveblocks.config'
 import { useEditThreadMetadata, useStorage, useThreads } from '../../../../liveblocks.config'
-import { useIsOnAnotherRemixRoute } from '../../../core/commenting/comment-hooks'
+import {
+  useCanvasLocationOfThread,
+  useIsOnAnotherRemixRoute,
+} from '../../../core/commenting/comment-hooks'
 import type { CanvasPoint, CanvasVector, WindowPoint } from '../../../core/shared/math-utils'
-import { canvasPoint, distance, offsetPoint, windowPoint } from '../../../core/shared/math-utils'
+import {
+  canvasPoint,
+  distance,
+  offsetPoint,
+  pointDifference,
+  windowPoint,
+} from '../../../core/shared/math-utils'
 import {
   multiplayerColorFromIndex,
   multiplayerInitialsFromName,
@@ -79,7 +88,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
 
   const [remixNavigationState] = useAtom(RemixNavigationAtom)
 
-  const point = canvasPoint(thread.metadata)
+  const canvasLocation = useCanvasLocationOfThread(thread)
 
   const remixLocationRoute = thread.metadata.remixLocationRoute ?? null
 
@@ -117,10 +126,10 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
     }
   })()
 
-  const { onMouseDown, dragPosition } = useDragging(thread)
+  const { onMouseDown, dragPosition } = useDragging(thread, canvasLocation)
   const position = React.useMemo(
-    () => canvasPointToWindowPoint(dragPosition ?? point, canvasScale, canvasOffset),
-    [point, canvasScale, canvasOffset, dragPosition],
+    () => canvasPointToWindowPoint(dragPosition ?? canvasLocation, canvasScale, canvasOffset),
+    [canvasLocation, canvasScale, canvasOffset, dragPosition],
   )
 
   return (
@@ -176,13 +185,12 @@ CommentIndicator.displayName = 'CommentIndicator'
 
 const COMMENT_DRAG_THRESHOLD = 5 // square px
 
-function useDragging(thread: ThreadData<ThreadMetadata>) {
+function useDragging(thread: ThreadData<ThreadMetadata>, originalLocation: CanvasPoint) {
   const editThreadMetadata = useEditThreadMetadata()
   const dispatch = useDispatch()
   const [dragPosition, setDragPosition] = React.useState<CanvasPoint | null>(null)
 
   const canvasScaleRef = useRefEditorState((store) => store.editor.canvas.scale)
-  const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.realCanvasOffset)
 
   const onMouseDown = React.useCallback(
     (event: React.MouseEvent) => {
@@ -196,12 +204,12 @@ function useDragging(thread: ThreadData<ThreadMetadata>) {
         draggedPastThreshold ||= distance(mouseDownPoint, mouseMovePoint) > COMMENT_DRAG_THRESHOLD
 
         if (draggedPastThreshold) {
-          const newCanvasPoint = mousePositionToIndicatorPosition(
-            canvasScaleRef.current,
-            canvasOffsetRef.current,
-            mouseMovePoint,
-          )
-          setDragPosition(newCanvasPoint)
+          const dragVectorWindow = pointDifference(mouseDownPoint, mouseMovePoint)
+          const dragVectorCanvas = canvasPoint({
+            x: dragVectorWindow.x / canvasScaleRef.current,
+            y: dragVectorWindow.y / canvasScaleRef.current,
+          })
+          setDragPosition(offsetPoint(originalLocation, dragVectorCanvas))
         }
       }
 
@@ -213,19 +221,16 @@ function useDragging(thread: ThreadData<ThreadMetadata>) {
         const mouseUpPoint = windowPoint({ x: upEvent.clientX, y: upEvent.clientY })
 
         if (draggedPastThreshold) {
-          const newCanvasPosition = mousePositionToIndicatorPosition(
-            canvasScaleRef.current,
-            canvasOffsetRef.current,
-            mouseUpPoint,
-          )
+          const dragVectorWindow = pointDifference(mouseDownPoint, mouseUpPoint)
+          const dragVectorCanvas = canvasPoint({
+            x: dragVectorWindow.x / canvasScaleRef.current,
+            y: dragVectorWindow.y / canvasScaleRef.current,
+          })
           setDragPosition(null)
 
           editThreadMetadata({
             threadId: thread.id,
-            metadata: {
-              x: newCanvasPosition.x,
-              y: newCanvasPosition.y,
-            },
+            metadata: offsetPoint(canvasPoint(thread.metadata), dragVectorCanvas),
           })
         }
       }
@@ -235,7 +240,7 @@ function useDragging(thread: ThreadData<ThreadMetadata>) {
       window.addEventListener('mousemove', onMouseMove)
       window.addEventListener('mouseup', onMouseUp)
     },
-    [dispatch, canvasOffsetRef, canvasScaleRef, editThreadMetadata, thread.id],
+    [dispatch, canvasScaleRef, editThreadMetadata, thread.id, originalLocation, thread.metadata],
   )
 
   return { onMouseDown, dragPosition }

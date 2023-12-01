@@ -2,6 +2,7 @@ import React from 'react'
 import { View } from './view'
 
 export interface SceneProps {
+  id?: string
   style?: React.CSSProperties
   'data-label'?: string
   'data-uid'?: string

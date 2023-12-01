@@ -477,6 +477,9 @@ import type {
   CommentId,
   NewComment,
   ExistingComment,
+  NewCommentLocation,
+  CanvasCommentLocation,
+  SceneCommentLocation,
 } from '../editor-modes'
 import {
   EditorModes,
@@ -485,6 +488,8 @@ import {
   imageInsertionSubject,
   newComment,
   existingComment,
+  canvasCommentLocation,
+  sceneCommentLocation,
 } from '../editor-modes'
 import type { EditorPanel } from '../../common/actions'
 import type { Notice, NoticeLevel } from '../../common/notice'
@@ -3252,9 +3257,42 @@ export const TextEditModeKeepDeepEquality: KeepDeepEqualityCall<TextEditMode> =
     EditorModes.textEditMode,
   )
 
+export const CanvasCommentLocationKeepDeepEquality: KeepDeepEqualityCall<CanvasCommentLocation> =
+  combine1EqualityCall((loc) => loc.position, CanvasPointKeepDeepEquality, canvasCommentLocation)
+
+export const SceneCommentLocationKeepDeepEquality: KeepDeepEqualityCall<SceneCommentLocation> =
+  combine2EqualityCalls(
+    (loc) => loc.sceneId,
+    StringKeepDeepEquality,
+    (loc) => loc.offset,
+    LocalPointKeepDeepEquality,
+    sceneCommentLocation,
+  )
+
+export const NewCommentLocationKeepDeepEquality: KeepDeepEqualityCall<NewCommentLocation> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'canvas':
+      if (newValue.type === oldValue.type) {
+        return CanvasCommentLocationKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'scene':
+      if (newValue.type === oldValue.type) {
+        return SceneCommentLocationKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
 export const NewCommentKeepDeepEquality: KeepDeepEqualityCall<NewComment> = combine1EqualityCall(
   (mode) => mode.location,
-  CanvasPointKeepDeepEquality,
+  NewCommentLocationKeepDeepEquality,
   newComment,
 )
 

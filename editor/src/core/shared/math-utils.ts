@@ -41,6 +41,9 @@ export function canvasSegment(a: CanvasPoint, b: CanvasPoint): CanvasSegment {
 export function canvasPoint(p: PointInner): CanvasPoint {
   return p as CanvasPoint
 }
+export function localPoint(p: PointInner): LocalPoint {
+  return p as LocalPoint
+}
 export function windowPoint(p: PointInner): WindowPoint {
   return p as WindowPoint
 }
