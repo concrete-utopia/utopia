@@ -30,11 +30,7 @@ export function useCanvasCommentThreadAndLocation(comment: CommentId): {
     }
   }, [threads, comment])
 
-  const scenes = useEditorState(
-    Substores.metadata,
-    (store) => MetadataUtils.getScenesMetadata(store.editor.jsxMetadata),
-    'useCommentModeSelectAndHover scenes',
-  )
+  const scenes = useScenesWithId()
 
   const location = React.useMemo(() => {
     switch (comment.type) {
@@ -174,5 +170,16 @@ export function useIsOnAnotherRemixRoute(remixLocationRoute: string | null) {
     me.presence.remix?.locationRoute != null &&
     remixLocationRoute != null &&
     remixLocationRoute !== me.presence.remix.locationRoute
+  )
+}
+
+export function useScenesWithId() {
+  return useEditorState(
+    Substores.metadata,
+    (store) => {
+      const scenes = MetadataUtils.getScenesMetadata(store.editor.jsxMetadata)
+      return scenes.filter((s) => getIdOfScene(s) != null)
+    },
+    'useScenesWithId scenes',
   )
 }

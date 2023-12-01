@@ -6,7 +6,7 @@ import { useAtom } from 'jotai'
 import React from 'react'
 import type { ThreadMetadata } from '../../../../liveblocks.config'
 import { useEditThreadMetadata, useStorage, useThreads } from '../../../../liveblocks.config'
-import { useIsOnAnotherRemixRoute } from '../../../core/commenting/comment-hooks'
+import { useIsOnAnotherRemixRoute, useScenesWithId } from '../../../core/commenting/comment-hooks'
 import type { CanvasPoint, CanvasVector, WindowPoint } from '../../../core/shared/math-utils'
 import {
   canvasPoint,
@@ -89,11 +89,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
 
   const [remixNavigationState] = useAtom(RemixNavigationAtom)
 
-  const scenes = useEditorState(
-    Substores.metadata,
-    (store) => MetadataUtils.getScenesMetadata(store.editor.jsxMetadata),
-    'CommentIndicator scenes',
-  )
+  const scenes = useScenesWithId()
 
   const canvasLocation = (() => {
     if (thread.metadata.sceneId == null) {

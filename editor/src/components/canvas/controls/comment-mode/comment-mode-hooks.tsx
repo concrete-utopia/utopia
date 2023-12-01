@@ -16,6 +16,8 @@ import { windowToCanvasCoordinates } from '../../dom-lookup'
 import {
   canvasPoint,
   isNotNullFiniteRectangle,
+  offsetPoint,
+  pointDifference,
   rectContainsPoint,
   windowPoint,
 } from '../../../../core/shared/math-utils'
@@ -29,15 +31,12 @@ import {
 } from '../../../../core/shared/jsx-attributes'
 import { create } from '../../../../core/shared/property-path'
 import { optionalMap } from '../../../../core/shared/optional-utils'
+import { useScenesWithId } from '../../../../core/commenting/comment-hooks'
 
 export function useCommentModeSelectAndHover(comment: CommentId | null): MouseCallbacks {
   const dispatch = useDispatch()
 
-  const scenes = useEditorState(
-    Substores.metadata,
-    (store) => MetadataUtils.getScenesMetadata(store.editor.jsxMetadata),
-    'useCommentModeSelectAndHover scenes',
-  )
+  const scenes = useScenesWithId()
 
   const storeRef = useRefEditorState((store) => {
     return {
@@ -54,6 +53,7 @@ export function useCommentModeSelectAndHover(comment: CommentId | null): MouseCa
           storeRef.current.canvasOffset,
           windowPoint({ x: event.clientX, y: event.clientY }),
         )
+
         const scenesUnderTheMouse = scenes.filter((scene) => {
           const sceneId = getIdOfScene(scene)
           return (
@@ -66,10 +66,7 @@ export function useCommentModeSelectAndHover(comment: CommentId | null): MouseCa
         const sceneId = getIdOfScene(scene)
         const offset =
           sceneId != null && isNotNullFiniteRectangle(scene.globalFrame)
-            ? canvasPoint({
-                x: loc.canvasPositionRounded.x - scene.globalFrame.x,
-                y: loc.canvasPositionRounded.y - scene.globalFrame.y,
-              })
+            ? pointDifference(scene.globalFrame, loc.canvasPositionRounded)
             : null
 
         if (scene == null || sceneId == null || offset == null) {
