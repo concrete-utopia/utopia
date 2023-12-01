@@ -95,10 +95,38 @@ export type CommentId = NewComment | ExistingComment
 
 export interface NewComment {
   type: 'new'
-  location: CanvasPoint
+  location: NewCommentLocation
 }
 
-export function newComment(location: CanvasPoint): NewComment {
+export type NewCommentLocation = CanvasCommentLocation | SceneCommentLocation
+
+export interface CanvasCommentLocation {
+  type: 'canvas'
+  position: CanvasPoint
+}
+
+export function canvasCommentLocation(canvasPoint: CanvasPoint): CanvasCommentLocation {
+  return {
+    type: 'canvas',
+    position: canvasPoint,
+  }
+}
+
+export interface SceneCommentLocation {
+  type: 'scene'
+  sceneId: string
+  offset: CanvasPoint
+}
+
+export function sceneCommentLocation(sceneId: string, offset: CanvasPoint): SceneCommentLocation {
+  return {
+    type: 'scene',
+    sceneId: sceneId,
+    offset: offset,
+  }
+}
+
+export function newComment(location: NewCommentLocation): NewComment {
   return {
     type: 'new',
     location: location,

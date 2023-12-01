@@ -84,6 +84,7 @@ export type ThreadMetadata = {
   type: 'canvas'
   x: number
   y: number
+  sceneId?: string
   remixLocationRoute?: string
 }
 

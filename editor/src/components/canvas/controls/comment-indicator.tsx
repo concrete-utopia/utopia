@@ -8,7 +8,13 @@ import type { ThreadMetadata } from '../../../../liveblocks.config'
 import { useEditThreadMetadata, useStorage, useThreads } from '../../../../liveblocks.config'
 import { useIsOnAnotherRemixRoute } from '../../../core/commenting/comment-hooks'
 import type { CanvasPoint, CanvasVector, WindowPoint } from '../../../core/shared/math-utils'
-import { canvasPoint, distance, offsetPoint, windowPoint } from '../../../core/shared/math-utils'
+import {
+  canvasPoint,
+  distance,
+  isNotNullFiniteRectangle,
+  offsetPoint,
+  windowPoint,
+} from '../../../core/shared/math-utils'
 import {
   multiplayerColorFromIndex,
   multiplayerInitialsFromName,
@@ -23,6 +29,8 @@ import { Substores, useEditorState, useRefEditorState } from '../../editor/store
 import { AvatarPicture } from '../../user-bar'
 import { canvasPointToWindowPoint, windowToCanvasCoordinates } from '../dom-lookup'
 import { RemixNavigationAtom } from '../remix/utopia-remix-root-component'
+import { getIdOfScene } from './comment-mode/comment-mode-hooks'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 
 const IndicatorSize = 20
 
@@ -79,7 +87,26 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
 
   const [remixNavigationState] = useAtom(RemixNavigationAtom)
 
-  const point = canvasPoint(thread.metadata)
+  const scenes = useEditorState(
+    Substores.metadata,
+    (store) => MetadataUtils.getScenesMetadata(store.editor.jsxMetadata),
+    'useCommentModeSelectAndHover scenes',
+  )
+
+  const point = (() => {
+    if (thread.metadata.sceneId == null) {
+      return canvasPoint(thread.metadata)
+    }
+    const scene = scenes.find((s) => getIdOfScene(s) === thread.metadata.sceneId)
+
+    if (scene == null) {
+      return canvasPoint(thread.metadata)
+    }
+    if (!isNotNullFiniteRectangle(scene.globalFrame)) {
+      return canvasPoint(thread.metadata)
+    }
+    return offsetPoint(canvasPoint(thread.metadata), scene.globalFrame)
+  })()
 
   const remixLocationRoute = thread.metadata.remixLocationRoute ?? null
 
