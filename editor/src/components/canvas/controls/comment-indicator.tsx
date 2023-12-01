@@ -6,12 +6,14 @@ import { useAtom } from 'jotai'
 import React from 'react'
 import type { ThreadMetadata } from '../../../../liveblocks.config'
 import { useEditThreadMetadata, useStorage, useThreads } from '../../../../liveblocks.config'
-import { useIsOnAnotherRemixRoute, useScenesWithId } from '../../../core/commenting/comment-hooks'
+import {
+  useCanvasLocationOfThread,
+  useIsOnAnotherRemixRoute,
+} from '../../../core/commenting/comment-hooks'
 import type { CanvasPoint, CanvasVector, WindowPoint } from '../../../core/shared/math-utils'
 import {
   canvasPoint,
   distance,
-  isNotNullFiniteRectangle,
   offsetPoint,
   pointDifference,
   windowPoint,
@@ -30,7 +32,6 @@ import { Substores, useEditorState, useRefEditorState } from '../../editor/store
 import { AvatarPicture } from '../../user-bar'
 import { canvasPointToWindowPoint, windowToCanvasCoordinates } from '../dom-lookup'
 import { RemixNavigationAtom } from '../remix/utopia-remix-root-component'
-import { getIdOfScene } from './comment-mode/comment-mode-hooks'
 
 const IndicatorSize = 20
 
@@ -87,22 +88,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
 
   const [remixNavigationState] = useAtom(RemixNavigationAtom)
 
-  const scenes = useScenesWithId()
-
-  const canvasLocation = (() => {
-    if (thread.metadata.sceneId == null) {
-      return canvasPoint(thread.metadata)
-    }
-    const scene = scenes.find((s) => getIdOfScene(s) === thread.metadata.sceneId)
-
-    if (scene == null) {
-      return canvasPoint(thread.metadata)
-    }
-    if (!isNotNullFiniteRectangle(scene.globalFrame)) {
-      return canvasPoint(thread.metadata)
-    }
-    return offsetPoint(canvasPoint(thread.metadata), scene.globalFrame)
-  })()
+  const canvasLocation = useCanvasLocationOfThread(thread)
 
   const remixLocationRoute = thread.metadata.remixLocationRoute ?? null
 

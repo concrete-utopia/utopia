@@ -186,3 +186,17 @@ export function useScenesWithId() {
     'useScenesWithId scenes',
   )
 }
+
+export function useCanvasLocationOfThread(thread: ThreadData<ThreadMetadata>): CanvasPoint {
+  const scenes = useScenesWithId()
+
+  if (thread.metadata.sceneId == null) {
+    return canvasPoint(thread.metadata)
+  }
+  const scene = scenes.find((s) => getIdOfScene(s) === thread.metadata.sceneId)
+
+  if (scene == null || !isNotNullFiniteRectangle(scene.globalFrame)) {
+    return canvasPoint(thread.metadata)
+  }
+  return getCanvasPointWithCanvasOffset(scene.globalFrame, localPoint(thread.metadata))
+}
