@@ -10,7 +10,7 @@ import {
   normalizeMultiplayerName,
   normalizeOthersList,
 } from '../core/shared/multiplayer'
-import { Avatar, Tooltip, useColorTheme } from '../uuiui'
+import { Avatar, FlexRow, Icn, Tooltip, useColorTheme } from '../uuiui'
 import { Substores, useEditorState } from './editor/store/store-hook'
 import { when } from '../utils/react-conditionals'
 import { MultiplayerWrapper } from '../utils/multiplayer-wrapper'
@@ -36,16 +36,20 @@ export const UserBar = React.memo(() => {
 
   if (!isLoggedIn(loginState)) {
     return null
-  } else if (roomStatus !== 'connected') {
-    return <SinglePlayerUserBar />
-  } else {
-    return (
-      <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
-        <MultiplayerUserBar />
-      </MultiplayerWrapper>
-    )
   }
+
+  return (
+    <FlexRow style={{ gap: 6 }}>
+      {roomStatus === 'connected' && (
+        <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
+          <MultiplayerUserBar />
+        </MultiplayerWrapper>
+      )}
+      <SinglePlayerUserBar />
+    </FlexRow>
+  )
 })
+
 UserBar.displayName = 'UserBar'
 
 export const SinglePlayerUserBar = React.memo(() => {
@@ -54,9 +58,24 @@ export const SinglePlayerUserBar = React.memo(() => {
     (store) => getUserPicture(store.userState.loginState),
     'SinglePlayerUserBar userPicture',
   )
+  const amIOwner = useEditorState(
+    Substores.projectServerState,
+    (store) => store.projectServerState.isMyProject === 'yes',
+    'SinglePlayerUserBar amIOwner',
+  )
+
   return (
     <a href='/projects' target='_blank'>
-      <Avatar userPicture={userPicture} isLoggedIn={true} />
+      <div
+        style={{
+          width: 24,
+          height: 24,
+          position: 'relative',
+        }}
+      >
+        <Avatar userPicture={userPicture} isLoggedIn={true} />
+        {amIOwner ? <OwnerBadge /> : null}
+      </div>
     </a>
   )
 })
@@ -90,6 +109,12 @@ const MultiplayerUserBar = React.memo(() => {
     Substores.restOfEditor,
     (store) => store.editor.mode,
     'MultiplayerUserBar mode',
+  )
+
+  const ownerId = useEditorState(
+    Substores.projectServerState,
+    (store) => store.projectServerState.ownerId,
+    'MultiplayerUserBar ownerId',
   )
 
   const toggleFollowing = React.useCallback(
@@ -134,64 +159,43 @@ const MultiplayerUserBar = React.memo(() => {
       style={{
         display: 'flex',
         alignItems: 'center',
-        gap: 4,
+        justifyContent: 'center',
       }}
     >
+      {visibleOthers.map((other) => {
+        if (other == null) {
+          return null
+        }
+        const name = normalizeMultiplayerName(other.name)
+        const isOwner = ownerId === other.id
+        return (
+          <MultiplayerAvatar
+            key={`avatar-${other.id}`}
+            name={multiplayerInitialsFromName(name)}
+            tooltip={name}
+            color={multiplayerColorFromIndex(other.colorIndex)}
+            picture={other.avatar}
+            border={true}
+            coloredTooltip={true}
+            onClick={toggleFollowing(other.id)}
+            isBeingFollowed={isFollowMode(mode) && mode.playerId === other.id}
+            follower={other.following === myUser.id}
+            isOwner={isOwner}
+          />
+        )
+      })}
       {when(
-        visibleOthers.length > 0,
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 4,
-            background: colorTheme.bg3.value,
-            borderRadius: '20px',
-            justifyContent: 'center',
-            padding: '4px',
-          }}
-        >
-          {visibleOthers.map((other) => {
-            if (other == null) {
-              return null
-            }
-            const name = normalizeMultiplayerName(other.name)
-            return (
-              <MultiplayerAvatar
-                key={`avatar-${other.id}`}
-                name={multiplayerInitialsFromName(name)}
-                tooltip={name}
-                color={multiplayerColorFromIndex(other.colorIndex)}
-                picture={other.avatar}
-                border={true}
-                coloredTooltip={true}
-                onClick={toggleFollowing(other.id)}
-                active={isFollowMode(mode) && mode.playerId === other.id}
-                follower={other.following === myUser.id}
-              />
-            )
-          })}
-          {when(
-            hiddenOthers.length > 0,
-            <MultiplayerAvatar
-              name={`+${hiddenOthers.length}`}
-              tooltip={hiddenOthers.map((c) => normalizeMultiplayerName(c.name)).join(', ')}
-              color={{
-                background: colorTheme.fg8.value,
-                foreground: colorTheme.fg0.value,
-              }}
-              picture={null}
-            />,
-          )}
-        </div>,
-      )}
-      <a href='/projects' target='_blank'>
+        hiddenOthers.length > 0,
         <MultiplayerAvatar
-          name={multiplayerInitialsFromName(myName)}
-          tooltip={`${myName} (you)`}
-          color={{ background: colorTheme.bg3.value, foreground: colorTheme.fg1.value }}
-          picture={myUser.avatar}
-        />
-      </a>
+          name={`+${hiddenOthers.length}`}
+          tooltip={hiddenOthers.map((c) => normalizeMultiplayerName(c.name)).join(', ')}
+          color={{
+            background: colorTheme.fg8.value,
+            foreground: colorTheme.fg0.value,
+          }}
+          picture={null}
+        />,
+      )}
     </div>
   )
 })
@@ -206,9 +210,10 @@ const MultiplayerAvatar = React.memo(
     picture?: string | null
     border?: boolean
     onClick?: () => void
-    active?: boolean
+    isBeingFollowed?: boolean
     size?: number
     follower?: boolean
+    isOwner?: boolean
   }) => {
     const picture = React.useMemo(() => {
       return isDefaultAuth0AvatarURL(props.picture ?? null) ? null : props.picture
@@ -224,30 +229,26 @@ const MultiplayerAvatar = React.memo(
       >
         <div
           style={{
-            width: props.size ?? 24,
-            height: props.size ?? 24,
-            backgroundColor: props.color.background,
+            width: 24,
+            height: 24,
             color: props.color.foreground,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             borderRadius: '100%',
-            border: `3px solid ${props.active === true ? colorTheme.primary.value : 'transparent'}`,
             fontSize: 9,
             fontWeight: 700,
             cursor: 'pointer',
-            boxShadow:
-              props.active === true ? `0px 0px 15px ${colorTheme.primary.value}` : undefined,
             position: 'relative',
+            marginRight: -2,
+            outline: `1px solid ${colorTheme.bg1.value}`,
           }}
           onClick={props.onClick}
         >
-          <AvatarPicture
-            url={picture}
-            size={props.border === true ? 22 : undefined}
-            initials={props.name}
-          />
-          {when(props.follower === true, <FollowerBadge />)}
+          <AvatarPicture url={picture} initials={props.name} size={24} />
+          {props.isOwner ? <OwnerBadge /> : null}
+          {props.follower ? <FollowerBadge /> : null}
+          {props.isBeingFollowed ? <FolloweeBadge /> : null}
         </div>
       </Tooltip>
     )
@@ -278,6 +279,40 @@ const FollowerBadge = React.memo(() => {
   )
 })
 FollowerBadge.displayName = 'FollowerBadge'
+
+const FolloweeBadge = React.memo(() => {
+  const colorTheme = useColorTheme()
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        bottom: -4,
+        left: 1,
+        backgroundColor: colorTheme.primary.value,
+        width: 22,
+        height: 2,
+        borderRadius: 5,
+      }}
+    />
+  )
+})
+FollowerBadge.displayName = 'FollowerBadge'
+
+const OwnerBadge = React.memo(() => {
+  return (
+    <Icn
+      category='semantic'
+      type={'crown'}
+      width={22}
+      height={22}
+      color='main'
+      style={{ position: 'absolute', zIndex: 1, top: -10, left: 1 }}
+    />
+  )
+})
+
+OwnerBadge.displayName = 'OwnerBadge'
 
 interface AvatarPictureProps {
   url: string | null | undefined
