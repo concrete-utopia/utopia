@@ -82,7 +82,7 @@ export type ThreadMetadata = {
   // quote: string;
   // time: number;
   type: 'canvas'
-  x: number
+  x: number // x and y is global when sceneId is undefined, and local to the scene when sceneId is not null
   y: number
   sceneId?: string
   remixLocationRoute?: string
