@@ -29,6 +29,7 @@ import {
 import { create } from '../../../../core/shared/property-path'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import { useScenesWithId } from '../../../../core/commenting/comment-hooks'
+import { safeIndex } from '../../../../core/shared/array-utils'
 
 export function useCommentModeSelectAndHover(comment: CommentId | null): MouseCallbacks {
   const dispatch = useDispatch()
@@ -59,10 +60,11 @@ export function useCommentModeSelectAndHover(comment: CommentId | null): MouseCa
             rectContainsPoint(scene.globalFrame, loc.canvasPositionRaw)
           )
         })
-        const scene = scenesUnderTheMouse[0]
-        const sceneId = getIdOfScene(scene)
+        const scene = safeIndex(scenesUnderTheMouse, 0) // TODO: choose the topmost one in z-order
+        const sceneId = optionalMap(getIdOfScene, scene)
+
         const offset =
-          sceneId != null && isNotNullFiniteRectangle(scene.globalFrame)
+          scene != null && sceneId != null && isNotNullFiniteRectangle(scene.globalFrame)
             ? getLocalPointInNewParentContext(scene.globalFrame, loc.canvasPositionRounded)
             : null
 
