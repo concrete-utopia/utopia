@@ -9,7 +9,14 @@ import { isLoggedIn } from '../../common/user'
 import type { CommentId, SceneCommentLocation } from '../../components/editor/editor-modes'
 import { assertNever } from '../shared/utils'
 import type { CanvasPoint } from '../shared/math-utils'
-import { canvasPoint, isNotNullFiniteRectangle, offsetPoint } from '../shared/math-utils'
+import {
+  canvasPoint,
+  getCanvasPointWithCanvasOffset,
+  isNotNullFiniteRectangle,
+  localPoint,
+  offsetPoint,
+  zeroCanvasPoint,
+} from '../shared/math-utils'
 import { MetadataUtils } from '../model/element-metadata-utils'
 import { getIdOfScene } from '../../components/canvas/controls/comment-mode/comment-mode-hooks'
 
@@ -43,13 +50,10 @@ export function useCanvasCommentThreadAndLocation(comment: CommentId): {
               (s) => getIdOfScene(s) === (comment.location as SceneCommentLocation).sceneId,
             )
 
-            if (scene == null) {
-              return comment.location.offset
+            if (scene == null || !isNotNullFiniteRectangle(scene.globalFrame)) {
+              return getCanvasPointWithCanvasOffset(zeroCanvasPoint, comment.location.offset)
             }
-            if (!isNotNullFiniteRectangle(scene.globalFrame)) {
-              return comment.location.offset
-            }
-            return offsetPoint(comment.location.offset, scene.globalFrame)
+            return getCanvasPointWithCanvasOffset(scene.globalFrame, comment.location.offset)
           default:
             assertNever(comment.location)
         }
@@ -69,7 +73,7 @@ export function useCanvasCommentThreadAndLocation(comment: CommentId): {
         if (!isNotNullFiniteRectangle(scene.globalFrame)) {
           return canvasPoint(thread.metadata)
         }
-        return offsetPoint(canvasPoint(thread.metadata), scene.globalFrame)
+        return getCanvasPointWithCanvasOffset(scene.globalFrame, localPoint(thread.metadata))
 
       default:
         assertNever(comment)

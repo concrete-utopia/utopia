@@ -3265,7 +3265,7 @@ export const SceneCommentLocationKeepDeepEquality: KeepDeepEqualityCall<SceneCom
     (loc) => loc.sceneId,
     StringKeepDeepEquality,
     (loc) => loc.offset,
-    CanvasPointKeepDeepEquality,
+    LocalPointKeepDeepEquality,
     sceneCommentLocation,
   )
 

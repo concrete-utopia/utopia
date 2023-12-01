@@ -15,6 +15,7 @@ import { Substores, useEditorState, useRefEditorState } from '../../../editor/st
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 import {
   canvasPoint,
+  getLocalPointInNewParentContext,
   isNotNullFiniteRectangle,
   offsetPoint,
   pointDifference,
@@ -66,7 +67,7 @@ export function useCommentModeSelectAndHover(comment: CommentId | null): MouseCa
         const sceneId = getIdOfScene(scene)
         const offset =
           sceneId != null && isNotNullFiniteRectangle(scene.globalFrame)
-            ? pointDifference(scene.globalFrame, loc.canvasPositionRounded)
+            ? getLocalPointInNewParentContext(scene.globalFrame, loc.canvasPositionRounded)
             : null
 
         if (scene == null || sceneId == null || offset == null) {
