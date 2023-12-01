@@ -405,7 +405,11 @@ export type CollabTextFileExportsDetail = Y.Array<ExportDetail>
 export type CollabTextFileImports = Y.Map<ImportDetails>
 
 export type CollabTextFile = Y.Map<
-  'TEXT_FILE' | CollabTextFileTopLevelElements | CollabTextFileExportsDetail | CollabTextFileImports
+  | 'TEXT_FILE'
+  | CollabTextFileTopLevelElements
+  | CollabTextFileExportsDetail
+  | CollabTextFileImports
+  | string
 >
 
 export type CollabFile = CollabTextFile //| CollabImageFileUpdate | CollabAssetFileUpdate | CollabDirectoryFileUpdate

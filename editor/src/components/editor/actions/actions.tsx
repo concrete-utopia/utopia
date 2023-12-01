@@ -317,6 +317,7 @@ import type {
   DeleteFileFromCollaboration,
   UpdateExportsDetailFromCollaborationUpdate,
   UpdateImportsFromCollaborationUpdate,
+  UpdateCodeFromCollaborationUpdate,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -5525,6 +5526,32 @@ export const UPDATE_FNS = {
           action.fullPath,
         ),
       }
+    }
+  },
+  UPDATE_CODE_FROM_COLLABORATION_UPDATE: (
+    action: UpdateCodeFromCollaborationUpdate,
+    editor: EditorModel,
+    serverState: ProjectServerState,
+    dispatch: EditorDispatch,
+    builtInDependencies: BuiltInDependencies,
+  ): EditorModel => {
+    // When the current user does own the project...
+    if (serverState.isMyProject === 'yes') {
+      // ...Disallow these updates as they're coming from non-owners.
+      return editor
+    } else {
+      const existing = getProjectFileByFilePath(editor.projectContents, action.fullPath)
+
+      let updatedFile: ProjectFile
+      if (existing == null || !isTextFile(existing)) {
+        const contents = textFileContents(action.code, unparsed, RevisionsState.CodeAhead)
+        updatedFile = textFile(contents, null, null, 0)
+      } else {
+        updatedFile = updateFileContents(action.code, existing, false)
+      }
+
+      const updateAction = updateFile(action.fullPath, updatedFile, true)
+      return UPDATE_FNS.UPDATE_FILE(updateAction, editor, dispatch, builtInDependencies)
     }
   },
 }

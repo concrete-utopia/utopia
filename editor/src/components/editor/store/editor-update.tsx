@@ -399,6 +399,14 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_EXPORTS_DETAIL_FROM_COLLABORATION_UPDATE(action, state, serverState)
     case 'UPDATE_IMPORTS_FROM_COLLABORATION_UPDATE':
       return UPDATE_FNS.UPDATE_IMPORTS_FROM_COLLABORATION_UPDATE(action, state, serverState)
+    case 'UPDATE_CODE_FROM_COLLABORATION_UPDATE':
+      return UPDATE_FNS.UPDATE_CODE_FROM_COLLABORATION_UPDATE(
+        action,
+        state,
+        serverState,
+        dispatch,
+        builtInDependencies,
+      )
     default:
       return state
   }

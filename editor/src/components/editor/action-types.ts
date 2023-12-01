@@ -1077,6 +1077,12 @@ export interface UpdateImportsFromCollaborationUpdate {
   imports: MapLike<ImportDetails>
 }
 
+export interface UpdateCodeFromCollaborationUpdate {
+  action: 'UPDATE_CODE_FROM_COLLABORATION_UPDATE'
+  fullPath: string
+  code: string
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
@@ -1251,6 +1257,7 @@ export type EditorAction =
   | UpdateTopLevelElementsFromCollaborationUpdate
   | UpdateExportsDetailFromCollaborationUpdate
   | UpdateImportsFromCollaborationUpdate
+  | UpdateCodeFromCollaborationUpdate
 
 export type DispatchPriority =
   | 'everyone'
