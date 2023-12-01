@@ -20,6 +20,7 @@ import {
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { canvasPointToWindowPoint } from '../dom-lookup'
+import { assertNever } from '../../../core/shared/utils'
 
 export const CommentPopup = React.memo(() => {
   const mode = useEditorState(
@@ -69,15 +70,33 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
         return
       }
       // Create a new thread
-      const newThread = createThread({
-        body,
-        metadata: {
-          type: 'canvas',
-          x: comment.location.x,
-          y: comment.location.y,
-          remixLocationRoute: remixPresence?.locationRoute ?? undefined,
-        },
-      })
+      const newThread = (() => {
+        switch (comment.location.type) {
+          case 'canvas':
+            return createThread({
+              body,
+              metadata: {
+                type: 'canvas',
+                x: comment.location.position.x,
+                y: comment.location.position.y,
+                remixLocationRoute: remixPresence?.locationRoute ?? undefined,
+              },
+            })
+          case 'scene':
+            return createThread({
+              body,
+              metadata: {
+                type: 'canvas',
+                x: comment.location.offset.x,
+                y: comment.location.offset.y,
+                sceneId: comment.location.sceneId,
+                remixLocationRoute: remixPresence?.locationRoute ?? undefined,
+              },
+            })
+          default:
+            assertNever(comment.location)
+        }
+      })()
       dispatch([
         switchEditorMode(EditorModes.commentMode(existingComment(newThread.id), 'not-dragging')),
       ])

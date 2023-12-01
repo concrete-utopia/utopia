@@ -6,10 +6,18 @@ import { useMutation, useSelf, useStorage, useThreads } from '../../../liveblock
 import { Substores, useEditorState } from '../../components/editor/store/store-hook'
 import { normalizeMultiplayerName, possiblyUniqueColor } from '../shared/multiplayer'
 import { isLoggedIn } from '../../common/user'
-import type { CommentId } from '../../components/editor/editor-modes'
+import type { CommentId, SceneCommentLocation } from '../../components/editor/editor-modes'
 import { assertNever } from '../shared/utils'
 import type { CanvasPoint } from '../shared/math-utils'
-import { canvasPoint } from '../shared/math-utils'
+import {
+  canvasPoint,
+  getCanvasPointWithCanvasOffset,
+  isNotNullFiniteRectangle,
+  localPoint,
+  zeroCanvasPoint,
+} from '../shared/math-utils'
+import { MetadataUtils } from '../model/element-metadata-utils'
+import { getIdOfScene } from '../../components/canvas/controls/comment-mode/comment-mode-hooks'
 
 export function useCanvasCommentThreadAndLocation(comment: CommentId): {
   location: CanvasPoint | null
@@ -28,19 +36,48 @@ export function useCanvasCommentThreadAndLocation(comment: CommentId): {
     }
   }, [threads, comment])
 
+  const scenes = useScenesWithId()
+
   const location = React.useMemo(() => {
     switch (comment.type) {
       case 'new':
-        return comment.location
+        switch (comment.location.type) {
+          case 'canvas':
+            return comment.location.position
+          case 'scene':
+            const scene = scenes.find(
+              (s) => getIdOfScene(s) === (comment.location as SceneCommentLocation).sceneId,
+            )
+
+            if (scene == null || !isNotNullFiniteRectangle(scene.globalFrame)) {
+              return getCanvasPointWithCanvasOffset(zeroCanvasPoint, comment.location.offset)
+            }
+            return getCanvasPointWithCanvasOffset(scene.globalFrame, comment.location.offset)
+          default:
+            assertNever(comment.location)
+        }
+        break
       case 'existing':
         if (thread == null) {
           return null
         }
-        return canvasPoint(thread.metadata)
+        if (thread.metadata.sceneId == null) {
+          return canvasPoint(thread.metadata)
+        }
+        const scene = scenes.find((s) => getIdOfScene(s) === thread.metadata.sceneId)
+
+        if (scene == null) {
+          return canvasPoint(thread.metadata)
+        }
+        if (!isNotNullFiniteRectangle(scene.globalFrame)) {
+          return canvasPoint(thread.metadata)
+        }
+        return getCanvasPointWithCanvasOffset(scene.globalFrame, localPoint(thread.metadata))
+
       default:
         assertNever(comment)
     }
-  }, [comment, thread])
+  }, [comment, thread, scenes])
 
   return { location, thread }
 }
@@ -137,4 +174,29 @@ export function useIsOnAnotherRemixRoute(remixLocationRoute: string | null) {
     remixLocationRoute != null &&
     remixLocationRoute !== me.presence.remix.locationRoute
   )
+}
+
+export function useScenesWithId() {
+  return useEditorState(
+    Substores.metadata,
+    (store) => {
+      const scenes = MetadataUtils.getScenesMetadata(store.editor.jsxMetadata)
+      return scenes.filter((s) => getIdOfScene(s) != null)
+    },
+    'useScenesWithId scenes',
+  )
+}
+
+export function useCanvasLocationOfThread(thread: ThreadData<ThreadMetadata>): CanvasPoint {
+  const scenes = useScenesWithId()
+
+  if (thread.metadata.sceneId == null) {
+    return canvasPoint(thread.metadata)
+  }
+  const scene = scenes.find((s) => getIdOfScene(s) === thread.metadata.sceneId)
+
+  if (scene == null || !isNotNullFiniteRectangle(scene.globalFrame)) {
+    return canvasPoint(thread.metadata)
+  }
+  return getCanvasPointWithCanvasOffset(scene.globalFrame, localPoint(thread.metadata))
 }

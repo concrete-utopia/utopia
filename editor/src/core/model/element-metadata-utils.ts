@@ -743,6 +743,13 @@ export const MetadataUtils = {
     }
     return null
   },
+  getScenesMetadata(metadata: ElementInstanceMetadataMap): Array<ElementInstanceMetadata> {
+    return Object.values(metadata).filter(
+      (metadataEntry) =>
+        MetadataUtils.isProbablySceneFromMetadata(metadataEntry) ||
+        MetadataUtils.isProbablyRemixSceneFromMetadata(metadataEntry),
+    )
+  },
   getAllStoryboardChildrenPathsOrdered(
     metadata: ElementInstanceMetadataMap,
     pathTree: ElementPathTrees,
