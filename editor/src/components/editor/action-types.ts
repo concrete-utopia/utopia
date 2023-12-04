@@ -1083,6 +1083,11 @@ export interface UpdateCodeFromCollaborationUpdate {
   code: string
 }
 
+export interface SetShowResolvedThreads {
+  action: 'SET_SHOW_RESOLVED_THREADS'
+  showResolvedThreads: boolean
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
@@ -1258,6 +1263,7 @@ export type EditorAction =
   | UpdateExportsDetailFromCollaborationUpdate
   | UpdateImportsFromCollaborationUpdate
   | UpdateCodeFromCollaborationUpdate
+  | SetShowResolvedThreads
 
 export type DispatchPriority =
   | 'everyone'

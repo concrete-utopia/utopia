@@ -2,7 +2,13 @@ import React from 'react'
 import type { User } from '@liveblocks/client'
 import { LiveObject, type ThreadData } from '@liveblocks/client'
 import type { Presence, ThreadMetadata, UserMeta } from '../../../liveblocks.config'
-import { useMutation, useSelf, useStorage, useThreads } from '../../../liveblocks.config'
+import {
+  useEditThreadMetadata,
+  useMutation,
+  useSelf,
+  useStorage,
+  useThreads,
+} from '../../../liveblocks.config'
 import { Substores, useEditorState } from '../../components/editor/store/store-hook'
 import { normalizeMultiplayerName, possiblyUniqueColor } from '../shared/multiplayer'
 import { isLoggedIn } from '../../common/user'
@@ -23,7 +29,7 @@ export function useCanvasCommentThreadAndLocation(comment: CommentId): {
   location: CanvasPoint | null
   thread: ThreadData<ThreadMetadata> | null
 } {
-  const { threads } = useThreads()
+  const threads = useActiveThreads()
 
   const thread = React.useMemo(() => {
     switch (comment.type) {
@@ -199,4 +205,47 @@ export function useCanvasLocationOfThread(thread: ThreadData<ThreadMetadata>): C
     return canvasPoint(thread.metadata)
   }
   return getCanvasPointWithCanvasOffset(scene.globalFrame, localPoint(thread.metadata))
+}
+
+export function useResolveThread() {
+  const editThreadMetadata = useEditThreadMetadata()
+
+  const resolveThread = React.useCallback(
+    (thread: ThreadData<ThreadMetadata>) => {
+      editThreadMetadata({ threadId: thread.id, metadata: { resolved: !thread.metadata.resolved } })
+    },
+    [editThreadMetadata],
+  )
+
+  return resolveThread
+}
+
+export function useActiveThreads() {
+  const { threads: unresolvedThreads } = useUnresolvedThreads()
+  const { threads: resolvedThreads } = useResolvedThreads()
+  const showResolved = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.showResolvedThreads,
+    'useActiveThreads showResolved',
+  )
+  if (!showResolved) {
+    return unresolvedThreads
+  }
+  return [...unresolvedThreads, ...resolvedThreads]
+}
+
+export function useResolvedThreads() {
+  const threads = useThreads()
+  return {
+    ...threads,
+    threads: threads.threads.filter((t) => t.metadata.resolved === true),
+  }
+}
+
+export function useUnresolvedThreads() {
+  const threads = useThreads()
+  return {
+    ...threads,
+    threads: threads.threads.filter((t) => t.metadata.resolved !== true),
+  }
 }

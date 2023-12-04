@@ -78,7 +78,6 @@ export type RoomEvent = {
 // Optionally, when using Comments, ThreadMetadata represents metadata on
 // each thread. Can only contain booleans, strings, and numbers.
 export type ThreadMetadata = {
-  // resolved: boolean;
   // quote: string;
   // time: number;
   type: 'canvas'
@@ -86,6 +85,7 @@ export type ThreadMetadata = {
   y: number
   sceneId?: string
   remixLocationRoute?: string
+  resolved: boolean
 }
 
 export const {

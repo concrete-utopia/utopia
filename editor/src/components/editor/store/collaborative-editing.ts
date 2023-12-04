@@ -26,6 +26,7 @@ import type {
   ExportDetail,
   ImportDetails,
   ParseSuccess,
+  ParsedTextFile,
 } from '../../../core/shared/project-file-types'
 import { isTextFile } from '../../../core/shared/project-file-types'
 import {
@@ -42,7 +43,7 @@ import {
   type ProjectChanges,
   type ProjectFileChange,
 } from './vscode-changes'
-import type { TopLevelElement } from '../../../core/shared/element-template'
+import { unparsedCode, type TopLevelElement } from '../../../core/shared/element-template'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import type { KeepDeepEqualityCall } from '../../../utils/deep-equality'
 import type { MapLike } from 'typescript'

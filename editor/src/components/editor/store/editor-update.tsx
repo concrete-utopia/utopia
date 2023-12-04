@@ -407,6 +407,8 @@ export function runSimpleLocalEditorAction(
         dispatch,
         builtInDependencies,
       )
+    case 'SET_SHOW_RESOLVED_THREADS':
+      return UPDATE_FNS.SET_SHOW_RESOLVED_THREADS(action, state)
     default:
       return state
   }
