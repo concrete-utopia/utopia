@@ -1,7 +1,13 @@
 import type { User } from '@liveblocks/client'
 import type { Presence, UserMeta } from '../../../liveblocks.config'
-import { possiblyUniqueInArray, safeIndex, uniqBy } from './array-utils'
+import { possiblyUniqueInArray, safeIndex, stripNulls, uniqBy } from './array-utils'
 import { getPreferredColorScheme } from '../../uuiui'
+import type { ElementPath } from './project-file-types'
+import {
+  setHighlightedView,
+  switchEditorMode,
+} from '../../components/editor/actions/action-creators'
+import { EditorModes, existingComment } from '../../components/editor/editor-modes'
 
 export type MultiplayerColor = {
   background: string
@@ -162,4 +168,11 @@ export function maybeRemixPresence(
   locationRoute: string | null,
 ): RemixPresence | null {
   return scene != null ? remixPresence(scene, locationRoute) : null
+}
+
+export function openCommentThreadActions(threadId: string, scene: ElementPath | null) {
+  return stripNulls([
+    switchEditorMode(EditorModes.commentMode(existingComment(threadId), 'not-dragging')),
+    scene != null ? setHighlightedView(scene) : null,
+  ])
 }

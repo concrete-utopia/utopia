@@ -23,16 +23,18 @@ import {
   multiplayerColorFromIndex,
   multiplayerInitialsFromName,
   normalizeMultiplayerName,
+  openCommentThreadActions,
 } from '../../../core/shared/multiplayer'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { UtopiaStyles } from '../../../uuiui'
-import { switchEditorMode } from '../../editor/actions/action-creators'
+import { setHighlightedView, switchEditorMode } from '../../editor/actions/action-creators'
 import { EditorModes, existingComment } from '../../editor/editor-modes'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { AvatarPicture } from '../../user-bar'
 import { canvasPointToWindowPoint, windowToCanvasCoordinates } from '../dom-lookup'
 import { RemixNavigationAtom } from '../remix/utopia-remix-root-component'
+import { stripNulls } from '../../../core/shared/array-utils'
 
 const IndicatorSize = 20
 
@@ -89,7 +91,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
 
   const [remixNavigationState] = useAtom(RemixNavigationAtom)
 
-  const canvasLocation = useCanvasLocationOfThread(thread)
+  const { location, scene: commentScene } = useCanvasLocationOfThread(thread)
 
   const remixLocationRoute = thread.metadata.remixLocationRoute ?? null
 
@@ -106,10 +108,16 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
         remixState.navigate(remixLocationRoute)
       })
     }
-    dispatch([
-      switchEditorMode(EditorModes.commentMode(existingComment(thread.id), 'not-dragging')),
-    ])
-  }, [dispatch, thread.id, remixNavigationState, remixLocationRoute, isOnAnotherRoute])
+
+    dispatch(openCommentThreadActions(thread.id, commentScene))
+  }, [
+    dispatch,
+    thread.id,
+    remixNavigationState,
+    remixLocationRoute,
+    isOnAnotherRoute,
+    commentScene,
+  ])
 
   const { initials, color, avatar } = (() => {
     const firstComment = thread.comments[0]
@@ -127,10 +135,10 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
     }
   })()
 
-  const { onMouseDown, dragPosition } = useDragging(thread, canvasLocation)
+  const { onMouseDown, dragPosition } = useDragging(thread, location)
   const position = React.useMemo(
-    () => canvasPointToWindowPoint(dragPosition ?? canvasLocation, canvasScale, canvasOffset),
-    [canvasLocation, canvasScale, canvasOffset, dragPosition],
+    () => canvasPointToWindowPoint(dragPosition ?? location, canvasScale, canvasOffset),
+    [location, canvasScale, canvasOffset, dragPosition],
   )
 
   return (
@@ -246,19 +254,4 @@ function useDragging(thread: ThreadData<ThreadMetadata>, originalLocation: Canva
   )
 
   return { onMouseDown, dragPosition }
-}
-
-function mousePositionToIndicatorPosition(
-  canvasScale: number,
-  canvasOffset: CanvasVector,
-  windowPosition: WindowPoint,
-): CanvasPoint {
-  return offsetPoint(
-    windowToCanvasCoordinates(
-      canvasScale,
-      canvasOffset,
-      windowPoint({ x: windowPosition.x, y: windowPosition.y }),
-    ).canvasPositionRounded,
-    canvasPoint({ x: -IndicatorSize / 2, y: -IndicatorSize / 2 }),
-  )
 }

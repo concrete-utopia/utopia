@@ -12,18 +12,13 @@ import { stopPropagation } from '../common/inspector-utils'
 import type { ThreadMetadata } from '../../../../liveblocks.config'
 import type { ThreadData } from '@liveblocks/client'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { canvasPoint, canvasRectangle } from '../../../core/shared/math-utils'
+import { canvasRectangle } from '../../../core/shared/math-utils'
 import {
   scrollToPosition,
   setShowResolvedThreads,
   switchEditorMode,
 } from '../../editor/actions/action-creators'
-import {
-  EditorModes,
-  existingComment,
-  isCommentMode,
-  isExistingComment,
-} from '../../editor/editor-modes'
+import { EditorModes, isCommentMode, isExistingComment } from '../../editor/editor-modes'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { useAtom } from 'jotai'
 import { RemixNavigationAtom } from '../../canvas/remix/utopia-remix-root-component'
@@ -32,9 +27,11 @@ import {
   useIsOnAnotherRemixRoute,
   useResolveThread,
   useResolvedThreads,
+  useCanvasLocationOfThread,
 } from '../../../core/commenting/comment-hooks'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { unless, when } from '../../../utils/react-conditionals'
+import { openCommentThreadActions } from '../../../core/shared/multiplayer'
 
 export const CommentSection = React.memo(() => {
   return (
@@ -111,7 +108,6 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
   const [remixNavigationState] = useAtom(RemixNavigationAtom)
 
   const { remixLocationRoute } = thread.metadata
-  const point = canvasPoint(thread.metadata)
 
   const isOnAnotherRoute = useIsOnAnotherRemixRoute(remixLocationRoute ?? null)
 
@@ -125,8 +121,10 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
     'ThreadPreview isSelected',
   )
 
+  const { location, scene: commentScene } = useCanvasLocationOfThread(thread)
+
   const onClick = React.useCallback(() => {
-    const rect = canvasRectangle({ x: point.x, y: point.y, width: 25, height: 25 })
+    const rect = canvasRectangle({ x: location.x, y: location.y, width: 25, height: 25 })
 
     if (isOnAnotherRoute && remixLocationRoute != null) {
       // TODO: after we have scene identifier in the comment metadata we should only navigate the scene with the comment
@@ -139,10 +137,18 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
       })
     }
     dispatch([
-      switchEditorMode(EditorModes.commentMode(existingComment(thread.id), 'not-dragging')),
+      ...openCommentThreadActions(thread.id, commentScene),
       scrollToPosition(rect, 'to-center'),
     ])
-  }, [dispatch, remixNavigationState, isOnAnotherRoute, remixLocationRoute, point, thread.id])
+  }, [
+    dispatch,
+    remixNavigationState,
+    isOnAnotherRoute,
+    remixLocationRoute,
+    location,
+    thread.id,
+    commentScene,
+  ])
 
   const resolveThread = useResolveThread()
 

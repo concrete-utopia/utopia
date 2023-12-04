@@ -24,6 +24,7 @@ import {
 } from '../shared/math-utils'
 import { MetadataUtils } from '../model/element-metadata-utils'
 import { getIdOfScene } from '../../components/canvas/controls/comment-mode/comment-mode-hooks'
+import type { ElementPath } from '../shared/project-file-types'
 
 export function useCanvasCommentThreadAndLocation(comment: CommentId): {
   location: CanvasPoint | null
@@ -193,18 +194,24 @@ export function useScenesWithId() {
   )
 }
 
-export function useCanvasLocationOfThread(thread: ThreadData<ThreadMetadata>): CanvasPoint {
+export function useCanvasLocationOfThread(thread: ThreadData<ThreadMetadata>): {
+  location: CanvasPoint
+  scene: ElementPath | null
+} {
   const scenes = useScenesWithId()
 
   if (thread.metadata.sceneId == null) {
-    return canvasPoint(thread.metadata)
+    return { location: canvasPoint(thread.metadata), scene: null }
   }
   const scene = scenes.find((s) => getIdOfScene(s) === thread.metadata.sceneId)
 
   if (scene == null || !isNotNullFiniteRectangle(scene.globalFrame)) {
-    return canvasPoint(thread.metadata)
+    return { location: canvasPoint(thread.metadata), scene: null }
   }
-  return getCanvasPointWithCanvasOffset(scene.globalFrame, localPoint(thread.metadata))
+  return {
+    location: getCanvasPointWithCanvasOffset(scene.globalFrame, localPoint(thread.metadata)),
+    scene: scene.elementPath,
+  }
 }
 
 export function useResolveThread() {
