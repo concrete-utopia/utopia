@@ -113,6 +113,7 @@ function checkIfActionShouldBeProcessed(
       action.action === 'UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION_UPDATE' ||
       action.action === 'UPDATE_EXPORTS_DETAIL_FROM_COLLABORATION_UPDATE' ||
       action.action === 'UPDATE_IMPORTS_FROM_COLLABORATION_UPDATE' ||
+      action.action === 'UPDATE_CODE_FROM_COLLABORATION_UPDATE' ||
       action.action === 'DELETE_FILE_FROM_COLLABORATION'
     shouldProcessAction = allowedNonOwnerAction
   }

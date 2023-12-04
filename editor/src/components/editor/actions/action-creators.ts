@@ -225,6 +225,7 @@ import type {
   DeleteFileFromCollaboration,
   UpdateExportsDetailFromCollaborationUpdate,
   UpdateImportsFromCollaborationUpdate,
+  UpdateCodeFromCollaborationUpdate,
   SetShowResolvedThreads,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
@@ -1706,6 +1707,17 @@ export function updateImportsFromCollaborationUpdate(
     action: 'UPDATE_IMPORTS_FROM_COLLABORATION_UPDATE',
     fullPath: fullPath,
     imports: imports,
+  }
+}
+
+export function updateCodeFromCollaborationUpdate(
+  fullPath: string,
+  code: string,
+): UpdateCodeFromCollaborationUpdate {
+  return {
+    action: 'UPDATE_CODE_FROM_COLLABORATION_UPDATE',
+    fullPath: fullPath,
+    code: code,
   }
 }
 
