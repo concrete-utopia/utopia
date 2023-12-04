@@ -24,6 +24,7 @@ import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { canvasPointToWindowPoint } from '../dom-lookup'
 import { assertNever } from '../../../core/shared/utils'
+import { when } from '../../../utils/react-conditionals'
 
 export const CommentPopup = React.memo(() => {
   const mode = useEditorState(
@@ -160,29 +161,32 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
       onKeyUp={stopPropagation}
       onMouseUp={stopPropagation}
     >
-      <div
-        style={{
-          position: 'relative',
-        }}
-      >
+      {when(
+        thread != null,
         <div
           style={{
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            top: -40,
-            zIndex: 1,
-            display: 'flex',
-            alignItems: 'flex-end',
-            justifyContent: 'flex-end',
-            height: 40,
+            position: 'relative',
           }}
         >
-          <Button highlight spotlight style={{ padding: '0 6px' }} onClick={onClickResolve}>
-            {thread?.metadata.resolved ? 'Unresolve' : 'Resolve'}
-          </Button>
-        </div>
-      </div>
+          <div
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              top: -40,
+              zIndex: 1,
+              display: 'flex',
+              alignItems: 'flex-end',
+              justifyContent: 'flex-end',
+              height: 40,
+            }}
+          >
+            <Button highlight spotlight style={{ padding: '0 6px' }} onClick={onClickResolve}>
+              {thread?.metadata.resolved ? 'Unresolve' : 'Resolve'}
+            </Button>
+          </div>
+        </div>,
+      )}
       {thread == null ? (
         <Composer autoFocus onComposerSubmit={onCreateThread} />
       ) : (
