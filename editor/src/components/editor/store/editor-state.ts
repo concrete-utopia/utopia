@@ -1479,6 +1479,7 @@ export interface EditorState {
   internalClipboard: InternalClipboard
   filesModifiedByAnotherUser: Array<string>
   activeFrames: ActiveFrame[]
+  showResolvedThreads: boolean
 }
 
 export function editorState(
@@ -1561,6 +1562,7 @@ export function editorState(
   internalClipboardData: InternalClipboard,
   filesModifiedByAnotherUser: Array<string>,
   activeFrames: ActiveFrame[],
+  showResolvedThreads: boolean,
 ): EditorState {
   return {
     id: id,
@@ -1642,6 +1644,7 @@ export function editorState(
     internalClipboard: internalClipboardData,
     filesModifiedByAnotherUser: filesModifiedByAnotherUser,
     activeFrames: activeFrames,
+    showResolvedThreads: showResolvedThreads,
   }
 }
 
@@ -2518,6 +2521,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     },
     filesModifiedByAnotherUser: [],
     activeFrames: [],
+    showResolvedThreads: false,
   }
 }
 
@@ -2894,6 +2898,7 @@ export function editorModelFromPersistentModel(
     },
     filesModifiedByAnotherUser: [],
     activeFrames: [],
+    showResolvedThreads: false,
   }
   return editor
 }

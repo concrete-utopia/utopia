@@ -76,6 +76,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
             return createThread({
               body,
               metadata: {
+                resolved: false,
                 type: 'canvas',
                 x: comment.location.position.x,
                 y: comment.location.position.y,
@@ -86,6 +87,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
             return createThread({
               body,
               metadata: {
+                resolved: false,
                 type: 'canvas',
                 x: comment.location.offset.x,
                 y: comment.location.offset.y,

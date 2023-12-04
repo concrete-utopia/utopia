@@ -1077,6 +1077,11 @@ export interface UpdateImportsFromCollaborationUpdate {
   imports: MapLike<ImportDetails>
 }
 
+export interface SetShowResolvedThreads {
+  action: 'SET_SHOW_RESOLVED_THREADS'
+  showResolvedThreads: boolean
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
@@ -1251,6 +1256,7 @@ export type EditorAction =
   | UpdateTopLevelElementsFromCollaborationUpdate
   | UpdateExportsDetailFromCollaborationUpdate
   | UpdateImportsFromCollaborationUpdate
+  | SetShowResolvedThreads
 
 export type DispatchPriority =
   | 'everyone'

@@ -317,6 +317,7 @@ import type {
   DeleteFileFromCollaboration,
   UpdateExportsDetailFromCollaborationUpdate,
   UpdateImportsFromCollaborationUpdate,
+  SetShowResolvedThreads,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -920,6 +921,7 @@ export function restoreEditorState(
     internalClipboard: currentEditor.internalClipboard,
     filesModifiedByAnotherUser: currentEditor.filesModifiedByAnotherUser,
     activeFrames: currentEditor.activeFrames,
+    showResolvedThreads: currentEditor.showResolvedThreads,
   }
 }
 
@@ -5526,6 +5528,9 @@ export const UPDATE_FNS = {
         ),
       }
     }
+  },
+  SET_SHOW_RESOLVED_THREADS: (action: SetShowResolvedThreads, editor: EditorModel): EditorModel => {
+    return { ...editor, showResolvedThreads: action.showResolvedThreads }
   },
 }
 

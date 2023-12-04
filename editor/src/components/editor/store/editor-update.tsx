@@ -399,6 +399,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_EXPORTS_DETAIL_FROM_COLLABORATION_UPDATE(action, state, serverState)
     case 'UPDATE_IMPORTS_FROM_COLLABORATION_UPDATE':
       return UPDATE_FNS.UPDATE_IMPORTS_FROM_COLLABORATION_UPDATE(action, state, serverState)
+    case 'SET_SHOW_RESOLVED_THREADS':
+      return UPDATE_FNS.SET_SHOW_RESOLVED_THREADS(action, state)
     default:
       return state
   }

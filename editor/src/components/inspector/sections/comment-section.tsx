@@ -1,14 +1,23 @@
 import '@liveblocks/react-comments/styles.css'
 import React from 'react'
-import { FlexColumn, FlexRow, InspectorSubsectionHeader, useColorTheme } from '../../../uuiui'
+import {
+  Button,
+  FlexColumn,
+  FlexRow,
+  InspectorSubsectionHeader,
+  useColorTheme,
+} from '../../../uuiui'
 import { Comment } from '@liveblocks/react-comments'
 import { stopPropagation } from '../common/inspector-utils'
 import type { ThreadMetadata } from '../../../../liveblocks.config'
-import { useThreads } from '../../../../liveblocks.config'
 import type { ThreadData } from '@liveblocks/client'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { canvasPoint, canvasRectangle } from '../../../core/shared/math-utils'
-import { scrollToPosition, switchEditorMode } from '../../editor/actions/action-creators'
+import {
+  scrollToPosition,
+  setShowResolvedThreads,
+  switchEditorMode,
+} from '../../editor/actions/action-creators'
 import {
   EditorModes,
   existingComment,
@@ -18,9 +27,14 @@ import {
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { useAtom } from 'jotai'
 import { RemixNavigationAtom } from '../../canvas/remix/utopia-remix-root-component'
-import { useIsOnAnotherRemixRoute } from '../../../core/commenting/comment-hooks'
+import {
+  useUnresolvedThreads,
+  useIsOnAnotherRemixRoute,
+  useResolveThread,
+  useResolvedThreads,
+} from '../../../core/commenting/comment-hooks'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
-import { when } from '../../../utils/react-conditionals'
+import { unless, when } from '../../../utils/react-conditionals'
 
 export const CommentSection = React.memo(() => {
   return (
@@ -45,13 +59,43 @@ export const CommentSection = React.memo(() => {
 CommentSection.displayName = 'CommentSection'
 
 const ThreadPreviews = React.memo(() => {
-  const { threads } = useThreads()
+  const dispatch = useDispatch()
+  const { threads: activeThreads } = useUnresolvedThreads()
+  const { threads: resolvedThreads } = useResolvedThreads()
+
+  const showResolved = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.showResolvedThreads,
+    'ThreadPreviews showResolvedThreads',
+  )
+
+  const toggleShowResolved = React.useCallback(() => {
+    dispatch([
+      setShowResolvedThreads(!showResolved),
+      switchEditorMode(EditorModes.selectMode(null, false, 'none')),
+    ])
+  }, [showResolved, dispatch])
 
   return (
     <FlexColumn style={{ gap: 5 }}>
-      {threads.map((thread) => (
+      {activeThreads.map((thread) => (
         <ThreadPreview key={thread.id} thread={thread} />
       ))}
+      {when(
+        resolvedThreads.length > 0,
+        <Button
+          highlight
+          spotlight
+          style={{ padding: 10, margin: '10px' }}
+          onClick={toggleShowResolved}
+        >
+          {showResolved ? 'Hide' : 'Show'} resolved threads
+        </Button>,
+      )}
+      {when(
+        showResolved,
+        resolvedThreads.map((thread) => <ThreadPreview key={thread.id} thread={thread} />),
+      )}
     </FlexColumn>
   )
 })
@@ -100,6 +144,17 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
     ])
   }, [dispatch, remixNavigationState, isOnAnotherRoute, remixLocationRoute, point, thread.id])
 
+  const resolveThread = useResolveThread()
+
+  const onResolveThread = React.useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation()
+      resolveThread(thread)
+      dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
+    },
+    [resolveThread, dispatch, thread],
+  )
+
   const comment = thread.comments[0]
   if (comment == null) {
     return null
@@ -110,23 +165,42 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
     <div
       key={comment.id}
       onClick={onClick}
-      style={{ backgroundColor: isSelected ? `${colorTheme.primary10.value}` : 'transparent' }}
+      style={{
+        backgroundColor: isSelected
+          ? colorTheme.primary10.value
+          : thread.metadata.resolved
+          ? colorTheme.bg2.value
+          : 'transparent',
+      }}
     >
       <Comment comment={comment} showActions={false} style={{ backgroundColor: 'transparent' }} />
-      {when(
-        repliesCount > 0,
-        <div
-          style={{
-            paddingBottom: 10,
-            paddingLeft: 44,
-            fontSize: 9,
-            color: colorTheme.fg6.value,
-            marginTop: -5,
-          }}
-        >
-          {repliesCount} {repliesCount > 1 ? 'replies' : 'reply'}
-        </div>,
-      )}
+      <div
+        style={{
+          paddingBottom: 10,
+          paddingLeft: 44,
+          paddingRight: 10,
+          marginTop: -5,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        {when(
+          repliesCount > 0,
+          <div
+            style={{
+              fontSize: 9,
+              color: colorTheme.fg6.value,
+            }}
+          >
+            {repliesCount} {repliesCount > 1 ? 'replies' : 'reply'}
+          </div>,
+        )}
+        {unless(repliesCount > 0, <div />)}
+        <Button highlight spotlight style={{ padding: '0 6px' }} onClick={onResolveThread}>
+          {thread.metadata.resolved ? 'Unresolve' : 'Resolve'}
+        </Button>
+      </div>
     </div>
   )
 })
