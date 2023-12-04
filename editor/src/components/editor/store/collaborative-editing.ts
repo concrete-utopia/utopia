@@ -25,6 +25,7 @@ import type {
   ExportDetail,
   ImportDetails,
   ParseSuccess,
+  ParsedTextFile,
 } from '../../../core/shared/project-file-types'
 import { isTextFile } from '../../../core/shared/project-file-types'
 import {
@@ -40,7 +41,7 @@ import {
   type ProjectChanges,
   type ProjectFileChange,
 } from './vscode-changes'
-import type { TopLevelElement } from '../../../core/shared/element-template'
+import { unparsedCode, type TopLevelElement } from '../../../core/shared/element-template'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import type { KeepDeepEqualityCall } from '../../../utils/deep-equality'
 import type { MapLike } from 'typescript'
@@ -180,12 +181,10 @@ function applyFileChangeToMap(
           collabFile.set(ImportsKey, importsMap)
         }
 
-        mergeDoc.transact(() => {
-          if (!projectContentsMap.has(change.fullPath)) {
-            projectContentsMap.set(change.fullPath, collabFile)
-          }
-          synchroniseParseSuccessToCollabFile(parsedPart, collabFile)
-        })
+        if (!projectContentsMap.has(change.fullPath)) {
+          projectContentsMap.set(change.fullPath, collabFile)
+        }
+        synchroniseParseSuccessToCollabFile(parsedPart, collabFile)
       }
       break
     case 'ENSURE_DIRECTORY_EXISTS':
@@ -201,11 +200,15 @@ export function updateCollaborativeProjectContents(
   collabProjectChanges: Array<ProjectFileChange>,
   filesModifiedByAnotherUser: Array<string>,
 ): void {
-  const projectContentsMap = session.projectContents
-  for (const change of collabProjectChanges) {
-    if (!filesModifiedByAnotherUser.includes(change.fullPath)) {
-      applyFileChangeToMap(change, projectContentsMap, session.mergeDoc)
-    }
+  if (collabProjectChanges.length > 0) {
+    session.mergeDoc.transact(() => {
+      const projectContentsMap = session.projectContents
+      for (const change of collabProjectChanges) {
+        if (!filesModifiedByAnotherUser.includes(change.fullPath)) {
+          applyFileChangeToMap(change, projectContentsMap, session.mergeDoc)
+        }
+      }
+    })
   }
 }
 
