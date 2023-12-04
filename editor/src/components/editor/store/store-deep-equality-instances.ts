@@ -4570,6 +4570,11 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.activeFrames,
   )
 
+  const showResolvedThreadsResults = BooleanKeepDeepEquality(
+    oldValue.showResolvedThreads,
+    newValue.showResolvedThreads,
+  )
+
   const areEqual =
     idResult.areEqual &&
     vscodeBridgeIdResult.areEqual &&
@@ -4648,7 +4653,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     colorSwatchesResults.areEqual &&
     internalClipboardResults.areEqual &&
     filesModifiedByAnotherUserResults.areEqual &&
-    activeFramesResults.areEqual
+    activeFramesResults.areEqual &&
+    showResolvedThreadsResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -4733,6 +4739,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       internalClipboardResults.value,
       filesModifiedByAnotherUserResults.value,
       activeFramesResults.value,
+      showResolvedThreadsResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)
