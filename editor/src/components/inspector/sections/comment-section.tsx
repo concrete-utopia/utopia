@@ -121,22 +121,25 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
     'ThreadPreview isSelected',
   )
 
-  const { location, scene } = useCanvasLocationOfThread(thread)
+  const { location, scene: commentScene } = useCanvasLocationOfThread(thread)
 
   const onClick = React.useCallback(() => {
     const rect = canvasRectangle({ x: location.x, y: location.y, width: 25, height: 25 })
 
     if (isOnAnotherRoute && remixLocationRoute != null) {
       // TODO: after we have scene identifier in the comment metadata we should only navigate the scene with the comment
-      Object.keys(remixNavigationState).forEach((s) => {
-        const remixState = remixNavigationState[s]
+      Object.keys(remixNavigationState).forEach((scene) => {
+        const remixState = remixNavigationState[scene]
         if (remixState == null) {
           return
         }
         remixState.navigate(remixLocationRoute)
       })
     }
-    dispatch([...openCommentThreadActions(thread.id, scene), scrollToPosition(rect, 'to-center')])
+    dispatch([
+      ...openCommentThreadActions(thread.id, commentScene),
+      scrollToPosition(rect, 'to-center'),
+    ])
   }, [
     dispatch,
     remixNavigationState,
@@ -144,7 +147,7 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
     remixLocationRoute,
     location,
     thread.id,
-    scene,
+    commentScene,
   ])
 
   const resolveThread = useResolveThread()

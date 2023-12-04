@@ -23,6 +23,7 @@ import {
   multiplayerColorFromIndex,
   multiplayerInitialsFromName,
   normalizeMultiplayerName,
+  openCommentThreadActions,
 } from '../../../core/shared/multiplayer'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { UtopiaStyles } from '../../../uuiui'
@@ -90,7 +91,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
 
   const [remixNavigationState] = useAtom(RemixNavigationAtom)
 
-  const { location, scene } = useCanvasLocationOfThread(thread)
+  const { location, scene: commentScene } = useCanvasLocationOfThread(thread)
 
   const remixLocationRoute = thread.metadata.remixLocationRoute ?? null
 
@@ -99,8 +100,8 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
   const onClick = React.useCallback(() => {
     if (isOnAnotherRoute && remixLocationRoute != null) {
       // TODO: after we have scene identifier in the comment metadata we should only navigate the scene with the comment
-      Object.keys(remixNavigationState).forEach((s) => {
-        const remixState = remixNavigationState[s]
+      Object.keys(remixNavigationState).forEach((scene) => {
+        const remixState = remixNavigationState[scene]
         if (remixState == null) {
           return
         }
@@ -108,13 +109,15 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
       })
     }
 
-    const actions = stripNulls([
-      switchEditorMode(EditorModes.commentMode(existingComment(thread.id), 'not-dragging')),
-      scene != null ? setHighlightedView(scene) : null,
-    ])
-
-    dispatch(actions)
-  }, [dispatch, thread.id, remixNavigationState, remixLocationRoute, isOnAnotherRoute, scene])
+    dispatch(openCommentThreadActions(thread.id, commentScene))
+  }, [
+    dispatch,
+    thread.id,
+    remixNavigationState,
+    remixLocationRoute,
+    isOnAnotherRoute,
+    commentScene,
+  ])
 
   const { initials, color, avatar } = (() => {
     const firstComment = thread.comments[0]
@@ -251,19 +254,4 @@ function useDragging(thread: ThreadData<ThreadMetadata>, originalLocation: Canva
   )
 
   return { onMouseDown, dragPosition }
-}
-
-function mousePositionToIndicatorPosition(
-  canvasScale: number,
-  canvasOffset: CanvasVector,
-  windowPosition: WindowPoint,
-): CanvasPoint {
-  return offsetPoint(
-    windowToCanvasCoordinates(
-      canvasScale,
-      canvasOffset,
-      windowPoint({ x: windowPosition.x, y: windowPosition.y }),
-    ).canvasPositionRounded,
-    canvasPoint({ x: -IndicatorSize / 2, y: -IndicatorSize / 2 }),
-  )
 }
