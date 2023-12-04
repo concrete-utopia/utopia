@@ -26,13 +26,14 @@ import {
 } from '../../../core/shared/multiplayer'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { UtopiaStyles } from '../../../uuiui'
-import { switchEditorMode } from '../../editor/actions/action-creators'
+import { setHighlightedView, switchEditorMode } from '../../editor/actions/action-creators'
 import { EditorModes, existingComment } from '../../editor/editor-modes'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { AvatarPicture } from '../../user-bar'
 import { canvasPointToWindowPoint, windowToCanvasCoordinates } from '../dom-lookup'
 import { RemixNavigationAtom } from '../remix/utopia-remix-root-component'
+import { stripNulls } from '../../../core/shared/array-utils'
 
 const IndicatorSize = 20
 
@@ -89,7 +90,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
 
   const [remixNavigationState] = useAtom(RemixNavigationAtom)
 
-  const canvasLocation = useCanvasLocationOfThread(thread)
+  const { location, scene } = useCanvasLocationOfThread(thread)
 
   const remixLocationRoute = thread.metadata.remixLocationRoute ?? null
 
@@ -98,18 +99,22 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
   const onClick = React.useCallback(() => {
     if (isOnAnotherRoute && remixLocationRoute != null) {
       // TODO: after we have scene identifier in the comment metadata we should only navigate the scene with the comment
-      Object.keys(remixNavigationState).forEach((scene) => {
-        const remixState = remixNavigationState[scene]
+      Object.keys(remixNavigationState).forEach((s) => {
+        const remixState = remixNavigationState[s]
         if (remixState == null) {
           return
         }
         remixState.navigate(remixLocationRoute)
       })
     }
-    dispatch([
+
+    const actions = stripNulls([
       switchEditorMode(EditorModes.commentMode(existingComment(thread.id), 'not-dragging')),
+      scene != null ? setHighlightedView(scene) : null,
     ])
-  }, [dispatch, thread.id, remixNavigationState, remixLocationRoute, isOnAnotherRoute])
+
+    dispatch(actions)
+  }, [dispatch, thread.id, remixNavigationState, remixLocationRoute, isOnAnotherRoute, scene])
 
   const { initials, color, avatar } = (() => {
     const firstComment = thread.comments[0]
@@ -127,10 +132,10 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
     }
   })()
 
-  const { onMouseDown, dragPosition } = useDragging(thread, canvasLocation)
+  const { onMouseDown, dragPosition } = useDragging(thread, location)
   const position = React.useMemo(
-    () => canvasPointToWindowPoint(dragPosition ?? canvasLocation, canvasScale, canvasOffset),
-    [canvasLocation, canvasScale, canvasOffset, dragPosition],
+    () => canvasPointToWindowPoint(dragPosition ?? location, canvasScale, canvasOffset),
+    [location, canvasScale, canvasOffset, dragPosition],
   )
 
   return (

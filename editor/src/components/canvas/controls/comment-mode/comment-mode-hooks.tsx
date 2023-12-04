@@ -3,7 +3,11 @@ import type { MouseCallbacks } from '../select-mode/select-mode-hooks'
 import { NO_OP } from '../../../../core/shared/utils'
 import { useKeepShallowReferenceEquality } from '../../../../utils/react-performance'
 import { useDispatch } from '../../../editor/store/dispatch-context'
-import { switchEditorMode } from '../../../editor/actions/action-creators'
+import {
+  clearHighlightedViews,
+  setHighlightedView,
+  switchEditorMode,
+} from '../../../editor/actions/action-creators'
 import type { CommentId } from '../../../editor/editor-modes'
 import {
   EditorModes,
@@ -13,6 +17,7 @@ import {
 } from '../../../editor/editor-modes'
 import { useRefEditorState } from '../../../editor/store/store-hook'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
+import type { CanvasPoint } from '../../../../core/shared/math-utils'
 import {
   getLocalPointInNewParentContext,
   isNotNullFiniteRectangle,
@@ -43,6 +48,26 @@ export function useCommentModeSelectAndHover(comment: CommentId | null): MouseCa
     }
   })
 
+  const onMouseMove = React.useCallback(
+    (event: React.MouseEvent) => {
+      if (comment == null) {
+        const loc = windowToCanvasCoordinates(
+          storeRef.current.scale,
+          storeRef.current.canvasOffset,
+          windowPoint({ x: event.clientX, y: event.clientY }),
+        )
+        const scene = getSceneWithIdUnderPoint(loc.canvasPositionRaw, scenes)
+
+        if (scene == null) {
+          dispatch([clearHighlightedViews()])
+        } else {
+          dispatch([setHighlightedView(scene.elementPath)])
+        }
+      }
+    },
+    [dispatch, comment, storeRef, scenes],
+  )
+
   const onMouseUp = React.useCallback(
     (event: React.MouseEvent) => {
       if (comment == null) {
@@ -52,15 +77,7 @@ export function useCommentModeSelectAndHover(comment: CommentId | null): MouseCa
           windowPoint({ x: event.clientX, y: event.clientY }),
         )
 
-        const scenesUnderTheMouse = scenes.filter((scene) => {
-          const sceneId = getIdOfScene(scene)
-          return (
-            sceneId != null &&
-            isNotNullFiniteRectangle(scene.globalFrame) &&
-            rectContainsPoint(scene.globalFrame, loc.canvasPositionRaw)
-          )
-        })
-        const scene = safeIndex(scenesUnderTheMouse, 0) // TODO: choose the topmost one in z-order
+        const scene = getSceneWithIdUnderPoint(loc.canvasPositionRaw, scenes)
         const sceneId = optionalMap(getIdOfScene, scene)
 
         const offset =
@@ -81,6 +98,7 @@ export function useCommentModeSelectAndHover(comment: CommentId | null): MouseCa
         }
 
         dispatch([
+          setHighlightedView(scene.elementPath),
           switchEditorMode(
             EditorModes.commentMode(
               newComment(sceneCommentLocation(sceneId, offset)),
@@ -96,10 +114,25 @@ export function useCommentModeSelectAndHover(comment: CommentId | null): MouseCa
   )
 
   return useKeepShallowReferenceEquality({
-    onMouseMove: NO_OP,
+    onMouseMove: onMouseMove,
     onMouseDown: NO_OP,
     onMouseUp: onMouseUp,
   })
+}
+
+function getSceneWithIdUnderPoint(
+  location: CanvasPoint,
+  scenes: ElementInstanceMetadata[],
+): ElementInstanceMetadata | null {
+  const scenesUnderTheMouse = scenes.filter((scene) => {
+    const sceneId = getIdOfScene(scene)
+    return (
+      sceneId != null &&
+      isNotNullFiniteRectangle(scene.globalFrame) &&
+      rectContainsPoint(scene.globalFrame, location)
+    )
+  })
+  return safeIndex(scenesUnderTheMouse, 0) ?? null // TODO: choose the topmost one in z-order
 }
 
 export function getIdOfScene(scene: ElementInstanceMetadata): string | null {
