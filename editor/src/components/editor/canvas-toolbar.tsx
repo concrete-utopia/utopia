@@ -69,6 +69,7 @@ import {
   useGetInsertableComponents,
 } from '../canvas/ui/floating-insert-menu'
 import { isFeatureEnabled } from '../../utils/feature-switches'
+import { floatingInsertMenuStateSwap } from './store/editor-state'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const PlayModeButtonTestId = 'canvas-toolbar-play-mode'
@@ -232,11 +233,7 @@ export const CanvasToolbar = React.memo(() => {
   const toInsertCallback = useToInsert()
 
   const openFloatingConvertMenuCallback = React.useCallback(() => {
-    dispatch([
-      openFloatingInsertMenu({
-        insertMenuMode: 'convert',
-      }),
-    ])
+    dispatch([openFloatingInsertMenu(floatingInsertMenuStateSwap())])
   }, [dispatch])
 
   const openFloatingWrapInMenuCallback = React.useCallback(() => {
@@ -569,7 +566,7 @@ export const CanvasToolbar = React.memo(() => {
                   }}
                 >
                   <Icn category='tools' type='convert-action' width={18} height={18} />
-                  Convert
+                  Swap
                 </FlexRow>
                 <FlexRow
                   onClick={toggleAbsolutePositioningCallback}
@@ -620,7 +617,7 @@ export const CanvasToolbar = React.memo(() => {
             ),
           )}
           {when(
-            insertMenuMode === 'convert',
+            insertMenuMode === 'swap',
             wrapInSubmenu(
               <FlexRow style={{ padding: '0 8px' }}>
                 <Tooltip title='Back' placement='bottom'>
@@ -638,7 +635,7 @@ export const CanvasToolbar = React.memo(() => {
                   height={18}
                   style={{ marginRight: 10 }}
                 />
-                <Tooltip title='Convert to Fragment' placement='bottom'>
+                <Tooltip title='Swap to Fragment' placement='bottom'>
                   <InsertModeButton iconType='fragment' onClick={convertToFragment} />
                 </Tooltip>
                 <Tile style={{ height: '100%' }}>

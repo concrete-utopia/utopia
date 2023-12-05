@@ -138,7 +138,7 @@ export function useToolbarMode(): ToolbarMode {
     return { primary: 'edit', secondary: 'nothing-selected' }
   }
 
-  if (floatingInsertMenu === 'convert' || floatingInsertMenu === 'wrap') {
+  if (floatingInsertMenu === 'swap' || floatingInsertMenu === 'wrap') {
     return { primary: 'edit', secondary: 'selected' }
   }
 

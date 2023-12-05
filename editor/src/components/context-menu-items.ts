@@ -29,11 +29,12 @@ import {
   duplicateSelected,
   toggleHidden,
 } from './editor/actions/action-creators'
-import type {
-  AllElementProps,
-  InternalClipboard,
-  NavigatorEntry,
-  PasteHerePostActionMenuData,
+import {
+  floatingInsertMenuStateSwap,
+  type AllElementProps,
+  type InternalClipboard,
+  type NavigatorEntry,
+  type PasteHerePostActionMenuData,
 } from './editor/store/editor-state'
 import type { ElementContextMenuInstance } from './element-context-menu'
 import {
@@ -348,8 +349,8 @@ export const insert: ContextMenuItem<CanvasData> = {
 }
 
 export const convert: ContextMenuItem<CanvasData> = {
-  name: 'Convert Element To…',
-  shortcut: 'C',
+  name: 'Swap Element With…',
+  shortcut: 'S',
   enabled: (data) => {
     return data.selectedViews.every((path) => {
       const element = MetadataUtils.findElementByElementPath(data.jsxMetadata, path)
@@ -359,7 +360,7 @@ export const convert: ContextMenuItem<CanvasData> = {
   action: (data, dispatch) => {
     requireDispatch(dispatch)([
       setFocus('canvas'),
-      EditorActions.openFloatingInsertMenu({ insertMenuMode: 'convert' }),
+      EditorActions.openFloatingInsertMenu(floatingInsertMenuStateSwap()),
     ])
   },
 }
