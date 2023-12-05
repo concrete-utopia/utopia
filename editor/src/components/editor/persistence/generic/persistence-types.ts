@@ -24,7 +24,7 @@ export interface PersistenceContext<ModelType> {
   rollbackProjectId?: string
   rollbackProject?: ProjectModel<ModelType>
   queuedSave?: ProjectModel<ModelType>
-  projectOwned: boolean
+  projectOwnership: ProjectOwnership
   loggedIn: boolean
 }
 
