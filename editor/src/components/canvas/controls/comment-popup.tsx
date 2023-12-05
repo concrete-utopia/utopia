@@ -2,11 +2,14 @@ import type { CommentData } from '@liveblocks/client'
 import type { ComposerSubmitComment } from '@liveblocks/react-comments'
 import { Comment, Composer } from '@liveblocks/react-comments'
 import { stopPropagation } from '../../inspector/common/inspector-utils'
-import { UtopiaStyles } from '../../../uuiui'
+import { Button, UtopiaStyles, useColorTheme } from '../../../uuiui'
 import React from 'react'
 import { useCreateThread } from '../../../../liveblocks.config'
 import '../../../../resources/editor/css/liveblocks-comments.css'
-import { useCanvasCommentThreadAndLocation } from '../../../core/commenting/comment-hooks'
+import {
+  useCanvasCommentThreadAndLocation,
+  useResolveThread,
+} from '../../../core/commenting/comment-hooks'
 import { useRemixPresence } from '../../../core/shared/multiplayer-hooks'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { switchEditorMode } from '../../editor/actions/action-creators'
@@ -21,6 +24,7 @@ import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { canvasPointToWindowPoint } from '../dom-lookup'
 import { assertNever } from '../../../core/shared/utils'
+import { when } from '../../../utils/react-conditionals'
 
 export const CommentPopup = React.memo(() => {
   const mode = useEditorState(
@@ -50,6 +54,7 @@ interface CommentThreadProps {
 
 const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
   const dispatch = useDispatch()
+  const colorTheme = useColorTheme()
 
   const { location, thread } = useCanvasCommentThreadAndLocation(comment)
 
@@ -126,6 +131,15 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
     'CommentPopup canvasScale',
   )
 
+  const resolveThread = useResolveThread()
+
+  const onClickResolve = React.useCallback(() => {
+    if (thread == null) {
+      return
+    }
+    resolveThread(thread)
+  }, [thread, resolveThread])
+
   if (location == null) {
     return null
   }
@@ -141,11 +155,38 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
         cursor: 'text',
         minWidth: 250,
         boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
+        background: colorTheme.bg0.value,
       }}
       onKeyDown={stopPropagation}
       onKeyUp={stopPropagation}
       onMouseUp={stopPropagation}
     >
+      {when(
+        thread != null,
+        <div
+          style={{
+            position: 'relative',
+          }}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              top: -40,
+              zIndex: 1,
+              display: 'flex',
+              alignItems: 'flex-end',
+              justifyContent: 'flex-end',
+              height: 40,
+            }}
+          >
+            <Button highlight spotlight style={{ padding: '0 6px' }} onClick={onClickResolve}>
+              {thread?.metadata.resolved ? 'Unresolve' : 'Resolve'}
+            </Button>
+          </div>
+        </div>,
+      )}
       {thread == null ? (
         <Composer autoFocus onComposerSubmit={onCreateThread} />
       ) : (
