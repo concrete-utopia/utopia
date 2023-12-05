@@ -106,7 +106,11 @@ export function getCollaborator(
   collabs: Collaborators,
   source: User<Presence, UserMeta>,
 ): UserMeta {
-  return collabs[source.id] ?? placeholderUserMeta(source)
+  return getCollaboratorById(collabs, source.id) ?? placeholderUserMeta(source)
+}
+
+export function getCollaboratorById(collabs: Collaborators, id: string): UserMeta | null {
+  return collabs[id] ?? null
 }
 
 export function useMyUserAndPresence(): {

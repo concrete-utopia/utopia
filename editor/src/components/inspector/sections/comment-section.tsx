@@ -27,6 +27,7 @@ import {
   useResolveThread,
   useResolvedThreads,
   useCanvasLocationOfThread,
+  getCollaboratorById,
 } from '../../../core/commenting/comment-hooks'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { unless, when } from '../../../utils/react-conditionals'
@@ -168,7 +169,7 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
   }
 
   const repliesCount = thread.comments.length - 1
-  const user = collabs[comment.userId]
+  const user = getCollaboratorById(collabs, comment.userId)
 
   return (
     <div

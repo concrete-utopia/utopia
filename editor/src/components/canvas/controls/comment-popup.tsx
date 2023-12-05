@@ -7,6 +7,7 @@ import React from 'react'
 import { useCreateThread, useStorage } from '../../../../liveblocks.config'
 import '../../../../resources/editor/css/liveblocks-comments.css'
 import {
+  getCollaboratorById,
   useCanvasCommentThreadAndLocation,
   useResolveThread,
 } from '../../../core/commenting/comment-hooks'
@@ -194,7 +195,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
       ) : (
         <>
           {thread.comments.map((c) => {
-            const user = collabs[c.userId]
+            const user = getCollaboratorById(collabs, c.userId)
             return (
               <CommentWrapper
                 key={c.id}
