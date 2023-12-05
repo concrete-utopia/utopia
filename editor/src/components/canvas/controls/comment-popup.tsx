@@ -1,17 +1,17 @@
 import type { CommentData } from '@liveblocks/client'
 import type { ComposerSubmitComment } from '@liveblocks/react-comments'
-import { Comment, Composer } from '@liveblocks/react-comments'
+import { Composer } from '@liveblocks/react-comments'
 import { stopPropagation } from '../../inspector/common/inspector-utils'
 import { Button, UtopiaStyles, useColorTheme } from '../../../uuiui'
 import React from 'react'
-import { useCreateThread } from '../../../../liveblocks.config'
+import { useCreateThread, useStorage } from '../../../../liveblocks.config'
 import '../../../../resources/editor/css/liveblocks-comments.css'
 import {
   useCanvasCommentThreadAndLocation,
   useResolveThread,
 } from '../../../core/commenting/comment-hooks'
 import { useRemixPresence } from '../../../core/shared/multiplayer-hooks'
-import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
+import { CommentWrapper, MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { switchEditorMode } from '../../editor/actions/action-creators'
 import type { CommentId } from '../../editor/editor-modes'
 import {
@@ -140,6 +140,8 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
     resolveThread(thread)
   }, [thread, resolveThread])
 
+  const collabs = useStorage((storage) => storage.collaborators)
+
   if (location == null) {
     return null
   }
@@ -191,9 +193,17 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
         <Composer autoFocus onComposerSubmit={onCreateThread} />
       ) : (
         <>
-          {thread.comments.map((c) => (
-            <Comment key={c.id} comment={c} onCommentDelete={onCommentDelete} />
-          ))}
+          {thread.comments.map((c) => {
+            const user = collabs[c.userId]
+            return (
+              <CommentWrapper
+                key={c.id}
+                user={user}
+                comment={c}
+                onCommentDelete={onCommentDelete}
+              />
+            )
+          })}
           <Composer autoFocus threadId={thread.id} />
         </>
       )}
