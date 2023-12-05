@@ -176,7 +176,10 @@ function setupTest(saveThrottle: number = 0) {
     dispatchedActions: [] as Array<EditorAction>,
     projectNotFound: false,
     createdOrLoadedProject: undefined as PersistentModel | undefined,
-    latestContext: { projectOwned: false, loggedIn: false } as PersistenceContext<PersistentModel>,
+    latestContext: {
+      projectOwnership: { ownerId: null, isOwner: false },
+      loggedIn: false,
+    } as PersistenceContext<PersistentModel>,
   }
   const testDispatch: EditorDispatch = (actions: ReadonlyArray<EditorAction>) => {
     capturedData.dispatchedActions.push(...actions)
