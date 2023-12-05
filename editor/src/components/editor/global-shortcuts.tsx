@@ -109,7 +109,7 @@ import {
   COMMENT_SHORTCUT,
 } from './shortcut-definitions'
 import type { EditorState, LockedElements, NavigatorEntry } from './store/editor-state'
-import { getOpenFile, RightMenuTab } from './store/editor-state'
+import { floatingInsertMenuStateSwap, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
 import { pickColorWithEyeDropper } from '../canvas/canvas-utils'
 import {
@@ -736,7 +736,7 @@ export function handleKeyDown(
           )
         })
         if (isSelectMode(editor.mode) && possibleToConvert) {
-          return [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'convert' })]
+          return [EditorActions.openFloatingInsertMenu(floatingInsertMenuStateSwap())]
         } else {
           return []
         }
