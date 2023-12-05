@@ -7,9 +7,8 @@ import {
   InspectorSubsectionHeader,
   useColorTheme,
 } from '../../../uuiui'
-import { Comment } from '@liveblocks/react-comments'
 import { stopPropagation } from '../common/inspector-utils'
-import type { ThreadMetadata } from '../../../../liveblocks.config'
+import { useStorage, type ThreadMetadata } from '../../../../liveblocks.config'
 import type { ThreadData } from '@liveblocks/client'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { canvasRectangle } from '../../../core/shared/math-utils'
@@ -19,7 +18,7 @@ import {
   switchEditorMode,
 } from '../../editor/actions/action-creators'
 import { EditorModes, isCommentMode, isExistingComment } from '../../editor/editor-modes'
-import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
+import { CommentWrapper, MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { useAtom } from 'jotai'
 import { RemixNavigationAtom } from '../../canvas/remix/utopia-remix-root-component'
 import {
@@ -28,6 +27,7 @@ import {
   useResolveThread,
   useResolvedThreads,
   useCanvasLocationOfThread,
+  getCollaboratorById,
 } from '../../../core/commenting/comment-hooks'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { unless, when } from '../../../utils/react-conditionals'
@@ -161,12 +161,16 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
     [resolveThread, dispatch, thread],
   )
 
+  const collabs = useStorage((storage) => storage.collaborators)
+
   const comment = thread.comments[0]
   if (comment == null) {
     return null
   }
 
   const repliesCount = thread.comments.length - 1
+  const user = getCollaboratorById(collabs, comment.userId)
+
   return (
     <div
       key={comment.id}
@@ -179,7 +183,12 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
           : 'transparent',
       }}
     >
-      <Comment comment={comment} showActions={false} style={{ backgroundColor: 'transparent' }} />
+      <CommentWrapper
+        user={user}
+        comment={comment}
+        showActions={false}
+        style={{ backgroundColor: 'transparent' }}
+      />
       <div
         style={{
           paddingBottom: 10,
