@@ -1396,7 +1396,7 @@ export var Playground = () => {
     it('when converting into fragment', async () => {
       const editor = await setup()
 
-      await pressKey('v')
+      await pressKey('s')
       await searchInFloatingMenu(editor, 'fragm')
 
       expect(getPrintedUiJsCode(editor.getEditorState(), PlaygroundFilePath))
@@ -1863,7 +1863,7 @@ async function wrapViaAddElementPopup(editor: EditorRenderResult, query: string)
 }
 
 async function convertViaAddElementPopup(editor: EditorRenderResult, query: string) {
-  await pressKey('v')
+  await pressKey('s')
   await searchInFloatingMenu(editor, query)
 }
 
