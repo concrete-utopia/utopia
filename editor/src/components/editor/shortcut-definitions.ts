@@ -170,10 +170,6 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
   [INSERT_RECTANGLE_SHORTCUT]: shortcut('Insert a rectangle.', key('r', [])),
   [INSERT_ELLIPSE_SHORTCUT]: shortcut('Insert an ellipse.', key('e', [])),
   [SAVE_CURRENT_FILE_SHORTCUT]: shortcut('Save the current file.', key('s', 'cmd')),
-  [TOGGLE_SHADOW_SHORTCUT]: shortcut(
-    'Toggle the shadow of the currently selected element.',
-    key('s', []),
-  ),
   [INSERT_DIV_SHORTCUT]: shortcut('Insert a div.', [key('d', []), key('f', [])]),
   [CUT_SELECTION_SHORTCUT]: shortcut(
     'Cut the current selection to the clipboard.',
@@ -220,7 +216,7 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
     'Toggle the inspector and the navigator.',
     key('backslash', 'cmd'),
   ),
-  [CONVERT_ELEMENT_SHORTCUT]: shortcut('Convert selected element to...', key('v', [])),
+  [CONVERT_ELEMENT_SHORTCUT]: shortcut('Convert selected element to...', key('s', [])),
   [ADD_ELEMENT_SHORTCUT]: shortcut('Add element...', key('a', [])),
   [OPEN_EYEDROPPPER]: shortcut('Open the eyedropper', key('c', 'ctrl')),
   [TEXT_EDIT_MODE]: shortcut('Activate text edit mode', key('t', [])),

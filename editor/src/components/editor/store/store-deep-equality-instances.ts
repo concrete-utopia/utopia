@@ -271,7 +271,7 @@ import type {
   CursorStackItem,
   CursorImportanceLevel,
   FloatingInsertMenuStateClosed,
-  FloatingInsertMenuStateConvert,
+  FloatingInsertMenuStateSwap,
   FloatingInsertMenuStateWrap,
   FloatingInsertMenuStateInsert,
   FloatingInsertMenuState,
@@ -348,7 +348,7 @@ import {
   cursorStackItem,
   canvasCursor,
   floatingInsertMenuStateClosed,
-  floatingInsertMenuStateConvert,
+  floatingInsertMenuStateSwap,
   floatingInsertMenuStateWrap,
   floatingInsertMenuStateInsert,
   editorStateInspector,
@@ -3489,9 +3489,9 @@ export const FloatingInsertMenuStateInsertKeepDeepEquality: KeepDeepEqualityCall
   )
 
 // Here to cause the build to break if `FloatingInsertMenuStateConvert` is changed.
-floatingInsertMenuStateConvert()
+floatingInsertMenuStateSwap()
 export const FloatingInsertMenuStateConvertKeepDeepEquality: KeepDeepEqualityCall<
-  FloatingInsertMenuStateConvert
+  FloatingInsertMenuStateSwap
 > = (oldValue, newValue) => {
   return keepDeepEqualityResult(oldValue, true)
 }
@@ -3518,7 +3518,7 @@ export const FloatingInsertMenuStateKeepDeepEquality: KeepDeepEqualityCall<
         return FloatingInsertMenuStateInsertKeepDeepEquality(oldValue, newValue)
       }
       break
-    case 'convert':
+    case 'swap':
       if (newValue.insertMenuMode === oldValue.insertMenuMode) {
         return FloatingInsertMenuStateConvertKeepDeepEquality(oldValue, newValue)
       }

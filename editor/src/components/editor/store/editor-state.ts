@@ -682,13 +682,13 @@ export function floatingInsertMenuStateInsert(
   }
 }
 
-export interface FloatingInsertMenuStateConvert {
-  insertMenuMode: 'convert'
+export interface FloatingInsertMenuStateSwap {
+  insertMenuMode: 'swap'
 }
 
-export function floatingInsertMenuStateConvert(): FloatingInsertMenuStateConvert {
+export function floatingInsertMenuStateSwap(): FloatingInsertMenuStateSwap {
   return {
-    insertMenuMode: 'convert',
+    insertMenuMode: 'swap',
   }
 }
 
@@ -705,7 +705,7 @@ export function floatingInsertMenuStateWrap(): FloatingInsertMenuStateWrap {
 export type FloatingInsertMenuState =
   | FloatingInsertMenuStateClosed
   | FloatingInsertMenuStateInsert
-  | FloatingInsertMenuStateConvert
+  | FloatingInsertMenuStateSwap
   | FloatingInsertMenuStateWrap
 
 export interface ResizeOptions {
