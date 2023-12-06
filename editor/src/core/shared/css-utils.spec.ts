@@ -50,7 +50,7 @@ describe('rescopeCSSToTargetCanvasOnly', () => {
     const output = formatCss(rescopeCSSToTargetCanvasOnly(input))
     expect(output).toEqual(
       formatCss(`
-      #canvas-container > * {
+      #canvas-container {
         font-family: San Francisco, SF UI, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
       }
       @font-face {
@@ -100,7 +100,6 @@ describe('rescopeCSSToTargetCanvasOnly', () => {
         --purple: #7cf08c;
         --orange: #0f7e6b;
         --yellow: #dd4a76;
-
         --primary: primary;
         --primary-basic: primary-basic;
         --secondary: 'Roboto Mono';
@@ -159,7 +158,6 @@ describe('rescopeCSSToTargetCanvasOnly', () => {
         --purple: #7cf08c;
         --orange: #0f7e6b;
         --yellow: #dd4a76;
-
         --primary: primary;
         --primary-basic: primary-basic;
         --secondary: 'Roboto Mono';
@@ -261,6 +259,51 @@ describe('rescopeCSSToTargetCanvasOnly', () => {
         }
       }
     `),
+    )
+  })
+
+  it('Handles keyframes', () => {
+    const input = `
+      @keyframes identifier {
+        from {
+          top: 0;
+          left: 0;
+        }
+        30% {
+          top: 50px;
+        }
+        68%,
+        72% {
+          left: 50px;
+        }
+        to {
+          top: 100px;
+          left: 100%;
+        }
+      }
+    `
+
+    const output = formatCss(rescopeCSSToTargetCanvasOnly(input))
+    expect(output).toEqual(
+      formatCss(`
+        @keyframes identifier {
+          from {
+            top: 0;
+            left: 0;
+          }
+          30% {
+            top: 50px;
+          }
+          68%,
+          72% {
+            left: 50px;
+          }
+          to {
+            top: 100px;
+            left: 100%;
+          }
+        }
+      `),
     )
   })
 })
