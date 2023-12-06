@@ -134,7 +134,9 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
         '&:hover': {
           transform: 'scale(1.15)',
           transitionDuration: 'transform 0.1s',
+          transformOrigin: 'bottom left',
         },
+        // on props.selected, no extra hover effect but show it transformed w/ scale as on hover
       }}
       onClick={onClick}
       onMouseDown={onMouseDown}
@@ -143,12 +145,17 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
         css={{
           height: 24,
           width: 24,
-          background: 'black',
-          border: '1px solid ',
+          background: 'white',
+          border: '1px solid white',
           borderRadius: '24px 24px 24px 0px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
+          // shouldn't work like this,  but on something like props.selected
+          '&:active': {
+            boxShadow: '0px 0px 0px 1px #007aff',
+          },
         }}
       >
         <div
@@ -163,7 +170,6 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
           }}
         >
           <AvatarPicture url={avatar} initials={initials} />

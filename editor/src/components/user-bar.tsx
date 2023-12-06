@@ -10,7 +10,16 @@ import {
   normalizeMultiplayerName,
   normalizeOthersList,
 } from '../core/shared/multiplayer'
-import { Avatar, FlexRow, Icn, Tooltip, useColorTheme } from '../uuiui'
+import {
+  Avatar,
+  FlexRow,
+  Icn,
+  Tooltip,
+  UtopiaStyles,
+  color,
+  colorTheme,
+  useColorTheme,
+} from '../uuiui'
 import { Substores, useEditorState } from './editor/store/store-hook'
 import { when } from '../utils/react-conditionals'
 import { MultiplayerWrapper } from '../utils/multiplayer-wrapper'
@@ -20,6 +29,7 @@ import type { EditorAction } from './editor/action-types'
 import { EditorModes, isFollowMode } from './editor/editor-modes'
 import { getCollaborator, useMyUserAndPresence } from '../core/commenting/comment-hooks'
 import { notice } from './common/notice'
+import { MenuProvider } from './context-menu-wrapper'
 
 const MAX_VISIBLE_OTHER_PLAYERS = 4
 
@@ -39,7 +49,7 @@ export const UserBar = React.memo(() => {
   }
 
   return (
-    <FlexRow style={{ gap: 6 }}>
+    <FlexRow style={{ gap: 8 }}>
       {roomStatus === 'connected' && (
         <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
           <MultiplayerUserBar />
@@ -66,16 +76,30 @@ export const SinglePlayerUserBar = React.memo(() => {
 
   return (
     <a href='/projects' target='_blank'>
-      <div
+      <FlexRow
         style={{
-          width: 24,
-          height: 24,
-          position: 'relative',
+          width: 72,
+          background: colorTheme.primary.value,
+          borderRadius: '24px',
+          color: 'white',
+          // fontWeight: 600,
+          gap: 5,
+          border: `2px solid ${colorTheme.primary.value}`,
+          boxShadow: UtopiaStyles.shadowStyles.low.boxShadow,
         }}
       >
-        <Avatar userPicture={userPicture} isLoggedIn={true} />
-        {amIOwner ? <OwnerBadge /> : null}
-      </div>
+        <div
+          style={{
+            width: 24,
+            height: 24,
+            position: 'relative',
+          }}
+        >
+          <Avatar userPicture={userPicture} isLoggedIn={true} />
+          {amIOwner ? <OwnerBadge /> : null}
+        </div>
+        Share
+      </FlexRow>
     </a>
   )
 })
@@ -83,7 +107,6 @@ SinglePlayerUserBar.displayName = 'SinglePlayerUserBar'
 
 const MultiplayerUserBar = React.memo(() => {
   const dispatch = useDispatch()
-  const colorTheme = useColorTheme()
   const collabs = useStorage((store) => store.collaborators)
 
   const { user: myUser } = useMyUserAndPresence()
@@ -160,6 +183,7 @@ const MultiplayerUserBar = React.memo(() => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        gap: 4,
       }}
     >
       {visibleOthers.map((other) => {
@@ -219,7 +243,6 @@ const MultiplayerAvatar = React.memo(
       return isDefaultAuth0AvatarURL(props.picture ?? null) ? null : props.picture
     }, [props.picture])
 
-    const colorTheme = useColorTheme()
     return (
       <Tooltip
         title={`${props.tooltip}${props.follower === true ? ' (following you)' : ''}`}
@@ -240,7 +263,7 @@ const MultiplayerAvatar = React.memo(
             fontWeight: 700,
             cursor: 'pointer',
             position: 'relative',
-            marginRight: -2,
+            // marginRight: -2,
             outline: `1px solid ${colorTheme.bg1.value}`,
           }}
           onClick={props.onClick}
@@ -257,32 +280,75 @@ const MultiplayerAvatar = React.memo(
 MultiplayerAvatar.displayName = 'MultiplayerAvatar'
 
 const FollowerBadge = React.memo(() => {
-  const colorTheme = useColorTheme()
-
   return (
-    <div
-      style={{
-        position: 'absolute',
-        top: -5,
-        right: -5,
-        borderRadius: '100%',
-        backgroundColor: colorTheme.primary.value,
-        color: colorTheme.white.value,
-        width: 8,
-        height: 8,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        border: `1px solid ${colorTheme.white.value}`,
-      }}
-    />
+    <div>
+      <div
+        style={{
+          position: 'absolute',
+          bottom: -1,
+          left: 0,
+          borderRadius: '100%',
+          // backgroundColor: colorTheme.primary.value,
+          background: 'white',
+          color: colorTheme.white.value,
+          width: 8,
+          height: 12,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          border: `1px solid ${colorTheme.black.value}`,
+          zIndex: 1,
+        }}
+      >
+        <div
+          style={{
+            width: 5,
+            height: 6,
+            background: 'black',
+            borderRadius: '100%',
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            border: `1px solid ${colorTheme.primary.value}`,
+          }}
+        ></div>
+      </div>
+      <div
+        style={{
+          position: 'absolute',
+          bottom: -1,
+          left: 7,
+          borderRadius: '100%',
+          backgroundColor: 'white',
+          color: colorTheme.white.value,
+          width: 8,
+          height: 12,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          border: `1px solid ${colorTheme.black.value}`,
+          zIndex: 1,
+        }}
+      >
+        <div
+          style={{
+            width: 5,
+            height: 6,
+            background: 'black',
+            borderRadius: '100%',
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            border: `1px solid ${colorTheme.primary.value}`,
+          }}
+        ></div>
+      </div>
+    </div>
   )
 })
 FollowerBadge.displayName = 'FollowerBadge'
 
 const FolloweeBadge = React.memo(() => {
-  const colorTheme = useColorTheme()
-
   return (
     <div
       style={{
@@ -299,6 +365,24 @@ const FolloweeBadge = React.memo(() => {
 })
 FollowerBadge.displayName = 'FollowerBadge'
 
+const FollowerBadge2 = React.memo(() => {
+  return (
+    <div
+      style={{
+        height: 8,
+        width: 8,
+        background: colorTheme.primary.value,
+        borderRadius: '100%',
+        border: `1px solid ${colorTheme.bg1.value}`,
+        position: 'absolute',
+        left: 0,
+        top: 0,
+      }}
+    />
+  )
+})
+FollowerBadge.displayName = 'FollowerBadge'
+
 const OwnerBadge = React.memo(() => {
   return (
     <Icn
@@ -308,6 +392,21 @@ const OwnerBadge = React.memo(() => {
       height={22}
       color='main'
       style={{ position: 'absolute', zIndex: 1, top: -10, left: 1 }}
+    />
+  )
+})
+
+OwnerBadge.displayName = 'OwnerBadge'
+
+const OwnerBadge2 = React.memo(() => {
+  return (
+    <Icn
+      category='semantic'
+      type={'star'}
+      width={14}
+      height={14}
+      color='main'
+      style={{ position: 'absolute', zIndex: 1, bottom: -1, left: -2 }}
     />
   )
 })

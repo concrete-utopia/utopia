@@ -1,4 +1,5 @@
 import React from 'react'
+import { colorTheme } from './styles/theme'
 
 type IsolatorProps = {
   onAbandonIntent: () => void
@@ -33,8 +34,9 @@ export const Isolator: React.FunctionComponent<React.PropsWithChildren<IsolatorP
         top: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: '#ffffff01',
-        backdropFilter: 'blur(3px)',
+        // backgroundColor: colorTheme.shadow75.value,
+        background: '#00000090',
+        // backdropFilter: 'blur(3px)',
         transition: 'all .1s ease-in-out',
       }}
       onClick={() => props.onAbandonIntent()}

@@ -120,6 +120,10 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
         cursor: 'text',
         minWidth: 250,
         boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
+        maxHeight: 300,
+        overflowY: 'scroll',
+        display: 'flex',
+        flexDirection: 'column-reverse',
       }}
       onKeyDown={stopPropagation}
       onKeyUp={stopPropagation}
@@ -129,9 +133,10 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
         <Composer autoFocus onComposerSubmit={onCreateThread} />
       ) : (
         <>
-          {thread.comments.map((c) => (
+          {thread.comments.reverse().map((c) => (
             <Comment key={c.id} comment={c} onCommentDelete={onCommentDelete} />
           ))}
+
           <Composer autoFocus threadId={thread.id} />
         </>
       )}
