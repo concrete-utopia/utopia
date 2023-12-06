@@ -11,7 +11,7 @@ import {
   useIsOnAnotherRemixRoute,
   useActiveThreads,
 } from '../../../core/commenting/comment-hooks'
-import type { CanvasPoint, CanvasVector, WindowPoint } from '../../../core/shared/math-utils'
+import type { CanvasPoint, WindowPoint } from '../../../core/shared/math-utils'
 import {
   canvasPoint,
   distance,
@@ -27,14 +27,14 @@ import {
 } from '../../../core/shared/multiplayer'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { UtopiaStyles } from '../../../uuiui'
-import { setHighlightedView, switchEditorMode } from '../../editor/actions/action-creators'
-import { EditorModes, existingComment } from '../../editor/editor-modes'
+import { switchEditorMode } from '../../editor/actions/action-creators'
+import { EditorModes } from '../../editor/editor-modes'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { AvatarPicture } from '../../user-bar'
-import { canvasPointToWindowPoint, windowToCanvasCoordinates } from '../dom-lookup'
+import { canvasPointToWindowPoint } from '../dom-lookup'
 import { RemixNavigationAtom } from '../remix/utopia-remix-root-component'
-import { stripNulls } from '../../../core/shared/array-utils'
+import { assertNever } from '../../../core/shared/utils'
 
 const IndicatorSize = 20
 
@@ -141,14 +141,53 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
     [location, canvasScale, canvasOffset, dragPosition],
   )
 
+  const indicatorOpactiy: 'transparent' | 'opaque' =
+    isOnAnotherRoute || thread.metadata.resolved ? 'transparent' : 'opaque'
+  return (
+    <CommentIndicatorUI
+      position={position}
+      opacity={indicatorOpactiy}
+      resolved={thread.metadata.resolved}
+      onClick={onClick}
+      onMouseDown={onMouseDown}
+      bgColor={color.background}
+      fgColor={color.foreground}
+      avatarUrl={avatar}
+      avatarInitials={initials}
+    />
+  )
+})
+CommentIndicator.displayName = 'CommentIndicator'
+
+interface CommentIndicatorUIProps {
+  position: WindowPoint
+  opacity: 'transparent' | 'opaque'
+  resolved: boolean
+  bgColor: string
+  fgColor: string
+  avatarInitials: string
+  avatarUrl?: string | null
+  onClick?: (e: React.MouseEvent) => void
+  onMouseDown?: (e: React.MouseEvent) => void
+}
+
+export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) => {
+  const { position, onClick, onMouseDown, bgColor, fgColor, avatarUrl, avatarInitials } = props
+  const opacity =
+    props.opacity === 'opaque'
+      ? 1
+      : props.opacity === 'transparent'
+      ? 0.25
+      : assertNever(props.opacity)
+
   return (
     <div
       css={{
         position: 'fixed',
         top: position.y,
         left: position.x,
-        opacity: isOnAnotherRoute || thread.metadata.resolved ? 0.25 : 1,
-        filter: thread.metadata.resolved ? 'grayscale(1)' : undefined,
+        opacity: opacity,
+        filter: props.resolved ? 'grayscale(1)' : undefined,
         width: IndicatorSize,
         '&:hover': {
           transform: 'scale(1.15)',
@@ -175,8 +214,8 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
             height: 20,
             width: 20,
             borderRadius: 10,
-            background: color.background,
-            color: color.foreground,
+            background: bgColor,
+            color: fgColor,
             fontSize: 9,
             fontWeight: 'bold',
             display: 'flex',
@@ -185,13 +224,13 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
             boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
           }}
         >
-          <AvatarPicture url={avatar} initials={initials} />
+          <AvatarPicture url={avatarUrl} initials={avatarInitials} />
         </div>
       </div>
     </div>
   )
 })
-CommentIndicator.displayName = 'CommentIndicator'
+CommentIndicatorUI.displayName = 'CommentIndicatorUI'
 
 const COMMENT_DRAG_THRESHOLD = 5 // square px
 

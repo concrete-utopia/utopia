@@ -26,6 +26,13 @@ import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { canvasPointToWindowPoint } from '../dom-lookup'
 import { assertNever } from '../../../core/shared/utils'
 import { when } from '../../../utils/react-conditionals'
+import { CommentIndicatorUI } from './comment-indicator'
+import {
+  multiplayerColorFromIndex,
+  multiplayerInitialsFromName,
+  normalizeMultiplayerName,
+} from '../../../core/shared/multiplayer'
+import { optionalMap } from '../../../core/shared/optional-utils'
 
 export const CommentPopup = React.memo(() => {
   const mode = useEditorState(
@@ -143,6 +150,35 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
 
   const collabs = useStorage((storage) => storage.collaborators)
 
+  const userId = useEditorState(
+    Substores.userState,
+    (store) => {
+      if (store.userState.loginState.type !== 'LOGGED_IN') {
+        return null
+      }
+
+      return store.userState.loginState.user.userId
+    },
+    'CommentThread userId',
+  )
+
+  const collaboratorInfo = React.useMemo(() => {
+    const collaborator = optionalMap((id) => collabs[id], userId)
+    if (collaborator == null) {
+      return {
+        initials: 'AN',
+        color: multiplayerColorFromIndex(null),
+        avatar: null,
+      }
+    }
+
+    return {
+      initials: multiplayerInitialsFromName(normalizeMultiplayerName(collaborator.name)),
+      color: multiplayerColorFromIndex(collaborator.colorIndex),
+      avatar: collaborator.avatar,
+    }
+  }, [collabs, userId])
+
   if (location == null) {
     return null
   }
@@ -191,7 +227,18 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
         </div>,
       )}
       {thread == null ? (
-        <Composer autoFocus onComposerSubmit={onCreateThread} />
+        <>
+          <CommentIndicatorUI
+            position={point}
+            opacity='opaque'
+            resolved={false}
+            bgColor={collaboratorInfo.color.background}
+            fgColor={collaboratorInfo.color.foreground}
+            avatarInitials={collaboratorInfo.initials}
+            avatarUrl={collaboratorInfo.avatar}
+          />
+          <Composer autoFocus onComposerSubmit={onCreateThread} />
+        </>
       ) : (
         <>
           {thread.comments.map((c) => {
