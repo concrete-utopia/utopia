@@ -15,6 +15,7 @@ import { NavigatorItemTestId } from '../../navigator/navigator-item/navigator-it
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import { dragElementWithDNDEvents } from '../event-helpers.test-utils'
 import { windowPoint } from '../../../core/shared/math-utils'
+import { RemixIndexPathLabel } from './remix-utils'
 
 const DefaultRouteTextContent = 'Hello Remix!'
 const RootTextContent = 'This is root!'
@@ -276,7 +277,7 @@ describe('Remix navigator', () => {
         ),
       ),
     )
-    expect(outletItemElement.textContent).toEqual('Outlet: (home)')
+    expect(outletItemElement.textContent).toEqual(`Outlet: ${RemixIndexPathLabel}`)
   })
 })
 describe('Reparenting in Remix projects in the navigator', () => {

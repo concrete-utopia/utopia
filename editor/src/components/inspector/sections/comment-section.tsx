@@ -32,6 +32,7 @@ import {
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { unless, when } from '../../../utils/react-conditionals'
 import { openCommentThreadActions } from '../../../core/shared/multiplayer'
+import { getRemixLocationLabel } from '../../canvas/remix/remix-utils'
 
 export const CommentSection = React.memo(() => {
   return (
@@ -169,6 +170,9 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
   }
 
   const repliesCount = thread.comments.length - 1
+
+  const remixLocationRouteLabel = getRemixLocationLabel(remixLocationRoute)
+
   const user = getCollaboratorById(collabs, comment.userId)
 
   return (
@@ -189,9 +193,30 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
         showActions={false}
         style={{ backgroundColor: 'transparent' }}
       />
+      {when(
+        remixLocationRouteLabel != null,
+        <div
+          style={{
+            paddingLeft: 44,
+            paddingBottom: 11,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <div
+            style={{
+              fontSize: 9,
+              color: colorTheme.fg6.value,
+            }}
+          >
+            {thread.metadata.remixLocationRoute ?? ''}
+          </div>
+        </div>,
+      )}
       <div
         style={{
-          paddingBottom: 10,
+          paddingBottom: 11,
           paddingLeft: 44,
           paddingRight: 10,
           marginTop: -5,

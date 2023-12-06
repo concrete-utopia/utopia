@@ -11,10 +11,9 @@ import { Substores, useEditorState } from './store/store-hook'
 import { FlexRow, Tooltip, UtopiaTheme, colorTheme, useColorTheme } from '../../uuiui'
 import { stopPropagation } from '../inspector/common/inspector-utils'
 import * as EP from '../../core/shared/element-path'
+import { RemixIndexPathLabel, getRemixLocationLabel } from '../canvas/remix/remix-utils'
 
 export const RemixNavigationBarPathTestId = 'remix-navigation-bar-path'
-
-export const RemixNavigationBarHomeLabel = '(home)'
 
 export type RemixSceneLabelButtonType = 'back' | 'forward' | 'home'
 
@@ -30,7 +29,6 @@ export const RemixNavigationBar = React.memo(() => {
     (store) => store.editor.mode.type === 'live',
     'RemixNavigationBar isLiveMode',
   )
-  const theme = useColorTheme()
 
   const forward = React.useCallback(
     () => navigationControls[EP.toString(activeRemixScene)]?.forward(),
@@ -46,9 +44,8 @@ export const RemixNavigationBar = React.memo(() => {
   )
 
   const pathname = navigationControls[EP.toString(activeRemixScene)]?.location?.pathname
-  const isIndexRoute = pathname === '/'
 
-  const label = isIndexRoute ? RemixNavigationBarHomeLabel : pathname
+  const label = getRemixLocationLabel(pathname)
 
   if (!isLiveMode || navigationControls == null || pathname == null) {
     return null

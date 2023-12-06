@@ -18,6 +18,7 @@ import { useAtom } from 'jotai'
 import { RemixNavigationAtom } from '../../remix/utopia-remix-root-component'
 import { matchRoutes } from 'react-router'
 import { unless } from '../../../../utils/react-conditionals'
+import { getRemixLocationLabel } from '../../remix/remix-utils'
 
 export const RemixSceneLabelPathTestId = (path: ElementPath): string =>
   `${EP.toString(path)}-remix-scene-label-path`
@@ -26,8 +27,6 @@ export const RemixSceneLabelTestId = (path: ElementPath): string =>
   `${EP.toString(path)}-remix-scene-label-test-id`
 
 export const LocationDoesNotMatchRoutesTestId = 'location-does-not-match-routes'
-
-export const RemixSceneHomeLabel = '(home)'
 
 export type RemixSceneLabelButtonType = 'back' | 'forward' | 'home'
 
@@ -95,9 +94,8 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
   const [navigationData] = useAtom(RemixNavigationAtom)
 
   const currentPath = (navigationData[EP.toString(props.target)] ?? null)?.location.pathname
-  const isIndexRoute = currentPath === '/'
 
-  const pathLabel = isIndexRoute ? RemixSceneHomeLabel : currentPath
+  const pathLabel = getRemixLocationLabel(currentPath)
 
   const scenelabel = useEditorState(
     Substores.metadata,
