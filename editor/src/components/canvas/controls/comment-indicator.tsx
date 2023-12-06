@@ -2,11 +2,15 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import type { ThreadData } from '@liveblocks/client'
-import React from 'react'
+import React, { useState } from 'react'
 import type { ThreadMetadata } from '../../../../liveblocks.config'
 import { useEditThreadMetadata, useStorage } from '../../../../liveblocks.config'
-import { useActiveThreads, useCanvasLocationOfThread } from '../../../core/commenting/comment-hooks'
-import type { CanvasPoint } from '../../../core/shared/math-utils'
+import {
+  useCanvasLocationOfThread,
+  useActiveThreads,
+  useCanvasCommentThreadAndLocation,
+} from '../../../core/commenting/comment-hooks'
+import type { CanvasPoint, WindowPoint } from '../../../core/shared/math-utils'
 import {
   canvasPoint,
   distance,
@@ -21,14 +25,19 @@ import {
   openCommentThreadActions,
 } from '../../../core/shared/multiplayer'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
-import { UtopiaStyles } from '../../../uuiui'
+import { UtopiaStyles, colorTheme } from '../../../uuiui'
 import { switchEditorMode } from '../../editor/actions/action-creators'
 import { EditorModes } from '../../editor/editor-modes'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { AvatarPicture } from '../../user-bar'
 import { canvasPointToWindowPoint } from '../dom-lookup'
-import { useRemixNavigationContext } from '../remix/utopia-remix-root-component'
+import {
+  RemixNavigationAtom,
+  useRemixNavigationContext,
+} from '../remix/utopia-remix-root-component'
+import { assertNever } from '../../../core/shared/utils'
+import { optionalMap } from '../../../core/shared/optional-utils'
 
 const IndicatorSize = 20
 
@@ -57,18 +66,187 @@ export const CommentIndicators = React.memo(() => {
 })
 CommentIndicators.displayName = 'CommentIndicators'
 
+interface TemporaryCommentIndicatorProps {
+  position: WindowPoint
+  bgColor: string
+  fgColor: string
+  avatarUrl: string | null
+  initials: string
+}
+
+function useCommentBeingComposed(): TemporaryCommentIndicatorProps | null {
+  const commentBeingComposed = useEditorState(
+    Substores.restOfEditor,
+    (store) => {
+      if (store.editor.mode.type !== 'comment' || store.editor.mode.comment?.type !== 'new') {
+        return null
+      }
+      return store.editor.mode.comment
+    },
+    'CommentIndicatorsInner commentBeingComposed',
+  )
+
+  const canvasScale = useEditorState(
+    Substores.canvasOffset,
+    (store) => store.editor.canvas.scale,
+    'MultiplayerPresence canvasScale',
+  )
+
+  const canvasOffset = useEditorState(
+    Substores.canvasOffset,
+    (store) => store.editor.canvas.roundedCanvasOffset,
+    'MultiplayerPresence canvasOffset',
+  )
+
+  const { location } = useCanvasCommentThreadAndLocation(
+    commentBeingComposed ?? { type: 'existing', threadId: 'dummy-thread-id' }, // this is as a placeholder for nulls
+  )
+  const position = React.useMemo(
+    () => (location == null ? null : canvasPointToWindowPoint(location, canvasScale, canvasOffset)),
+    [location, canvasScale, canvasOffset],
+  )
+
+  const collabs = useStorage((storage) => storage.collaborators)
+
+  const userId = useEditorState(
+    Substores.userState,
+    (store) => {
+      if (store.userState.loginState.type !== 'LOGGED_IN') {
+        return null
+      }
+
+      return store.userState.loginState.user.userId
+    },
+    'CommentThread userId',
+  )
+
+  const collaboratorInfo = React.useMemo(() => {
+    const collaborator = optionalMap((id) => collabs[id], userId)
+    if (collaborator == null) {
+      return {
+        initials: 'AN',
+        color: multiplayerColorFromIndex(null),
+        avatar: null,
+      }
+    }
+
+    return {
+      initials: multiplayerInitialsFromName(normalizeMultiplayerName(collaborator.name)),
+      color: multiplayerColorFromIndex(collaborator.colorIndex),
+      avatar: collaborator.avatar,
+    }
+  }, [collabs, userId])
+
+  if (position == null) {
+    return null
+  }
+
+  return {
+    position: position,
+    bgColor: collaboratorInfo.color.background,
+    fgColor: collaboratorInfo.color.foreground,
+    avatarUrl: collaboratorInfo.avatar,
+    initials: collaboratorInfo.initials,
+  }
+}
+
 const CommentIndicatorsInner = React.memo(() => {
   const threads = useActiveThreads()
+  const temporaryIndicatorData = useCommentBeingComposed()
 
   return (
     <React.Fragment>
       {threads.map((thread) => (
         <CommentIndicator key={thread.id} thread={thread} />
       ))}
+      {temporaryIndicatorData != null ? (
+        <CommentIndicatorUI
+          position={temporaryIndicatorData.position}
+          opacity={'opaque'}
+          resolved={false}
+          bgColor={temporaryIndicatorData.bgColor}
+          fgColor={temporaryIndicatorData.fgColor}
+          avatarUrl={temporaryIndicatorData.avatarUrl}
+          avatarInitials={temporaryIndicatorData.initials}
+        />
+      ) : null}
     </React.Fragment>
   )
 })
 CommentIndicatorsInner.displayName = 'CommentIndicatorInner'
+
+interface CommentIndicatorUIProps {
+  position: WindowPoint
+  opacity: 'transparent' | 'opaque'
+  resolved: boolean
+  bgColor: string
+  fgColor: string
+  avatarInitials: string
+  avatarUrl?: string | null
+  onClick?: (e: React.MouseEvent) => void
+  onMouseDown?: (e: React.MouseEvent) => void
+}
+
+export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) => {
+  const { position, onClick, onMouseDown, bgColor, fgColor, avatarUrl, avatarInitials } = props
+  const opacity =
+    props.opacity === 'opaque'
+      ? 1
+      : props.opacity === 'transparent'
+      ? 0.25
+      : assertNever(props.opacity)
+
+  return (
+    <div
+      css={{
+        position: 'fixed',
+        top: position.y,
+        left: position.x,
+        opacity: opacity,
+        filter: props.resolved ? 'grayscale(1)' : undefined,
+        width: IndicatorSize,
+        '&:hover': {
+          transform: 'scale(1.15)',
+          transitionDuration: 'transform 0.1s ease',
+          transformOrigin: 'bottom left',
+        },
+      }}
+      onClick={onClick}
+      onMouseDown={onMouseDown}
+    >
+      <div
+        css={{
+          height: 24,
+          width: 24,
+          background: colorTheme.bg1.value,
+          borderRadius: '24px 24px 24px 0px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
+        }}
+      >
+        <div
+          style={{
+            height: 20,
+            width: 20,
+            borderRadius: 10,
+            background: bgColor,
+            color: fgColor,
+            fontSize: 9,
+            fontWeight: 'bold',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <AvatarPicture url={avatarUrl} initials={avatarInitials} />
+        </div>
+      </div>
+    </div>
+  )
+})
+CommentIndicatorUI.displayName = 'CommentIndicatorUI'
 
 interface CommentIndicatorProps {
   thread: ThreadData<ThreadMetadata>
@@ -105,7 +283,6 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
       }
       remixState.navigate(remixLocationRoute)
     }
-
     dispatch(openCommentThreadActions(thread.id, commentScene))
   }, [dispatch, thread.id, remixState, remixLocationRoute, isOnAnotherRoute, commentScene])
 
@@ -131,54 +308,21 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
     [location, canvasScale, canvasOffset, dragPosition],
   )
 
+  const indicatorOpactiy: 'transparent' | 'opaque' =
+    isOnAnotherRoute || thread.metadata.resolved ? 'transparent' : 'opaque'
+
   return (
-    <div
-      css={{
-        position: 'fixed',
-        top: position.y,
-        left: position.x,
-        opacity: isOnAnotherRoute || thread.metadata.resolved ? 0.25 : 1,
-        filter: thread.metadata.resolved ? 'grayscale(1)' : undefined,
-        width: IndicatorSize,
-        '&:hover': {
-          transform: 'scale(1.15)',
-          transitionDuration: 'transform 0.1s',
-        },
-      }}
+    <CommentIndicatorUI
+      position={position}
+      opacity={indicatorOpactiy}
+      resolved={thread.metadata.resolved}
       onClick={onClick}
       onMouseDown={onMouseDown}
-    >
-      <div
-        css={{
-          height: 24,
-          width: 24,
-          background: 'black',
-          border: '1px solid ',
-          borderRadius: '24px 24px 24px 0px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <div
-          style={{
-            height: 20,
-            width: 20,
-            borderRadius: 10,
-            background: color.background,
-            color: color.foreground,
-            fontSize: 9,
-            fontWeight: 'bold',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
-          }}
-        >
-          <AvatarPicture url={avatar} initials={initials} />
-        </div>
-      </div>
-    </div>
+      bgColor={color.background}
+      fgColor={color.foreground}
+      avatarUrl={avatar}
+      avatarInitials={initials}
+    />
   )
 })
 CommentIndicator.displayName = 'CommentIndicator'
