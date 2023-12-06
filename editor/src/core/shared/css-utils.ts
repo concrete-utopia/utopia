@@ -16,6 +16,14 @@ export function rescopeCSSToTargetCanvasOnly(input: string): string {
   let ast = csstree.parse(input)
 
   csstree.walk(ast, (node) => {
+    if (node.type === 'PseudoClassSelector' && node.name !== 'is') {
+      // We don't want to walk pseudo classes with the exception of :is()
+      // We can return the special value csstree.walk.skip to achieve this, though
+      // the types seem to believe this doesn't exist, it does
+      // https://github.com/csstree/csstree/blob/ba6dfd8bb0e33055c05f13803d04825d98dd2d8d/docs/traversal.md#walkast-options
+      return (csstree.walk as any).skip
+    }
+
     // We want to find all selectors, and prepend '#canvas-container ' (i.e. the canvas-container
     // ID Selector and a ' ' combinator) so that they will only apply to descendents of the canvas
     if (node.type === 'Selector') {

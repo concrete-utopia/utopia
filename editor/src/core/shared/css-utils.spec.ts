@@ -303,4 +303,28 @@ describe('rescopeCSSToTargetCanvasOnly', () => {
       `),
     )
   })
+
+  it('Skips selectors inside pseudo-class selectors, with the exception of :is()', () => {
+    const input = `
+      .myClass:has(.x) {
+        background-color: aqua;
+      }
+
+      :is(h1, h2, h3):has(+ :is(h2, h3, h4)) {
+        margin: 0 0 0.25rem 0;
+      }
+    `
+
+    const output = formatCss(rescopeCSSToTargetCanvasOnly(input))
+    expect(output).toEqual(
+      formatCss(`
+        #canvas-container .myClass:has(.x) {
+          background-color: aqua;
+        }
+        :is(#canvas-container h1, #canvas-container h2, #canvas-container h3):has(+ :is(h2, h3, h4)) {
+          margin: 0 0 0.25rem 0;
+        }
+      `),
+    )
+  })
 })
