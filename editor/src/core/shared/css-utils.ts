@@ -11,7 +11,7 @@ const SelectorsToSkip = [
   'from',
   'to',
 ]
-const PseudoClassSelectorsToWalk = ['is', 'where']
+const PseudoClassSelectorsToWalk = ['is', 'where', 'not']
 
 export function rescopeCSSToTargetCanvasOnly(input: string): string {
   let ast = csstree.parse(input)

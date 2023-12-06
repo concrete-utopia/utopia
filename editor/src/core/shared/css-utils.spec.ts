@@ -317,6 +317,10 @@ describe('rescopeCSSToTargetCanvasOnly', () => {
       :where(h1, h2, h3):has(+ :where(h2, h3, h4)) {
         margin: 0 0 0.25rem 0;
       }
+
+      :not(h1, h2, h3):has(+ :not(h2, h3, h4)) {
+        margin: 0 0 0.25rem 0;
+      }
     `
 
     const output = formatCss(rescopeCSSToTargetCanvasOnly(input))
@@ -329,6 +333,9 @@ describe('rescopeCSSToTargetCanvasOnly', () => {
           margin: 0 0 0.25rem 0;
         }
         :where(#canvas-container h1, #canvas-container h2, #canvas-container h3):has(+ :where(h2, h3, h4)) {
+          margin: 0 0 0.25rem 0;
+        }
+        :not(#canvas-container h1, #canvas-container h2, #canvas-container h3):has(+ :not(h2, h3, h4)) {
           margin: 0 0 0.25rem 0;
         }
       `),
