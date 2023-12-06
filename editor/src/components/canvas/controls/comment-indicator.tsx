@@ -7,7 +7,6 @@ import type { ThreadMetadata } from '../../../../liveblocks.config'
 import { useEditThreadMetadata, useStorage } from '../../../../liveblocks.config'
 import {
   useCanvasLocationOfThread,
-  useIsOnAnotherRemixRoute,
   useActiveThreads,
   useCanvasCommentThreadAndLocation,
 } from '../../../core/commenting/comment-hooks'
@@ -33,7 +32,10 @@ import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { AvatarPicture } from '../../user-bar'
 import { canvasPointToWindowPoint } from '../dom-lookup'
-import { RemixNavigationAtom, useRemixNavigationContext } from '../remix/utopia-remix-root-component'
+import {
+  RemixNavigationAtom,
+  useRemixNavigationContext,
+} from '../remix/utopia-remix-root-component'
 import { assertNever } from '../../../core/shared/utils'
 import { optionalMap } from '../../../core/shared/optional-utils'
 
