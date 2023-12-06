@@ -33,7 +33,7 @@ export const CommentWrapper = React.memo(
     }
     return (
       <div style={{ position: 'relative' }}>
-        {/* <MultiplayerAvatar
+        <MultiplayerAvatar
           name={multiplayerInitialsFromName(normalizeMultiplayerName(user.name))}
           color={multiplayerColorFromIndex(user.colorIndex)}
           style={{
@@ -45,7 +45,7 @@ export const CommentWrapper = React.memo(
             height: 25.5, // matching the size of the liveblocks component
           }}
           picture={user.avatar}
-        /> */}
+        />
         <Comment {...commentProps} />
       </div>
     )
