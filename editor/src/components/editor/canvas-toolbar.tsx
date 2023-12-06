@@ -655,7 +655,9 @@ export const CanvasToolbar = React.memo(() => {
         </>,
       )}
       {when(
-        canvasToolbarMode.primary === 'edit' && canvasToolbarMode.secondary === 'strategy-active',
+        canvasToolbarMode.primary === 'edit' &&
+          canvasToolbarMode.secondary === 'strategy-active' &&
+          !isViewer,
         <StrategyIndicator />,
       )}
       {/* Insert Mode */}
