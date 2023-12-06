@@ -10,8 +10,8 @@ import {
   getCollaboratorById,
   useCanvasCommentThreadAndLocation,
   useResolveThread,
+  useScenesWithId,
 } from '../../../core/commenting/comment-hooks'
-import { useRemixPresence } from '../../../core/shared/multiplayer-hooks'
 import { CommentWrapper, MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { switchEditorMode } from '../../editor/actions/action-creators'
 import type { CommentId } from '../../editor/editor-modes'
@@ -26,6 +26,10 @@ import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { canvasPointToWindowPoint } from '../dom-lookup'
 import { assertNever } from '../../../core/shared/utils'
 import { when } from '../../../utils/react-conditionals'
+import { useAtom } from 'jotai'
+import { RemixNavigationAtom } from '../remix/utopia-remix-root-component'
+import { getIdOfScene } from './comment-mode/comment-mode-hooks'
+import * as EP from '../../../core/shared/element-path'
 
 export const CommentPopup = React.memo(() => {
   const mode = useEditorState(
@@ -66,7 +70,8 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
 
   const createThread = useCreateThread()
 
-  const remixPresence = useRemixPresence()
+  const scenes = useScenesWithId()
+  const [remixSceneRoutes] = useAtom(RemixNavigationAtom)
 
   const onCreateThread = React.useCallback(
     ({ body }: ComposerSubmitComment, event: React.FormEvent<HTMLFormElement>) => {
@@ -75,6 +80,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
       if (!isNewComment(comment)) {
         return
       }
+
       // Create a new thread
       const newThread = (() => {
         switch (comment.location.type) {
@@ -86,10 +92,14 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
                 type: 'canvas',
                 x: comment.location.position.x,
                 y: comment.location.position.y,
-                remixLocationRoute: remixPresence?.locationRoute ?? undefined,
               },
             })
           case 'scene':
+            const sceneId = comment.location.sceneId
+            const scene = scenes.find((s) => getIdOfScene(s) === sceneId)
+            const remixRoute =
+              scene != null ? remixSceneRoutes[EP.toString(scene?.elementPath)] : undefined
+
             return createThread({
               body,
               metadata: {
@@ -97,8 +107,8 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
                 type: 'canvas',
                 x: comment.location.offset.x,
                 y: comment.location.offset.y,
-                sceneId: comment.location.sceneId,
-                remixLocationRoute: remixPresence?.locationRoute ?? undefined,
+                sceneId: sceneId,
+                remixLocationRoute: remixRoute != null ? remixRoute.location.pathname : undefined,
               },
             })
           default:
@@ -109,7 +119,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
         switchEditorMode(EditorModes.commentMode(existingComment(newThread.id), 'not-dragging')),
       ])
     },
-    [createThread, comment, remixPresence, dispatch],
+    [createThread, comment, dispatch, remixSceneRoutes, scenes],
   )
 
   const onCommentDelete = React.useCallback(
