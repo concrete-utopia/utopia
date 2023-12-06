@@ -44,7 +44,13 @@ export const CommentIndicators = React.memo(() => {
     'CommentIndicator projectId',
   )
 
-  if (projectId == null) {
+  const mode = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.mode.type,
+    'CommentIndicators mode',
+  )
+
+  if (projectId == null || mode === 'live') {
     return null
   }
 
