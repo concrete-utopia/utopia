@@ -4,9 +4,6 @@ import * as prettier from 'prettier'
 function formatCss(css: string): string {
   return prettier.format(css, { parser: 'css' })
 }
-function removeUnnecessaryWhitespace(css: string): string {
-  return css.replace(/\n\s*|\s(?=\{)|(?<=\:)\s|;/g, '')
-}
 
 describe('rescopeCSSToTargetCanvasOnly', () => {
   it('Handles the default project CSS', () => {
