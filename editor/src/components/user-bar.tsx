@@ -49,7 +49,7 @@ export const UserBar = React.memo(() => {
   }
 
   return (
-    <FlexRow style={{ gap: 8 }}>
+    <FlexRow style={{ gap: 4 }}>
       {roomStatus === 'connected' && (
         <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
           <MultiplayerUserBar />
@@ -76,7 +76,7 @@ export const SinglePlayerUserBar = React.memo(() => {
 
   return (
     <a href='/projects' target='_blank'>
-      <FlexRow
+      {/* <FlexRow
         style={{
           width: 72,
           background: colorTheme.primary.value,
@@ -99,7 +99,18 @@ export const SinglePlayerUserBar = React.memo(() => {
           {amIOwner ? <OwnerBadge /> : null}
         </div>
         Share
-      </FlexRow>
+      </FlexRow> */}
+
+      <div
+        style={{
+          width: 24,
+          height: 24,
+          position: 'relative',
+        }}
+      >
+        <Avatar userPicture={userPicture} isLoggedIn={true} />
+        {amIOwner ? <OwnerBadge /> : null}
+      </div>
     </a>
   )
 })
@@ -263,14 +274,15 @@ const MultiplayerAvatar = React.memo(
             fontWeight: 700,
             cursor: 'pointer',
             position: 'relative',
-            // marginRight: -2,
-            outline: `1px solid ${colorTheme.bg1.value}`,
+            outline: props.follower ? `${colorTheme.primary.value} solid 1px ` : undefined,
+            outlineOffset: props.follower ? -2 : undefined,
+            // boxShadow: props.follower ? `0 0 1px ${colorTheme.primary.value}` : undefined,
           }}
           onClick={props.onClick}
         >
           <AvatarPicture url={picture} initials={props.name} size={24} />
-          {props.isOwner ? <OwnerBadge /> : null}
-          {props.follower ? <FollowerBadge /> : null}
+          {props.isOwner ? <OwnerBadge2 /> : null}
+          {/* {props.follower ? <FollowerBadge2 /> : null} */}
           {props.isBeingFollowed ? <FolloweeBadge /> : null}
         </div>
       </Tooltip>
@@ -375,7 +387,7 @@ const FollowerBadge2 = React.memo(() => {
         borderRadius: '100%',
         border: `1px solid ${colorTheme.bg1.value}`,
         position: 'absolute',
-        left: 0,
+        left: -1,
         top: 0,
       }}
     />
