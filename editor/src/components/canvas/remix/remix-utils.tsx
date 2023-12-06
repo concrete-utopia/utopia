@@ -461,7 +461,7 @@ export function getRemixLocationLabel(location: string | undefined): string | nu
   }
 
   if (location === '/') {
-    return 'RemixNavigationBarHomeLabel'
+    return RemixIndexPathLabel
   }
 
   return location
