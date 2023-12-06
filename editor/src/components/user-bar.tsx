@@ -254,6 +254,7 @@ export const MultiplayerAvatar = React.memo((props: MultiplayerAvatarProps) => {
           props.isBeingFollowed === true
             ? `0px 0px 8px ${colorTheme.dynamicBlue.value}`
             : undefined,
+        ...props.style,
       }}
       onClick={props.onClick}
     >
