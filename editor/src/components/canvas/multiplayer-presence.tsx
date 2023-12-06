@@ -108,10 +108,16 @@ export const MultiplayerPresence = React.memo(() => {
     }
   }, [updateMyPresence])
 
+  const [roomId, setRoomId] = React.useState<string>(room.id)
+
   React.useEffect(() => {
     // when the room changes, reset
-    setTimeout(() => dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))]), 0)
-  }, [room.id, dispatch])
+    // (unfortunately there's not a subscription event for room id changes :()
+    if (roomId !== room.id) {
+      setRoomId(room.id)
+      dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
+    }
+  }, [room.id, roomId, dispatch])
 
   if (!isLoggedIn(loginState)) {
     return null

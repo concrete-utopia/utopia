@@ -91,7 +91,7 @@ import {
   TOGGLE_FOCUSED_OMNIBOX_TAB,
   FOCUS_CLASS_NAME_INPUT,
   INSERT_DIV_SHORTCUT,
-  OPEN_EYEDROPPPER as OPEN_EYEDROPPER,
+  OPEN_EYEDROPPER,
   TEXT_EDIT_MODE,
   TOGGLE_TEXT_BOLD,
   TOGGLE_TEXT_ITALIC,
@@ -146,6 +146,7 @@ import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { createPasteToReplacePostActionActions } from '../canvas/canvas-strategies/post-action-options/post-action-options'
 import { wrapInDivStrategy } from './wrap-in-callbacks'
 import { isFeatureEnabled } from '../../utils/feature-switches'
+import { isProjectViewerFromState, type ProjectServerState } from './store/project-server-state'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -354,6 +355,7 @@ export function preventBrowserShortcuts(editor: EditorState, event: KeyboardEven
 export function handleKeyDown(
   event: KeyboardEvent,
   editor: EditorState,
+  projectServerState: ProjectServerState,
   metadataRef: { current: ElementInstanceMetadataMap },
   navigatorTargetsRef: { current: Array<NavigatorEntry> },
   namesByKey: ShortcutNamesByKey,
@@ -361,6 +363,8 @@ export function handleKeyDown(
 ): Array<EditorAction> {
   // Stop the browser from firing things like save dialogs.
   preventBrowserShortcuts(editor, event)
+
+  const isViewer = isProjectViewerFromState(projectServerState)
 
   // Ensure that any key presses are appropriately recorded.
   const key = Keyboard.keyCharacterForCode(event.keyCode)
@@ -605,6 +609,9 @@ export function handleKeyDown(
         return [EditorActions.toggleHidden()]
       },
       [INSERT_IMAGE_SHORTCUT]: () => {
+        if (isViewer) {
+          return []
+        }
         if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
           // FIXME: Side effects.
           insertImage(dispatch)
@@ -742,6 +749,9 @@ export function handleKeyDown(
         }
       },
       [ADD_ELEMENT_SHORTCUT]: () => {
+        if (isViewer) {
+          return []
+        }
         if (isSelectMode(editor.mode)) {
           return [
             EditorActions.openFloatingInsertMenu({
@@ -775,6 +785,9 @@ export function handleKeyDown(
         return []
       },
       [TEXT_EDIT_MODE]: () => {
+        if (isViewer) {
+          return []
+        }
         const newUID = generateUidWithExistingComponents(editor.projectContents)
 
         actions.push(
@@ -949,6 +962,9 @@ export function handleKeyDown(
         return [EditorActions.applyCommandsAction(commands)]
       },
       [OPEN_INSERT_MENU]: () => {
+        if (isViewer) {
+          return []
+        }
         return [
           EditorActions.setPanelVisibility('rightmenu', true),
           EditorActions.setRightMenuTab(RightMenuTab.Insert),

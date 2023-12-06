@@ -37,14 +37,12 @@ import {
 } from './insert-callbacks'
 import { useDispatch } from './store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
-import { togglePanel } from './actions/action-creators'
 import { defaultTransparentViewElement } from './defaults'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { useToolbarMode } from './canvas-toolbar-states'
-import { when } from '../../utils/react-conditionals'
+import { unless, when } from '../../utils/react-conditionals'
 import { StrategyIndicator } from '../canvas/controls/select-mode/strategy-indicator'
 import { toggleAbsolutePositioningCommands } from '../inspector/inspector-common'
-import { NO_OP } from '../../core/shared/utils'
 import { createFilter } from 'react-select'
 import WindowedSelect from 'react-windowed-select'
 import { InspectorInputEmotionStyle } from '../../uuiui/inputs/base-input'
@@ -70,6 +68,7 @@ import {
 } from '../canvas/ui/floating-insert-menu'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { floatingInsertMenuStateSwap } from './store/editor-state'
+import { useIsViewer } from './store/project-server-state-hooks'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const PlayModeButtonTestId = 'canvas-toolbar-play-mode'
@@ -410,6 +409,8 @@ export const CanvasToolbar = React.memo(() => {
     'TopMenu loggedIn',
   )
 
+  const isViewer = useIsViewer()
+
   return (
     <FlexColumn
       style={{ alignItems: 'start', justifySelf: 'center' }}
@@ -442,27 +443,32 @@ export const CanvasToolbar = React.memo(() => {
             style={{ width: 36 }}
           />
         </Tooltip>
-        <Tooltip title='Insert or Edit Text' placement='bottom'>
-          <InsertModeButton
-            iconType='text'
-            iconCategory='tools'
-            primary={canvasToolbarMode.primary === 'text'}
-            onClick={insertTextCallback}
-            keepActiveInLiveMode
-            style={{ width: 36 }}
-          />
-        </Tooltip>
-        <Tooltip title='Insert' placement='bottom'>
-          <InsertModeButton
-            testid={InsertMenuButtonTestId}
-            iconType='insert'
-            iconCategory='tools'
-            primary={canvasToolbarMode.primary === 'insert'}
-            onClick={toggleInsertButtonClicked}
-            keepActiveInLiveMode
-            style={{ width: 36 }}
-          />
-        </Tooltip>
+        {unless(
+          isViewer,
+          <>
+            <Tooltip title='Insert or Edit Text' placement='bottom'>
+              <InsertModeButton
+                iconType='text'
+                iconCategory='tools'
+                primary={canvasToolbarMode.primary === 'text'}
+                onClick={insertTextCallback}
+                keepActiveInLiveMode
+                style={{ width: 36 }}
+              />
+            </Tooltip>
+            <Tooltip title='Insert' placement='bottom'>
+              <InsertModeButton
+                testid={InsertMenuButtonTestId}
+                iconType='insert'
+                iconCategory='tools'
+                primary={canvasToolbarMode.primary === 'insert'}
+                onClick={toggleInsertButtonClicked}
+                keepActiveInLiveMode
+                style={{ width: 36 }}
+              />
+            </Tooltip>
+          </>,
+        )}
         <Tooltip title='Live Mode' placement='bottom'>
           <InsertModeButton
             testid={PlayModeButtonTestId}

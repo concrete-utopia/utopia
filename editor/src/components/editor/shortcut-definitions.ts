@@ -81,7 +81,7 @@ export const PASTE_TO_REPLACE = 'paste-to-replace'
 export const PASTE_STYLE_PROPERTIES = 'paste-style-properties'
 export const COPY_STYLE_PROPERTIES = 'copy-style-properties'
 
-export const OPEN_EYEDROPPPER = 'open-eyedropper'
+export const OPEN_EYEDROPPER = 'open-eyedropper'
 export const CONVERT_TO_FLEX_CONTAINER = 'convert-to-flex-container'
 export const REMOVE_ABSOLUTE_POSITIONING = 'remove-absolute-positioning'
 export const RESIZE_TO_FIT = 'resize-to-fit'
@@ -218,7 +218,7 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
   ),
   [CONVERT_ELEMENT_SHORTCUT]: shortcut('Convert selected element to...', key('s', [])),
   [ADD_ELEMENT_SHORTCUT]: shortcut('Add element...', key('a', [])),
-  [OPEN_EYEDROPPPER]: shortcut('Open the eyedropper', key('c', 'ctrl')),
+  [OPEN_EYEDROPPER]: shortcut('Open the eyedropper', key('c', 'ctrl')),
   [TEXT_EDIT_MODE]: shortcut('Activate text edit mode', key('t', [])),
   [TOGGLE_TEXT_BOLD]: shortcut(
     'Toggle font-weight to bold of the currently selected text element.',

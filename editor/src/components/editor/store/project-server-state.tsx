@@ -25,8 +25,10 @@ export function projectMetadataFromServer(
   }
 }
 
+export type IsMyProject = 'yes' | 'no' | 'unknown'
+
 export interface ProjectServerState {
-  isMyProject: 'yes' | 'no' | 'unknown'
+  isMyProject: IsMyProject
   ownerId: string | null
   projectData: ProjectMetadataFromServer | null
   forkedFromProjectData: ProjectMetadataFromServer | null
@@ -118,3 +120,11 @@ export const ProjectServerStateUpdater = React.memo(
     return <>{children}</>
   },
 )
+
+export function isProjectViewerFromState(state: ProjectServerState): boolean {
+  return isProjectViewer(state.isMyProject)
+}
+
+export function isProjectViewer(isMyProject: IsMyProject): boolean {
+  return isMyProject === 'no'
+}

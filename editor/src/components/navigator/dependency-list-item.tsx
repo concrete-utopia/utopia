@@ -14,7 +14,6 @@ import {
   AlternateColorThemeComponent,
 } from '../../uuiui'
 import { MenuProvider, MomentumContextMenu } from '../../uuiui-deps'
-import { handleKeyDown } from '../editor/global-shortcuts'
 import type { DependencyPackageDetails } from '../editor/store/editor-state'
 import { unless } from '../../utils/react-conditionals'
 
