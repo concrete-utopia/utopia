@@ -65,9 +65,15 @@ export const CommentIndicators = React.memo(() => {
 })
 CommentIndicators.displayName = 'CommentIndicators'
 
-const CommentIndicatorsInner = React.memo(() => {
-  const threads = useActiveThreads()
+interface TemporaryCommentIndicatorProps {
+  position: WindowPoint
+  bgColor: string
+  fgColor: string
+  avatarUrl: string | null
+  initials: string
+}
 
+function useCommentBeingComposed(): TemporaryCommentIndicatorProps | null {
   const commentBeingComposed = useEditorState(
     Substores.restOfEditor,
     (store) => {
@@ -130,28 +136,37 @@ const CommentIndicatorsInner = React.memo(() => {
     }
   }, [collabs, userId])
 
-  const fakeThreadData = React.useMemo(() => {
-    if (position == null) {
-      return null
-    }
+  if (position == null) {
+    return null
+  }
 
-    return { position }
-  }, [position])
+  return {
+    position: position,
+    bgColor: collaboratorInfo.color.background,
+    fgColor: collaboratorInfo.color.foreground,
+    avatarUrl: collaboratorInfo.avatar,
+    initials: collaboratorInfo.initials,
+  }
+}
+
+const CommentIndicatorsInner = React.memo(() => {
+  const threads = useActiveThreads()
+  const temporaryIndicatorData = useCommentBeingComposed()
 
   return (
     <React.Fragment>
       {threads.map((thread) => (
         <CommentIndicator key={thread.id} thread={thread} />
       ))}
-      {fakeThreadData != null ? (
+      {temporaryIndicatorData != null ? (
         <CommentIndicatorUI
-          position={fakeThreadData.position}
+          position={temporaryIndicatorData.position}
           opacity={'opaque'}
           resolved={false}
-          bgColor={collaboratorInfo.color.background}
-          fgColor={collaboratorInfo.color.foreground}
-          avatarUrl={collaboratorInfo.avatar}
-          avatarInitials={collaboratorInfo.initials}
+          bgColor={temporaryIndicatorData.bgColor}
+          fgColor={temporaryIndicatorData.fgColor}
+          avatarUrl={temporaryIndicatorData.avatarUrl}
+          avatarInitials={temporaryIndicatorData.initials}
         />
       ) : null}
     </React.Fragment>
