@@ -11,13 +11,14 @@ const SelectorsToSkip = [
   'from',
   'to',
 ]
+const PseudoClassSelectorsToWalk = ['is', 'where']
 
 export function rescopeCSSToTargetCanvasOnly(input: string): string {
   let ast = csstree.parse(input)
 
   csstree.walk(ast, (node) => {
-    if (node.type === 'PseudoClassSelector' && node.name !== 'is') {
-      // We don't want to walk pseudo classes with the exception of :is()
+    if (node.type === 'PseudoClassSelector' && !PseudoClassSelectorsToWalk.includes(node.name)) {
+      // We don't want to walk pseudo classes with some exceptions
       // We can return the special value csstree.walk.skip to achieve this, though
       // the types seem to believe this doesn't exist, it does
       // https://github.com/csstree/csstree/blob/ba6dfd8bb0e33055c05f13803d04825d98dd2d8d/docs/traversal.md#walkast-options
