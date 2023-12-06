@@ -36,6 +36,14 @@ export interface RemixNavigationAtomData {
 export const ActiveRemixSceneAtom = atom<ElementPath>(EP.emptyElementPath)
 export const RemixNavigationAtom = atom<RemixNavigationAtomData>({})
 
+export function useRemixNavigationContext(
+  scenePath: ElementPath | null,
+): RemixNavigationContext | null {
+  const [remixNavigationState] = useAtom(RemixNavigationAtom)
+  const remixContext = scenePath != null ? remixNavigationState[EP.toString(scenePath)] : null
+  return remixContext ?? null
+}
+
 function useGetRouteModules(basePath: ElementPath) {
   const remixDerivedDataRef = useRefEditorState((store) => store.derived.remixData)
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)

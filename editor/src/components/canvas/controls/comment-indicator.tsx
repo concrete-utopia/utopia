@@ -2,16 +2,11 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import type { ThreadData } from '@liveblocks/client'
-import { useAtom } from 'jotai'
 import React from 'react'
 import type { ThreadMetadata } from '../../../../liveblocks.config'
 import { useEditThreadMetadata, useStorage } from '../../../../liveblocks.config'
-import {
-  useCanvasLocationOfThread,
-  useIsOnAnotherRemixRoute,
-  useActiveThreads,
-} from '../../../core/commenting/comment-hooks'
-import type { CanvasPoint, CanvasVector, WindowPoint } from '../../../core/shared/math-utils'
+import { useActiveThreads, useCanvasLocationOfThread } from '../../../core/commenting/comment-hooks'
+import type { CanvasPoint } from '../../../core/shared/math-utils'
 import {
   canvasPoint,
   distance,
@@ -27,14 +22,13 @@ import {
 } from '../../../core/shared/multiplayer'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { UtopiaStyles } from '../../../uuiui'
-import { setHighlightedView, switchEditorMode } from '../../editor/actions/action-creators'
-import { EditorModes, existingComment } from '../../editor/editor-modes'
+import { switchEditorMode } from '../../editor/actions/action-creators'
+import { EditorModes } from '../../editor/editor-modes'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { AvatarPicture } from '../../user-bar'
-import { canvasPointToWindowPoint, windowToCanvasCoordinates } from '../dom-lookup'
-import { RemixNavigationAtom } from '../remix/utopia-remix-root-component'
-import { stripNulls } from '../../../core/shared/array-utils'
+import { canvasPointToWindowPoint } from '../dom-lookup'
+import { useRemixNavigationContext } from '../remix/utopia-remix-root-component'
 
 const IndicatorSize = 20
 
@@ -95,35 +89,25 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
     'CommentIndicator canvasOffset',
   )
 
-  const [remixNavigationState] = useAtom(RemixNavigationAtom)
-
   const { location, scene: commentScene } = useCanvasLocationOfThread(thread)
 
   const remixLocationRoute = thread.metadata.remixLocationRoute ?? null
 
-  const isOnAnotherRoute = useIsOnAnotherRemixRoute(remixLocationRoute)
+  const remixState = useRemixNavigationContext(commentScene)
+
+  const isOnAnotherRoute =
+    remixLocationRoute != null && remixLocationRoute !== remixState?.location.pathname
 
   const onClick = React.useCallback(() => {
-    if (isOnAnotherRoute && remixLocationRoute != null) {
-      // TODO: after we have scene identifier in the comment metadata we should only navigate the scene with the comment
-      Object.keys(remixNavigationState).forEach((scene) => {
-        const remixState = remixNavigationState[scene]
-        if (remixState == null) {
-          return
-        }
-        remixState.navigate(remixLocationRoute)
-      })
+    if (isOnAnotherRoute) {
+      if (remixState == null) {
+        return
+      }
+      remixState.navigate(remixLocationRoute)
     }
 
     dispatch(openCommentThreadActions(thread.id, commentScene))
-  }, [
-    dispatch,
-    thread.id,
-    remixNavigationState,
-    remixLocationRoute,
-    isOnAnotherRoute,
-    commentScene,
-  ])
+  }, [dispatch, thread.id, remixState, remixLocationRoute, isOnAnotherRoute, commentScene])
 
   const { initials, color, avatar } = (() => {
     const firstComment = thread.comments[0]

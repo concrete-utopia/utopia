@@ -25,6 +25,7 @@ import {
 import { MetadataUtils } from '../model/element-metadata-utils'
 import { getIdOfScene } from '../../components/canvas/controls/comment-mode/comment-mode-hooks'
 import type { ElementPath } from '../shared/project-file-types'
+import type { ElementInstanceMetadata } from '../shared/element-template'
 
 export function useCanvasCommentThreadAndLocation(comment: CommentId): {
   location: CanvasPoint | null
@@ -177,17 +178,7 @@ export function useCollaborators() {
   return useStorage((store) => store.collaborators)
 }
 
-export function useIsOnAnotherRemixRoute(remixLocationRoute: string | null) {
-  const me = useSelf()
-
-  return (
-    me.presence.remix?.locationRoute != null &&
-    remixLocationRoute != null &&
-    remixLocationRoute !== me.presence.remix.locationRoute
-  )
-}
-
-export function useScenesWithId() {
+export function useScenesWithId(): Array<ElementInstanceMetadata> {
   return useEditorState(
     Substores.metadata,
     (store) => {
@@ -195,6 +186,20 @@ export function useScenesWithId() {
       return scenes.filter((s) => getIdOfScene(s) != null)
     },
     'useScenesWithId scenes',
+  )
+}
+
+export function useSceneWithId(sceneId: string | null): ElementInstanceMetadata | null {
+  return useEditorState(
+    Substores.metadata,
+    (store) => {
+      if (sceneId == null) {
+        return null
+      }
+      const scenes = MetadataUtils.getScenesMetadata(store.editor.jsxMetadata)
+      return scenes.find((s) => getIdOfScene(s) != sceneId) ?? null
+    },
+    'useSceneWithId scene',
   )
 }
 
