@@ -2,7 +2,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import type { ThreadData } from '@liveblocks/client'
-import React from 'react'
+import React, { useState } from 'react'
 import type { ThreadMetadata } from '../../../../liveblocks.config'
 import { useEditThreadMetadata, useStorage } from '../../../../liveblocks.config'
 import {
@@ -25,7 +25,7 @@ import {
   openCommentThreadActions,
 } from '../../../core/shared/multiplayer'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
-import { UtopiaStyles } from '../../../uuiui'
+import { UtopiaStyles, colorTheme } from '../../../uuiui'
 import { switchEditorMode } from '../../editor/actions/action-creators'
 import { EditorModes } from '../../editor/editor-modes'
 import { useDispatch } from '../../editor/store/dispatch-context'
@@ -207,7 +207,8 @@ export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) =>
         width: IndicatorSize,
         '&:hover': {
           transform: 'scale(1.15)',
-          transitionDuration: 'transform 0.1s',
+          transitionDuration: 'transform 0.1s ease',
+          transformOrigin: 'bottom left',
         },
       }}
       onClick={onClick}
@@ -217,12 +218,12 @@ export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) =>
         css={{
           height: 24,
           width: 24,
-          background: 'black',
-          border: '1px solid ',
+          background: colorTheme.bg1.value,
           borderRadius: '24px 24px 24px 0px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
         }}
       >
         <div
@@ -237,7 +238,6 @@ export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) =>
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
           }}
         >
           <AvatarPicture url={avatarUrl} initials={avatarInitials} />
@@ -283,7 +283,6 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
       }
       remixState.navigate(remixLocationRoute)
     }
-
     dispatch(openCommentThreadActions(thread.id, commentScene))
   }, [dispatch, thread.id, remixState, remixLocationRoute, isOnAnotherRoute, commentScene])
 
