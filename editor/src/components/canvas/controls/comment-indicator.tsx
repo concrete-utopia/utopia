@@ -34,7 +34,6 @@ import { Substores, useEditorState, useRefEditorState } from '../../editor/store
 import { AvatarPicture } from '../../user-bar'
 import { canvasPointToWindowPoint, windowToCanvasCoordinates } from '../dom-lookup'
 import { RemixNavigationAtom } from '../remix/utopia-remix-root-component'
-import { stripNulls } from '../../../core/shared/array-utils'
 
 const IndicatorSize = 20
 
@@ -58,7 +57,74 @@ export const CommentIndicators = React.memo(() => {
 CommentIndicators.displayName = 'CommentIndicators'
 
 const CommentIndicatorsInner = React.memo(() => {
-  const threads = useActiveThreads()
+  const activeThreads = useActiveThreads()
+
+  const commentBeingComposed = useEditorState(
+    Substores.restOfEditor,
+    (store) => {
+      if (store.editor.mode.type !== 'comment' || store.editor.mode.comment?.type !== 'new') {
+        return null
+      }
+      return store.editor.mode.comment
+    },
+    'CommentIndicatorsInner commentBeingComposed',
+  )
+
+  const userId = useEditorState(
+    Substores.userState,
+    (store) => {
+      if (store.userState.loginState.type !== 'LOGGED_IN') {
+        return null
+      }
+      return store.userState.loginState.user.userId
+    },
+    'CommentIndicatorsInner userId',
+  )
+
+  const fakeThread: ThreadData<ThreadMetadata> | null = React.useMemo(() => {
+    if (commentBeingComposed == null || userId == null) {
+      return null
+    }
+
+    const { location } = commentBeingComposed
+
+    const sceneId = location.type === 'scene' ? location.sceneId : undefined
+    const coords =
+      commentBeingComposed.location.type === 'canvas'
+        ? commentBeingComposed.location.position
+        : commentBeingComposed.location.offset
+
+    return {
+      type: 'thread',
+      id: 'dummy-thread-id',
+      roomId: 'dummy-room-id',
+      createdAt: Date.now().toLocaleString(),
+      comments: [
+        {
+          type: 'comment',
+          id: 'dummy-comment-id',
+          threadId: 'dummy-thread-id',
+          roomId: 'dummy-room-id',
+          userId: userId,
+          createdAt: Date.now().toLocaleString(),
+          reactions: [],
+          deletedAt: Date.now().toLocaleString(),
+        },
+      ],
+      metadata: {
+        type: 'canvas',
+        x: coords.x,
+        y: coords.y,
+        sceneId: sceneId,
+        resolved: false,
+      },
+    }
+  }, [commentBeingComposed, userId])
+
+  const threads: Array<ThreadData<ThreadMetadata>> = React.useMemo(
+    () => (fakeThread == null ? activeThreads : [fakeThread, ...activeThreads]),
+    [activeThreads, fakeThread],
+  )
 
   return (
     <React.Fragment>
