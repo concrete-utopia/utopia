@@ -526,7 +526,9 @@ export const CanvasToolbar = React.memo(() => {
       </div>
       {/* Edit Mode submenus */}
       {when(
-        canvasToolbarMode.primary === 'edit' && canvasToolbarMode.secondary === 'selected',
+        canvasToolbarMode.primary === 'edit' &&
+          canvasToolbarMode.secondary === 'selected' &&
+          !isViewer,
         <>
           {when(
             insertMenuMode === 'closed',
