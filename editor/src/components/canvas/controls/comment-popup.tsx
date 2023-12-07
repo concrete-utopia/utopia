@@ -3,12 +3,7 @@ import type { ComposerSubmitComment } from '@liveblocks/react-comments'
 import { Composer } from '@liveblocks/react-comments'
 import { useAtom } from 'jotai'
 import React from 'react'
-import {
-  useCreateThread,
-  useEditThreadMetadata,
-  useSelf,
-  useStorage,
-} from '../../../../liveblocks.config'
+import { useCreateThread, useStorage } from '../../../../liveblocks.config'
 import '../../../../resources/editor/css/liveblocks-comments.css'
 import {
   getCollaboratorById,
