@@ -23,6 +23,7 @@ import {
   closeFloatingInsertMenu,
   openFloatingInsertMenu,
   resetCanvas,
+  setRightMenuTab,
   switchEditorMode,
   wrapInElement,
 } from './actions/action-creators'
@@ -67,7 +68,7 @@ import {
   useGetInsertableComponents,
 } from '../canvas/ui/floating-insert-menu'
 import { isFeatureEnabled } from '../../utils/feature-switches'
-import { floatingInsertMenuStateSwap } from './store/editor-state'
+import { RightMenuTab, floatingInsertMenuStateSwap } from './store/editor-state'
 import { useIsViewer } from './store/project-server-state-hooks'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
@@ -347,7 +348,10 @@ export const CanvasToolbar = React.memo(() => {
     if (isCommentMode) {
       dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
     } else {
-      dispatch([switchEditorMode(EditorModes.commentMode(null, 'not-dragging'))])
+      dispatch([
+        switchEditorMode(EditorModes.commentMode(null, 'not-dragging')),
+        setRightMenuTab(RightMenuTab.Comments),
+      ])
     }
   }, [dispatch, isCommentMode])
 

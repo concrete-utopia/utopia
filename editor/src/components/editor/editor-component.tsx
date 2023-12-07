@@ -44,6 +44,7 @@ import {
   githubOperationLocksEditor,
   githubOperationPrettyName,
   LeftMenuTab,
+  RightMenuTab,
 } from './store/editor-state'
 import {
   Substores,
@@ -361,7 +362,10 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     (store) => store.projectServerState.isMyProject,
     (isMyProject) => {
       if (isProjectViewer(isMyProject)) {
-        dispatch([EditorActions.switchEditorMode(EditorModes.commentMode(null, 'not-dragging'))])
+        dispatch([
+          EditorActions.switchEditorMode(EditorModes.commentMode(null, 'not-dragging')),
+          EditorActions.setRightMenuTab(RightMenuTab.Comments),
+        ])
       }
     },
     'EditorComponentInner viewer mode',

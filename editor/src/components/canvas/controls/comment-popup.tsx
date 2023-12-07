@@ -13,7 +13,7 @@ import {
 } from '../../../core/commenting/comment-hooks'
 import { useRemixPresence } from '../../../core/shared/multiplayer-hooks'
 import { CommentWrapper, MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
-import { switchEditorMode } from '../../editor/actions/action-creators'
+import { setRightMenuTab, switchEditorMode } from '../../editor/actions/action-creators'
 import type { CommentId } from '../../editor/editor-modes'
 import {
   EditorModes,
@@ -26,6 +26,7 @@ import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { canvasPointToWindowPoint } from '../dom-lookup'
 import { assertNever } from '../../../core/shared/utils'
 import { when } from '../../../utils/react-conditionals'
+import { RightMenuTab } from '../../editor/store/editor-state'
 
 export const CommentPopup = React.memo(() => {
   const mode = useEditorState(
@@ -107,6 +108,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
       })()
       dispatch([
         switchEditorMode(EditorModes.commentMode(existingComment(newThread.id), 'not-dragging')),
+        setRightMenuTab(RightMenuTab.Comments),
       ])
     },
     [createThread, comment, remixPresence, dispatch],

@@ -58,6 +58,8 @@ CommentSection.displayName = 'CommentSection'
 
 const ThreadPreviews = React.memo(() => {
   const dispatch = useDispatch()
+  const colorTheme = useColorTheme()
+
   const { threads: activeThreads } = useUnresolvedThreads()
   const { threads: resolvedThreads } = useResolvedThreads()
 
@@ -79,6 +81,12 @@ const ThreadPreviews = React.memo(() => {
       {activeThreads.map((thread) => (
         <ThreadPreview key={thread.id} thread={thread} />
       ))}
+      {when(
+        activeThreads.length === 0,
+        <div style={{ padding: '0px 8px', color: colorTheme.fg6.value }}>
+          No active comment threads.
+        </div>,
+      )}
       {when(
         resolvedThreads.length > 0,
         <Button

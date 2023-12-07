@@ -11,7 +11,7 @@ import {
   useIsOnAnotherRemixRoute,
   useActiveThreads,
 } from '../../../core/commenting/comment-hooks'
-import type { CanvasPoint, CanvasVector, WindowPoint } from '../../../core/shared/math-utils'
+import type { CanvasPoint } from '../../../core/shared/math-utils'
 import {
   canvasPoint,
   distance,
@@ -27,14 +27,14 @@ import {
 } from '../../../core/shared/multiplayer'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { UtopiaStyles } from '../../../uuiui'
-import { setHighlightedView, switchEditorMode } from '../../editor/actions/action-creators'
-import { EditorModes, existingComment } from '../../editor/editor-modes'
+import { setRightMenuTab, switchEditorMode } from '../../editor/actions/action-creators'
+import { EditorModes } from '../../editor/editor-modes'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { AvatarPicture } from '../../user-bar'
-import { canvasPointToWindowPoint, windowToCanvasCoordinates } from '../dom-lookup'
+import { canvasPointToWindowPoint } from '../dom-lookup'
 import { RemixNavigationAtom } from '../remix/utopia-remix-root-component'
-import { stripNulls } from '../../../core/shared/array-utils'
+import { RightMenuTab } from '../../editor/store/editor-state'
 
 const IndicatorSize = 20
 
@@ -246,7 +246,10 @@ function useDragging(thread: ThreadData<ThreadMetadata>, originalLocation: Canva
       }
 
       event.stopPropagation()
-      dispatch([switchEditorMode(EditorModes.commentMode(null, 'dragging'))])
+      dispatch([
+        switchEditorMode(EditorModes.commentMode(null, 'dragging')),
+        setRightMenuTab(RightMenuTab.Comments),
+      ])
       window.addEventListener('mousemove', onMouseMove)
       window.addEventListener('mouseup', onMouseUp)
     },
