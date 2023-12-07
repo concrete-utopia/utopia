@@ -39,6 +39,7 @@ import { CommentSection } from '../inspector/sections/comment-section'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { CommentsPane } from '../inspector/comments-pane'
 import { useIsViewer } from '../editor/store/project-server-state-hooks'
+import { EditorModes, isCommentMode } from '../editor/editor-modes'
 
 interface NumberSize {
   width: number
@@ -201,13 +202,24 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
   )
   const dispatch = useDispatch()
 
+  const mode = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.mode,
+    'DesignPanelRoot mode',
+  )
+
   const onClickTab = React.useCallback(
     (menuTab: RightMenuTab) => {
       let actions: Array<EditorAction> = []
       actions.push(EditorActions.setRightMenuTab(menuTab))
+
+      if (isCommentMode(mode) && menuTab !== RightMenuTab.Comments) {
+        actions.push(EditorActions.switchEditorMode(EditorModes.selectMode(null, false, 'none')))
+      }
+
       dispatch(actions)
     },
-    [dispatch],
+    [dispatch, mode],
   )
 
   const onClickInsertTab = React.useCallback(() => {
