@@ -21,6 +21,7 @@ import {
   isJSXElement,
   isJSXAttributesEntry,
   isJSXAttributeValue,
+  simplifyAttributeIfPossible,
 } from '../../core/shared/element-template'
 import type { VariableData } from '../canvas/ui-jsx-canvas'
 import { type VariablesInScope } from '../canvas/ui-jsx-canvas'
@@ -135,8 +136,10 @@ function getContainerPropsValue(
     isJSXElement(containerMetadata)
   ) {
     containerMetadata.props.forEach((prop) => {
-      if (isJSXAttributesEntry(prop) && isJSXAttributeValue(prop.value)) {
-        runtimeProps[prop.key] = prop.value.value
+      if (isJSXAttributesEntry(prop)) {
+        const value = simplifyAttributeIfPossible(prop.value)
+        if (!isJSXAttributeValue(value)) return
+        runtimeProps[prop.key] = value.value
       }
     })
   }

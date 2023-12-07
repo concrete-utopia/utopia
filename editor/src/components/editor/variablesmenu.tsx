@@ -74,7 +74,12 @@ export const VariablesMenu = React.memo(() => {
   const scopedVariables = useEditorState(
     Substores.variablesInScope,
     (store) =>
-      getVariablesInScope(selectedViews[0], projectContents, store.editor.variablesInScope),
+      getVariablesInScope(
+        selectedViews[0],
+        projectContents,
+        store.editor.variablesInScope,
+        store.editor.jsxMetadata,
+      ),
     'VariablesMenu scopedVariables',
   )
 
