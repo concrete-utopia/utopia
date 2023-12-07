@@ -142,7 +142,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
 
   const onSubmitComment = React.useCallback(() => {
     if (thread != null) {
-      setCommentThreadReadStatus(thread, self.id, 'read', editThreadMetadata)
+      setCommentThreadReadStatus(thread, self.id, 'read', editThreadMetadata, 'delete-others')
     }
   }, [editThreadMetadata, thread, self.id])
 
@@ -179,7 +179,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
     if (thread == null) {
       return
     }
-    setCommentThreadReadStatus(thread, self.id, 'unread', editThreadMetadata)
+    setCommentThreadReadStatus(thread, self.id, 'unread', editThreadMetadata, 'keep-others')
   }, [thread, editThreadMetadata, self.id])
 
   const collabs = useStorage((storage) => storage.collaborators)

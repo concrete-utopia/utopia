@@ -277,7 +277,7 @@ export function useSetCommentThreadReadStatusOnMount(thread: ThreadData<ThreadMe
       return
     }
 
-    setCommentThreadReadStatus(thread, self.id, 'read', editThreadMetadata)
+    setCommentThreadReadStatus(thread, self.id, 'read', editThreadMetadata, 'keep-others')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // only run it once on mount, because opening the popup means reading the thread, no dependencies added
 }
@@ -307,8 +307,10 @@ export function setCommentThreadReadStatus(
   userId: string,
   status: CommentThreadReadStatus,
   editThreadMetadata: ReturnType<typeof useEditThreadMetadata>,
+  deleteOthers: 'delete-others' | 'keep-others',
 ) {
-  const userReadStatuses = parseUserReadStatuses(thread.metadata.userReadStatuses)
+  const userReadStatuses =
+    deleteOthers === 'delete-others' ? {} : parseUserReadStatuses(thread.metadata.userReadStatuses)
   switch (status) {
     case 'read':
       if (userReadStatuses[userId] === true) {
