@@ -40,10 +40,11 @@ export const UserBar = React.memo(() => {
   }
   return (
     <FlexRow style={{ gap: 4 }}>
-      {when(roomStatus === 'connected', 
+      {when(
+        roomStatus === 'connected',
         <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
           <MultiplayerUserBar />
-        </MultiplayerWrapper>
+        </MultiplayerWrapper>,
       )}
       <SinglePlayerUserBar />
     </FlexRow>
