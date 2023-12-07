@@ -2,7 +2,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import type { ThreadData } from '@liveblocks/client'
-import React, { useState } from 'react'
+import React from 'react'
 import type { ThreadMetadata } from '../../../../liveblocks.config'
 import { useEditThreadMetadata, useStorage } from '../../../../liveblocks.config'
 import {
@@ -25,17 +25,15 @@ import {
   openCommentThreadActions,
 } from '../../../core/shared/multiplayer'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
+import { setRightMenuTab, switchEditorMode } from '../../editor/actions/action-creators'
 import { UtopiaStyles, colorTheme } from '../../../uuiui'
-import { switchEditorMode } from '../../editor/actions/action-creators'
 import { EditorModes } from '../../editor/editor-modes'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { AvatarPicture } from '../../user-bar'
 import { canvasPointToWindowPoint } from '../dom-lookup'
-import {
-  RemixNavigationAtom,
-  useRemixNavigationContext,
-} from '../remix/utopia-remix-root-component'
+import { RightMenuTab } from '../../editor/store/editor-state'
+import { useRemixNavigationContext } from '../remix/utopia-remix-root-component'
 import { assertNever } from '../../../core/shared/utils'
 import { optionalMap } from '../../../core/shared/optional-utils'
 
@@ -380,7 +378,10 @@ function useDragging(thread: ThreadData<ThreadMetadata>, originalLocation: Canva
       }
 
       event.stopPropagation()
-      dispatch([switchEditorMode(EditorModes.commentMode(null, 'dragging'))])
+      dispatch([
+        switchEditorMode(EditorModes.commentMode(null, 'dragging')),
+        setRightMenuTab(RightMenuTab.Comments),
+      ])
       window.addEventListener('mousemove', onMouseMove)
       window.addEventListener('mouseup', onMouseUp)
     },
