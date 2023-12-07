@@ -72,6 +72,8 @@ const expressionJSXMapExpressionUIDOptic: Optic<JSXMapExpression, string> = from
 
 const jsExpressionUIDOptic: Optic<JSExpression, string> = fromField('uid')
 
+const arbitraryJSBlockUIDOptic: Optic<ArbitraryJSBlock, string> = fromField('uid')
+
 export interface FixUIDsState {
   mutableAllNewUIDs: Set<string>
   uidsExpectedToBeSeen: Set<string>
@@ -362,10 +364,11 @@ export function fixArbitraryJSBlockUIDs(
     newElement.elementsWithin,
     fixUIDsState,
   )
-  return {
+
+  return updateUID(arbitraryJSBlockUIDOptic, oldElement?.uid ?? newElement.uid, fixUIDsState, {
     ...newElement,
     elementsWithin: fixedElementsWithin,
-  }
+  })
 }
 
 export function fixCombinedArbitraryJSBlockUIDs(
@@ -373,15 +376,16 @@ export function fixCombinedArbitraryJSBlockUIDs(
   newElement: ArbitraryJSBlock,
   fixUIDsState: FixUIDsState,
 ): ArbitraryJSBlock {
+  const useMappingsState: FixUIDsState = { ...fixUIDsState, uidUpdateMethod: 'use-mappings' }
   const fixedElementsWithin = fixElementsWithin(
     oldElement?.elementsWithin ?? {},
     newElement.elementsWithin,
-    { ...fixUIDsState, uidUpdateMethod: 'use-mappings' },
+    useMappingsState,
   )
-  return {
+  return updateUID(arbitraryJSBlockUIDOptic, oldElement?.uid ?? newElement.uid, useMappingsState, {
     ...newElement,
     elementsWithin: fixedElementsWithin,
-  }
+  })
 }
 
 export function fixJSXArrayElement(

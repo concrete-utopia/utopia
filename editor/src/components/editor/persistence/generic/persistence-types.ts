@@ -24,7 +24,7 @@ export interface PersistenceContext<ModelType> {
   rollbackProjectId?: string
   rollbackProject?: ProjectModel<ModelType>
   queuedSave?: ProjectModel<ModelType>
-  projectOwned: boolean
+  projectOwnership: ProjectOwnership
   loggedIn: boolean
 }
 
@@ -68,9 +68,14 @@ export function projectWithFileChanges<ModelType, FileType>(
   }
 }
 
+export type ProjectOwnership = {
+  ownerId: string | null
+  isOwner: boolean
+}
+
 export interface PersistenceBackendAPI<ModelType, FileType> {
   getNewProjectId: () => Promise<string>
-  checkProjectOwned: (projectId: string) => Promise<boolean>
+  checkProjectOwned: (projectId: string) => Promise<ProjectOwnership>
   loadProject: (projectId: string) => Promise<ProjectLoadResult<ModelType>>
   saveProjectToServer: (
     projectId: string,

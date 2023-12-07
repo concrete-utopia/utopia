@@ -92,7 +92,7 @@ export function changeConditionalOrFragment(
         ),
       ]
       break
-    case 'convert': {
+    case 'swap': {
       if (element.type === 'JSX_FRAGMENT') {
         const targetsForUpdates = getElementsToTarget(selectedViews)
         actionsToDispatch = targetsForUpdates.flatMap((path) => {
@@ -201,7 +201,7 @@ export function changeElement(
         ]
       }
       break
-    case 'convert':
+    case 'swap':
       // this is taken from render-as.tsx
       const targetsForUpdates = getElementsToTarget(selectedViews)
       actionsToDispatch = targetsForUpdates.flatMap((path) => {

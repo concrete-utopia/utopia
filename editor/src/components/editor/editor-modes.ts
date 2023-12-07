@@ -5,7 +5,7 @@ import type {
   ImageFile,
 } from '../../core/shared/project-file-types'
 import type { JSXElement } from '../../core/shared/element-template'
-import type { CanvasPoint, Size } from '../../core/shared/math-utils'
+import type { CanvasPoint, LocalPoint, Size } from '../../core/shared/math-utils'
 
 export const DefaultInsertSize: Size = { width: 100, height: 100 }
 
@@ -91,9 +91,71 @@ export interface InsertMode {
 
 export type IsDragging = 'dragging' | 'not-dragging'
 
+export type CommentId = NewComment | ExistingComment
+
+export interface NewComment {
+  type: 'new'
+  location: NewCommentLocation
+}
+
+export type NewCommentLocation = CanvasCommentLocation | SceneCommentLocation
+
+export interface CanvasCommentLocation {
+  type: 'canvas'
+  position: CanvasPoint
+}
+
+export function canvasCommentLocation(canvasPoint: CanvasPoint): CanvasCommentLocation {
+  return {
+    type: 'canvas',
+    position: canvasPoint,
+  }
+}
+
+export interface SceneCommentLocation {
+  type: 'scene'
+  sceneId: string
+  offset: LocalPoint
+}
+
+export function sceneCommentLocation(sceneId: string, offset: LocalPoint): SceneCommentLocation {
+  return {
+    type: 'scene',
+    sceneId: sceneId,
+    offset: offset,
+  }
+}
+
+export function newComment(location: NewCommentLocation): NewComment {
+  return {
+    type: 'new',
+    location: location,
+  }
+}
+
+export function isNewComment(comment: CommentId): comment is NewComment {
+  return comment.type === 'new'
+}
+
+export interface ExistingComment {
+  type: 'existing'
+  threadId: string
+}
+
+export function existingComment(threadId: string): ExistingComment {
+  return {
+    type: 'existing',
+    threadId: threadId,
+  }
+}
+
+export function isExistingComment(comment: CommentId): comment is ExistingComment {
+  return comment.type === 'existing'
+}
+
 export interface CommentMode {
   type: 'comment'
-  location: CanvasPoint | null
+  comment: CommentId | null
   isDragging: IsDragging
 }
 
@@ -179,10 +241,10 @@ export const EditorModes = {
       selectOnFocus: selectOnFocus,
     }
   },
-  commentMode: function (location: CanvasPoint | null, isDragging: IsDragging): CommentMode {
+  commentMode: function (comment: CommentId | null, isDragging: IsDragging): CommentMode {
     return {
       type: 'comment',
-      location: location,
+      comment: comment,
       isDragging: isDragging,
     }
   },

@@ -20,6 +20,7 @@ import type { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
 import type { ProjectServerState } from './project-server-state'
+import { isTransientAction } from '../actions/action-utils'
 
 export function runLocalEditorAction(
   state: EditorState,
@@ -57,6 +58,54 @@ export function runLocalEditorAction(
         collaborativeEditingSupport,
         serverState,
       )
+  }
+}
+
+export function gatedActions<T>(
+  action: EditorAction,
+  serverState: ProjectServerState,
+  editorState: EditorState,
+  defaultValue: T,
+  updateCallback: () => T,
+): T {
+  // Determine if this is a collaboration update, which is to say it's an update
+  // which is only for viewers in a collaboration scenario.
+  let isCollaborationUpdate: boolean = false
+  let alwaysRun: boolean = false
+  switch (action.action) {
+    case 'UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION_UPDATE':
+    case 'UPDATE_EXPORTS_DETAIL_FROM_COLLABORATION_UPDATE':
+    case 'UPDATE_IMPORTS_FROM_COLLABORATION_UPDATE':
+    case 'UPDATE_CODE_FROM_COLLABORATION_UPDATE':
+    case 'DELETE_FILE_FROM_COLLABORATION':
+      isCollaborationUpdate = true
+      break
+    case 'UPDATE_FROM_WORKER':
+      alwaysRun = true
+      break
+    default:
+      break
+  }
+
+  if (alwaysRun) {
+    // If it should always run.
+    return updateCallback()
+  } else if (isCollaborationUpdate && serverState.isMyProject === 'yes') {
+    // If this action is something that would've originated with an owner,
+    // it shouldn't run on an owner.
+    return defaultValue
+  } else if (
+    !isTransientAction(action) &&
+    serverState.isMyProject == 'no' &&
+    !isCollaborationUpdate
+  ) {
+    // If this is a change that will modify the project contents, the current user
+    // is not the owner and it's not a collaboration update (those intended directly
+    // for viewers in a collaboration session) do not run the action.
+    return defaultValue
+  } else {
+    // Otherwise, run the action as a fallback.
+    return updateCallback()
   }
 }
 
@@ -390,15 +439,20 @@ export function runSimpleLocalEditorAction(
     case 'SWITCH_CONDITIONAL_BRANCHES':
       return UPDATE_FNS.SWITCH_CONDITIONAL_BRANCHES(action, state)
     case 'UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION_UPDATE':
-      return UPDATE_FNS.UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION_UPDATE(
+      return UPDATE_FNS.UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION_UPDATE(action, state)
+    case 'UPDATE_EXPORTS_DETAIL_FROM_COLLABORATION_UPDATE':
+      return UPDATE_FNS.UPDATE_EXPORTS_DETAIL_FROM_COLLABORATION_UPDATE(action, state)
+    case 'UPDATE_IMPORTS_FROM_COLLABORATION_UPDATE':
+      return UPDATE_FNS.UPDATE_IMPORTS_FROM_COLLABORATION_UPDATE(action, state)
+    case 'UPDATE_CODE_FROM_COLLABORATION_UPDATE':
+      return UPDATE_FNS.UPDATE_CODE_FROM_COLLABORATION_UPDATE(
         action,
         state,
-        serverState,
+        dispatch,
+        builtInDependencies,
       )
-    case 'UPDATE_EXPORTS_DETAIL_FROM_COLLABORATION_UPDATE':
-      return UPDATE_FNS.UPDATE_EXPORTS_DETAIL_FROM_COLLABORATION_UPDATE(action, state, serverState)
-    case 'UPDATE_IMPORTS_FROM_COLLABORATION_UPDATE':
-      return UPDATE_FNS.UPDATE_IMPORTS_FROM_COLLABORATION_UPDATE(action, state, serverState)
+    case 'SET_SHOW_RESOLVED_THREADS':
+      return UPDATE_FNS.SET_SHOW_RESOLVED_THREADS(action, state)
     default:
       return state
   }

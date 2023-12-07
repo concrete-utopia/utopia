@@ -367,7 +367,9 @@ projectOwnerEndpoint cookie (ProjectIdWithSuffix projectID _) = checkForUser coo
   case (maybeUser, possibleProject) of
     (_, Nothing) -> notFound
     (Nothing, _) -> notAuthenticated
-    (Just sessionUser, Just project) -> return $ ProjectOwnerResponse $ view (field @"_id") sessionUser == view (field @"ownerId") project
+    (Just sessionUser, Just project) -> do
+        let projectOwnerId = view (field @"ownerId") project
+        return $ ProjectOwnerResponse ( view (field @"_id") sessionUser == projectOwnerId ) projectOwnerId
 
 projectChangedSince :: Text -> UTCTime -> ServerMonad (Maybe Bool)
 projectChangedSince projectID lastChangedDate = do

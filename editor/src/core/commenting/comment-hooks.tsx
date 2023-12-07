@@ -2,17 +2,92 @@ import React from 'react'
 import type { User } from '@liveblocks/client'
 import { LiveObject, type ThreadData } from '@liveblocks/client'
 import type { Presence, ThreadMetadata, UserMeta } from '../../../liveblocks.config'
-import { useMutation, useSelf, useStorage, useThreads } from '../../../liveblocks.config'
+import {
+  useEditThreadMetadata,
+  useMutation,
+  useSelf,
+  useStorage,
+  useThreads,
+} from '../../../liveblocks.config'
 import { Substores, useEditorState } from '../../components/editor/store/store-hook'
 import { normalizeMultiplayerName, possiblyUniqueColor } from '../shared/multiplayer'
 import { isLoggedIn } from '../../common/user'
-import { useAtom } from 'jotai'
-import { RemixNavigationAtom } from '../../components/canvas/remix/utopia-remix-root-component'
+import type { CommentId, SceneCommentLocation } from '../../components/editor/editor-modes'
+import { assertNever } from '../shared/utils'
+import type { CanvasPoint } from '../shared/math-utils'
+import {
+  canvasPoint,
+  getCanvasPointWithCanvasOffset,
+  isNotNullFiniteRectangle,
+  localPoint,
+  zeroCanvasPoint,
+} from '../shared/math-utils'
+import { MetadataUtils } from '../model/element-metadata-utils'
+import { getIdOfScene } from '../../components/canvas/controls/comment-mode/comment-mode-hooks'
+import type { ElementPath } from '../shared/project-file-types'
+import type { ElementInstanceMetadata } from '../shared/element-template'
 
-export function useCanvasCommentThread(x: number, y: number): ThreadData<ThreadMetadata> | null {
-  const { threads } = useThreads()
-  const thread = threads.find((t) => t.metadata.x === x && t.metadata.y === y) ?? null
-  return thread
+export function useCanvasCommentThreadAndLocation(comment: CommentId): {
+  location: CanvasPoint | null
+  thread: ThreadData<ThreadMetadata> | null
+} {
+  const threads = useActiveThreads()
+
+  const thread = React.useMemo(() => {
+    switch (comment.type) {
+      case 'new':
+        return null
+      case 'existing':
+        return threads.find((t) => t.id === comment.threadId) ?? null
+      default:
+        assertNever(comment)
+    }
+  }, [threads, comment])
+
+  const scenes = useScenesWithId()
+
+  const location = React.useMemo(() => {
+    switch (comment.type) {
+      case 'new':
+        switch (comment.location.type) {
+          case 'canvas':
+            return comment.location.position
+          case 'scene':
+            const scene = scenes.find(
+              (s) => getIdOfScene(s) === (comment.location as SceneCommentLocation).sceneId,
+            )
+
+            if (scene == null || !isNotNullFiniteRectangle(scene.globalFrame)) {
+              return getCanvasPointWithCanvasOffset(zeroCanvasPoint, comment.location.offset)
+            }
+            return getCanvasPointWithCanvasOffset(scene.globalFrame, comment.location.offset)
+          default:
+            assertNever(comment.location)
+        }
+        break
+      case 'existing':
+        if (thread == null) {
+          return null
+        }
+        if (thread.metadata.sceneId == null) {
+          return canvasPoint(thread.metadata)
+        }
+        const scene = scenes.find((s) => getIdOfScene(s) === thread.metadata.sceneId)
+
+        if (scene == null) {
+          return canvasPoint(thread.metadata)
+        }
+        if (!isNotNullFiniteRectangle(scene.globalFrame)) {
+          return canvasPoint(thread.metadata)
+        }
+        return getCanvasPointWithCanvasOffset(scene.globalFrame, localPoint(thread.metadata))
+
+      default:
+        assertNever(comment)
+    }
+  }, [comment, thread, scenes])
+
+  return { location, thread }
 }
 
 function placeholderUserMeta(user: User<Presence, UserMeta>): UserMeta {
@@ -32,7 +107,11 @@ export function getCollaborator(
   collabs: Collaborators,
   source: User<Presence, UserMeta>,
 ): UserMeta {
-  return collabs[source.id] ?? placeholderUserMeta(source)
+  return getCollaboratorById(collabs, source.id) ?? placeholderUserMeta(source)
+}
+
+export function getCollaboratorById(collabs: Collaborators, id: string): UserMeta | null {
+  return collabs[id] ?? null
 }
 
 export function useMyUserAndPresence(): {
@@ -99,12 +178,90 @@ export function useCollaborators() {
   return useStorage((store) => store.collaborators)
 }
 
-export function useIsOnAnotherRemixRoute(remixLocationRoute: string | null) {
-  const me = useSelf()
-
-  return (
-    me.presence.remix?.locationRoute != null &&
-    remixLocationRoute != null &&
-    remixLocationRoute !== me.presence.remix.locationRoute
+export function useScenesWithId(): Array<ElementInstanceMetadata> {
+  return useEditorState(
+    Substores.metadata,
+    (store) => {
+      const scenes = MetadataUtils.getScenesMetadata(store.editor.jsxMetadata)
+      return scenes.filter((s) => getIdOfScene(s) != null)
+    },
+    'useScenesWithId scenes',
   )
+}
+
+export function useSceneWithId(sceneId: string | null): ElementInstanceMetadata | null {
+  return useEditorState(
+    Substores.metadata,
+    (store) => {
+      if (sceneId == null) {
+        return null
+      }
+      const scenes = MetadataUtils.getScenesMetadata(store.editor.jsxMetadata)
+      return scenes.find((s) => getIdOfScene(s) != sceneId) ?? null
+    },
+    'useSceneWithId scene',
+  )
+}
+
+export function useCanvasLocationOfThread(thread: ThreadData<ThreadMetadata>): {
+  location: CanvasPoint
+  scene: ElementPath | null
+} {
+  const scenes = useScenesWithId()
+
+  if (thread.metadata.sceneId == null) {
+    return { location: canvasPoint(thread.metadata), scene: null }
+  }
+  const scene = scenes.find((s) => getIdOfScene(s) === thread.metadata.sceneId)
+
+  if (scene == null || !isNotNullFiniteRectangle(scene.globalFrame)) {
+    return { location: canvasPoint(thread.metadata), scene: null }
+  }
+  return {
+    location: getCanvasPointWithCanvasOffset(scene.globalFrame, localPoint(thread.metadata)),
+    scene: scene.elementPath,
+  }
+}
+
+export function useResolveThread() {
+  const editThreadMetadata = useEditThreadMetadata()
+
+  const resolveThread = React.useCallback(
+    (thread: ThreadData<ThreadMetadata>) => {
+      editThreadMetadata({ threadId: thread.id, metadata: { resolved: !thread.metadata.resolved } })
+    },
+    [editThreadMetadata],
+  )
+
+  return resolveThread
+}
+
+export function useActiveThreads() {
+  const { threads: unresolvedThreads } = useUnresolvedThreads()
+  const { threads: resolvedThreads } = useResolvedThreads()
+  const showResolved = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.showResolvedThreads,
+    'useActiveThreads showResolved',
+  )
+  if (!showResolved) {
+    return unresolvedThreads
+  }
+  return [...unresolvedThreads, ...resolvedThreads]
+}
+
+export function useResolvedThreads() {
+  const threads = useThreads()
+  return {
+    ...threads,
+    threads: threads.threads.filter((t) => t.metadata.resolved === true),
+  }
+}
+
+export function useUnresolvedThreads() {
+  const threads = useThreads()
+  return {
+    ...threads,
+    threads: threads.threads.filter((t) => t.metadata.resolved !== true),
+  }
 }

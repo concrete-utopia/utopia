@@ -271,7 +271,7 @@ import type {
   CursorStackItem,
   CursorImportanceLevel,
   FloatingInsertMenuStateClosed,
-  FloatingInsertMenuStateConvert,
+  FloatingInsertMenuStateSwap,
   FloatingInsertMenuStateWrap,
   FloatingInsertMenuStateInsert,
   FloatingInsertMenuState,
@@ -348,7 +348,7 @@ import {
   cursorStackItem,
   canvasCursor,
   floatingInsertMenuStateClosed,
-  floatingInsertMenuStateConvert,
+  floatingInsertMenuStateSwap,
   floatingInsertMenuStateWrap,
   floatingInsertMenuStateInsert,
   editorStateInspector,
@@ -474,12 +474,22 @@ import type {
   SelectModeToolbarMode,
   CommentMode,
   FollowMode,
+  CommentId,
+  NewComment,
+  ExistingComment,
+  NewCommentLocation,
+  CanvasCommentLocation,
+  SceneCommentLocation,
 } from '../editor-modes'
 import {
   EditorModes,
   insertionSubject,
   targetedInsertionParent,
   imageInsertionSubject,
+  newComment,
+  existingComment,
+  canvasCommentLocation,
+  sceneCommentLocation,
 } from '../editor-modes'
 import type { EditorPanel } from '../../common/actions'
 import type { Notice, NoticeLevel } from '../../common/notice'
@@ -558,9 +568,11 @@ export const ProjectMetadataFromServerKeepDeepEquality: KeepDeepEqualityCall<Pro
   )
 
 export const ProjectServerStateKeepDeepEquality: KeepDeepEqualityCall<ProjectServerState> =
-  combine3EqualityCalls(
+  combine4EqualityCalls(
     (entry) => entry.isMyProject,
     createCallWithTripleEquals<ProjectServerState['isMyProject']>(),
+    (entry) => entry.ownerId,
+    NullableStringKeepDeepEquality,
     (entry) => entry.projectData,
     nullableDeepEquality(ProjectMetadataFromServerKeepDeepEquality),
     (entry) => entry.forkedFromProjectData,
@@ -765,16 +777,13 @@ export const SingleLineCommentKeepDeepEqualityCall: KeepDeepEqualityCall<SingleL
     singleLineComment,
   )
 
-export const CommentKeepDeepEqualityCall: KeepDeepEqualityCall<Comment> = (
-  oldComment,
-  newComment,
-) => {
-  if (isMultiLineComment(oldComment) && isMultiLineComment(newComment)) {
-    return MultiLineCommentKeepDeepEqualityCall(oldComment, newComment)
-  } else if (isSingleLineComment(oldComment) && isSingleLineComment(newComment)) {
-    return SingleLineCommentKeepDeepEqualityCall(oldComment, newComment)
+export const CommentKeepDeepEqualityCall: KeepDeepEqualityCall<Comment> = (oldValue, newValue) => {
+  if (isMultiLineComment(oldValue) && isMultiLineComment(newValue)) {
+    return MultiLineCommentKeepDeepEqualityCall(oldValue, newValue)
+  } else if (isSingleLineComment(oldValue) && isSingleLineComment(newValue)) {
+    return SingleLineCommentKeepDeepEqualityCall(oldValue, newValue)
   } else {
-    return keepDeepEqualityResult(newComment, false)
+    return keepDeepEqualityResult(newValue, false)
   }
 }
 
@@ -3248,9 +3257,69 @@ export const TextEditModeKeepDeepEquality: KeepDeepEqualityCall<TextEditMode> =
     EditorModes.textEditMode,
   )
 
-export const CommentModeKeepDeepEquality: KeepDeepEqualityCall<CommentMode> = combine2EqualityCalls(
+export const CanvasCommentLocationKeepDeepEquality: KeepDeepEqualityCall<CanvasCommentLocation> =
+  combine1EqualityCall((loc) => loc.position, CanvasPointKeepDeepEquality, canvasCommentLocation)
+
+export const SceneCommentLocationKeepDeepEquality: KeepDeepEqualityCall<SceneCommentLocation> =
+  combine2EqualityCalls(
+    (loc) => loc.sceneId,
+    StringKeepDeepEquality,
+    (loc) => loc.offset,
+    LocalPointKeepDeepEquality,
+    sceneCommentLocation,
+  )
+
+export const NewCommentLocationKeepDeepEquality: KeepDeepEqualityCall<NewCommentLocation> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'canvas':
+      if (newValue.type === oldValue.type) {
+        return CanvasCommentLocationKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'scene':
+      if (newValue.type === oldValue.type) {
+        return SceneCommentLocationKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
+export const NewCommentKeepDeepEquality: KeepDeepEqualityCall<NewComment> = combine1EqualityCall(
   (mode) => mode.location,
-  nullableDeepEquality(CanvasPointKeepDeepEquality),
+  NewCommentLocationKeepDeepEquality,
+  newComment,
+)
+
+export const ExistingCommentKeepDeepEquality: KeepDeepEqualityCall<ExistingComment> =
+  combine1EqualityCall((mode) => mode.threadId, StringKeepDeepEquality, existingComment)
+
+export const CommentIdKeepDeepEquality: KeepDeepEqualityCall<CommentId> = (oldValue, newValue) => {
+  switch (oldValue.type) {
+    case 'new':
+      if (newValue.type === oldValue.type) {
+        return NewCommentKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'existing':
+      if (newValue.type === oldValue.type) {
+        return ExistingCommentKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
+export const CommentModeKeepDeepEquality: KeepDeepEqualityCall<CommentMode> = combine2EqualityCalls(
+  (mode) => mode.comment,
+  nullableDeepEquality(CommentIdKeepDeepEquality),
   (mode) => mode.isDragging,
   createCallWithTripleEquals<IsDragging>(),
   EditorModes.commentMode,
@@ -3420,9 +3489,9 @@ export const FloatingInsertMenuStateInsertKeepDeepEquality: KeepDeepEqualityCall
   )
 
 // Here to cause the build to break if `FloatingInsertMenuStateConvert` is changed.
-floatingInsertMenuStateConvert()
+floatingInsertMenuStateSwap()
 export const FloatingInsertMenuStateConvertKeepDeepEquality: KeepDeepEqualityCall<
-  FloatingInsertMenuStateConvert
+  FloatingInsertMenuStateSwap
 > = (oldValue, newValue) => {
   return keepDeepEqualityResult(oldValue, true)
 }
@@ -3449,7 +3518,7 @@ export const FloatingInsertMenuStateKeepDeepEquality: KeepDeepEqualityCall<
         return FloatingInsertMenuStateInsertKeepDeepEquality(oldValue, newValue)
       }
       break
-    case 'convert':
+    case 'swap':
       if (newValue.insertMenuMode === oldValue.insertMenuMode) {
         return FloatingInsertMenuStateConvertKeepDeepEquality(oldValue, newValue)
       }
@@ -4501,6 +4570,11 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.activeFrames,
   )
 
+  const showResolvedThreadsResults = BooleanKeepDeepEquality(
+    oldValue.showResolvedThreads,
+    newValue.showResolvedThreads,
+  )
+
   const areEqual =
     idResult.areEqual &&
     vscodeBridgeIdResult.areEqual &&
@@ -4579,7 +4653,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     colorSwatchesResults.areEqual &&
     internalClipboardResults.areEqual &&
     filesModifiedByAnotherUserResults.areEqual &&
-    activeFramesResults.areEqual
+    activeFramesResults.areEqual &&
+    showResolvedThreadsResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -4664,6 +4739,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       internalClipboardResults.value,
       filesModifiedByAnotherUserResults.value,
       activeFramesResults.value,
+      showResolvedThreadsResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

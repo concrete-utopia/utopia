@@ -203,6 +203,7 @@ export enum RightMenuTab {
   Inspector = 'inspector',
   Settings = 'settings',
   Comments = 'comments',
+  Variables = 'variables',
 }
 
 // TODO: this should just contain an NpmDependency and a status
@@ -404,7 +405,11 @@ export type CollabTextFileExportsDetail = Y.Array<ExportDetail>
 export type CollabTextFileImports = Y.Map<ImportDetails>
 
 export type CollabTextFile = Y.Map<
-  'TEXT_FILE' | CollabTextFileTopLevelElements | CollabTextFileExportsDetail | CollabTextFileImports
+  | 'TEXT_FILE'
+  | CollabTextFileTopLevelElements
+  | CollabTextFileExportsDetail
+  | CollabTextFileImports
+  | string
 >
 
 export type CollabFile = CollabTextFile //| CollabImageFileUpdate | CollabAssetFileUpdate | CollabDirectoryFileUpdate
@@ -677,13 +682,13 @@ export function floatingInsertMenuStateInsert(
   }
 }
 
-export interface FloatingInsertMenuStateConvert {
-  insertMenuMode: 'convert'
+export interface FloatingInsertMenuStateSwap {
+  insertMenuMode: 'swap'
 }
 
-export function floatingInsertMenuStateConvert(): FloatingInsertMenuStateConvert {
+export function floatingInsertMenuStateSwap(): FloatingInsertMenuStateSwap {
   return {
-    insertMenuMode: 'convert',
+    insertMenuMode: 'swap',
   }
 }
 
@@ -700,7 +705,7 @@ export function floatingInsertMenuStateWrap(): FloatingInsertMenuStateWrap {
 export type FloatingInsertMenuState =
   | FloatingInsertMenuStateClosed
   | FloatingInsertMenuStateInsert
-  | FloatingInsertMenuStateConvert
+  | FloatingInsertMenuStateSwap
   | FloatingInsertMenuStateWrap
 
 export interface ResizeOptions {
@@ -1478,6 +1483,7 @@ export interface EditorState {
   internalClipboard: InternalClipboard
   filesModifiedByAnotherUser: Array<string>
   activeFrames: ActiveFrame[]
+  showResolvedThreads: boolean
 }
 
 export function editorState(
@@ -1560,6 +1566,7 @@ export function editorState(
   internalClipboardData: InternalClipboard,
   filesModifiedByAnotherUser: Array<string>,
   activeFrames: ActiveFrame[],
+  showResolvedThreads: boolean,
 ): EditorState {
   return {
     id: id,
@@ -1641,6 +1648,7 @@ export function editorState(
     internalClipboard: internalClipboardData,
     filesModifiedByAnotherUser: filesModifiedByAnotherUser,
     activeFrames: activeFrames,
+    showResolvedThreads: showResolvedThreads,
   }
 }
 
@@ -2517,6 +2525,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     },
     filesModifiedByAnotherUser: [],
     activeFrames: [],
+    showResolvedThreads: false,
   }
 }
 
@@ -2893,6 +2902,7 @@ export function editorModelFromPersistentModel(
     },
     filesModifiedByAnotherUser: [],
     activeFrames: [],
+    showResolvedThreads: false,
   }
   return editor
 }

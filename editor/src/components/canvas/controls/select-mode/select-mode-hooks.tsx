@@ -792,7 +792,7 @@ export function useSelectAndHover(
   const insertModeCallbacks = useInsertModeSelectAndHover(modeType === 'insert', cmdPressed)
   const textEditModeCallbacks = useTextEditModeSelectAndHover(modeType === 'textEdit')
   const commentModeCallbacks = useCommentModeSelectAndHover(
-    mode?.type === 'comment' ? mode.location : null,
+    mode?.type === 'comment' ? mode.comment : null,
   )
   const followModeCallbacks = useFollowModeSelectAndHover()
 

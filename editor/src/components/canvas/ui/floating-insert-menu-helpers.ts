@@ -1,4 +1,6 @@
-export type InsertMenuMode = 'closed' | 'insert' | 'convert' | 'wrap'
+import type { FloatingInsertMenuState } from '../../editor/store/editor-state'
+
+export type InsertMenuMode = FloatingInsertMenuState['insertMenuMode']
 
 export const insertMenuModes: {
   all: InsertMenuMode[]
@@ -7,9 +9,9 @@ export const insertMenuModes: {
   onlyConvert: InsertMenuMode[]
   onlyWrap: InsertMenuMode[]
 } = {
-  all: ['closed', 'insert', 'convert', 'wrap'],
+  all: ['closed', 'insert', 'swap', 'wrap'],
   onlyClosed: ['closed'],
   onlyInsert: ['insert'],
-  onlyConvert: ['convert'],
+  onlyConvert: ['swap'],
   onlyWrap: ['wrap'],
 }

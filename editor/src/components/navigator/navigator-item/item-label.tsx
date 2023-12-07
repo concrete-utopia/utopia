@@ -25,6 +25,7 @@ import { RemixNavigationAtom } from '../../canvas/remix/utopia-remix-root-compon
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { Location } from 'react-router'
+import { RemixIndexPathLabel, getRemixLocationLabel } from '../../canvas/remix/remix-utils'
 
 export function itemLabelTestIdForEntry(navigatorEntry: NavigatorEntry): string {
   return `${NavigatorItemTestId(varSafeNavigatorEntryToKey(navigatorEntry))}-label`
@@ -120,7 +121,7 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
       return maybeLinkTarget
     }
     if (maybePathForOutlet != null) {
-      return maybePathForOutlet === '/' ? 'Outlet: (home)' : `Outlet: ${maybePathForOutlet}`
+      return `Outlet: ${getRemixLocationLabel(maybePathForOutlet)}`
     }
     return suffix == null ? name : `Outlet: ${name} ${suffix}`
   }, [maybeLinkTarget, maybePathForOutlet, suffix, name])

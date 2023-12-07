@@ -24,7 +24,6 @@ import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
 import type { RemixSceneLabelButtonType } from '../controls/select-mode/remix-scene-label'
 import {
   LocationDoesNotMatchRoutesTestId,
-  RemixSceneHomeLabel,
   RemixSceneLabelButtonTestId,
   RemixSceneLabelPathTestId,
 } from '../controls/select-mode/remix-scene-label'
@@ -47,7 +46,6 @@ import {
 } from '../ui-jsx.test-utils'
 import {
   RemixNavigationBarButtonTestId,
-  RemixNavigationBarHomeLabel,
   RemixNavigationBarPathTestId,
 } from '../../editor/remix-navigation-bar'
 import { NonResizableControlTestId } from '../controls/select-mode/non-resizable-control'
@@ -56,6 +54,7 @@ import {
   getMultiSelectElementOutlineTestId,
 } from '../controls/select-mode/simple-outline-control'
 import { updateFromCodeEditor } from '../../editor/actions/actions-from-vscode'
+import { RemixIndexPathLabel } from './remix-utils'
 
 const DefaultRouteTextContent = 'Hello Remix!'
 const RootTextContent = 'This is root!'
@@ -429,7 +428,7 @@ describe('Remix content', () => {
     const pathToRemixScene = EP.fromString('sb/remix-scene')
     await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'back')
     expect(renderResult.renderedDOM.queryByText(newRouteTextContent)).not.toBeNull()
-    expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('(home)')
+    expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixIndexPathLabel)
   })
 
   it('Two remix scenes, both have metadata', async () => {
@@ -1185,7 +1184,7 @@ describe('Remix navigation', () => {
       const pathToRemixScene = EP.fromString('storyboard/remix')
 
       await switchToLiveMode(renderResult)
-      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixSceneHomeLabel)
+      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixIndexPathLabel)
 
       await clickRemixLink(renderResult)
 
@@ -1195,7 +1194,7 @@ describe('Remix navigation', () => {
       await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'back')
 
       expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
-      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixSceneHomeLabel)
+      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixIndexPathLabel)
 
       await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'forward')
       expect(renderResult.renderedDOM.queryAllByText(AboutTextContent)).toHaveLength(1)
@@ -1203,7 +1202,7 @@ describe('Remix navigation', () => {
 
       await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'home')
       expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
-      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixSceneHomeLabel)
+      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixIndexPathLabel)
     })
 
     it('can navigate with the scene label nav buttons, in edit mode', async () => {
@@ -1212,7 +1211,7 @@ describe('Remix navigation', () => {
       const pathToRemixScene = EP.fromString('storyboard/remix')
 
       await switchToLiveMode(renderResult)
-      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixSceneHomeLabel)
+      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixIndexPathLabel)
 
       await clickRemixLink(renderResult)
 
@@ -1228,7 +1227,7 @@ describe('Remix navigation', () => {
       await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'back')
 
       expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
-      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixSceneHomeLabel)
+      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixIndexPathLabel)
 
       await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'forward')
       expect(renderResult.renderedDOM.queryAllByText(AboutTextContent)).toHaveLength(1)
@@ -1236,7 +1235,7 @@ describe('Remix navigation', () => {
 
       await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'home')
       expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
-      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixSceneHomeLabel)
+      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixIndexPathLabel)
     })
 
     it('navigating in one Remix scene does not affect the navigation state in the other', async () => {
@@ -1246,8 +1245,8 @@ describe('Remix navigation', () => {
       const pathToRemixScene2 = EP.fromString('storyboard/remix-2')
 
       await switchToLiveMode(renderResult)
-      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene1)).toEqual(RemixSceneHomeLabel)
-      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene2)).toEqual(RemixSceneHomeLabel)
+      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene1)).toEqual(RemixIndexPathLabel)
+      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene2)).toEqual(RemixIndexPathLabel)
 
       await clickRemixLink(renderResult)
       const remixScene1 = renderResult.renderedDOM.getByTestId(Remix1TestId)
@@ -1257,7 +1256,7 @@ describe('Remix navigation', () => {
       expect(within(remixScene2).queryAllByText(RootTextContent)).toHaveLength(1)
 
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene1)).toEqual('/about')
-      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene2)).toEqual(RemixSceneHomeLabel)
+      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene2)).toEqual(RemixIndexPathLabel)
     })
   })
 
@@ -1266,7 +1265,7 @@ describe('Remix navigation', () => {
       const renderResult = await renderRemixProject(projectWithMultipleRoutes())
 
       await switchToLiveMode(renderResult)
-      expect(getPathInRemixNavigationBar(renderResult)).toEqual(RemixNavigationBarHomeLabel)
+      expect(getPathInRemixNavigationBar(renderResult)).toEqual(RemixIndexPathLabel)
 
       await clickRemixLink(renderResult)
 
@@ -1276,7 +1275,7 @@ describe('Remix navigation', () => {
       await navigateWithRemixNavigationBarButton(renderResult, 'back')
 
       expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
-      expect(getPathInRemixNavigationBar(renderResult)).toEqual(RemixNavigationBarHomeLabel)
+      expect(getPathInRemixNavigationBar(renderResult)).toEqual(RemixIndexPathLabel)
 
       await navigateWithRemixNavigationBarButton(renderResult, 'forward')
       expect(renderResult.renderedDOM.queryAllByText(AboutTextContent)).toHaveLength(1)
@@ -1284,14 +1283,14 @@ describe('Remix navigation', () => {
 
       await navigateWithRemixNavigationBarButton(renderResult, 'home')
       expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
-      expect(getPathInRemixNavigationBar(renderResult)).toEqual(RemixNavigationBarHomeLabel)
+      expect(getPathInRemixNavigationBar(renderResult)).toEqual(RemixIndexPathLabel)
     })
 
     it('can navigate inside multiple Remix scenes, using the nav bar in the canvas toolbar', async () => {
       const renderResult = await renderRemixProject(projectWithMultipleRemixScenes())
 
       await switchToLiveMode(renderResult)
-      expect(getPathInRemixNavigationBar(renderResult)).toEqual(RemixNavigationBarHomeLabel)
+      expect(getPathInRemixNavigationBar(renderResult)).toEqual(RemixIndexPathLabel)
 
       await clickRemixLink(renderResult)
 
@@ -1301,7 +1300,7 @@ describe('Remix navigation', () => {
       const remixScene2 = renderResult.renderedDOM.getByTestId(Remix2TestId)
       await mouseClickAtPoint(remixScene2, { x: 10, y: 10 })
 
-      expect(getPathInRemixNavigationBar(renderResult)).toEqual(RemixNavigationBarHomeLabel)
+      expect(getPathInRemixNavigationBar(renderResult)).toEqual(RemixIndexPathLabel)
     })
   })
 })

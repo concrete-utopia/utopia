@@ -24,20 +24,24 @@ export function useDisplayOwnershipWarning(): void {
         switch (ownershipValues.projectOwnership) {
           case 'yes':
             // Remove the toast if we switch to a project that the user owns.
-            dispatch([removeToast(OwnershipToastID)])
+            globalThis.requestAnimationFrame(() => {
+              dispatch([removeToast(OwnershipToastID)])
+            })
             break
           case 'no':
             // Add the toast if we switch to a project that the user does not own.
-            dispatch([
-              showToast(
-                notice(
-                  'Viewer Mode: As you are not the owner of this project, it is read-only.',
-                  'NOTICE',
-                  true,
-                  OwnershipToastID,
+            globalThis.requestAnimationFrame(() => {
+              dispatch([
+                showToast(
+                  notice(
+                    'Viewer Mode: As you are not the owner of this project, it is read-only.',
+                    'NOTICE',
+                    true,
+                    OwnershipToastID,
+                  ),
                 ),
-              ),
-            ])
+              ])
+            })
             break
           case 'unknown':
             // Do nothing.
