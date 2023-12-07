@@ -1,8 +1,7 @@
 import type { CommentData } from '@liveblocks/client'
 import type { ComposerSubmitComment } from '@liveblocks/react-comments'
 import { Composer } from '@liveblocks/react-comments'
-import { stopPropagation } from '../../inspector/common/inspector-utils'
-import { Button, UtopiaStyles, useColorTheme } from '../../../uuiui'
+import { useAtom } from 'jotai'
 import React from 'react'
 import {
   printUserReadStatuses,
@@ -21,8 +20,12 @@ import {
   useScenesWithId,
   useSetCommentThreadReadStatusOnMount,
 } from '../../../core/commenting/comment-hooks'
+import * as EP from '../../../core/shared/element-path'
+import { assertNever } from '../../../core/shared/utils'
 import { CommentWrapper, MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
-import { switchEditorMode } from '../../editor/actions/action-creators'
+import { when } from '../../../utils/react-conditionals'
+import { Button, UtopiaStyles, useColorTheme } from '../../../uuiui'
+import { setRightMenuTab, switchEditorMode } from '../../editor/actions/action-creators'
 import type { CommentId } from '../../editor/editor-modes'
 import {
   EditorModes,
@@ -31,15 +34,12 @@ import {
   isNewComment,
 } from '../../editor/editor-modes'
 import { useDispatch } from '../../editor/store/dispatch-context'
+import { RightMenuTab } from '../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
+import { stopPropagation } from '../../inspector/common/inspector-utils'
 import { canvasPointToWindowPoint } from '../dom-lookup'
-import { assertNever } from '../../../core/shared/utils'
-import { when } from '../../../utils/react-conditionals'
-import { useAtom } from 'jotai'
 import { RemixNavigationAtom } from '../remix/utopia-remix-root-component'
 import { getIdOfScene } from './comment-mode/comment-mode-hooks'
-import * as EP from '../../../core/shared/element-path'
-import { use } from 'chai'
 
 export const CommentPopup = React.memo(() => {
   const mode = useEditorState(
@@ -135,6 +135,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
       })()
       dispatch([
         switchEditorMode(EditorModes.commentMode(existingComment(newThread.id), 'not-dragging')),
+        setRightMenuTab(RightMenuTab.Comments),
       ])
     },
     [createThread, comment, dispatch, remixSceneRoutes, scenes, self.id],
