@@ -549,7 +549,7 @@ describe('canvas toolbar', () => {
 
     FOR_TESTS_setNextGeneratedUids(['reserved', 'sample-text'])
 
-    await insertViaAddElementPopup(editor, 'test')
+    await insertViaAddElementPopup(editor, 'myObj.test')
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       makeTestProjectCodeWithComponentInnards(`
