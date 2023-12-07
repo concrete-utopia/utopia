@@ -19,11 +19,9 @@ import {
 } from '../../editor/actions/action-creators'
 import { EditorModes, isCommentMode, isExistingComment } from '../../editor/editor-modes'
 import { CommentWrapper, MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
-import { useAtom } from 'jotai'
-import { RemixNavigationAtom } from '../../canvas/remix/utopia-remix-root-component'
+import { useRemixNavigationContext } from '../../canvas/remix/utopia-remix-root-component'
 import {
   useUnresolvedThreads,
-  useIsOnAnotherRemixRoute,
   useResolveThread,
   useResolvedThreads,
   useCanvasLocationOfThread,
@@ -114,11 +112,8 @@ interface ThreadPreviewProps {
 const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
   const dispatch = useDispatch()
   const colorTheme = useColorTheme()
-  const [remixNavigationState] = useAtom(RemixNavigationAtom)
 
   const { remixLocationRoute } = thread.metadata
-
-  const isOnAnotherRoute = useIsOnAnotherRemixRoute(remixLocationRoute ?? null)
 
   const isSelected = useEditorState(
     Substores.restOfEditor,
@@ -132,28 +127,28 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
 
   const { location, scene: commentScene } = useCanvasLocationOfThread(thread)
 
-  const onClick = React.useCallback(() => {
-    const rect = canvasRectangle({ x: location.x, y: location.y, width: 25, height: 25 })
+  const remixState = useRemixNavigationContext(commentScene)
 
-    if (isOnAnotherRoute && remixLocationRoute != null) {
-      // TODO: after we have scene identifier in the comment metadata we should only navigate the scene with the comment
-      Object.keys(remixNavigationState).forEach((scene) => {
-        const remixState = remixNavigationState[scene]
-        if (remixState == null) {
-          return
-        }
-        remixState.navigate(remixLocationRoute)
-      })
+  const isOnAnotherRoute =
+    remixLocationRoute != null && remixLocationRoute !== remixState?.location.pathname
+
+  const onClick = React.useCallback(() => {
+    if (isOnAnotherRoute) {
+      if (remixState == null) {
+        return
+      }
+      remixState.navigate(remixLocationRoute)
     }
+    const rect = canvasRectangle({ x: location.x, y: location.y, width: 25, height: 25 })
     dispatch([
       ...openCommentThreadActions(thread.id, commentScene),
       scrollToPosition(rect, 'to-center'),
     ])
   }, [
     dispatch,
-    remixNavigationState,
     isOnAnotherRoute,
     remixLocationRoute,
+    remixState,
     location,
     thread.id,
     commentScene,

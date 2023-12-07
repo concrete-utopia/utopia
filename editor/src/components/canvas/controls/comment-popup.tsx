@@ -1,8 +1,7 @@
 import type { CommentData } from '@liveblocks/client'
 import type { ComposerSubmitComment } from '@liveblocks/react-comments'
 import { Composer } from '@liveblocks/react-comments'
-import { stopPropagation } from '../../inspector/common/inspector-utils'
-import { Button, UtopiaStyles, useColorTheme } from '../../../uuiui'
+import { useAtom } from 'jotai'
 import React from 'react'
 import { useCreateThread, useStorage } from '../../../../liveblocks.config'
 import '../../../../resources/editor/css/liveblocks-comments.css'
@@ -10,9 +9,13 @@ import {
   getCollaboratorById,
   useCanvasCommentThreadAndLocation,
   useResolveThread,
+  useScenesWithId,
 } from '../../../core/commenting/comment-hooks'
-import { useRemixPresence } from '../../../core/shared/multiplayer-hooks'
+import * as EP from '../../../core/shared/element-path'
+import { assertNever } from '../../../core/shared/utils'
 import { CommentWrapper, MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
+import { when } from '../../../utils/react-conditionals'
+import { Button, UtopiaStyles, useColorTheme } from '../../../uuiui'
 import { setRightMenuTab, switchEditorMode } from '../../editor/actions/action-creators'
 import type { CommentId } from '../../editor/editor-modes'
 import {
@@ -22,11 +25,12 @@ import {
   isNewComment,
 } from '../../editor/editor-modes'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { Substores, useEditorState } from '../../editor/store/store-hook'
-import { canvasPointToWindowPoint } from '../dom-lookup'
-import { assertNever } from '../../../core/shared/utils'
-import { when } from '../../../utils/react-conditionals'
 import { RightMenuTab } from '../../editor/store/editor-state'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
+import { stopPropagation } from '../../inspector/common/inspector-utils'
+import { canvasPointToWindowPoint } from '../dom-lookup'
+import { RemixNavigationAtom } from '../remix/utopia-remix-root-component'
+import { getIdOfScene } from './comment-mode/comment-mode-hooks'
 
 export const CommentPopup = React.memo(() => {
   const mode = useEditorState(
@@ -67,7 +71,8 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
 
   const createThread = useCreateThread()
 
-  const remixPresence = useRemixPresence()
+  const scenes = useScenesWithId()
+  const [remixSceneRoutes] = useAtom(RemixNavigationAtom)
 
   const onCreateThread = React.useCallback(
     ({ body }: ComposerSubmitComment, event: React.FormEvent<HTMLFormElement>) => {
@@ -76,6 +81,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
       if (!isNewComment(comment)) {
         return
       }
+
       // Create a new thread
       const newThread = (() => {
         switch (comment.location.type) {
@@ -87,10 +93,14 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
                 type: 'canvas',
                 x: comment.location.position.x,
                 y: comment.location.position.y,
-                remixLocationRoute: remixPresence?.locationRoute ?? undefined,
               },
             })
           case 'scene':
+            const sceneId = comment.location.sceneId
+            const scene = scenes.find((s) => getIdOfScene(s) === sceneId)
+            const remixRoute =
+              scene != null ? remixSceneRoutes[EP.toString(scene?.elementPath)] : undefined
+
             return createThread({
               body,
               metadata: {
@@ -98,8 +108,8 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
                 type: 'canvas',
                 x: comment.location.offset.x,
                 y: comment.location.offset.y,
-                sceneId: comment.location.sceneId,
-                remixLocationRoute: remixPresence?.locationRoute ?? undefined,
+                sceneId: sceneId,
+                remixLocationRoute: remixRoute != null ? remixRoute.location.pathname : undefined,
               },
             })
           default:
@@ -111,7 +121,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
         setRightMenuTab(RightMenuTab.Comments),
       ])
     },
-    [createThread, comment, remixPresence, dispatch],
+    [createThread, comment, dispatch, remixSceneRoutes, scenes],
   )
 
   const onCommentDelete = React.useCallback(
