@@ -163,6 +163,7 @@ function generateVariableTypes(variables: VariableData): Variable[] {
           value: innerValue,
           type: getTypeByValue(innerValue),
           parent: variable,
+          depth: 1,
         })),
       )
     } else {
@@ -184,7 +185,7 @@ export function convertVariablesToElements(
           variable.name,
           [],
           null,
-          { variableType: variable.type },
+          { variableType: variable.type, depth: variable.depth },
         )
       }),
     }
@@ -318,4 +319,5 @@ interface Variable {
   type: InsertableType
   value?: unknown
   parent?: Variable
+  depth?: number
 }

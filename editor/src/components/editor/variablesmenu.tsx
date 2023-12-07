@@ -97,6 +97,11 @@ const Input = (props: InputProps) => {
   return <components.Input {...props} data-testid={VariablesMenuFilterTestId} />
 }
 
+function paddingByDepth(insertMenuItem: InsertMenuItem): number {
+  const depth = insertMenuItem.value.metadata?.depth as number | null
+  return depth == null ? 4 : 4 + depth * 16
+}
+
 const iconByType = (insertMenuItem: InsertMenuItem): string => {
   const variableType = insertMenuItem.value.metadata?.variableType as string
 
@@ -133,6 +138,7 @@ const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
           background: undefined,
           gap: 4,
           border: '1px solid transparent',
+          paddingLeft: paddingByDepth(props.data as InsertMenuItem),
         }}
         onMouseEnter={setIsHoveredTrue}
         onMouseLeave={setIsHoveredFalse}
