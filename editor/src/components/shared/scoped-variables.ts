@@ -115,6 +115,7 @@ function getComponentPropsInScope(
     getContainerPropsValue(elementPath, jsxMetadata),
     (key) => !jsxComponentPropNamesUsed.includes(key as string),
   )
+
   const name = jsxComponent?.name ?? 'Component'
   return {
     filePath: `${name}::props`,
@@ -126,8 +127,8 @@ function getContainerPropsValue(
   elementPath: ElementPath,
   jsxMetadata: ElementInstanceMetadataMap,
 ): VariableData {
-  const elementPathString = toComponentId(getContainingComponent(elementPath))
-  const containerMetadata = jsxMetadata[elementPathString]?.element.value
+  const containerPathString = toComponentId(getContainingComponent(elementPath))
+  const containerMetadata = jsxMetadata[containerPathString]?.element.value
   const runtimeProps: VariableData = {}
 
   if (

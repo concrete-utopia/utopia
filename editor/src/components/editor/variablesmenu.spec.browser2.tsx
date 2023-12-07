@@ -7,7 +7,9 @@ import {
   makeTestProjectCodeWithComponentInnards,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
+  renderTestEditorWithProjectContent,
 } from '../canvas/ui-jsx.test-utils'
+import * as Prettier from 'prettier'
 import * as EP from '../../core/shared/element-path'
 import { setPanelVisibility, setRightMenuTab } from './actions/action-creators'
 import { RightMenuTab } from './store/editor-state'
@@ -15,6 +17,10 @@ import { selectComponentsForTest } from '../../utils/utils.test-utils'
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
 import { forceNotNull } from '../../core/shared/optional-utils'
 import { InsertMenuFilterTestId } from './insertmenu'
+import { codeFile } from '../../core/shared/project-file-types'
+import type { ProjectContentTreeRoot } from '../assets'
+import { contentsToTree } from '../assets'
+import { PrettierConfig } from 'utopia-vscode-common'
 
 function getInsertItems() {
   return screen.queryAllByTestId(/^insert-item-/gi)
@@ -57,7 +63,7 @@ describe('variables menu', () => {
 
       await openVariablesMenu(editor)
 
-      expect(getInsertItems().length).toEqual(3)
+      expect(getInsertItems().length).toEqual(4)
 
       document.execCommand('insertText', false, 'myObj.im')
 
@@ -103,6 +109,59 @@ describe('variables menu', () => {
       await openVariablesMenu(editor)
 
       expect(getInsertItems().length).toEqual(0)
+    })
+  })
+
+  describe('props', () => {
+    it('shows and inserts props in scope', async () => {
+      const editor = await renderTestEditorWithProjectContent(
+        makeTestProjectContents(),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
+      ])
+
+      await openVariablesMenu(editor)
+
+      document.execCommand('insertText', false, 'imgProp')
+      expect(getInsertItems().length).toEqual(1)
+      expect(getInsertItems()[0].innerText).toEqual('imgProp')
+
+      const filterBox = await screen.findByTestId(InsertMenuFilterTestId)
+      forceNotNull('the filter box must not be null', filterBox)
+
+      await act(async () => {
+        fireEvent.keyDown(filterBox, { key: 'Enter', keycode: 13 })
+      })
+
+      expect(getPrintedUiJsCode(editor.getEditorState(), '/src/app.js')).toEqual(
+        Prettier.format(
+          `
+        import * as React from 'react'
+        export function App({objProp, imgProp, unusedProp}) {
+          return (
+            <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 57,
+              top: 168,
+              width: 247,
+              height: 402,
+            }}
+            data-uid='container'
+          >
+            <div data-uid='a3d' />
+            <img src={imgProp} style={{width: 100, height: 100, top:0, left: 0, position: 'absolute'}} data-uid='ele'/>
+          </div>
+          )
+        }
+    `,
+          PrettierConfig,
+        ),
+      )
     })
   })
 
@@ -225,3 +284,80 @@ describe('variables menu', () => {
     })
   })
 })
+
+function makeTestProjectContents(): ProjectContentTreeRoot {
+  return contentsToTree({
+    ['/package.json']: codeFile(
+      `
+{
+  "name": "Utopia Project",
+  "version": "0.1.0",
+  "utopia": {
+    "main-ui": "utopia/storyboard.js",
+    "html": "public/index.html",
+    "js": "src/index.js"
+  },
+  "dependencies": {
+    "react": "16.13.1",
+    "react-dom": "16.13.1",
+    "utopia-api": "0.4.1",
+    "non-existant-dummy-library": "8.0.27",
+    "@heroicons/react": "1.0.1",
+    "@emotion/react": "11.9.3"
+  }
+}`,
+      null,
+    ),
+    ['/src/app.js']: codeFile(
+      `
+    import * as React from 'react'
+    export function App({objProp, imgProp, unusedProp}) {
+      return (
+        <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 57,
+          top: 168,
+          width: 247,
+          height: 402,
+        }}
+        data-uid='container'
+      >
+        <div data-uid='a3d' />
+      </div>
+      )
+    }
+    `,
+      null,
+    ),
+    ['/utopia/storyboard.js']: codeFile(
+      `
+    import * as React from 'react'
+    import { Scene, Storyboard } from 'utopia-api'
+    import { App } from '/src/app.js'
+
+    export var storyboard = (
+      <Storyboard data-uid='utopia-storyboard-uid' data-testid='utopia-storyboard-uid'>
+        <Scene
+          style={{
+            width: 744,
+            height: 1133,
+            display: 'flex',
+            flexDirection: 'column',
+            left: -52,
+            top: 9,
+            position: 'absolute',
+          }}
+          data-label='Main Scene'
+          data-uid='scene-aaa'
+          data-testid='scene-aaa'
+        >
+        <App objProp={{key1: 'key1'}} imgProp='test.png' nonExistentProp='non' data-uid='app-entity' data-testid='app-entity' />
+        </Scene>
+      </Storyboard>
+)`,
+      null,
+    ),
+  })
+}
