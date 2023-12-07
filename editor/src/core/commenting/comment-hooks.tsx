@@ -26,6 +26,7 @@ import { MetadataUtils } from '../model/element-metadata-utils'
 import { getIdOfScene } from '../../components/canvas/controls/comment-mode/comment-mode-hooks'
 import type { ElementPath } from '../shared/project-file-types'
 import type { ElementInstanceMetadata } from '../shared/element-template'
+import * as EP from '../shared/element-path'
 
 export function useCanvasCommentThreadAndLocation(comment: CommentId): {
   location: CanvasPoint | null
@@ -44,7 +45,7 @@ export function useCanvasCommentThreadAndLocation(comment: CommentId): {
     }
   }, [threads, comment])
 
-  const scenes = useScenesWithId()
+  const scenes = useScenes()
 
   const location = React.useMemo(() => {
     switch (comment.type) {
@@ -53,9 +54,10 @@ export function useCanvasCommentThreadAndLocation(comment: CommentId): {
           case 'canvas':
             return comment.location.position
           case 'scene':
-            const scene = scenes.find(
-              (s) => getIdOfScene(s) === (comment.location as SceneCommentLocation).sceneId,
-            )
+            let { sceneId } = comment.location as SceneCommentLocation
+            const scene = scenes.find((s) => {
+              return getIdOfScene(s) === sceneId || EP.toUid(s.elementPath) === sceneId
+            })
 
             if (scene == null || !isNotNullFiniteRectangle(scene.globalFrame)) {
               return getCanvasPointWithCanvasOffset(zeroCanvasPoint, comment.location.offset)
@@ -189,17 +191,11 @@ export function useScenesWithId(): Array<ElementInstanceMetadata> {
   )
 }
 
-export function useSceneWithId(sceneId: string | null): ElementInstanceMetadata | null {
+export function useScenes(): Array<ElementInstanceMetadata> {
   return useEditorState(
     Substores.metadata,
-    (store) => {
-      if (sceneId == null) {
-        return null
-      }
-      const scenes = MetadataUtils.getScenesMetadata(store.editor.jsxMetadata)
-      return scenes.find((s) => getIdOfScene(s) != sceneId) ?? null
-    },
-    'useSceneWithId scene',
+    (store) => MetadataUtils.getScenesMetadata(store.editor.jsxMetadata),
+    'useScenesWithId scenes',
   )
 }
 
