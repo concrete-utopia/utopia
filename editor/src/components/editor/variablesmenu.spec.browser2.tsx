@@ -68,7 +68,7 @@ describe('variables menu', () => {
       document.execCommand('insertText', false, 'myObj.im')
 
       expect(getInsertItems().length).toEqual(1)
-      expect(getInsertItems()[0].innerText).toEqual('myObj.image')
+      expect(getInsertItems()[0].innerText).toEqual('image')
     })
 
     describe('no match', () => {
