@@ -266,24 +266,22 @@ export function useUnresolvedThreads() {
   }
 }
 
-export function useSetCommentThreadReadStatusOnMount(thread: ThreadData<ThreadMetadata> | null) {
-  const setCommentThreadReadStatus = useSetCommentThreadReadStatus()
+export function useSetThreadReadStatusOnMount(thread: ThreadData<ThreadMetadata> | null) {
+  const setThreadReadStatus = useSetThreadReadStatus()
 
   React.useEffect(() => {
     if (thread == null) {
       return
     }
 
-    setCommentThreadReadStatus(thread.id, 'read')
+    setThreadReadStatus(thread.id, 'read')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // only run it once on mount, because opening the popup means reading the thread, no dependencies added
 }
 
-export function useMyCommentThreadReadStatus(
-  thread: ThreadData<ThreadMetadata> | null,
-): CommentThreadReadStatus {
+export function useMyThreadReadStatus(thread: ThreadData<ThreadMetadata> | null): ThreadReadStatus {
   const self = useSelf()
-  const myStatus = useStorage((store) => {
+  return useStorage((store) => {
     if (thread == null) {
       return 'unread'
     }
@@ -293,14 +291,16 @@ export function useMyCommentThreadReadStatus(
     }
     return statusesForThread[self.id] === true ? 'read' : 'unread'
   })
-  return myStatus
 }
 
-export type CommentThreadReadStatus = 'read' | 'unread'
+export type ThreadReadStatus = 'read' | 'unread'
 
-export function useSetCommentThreadReadStatus() {
-  return useMutation(({ storage, self }, threadId: string, status: CommentThreadReadStatus) => {
+export function useSetThreadReadStatus() {
+  return useMutation(({ storage, self }, threadId: string, status: ThreadReadStatus) => {
     const statusesForThread = storage.get('userReadStatusesByThread')
+    if (statusesForThread == null) {
+      return
+    }
     const userReadStatuses = statusesForThread.get(threadId)
     if (userReadStatuses == null) {
       return
@@ -323,10 +323,21 @@ export function useSetCommentThreadReadStatus() {
   }, [])
 }
 
-export function useCreateNewCommentThreadReadStatus() {
-  return useMutation(({ storage, self }, threadId: string, status: CommentThreadReadStatus) => {
+export function useCreateNewThreadReadStatus() {
+  return useMutation(({ storage, self }, threadId: string, status: ThreadReadStatus) => {
     const userReadStatuses = new LiveObject(status === 'read' ? { [self.id]: true } : {})
     const statusesForThread = storage.get('userReadStatusesByThread')
-    statusesForThread.set(threadId, userReadStatuses)
+    if (statusesForThread != null) {
+      statusesForThread.set(threadId, userReadStatuses)
+    }
+  }, [])
+}
+
+export function useDeleteThreadReadStatus() {
+  return useMutation(({ storage }, threadId: string) => {
+    const statusesForThread = storage.get('userReadStatusesByThread')
+    if (statusesForThread != null) {
+      statusesForThread.delete(threadId)
+    }
   }, [])
 }

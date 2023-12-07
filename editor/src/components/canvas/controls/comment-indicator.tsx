@@ -9,7 +9,7 @@ import {
   useCanvasLocationOfThread,
   useActiveThreads,
   useCanvasCommentThreadAndLocation,
-  useMyCommentThreadReadStatus,
+  useMyThreadReadStatus,
 } from '../../../core/commenting/comment-hooks'
 import type { CanvasPoint, WindowPoint } from '../../../core/shared/math-utils'
 import {
@@ -279,7 +279,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
   const isOnAnotherRoute =
     remixLocationRoute != null && remixLocationRoute !== remixState?.location.pathname
 
-  const readByMe = useMyCommentThreadReadStatus(thread)
+  const readByMe = useMyThreadReadStatus(thread)
 
   const onClick = React.useCallback(() => {
     if (isOnAnotherRoute) {

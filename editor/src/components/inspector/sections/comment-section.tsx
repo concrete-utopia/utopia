@@ -26,8 +26,8 @@ import {
   useResolvedThreads,
   useCanvasLocationOfThread,
   getCollaboratorById,
-  useMyCommentThreadReadStatus,
-  useSetCommentThreadReadStatus,
+  useMyThreadReadStatus,
+  useSetThreadReadStatus,
 } from '../../../core/commenting/comment-hooks'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { unless, when } from '../../../utils/react-conditionals'
@@ -167,7 +167,7 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
     [resolveThread, dispatch, thread],
   )
 
-  const readByMe = useMyCommentThreadReadStatus(thread)
+  const readByMe = useMyThreadReadStatus(thread)
 
   const collabs = useStorage((storage) => storage.collaborators)
 

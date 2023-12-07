@@ -13,12 +13,13 @@ import '../../../../resources/editor/css/liveblocks-comments.css'
 import {
   getCollaboratorById,
   useCanvasCommentThreadAndLocation,
-  useCreateNewCommentThreadReadStatus,
-  useMyCommentThreadReadStatus,
+  useCreateNewThreadReadStatus,
+  useDeleteThreadReadStatus,
+  useMyThreadReadStatus,
   useResolveThread,
   useScenesWithId,
-  useSetCommentThreadReadStatus,
-  useSetCommentThreadReadStatusOnMount,
+  useSetThreadReadStatus,
+  useSetThreadReadStatusOnMount,
 } from '../../../core/commenting/comment-hooks'
 import * as EP from '../../../core/shared/element-path'
 import { assertNever } from '../../../core/shared/utils'
@@ -72,12 +73,14 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
   const colorTheme = useColorTheme()
 
   const { location, thread } = useCanvasCommentThreadAndLocation(comment)
+  const threadId = thread?.id ?? null
 
-  useSetCommentThreadReadStatusOnMount(thread)
-  const setCommentThreadReadStatus = useSetCommentThreadReadStatus()
-  const createNewCommentThreadReadStatus = useCreateNewCommentThreadReadStatus()
+  useSetThreadReadStatusOnMount(thread)
+  const setThreadReadStatus = useSetThreadReadStatus()
+  const createNewThreadReadStatus = useCreateNewThreadReadStatus()
+  const deleteThreadReadStatus = useDeleteThreadReadStatus()
 
-  const readByMe = useMyCommentThreadReadStatus(thread)
+  const readByMe = useMyThreadReadStatus(thread)
 
   const commentsCount = React.useMemo(
     () => thread?.comments.filter((c) => c.deletedAt == null).length ?? 0,
@@ -131,28 +134,31 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
             assertNever(comment.location)
         }
       })()
-      createNewCommentThreadReadStatus(newThread.id, 'read')
+      createNewThreadReadStatus(newThread.id, 'read')
       dispatch([
         switchEditorMode(EditorModes.commentMode(existingComment(newThread.id), 'not-dragging')),
         setRightMenuTab(RightMenuTab.Comments),
       ])
     },
-    [createThread, comment, dispatch, remixSceneRoutes, scenes, createNewCommentThreadReadStatus],
+    [createThread, comment, dispatch, remixSceneRoutes, scenes, createNewThreadReadStatus],
   )
 
   const onSubmitComment = React.useCallback(() => {
-    if (thread?.id != null) {
-      createNewCommentThreadReadStatus(thread.id, 'read')
+    if (threadId != null) {
+      createNewThreadReadStatus(threadId, 'read')
     }
-  }, [thread?.id, createNewCommentThreadReadStatus])
+  }, [threadId, createNewThreadReadStatus])
 
   const onCommentDelete = React.useCallback(
     (_deleted: CommentData) => {
       if (commentsCount - 1 <= 0) {
         dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
+        if (threadId != null) {
+          deleteThreadReadStatus(threadId)
+        }
       }
     },
-    [commentsCount, dispatch],
+    [commentsCount, dispatch, threadId, deleteThreadReadStatus],
   )
 
   const canvasScale = useEditorState(
@@ -179,8 +185,8 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
     if (thread?.id == null) {
       return
     }
-    setCommentThreadReadStatus(thread.id, 'unread')
-  }, [thread?.id, setCommentThreadReadStatus])
+    setThreadReadStatus(thread.id, 'unread')
+  }, [thread?.id, setThreadReadStatus])
 
   const collabs = useStorage((storage) => storage.collaborators)
 
