@@ -56,14 +56,13 @@ function convertInsertableComponentsToFlatList(
       options: componentGroup.insertableComponents.map(
         (componentToBeInserted, index): InsertMenuItem => {
           const source = index === 0 ? componentGroup.source : null
+          const label = componentToBeInserted.metadata?.originalName ?? componentToBeInserted.name
           return {
-            label: componentToBeInserted.name,
+            label,
             source: optionalMap(getInsertableGroupLabel, source),
             value: {
               ...componentToBeInserted,
-              key: `${getInsertableGroupLabel(componentGroup.source)}-${
-                componentToBeInserted.name
-              }`,
+              key: `${getInsertableGroupLabel(componentGroup.source)}-${label}`,
               source: source,
             },
           }

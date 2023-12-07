@@ -322,7 +322,7 @@ const VariablesMenuInner = React.memo((props: VariablesMenuProps) => {
 
   const filterOption = createFilter({
     ignoreAccents: true,
-    stringify: (c) => c.data.source + c.data.label,
+    stringify: (c) => c.data.source + c.data.label + c.data.value?.metadata?.originalName,
     ignoreCase: true,
     trim: true,
     matchFrom: 'any',

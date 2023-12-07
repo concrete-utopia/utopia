@@ -186,7 +186,7 @@ export function convertVariablesToElements(
           variable.displayName ?? variable.name,
           [],
           null,
-          { variableType: variable.type, depth: variable.depth },
+          { variableType: variable.type, depth: variable.depth, originalName: variable.name },
         )
       }),
     }
