@@ -1,12 +1,15 @@
 import type { ElementPath } from '../../core/shared/project-file-types'
 import { withUnderlyingTarget } from '../editor/store/editor-state'
 import type { ProjectContentTreeRoot } from '../assets'
+import type {
+  ElementInstanceMetadataMap,
+  ArbitraryJSBlock,
+  UtopiaJSXComponent,
+  TopLevelElement,
+} from '../../core/shared/element-template'
 import {
   isArbitraryJSBlock,
   isUtopiaJSXComponent,
-  type ArbitraryJSBlock,
-  type UtopiaJSXComponent,
-  type TopLevelElement,
   jsxAttributesFromMap,
   jsxElementWithoutUID,
   jsExpressionValue,
@@ -14,11 +17,14 @@ import {
   emptyComments,
   jsExpressionOtherJavaScriptSimple,
   jsxFragmentWithoutUID,
-  type JSExpressionOtherJavaScript,
   jsxTextBlock,
+  isJSXElement,
+  isJSXAttributesEntry,
+  isJSXAttributeValue,
 } from '../../core/shared/element-template'
+import type { VariableData } from '../canvas/ui-jsx-canvas'
 import { type VariablesInScope } from '../canvas/ui-jsx-canvas'
-import { toComponentId } from '../../core/shared/element-path'
+import { getContainingComponent, toComponentId } from '../../core/shared/element-path'
 import {
   type InsertableComponentGroup,
   insertableComponent,
@@ -27,11 +33,13 @@ import {
 import { emptyImports } from '../../core/workers/common/project-file-utils'
 import { isImage } from '../../core/shared/utils'
 import { type ComponentElementToInsert } from '../custom-code/code-file'
+import { omitWithPredicate } from '../../core/shared/object-utils'
 
 export function getVariablesInScope(
   elementPath: ElementPath | null,
   projectContents: ProjectContentTreeRoot,
   variablesInScopeFromEditorState: VariablesInScope,
+  jsxMetadata: ElementInstanceMetadataMap,
 ): AllVariablesInScope[] {
   return withUnderlyingTarget(
     elementPath,
@@ -47,6 +55,13 @@ export function getVariablesInScope(
           variablesInScopeFromEditorState,
         )
         varsInScope.push(componentScopedVariables)
+
+        const componentPropsInScope = getComponentPropsInScope(
+          success.topLevelElements,
+          elementPath,
+          jsxMetadata,
+        )
+        varsInScope.push(componentPropsInScope)
       }
 
       /** for future reference - adding variables from top level **/
@@ -83,26 +98,74 @@ function getVariablesFromComponent(
   const jsxComponentVariables = variablesInScopeFromEditorState[elementPathString] ?? {}
   return {
     filePath: jsxComponent?.name ?? 'Component',
-    variables: Object.entries(jsxComponentVariables).flatMap(([name, value]) => {
-      const type = getTypeByValue(value)
-      const variable = {
-        name,
-        value,
-        type,
+    variables: generateVariableTypes(jsxComponentVariables),
+  }
+}
+
+function getComponentPropsInScope(
+  topLevelElements: TopLevelElement[],
+  elementPath: ElementPath,
+  jsxMetadata: ElementInstanceMetadataMap,
+): AllVariablesInScope {
+  const jsxComponent = topLevelElements.find((el) => isUtopiaJSXComponent(el)) as UtopiaJSXComponent
+  const jsxComponentPropNamesUsed = jsxComponent?.propsUsed ?? []
+
+  const jsxComponentProps = omitWithPredicate(
+    getContainerPropsValue(elementPath, jsxMetadata),
+    (key) => !jsxComponentPropNamesUsed.includes(key as string),
+  )
+  const name = jsxComponent?.name ?? 'Component'
+  return {
+    filePath: `${name}:Props`,
+    variables: generateVariableTypes(jsxComponentProps),
+  }
+}
+
+function getContainerPropsValue(
+  elementPath: ElementPath,
+  jsxMetadata: ElementInstanceMetadataMap,
+): VariableData {
+  const elementPathString = toComponentId(getContainingComponent(elementPath))
+  const containerMetadata = jsxMetadata[elementPathString]?.element.value
+  const runtimeProps: VariableData = {}
+
+  if (
+    containerMetadata != null &&
+    typeof containerMetadata !== 'string' &&
+    isJSXElement(containerMetadata)
+  ) {
+    containerMetadata.props.forEach((prop) => {
+      if (isJSXAttributesEntry(prop) && isJSXAttributeValue(prop.value)) {
+        runtimeProps[prop.key] = prop.value.value
       }
-      if (type === 'object' && value != null) {
-        // iterate only first-level keys of object
-        return Object.entries(value).map(([key, innerValue]) => ({
+    })
+  }
+
+  return runtimeProps
+}
+
+function generateVariableTypes(variables: VariableData): Variable[] {
+  return Object.entries(variables).flatMap(([name, value]) => {
+    const type = getTypeByValue(value)
+    const variable = {
+      name,
+      value,
+      type,
+    }
+    if (type === 'object' && value != null) {
+      // iterate also first-level keys of object
+      return [variable].concat(
+        Object.entries(value).map(([key, innerValue]) => ({
           name: `${name}.${key}`,
           value: innerValue,
           type: getTypeByValue(innerValue),
           parent: variable,
-        }))
-      } else {
-        return variable
-      }
-    }),
-  }
+        })),
+      )
+    } else {
+      return variable
+    }
+  })
 }
 
 export function convertVariablesToElements(

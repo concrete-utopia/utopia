@@ -125,6 +125,7 @@ export function useGetInsertableComponents(
         store.editor.selectedViews[0],
         projectContents,
         store.editor.variablesInScope,
+        store.editor.jsxMetadata,
       ),
     'useGetInsertableComponents scopedVariables',
   )
