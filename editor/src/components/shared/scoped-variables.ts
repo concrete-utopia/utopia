@@ -117,7 +117,7 @@ function getComponentPropsInScope(
   )
   const name = jsxComponent?.name ?? 'Component'
   return {
-    filePath: `${name}:Props`,
+    filePath: `${name}::props`,
     variables: generateVariableTypes(jsxComponentProps),
   }
 }
@@ -159,6 +159,7 @@ function generateVariableTypes(variables: VariableData): Variable[] {
       // iterate also first-level keys of object
       return [variable].concat(
         Object.entries(value).map(([key, innerValue]) => ({
+          displayName: `${key}`,
           name: `${name}.${key}`,
           value: innerValue,
           type: getTypeByValue(innerValue),
@@ -182,7 +183,7 @@ export function convertVariablesToElements(
         return insertableComponent(
           emptyImports(),
           () => getMatchingElementForVariable(variable),
-          variable.name,
+          variable.displayName ?? variable.name,
           [],
           null,
           { variableType: variable.type, depth: variable.depth },
@@ -317,6 +318,7 @@ type InsertableType =
 interface Variable {
   name: string
   type: InsertableType
+  displayName?: string
   value?: unknown
   parent?: Variable
   depth?: number

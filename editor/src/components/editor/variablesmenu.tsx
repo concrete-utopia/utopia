@@ -97,9 +97,15 @@ const Input = (props: InputProps) => {
   return <components.Input {...props} data-testid={VariablesMenuFilterTestId} />
 }
 
-function paddingByDepth(insertMenuItem: InsertMenuItem): number {
+const BASE_PADDING = 4
+const DEPTH_PADDING = 16
+function paddingByDepth(insertMenuItem: InsertMenuItem) {
   const depth = insertMenuItem.value.metadata?.depth as number | null
-  return depth == null ? 4 : 4 + depth * 16
+  const depthValue = depth == null ? 0 : depth
+  return {
+    padding: BASE_PADDING,
+    paddingLeft: BASE_PADDING + depthValue * DEPTH_PADDING,
+  }
 }
 
 const iconByType = (insertMenuItem: InsertMenuItem): string => {
@@ -133,12 +139,11 @@ const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
         rowHeight={'smaller'}
         css={{
           borderRadius: 2,
-          padding: 4,
           color: isHovered ? colorTheme.dynamicBlue.value : colorTheme.fg1.value,
           background: undefined,
           gap: 4,
           border: '1px solid transparent',
-          paddingLeft: paddingByDepth(props.data as InsertMenuItem),
+          ...paddingByDepth(props.data as InsertMenuItem),
         }}
         onMouseEnter={setIsHoveredTrue}
         onMouseLeave={setIsHoveredFalse}
