@@ -9,14 +9,17 @@ import {
   getCollaboratorById,
   useCanvasCommentThreadAndLocation,
   useResolveThread,
-  useScenesWithId,
+  useScenes,
 } from '../../../core/commenting/comment-hooks'
-import * as EP from '../../../core/shared/element-path'
 import { assertNever } from '../../../core/shared/utils'
 import { CommentWrapper, MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { when } from '../../../utils/react-conditionals'
 import { Button, UtopiaStyles, useColorTheme } from '../../../uuiui'
-import { setRightMenuTab, switchEditorMode } from '../../editor/actions/action-creators'
+import {
+  setRightMenuTab,
+  switchEditorMode,
+  setProp_UNSAFE,
+} from '../../editor/actions/action-creators'
 import type { CommentId } from '../../editor/editor-modes'
 import {
   EditorModes,
@@ -31,6 +34,9 @@ import { stopPropagation } from '../../inspector/common/inspector-utils'
 import { canvasPointToWindowPoint } from '../dom-lookup'
 import { RemixNavigationAtom } from '../remix/utopia-remix-root-component'
 import { getIdOfScene } from './comment-mode/comment-mode-hooks'
+import * as EP from '../../../core/shared/element-path'
+import { create } from '../../../core/shared/property-path'
+import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 
 export const CommentPopup = React.memo(() => {
   const mode = useEditorState(
@@ -71,7 +77,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
 
   const createThread = useCreateThread()
 
-  const scenes = useScenesWithId()
+  const scenes = useScenes()
   const [remixSceneRoutes] = useAtom(RemixNavigationAtom)
 
   const onCreateThread = React.useCallback(
@@ -83,10 +89,10 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
       }
 
       // Create a new thread
-      const newThread = (() => {
+      const [newThread, auxiliaryActions] = (() => {
         switch (comment.location.type) {
           case 'canvas':
-            return createThread({
+            const newThreadOnCanvas = createThread({
               body,
               metadata: {
                 resolved: false,
@@ -95,13 +101,27 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
                 y: comment.location.position.y,
               },
             })
+            return [newThreadOnCanvas, []]
           case 'scene':
             const sceneId = comment.location.sceneId
-            const scene = scenes.find((s) => getIdOfScene(s) === sceneId)
+            const scene = scenes.find(
+              (s) => getIdOfScene(s) === sceneId || EP.toUid(s.elementPath) === sceneId,
+            )
             const remixRoute =
               scene != null ? remixSceneRoutes[EP.toString(scene?.elementPath)] : undefined
 
-            return createThread({
+            const addSceneIdPropAction =
+              scene == null
+                ? []
+                : [
+                    setProp_UNSAFE(
+                      scene.elementPath,
+                      create('id'),
+                      jsExpressionValue(sceneId, emptyComments),
+                    ),
+                  ]
+
+            const newThreadOnScene = createThread({
               body,
               metadata: {
                 resolved: false,
@@ -112,11 +132,14 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
                 remixLocationRoute: remixRoute != null ? remixRoute.location.pathname : undefined,
               },
             })
+            return [newThreadOnScene, addSceneIdPropAction]
           default:
             assertNever(comment.location)
         }
       })()
+
       dispatch([
+        ...auxiliaryActions,
         switchEditorMode(EditorModes.commentMode(existingComment(newThread.id), 'not-dragging')),
         setRightMenuTab(RightMenuTab.Comments),
       ])
