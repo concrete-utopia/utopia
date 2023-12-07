@@ -44,8 +44,14 @@ import {
   githubOperationLocksEditor,
   githubOperationPrettyName,
   LeftMenuTab,
+  RightMenuTab,
 } from './store/editor-state'
-import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
+import {
+  Substores,
+  useEditorState,
+  useRefEditorState,
+  useSelectorWithCallback,
+} from './store/store-hook'
 import { ConfirmDisconnectBranchDialog } from '../filebrowser/confirm-branch-disconnect'
 import { when } from '../../utils/react-conditionals'
 import { LowPriorityStoreProvider } from './store/store-context-providers'
@@ -53,7 +59,11 @@ import { useDispatch } from './store/dispatch-context'
 import type { EditorAction } from './action-types'
 import { EditorCommon } from './editor-component-common'
 import { notice } from '../common/notice'
-import { ProjectServerStateUpdater } from './store/project-server-state'
+import {
+  ProjectServerStateUpdater,
+  isProjectViewer,
+  isProjectViewerFromState,
+} from './store/project-server-state'
 import { RoomProvider, initialPresence, useRoom, initialStorage } from '../../../liveblocks.config'
 import { generateUUID } from '../../utils/utils'
 import { isLiveblocksEnabled } from './liveblocks-utils'
@@ -61,6 +71,7 @@ import type { Storage, Presence, RoomEvent, UserMeta } from '../../../liveblocks
 import LiveblocksProvider from '@liveblocks/yjs'
 import { isRoomId, projectIdToRoomId } from '../../core/shared/multiplayer'
 import { useDisplayOwnershipWarning } from './project-owner-hooks'
+import { EditorModes } from './editor-modes'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -209,6 +220,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
         ...handleKeyDown(
           event,
           editorStoreRef.current.editor,
+          editorStoreRef.current.projectServerState,
           metadataRef,
           navigatorTargetsRef,
           namesByKey,
@@ -343,6 +355,20 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
       }
     },
     [dispatch],
+  )
+
+  useSelectorWithCallback(
+    Substores.projectServerState,
+    (store) => store.projectServerState.isMyProject,
+    (isMyProject) => {
+      if (isProjectViewer(isMyProject)) {
+        dispatch([
+          EditorActions.switchEditorMode(EditorModes.commentMode(null, 'not-dragging')),
+          EditorActions.setRightMenuTab(RightMenuTab.Comments),
+        ])
+      }
+    },
+    'EditorComponentInner viewer mode',
   )
 
   return (
