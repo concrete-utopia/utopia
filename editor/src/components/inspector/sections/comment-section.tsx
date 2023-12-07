@@ -26,6 +26,7 @@ import {
   useResolvedThreads,
   useCanvasLocationOfThread,
   getCollaboratorById,
+  useMyCommentThreadReadStatus,
 } from '../../../core/commenting/comment-hooks'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { unless, when } from '../../../utils/react-conditionals'
@@ -157,6 +158,8 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
     [resolveThread, dispatch, thread],
   )
 
+  const readByMe = useMyCommentThreadReadStatus(thread)
+
   const collabs = useStorage((storage) => storage.collaborators)
 
   const comment = thread.comments[0]
@@ -232,6 +235,7 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
           </div>,
         )}
         {unless(repliesCount > 0, <div />)}
+        {when(readByMe === 'unread', 'Unread')}
         <Button highlight spotlight style={{ padding: '0 6px' }} onClick={onResolveThread}>
           {thread.metadata.resolved ? 'Unresolve' : 'Resolve'}
         </Button>

@@ -86,6 +86,36 @@ export type ThreadMetadata = {
   sceneId?: string
   remixLocationRoute?: string
   resolved: boolean
+  userReadStatuses: string
+}
+
+export type UserReadStatuses = { [userId: string]: boolean }
+
+export function isUserReadStatuses(statuses: any): statuses is UserReadStatuses {
+  return (
+    statuses != null &&
+    typeof statuses === 'object' &&
+    Object.keys(statuses).every((v) => typeof v === 'string') &&
+    Object.values(statuses).every((v) => typeof v === 'boolean')
+  )
+}
+
+export function parseUserReadStatuses(userReadStatuses: string): UserReadStatuses {
+  try {
+    const statuses = JSON.parse(userReadStatuses) as UserReadStatuses
+    if (!isUserReadStatuses(statuses)) {
+      console.warn('Invalid user read statuses in metadata', statuses)
+      return {}
+    }
+    return statuses
+  } catch (e) {
+    console.warn('Invalid user read statuses in metadata', userReadStatuses)
+    return {}
+  }
+}
+
+export function printUserReadStatuses(userReadStatuses: UserReadStatuses): string {
+  return JSON.stringify(userReadStatuses)
 }
 
 export const {

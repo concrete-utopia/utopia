@@ -9,6 +9,7 @@ import {
   useCanvasLocationOfThread,
   useActiveThreads,
   useCanvasCommentThreadAndLocation,
+  useMyCommentThreadReadStatus,
 } from '../../../core/commenting/comment-hooks'
 import type { CanvasPoint, WindowPoint } from '../../../core/shared/math-utils'
 import {
@@ -177,7 +178,7 @@ CommentIndicatorsInner.displayName = 'CommentIndicatorInner'
 
 interface CommentIndicatorUIProps {
   position: WindowPoint
-  opacity: 'transparent' | 'opaque'
+  opacity: 'transparent' | 'opaque' | 'half-opaque'
   resolved: boolean
   bgColor: string
   fgColor: string
@@ -189,12 +190,16 @@ interface CommentIndicatorUIProps {
 
 export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) => {
   const { position, onClick, onMouseDown, bgColor, fgColor, avatarUrl, avatarInitials } = props
-  const opacity =
-    props.opacity === 'opaque'
-      ? 1
-      : props.opacity === 'transparent'
-      ? 0.25
-      : assertNever(props.opacity)
+  const opacity = (() => {
+    switch (props.opacity) {
+      case 'opaque':
+        return 1
+      case 'transparent':
+        return 0.25
+      case 'half-opaque':
+        return 0.75
+    }
+  })()
 
   return (
     <div
@@ -276,6 +281,8 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
   const isOnAnotherRoute =
     remixLocationRoute != null && remixLocationRoute !== remixState?.location.pathname
 
+  const readByMe = useMyCommentThreadReadStatus(thread)
+
   const onClick = React.useCallback(() => {
     if (isOnAnotherRoute) {
       if (remixState == null) {
@@ -308,13 +315,24 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
     [location, canvasScale, canvasOffset, dragPosition],
   )
 
-  const indicatorOpactiy: 'transparent' | 'opaque' =
-    isOnAnotherRoute || thread.metadata.resolved ? 'transparent' : 'opaque'
+  const indicatorOpacity = (() => {
+    if (isOnAnotherRoute || thread.metadata.resolved) {
+      return 'transparent'
+    }
+    switch (readByMe) {
+      case 'unread':
+        return 'opaque'
+      case 'read':
+        return 'half-opaque'
+      default:
+        assertNever(readByMe)
+    }
+  })()
 
   return (
     <CommentIndicatorUI
       position={position}
-      opacity={indicatorOpactiy}
+      opacity={indicatorOpacity}
       resolved={thread.metadata.resolved}
       onClick={onClick}
       onMouseDown={onMouseDown}

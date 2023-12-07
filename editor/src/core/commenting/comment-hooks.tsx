@@ -3,6 +3,8 @@ import type { User } from '@liveblocks/client'
 import { LiveObject, type ThreadData } from '@liveblocks/client'
 import type { Presence, ThreadMetadata, UserMeta } from '../../../liveblocks.config'
 import {
+  parseUserReadStatuses,
+  printUserReadStatuses,
   useEditThreadMetadata,
   useMutation,
   useSelf,
@@ -264,4 +266,69 @@ export function useUnresolvedThreads() {
     ...threads,
     threads: threads.threads.filter((t) => t.metadata.resolved !== true),
   }
+}
+
+export function useSetCommentThreadReadStatusOnMount(thread: ThreadData<ThreadMetadata> | null) {
+  const self = useSelf()
+  const editThreadMetadata = useEditThreadMetadata()
+
+  React.useEffect(() => {
+    if (thread == null) {
+      return
+    }
+
+    setCommentThreadReadStatus(thread, self.id, 'read', editThreadMetadata)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // only run it once on mount, because opening the popup means reading the thread, no dependencies added
+}
+
+export function useMyCommentThreadReadStatus(
+  thread: ThreadData<ThreadMetadata> | null,
+): CommentThreadReadStatus {
+  const self = useSelf()
+  if (thread == null) {
+    return 'unread'
+  }
+  return getCommentThreadReadStatus(thread, self.id)
+}
+
+export type CommentThreadReadStatus = 'read' | 'unread'
+
+function getCommentThreadReadStatus(
+  thread: ThreadData<ThreadMetadata>,
+  userId: string,
+): CommentThreadReadStatus {
+  const userReadStatuses = parseUserReadStatuses(thread.metadata.userReadStatuses)
+  return userReadStatuses[userId] === true ? 'read' : 'unread'
+}
+
+export function setCommentThreadReadStatus(
+  thread: ThreadData<ThreadMetadata>,
+  userId: string,
+  status: CommentThreadReadStatus,
+  editThreadMetadata: ReturnType<typeof useEditThreadMetadata>,
+) {
+  const userReadStatuses = parseUserReadStatuses(thread.metadata.userReadStatuses)
+  switch (status) {
+    case 'read':
+      if (userReadStatuses[userId] === true) {
+        return
+      }
+      userReadStatuses[userId] = true
+      break
+    case 'unread':
+      if (userReadStatuses[userId] == null || userReadStatuses[userId] === false) {
+        return
+      }
+      delete userReadStatuses[userId]
+      break
+    default:
+      assertNever(status)
+  }
+  editThreadMetadata({
+    threadId: thread.id,
+    metadata: {
+      userReadStatuses: printUserReadStatuses(userReadStatuses),
+    },
+  })
 }
