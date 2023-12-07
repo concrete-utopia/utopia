@@ -27,6 +27,7 @@ import {
   useCanvasLocationOfThread,
   getCollaboratorById,
   useMyCommentThreadReadStatus,
+  useSetCommentThreadReadStatus,
 } from '../../../core/commenting/comment-hooks'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { unless, when } from '../../../utils/react-conditionals'

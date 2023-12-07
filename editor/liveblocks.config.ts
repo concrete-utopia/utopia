@@ -48,13 +48,18 @@ export type Storage = {
   // author: LiveObject<{ firstName: string, lastName: string }>,
   // ...
   collaborators: LiveObject<{ [userId: string]: User }> // this is an object (and not a list) so we can quickly check if a user is a collaborator, but later we can extend the information by storing something more than a boolean (e.g. a permission level)
+  userReadStatusesByThread: LiveObject<{ [threadId: string]: UserReadStatuses }>
 }
 
 export type User = LiveObject<UserMeta>
 
+export type UserReadStatusesMeta = { [userId: string]: boolean }
+export type UserReadStatuses = LiveObject<UserReadStatusesMeta>
+
 export function initialStorage(): Storage {
   return {
     collaborators: new LiveObject(),
+    userReadStatusesByThread: new LiveObject(),
   }
 }
 
@@ -86,36 +91,6 @@ export type ThreadMetadata = {
   sceneId?: string
   remixLocationRoute?: string
   resolved: boolean
-  userReadStatuses: string
-}
-
-export type UserReadStatuses = { [userId: string]: boolean }
-
-export function isUserReadStatuses(statuses: any): statuses is UserReadStatuses {
-  return (
-    statuses != null &&
-    typeof statuses === 'object' &&
-    Object.keys(statuses).every((v) => typeof v === 'string') &&
-    Object.values(statuses).every((v) => typeof v === 'boolean')
-  )
-}
-
-export function parseUserReadStatuses(userReadStatuses: string): UserReadStatuses {
-  try {
-    const statuses = JSON.parse(userReadStatuses) as UserReadStatuses
-    if (!isUserReadStatuses(statuses)) {
-      console.warn('Invalid user read statuses in metadata', statuses)
-      return {}
-    }
-    return statuses
-  } catch (e) {
-    console.warn('Invalid user read statuses in metadata', userReadStatuses)
-    return {}
-  }
-}
-
-export function printUserReadStatuses(userReadStatuses: UserReadStatuses): string {
-  return JSON.stringify(userReadStatuses)
 }
 
 export const {

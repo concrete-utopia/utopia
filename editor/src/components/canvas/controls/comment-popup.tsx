@@ -4,7 +4,6 @@ import { Composer } from '@liveblocks/react-comments'
 import { useAtom } from 'jotai'
 import React from 'react'
 import {
-  printUserReadStatuses,
   useCreateThread,
   useEditThreadMetadata,
   useSelf,
@@ -13,11 +12,12 @@ import {
 import '../../../../resources/editor/css/liveblocks-comments.css'
 import {
   getCollaboratorById,
-  setCommentThreadReadStatus,
   useCanvasCommentThreadAndLocation,
+  useCreateNewCommentThreadReadStatus,
   useMyCommentThreadReadStatus,
   useResolveThread,
   useScenesWithId,
+  useSetCommentThreadReadStatus,
   useSetCommentThreadReadStatusOnMount,
 } from '../../../core/commenting/comment-hooks'
 import * as EP from '../../../core/shared/element-path'
@@ -70,12 +70,12 @@ interface CommentThreadProps {
 const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
   const dispatch = useDispatch()
   const colorTheme = useColorTheme()
-  const self = useSelf()
-  const editThreadMetadata = useEditThreadMetadata()
 
   const { location, thread } = useCanvasCommentThreadAndLocation(comment)
 
   useSetCommentThreadReadStatusOnMount(thread)
+  const setCommentThreadReadStatus = useSetCommentThreadReadStatus()
+  const createNewCommentThreadReadStatus = useCreateNewCommentThreadReadStatus()
 
   const readByMe = useMyCommentThreadReadStatus(thread)
 
@@ -108,7 +108,6 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
                 type: 'canvas',
                 x: comment.location.position.x,
                 y: comment.location.position.y,
-                userReadStatuses: printUserReadStatuses({ [self.id]: true }),
               },
             })
           case 'scene':
@@ -126,26 +125,26 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
                 y: comment.location.offset.y,
                 sceneId: sceneId,
                 remixLocationRoute: remixRoute != null ? remixRoute.location.pathname : undefined,
-                userReadStatuses: printUserReadStatuses({ [self.id]: true }),
               },
             })
           default:
             assertNever(comment.location)
         }
       })()
+      createNewCommentThreadReadStatus(newThread.id, 'read')
       dispatch([
         switchEditorMode(EditorModes.commentMode(existingComment(newThread.id), 'not-dragging')),
         setRightMenuTab(RightMenuTab.Comments),
       ])
     },
-    [createThread, comment, dispatch, remixSceneRoutes, scenes, self.id],
+    [createThread, comment, dispatch, remixSceneRoutes, scenes, createNewCommentThreadReadStatus],
   )
 
   const onSubmitComment = React.useCallback(() => {
-    if (thread != null) {
-      setCommentThreadReadStatus(thread, self.id, 'read', editThreadMetadata, 'delete-others')
+    if (thread?.id != null) {
+      createNewCommentThreadReadStatus(thread.id, 'read')
     }
-  }, [editThreadMetadata, thread, self.id])
+  }, [thread?.id, createNewCommentThreadReadStatus])
 
   const onCommentDelete = React.useCallback(
     (_deleted: CommentData) => {
@@ -177,11 +176,11 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
   }, [thread, resolveThread])
 
   const onClickMarkAsUnread = React.useCallback(() => {
-    if (thread == null) {
+    if (thread?.id == null) {
       return
     }
-    setCommentThreadReadStatus(thread, self.id, 'unread', editThreadMetadata, 'keep-others')
-  }, [thread, editThreadMetadata, self.id])
+    setCommentThreadReadStatus(thread.id, 'unread')
+  }, [thread?.id, setCommentThreadReadStatus])
 
   const collabs = useStorage((storage) => storage.collaborators)
 
