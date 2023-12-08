@@ -5,7 +5,7 @@ import { jsx } from '@emotion/react'
 import React from 'react'
 import * as EditorActions from '../editor/actions/action-creators'
 import { RightMenuTab } from '../editor/store/editor-state'
-import { Substores, useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { InspectorEntryPoint } from '../inspector/inspector'
 import { CanvasWrapperComponent } from './canvas-wrapper-component'
 import { CodeEditorWrapper } from '../code-editor/code-editor-container'
@@ -35,15 +35,10 @@ import type { StoredPanel } from './stored-layout'
 import { MultiplayerPresence } from './multiplayer-presence'
 import { useStatus } from '../../../liveblocks.config'
 import { MultiplayerWrapper } from '../../utils/multiplayer-wrapper'
-import { CommentSection } from '../inspector/sections/comment-section'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { CommentsPane } from '../inspector/comments-pane'
 import { useIsViewer } from '../editor/store/project-server-state-hooks'
-
-interface NumberSize {
-  width: number
-  height: number
-}
+import { EditorModes, isCommentMode } from '../editor/editor-modes'
 
 function isCodeEditorEnabled(): boolean {
   if (typeof window !== 'undefined') {
@@ -52,79 +47,6 @@ function isCodeEditorEnabled(): boolean {
     return true
   }
 }
-
-const TopMenuHeight = 35
-// height so that the bottom border on the top menu aligns
-// with the top border of the first inspector section
-
-const NothingOpenCard = React.memo(() => {
-  const dispatch = useDispatch()
-  const handleOpenCanvasClick = React.useCallback(() => {
-    dispatch([EditorActions.setPanelVisibility('canvas', true)])
-  }, [dispatch])
-  const handleOpenCodeEditorClick = React.useCallback(() => {
-    dispatch([EditorActions.setPanelVisibility('codeEditor', true)])
-  }, [dispatch])
-  const handleOpenBothCodeEditorAndDesignToolClick = React.useCallback(() => {
-    dispatch([
-      EditorActions.setPanelVisibility('codeEditor', true),
-      EditorActions.setPanelVisibility('canvas', true),
-    ])
-  }, [dispatch])
-
-  return (
-    <div
-      role='card'
-      style={{
-        width: 180,
-        height: 240,
-        padding: 12,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'space-around',
-        borderRadius: 4,
-        backgroundColor: 'white',
-        border: '1px solid lightgrey',
-      }}
-    >
-      <LargerIcons.PixelatedPalm
-        color='primary'
-        style={{ width: 42, height: 42, imageRendering: 'pixelated' }}
-      />
-      <div style={{ textAlign: 'center' }}>
-        <h3 style={{ fontWeight: 600, fontSize: 11 }}>Get Started</h3>
-        <p style={{ lineHeight: '1.7em', whiteSpace: 'normal' }}>
-          Start building with the &nbsp;
-          <span
-            role='button'
-            style={{ cursor: 'pointer', color: colorTheme.primary.value }}
-            onClick={handleOpenCanvasClick}
-          >
-            canvas
-          </span>
-          ,&nbsp;
-          <span
-            role='button'
-            style={{ cursor: 'pointer', color: colorTheme.primary.value }}
-            onClick={handleOpenCodeEditorClick}
-          >
-            code editor
-          </span>
-          ,&nbsp; or{' '}
-          <span
-            role='button'
-            style={{ cursor: 'pointer', color: colorTheme.primary.value }}
-            onClick={handleOpenBothCodeEditorAndDesignToolClick}
-          >
-            both
-          </span>
-          .
-        </p>
-      </div>
-    </div>
-  )
-})
 
 const DesignPanelRootInner = React.memo(() => {
   const roomStatus = useStatus()
@@ -194,6 +116,8 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
     'ResizableRightPane selectedTab',
   )
 
+  const editorModeRef = useRefEditorState((store) => store.editor.mode)
+
   const isRightMenuExpanded = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.rightMenu.visible,
@@ -203,11 +127,13 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
 
   const onClickTab = React.useCallback(
     (menuTab: RightMenuTab) => {
-      let actions: Array<EditorAction> = []
-      actions.push(EditorActions.setRightMenuTab(menuTab))
+      const actions: Array<EditorAction> = [EditorActions.setRightMenuTab(menuTab)]
+      if (isCommentMode(editorModeRef.current) && menuTab !== RightMenuTab.Comments) {
+        actions.push(EditorActions.switchEditorMode(EditorModes.selectMode(null, false, 'none')))
+      }
       dispatch(actions)
     },
-    [dispatch],
+    [dispatch, editorModeRef],
   )
 
   const onClickInsertTab = React.useCallback(() => {
