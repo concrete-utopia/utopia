@@ -3,13 +3,13 @@ lockfileVersion: 5.4
 specifiers:
   ts-loader: 5.3.3
   typescript: 4.0.5
-  utopia-vscode-common: file:../utopia-vscode-common
+  utopia-vscode-common: link:../utopia-vscode-common
   vscode-dts: 0.3.1
   webpack: 4.42.0
   webpack-cli: 3.3.11
 
 dependencies:
-  utopia-vscode-common: file:../utopia-vscode-common
+  utopia-vscode-common: link:../utopia-vscode-common
 
 devDependencies:
   ts-loader: 5.3.3_typescript@4.0.5
@@ -1110,7 +1110,7 @@ packages:
     resolution: {integrity: sha512-oWb1Z6mkHIskLzEJ/XWX0srkpkTQ7vaopMQkyaEIoq0fmtFVxOthb8cCxeT+p3ynTdkk/RZwbgG4brR5BeWECw==}
     engines: {node: '>= 4.0'}
     os: [darwin]
-    deprecated: fsevents 1 will break on node v14+ and could be using insecure binaries. Upgrade to fsevents 2.
+    deprecated: The v1 package contains DANGEROUS / INSECURE binaries. Upgrade to safe fsevents v2
     requiresBuild: true
     dependencies:
       bindings: 1.5.0
@@ -1288,10 +1288,6 @@ packages:
   /iferr/0.1.5:
     resolution: {integrity: sha1-xg7taebY/bazEEofy8ocGS3FtQE=}
     dev: true
-
-  /immediate/3.0.6:
-    resolution: {integrity: sha512-XXOFtyqDjNDAQxVfYxuF7g9Il/IbWmmlQg2MYKOH8ExIT1qg6xc4zyS3HaEEATgs1btfzxq15ciUiY7gjSXRGQ==}
-    dev: false
 
   /import-local/2.0.0:
     resolution: {integrity: sha512-b6s04m3O+s3CGSbqDIyP4R6aAwAeYlVq9+WUWep6iHa8ETRf9yei1U48C5MmfJmV9AiLYYBKPMq/W+/WRpQmCQ==}
@@ -1553,12 +1549,6 @@ packages:
       invert-kv: 2.0.0
     dev: true
 
-  /lie/3.1.1:
-    resolution: {integrity: sha512-RiNhHysUjhrDQntfYSfY4MU24coXXdEOgw9WGcKHNeEwffDYbF//u87M1EWaMGzuFoSbqW0C9C6lEEhDOAswfw==}
-    dependencies:
-      immediate: 3.0.6
-    dev: false
-
   /loader-runner/2.4.0:
     resolution: {integrity: sha512-Jsmr89RcXGIwivFY21FcRrisYZfvLMTWx5kOLc+JTxtpBOG6xML0vzbc6SEQG2FO9/4Fc3wW4LVcB5DmGflaRw==}
     engines: {node: '>=4.3.0 <5.0.0 || >=5.10'}
@@ -1581,12 +1571,6 @@ packages:
       emojis-list: 3.0.0
       json5: 1.0.1
     dev: true
-
-  /localforage/1.9.0:
-    resolution: {integrity: sha512-rR1oyNrKulpe+VM9cYmcFn6tsHuokyVHFaCM3+osEmxaHTbEk8oQu6eGDfS6DQLWi/N67XRmB8ECG37OES368g==}
-    dependencies:
-      lie: 3.1.1
-    dev: false
 
   /locate-path/3.0.0:
     resolution: {integrity: sha512-7AO748wWnIhNqAuaty2ZWHkQHRSNfPVIsPIfwEOWO22AmaoVrWavlOcMR5nzTLNYvp36X220/maaRsrec1G65A==}
@@ -2054,12 +2038,6 @@ packages:
     resolution: {integrity: sha1-AerA/jta9xoqbAL+q7jB/vfgDqs=}
     engines: {node: '>=0.10.0'}
     dev: true
-
-  /prettier/2.0.5:
-    resolution: {integrity: sha512-7PtVymN48hGcO4fGjybyBSIWDsLU4H4XlvOHfq91pz9kkGlonzwTfYkaIEwiRg/dAJF9YlbsduBAgtYLi+8cFg==}
-    engines: {node: '>=10.13.0'}
-    hasBin: true
-    dev: false
 
   /process-nextick-args/2.0.1:
     resolution: {integrity: sha512-3ouUOpQhtgrbOa17J7+uxOTpITYWaGP7/AhoR3+A+/1e9skrzelGi/dXzEYyvbxubEF6Wn2ypscTKiKJFFn1ag==}
@@ -2919,13 +2897,3 @@ packages:
       y18n: 4.0.3
       yargs-parser: 13.1.2
     dev: true
-
-  file:../utopia-vscode-common:
-    resolution: {directory: ../utopia-vscode-common, type: directory}
-    name: utopia-vscode-common
-    version: 0.1.2
-    requiresBuild: true
-    dependencies:
-      localforage: 1.9.0
-      prettier: 2.0.5
-    dev: false
