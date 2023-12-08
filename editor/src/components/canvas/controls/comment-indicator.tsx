@@ -161,7 +161,7 @@ const CommentIndicatorsInner = React.memo(() => {
       {temporaryIndicatorData != null ? (
         <CommentIndicatorUI
           position={temporaryIndicatorData.position}
-          opacity={'opaque'}
+          opacity={1}
           resolved={false}
           bgColor={temporaryIndicatorData.bgColor}
           fgColor={temporaryIndicatorData.fgColor}
@@ -176,7 +176,7 @@ CommentIndicatorsInner.displayName = 'CommentIndicatorInner'
 
 interface CommentIndicatorUIProps {
   position: WindowPoint
-  opacity: 'transparent' | 'opaque' | 'half-opaque'
+  opacity: number
   resolved: boolean
   bgColor: string
   fgColor: string
@@ -187,17 +187,8 @@ interface CommentIndicatorUIProps {
 }
 
 export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) => {
-  const { position, onClick, onMouseDown, bgColor, fgColor, avatarUrl, avatarInitials } = props
-  const opacity = (() => {
-    switch (props.opacity) {
-      case 'opaque':
-        return 1
-      case 'transparent':
-        return 0.25
-      case 'half-opaque':
-        return 0.75
-    }
-  })()
+  const { position, onClick, onMouseDown, bgColor, fgColor, avatarUrl, avatarInitials, opacity } =
+    props
 
   return (
     <div
@@ -315,13 +306,13 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
 
   const indicatorOpacity = (() => {
     if (isOnAnotherRoute || thread.metadata.resolved) {
-      return 'transparent'
+      return 0
     }
     switch (readByMe) {
       case 'unread':
-        return 'opaque'
+        return 1
       case 'read':
-        return 'half-opaque'
+        return 0.75
       default:
         assertNever(readByMe)
     }
