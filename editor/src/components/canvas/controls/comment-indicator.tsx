@@ -56,11 +56,7 @@ export const CommentIndicators = React.memo(() => {
     return null
   }
 
-  return (
-    <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
-      <CommentIndicatorsInner />
-    </MultiplayerWrapper>
-  )
+  return <CommentIndicatorsInner />
 })
 CommentIndicators.displayName = 'CommentIndicators'
 
