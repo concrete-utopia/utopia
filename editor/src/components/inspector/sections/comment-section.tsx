@@ -111,6 +111,8 @@ interface ThreadPreviewProps {
 }
 
 const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
+  const ref = React.useRef<HTMLDivElement>(null)
+
   const dispatch = useDispatch()
   const colorTheme = useColorTheme()
 
@@ -170,6 +172,8 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
 
   const collabs = useStorage((storage) => storage.collaborators)
 
+  useScrollToIfSelected(ref, isSelected)
+
   const comment = thread.comments[0]
   if (comment == null) {
     return null
@@ -183,6 +187,7 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
 
   return (
     <div
+      ref={ref}
       key={comment.id}
       onClick={onClick}
       style={{
@@ -252,3 +257,11 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
   )
 })
 ThreadPreview.displayName = 'ThreadPreview'
+
+function useScrollToIfSelected(ref: React.RefObject<HTMLDivElement>, isSelected: boolean) {
+  React.useEffect(() => {
+    if (isSelected && ref.current != null) {
+      ref.current.scrollIntoView()
+    }
+  }, [isSelected, ref])
+}
