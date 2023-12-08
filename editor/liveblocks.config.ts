@@ -48,13 +48,18 @@ export type Storage = {
   // author: LiveObject<{ firstName: string, lastName: string }>,
   // ...
   collaborators: LiveObject<{ [userId: string]: User }> // this is an object (and not a list) so we can quickly check if a user is a collaborator, but later we can extend the information by storing something more than a boolean (e.g. a permission level)
+  userReadStatusesByThread: LiveObject<{ [threadId: string]: UserReadStatuses }>
 }
 
 export type User = LiveObject<UserMeta>
 
+export type UserReadStatusesMeta = { [userId: string]: boolean }
+export type UserReadStatuses = LiveObject<UserReadStatusesMeta>
+
 export function initialStorage(): Storage {
   return {
     collaborators: new LiveObject(),
+    userReadStatusesByThread: new LiveObject(),
   }
 }
 

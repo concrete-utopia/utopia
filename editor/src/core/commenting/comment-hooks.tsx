@@ -261,3 +261,79 @@ export function useUnresolvedThreads() {
     threads: threads.threads.filter((t) => t.metadata.resolved !== true),
   }
 }
+
+export function useSetThreadReadStatusOnMount(thread: ThreadData<ThreadMetadata> | null) {
+  const setThreadReadStatus = useSetThreadReadStatus()
+
+  React.useEffect(() => {
+    if (thread == null) {
+      return
+    }
+
+    setThreadReadStatus(thread.id, 'read')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // only run it once on mount, because opening the popup means reading the thread, no dependencies added
+}
+
+export function useMyThreadReadStatus(thread: ThreadData<ThreadMetadata> | null): ThreadReadStatus {
+  const self = useSelf()
+  return useStorage((store) => {
+    if (thread == null) {
+      return 'unread'
+    }
+    const statusesForThread = store.userReadStatusesByThread[thread.id]
+    if (statusesForThread == null) {
+      return 'unread'
+    }
+    return statusesForThread[self.id] === true ? 'read' : 'unread'
+  })
+}
+
+export type ThreadReadStatus = 'read' | 'unread'
+
+export function useSetThreadReadStatus() {
+  return useMutation(({ storage, self }, threadId: string, status: ThreadReadStatus) => {
+    const statusesForThread = storage.get('userReadStatusesByThread')
+    if (statusesForThread == null) {
+      return
+    }
+    const userReadStatuses = statusesForThread.get(threadId)
+    if (userReadStatuses == null) {
+      return
+    }
+    const myStatus = userReadStatuses.get(self.id)
+    switch (status) {
+      case 'read':
+        if (myStatus === true) {
+          return
+        }
+        userReadStatuses.set(self.id, true)
+        break
+      case 'unread':
+        if (myStatus == null || myStatus === false) {
+          return
+        }
+        userReadStatuses.delete(self.id)
+        break
+    }
+  }, [])
+}
+
+export function useCreateNewThreadReadStatus() {
+  return useMutation(({ storage, self }, threadId: string, status: ThreadReadStatus) => {
+    const userReadStatuses = new LiveObject(status === 'read' ? { [self.id]: true } : {})
+    const statusesForThread = storage.get('userReadStatusesByThread')
+    if (statusesForThread != null) {
+      statusesForThread.set(threadId, userReadStatuses)
+    }
+  }, [])
+}
+
+export function useDeleteThreadReadStatus() {
+  return useMutation(({ storage }, threadId: string) => {
+    const statusesForThread = storage.get('userReadStatusesByThread')
+    if (statusesForThread != null) {
+      statusesForThread.delete(threadId)
+    }
+  }, [])
+}
