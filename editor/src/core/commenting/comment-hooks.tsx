@@ -26,6 +26,7 @@ import { MetadataUtils } from '../model/element-metadata-utils'
 import { getIdOfScene } from '../../components/canvas/controls/comment-mode/comment-mode-hooks'
 import type { ElementPath } from '../shared/project-file-types'
 import type { ElementInstanceMetadata } from '../shared/element-template'
+import * as EP from '../shared/element-path'
 
 export function useCanvasCommentThreadAndLocation(comment: CommentId): {
   location: CanvasPoint | null
@@ -44,7 +45,7 @@ export function useCanvasCommentThreadAndLocation(comment: CommentId): {
     }
   }, [threads, comment])
 
-  const scenes = useScenesWithId()
+  const scenes = useScenes()
 
   const location = React.useMemo(() => {
     switch (comment.type) {
@@ -53,9 +54,10 @@ export function useCanvasCommentThreadAndLocation(comment: CommentId): {
           case 'canvas':
             return comment.location.position
           case 'scene':
-            const scene = scenes.find(
-              (s) => getIdOfScene(s) === (comment.location as SceneCommentLocation).sceneId,
-            )
+            let { sceneId } = comment.location as SceneCommentLocation
+            const scene = scenes.find((s) => {
+              return getIdOfScene(s) === sceneId || EP.toUid(s.elementPath) === sceneId
+            })
 
             if (scene == null || !isNotNullFiniteRectangle(scene.globalFrame)) {
               return getCanvasPointWithCanvasOffset(zeroCanvasPoint, comment.location.offset)
@@ -189,17 +191,11 @@ export function useScenesWithId(): Array<ElementInstanceMetadata> {
   )
 }
 
-export function useSceneWithId(sceneId: string | null): ElementInstanceMetadata | null {
+export function useScenes(): Array<ElementInstanceMetadata> {
   return useEditorState(
     Substores.metadata,
-    (store) => {
-      if (sceneId == null) {
-        return null
-      }
-      const scenes = MetadataUtils.getScenesMetadata(store.editor.jsxMetadata)
-      return scenes.find((s) => getIdOfScene(s) != sceneId) ?? null
-    },
-    'useSceneWithId scene',
+    (store) => MetadataUtils.getScenesMetadata(store.editor.jsxMetadata),
+    'useScenesWithId scenes',
   )
 }
 
@@ -264,4 +260,80 @@ export function useUnresolvedThreads() {
     ...threads,
     threads: threads.threads.filter((t) => t.metadata.resolved !== true),
   }
+}
+
+export function useSetThreadReadStatusOnMount(thread: ThreadData<ThreadMetadata> | null) {
+  const setThreadReadStatus = useSetThreadReadStatus()
+
+  React.useEffect(() => {
+    if (thread == null) {
+      return
+    }
+
+    setThreadReadStatus(thread.id, 'read')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // only run it once on mount, because opening the popup means reading the thread, no dependencies added
+}
+
+export function useMyThreadReadStatus(thread: ThreadData<ThreadMetadata> | null): ThreadReadStatus {
+  const self = useSelf()
+  return useStorage((store) => {
+    if (thread == null) {
+      return 'unread'
+    }
+    const statusesForThread = store.userReadStatusesByThread[thread.id]
+    if (statusesForThread == null) {
+      return 'unread'
+    }
+    return statusesForThread[self.id] === true ? 'read' : 'unread'
+  })
+}
+
+export type ThreadReadStatus = 'read' | 'unread'
+
+export function useSetThreadReadStatus() {
+  return useMutation(({ storage, self }, threadId: string, status: ThreadReadStatus) => {
+    const statusesForThread = storage.get('userReadStatusesByThread')
+    if (statusesForThread == null) {
+      return
+    }
+    const userReadStatuses = statusesForThread.get(threadId)
+    if (userReadStatuses == null) {
+      return
+    }
+    const myStatus = userReadStatuses.get(self.id)
+    switch (status) {
+      case 'read':
+        if (myStatus === true) {
+          return
+        }
+        userReadStatuses.set(self.id, true)
+        break
+      case 'unread':
+        if (myStatus == null || myStatus === false) {
+          return
+        }
+        userReadStatuses.delete(self.id)
+        break
+    }
+  }, [])
+}
+
+export function useCreateNewThreadReadStatus() {
+  return useMutation(({ storage, self }, threadId: string, status: ThreadReadStatus) => {
+    const userReadStatuses = new LiveObject(status === 'read' ? { [self.id]: true } : {})
+    const statusesForThread = storage.get('userReadStatusesByThread')
+    if (statusesForThread != null) {
+      statusesForThread.set(threadId, userReadStatuses)
+    }
+  }, [])
+}
+
+export function useDeleteThreadReadStatus() {
+  return useMutation(({ storage }, threadId: string) => {
+    const statusesForThread = storage.get('userReadStatusesByThread')
+    if (statusesForThread != null) {
+      statusesForThread.delete(threadId)
+    }
+  }, [])
 }
