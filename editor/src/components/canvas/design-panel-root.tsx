@@ -13,7 +13,6 @@ import {
   SimpleFlexRow,
   UtopiaTheme,
   SimpleFlexColumn,
-  LargerIcons,
   FlexColumn,
   colorTheme,
   UtopiaStyles,
