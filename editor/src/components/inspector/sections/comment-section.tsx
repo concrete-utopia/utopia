@@ -28,10 +28,11 @@ import {
   getCollaboratorById,
   useMyThreadReadStatus,
 } from '../../../core/commenting/comment-hooks'
-import { Substores, useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
 import { unless, when } from '../../../utils/react-conditionals'
 import { openCommentThreadActions } from '../../../core/shared/multiplayer'
 import { getRemixLocationLabel } from '../../canvas/remix/remix-utils'
+import type { RestOfEditorState } from '../../editor/store/store-hook-substore-types'
 
 export const CommentSection = React.memo(() => {
   return (
@@ -118,16 +119,6 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
 
   const { remixLocationRoute } = thread.metadata
 
-  const isSelected = useEditorState(
-    Substores.restOfEditor,
-    (store) =>
-      isCommentMode(store.editor.mode) &&
-      store.editor.mode.comment != null &&
-      isExistingComment(store.editor.mode.comment) &&
-      store.editor.mode.comment.threadId === thread.id,
-    'ThreadPreview isSelected',
-  )
-
   const { location, scene: commentScene } = useCanvasLocationOfThread(thread)
 
   const remixState = useRemixNavigationContext(commentScene)
@@ -172,7 +163,7 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
 
   const collabs = useStorage((storage) => storage.collaborators)
 
-  useScrollToIfSelected(ref, isSelected)
+  const isSelected = useIsSelectedAndScrollToThread(ref, thread.id)
 
   const comment = thread.comments[0]
   if (comment == null) {
@@ -258,10 +249,38 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
 })
 ThreadPreview.displayName = 'ThreadPreview'
 
-function useScrollToIfSelected(ref: React.RefObject<HTMLDivElement>, isSelected: boolean) {
-  React.useEffect(() => {
-    if (isSelected && ref.current != null) {
-      ref.current.scrollIntoView()
-    }
-  }, [isSelected, ref])
+function useIsSelectedAndScrollToThread(ref: React.RefObject<HTMLDivElement>, threadId: string) {
+  const scrollToSelectedCallback = React.useCallback(
+    (isSelected: boolean) => {
+      if (isSelected && ref.current != null) {
+        ref.current.scrollIntoView()
+      }
+    },
+    [ref],
+  )
+
+  const isSelectedSelector = React.useCallback(
+    (store: RestOfEditorState) => {
+      return (
+        isCommentMode(store.editor.mode) &&
+        store.editor.mode.comment != null &&
+        isExistingComment(store.editor.mode.comment) &&
+        store.editor.mode.comment.threadId === threadId
+      )
+    },
+    [threadId],
+  )
+
+  useSelectorWithCallback(
+    Substores.restOfEditor,
+    isSelectedSelector,
+    scrollToSelectedCallback,
+    'useIsSelectedAndScrollToThread isSelected',
+  )
+
+  return useEditorState(
+    Substores.restOfEditor,
+    isSelectedSelector,
+    'useIsSelectedAndScrollToThread isSelected',
+  )
 }
