@@ -80,7 +80,6 @@ export const MultiplayerPresence = React.memo(() => {
   )
 
   useAddMyselfToCollaborators()
-
   const remixPresence = useRemixPresence()
 
   React.useEffect(() => {
@@ -382,6 +381,7 @@ const FollowingOverlay = React.memo(() => {
   }
   return (
     <div
+      data-testid='following-overlay'
       style={{
         position: 'fixed',
         top: 0,

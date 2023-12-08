@@ -159,6 +159,7 @@ const CommentIndicatorsInner = React.memo(() => {
       ))}
       {temporaryIndicatorData != null ? (
         <CommentIndicatorUI
+          key={'temp-comment-indicator'}
           position={temporaryIndicatorData.position}
           opacity={'opaque'}
           resolved={false}
@@ -173,7 +174,10 @@ const CommentIndicatorsInner = React.memo(() => {
 })
 CommentIndicatorsInner.displayName = 'CommentIndicatorInner'
 
+export const CommentIndicatorUITestId = (key: string) => `comment-indicator-ui`
+
 interface CommentIndicatorUIProps {
+  key: string
   position: WindowPoint
   opacity: 'transparent' | 'opaque'
   resolved: boolean
@@ -196,6 +200,7 @@ export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) =>
 
   return (
     <div
+      data-testid={CommentIndicatorUITestId(props.key)}
       css={{
         position: 'fixed',
         top: position.y,
@@ -311,6 +316,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
 
   return (
     <CommentIndicatorUI
+      key={'temp-comment-indicator'}
       position={position}
       opacity={indicatorOpactiy}
       resolved={thread.metadata.resolved}

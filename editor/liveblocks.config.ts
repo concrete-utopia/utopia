@@ -4,7 +4,8 @@ import { getProjectID } from './src/common/env-vars'
 import type { ActiveFrameAction } from './src/components/canvas/commands/set-active-frames-command'
 import type { CanvasRectangle, CanvasVector, WindowPoint } from './src/core/shared/math-utils'
 import type { RemixPresence } from './src/core/shared/multiplayer'
-import { projectIdToRoomId } from './src/core/shared/multiplayer'
+import { possiblyUniqueColor, projectIdToRoomId } from './src/core/shared/multiplayer'
+import { MOCK_LIVEBLOCKS_CONFIG, setMockData } from './liveblocks.mock.config'
 
 export const liveblocksThrottle = 100 // ms
 
@@ -88,44 +89,13 @@ export type ThreadMetadata = {
   resolved: boolean
 }
 
-export const {
-  suspense: {
-    RoomProvider,
-    useRoom,
-    useMyPresence,
-    useUpdateMyPresence,
-    useSelf,
-    useOthers,
-    useOthersListener,
-    useOthersMapped,
-    useOthersConnectionIds,
-    useOther,
-    useBroadcastEvent,
-    useEventListener,
-    useErrorListener,
-    useStorage,
-    useObject,
-    useMap,
-    useList,
-    useBatch,
-    useHistory,
-    useUndo,
-    useRedo,
-    useCanUndo,
-    useCanRedo,
-    useMutation,
-    useStatus,
-    useLostConnectionListener,
-    useThreads,
-    useUser,
-    useCreateThread,
-    useEditThreadMetadata,
-    useCreateComment,
-    useEditComment,
-    useDeleteComment,
-    useAddReaction,
-  },
-} = createRoomContext<Presence, Storage, UserMeta, RoomEvent, ThreadMetadata>(liveblocksClient, {
+const LiveblocksRoomContext = createRoomContext<
+  Presence,
+  Storage,
+  UserMeta,
+  RoomEvent,
+  ThreadMetadata
+>(liveblocksClient, {
   async resolveUsers({ userIds }) {
     // Used only for Comments. Return a list of user information retrieved
     // from `userIds`. This info is used in comments, mentions etc.
@@ -166,6 +136,68 @@ export const {
       .map((u) => u.id)
   },
 })
+
+const LiveBlockConfigExports: typeof LiveblocksRoomContext = {
+  ...LiveblocksRoomContext,
+  suspense: {
+    ...LiveblocksRoomContext.suspense,
+    useThreads: (...args) =>
+      MOCK_LIVEBLOCKS_CONFIG.current == null
+        ? LiveblocksRoomContext.suspense.useThreads(...args)
+        : MOCK_LIVEBLOCKS_CONFIG.current.useThreads(...args),
+    useStorage: (...args) =>
+      MOCK_LIVEBLOCKS_CONFIG.current == null
+        ? LiveblocksRoomContext.suspense.useStorage(...args)
+        : MOCK_LIVEBLOCKS_CONFIG.current.useStorage(...args),
+    useCreateThread: (...args) =>
+      MOCK_LIVEBLOCKS_CONFIG.current == null
+        ? LiveblocksRoomContext.suspense.useCreateThread(...args)
+        : MOCK_LIVEBLOCKS_CONFIG.current.useCreateThread(...args),
+    useMutation: (...args) =>
+      MOCK_LIVEBLOCKS_CONFIG.current == null
+        ? LiveblocksRoomContext.suspense.useMutation(...args)
+        : MOCK_LIVEBLOCKS_CONFIG.current.useMutation(...args),
+  },
+}
+
+export const {
+  suspense: {
+    RoomProvider,
+    useRoom,
+    useMyPresence,
+    useUpdateMyPresence,
+    useSelf,
+    useOthers,
+    useOthersListener,
+    useOthersMapped,
+    useOthersConnectionIds,
+    useOther,
+    useBroadcastEvent,
+    useEventListener,
+    useErrorListener,
+    useObject,
+    useMap,
+    useList,
+    useBatch,
+    useHistory,
+    useUndo,
+    useRedo,
+    useCanUndo,
+    useCanRedo,
+    useMutation,
+    useStatus,
+    useLostConnectionListener,
+    useStorage,
+    useThreads,
+    useCreateThread,
+    useUser,
+    useEditThreadMetadata,
+    useCreateComment,
+    useEditComment,
+    useDeleteComment,
+    useAddReaction,
+  },
+} = LiveBlockConfigExports
 
 async function getAllUsersFromRoom(roomId: string) {
   const room = liveblocksClient.getRoom(roomId)

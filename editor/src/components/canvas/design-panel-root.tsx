@@ -150,12 +150,12 @@ const DesignPanelRootInner = React.memo(() => {
             }}
           >
             <CanvasWrapperComponent />
-            {when(
-              roomStatus === 'connected',
-              <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
-                <MultiplayerPresence />
-              </MultiplayerWrapper>,
-            )}
+            {/* {when(
+              roomStatus === 'connected', */}
+            <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
+              <MultiplayerPresence />
+            </MultiplayerWrapper>
+            ,{/* )} */}
             <GridPanelsContainer />
           </SimpleFlexColumn>
         }
