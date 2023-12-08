@@ -4,8 +4,8 @@ import { getProjectID } from './src/common/env-vars'
 import type { ActiveFrameAction } from './src/components/canvas/commands/set-active-frames-command'
 import type { CanvasRectangle, CanvasVector, WindowPoint } from './src/core/shared/math-utils'
 import type { RemixPresence } from './src/core/shared/multiplayer'
-import { possiblyUniqueColor, projectIdToRoomId } from './src/core/shared/multiplayer'
-import { MOCK_LIVEBLOCKS_CONFIG, setMockData } from './liveblocks.mock.config'
+import { projectIdToRoomId } from './src/core/shared/multiplayer'
+import { MOCK_LIVEBLOCKS_CONFIG } from './liveblocks.mock.config'
 
 export const liveblocksThrottle = 100 // ms
 
@@ -89,53 +89,54 @@ export type ThreadMetadata = {
   resolved: boolean
 }
 
-const LiveblocksRoomContext = createRoomContext<
-  Presence,
-  Storage,
-  UserMeta,
-  RoomEvent,
-  ThreadMetadata
->(liveblocksClient, {
-  async resolveUsers({ userIds }) {
-    // Used only for Comments. Return a list of user information retrieved
-    // from `userIds`. This info is used in comments, mentions etc.
+export function createRoomContextU() {
+  return createRoomContext<Presence, Storage, UserMeta, RoomEvent, ThreadMetadata>(
+    liveblocksClient,
+    {
+      async resolveUsers({ userIds }) {
+        // Used only for Comments. Return a list of user information retrieved
+        // from `userIds`. This info is used in comments, mentions etc.
 
-    // This should be provided by the Utopia backend, but as a quick hack I store the user data in the room storage.
-    // This means we need the room id to get the users, which is not provided to this function, but fortunately we can
-    // recreate that from the project id.
-    const projectId = getProjectID()
-    if (projectId == null) {
-      return []
-    }
-
-    const users = await getAllUsersFromRoom(projectIdToRoomId(projectId))
-    return users.filter((u) => userIds.includes(u.id))
-  },
-  async resolveMentionSuggestions({ text, roomId }) {
-    // Used only for Comments. Return a list of userIds where the name matches `text`.
-    // These userIds are used to create a mention list when typing in the
-    // composer.
-    //
-    // For example when you type "@jo", `text` will be `"jo"`, and
-    // you should to return an array with John and Joanna's userIds.
-
-    const users = await getAllUsersFromRoom(roomId)
-
-    if (text == null) {
-      return users.map((u) => u.id)
-    }
-
-    // Otherwise, filter user names for the search `text` and return
-    return users
-      .filter((u) => {
-        if (u.name == null) {
-          return false
+        // This should be provided by the Utopia backend, but as a quick hack I store the user data in the room storage.
+        // This means we need the room id to get the users, which is not provided to this function, but fortunately we can
+        // recreate that from the project id.
+        const projectId = getProjectID()
+        if (projectId == null) {
+          return []
         }
-        return u.name.toLowerCase().includes(text.toLowerCase())
-      })
-      .map((u) => u.id)
-  },
-})
+
+        const users = await getAllUsersFromRoom(projectIdToRoomId(projectId))
+        return users.filter((u) => userIds.includes(u.id))
+      },
+      async resolveMentionSuggestions({ text, roomId }) {
+        // Used only for Comments. Return a list of userIds where the name matches `text`.
+        // These userIds are used to create a mention list when typing in the
+        // composer.
+        //
+        // For example when you type "@jo", `text` will be `"jo"`, and
+        // you should to return an array with John and Joanna's userIds.
+
+        const users = await getAllUsersFromRoom(roomId)
+
+        if (text == null) {
+          return users.map((u) => u.id)
+        }
+
+        // Otherwise, filter user names for the search `text` and return
+        return users
+          .filter((u) => {
+            if (u.name == null) {
+              return false
+            }
+            return u.name.toLowerCase().includes(text.toLowerCase())
+          })
+          .map((u) => u.id)
+      },
+    },
+  )
+}
+
+const LiveblocksRoomContext = createRoomContextU()
 
 const LiveBlockConfigExports: typeof LiveblocksRoomContext = {
   ...LiveblocksRoomContext,

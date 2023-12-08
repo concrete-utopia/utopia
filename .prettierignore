@@ -1,2 +1,3 @@
 vscode-build/vscode/
 utopia-vscode-extension/src/vscode-types/
+editor/liveblocks.mock.config.ts

@@ -1,21 +1,21 @@
 import type { createRoomContext } from '@liveblocks/react'
 import type { ThreadData } from '@liveblocks/client'
-import type { Presence, ThreadMetadata, UserMeta, Storage, RoomEvent } from './liveblocks.config'
+import type {
+  Presence,
+  ThreadMetadata,
+  UserMeta,
+  Storage,
+  RoomEvent,
+  createRoomContextU,
+} from './liveblocks.config'
 
-type UseContextFn = typeof createRoomContext
+type CreateRoomContextType = typeof createRoomContextU
+type RoomContextType = ReturnType<CreateRoomContextType>
 
-type UseThreads = ReturnType<
-  UseContextFn<Presence, Storage, UserMeta, RoomEvent, ThreadMetadata>
->['suspense']['useThreads']
-type UseStorage = ReturnType<
-  UseContextFn<Presence, Storage, UserMeta, RoomEvent, ThreadMetadata>
->['suspense']['useStorage']
-type UseCreateThread = ReturnType<
-  UseContextFn<Presence, Storage, UserMeta, RoomEvent, ThreadMetadata>
->['suspense']['useCreateThread']
-type UseMutation = ReturnType<
-  UseContextFn<Presence, Storage, UserMeta, RoomEvent, ThreadMetadata>
->['suspense']['useMutation']
+type UseThreads = RoomContextType['suspense']['useThreads']
+type UseStorage = RoomContextType['suspense']['useStorage']
+type UseCreateThread = RoomContextType['suspense']['useCreateThread']
+type UseMutation = RoomContextType['suspense']['useMutation']
 
 interface MockedLiveBlocksConfig {
   useThreads: UseThreads
