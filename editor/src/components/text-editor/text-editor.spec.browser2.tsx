@@ -1,5 +1,11 @@
 import * as EP from '../../core/shared/element-path'
-import { expectSingleUndo2Saves, expectSingleUndoNSaves, wait } from '../../utils/utils.test-utils'
+import {
+  expectSingleUndo2Saves,
+  expectSingleUndoNSaves,
+  selectComponentsForTest,
+  setFeatureForBrowserTestsUseInDescribeBlockOnly,
+  wait,
+} from '../../utils/utils.test-utils'
 import type { Modifiers } from '../../utils/modifiers'
 import { altCmdModifier, cmdModifier, shiftCmdModifier } from '../../utils/modifiers'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
@@ -1695,6 +1701,496 @@ describe('Use the text editor', () => {
     )
     expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('this is just a string')
   })
+
+  describe('Editing with steganograpy enabled', () => {
+    setFeatureForBrowserTestsUseInDescribeBlockOnly('Steganography', true)
+
+    const steganoProject = `import * as React from 'react'
+    import { Storyboard, Scene } from 'utopia-api'
+
+    const StoryboardWrapper = ({ style }) => {
+      const text = 'Hello'
+      return (
+        <div data-uid='div' data-testid='div' style={{ ...style }}>
+          {text}
+        </div>
+      )
+    }
+
+    export var storyboard = (
+      <Storyboard data-uid='sb'>
+        <Scene
+          data-uid='scene'
+          style={{
+            backgroundColor: '#0091FFAA',
+            position: 'absolute',
+            left: 144,
+            top: 58,
+            width: 288,
+            height: 362,
+          }}
+        >
+          <StoryboardWrapper data-uid='wrapper' />
+        </Scene>
+      </Storyboard>
+    )
+    `
+
+    it('updates string literal valued variable in component body when it is edited', async () => {
+      const editor = await renderTestEditorWithCode(steganoProject, 'await-first-dom-report', {
+        applySteganography: 'apply-steganography',
+      })
+
+      await enterTextEditMode(editor, 'start')
+      typeText(' Utopia')
+      await expectSingleUndo2Saves(editor, async () => closeTextEditor())
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Storyboard, Scene } from 'utopia-api'
+
+const StoryboardWrapper = ({ style }) => {
+  const text = ' UtopiaHello'
+  return (
+    <div
+      data-uid='div'
+      data-testid='div'
+      style={{ ...style }}
+    >
+      {text}
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      data-uid='scene'
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 144,
+        top: 58,
+        width: 288,
+        height: 362,
+      }}
+    >
+      <StoryboardWrapper data-uid='wrapper' />
+    </Scene>
+  </Storyboard>
+)
+`)
+    })
+
+    it('updates text var passed through props', async () => {
+      const editor = await renderTestEditorWithCode(
+        `import * as React from 'react'
+        import { Storyboard, Scene } from 'utopia-api'
+        
+        const variable = 'constant'
+        
+        const StoryboardWrapper = ({ style, text }) => {
+          return (
+            <div
+              data-uid='div'
+              data-testid='div'
+              style={{ ...style }}
+            >
+              {text}
+            </div>
+          )
+        }
+        
+        export var storyboard = (
+          <Storyboard data-uid='sb'>
+            <Scene
+              data-uid='scene'
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 144,
+                top: 58,
+                width: 288,
+                height: 362,
+              }}
+            >
+              <StoryboardWrapper text={variable} data-uid='wrapper' />
+            </Scene>
+          </Storyboard>
+        )`,
+        'await-first-dom-report',
+        { applySteganography: 'apply-steganography' },
+      )
+
+      await enterTextEditMode(editor, 'start')
+      typeText('this is not a ')
+      await expectSingleUndo2Saves(editor, async () => closeTextEditor())
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Storyboard, Scene } from 'utopia-api'
+
+const variable = 'this is not a constant'
+
+const StoryboardWrapper = ({ style, text }) => {
+  return (
+    <div
+      data-uid='div'
+      data-testid='div'
+      style={{ ...style }}
+    >
+      {text}
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      data-uid='scene'
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 144,
+        top: 58,
+        width: 288,
+        height: 362,
+      }}
+    >
+      <StoryboardWrapper
+        text={variable}
+        data-uid='wrapper'
+      />
+    </Scene>
+  </Storyboard>
+)
+`)
+    })
+
+    it('can handle quote marks and newlines in the updated text', async () => {
+      const editor = await renderTestEditorWithCode(steganoProject, 'await-first-dom-report', {
+        applySteganography: 'apply-steganography',
+      })
+
+      await enterTextEditMode(editor, 'start')
+      typeText(`"quote" 'unquote'`)
+      document.execCommand('insertParagraph', false)
+      typeText('fin')
+      await expectSingleUndo2Saves(editor, async () => closeTextEditor())
+      await editor.getDispatchFollowUpActionsFinished()
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Storyboard, Scene } from 'utopia-api'
+
+const StoryboardWrapper = ({ style }) => {
+  const text = '"quote" \\'unquote\\'\\nfinHello'
+  return (
+    <div
+      data-uid='div'
+      data-testid='div'
+      style={{ ...style }}
+    >
+      {text}
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      data-uid='scene'
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 144,
+        top: 58,
+        width: 288,
+        height: 362,
+      }}
+    >
+      <StoryboardWrapper data-uid='wrapper' />
+    </Scene>
+  </Storyboard>
+)
+`)
+    })
+
+    it('can update text that has escaped newlines to begin with', async () => {
+      const editor = await renderTestEditorWithCode(
+        `import * as React from 'react'
+      import { Storyboard, Scene } from 'utopia-api'
+      
+      const StoryboardWrapper = ({ style }) => {
+        const text = 'line 1\\nline 2'
+        return (
+          <div
+            data-uid='div'
+            data-testid='div'
+            style={{ ...style }}
+          >
+            {text}
+          </div>
+        )
+      }
+      
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          <Scene
+            data-uid='scene'
+            style={{
+              backgroundColor: '#0091FFAA',
+              position: 'absolute',
+              left: 144,
+              top: 58,
+              width: 288,
+              height: 362,
+            }}
+          >
+            <StoryboardWrapper data-uid='wrapper' />
+          </Scene>
+        </Storyboard>
+      )`,
+        'await-first-dom-report',
+        {
+          applySteganography: 'apply-steganography',
+        },
+      )
+
+      await enterTextEditMode(editor, 'start')
+      typeText('hello')
+      await expectSingleUndo2Saves(editor, async () => closeTextEditor())
+      await editor.getDispatchFollowUpActionsFinished()
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Storyboard, Scene } from 'utopia-api'
+
+const StoryboardWrapper = ({ style }) => {
+  const text = 'helloline 1\\nline 2'
+  return (
+    <div
+      data-uid='div'
+      data-testid='div'
+      style={{ ...style }}
+    >
+      {text}
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      data-uid='scene'
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 144,
+        top: 58,
+        width: 288,
+        height: 362,
+      }}
+    >
+      <StoryboardWrapper data-uid='wrapper' />
+    </Scene>
+  </Storyboard>
+)
+`)
+    })
+
+    it('does not print back weird characters into the file on unrelated edits', async () => {
+      const editor = await renderTestEditorWithCode(
+        `import * as React from 'react'
+        import { Storyboard, Scene } from 'utopia-api'
+        
+        const StoryboardWrapper = ({ style }) => {
+          const text = 'Hello'
+          return (
+            <div data-uid='div' data-testid='div' style={{ ...style }}>
+              {text}
+            </div>
+          )
+        }
+        
+        export var storyboard = (
+          <Storyboard data-uid='sb'>
+            <Scene
+              data-uid='scene'
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 144,
+                top: 58,
+                width: 288,
+                height: 362,
+              }}
+            >
+              <StoryboardWrapper data-uid='wrapper' />
+            </Scene>
+          </Storyboard>
+        )
+        `,
+        'await-first-dom-report',
+        { applySteganography: 'apply-steganography' },
+      )
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/scene/wrapper')])
+      await pressKey('Backspace')
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        formatTestProjectCode(`
+        import * as React from 'react'
+        import { Storyboard, Scene } from 'utopia-api'
+
+        const StoryboardWrapper = ({ style }) => {
+          const text = 'Hello'
+          return (
+            <div data-uid='div' data-testid='div' style={{ ...style }}>
+              {text}
+            </div>
+          )
+        }
+
+        export var storyboard = (
+          <Storyboard data-uid='sb'>
+            <Scene
+              data-uid='scene'
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 144,
+                top: 58,
+                width: 288,
+                height: 362,
+              }}
+            />
+          </Storyboard>
+        )
+`),
+      )
+    })
+
+    it("can edit string when there's more than one declaration", async () => {
+      const editor = await renderTestEditorWithCode(
+        `import * as React from 'react'
+        import { Storyboard, Scene } from 'utopia-api'
+        
+        const aaa = 'aaa'
+        const bbb = 'bbb'
+        const ccc = 'ccc'
+        
+        export var storyboard = (
+          <Storyboard>
+            <Scene
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 144,
+                top: 58,
+                width: 288,
+                height: 362,
+              }}
+            >
+              <div data-testid='111' style={{}}>
+                {aaa}
+              </div>
+              <div
+                data-testid='222'
+                style={{
+                  width: 288,
+                  height: 19,
+                  position: 'absolute',
+                  left: 0,
+                  top: 41,
+                }}
+              >
+                {bbb}
+              </div>
+              <div
+                data-testid='333'
+                style={{
+                  width: 288,
+                  height: 19,
+                  position: 'absolute',
+                  left: 0,
+                  top: 71,
+                }}
+              >
+                {ccc}
+              </div>
+            </Scene>
+          </Storyboard>
+        )        
+      `,
+        'await-first-dom-report',
+        {
+          applySteganography: 'apply-steganography',
+        },
+      )
+
+      await enterTextEditMode(editor, 'start', '111', '111-span')
+      typeText('111')
+      await expectSingleUndo2Saves(editor, async () => closeTextEditor())
+
+      await enterTextEditMode(editor, 'start', '222', '222-span')
+      typeText('222')
+      await expectSingleUndo2Saves(editor, async () => closeTextEditor())
+
+      await enterTextEditMode(editor, 'start', '333', '333-span')
+      typeText('333')
+      await expectSingleUndo2Saves(editor, async () => closeTextEditor())
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Storyboard, Scene } from 'utopia-api'
+
+const aaa = '111aaa'
+const bbb = '222bbb'
+const ccc = '333ccc'
+
+export var storyboard = (
+  <Storyboard>
+    <Scene
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 144,
+        top: 58,
+        width: 288,
+        height: 362,
+      }}
+    >
+      <div data-testid='111' style={{}}>
+        {aaa}
+      </div>
+      <div
+        data-testid='222'
+        style={{
+          width: 288,
+          height: 19,
+          position: 'absolute',
+          left: 0,
+          top: 41,
+        }}
+      >
+        {bbb}
+      </div>
+      <div
+        data-testid='333'
+        style={{
+          width: 288,
+          height: 19,
+          position: 'absolute',
+          left: 0,
+          top: 71,
+        }}
+      >
+        {ccc}
+      </div>
+    </Scene>
+  </Storyboard>
+)
+`)
+    })
+  })
 })
 
 describe('SWITCH_EDITOR_MODE', () => {
@@ -1905,6 +2401,7 @@ async function enterTextEditMode(
   editor: EditorRenderResult,
   where: 'start' | 'end' = 'end',
   testId: string = 'div',
+  nextUid = 'text-span',
 ): Promise<void> {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
   const element = editor.renderedDOM.getByTestId(testId)
@@ -1914,13 +2411,14 @@ async function enterTextEditMode(
     y: bounds.y + (where === 'start' ? 1 : 40),
   }
 
-  FOR_TESTS_setNextGeneratedUid('text-span')
+  FOR_TESTS_setNextGeneratedUid(nextUid)
 
   await pressKey('t')
   await editor.getDispatchFollowUpActionsFinished()
   await mouseClickAtPoint(canvasControlsLayer, corner)
   await editor.getDispatchFollowUpActionsFinished()
 }
+
 function typeText(text: string) {
   document.execCommand('insertText', false, text)
 }

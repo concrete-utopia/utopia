@@ -244,7 +244,12 @@ export function isTsFile(filename: string): boolean {
 }
 
 export function isJsFile(filename: string): boolean {
-  return filename.endsWith('.js') || filename.endsWith('.jsx')
+  return (
+    filename.endsWith('.js') ||
+    filename.endsWith('.jsx') ||
+    filename.endsWith('.mjs') ||
+    filename.endsWith('.cjs')
+  )
 }
 
 export function isCssFile(filename: string): boolean {

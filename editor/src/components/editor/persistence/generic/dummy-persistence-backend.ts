@@ -2,6 +2,7 @@ import type {
   PersistenceBackendAPI,
   ProjectLoadResult,
   ProjectModel,
+  ProjectOwnership,
   ProjectWithFileChanges,
 } from './persistence-types'
 import { projectWithFileChanges } from './persistence-types'
@@ -13,8 +14,8 @@ function getNewProjectId(): Promise<string> {
   return Promise.resolve(`Project_${projectCounter++}`)
 }
 
-function checkProjectOwned(projectId: string): Promise<boolean> {
-  return Promise.resolve(true)
+function checkProjectOwned(_projectId: string): Promise<ProjectOwnership> {
+  return Promise.resolve({ isOwner: true, ownerId: 'the-owner' })
 }
 
 function loadProject<ModelType>(projectId: string): Promise<ProjectLoadResult<ModelType>> {

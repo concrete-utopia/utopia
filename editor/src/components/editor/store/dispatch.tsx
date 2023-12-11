@@ -47,6 +47,7 @@ import {
   storedEditorStateFromEditorState,
 } from './editor-state'
 import {
+  gatedActions,
   runClearPostActionSession,
   runExecuteStartPostActionMenuAction,
   runExecuteWithPostActionMenuAction,
@@ -87,6 +88,8 @@ import {
 } from '../../../core/shared/parser-projectcontents-utils'
 import { unpatchedCreateRemixDerivedDataMemo } from './remix-derived-data'
 import { maybeClearPseudoInsertMode } from '../canvas-toolbar-states'
+import { isSteganographyEnabled } from '../../../core/shared/stegano-text'
+import { updateCollaborativeProjectContents } from './collaborative-editing'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -103,166 +106,185 @@ function processAction(
   action: EditorAction,
   spyCollector: UiJsxCanvasContextData,
 ): EditorStoreUnpatched {
-  let working = editorStoreUnpatched
-  // Sidestep around the local actions so that we definitely run them locally.
-  if (action.action === 'TRANSIENT_ACTIONS') {
-    // Drill into the array.
-    return processActions(dispatchEvent, working, action.transientActions, spyCollector)
-  } else if (action.action === 'ATOMIC' || action.action === 'MERGE_WITH_PREV_UNDO') {
-    // Drill into the array.
-    return processActions(dispatchEvent, working, action.actions, spyCollector)
-  } else if (action.action === 'UNDO' && !History.canUndo(working.history)) {
-    // Bail early and make no changes.
-    return processActions(
-      dispatchEvent,
-      working,
-      [
-        EditorActions.addToast(
-          notice(
-            `Can't undo, reached the end of the undo history.`,
-            'NOTICE',
-            false,
-            cannotUndoRedoToastId,
-          ),
-        ),
-      ],
-      spyCollector,
-    )
-  } else if (action.action === 'REDO' && !History.canRedo(working.history)) {
-    // Bail early and make no changes.
-    return processActions(
-      dispatchEvent,
-      working,
-      [
-        EditorActions.addToast(
-          notice(
-            `Can't redo, reached the end of the undo history.`,
-            'NOTICE',
-            false,
-            cannotUndoRedoToastId,
-          ),
-        ),
-      ],
-      spyCollector,
-    )
-  } else if (action.action === 'SET_SHORTCUT') {
-    return {
-      ...working,
-      userState: UPDATE_FNS.SET_SHORTCUT(action, working.userState),
-    }
-  } else if (action.action === 'SET_CURRENT_THEME') {
-    return {
-      ...working,
-      userState: UPDATE_FNS.SET_CURRENT_THEME(action, working.userState),
-    }
-  } else if (action.action === 'SET_LOGIN_STATE') {
-    return {
-      ...working,
-      userState: UPDATE_FNS.SET_LOGIN_STATE(action, working.userState),
-    }
-  } else if (action.action === 'SET_GITHUB_STATE') {
-    return {
-      ...working,
-      userState: UPDATE_FNS.SET_GITHUB_STATE(action, working.userState),
-    }
-  } else if (action.action === 'SET_USER_CONFIGURATION') {
-    return {
-      ...working,
-      userState: UPDATE_FNS.SET_USER_CONFIGURATION(action, working.userState),
-    }
-  }
-
-  if (action.action === 'UPDATE_TEXT') {
-    working = UPDATE_FNS.UPDATE_TEXT(action, working)
-  }
-
-  if (action.action === 'TRUNCATE_HISTORY') {
-    working = UPDATE_FNS.TRUNCATE_HISTORY(working)
-  }
-
-  if (action.action === 'START_POST_ACTION_SESSION') {
-    working = runExecuteStartPostActionMenuAction(action, working)
-  }
-
-  if (action.action === 'EXECUTE_POST_ACTION_MENU_CHOICE') {
-    working = runExecuteWithPostActionMenuAction(action, working)
-  }
-
-  if (action.action === 'CLEAR_POST_ACTION_SESSION') {
-    working = runClearPostActionSession(working)
-  }
-
-  if (action.action === 'UPDATE_PROJECT_SERVER_STATE') {
-    working = runUpdateProjectServerState(working, action)
-  }
-
-  // Process action on the JS side.
-  const editorAfterUpdateFunction = runLocalEditorAction(
-    working.unpatchedEditor,
-    working.unpatchedDerived,
-    working.userState,
-    working.workers,
-    action as EditorAction,
-    working.history,
-    dispatchEvent,
-    spyCollector,
-    working.builtInDependencies,
-  )
-  const editorAfterCanvas = runLocalCanvasAction(
-    dispatchEvent,
-    editorAfterUpdateFunction,
-    working.unpatchedDerived,
-    working.builtInDependencies,
-    action as CanvasAction,
-  )
-  const editorAfterNavigator = runLocalNavigatorAction(
-    editorAfterCanvas,
-    working.unpatchedDerived,
-    action as LocalNavigatorAction,
-  )
-  const withPossiblyClearedPseudoInsert = maybeClearPseudoInsertMode(
-    editorStoreUnpatched.unpatchedEditor,
-    editorAfterNavigator,
+  return gatedActions(
     action,
-  )
+    editorStoreUnpatched.projectServerState,
+    editorStoreUnpatched.unpatchedEditor,
+    editorStoreUnpatched,
+    () => {
+      let working = editorStoreUnpatched
+      // Sidestep around the local actions so that we definitely run them locally.
+      if (action.action === 'TRANSIENT_ACTIONS') {
+        // Drill into the array.
+        return processActions(dispatchEvent, working, action.transientActions, spyCollector)
+      } else if (action.action === 'ATOMIC' || action.action === 'MERGE_WITH_PREV_UNDO') {
+        // Drill into the array.
+        return processActions(dispatchEvent, working, action.actions, spyCollector)
+      } else if (action.action === 'UNDO' && !History.canUndo(working.history)) {
+        // Bail early and make no changes.
+        return processActions(
+          dispatchEvent,
+          working,
+          [
+            EditorActions.addToast(
+              notice(
+                `Can't undo, reached the end of the undo history.`,
+                'NOTICE',
+                false,
+                cannotUndoRedoToastId,
+              ),
+            ),
+          ],
+          spyCollector,
+        )
+      } else if (action.action === 'REDO' && !History.canRedo(working.history)) {
+        // Bail early and make no changes.
+        return processActions(
+          dispatchEvent,
+          working,
+          [
+            EditorActions.addToast(
+              notice(
+                `Can't redo, reached the end of the undo history.`,
+                'NOTICE',
+                false,
+                cannotUndoRedoToastId,
+              ),
+            ),
+          ],
+          spyCollector,
+        )
+      } else if (action.action === 'SET_SHORTCUT') {
+        return {
+          ...working,
+          userState: UPDATE_FNS.SET_SHORTCUT(action, working.userState),
+        }
+      } else if (action.action === 'SET_CURRENT_THEME') {
+        return {
+          ...working,
+          userState: UPDATE_FNS.SET_CURRENT_THEME(action, working.userState),
+        }
+      } else if (action.action === 'SET_LOGIN_STATE') {
+        return {
+          ...working,
+          userState: UPDATE_FNS.SET_LOGIN_STATE(action, working.userState),
+        }
+      } else if (action.action === 'SET_GITHUB_STATE') {
+        return {
+          ...working,
+          userState: UPDATE_FNS.SET_GITHUB_STATE(action, working.userState),
+        }
+      } else if (action.action === 'SET_USER_CONFIGURATION') {
+        return {
+          ...working,
+          userState: UPDATE_FNS.SET_USER_CONFIGURATION(action, working.userState),
+        }
+      }
 
-  let newStateHistory: StateHistory
-  switch (action.action) {
-    case 'UNDO':
-      newStateHistory = History.undo(working.unpatchedEditor.id, working.history, 'no-side-effects')
-      working.postActionInteractionSession = null
-      break
-    case 'REDO':
-      newStateHistory = History.redo(working.unpatchedEditor.id, working.history, 'no-side-effects')
-      break
-    case 'NEW':
-    case 'LOAD':
-      const derivedState = deriveState(
-        withPossiblyClearedPseudoInsert,
-        null,
-        'unpatched',
-        unpatchedCreateRemixDerivedDataMemo,
+      if (action.action === 'UPDATE_TEXT') {
+        working = UPDATE_FNS.UPDATE_TEXT(action, working)
+      }
+
+      if (action.action === 'TRUNCATE_HISTORY') {
+        working = UPDATE_FNS.TRUNCATE_HISTORY(working)
+      }
+
+      if (action.action === 'START_POST_ACTION_SESSION') {
+        working = runExecuteStartPostActionMenuAction(action, working)
+      }
+
+      if (action.action === 'EXECUTE_POST_ACTION_MENU_CHOICE') {
+        working = runExecuteWithPostActionMenuAction(action, working)
+      }
+
+      if (action.action === 'CLEAR_POST_ACTION_SESSION') {
+        working = runClearPostActionSession(working)
+      }
+
+      if (action.action === 'UPDATE_PROJECT_SERVER_STATE') {
+        working = runUpdateProjectServerState(working, action)
+      }
+
+      // Process action on the JS side.
+      const editorAfterUpdateFunction = runLocalEditorAction(
+        working.unpatchedEditor,
+        working.unpatchedDerived,
+        working.userState,
+        working.workers,
+        action as EditorAction,
+        working.history,
+        dispatchEvent,
+        spyCollector,
+        working.builtInDependencies,
+        working.collaborativeEditingSupport,
+        working.projectServerState,
       )
-      newStateHistory = History.init(withPossiblyClearedPseudoInsert, derivedState)
-      break
-    default:
-      newStateHistory = working.history
-      break
-  }
+      const editorAfterCanvas = runLocalCanvasAction(
+        dispatchEvent,
+        editorAfterUpdateFunction,
+        working.unpatchedDerived,
+        working.builtInDependencies,
+        action as CanvasAction,
+      )
+      const editorAfterNavigator = runLocalNavigatorAction(
+        editorAfterCanvas,
+        working.unpatchedDerived,
+        action as LocalNavigatorAction,
+      )
+      const withPossiblyClearedPseudoInsert = maybeClearPseudoInsertMode(
+        editorStoreUnpatched.unpatchedEditor,
+        editorAfterNavigator,
+        action,
+      )
 
-  return {
-    unpatchedEditor: withPossiblyClearedPseudoInsert,
-    unpatchedDerived: working.unpatchedDerived,
-    strategyState: working.strategyState, // this means the actions cannot update strategyState – this piece of state lives outside our "redux" state
-    postActionInteractionSession: working.postActionInteractionSession,
-    history: newStateHistory,
-    userState: working.userState,
-    workers: working.workers,
-    persistence: working.persistence,
-    saveCountThisSession: working.saveCountThisSession,
-    builtInDependencies: working.builtInDependencies,
-    projectServerState: working.projectServerState,
-  }
+      let newStateHistory: StateHistory
+      switch (action.action) {
+        case 'UNDO':
+          newStateHistory = History.undo(
+            working.unpatchedEditor.id,
+            working.history,
+            'no-side-effects',
+          )
+          working.postActionInteractionSession = null
+          break
+        case 'REDO':
+          newStateHistory = History.redo(
+            working.unpatchedEditor.id,
+            working.history,
+            'no-side-effects',
+          )
+          break
+        case 'NEW':
+        case 'LOAD':
+          const derivedState = deriveState(
+            withPossiblyClearedPseudoInsert,
+            null,
+            'unpatched',
+            unpatchedCreateRemixDerivedDataMemo,
+          )
+          newStateHistory = History.init(withPossiblyClearedPseudoInsert, derivedState)
+          break
+        default:
+          newStateHistory = working.history
+          break
+      }
+
+      return {
+        unpatchedEditor: withPossiblyClearedPseudoInsert,
+        unpatchedDerived: working.unpatchedDerived,
+        strategyState: working.strategyState, // this means the actions cannot update strategyState – this piece of state lives outside our "redux" state
+        postActionInteractionSession: working.postActionInteractionSession,
+        history: newStateHistory,
+        userState: working.userState,
+        workers: working.workers,
+        persistence: working.persistence,
+        saveCountThisSession: working.saveCountThisSession,
+        builtInDependencies: working.builtInDependencies,
+        projectServerState: working.projectServerState,
+        collaborativeEditingSupport: working.collaborativeEditingSupport,
+      }
+    },
+  )
 }
 
 function processActions(
@@ -314,7 +336,12 @@ function maybeRequestModelUpdate(
 
   // Should anything need to be sent across, do so here.
   if (filesToUpdate.length > 0) {
-    const parseFinished = getParseResult(workers, filesToUpdate, existingUIDs)
+    const parseFinished = getParseResult(
+      workers,
+      filesToUpdate,
+      existingUIDs,
+      isSteganographyEnabled(),
+    )
       .then((parseResult) => {
         const updates = parseResult.map((fileResult) => {
           return parseResultToWorkerUpdates(fileResult)
@@ -596,6 +623,7 @@ export function editorDispatchClosingOut(
     saveCountThisSession: saveCountThisSession + (shouldSave ? 1 : 0),
     builtInDependencies: storedState.builtInDependencies,
     projectServerState: storedState.projectServerState,
+    collaborativeEditingSupport: storedState.collaborativeEditingSupport,
   }
 
   reduxDevtoolsSendActions(actionGroupsToProcess, finalStore, allTransient)
@@ -627,6 +655,7 @@ export function editorDispatchClosingOut(
     )
   }
 
+  let finalStoreV1Final: DispatchResult = finalStore
   // If the action was a load action then we don't want to send across any changes
   if (!isLoadAction) {
     const parsedAfterCodeChanged = onlyActionIsWorkerParsedUpdate(dispatchedActions)
@@ -640,6 +669,27 @@ export function editorDispatchClosingOut(
       updatedFromVSCodeOrParsedAfterCodeChange,
     )
     applyProjectChangesToVSCode(frozenEditorState, projectChanges)
+    if (
+      finalStore.collaborativeEditingSupport.session != null &&
+      finalStore.projectServerState.isMyProject === 'yes'
+    ) {
+      updateCollaborativeProjectContents(
+        finalStore.collaborativeEditingSupport.session,
+        projectChanges.fileChanges.collabProjectChanges,
+        frozenEditorState.filesModifiedByAnotherUser,
+      )
+    }
+    const filesChanged = projectChanges.fileChanges.collabProjectChanges.map((v) => v.fullPath)
+    const updatedFilesModifiedByElsewhere = frozenEditorState.filesModifiedByAnotherUser.filter(
+      (v) => !filesChanged.includes(v),
+    )
+    finalStoreV1Final = {
+      ...finalStoreV1Final,
+      unpatchedEditor: {
+        ...finalStoreV1Final.unpatchedEditor,
+        filesModifiedByAnotherUser: updatedFilesModifiedByElsewhere,
+      },
+    }
   }
 
   const shouldUpdatePreview =
@@ -658,7 +708,7 @@ export function editorDispatchClosingOut(
     anyWorkerUpdates ? 'schedule-now' : 'dont-schedule',
   )
 
-  return finalStore
+  return finalStoreV1Final
 }
 
 function editorChangesShouldTriggerSave(oldState: EditorState, newState: EditorState): boolean {
@@ -727,7 +777,9 @@ function applyProjectChangesToEditor(
   frozenEditorState: EditorState,
   projectChanges: ProjectChanges,
 ): void {
-  const updatedFileNames = projectChanges.fileChanges.map((fileChange) => fileChange.fullPath)
+  const updatedFileNames = projectChanges.fileChanges.changesForVSCode.map(
+    (fileChange) => fileChange.fullPath,
+  )
   const updatedAndReverseDepFilenames = getTransitiveReverseDependencies(
     frozenEditorState.projectContents,
     frozenEditorState.nodeModules.files,
@@ -779,10 +831,16 @@ function editorDispatchInner(
     const spyMetadataChanged =
       storedState.unpatchedEditor.spyMetadata !== result.unpatchedEditor.spyMetadata
     const allElementPropsChanged =
-      storedState.unpatchedEditor._currentAllElementProps_KILLME !==
-      result.unpatchedEditor._currentAllElementProps_KILLME
+      storedState.unpatchedEditor.currentAllElementProps !==
+      result.unpatchedEditor.currentAllElementProps
 
-    const metadataChanged = domMetadataChanged || spyMetadataChanged || allElementPropsChanged
+    const variablesInScopeChanged =
+      storedState.unpatchedEditor.currentVariablesInScope !==
+      result.unpatchedEditor.currentVariablesInScope
+
+    const metadataChanged =
+      domMetadataChanged || spyMetadataChanged || allElementPropsChanged || variablesInScopeChanged
+
     if (metadataChanged) {
       const { metadata, elementPathTree } = reconstructJSXMetadata(result.unpatchedEditor)
       // Cater for the strategies wiping out the metadata on completion.
@@ -811,8 +869,9 @@ function editorDispatchInner(
               interactionSession: {
                 ...result.unpatchedEditor.canvas.interactionSession,
                 latestMetadata: metadata,
-                latestAllElementProps: result.unpatchedEditor._currentAllElementProps_KILLME,
+                latestAllElementProps: result.unpatchedEditor.currentAllElementProps,
                 latestElementPathTree: elementPathTree,
+                latestVariablesInScope: result.unpatchedEditor.currentVariablesInScope,
               },
             },
           },
@@ -824,7 +883,8 @@ function editorDispatchInner(
             ...result.unpatchedEditor,
             jsxMetadata: metadata,
             elementPathTree: elementPathTree,
-            allElementProps: result.unpatchedEditor._currentAllElementProps_KILLME,
+            allElementProps: result.unpatchedEditor.currentAllElementProps,
+            variablesInScope: result.unpatchedEditor.currentVariablesInScope,
             lockedElements: {
               ...result.unpatchedEditor.lockedElements,
               simpleLock: updatedSimpleLocks,
@@ -923,7 +983,8 @@ function editorDispatchInner(
       entireUpdateFinished: Promise.all([storedState.entireUpdateFinished]),
       saveCountThisSession: storedState.saveCountThisSession,
       builtInDependencies: storedState.builtInDependencies,
-      projectServerState: storedState.projectServerState,
+      projectServerState: result.projectServerState,
+      collaborativeEditingSupport: result.collaborativeEditingSupport,
     }
   } else {
     //empty return

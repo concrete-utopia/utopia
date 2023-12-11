@@ -33,10 +33,11 @@ import { svgToBase64 } from '../../shared/file-utils'
 import { createBuiltInDependenciesList } from './built-in-dependencies-list'
 import * as moduleResolutionExamples from '../test-cases/module-resolution-examples.json'
 import { createNodeModules } from './test-utils'
+import { CanvasContainerID } from '../../../components/canvas/canvas-types'
 
 require('jest-fetch-mock').enableMocks()
 
-const simpleCssContent = '.utopiaClass { background-color: red; }'
+const simpleCssContent = '.utopiaClass{background-color:red}'
 
 beforeEach(() => {
   resetDepPackagerCache()
@@ -129,23 +130,6 @@ describe('ES Dependency Package Manager', () => {
 
     unimportAllButTheseCSSFiles([])
     expect(document.getElementById('/node_modules/mypackage/simple.css')).toBeNull()
-  })
-
-  it('resolves a svg import', () => {
-    const reqFn = getRequireFn(
-      NO_OP,
-      {},
-      extractNodeModulesFromPackageResponse(fileWithImports),
-      {},
-      createBuiltInDependenciesList(null),
-    )
-
-    const requireResult = reqFn('/src/index.js', 'mypackage/simple.svg')
-    expect(requireResult).toHaveProperty('ReactComponent')
-    expect(requireResult).toHaveProperty('default')
-    expect((requireResult as any).default).toEqual(
-      svgToBase64(fileWithImports.contents['/node_modules/mypackage/simple.svg'].content),
-    )
   })
 
   it('throws exception on not found dependency', () => {
@@ -395,7 +379,8 @@ describe('ES Dependency Manager — Downloads extra files as-needed', () => {
         const styleTag = document.getElementById(
           `${InjectedCSSFilePrefix}/node_modules/mypackage/dist/style.css`,
         )
-        expect(styleTag?.innerHTML).toEqual(simpleCssContent)
+        const rescopedCSS = `#${CanvasContainerID} ${simpleCssContent}`
+        expect(styleTag?.innerHTML).toEqual(rescopedCSS)
         expect(innerOnRemoteModuleDownload).toBeCalledTimes(0)
 
         done()

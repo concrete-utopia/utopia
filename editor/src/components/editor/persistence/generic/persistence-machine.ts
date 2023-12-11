@@ -6,6 +6,7 @@ import type {
   PersistenceContext,
   ProjectLoadResult,
   ProjectModel,
+  ProjectOwnership,
   ProjectWithFileChanges,
 } from './persistence-types'
 const { choose } = actions
@@ -159,13 +160,13 @@ function downloadAssetsCompleteEvent<ModelType, FileType>(
 
 interface CheckOwnershipCompleteEvent {
   type: 'CHECK_OWNERSHIP_COMPLETE'
-  isOwner: boolean
+  ownership: ProjectOwnership
 }
 
-function checkOwnershipCompleteEvent(isOwner: boolean): CheckOwnershipCompleteEvent {
+function checkOwnershipCompleteEvent(ownership: ProjectOwnership): CheckOwnershipCompleteEvent {
   return {
     type: 'CHECK_OWNERSHIP_COMPLETE',
-    isOwner: isOwner,
+    ownership: ownership,
   }
 }
 
@@ -408,7 +409,7 @@ export function createPersistenceMachine<ModelType, FileType>(
     {
       id: 'persistence-parallel',
       type: 'parallel',
-      context: { projectOwned: false, loggedIn: false },
+      context: { projectOwnership: { ownerId: null, isOwner: false }, loggedIn: false },
       states: {
         // Backend Communication
         backend: {
@@ -448,7 +449,7 @@ export function createPersistenceMachine<ModelType, FileType>(
                 onDone: {
                   target: BackendIdle,
                   actions: [
-                    send((_, event: DoneInvokeEvent<boolean>) =>
+                    send((_, event: DoneInvokeEvent<ProjectOwnership>) =>
                       checkOwnershipCompleteEvent(event.data),
                     ),
                   ],
@@ -580,15 +581,16 @@ export function createPersistenceMachine<ModelType, FileType>(
                 LOAD: Loading,
                 SAVE: [
                   {
-                    cond: (context, _) => context.projectOwned,
+                    cond: (context, _) => {
+                      return context.projectOwnership.isOwner
+                    },
                     target: Saving,
                   },
-                  { target: Forking },
                 ],
                 FORK: Forking,
                 USER_LOG_IN: [
                   {
-                    cond: (context, _) => context.projectOwned,
+                    cond: (context, _) => context.projectOwnership.isOwner,
                     actions: send((context, _) => saveEvent(context.project!)),
                   },
                 ],
@@ -601,12 +603,15 @@ export function createPersistenceMachine<ModelType, FileType>(
               states: {
                 [CreatingProjectId]: {
                   entry: [
-                    assign((_, event) => {
+                    assign((currentContext, event) => {
                       return {
                         projectId: undefined,
                         project: (event as NewEvent<ModelType>).projectModel,
                         queuedSave: undefined,
-                        projectOwned: true,
+                        projectOwnership: {
+                          isOwner: true,
+                          ownerId: currentContext.projectOwnership.ownerId,
+                        },
                       }
                     }),
                     send(backendCreateProjectIdEvent()),
@@ -668,7 +673,7 @@ export function createPersistenceMachine<ModelType, FileType>(
                     CHECK_OWNERSHIP_COMPLETE: {
                       target: ProjectLoaded,
                       actions: assign({
-                        projectOwned: (_, event) => event.isOwner,
+                        projectOwnership: (_, event) => event.ownership,
                       }),
                     },
                   },
@@ -688,7 +693,10 @@ export function createPersistenceMachine<ModelType, FileType>(
                       projectId: undefined,
                       project: undefined,
                       queuedSave: undefined,
-                      projectOwned: false,
+                      projectOwnership: {
+                        ownerId: null,
+                        isOwner: false,
+                      },
                     }
                   }),
                 },
@@ -722,7 +730,10 @@ export function createPersistenceMachine<ModelType, FileType>(
                   target: Ready,
                   actions: assign((_context, event) => {
                     return {
-                      projectOwned: true,
+                      projectOwnership: {
+                        isOwner: true,
+                        ownerId: null,
+                      },
                       project: event.saveResult.projectModel,
                     }
                   }),

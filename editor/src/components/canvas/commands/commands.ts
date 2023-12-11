@@ -85,6 +85,7 @@ import type { PushIntendedBoundsAndUpdateGroups } from './push-intended-bounds-a
 import { runPushIntendedBoundsAndUpdateGroups } from './push-intended-bounds-and-update-groups-command'
 import type { PushIntendedBoundsAndUpdateHuggingElements } from './push-intended-bounds-and-update-hugging-elements-command'
 import { runPushIntendedBoundsAndUpdateHuggingElements } from './push-intended-bounds-and-update-hugging-elements-command'
+import { runSetActiveFrames, type SetActiveFrames } from './set-active-frames-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -137,6 +138,7 @@ export type CanvasCommand =
   | DeleteElement
   | WrapInContainerCommand
   | QueueTrueUpElement
+  | SetActiveFrames
 
 export function runCanvasCommand(
   editorState: EditorState,
@@ -219,6 +221,8 @@ export function runCanvasCommand(
       return runWrapInContainerCommand(editorState, command)
     case 'QUEUE_TRUE_UP_ELEMENT':
       return runQueueTrueUpElement(editorState, command)
+    case 'SET_ACTIVE_FRAMES':
+      return runSetActiveFrames(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
@@ -308,7 +312,7 @@ export function foldAndApplyCommands(
     ...priorPatchedState,
 
     // List of parts of the editor state that we already know changed from the last frame, and are not usually affected by Commands
-    _currentAllElementProps_KILLME: editorState._currentAllElementProps_KILLME,
+    currentAllElementProps: editorState.currentAllElementProps,
     jsxMetadata: editorState.jsxMetadata,
     domMetadata: editorState.domMetadata,
     spyMetadata: editorState.spyMetadata,

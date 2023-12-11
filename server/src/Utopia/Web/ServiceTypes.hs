@@ -142,6 +142,8 @@ data ServiceCallsF a = NotFound
                      | SaveGithubAsset Text Text Text Text Text [Text] (GithubSaveAssetResponse -> a)
                      | GetPullRequestForBranch Text Text Text Text (GetBranchPullRequestResponse -> a)
                      | GetGithubUserDetails Text (GetGithubUserResponse -> a)
+                     | AuthLiveblocksUser Text Text (Text -> a)
+                     | IsLiveblocksEnabled (Bool -> a)
                      deriving Functor
 
 {-
@@ -168,6 +170,7 @@ $(makeFieldsNoPrefix ''ProjectListResponse)
 
 data ProjectOwnerResponse = ProjectOwnerResponse
                           { _isOwner :: Bool
+                          , _ownerId :: Text
                           } deriving (Eq, Show, Generic)
 
 $(makeFieldsNoPrefix ''ProjectOwnerResponse)
@@ -236,3 +239,12 @@ data UserConfigurationRequest = UserConfigurationRequest
                               } deriving (Eq, Show, Generic)
 
 $(makeFieldsNoPrefix ''UserConfigurationRequest)
+
+data LiveblocksAuthenticationRequest = LiveblocksAuthenticationRequest
+                                       { _room :: Text
+                                       } deriving (Eq, Show, Generic)
+
+data LiveblocksAuthenticationResponse = LiveblocksAuthenticationResponse
+                                      { _token :: Text
+                                      } deriving (Eq, Show, Generic)
+

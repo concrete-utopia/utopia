@@ -3,7 +3,11 @@ import { runLocalCanvasAction } from '../../templates/editor-canvas'
 import { canvasPoint, point } from '../../core/shared/math-utils'
 import CanvasActions from '../canvas/canvas-actions'
 import { editorStateToolbarModeOptic, maybeClearPseudoInsertMode } from './canvas-toolbar-states'
-import { defaultUserState, StoryboardFilePath } from './store/editor-state'
+import {
+  defaultUserState,
+  emptyCollaborativeEditingSupport,
+  StoryboardFilePath,
+} from './store/editor-state'
 import { setFocus } from '../common/actions'
 import { runLocalEditorAction } from './store/editor-update'
 import type { CreateEditorStatesResult } from '../../utils/utils.test-utils'
@@ -25,6 +29,7 @@ import {
 } from '../canvas/canvas-strategies/interaction-state'
 import { emptyModifiers } from '../../utils/modifiers'
 import { unparsed } from '../../core/shared/project-file-types'
+import { emptyProjectServerState } from './store/project-server-state'
 
 const workers = new MockUtopiaTsWorkers()
 
@@ -73,6 +78,8 @@ describe('maybeClearPseudoInsertMode', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
       [],
+      emptyCollaborativeEditingSupport(),
+      emptyProjectServerState(),
     )
     const editorStateAfterPseudoInsertUpdate = maybeClearPseudoInsertMode(
       editor,
@@ -106,6 +113,8 @@ describe('maybeClearPseudoInsertMode', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
       [],
+      emptyCollaborativeEditingSupport(),
+      emptyProjectServerState(),
     )
     const editorStateAfterPseudoInsertUpdate = maybeClearPseudoInsertMode(
       editor,
@@ -140,6 +149,8 @@ describe('maybeClearPseudoInsertMode', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
       [],
+      emptyCollaborativeEditingSupport(),
+      emptyProjectServerState(),
     )
     const editorStateAfterPseudoInsertUpdate = maybeClearPseudoInsertMode(
       editor,
@@ -203,6 +214,8 @@ describe('maybeClearPseudoInsertMode', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
       [],
+      emptyCollaborativeEditingSupport(),
+      emptyProjectServerState(),
     )
     const editorStateAfterPseudoInsertUpdate = maybeClearPseudoInsertMode(
       editor,

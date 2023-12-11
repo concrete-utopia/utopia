@@ -225,8 +225,8 @@ import {
   NullableNumberKeepDeepEquality,
   combine9EqualityCalls,
   unionDeepEquality,
-  combine13EqualityCalls,
   combine14EqualityCalls,
+  combine11EqualityCalls,
 } from '../../../utils/deep-equality'
 import {
   ElementPathArrayKeepDeepEquality,
@@ -271,7 +271,7 @@ import type {
   CursorStackItem,
   CursorImportanceLevel,
   FloatingInsertMenuStateClosed,
-  FloatingInsertMenuStateConvert,
+  FloatingInsertMenuStateSwap,
   FloatingInsertMenuStateWrap,
   FloatingInsertMenuStateInsert,
   FloatingInsertMenuState,
@@ -348,7 +348,7 @@ import {
   cursorStackItem,
   canvasCursor,
   floatingInsertMenuStateClosed,
-  floatingInsertMenuStateConvert,
+  floatingInsertMenuStateSwap,
   floatingInsertMenuStateWrap,
   floatingInsertMenuStateInsert,
   editorStateInspector,
@@ -462,6 +462,7 @@ import type {
   ImageInsertionSubject,
   InsertionSubject,
   InsertMode,
+  IsDragging,
   LiveCanvasMode,
   Mode,
   SelectMode,
@@ -471,12 +472,24 @@ import type {
   TextEditableElementState,
   InsertionSubjectWrapper,
   SelectModeToolbarMode,
+  CommentMode,
+  FollowMode,
+  CommentId,
+  NewComment,
+  ExistingComment,
+  NewCommentLocation,
+  CanvasCommentLocation,
+  SceneCommentLocation,
 } from '../editor-modes'
 import {
   EditorModes,
   insertionSubject,
   targetedInsertionParent,
   imageInsertionSubject,
+  newComment,
+  existingComment,
+  canvasCommentLocation,
+  sceneCommentLocation,
 } from '../editor-modes'
 import type { EditorPanel } from '../../common/actions'
 import type { Notice, NoticeLevel } from '../../common/notice'
@@ -535,6 +548,13 @@ import type { CopyData, ElementPasteWithMetadata } from '../../../utils/clipboar
 import { elementPaste } from '../actions/action-creators'
 import type { ProjectMetadataFromServer, ProjectServerState } from './project-server-state'
 import { projectServerState, projectMetadataFromServer } from './project-server-state'
+import type { VariablesInScope } from '../../canvas/ui-jsx-canvas'
+import type {
+  ActiveFrame,
+  ActiveFrameTarget,
+  ActiveFrameTargetPath,
+  ActiveFrameTargetRect,
+} from '../../canvas/commands/set-active-frames-command'
 
 export const ProjectMetadataFromServerKeepDeepEquality: KeepDeepEqualityCall<ProjectMetadataFromServer> =
   combine3EqualityCalls(
@@ -548,9 +568,11 @@ export const ProjectMetadataFromServerKeepDeepEquality: KeepDeepEqualityCall<Pro
   )
 
 export const ProjectServerStateKeepDeepEquality: KeepDeepEqualityCall<ProjectServerState> =
-  combine3EqualityCalls(
+  combine4EqualityCalls(
     (entry) => entry.isMyProject,
     createCallWithTripleEquals<ProjectServerState['isMyProject']>(),
+    (entry) => entry.ownerId,
+    NullableStringKeepDeepEquality,
     (entry) => entry.projectData,
     nullableDeepEquality(ProjectMetadataFromServerKeepDeepEquality),
     (entry) => entry.forkedFromProjectData,
@@ -684,7 +706,7 @@ export const NavigatorStateKeepDeepEquality: KeepDeepEqualityCall<NavigatorState
   )
 
 export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedState> {
-  return combine8EqualityCalls(
+  return combine9EqualityCalls(
     (state) => state.navigatorTargets,
     arrayDeepEquality(NavigatorEntryKeepDeepEquality),
     (state) => state.visibleNavigatorTargets,
@@ -701,6 +723,8 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
     nullableDeepEquality(FileChecksumsWithFileKeepDeepEquality),
     (state) => state.remixData,
     createCallWithTripleEquals(),
+    (state) => state.filePathMappings,
+    createCallWithShallowEquals(),
     (
       navigatorTargets,
       visibleNavigatorTargets,
@@ -710,6 +734,7 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
       projectContentsChecksums,
       branchOriginContentsChecksums,
       remixData,
+      filePathMappings,
     ) => {
       return {
         navigatorTargets: navigatorTargets,
@@ -720,6 +745,7 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
         projectContentsChecksums: projectContentsChecksums,
         branchOriginContentsChecksums: branchOriginContentsChecksums,
         remixData: remixData,
+        filePathMappings: filePathMappings,
       }
     },
   )
@@ -751,16 +777,13 @@ export const SingleLineCommentKeepDeepEqualityCall: KeepDeepEqualityCall<SingleL
     singleLineComment,
   )
 
-export const CommentKeepDeepEqualityCall: KeepDeepEqualityCall<Comment> = (
-  oldComment,
-  newComment,
-) => {
-  if (isMultiLineComment(oldComment) && isMultiLineComment(newComment)) {
-    return MultiLineCommentKeepDeepEqualityCall(oldComment, newComment)
-  } else if (isSingleLineComment(oldComment) && isSingleLineComment(newComment)) {
-    return SingleLineCommentKeepDeepEqualityCall(oldComment, newComment)
+export const CommentKeepDeepEqualityCall: KeepDeepEqualityCall<Comment> = (oldValue, newValue) => {
+  if (isMultiLineComment(oldValue) && isMultiLineComment(newValue)) {
+    return MultiLineCommentKeepDeepEqualityCall(oldValue, newValue)
+  } else if (isSingleLineComment(oldValue) && isSingleLineComment(newValue)) {
+    return SingleLineCommentKeepDeepEqualityCall(oldValue, newValue)
   } else {
-    return keepDeepEqualityResult(newComment, false)
+    return keepDeepEqualityResult(newValue, false)
   }
 }
 
@@ -2329,8 +2352,11 @@ export function ElementPathTreeKeepDeepEquality(
   )(oldValue, newValue)
 }
 
+export const VariablesInScopeKeepDeepEquality: KeepDeepEqualityCall<VariablesInScope> =
+  objectDeepEquality(objectDeepEquality(createCallFromIntrospectiveKeepDeep()))
+
 export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<InteractionSession> =
-  combine10EqualityCalls(
+  combine11EqualityCalls(
     (session) => session.interactionData,
     InputDataKeepDeepEquality,
     (session) => session.activeControl,
@@ -2345,6 +2371,8 @@ export const InteractionSessionKeepDeepEquality: KeepDeepEqualityCall<Interactio
     createCallWithTripleEquals(),
     (session) => session.latestAllElementProps,
     createCallFromIntrospectiveKeepDeep(),
+    (session) => session.latestVariablesInScope,
+    VariablesInScopeKeepDeepEquality,
     (session) => session.updatedTargetPaths,
     objectDeepEquality(ElementPathKeepDeepEquality),
     (session) => session.aspectRatioLock,
@@ -3229,6 +3257,80 @@ export const TextEditModeKeepDeepEquality: KeepDeepEqualityCall<TextEditMode> =
     EditorModes.textEditMode,
   )
 
+export const CanvasCommentLocationKeepDeepEquality: KeepDeepEqualityCall<CanvasCommentLocation> =
+  combine1EqualityCall((loc) => loc.position, CanvasPointKeepDeepEquality, canvasCommentLocation)
+
+export const SceneCommentLocationKeepDeepEquality: KeepDeepEqualityCall<SceneCommentLocation> =
+  combine2EqualityCalls(
+    (loc) => loc.sceneId,
+    StringKeepDeepEquality,
+    (loc) => loc.offset,
+    LocalPointKeepDeepEquality,
+    sceneCommentLocation,
+  )
+
+export const NewCommentLocationKeepDeepEquality: KeepDeepEqualityCall<NewCommentLocation> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'canvas':
+      if (newValue.type === oldValue.type) {
+        return CanvasCommentLocationKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'scene':
+      if (newValue.type === oldValue.type) {
+        return SceneCommentLocationKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
+export const NewCommentKeepDeepEquality: KeepDeepEqualityCall<NewComment> = combine1EqualityCall(
+  (mode) => mode.location,
+  NewCommentLocationKeepDeepEquality,
+  newComment,
+)
+
+export const ExistingCommentKeepDeepEquality: KeepDeepEqualityCall<ExistingComment> =
+  combine1EqualityCall((mode) => mode.threadId, StringKeepDeepEquality, existingComment)
+
+export const CommentIdKeepDeepEquality: KeepDeepEqualityCall<CommentId> = (oldValue, newValue) => {
+  switch (oldValue.type) {
+    case 'new':
+      if (newValue.type === oldValue.type) {
+        return NewCommentKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'existing':
+      if (newValue.type === oldValue.type) {
+        return ExistingCommentKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
+export const CommentModeKeepDeepEquality: KeepDeepEqualityCall<CommentMode> = combine2EqualityCalls(
+  (mode) => mode.comment,
+  nullableDeepEquality(CommentIdKeepDeepEquality),
+  (mode) => mode.isDragging,
+  createCallWithTripleEquals<IsDragging>(),
+  EditorModes.commentMode,
+)
+
+export const FollowModeKeepDeepEquality: KeepDeepEqualityCall<FollowMode> = combine1EqualityCall(
+  (mode) => mode.playerId,
+  StringKeepDeepEquality,
+  EditorModes.followMode,
+)
+
 export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newValue) => {
   switch (oldValue.type) {
     case 'insert':
@@ -3251,9 +3353,18 @@ export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newVa
         return TextEditModeKeepDeepEquality(oldValue, newValue)
       }
       break
+    case 'comment':
+      if (newValue.type === oldValue.type) {
+        return CommentModeKeepDeepEquality(newValue, oldValue)
+      }
+      break
+    case 'follow':
+      if (newValue.type === oldValue.type) {
+        return FollowModeKeepDeepEquality(newValue, oldValue)
+      }
+      break
     default:
-      const _exhaustiveCheck: never = oldValue
-      throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
+      assertNever(oldValue)
   }
   return keepDeepEqualityResult(newValue, false)
 }
@@ -3378,9 +3489,9 @@ export const FloatingInsertMenuStateInsertKeepDeepEquality: KeepDeepEqualityCall
   )
 
 // Here to cause the build to break if `FloatingInsertMenuStateConvert` is changed.
-floatingInsertMenuStateConvert()
+floatingInsertMenuStateSwap()
 export const FloatingInsertMenuStateConvertKeepDeepEquality: KeepDeepEqualityCall<
-  FloatingInsertMenuStateConvert
+  FloatingInsertMenuStateSwap
 > = (oldValue, newValue) => {
   return keepDeepEqualityResult(oldValue, true)
 }
@@ -3407,7 +3518,7 @@ export const FloatingInsertMenuStateKeepDeepEquality: KeepDeepEqualityCall<
         return FloatingInsertMenuStateInsertKeepDeepEquality(oldValue, newValue)
       }
       break
-    case 'convert':
+    case 'swap':
       if (newValue.insertMenuMode === oldValue.insertMenuMode) {
         return FloatingInsertMenuStateConvertKeepDeepEquality(oldValue, newValue)
       }
@@ -4122,6 +4233,51 @@ export const TrueUpTargetKeepDeepEquality: KeepDeepEqualityCall<TrueUpTarget> = 
   return keepDeepEqualityResult(newValue, false)
 }
 
+export const ActiveFrameTargetPathKeepDeepEquality: KeepDeepEqualityCall<ActiveFrameTargetPath> =
+  combine1EqualityCall(
+    (data) => data.path,
+    ElementPathKeepDeepEquality,
+    (path) => ({ type: 'ACTIVE_FRAME_TARGET_PATH', path }),
+  )
+
+export const ActiveFrameTargetRectKeepDeepEquality: KeepDeepEqualityCall<ActiveFrameTargetRect> =
+  combine1EqualityCall(
+    (data) => data.rect,
+    CanvasRectangleKeepDeepEquality,
+    (rect) => ({ type: 'ACTIVE_FRAME_TARGET_RECT', rect }),
+  )
+
+export const ActiveFrameTargetKeepDeepEquality: KeepDeepEqualityCall<ActiveFrameTarget> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'ACTIVE_FRAME_TARGET_PATH':
+      if (oldValue.type === newValue.type) {
+        return ActiveFrameTargetPathKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'ACTIVE_FRAME_TARGET_RECT':
+      if (oldValue.type === newValue.type) {
+        return ActiveFrameTargetRectKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
+export const FrameOrPathKeepDeepEquality: KeepDeepEqualityCall<ActiveFrame> = combine3EqualityCalls(
+  (data) => data.target,
+  ActiveFrameTargetKeepDeepEquality,
+  (data) => data.action,
+  createCallWithTripleEquals(),
+  (data) => data.source,
+  CanvasRectangleKeepDeepEquality,
+  (target, action, source) => ({ target, action, source }),
+)
+
 export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   oldValue,
   newValue,
@@ -4354,10 +4510,21 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.allElementProps,
     newValue.allElementProps,
   )
-  const _currentAllElementProps_KILLME_Results = AllElementPropsKeepDeepEquality(
-    oldValue._currentAllElementProps_KILLME,
-    newValue._currentAllElementProps_KILLME,
+  const currentAllElementPropsResults = AllElementPropsKeepDeepEquality(
+    oldValue.currentAllElementProps,
+    newValue.currentAllElementProps,
   )
+
+  const variablesInScopeResult = VariablesInScopeKeepDeepEquality(
+    oldValue.variablesInScope,
+    newValue.variablesInScope,
+  )
+
+  const currentVariablesInScopeResult = VariablesInScopeKeepDeepEquality(
+    oldValue.currentVariablesInScope,
+    newValue.currentVariablesInScope,
+  )
+
   const githubSettingsResults = ProjectGithubSettingsKeepDeepEquality(
     oldValue.githubSettings,
     newValue.githubSettings,
@@ -4392,6 +4559,20 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   const internalClipboardResults = InternalClipboardKeepDeepEquality(
     oldValue.internalClipboard,
     newValue.internalClipboard,
+  )
+  const filesModifiedByAnotherUserResults = arrayDeepEquality(StringKeepDeepEquality)(
+    oldValue.filesModifiedByAnotherUser,
+    newValue.filesModifiedByAnotherUser,
+  )
+
+  const activeFramesResults = arrayDeepEquality(FrameOrPathKeepDeepEquality)(
+    oldValue.activeFrames,
+    newValue.activeFrames,
+  )
+
+  const showResolvedThreadsResults = BooleanKeepDeepEquality(
+    oldValue.showResolvedThreads,
+    newValue.showResolvedThreads,
   )
 
   const areEqual =
@@ -4461,7 +4642,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     indexedDBFailedResults.areEqual &&
     forceParseFilesResults.areEqual &&
     allElementPropsResults.areEqual &&
-    _currentAllElementProps_KILLME_Results.areEqual &&
+    currentAllElementPropsResults.areEqual &&
+    variablesInScopeResult.areEqual &&
     githubSettingsResults.areEqual &&
     imageDragSessionStateEqual.areEqual &&
     githubOperationsResults.areEqual &&
@@ -4469,7 +4651,10 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     githubDataResults.areEqual &&
     refreshingDependenciesResults.areEqual &&
     colorSwatchesResults.areEqual &&
-    internalClipboardResults.areEqual
+    internalClipboardResults.areEqual &&
+    filesModifiedByAnotherUserResults.areEqual &&
+    activeFramesResults.areEqual &&
+    showResolvedThreadsResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -4541,7 +4726,9 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       indexedDBFailedResults.value,
       forceParseFilesResults.value,
       allElementPropsResults.value,
-      _currentAllElementProps_KILLME_Results.value,
+      currentAllElementPropsResults.value,
+      variablesInScopeResult.value,
+      currentVariablesInScopeResult.value,
       githubSettingsResults.value,
       imageDragSessionStateEqual.value,
       githubOperationsResults.value,
@@ -4550,6 +4737,9 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       refreshingDependenciesResults.value,
       colorSwatchesResults.value,
       internalClipboardResults.value,
+      filesModifiedByAnotherUserResults.value,
+      activeFramesResults.value,
+      showResolvedThreadsResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

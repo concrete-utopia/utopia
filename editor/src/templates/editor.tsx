@@ -54,6 +54,7 @@ import {
   persistentModelForProjectContents,
   patchedStoreFromFullStore,
   getCurrentTheme,
+  emptyCollaborativeEditingSupport,
 } from '../components/editor/store/editor-state'
 import type { UtopiaStoreAPI } from '../components/editor/store/store-hook'
 import {
@@ -268,6 +269,7 @@ export class Editor {
       builtInDependencies: builtInDependencies,
       saveCountThisSession: 0,
       projectServerState: emptyProjectServerState(),
+      collaborativeEditingSupport: emptyCollaborativeEditingSupport(),
     }
 
     const store = createStoresAndState(patchedStoreFromFullStore(this.storedState, 'editor-store'))
@@ -798,7 +800,7 @@ const ProjectLoadError = ({ error }: { error: string }) => {
   return (
     <div
       style={{
-        boxShadow: UtopiaStyles.shadowStyles.medium.boxShadow,
+        boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
         borderRadius: 3,
         overflowWrap: 'break-word',
         wordWrap: 'break-word',

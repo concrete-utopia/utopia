@@ -17,6 +17,7 @@ import {
 import {
   applyToAllUIJSFiles,
   applyUtopiaJSXComponentsChanges,
+  fileExists,
   fileTypeFromFileName,
   getUtopiaJSXComponentsFromSuccess,
   saveFile,
@@ -125,6 +126,7 @@ import {
   imageFile,
   isImageFile,
   isDirectory,
+  parseSuccess,
 } from '../../../core/shared/project-file-types'
 import {
   codeFile,
@@ -311,10 +313,16 @@ import type {
   UpdateConditionalExpression,
   SetMapCountOverride,
   ScrollToPosition,
+  UpdateTopLevelElementsFromCollaborationUpdate,
+  DeleteFileFromCollaboration,
+  UpdateExportsDetailFromCollaborationUpdate,
+  UpdateImportsFromCollaborationUpdate,
+  UpdateCodeFromCollaborationUpdate,
+  SetShowResolvedThreads,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
-import { isTextEditMode } from '../editor-modes'
+import { isCommentMode, isFollowMode, isTextEditMode } from '../editor-modes'
 import { EditorModes, isLiveMode, isSelectMode } from '../editor-modes'
 import * as History from '../history'
 import type { StateHistory } from '../history'
@@ -347,6 +355,7 @@ import type {
   NavigatorEntry,
   TrueUpTarget,
   TrueUpHuggingElement,
+  CollaborativeEditingSupport,
 } from '../store/editor-state'
 import {
   trueUpChildrenOfGroupChanged,
@@ -418,7 +427,12 @@ import {
   sendSetVSCodeTheme,
 } from '../../../core/vscode/vscode-bridge'
 import { createClipboardDataFromSelection, Clipboard } from '../../../utils/clipboard'
-import { NavigatorStateKeepDeepEquality } from '../store/store-deep-equality-instances'
+import {
+  ExportDetailKeepDeepEquality,
+  ImportDetailsKeepDeepEquality,
+  NavigatorStateKeepDeepEquality,
+  TopLevelElementKeepDeepEquality,
+} from '../store/store-deep-equality-instances'
 import type { MouseButtonsPressed } from '../../../utils/mouse'
 import { addButtonPressed, removeButtonPressed } from '../../../utils/mouse'
 import { stripLeadingSlash } from '../../../utils/path-utils'
@@ -534,6 +548,10 @@ import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import { resultForFirstApplicableStrategy } from '../../inspector/inspector-strategies/inspector-strategy'
 import { reparentToUnwrapAsAbsoluteStrategy } from '../one-shot-unwrap-strategies/reparent-to-unwrap-as-absolute-strategy'
 import { convertToAbsoluteAndReparentToUnwrapStrategy } from '../one-shot-unwrap-strategies/convert-to-absolute-and-reparent-to-unwrap'
+import { addHookForProjectChanges } from '../store/collaborative-editing'
+import { arrayDeepEquality, objectDeepEquality } from '../../../utils/deep-equality'
+import type { ProjectServerState } from '../store/project-server-state'
+import { fixParseSuccessUIDs } from '../../../core/workers/parser-printer/uid-fix'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -891,7 +909,9 @@ export function restoreEditorState(
     indexedDBFailed: currentEditor.indexedDBFailed,
     forceParseFiles: currentEditor.forceParseFiles,
     allElementProps: desiredEditor.allElementProps,
-    _currentAllElementProps_KILLME: desiredEditor._currentAllElementProps_KILLME,
+    currentAllElementProps: desiredEditor.currentAllElementProps,
+    variablesInScope: desiredEditor.variablesInScope,
+    currentVariablesInScope: desiredEditor.currentVariablesInScope,
     githubSettings: currentEditor.githubSettings,
     imageDragSessionState: currentEditor.imageDragSessionState,
     githubOperations: currentEditor.githubOperations,
@@ -900,6 +920,9 @@ export function restoreEditorState(
     refreshingDependencies: currentEditor.refreshingDependencies,
     colorSwatches: currentEditor.colorSwatches,
     internalClipboard: currentEditor.internalClipboard,
+    filesModifiedByAnotherUser: currentEditor.filesModifiedByAnotherUser,
+    activeFrames: currentEditor.activeFrames,
+    showResolvedThreads: currentEditor.showResolvedThreads,
   }
 }
 
@@ -923,6 +946,7 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
     projectContentsChecksums: poppedDerived.projectContentsChecksums,
     branchOriginContentsChecksums: poppedDerived.branchOriginContentsChecksums,
     remixData: poppedDerived.remixData,
+    filePathMappings: poppedDerived.filePathMappings,
   }
 }
 
@@ -947,18 +971,18 @@ function deleteElements(
 
       const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
 
-      function deleteElementFromParseSuccess(parseSuccess: ParseSuccess): ParseSuccess {
-        const utopiaComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
+      function deleteElementFromParseSuccess(success: ParseSuccess): ParseSuccess {
+        const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
         const withTargetRemoved: Array<UtopiaJSXComponent> = removeElementAtPath(
           targetPath,
           utopiaComponents,
         )
-        return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {
+        return modifyParseSuccessWithSimple((simpleSuccess: SimpleParseSuccess) => {
           return {
-            ...success,
+            ...simpleSuccess,
             utopiaComponents: withTargetRemoved,
           }
-        }, parseSuccess)
+        }, success)
       }
       return modifyParseSuccessAtPath(
         targetSuccess.filePath,
@@ -1539,7 +1563,12 @@ export const UPDATE_FNS = {
       codeResultCache: action.codeResultCache,
     }
   },
-  LOAD: (action: Load, oldEditor: EditorModel, dispatch: EditorDispatch): EditorModel => {
+  LOAD: (
+    action: Load,
+    oldEditor: EditorModel,
+    dispatch: EditorDispatch,
+    collaborativeEditingSupport: CollaborativeEditingSupport,
+  ): EditorModel => {
     const migratedModel = applyMigrations(action.model)
     const parsedProjectFiles = applyToAllUIJSFiles(
       migratedModel.projectContents,
@@ -1584,6 +1613,9 @@ export const UPDATE_FNS = {
       dispatch,
       StoryboardFilePath,
     )
+    if (collaborativeEditingSupport.session != null) {
+      addHookForProjectChanges(collaborativeEditingSupport.session, dispatch)
+    }
 
     return loadModel(newModelMergedWithStoredStateAndStoryboardFile, oldEditor)
   },
@@ -1653,7 +1685,7 @@ export const UPDATE_FNS = {
           updatedProps,
         )
       },
-      (parseSuccess) => parseSuccess,
+      (success) => success,
     )
     if (unsetPropFailedMessage != null) {
       const toastAction = showToast(notice(unsetPropFailedMessage, 'ERROR'))
@@ -1716,7 +1748,7 @@ export const UPDATE_FNS = {
           updatedProps,
         )
       },
-      (parseSuccess) => parseSuccess,
+      (success) => success,
     )
 
     updatedEditor = addToTrueUpElements(updatedEditor, trueUpGroupElementChanged(action.target))
@@ -2033,7 +2065,7 @@ export const UPDATE_FNS = {
   SWITCH_EDITOR_MODE: (
     action: SwitchEditorMode,
     editor: EditorModel,
-    derived: DerivedState,
+    userState: UserState,
   ): EditorModel => {
     // TODO this should probably be merged with UPDATE_EDITOR_MODE
     if (action.unlessMode === editor.mode.type) {
@@ -2054,6 +2086,9 @@ export const UPDATE_FNS = {
         console.error(`Invalid target for text edit mode: ${EP.toString(action.mode.editedText)}`)
         return editor
       }
+    }
+    if (isCommentMode(action.mode) && !isLoggedIn(userState.loginState)) {
+      return editor
     }
     return setModeState(action.mode, editor)
   },
@@ -2621,6 +2656,7 @@ export const UPDATE_FNS = {
       case 'canvas':
       case 'center':
       case 'insertmenu':
+      case 'variablesmenu':
       case 'projectsettings':
       case 'githuboptions':
         return editor
@@ -2727,6 +2763,7 @@ export const UPDATE_FNS = {
       case 'misccodeeditor':
       case 'center':
       case 'insertmenu':
+      case 'variablesmenu':
       case 'githuboptions':
         return editor
       default:
@@ -2843,7 +2880,7 @@ export const UPDATE_FNS = {
       return editor
     } else {
       const target = editor.selectedViews[0]
-      const styleProps = editor._currentAllElementProps_KILLME[EP.toString(target)]?.style ?? {}
+      const styleProps = editor.currentAllElementProps[EP.toString(target)]?.style ?? {}
       const styleClipboardData = Object.keys(styleProps).map((name) =>
         valueAtPath(PP.create('style', name), jsExpressionValue(styleProps[name], emptyComments)),
       )
@@ -3057,7 +3094,6 @@ export const UPDATE_FNS = {
   SAVE_ASSET: (
     action: SaveAsset,
     editor: EditorModel,
-    derived: DerivedState,
     dispatch: EditorDispatch,
     userState: UserState,
   ): EditorModel => {
@@ -3199,7 +3235,7 @@ export const UPDATE_FNS = {
           const editorInsertEnabled = UPDATE_FNS.SWITCH_EDITOR_MODE(
             switchMode,
             editorWithToast,
-            derived,
+            userState,
           )
           return {
             ...editorInsertEnabled,
@@ -3281,7 +3317,7 @@ export const UPDATE_FNS = {
   INSERT_IMAGE_INTO_UI: (
     action: InsertImageIntoUI,
     editor: EditorModel,
-    derived: DerivedState,
+    userState: UserState,
   ): EditorModel => {
     const possiblyAnImage = getProjectFileByFilePath(editor.projectContents, action.imagePath)
     if (possiblyAnImage != null && isImageFile(possiblyAnImage)) {
@@ -3311,7 +3347,7 @@ export const UPDATE_FNS = {
       )
       const size = width != null && height != null ? { width: width, height: height } : null
       const switchMode = enableInsertModeForJSXElement(imageElement, newUID, {}, size)
-      return UPDATE_FNS.SWITCH_EDITOR_MODE(switchMode, editor, derived)
+      return UPDATE_FNS.SWITCH_EDITOR_MODE(switchMode, editor, userState)
     } else {
       return editor
     }
@@ -3670,26 +3706,35 @@ export const UPDATE_FNS = {
     editor: EditorModel,
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
+    serverState: ProjectServerState,
   ): EditorModel => {
-    const existing = getProjectFileByFilePath(editor.projectContents, action.filePath)
+    // Prevents updates from VS Code when the user is not the owner of the project.
+    // Also fixes an issue with the collaboration where VS Code is firing one of these updates
+    // immediately after it loads which then causes the collaboration update to fail because it's
+    // viewed as being "stale".
+    if (serverState.isMyProject === 'yes') {
+      const existing = getProjectFileByFilePath(editor.projectContents, action.filePath)
 
-    const manualSave = action.unsavedContent == null
-    const code = action.unsavedContent ?? action.savedContent
+      const manualSave = action.unsavedContent == null
+      const code = action.unsavedContent ?? action.savedContent
 
-    let updatedFile: ProjectFile
-    if (existing == null || !isTextFile(existing)) {
-      const contents = textFileContents(code, unparsed, RevisionsState.CodeAhead)
-      const lastSavedContents = manualSave
-        ? null
-        : textFileContents(action.savedContent, unparsed, RevisionsState.CodeAhead)
+      let updatedFile: ProjectFile
+      if (existing == null || !isTextFile(existing)) {
+        const contents = textFileContents(code, unparsed, RevisionsState.CodeAhead)
+        const lastSavedContents = manualSave
+          ? null
+          : textFileContents(action.savedContent, unparsed, RevisionsState.CodeAhead)
 
-      updatedFile = textFile(contents, lastSavedContents, null, 0)
+        updatedFile = textFile(contents, lastSavedContents, null, 0)
+      } else {
+        updatedFile = updateFileContents(code, existing, manualSave)
+      }
+
+      const updateAction = updateFile(action.filePath, updatedFile, true)
+      return UPDATE_FNS.UPDATE_FILE(updateAction, editor, dispatch, builtInDependencies)
     } else {
-      updatedFile = updateFileContents(code, existing, manualSave)
+      return editor
     }
-
-    const updateAction = updateFile(action.filePath, updatedFile, true)
-    return UPDATE_FNS.UPDATE_FILE(updateAction, editor, dispatch, builtInDependencies)
   },
   CLEAR_PARSE_OR_PRINT_IN_FLIGHT: (
     action: ClearParseOrPrintInFlight,
@@ -3751,7 +3796,7 @@ export const UPDATE_FNS = {
     return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(openCodeEditorFile(newFileKey, false), updatedEditor)
   },
   DELETE_FILE: (
-    action: DeleteFile | DeleteFileFromVSCode,
+    action: DeleteFile | DeleteFileFromVSCode | DeleteFileFromCollaboration,
     editor: EditorModel,
     derived: DerivedState,
     userState: UserState,
@@ -3904,12 +3949,13 @@ export const UPDATE_FNS = {
     } else {
       return {
         ...editor,
-        // TODO move the reconstructMetadata call here, and remove _currentAllElementProps_KILLME
+        // TODO move the reconstructMetadata call here, and remove currentAllElementProps
         domMetadata: finalDomMetadata,
         spyMetadata: finalSpyMetadata,
-        _currentAllElementProps_KILLME: {
+        currentAllElementProps: {
           ...spyCollector.current.spyValues.allElementProps,
         },
+        currentVariablesInScope: { ...spyCollector.current.spyValues.variablesInScope },
       }
     }
   },
@@ -4505,6 +4551,7 @@ export const UPDATE_FNS = {
         action.focusedElementPath,
         editor.jsxMetadata,
         derived.autoFocusedPaths,
+        derived.filePathMappings,
       )
     ) {
       shouldApplyChange = true
@@ -4633,7 +4680,11 @@ export const UPDATE_FNS = {
       action.target,
       editor.jsxMetadata,
     )
-    if (targetElementCoords != null && isFiniteRectangle(targetElementCoords)) {
+    if (
+      targetElementCoords != null &&
+      isFiniteRectangle(targetElementCoords) &&
+      !isFollowMode(editor.mode)
+    ) {
       return UPDATE_FNS.SCROLL_TO_POSITION(
         scrollToPosition(targetElementCoords, action.behaviour),
         editor,
@@ -5298,10 +5349,182 @@ export const UPDATE_FNS = {
           element.comments,
         )
       },
-      (parseSuccess) => parseSuccess,
+      (success) => success,
     )
 
     return updatedEditor
+  },
+  UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION_UPDATE: (
+    action: UpdateTopLevelElementsFromCollaborationUpdate,
+    editor: EditorModel,
+  ): EditorModel => {
+    let updatedEditor: EditorModel = editor
+    if (fileExists(editor.projectContents, action.fullPath)) {
+      updatedEditor = modifyParseSuccessAtPath(
+        action.fullPath,
+        editor,
+        (parsed) => {
+          const newTopLevelElementsDeepEquals = arrayDeepEquality(TopLevelElementKeepDeepEquality)(
+            parsed.topLevelElements,
+            action.topLevelElements,
+          )
+
+          if (newTopLevelElementsDeepEquals.areEqual) {
+            return parsed
+          } else {
+            return {
+              ...parsed,
+              topLevelElements: newTopLevelElementsDeepEquals.value,
+            }
+          }
+        },
+        false,
+      )
+    } else {
+      const newParseSuccess = parseSuccess({}, action.topLevelElements, {}, null, null, [], {})
+      const newFile = textFile(
+        textFileContents('', newParseSuccess, RevisionsState.ParsedAhead),
+        null,
+        null,
+        1,
+      )
+      const updatedProjectContents = addFileToProjectContents(
+        editor.projectContents,
+        action.fullPath,
+        newFile,
+      )
+      updatedEditor = {
+        ...editor,
+        projectContents: updatedProjectContents,
+      }
+    }
+
+    return {
+      ...updatedEditor,
+      filesModifiedByAnotherUser: updatedEditor.filesModifiedByAnotherUser.concat(action.fullPath),
+    }
+  },
+  UPDATE_EXPORTS_DETAIL_FROM_COLLABORATION_UPDATE: (
+    action: UpdateExportsDetailFromCollaborationUpdate,
+    editor: EditorModel,
+  ): EditorModel => {
+    let updatedEditor: EditorModel = editor
+    if (fileExists(editor.projectContents, action.fullPath)) {
+      updatedEditor = modifyParseSuccessAtPath(
+        action.fullPath,
+        editor,
+        (parsed) => {
+          const newExportsDetailsDeepEquals = arrayDeepEquality(ExportDetailKeepDeepEquality)(
+            parsed.exportsDetail,
+            action.exportsDetail,
+          )
+
+          if (newExportsDetailsDeepEquals.areEqual) {
+            return parsed
+          } else {
+            return {
+              ...parsed,
+              exportsDetail: newExportsDetailsDeepEquals.value,
+            }
+          }
+        },
+        false,
+      )
+    } else {
+      const newParseSuccess = parseSuccess({}, [], {}, null, null, action.exportsDetail, {})
+      const newFile = textFile(
+        textFileContents('', newParseSuccess, RevisionsState.ParsedAhead),
+        null,
+        null,
+        1,
+      )
+      const updatedProjectContents = addFileToProjectContents(
+        editor.projectContents,
+        action.fullPath,
+        newFile,
+      )
+      updatedEditor = {
+        ...editor,
+        projectContents: updatedProjectContents,
+      }
+    }
+
+    return {
+      ...updatedEditor,
+      filesModifiedByAnotherUser: updatedEditor.filesModifiedByAnotherUser.concat(action.fullPath),
+    }
+  },
+  UPDATE_IMPORTS_FROM_COLLABORATION_UPDATE: (
+    action: UpdateImportsFromCollaborationUpdate,
+    editor: EditorModel,
+  ): EditorModel => {
+    let updatedEditor: EditorModel = editor
+    if (fileExists(editor.projectContents, action.fullPath)) {
+      updatedEditor = modifyParseSuccessAtPath(
+        action.fullPath,
+        editor,
+        (parsed) => {
+          const newImportsDeepEquals = objectDeepEquality(ImportDetailsKeepDeepEquality)(
+            parsed.imports,
+            action.imports,
+          )
+
+          if (newImportsDeepEquals.areEqual) {
+            return parsed
+          } else {
+            return {
+              ...parsed,
+              imports: newImportsDeepEquals.value,
+            }
+          }
+        },
+        false,
+      )
+    } else {
+      const newParseSuccess = parseSuccess(action.imports, [], {}, null, null, [], {})
+      const newFile = textFile(
+        textFileContents('', newParseSuccess, RevisionsState.ParsedAhead),
+        null,
+        null,
+        1,
+      )
+      const updatedProjectContents = addFileToProjectContents(
+        editor.projectContents,
+        action.fullPath,
+        newFile,
+      )
+      updatedEditor = {
+        ...editor,
+        projectContents: updatedProjectContents,
+      }
+    }
+
+    return {
+      ...updatedEditor,
+      filesModifiedByAnotherUser: updatedEditor.filesModifiedByAnotherUser.concat(action.fullPath),
+    }
+  },
+  UPDATE_CODE_FROM_COLLABORATION_UPDATE: (
+    action: UpdateCodeFromCollaborationUpdate,
+    editor: EditorModel,
+    dispatch: EditorDispatch,
+    builtInDependencies: BuiltInDependencies,
+  ): EditorModel => {
+    const existing = getProjectFileByFilePath(editor.projectContents, action.fullPath)
+
+    let updatedFile: ProjectFile
+    if (existing == null || !isTextFile(existing)) {
+      const contents = textFileContents(action.code, unparsed, RevisionsState.CodeAhead)
+      updatedFile = textFile(contents, null, null, 0)
+    } else {
+      updatedFile = updateFileContents(action.code, existing, false)
+    }
+
+    const updateAction = updateFile(action.fullPath, updatedFile, true)
+    return UPDATE_FNS.UPDATE_FILE(updateAction, editor, dispatch, builtInDependencies)
+  },
+  SET_SHOW_RESOLVED_THREADS: (action: SetShowResolvedThreads, editor: EditorModel): EditorModel => {
+    return { ...editor, showResolvedThreads: action.showResolvedThreads }
   },
 }
 

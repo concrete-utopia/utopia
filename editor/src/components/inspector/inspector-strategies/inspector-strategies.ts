@@ -13,7 +13,10 @@ import type { CSSNumber, FlexDirection } from '../common/css-utils'
 import { removeFlexConvertToAbsolute } from './remove-flex-convert-to-absolute-strategy'
 import type { InspectorStrategy } from './inspector-strategy'
 import type { WhenToRun } from '../../../components/canvas/commands/commands'
-import { hugContentsBasicStrategy } from './hug-contents-basic-strategy'
+import {
+  hugContentsAbsoluteStrategy,
+  hugContentsBasicStrategy,
+} from './hug-contents-basic-strategy'
 import {
   fillContainerStrategyFlexParent,
   fillContainerStrategyFlow,
@@ -202,6 +205,15 @@ export const setPropHugStrategies = (
   pathTrees: ElementPathTrees,
   axis: Axis,
 ): Array<InspectorStrategy> => [hugContentsBasicStrategy(metadata, elementPaths, pathTrees, axis)]
+
+export const setPropHugAbsoluteStrategies = (
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: ElementPath[],
+  pathTrees: ElementPathTrees,
+  allElementProps: AllElementProps,
+): Array<InspectorStrategy> => [
+  hugContentsAbsoluteStrategy(metadata, elementPaths, pathTrees, allElementProps),
+]
 
 export const setSpacingModeSpaceBetweenStrategies = (
   metadata: ElementInstanceMetadataMap,

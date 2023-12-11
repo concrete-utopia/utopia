@@ -29,6 +29,7 @@ import type {
   ProjectModel,
   ProjectWithFileChanges,
   LocalProject,
+  ProjectOwnership,
 } from './generic/persistence-types'
 import { fileWithFileName, projectWithFileChanges } from './generic/persistence-types'
 import type { PersistentModel } from '../store/editor-state'
@@ -66,13 +67,18 @@ async function getNewProjectId(): Promise<string> {
   return createNewProjectID()
 }
 
-export async function checkProjectOwned(projectId: string): Promise<boolean> {
+export async function checkProjectOwned(projectId: string): Promise<ProjectOwnership> {
   const existsLocally = await projectIsStoredLocally(projectId)
   if (existsLocally) {
-    return true
+    return {
+      ownerId: null,
+      isOwner: true,
+    }
   } else {
     const ownerState = await checkProjectOwnership(projectId)
-    return ownerState === 'unowned' || ownerState.isOwner
+    return ownerState === 'unowned'
+      ? { ownerId: null, isOwner: true }
+      : { ownerId: ownerState.ownerId, isOwner: ownerState.isOwner }
   }
 }
 

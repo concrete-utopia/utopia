@@ -35,6 +35,7 @@ import type {
   Substates,
   ThemeSubstate,
   UserStateSubstate,
+  VariablesInScopeSubstate,
 } from './store-hook-substore-types'
 import {
   canvasOffsetSubstateKeys,
@@ -47,6 +48,7 @@ import {
   restOfEditorStateKeys,
   restOfStoreKeys,
   selectedViewsSubstateKeys,
+  variablesInScopeSubstateKeys,
 } from './store-hook-substore-types'
 
 // This is how to officially type the store with a subscribeWithSelector middleware as of Zustand 4.1.5 https://github.com/pmndrs/zustand#using-subscribe-with-selector
@@ -111,7 +113,7 @@ export type StateSelector<T, U> = (state: T) => U
  * The return value of the function is the return value of useEditorState itself.
  * It is a good practice to use object destructure to consume the return value.
  */
-export const useEditorState = <K extends StoreKey, S extends typeof Substores[K], U>(
+export const useEditorState = <K extends StoreKey, S extends (typeof Substores)[K], U>(
   storeKey_: S,
   selector: StateSelector<Parameters<S>[0], U>,
   selectorName: string,
@@ -128,7 +130,7 @@ export const useEditorState = <K extends StoreKey, S extends typeof Substores[K]
   return context.stores[storeKey](wrappedSelector, equalityFn as EqualityChecker<U>)
 }
 
-export const useSelectorWithCallback = <K extends StoreKey, S extends typeof Substores[K], U>(
+export const useSelectorWithCallback = <K extends StoreKey, S extends (typeof Substores)[K], U>(
   storeKey_: S,
   selector: StateSelector<Parameters<S>[0], U>,
   callback: (newValue: U) => void,
@@ -305,6 +307,9 @@ export const Substores = {
   },
   projectServerState: (a: ProjectServerStateSubstate, b: ProjectServerStateSubstate) => {
     return ProjectServerStateKeepDeepEquality(a.projectServerState, b.projectServerState).areEqual
+  },
+  variablesInScope: (a: VariablesInScopeSubstate, b: VariablesInScopeSubstate) => {
+    return keysEquality(variablesInScopeSubstateKeys, a.editor, b.editor)
   },
 } as const
 

@@ -10,7 +10,10 @@ import {
   strategyApplicationResult,
 } from '../../canvas-strategies/canvas-strategy-types'
 import { CanvasControlsContainerID } from '../new-canvas-controls'
-import type { ApplicableStrategy } from '../../canvas-strategies/canvas-strategies'
+import type {
+  ApplicableStrategy,
+  MetaCanvasStrategy,
+} from '../../canvas-strategies/canvas-strategies'
 import { applicableStrategy } from '../../canvas-strategies/canvas-strategies'
 import { cmdModifier, emptyModifiers, Modifiers, shiftModifier } from '../../../../utils/modifiers'
 import {
@@ -63,7 +66,9 @@ const UnfitStrategy: CanvasStrategy = {
 }
 
 // Deliberately not in sorted order
-const allStrategies = [() => [AverageStrategy, BestStrategy, UnfitStrategy, WorstStrategy]]
+const allStrategies: MetaCanvasStrategy[] = [
+  () => [AverageStrategy, BestStrategy, UnfitStrategy, WorstStrategy],
+]
 
 async function renderBasicModel(): Promise<EditorRenderResult> {
   const renderResult = await renderTestEditorWithCode(
@@ -76,7 +81,7 @@ async function renderBasicModel(): Promise<EditorRenderResult> {
       </div>
     `),
     'await-first-dom-report',
-    allStrategies,
+    { strategiesToUse: allStrategies },
   )
   await renderResult.getDispatchFollowUpActionsFinished()
 

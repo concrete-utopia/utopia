@@ -254,6 +254,7 @@ function convertToAbsoluteAndMoveStrategyFactory(setHuggingParentToFixed: SetHug
             canvasState,
             interactionSession,
             getConversionAndMoveCommands,
+            'move',
           )
 
           const strategyIndicatorCommand = wildcardPatch('mid-interaction', {

@@ -6,8 +6,10 @@ import {
   transformJSXComponentAtPath,
 } from '../../../core/model/element-template-utils'
 import {
+  type FilePathMappings,
   applyToAllUIJSFiles,
   applyUtopiaJSXComponentsChanges,
+  getFilePathMappings,
   getHighlightBoundsForProject,
   getHighlightBoundsFromParseResult,
   getUtopiaJSXComponentsFromSuccess,
@@ -48,9 +50,11 @@ import { isFiniteRectangle, size } from '../../../core/shared/math-utils'
 import type { PackageStatus, PackageStatusMap } from '../../../core/shared/npm-dependency-types'
 import type {
   ElementPath,
+  ExportDetail,
   HighlightBoundsForUids,
   HighlightBoundsWithFile,
   HighlightBoundsWithFileForUids,
+  ImportDetails,
   Imports,
   NodeModules,
   ParseSuccess,
@@ -174,6 +178,10 @@ import type { RemixDerivedData, RemixDerivedDataFactory } from './remix-derived-
 import type { ProjectServerState } from './project-server-state'
 import type { ReparentTargetForPaste } from '../../canvas/canvas-strategies/strategies/reparent-utils'
 import { GridMenuWidth } from '../../canvas/stored-layout'
+import type { VariablesInScope } from '../../canvas/ui-jsx-canvas'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
+import type { ActiveFrame } from '../../canvas/commands/set-active-frames-command'
+import { Y } from '../../../core/shared/yjs'
 
 const ObjectPathImmutable: any = OPI
 
@@ -194,6 +202,8 @@ export enum RightMenuTab {
   Insert = 'insert',
   Inspector = 'inspector',
   Settings = 'settings',
+  Comments = 'comments',
+  Variables = 'variables',
 }
 
 // TODO: this should just contain an NpmDependency and a status
@@ -388,6 +398,49 @@ export const defaultUserState: UserState = {
   },
 }
 
+export type CollabTextFileTopLevelElements = Y.Array<TopLevelElement>
+
+export type CollabTextFileExportsDetail = Y.Array<ExportDetail>
+
+export type CollabTextFileImports = Y.Map<ImportDetails>
+
+export type CollabTextFile = Y.Map<
+  | 'TEXT_FILE'
+  | CollabTextFileTopLevelElements
+  | CollabTextFileExportsDetail
+  | CollabTextFileImports
+  | string
+>
+
+export type CollabFile = CollabTextFile //| CollabImageFileUpdate | CollabAssetFileUpdate | CollabDirectoryFileUpdate
+
+export interface CollaborativeEditingSupportSession {
+  mergeDoc: Y.Doc
+  projectContents: Y.Map<CollabFile>
+}
+
+export interface CollaborativeEditingSupport {
+  session: CollaborativeEditingSupportSession | null
+}
+
+export function emptyCollaborativeEditingSupportSession(): CollaborativeEditingSupportSession {
+  const doc = new Y.Doc()
+  return {
+    mergeDoc: doc,
+    projectContents: doc.getMap('projectContents'),
+  }
+}
+
+export function emptyCollaborativeEditingSupport(): CollaborativeEditingSupport {
+  let session: CollaborativeEditingSupportSession | null = null
+  if (isFeatureEnabled('Collaboration')) {
+    session = emptyCollaborativeEditingSupportSession()
+  }
+  return {
+    session: session,
+  }
+}
+
 export type EditorStoreShared = {
   postActionInteractionSession: PostActionMenuSession | null
   strategyState: StrategyState
@@ -398,6 +451,7 @@ export type EditorStoreShared = {
   builtInDependencies: BuiltInDependencies
   saveCountThisSession: number
   projectServerState: ProjectServerState
+  collaborativeEditingSupport: CollaborativeEditingSupport
 }
 
 export type EditorStoreFull = EditorStoreShared & {
@@ -628,13 +682,13 @@ export function floatingInsertMenuStateInsert(
   }
 }
 
-export interface FloatingInsertMenuStateConvert {
-  insertMenuMode: 'convert'
+export interface FloatingInsertMenuStateSwap {
+  insertMenuMode: 'swap'
 }
 
-export function floatingInsertMenuStateConvert(): FloatingInsertMenuStateConvert {
+export function floatingInsertMenuStateSwap(): FloatingInsertMenuStateSwap {
   return {
-    insertMenuMode: 'convert',
+    insertMenuMode: 'swap',
   }
 }
 
@@ -651,7 +705,7 @@ export function floatingInsertMenuStateWrap(): FloatingInsertMenuStateWrap {
 export type FloatingInsertMenuState =
   | FloatingInsertMenuStateClosed
   | FloatingInsertMenuStateInsert
-  | FloatingInsertMenuStateConvert
+  | FloatingInsertMenuStateSwap
   | FloatingInsertMenuStateWrap
 
 export interface ResizeOptions {
@@ -1417,7 +1471,9 @@ export interface EditorState {
   indexedDBFailed: boolean
   forceParseFiles: Array<string>
   allElementProps: AllElementProps // the final, resolved, static props value for each element. // This is the counterpart of jsxMetadata. we only update allElementProps when we update jsxMetadata
-  _currentAllElementProps_KILLME: AllElementProps // This is the counterpart of domMetadata and spyMetadata. we update _currentAllElementProps_KILLME every time we update domMetadata/spyMetadata
+  currentAllElementProps: AllElementProps // This is the counterpart of domMetadata and spyMetadata. we update currentAllElementProps every time we update domMetadata/spyMetadata
+  variablesInScope: VariablesInScope // updated every time we update jsxMetadata, along the same lines as `allElementProps` and `currentAllElementProps`
+  currentVariablesInScope: VariablesInScope // updated every time we update domMetadata/spyMetadata
   githubSettings: ProjectGithubSettings
   imageDragSessionState: ImageDragSessionState
   githubOperations: Array<GithubOperation>
@@ -1425,6 +1481,9 @@ export interface EditorState {
   refreshingDependencies: boolean
   colorSwatches: Array<ColorSwatch>
   internalClipboard: InternalClipboard
+  filesModifiedByAnotherUser: Array<string>
+  activeFrames: ActiveFrame[]
+  showResolvedThreads: boolean
 }
 
 export function editorState(
@@ -1494,7 +1553,9 @@ export function editorState(
   indexedDBFailed: boolean,
   forceParseFiles: Array<string>,
   allElementProps: AllElementProps,
-  _currentAllElementProps_KILLME: AllElementProps,
+  currentAllElementProps: AllElementProps,
+  variablesInScope: VariablesInScope,
+  currentVariablesInScope: VariablesInScope,
   githubSettings: ProjectGithubSettings,
   imageDragSessionState: ImageDragSessionState,
   githubOperations: Array<GithubOperation>,
@@ -1503,6 +1564,9 @@ export function editorState(
   refreshingDependencies: boolean,
   colorSwatches: Array<ColorSwatch>,
   internalClipboardData: InternalClipboard,
+  filesModifiedByAnotherUser: Array<string>,
+  activeFrames: ActiveFrame[],
+  showResolvedThreads: boolean,
 ): EditorState {
   return {
     id: id,
@@ -1572,7 +1636,9 @@ export function editorState(
     indexedDBFailed: indexedDBFailed,
     forceParseFiles: forceParseFiles,
     allElementProps: allElementProps,
-    _currentAllElementProps_KILLME: _currentAllElementProps_KILLME,
+    currentAllElementProps: currentAllElementProps,
+    variablesInScope,
+    currentVariablesInScope: currentVariablesInScope,
     githubSettings: githubSettings,
     imageDragSessionState: imageDragSessionState,
     githubOperations: githubOperations,
@@ -1580,6 +1646,9 @@ export function editorState(
     refreshingDependencies: refreshingDependencies,
     colorSwatches: colorSwatches,
     internalClipboard: internalClipboardData,
+    filesModifiedByAnotherUser: filesModifiedByAnotherUser,
+    activeFrames: activeFrames,
+    showResolvedThreads: showResolvedThreads,
   }
 }
 
@@ -2179,6 +2248,7 @@ export interface DerivedState {
   projectContentsChecksums: FileChecksumsWithFile
   branchOriginContentsChecksums: FileChecksumsWithFile | null
   remixData: RemixDerivedData | null
+  filePathMappings: FilePathMappings
 }
 
 function emptyDerivedState(editor: EditorState): DerivedState {
@@ -2191,6 +2261,7 @@ function emptyDerivedState(editor: EditorState): DerivedState {
     projectContentsChecksums: {},
     branchOriginContentsChecksums: {},
     remixData: null,
+    filePathMappings: [],
   }
 }
 
@@ -2438,7 +2509,9 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     indexedDBFailed: false,
     forceParseFiles: [],
     allElementProps: {},
-    _currentAllElementProps_KILLME: {},
+    currentAllElementProps: {},
+    variablesInScope: {},
+    currentVariablesInScope: {},
     githubSettings: emptyGithubSettings(),
     imageDragSessionState: notDragging(),
     githubOperations: [],
@@ -2450,6 +2523,9 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       styleClipboard: [],
       elements: [],
     },
+    filesModifiedByAnotherUser: [],
+    activeFrames: [],
+    showResolvedThreads: false,
   }
 }
 
@@ -2602,6 +2678,8 @@ export function deriveState(
     editor.codeResultCache.curriedResolveFn,
   )
 
+  const filePathMappings = getFilePathMappings(editor.projectContents)
+
   const derived: DerivedState = {
     navigatorTargets: navigatorTargets,
     visibleNavigatorTargets: visibleNavigatorTargets,
@@ -2620,6 +2698,7 @@ export function deriveState(
             oldDerivedState?.branchOriginContentsChecksums ?? {},
           ),
     remixData: remixDerivedData,
+    filePathMappings: filePathMappings,
   }
 
   const sanitizedDerivedState = DerivedStateKeepDeepEquality()(derivedState, derived).value
@@ -2807,7 +2886,9 @@ export function editorModelFromPersistentModel(
     indexedDBFailed: false,
     forceParseFiles: [],
     allElementProps: {},
-    _currentAllElementProps_KILLME: {},
+    currentAllElementProps: {},
+    variablesInScope: {},
+    currentVariablesInScope: {},
     githubSettings: persistentModel.githubSettings,
     imageDragSessionState: notDragging(),
     githubOperations: [],
@@ -2819,6 +2900,9 @@ export function editorModelFromPersistentModel(
       styleClipboard: [],
       elements: [],
     },
+    filesModifiedByAnotherUser: [],
+    activeFrames: [],
+    showResolvedThreads: false,
   }
   return editor
 }
@@ -3231,6 +3315,7 @@ export function modifyParseSuccessAtPath(
   filePath: string,
   editor: EditorState,
   modifyParseSuccess: (parseSuccess: ParseSuccess) => ParseSuccess,
+  throwForErrors: boolean = true,
 ): EditorState {
   const projectFile = getProjectFileByFilePath(editor.projectContents, filePath)
   if (projectFile != null && isTextFile(projectFile)) {
@@ -3256,10 +3341,18 @@ export function modifyParseSuccessAtPath(
         }
       }
     } else {
-      throw new Error(`File ${filePath} is not currently parsed.`)
+      if (throwForErrors) {
+        throw new Error(`File ${filePath} is not currently parsed.`)
+      } else {
+        return editor
+      }
     }
   } else {
-    throw new Error(`No text file found at ${filePath}`)
+    if (throwForErrors) {
+      throw new Error(`No text file found at ${filePath}`)
+    } else {
+      return editor
+    }
   }
 }
 

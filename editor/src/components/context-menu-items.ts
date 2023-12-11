@@ -1,4 +1,5 @@
 import { MetadataUtils } from '../core/model/element-metadata-utils'
+import type { FilePathMappings } from '../core/model/project-file-utils'
 import type { Either } from '../core/shared/either'
 import { isRight } from '../core/shared/either'
 import * as EP from '../core/shared/element-path'
@@ -28,11 +29,12 @@ import {
   duplicateSelected,
   toggleHidden,
 } from './editor/actions/action-creators'
-import type {
-  AllElementProps,
-  InternalClipboard,
-  NavigatorEntry,
-  PasteHerePostActionMenuData,
+import {
+  floatingInsertMenuStateSwap,
+  type AllElementProps,
+  type InternalClipboard,
+  type NavigatorEntry,
+  type PasteHerePostActionMenuData,
 } from './editor/store/editor-state'
 import type { ElementContextMenuInstance } from './element-context-menu'
 import {
@@ -62,6 +64,7 @@ export interface CanvasData {
   selectedViews: Array<ElementPath>
   jsxMetadata: ElementInstanceMetadataMap
   projectContents: ProjectContentTreeRoot
+  filePathMappings: FilePathMappings
   resolve: (importOrigin: string, toImport: string) => Either<string, string>
   hiddenInstances: ElementPath[]
   scale: number
@@ -254,6 +257,7 @@ export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
         view,
         data.jsxMetadata,
         data.autoFocusedPaths,
+        data.filePathMappings,
       )
     })
   },
@@ -345,8 +349,8 @@ export const insert: ContextMenuItem<CanvasData> = {
 }
 
 export const convert: ContextMenuItem<CanvasData> = {
-  name: 'Convert Element To…',
-  shortcut: 'C',
+  name: 'Swap Element With…',
+  shortcut: 'S',
   enabled: (data) => {
     return data.selectedViews.every((path) => {
       const element = MetadataUtils.findElementByElementPath(data.jsxMetadata, path)
@@ -356,7 +360,7 @@ export const convert: ContextMenuItem<CanvasData> = {
   action: (data, dispatch) => {
     requireDispatch(dispatch)([
       setFocus('canvas'),
-      EditorActions.openFloatingInsertMenu({ insertMenuMode: 'convert' }),
+      EditorActions.openFloatingInsertMenu(floatingInsertMenuStateSwap()),
     ])
   },
 }

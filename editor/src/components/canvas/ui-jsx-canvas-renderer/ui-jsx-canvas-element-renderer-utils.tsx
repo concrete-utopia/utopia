@@ -39,7 +39,11 @@ import type {
 import { assertNever } from '../../../core/shared/utils'
 import { Utils } from '../../../uuiui-deps'
 import type { UIFileBase64Blobs } from '../../editor/store/editor-state'
-import type { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
+import type {
+  DomWalkerInvalidatePathsCtxData,
+  UiJsxCanvasContextData,
+  VariableData,
+} from '../ui-jsx-canvas'
 import { SceneComponent } from './scene-component'
 import * as PP from '../../../core/shared/property-path'
 import * as EP from '../../../core/shared/element-path'
@@ -136,6 +140,7 @@ export function createLookupRender(
       code,
       highlightBounds,
       editedText,
+      {},
     )
   }
 }
@@ -181,6 +186,7 @@ export function renderCoreElement(
   code: string,
   highlightBounds: HighlightBoundsForUids | null,
   editedText: ElementPath | null,
+  variablesInScope: VariableData,
 ): React.ReactChild {
   if (codeError != null) {
     throw codeError
@@ -261,6 +267,7 @@ export function renderCoreElement(
         code,
         highlightBounds,
         editedText,
+        variablesInScope,
       )
     }
     case 'JSX_MAP_EXPRESSION':
@@ -286,11 +293,48 @@ export function renderCoreElement(
       }
 
       if (elementIsTextEdited) {
+        const runJSExpressionLazy = () => {
+          const innerRender = createLookupRender(
+            elementPath,
+            rootScope,
+            parentComponentInputProps,
+            requireResult,
+            hiddenInstances,
+            displayNoneInstances,
+            fileBlobs,
+            validPaths,
+            reactChildren,
+            metadataContext,
+            updateInvalidatedPaths,
+            jsxFactoryFunctionName,
+            shouldIncludeCanvasRootInTheSpy,
+            filePath,
+            imports,
+            code,
+            highlightBounds,
+            editedText,
+            mapCountOverride,
+          )
+
+          const blockScope = {
+            ...inScope,
+            [JSX_CANVAS_LOOKUP_FUNCTION_NAME]: utopiaCanvasJSXLookup(
+              element.elementsWithin,
+              inScope,
+              innerRender,
+            ),
+          }
+          return runJSExpression(filePath, requireResult, element, blockScope)
+        }
+
+        const originalTextContent = isFeatureEnabled('Steganography') ? runJSExpressionLazy() : null
+
         const textContent = trimJoinUnescapeTextFromJSXElements([element])
         const textEditorProps: TextEditorProps = {
           elementPath: elementPath,
           filePath: filePath,
           text: textContent,
+          originalText: originalTextContent,
           component: React.Fragment,
           passthroughProps: {},
           textProp: 'itself',
@@ -309,6 +353,7 @@ export function renderCoreElement(
           shouldIncludeCanvasRootInTheSpy,
           imports,
           filePath,
+          variablesInScope,
         )
       }
       const innerRender = createLookupRender(
@@ -369,6 +414,7 @@ export function renderCoreElement(
         code,
         highlightBounds,
         editedText,
+        variablesInScope,
       )
     }
     case 'JSX_TEXT_BLOCK': {
@@ -448,6 +494,7 @@ export function renderCoreElement(
           elementPath: elementPath,
           filePath: filePath,
           text: textContent,
+          originalText: null,
           component: React.Fragment,
           passthroughProps: {},
           textProp: textProp,
@@ -466,6 +513,7 @@ export function renderCoreElement(
           shouldIncludeCanvasRootInTheSpy,
           imports,
           filePath,
+          variablesInScope,
         )
       }
 
@@ -492,6 +540,7 @@ export function renderCoreElement(
         code,
         highlightBounds,
         editedText,
+        variablesInScope,
       )
     }
     case 'ATTRIBUTE_VALUE':
@@ -506,6 +555,7 @@ export function renderCoreElement(
           elementPath: elementPath,
           filePath: filePath,
           text: textContent,
+          originalText: null,
           component: React.Fragment,
           passthroughProps: {},
           textProp: 'itself',
@@ -524,6 +574,7 @@ export function renderCoreElement(
           shouldIncludeCanvasRootInTheSpy,
           imports,
           filePath,
+          variablesInScope,
         )
       }
 
@@ -675,6 +726,7 @@ function renderJSXElement(
   code: string,
   highlightBounds: HighlightBoundsForUids | null,
   editedText: ElementPath | null,
+  variablesInScope: VariableData,
 ): React.ReactElement {
   const createChildrenElement = (child: JSXElementChild): React.ReactChild => {
     const childPath = optionalMap((path) => EP.appendToPath(path, getUtopiaID(child)), elementPath)
@@ -701,6 +753,7 @@ function renderJSXElement(
       code,
       highlightBounds,
       editedText,
+      variablesInScope,
     )
   }
 
@@ -790,11 +843,49 @@ function renderJSXElement(
     validPaths.has(EP.toString(EP.makeLastPartOfPathStatic(elementPath)))
   ) {
     if (elementIsTextEdited) {
+      const runJSExpressionLazy = () => {
+        const innerRender = createLookupRender(
+          elementPath,
+          rootScope,
+          parentComponentInputProps,
+          requireResult,
+          hiddenInstances,
+          displayNoneInstances,
+          fileBlobs,
+          validPaths,
+          [],
+          metadataContext,
+          updateInvalidatedPaths,
+          jsxFactoryFunctionName,
+          shouldIncludeCanvasRootInTheSpy,
+          filePath,
+          imports,
+          code,
+          highlightBounds,
+          editedText,
+          null,
+        )
+        const blockScope = {
+          ...inScope,
+          [JSX_CANVAS_LOOKUP_FUNCTION_NAME]: utopiaCanvasJSXLookup({}, inScope, innerRender),
+        }
+
+        const expressionToEvaluate =
+          childrenWithNewTextBlock.length > 0 && isJSExpression(childrenWithNewTextBlock[0])
+            ? childrenWithNewTextBlock[0]
+            : jsExpressionValue(null, emptyComments) // placeholder
+
+        return runJSExpression(filePath, requireResult, expressionToEvaluate, blockScope)
+      }
+
+      const originalTextContent = isFeatureEnabled('Steganography') ? runJSExpressionLazy() : null
+
       const textContent = trimJoinUnescapeTextFromJSXElements(childrenWithNewTextBlock)
       const textEditorProps: TextEditorProps = {
         elementPath: elementPath,
         filePath: filePath,
         text: textContent,
+        originalText: originalTextContent,
         component: FinalElement,
         passthroughProps: finalProps,
         textProp: 'child',
@@ -813,6 +904,7 @@ function renderJSXElement(
         shouldIncludeCanvasRootInTheSpy,
         imports,
         filePath,
+        variablesInScope,
       )
     }
     return buildSpyWrappedElement(
@@ -828,6 +920,7 @@ function renderJSXElement(
       shouldIncludeCanvasRootInTheSpy,
       imports,
       filePath,
+      variablesInScope,
     )
   } else {
     return renderComponentUsingJsxFactoryFunction(

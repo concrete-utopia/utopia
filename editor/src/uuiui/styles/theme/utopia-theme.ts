@@ -57,12 +57,27 @@ export const UtopiaTheme = {
   },
   panelStyles: {
     panelBorderRadius: 10,
-    shadows: {
-      // NB this uses black since shadows are always darker than the surrounding area, dark mode or not
-      medium: `rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.06) 0px 1px 2px 0px`,
-    },
   },
 } as const
+
+const shadowStyles = {
+  //scenes directly on the canvas
+  grounded: {
+    boxShadow: `0px 1px 2px 0px ${colorTheme.shadow90.value}, 0px 2px 4px -1px ${colorTheme.shadow50.value}`,
+  },
+  low: {
+    boxShadow: `0px 2px 4px -2px ${colorTheme.shadow80.value}, 0px 4px 8px -2px ${colorTheme.shadow45.value}`,
+  },
+  mid: {
+    boxShadow: `0px 3px 6px -2px ${colorTheme.shadow70.value}, 0px 4px 8px -2px ${colorTheme.shadow40.value}`,
+  },
+  high: {
+    boxShadow: `0px 4px 8px -2px ${colorTheme.shadow60.value}, 0px 6px 12px -2px ${colorTheme.shadow35.value}`,
+  },
+  highest: {
+    boxShadow: `0px 6px 12px -2px ${colorTheme.shadow50.value}, 0px 8px 16px -2px ${colorTheme.shadow30.value}`,
+  },
+}
 
 const flexRow: React.CSSProperties = {
   display: 'flex',
@@ -89,20 +104,9 @@ const flexCenter: React.CSSProperties = {
 const canvas = {
   live: {
     border: `1px solid ${colorTheme.canvasLiveBorder.value}`,
-    backgroundColor: colorTheme.canvasLiveBackground.value,
   },
   editing: {
     border: '1px solid transparent',
-    backgroundColor: colorTheme.canvasBackground.value,
-  },
-}
-
-const scene = {
-  live: {
-    boxShadow: `0px 0px 1px 0px ${colorTheme.neutralInvertedBackground20.value}`,
-  },
-  editing: {
-    boxShadow: `0px 0px 1px 0px ${colorTheme.neutralInvertedBackground30.value}`,
   },
 }
 
@@ -155,18 +159,9 @@ const fontStyles = {
   },
 }
 
-const shadowStyles = {
-  small: {
-    boxShadow: `0px 1p 3px 0px rgba(0,0,0,.2)`,
-  },
-  medium: {
-    boxShadow: '0px 2px 4px 1px rgba(0,0,0,0.2)',
-  },
-}
-
 const popup: React.CSSProperties = {
   background: colorTheme.neutralBackground.value,
-  boxShadow: `0px 0px 0px .5px ${colorTheme.border3.value} , 0px 5px 8px 0px ${colorTheme.border3.value}`,
+  boxShadow: shadowStyles.high.boxShadow,
   paddingTop: 4,
   paddingBottom: 4,
   borderRadius: 4,
@@ -206,7 +201,6 @@ export const UtopiaStyles = {
   flexRow,
   flexColumn,
   flexCenter,
-  scene,
   canvas,
   fontStyles,
 } as const

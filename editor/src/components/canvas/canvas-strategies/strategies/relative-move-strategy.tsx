@@ -98,6 +98,7 @@ export function relativeMoveStrategy(
             getAdjustMoveCommands(filteredSelectedElements, canvasState, interactionSession, {
               ignoreLocalFrame: true,
             }),
+            'move',
           )
         } else {
           return emptyStrategyApplicationResult

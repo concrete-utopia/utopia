@@ -20,6 +20,7 @@ import {
   TabComponent,
   useColorTheme,
   UtopiaTheme,
+  UtopiaStyles,
 } from '../../uuiui'
 import CanvasActions from '../canvas/canvas-actions'
 import {
@@ -34,7 +35,6 @@ import { ConfirmOverwriteDialog } from '../filebrowser/confirm-overwrite-dialog'
 import { ConfirmRevertDialog } from '../filebrowser/confirm-revert-dialog'
 import { ConfirmRevertAllDialog } from '../filebrowser/confirm-revert-all-dialog'
 import { PreviewColumn } from '../preview/preview-pane'
-import TitleBar from '../titlebar/title-bar'
 import * as EditorActions from './actions/action-creators'
 import { FatalIndexedDBErrorComponent } from './fatal-indexeddb-error-component'
 import { editorIsTarget, handleKeyDown, handleKeyUp } from './global-shortcuts'
@@ -44,17 +44,34 @@ import {
   githubOperationLocksEditor,
   githubOperationPrettyName,
   LeftMenuTab,
+  RightMenuTab,
 } from './store/editor-state'
-import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
+import {
+  Substores,
+  useEditorState,
+  useRefEditorState,
+  useSelectorWithCallback,
+} from './store/store-hook'
 import { ConfirmDisconnectBranchDialog } from '../filebrowser/confirm-branch-disconnect'
-import { unless, when } from '../../utils/react-conditionals'
+import { when } from '../../utils/react-conditionals'
 import { LowPriorityStoreProvider } from './store/store-context-providers'
 import { useDispatch } from './store/dispatch-context'
 import type { EditorAction } from './action-types'
 import { EditorCommon } from './editor-component-common'
 import { notice } from '../common/notice'
-import { isFeatureEnabled } from '../../utils/feature-switches'
-import { ProjectServerStateUpdater } from './store/project-server-state'
+import {
+  ProjectServerStateUpdater,
+  isProjectViewer,
+  isProjectViewerFromState,
+} from './store/project-server-state'
+import { RoomProvider, initialPresence, useRoom, initialStorage } from '../../../liveblocks.config'
+import { generateUUID } from '../../utils/utils'
+import { isLiveblocksEnabled } from './liveblocks-utils'
+import type { Storage, Presence, RoomEvent, UserMeta } from '../../../liveblocks.config'
+import LiveblocksProvider from '@liveblocks/yjs'
+import { isRoomId, projectIdToRoomId } from '../../core/shared/multiplayer'
+import { useDisplayOwnershipWarning } from './project-owner-hooks'
+import { EditorModes } from './editor-modes'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -68,26 +85,8 @@ function pushProjectURLToBrowserHistory(projectId: string, projectName: string):
 
 export interface EditorProps {}
 
-function useDelayedValueHook(inputValue: boolean, delayMs: number): boolean {
-  const [returnValue, setReturnValue] = React.useState(inputValue)
-  React.useEffect(() => {
-    let timerID: any = undefined
-    if (inputValue) {
-      // we do not delay the toggling if the input value is true
-      setReturnValue(true)
-    } else {
-      timerID = setTimeout(() => {
-        setReturnValue(false)
-      }, delayMs)
-    }
-    return function cleanup() {
-      clearTimeout(timerID)
-    }
-  }, [inputValue, delayMs])
-  return returnValue
-}
-
 export const EditorComponentInner = React.memo((props: EditorProps) => {
+  const room = useRoom()
   const dispatch = useDispatch()
   const editorStoreRef = useRefEditorState((store) => store)
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
@@ -161,6 +160,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
       }
     }, 0)
   }, [mode.type, dispatch])
+  useDisplayOwnershipWarning()
 
   const onWindowKeyDown = React.useCallback(
     (event: KeyboardEvent) => {
@@ -220,6 +220,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
         ...handleKeyDown(
           event,
           editorStoreRef.current.editor,
+          editorStoreRef.current.projectServerState,
           metadataRef,
           navigatorTargetsRef,
           namesByKey,
@@ -303,6 +304,24 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     'EditorComponentInner previewVisible',
   )
 
+  const yDoc = useEditorState(
+    Substores.restOfStore,
+    (store) => store.collaborativeEditingSupport.session?.mergeDoc,
+    'EditorComponentInner yDoc',
+  )
+
+  React.useEffect(() => {
+    if (yDoc != null && isRoomId(room.id)) {
+      const yProvider = new LiveblocksProvider<Presence, Storage, UserMeta, RoomEvent>(room, yDoc)
+
+      return () => {
+        yProvider.destroy()
+      }
+    }
+
+    return () => {}
+  }, [yDoc, room])
+
   React.useEffect(() => {
     document.title = projectName + ' - Utopia'
   }, [projectName])
@@ -313,6 +332,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     }
     if (projectId != null) {
       pushProjectURLToBrowserHistory(projectId, projectName)
+      ;(window as any).utopiaProjectID = projectId
     }
   }, [projectName, projectId])
 
@@ -335,6 +355,20 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
       }
     },
     [dispatch],
+  )
+
+  useSelectorWithCallback(
+    Substores.projectServerState,
+    (store) => store.projectServerState.isMyProject,
+    (isMyProject) => {
+      if (isProjectViewer(isMyProject)) {
+        dispatch([
+          EditorActions.switchEditorMode(EditorModes.commentMode(null, 'not-dragging')),
+          EditorActions.setRightMenuTab(RightMenuTab.Comments),
+        ])
+      }
+    },
+    'EditorComponentInner viewer mode',
   )
 
   return (
@@ -428,7 +462,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
           </SimpleFlexRow>
         </SimpleFlexColumn>
         <ModalComponent />
-        <ToastRenderer />
         <LockedOverlay />
       </SimpleFlexRow>
       <EditorCommon
@@ -504,22 +537,33 @@ export function EditorComponent(props: EditorProps) {
 
   const dispatch = useDispatch()
 
+  const roomId = React.useMemo(
+    () => (projectId == null ? generateUUID() : projectIdToRoomId(projectId)),
+    [projectId],
+  )
   return indexedDBFailed ? (
     <FatalIndexedDBErrorComponent />
   ) : (
-    <DndProvider backend={HTML5Backend} context={window}>
-      <ProjectServerStateUpdater
-        projectId={projectId}
-        forkedFromProjectId={forkedFromProjectId}
-        dispatch={dispatch}
-      >
-        <EditorComponentInner {...props} />
-      </ProjectServerStateUpdater>
-    </DndProvider>
+    <RoomProvider
+      id={roomId}
+      autoConnect={isLiveblocksEnabled()}
+      initialPresence={initialPresence()}
+      initialStorage={initialStorage()}
+    >
+      <DndProvider backend={HTML5Backend} context={window}>
+        <ProjectServerStateUpdater
+          projectId={projectId}
+          forkedFromProjectId={forkedFromProjectId}
+          dispatch={dispatch}
+        >
+          <EditorComponentInner {...props} />
+        </ProjectServerStateUpdater>
+      </DndProvider>
+    </RoomProvider>
   )
 }
 
-const ToastRenderer = React.memo(() => {
+export const ToastRenderer = React.memo(() => {
   const toasts = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.toasts,
@@ -530,15 +574,8 @@ const ToastRenderer = React.memo(() => {
     <FlexColumn
       key={'toast-stack'}
       style={{
-        position: 'fixed',
-        bottom: 8,
-        justifyContent: 'center',
-        right: 260,
         zIndex: 100,
-        // padding required to not cut off the boxShadow on each toast
-        paddingTop: 50,
-        paddingLeft: 50,
-        paddingRight: 50,
+        gap: 10,
       }}
     >
       {toasts.map((toast, index) => (
@@ -640,7 +677,7 @@ const LockedOverlay = React.memo(() => {
             border: `1px solid ${colorTheme.neutralBorder.value}`,
             padding: 30,
             borderRadius: 2,
-            boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+            boxShadow: UtopiaStyles.shadowStyles.high.boxShadow,
           }}
         >
           {dialogContent}

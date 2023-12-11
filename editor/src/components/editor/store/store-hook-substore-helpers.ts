@@ -157,7 +157,9 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   indexedDBFailed: false,
   forceParseFiles: [],
   allElementProps: {},
-  _currentAllElementProps_KILLME: {},
+  currentAllElementProps: {},
+  variablesInScope: {},
+  currentVariablesInScope: {},
   githubSettings: null as any,
   imageDragSessionState: null as any,
   githubOperations: [],
@@ -169,4 +171,7 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
     styleClipboard: [],
     elements: [],
   },
+  filesModifiedByAnotherUser: [],
+  activeFrames: [],
+  showResolvedThreads: false,
 }

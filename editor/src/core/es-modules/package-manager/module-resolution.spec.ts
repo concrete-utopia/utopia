@@ -11,6 +11,40 @@ import { isResolveSuccess, resolveModule } from './module-resolution'
 import { createNodeModules } from './test-utils'
 
 const sampleProjectContents: ProjectContentTreeRoot = contentsToTree({
+  'jsconfig.json': textFile(
+    textFileContents(
+      `
+    {
+      "compilerOptions": {
+        "paths": {
+          "stars/**/*.stars": [
+            "a/**/*.js"
+          ],
+          "~/*": [
+            "app/*"
+          ]
+        }
+      }
+    }`,
+      unparsed,
+      RevisionsState.CodeAhead,
+    ),
+    null,
+    null,
+    0,
+  ),
+  '/a/some/nested/file.js': textFile(
+    textFileContents('export const Cake = "tasty"', unparsed, RevisionsState.CodeAhead),
+    null,
+    null,
+    0,
+  ),
+  '/app/card.js': textFile(
+    textFileContents('export const Card = "card"', unparsed, RevisionsState.CodeAhead),
+    null,
+    null,
+    0,
+  ),
   '/src/thing.js': textFile(
     textFileContents('export const Thing = 1', unparsed, RevisionsState.CodeAhead),
     null,
@@ -42,6 +76,13 @@ describe('ES Package Manager Module Resolution', () => {
       return null
     }
   }
+
+  it('resolves mapped file paths', () => {
+    expect(resolve('/src/startingFile.js', '~/card')).toEqual('/app/card.js')
+    expect(resolve('/src/startingFile.js', 'stars/some/nested/file.stars')).toEqual(
+      '/a/some/nested/file.js',
+    )
+  })
 
   function testNonRelativeResolve(toImport: string, expectedResult: string | null): void {
     it(`resolves non-relative path ${toImport}`, () => {

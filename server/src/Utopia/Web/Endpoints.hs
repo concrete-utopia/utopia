@@ -367,7 +367,9 @@ projectOwnerEndpoint cookie (ProjectIdWithSuffix projectID _) = checkForUser coo
   case (maybeUser, possibleProject) of
     (_, Nothing) -> notFound
     (Nothing, _) -> notAuthenticated
-    (Just sessionUser, Just project) -> return $ ProjectOwnerResponse $ view (field @"_id") sessionUser == view (field @"ownerId") project
+    (Just sessionUser, Just project) -> do
+        let projectOwnerId = view (field @"ownerId") project
+        return $ ProjectOwnerResponse ( view (field @"_id") sessionUser == projectOwnerId ) projectOwnerId
 
 projectChangedSince :: Text -> UTCTime -> ServerMonad (Maybe Bool)
 projectChangedSince projectID lastChangedDate = do
@@ -705,6 +707,17 @@ getGithubUserEndpoint :: Maybe Text -> ServerMonad GetGithubUserResponse
 getGithubUserEndpoint cookie = requireUser cookie $ \sessionUser -> do
   getGithubUserDetails (view (field @"_id") sessionUser)
 
+liveblocksAuthenticationEndpoint :: Maybe Text -> LiveblocksAuthenticationRequest -> ServerMonad LiveblocksAuthenticationResponse
+liveblocksAuthenticationEndpoint cookie authBody = requireUser cookie $ \sessionUser -> do
+  let roomID = view (field @"_room") authBody
+  token <- authLiveblocksUser (view (field @"_id") sessionUser) roomID
+  pure $ LiveblocksAuthenticationResponse { _token = token }
+
+liveblocksEnabledEndpoint :: ServerMonad Bool
+liveblocksEnabledEndpoint = do
+  liveblocksEnabled <- isLiveblocksEnabled
+  pure liveblocksEnabled
+
 {-|
   Compose together all the individual endpoints into a definition for the whole server.
 -}
@@ -734,6 +747,7 @@ protected authCookie = logoutPage authCookie
                   :<|> getGithubUsersRepositoriesEndpoint authCookie
                   :<|> saveGithubAssetEndpoint authCookie
                   :<|> getGithubUserEndpoint authCookie
+                  :<|> liveblocksAuthenticationEndpoint authCookie
 
 unprotected :: ServerT Unprotected ServerMonad
 unprotected = authenticate
@@ -750,6 +764,7 @@ unprotected = authenticate
          :<|> loadProjectFileEndpoint
          :<|> loadProjectFileEndpoint
          :<|> loadProjectThumbnailEndpoint
+         :<|> liveblocksEnabledEndpoint
          :<|> monitoringEndpoint
          :<|> clearBranchCacheEndpoint
          :<|> packagePackagerEndpoint

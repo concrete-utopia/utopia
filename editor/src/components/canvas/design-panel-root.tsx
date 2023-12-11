@@ -2,12 +2,10 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
-import type { ResizeDirection } from 're-resizable'
-import { Resizable } from 're-resizable'
 import React from 'react'
 import * as EditorActions from '../editor/actions/action-creators'
 import { RightMenuTab } from '../editor/store/editor-state'
-import { Substores, useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { InspectorEntryPoint } from '../inspector/inspector'
 import { CanvasWrapperComponent } from './canvas-wrapper-component'
 import { CodeEditorWrapper } from '../code-editor/code-editor-container'
@@ -15,35 +13,31 @@ import {
   SimpleFlexRow,
   UtopiaTheme,
   SimpleFlexColumn,
-  useColorTheme,
-  LargerIcons,
   FlexColumn,
   colorTheme,
+  UtopiaStyles,
 } from '../../uuiui'
 import { ConsoleAndErrorsPane } from '../code-editor/console-and-errors-pane'
-import { InspectorWidthAtom } from '../inspector/common/inspector-atoms'
-import { useAtom } from 'jotai'
 import { CanvasStrategyInspector } from './canvas-strategies/canvas-strategy-inspector'
 import { getQueryParam } from '../../common/env-vars'
 import { unless, when } from '../../utils/react-conditionals'
 import { InsertMenuPane } from '../navigator/insert-menu-pane'
+import { VariablesMenuPane } from '../navigator/variables-menu-pane'
 import { useDispatch } from '../editor/store/dispatch-context'
-import { LeftPaneComponent } from '../navigator/left-pane'
 import { GridPanelsContainer } from './grid-panels-container'
-import type { ResizableProps } from '../../uuiui-deps'
-import type { Direction } from 're-resizable/lib/resizer'
-import { isFeatureEnabled } from '../../utils/feature-switches'
 import { TitleBarCode, TitleBarUserProfile } from '../titlebar/title-bar'
 import type { EditorAction } from '../editor/action-types'
 import { SettingsPane } from '../navigator/left-pane/settings-pane'
 import { MenuTab } from '../../uuiui/menu-tab'
 import { FlexRow } from 'utopia-api'
 import type { StoredPanel } from './stored-layout'
-
-interface NumberSize {
-  width: number
-  height: number
-}
+import { MultiplayerPresence } from './multiplayer-presence'
+import { useStatus } from '../../../liveblocks.config'
+import { MultiplayerWrapper } from '../../utils/multiplayer-wrapper'
+import { isFeatureEnabled } from '../../utils/feature-switches'
+import { CommentsPane } from '../inspector/comments-pane'
+import { useIsViewer } from '../editor/store/project-server-state-hooks'
+import { EditorModes, isCommentMode } from '../editor/editor-modes'
 
 function isCodeEditorEnabled(): boolean {
   if (typeof window !== 'undefined') {
@@ -53,80 +47,8 @@ function isCodeEditorEnabled(): boolean {
   }
 }
 
-const TopMenuHeight = 35
-// height so that the bottom border on the top menu aligns
-// with the top border of the first inspector section
-
-const NothingOpenCard = React.memo(() => {
-  const dispatch = useDispatch()
-  const handleOpenCanvasClick = React.useCallback(() => {
-    dispatch([EditorActions.setPanelVisibility('canvas', true)])
-  }, [dispatch])
-  const handleOpenCodeEditorClick = React.useCallback(() => {
-    dispatch([EditorActions.setPanelVisibility('codeEditor', true)])
-  }, [dispatch])
-  const handleOpenBothCodeEditorAndDesignToolClick = React.useCallback(() => {
-    dispatch([
-      EditorActions.setPanelVisibility('codeEditor', true),
-      EditorActions.setPanelVisibility('canvas', true),
-    ])
-  }, [dispatch])
-
-  return (
-    <div
-      role='card'
-      style={{
-        width: 180,
-        height: 240,
-        padding: 12,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'space-around',
-        borderRadius: 4,
-        backgroundColor: 'white',
-        border: '1px solid lightgrey',
-      }}
-    >
-      <LargerIcons.PixelatedPalm
-        color='primary'
-        style={{ width: 42, height: 42, imageRendering: 'pixelated' }}
-      />
-      <div style={{ textAlign: 'center' }}>
-        <h3 style={{ fontWeight: 600, fontSize: 11 }}>Get Started</h3>
-        <p style={{ lineHeight: '1.7em', whiteSpace: 'normal' }}>
-          Start building with the &nbsp;
-          <span
-            role='button'
-            style={{ cursor: 'pointer', color: colorTheme.primary.value }}
-            onClick={handleOpenCanvasClick}
-          >
-            canvas
-          </span>
-          ,&nbsp;
-          <span
-            role='button'
-            style={{ cursor: 'pointer', color: colorTheme.primary.value }}
-            onClick={handleOpenCodeEditorClick}
-          >
-            code editor
-          </span>
-          ,&nbsp; or{' '}
-          <span
-            role='button'
-            style={{ cursor: 'pointer', color: colorTheme.primary.value }}
-            onClick={handleOpenBothCodeEditorAndDesignToolClick}
-          >
-            both
-          </span>
-          .
-        </p>
-      </div>
-    </div>
-  )
-})
-
 const DesignPanelRootInner = React.memo(() => {
+  const roomStatus = useStatus()
   return (
     <>
       <SimpleFlexRow
@@ -149,6 +71,12 @@ const DesignPanelRootInner = React.memo(() => {
             }}
           >
             <CanvasWrapperComponent />
+            {when(
+              roomStatus === 'connected',
+              <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
+                <MultiplayerPresence />
+              </MultiplayerWrapper>,
+            )}
             <GridPanelsContainer />
           </SimpleFlexColumn>
         }
@@ -187,6 +115,8 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
     'ResizableRightPane selectedTab',
   )
 
+  const editorModeRef = useRefEditorState((store) => store.editor.mode)
+
   const isRightMenuExpanded = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.rightMenu.visible,
@@ -196,15 +126,25 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
 
   const onClickTab = React.useCallback(
     (menuTab: RightMenuTab) => {
-      let actions: Array<EditorAction> = []
-      actions.push(EditorActions.setRightMenuTab(menuTab))
+      const actions: Array<EditorAction> = [EditorActions.setRightMenuTab(menuTab)]
+      if (isCommentMode(editorModeRef.current) && menuTab !== RightMenuTab.Comments) {
+        actions.push(EditorActions.switchEditorMode(EditorModes.selectMode(null, false, 'none')))
+      }
       dispatch(actions)
     },
-    [dispatch],
+    [dispatch, editorModeRef],
   )
 
   const onClickInsertTab = React.useCallback(() => {
     onClickTab(RightMenuTab.Insert)
+  }, [onClickTab])
+
+  const onClickVariablesTab = React.useCallback(() => {
+    onClickTab(RightMenuTab.Variables)
+  }, [onClickTab])
+
+  const onClickCommentsTab = React.useCallback(() => {
+    onClickTab(RightMenuTab.Comments)
   }, [onClickTab])
 
   const onClickInspectorTab = React.useCallback(() => {
@@ -214,6 +154,8 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
   const onClickSettingsTab = React.useCallback(() => {
     onClickTab(RightMenuTab.Settings)
   }, [onClickTab])
+
+  const isViewer = useIsViewer()
 
   if (!isRightMenuExpanded) {
     return null
@@ -226,12 +168,12 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
         overflow: 'hidden',
         backgroundColor: colorTheme.inspectorBackground.value,
         borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
-        boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+        boxShadow: UtopiaStyles.shadowStyles.low.boxShadow,
       }}
     >
       <TitleBarUserProfile panelData={props.panelData} />
       <FlexRow
-        style={{ marginBottom: 10, gap: 10, alignSelf: 'stretch', flexShrink: 0 }}
+        style={{ marginBottom: 10, gap: 2, alignSelf: 'stretch', flexShrink: 0 }}
         css={undefined}
       >
         <MenuTab
@@ -239,11 +181,29 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
           selected={selectedTab === RightMenuTab.Inspector}
           onClick={onClickInspectorTab}
         />
-        <MenuTab
-          label={'Insert'}
-          selected={selectedTab === RightMenuTab.Insert}
-          onClick={onClickInsertTab}
-        />
+        {unless(
+          isViewer,
+          <>
+            <MenuTab
+              label={'Insert'}
+              selected={selectedTab === RightMenuTab.Insert}
+              onClick={onClickInsertTab}
+            />
+            <MenuTab
+              label={'Variables'}
+              selected={selectedTab === RightMenuTab.Variables}
+              onClick={onClickVariablesTab}
+            />
+          </>,
+        )}
+        {when(
+          isFeatureEnabled('Commenting'),
+          <MenuTab
+            label={'Comments'}
+            selected={selectedTab === RightMenuTab.Comments}
+            onClick={onClickCommentsTab}
+          />,
+        )}
         <MenuTab
           label={'Settings'}
           selected={selectedTab === RightMenuTab.Settings}
@@ -264,8 +224,10 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
         }}
       >
         {when(selectedTab === RightMenuTab.Insert, <InsertMenuPane />)}
+        {when(selectedTab === RightMenuTab.Variables, <VariablesMenuPane />)}
         {when(selectedTab === RightMenuTab.Inspector, <InspectorEntryPoint />)}
         {when(selectedTab === RightMenuTab.Settings, <SettingsPane />)}
+        {when(selectedTab === RightMenuTab.Comments, <CommentsPane />)}
       </SimpleFlexRow>
       <CanvasStrategyInspector />
     </FlexColumn>
@@ -288,7 +250,7 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
         contain: 'layout',
         overflow: 'hidden',
         borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
-        boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+        boxShadow: UtopiaStyles.shadowStyles.low.boxShadow,
         background: colorTheme.bg1.value,
       }}
     >

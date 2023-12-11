@@ -3,7 +3,14 @@ import { VariableSizeList } from 'react-window'
 import { googleFontsList } from '../../../../../../assets/google-fonts-list'
 import { isRight } from '../../../../../core/shared/either'
 import { useExternalResources } from '../../../../../printer-parsers/html/external-resources-parser'
-import { FlexColumn, UtopiaTheme, FlexRow, StringInput, useColorTheme } from '../../../../../uuiui'
+import {
+  FlexColumn,
+  UtopiaTheme,
+  FlexRow,
+  StringInput,
+  useColorTheme,
+  UtopiaStyles,
+} from '../../../../../uuiui'
 import type { ControlStyles } from '../../../../../uuiui-deps'
 import { Utils } from '../../../../../uuiui-deps'
 import { updatePushNewFontFamilyVariant } from '../../../../navigator/external-resources/google-fonts-resources-list-search'
@@ -502,9 +509,9 @@ export const FontFamilySelectPopup = React.memo(
             tabIndex={0}
             style={{
               ...style,
-              backgroundColor: colorTheme.inspectorBackground.value,
+              backgroundColor: colorTheme.bg2.value,
               width: UtopiaTheme.layout.inspectorSmallPaddedWidth, // TODO should this be resize-aware
-              boxShadow: '#0002 0px 0px 0px 1px, #0002 0px 4px 11px',
+              boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
               zIndex: 1,
               borderRadius: UtopiaTheme.inputBorderRadius,
             }}

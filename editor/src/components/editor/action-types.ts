@@ -6,6 +6,7 @@ import type {
   JSXElementChild,
   JSXConditionalExpression,
   JSXFragment,
+  TopLevelElement,
 } from '../../core/shared/element-template'
 import { SettableLayoutSystem } from '../../core/shared/element-template'
 import type { KeysPressed, Key } from '../../utils/keyboard'
@@ -26,6 +27,8 @@ import type {
   Imports,
   ParsedTextFile,
   ImageFile,
+  ExportDetail,
+  ImportDetails,
 } from '../../core/shared/project-file-types'
 import { StaticElementPathPart } from '../../core/shared/project-file-types'
 import type { CodeResultCache, PropertyControlsInfo } from '../custom-code/code-file'
@@ -60,6 +63,7 @@ import type {
   ThemeSetting,
   ColorSwatch,
   PostActionMenuData,
+  CollabFile,
 } from './store/editor-state'
 import { NavigatorEntry } from './store/editor-state'
 import type { Notice } from '../common/notice'
@@ -77,6 +81,7 @@ import type { PostActionChoice } from '../canvas/canvas-strategies/post-action-o
 import type { FromVSCodeAction } from './actions/actions-from-vscode'
 import type { ProjectServerState } from './store/project-server-state'
 import type { SetHuggingParentToFixed } from '../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
+import type { MapLike } from 'typescript'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -674,6 +679,11 @@ export interface DeleteFile {
   filename: string
 }
 
+export interface DeleteFileFromCollaboration {
+  action: 'DELETE_FILE_FROM_COLLABORATION'
+  filename: string
+}
+
 export interface AddTextFile {
   action: 'ADD_TEXT_FILE'
   fileName: string
@@ -1049,6 +1059,35 @@ export interface UpdateProjectServerState {
   serverState: ProjectServerState
 }
 
+export interface UpdateTopLevelElementsFromCollaborationUpdate {
+  action: 'UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION_UPDATE'
+  fullPath: string
+  topLevelElements: Array<TopLevelElement>
+}
+
+export interface UpdateExportsDetailFromCollaborationUpdate {
+  action: 'UPDATE_EXPORTS_DETAIL_FROM_COLLABORATION_UPDATE'
+  fullPath: string
+  exportsDetail: Array<ExportDetail>
+}
+
+export interface UpdateImportsFromCollaborationUpdate {
+  action: 'UPDATE_IMPORTS_FROM_COLLABORATION_UPDATE'
+  fullPath: string
+  imports: MapLike<ImportDetails>
+}
+
+export interface UpdateCodeFromCollaborationUpdate {
+  action: 'UPDATE_CODE_FROM_COLLABORATION_UPDATE'
+  fullPath: string
+  code: string
+}
+
+export interface SetShowResolvedThreads {
+  action: 'SET_SHOW_RESOLVED_THREADS'
+  showResolvedThreads: boolean
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
@@ -1146,6 +1185,7 @@ export type EditorAction =
   | ClearImageFileBlob
   | AddFolder
   | DeleteFile
+  | DeleteFileFromCollaboration
   | AddTextFile
   | SetMainUIFile
   | SetCodeEditorBuildErrors
@@ -1219,6 +1259,11 @@ export type EditorAction =
   | FromVSCodeAction
   | TruncateHistory
   | UpdateProjectServerState
+  | UpdateTopLevelElementsFromCollaborationUpdate
+  | UpdateExportsDetailFromCollaborationUpdate
+  | UpdateImportsFromCollaborationUpdate
+  | UpdateCodeFromCollaborationUpdate
+  | SetShowResolvedThreads
 
 export type DispatchPriority =
   | 'everyone'

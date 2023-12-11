@@ -1,4 +1,10 @@
-import type { EditorState, DerivedState, UserState, EditorStoreUnpatched } from './editor-state'
+import type {
+  EditorState,
+  DerivedState,
+  UserState,
+  EditorStoreUnpatched,
+  CollaborativeEditingSupport,
+} from './editor-state'
 import type {
   EditorAction,
   EditorDispatch,
@@ -13,6 +19,8 @@ import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import type { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
+import type { ProjectServerState } from './project-server-state'
+import { isTransientAction } from '../actions/action-utils'
 
 export function runLocalEditorAction(
   state: EditorState,
@@ -24,6 +32,8 @@ export function runLocalEditorAction(
   dispatch: EditorDispatch,
   spyCollector: UiJsxCanvasContextData,
   builtInDependencies: BuiltInDependencies,
+  collaborativeEditingSupport: CollaborativeEditingSupport,
+  serverState: ProjectServerState,
 ): EditorState {
   switch (action.action) {
     case 'SET_CANVAS_FRAMES':
@@ -33,7 +43,7 @@ export function runLocalEditorAction(
     case 'DISTRIBUTE_SELECTED_VIEWS':
       return UPDATE_FNS.DISTRIBUTE_SELECTED_VIEWS(action, state)
     case 'SAVE_ASSET':
-      return UPDATE_FNS.SAVE_ASSET(action, state, derivedState, dispatch, userState)
+      return UPDATE_FNS.SAVE_ASSET(action, state, dispatch, userState)
     default:
       return runSimpleLocalEditorAction(
         state,
@@ -45,7 +55,57 @@ export function runLocalEditorAction(
         dispatch,
         spyCollector,
         builtInDependencies,
+        collaborativeEditingSupport,
+        serverState,
       )
+  }
+}
+
+export function gatedActions<T>(
+  action: EditorAction,
+  serverState: ProjectServerState,
+  editorState: EditorState,
+  defaultValue: T,
+  updateCallback: () => T,
+): T {
+  // Determine if this is a collaboration update, which is to say it's an update
+  // which is only for viewers in a collaboration scenario.
+  let isCollaborationUpdate: boolean = false
+  let alwaysRun: boolean = false
+  switch (action.action) {
+    case 'UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION_UPDATE':
+    case 'UPDATE_EXPORTS_DETAIL_FROM_COLLABORATION_UPDATE':
+    case 'UPDATE_IMPORTS_FROM_COLLABORATION_UPDATE':
+    case 'UPDATE_CODE_FROM_COLLABORATION_UPDATE':
+    case 'DELETE_FILE_FROM_COLLABORATION':
+      isCollaborationUpdate = true
+      break
+    case 'UPDATE_FROM_WORKER':
+      alwaysRun = true
+      break
+    default:
+      break
+  }
+
+  if (alwaysRun) {
+    // If it should always run.
+    return updateCallback()
+  } else if (isCollaborationUpdate && serverState.isMyProject === 'yes') {
+    // If this action is something that would've originated with an owner,
+    // it shouldn't run on an owner.
+    return defaultValue
+  } else if (
+    !isTransientAction(action) &&
+    serverState.isMyProject == 'no' &&
+    !isCollaborationUpdate
+  ) {
+    // If this is a change that will modify the project contents, the current user
+    // is not the owner and it's not a collaboration update (those intended directly
+    // for viewers in a collaboration session) do not run the action.
+    return defaultValue
+  } else {
+    // Otherwise, run the action as a fallback.
+    return updateCallback()
   }
 }
 
@@ -59,12 +119,14 @@ export function runSimpleLocalEditorAction(
   dispatch: EditorDispatch,
   spyCollector: UiJsxCanvasContextData,
   builtInDependencies: BuiltInDependencies,
+  collaborativeEditingSupport: CollaborativeEditingSupport,
+  serverState: ProjectServerState,
 ): EditorState {
   switch (action.action) {
     case 'NEW':
       return UPDATE_FNS.NEW(action, state, workers, dispatch)
     case 'LOAD':
-      return UPDATE_FNS.LOAD(action, state, dispatch)
+      return UPDATE_FNS.LOAD(action, state, dispatch, collaborativeEditingSupport)
     case 'DUPLICATE_SELECTED':
       return UPDATE_FNS.DUPLICATE_SELECTED(state, dispatch)
     case 'UPDATE_DUPLICATION_STATE':
@@ -92,7 +154,7 @@ export function runSimpleLocalEditorAction(
     case 'UPDATE_EDITOR_MODE':
       return UPDATE_FNS.UPDATE_EDITOR_MODE(action, state)
     case 'SWITCH_EDITOR_MODE':
-      return UPDATE_FNS.SWITCH_EDITOR_MODE(action, state, derivedState)
+      return UPDATE_FNS.SWITCH_EDITOR_MODE(action, state, userState)
     case 'TOGGLE_HIDDEN':
       return UPDATE_FNS.TOGGLE_HIDDEN(action, state)
     case 'RENAME_COMPONENT':
@@ -214,13 +276,20 @@ export function runSimpleLocalEditorAction(
     case 'UPDATE_FROM_WORKER':
       return UPDATE_FNS.UPDATE_FROM_WORKER(action, state)
     case 'UPDATE_FROM_CODE_EDITOR':
-      return UPDATE_FNS.UPDATE_FROM_CODE_EDITOR(action, state, dispatch, builtInDependencies)
+      return UPDATE_FNS.UPDATE_FROM_CODE_EDITOR(
+        action,
+        state,
+        dispatch,
+        builtInDependencies,
+        serverState,
+      )
     case 'CLEAR_PARSE_OR_PRINT_IN_FLIGHT':
       return UPDATE_FNS.CLEAR_PARSE_OR_PRINT_IN_FLIGHT(action, state)
     case 'ADD_FOLDER':
       return UPDATE_FNS.ADD_FOLDER(action, state)
     case 'DELETE_FILE':
     case 'DELETE_FILE_FROM_VSCODE':
+    case 'DELETE_FILE_FROM_COLLABORATION':
       return UPDATE_FNS.DELETE_FILE(action, state, derivedState, userState)
     case 'ADD_TEXT_FILE':
       return UPDATE_FNS.ADD_TEXT_FILE(action, state)
@@ -255,7 +324,7 @@ export function runSimpleLocalEditorAction(
     case 'UNWRAP_ELEMENTS':
       return UPDATE_FNS.UNWRAP_ELEMENTS(action, state, dispatch, builtInDependencies)
     case 'INSERT_IMAGE_INTO_UI':
-      return UPDATE_FNS.INSERT_IMAGE_INTO_UI(action, state, derivedState)
+      return UPDATE_FNS.INSERT_IMAGE_INTO_UI(action, state, userState)
     case 'UPDATE_JSX_ELEMENT_NAME':
       return UPDATE_FNS.UPDATE_JSX_ELEMENT_NAME(action, state)
     case 'ADD_IMPORTS':
@@ -369,6 +438,21 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_CONDITIONAL_EXPRESSION(action, state)
     case 'SWITCH_CONDITIONAL_BRANCHES':
       return UPDATE_FNS.SWITCH_CONDITIONAL_BRANCHES(action, state)
+    case 'UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION_UPDATE':
+      return UPDATE_FNS.UPDATE_TOP_LEVEL_ELEMENTS_FROM_COLLABORATION_UPDATE(action, state)
+    case 'UPDATE_EXPORTS_DETAIL_FROM_COLLABORATION_UPDATE':
+      return UPDATE_FNS.UPDATE_EXPORTS_DETAIL_FROM_COLLABORATION_UPDATE(action, state)
+    case 'UPDATE_IMPORTS_FROM_COLLABORATION_UPDATE':
+      return UPDATE_FNS.UPDATE_IMPORTS_FROM_COLLABORATION_UPDATE(action, state)
+    case 'UPDATE_CODE_FROM_COLLABORATION_UPDATE':
+      return UPDATE_FNS.UPDATE_CODE_FROM_COLLABORATION_UPDATE(
+        action,
+        state,
+        dispatch,
+        builtInDependencies,
+      )
+    case 'SET_SHOW_RESOLVED_THREADS':
+      return UPDATE_FNS.SET_SHOW_RESOLVED_THREADS(action, state)
     default:
       return state
   }

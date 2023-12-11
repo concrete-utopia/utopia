@@ -27,6 +27,7 @@ import { EdgePositionLeft, EdgePositionTop, EdgePositionTopLeft } from '../../ca
 import { isEdgePositionEqualTo } from '../../canvas-utils'
 import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
 import { queueTrueUpElement } from '../../commands/queue-true-up-command'
+import { activeFrameTargetRect, setActiveFrames } from '../../commands/set-active-frames-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
@@ -263,6 +264,13 @@ export function absoluteResizeBoundingBoxStrategy(
                   'starting-metadata',
                 ),
                 queueTrueUpElement(childGroups.map(trueUpGroupElementChanged)),
+                setActiveFrames([
+                  {
+                    action: 'resize',
+                    target: activeFrameTargetRect(newFrame),
+                    source: originalBoundingBox,
+                  },
+                ]),
               ]
             })
 

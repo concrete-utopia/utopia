@@ -31,7 +31,15 @@ import {
   defaultRectangleElement,
   defaultSpanElement,
 } from './defaults'
-import { EditorModes, isInsertMode, isLiveMode, isSelectMode, isTextEditMode } from './editor-modes'
+import {
+  EditorModes,
+  isCommentMode,
+  isFollowMode,
+  isInsertMode,
+  isLiveMode,
+  isSelectMode,
+  isTextEditMode,
+} from './editor-modes'
 import { insertImage } from './image-insert'
 import type { ShortcutNamesByKey } from './shortcut-definitions'
 import {
@@ -83,7 +91,7 @@ import {
   TOGGLE_FOCUSED_OMNIBOX_TAB,
   FOCUS_CLASS_NAME_INPUT,
   INSERT_DIV_SHORTCUT,
-  OPEN_EYEDROPPPER as OPEN_EYEDROPPER,
+  OPEN_EYEDROPPER,
   TEXT_EDIT_MODE,
   TOGGLE_TEXT_BOLD,
   TOGGLE_TEXT_ITALIC,
@@ -98,9 +106,10 @@ import {
   OPEN_INSERT_MENU,
   PASTE_TO_REPLACE,
   WRAP_IN_DIV,
+  COMMENT_SHORTCUT,
 } from './shortcut-definitions'
 import type { EditorState, LockedElements, NavigatorEntry } from './store/editor-state'
-import { getOpenFile, RightMenuTab } from './store/editor-state'
+import { floatingInsertMenuStateSwap, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
 import { pickColorWithEyeDropper } from '../canvas/canvas-utils'
 import {
@@ -136,6 +145,8 @@ import { isRight } from '../../core/shared/either'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { createPasteToReplacePostActionActions } from '../canvas/canvas-strategies/post-action-options/post-action-options'
 import { wrapInDivStrategy } from './wrap-in-callbacks'
+import { isFeatureEnabled } from '../../utils/feature-switches'
+import { isProjectViewerFromState, type ProjectServerState } from './store/project-server-state'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -344,6 +355,7 @@ export function preventBrowserShortcuts(editor: EditorState, event: KeyboardEven
 export function handleKeyDown(
   event: KeyboardEvent,
   editor: EditorState,
+  projectServerState: ProjectServerState,
   metadataRef: { current: ElementInstanceMetadataMap },
   navigatorTargetsRef: { current: Array<NavigatorEntry> },
   namesByKey: ShortcutNamesByKey,
@@ -351,6 +363,8 @@ export function handleKeyDown(
 ): Array<EditorAction> {
   // Stop the browser from firing things like save dialogs.
   preventBrowserShortcuts(editor, event)
+
+  const isViewer = isProjectViewerFromState(projectServerState)
 
   // Ensure that any key presses are appropriately recorded.
   const key = Keyboard.keyCharacterForCode(event.keyCode)
@@ -390,19 +404,23 @@ export function handleKeyDown(
         return isSelectMode(editor.mode) ? [EditorActions.deleteSelected()] : []
       },
       [RESET_CANVAS_ZOOM_SHORTCUT]: () => {
-        return [CanvasActions.zoom(1)]
+        return !isFollowMode(editor.mode) ? [CanvasActions.zoom(1)] : []
       },
       [ZOOM_UI_IN_SHORTCUT]: () => {
         return [CanvasActions.zoomUI(true)]
       },
       [ZOOM_CANVAS_IN_SHORTCUT]: () => {
-        return [CanvasActions.zoom(Utils.increaseScale(editor.canvas.scale))]
+        return !isFollowMode(editor.mode)
+          ? [CanvasActions.zoom(Utils.increaseScale(editor.canvas.scale))]
+          : []
       },
       [ZOOM_UI_OUT_SHORTCUT]: () => {
         return [CanvasActions.zoomUI(false)]
       },
       [ZOOM_CANVAS_OUT_SHORTCUT]: () => {
-        return [CanvasActions.zoom(Utils.decreaseScale(editor.canvas.scale))]
+        return !isFollowMode(editor.mode)
+          ? [CanvasActions.zoom(Utils.decreaseScale(editor.canvas.scale))]
+          : []
       },
       [FIRST_CHILD_OR_EDIT_TEXT_SHORTCUT]: () => {
         if (isSelectMode(editor.mode)) {
@@ -430,6 +448,15 @@ export function handleKeyDown(
           if (childToSelect != null) {
             return MetaActions.selectComponents([childToSelect], false)
           }
+        }
+        return []
+      },
+      [COMMENT_SHORTCUT]: () => {
+        if (isFeatureEnabled('Commenting')) {
+          return [
+            EditorActions.switchEditorMode(EditorModes.commentMode(null, 'not-dragging')),
+            EditorActions.setRightMenuTab(RightMenuTab.Comments),
+          ]
         }
         return []
       },
@@ -487,6 +514,9 @@ export function handleKeyDown(
           ]
         }
         if (isTextEditMode(editor.mode)) {
+          return [EditorActions.updateEditorMode(EditorModes.selectMode(null, false, 'none'))]
+        }
+        if (isCommentMode(editor.mode)) {
           return [EditorActions.updateEditorMode(EditorModes.selectMode(null, false, 'none'))]
         }
         return []
@@ -582,6 +612,9 @@ export function handleKeyDown(
         return [EditorActions.toggleHidden()]
       },
       [INSERT_IMAGE_SHORTCUT]: () => {
+        if (isViewer) {
+          return []
+        }
         if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
           // FIXME: Side effects.
           insertImage(dispatch)
@@ -713,12 +746,15 @@ export function handleKeyDown(
           )
         })
         if (isSelectMode(editor.mode) && possibleToConvert) {
-          return [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'convert' })]
+          return [EditorActions.openFloatingInsertMenu(floatingInsertMenuStateSwap())]
         } else {
           return []
         }
       },
       [ADD_ELEMENT_SHORTCUT]: () => {
+        if (isViewer) {
+          return []
+        }
         if (isSelectMode(editor.mode)) {
           return [
             EditorActions.openFloatingInsertMenu({
@@ -752,6 +788,9 @@ export function handleKeyDown(
         return []
       },
       [TEXT_EDIT_MODE]: () => {
+        if (isViewer) {
+          return []
+        }
         const newUID = generateUidWithExistingComponents(editor.projectContents)
 
         actions.push(
@@ -926,6 +965,9 @@ export function handleKeyDown(
         return [EditorActions.applyCommandsAction(commands)]
       },
       [OPEN_INSERT_MENU]: () => {
+        if (isViewer) {
+          return []
+        }
         return [
           EditorActions.setPanelVisibility('rightmenu', true),
           EditorActions.setRightMenuTab(RightMenuTab.Insert),

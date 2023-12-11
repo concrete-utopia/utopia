@@ -86,6 +86,7 @@ import type {
 import {
   createEditorState,
   deriveState,
+  emptyCollaborativeEditingSupport,
   patchedStoreFromFullStore,
   persistentModelForProjectContents,
   StoryboardFilePath,
@@ -95,6 +96,7 @@ import { elementPath } from '../../core/shared/element-path'
 import { CanvasContextMenuPortalTargetID, NO_OP } from '../../core/shared/utils'
 import { emptyUiJsxCanvasContextData } from './ui-jsx-canvas'
 import { testParseCode } from '../../core/workers/parser-printer/parser-printer.test-utils'
+import type { SteganographyMode } from '../../core/workers/parser-printer/parser-printer'
 import { printCode, printCodeOptions } from '../../core/workers/parser-printer/parser-printer'
 import type { PathAndFileEntry, ProjectContentTreeRoot } from '../assets'
 import {
@@ -235,14 +237,29 @@ export const DefaultStartingFeatureSwitches: StartingFeatureSwitches = {
   'Debug - Print UIDs': true,
 }
 
+interface RenderTestEditorWithCodeOptions {
+  strategiesToUse: Array<MetaCanvasStrategy>
+  startingFeatureSwitches: StartingFeatureSwitches
+  applySteganography: SteganographyMode
+}
+
+const DefaultRenderTestEditorWithCodeOptions: RenderTestEditorWithCodeOptions = {
+  strategiesToUse: RegisteredCanvasStrategies,
+  startingFeatureSwitches: DefaultStartingFeatureSwitches,
+  applySteganography: 'do-not-apply-steganography',
+}
+
 export async function renderTestEditorWithCode(
   appUiJsFileCode: string,
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
-  strategiesToUse: Array<MetaCanvasStrategy> = RegisteredCanvasStrategies,
-  startingFeatureSwitches: StartingFeatureSwitches = DefaultStartingFeatureSwitches,
+  options: Partial<RenderTestEditorWithCodeOptions> = {},
 ): Promise<EditorRenderResult> {
+  const { strategiesToUse, startingFeatureSwitches } = {
+    ...DefaultRenderTestEditorWithCodeOptions,
+    ...options,
+  }
   return renderTestEditorWithModel(
-    createTestProjectWithCode(appUiJsFileCode),
+    createTestProjectWithCode(appUiJsFileCode, options.applySteganography),
     awaitFirstDomReport,
     startingFeatureSwitches,
     undefined,
@@ -546,7 +563,11 @@ export async function renderTestEditorWithModel(
     saveCountThisSession: 0,
     builtInDependencies: builtInDependencies,
     postActionInteractionSession: null,
-    projectServerState: emptyProjectServerState(),
+    projectServerState: {
+      ...emptyProjectServerState(),
+      isMyProject: 'yes',
+    },
+    collaborativeEditingSupport: emptyCollaborativeEditingSupport(),
   }
 
   const canvasStoreHook: UtopiaStoreAPI = createStoresAndState(
@@ -701,7 +722,15 @@ function expectUpdatedFilesUpdateTimestamp(
 function expectNoActionsCausedDuplicateUids(
   actionsCausingDuplicateUIDs: ActionsCausingDuplicateUIDs,
 ) {
-  expect(actionsCausingDuplicateUIDs).toHaveLength(0)
+  if (actionsCausingDuplicateUIDs.length > 0) {
+    expect({
+      actionsCausingDuplicateUIDs: actionsCausingDuplicateUIDs,
+      message: 'No actions have introduced duplicate uids',
+    }).toEqual({
+      actionsCausingDuplicateUIDs: actionsCausingDuplicateUIDs,
+      message: 'Some actions have introduced duplicate uids!',
+    })
+  }
 }
 
 export function getPrintedUiJsCode(

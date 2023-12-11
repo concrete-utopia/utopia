@@ -10,6 +10,10 @@ import '../vite-shims'
 import { loadFeatureSwitches } from '../utils/feature-switches'
 await loadFeatureSwitches()
 
+// Check to see if the server supports Liveblocks currently.
+import { checkLiveblocksEnabledOnServer } from '../components/editor/liveblocks-utils'
+await checkLiveblocksEnabledOnServer()
+
 // Fire off server requests that later block, to improve initial load on slower connections. These will still block,
 // but this gives us a chance to cache the result first
 import { getLoginState } from '../common/server'

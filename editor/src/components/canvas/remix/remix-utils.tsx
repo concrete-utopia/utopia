@@ -255,7 +255,7 @@ function getRemixExportsOfModule(
     displayNoneInstances: Array<ElementPath>,
     metadataContext: UiJsxCanvasContextData,
   ) => {
-    let resolvedFiles: MapLike<Array<string>> = {}
+    let resolvedFiles: MapLike<MapLike<any>> = {}
     let resolvedFileNames: Array<string> = [filename]
 
     const requireFn = curriedRequireFn(innerProjectContents)
@@ -267,11 +267,12 @@ function getRemixExportsOfModule(
       }
       let resolvedFromThisOrigin = resolvedFiles[importOrigin]
 
-      const alreadyResolved = resolvedFromThisOrigin.includes(toImport) // We're inside a cyclic dependency, so trigger the below fallback     const filePathResolveResult = alreadyResolved
+      const alreadyResolved = resolvedFromThisOrigin[toImport] !== undefined
+      const filePathResolveResult = alreadyResolved
         ? left<string, string>('Already resolved')
         : resolve(importOrigin, toImport)
 
-      forEachRight(alreadyResolved, (filepath) => resolvedFileNames.push(filepath))
+      forEachRight(filePathResolveResult, (filepath) => resolvedFileNames.push(filepath))
 
       const resolvedParseSuccess: Either<string, MapLike<any>> = attemptToResolveParsedComponents(
         resolvedFromThisOrigin,
@@ -287,7 +288,7 @@ function getRemixExportsOfModule(
         metadataContext,
         NO_OP,
         false,
-        alreadyResolved,
+        filePathResolveResult,
         null,
       )
       return foldEither(
@@ -450,4 +451,18 @@ export function getRouteComponentNameForOutlet(
   }
 
   return defaultExport.name
+}
+
+export const RemixIndexPathLabel = '(home)'
+
+export function getRemixLocationLabel(location: string | undefined): string | null {
+  if (location == null) {
+    return null
+  }
+
+  if (location === '/') {
+    return RemixIndexPathLabel
+  }
+
+  return location
 }

@@ -55,6 +55,7 @@ import { last } from '../../../core/shared/array-utils'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { isInsertMode } from '../editor-modes'
 import { patchedCreateRemixDerivedDataMemo } from './remix-derived-data'
+import { isProjectViewerFromState } from './project-server-state'
 
 interface HandleStrategiesResult {
   unpatchedEditorState: EditorState
@@ -654,12 +655,24 @@ export function handleStrategies(
   if (MeasureDispatchTime) {
     window.performance.mark('strategies_begin')
   }
-  const { unpatchedEditorState, patchedEditorState, newStrategyState } = handleStrategiesInner(
-    strategies,
-    dispatchedActions,
-    storedState,
-    result,
-  )
+  let unpatchedEditorState: EditorState
+  let patchedEditorState: EditorState
+  let newStrategyState: StrategyState
+  if (isProjectViewerFromState(storedState.projectServerState)) {
+    unpatchedEditorState = result.unpatchedEditor
+    patchedEditorState = result.unpatchedEditor
+    newStrategyState = result.strategyState
+  } else {
+    const strategiesResult = handleStrategiesInner(
+      strategies,
+      dispatchedActions,
+      storedState,
+      result,
+    )
+    unpatchedEditorState = strategiesResult.unpatchedEditorState
+    patchedEditorState = strategiesResult.patchedEditorState
+    newStrategyState = strategiesResult.newStrategyState
+  }
 
   const patchedEditorWithMetadata: EditorState = {
     ...patchedEditorState,

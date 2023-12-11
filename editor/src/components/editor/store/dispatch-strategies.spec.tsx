@@ -58,7 +58,7 @@ import {
   interactionUpdate,
 } from './dispatch-strategies'
 import type { EditorStoreFull } from './editor-state'
-import { createEditorState, deriveState } from './editor-state'
+import { createEditorState, deriveState, emptyCollaborativeEditingSupport } from './editor-state'
 import { emptyProjectServerState } from './project-server-state'
 import { unpatchedCreateRemixDerivedDataMemo } from './remix-derived-data'
 
@@ -73,6 +73,7 @@ function createEditorStore(
       latestMetadata: {},
       latestAllElementProps: {},
       latestElementPathTree: {},
+      latestVariablesInScope: {},
     }
   }
 
@@ -111,6 +112,7 @@ function createEditorStore(
     builtInDependencies: createBuiltInDependenciesList(null),
     postActionInteractionSession: null,
     projectServerState: emptyProjectServerState(),
+    collaborativeEditingSupport: emptyCollaborativeEditingSupport(),
   }
 
   return initialEditorStore
@@ -187,6 +189,7 @@ describe('interactionStart', () => {
         "currentStrategyFitness": 0,
         "currentStrategyIcon": null,
         "customStrategyState": Object {
+          "action": null,
           "duplicatedElementNewUids": Object {},
           "elementsToRerender": Array [],
           "escapeHatchActivated": false,
@@ -248,6 +251,7 @@ describe('interactionStart', () => {
         "currentStrategyFitness": 0,
         "currentStrategyIcon": null,
         "customStrategyState": Object {
+          "action": null,
           "duplicatedElementNewUids": Object {},
           "elementsToRerender": Array [],
           "escapeHatchActivated": false,
@@ -329,6 +333,7 @@ describe('interactionUpdate', () => {
           "type": "magic-large",
         },
         "customStrategyState": Object {
+          "action": null,
           "duplicatedElementNewUids": Object {},
           "elementsToRerender": Array [],
           "escapeHatchActivated": false,
@@ -410,6 +415,7 @@ describe('interactionUpdate', () => {
         "currentStrategyFitness": 0,
         "currentStrategyIcon": null,
         "customStrategyState": Object {
+          "action": null,
           "duplicatedElementNewUids": Object {},
           "elementsToRerender": Array [],
           "escapeHatchActivated": false,
@@ -485,6 +491,7 @@ describe('interactionHardReset', () => {
           "type": "magic-large",
         },
         "customStrategyState": Object {
+          "action": null,
           "duplicatedElementNewUids": Object {},
           "elementsToRerender": Array [],
           "escapeHatchActivated": false,
@@ -568,6 +575,7 @@ describe('interactionHardReset', () => {
         "currentStrategyFitness": 0,
         "currentStrategyIcon": null,
         "customStrategyState": Object {
+          "action": null,
           "duplicatedElementNewUids": Object {},
           "elementsToRerender": Array [],
           "escapeHatchActivated": false,
@@ -657,6 +665,7 @@ describe('interactionUpdate with user changed strategy', () => {
           "type": "magic-large",
         },
         "customStrategyState": Object {
+          "action": null,
           "duplicatedElementNewUids": Object {},
           "elementsToRerender": Array [],
           "escapeHatchActivated": false,
@@ -741,6 +750,7 @@ describe('interactionUpdate with user changed strategy', () => {
         "currentStrategyFitness": 0,
         "currentStrategyIcon": null,
         "customStrategyState": Object {
+          "action": null,
           "duplicatedElementNewUids": Object {},
           "elementsToRerender": Array [],
           "escapeHatchActivated": false,
@@ -893,6 +903,8 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
 
     // dispatching a no-op change to the interaction session to trigger the strategies
 
+    let testStrategyRan = false
+
     await renderResult.dispatch(
       [
         CanvasActions.updateInteractionSession(
@@ -946,6 +958,7 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
                 interactionSession.latestAllElementProps[EP.toString(targetElement)].style
                   .backgroundColor,
               ).toBeDefined()
+              testStrategyRan = true
               return strategyApplicationResult([])
             },
           },
@@ -953,6 +966,6 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
       ],
     )
 
-    expect.assertions(16) // this ensures that the test fails if the expects inside the apply function are not called
+    expect(testStrategyRan).toEqual(true)
   })
 })

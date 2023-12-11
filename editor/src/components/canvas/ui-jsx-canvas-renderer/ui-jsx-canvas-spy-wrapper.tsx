@@ -1,7 +1,7 @@
 import React from 'react'
 import type { MapLike } from 'typescript'
 import type { Either } from '../../../core/shared/either'
-import { foldEither, left, right } from '../../../core/shared/either'
+import { foldEither, right } from '../../../core/shared/either'
 import type {
   ElementInstanceMetadata,
   JSXElementChild,
@@ -12,18 +12,18 @@ import {
   emptyAttributeMetadata,
   emptyComputedStyle,
   emptySpecialSizeMeasurements,
-  JSXElementLike,
   isJSXElement,
-  isJSExpression,
-  isJSXConditionalExpression,
 } from '../../../core/shared/element-template'
 import type { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { makeCanvasElementPropsSafe } from '../../../utils/canvas-react-utils'
-import type { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
+import type {
+  DomWalkerInvalidatePathsCtxData,
+  UiJsxCanvasContextData,
+  VariableData,
+} from '../ui-jsx-canvas'
 import * as EP from '../../../core/shared/element-path'
 import { renderComponentUsingJsxFactoryFunction } from './ui-jsx-canvas-element-renderer-utils'
 import { importInfoFromImportDetails } from '../../../core/model/project-file-utils'
-import { jsxSimpleAttributeToValue } from '../../../core/shared/jsx-attributes'
 import { getUtopiaID } from '../../../core/shared/uid-utils'
 
 // Should the condition value of conditional expression change (which maybe be done by overriding it),
@@ -112,6 +112,7 @@ export function buildSpyWrappedElement(
   shouldIncludeCanvasRootInTheSpy: boolean,
   imports: Imports,
   filePath: string,
+  variablesInScope: VariableData,
 ): React.ReactElement {
   const props = {
     ...finalProps,
@@ -149,6 +150,7 @@ export function buildSpyWrappedElement(
       metadataContext.current.spyValues.metadata[elementPathString] = instanceMetadata
       metadataContext.current.spyValues.allElementProps[elementPathString] =
         makeCanvasElementPropsSafe(reportedProps)
+      metadataContext.current.spyValues.variablesInScope[elementPathString] = variablesInScope
     }
   }
   const spyWrapperProps: SpyWrapperProps = {

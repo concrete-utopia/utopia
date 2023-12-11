@@ -10,6 +10,7 @@ import type { CanvasCommand } from '../commands/commands'
 import type { StrategyApplicationStatus } from './interaction-state'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import type { RemixRoutingTable } from '../../editor/store/remix-derived-data'
+import type { ActiveFrameAction } from '../commands/set-active-frames-command'
 
 // TODO: fill this in, maybe make it an ADT for different strategies
 export interface CustomStrategyState {
@@ -18,6 +19,7 @@ export interface CustomStrategyState {
   duplicatedElementNewUids: { [elementPath: string]: string }
   strategyGeneratedUidsCache: { [elementPath: string]: string | undefined }
   elementsToRerender: Array<ElementPath>
+  action: ActiveFrameAction | null
 }
 
 export type CustomStrategyStatePatch = Partial<CustomStrategyState>
@@ -29,6 +31,7 @@ export function defaultCustomStrategyState(): CustomStrategyState {
     duplicatedElementNewUids: {},
     strategyGeneratedUidsCache: {},
     elementsToRerender: [],
+    action: null,
   }
 }
 

@@ -36,7 +36,7 @@ import {
 } from './parser-printer.test-utils'
 import type { Arbitrary } from 'fast-check'
 import type { FixUIDsState } from './uid-fix'
-import { fixExpressionUIDs, fixJSXElementChildUIDs } from './uid-fix'
+import { fixExpressionUIDs, fixJSXElementChildUIDs, fixParseSuccessUIDs } from './uid-fix'
 import { foldEither } from '../../../core/shared/either'
 import {
   getAllUniqueUids,
@@ -44,12 +44,14 @@ import {
 } from '../../../core/model/get-unique-ids'
 import { contentsToTree } from '../../../components/assets'
 import {
+  filtered,
+  fromArrayIndex,
   fromField,
   fromTypeGuard,
   notNull,
   traverseArray,
 } from '../../../core/shared/optics/optic-creators'
-import { modify } from '../../../core/shared/optics/optic-utilities'
+import { modify, set, unsafeGet } from '../../../core/shared/optics/optic-utilities'
 
 function asParseSuccessOrNull(file: ParsedTextFile): ParseSuccess | null {
   return isParseSuccess(file) ? file : null
@@ -113,6 +115,7 @@ function lintAndParseAndValidateResult(
     oldParseResultForUIDComparison,
     alreadyExistingUIDs_MUTABLE,
     shouldTrimBounds,
+    'do-not-apply-steganography',
   )
   validateParsedTextFileElementUIDs(result)
   validateHighlightBoundsForUIDs(result)
@@ -564,6 +567,43 @@ describe('fixParseSuccessUIDs', () => {
         678
           104"
     `)
+  })
+  it(`handles arbitrary JS blocks and their UIDs`, () => {
+    const parsedResult = lintAndParseAndValidateResult(
+      'test.js',
+      fileWithArbitraryBlockInside,
+      null,
+      emptySet(),
+      'trim-bounds',
+    )
+    const toRootElementOptic = fromTypeGuard(isParseSuccess)
+      .compose(fromField('topLevelElements'))
+      .compose(traverseArray())
+      .compose(filtered(isUtopiaJSXComponent))
+      .compose(fromTypeGuard(isUtopiaJSXComponent))
+      .compose(fromField('rootElement'))
+      .compose(fromField('uid'))
+    const toArbitraryBlockOptic = fromTypeGuard(isParseSuccess)
+      .compose(fromField('topLevelElements'))
+      .compose(traverseArray())
+      .compose(filtered(isUtopiaJSXComponent))
+      .compose(fromTypeGuard(isUtopiaJSXComponent))
+      .compose(fromField('arbitraryJSBlock'))
+      .compose(notNull())
+      .compose(fromField('uid'))
+    const uidFromElement = unsafeGet(toRootElementOptic, parsedResult)
+    const fudgedResult = set(toArbitraryBlockOptic, uidFromElement, parsedResult)
+    const fixedResult = fixParseSuccessUIDs(null, fudgedResult, new Set(), new Set())
+    const projectContents = contentsToTree({
+      ['test.js']: textFile(
+        textFileContents(fileWithArbitraryBlockInside, fixedResult, RevisionsState.BothMatch),
+        null,
+        null,
+        0,
+      ),
+    })
+    const duplicateUIDs = getAllUniqueUids(projectContents).duplicateIDs
+    expect(Object.keys(duplicateUIDs)).toHaveLength(0)
   })
 })
 

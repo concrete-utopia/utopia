@@ -1,17 +1,7 @@
-import * as React from 'react'
 import * as TS from 'typescript-for-the-editor'
-import {
-  addUniquely,
-  flatMapArray,
-  uniq,
-  uniqBy,
-  sortBy,
-  findLastIndex,
-} from '../../shared/array-utils'
+import { flatMapArray, uniq, findLastIndex } from '../../shared/array-utils'
 import type { Either } from '../../shared/either'
 import {
-  eitherToMaybe,
-  flatMap2Either,
   flatMapEither,
   isLeft,
   isRight,
@@ -21,9 +11,7 @@ import {
   sequenceEither,
   foldEither,
   forEachLeft,
-  bimapEither,
   forEachRight,
-  traverseEither,
 } from '../../shared/either'
 import type {
   ArbitraryJSBlock,
@@ -59,19 +47,14 @@ import {
   utopiaJSXComponent,
   propNamesForParam,
   jsxElementName,
-  singleLineComment,
-  multiLineComment,
-  WithComments,
-  getJSXAttributeForced,
   importStatement,
   isImportStatement,
   unparsedCode,
   emptyComments,
-  parsedComments,
 } from '../../shared/element-template'
 import { messageisFatal } from '../../shared/error-messages'
 import { memoize } from '../../shared/memoize'
-import { defaultIfNull, maybeToArray, optionalMap } from '../../shared/optional-utils'
+import { maybeToArray, optionalMap } from '../../shared/optional-utils'
 import type {
   HighlightBoundsForUids,
   ImportAlias,
@@ -85,10 +68,8 @@ import type {
 } from '../../shared/project-file-types'
 import {
   importAlias,
-  HighlightBounds,
   mergeExportsDetail,
   EmptyExportsDetail,
-  TextFile,
   reexportWildcard,
   exportVariable,
   reexportVariables,
@@ -105,13 +86,11 @@ import {
   isParseSuccess,
 } from '../../shared/project-file-types'
 import * as PP from '../../shared/property-path'
-import { assertNever, fastForEach, NO_OP } from '../../shared/utils'
+import { assertNever, fastForEach } from '../../shared/utils'
 import { addImport, emptyImports } from '../common/project-file-utils'
-import { UtopiaTsWorkers } from '../common/worker-types'
 import { lintCode } from '../linter/linter'
 import type { FunctionContents, WithParserMetadata } from './parser-printer-parsing'
 import {
-  CanvasMetadataName,
   flattenOutAnnoyingContainers,
   getPropertyNameText,
   liftParsedElementsIntoFunctionContents,
@@ -123,25 +102,20 @@ import {
   isExported,
   expressionTypeForExpression,
   extractPrefixedCode,
-  parseAttributeExpression,
   markedAsExported,
   markedAsDefault,
 } from './parser-printer-parsing'
 import { jsonToExpression } from './json-to-expression'
-import { compareOn, comparePrimitive } from '../../../utils/compare'
-import { difference, emptySet } from '../../shared/set-utils'
-import { addCommentsToNode, getLeadingComments } from './parser-printer-comments'
-import { replaceAll } from '../../shared/string-utils'
+import { difference } from '../../shared/set-utils'
+import { addCommentsToNode } from './parser-printer-comments'
 import { fixParseSuccessUIDs } from './uid-fix'
 import { applyPrettier } from 'utopia-vscode-common'
 import { BakedInStoryboardVariableName } from '../../model/scene-utils'
 import { stripExtension } from '../../../components/custom-code/custom-code-utils'
 import { absolutePathFromRelativePath } from '../../../utils/path-utils'
-import { v4 as UUID } from 'uuid'
 import { fromField } from '../../../core/shared/optics/optic-creators'
 import type { Optic } from '../../../core/shared/optics/optics'
 import { modify } from '../../../core/shared/optics/optic-utilities'
-import { updateHighlightBounds } from '../../../core/shared/uid-utils'
 
 function buildPropertyCallingFunction(
   functionName: string,
@@ -833,6 +807,7 @@ export const printCode = memoize(printCodeImpl, {
 })
 
 function printStatements(
+  filePath: string,
   statements: Array<TS.Node>,
   shouldPrettify: boolean,
   insertLinesBetweenStatements: boolean,
@@ -993,6 +968,7 @@ function printCodeImpl(
   ]
 
   return printStatements(
+    filePath,
     statementsToPrint,
     printOptions.pretty,
     printOptions.insertLinesBetweenStatements,
@@ -1256,19 +1232,27 @@ export function isReactImported(sourceFile: TS.SourceFile): boolean {
   })
 }
 
+export type SteganographyMode = 'apply-steganography' | 'do-not-apply-steganography'
+
 export function parseCode(
-  filename: string,
+  filePath: string,
   sourceText: string,
   oldParseResultForUIDComparison: ParseSuccess | null,
   alreadyExistingUIDs_MUTABLE: Set<string>,
+  applySteganography: SteganographyMode,
 ): ParsedTextFile {
   const originalAlreadyExistingUIDs_MUTABLE: Set<string> = new Set(alreadyExistingUIDs_MUTABLE)
-  const sourceFile = TS.createSourceFile(filename, sourceText, TS.ScriptTarget.ES3)
+  const sourceFile = TS.createSourceFile(filePath, sourceText, TS.ScriptTarget.ES3)
+
+  const topLevelNodes = flatMapArray(
+    (e) => flattenOutAnnoyingContainers(sourceFile, e),
+    sourceFile.getChildren(sourceFile),
+  )
 
   const jsxFactoryFunction = getJsxFactoryFunction(sourceFile)
 
   if (sourceFile == null) {
-    return parseFailure([], null, `File ${filename} not found.`, [])
+    return parseFailure([], null, `File ${filePath} not found.`, [])
   } else {
     let topLevelElements: Array<Either<string, TopLevelElement>> = []
     let imports: Imports = emptyImports()
@@ -1291,7 +1275,7 @@ export function parseCode(
         const nodeParseResult = parseArbitraryNodes(
           sourceFile,
           sourceText,
-          filename,
+          filePath,
           [node],
           imports,
           topLevelNames,
@@ -1301,6 +1285,7 @@ export function parseCode(
           true,
           '',
           false,
+          applySteganography,
         )
         topLevelElements.push(
           mapEither((parsed) => {
@@ -1325,11 +1310,6 @@ export function parseCode(
     function pushUnparsedCode(rawCode: string) {
       topLevelElements.push(right(unparsedCode(rawCode)))
     }
-
-    const topLevelNodes = flatMapArray(
-      (e) => flattenOutAnnoyingContainers(sourceFile, e),
-      sourceFile.getChildren(sourceFile),
-    )
 
     const topLevelNames = flatMapArray((node) => {
       let names: Array<string> = []
@@ -1441,7 +1421,7 @@ export function parseCode(
           // this import looks like `import Cat from './src/cats'`
           const importedWithName = optionalMap((n) => n.getText(sourceFile), importClause?.name)
           imports = addImport(
-            filename,
+            filePath,
             importFrom,
             importedWithName,
             importedFromWithin,
@@ -1475,11 +1455,12 @@ export function parseCode(
               parameters,
               sourceFile,
               sourceText,
-              filename,
+              filePath,
               imports,
               topLevelNames,
               highlightBounds,
               alreadyExistingUIDs_MUTABLE,
+              applySteganography,
             )
             parsedFunctionParam = flatMapEither((parsedParams) => {
               const paramsValue = parsedParams.value
@@ -1505,13 +1486,14 @@ export function parseCode(
               parsedContents = parseOutFunctionContents(
                 sourceFile,
                 sourceText,
-                filename,
+                filePath,
                 imports,
                 topLevelNames,
                 propsObjectName,
                 body,
                 param?.highlightBounds ?? {},
                 alreadyExistingUIDs_MUTABLE,
+                applySteganography,
               )
             })
           } else {
@@ -1521,13 +1503,14 @@ export function parseCode(
               parseOutJSXElements(
                 sourceFile,
                 sourceText,
-                filename,
+                filePath,
                 [canvasContents.initializer],
                 imports,
                 topLevelNames,
                 null,
                 highlightBounds,
                 alreadyExistingUIDs_MUTABLE,
+                applySteganography,
               ),
             )
           }
@@ -1689,7 +1672,7 @@ export function parseCode(
       const nodeParseResult = parseArbitraryNodes(
         sourceFile,
         sourceText,
-        filename,
+        filePath,
         allArbitraryNodes.map((entry) => entry.node),
         imports,
         topLevelNames,
@@ -1702,6 +1685,7 @@ export function parseCode(
         true,
         '',
         true,
+        applySteganography,
       )
       forEachRight(nodeParseResult, (nodeParseSuccess) => {
         combinedTopLevelArbitraryBlock = nodeParseSuccess.value
@@ -1782,6 +1766,7 @@ function parseParams(
   topLevelNames: Array<string>,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   existingUIDs: Set<string>,
+  applySteganography: SteganographyMode,
 ): Either<string, WithParserMetadata<Array<Param>>> {
   let parsedParams: Array<Param> = []
   let highlightBounds: HighlightBoundsForUids = { ...existingHighlightBounds }
@@ -1796,6 +1781,7 @@ function parseParams(
       topLevelNames,
       highlightBounds,
       existingUIDs,
+      applySteganography,
     )
     if (isRight(parseResult)) {
       const parsedParam = parseResult.value
@@ -1821,6 +1807,7 @@ function parseParam(
   topLevelNames: Array<string>,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   existingUIDs: Set<string>,
+  applySteganography: SteganographyMode,
 ): Either<string, WithParserMetadata<Param>> {
   const dotDotDotToken = param.dotDotDotToken != null
   const parsedExpression: Either<
@@ -1838,6 +1825,7 @@ function parseParam(
         param.initializer,
         existingHighlightBounds,
         existingUIDs,
+        applySteganography,
       )
   return flatMapEither((paramExpression) => {
     const parsedBindingName = parseBindingName(
@@ -1850,6 +1838,7 @@ function parseParam(
       topLevelNames,
       existingHighlightBounds,
       existingUIDs,
+      applySteganography,
     )
     return mapEither(
       (bindingName) =>
@@ -1874,6 +1863,7 @@ function parseBindingName(
   topLevelNames: Array<string>,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   existingUIDs: Set<string>,
+  applySteganography: SteganographyMode,
 ): Either<string, WithParserMetadata<BoundParam>> {
   let highlightBounds: HighlightBoundsForUids = {
     ...existingHighlightBounds,
@@ -1909,6 +1899,7 @@ function parseBindingName(
           topLevelNames,
           highlightBounds,
           existingUIDs,
+          applySteganography,
         )
         if (isRight(parsedParam)) {
           const bound = parsedParam.value.value
@@ -1949,6 +1940,7 @@ function parseBindingName(
           topLevelNames,
           highlightBounds,
           existingUIDs,
+          applySteganography,
         )
         if (isRight(parsedParam)) {
           const bound = parsedParam.value.value
@@ -1967,27 +1959,6 @@ function parseBindingName(
   } else {
     return left('Unable to parse binding element')
   }
-}
-
-function withJSXElementAttributes(
-  sourceFile: TS.SourceFile,
-  withAttributes: (node: TS.Node, attrs: TS.JsxAttributes) => void,
-): void {
-  const transformer = (context: TS.TransformationContext) => {
-    const walkTree = (node: TS.Node) => {
-      if (TS.isJsxSelfClosingElement(node)) {
-        withAttributes(node, node.attributes)
-      } else if (TS.isJsxElement(node)) {
-        withAttributes(node, node.openingElement.attributes)
-      }
-      TS.visitEachChild(node, walkTree, context)
-
-      return node
-    }
-    return (n: TS.Node) => TS.visitNode(n, walkTree)
-  }
-
-  TS.transform(sourceFile, [transformer])
 }
 
 // In practical usage currently these highlight bounds should only include entries
@@ -2078,6 +2049,7 @@ export function lintAndParse(
   oldParseResultForUIDComparison: ParseSuccess | null,
   alreadyExistingUIDs_MUTABLE: Set<string>,
   shouldTrimBounds: 'trim-bounds' | 'do-not-trim-bounds',
+  applySteganography: SteganographyMode,
 ): ParsedTextFile {
   const lintResult = lintCode(filename, content)
   // Only fatal or error messages should bounce the parse.
@@ -2087,6 +2059,7 @@ export function lintAndParse(
       content,
       oldParseResultForUIDComparison,
       alreadyExistingUIDs_MUTABLE,
+      applySteganography,
     )
     if (isParseSuccess(result) && shouldTrimBounds === 'trim-bounds') {
       return trimHighlightBounds(result)

@@ -45,6 +45,10 @@ import { assertNever } from '../../core/shared/utils'
 import { notice } from '../common/notice'
 import type { AllElementProps } from '../editor/store/editor-state'
 import { toString } from '../../core/shared/element-path'
+import type { SteganoTextData } from '../../core/shared/stegano-text'
+import { cleanSteganoTextData, decodeSteganoData } from '../../core/shared/stegano-text'
+import { useUpdateStringRun } from '../../core/model/project-file-helper-hooks'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 export const TextEditorSpanId = 'text-editor'
 
@@ -53,6 +57,7 @@ export type TextProp = 'itself' | 'child' | 'whenTrue' | 'whenFalse' | 'fullCond
 export interface TextEditorProps {
   elementPath: ElementPath
   text: string
+  originalText: string | null
   component: React.ComponentType<React.PropsWithChildren<any>>
   passthroughProps: Record<string, any>
   filePath: string
@@ -286,8 +291,40 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
   )
 })
 
+type TextEditedText =
+  | { type: 'untracked'; contents: string }
+  | { type: 'tracked'; contents: string; data: SteganoTextData; quote: string }
+
+function getTextToUse({
+  text,
+  originalText,
+}: {
+  text: string
+  originalText: string | null
+}): TextEditedText {
+  if (isFeatureEnabled('Steganography') && originalText != null) {
+    const data = decodeSteganoData(originalText)
+    if (data != null) {
+      const { cleaned } = cleanSteganoTextData(originalText)
+      return {
+        type: 'tracked',
+        contents: cleaned,
+        data: data,
+        quote: data.originalString[0],
+      }
+    }
+  }
+  return { type: 'untracked', contents: text }
+}
+
 const TextEditor = React.memo((props: TextEditorProps) => {
-  const { elementPath, text, component, passthroughProps, textProp } = props
+  const { elementPath, component, passthroughProps, textProp } = props
+
+  const textToUse = React.useMemo(
+    () => getTextToUse({ text: props.text, originalText: props.originalText }),
+    [props.text, props.originalText],
+  )
+
   const dispatch = useDispatch()
   const cursorPosition = useEditorState(
     Substores.restOfEditor,
@@ -321,9 +358,11 @@ const TextEditor = React.memo((props: TextEditorProps) => {
   const outlineWidth = 1 / scale
   const outlineColor = colorTheme.textEditableOutline.value
 
-  const [firstTextProp] = React.useState(text)
+  const [firstTextProp] = React.useState(textToUse.contents)
 
   const myElement = React.useRef<HTMLSpanElement>(null)
+
+  const updateStringRunCommands = useUpdateStringRun()
 
   React.useEffect(() => {
     const currentElement = myElement.current
@@ -351,27 +390,41 @@ const TextEditor = React.memo((props: TextEditorProps) => {
 
     return () => {
       const content = currentElement.textContent
-      if (content != null) {
-        if (elementState === 'new' && content.replace(/\n/g, '') === '') {
-          requestAnimationFrame(() => dispatch([deleteView(elementPath)]))
+      if (content == null) {
+        return
+      }
+      if (elementState === 'new' && content.replace(/\n/g, '') === '') {
+        requestAnimationFrame(() => dispatch([deleteView(elementPath)]))
+        return
+      }
+      if (elementState != null && savedContentRef.current !== content) {
+        savedContentRef.current = content
+        if (textToUse.type === 'tracked') {
+          requestAnimationFrame(() => dispatch(updateStringRunCommands(textToUse.data, content)))
         } else {
-          if (elementState != null && savedContentRef.current !== content) {
-            savedContentRef.current = content
-            requestAnimationFrame(() => dispatch([getSaveAction(elementPath, content, textProp)]))
-          }
-          // remove dangling empty spans
-          if (
-            content != null &&
-            initialText !== content &&
-            content.replace(/^\n/, '').length === 0 &&
-            canDeleteWhenEmpty
-          ) {
-            requestAnimationFrame(() => dispatch([deleteView(elementPath)]))
-          }
+          requestAnimationFrame(() => dispatch([getSaveAction(elementPath, content, textProp)]))
         }
       }
+
+      if (
+        content != null &&
+        initialText !== content &&
+        content.replace(/^\n/, '').length === 0 &&
+        canDeleteWhenEmpty
+      ) {
+        requestAnimationFrame(() => dispatch([deleteView(elementPath)]))
+      }
     }
-  }, [dispatch, elementPath, elementState, textProp, metadataRef, allElementPropsRef])
+  }, [
+    dispatch,
+    elementPath,
+    elementState,
+    textProp,
+    metadataRef,
+    allElementPropsRef,
+    updateStringRunCommands,
+    textToUse,
+  ])
 
   React.useLayoutEffect(() => {
     if (myElement.current == null) {
@@ -449,14 +502,23 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     const content = myElement.current?.textContent
     if (content != null && elementState != null && savedContentRef.current !== content) {
       savedContentRef.current = content
-      dispatch([
-        getSaveAction(elementPath, content, textProp),
-        updateEditorMode(EditorModes.selectMode(null, false, 'none')),
-      ])
+      if (textToUse.type === 'tracked') {
+        requestAnimationFrame(() => {
+          dispatch([
+            ...updateStringRunCommands(textToUse.data, content),
+            updateEditorMode(EditorModes.selectMode(null, false, 'none')),
+          ])
+        })
+      } else {
+        dispatch([
+          getSaveAction(elementPath, content, textProp),
+          updateEditorMode(EditorModes.selectMode(null, false, 'none')),
+        ])
+      }
     } else {
       dispatch([updateEditorMode(EditorModes.selectMode(null, false, 'none'))])
     }
-  }, [dispatch, elementPath, elementState, textProp])
+  }, [dispatch, elementPath, elementState, textProp, textToUse, updateStringRunCommands])
 
   const editorProps: React.DetailedHTMLProps<
     React.HTMLAttributes<HTMLSpanElement>,
