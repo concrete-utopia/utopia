@@ -16,6 +16,7 @@ import {
 } from '../shared/array-utils'
 import {
   intrinsicHTMLElementNamesThatSupportChildren,
+  PossibleTextElements,
   TextElements,
   VoidElementsToFilter,
 } from '../shared/dom-utils'
@@ -175,6 +176,7 @@ export const getChildrenOfCollapsedViews = (
   }, collapsedViews)
 }
 
+// TODO: should this also be changed to TextElements to include all possible text elements?
 const ElementsToDrillIntoForTextContent = ['div', 'span']
 
 export const MetadataUtils = {
@@ -1119,7 +1121,7 @@ export const MetadataUtils = {
     if (
       isJSXElement(elementValue) &&
       isIntrinsicHTMLElement(elementValue.name) &&
-      !intrinsicHTMLElementNamesThatSupportChildren.includes(elementValue.name.baseVariable)
+      !PossibleTextElements.includes(elementValue.name.baseVariable)
     ) {
       return false
     }
