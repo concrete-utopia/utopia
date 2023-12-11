@@ -222,7 +222,7 @@ export function replaceNonDomElementWithFirstDomAncestorPath(
 
 export const AllFragmentLikeNonDomElementTypes = ['fragment', 'conditional'] as const
 export const AllFragmentLikeTypes = [...AllFragmentLikeNonDomElementTypes, 'sizeless-div'] as const
-export type FragmentLikeType = typeof AllFragmentLikeTypes[number] // <- this gives us the union type of the Array's entries
+export type FragmentLikeType = (typeof AllFragmentLikeTypes)[number] // <- this gives us the union type of the Array's entries
 
 type SizelessDivsConsideredFragmentLike =
   | 'sizeless-div-considered-fragment-like'

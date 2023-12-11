@@ -26,11 +26,13 @@ import {
   useResolvedThreads,
   useCanvasLocationOfThread,
   getCollaboratorById,
+  useMyThreadReadStatus,
 } from '../../../core/commenting/comment-hooks'
-import { Substores, useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
 import { unless, when } from '../../../utils/react-conditionals'
 import { openCommentThreadActions } from '../../../core/shared/multiplayer'
 import { getRemixLocationLabel } from '../../canvas/remix/remix-utils'
+import type { RestOfEditorState } from '../../editor/store/store-hook-substore-types'
 
 export const CommentSection = React.memo(() => {
   return (
@@ -110,20 +112,12 @@ interface ThreadPreviewProps {
 }
 
 const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
+  const ref = React.useRef<HTMLDivElement>(null)
+
   const dispatch = useDispatch()
   const colorTheme = useColorTheme()
 
   const { remixLocationRoute } = thread.metadata
-
-  const isSelected = useEditorState(
-    Substores.restOfEditor,
-    (store) =>
-      isCommentMode(store.editor.mode) &&
-      store.editor.mode.comment != null &&
-      isExistingComment(store.editor.mode.comment) &&
-      store.editor.mode.comment.threadId === thread.id,
-    'ThreadPreview isSelected',
-  )
 
   const { location, scene: commentScene } = useCanvasLocationOfThread(thread)
 
@@ -165,7 +159,11 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
     [resolveThread, dispatch, thread],
   )
 
+  const readByMe = useMyThreadReadStatus(thread)
+
   const collabs = useStorage((storage) => storage.collaborators)
+
+  const isSelected = useIsSelectedAndScrollToThread(ref, thread.id)
 
   const comment = thread.comments[0]
   if (comment == null) {
@@ -180,6 +178,7 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
 
   return (
     <div
+      ref={ref}
       key={comment.id}
       onClick={onClick}
       style={{
@@ -240,6 +239,7 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
           </div>,
         )}
         {unless(repliesCount > 0, <div />)}
+        {when(readByMe === 'unread', 'Unread')}
         <Button highlight spotlight style={{ padding: '0 6px' }} onClick={onResolveThread}>
           {thread.metadata.resolved ? 'Unresolve' : 'Resolve'}
         </Button>
@@ -248,3 +248,39 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
   )
 })
 ThreadPreview.displayName = 'ThreadPreview'
+
+function useIsSelectedAndScrollToThread(ref: React.RefObject<HTMLDivElement>, threadId: string) {
+  const scrollToSelectedCallback = React.useCallback(
+    (isSelected: boolean) => {
+      if (isSelected && ref.current != null) {
+        ref.current.scrollIntoView()
+      }
+    },
+    [ref],
+  )
+
+  const isSelectedSelector = React.useCallback(
+    (store: RestOfEditorState) => {
+      return (
+        isCommentMode(store.editor.mode) &&
+        store.editor.mode.comment != null &&
+        isExistingComment(store.editor.mode.comment) &&
+        store.editor.mode.comment.threadId === threadId
+      )
+    },
+    [threadId],
+  )
+
+  useSelectorWithCallback(
+    Substores.restOfEditor,
+    isSelectedSelector,
+    scrollToSelectedCallback,
+    'useIsSelectedAndScrollToThread isSelected',
+  )
+
+  return useEditorState(
+    Substores.restOfEditor,
+    isSelectedSelector,
+    'useIsSelectedAndScrollToThread isSelected',
+  )
+}
