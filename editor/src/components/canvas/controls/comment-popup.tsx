@@ -8,15 +8,24 @@ import '../../../../resources/editor/css/liveblocks-comments.css'
 import {
   getCollaboratorById,
   useCanvasCommentThreadAndLocation,
+  useCreateNewThreadReadStatus,
+  useDeleteThreadReadStatus,
+  useMyThreadReadStatus,
   useResolveThread,
   useScenesWithId,
+  useSetThreadReadStatus,
+  useSetThreadReadStatusOnMount,
+  useScenes,
 } from '../../../core/commenting/comment-hooks'
-import * as EP from '../../../core/shared/element-path'
 import { assertNever } from '../../../core/shared/utils'
 import { CommentWrapper, MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { when } from '../../../utils/react-conditionals'
 import { Button, UtopiaStyles, useColorTheme } from '../../../uuiui'
-import { setRightMenuTab, switchEditorMode } from '../../editor/actions/action-creators'
+import {
+  setRightMenuTab,
+  switchEditorMode,
+  setProp_UNSAFE,
+} from '../../editor/actions/action-creators'
 import type { CommentId } from '../../editor/editor-modes'
 import {
   EditorModes,
@@ -31,6 +40,9 @@ import { stopPropagation } from '../../inspector/common/inspector-utils'
 import { canvasPointToWindowPoint } from '../dom-lookup'
 import { RemixNavigationAtom } from '../remix/utopia-remix-root-component'
 import { getIdOfScene } from './comment-mode/comment-mode-hooks'
+import * as EP from '../../../core/shared/element-path'
+import { create } from '../../../core/shared/property-path'
+import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 
 export const CommentPopup = React.memo(() => {
   const mode = useEditorState(
@@ -63,6 +75,14 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
   const colorTheme = useColorTheme()
 
   const { location, thread } = useCanvasCommentThreadAndLocation(comment)
+  const threadId = thread?.id ?? null
+
+  useSetThreadReadStatusOnMount(thread)
+  const setThreadReadStatus = useSetThreadReadStatus()
+  const createNewThreadReadStatus = useCreateNewThreadReadStatus()
+  const deleteThreadReadStatus = useDeleteThreadReadStatus()
+
+  const readByMe = useMyThreadReadStatus(thread)
 
   const commentsCount = React.useMemo(
     () => thread?.comments.filter((c) => c.deletedAt == null).length ?? 0,
@@ -71,7 +91,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
 
   const createThread = useCreateThread()
 
-  const scenes = useScenesWithId()
+  const scenes = useScenes()
   const [remixSceneRoutes] = useAtom(RemixNavigationAtom)
 
   const onCreateThread = React.useCallback(
@@ -83,10 +103,10 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
       }
 
       // Create a new thread
-      const newThread = (() => {
+      const [newThread, auxiliaryActions] = (() => {
         switch (comment.location.type) {
           case 'canvas':
-            return createThread({
+            const newThreadOnCanvas = createThread({
               body,
               metadata: {
                 resolved: false,
@@ -95,13 +115,27 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
                 y: comment.location.position.y,
               },
             })
+            return [newThreadOnCanvas, []]
           case 'scene':
             const sceneId = comment.location.sceneId
-            const scene = scenes.find((s) => getIdOfScene(s) === sceneId)
+            const scene = scenes.find(
+              (s) => getIdOfScene(s) === sceneId || EP.toUid(s.elementPath) === sceneId,
+            )
             const remixRoute =
               scene != null ? remixSceneRoutes[EP.toString(scene?.elementPath)] : undefined
 
-            return createThread({
+            const addSceneIdPropAction =
+              scene == null
+                ? []
+                : [
+                    setProp_UNSAFE(
+                      scene.elementPath,
+                      create('id'),
+                      jsExpressionValue(sceneId, emptyComments),
+                    ),
+                  ]
+
+            const newThreadOnScene = createThread({
               body,
               metadata: {
                 resolved: false,
@@ -112,25 +146,37 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
                 remixLocationRoute: remixRoute != null ? remixRoute.location.pathname : undefined,
               },
             })
+            return [newThreadOnScene, addSceneIdPropAction]
           default:
             assertNever(comment.location)
         }
       })()
+      createNewThreadReadStatus(newThread.id, 'read')
       dispatch([
+        ...auxiliaryActions,
         switchEditorMode(EditorModes.commentMode(existingComment(newThread.id), 'not-dragging')),
         setRightMenuTab(RightMenuTab.Comments),
       ])
     },
-    [createThread, comment, dispatch, remixSceneRoutes, scenes],
+    [createThread, comment, dispatch, remixSceneRoutes, scenes, createNewThreadReadStatus],
   )
+
+  const onSubmitComment = React.useCallback(() => {
+    if (threadId != null) {
+      createNewThreadReadStatus(threadId, 'read')
+    }
+  }, [threadId, createNewThreadReadStatus])
 
   const onCommentDelete = React.useCallback(
     (_deleted: CommentData) => {
       if (commentsCount - 1 <= 0) {
         dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
+        if (threadId != null) {
+          deleteThreadReadStatus(threadId)
+        }
       }
     },
-    [commentsCount, dispatch],
+    [commentsCount, dispatch, threadId, deleteThreadReadStatus],
   )
 
   const canvasScale = useEditorState(
@@ -152,6 +198,13 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
     }
     resolveThread(thread)
   }, [thread, resolveThread])
+
+  const onClickMarkAsUnread = React.useCallback(() => {
+    if (thread?.id == null) {
+      return
+    }
+    setThreadReadStatus(thread.id, 'unread')
+  }, [thread?.id, setThreadReadStatus])
 
   const collabs = useStorage((storage) => storage.collaborators)
 
@@ -196,6 +249,18 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
               height: 40,
             }}
           >
+            {when(
+              readByMe === 'read',
+              <Button
+                highlight
+                spotlight
+                style={{ padding: '0 6px' }}
+                onClick={onClickMarkAsUnread}
+              >
+                Mark as unread
+              </Button>,
+            )}
+            <div style={{ width: 8 }} />
             <Button highlight spotlight style={{ padding: '0 6px' }} onClick={onClickResolve}>
               {thread?.metadata.resolved ? 'Unresolve' : 'Resolve'}
             </Button>
@@ -217,7 +282,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
               />
             )
           })}
-          <Composer autoFocus threadId={thread.id} />
+          <Composer autoFocus threadId={thread.id} onComposerSubmit={onSubmitComment} />
         </>
       )}
     </div>
