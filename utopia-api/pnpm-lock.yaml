@@ -26,18 +26,14 @@ specifiers:
   jest-environment-jsdom: 27.2.3
   lint-staged: ^9.4.3
   prettier: 2.0.5
-  react: 18.1.0
-  react-dom: 18.1.0
   typescript: 4.6.4
   uuid: 3.3.2
 
 dependencies:
-  '@emotion/react': 11.1.2_l23vr2jl6b3o5l3eanlyfmxl6q_7vt4anojlpsjiins4bgoi5udfi
+  '@emotion/react': 11.1.2_l23vr2jl6b3o5l3eanlyfmxl6q_fterebvpvk7nemgaxwrzlbcgoa
   '@emotion/serialize': 1.0.2
-  '@emotion/styled': 11.0.0_uvvexja3etv2yw236j5nxfshzm
+  '@emotion/styled': 11.0.0_n2e4lto2imyvl3bmdp4z4y4mtq
   '@emotion/styled-base': 11.0.0
-  react: 18.1.0
-  react-dom: 18.1.0_react@18.1.0
   uuid: 3.3.2
 
 devDependencies:
@@ -1468,7 +1464,7 @@ packages:
     resolution: {integrity: sha512-igX9a37DR2ZPGYtV6suZ6whr8pTFtyHL3K/oLUotxpSVO2ASaprmAe2Dkq7tBo7CRY7MMDrAa9nuQP9/YG8FxQ==}
     dev: false
 
-  /@emotion/react/11.1.2_l23vr2jl6b3o5l3eanlyfmxl6q_7vt4anojlpsjiins4bgoi5udfi:
+  /@emotion/react/11.1.2_l23vr2jl6b3o5l3eanlyfmxl6q_fterebvpvk7nemgaxwrzlbcgoa:
     resolution: {integrity: sha512-zEpxynUhHm2GqjY556RnA12Ijt0v6rYUwV6WliyGoFbQKJKkXFuTzGHGQx4UY2jKUV1I4yjr66Ajj/qoQMVPeQ==}
     peerDependencies:
       '@babel/core': ^7.0.0
@@ -1489,7 +1485,6 @@ packages:
       '@emotion/weak-memoize': 0.2.5
       '@types/react': 18.0.9
       hoist-non-react-statics: 3.3.2
-      react: 18.1.0
     dev: false
     patched: true
 
@@ -1511,7 +1506,7 @@ packages:
     resolution: {integrity: sha512-/NY/PXrQkl/wI0+0E3QWd+m9kMg7h4THmjbPEe0VVnplNtdJC6db0VHDqmaC2tsEDcda6zvy3b8giM9DHa6BLw==}
     dev: false
 
-  /@emotion/styled/11.0.0_uvvexja3etv2yw236j5nxfshzm:
+  /@emotion/styled/11.0.0_n2e4lto2imyvl3bmdp4z4y4mtq:
     resolution: {integrity: sha512-498laccxJlBiJqrr2r/fx9q+Pr55D0URP2UyOkoSGLjevb8LLAFWueqthsQ5XijE66iGo7y3rzzEYdA7CHmZEQ==}
     peerDependencies:
       '@babel/core': ^7.0.0
@@ -1528,11 +1523,10 @@ packages:
       '@babel/runtime': 7.15.4
       '@emotion/babel-plugin': 11.3.0_@babel+core@7.14.6
       '@emotion/is-prop-valid': 1.1.0
-      '@emotion/react': 11.1.2_l23vr2jl6b3o5l3eanlyfmxl6q_7vt4anojlpsjiins4bgoi5udfi
+      '@emotion/react': 11.1.2_l23vr2jl6b3o5l3eanlyfmxl6q_fterebvpvk7nemgaxwrzlbcgoa
       '@emotion/serialize': 1.0.2
       '@emotion/utils': 1.0.0
       '@types/react': 18.0.9
-      react: 18.1.0
     dev: false
 
   /@emotion/unitless/0.7.5:
@@ -3887,13 +3881,6 @@ packages:
       wrap-ansi: 3.0.1
     dev: true
 
-  /loose-envify/1.4.0:
-    resolution: {integrity: sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==}
-    hasBin: true
-    dependencies:
-      js-tokens: 4.0.0
-    dev: false
-
   /lru-cache/6.0.0:
     resolution: {integrity: sha512-Jo6dJ04CmSjuznwJSS3pUeWmd/H0ffTlkXXgwZi+eq1UCmqQwCh+eLsYOYCwY991i2Fah4h1BEMCx4qThGbsiA==}
     engines: {node: '>=10'}
@@ -4225,16 +4212,6 @@ packages:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
     dev: true
 
-  /react-dom/18.1.0_react@18.1.0:
-    resolution: {integrity: sha512-fU1Txz7Budmvamp7bshe4Zi32d0ll7ect+ccxNu9FlObT605GOEB8BfO4tmRJ39R5Zj831VCpvQ05QPBW5yb+w==}
-    peerDependencies:
-      react: ^18.1.0
-    dependencies:
-      loose-envify: 1.4.0
-      react: 18.1.0
-      scheduler: 0.22.0
-    dev: false
-
   /react-is/16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
     dev: false
@@ -4242,13 +4219,6 @@ packages:
   /react-is/17.0.2:
     resolution: {integrity: sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==}
     dev: true
-
-  /react/18.1.0:
-    resolution: {integrity: sha512-4oL8ivCz5ZEPyclFQXaNksK3adutVS8l2xzZU0cqEFrE9Sb7fC0EFK5uEk74wIreL1DERyjvsU915j1pcT2uEQ==}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      loose-envify: 1.4.0
-    dev: false
 
   /regenerate-unicode-properties/9.0.0:
     resolution: {integrity: sha512-3E12UeNSPfjrgwjkR81m5J7Aw/T55Tu7nUyZVQYCKEOs+2dkxEY+DpPtZzO4YruuiPb7NkYLVcyJC4+zCbk5pA==}
@@ -4372,12 +4342,6 @@ packages:
     dependencies:
       xmlchars: 2.2.0
     dev: true
-
-  /scheduler/0.22.0:
-    resolution: {integrity: sha512-6QAm1BgQI88NPYymgGQLCZgvep4FyePDWFpXVK+zNSUgHwlqpJy8VEh8Et0KxTACS4VWwMousBElAZOH9nkkoQ==}
-    dependencies:
-      loose-envify: 1.4.0
-    dev: false
 
   /semver-compare/1.0.0:
     resolution: {integrity: sha1-De4hahyUGrN+nvsXiPavxf9VN/w=}
