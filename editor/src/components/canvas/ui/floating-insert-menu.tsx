@@ -58,7 +58,7 @@ function convertInsertableComponentsToFlatList(
           const source = index === 0 ? componentGroup.source : null
           const label = componentToBeInserted.metadata?.originalName ?? componentToBeInserted.name
           return {
-            label,
+            label: label,
             source: optionalMap(getInsertableGroupLabel, source),
             value: {
               ...componentToBeInserted,

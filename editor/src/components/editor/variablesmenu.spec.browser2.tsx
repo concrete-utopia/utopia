@@ -21,6 +21,7 @@ import { codeFile } from '../../core/shared/project-file-types'
 import type { ProjectContentTreeRoot } from '../assets'
 import { contentsToTree } from '../assets'
 import { PrettierConfig } from 'utopia-vscode-common'
+import { pressKey } from '../canvas/event-helpers.test-utils'
 
 function getInsertItems() {
   return screen.queryAllByTestId(/^insert-item-/gi)
@@ -132,9 +133,7 @@ describe('variables menu', () => {
       const filterBox = await screen.findByTestId(InsertMenuFilterTestId)
       forceNotNull('the filter box must not be null', filterBox)
 
-      await act(async () => {
-        fireEvent.keyDown(filterBox, { key: 'Enter', keycode: 13 })
-      })
+      await pressKey('Enter', { targetElement: filterBox })
 
       expect(getPrintedUiJsCode(editor.getEditorState(), '/src/app.js')).toEqual(
         Prettier.format(
@@ -199,9 +198,7 @@ describe('variables menu', () => {
       const filterBox = await screen.findByTestId(InsertMenuFilterTestId)
       forceNotNull('the filter box must not be null', filterBox)
 
-      await act(async () => {
-        fireEvent.keyDown(filterBox, { key: 'Enter', keycode: 13 })
-      })
+      await pressKey('Enter', { targetElement: filterBox })
 
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         makeTestProjectCodeWithComponentInnards(`
@@ -257,9 +254,7 @@ describe('variables menu', () => {
       const filterBox = await screen.findByTestId(InsertMenuFilterTestId)
       forceNotNull('the filter box must not be null', filterBox)
 
-      await act(async () => {
-        fireEvent.keyDown(filterBox, { key: 'Enter', keycode: 13 })
-      })
+      await pressKey('Enter', { targetElement: filterBox })
 
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         makeTestProjectCodeWithComponentInnards(`

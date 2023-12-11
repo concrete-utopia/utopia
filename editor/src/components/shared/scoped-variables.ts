@@ -35,6 +35,8 @@ import { emptyImports } from '../../core/workers/common/project-file-utils'
 import { isImage } from '../../core/shared/utils'
 import { type ComponentElementToInsert } from '../custom-code/code-file'
 import { omitWithPredicate } from '../../core/shared/object-utils'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { isLeft } from '../../core/shared/either'
 
 export function getVariablesInScope(
   elementPath: ElementPath | null,
@@ -95,7 +97,7 @@ function getVariablesFromComponent(
   variablesInScopeFromEditorState: VariablesInScope,
 ): AllVariablesInScope {
   const elementPathString = toComponentId(elementPath)
-  const jsxComponent = topLevelElements.find((el) => isUtopiaJSXComponent(el)) as UtopiaJSXComponent
+  const jsxComponent = topLevelElements.find(isUtopiaJSXComponent)
   const jsxComponentVariables = variablesInScopeFromEditorState[elementPathString] ?? {}
   return {
     filePath: jsxComponent?.name ?? 'Component',
@@ -108,18 +110,18 @@ function getComponentPropsInScope(
   elementPath: ElementPath,
   jsxMetadata: ElementInstanceMetadataMap,
 ): AllVariablesInScope {
-  const jsxComponent = topLevelElements.find((el) => isUtopiaJSXComponent(el)) as UtopiaJSXComponent
-  const jsxComponentPropNamesUsed = jsxComponent?.propsUsed ?? []
+  const jsxComponent = topLevelElements.find(isUtopiaJSXComponent)
+  const jsxComponentPropNamesDeclared = jsxComponent?.propsUsed ?? []
 
-  const jsxComponentProps = omitWithPredicate(
+  const jsxComponentPropsPassed = omitWithPredicate(
     getContainerPropsValue(elementPath, jsxMetadata),
-    (key) => !jsxComponentPropNamesUsed.includes(key as string),
+    (key) => typeof key !== 'string' || !jsxComponentPropNamesDeclared.includes(key),
   )
 
   const name = jsxComponent?.name ?? 'Component'
   return {
     filePath: `${name}::props`,
-    variables: generateVariableTypes(jsxComponentProps),
+    variables: generateVariableTypes(jsxComponentPropsPassed),
   }
 }
 
@@ -127,20 +129,25 @@ function getContainerPropsValue(
   elementPath: ElementPath,
   jsxMetadata: ElementInstanceMetadataMap,
 ): VariableData {
-  const containerPathString = toComponentId(getContainingComponent(elementPath))
-  const containerMetadata = jsxMetadata[containerPathString]?.element.value
+  const containerMetadata = MetadataUtils.findElementByElementPath(
+    jsxMetadata,
+    getContainingComponent(elementPath),
+  )
   const runtimeProps: VariableData = {}
 
-  if (
-    containerMetadata != null &&
-    typeof containerMetadata !== 'string' &&
-    isJSXElement(containerMetadata)
-  ) {
-    containerMetadata.props.forEach((prop) => {
+  if (containerMetadata == null || isLeft(containerMetadata.element)) {
+    return runtimeProps
+  }
+
+  const containerElement = containerMetadata.element.value
+
+  if (isJSXElement(containerElement)) {
+    containerElement.props.forEach((prop) => {
       if (isJSXAttributesEntry(prop)) {
         const value = simplifyAttributeIfPossible(prop.value)
-        if (!isJSXAttributeValue(value)) return
-        runtimeProps[prop.key] = value.value
+        if (isJSXAttributeValue(value)) {
+          runtimeProps[prop.key] = value.value
+        }
       }
     })
   }
