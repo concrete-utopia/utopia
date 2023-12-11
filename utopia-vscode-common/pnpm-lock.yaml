@@ -1,9 +1,9 @@
 lockfileVersion: 5.4
 
 specifiers:
-  '@types/prettier': 2.0.1
+  '@types/prettier': 2.7.3
   localforage: 1.9.0
-  prettier: 2.0.5
+  prettier: 2.8.8
   ts-loader: 5.3.3
   typescript: 4.0.5
   vscode-dts: 0.3.1
@@ -12,10 +12,10 @@ specifiers:
 
 dependencies:
   localforage: 1.9.0
-  prettier: 2.0.5
+  prettier: 2.8.8
 
 devDependencies:
-  '@types/prettier': 2.0.1
+  '@types/prettier': 2.7.3
   ts-loader: 5.3.3_typescript@4.0.5
   typescript: 4.0.5
   vscode-dts: 0.3.1
@@ -24,8 +24,8 @@ devDependencies:
 
 packages:
 
-  /@types/prettier/2.0.1:
-    resolution: {integrity: sha512-boy4xPNEtiw6N3abRhBi/e7hNvy3Tt8E9ZRAQrwAGzoCGZS/1wjo9KY7JHhnfnEsG5wSjDbymCozUM9a3ea7OQ==}
+  /@types/prettier/2.7.3:
+    resolution: {integrity: sha512-+68kP9yzs4LMp7VNh8gdzMSPZFL44MLGqiHWvttYJe+6qnuVr4Ek9wSBQoveqY/r+LwjCcU29kNVkidwim+kYA==}
     dev: true
 
   /@webassemblyjs/ast/1.8.5:
@@ -1118,7 +1118,7 @@ packages:
     resolution: {integrity: sha512-oWb1Z6mkHIskLzEJ/XWX0srkpkTQ7vaopMQkyaEIoq0fmtFVxOthb8cCxeT+p3ynTdkk/RZwbgG4brR5BeWECw==}
     engines: {node: '>= 4.0'}
     os: [darwin]
-    deprecated: fsevents 1 will break on node v14+ and could be using insecure binaries. Upgrade to fsevents 2.
+    deprecated: The v1 package contains DANGEROUS / INSECURE binaries. Upgrade to safe fsevents v2
     requiresBuild: true
     dependencies:
       bindings: 1.5.0
@@ -2067,8 +2067,8 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
-  /prettier/2.0.5:
-    resolution: {integrity: sha512-7PtVymN48hGcO4fGjybyBSIWDsLU4H4XlvOHfq91pz9kkGlonzwTfYkaIEwiRg/dAJF9YlbsduBAgtYLi+8cFg==}
+  /prettier/2.8.8:
+    resolution: {integrity: sha512-tdN8qQGvNjw4CHbY+XXk0JgCXn9QiF21a55rBe5LJAU+kDyC4WQn4+awm2Xfk2lQMk5fKup9XgzTZtGkjBdP9Q==}
     engines: {node: '>=10.13.0'}
     hasBin: true
     dev: false
