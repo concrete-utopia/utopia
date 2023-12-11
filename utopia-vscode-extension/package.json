@@ -47,7 +47,7 @@
     ]
   },
   "dependencies": {
-    "utopia-vscode-common": "link:../utopia-vscode-common"
+    "utopia-vscode-common": "file:../utopia-vscode-common"
   },
   "devDependencies": {
     "ts-loader": "5.3.3",
