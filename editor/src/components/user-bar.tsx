@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react'
 import React from 'react'
 import { useOthers, useStatus, useStorage } from '../../liveblocks.config'
-import { getUserPicture, isLoggedIn } from '../common/user'
+import { getUserPicture, isLoggedIn, isOfflineState } from '../common/user'
 import { getCollaborator, useMyUserAndPresence } from '../core/commenting/comment-hooks'
 import type { MultiplayerColor } from '../core/shared/multiplayer'
 import {
@@ -14,7 +14,7 @@ import {
 } from '../core/shared/multiplayer'
 import { MultiplayerWrapper } from '../utils/multiplayer-wrapper'
 import { when } from '../utils/react-conditionals'
-import { Avatar, FlexRow, Icn, Tooltip, colorTheme } from '../uuiui'
+import { Avatar, FlexRow, Icn, Tooltip, color, colorTheme } from '../uuiui'
 import { notice } from './common/notice'
 import type { EditorAction } from './editor/action-types'
 import { showToast, switchEditorMode } from './editor/actions/action-creators'
@@ -82,9 +82,8 @@ SinglePlayerUserBar.displayName = 'SinglePlayerUserBar'
 
 const MultiplayerUserBar = React.memo(() => {
   const dispatch = useDispatch()
-  const collabs = useStorage((store) => store.collaborators)
-
   const { user: myUser } = useMyUserAndPresence()
+  const collabs = useStorage((store) => store.collaborators)
 
   const others = useOthers((list) =>
     normalizeOthersList(myUser.id, list).map((other) => {
@@ -101,6 +100,10 @@ const MultiplayerUserBar = React.memo(() => {
   const hiddenOthers = React.useMemo(() => {
     return others.slice(MAX_VISIBLE_OTHER_PLAYERS)
   }, [others])
+
+  const offlineOthers = Object.values(collabs).filter((collab) => {
+    return !others.some((other) => other.id === collab.id)
+  })
 
   const mode = useEditorState(
     Substores.restOfEditor,
@@ -193,6 +196,28 @@ const MultiplayerUserBar = React.memo(() => {
           picture={null}
         />,
       )}
+      {when(
+        offlineOthers.length > 0,
+        offlineOthers.map((other) => {
+          if (other == null) {
+            return null
+          }
+          const name = normalizeMultiplayerName(other.name)
+          const isOwner = ownerId === other.id
+          return (
+            <MultiplayerAvatarWithTooltip
+              key={`avatar-${other.id}`}
+              name={multiplayerInitialsFromName(name)}
+              tooltip={name}
+              color={multiplayerColorFromIndex(other.colorIndex)}
+              picture={other.avatar}
+              coloredTooltip={true}
+              isOwner={isOwner}
+              isOffline={true}
+            />
+          )
+        }),
+      )}
     </div>
   )
 })
@@ -229,6 +254,7 @@ export type MultiplayerAvatarProps = {
   follower?: boolean
   isOwner?: boolean
   style?: CSSProperties
+  isOffline?: boolean
 }
 
 export const MultiplayerAvatar = React.memo((props: MultiplayerAvatarProps) => {
@@ -240,8 +266,8 @@ export const MultiplayerAvatar = React.memo((props: MultiplayerAvatarProps) => {
       style={{
         width: props.size ?? 24,
         height: props.size ?? 24,
-        backgroundColor: props.color.background,
-        color: props.color.foreground,
+        backgroundColor: props.isOffline ? colorTheme.bg4.value : props.color.background,
+        color: props.isOffline ? colorTheme.fg2.value : props.color.foreground,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -259,7 +285,7 @@ export const MultiplayerAvatar = React.memo((props: MultiplayerAvatarProps) => {
       }}
       onClick={props.onClick}
     >
-      <AvatarPicture url={picture} size={24} initials={props.name} />
+      <AvatarPicture url={picture} size={24} initials={props.name} isOffline={props.isOffline} />
       {props.isOwner ? <OwnerBadge /> : null}
       {props.follower ? <FollowerBadge /> : null}
     </div>
@@ -308,6 +334,7 @@ interface AvatarPictureProps {
   url: string | null | undefined
   initials: string
   size?: number
+  isOffline?: boolean
 }
 
 export const AvatarPicture = React.memo((props: AvatarPictureProps) => {
@@ -337,6 +364,7 @@ export const AvatarPicture = React.memo((props: AvatarPictureProps) => {
         width: size ?? '100%',
         height: size ?? '100%',
         borderRadius: '100%',
+        filter: props.isOffline ? 'grayscale(1)' : undefined,
       }}
       src={url}
       referrerPolicy='no-referrer'
