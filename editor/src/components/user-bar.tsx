@@ -259,7 +259,7 @@ export const MultiplayerAvatar = React.memo((props: MultiplayerAvatarProps) => {
       }}
       onClick={props.onClick}
     >
-      <AvatarPicture url={picture} size={24} initials={props.name} />
+      <AvatarPicture url={picture} initials={props.name} />
       {props.isOwner ? <OwnerBadge /> : null}
       {props.follower ? <FollowerBadge /> : null}
     </div>
