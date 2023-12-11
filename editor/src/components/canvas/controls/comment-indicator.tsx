@@ -210,8 +210,8 @@ export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) =>
   function getIndicatorStyle() {
     const base: Interpolation<Theme> = {
       position: 'fixed',
-      top: position.y,
-      left: position.x,
+      top: position.y + 3,
+      left: position.x - 3,
       opacity: opacity,
       filter: resolved ? 'grayscale(1)' : undefined,
       width: IndicatorSize,
@@ -253,7 +253,7 @@ export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) =>
         style={{
           height: 18,
           width: 18,
-          borderRadius: 10,
+          borderRadius: 18,
           background: bgColor,
           color: fgColor,
           fontSize: 9,
