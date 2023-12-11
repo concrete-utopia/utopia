@@ -1,6 +1,7 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
+import type { Interpolation } from '@emotion/react'
 import type { ThreadData } from '@liveblocks/client'
 import React from 'react'
 import type { ThreadMetadata } from '../../../../liveblocks.config'
@@ -27,8 +28,9 @@ import {
 } from '../../../core/shared/multiplayer'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { setRightMenuTab, switchEditorMode } from '../../editor/actions/action-creators'
+import type { Theme } from '../../../uuiui'
 import { UtopiaStyles, colorTheme } from '../../../uuiui'
-import { EditorModes } from '../../editor/editor-modes'
+import { EditorModes, isCommentMode, isExistingComment } from '../../editor/editor-modes'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { AvatarPicture } from '../../user-bar'
@@ -39,6 +41,7 @@ import { assertNever } from '../../../core/shared/utils'
 import { optionalMap } from '../../../core/shared/optional-utils'
 
 const IndicatorSize = 20
+const MagnifyScale = 1.15
 
 export const CommentIndicators = React.memo(() => {
   const projectId = useEditorState(
@@ -167,6 +170,7 @@ const CommentIndicatorsInner = React.memo(() => {
           fgColor={temporaryIndicatorData.fgColor}
           avatarUrl={temporaryIndicatorData.avatarUrl}
           avatarInitials={temporaryIndicatorData.initials}
+          isActive={true}
         />
       ) : null}
     </React.Fragment>
@@ -184,30 +188,57 @@ interface CommentIndicatorUIProps {
   avatarUrl?: string | null
   onClick?: (e: React.MouseEvent) => void
   onMouseDown?: (e: React.MouseEvent) => void
+  isActive: boolean
 }
 
 export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) => {
-  const { position, onClick, onMouseDown, bgColor, fgColor, avatarUrl, avatarInitials, opacity } =
-    props
+  const {
+    position,
+    onClick,
+    onMouseDown,
+    bgColor,
+    fgColor,
+    avatarUrl,
+    avatarInitials,
+    opacity,
+    resolved,
+    isActive,
+  } = props
+
+  function getIndicatorStyle() {
+    const base: Interpolation<Theme> = {
+      position: 'fixed',
+      top: position.y,
+      left: position.x,
+      opacity: opacity,
+      filter: resolved ? 'grayscale(1)' : undefined,
+      width: IndicatorSize,
+    }
+
+    const transform: Interpolation<Theme> = {
+      transform: `scale(${MagnifyScale})`,
+      transformOrigin: 'bottom left',
+      transitionDuration: 'transform 0.1s ease',
+    }
+
+    const whenActive: Interpolation<Theme> = {
+      ...transform,
+    }
+
+    const whenInactive: Interpolation<Theme> = {
+      ':hover': {
+        ...transform,
+      },
+    }
+
+    return {
+      ...base,
+      ...(isActive ? whenActive : whenInactive),
+    }
+  }
 
   return (
-    <div
-      css={{
-        position: 'fixed',
-        top: position.y,
-        left: position.x,
-        opacity: opacity,
-        filter: props.resolved ? 'grayscale(1)' : undefined,
-        width: IndicatorSize,
-        '&:hover': {
-          transform: 'scale(1.15)',
-          transitionDuration: 'transform 0.1s ease',
-          transformOrigin: 'bottom left',
-        },
-      }}
-      onClick={onClick}
-      onMouseDown={onMouseDown}
-    >
+    <div css={getIndicatorStyle()} onClick={onClick} onMouseDown={onMouseDown}>
       <div
         css={{
           height: 24,
@@ -318,6 +349,16 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
     }
   })()
 
+  const isActive = useEditorState(
+    Substores.restOfEditor,
+    (store) =>
+      isCommentMode(store.editor.mode) &&
+      store.editor.mode.comment != null &&
+      isExistingComment(store.editor.mode.comment) &&
+      store.editor.mode.comment.threadId === thread.id,
+    'CommentIndicator isActive',
+  )
+
   return (
     <CommentIndicatorUI
       position={position}
@@ -329,6 +370,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
       fgColor={color.foreground}
       avatarUrl={avatar}
       avatarInitials={initials}
+      isActive={isActive}
     />
   )
 })
