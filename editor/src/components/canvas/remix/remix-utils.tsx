@@ -41,6 +41,10 @@ import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { safeIndex } from '../../../core/shared/array-utils'
 import { createClientRoutes, groupRoutesByParentId } from '../../../third-party/remix/client-routes'
 import path from 'path'
+import {
+  type CustomServerJSExecutor,
+  getCustomServerJSExecutor,
+} from '../../../core/es-modules/package-manager/hydrogen-oxygen-support'
 
 export const OutletPathContext = React.createContext<ElementPath | null>(null)
 
@@ -165,6 +169,7 @@ interface GetRoutesAndModulesFromManifestResult {
   routes: Array<DataRouteObject>
   routeModulesToRelativePaths: RouteModulesWithRelativePaths
   routingTable: RemixRoutingTable
+  customServerJSExecutor: CustomServerJSExecutor | null
 }
 
 function getRouteModulesWithPaths(
@@ -234,21 +239,17 @@ export type ExecutionScopeCreator = (
   metadataContext: UiJsxCanvasContextData,
 ) => ExecutionScope
 
-function getRemixExportsOfModule(
+function createExecutionScopeCreator(
   filename: string,
   curriedRequireFn: CurriedUtopiaRequireFn,
   curriedResolveFn: CurriedResolveFn,
-  projectContents: ProjectContentTreeRoot,
-): {
-  executionScopeCreator: ExecutionScopeCreator
-  rootComponentUid: string
-} {
+): ExecutionScopeCreator {
   let mutableContextRef: { current: MutableUtopiaCtxRefData } = { current: {} }
   let topLevelComponentRendererComponents: {
     current: MapLike<MapLike<ComponentRendererComponent>>
   } = { current: {} }
 
-  const executionScopeCreator = (
+  return (
     innerProjectContents: ProjectContentTreeRoot,
     fileBlobs: CanvasBase64Blobs,
     hiddenInstances: Array<ElementPath>,
@@ -319,7 +320,22 @@ function getRemixExportsOfModule(
       null,
     )
   }
+}
 
+function getRemixExportsOfModule(
+  filename: string,
+  curriedRequireFn: CurriedUtopiaRequireFn,
+  curriedResolveFn: CurriedResolveFn,
+  projectContents: ProjectContentTreeRoot,
+): {
+  executionScopeCreator: ExecutionScopeCreator
+  rootComponentUid: string
+} {
+  const executionScopeCreator = createExecutionScopeCreator(
+    filename,
+    curriedRequireFn,
+    curriedResolveFn,
+  )
   const nameAndUid = getDefaultExportNameAndUidFromFile(projectContents, filename)
 
   return {
@@ -411,11 +427,14 @@ export function getRoutesAndModulesFromManifest(
     routingTable[rootComponentUid] = route.module
   })
 
+  const customServerJSExecutor = getCustomServerJSExecutor(projectContents, curriedRequireFn)
+
   return {
     routeModuleCreators,
     routes,
     routeModulesToRelativePaths,
     routingTable,
+    customServerJSExecutor,
   }
 }
 

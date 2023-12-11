@@ -7,12 +7,14 @@ import { UtopiaStyles, useColorTheme } from '../../../uuiui'
 import { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
 import * as EP from '../../../core/shared/element-path'
 import { useSetAtom } from 'jotai'
+import type { AppLoadContext } from '@remix-run/server-runtime'
 
 export const REMIX_SCENE_TESTID = 'remix-scene'
 
 export interface RemixSceneProps {
   style?: React.CSSProperties
   [UTOPIA_PATH_KEY]?: string
+  getLoadContext?: (request: Request) => Promise<AppLoadContext> | AppLoadContext
 }
 
 export const RemixSceneComponent = React.memo((props: React.PropsWithChildren<RemixSceneProps>) => {
@@ -49,7 +51,7 @@ export const RemixSceneComponent = React.memo((props: React.PropsWithChildren<Re
       style={sceneStyle}
       onMouseDown={onMouseDown}
     >
-      <UtopiaRemixRootComponent data-path={path} />
+      <UtopiaRemixRootComponent data-path={path} getLoadContext={props.getLoadContext} />
     </div>
   )
 })

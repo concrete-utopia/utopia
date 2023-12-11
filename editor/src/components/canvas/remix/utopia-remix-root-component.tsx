@@ -10,12 +10,17 @@ import * as EP from '../../../core/shared/element-path'
 import { PathPropHOC } from './path-props-hoc'
 import { atom, useAtom, useSetAtom } from 'jotai'
 import { getDefaultExportNameAndUidFromFile } from '../../../core/model/project-file-utils'
-import { OutletPathContext } from './remix-utils'
+import { type ExecutionScopeCreator, OutletPathContext } from './remix-utils'
 import { UiJsxCanvasCtxAtom } from '../ui-jsx-canvas'
 import type { UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { AlwaysFalse, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { CreateRemixDerivedDataRefsGLOBAL } from '../../editor/store/remix-derived-data'
+import { type ProjectContentTreeRoot } from '../../assets'
+import { type CanvasBase64Blobs } from '../../editor/store/editor-state'
+import { type AppLoadContext } from '@remix-run/server-runtime'
+import { patchServerJSContextIntoArgs } from '../../../core/es-modules/package-manager/hydrogen-oxygen-support'
+import { patchRoutesWithContext } from '../../../third-party/remix/create-remix-stub'
 
 type RouteModule = RouteModules[keyof RouteModules]
 type RouterType = ReturnType<typeof createMemoryRouter>
@@ -136,7 +141,9 @@ export const RouteExportsForRouteObject: Array<keyof RouteObject> = [
   'shouldRevalidate',
 ]
 
-function useGetRoutes() {
+function useGetRoutes(
+  getLoadContext?: (request: Request) => Promise<AppLoadContext> | AppLoadContext,
+) {
   const routes = useEditorState(
     Substores.derived,
     (store) => store.derived.remixData?.routes ?? [],
@@ -187,9 +194,12 @@ function useGetRoutes() {
 
     addExportsToRoutes(routes)
 
-    return routes
+    const routesWithContext = patchRoutesWithContext(routes, getLoadContext)
+
+    return routesWithContext
   }, [
     displayNoneInstancesRef,
+    getLoadContext,
     metadataContext,
     fileBlobsRef,
     hiddenInstancesRef,
@@ -201,12 +211,13 @@ function useGetRoutes() {
 
 export interface UtopiaRemixRootComponentProps {
   [UTOPIA_PATH_KEY]: ElementPath
+  getLoadContext?: (request: Request) => Promise<AppLoadContext> | AppLoadContext
 }
 
 export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootComponentProps) => {
   const remixDerivedDataRef = useRefEditorState((store) => store.derived.remixData)
 
-  const routes = useGetRoutes()
+  const routes = useGetRoutes(props.getLoadContext)
 
   const basePath = props[UTOPIA_PATH_KEY]
 

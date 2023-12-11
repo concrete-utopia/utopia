@@ -75,6 +75,7 @@ specifiers:
   '@root/encoding': 1.0.1
   '@seznam/compose-react-refs': ^1.0.4
   '@shopify/hydrogen': 2023.10.2
+  '@shopify/remix-oxygen': 2.0.1
   '@stitches/react': 1.2.8
   '@svgr/plugin-jsx': 5.5.0
   '@testing-library/react': 14.0.0
@@ -363,6 +364,7 @@ dependencies:
   '@root/encoding': 1.0.1
   '@seznam/compose-react-refs': 1.0.6
   '@shopify/hydrogen': 2023.10.2_w6lhquyj4jtuytgedwpbhq3tte
+  '@shopify/remix-oxygen': 2.0.1_7d3z4mwwjazrsw5sc36gfmw2te
   '@stitches/react': 1.2.8_react@18.1.0
   '@svgr/plugin-jsx': 5.5.0
   '@tippyjs/react': 4.1.0_ef5jwxihqo6n7gxfmzogljlgcm
@@ -4708,6 +4710,18 @@ packages:
       - '@types/react'
       - react-dom
       - xstate
+    dev: false
+
+  /@shopify/remix-oxygen/2.0.1_7d3z4mwwjazrsw5sc36gfmw2te:
+    resolution: {integrity: sha512-D1dqaAr0P9kARqqh2OKiNW/SglCq3FWX0NdJ/RTrwwQMuwcrKWKJAOL/bxmIbYXVYfY0YsBdhvq3bIbb0KpRog==}
+    peerDependencies:
+      '@remix-run/server-runtime': ^2.1.0
+      '@shopify/oxygen-workers-types': ^3.17.3
+    peerDependenciesMeta:
+      '@remix-run/server-runtime':
+        optional: true
+    dependencies:
+      '@remix-run/server-runtime': 2.3.1_typescript@5.2.2
     dev: false
 
   /@sindresorhus/is/4.2.0:

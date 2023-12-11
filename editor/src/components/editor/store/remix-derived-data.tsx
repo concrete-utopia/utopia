@@ -14,6 +14,7 @@ import {
 } from '../../assets'
 import type { ProjectContentTreeRoot } from '../../assets'
 import type {
+  ExecutionScopeCreator,
   RouteIdsToModuleCreators,
   RouteModulesWithRelativePaths,
 } from '../../canvas/remix/remix-utils'
@@ -28,6 +29,7 @@ import type { CurriedUtopiaRequireFn, CurriedResolveFn } from '../../custom-code
 import { memoize } from '../../../core/shared/memoize'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { evaluator } from '../../../core/es-modules/evaluator/evaluator'
+import { type CustomServerJSExecutor } from '../../../core/es-modules/package-manager/hydrogen-oxygen-support'
 
 export interface RemixRoutingTable {
   [rootElementUid: string]: string /* file path */
@@ -40,6 +42,7 @@ export interface RemixDerivedData {
   routeModulesToRelativePaths: RouteModulesWithRelativePaths
   routes: Array<DataRouteObject>
   routingTable: RemixRoutingTable
+  customServerJSExecutor: CustomServerJSExecutor | null
 }
 
 export const CreateRemixDerivedDataRefsGLOBAL: {
@@ -112,8 +115,13 @@ export function createRemixDerivedData(
     return null
   }
 
-  const { routeModuleCreators, routes, routeModulesToRelativePaths, routingTable } =
-    routesAndModulesFromManifestResult
+  const {
+    routeModuleCreators,
+    routes,
+    routeModulesToRelativePaths,
+    routingTable,
+    customServerJSExecutor,
+  } = routesAndModulesFromManifestResult
 
   return {
     futureConfig: DefaultFutureConfig,
@@ -122,6 +130,7 @@ export function createRemixDerivedData(
     routeModuleCreators: routeModuleCreators,
     routeModulesToRelativePaths: routeModulesToRelativePaths,
     routingTable: routingTable,
+    customServerJSExecutor: customServerJSExecutor,
   }
 }
 
