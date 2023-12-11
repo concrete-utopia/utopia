@@ -40,7 +40,7 @@ import { useRemixNavigationContext } from '../remix/utopia-remix-root-component'
 import { assertNever } from '../../../core/shared/utils'
 import { optionalMap } from '../../../core/shared/optional-utils'
 
-const IndicatorSize = 20
+const IndicatorSize = 24
 const MagnifyScale = 1.15
 
 export const CommentIndicators = React.memo(() => {
@@ -213,6 +213,13 @@ export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) =>
       opacity: opacity,
       filter: resolved ? 'grayscale(1)' : undefined,
       width: IndicatorSize,
+      height: IndicatorSize,
+      background: colorTheme.bg1.value,
+      borderRadius: '24px 24px 24px 0px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
     }
 
     const transform: Interpolation<Theme> = {
@@ -223,6 +230,7 @@ export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) =>
 
     const whenActive: Interpolation<Theme> = {
       ...transform,
+      border: `1px solid ${colorTheme.primary.value}`,
     }
 
     const whenInactive: Interpolation<Theme> = {
@@ -238,18 +246,19 @@ export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) =>
   }
 
   return (
-    <div css={getIndicatorStyle()} onClick={onClick} onMouseDown={onMouseDown}>
+    <div onClick={onClick} onMouseDown={onMouseDown}>
       <div
-        css={{
-          height: 24,
-          width: 24,
-          background: colorTheme.bg1.value,
-          borderRadius: '24px 24px 24px 0px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
-        }}
+        css={getIndicatorStyle()}
+        // css={{
+        //   height: 24,
+        //   width: 24,
+        //   background: colorTheme.bg1.value,
+        //   borderRadius: '24px 24px 24px 0px',
+        //   display: 'flex',
+        //   alignItems: 'center',
+        //   justifyContent: 'center',
+        //   boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
+        // }}
       >
         <div
           style={{
