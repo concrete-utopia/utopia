@@ -51,6 +51,25 @@ describe('Text edit mode', () => {
       expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
       expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e')
     })
+    ;['div', 'p'].forEach((tag) => {
+      it(`Entering text edit mode with double click on selected ${tag} text editable element`, async () => {
+        const editor = await renderTestEditorWithCode(
+          project('hello', tag),
+          'await-first-dom-report',
+        )
+        await selectElement(editor, EP.fromString('sb/39e'))
+        await clickOnElement(editor, tag, 'double-click')
+        // wait for the next frame
+        await wait(1)
+
+        expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
+        expect(
+          EP.toString((editor.getEditorState().editor.mode as TextEditMode).editedText!),
+        ).toEqual('sb/39e')
+        expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
+        expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e')
+      })
+    })
     it('Entering text edit mode with double click on selected text editable element with only code inside', async () => {
       const editor = await renderTestEditorWithCode(projectWithCodeText, 'await-first-dom-report')
       await selectElement(editor, EP.fromString('sb/39e'))
@@ -417,15 +436,15 @@ async function clickOnElement(
   await editor.getDispatchFollowUpActionsFinished()
 }
 
-const project = (snippet: string) => {
+const project = (snippet: string, tag = 'div') => {
   return formatTestProjectCode(`import * as React from 'react'
   import { Storyboard } from 'utopia-api'
   
   const title = 'Hello'
   export var storyboard = (
     <Storyboard data-uid='sb'>
-      <div
-        data-testid='div'
+      <${tag}
+        data-testid='${tag}'
         style={{
           backgroundColor: '#0091FFAA',
           position: 'absolute',
@@ -437,7 +456,7 @@ const project = (snippet: string) => {
         data-uid='39e'
       >
         ${snippet}
-      </div>
+      </${tag}>
     </Storyboard>
   )`)
 }
