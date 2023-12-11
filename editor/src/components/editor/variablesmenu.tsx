@@ -25,7 +25,11 @@ import { Substores, useEditorState } from './store/store-hook'
 import type { AllVariablesInScope } from '../shared/scoped-variables'
 import { convertVariablesToElements, getVariablesInScope } from '../shared/scoped-variables'
 import { useToInsert } from './insert-callbacks'
-import type { InsertMenuItem, InsertableComponentFlatList } from '../canvas/ui/floating-insert-menu'
+import type {
+  InsertMenuItem,
+  InsertMenuVariableItem,
+  InsertableComponentFlatList,
+} from '../canvas/ui/floating-insert-menu'
 import { optionalMap } from '../../core/shared/optional-utils'
 
 export const VariablesMenuFilterTestId = 'insert-menu-filter'
@@ -99,8 +103,8 @@ const Input = (props: InputProps) => {
 
 const BASE_PADDING = 4
 const DEPTH_PADDING = 16
-function paddingByDepth(insertMenuItem: InsertMenuItem) {
-  const depth = insertMenuItem.value.metadata?.depth as number | null
+function paddingByDepth(insertMenuItem: InsertMenuVariableItem) {
+  const depth = insertMenuItem.value.depth
   const depthValue = depth == null ? 0 : depth
   return {
     padding: BASE_PADDING,
@@ -108,8 +112,8 @@ function paddingByDepth(insertMenuItem: InsertMenuItem) {
   }
 }
 
-const iconByType = (insertMenuItem: InsertMenuItem): string => {
-  const variableType = insertMenuItem.value.metadata?.variableType as string
+const iconByType = (insertMenuItem: InsertMenuVariableItem): string => {
+  const variableType = insertMenuItem.value.variableType
 
   const iconsByType: Record<string, string> = {
     string: 'text',
@@ -143,7 +147,7 @@ const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
           background: undefined,
           gap: 4,
           border: '1px solid transparent',
-          ...paddingByDepth(props.data as InsertMenuItem),
+          ...paddingByDepth(props.data as InsertMenuVariableItem),
         }}
         onMouseEnter={setIsHoveredTrue}
         onMouseLeave={setIsHoveredFalse}
@@ -151,7 +155,7 @@ const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
       >
         <Icn
           category='element'
-          type={iconByType(props.data as InsertMenuItem)}
+          type={iconByType(props.data as InsertMenuVariableItem)}
           color={isHovered ? 'dynamic' : 'main'}
           width={18}
           height={18}
@@ -322,7 +326,8 @@ const VariablesMenuInner = React.memo((props: VariablesMenuProps) => {
 
   const filterOption = createFilter({
     ignoreAccents: true,
-    stringify: (c) => c.data.source + c.data.label + c.data.value?.metadata?.originalName,
+    stringify: (c: { data: InsertMenuVariableItem }) =>
+      c.data.source + c.data.label + c.data.value.originalName,
     ignoreCase: true,
     trim: true,
     matchFrom: 'any',

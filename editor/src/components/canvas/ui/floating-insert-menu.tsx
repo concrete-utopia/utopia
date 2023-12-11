@@ -14,10 +14,12 @@ import type {
   InsertableComponent,
   InsertableComponentGroup,
   InsertableComponentGroupType,
+  InsertableVariable,
 } from '../../shared/project-components'
 import {
   getInsertableGroupLabel,
   getNonEmptyComponentGroups,
+  isInsertableVariable,
 } from '../../shared/project-components'
 import { InspectorInputEmotionStyle } from '../../../uuiui/inputs/base-input'
 import { optionalMap } from '../../../core/shared/optional-utils'
@@ -40,6 +42,17 @@ export type InsertMenuItem = {
   value: InsertMenuItemValue
 }
 
+export type InsertMenuVariableItemValue = InsertableVariable & {
+  source: InsertableComponentGroupType | null
+  key: string
+}
+
+export type InsertMenuVariableItem = {
+  label: string
+  source: string | null
+  value: InsertMenuVariableItemValue
+}
+
 type InsertMenuItemGroup = {
   label: string
   options: Array<InsertMenuItem>
@@ -56,7 +69,14 @@ function convertInsertableComponentsToFlatList(
       options: componentGroup.insertableComponents.map(
         (componentToBeInserted, index): InsertMenuItem => {
           const source = index === 0 ? componentGroup.source : null
-          const label = componentToBeInserted.metadata?.originalName ?? componentToBeInserted.name
+          let label = componentToBeInserted.name
+          // there is no indentation, so for inner props we want to show here the full path (i.e myObj.myProp)
+          if (
+            isInsertableVariable(componentToBeInserted) &&
+            componentToBeInserted.originalName != null
+          ) {
+            label = componentToBeInserted.originalName
+          }
           return {
             label: label,
             source: optionalMap(getInsertableGroupLabel, source),

@@ -4,7 +4,6 @@ import type { ProjectContentTreeRoot } from '../assets'
 import type {
   ElementInstanceMetadataMap,
   ArbitraryJSBlock,
-  UtopiaJSXComponent,
   TopLevelElement,
 } from '../../core/shared/element-template'
 import {
@@ -28,8 +27,9 @@ import { type VariablesInScope } from '../canvas/ui-jsx-canvas'
 import { getContainingComponent, toComponentId } from '../../core/shared/element-path'
 import {
   type InsertableComponentGroup,
-  insertableComponent,
+  type InsertableVariableType,
   insertableComponentGroupProjectComponent,
+  insertableVariable,
 } from './project-components'
 import { emptyImports } from '../../core/workers/common/project-file-utils'
 import { isImage } from '../../core/shared/utils'
@@ -44,36 +44,31 @@ export function getVariablesInScope(
   variablesInScopeFromEditorState: VariablesInScope,
   jsxMetadata: ElementInstanceMetadataMap,
 ): AllVariablesInScope[] {
-  return withUnderlyingTarget(
-    elementPath,
-    projectContents,
-    [],
-    (success, element, underlyingTarget, underlyingFilePath) => {
-      let varsInScope = []
+  return withUnderlyingTarget(elementPath, projectContents, [], (success) => {
+    let varsInScope = []
 
-      if (elementPath !== null) {
-        const componentScopedVariables = getVariablesFromComponent(
-          success.topLevelElements,
-          elementPath,
-          variablesInScopeFromEditorState,
-        )
-        varsInScope.push(componentScopedVariables)
+    if (elementPath !== null) {
+      const componentScopedVariables = getVariablesFromComponent(
+        success.topLevelElements,
+        elementPath,
+        variablesInScopeFromEditorState,
+      )
+      varsInScope.push(componentScopedVariables)
 
-        const componentPropsInScope = getComponentPropsInScope(
-          success.topLevelElements,
-          elementPath,
-          jsxMetadata,
-        )
-        varsInScope.push(componentPropsInScope)
-      }
+      const componentPropsInScope = getComponentPropsInScope(
+        success.topLevelElements,
+        elementPath,
+        jsxMetadata,
+      )
+      varsInScope.push(componentPropsInScope)
+    }
 
-      /** for future reference - adding variables from top level **/
-      // const topLevelVariables = getTopLevelVariables(success.topLevelElements, underlyingFilePath)
-      // varsInScope.push(topLevelVariables)
+    /** for future reference - adding variables from top level **/
+    // const topLevelVariables = getTopLevelVariables(success.topLevelElements, underlyingFilePath)
+    // varsInScope.push(topLevelVariables)
 
-      return varsInScope
-    },
-  )
+    return varsInScope
+  })
 }
 
 function getTopLevelVariables(topLevelElements: TopLevelElement[], underlyingFilePath: string) {
@@ -162,6 +157,7 @@ function generateVariableTypes(variables: VariableData): Variable[] {
       name,
       value,
       type,
+      depth: 0,
     }
     if (type === 'object' && value != null) {
       // iterate also first-level keys of object
@@ -188,13 +184,15 @@ export function convertVariablesToElements(
     return {
       source: insertableComponentGroupProjectComponent(variableGroup.filePath),
       insertableComponents: variableGroup.variables.map((variable) => {
-        return insertableComponent(
+        return insertableVariable(
           emptyImports(),
           () => getMatchingElementForVariable(variable),
           variable.displayName ?? variable.name,
           [],
           null,
-          { variableType: variable.type, depth: variable.depth, originalName: variable.name },
+          variable.type,
+          variable.depth,
+          variable.name,
         )
       }),
     }
@@ -251,7 +249,7 @@ function getMatchingElementForVariableInner(variable: Variable): InsertableCompo
   }
 }
 
-function getTypeByValue(value: unknown): InsertableType {
+function getTypeByValue(value: unknown): InsertableVariableType {
   const type = typeof value
   if (type === 'object' && Array.isArray(value)) {
     return 'array'
@@ -266,13 +264,14 @@ function arrayInsertableComponentAndJsx(variable: Variable): InsertableComponent
   const innerElementString = getMatchingElementForVariableInner({
     name: 'item',
     type: arrayElementsType,
+    depth: variable.depth + 1,
   }).jsx
   const arrayElementString = `${variable.name}.map((item) => (${innerElementString}))`
   const arrayElement = jsxFragmentWithoutUID([jsxTextBlock(`{${arrayElementString}}`)], true)
   return insertableComponentAndJSX(arrayElement, arrayElementString)
 }
 
-function getArrayType(arrayVariable: Variable): InsertableType {
+function getArrayType(arrayVariable: Variable): InsertableVariableType {
   const arr = arrayVariable.value as unknown[]
   const types = new Set(arr.map((item) => getTypeByValue(item)))
   return types.size === 1 ? [...types][0] : 'object'
@@ -311,23 +310,11 @@ export type AllVariablesInScope = {
   variables: Variable[]
 }
 
-type InsertableType =
-  | 'string'
-  | 'number'
-  | 'bigint'
-  | 'boolean'
-  | 'symbol'
-  | 'undefined'
-  | 'object'
-  | 'function'
-  | 'array'
-  | 'image'
-
 interface Variable {
   name: string
-  type: InsertableType
+  type: InsertableVariableType
   displayName?: string
   value?: unknown
   parent?: Variable
-  depth?: number
+  depth: number
 }
