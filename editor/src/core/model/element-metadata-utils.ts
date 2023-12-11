@@ -176,7 +176,7 @@ export const getChildrenOfCollapsedViews = (
   }, collapsedViews)
 }
 
-// TODO should this also be changed to simply TextElements?
+// TODO should this also be changed to simply PossibleTextElements?
 // (to include all possible text elements in the name lookup)
 const ElementsToDrillIntoForTextContent = ['div', 'span']
 
