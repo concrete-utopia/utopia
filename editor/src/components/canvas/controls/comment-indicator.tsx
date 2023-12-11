@@ -263,7 +263,7 @@ export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) =>
           justifyContent: 'center',
         }}
       >
-        <AvatarPicture url={avatarUrl} initials={avatarInitials} />
+        <AvatarPicture url={avatarUrl} initials={avatarInitials} size={20} />
       </div>
     </div>
   )
