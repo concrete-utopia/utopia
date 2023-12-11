@@ -37,20 +37,6 @@ describe('Text edit mode', () => {
       expect(editor.getEditorState().editor.mode.type).toEqual('insert')
       expect((editor.getEditorState().editor.mode as InsertMode).subjects.length).toBeGreaterThan(0)
     })
-    it('Entering text edit mode with double click on selected text editable element', async () => {
-      const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
-      await selectElement(editor, EP.fromString('sb/39e'))
-      await clickOnElement(editor, 'div', 'double-click')
-      // wait for the next frame
-      await wait(1)
-
-      expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
-      expect(
-        EP.toString((editor.getEditorState().editor.mode as TextEditMode).editedText!),
-      ).toEqual('sb/39e')
-      expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
-      expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e')
-    })
     ;['div', 'p'].forEach((tag) => {
       it(`Entering text edit mode with double click on selected ${tag} text editable element`, async () => {
         const editor = await renderTestEditorWithCode(
