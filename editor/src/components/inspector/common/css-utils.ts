@@ -972,7 +972,7 @@ function cssBoxShadow(
 export type CSSBoxShadows = ReadonlyArray<CSSBoxShadow>
 
 export const cssLineWidthKeywordValues = ['thin', 'medium', 'thick'] as const
-export type CSSLineWidthKeywordValue = NonNullable<typeof cssLineWidthKeywordValues[number]>
+export type CSSLineWidthKeywordValue = NonNullable<(typeof cssLineWidthKeywordValues)[number]>
 export type CSSLineWidthValue = CSSNumber | CSSKeyword<CSSLineWidthKeywordValue>
 export interface CSSLineWidth {
   type: 'line-width'
@@ -1004,7 +1004,7 @@ export const cssLineStyleKeywordValues = [
   'inset',
   'outset',
 ] as const
-export type CSSLineStyleKeywordValue = NonNullable<typeof cssLineStyleKeywordValues[number]>
+export type CSSLineStyleKeywordValue = NonNullable<(typeof cssLineStyleKeywordValues)[number]>
 export type CSSLineStyleValue = CSSKeyword<CSSLineStyleKeywordValue>
 
 export interface CSSLineStyle {
@@ -2488,7 +2488,7 @@ export type CSSBackgroundLayerType =
   | GradientBackgroundLayerType
 
 export const cssBGSizeKeywordValueValues = ['contain', 'cover'] as const
-export type CSSBGSizeKeywordValueValue = NonNullable<typeof cssBGSizeKeywordValueValues[number]>
+export type CSSBGSizeKeywordValueValue = NonNullable<(typeof cssBGSizeKeywordValueValues)[number]>
 export type CSSBGSizeKeywordValue = CSSKeyword<CSSBGSizeKeywordValueValue>
 export type CSSBGSizeCurlyBraceValueValue = CSSNumber | CSSKeyword<'auto'>
 export type CSSBGSizeCurlyBraceValue = ParsedCurlyBrace<CSSBGSizeCurlyBraceValueValue>
@@ -4702,7 +4702,7 @@ export const DOMEventHandlerNames = [
   'onTransitionEnd',
   'onTransitionEndCapture',
 ] as const
-export type DOMEventHandler = NonNullable<typeof DOMEventHandlerNames[number]>
+export type DOMEventHandler = NonNullable<(typeof DOMEventHandlerNames)[number]>
 
 type DOMEventAttributeProperties = {
   [key in DOMEventHandler]: DOMEventHandlerMetadata
