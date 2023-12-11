@@ -51,6 +51,7 @@ import { when } from '../../utils/react-conditionals'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { CommentIndicators } from './controls/comment-indicator'
 import { CommentPopup } from './controls/comment-popup'
+import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
 
 export const MultiplayerPresence = React.memo(() => {
   const dispatch = useDispatch()
@@ -124,8 +125,8 @@ export const MultiplayerPresence = React.memo(() => {
 
   return (
     <>
-      <FollowingOverlay />
-      <MultiplayerShadows />
+      {IS_TEST_ENVIRONMENT ? <FollowingOverlay /> : null}
+      {IS_TEST_ENVIRONMENT ? <MultiplayerShadows /> : null}
       {when(isFeatureEnabled('Commenting'), <CommentIndicators />)}
       <MultiplayerCursors />
       {when(isCommentMode(mode) && mode.comment != null, <CommentPopup />)}

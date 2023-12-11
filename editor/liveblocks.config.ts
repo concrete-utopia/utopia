@@ -142,6 +142,14 @@ const LiveBlockConfigExports: typeof LiveblocksRoomContext = {
   ...LiveblocksRoomContext,
   suspense: {
     ...LiveblocksRoomContext.suspense,
+    useSelf: (...args) =>
+      MOCK_LIVEBLOCKS_CONFIG.current == null
+        ? LiveblocksRoomContext.suspense.useSelf(...args)
+        : MOCK_LIVEBLOCKS_CONFIG.current.useSelf(...args),
+    useOthers: (...args) =>
+      MOCK_LIVEBLOCKS_CONFIG.current == null
+        ? LiveblocksRoomContext.suspense.useOthers(...args)
+        : MOCK_LIVEBLOCKS_CONFIG.current.useOthers(...args),
     useThreads: (...args) =>
       MOCK_LIVEBLOCKS_CONFIG.current == null
         ? LiveblocksRoomContext.suspense.useThreads(...args)

@@ -16,12 +16,16 @@ type UseThreads = RoomContextType['suspense']['useThreads']
 type UseStorage = RoomContextType['suspense']['useStorage']
 type UseCreateThread = RoomContextType['suspense']['useCreateThread']
 type UseMutation = RoomContextType['suspense']['useMutation']
+type UseOthers = RoomContextType['suspense']['useOthers']
+type UseSelf = RoomContextType['suspense']['useSelf']
 
 interface MockedLiveBlocksConfig {
   useThreads: UseThreads
   useStorage: UseStorage
   useCreateThread: UseCreateThread
   useMutation: UseMutation
+  useOthers: UseOthers
+  useSelf: UseSelf
 }
 
 const MOCKS: {
@@ -43,7 +47,27 @@ export function setMockData(
   MOCKS.threads = threadsToSet
   MOCKS.storage = storageToSet
 
+  const p: Presence = {
+    cursor: null,
+    canvasScale: null,
+    canvasOffset: null,
+    following: null,
+  }
+
   MOCK_LIVEBLOCKS_CONFIG.current = {
+    useOthers: (arg) => (typeof arg === 'function' ? arg([]) : []) as any,
+    useSelf: (arg) =>
+      (typeof arg === 'function'
+        ? arg({
+            presence: p,
+            id: 'user-123',
+            connectionId: 123,
+            info: null,
+            isReadOnly: false,
+            canComment: true,
+            canWrite: true,
+          })
+        : { presence: p, id: 'user-123' }) as any,
     useThreads: () => ({
       isLoading: false,
       threads: MOCKS.threads,
