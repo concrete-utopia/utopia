@@ -189,6 +189,7 @@ interface CommentIndicatorUIProps {
   onClick?: (e: React.MouseEvent) => void
   onMouseDown?: (e: React.MouseEvent) => void
   isActive: boolean
+  read?: boolean
 }
 
 export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) => {
@@ -203,6 +204,7 @@ export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) =>
     opacity,
     resolved,
     isActive,
+    read,
   } = props
 
   function getIndicatorStyle() {
@@ -214,7 +216,7 @@ export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) =>
       filter: resolved ? 'grayscale(1)' : undefined,
       width: IndicatorSize,
       height: IndicatorSize,
-      background: colorTheme.bg1.value,
+      background: read ? colorTheme.bg1.value : colorTheme.primary.value,
       borderRadius: '24px 24px 24px 0px',
       display: 'flex',
       alignItems: 'center',
@@ -249,8 +251,8 @@ export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) =>
     <div onClick={onClick} onMouseDown={onMouseDown} css={getIndicatorStyle()}>
       <div
         style={{
-          height: 20,
-          width: 20,
+          height: 18,
+          width: 18,
           borderRadius: 10,
           background: bgColor,
           color: fgColor,
@@ -330,20 +332,6 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
     [location, canvasScale, canvasOffset, dragPosition],
   )
 
-  const indicatorOpacity = (() => {
-    if (isOnAnotherRoute || thread.metadata.resolved) {
-      return 0
-    }
-    switch (readByMe) {
-      case 'unread':
-        return 1
-      case 'read':
-        return 0.75
-      default:
-        assertNever(readByMe)
-    }
-  })()
-
   const isActive = useEditorState(
     Substores.restOfEditor,
     (store) =>
@@ -357,7 +345,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
   return (
     <CommentIndicatorUI
       position={position}
-      opacity={indicatorOpacity}
+      opacity={isOnAnotherRoute || thread.metadata.resolved ? 0 : 1}
       resolved={thread.metadata.resolved}
       onClick={onClick}
       onMouseDown={onMouseDown}
@@ -366,6 +354,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
       avatarUrl={avatar}
       avatarInitials={initials}
       isActive={isActive}
+      read={readByMe === 'read'}
     />
   )
 })
