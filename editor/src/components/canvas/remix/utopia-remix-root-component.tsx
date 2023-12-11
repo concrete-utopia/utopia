@@ -20,6 +20,7 @@ import { type ProjectContentTreeRoot } from '../../assets'
 import { type CanvasBase64Blobs } from '../../editor/store/editor-state'
 import { type AppLoadContext } from '@remix-run/server-runtime'
 import { patchServerJSContextIntoArgs } from '../../../core/es-modules/package-manager/hydrogen-oxygen-support'
+import { patchRoutesWithContext } from '../../../third-party/remix/create-remix-stub'
 
 type RouteModule = RouteModules[keyof RouteModules]
 type RouterType = ReturnType<typeof createMemoryRouter>
@@ -140,7 +141,9 @@ export const RouteExportsForRouteObject: Array<keyof RouteObject> = [
   'shouldRevalidate',
 ]
 
-function useGetRoutes() {
+function useGetRoutes(
+  getLoadContext?: (request: Request) => Promise<AppLoadContext> | AppLoadContext,
+) {
   const routes = useEditorState(
     Substores.derived,
     (store) => store.derived.remixData?.routes ?? [],
@@ -163,33 +166,25 @@ function useGetRoutes() {
       return routes
     }
 
-    const customServerJSExecutor = remixDerivedDataRef.current.customServerJSExecutor
     const creators = remixDerivedDataRef.current.routeModuleCreators
 
     function addExportsToRoutes(innerRoutes: DataRouteObject[]) {
       innerRoutes.forEach((route) => {
+        // FIXME Adding a loader function to the 'root' route causes the `createShouldRevalidate` to fail, because
+        // we only ever pass in an empty object for the `routeModules` and never mutate it
         const creatorForRoute = creators[route.id] ?? null
         if (creatorForRoute != null) {
           for (const routeExport of RouteExportsForRouteObject) {
-            route[routeExport] = async (args: any) => {
-              const patchedArgs = await patchServerJSContextIntoArgs(
-                customServerJSExecutor,
-                projectContentsRef.current,
-                args,
-              )
-
-              return (
-                creatorForRoute
-                  .executionScopeCreator(
-                    projectContentsRef.current,
-                    fileBlobsRef.current,
-                    hiddenInstancesRef.current,
-                    displayNoneInstancesRef.current,
-                    metadataContext,
-                  )
-                  .scope[routeExport]?.(patchedArgs) ?? null
-              )
-            }
+            route[routeExport] = (args: any) =>
+              creatorForRoute
+                .executionScopeCreator(
+                  projectContentsRef.current,
+                  fileBlobsRef.current,
+                  hiddenInstancesRef.current,
+                  displayNoneInstancesRef.current,
+                  metadataContext,
+                )
+                .scope[routeExport]?.(args) ?? null
           }
         }
 
@@ -199,9 +194,12 @@ function useGetRoutes() {
 
     addExportsToRoutes(routes)
 
-    return routes
+    const routesWithContext = patchRoutesWithContext(routes, getLoadContext)
+
+    return routesWithContext
   }, [
     displayNoneInstancesRef,
+    getLoadContext,
     metadataContext,
     fileBlobsRef,
     hiddenInstancesRef,
@@ -213,12 +211,13 @@ function useGetRoutes() {
 
 export interface UtopiaRemixRootComponentProps {
   [UTOPIA_PATH_KEY]: ElementPath
+  getLoadContext?: (request: Request) => Promise<AppLoadContext> | AppLoadContext
 }
 
 export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootComponentProps) => {
   const remixDerivedDataRef = useRefEditorState((store) => store.derived.remixData)
 
-  const routes = useGetRoutes()
+  const routes = useGetRoutes(props.getLoadContext)
 
   const basePath = props[UTOPIA_PATH_KEY]
 
