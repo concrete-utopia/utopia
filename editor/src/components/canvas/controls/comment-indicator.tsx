@@ -246,36 +246,22 @@ export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) =>
   }
 
   return (
-    <div onClick={onClick} onMouseDown={onMouseDown}>
+    <div onClick={onClick} onMouseDown={onMouseDown} css={getIndicatorStyle()}>
       <div
-        css={getIndicatorStyle()}
-        // css={{
-        //   height: 24,
-        //   width: 24,
-        //   background: colorTheme.bg1.value,
-        //   borderRadius: '24px 24px 24px 0px',
-        //   display: 'flex',
-        //   alignItems: 'center',
-        //   justifyContent: 'center',
-        //   boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
-        // }}
+        style={{
+          height: 20,
+          width: 20,
+          borderRadius: 10,
+          background: bgColor,
+          color: fgColor,
+          fontSize: 9,
+          fontWeight: 'bold',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
       >
-        <div
-          style={{
-            height: 20,
-            width: 20,
-            borderRadius: 10,
-            background: bgColor,
-            color: fgColor,
-            fontSize: 9,
-            fontWeight: 'bold',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <AvatarPicture url={avatarUrl} initials={avatarInitials} />
-        </div>
+        <AvatarPicture url={avatarUrl} initials={avatarInitials} />
       </div>
     </div>
   )
