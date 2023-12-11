@@ -16,7 +16,12 @@ import { Icn, UIRow, UtopiaTheme, useColorTheme } from '../../uuiui'
 import { getControlStyles } from '../../uuiui-deps'
 import { InspectorInputEmotionStyle } from '../../uuiui/inputs/base-input'
 import type { ProjectContentTreeRoot } from '../assets'
-import type { InsertableComponent, InsertableComponentGroup } from '../shared/project-components'
+import type {
+  InsertableComponent,
+  InsertableComponentGroup,
+  InsertableComponentGroupType,
+  InsertableVariable,
+} from '../shared/project-components'
 import { getInsertableGroupLabel } from '../shared/project-components'
 import { setRightMenuTab } from './actions/action-creators'
 import type { Mode } from './editor-modes'
@@ -25,14 +30,21 @@ import { Substores, useEditorState } from './store/store-hook'
 import type { AllVariablesInScope } from '../shared/scoped-variables'
 import { convertVariablesToElements, getVariablesInScope } from '../shared/scoped-variables'
 import { useToInsert } from './insert-callbacks'
-import type {
-  InsertMenuItem,
-  InsertMenuVariableItem,
-  InsertableComponentFlatList,
-} from '../canvas/ui/floating-insert-menu'
+import type { InsertMenuItem, InsertableComponentFlatList } from '../canvas/ui/floating-insert-menu'
 import { optionalMap } from '../../core/shared/optional-utils'
 
 export const VariablesMenuFilterTestId = 'insert-menu-filter'
+
+type InsertMenuVariableItemValue = InsertableVariable & {
+  source: InsertableComponentGroupType | null
+  key: string
+}
+
+type InsertMenuVariableItem = {
+  label: string
+  source: string | null
+  value: InsertMenuVariableItemValue
+}
 
 interface VariablesMenuProps {
   mode: Mode

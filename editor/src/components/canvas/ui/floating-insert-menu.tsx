@@ -42,17 +42,6 @@ export type InsertMenuItem = {
   value: InsertMenuItemValue
 }
 
-export type InsertMenuVariableItemValue = InsertableVariable & {
-  source: InsertableComponentGroupType | null
-  key: string
-}
-
-export type InsertMenuVariableItem = {
-  label: string
-  source: string | null
-  value: InsertMenuVariableItemValue
-}
-
 type InsertMenuItemGroup = {
   label: string
   options: Array<InsertMenuItem>
