@@ -21,7 +21,7 @@ export const RemixSceneComponent = React.memo((props: React.PropsWithChildren<Re
   const colorTheme = useColorTheme()
   const canvasIsLive = false
 
-  const { style, ...remainingProps } = props
+  const { style, getLoadContext, ...remainingProps } = props
 
   const sceneStyle: React.CSSProperties = {
     position: 'relative',
@@ -51,7 +51,7 @@ export const RemixSceneComponent = React.memo((props: React.PropsWithChildren<Re
       style={sceneStyle}
       onMouseDown={onMouseDown}
     >
-      <UtopiaRemixRootComponent data-path={path} getLoadContext={props.getLoadContext} />
+      <UtopiaRemixRootComponent data-path={path} getLoadContext={getLoadContext} />
     </div>
   )
 })
