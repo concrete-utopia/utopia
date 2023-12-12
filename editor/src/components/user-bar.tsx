@@ -103,7 +103,7 @@ const MultiplayerUserBar = React.memo(() => {
   }, [others])
 
   const offlineOthers = Object.values(collabs).filter((collab) => {
-    return !others.some((other) => other.id === collab.id) && collab.id !== myUser.id
+    return collab.id !== myUser.id && !others.some((other) => other.id === collab.id)
   })
 
   const mode = useEditorState(
