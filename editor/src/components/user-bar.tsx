@@ -13,7 +13,7 @@ import {
   normalizeOthersList,
 } from '../core/shared/multiplayer'
 import { MultiplayerWrapper } from '../utils/multiplayer-wrapper'
-import { when } from '../utils/react-conditionals'
+import { unless, when } from '../utils/react-conditionals'
 import { Avatar, FlexRow, Icn, Tooltip, colorTheme } from '../uuiui'
 import { notice } from './common/notice'
 import type { EditorAction } from './editor/action-types'
@@ -46,7 +46,7 @@ export const UserBar = React.memo(() => {
           <MultiplayerUserBar />
         </MultiplayerWrapper>,
       )}
-      <SinglePlayerUserBar />
+      {unless(roomStatus === 'connected', <SinglePlayerUserBar />)}
     </FlexRow>
   )
 })
@@ -64,7 +64,7 @@ export const SinglePlayerUserBar = React.memo(() => {
     'SinglePlayerUserBar amIOwner',
   )
   return (
-    <a href='/projects' target='_blank'>
+    <a href='/projects' target='_blank' rel='noopener rofererrer'>
       <div
         style={{
           width: 24,
@@ -114,16 +114,15 @@ const MultiplayerUserBar = React.memo(() => {
     'MultiplayerUserBar ownerId',
   )
 
+  const amIOwner = React.useMemo(() => {
+    return ownerId === myUser.id
+  }, [ownerId, myUser])
+
   const toggleFollowing = React.useCallback(
     (targetId: string) => () => {
       let actions: EditorAction[] = []
-      if (
-        !canFollowTarget(
-          myUser.id,
-          targetId,
-          others.map((o) => o),
-        )
-      ) {
+      const canFollow = canFollowTarget(myUser.id, targetId, others)
+      if (!canFollow) {
         actions.push(
           showToast(
             notice(
@@ -195,6 +194,14 @@ const MultiplayerUserBar = React.memo(() => {
           picture={null}
         />,
       )}
+      <a href='/projects' target='_blank' rel='noopener rofererrer'>
+        <MultiplayerAvatar
+          name={multiplayerInitialsFromName(myUser.name)}
+          color={multiplayerColorFromIndex(myUser.colorIndex)}
+          picture={myUser.avatar}
+          isOwner={amIOwner}
+        />
+      </a>
     </div>
   )
 })
@@ -238,7 +245,7 @@ export const MultiplayerAvatar = React.memo((props: MultiplayerAvatarProps) => {
           borderRadius: '100%',
           fontSize: 9,
           fontWeight: 700,
-          cursor: props.onClick != null ? 'pointer' : 'default',
+          cursor: props.onClick != null ? 'pointer' : 'inherit',
           position: 'relative',
           outline: `.3px solid ${colorTheme.bg1.value}`,
           boxShadow:
