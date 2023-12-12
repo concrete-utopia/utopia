@@ -116,11 +116,9 @@ const Input = (props: InputProps) => {
 const BASE_PADDING = 4
 const DEPTH_PADDING = 16
 function paddingByDepth(insertMenuItem: InsertMenuVariableItem) {
-  const depth = insertMenuItem.value.depth
-  const depthValue = depth == null ? 0 : depth
   return {
     padding: BASE_PADDING,
-    paddingLeft: BASE_PADDING + depthValue * DEPTH_PADDING,
+    paddingLeft: BASE_PADDING + insertMenuItem.value.depth * DEPTH_PADDING,
   }
 }
 
@@ -159,7 +157,7 @@ const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
           background: undefined,
           gap: 4,
           border: '1px solid transparent',
-          ...paddingByDepth(props.data as InsertMenuVariableItem),
+          ...paddingByDepth(props.data),
         }}
         onMouseEnter={setIsHoveredTrue}
         onMouseLeave={setIsHoveredFalse}
@@ -167,7 +165,7 @@ const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
       >
         <Icn
           category='element'
-          type={iconByType(props.data as InsertMenuVariableItem)}
+          type={iconByType(props.data)}
           color={isHovered ? 'dynamic' : 'main'}
           width={18}
           height={18}
