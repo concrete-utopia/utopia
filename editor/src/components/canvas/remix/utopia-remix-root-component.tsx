@@ -211,45 +211,6 @@ function useGetRoutes() {
   ])
 }
 
-// Super hacky way of calling the `fetch` function from `server.js` purely to get the context
-// that it provides, so that we can then provide that to the server function
-async function getContextFromCustomServer(
-  customServerCreator: ExecutionScopeCreator | null,
-  projectContents: ProjectContentTreeRoot,
-  fileBlobs: CanvasBase64Blobs,
-  hiddenInstances: Array<ElementPath>,
-  displayNoneInstances: Array<ElementPath>,
-  metadataContext: UiJsxCanvasContextData,
-  request: Request,
-): Promise<{ context: AppLoadContext }> {
-  if (customServerCreator == null) {
-    return { context: {} }
-  }
-
-  const customServerScope = customServerCreator(
-    projectContents,
-    fileBlobs,
-    hiddenInstances,
-    displayNoneInstances,
-    metadataContext,
-  ).scope
-
-  if (customServerScope.default?.fetch == null) {
-    return { context: {} }
-  }
-
-  return customServerScope.default.fetch(
-    request,
-    {
-      SESSION_SECRET: 'foobar',
-      PUBLIC_STORE_DOMAIN: 'mock.shop',
-    },
-    {
-      waitUntil: () => {},
-    },
-  )
-}
-
 export interface UtopiaRemixRootComponentProps {
   [UTOPIA_PATH_KEY]: ElementPath
 }
