@@ -168,11 +168,11 @@ describe('Parsing and printing code with comments', () => {
             }
             someProp2={{
               /* Comment before object key */ someKey /* Comment after object key */:
-                /* Comment before object value */ 'someValue' /* Comment after object value */ /* Comment after object separator */,
+                /* Comment before object value */ 'someValue' /* Comment after object separator */ /* Comment after object value */,
               someKey2: 'someValue2',
             }}
             someProp3={[
-              /* Comment before array value */ 100 /* Comment after array value */ /* Comment after array separator */,
+              /* Comment before array value */ 100 /* Comment after array separator */ /* Comment after array value */,
               200,
             ]} /* Comment after all attributes */
           >

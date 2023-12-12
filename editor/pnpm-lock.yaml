@@ -320,8 +320,8 @@ specifiers:
   typescript-for-the-editor: npm:typescript@4.6.4
   url-join: 4.0.1
   use-context-selector: 1.3.9
-  utopia-api: link:../utopia-api
-  utopia-vscode-common: link:../utopia-vscode-common
+  utopia-api: file:../utopia-api
+  utopia-vscode-common: file:../utopia-vscode-common
   uuid: 8.3.2
   val-loader: 2.1.0
   vite: 4.4.8
@@ -478,8 +478,8 @@ dependencies:
   typescript-for-the-editor: /typescript/4.6.4
   url-join: 4.0.1
   use-context-selector: 1.3.9_2j5b55brghbi7pju3qvaqzwbdi_tvz7qjexdclsfyfjk6db43e66q
-  utopia-api: link:../utopia-api
-  utopia-vscode-common: link:../utopia-vscode-common
+  utopia-api: file:../utopia-api_mqm2tfoqktrfeah4tnjtdfd5o4
+  utopia-vscode-common: file:../utopia-vscode-common
   uuid: 8.3.2
   xstate: 4.23.1
   yjs: 13.6.8
@@ -13410,6 +13410,12 @@ packages:
       lie: 3.1.1
     dev: false
 
+  /localforage/1.9.0:
+    resolution: {integrity: sha512-rR1oyNrKulpe+VM9cYmcFn6tsHuokyVHFaCM3+osEmxaHTbEk8oQu6eGDfS6DQLWi/N67XRmB8ECG37OES368g==}
+    dependencies:
+      lie: 3.1.1
+    dev: false
+
   /locate-path/5.0.0:
     resolution: {integrity: sha512-t7hw9pI+WvuwNJXwk5zVHpyhIqzg2qTlklJOf0mVxGSbe3Fp2VieZcduNYjaLDoy6p9uGpQEGWG87WpMKlNq8g==}
     engines: {node: '>=8'}
@@ -15092,6 +15098,12 @@ packages:
     dependencies:
       fast-diff: 1.2.0
     dev: true
+
+  /prettier/2.0.5:
+    resolution: {integrity: sha512-7PtVymN48hGcO4fGjybyBSIWDsLU4H4XlvOHfq91pz9kkGlonzwTfYkaIEwiRg/dAJF9YlbsduBAgtYLi+8cFg==}
+    engines: {node: '>=10.13.0'}
+    hasBin: true
+    dev: false
 
   /prettier/2.8.8:
     resolution: {integrity: sha512-tdN8qQGvNjw4CHbY+XXk0JgCXn9QiF21a55rBe5LJAU+kDyC4WQn4+awm2Xfk2lQMk5fKup9XgzTZtGkjBdP9Q==}
@@ -18993,6 +19005,12 @@ packages:
     engines: {node: '>= 0.4.0'}
     dev: true
 
+  /uuid/3.3.2:
+    resolution: {integrity: sha512-yXJmeNaw3DnnKAOKJE51sL/ZaYfWJRl1pK9dr19YFCu0ObS231AB1/LbqTKRAQ5kw8A90rA6fr4riOUpTZvQZA==}
+    deprecated: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
+    hasBin: true
+    dev: false
+
   /uuid/8.3.2:
     resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
     hasBin: true
@@ -19747,6 +19765,38 @@ packages:
       immer: 3.2.0
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
       use-sync-external-store: 1.2.0_react@18.1.0
+    dev: false
+
+  file:../utopia-api_mqm2tfoqktrfeah4tnjtdfd5o4:
+    resolution: {directory: ../utopia-api, type: directory}
+    id: file:../utopia-api
+    name: utopia-api
+    version: 0.4.4
+    requiresBuild: true
+    peerDependencies:
+      react: 18.1.0
+      react-dom: 18.1.0
+    dependencies:
+      '@emotion/react': 11.1.2_l23vr2jl6b3o5l3eanlyfmxl6q_gdgxr7fdmsbhtbuls64pcvulza
+      '@emotion/serialize': 1.0.2
+      '@emotion/styled': 11.0.0_kf2s5ttaepyzuejtstis4wzmwe
+      '@emotion/styled-base': 11.0.0
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
+      uuid: 3.3.2
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@types/react'
+    dev: false
+
+  file:../utopia-vscode-common:
+    resolution: {directory: ../utopia-vscode-common, type: directory}
+    name: utopia-vscode-common
+    version: 0.1.2
+    requiresBuild: true
+    dependencies:
+      localforage: 1.9.0
+      prettier: 2.0.5
     dev: false
 
   github.com/concrete-utopia/react-error-overlay/201980990d653e821f36ab4f921a4f83588a8a42:
