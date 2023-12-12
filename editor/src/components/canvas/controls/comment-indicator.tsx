@@ -27,18 +27,18 @@ import {
   openCommentThreadActions,
 } from '../../../core/shared/multiplayer'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
-import { setRightMenuTab, switchEditorMode } from '../../editor/actions/action-creators'
 import type { Theme } from '../../../uuiui'
 import { UtopiaStyles, colorTheme } from '../../../uuiui'
-import { EditorModes, isCommentMode, isExistingComment } from '../../editor/editor-modes'
+import { isCommentMode, isExistingComment } from '../../editor/editor-modes'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { AvatarPicture } from '../../user-bar'
 import { canvasPointToWindowPoint } from '../dom-lookup'
-import { RightMenuTab } from '../../editor/store/editor-state'
 import { useRemixNavigationContext } from '../remix/utopia-remix-root-component'
 import { assertNever } from '../../../core/shared/utils'
 import { optionalMap } from '../../../core/shared/optional-utils'
+import { setRightMenuTab } from '../../editor/actions/action-creators'
+import { RightMenuTab } from '../../editor/store/editor-state'
 
 const IndicatorSize = 20
 const MagnifyScale = 1.15
@@ -294,6 +294,8 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
 
   const { location, scene: commentScene } = useCanvasLocationOfThread(thread)
 
+  const { onMouseDown, didDrag, dragPosition } = useDragging(thread, location)
+
   const remixLocationRoute = thread.metadata.remixLocationRoute ?? null
 
   const remixState = useRemixNavigationContext(commentScene)
@@ -304,14 +306,20 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
   const readByMe = useMyThreadReadStatus(thread)
 
   const onClick = React.useCallback(() => {
+    if (didDrag) {
+      return
+    }
     if (isOnAnotherRoute) {
       if (remixState == null) {
         return
       }
       remixState.navigate(remixLocationRoute)
     }
-    dispatch(openCommentThreadActions(thread.id, commentScene))
-  }, [dispatch, thread.id, remixState, remixLocationRoute, isOnAnotherRoute, commentScene])
+    dispatch([
+      ...openCommentThreadActions(thread.id, commentScene),
+      setRightMenuTab(RightMenuTab.Comments),
+    ])
+  }, [dispatch, thread.id, remixState, remixLocationRoute, isOnAnotherRoute, commentScene, didDrag])
 
   const { initials, color, avatar } = (() => {
     const firstComment = thread.comments[0]
@@ -329,7 +337,6 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
     }
   })()
 
-  const { onMouseDown, dragPosition } = useDragging(thread, location)
   const position = React.useMemo(
     () => canvasPointToWindowPoint(dragPosition ?? location, canvasScale, canvasOffset),
     [location, canvasScale, canvasOffset, dragPosition],
@@ -380,13 +387,15 @@ const COMMENT_DRAG_THRESHOLD = 5 // square px
 
 function useDragging(thread: ThreadData<ThreadMetadata>, originalLocation: CanvasPoint) {
   const editThreadMetadata = useEditThreadMetadata()
-  const dispatch = useDispatch()
   const [dragPosition, setDragPosition] = React.useState<CanvasPoint | null>(null)
+  const [didDrag, setDidDrag] = React.useState(false)
 
   const canvasScaleRef = useRefEditorState((store) => store.editor.canvas.scale)
 
   const onMouseDown = React.useCallback(
     (event: React.MouseEvent) => {
+      setDidDrag(false)
+
       const mouseDownPoint = windowPoint({ x: event.clientX, y: event.clientY })
 
       let draggedPastThreshold = false
@@ -397,6 +406,7 @@ function useDragging(thread: ThreadData<ThreadMetadata>, originalLocation: Canva
         draggedPastThreshold ||= distance(mouseDownPoint, mouseMovePoint) > COMMENT_DRAG_THRESHOLD
 
         if (draggedPastThreshold) {
+          setDidDrag(true)
           const dragVectorWindow = pointDifference(mouseDownPoint, mouseMovePoint)
           const dragVectorCanvas = canvasPoint({
             x: dragVectorWindow.x / canvasScaleRef.current,
@@ -429,15 +439,11 @@ function useDragging(thread: ThreadData<ThreadMetadata>, originalLocation: Canva
       }
 
       event.stopPropagation()
-      dispatch([
-        switchEditorMode(EditorModes.commentMode(null, 'dragging')),
-        setRightMenuTab(RightMenuTab.Comments),
-      ])
       window.addEventListener('mousemove', onMouseMove)
       window.addEventListener('mouseup', onMouseUp)
     },
-    [dispatch, canvasScaleRef, editThreadMetadata, thread.id, originalLocation, thread.metadata],
+    [canvasScaleRef, editThreadMetadata, thread.id, originalLocation, thread.metadata],
   )
 
-  return { onMouseDown, dragPosition }
+  return { onMouseDown, dragPosition, didDrag }
 }
