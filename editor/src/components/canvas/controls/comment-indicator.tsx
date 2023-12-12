@@ -1,6 +1,7 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
+import type { Interpolation } from '@emotion/react'
 import type { ThreadData } from '@liveblocks/client'
 import React from 'react'
 import type { ThreadMetadata } from '../../../../liveblocks.config'
@@ -27,8 +28,9 @@ import {
 } from '../../../core/shared/multiplayer'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { setRightMenuTab, switchEditorMode } from '../../editor/actions/action-creators'
+import type { Theme } from '../../../uuiui'
 import { UtopiaStyles, colorTheme } from '../../../uuiui'
-import { EditorModes } from '../../editor/editor-modes'
+import { EditorModes, isCommentMode, isExistingComment } from '../../editor/editor-modes'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { AvatarPicture } from '../../user-bar'
@@ -38,7 +40,8 @@ import { useRemixNavigationContext } from '../remix/utopia-remix-root-component'
 import { assertNever } from '../../../core/shared/utils'
 import { optionalMap } from '../../../core/shared/optional-utils'
 
-const IndicatorSize = 20
+const IndicatorSize = 24
+const MagnifyScale = 1.15
 
 export const CommentIndicators = React.memo(() => {
   const projectId = useEditorState(
@@ -167,6 +170,7 @@ const CommentIndicatorsInner = React.memo(() => {
           fgColor={temporaryIndicatorData.fgColor}
           avatarUrl={temporaryIndicatorData.avatarUrl}
           avatarInitials={temporaryIndicatorData.initials}
+          isActive={true}
         />
       ) : null}
     </React.Fragment>
@@ -184,58 +188,82 @@ interface CommentIndicatorUIProps {
   avatarUrl?: string | null
   onClick?: (e: React.MouseEvent) => void
   onMouseDown?: (e: React.MouseEvent) => void
+  isActive: boolean
+  read?: boolean
 }
 
 export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) => {
-  const { position, onClick, onMouseDown, bgColor, fgColor, avatarUrl, avatarInitials, opacity } =
-    props
+  const {
+    position,
+    onClick,
+    onMouseDown,
+    bgColor,
+    fgColor,
+    avatarUrl,
+    avatarInitials,
+    opacity,
+    resolved,
+    isActive,
+    read,
+  } = props
+
+  function getIndicatorStyle() {
+    const base: Interpolation<Theme> = {
+      position: 'fixed',
+      top: position.y + 3,
+      left: position.x - 3,
+      opacity: opacity,
+      filter: resolved ? 'grayscale(1)' : undefined,
+      width: IndicatorSize,
+      height: IndicatorSize,
+      background: read ? colorTheme.bg1.value : colorTheme.primary.value,
+      borderRadius: '24px 24px 24px 0px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
+    }
+
+    const transform: Interpolation<Theme> = {
+      transform: `scale(${MagnifyScale})`,
+      transformOrigin: 'bottom left',
+      transitionDuration: 'transform 0.1s ease',
+    }
+
+    const whenActive: Interpolation<Theme> = {
+      ...transform,
+      border: `1px solid ${colorTheme.primary.value}`,
+    }
+
+    const whenInactive: Interpolation<Theme> = {
+      ':hover': {
+        ...transform,
+      },
+    }
+
+    return {
+      ...base,
+      ...(isActive ? whenActive : whenInactive),
+    }
+  }
 
   return (
-    <div
-      css={{
-        position: 'fixed',
-        top: position.y,
-        left: position.x,
-        opacity: opacity,
-        filter: props.resolved ? 'grayscale(1)' : undefined,
-        width: IndicatorSize,
-        '&:hover': {
-          transform: 'scale(1.15)',
-          transitionDuration: 'transform 0.1s ease',
-          transformOrigin: 'bottom left',
-        },
-      }}
-      onClick={onClick}
-      onMouseDown={onMouseDown}
-    >
+    <div onClick={onClick} onMouseDown={onMouseDown} css={getIndicatorStyle()}>
       <div
-        css={{
-          height: 24,
-          width: 24,
-          background: colorTheme.bg1.value,
-          borderRadius: '24px 24px 24px 0px',
+        style={{
+          height: 18,
+          width: 18,
+          borderRadius: 18,
+          background: bgColor,
+          color: fgColor,
+          fontSize: 9,
+          fontWeight: 'bold',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
         }}
       >
-        <div
-          style={{
-            height: 20,
-            width: 20,
-            borderRadius: 10,
-            background: bgColor,
-            color: fgColor,
-            fontSize: 9,
-            fontWeight: 'bold',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <AvatarPicture url={avatarUrl} initials={avatarInitials} />
-        </div>
+        <AvatarPicture url={avatarUrl} initials={avatarInitials} />
       </div>
     </div>
   )
@@ -304,24 +332,20 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
     [location, canvasScale, canvasOffset, dragPosition],
   )
 
-  const indicatorOpacity = (() => {
-    if (isOnAnotherRoute || thread.metadata.resolved) {
-      return 0
-    }
-    switch (readByMe) {
-      case 'unread':
-        return 1
-      case 'read':
-        return 0.75
-      default:
-        assertNever(readByMe)
-    }
-  })()
+  const isActive = useEditorState(
+    Substores.restOfEditor,
+    (store) =>
+      isCommentMode(store.editor.mode) &&
+      store.editor.mode.comment != null &&
+      isExistingComment(store.editor.mode.comment) &&
+      store.editor.mode.comment.threadId === thread.id,
+    'CommentIndicator isActive',
+  )
 
   return (
     <CommentIndicatorUI
       position={position}
-      opacity={indicatorOpacity}
+      opacity={isOnAnotherRoute || thread.metadata.resolved ? 0 : 1}
       resolved={thread.metadata.resolved}
       onClick={onClick}
       onMouseDown={onMouseDown}
@@ -329,6 +353,8 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
       fgColor={color.foreground}
       avatarUrl={avatar}
       avatarInitials={initials}
+      isActive={isActive}
+      read={readByMe === 'read'}
     />
   )
 })

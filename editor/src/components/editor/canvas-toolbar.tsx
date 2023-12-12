@@ -142,7 +142,10 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
         onChange={props.actionWith}
         options={options}
         menuPortalTarget={menuPortalTarget}
-        filterOption={createFilter({ ignoreAccents: true })}
+        filterOption={createFilter({
+          ignoreAccents: true,
+          stringify: (c) => c.data.source + c.data.label,
+        })}
         styles={{
           ...componentSelectorStyles,
           menuPortal: (styles: CSSObject): CSSObject => {

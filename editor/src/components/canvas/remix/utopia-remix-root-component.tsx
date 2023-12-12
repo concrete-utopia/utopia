@@ -16,6 +16,8 @@ import type { UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { AlwaysFalse, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { CreateRemixDerivedDataRefsGLOBAL } from '../../editor/store/remix-derived-data'
+import { patchRoutesWithContext } from '../../../third-party/remix/create-remix-stub'
+import type { AppLoadContext } from '@remix-run/server-runtime'
 
 type RouteModule = RouteModules[keyof RouteModules]
 type RouterType = ReturnType<typeof createMemoryRouter>
@@ -136,7 +138,9 @@ export const RouteExportsForRouteObject: Array<keyof RouteObject> = [
   'shouldRevalidate',
 ]
 
-function useGetRoutes() {
+function useGetRoutes(
+  getLoadContext?: (request: Request) => Promise<AppLoadContext> | AppLoadContext,
+) {
   const routes = useEditorState(
     Substores.derived,
     (store) => store.derived.remixData?.routes ?? [],
@@ -187,8 +191,11 @@ function useGetRoutes() {
 
     addExportsToRoutes(routes)
 
-    return routes
+    const routesWithContext = patchRoutesWithContext(routes, getLoadContext)
+
+    return routesWithContext
   }, [
+    getLoadContext, // I'm not sure about the performance impact of this, maybe it'd be better to pass in getLoadContext as a Ref?
     displayNoneInstancesRef,
     metadataContext,
     fileBlobsRef,
@@ -201,12 +208,13 @@ function useGetRoutes() {
 
 export interface UtopiaRemixRootComponentProps {
   [UTOPIA_PATH_KEY]: ElementPath
+  getLoadContext?: (request: Request) => Promise<AppLoadContext> | AppLoadContext
 }
 
 export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootComponentProps) => {
   const remixDerivedDataRef = useRefEditorState((store) => store.derived.remixData)
 
-  const routes = useGetRoutes()
+  const routes = useGetRoutes(props.getLoadContext)
 
   const basePath = props[UTOPIA_PATH_KEY]
 

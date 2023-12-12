@@ -13,7 +13,7 @@ import {
   normalizeOthersList,
 } from '../core/shared/multiplayer'
 import { MultiplayerWrapper } from '../utils/multiplayer-wrapper'
-import { when } from '../utils/react-conditionals'
+import { unless, when } from '../utils/react-conditionals'
 import { Avatar, FlexRow, Icn, Tooltip, colorTheme } from '../uuiui'
 import { notice } from './common/notice'
 import type { EditorAction } from './editor/action-types'
@@ -46,7 +46,7 @@ export const UserBar = React.memo(() => {
           <MultiplayerUserBar />
         </MultiplayerWrapper>,
       )}
-      <SinglePlayerUserBar />
+      {unless(roomStatus === 'connected', <SinglePlayerUserBar />)}
     </FlexRow>
   )
 })
@@ -64,7 +64,7 @@ export const SinglePlayerUserBar = React.memo(() => {
     'SinglePlayerUserBar amIOwner',
   )
   return (
-    <a href='/projects' target='_blank'>
+    <a href='/projects' target='_blank' rel='noopener rofererrer'>
       <div
         style={{
           width: 24,
@@ -102,6 +102,10 @@ const MultiplayerUserBar = React.memo(() => {
     return others.slice(MAX_VISIBLE_OTHER_PLAYERS)
   }, [others])
 
+  const offlineOthers = Object.values(collabs).filter((collab) => {
+    return collab.id !== myUser.id && !others.some((other) => other.id === collab.id)
+  })
+
   const mode = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.mode,
@@ -114,16 +118,15 @@ const MultiplayerUserBar = React.memo(() => {
     'MultiplayerUserBar ownerId',
   )
 
+  const amIOwner = React.useMemo(() => {
+    return ownerId === myUser.id
+  }, [ownerId, myUser])
+
   const toggleFollowing = React.useCallback(
     (targetId: string) => () => {
       let actions: EditorAction[] = []
-      if (
-        !canFollowTarget(
-          myUser.id,
-          targetId,
-          others.map((o) => o),
-        )
-      ) {
+      const canFollow = canFollowTarget(myUser.id, targetId, others)
+      if (!canFollow) {
         actions.push(
           showToast(
             notice(
@@ -167,13 +170,12 @@ const MultiplayerUserBar = React.memo(() => {
         const name = normalizeMultiplayerName(other.name)
         const isOwner = ownerId === other.id
         return (
-          <MultiplayerAvatarWithTooltip
+          <MultiplayerAvatar
             key={`avatar-${other.id}`}
             name={multiplayerInitialsFromName(name)}
-            tooltip={name}
+            tooltip={{ text: name, colored: true }}
             color={multiplayerColorFromIndex(other.colorIndex)}
             picture={other.avatar}
-            coloredTooltip={true}
             onClick={toggleFollowing(other.id)}
             isBeingFollowed={isFollowMode(mode) && mode.playerId === other.id}
             follower={other.following === myUser.id}
@@ -183,9 +185,12 @@ const MultiplayerUserBar = React.memo(() => {
       })}
       {when(
         hiddenOthers.length > 0,
-        <MultiplayerAvatarWithTooltip
+        <MultiplayerAvatar
           name={`+${hiddenOthers.length}`}
-          tooltip={hiddenOthers.map((c) => normalizeMultiplayerName(c.name)).join(', ')}
+          tooltip={{
+            text: hiddenOthers.map((c) => normalizeMultiplayerName(c.name)).join(', '),
+            colored: false,
+          }}
           color={{
             background: colorTheme.fg8.value,
             foreground: colorTheme.fg0.value,
@@ -193,35 +198,43 @@ const MultiplayerUserBar = React.memo(() => {
           picture={null}
         />,
       )}
+      {when(
+        offlineOthers.length > 0,
+        offlineOthers.map((other) => {
+          if (other == null) {
+            return null
+          }
+          const name = normalizeMultiplayerName(other.name)
+          const isOwner = ownerId === other.id
+          return (
+            <MultiplayerAvatar
+              key={`avatar-${other.id}`}
+              name={multiplayerInitialsFromName(name)}
+              tooltip={{ text: name, colored: false }}
+              color={multiplayerColorFromIndex(other.colorIndex)}
+              picture={other.avatar}
+              isOwner={isOwner}
+              isOffline={true}
+            />
+          )
+        }),
+      )}
+      <a href='/projects' target='_blank' rel='noopener rofererrer'>
+        <MultiplayerAvatar
+          name={multiplayerInitialsFromName(myUser.name)}
+          color={multiplayerColorFromIndex(myUser.colorIndex)}
+          picture={myUser.avatar}
+          isOwner={amIOwner}
+        />
+      </a>
     </div>
   )
 })
 MultiplayerUserBar.displayName = 'MultiplayerUserBar'
 
-const MultiplayerAvatarWithTooltip = React.memo(
-  ({
-    tooltip,
-    coloredTooltip,
-    ...otherProps
-  }: { tooltip: string; coloredTooltip?: boolean } & MultiplayerAvatarProps) => {
-    return (
-      <Tooltip
-        title={`${tooltip}${otherProps.follower === true ? ' (following you)' : ''}`}
-        placement='bottom'
-        backgroundColor={coloredTooltip ? otherProps.color.background : undefined}
-        textColor={coloredTooltip ? otherProps.color.foreground : undefined}
-      >
-        <MultiplayerAvatar {...otherProps} />
-      </Tooltip>
-    )
-  },
-)
-MultiplayerAvatarWithTooltip.displayName = 'MultiplayerAvatarWithTooltip'
-
 export type MultiplayerAvatarProps = {
   name: string
   color: MultiplayerColor
-  coloredTooltip?: boolean
   picture?: string | null
   onClick?: () => void
   isBeingFollowed?: boolean
@@ -229,40 +242,63 @@ export type MultiplayerAvatarProps = {
   follower?: boolean
   isOwner?: boolean
   style?: CSSProperties
+  tooltip?: { text: string; colored: boolean }
+  isOffline?: boolean
 }
 
 export const MultiplayerAvatar = React.memo((props: MultiplayerAvatarProps) => {
   const picture = React.useMemo(() => {
     return isDefaultAuth0AvatarURL(props.picture ?? null) ? null : props.picture
   }, [props.picture])
+
+  const tooltipText = <strong>{props.tooltip?.text}</strong>
+  const tooltipSubtext =
+    props.follower === true ? ' following you' : props.isOffline ? ' offline' : ''
+
+  const tooltipWithLineBreak = (
+    <>
+      {tooltipText}
+      {<br />}
+      {tooltipSubtext}
+    </>
+  )
+
   return (
-    <div
-      style={{
-        width: props.size ?? 24,
-        height: props.size ?? 24,
-        backgroundColor: props.color.background,
-        color: props.color.foreground,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: '100%',
-        fontSize: 9,
-        fontWeight: 700,
-        cursor: props.onClick != null ? 'pointer' : 'default',
-        position: 'relative',
-        outline: `.3px solid ${colorTheme.bg1.value}`,
-        boxShadow:
-          props.isBeingFollowed === true
-            ? `0px 0px 8px ${colorTheme.dynamicBlue.value}`
-            : undefined,
-        ...props.style,
-      }}
-      onClick={props.onClick}
+    <Tooltip
+      disabled={props.tooltip == null}
+      title={tooltipWithLineBreak}
+      placement='bottom'
+      backgroundColor={props.tooltip?.colored === true ? props.color.background : undefined}
+      textColor={props.tooltip?.colored === true ? props.color.foreground : undefined}
     >
-      <AvatarPicture url={picture} size={24} initials={props.name} />
-      {props.isOwner ? <OwnerBadge /> : null}
-      {props.follower ? <FollowerBadge /> : null}
-    </div>
+      <div
+        style={{
+          width: props.size ?? 24,
+          height: props.size ?? 24,
+          backgroundColor: props.isOffline ? colorTheme.bg4.value : props.color.background,
+          color: props.isOffline ? colorTheme.fg2.value : props.color.foreground,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: '100%',
+          fontSize: 9,
+          fontWeight: 700,
+          cursor: props.onClick != null ? 'pointer' : 'inherit',
+          position: 'relative',
+          outline: `.3px solid ${colorTheme.bg1.value}`,
+          boxShadow:
+            props.isBeingFollowed === true
+              ? `0px 0px 8px ${colorTheme.dynamicBlue.value}`
+              : undefined,
+          ...props.style,
+        }}
+        onClick={props.onClick}
+      >
+        <AvatarPicture url={picture} size={24} initials={props.name} isOffline={props.isOffline} />
+        {props.isOwner ? <OwnerBadge /> : null}
+        {props.follower ? <FollowerBadge /> : null}
+      </div>
+    </Tooltip>
   )
 })
 MultiplayerAvatar.displayName = 'MultiplayerAvatar'
@@ -308,6 +344,7 @@ interface AvatarPictureProps {
   url: string | null | undefined
   initials: string
   size?: number
+  isOffline?: boolean
 }
 
 export const AvatarPicture = React.memo((props: AvatarPictureProps) => {
@@ -337,6 +374,7 @@ export const AvatarPicture = React.memo((props: AvatarPictureProps) => {
         width: size ?? '100%',
         height: size ?? '100%',
         borderRadius: '100%',
+        filter: props.isOffline ? 'grayscale(1)' : undefined,
       }}
       src={url}
       referrerPolicy='no-referrer'

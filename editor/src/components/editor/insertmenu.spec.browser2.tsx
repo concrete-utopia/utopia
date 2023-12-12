@@ -2,7 +2,11 @@ import { act, fireEvent, screen } from '@testing-library/react'
 import { FOR_TESTS_setNextGeneratedUid } from '../../core/model/element-template-utils.test-utils'
 import { forceNotNull } from '../../core/shared/optional-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
-import { mouseDragFromPointToPoint, mouseMoveToPoint } from '../canvas/event-helpers.test-utils'
+import {
+  mouseDragFromPointToPoint,
+  mouseMoveToPoint,
+  pressKey,
+} from '../canvas/event-helpers.test-utils'
 import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import {
   getPrintedUiJsCode,
@@ -122,9 +126,7 @@ describe('insert menu', () => {
     const filterBox = await screen.findByTestId(InsertMenuFilterTestId)
     forceNotNull('the filter box must not be null', filterBox)
 
-    await act(async () => {
-      fireEvent.keyDown(filterBox, { key: 'Enter', keycode: 13 })
-    })
+    await pressKey('Enter', { targetElement: filterBox })
 
     const targetElement = renderResult.renderedDOM.getByTestId('root')
     const targetElementBounds = targetElement.getBoundingClientRect()

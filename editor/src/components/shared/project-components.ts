@@ -43,17 +43,13 @@ import type {
 } from '../custom-code/code-file'
 import { clearComponentElementToInsertUniqueIDs } from '../custom-code/code-file'
 import { defaultElementStyle } from '../editor/defaults'
-import {
-  getExportedComponentImports,
-  getExportedComponentImportsFromParseSuccess,
-} from '../editor/export-utils'
+import { getExportedComponentImportsFromParseSuccess } from '../editor/export-utils'
 import {
   groupJSXElement,
   groupJSXElementImportsToAdd,
 } from '../canvas/canvas-strategies/strategies/group-helpers'
 import type { InsertMenuMode } from '../canvas/ui/floating-insert-menu-helpers'
 import { insertMenuModes } from '../canvas/ui/floating-insert-menu-helpers'
-import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { elementUsesProperty } from '../../core/model/element-template-utils'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../../core/shared/dom-utils'
 import { getTopLevelElementByExportsDetail } from '../../core/model/project-file-utils'
@@ -66,7 +62,6 @@ export interface InsertableComponent {
   name: string
   stylePropOptions: Array<StylePropOption>
   defaultSize: Size | null
-  metadata?: Record<string, any>
 }
 
 export function insertableComponent(
@@ -75,7 +70,6 @@ export function insertableComponent(
   name: string,
   stylePropOptions: Array<StylePropOption>,
   defaultSize: Size | null,
-  metadata?: Record<string, any>,
 ): InsertableComponent {
   const component = {
     importsToAdd: importsToAdd,
@@ -83,12 +77,6 @@ export function insertableComponent(
     name: name,
     stylePropOptions: stylePropOptions,
     defaultSize: defaultSize,
-  }
-  if (metadata != null) {
-    return {
-      ...component,
-      metadata: metadata,
-    }
   }
   return component
 }
@@ -265,6 +253,48 @@ export function getInsertableGroupPackageStatus(
     default:
       assertNever(insertableType)
   }
+}
+
+export interface InsertableVariable extends InsertableComponent {
+  depth: number
+  variableType: InsertableVariableType
+  originalName: string
+}
+
+export type InsertableVariableType =
+  | 'string'
+  | 'number'
+  | 'bigint'
+  | 'boolean'
+  | 'symbol'
+  | 'undefined'
+  | 'object'
+  | 'function'
+  | 'array'
+  | 'image'
+
+export function insertableVariable(
+  importsToAdd: Imports,
+  element: () => ComponentElementToInsert,
+  name: string,
+  stylePropOptions: Array<StylePropOption>,
+  defaultSize: Size | null,
+  variableType: InsertableVariableType,
+  depth: number,
+  originalName: string,
+): InsertableVariable {
+  return {
+    ...insertableComponent(importsToAdd, element, name, stylePropOptions, defaultSize),
+    variableType: variableType,
+    depth: depth,
+    originalName: originalName,
+  }
+}
+
+export function isInsertableVariable(
+  insertable: InsertableComponent,
+): insertable is InsertableVariable {
+  return 'variableType' in insertable
 }
 
 export function getDependencyStatus(

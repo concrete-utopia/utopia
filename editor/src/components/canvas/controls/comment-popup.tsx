@@ -2,7 +2,7 @@ import type { CommentData } from '@liveblocks/client'
 import type { ComposerSubmitComment } from '@liveblocks/react-comments'
 import { Composer } from '@liveblocks/react-comments'
 import { useAtom } from 'jotai'
-import React from 'react'
+import React, { useRef } from 'react'
 import { useCreateThread, useStorage } from '../../../../liveblocks.config'
 import '../../../../resources/editor/css/liveblocks-comments.css'
 import {
@@ -44,6 +44,8 @@ import * as EP from '../../../core/shared/element-path'
 import { create } from '../../../core/shared/property-path'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 
+const ComposerEditorClassName = 'lb-composer-editor'
+
 export const CommentPopup = React.memo(() => {
   const mode = useEditorState(
     Substores.restOfEditor,
@@ -73,6 +75,8 @@ interface CommentThreadProps {
 const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
   const dispatch = useDispatch()
   const colorTheme = useColorTheme()
+
+  const composerRef = useRef<HTMLFormElement | null>(null)
 
   const { location, thread } = useCanvasCommentThreadAndLocation(comment)
   const threadId = thread?.id ?? null
@@ -165,6 +169,19 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
     if (threadId != null) {
       createNewThreadReadStatus(threadId, 'read')
     }
+    function getLiveblocksEditorElement(): HTMLDivElement | null {
+      if (composerRef.current == null) {
+        return null
+      }
+      const editorsByClass = composerRef.current.getElementsByClassName(ComposerEditorClassName)
+      if (editorsByClass.length < 1) {
+        return null
+      }
+      return editorsByClass[0] as HTMLDivElement
+    }
+    setTimeout(() => {
+      getLiveblocksEditorElement()?.focus()
+    }, 0)
   }, [threadId, createNewThreadReadStatus])
 
   const onCommentDelete = React.useCallback(
@@ -282,7 +299,12 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
               />
             )
           })}
-          <Composer autoFocus threadId={thread.id} onComposerSubmit={onSubmitComment} />
+          <Composer
+            ref={composerRef}
+            autoFocus
+            threadId={thread.id}
+            onComposerSubmit={onSubmitComment}
+          />
         </>
       )}
     </div>

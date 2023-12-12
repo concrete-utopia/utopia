@@ -16,7 +16,12 @@ import { Icn, UIRow, UtopiaTheme, useColorTheme } from '../../uuiui'
 import { getControlStyles } from '../../uuiui-deps'
 import { InspectorInputEmotionStyle } from '../../uuiui/inputs/base-input'
 import type { ProjectContentTreeRoot } from '../assets'
-import type { InsertableComponent, InsertableComponentGroup } from '../shared/project-components'
+import type {
+  InsertableComponent,
+  InsertableComponentGroup,
+  InsertableComponentGroupType,
+  InsertableVariable,
+} from '../shared/project-components'
 import { getInsertableGroupLabel } from '../shared/project-components'
 import { setRightMenuTab } from './actions/action-creators'
 import type { Mode } from './editor-modes'
@@ -29,6 +34,17 @@ import type { InsertMenuItem, InsertableComponentFlatList } from '../canvas/ui/f
 import { optionalMap } from '../../core/shared/optional-utils'
 
 export const VariablesMenuFilterTestId = 'insert-menu-filter'
+
+type InsertMenuVariableItemValue = InsertableVariable & {
+  source: InsertableComponentGroupType | null
+  key: string
+}
+
+type InsertMenuVariableItem = {
+  label: string
+  source: string | null
+  value: InsertMenuVariableItemValue
+}
 
 interface VariablesMenuProps {
   mode: Mode
@@ -74,7 +90,12 @@ export const VariablesMenu = React.memo(() => {
   const scopedVariables = useEditorState(
     Substores.variablesInScope,
     (store) =>
-      getVariablesInScope(selectedViews[0], projectContents, store.editor.variablesInScope),
+      getVariablesInScope(
+        selectedViews[0],
+        projectContents,
+        store.editor.variablesInScope,
+        store.editor.jsxMetadata,
+      ),
     'VariablesMenu scopedVariables',
   )
 
@@ -92,8 +113,17 @@ const Input = (props: InputProps) => {
   return <components.Input {...props} data-testid={VariablesMenuFilterTestId} />
 }
 
-const iconByType = (insertMenuItem: InsertMenuItem): string => {
-  const variableType = insertMenuItem.value.metadata?.variableType as string
+const BASE_PADDING = 4
+const DEPTH_PADDING = 16
+function paddingByDepth(insertMenuItem: InsertMenuVariableItem) {
+  return {
+    padding: BASE_PADDING,
+    paddingLeft: BASE_PADDING + insertMenuItem.value.depth * DEPTH_PADDING,
+  }
+}
+
+const iconByType = (insertMenuItem: InsertMenuVariableItem): string => {
+  const variableType = insertMenuItem.value.variableType
 
   const iconsByType: Record<string, string> = {
     string: 'text',
@@ -123,11 +153,11 @@ const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
         rowHeight={'smaller'}
         css={{
           borderRadius: 2,
-          padding: 4,
           color: isHovered ? colorTheme.dynamicBlue.value : colorTheme.fg1.value,
           background: undefined,
           gap: 4,
           border: '1px solid transparent',
+          ...paddingByDepth(props.data),
         }}
         onMouseEnter={setIsHoveredTrue}
         onMouseLeave={setIsHoveredFalse}
@@ -135,7 +165,7 @@ const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
       >
         <Icn
           category='element'
-          type={iconByType(props.data as InsertMenuItem)}
+          type={iconByType(props.data)}
           color={isHovered ? 'dynamic' : 'main'}
           width={18}
           height={18}
@@ -306,7 +336,8 @@ const VariablesMenuInner = React.memo((props: VariablesMenuProps) => {
 
   const filterOption = createFilter({
     ignoreAccents: true,
-    stringify: (c) => c.data.source + c.data.label,
+    stringify: (c: { data: InsertMenuVariableItem }) =>
+      c.data.source + c.data.label + c.data.value.originalName,
     ignoreCase: true,
     trim: true,
     matchFrom: 'any',
