@@ -52,7 +52,7 @@ index 2d7da1aecf8..052f52383f0 100644
  
  				<script src="${mainJs}" nonce="${nonce}"></script>
 diff --git a/package.json b/package.json
-index 2bca5115cac..75f06b97e0b 100644
+index 2bca5115cac..53884a9bb17 100644
 --- a/package.json
 +++ b/package.json
 @@ -44,15 +44,15 @@
@@ -212,7 +212,7 @@ index 6148eb30092..6948ededa4a 100644
  
  class SizeUtils {
 diff --git a/src/vs/code/browser/workbench/workbench.ts b/src/vs/code/browser/workbench/workbench.ts
-index 534fe232636..bc8685dc831 100644
+index 534fe232636..b41446430f0 100644
 --- a/src/vs/code/browser/workbench/workbench.ts
 +++ b/src/vs/code/browser/workbench/workbench.ts
 @@ -1,536 +1,101 @@
@@ -821,7 +821,7 @@ index 534fe232636..bc8685dc831 100644
 +
 +  // Inject project specific utopia config into the product.json
 +  const urlParams = new URLSearchParams(window.location.search)
-+  const projectID = urlParams.get('project_id')!
++  const vsCodeSessionID = urlParams.get('vs_code_session_id')!
 +
 +  // Use this instance as the webview provider rather than hitting MS servers
 +  const webviewEndpoint = `${window.location.origin}/vscode/vscode/vs/workbench/contrib/webview/browser/pre`
@@ -829,7 +829,7 @@ index 534fe232636..bc8685dc831 100644
 +  let config = {
 +    ...loadedConfig,
 +    folderUri: {
-+      scheme: projectID,
++      scheme: vsCodeSessionID,
 +      authority: '',
 +      path: `/`,
 +      query: '',
@@ -849,7 +849,7 @@ index 534fe232636..bc8685dc831 100644
 +    config = { ...config, workspaceProvider }
 +  }
 +
-+  setupVSCodeEventListenersForProject(projectID)
++  setupVSCodeEventListenersForProject(vsCodeSessionID)
 +
 +  create(document.body, config)
 +})()
@@ -1212,7 +1212,7 @@ index aedda47bd66..1e685812b0e 100644
  
  		this._registry = new ExtensionDescriptionRegistry([]);
 diff --git a/src/vs/workbench/services/workspaces/browser/workspaces.ts b/src/vs/workbench/services/workspaces/browser/workspaces.ts
-index 3b90080dc3d..a2228f49e9e 100644
+index 3b90080dc3d..cf9ac44fca9 100644
 --- a/src/vs/workbench/services/workspaces/browser/workspaces.ts
 +++ b/src/vs/workbench/services/workspaces/browser/workspaces.ts
 @@ -5,7 +5,6 @@
@@ -1229,10 +1229,10 @@ index 3b90080dc3d..a2228f49e9e 100644
  function getWorkspaceId(uri: URI): string {
 -	return hash(uri.toString()).toString(16);
 +	const urlParams = new URLSearchParams(window.location.search);
-+	return urlParams.get('project_id')!;
++	return urlParams.get('vs_code_session_id')!;
  }
 diff --git a/yarn.lock b/yarn.lock
-index 2f4f87570dd..fe2016e07f8 100644
+index 2f4f87570dd..cdeffa74f26 100644
 --- a/yarn.lock
 +++ b/yarn.lock
 @@ -5248,6 +5248,11 @@ ignore@^5.1.4:
@@ -1279,10 +1279,10 @@ index 2f4f87570dd..fe2016e07f8 100644
    resolved "https://registry.yarnpkg.com/prepend-http/-/prepend-http-2.0.0.tgz#e92434bfa5ea8c19f41cdfd401d741a3c819d897"
    integrity sha1-6SQ0v6XqjBn0HN/UAddBo8gZ2Jc=
  
-+prettier@2.0.5:
-+  version "2.0.5"
-+  resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.0.5.tgz#d6d56282455243f2f92cc1716692c08aa31522d4"
-+  integrity sha512-7PtVymN48hGcO4fGjybyBSIWDsLU4H4XlvOHfq91pz9kkGlonzwTfYkaIEwiRg/dAJF9YlbsduBAgtYLi+8cFg==
++prettier@2.8.8:
++  version "2.8.8"
++  resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.8.8.tgz#e8c5d7e98a4305ffe3de2e1fc4aca1a71c28b1da"
++  integrity sha512-tdN8qQGvNjw4CHbY+XXk0JgCXn9QiF21a55rBe5LJAU+kDyC4WQn4+awm2Xfk2lQMk5fKup9XgzTZtGkjBdP9Q==
 +
  pretty-hrtime@^1.0.0:
    version "1.0.3"
@@ -1292,10 +1292,10 @@ index 2f4f87570dd..fe2016e07f8 100644
      which-typed-array "^1.1.2"
  
 +"utopia-vscode-common@file:../../utopia-vscode-common":
-+  version "0.1.2"
++  version "0.1.4"
 +  dependencies:
 +    localforage "1.9.0"
-+    prettier "2.0.5"
++    prettier "2.8.8"
 +
  uuid@^3.0.0:
    version "3.1.0"

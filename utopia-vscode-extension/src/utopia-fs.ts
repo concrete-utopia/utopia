@@ -1,26 +1,28 @@
-import {
+import type {
   CancellationToken,
-  Disposable,
   Event,
-  EventEmitter,
   FileChangeEvent,
-  FileChangeType,
   FileSearchOptions,
   FileSearchProvider,
   FileSearchQuery,
   FileStat,
-  FileSystemError,
   FileSystemProvider,
-  FileType,
-  Position,
   Progress,
-  Range,
   TextSearchComplete,
   TextSearchOptions,
   TextSearchProvider,
   TextSearchQuery,
   TextSearchResult,
   Uri,
+} from 'vscode'
+import {
+  Disposable,
+  EventEmitter,
+  FileChangeType,
+  FileType,
+  FileSystemError,
+  Position,
+  Range,
   workspace,
 } from 'vscode'
 import {

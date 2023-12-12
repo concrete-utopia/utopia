@@ -387,7 +387,6 @@ import {
   removeElementAtPath,
   StoryboardFilePath,
   updateMainUIInEditorState,
-  vsCodeBridgeIdProjectId,
   withUnderlyingTarget,
   modifyOpenJsxElementOrConditionalAtPath,
   modifyOpenJsxChildAtPath,
@@ -781,7 +780,6 @@ export function restoreEditorState(
   // FIXME Ask Team Components to check over these
   return {
     id: currentEditor.id,
-    vscodeBridgeId: currentEditor.vscodeBridgeId,
     forkedFromProjectId: currentEditor.forkedFromProjectId,
     appID: currentEditor.appID,
     projectName: currentEditor.projectName,
@@ -1594,7 +1592,6 @@ export const UPDATE_FNS = {
       ...editorModelFromPersistentModel(parsedModel, dispatch),
       projectName: action.title,
       id: action.projectId,
-      vscodeBridgeId: vsCodeBridgeIdProjectId(action.projectId), // we assign a first value when loading a project. SET_PROJECT_ID will not change this, saving us from having to reload VSCode
       nodeModules: {
         skipDeepFreeze: true,
         files: action.nodeModules,
@@ -3352,21 +3349,10 @@ export const UPDATE_FNS = {
       return editor
     }
   },
-  SET_PROJECT_ID: (
-    action: SetProjectID,
-    editor: EditorModel,
-    dispatch: EditorDispatch,
-  ): EditorModel => {
-    let vscodeBridgeId = editor.vscodeBridgeId
-    if (vscodeBridgeId.type === 'VSCODE_BRIDGE_ID_DEFAULT') {
-      vscodeBridgeId = vsCodeBridgeIdProjectId(action.id)
-      // Side effect.
-      initVSCodeBridge(editor.projectContents, dispatch, editor.canvas.openFile?.filename ?? null)
-    }
+  SET_PROJECT_ID: (action: SetProjectID, editor: EditorModel): EditorModel => {
     return {
       ...editor,
       id: action.id,
-      vscodeBridgeId: vscodeBridgeId,
     }
   },
   UPDATE_CODE_RESULT_CACHE: (action: UpdateCodeResultCache, editor: EditorModel): EditorModel => {

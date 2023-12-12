@@ -26,7 +26,7 @@ import type {
 } from 'utopia-vscode-common'
 import { accumulatedToVSCodeMessage, toVSCodeExtensionMessage } from 'utopia-vscode-common'
 import type { EditorState } from './editor-state'
-import { getHighlightBoundsForElementPaths, getUnderlyingVSCodeBridgeID } from './editor-state'
+import { getHighlightBoundsForElementPaths } from './editor-state'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import * as EP from '../../../core/shared/element-path'
 import { collateCollaborativeProjectChanges } from './collaborative-editing'
@@ -80,7 +80,6 @@ export type ProjectFileChange =
   | EnsureDirectoryExistsChange
 
 export function collateProjectChanges(
-  projectID: string,
   oldContents: ProjectContentTreeRoot,
   newContents: ProjectContentTreeRoot,
 ): Array<ProjectFileChange> {
@@ -230,7 +229,6 @@ export function getProjectContentsChanges(
   newEditorState: EditorState,
 ): ProjectContentProjectChanges {
   const projectChanges = collateProjectChanges(
-    getUnderlyingVSCodeBridgeID(oldEditorState.vscodeBridgeId),
     oldEditorState.projectContents,
     newEditorState.projectContents,
   )
@@ -239,16 +237,9 @@ export function getProjectContentsChanges(
     newEditorState.projectContents,
   )
 
-  if (oldEditorState.vscodeBridgeId != null) {
-    return {
-      collabProjectChanges: collabProjectChanges,
-      changesForVSCode: projectChanges,
-    }
-  } else {
-    return {
-      collabProjectChanges: collabProjectChanges,
-      changesForVSCode: [],
-    }
+  return {
+    collabProjectChanges: collabProjectChanges,
+    changesForVSCode: projectChanges,
   }
 }
 

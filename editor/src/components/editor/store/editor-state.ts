@@ -723,42 +723,10 @@ export function resizeOptions(
   }
 }
 
-export interface VSCodeBridgeIdDefault {
-  type: 'VSCODE_BRIDGE_ID_DEFAULT'
-  defaultID: string
-}
+const UnderlyingVSCodeBridgeId = UUID()
 
-export function vsCodeBridgeIdDefault(defaultID: string): VSCodeBridgeIdDefault {
-  return {
-    type: 'VSCODE_BRIDGE_ID_DEFAULT',
-    defaultID: defaultID,
-  }
-}
-
-export interface VSCodeBridgeIdProjectId {
-  type: 'VSCODE_BRIDGE_ID_PROJECT_ID'
-  projectID: string
-}
-
-export function vsCodeBridgeIdProjectId(projectID: string): VSCodeBridgeIdProjectId {
-  return {
-    type: 'VSCODE_BRIDGE_ID_PROJECT_ID',
-    projectID: projectID,
-  }
-}
-
-export type VSCodeBridgeId = VSCodeBridgeIdDefault | VSCodeBridgeIdProjectId
-
-export function getUnderlyingVSCodeBridgeID(bridgeId: VSCodeBridgeId): string {
-  switch (bridgeId.type) {
-    case 'VSCODE_BRIDGE_ID_DEFAULT':
-      return `${ProjectIDPlaceholderPrefix}_${bridgeId.defaultID}`
-    case 'VSCODE_BRIDGE_ID_PROJECT_ID':
-      return bridgeId.projectID
-    default:
-      const _exhaustiveCheck: never = bridgeId
-      throw new Error(`Unhandled type ${JSON.stringify(bridgeId)}`)
-  }
+export function getUnderlyingVSCodeBridgeID(): string {
+  return UnderlyingVSCodeBridgeId
 }
 
 export interface EditorStateNodeModules {
@@ -1405,7 +1373,6 @@ export type TrueUpTarget =
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
   id: string | null
-  vscodeBridgeId: VSCodeBridgeId
   forkedFromProjectId: string | null
   appID: string | null
   projectName: string
@@ -1488,7 +1455,6 @@ export interface EditorState {
 
 export function editorState(
   id: string | null,
-  vscodeBridgeId: VSCodeBridgeId,
   forkedFromProjectId: string | null,
   appID: string | null,
   projectName: string,
@@ -1570,7 +1536,6 @@ export function editorState(
 ): EditorState {
   return {
     id: id,
-    vscodeBridgeId: vscodeBridgeId,
     forkedFromProjectId: forkedFromProjectId,
     appID: appID,
     projectName: projectName,
@@ -2354,7 +2319,6 @@ export const BaseCanvasOffsetLeftPane = {
 export function createEditorState(dispatch: EditorDispatch): EditorState {
   return {
     id: null,
-    vscodeBridgeId: vsCodeBridgeIdDefault(UUID()),
     forkedFromProjectId: null,
     appID: null,
     projectName: createNewProjectName(),
@@ -2730,7 +2694,6 @@ export function editorModelFromPersistentModel(
 ): EditorState {
   const editor: EditorState = {
     id: null,
-    vscodeBridgeId: vsCodeBridgeIdDefault(UUID()),
     forkedFromProjectId: persistentModel.forkedFromProjectId,
     appID: persistentModel.appID ?? null,
     projectName: createNewProjectName(),
