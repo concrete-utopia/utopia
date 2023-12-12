@@ -379,7 +379,7 @@ describe('ES Dependency Manager — Downloads extra files as-needed', () => {
         const styleTag = document.getElementById(
           `${InjectedCSSFilePrefix}/node_modules/mypackage/dist/style.css`,
         )
-        const rescopedCSS = `#${CanvasContainerID} ${simpleCssContent}`
+        const rescopedCSS = `@scope (#${CanvasContainerID}){${simpleCssContent}}`
         expect(styleTag?.innerHTML).toEqual(rescopedCSS)
         expect(innerOnRemoteModuleDownload).toBeCalledTimes(0)
 
