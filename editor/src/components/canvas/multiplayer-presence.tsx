@@ -52,6 +52,19 @@ import { isFeatureEnabled } from '../../utils/feature-switches'
 import { CommentIndicators } from './controls/comment-indicator'
 import { CommentPopup } from './controls/comment-popup'
 
+export const OtherUserPointer = (props: any) => {
+  return (
+    <svg width='12' height='17' viewBox='0 0 12 17' fill='none' xmlns='http://www.w3.org/2000/svg'>
+      <path
+        id='Default'
+        d='M0.0397339 0.0756531V16.5757L4.16473 11.0757H11.0397L0.0397339 0.0756531Z'
+        fill={props.color}
+        stroke='white'
+      />
+    </svg>
+  )
+}
+
 export const MultiplayerPresence = React.memo(() => {
   const dispatch = useDispatch()
 
@@ -179,7 +192,7 @@ const MultiplayerCursors = React.memo(() => {
             name={other.userInfo.name}
             colorIndex={other.userInfo.colorIndex}
             position={position}
-            opacity={isOnAnotherRoute ? 0.25 : 1}
+            isOnAnotherRoute={isOnAnotherRoute}
           />
         )
       })}
@@ -193,12 +206,12 @@ const MultiplayerCursor = React.memo(
     name,
     colorIndex,
     position,
-    opacity,
+    isOnAnotherRoute,
   }: {
     name: string | null
     colorIndex: number | null
     position: CanvasPoint
-    opacity: number
+    isOnAnotherRoute: boolean
   }) => {
     const canvasScale = useEditorState(
       Substores.canvasOffset,
@@ -219,36 +232,18 @@ const MultiplayerCursor = React.memo(
             stiffness: 350,
           }}
           style={{
-            color: color.foreground,
-            backgroundColor: color.background,
-            padding: '0 4px',
-            borderRadius: 2,
-            boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
-            fontWeight: 'bold',
-            fontSize: 9,
-            left: 5,
-            top: 5,
-            position: 'fixed',
-            pointerEvents: 'none',
-            opacity: opacity,
             scale: canvasScale <= 1 ? 1 / canvasScale : 1,
+            opacity: isOnAnotherRoute ? 0.3 : 1,
           }}
         >
-          {/* This is a temporary placeholder for a good pointer icon */}
           <div
             style={{
-              width: 0,
-              height: 0,
-              borderTop: `5px solid transparent`,
-              borderBottom: `5px solid transparent`,
-              borderRight: `5px solid ${color.background}`,
-              transform: 'rotate(45deg)',
-              position: 'absolute',
-              top: -3,
-              left: -1,
-              zoom: canvasScale > 1 ? 1 / canvasScale : 1,
+              filter: 'drop-shadow(1px 2px 3px rgb(0 0 0 / 0.3))',
+              transform: 'translate(0px, 0px)',
             }}
-          />
+          >
+            <OtherUserPointer color={color.background} />
+          </div>
           <div
             style={{
               color: color.foreground,
@@ -259,8 +254,8 @@ const MultiplayerCursor = React.memo(
               fontWeight: 'bold',
               fontSize: 9,
               position: 'absolute',
-              left: 5,
-              top: 5,
+              left: 6,
+              top: 15,
               zoom: canvasScale > 1 ? 1 / canvasScale : 1,
             }}
           >
