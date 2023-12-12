@@ -189,7 +189,7 @@
     "prettier": "2.8.8",
     "prop-types": "15.6.2",
     "pubsub-js": "^1.9.2",
-    "puppeteer": "19.6.0",
+    "puppeteer": "21.6.0",
     "rc-slider": "git://github.com/momentumworks/slider.git#93a6ef5d67845a340bb1847be4e7fc9b3f5c9c5f",
     "rc-table": "7.8.6",
     "re-reselect": "^4.0.1",

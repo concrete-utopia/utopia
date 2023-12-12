@@ -43,6 +43,7 @@ export class Tooltip extends React.Component<React.PropsWithChildren<TooltipProp
         css={{
           fontWeight: 400,
           fontSize: 11,
+          textAlign: 'center',
           fontFamily:
             "utopian-inter, -apple-system, BlinkMacSystemFont, Helvetica, 'Segoe UI', Roboto, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'",
           backgroundColor: `${backgroundColor} !important`,
