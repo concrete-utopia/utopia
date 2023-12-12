@@ -1307,7 +1307,9 @@ describe('Remix navigation', () => {
 
     for (let i = 1; i < 7; i++) {
       await clickRemixLink(renderResult)
-      expect(renderResult.renderedDOM.queryAllByText(`post id: ${i}`)).toHaveLength(1)
+      expect(
+        renderResult.renderedDOM.queryAllByText(`post id: ${i}`).filter(filterOutMenuLabels),
+      ).toHaveLength(1)
     }
   })
 
