@@ -77,8 +77,8 @@ export const runAddElements: CommandFunction<AddElements> = (
             underlyingFilePathNewParent,
             insertionResult.importsToAdd,
             command.importsToAdd ?? {},
-          ),
-        ),
+          ).imports,
+        ).imports,
         underlyingFilePathNewParent,
       )
 

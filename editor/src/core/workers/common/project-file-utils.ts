@@ -5,6 +5,7 @@ import type {
   ParsedJSONSuccess,
   ImportAlias,
   RevisionsStateType,
+  ImportsMergeResolution,
 } from '../../shared/project-file-types'
 import { RevisionsState } from '../../shared/project-file-types'
 import { fastForEach } from '../../shared/utils'
@@ -26,6 +27,13 @@ export function codeNeedsParsing(revisionsState: RevisionsStateType): boolean {
 
 export function emptyImports(): Imports {
   return {}
+}
+
+export function emptyImportsMergeResolution(): ImportsMergeResolution {
+  return {
+    imports: emptyImports(),
+    duplicateNameMapping: new Map<string, string>(),
+  }
 }
 
 function mergeImportedFromWithin(
@@ -100,12 +108,17 @@ function mergeMaybeImportDetails(
   )
 }
 
-export function mergeImports(fileUri: string, first: Imports, second: Imports): Imports {
+export function mergeImports(
+  fileUri: string,
+  first: Imports,
+  second: Imports,
+): ImportsMergeResolution {
   const allImportSources = new Set([...Object.keys(first), ...Object.keys(second)])
   let absoluteImportSourcePathsToRelativeImportSourcePaths: {
     [absolutePath: string]: string | undefined
   } = {}
   let imports: Imports = {}
+  let duplicateNameMapping = new Map<string, string>()
 
   allImportSources.forEach((importSource) => {
     const rawAbsolutePath = absolutePathFromRelativePath(fileUri, false, importSource)
@@ -136,7 +149,7 @@ export function mergeImports(fileUri: string, first: Imports, second: Imports): 
       imports[existingImportSourceToUse] = merged
     }
   })
-  return imports
+  return { imports, duplicateNameMapping }
 }
 
 export function addImport(
@@ -146,7 +159,7 @@ export function addImport(
   importedFromWithin: Array<ImportAlias>,
   importedAs: string | null,
   imports: Imports,
-): Imports {
+): ImportsMergeResolution {
   const toAdd: Imports = {
     [importedFrom]: {
       importedWithName: importedWithName,

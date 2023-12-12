@@ -127,7 +127,7 @@ describe('modifyUnderlyingTarget', () => {
           null,
           [importAlias('Spring')],
           null,
-          addImport('', 'react', null, [], 'React', emptyImports()),
+          addImport('', 'react', null, [], 'React', emptyImports()).imports,
         ),
       )
     } else {

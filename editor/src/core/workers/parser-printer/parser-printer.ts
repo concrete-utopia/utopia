@@ -1427,7 +1427,7 @@ export function parseCode(
             importedFromWithin,
             importedAs,
             imports,
-          )
+          ).imports
           const rawImportStatement = importStatement(
             topLevelElement.getText(sourceFile),
             importedAs != null,

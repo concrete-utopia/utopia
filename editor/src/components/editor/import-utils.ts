@@ -1,6 +1,10 @@
 import { resolveModulePathIncludingBuiltIns } from '../../core/es-modules/package-manager/module-resolution'
 import { foldEither } from '../../core/shared/either'
-import { emptyImports, mergeImports } from '../../core/workers/common/project-file-utils'
+import {
+  emptyImports,
+  emptyImportsMergeResolution,
+  mergeImports,
+} from '../../core/workers/common/project-file-utils'
 import type { ImportInfo, TopLevelElement } from '../../core/shared/element-template'
 import {
   importedOrigin,
@@ -11,7 +15,7 @@ import {
   walkElement,
 } from '../../core/shared/element-template'
 import type {
-  DuplicateImportsResolution,
+  ImportsMergeResolution,
   ElementPath,
   Imports,
   NodeModules,
@@ -29,18 +33,19 @@ export function getRequiredImportsForElement(
   nodeModules: NodeModules,
   targetFilePath: string,
   builtInDependencies: BuiltInDependencies,
-): Imports {
-  return withUnderlyingTarget<Imports>(
+): ImportsMergeResolution {
+  return withUnderlyingTarget<ImportsMergeResolution>(
     target,
     projectContents,
-    emptyImports(),
+    emptyImportsMergeResolution(),
     (success, element, underlyingTarget, underlyingFilePath) => {
       const importsInOriginFile = success.imports
       const topLevelElementsInOriginFile = success.topLevelElements
       const lastPathPart =
         EP.lastElementPathForPath(underlyingTarget) ?? EP.emptyStaticElementPathPart()
 
-      let importsToAdd: Imports = emptyImports()
+      let importsMergeResolution = emptyImportsMergeResolution()
+
       // Walk down through the elements as elements within the element being reparented might also be imported.
       walkElement(element, lastPathPart, 0, (elem, subPath, depth) => {
         if (isJSXElement(elem)) {
@@ -56,9 +61,9 @@ export function getRequiredImportsForElement(
             if (importedFromResult != null) {
               switch (importedFromResult.type) {
                 case 'SAME_FILE_ORIGIN':
-                  importsToAdd = mergeImports(
+                  importsMergeResolution = mergeImportsResolutionWithImports(
                     targetFilePath,
-                    importsToAdd,
+                    importsMergeResolution,
                     getImportsFor(
                       builtInDependencies,
                       importsInOriginFile,
@@ -71,9 +76,9 @@ export function getRequiredImportsForElement(
                   break
                 case 'IMPORTED_ORIGIN':
                   if (importedFromResult.exportedName != null) {
-                    importsToAdd = mergeImports(
+                    importsMergeResolution = mergeImportsResolutionWithImports(
                       targetFilePath,
-                      importsToAdd,
+                      importsMergeResolution,
                       getImportsFor(
                         builtInDependencies,
                         importsInOriginFile,
@@ -94,19 +99,23 @@ export function getRequiredImportsForElement(
             }
           }
         } else if (isJSXFragment(elem) && elem.longForm) {
-          importsToAdd = mergeImports(targetFilePath, importsToAdd, {
-            react: {
-              importedAs: 'React',
-              importedFromWithin: [],
-              importedWithName: null,
+          importsMergeResolution = mergeImportsResolutionWithImports(
+            targetFilePath,
+            importsMergeResolution,
+            {
+              react: {
+                importedAs: 'React',
+                importedFromWithin: [],
+                importedWithName: null,
+              },
             },
-          })
+          )
         }
       })
 
       // adjust imports in case of duplicate names
 
-      return importsToAdd
+      return importsMergeResolution
     },
   )
 }
@@ -238,9 +247,9 @@ export function getAllImportsUniqueNames(imports: Imports): Map<string, string> 
 export function handleDuplicateImports(
   existingImports: Imports,
   toAdd: Imports,
-): DuplicateImportsResolution {
+): ImportsMergeResolution {
   const existingNames = getAllImportsUniqueNames(existingImports)
-  const nameMapping = new Map<string, string>()
+  const duplicateNameMapping = new Map<string, string>()
 
   const importResult = mapValues((original, importSource) => {
     let importedWithName = original.importedWithName,
@@ -254,7 +263,7 @@ export function handleDuplicateImports(
         importSource,
       )
       if (importedWithName !== original.importedWithName) {
-        nameMapping.set(original.importedWithName, importedWithName)
+        duplicateNameMapping.set(original.importedWithName, importedWithName)
         existingNames.set(importedWithName, importSource)
       }
     }
@@ -263,7 +272,7 @@ export function handleDuplicateImports(
     if (original.importedAs != null) {
       importedAs = adjustImportNameIfNeeded(existingNames, original.importedAs, importSource)
       if (importedAs !== original.importedAs) {
-        nameMapping.set(original.importedAs, importedAs)
+        duplicateNameMapping.set(original.importedAs, importedAs)
         existingNames.set(importedAs, importSource)
       }
     }
@@ -273,7 +282,7 @@ export function handleDuplicateImports(
       let alias = importAliasDetails.alias
       alias = adjustImportNameIfNeeded(existingNames, importAliasDetails.alias, importSource)
       if (alias !== importAliasDetails.alias) {
-        nameMapping.set(importAliasDetails.alias, alias)
+        duplicateNameMapping.set(importAliasDetails.alias, alias)
         existingNames.set(alias, importSource)
       }
       return importAlias(importAliasDetails.name, alias)
@@ -284,7 +293,7 @@ export function handleDuplicateImports(
 
   return {
     imports: importResult,
-    nameMapping: nameMapping,
+    duplicateNameMapping: duplicateNameMapping,
   }
 }
 
@@ -302,4 +311,20 @@ function adjustImportNameIfNeeded(
 
 function pathHash(path: string) {
   return Buffer.from(path).toString('base64').slice(0, 4)
+}
+
+function mergeImportsResolutionWithImports(
+  fileUri: string,
+  first: ImportsMergeResolution,
+  second: Imports,
+): ImportsMergeResolution {
+  const { imports, duplicateNameMapping } = mergeImports(fileUri, first.imports, second)
+  const mergedDuplicateNameMapping = new Map<string, string>({
+    ...first.duplicateNameMapping,
+    ...duplicateNameMapping,
+  })
+  return {
+    imports: imports,
+    duplicateNameMapping: mergedDuplicateNameMapping,
+  }
 }

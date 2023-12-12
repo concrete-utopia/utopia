@@ -1291,7 +1291,7 @@ export function printedProjectContentArbitrary(stripUIDs: boolean): Arbitrary<Ar
         if (componentExistsInFile) {
           return workingImports
         } else {
-          return addImport('code.jsx', 'testlib', baseVariable, [], null, workingImports)
+          return addImport('code.jsx', 'testlib', baseVariable, [], null, workingImports).imports
         }
       }, JustImportViewAndReact)
 

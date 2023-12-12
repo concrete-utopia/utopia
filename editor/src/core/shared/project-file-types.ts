@@ -150,9 +150,9 @@ export function importDetailsEquals(first: ImportDetails, second: ImportDetails)
 
 export type Imports = { [importSource: string]: ImportDetails }
 
-export type DuplicateImportsResolution = {
+export type ImportsMergeResolution = {
   imports: Imports
-  nameMapping: Map<string, string>
+  duplicateNameMapping: Map<string, string>
 }
 
 export function importsEquals(first: Imports, second: Imports): boolean {

@@ -19,7 +19,7 @@ export function rescopeCSSToTargetCanvasOnly(input: string): string {
     // We want to find all selectors, and prepend '#canvas-container ' (i.e. the canvas-container
     // ID Selector and a ' ' combinator) so that they will only apply to descendents of the canvas
     if (node.type === 'Selector') {
-      const firstChild = node.children.first
+      const firstChild = node.children.first()
 
       if (firstChild == null) {
         return
