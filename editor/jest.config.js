@@ -111,8 +111,6 @@ module.exports = {
         '../utils/vite-hmr-config': '<rootDir>/src/utils/__mocks__/vite-hmr-config.ts',
         'react-dnd': '<rootDir>/test/jest/__mocks__/react-dnd.js',
         'react-dnd-html5-backend': '<rootDir>/test/jest/__mocks__/react-dnd-html5-backend.js',
-        '^react$': '<rootDir>/node_modules/react/index.js',
-        '^react-dom$': '<rootDir>/node_modules/react-dom/index.js',
       },
       transform: {
         '\\.[jt]sx?$': 'babel-jest',
