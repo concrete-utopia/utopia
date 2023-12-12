@@ -148,6 +148,7 @@ describe('Storyboard utils', () => {
       },
       emptyDefaultProject(),
     )
+
     const mock = new MockGithubOperations().mock({
       fakeResolvedProjectContents: projectContents,
       apiConfig: {
