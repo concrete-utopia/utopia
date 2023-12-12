@@ -167,13 +167,12 @@ const MultiplayerUserBar = React.memo(() => {
         const name = normalizeMultiplayerName(other.name)
         const isOwner = ownerId === other.id
         return (
-          <MultiplayerAvatarWithTooltip
+          <MultiplayerAvatar
             key={`avatar-${other.id}`}
             name={multiplayerInitialsFromName(name)}
-            tooltip={name}
+            tooltip={{ text: name, colored: true }}
             color={multiplayerColorFromIndex(other.colorIndex)}
             picture={other.avatar}
-            coloredTooltip={true}
             onClick={toggleFollowing(other.id)}
             isBeingFollowed={isFollowMode(mode) && mode.playerId === other.id}
             follower={other.following === myUser.id}
@@ -183,9 +182,12 @@ const MultiplayerUserBar = React.memo(() => {
       })}
       {when(
         hiddenOthers.length > 0,
-        <MultiplayerAvatarWithTooltip
+        <MultiplayerAvatar
           name={`+${hiddenOthers.length}`}
-          tooltip={hiddenOthers.map((c) => normalizeMultiplayerName(c.name)).join(', ')}
+          tooltip={{
+            text: hiddenOthers.map((c) => normalizeMultiplayerName(c.name)).join(', '),
+            colored: false,
+          }}
           color={{
             background: colorTheme.fg8.value,
             foreground: colorTheme.fg0.value,
@@ -198,30 +200,9 @@ const MultiplayerUserBar = React.memo(() => {
 })
 MultiplayerUserBar.displayName = 'MultiplayerUserBar'
 
-const MultiplayerAvatarWithTooltip = React.memo(
-  ({
-    tooltip,
-    coloredTooltip,
-    ...otherProps
-  }: { tooltip: string; coloredTooltip?: boolean } & MultiplayerAvatarProps) => {
-    return (
-      <Tooltip
-        title={`${tooltip}${otherProps.follower === true ? ' (following you)' : ''}`}
-        placement='bottom'
-        backgroundColor={coloredTooltip ? otherProps.color.background : undefined}
-        textColor={coloredTooltip ? otherProps.color.foreground : undefined}
-      >
-        <MultiplayerAvatar {...otherProps} />
-      </Tooltip>
-    )
-  },
-)
-MultiplayerAvatarWithTooltip.displayName = 'MultiplayerAvatarWithTooltip'
-
 export type MultiplayerAvatarProps = {
   name: string
   color: MultiplayerColor
-  coloredTooltip?: boolean
   picture?: string | null
   onClick?: () => void
   isBeingFollowed?: boolean
@@ -229,40 +210,50 @@ export type MultiplayerAvatarProps = {
   follower?: boolean
   isOwner?: boolean
   style?: CSSProperties
+  tooltip?: { text: string; colored: boolean }
 }
 
 export const MultiplayerAvatar = React.memo((props: MultiplayerAvatarProps) => {
   const picture = React.useMemo(() => {
     return isDefaultAuth0AvatarURL(props.picture ?? null) ? null : props.picture
   }, [props.picture])
+
   return (
-    <div
-      style={{
-        width: props.size ?? 24,
-        height: props.size ?? 24,
-        backgroundColor: props.color.background,
-        color: props.color.foreground,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: '100%',
-        fontSize: 9,
-        fontWeight: 700,
-        cursor: props.onClick != null ? 'pointer' : 'default',
-        position: 'relative',
-        outline: `.3px solid ${colorTheme.bg1.value}`,
-        boxShadow:
-          props.isBeingFollowed === true
-            ? `0px 0px 8px ${colorTheme.dynamicBlue.value}`
-            : undefined,
-        ...props.style,
-      }}
-      onClick={props.onClick}
+    <Tooltip
+      disabled={props.tooltip == null}
+      title={`${props.tooltip?.text}${props.follower === true ? ' (following you)' : ''}`}
+      placement='bottom'
+      backgroundColor={props.tooltip?.colored === true ? props.color.background : undefined}
+      textColor={props.tooltip?.colored === true ? props.color.foreground : undefined}
     >
-      <AvatarPicture url={picture} size={24} initials={props.name} />
-      {props.isOwner ? <OwnerBadge /> : null}
-      {props.follower ? <FollowerBadge /> : null}
-    </div>
+      <div
+        style={{
+          width: props.size ?? 24,
+          height: props.size ?? 24,
+          backgroundColor: props.color.background,
+          color: props.color.foreground,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: '100%',
+          fontSize: 9,
+          fontWeight: 700,
+          cursor: props.onClick != null ? 'pointer' : 'default',
+          position: 'relative',
+          outline: `.3px solid ${colorTheme.bg1.value}`,
+          boxShadow:
+            props.isBeingFollowed === true
+              ? `0px 0px 8px ${colorTheme.dynamicBlue.value}`
+              : undefined,
+          ...props.style,
+        }}
+        onClick={props.onClick}
+      >
+        <AvatarPicture url={picture} size={24} initials={props.name} />
+        {props.isOwner ? <OwnerBadge /> : null}
+        {props.follower ? <FollowerBadge /> : null}
+      </div>
+    </Tooltip>
   )
 })
 MultiplayerAvatar.displayName = 'MultiplayerAvatar'

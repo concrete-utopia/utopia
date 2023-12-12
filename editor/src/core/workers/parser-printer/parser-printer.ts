@@ -910,7 +910,7 @@ function printCodeImpl(
               missingImports.map((i) => {
                 return TS.createImportSpecifier(
                   false,
-                  TS.createIdentifier(i.name),
+                  i.name === i.alias ? undefined : TS.createIdentifier(i.name),
                   TS.createIdentifier(i.alias),
                 )
               }),

@@ -119,9 +119,12 @@ export function createBuiltInDependenciesList(
     ),
 
     // Stubs for the hydrogen projects. this is here to prevent our backend from downloading a massive amount of files into the editor
-    builtInDependency('@remix-run/dev/server-build', RemixServerBuild, '1.19.1'),
-    builtInDependency('@shopify/cli', Stub, '3.49.2'),
-    builtInDependency('@shopify/cli-hydrogen', Stub, '5.4.2'),
+    builtInDependency('@remix-run/dev/server-build', RemixServerBuild, '2.1.0'),
+    builtInDependency('@remix-run/dev', Stub, '2.1.0'),
+    // FIXME this shouldn't be stubbed when we support configurable eslint
+    builtInDependency('@remix-run/eslint-config', Stub, '2.1.0'),
+    builtInDependency('@shopify/cli', Stub, '3.50.0'),
+    builtInDependency('@shopify/cli-hydrogen', Stub, '6.0.0'),
 
     // Oxygen support (hack). The request handler is required to inject context for the loaders / actions
     builtInDependency(
