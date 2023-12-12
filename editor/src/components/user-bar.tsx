@@ -102,6 +102,10 @@ const MultiplayerUserBar = React.memo(() => {
     return others.slice(MAX_VISIBLE_OTHER_PLAYERS)
   }, [others])
 
+  const offlineOthers = Object.values(collabs).filter((collab) => {
+    return collab.id !== myUser.id && !others.some((other) => other.id === collab.id)
+  })
+
   const mode = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.mode,
@@ -194,6 +198,27 @@ const MultiplayerUserBar = React.memo(() => {
           picture={null}
         />,
       )}
+      {when(
+        offlineOthers.length > 0,
+        offlineOthers.map((other) => {
+          if (other == null) {
+            return null
+          }
+          const name = normalizeMultiplayerName(other.name)
+          const isOwner = ownerId === other.id
+          return (
+            <MultiplayerAvatar
+              key={`avatar-${other.id}`}
+              name={multiplayerInitialsFromName(name)}
+              tooltip={{ text: name, colored: false }}
+              color={multiplayerColorFromIndex(other.colorIndex)}
+              picture={other.avatar}
+              isOwner={isOwner}
+              isOffline={true}
+            />
+          )
+        }),
+      )}
       <a href='/projects' target='_blank' rel='noopener rofererrer'>
         <MultiplayerAvatar
           name={multiplayerInitialsFromName(myUser.name)}
@@ -218,6 +243,7 @@ export type MultiplayerAvatarProps = {
   isOwner?: boolean
   style?: CSSProperties
   tooltip?: { text: string; colored: boolean }
+  isOffline?: boolean
 }
 
 export const MultiplayerAvatar = React.memo((props: MultiplayerAvatarProps) => {
@@ -225,10 +251,22 @@ export const MultiplayerAvatar = React.memo((props: MultiplayerAvatarProps) => {
     return isDefaultAuth0AvatarURL(props.picture ?? null) ? null : props.picture
   }, [props.picture])
 
+  const tooltipText = <strong>{props.tooltip?.text}</strong>
+  const tooltipSubtext =
+    props.follower === true ? ' following you' : props.isOffline ? ' offline' : ''
+
+  const tooltipWithLineBreak = (
+    <>
+      {tooltipText}
+      {<br />}
+      {tooltipSubtext}
+    </>
+  )
+
   return (
     <Tooltip
       disabled={props.tooltip == null}
-      title={`${props.tooltip?.text}${props.follower === true ? ' (following you)' : ''}`}
+      title={tooltipWithLineBreak}
       placement='bottom'
       backgroundColor={props.tooltip?.colored === true ? props.color.background : undefined}
       textColor={props.tooltip?.colored === true ? props.color.foreground : undefined}
@@ -237,8 +275,8 @@ export const MultiplayerAvatar = React.memo((props: MultiplayerAvatarProps) => {
         style={{
           width: props.size ?? 24,
           height: props.size ?? 24,
-          backgroundColor: props.color.background,
-          color: props.color.foreground,
+          backgroundColor: props.isOffline ? colorTheme.bg4.value : props.color.background,
+          color: props.isOffline ? colorTheme.fg2.value : props.color.foreground,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -256,7 +294,7 @@ export const MultiplayerAvatar = React.memo((props: MultiplayerAvatarProps) => {
         }}
         onClick={props.onClick}
       >
-        <AvatarPicture url={picture} size={24} initials={props.name} />
+        <AvatarPicture url={picture} size={24} initials={props.name} isOffline={props.isOffline} />
         {props.isOwner ? <OwnerBadge /> : null}
         {props.follower ? <FollowerBadge /> : null}
       </div>
@@ -306,6 +344,7 @@ interface AvatarPictureProps {
   url: string | null | undefined
   initials: string
   size?: number
+  isOffline?: boolean
 }
 
 export const AvatarPicture = React.memo((props: AvatarPictureProps) => {
@@ -335,6 +374,7 @@ export const AvatarPicture = React.memo((props: AvatarPictureProps) => {
         width: size ?? '100%',
         height: size ?? '100%',
         borderRadius: '100%',
+        filter: props.isOffline ? 'grayscale(1)' : undefined,
       }}
       src={url}
       referrerPolicy='no-referrer'
