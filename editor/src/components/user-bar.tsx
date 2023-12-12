@@ -253,7 +253,7 @@ export const MultiplayerAvatar = React.memo((props: MultiplayerAvatarProps) => {
 
   const tooltipText = <strong>{props.tooltip?.text}</strong>
   const tooltipSubtext =
-    props.follower === true ? ' (following you)' : props.isOffline ? ' (offline)' : ''
+    props.follower === true ? ' following you' : props.isOffline ? ' offline' : ''
 
   const tooltipWithLineBreak = (
     <>
