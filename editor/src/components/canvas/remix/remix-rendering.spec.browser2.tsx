@@ -798,11 +798,76 @@ describe('Remix content', () => {
 })
 
 describe('Remix getLoadContext', () => {
-  it('Renders the remix project that relies on loader context', async () => {
+  it('Renders the remix project that relies on async loader context', async () => {
     const project = createModifiedProject({
       [StoryboardFilePath]: `import * as React from 'react'
       import { RemixScene, Storyboard } from 'utopia-api'
       const getLoadContext = async (request) => {
+        return {
+          request: request,
+          otherStuff: await Promise.resolve('hello!')
+        }
+      }
+      
+      export var storyboard = (
+        <Storyboard>
+          <RemixScene
+            style={{
+              width: 700,
+              height: 759,
+              position: 'absolute',
+              left: 212,
+              top: 128,
+            }}
+            data-label='Playground'
+            getLoadContext={getLoadContext}
+          />
+        </Storyboard>
+      )
+      `,
+      ['/app/root.js']: `import React from 'react'
+      import { Outlet } from '@remix-run/react'
+      import { json, useLoaderData } from 'react-router'
+      export function loader({params, request, context}) {
+        console.log('loader called', params, request, context)
+        return json({
+          contextEqualsRequest: context.request === request,
+        })
+      }
+      
+      export default function Root() {
+        const loaderData = useLoaderData()
+        return (
+          <div>
+            Request given to loader matches the request given to getLoadContext: {JSON.stringify(loaderData.contextEqualsRequest)}
+            <div>${RootTextContent}</div>
+            <Outlet />
+          </div>
+        )
+      }
+      `,
+      ['/app/routes/_index.js']: `import React from 'react'
+      const Index = () => (<h1>${DefaultRouteTextContent}</h1>)
+      export default Index
+      `,
+    })
+
+    const renderResult = await renderRemixProject(project)
+
+    expect(
+      renderResult.renderedDOM.getByText(
+        'Request given to loader matches the request given to getLoadContext: true',
+      ),
+    ).toBeTruthy()
+
+    await expectRemixSceneToBeRendered(renderResult)
+  })
+
+  it('Renders the remix project that relies on synchronous loader context', async () => {
+    const project = createModifiedProject({
+      [StoryboardFilePath]: `import * as React from 'react'
+      import { RemixScene, Storyboard } from 'utopia-api'
+      const getLoadContext = (request) => {
         return {
           request: request,
           otherStuff: 'hello!'
