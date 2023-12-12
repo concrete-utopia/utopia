@@ -176,10 +176,6 @@ export const getChildrenOfCollapsedViews = (
   }, collapsedViews)
 }
 
-// TODO should this also be changed to simply PossibleTextElements?
-// (to include all possible text elements in the name lookup)
-const ElementsToDrillIntoForTextContent = ['div', 'span']
-
 export const MetadataUtils = {
   isElementGenerated(target: ElementPath): boolean {
     const staticTarget = EP.dynamicPathToStaticPath(target)
@@ -1524,7 +1520,7 @@ export const MetadataUtils = {
                 element.elementPath,
               ).length
               if (numberOfChildrenElements === 0) {
-                if (ElementsToDrillIntoForTextContent.includes(lastNamePart)) {
+                if (PossibleTextElements.includes(lastNamePart)) {
                   if (element.textContent != null && element.textContent !== '') {
                     return element.textContent
                   }
