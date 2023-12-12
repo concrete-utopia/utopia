@@ -1,12 +1,14 @@
 import type { ElementPath } from '../../core/shared/project-file-types'
 import { withUnderlyingTarget } from '../editor/store/editor-state'
 import type { ProjectContentTreeRoot } from '../assets'
+import type {
+  ElementInstanceMetadataMap,
+  ArbitraryJSBlock,
+  TopLevelElement,
+} from '../../core/shared/element-template'
 import {
   isArbitraryJSBlock,
   isUtopiaJSXComponent,
-  type ArbitraryJSBlock,
-  type UtopiaJSXComponent,
-  type TopLevelElement,
   jsxAttributesFromMap,
   jsxElementWithoutUID,
   jsExpressionValue,
@@ -14,48 +16,59 @@ import {
   emptyComments,
   jsExpressionOtherJavaScriptSimple,
   jsxFragmentWithoutUID,
-  type JSExpressionOtherJavaScript,
   jsxTextBlock,
+  isJSXElement,
+  isJSXAttributesEntry,
+  isJSXAttributeValue,
+  simplifyAttributeIfPossible,
 } from '../../core/shared/element-template'
+import type { VariableData } from '../canvas/ui-jsx-canvas'
 import { type VariablesInScope } from '../canvas/ui-jsx-canvas'
-import { toComponentId } from '../../core/shared/element-path'
+import { getContainingComponent, toComponentId } from '../../core/shared/element-path'
 import {
   type InsertableComponentGroup,
-  insertableComponent,
+  type InsertableVariableType,
   insertableComponentGroupProjectComponent,
+  insertableVariable,
 } from './project-components'
 import { emptyImports } from '../../core/workers/common/project-file-utils'
 import { isImage } from '../../core/shared/utils'
 import { type ComponentElementToInsert } from '../custom-code/code-file'
+import { omitWithPredicate } from '../../core/shared/object-utils'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { isLeft } from '../../core/shared/either'
 
 export function getVariablesInScope(
   elementPath: ElementPath | null,
   projectContents: ProjectContentTreeRoot,
   variablesInScopeFromEditorState: VariablesInScope,
+  jsxMetadata: ElementInstanceMetadataMap,
 ): AllVariablesInScope[] {
-  return withUnderlyingTarget(
-    elementPath,
-    projectContents,
-    [],
-    (success, element, underlyingTarget, underlyingFilePath) => {
-      let varsInScope = []
+  return withUnderlyingTarget(elementPath, projectContents, [], (success) => {
+    let varsInScope = []
 
-      if (elementPath !== null) {
-        const componentScopedVariables = getVariablesFromComponent(
-          success.topLevelElements,
-          elementPath,
-          variablesInScopeFromEditorState,
-        )
-        varsInScope.push(componentScopedVariables)
-      }
+    if (elementPath !== null) {
+      const componentScopedVariables = getVariablesFromComponent(
+        success.topLevelElements,
+        elementPath,
+        variablesInScopeFromEditorState,
+      )
+      varsInScope.push(componentScopedVariables)
 
-      /** for future reference - adding variables from top level **/
-      // const topLevelVariables = getTopLevelVariables(success.topLevelElements, underlyingFilePath)
-      // varsInScope.push(topLevelVariables)
+      const componentPropsInScope = getComponentPropsInScope(
+        success.topLevelElements,
+        elementPath,
+        jsxMetadata,
+      )
+      varsInScope.push(componentPropsInScope)
+    }
 
-      return varsInScope
-    },
-  )
+    /** for future reference - adding variables from top level **/
+    // const topLevelVariables = getTopLevelVariables(success.topLevelElements, underlyingFilePath)
+    // varsInScope.push(topLevelVariables)
+
+    return varsInScope
+  })
 }
 
 function getTopLevelVariables(topLevelElements: TopLevelElement[], underlyingFilePath: string) {
@@ -79,30 +92,89 @@ function getVariablesFromComponent(
   variablesInScopeFromEditorState: VariablesInScope,
 ): AllVariablesInScope {
   const elementPathString = toComponentId(elementPath)
-  const jsxComponent = topLevelElements.find((el) => isUtopiaJSXComponent(el)) as UtopiaJSXComponent
+  const jsxComponent = topLevelElements.find(isUtopiaJSXComponent)
   const jsxComponentVariables = variablesInScopeFromEditorState[elementPathString] ?? {}
   return {
     filePath: jsxComponent?.name ?? 'Component',
-    variables: Object.entries(jsxComponentVariables).flatMap(([name, value]) => {
-      const type = getTypeByValue(value)
-      const variable = {
-        name,
-        value,
-        type,
+    variables: generateVariableTypes(jsxComponentVariables),
+  }
+}
+
+function getComponentPropsInScope(
+  topLevelElements: TopLevelElement[],
+  elementPath: ElementPath,
+  jsxMetadata: ElementInstanceMetadataMap,
+): AllVariablesInScope {
+  const jsxComponent = topLevelElements.find(isUtopiaJSXComponent)
+  const jsxComponentPropNamesDeclared = jsxComponent?.propsUsed ?? []
+
+  const jsxComponentPropsPassed = omitWithPredicate(
+    getContainerPropsValue(elementPath, jsxMetadata),
+    (key) => typeof key !== 'string' || !jsxComponentPropNamesDeclared.includes(key),
+  )
+
+  const name = jsxComponent?.name ?? 'Component'
+  return {
+    filePath: `${name}::props`,
+    variables: generateVariableTypes(jsxComponentPropsPassed),
+  }
+}
+
+function getContainerPropsValue(
+  elementPath: ElementPath,
+  jsxMetadata: ElementInstanceMetadataMap,
+): VariableData {
+  const containerMetadata = MetadataUtils.findElementByElementPath(
+    jsxMetadata,
+    getContainingComponent(elementPath),
+  )
+  const runtimeProps: VariableData = {}
+
+  if (containerMetadata == null || isLeft(containerMetadata.element)) {
+    return runtimeProps
+  }
+
+  const containerElement = containerMetadata.element.value
+
+  if (isJSXElement(containerElement)) {
+    containerElement.props.forEach((prop) => {
+      if (isJSXAttributesEntry(prop)) {
+        const value = simplifyAttributeIfPossible(prop.value)
+        if (isJSXAttributeValue(value)) {
+          runtimeProps[prop.key] = value.value
+        }
       }
-      if (type === 'object' && value != null) {
-        // iterate only first-level keys of object
-        return Object.entries(value).map(([key, innerValue]) => ({
+    })
+  }
+
+  return runtimeProps
+}
+
+function generateVariableTypes(variables: VariableData): Variable[] {
+  return Object.entries(variables).flatMap(([name, value]) => {
+    const type = getTypeByValue(value)
+    const variable = {
+      name,
+      value,
+      type,
+      depth: 0,
+    }
+    if (type === 'object' && value != null) {
+      // iterate also first-level keys of object
+      return [variable].concat(
+        Object.entries(value).map(([key, innerValue]) => ({
+          displayName: `${key}`,
           name: `${name}.${key}`,
           value: innerValue,
           type: getTypeByValue(innerValue),
           parent: variable,
-        }))
-      } else {
-        return variable
-      }
-    }),
-  }
+          depth: 1,
+        })),
+      )
+    } else {
+      return variable
+    }
+  })
 }
 
 export function convertVariablesToElements(
@@ -112,13 +184,15 @@ export function convertVariablesToElements(
     return {
       source: insertableComponentGroupProjectComponent(variableGroup.filePath),
       insertableComponents: variableGroup.variables.map((variable) => {
-        return insertableComponent(
+        return insertableVariable(
           emptyImports(),
           () => getMatchingElementForVariable(variable),
-          variable.name,
+          variable.displayName ?? variable.name,
           [],
           null,
-          { variableType: variable.type },
+          variable.type,
+          variable.depth,
+          variable.name,
         )
       }),
     }
@@ -175,7 +249,7 @@ function getMatchingElementForVariableInner(variable: Variable): InsertableCompo
   }
 }
 
-function getTypeByValue(value: unknown): InsertableType {
+function getTypeByValue(value: unknown): InsertableVariableType {
   const type = typeof value
   if (type === 'object' && Array.isArray(value)) {
     return 'array'
@@ -190,13 +264,14 @@ function arrayInsertableComponentAndJsx(variable: Variable): InsertableComponent
   const innerElementString = getMatchingElementForVariableInner({
     name: 'item',
     type: arrayElementsType,
+    depth: variable.depth + 1,
   }).jsx
   const arrayElementString = `${variable.name}.map((item) => (${innerElementString}))`
   const arrayElement = jsxFragmentWithoutUID([jsxTextBlock(`{${arrayElementString}}`)], true)
   return insertableComponentAndJSX(arrayElement, arrayElementString)
 }
 
-function getArrayType(arrayVariable: Variable): InsertableType {
+function getArrayType(arrayVariable: Variable): InsertableVariableType {
   const arr = arrayVariable.value as unknown[]
   const types = new Set(arr.map((item) => getTypeByValue(item)))
   return types.size === 1 ? [...types][0] : 'object'
@@ -235,21 +310,11 @@ export type AllVariablesInScope = {
   variables: Variable[]
 }
 
-type InsertableType =
-  | 'string'
-  | 'number'
-  | 'bigint'
-  | 'boolean'
-  | 'symbol'
-  | 'undefined'
-  | 'object'
-  | 'function'
-  | 'array'
-  | 'image'
-
 interface Variable {
   name: string
-  type: InsertableType
+  type: InsertableVariableType
+  displayName?: string
   value?: unknown
   parent?: Variable
+  depth: number
 }

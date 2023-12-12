@@ -114,7 +114,11 @@ export const canvasSubstateKeys = Object.keys(emptyCanvasSubstate.editor.canvas)
 >
 
 // VariablesInScopeSubstate
-export const variablesInScopeSubstateKeys = ['variablesInScope', 'selectedViews'] as const
+export const variablesInScopeSubstateKeys = [
+  'variablesInScope',
+  'selectedViews',
+  'jsxMetadata',
+] as const
 const emptyVariablesInScopeSubstate = {
   editor: pick(variablesInScopeSubstateKeys, EmptyEditorStateForKeysOnly),
 } as const

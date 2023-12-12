@@ -14,10 +14,12 @@ import type {
   InsertableComponent,
   InsertableComponentGroup,
   InsertableComponentGroupType,
+  InsertableVariable,
 } from '../../shared/project-components'
 import {
   getInsertableGroupLabel,
   getNonEmptyComponentGroups,
+  isInsertableVariable,
 } from '../../shared/project-components'
 import { InspectorInputEmotionStyle } from '../../../uuiui/inputs/base-input'
 import { optionalMap } from '../../../core/shared/optional-utils'
@@ -56,14 +58,20 @@ function convertInsertableComponentsToFlatList(
       options: componentGroup.insertableComponents.map(
         (componentToBeInserted, index): InsertMenuItem => {
           const source = index === 0 ? componentGroup.source : null
+          let label = componentToBeInserted.name
+          // there is no indentation, so for inner props we want to show here the full path (i.e myObj.myProp)
+          if (
+            isInsertableVariable(componentToBeInserted) &&
+            componentToBeInserted.originalName != null
+          ) {
+            label = componentToBeInserted.originalName
+          }
           return {
-            label: componentToBeInserted.name,
+            label: label,
             source: optionalMap(getInsertableGroupLabel, source),
             value: {
               ...componentToBeInserted,
-              key: `${getInsertableGroupLabel(componentGroup.source)}-${
-                componentToBeInserted.name
-              }`,
+              key: `${getInsertableGroupLabel(componentGroup.source)}-${label}`,
               source: source,
             },
           }
@@ -125,6 +133,7 @@ export function useGetInsertableComponents(
         store.editor.selectedViews[0],
         projectContents,
         store.editor.variablesInScope,
+        store.editor.jsxMetadata,
       ),
     'useGetInsertableComponents scopedVariables',
   )
