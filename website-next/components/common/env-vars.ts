@@ -73,9 +73,17 @@ export const GOOGLE_WEB_FONTS_KEY =
 export type AuthRedirectBehaviour = 'redirect' | 'auto-close'
 
 export function auth0Url(behaviour: AuthRedirectBehaviour): string {
-  let url: URL
+  const searchParams = new URLSearchParams(window?.location?.search ?? '')
+  const fakeUser = searchParams.get('fakeUser')
+  if (fakeUser != null) {
+    const url = new URL(`${BASE_URL}authenticate`)
+    url.searchParams.set('code', fakeUser)
+    url.searchParams.set('onto', behaviour)
+    return url.href
+  }
+
   if (USE_AUTH0) {
-    url = new URL(`https://${AUTH0_HOST}/authorize`)
+    const url = new URL(`https://${AUTH0_HOST}/authorize`)
     url.searchParams.set('scope', 'openid profile email')
     url.searchParams.set('response_type', 'code')
     url.searchParams.set('client_id', AUTH0_CLIENT_ID)
@@ -84,12 +92,13 @@ export function auth0Url(behaviour: AuthRedirectBehaviour): string {
     redirectURL.searchParams.set('onto', behaviour)
 
     url.searchParams.set('redirect_uri', redirectURL.href)
-  } else {
-    url = new URL(`${BASE_URL}authenticate`)
-    // here
-    url.searchParams.set('code', 'logmein')
-    url.searchParams.set('onto', behaviour)
+    return url.href
   }
+
+  const url = new URL(`${BASE_URL}authenticate`)
+  url.searchParams.set('code', 'logmein')
+  url.searchParams.set('onto', behaviour)
+
   return url.href
 }
 

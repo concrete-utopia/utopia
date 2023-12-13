@@ -104,12 +104,12 @@ localAuthURL = "/authenticate?code=logmein&state=shrugemoji"
 dummyUser :: Text -> UserDetails
 dummyUser cdnRoot = UserDetails { userId  = "1"
                                 , email   = Just "team@utopia.app"
-                                , name    = Just "Utopian Worke r #296"
+                                , name    = Just "Utopian Worker #296"
                                 , picture = Just (cdnRoot <> "/editor/avatars/utopino3.png")
                                 }
 
 dummyUserAlice :: Text -> UserDetails
-dummyUserAlice cdnRoot = UserDetails { userId  = "1"
+dummyUserAlice cdnRoot = UserDetails { userId  = "ab9401d8-f6f0-4642-8239-2435656bf0b2 "
                                      , email   = Just "team1@utopia.app"
                                      , name    = Just "A real human being"
                                      , picture = Just (cdnRoot <> "/editor/avatars/utopino3.png")
@@ -126,13 +126,6 @@ localAuthCodeCheck "logmein" action = do
   portOfServer <- fmap _serverPort ask
   let cdnRoot = "http://localhost:" <> show portOfServer
   successfulAuthCheck metrics pool sessionStore action $ dummyUser cdnRoot
--- localAuthCodeCheck "alice" action = do
---   sessionStore <- fmap _sessionState ask
---   pool <- fmap _projectPool ask
---   metrics <- fmap _databaseMetrics ask
---   portOfServer <- fmap _serverPort ask
---   let cdnRoot = "http://localhost:" <> show portOfServer
---   successfulAuthCheck metrics pool sessionStore action $ dummyUser cdnRoot
 localAuthCodeCheck _ action = do
   return $ action Nothing
 
@@ -169,8 +162,12 @@ innerServerExecutor (CheckAuthCode authCode action) = do
   sessionStore <- fmap _sessionState ask
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
+  portOfServer <- fmap _serverPort ask
+  let cdnRoot = "http://localhost:" <> show portOfServer
   let codeCheck = maybe localAuthCodeCheck (auth0CodeCheck metrics pool sessionStore) auth0
-  codeCheck authCode action
+  case authCode of
+    "alice" -> successfulAuthCheck metrics pool sessionStore action (dummyUserAlice cdnRoot)
+    _ -> codeCheck authCode action
 innerServerExecutor (Logout cookie pageContents action) = do
   sessionStore <- fmap _sessionState ask
   logoutOfSession sessionStore cookie pageContents action

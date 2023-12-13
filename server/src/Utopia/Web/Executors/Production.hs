@@ -77,7 +77,7 @@ data ProductionServerResources = ProductionServerResources
 type ProductionProcessMonad a = ServerProcessMonad ProductionServerResources a
 
 dummyUserAlice :: UserDetails
-dummyUserAlice = UserDetails { userId  = "1"
+dummyUserAlice = UserDetails { userId  = "ab9401d8-f6f0-4642-8239-2435656bf0b2"
                              , email   = Just "team1@utopia.app"
                              , name    = Just "A real human being"
                              , picture = Just "/editor/avatars/utopino3.png"
