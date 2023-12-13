@@ -164,36 +164,36 @@ describe('Basic Resize', () => {
 describe('when the element has missing dimensions', () => {
   describe('both missing', () => {
     describe('horizontal movement', () => {
-      it('does nothing', async () => {
+      it('adds the width', async () => {
         await resizeWithoutDimensions(
           edgePosition(1, 0),
           canvasPoint({ x: 15, y: 0 }),
           {},
-          {},
+          { width: 415 },
           false,
         )
       })
     })
 
     describe('vertical movement', () => {
-      it('does nothing', async () => {
+      it('adds the height', async () => {
         await resizeWithoutDimensions(
           edgePosition(0, 0),
           canvasPoint({ x: 0, y: 15 }),
           {},
-          {},
+          { height: 15 },
           false,
         )
       })
     })
 
     describe('diagonal movement', () => {
-      it('does nothing', async () => {
+      it('adds both dimensions', async () => {
         await resizeWithoutDimensions(
           edgePosition(0, 0),
           canvasPoint({ x: 10, y: 15 }),
           {},
-          {},
+          { width: 390, height: 15 },
           false,
         )
       })
@@ -202,12 +202,12 @@ describe('when the element has missing dimensions', () => {
 
   describe('width missing', () => {
     describe('horizontal movement', () => {
-      it('does nothing', async () => {
+      it('adds the width', async () => {
         await resizeWithoutDimensions(
           edgePosition(1, 0),
           canvasPoint({ x: 15, y: 0 }),
           {},
-          {},
+          { width: 415 },
           false,
         )
       })
@@ -225,12 +225,12 @@ describe('when the element has missing dimensions', () => {
     })
 
     describe('diagonal movement', () => {
-      it('updates the height, does not add the width', async () => {
+      it('updates the height, and adds the width', async () => {
         await resizeWithoutDimensions(
           edgePosition(0, 0),
           canvasPoint({ x: 10, y: 15 }),
           { height: 20 },
-          { height: 5 },
+          { height: 5, width: 390 },
         )
       })
     })
@@ -249,24 +249,24 @@ describe('when the element has missing dimensions', () => {
     })
 
     describe('vertical movement', () => {
-      it('does nothing', async () => {
+      it('adds the height', async () => {
         await resizeWithoutDimensions(
           edgePosition(0, 0),
           canvasPoint({ x: 0, y: 15 }),
           { width: 15 },
-          { width: 15 },
+          { width: 15, height: 15 },
           false,
         )
       })
     })
 
     describe('diagonal movement', () => {
-      it('does not add the height and updates width', async () => {
+      it('adds the height and updates width', async () => {
         await resizeWithoutDimensions(
           edgePosition(0, 0),
           canvasPoint({ x: 10, y: 15 }),
           { width: 15 },
-          { width: 5 },
+          { width: 5, height: 15 },
         )
       })
     })
