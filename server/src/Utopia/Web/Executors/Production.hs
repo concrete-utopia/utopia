@@ -76,6 +76,13 @@ data ProductionServerResources = ProductionServerResources
 
 type ProductionProcessMonad a = ServerProcessMonad ProductionServerResources a
 
+dummyUserAlice :: UserDetails
+dummyUserAlice = UserDetails { userId  = "1"
+                             , email   = Just "team1@utopia.app"
+                             , name    = Just "A real human being"
+                             , picture = Just "/editor/avatars/utopino3.png"
+                             }
+
 {-|
   Interpretor for a service call, which converts it into side effecting calls ready to be invoked.
 -}
@@ -95,7 +102,9 @@ innerServerExecutor (CheckAuthCode authCode action) = do
   sessionStore <- fmap _sessionState ask
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  auth0CodeCheck metrics pool sessionStore auth0 authCode action
+  case authCode of
+    "alice" -> successfulAuthCheck metrics pool sessionStore action dummyUserAlice
+    _ -> auth0CodeCheck metrics pool sessionStore auth0 authCode action
 innerServerExecutor (Logout cookie pageContents action) = do
   sessionStore <- fmap _sessionState ask
   logoutOfSession sessionStore cookie pageContents action

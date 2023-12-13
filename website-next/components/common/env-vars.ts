@@ -86,6 +86,7 @@ export function auth0Url(behaviour: AuthRedirectBehaviour): string {
     url.searchParams.set('redirect_uri', redirectURL.href)
   } else {
     url = new URL(`${BASE_URL}authenticate`)
+    // here
     url.searchParams.set('code', 'logmein')
     url.searchParams.set('onto', behaviour)
   }

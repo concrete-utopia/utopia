@@ -104,9 +104,16 @@ localAuthURL = "/authenticate?code=logmein&state=shrugemoji"
 dummyUser :: Text -> UserDetails
 dummyUser cdnRoot = UserDetails { userId  = "1"
                                 , email   = Just "team@utopia.app"
-                                , name    = Just "Utopian Worker #296"
+                                , name    = Just "Utopian Worke r #296"
                                 , picture = Just (cdnRoot <> "/editor/avatars/utopino3.png")
                                 }
+
+dummyUserAlice :: Text -> UserDetails
+dummyUserAlice cdnRoot = UserDetails { userId  = "1"
+                                     , email   = Just "team1@utopia.app"
+                                     , name    = Just "A real human being"
+                                     , picture = Just (cdnRoot <> "/editor/avatars/utopino3.png")
+                                     }
 
 {-|
   Fallback for validating the authentication code in the case where Auth0 isn't setup locally.
@@ -119,6 +126,13 @@ localAuthCodeCheck "logmein" action = do
   portOfServer <- fmap _serverPort ask
   let cdnRoot = "http://localhost:" <> show portOfServer
   successfulAuthCheck metrics pool sessionStore action $ dummyUser cdnRoot
+-- localAuthCodeCheck "alice" action = do
+--   sessionStore <- fmap _sessionState ask
+--   pool <- fmap _projectPool ask
+--   metrics <- fmap _databaseMetrics ask
+--   portOfServer <- fmap _serverPort ask
+--   let cdnRoot = "http://localhost:" <> show portOfServer
+--   successfulAuthCheck metrics pool sessionStore action $ dummyUser cdnRoot
 localAuthCodeCheck _ action = do
   return $ action Nothing
 
