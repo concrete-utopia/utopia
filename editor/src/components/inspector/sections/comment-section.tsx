@@ -1,3 +1,6 @@
+/** @jsxRuntime classic */
+/** @jsx jsx */
+import { jsx } from '@emotion/react'
 import '@liveblocks/react-comments/styles.css'
 import React from 'react'
 import {
@@ -179,6 +182,7 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
   return (
     <div
       ref={ref}
+      className={'thread-preview'}
       key={comment.id}
       onClick={onClick}
       style={{
@@ -240,7 +244,21 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
         )}
         {unless(repliesCount > 0, <div />)}
         {when(readByMe === 'unread', 'Unread')}
-        <Button highlight spotlight style={{ padding: '0 6px' }} onClick={onResolveThread}>
+        <Button
+          highlight
+          spotlight
+          css={{
+            visibility: 'hidden',
+            '.thread-preview:hover &': {
+              visibility: 'visible',
+            },
+            '.thread-preview:focus-within &': {
+              visibility: 'hidden',
+            },
+            padding: '0 6px',
+          }}
+          onClick={onResolveThread}
+        >
           {thread.metadata.resolved ? 'Unresolve' : 'Resolve'}
         </Button>
       </div>
