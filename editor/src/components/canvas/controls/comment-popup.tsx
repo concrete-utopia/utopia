@@ -319,14 +319,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
               {thread?.metadata.resolved ? 'Unresolve' : 'Resolve'}
             </Button>
             <Button style={{ padding: '0 6px' }} onClick={onClickResolve}>
-              <Icn
-                category='semantic'
-                type='cross-medium'
-                width={16}
-                height={16}
-                // color={isHovered ? 'dynamic' : 'main'}
-                color='main'
-              />
+              <Icn category='semantic' type='cross-medium' width={16} height={16} color='main' />
             </Button>
           </FlexRow>
           <div style={{ position: 'relative' }}>
