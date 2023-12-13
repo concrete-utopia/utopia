@@ -173,7 +173,7 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
   const theme = useEditorState(
     Substores.userState,
     (store) => getCurrentTheme(store.userState),
-    'CommentThread theme',
+    'ThreadPreview theme',
   )
 
   const comment = thread.comments[0]
