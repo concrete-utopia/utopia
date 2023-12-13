@@ -2,6 +2,7 @@ import type { CommentData } from '@liveblocks/client'
 import type { ComposerSubmitComment } from '@liveblocks/react-comments'
 import { Composer } from '@liveblocks/react-comments'
 import { useAtom } from 'jotai'
+import type { CSSProperties } from 'react'
 import React, { useRef } from 'react'
 import { useCreateThread, useStorage } from '../../../../liveblocks.config'
 import '../../../../resources/editor/css/liveblocks-comments.css'
@@ -12,19 +13,21 @@ import {
   useDeleteThreadReadStatus,
   useMyThreadReadStatus,
   useResolveThread,
-  useScenesWithId,
+  useScenes,
   useSetThreadReadStatus,
   useSetThreadReadStatusOnMount,
-  useScenes,
 } from '../../../core/commenting/comment-hooks'
+import * as EP from '../../../core/shared/element-path'
+import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
+import { create } from '../../../core/shared/property-path'
 import { assertNever } from '../../../core/shared/utils'
 import { CommentWrapper, MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { when } from '../../../utils/react-conditionals'
 import { Button, UtopiaStyles, useColorTheme } from '../../../uuiui'
 import {
+  setProp_UNSAFE,
   setRightMenuTab,
   switchEditorMode,
-  setProp_UNSAFE,
 } from '../../editor/actions/action-creators'
 import type { CommentId } from '../../editor/editor-modes'
 import {
@@ -40,11 +43,17 @@ import { stopPropagation } from '../../inspector/common/inspector-utils'
 import { canvasPointToWindowPoint } from '../dom-lookup'
 import { RemixNavigationAtom } from '../remix/utopia-remix-root-component'
 import { getIdOfScene } from './comment-mode/comment-mode-hooks'
-import * as EP from '../../../core/shared/element-path'
-import { create } from '../../../core/shared/property-path'
-import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 
 const ComposerEditorClassName = 'lb-composer-editor'
+
+const PopupMaxWidth = 250
+const PopupMaxHeight = 350
+
+const ComposerStyle: CSSProperties = {
+  maxWidth: PopupMaxWidth,
+  wordWrap: 'break-word',
+  whiteSpace: 'normal',
+}
 
 export const CommentPopup = React.memo(() => {
   const mode = useEditorState(
@@ -77,6 +86,10 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
   const colorTheme = useColorTheme()
 
   const composerRef = useRef<HTMLFormElement | null>(null)
+  const listRef = React.useRef<HTMLDivElement | null>(null)
+
+  const [showShadowBottom, setShowShadowBottom] = React.useState(false)
+  const [showShadowTop, setShowShadowTop] = React.useState(false)
 
   const { location, thread } = useCanvasCommentThreadAndLocation(comment)
   const threadId = thread?.id ?? null
@@ -97,6 +110,14 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
 
   const scenes = useScenes()
   const [remixSceneRoutes] = useAtom(RemixNavigationAtom)
+
+  const scrollToBottom = React.useCallback(() => {
+    if (listRef.current != null) {
+      listRef.current.scrollTo({
+        top: listRef.current.scrollHeight,
+      })
+    }
+  }, [])
 
   const onCreateThread = React.useCallback(
     ({ body }: ComposerSubmitComment, event: React.FormEvent<HTMLFormElement>) => {
@@ -177,12 +198,15 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
       if (editorsByClass.length < 1) {
         return null
       }
+
+      scrollToBottom()
+
       return editorsByClass[0] as HTMLDivElement
     }
     setTimeout(() => {
       getLiveblocksEditorElement()?.focus()
     }, 0)
-  }, [threadId, createNewThreadReadStatus])
+  }, [threadId, createNewThreadReadStatus, scrollToBottom])
 
   const onCommentDelete = React.useCallback(
     (_deleted: CommentData) => {
@@ -224,6 +248,27 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
   }, [thread?.id, setThreadReadStatus])
 
   const collabs = useStorage((storage) => storage.collaborators)
+
+  const onScroll = () => {
+    const element = listRef.current
+    if (element == null) {
+      return
+    }
+    const tolerance = 20 // px
+
+    const atBottom = element.scrollHeight - element.scrollTop <= PopupMaxHeight + tolerance
+    const isOverflowing = element.scrollHeight > PopupMaxHeight
+    setShowShadowBottom(!atBottom && isOverflowing)
+
+    const atTop = element.scrollTop > tolerance
+    setShowShadowTop(atTop && isOverflowing)
+  }
+
+  React.useEffect(() => {
+    // when the thread id changes, re-check the scroll and set the inset shadow
+    onScroll()
+    scrollToBottom()
+  }, [threadId, scrollToBottom])
 
   if (location == null) {
     return null
@@ -285,25 +330,46 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
         </div>,
       )}
       {thread == null ? (
-        <Composer autoFocus onComposerSubmit={onCreateThread} />
+        <Composer autoFocus onComposerSubmit={onCreateThread} style={ComposerStyle} />
       ) : (
         <>
-          {thread.comments.map((c) => {
-            const user = getCollaboratorById(collabs, c.userId)
-            return (
-              <CommentWrapper
-                key={c.id}
-                user={user}
-                comment={c}
-                onCommentDelete={onCommentDelete}
-              />
-            )
-          })}
+          <div style={{ position: 'relative' }}>
+            <div
+              style={{
+                maxHeight: PopupMaxHeight,
+                overflowY: 'scroll',
+                maxWidth: PopupMaxWidth,
+                wordWrap: 'break-word',
+                whiteSpace: 'normal',
+              }}
+              ref={listRef}
+              onScroll={onScroll}
+            >
+              {thread.comments.map((c) => {
+                const user = getCollaboratorById(collabs, c.userId)
+                return (
+                  <CommentWrapper
+                    key={c.id}
+                    user={user}
+                    comment={c}
+                    onCommentDelete={onCommentDelete}
+                  />
+                )
+              })}
+            </div>
+            <ListShadow position='top' enabled={showShadowTop} />
+            <ListShadow position='bottom' enabled={showShadowBottom} />
+            <HeaderComment
+              enabled={thread.comments.length > 0 && showShadowTop}
+              comment={thread.comments[0]}
+            />
+          </div>
           <Composer
             ref={composerRef}
             autoFocus
             threadId={thread.id}
             onComposerSubmit={onSubmitComment}
+            style={ComposerStyle}
           />
         </>
       )}
@@ -311,3 +377,56 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
   )
 })
 CommentThread.displayName = 'CommentThread'
+
+const ListShadow = React.memo(
+  ({ enabled, position }: { enabled: boolean; position: 'top' | 'bottom' }) => {
+    const colorTheme = useColorTheme()
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 1,
+          boxShadow: `inset 0 ${position === 'top' ? '20px' : '-20px'} 15px -10px ${
+            colorTheme.shadow30.value
+          }`,
+          pointerEvents: 'none',
+          opacity: enabled ? 1 : 0,
+          transition: 'opacity 150ms linear',
+        }}
+      />
+    )
+  },
+)
+ListShadow.displayName = 'ListShadow'
+
+const HeaderComment = React.memo(
+  ({ comment, enabled }: { comment: CommentData; enabled: boolean }) => {
+    const colorTheme = useColorTheme()
+    const collabs = useStorage((storage) => storage.collaborators)
+    const user = getCollaboratorById(collabs, comment.userId)
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          top: -1,
+          left: -1,
+          right: 0,
+          backgroundColor: 'white',
+          zIndex: 1,
+          boxShadow: UtopiaStyles.shadowStyles.highest.boxShadow,
+          border: `1px solid ${colorTheme.primary50.value}`,
+          opacity: enabled ? 1 : 0,
+          transition: 'opacity 100ms linear',
+          minHeight: 67,
+        }}
+      >
+        <CommentWrapper user={user} comment={comment} />
+      </div>
+    )
+  },
+)
+HeaderComment.displayName = 'HeaderComment'
