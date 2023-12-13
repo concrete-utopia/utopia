@@ -165,6 +165,8 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
 
   const isSelected = useIsSelectedAndScrollToThread(ref, thread.id)
 
+  const { hovered, onMouseOver, onMouseOut } = useHover()
+
   const comment = thread.comments[0]
   if (comment == null) {
     return null
@@ -181,6 +183,8 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
       ref={ref}
       key={comment.id}
       onClick={onClick}
+      onMouseOver={onMouseOver}
+      onMouseOut={onMouseOut}
       style={{
         backgroundColor: isSelected
           ? colorTheme.primary10.value
@@ -240,7 +244,15 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
         )}
         {unless(repliesCount > 0, <div />)}
         {when(readByMe === 'unread', 'Unread')}
-        <Button highlight spotlight style={{ padding: '0 6px' }} onClick={onResolveThread}>
+        <Button
+          highlight
+          spotlight
+          style={{
+            visibility: hovered ? 'visible' : 'hidden',
+            padding: '0 6px',
+          }}
+          onClick={onResolveThread}
+        >
           {thread.metadata.resolved ? 'Unresolve' : 'Resolve'}
         </Button>
       </div>
@@ -283,4 +295,18 @@ function useIsSelectedAndScrollToThread(ref: React.RefObject<HTMLDivElement>, th
     isSelectedSelector,
     'useIsSelectedAndScrollToThread isSelected',
   )
+}
+
+function useHover() {
+  const [hovered, setHovered] = React.useState(false)
+
+  const onMouseOver = React.useCallback(() => {
+    setHovered(true)
+  }, [])
+
+  const onMouseOut = React.useCallback(() => {
+    setHovered(false)
+  }, [])
+
+  return { hovered, onMouseOver, onMouseOut }
 }
