@@ -16,6 +16,7 @@ import {
 } from '../shared/array-utils'
 import {
   intrinsicHTMLElementNamesThatSupportChildren,
+  PossibleTextElements,
   TextElements,
   VoidElementsToFilter,
 } from '../shared/dom-utils'
@@ -174,8 +175,6 @@ export const getChildrenOfCollapsedViews = (
     )
   }, collapsedViews)
 }
-
-const ElementsToDrillIntoForTextContent = ['div', 'span']
 
 export const MetadataUtils = {
   isElementGenerated(target: ElementPath): boolean {
@@ -1119,7 +1118,7 @@ export const MetadataUtils = {
     if (
       isJSXElement(elementValue) &&
       isIntrinsicHTMLElement(elementValue.name) &&
-      !intrinsicHTMLElementNamesThatSupportChildren.includes(elementValue.name.baseVariable)
+      !PossibleTextElements.includes(elementValue.name.baseVariable)
     ) {
       return false
     }
@@ -1521,7 +1520,7 @@ export const MetadataUtils = {
                 element.elementPath,
               ).length
               if (numberOfChildrenElements === 0) {
-                if (ElementsToDrillIntoForTextContent.includes(lastNamePart)) {
+                if (PossibleTextElements.includes(lastNamePart)) {
                   if (element.textContent != null && element.textContent !== '') {
                     return element.textContent
                   }

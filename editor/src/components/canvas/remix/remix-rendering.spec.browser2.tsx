@@ -1301,11 +1301,15 @@ describe('Remix navigation', () => {
 
     const renderResult = await renderRemixProject(project)
     await switchToLiveMode(renderResult)
-    expect(renderResult.renderedDOM.queryAllByText('Go')).toHaveLength(1)
+    expect(renderResult.renderedDOM.queryAllByText('Go').filter(filterOutMenuLabels)).toHaveLength(
+      1,
+    )
 
     for (let i = 1; i < 7; i++) {
       await clickRemixLink(renderResult)
-      expect(renderResult.renderedDOM.queryAllByText(`post id: ${i}`)).toHaveLength(1)
+      expect(
+        renderResult.renderedDOM.queryAllByText(`post id: ${i}`).filter(filterOutMenuLabels),
+      ).toHaveLength(1)
     }
   })
 
@@ -1320,7 +1324,9 @@ describe('Remix navigation', () => {
 
       await clickRemixLink(renderResult)
 
-      expect(renderResult.renderedDOM.queryAllByText(AboutTextContent)).toHaveLength(1)
+      expect(
+        renderResult.renderedDOM.queryAllByText(AboutTextContent).filter(filterOutMenuLabels),
+      ).toHaveLength(1)
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
 
       await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'back')
@@ -1329,7 +1335,9 @@ describe('Remix navigation', () => {
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixIndexPathLabel)
 
       await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'forward')
-      expect(renderResult.renderedDOM.queryAllByText(AboutTextContent)).toHaveLength(1)
+      expect(
+        renderResult.renderedDOM.queryAllByText(AboutTextContent).filter(filterOutMenuLabels),
+      ).toHaveLength(1)
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
 
       await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'home')
@@ -1347,14 +1355,18 @@ describe('Remix navigation', () => {
 
       await clickRemixLink(renderResult)
 
-      expect(renderResult.renderedDOM.queryAllByText(AboutTextContent)).toHaveLength(1)
+      expect(
+        renderResult.renderedDOM.queryAllByText(AboutTextContent).filter(filterOutMenuLabels),
+      ).toHaveLength(1)
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
 
       await switchToEditMode(renderResult)
 
       // check that switching modes doesn't change the navigation state
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
-      expect(renderResult.renderedDOM.queryAllByText(AboutTextContent)).toHaveLength(1)
+      expect(
+        renderResult.renderedDOM.queryAllByText(AboutTextContent).filter(filterOutMenuLabels),
+      ).toHaveLength(1)
 
       await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'back')
 
@@ -1362,7 +1374,9 @@ describe('Remix navigation', () => {
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixIndexPathLabel)
 
       await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'forward')
-      expect(renderResult.renderedDOM.queryAllByText(AboutTextContent)).toHaveLength(1)
+      expect(
+        renderResult.renderedDOM.queryAllByText(AboutTextContent).filter(filterOutMenuLabels),
+      ).toHaveLength(1)
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
 
       await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'home')
@@ -1382,7 +1396,9 @@ describe('Remix navigation', () => {
 
       await clickRemixLink(renderResult)
       const remixScene1 = renderResult.renderedDOM.getByTestId(Remix1TestId)
-      expect(within(remixScene1).queryAllByText(AboutTextContent)).toHaveLength(1)
+      expect(
+        within(remixScene1).queryAllByText(AboutTextContent).filter(filterOutMenuLabels),
+      ).toHaveLength(1)
 
       const remixScene2 = renderResult.renderedDOM.getByTestId(Remix2TestId)
       expect(within(remixScene2).queryAllByText(RootTextContent)).toHaveLength(1)
@@ -1401,7 +1417,9 @@ describe('Remix navigation', () => {
 
       await clickRemixLink(renderResult)
 
-      expect(renderResult.renderedDOM.queryAllByText(AboutTextContent)).toHaveLength(1)
+      expect(
+        renderResult.renderedDOM.queryAllByText(AboutTextContent).filter(filterOutMenuLabels),
+      ).toHaveLength(1)
       expect(getPathInRemixNavigationBar(renderResult)).toEqual('/about')
 
       await navigateWithRemixNavigationBarButton(renderResult, 'back')
@@ -1410,7 +1428,9 @@ describe('Remix navigation', () => {
       expect(getPathInRemixNavigationBar(renderResult)).toEqual(RemixIndexPathLabel)
 
       await navigateWithRemixNavigationBarButton(renderResult, 'forward')
-      expect(renderResult.renderedDOM.queryAllByText(AboutTextContent)).toHaveLength(1)
+      expect(
+        renderResult.renderedDOM.queryAllByText(AboutTextContent).filter(filterOutMenuLabels),
+      ).toHaveLength(1)
       expect(getPathInRemixNavigationBar(renderResult)).toEqual('/about')
 
       await navigateWithRemixNavigationBarButton(renderResult, 'home')
@@ -1426,7 +1446,9 @@ describe('Remix navigation', () => {
 
       await clickRemixLink(renderResult)
 
-      expect(renderResult.renderedDOM.queryAllByText(AboutTextContent)).toHaveLength(1)
+      expect(
+        renderResult.renderedDOM.queryAllByText(AboutTextContent).filter(filterOutMenuLabels),
+      ).toHaveLength(1)
       expect(getPathInRemixNavigationBar(renderResult)).toEqual('/about')
 
       const remixScene2 = renderResult.renderedDOM.getByTestId(Remix2TestId)
@@ -2280,3 +2302,7 @@ const navigateWithRemixNavigationBarButton = (
 
 const getPathInRemixNavigationBar = (renderResult: EditorRenderResult) =>
   renderResult.renderedDOM.getByTestId(RemixNavigationBarPathTestId).textContent
+
+function filterOutMenuLabels(htmlElement: HTMLElement): boolean {
+  return !htmlElement.getAttribute('data-testid')?.startsWith('NavigatorItem')
+}
