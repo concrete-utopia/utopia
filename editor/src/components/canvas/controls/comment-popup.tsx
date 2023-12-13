@@ -123,7 +123,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
   const theme = useEditorState(
     Substores.userState,
     (store) => getCurrentTheme(store.userState),
-    'CommentThread, theme',
+    'CommentThread theme',
   )
 
   const onCreateThread = React.useCallback(
