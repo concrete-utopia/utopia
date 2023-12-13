@@ -55,7 +55,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   // Send a VSCodeReady message on activation as this might be triggered by an iframe reload,
   // meaning no new UtopiaReady message will have been sent
-  sendMessage(vsCodeReady())
+  await sendMessage(vsCodeReady())
 
   watchForFileDeletions()
 }

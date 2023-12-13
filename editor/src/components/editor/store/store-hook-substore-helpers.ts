@@ -2,7 +2,6 @@ import type { EditorState } from './editor-state'
 
 export const EmptyEditorStateForKeysOnly: EditorState = {
   id: null,
-  vscodeBridgeId: null as any,
   forkedFromProjectId: null,
   appID: null,
   projectName: null as any,
