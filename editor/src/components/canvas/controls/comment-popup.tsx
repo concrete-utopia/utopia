@@ -23,7 +23,7 @@ import { create } from '../../../core/shared/property-path'
 import { assertNever } from '../../../core/shared/utils'
 import { CommentWrapper, MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { when } from '../../../utils/react-conditionals'
-import { Button, UtopiaStyles, useColorTheme } from '../../../uuiui'
+import { Button, FlexRow, Icn, UtopiaStyles, useColorTheme } from '../../../uuiui'
 import {
   setProp_UNSAFE,
   setRightMenuTab,
@@ -291,24 +291,16 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
       onKeyUp={stopPropagation}
       onMouseUp={stopPropagation}
     >
-      {when(
-        thread != null,
-        <div
-          style={{
-            position: 'relative',
-          }}
-        >
-          <div
+      {thread == null ? (
+        <Composer autoFocus onComposerSubmit={onCreateThread} style={ComposerStyle} />
+      ) : (
+        <>
+          <FlexRow
             style={{
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              top: -40,
-              zIndex: 1,
-              display: 'flex',
-              alignItems: 'flex-end',
+              background: colorTheme.bg1.value,
               justifyContent: 'flex-end',
-              height: 40,
+              padding: 6,
+              borderBottom: `1px solid ${colorTheme.bg3.value}`,
             }}
           >
             {when(
@@ -326,13 +318,17 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
             <Button highlight spotlight style={{ padding: '0 6px' }} onClick={onClickResolve}>
               {thread?.metadata.resolved ? 'Unresolve' : 'Resolve'}
             </Button>
-          </div>
-        </div>,
-      )}
-      {thread == null ? (
-        <Composer autoFocus onComposerSubmit={onCreateThread} style={ComposerStyle} />
-      ) : (
-        <>
+            <Button style={{ padding: '0 6px' }} onClick={onClickResolve}>
+              <Icn
+                category='semantic'
+                type='cross-medium'
+                width={16}
+                height={16}
+                // color={isHovered ? 'dynamic' : 'main'}
+                color='main'
+              />
+            </Button>
+          </FlexRow>
           <div style={{ position: 'relative' }}>
             <div
               style={{
@@ -412,16 +408,17 @@ const HeaderComment = React.memo(
       <div
         style={{
           position: 'absolute',
-          top: -1,
-          left: -1,
+          top: 0,
+          left: 0,
           right: 0,
           backgroundColor: 'white',
           zIndex: 1,
           boxShadow: UtopiaStyles.shadowStyles.highest.boxShadow,
-          border: `1px solid ${colorTheme.primary50.value}`,
+          // border: `1px solid ${colorTheme.primary50.value}`,
           opacity: enabled ? 1 : 0,
-          transition: 'opacity 100ms linear',
+          transition: 'all 100ms linear',
           minHeight: 67,
+          transform: 'scale(1.01)',
         }}
       >
         <CommentWrapper user={user} comment={comment} />
