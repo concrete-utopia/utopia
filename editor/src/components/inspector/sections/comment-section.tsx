@@ -252,9 +252,6 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
             '.thread-preview:hover &': {
               visibility: 'visible',
             },
-            '.thread-preview:focus-within &': {
-              visibility: 'hidden',
-            },
             padding: '0 6px',
           }}
           onClick={onResolveThread}
