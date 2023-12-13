@@ -1,4 +1,3 @@
-import '@liveblocks/react-comments/styles.css'
 import React from 'react'
 import { CommentSection } from './sections/comment-section'
 import { FlexColumn, Section } from '../../uuiui'
