@@ -32,7 +32,7 @@ import { MenuTab } from '../../uuiui/menu-tab'
 import { FlexRow } from 'utopia-api'
 import type { StoredPanel } from './stored-layout'
 import { MultiplayerPresence } from './multiplayer-presence'
-import { useStatus } from '../../../liveblocks.config'
+import { useRoom, useStatus } from '../../../liveblocks.config'
 import { MultiplayerWrapper } from '../../utils/multiplayer-wrapper'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { CommentsPane } from '../inspector/comments-pane'
@@ -49,6 +49,20 @@ function isCodeEditorEnabled(): boolean {
 
 const DesignPanelRootInner = React.memo(() => {
   const roomStatus = useStatus()
+
+  const room = useRoom()
+  const loginStateType = useEditorState(
+    Substores.userState,
+    (store) => store.userState.loginState.type,
+    'DesignPanelRootInner loginStateType',
+  )
+
+  React.useEffect(() => {
+    if (loginStateType === 'LOGGED_IN' && roomStatus === 'disconnected') {
+      room.reconnect()
+    }
+  }, [loginStateType, room, roomStatus])
+
   return (
     <>
       <SimpleFlexRow
