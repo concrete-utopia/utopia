@@ -684,13 +684,13 @@ function useSelectOrLiveModeSelectAndHover(
         const foundTargetIsSelected = foundTarget?.isSelected ?? false
 
         if (foundTarget != null && foundTargetIsSelected && doubleClick) {
-          const isFocusableLeaf = MetadataUtils.isManuallyFocusableComponent(
+          const isFocusableComponent = MetadataUtils.isManuallyFocusableComponent(
             foundTarget.elementPath,
             editorStoreRef.current.editor.jsxMetadata,
             editorStoreRef.current.derived.autoFocusedPaths,
             editorStoreRef.current.derived.filePathMappings,
           )
-          if (isFocusableLeaf) {
+          if (isFocusableComponent) {
             editorActions.push(CanvasActions.clearInteractionSession(false))
             editorActions.push(setFocusedElement(foundTarget.elementPath))
           }
