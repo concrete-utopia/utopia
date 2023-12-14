@@ -18,12 +18,6 @@ const MASTER_EDITOR_URL =
   process.env.MASTER_EDITOR_URL ??
   `https://utopia.pizza/p?code_editor_disabled=true${TARGET_BRANCH_NAME}`
 
-export function wait(timeout: number): Promise<void> {
-  return new Promise((resolve) => {
-    setTimeout(resolve, timeout)
-  })
-}
-
 interface FrameResult {
   title: string
   timeSeries: Array<number>
