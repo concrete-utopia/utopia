@@ -24,7 +24,7 @@ import { create } from '../../../core/shared/property-path'
 import { assertNever } from '../../../core/shared/utils'
 import { CommentWrapper, MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { when } from '../../../utils/react-conditionals'
-import { Button, UtopiaStyles, useColorTheme } from '../../../uuiui'
+import { Button, Icons, UtopiaStyles, useColorTheme } from '../../../uuiui'
 import {
   setProp_UNSAFE,
   setRightMenuTab,
@@ -259,6 +259,10 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
     resolveThread(thread)
   }, [thread, resolveThread])
 
+  const onClickClose = React.useCallback(() => {
+    dispatch([switchEditorMode(EditorModes.commentMode(null, 'not-dragging'))])
+  }, [dispatch])
+
   const onClickMarkAsUnread = React.useCallback(() => {
     if (thread?.id == null) {
       return
@@ -289,6 +293,14 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
     scrollToBottom()
   }, [threadId, scrollToBottom])
 
+  const onExistingCommentComposerKeyDown = React.useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        dispatch([switchEditorMode(EditorModes.commentMode(null, 'not-dragging'))])
+      }
+    },
+    [dispatch],
+  )
   if (location == null) {
     return null
   }
@@ -309,44 +321,49 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
       onKeyUp={stopPropagation}
       onMouseUp={stopPropagation}
     >
-      {when(
-        thread != null,
+      <div
+        style={{
+          position: 'relative',
+        }}
+      >
         <div
           style={{
-            position: 'relative',
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: -40,
+            zIndex: 1,
+            display: 'flex',
+            alignItems: 'flex-end',
+            justifyContent: 'flex-end',
+            height: 40,
+            gap: 8,
           }}
         >
-          <div
-            style={{
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              top: -40,
-              zIndex: 1,
-              display: 'flex',
-              alignItems: 'flex-end',
-              justifyContent: 'flex-end',
-              height: 40,
-            }}
-          >
-            {when(
-              readByMe === 'read',
-              <Button
-                highlight
-                spotlight
-                style={{ padding: '0 6px' }}
-                onClick={onClickMarkAsUnread}
-              >
-                Mark as unread
-              </Button>,
-            )}
-            <div style={{ width: 8 }} />
-            <Button highlight spotlight style={{ padding: '0 6px' }} onClick={onClickResolve}>
-              {thread?.metadata.resolved ? 'Unresolve' : 'Resolve'}
-            </Button>
-          </div>
-        </div>,
-      )}
+          {when(
+            thread != null,
+            <>
+              {when(
+                readByMe === 'read',
+                <Button
+                  highlight
+                  spotlight
+                  style={{ padding: '0 6px' }}
+                  onClick={onClickMarkAsUnread}
+                >
+                  Mark as unread
+                </Button>,
+              )}
+              <Button highlight spotlight style={{ padding: '0 6px' }} onClick={onClickResolve}>
+                {thread?.metadata.resolved ? 'Unresolve' : 'Resolve'}
+              </Button>
+            </>,
+          )}
+          <Button highlight spotlight style={{ padding: '0 6px' }} onClick={onClickClose}>
+            <Icons.Cross />
+          </Button>
+        </div>
+      </div>
       {thread == null ? (
         <NewCommentPopup onComposerSubmit={onCreateThread} />
       ) : (
@@ -390,6 +407,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
             threadId={thread.id}
             onComposerSubmit={onSubmitComment}
             style={ComposerStyle}
+            onKeyDown={onExistingCommentComposerKeyDown}
           />
         </>
       )}
@@ -431,25 +449,48 @@ const NewCommentPopup = React.memo((props: NewCommentPopupProps) => {
       e.preventDefault()
       e.stopPropagation()
 
-      const shakeDelta = 4 // px
-      void newCommentComposerAnimation.start({
-        x: [-shakeDelta, shakeDelta, -shakeDelta, shakeDelta, 0],
-        borderColor: [
-          colorTheme.error.cssValue,
-          colorTheme.error.cssValue,
-          colorTheme.error.cssValue,
-          colorTheme.error.cssValue,
-          '#00000000', // transparent, animatable
-        ],
-        transition: { duration: 0.2 },
-      })
-
       const composerTextbox = getComposerTextbox()
       if (composerTextbox != null) {
+        function findPlaceholderChild(element: Element) {
+          if (element == null) {
+            return false
+          }
+          if (element.attributes.getNamedItem('data-placeholder') != null) {
+            return true
+          }
+          if (element.children.length < 1) {
+            return false
+          }
+          return findPlaceholderChild(element.children[0])
+        }
+
+        const isEmpty = composerTextbox.innerText.trim().length === 0
+        const isPlaceholder = !isEmpty && findPlaceholderChild(composerTextbox.children[0])
+
+        // if the contents of the new comment are empty...
+        if (isEmpty || isPlaceholder) {
+          // ...just close the popup
+          dispatch([switchEditorMode(EditorModes.commentMode(null, 'not-dragging'))])
+        } else {
+          // ...otherwise, shake the popup and re-focus its text box
+          const shakeDelta = 4 // px
+          void newCommentComposerAnimation.start({
+            x: [-shakeDelta, shakeDelta, -shakeDelta, shakeDelta, 0],
+            borderColor: [
+              colorTheme.error.cssValue,
+              colorTheme.error.cssValue,
+              colorTheme.error.cssValue,
+              colorTheme.error.cssValue,
+              '#00000000', // transparent, animatable
+            ],
+            transition: { duration: 0.2 },
+          })
+        }
+
         composerTextbox.focus()
       }
     },
-    [newCommentComposerAnimation, colorTheme],
+    [newCommentComposerAnimation, colorTheme, dispatch],
   )
 
   return (

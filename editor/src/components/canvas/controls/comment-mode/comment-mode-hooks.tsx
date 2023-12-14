@@ -72,7 +72,7 @@ export function useCommentModeSelectAndHover(comment: CommentId | null): MouseCa
 
   const onMouseUp = React.useCallback(
     (event: React.MouseEvent) => {
-      if (comment == null || isExistingComment(comment)) {
+      if (comment == null) {
         const loc = windowToCanvasCoordinates(
           storeRef.current.scale,
           storeRef.current.canvasOffset,
@@ -109,6 +109,8 @@ export function useCommentModeSelectAndHover(comment: CommentId | null): MouseCa
             ),
           ),
         ])
+      } else {
+        dispatch([switchEditorMode(EditorModes.commentMode(null, 'not-dragging'))])
       }
     },
     [dispatch, comment, storeRef, scenes],
