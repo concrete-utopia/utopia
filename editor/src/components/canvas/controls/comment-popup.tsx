@@ -264,6 +264,10 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
     setShowShadowTop(atTop && isOverflowing)
   }
 
+  const onClickClose = React.useCallback(() => {
+    dispatch([switchEditorMode(EditorModes.commentMode(null, 'not-dragging'))])
+  }, [dispatch])
+
   React.useEffect(() => {
     // when the thread id changes, re-check the scroll and set the inset shadow
     onScroll()
@@ -286,6 +290,8 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
         minWidth: 250,
         boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
         background: colorTheme.bg0.value,
+        borderRadius: 4,
+        overflow: 'hidden',
       }}
       onKeyDown={stopPropagation}
       onKeyUp={stopPropagation}
@@ -301,24 +307,25 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
               justifyContent: 'flex-end',
               padding: 6,
               borderBottom: `1px solid ${colorTheme.bg3.value}`,
+              gap: 4,
             }}
           >
             {when(
               readByMe === 'read',
-              <Button
-                highlight
-                spotlight
-                style={{ padding: '0 6px' }}
-                onClick={onClickMarkAsUnread}
-              >
-                Mark as unread
+              <Button onClick={onClickMarkAsUnread}>
+                <Icn category='semantic' type='unread' width={16} height={16} color='main' />
               </Button>,
             )}
-            <div style={{ width: 8 }} />
-            <Button highlight spotlight style={{ padding: '0 6px' }} onClick={onClickResolve}>
-              {thread?.metadata.resolved ? 'Unresolve' : 'Resolve'}
+            <Button onClick={onClickResolve}>
+              <Icn
+                category='semantic'
+                type={thread?.metadata.resolved ? 'resolved' : 'resolve'}
+                width={16}
+                height={16}
+                color='main'
+              />
             </Button>
-            <Button style={{ padding: '0 6px' }} onClick={onClickResolve}>
+            <Button onClick={onClickClose}>
               <Icn category='semantic' type='cross-medium' width={16} height={16} color='main' />
             </Button>
           </FlexRow>
