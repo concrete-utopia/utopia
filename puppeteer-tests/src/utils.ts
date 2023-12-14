@@ -25,6 +25,8 @@ export const setupBrowser = async (
   page.setDefaultNavigationTimeout(120000)
   page.setDefaultTimeout(defaultTimeout)
   await page.setViewport({ width: 1500, height: 768 })
+  const browserVersion = await browser.version()
+  console.info('setup browser with version:', browserVersion)
   console.info('loading editor at URL:', url)
   await page.goto(url)
   return {

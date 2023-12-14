@@ -1,6 +1,6 @@
 {
   "name": "utopia-vscode-common",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "license": "MIT",
   "private": true,
   "description": "Common code for bridging VSCode and Utopia",
@@ -22,10 +22,10 @@
   },
   "dependencies": {
     "localforage": "1.9.0",
-    "prettier": "2.0.5"
+    "prettier": "2.8.8"
   },
   "devDependencies": {
-    "@types/prettier": "2.0.1",
+    "@types/prettier": "2.7.3",
     "ts-loader": "5.3.3",
     "typescript": "4.0.5",
     "vscode-dts": "0.3.1",

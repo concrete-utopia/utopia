@@ -214,7 +214,32 @@ export const intrinsicHTMLElementNamesThatSupportChildren: Array<string> = [
   'span',
 ]
 
-export const TextElements = ['text', 'p', 'span', 'h1', 'h2', 'h2', 'h3', 'h5', 'h6']
+export const TextElements = [
+  'text',
+  'p',
+  'span',
+  'h1',
+  'h2',
+  'h2',
+  'h3',
+  'h5',
+  'h6',
+  'strong',
+  'small',
+  'mark',
+  'i',
+  'em',
+  'b',
+  'del',
+  'ins',
+  'sub',
+  'sup',
+]
+
+export const PossibleTextElements = [
+  ...intrinsicHTMLElementNamesThatSupportChildren,
+  ...TextElements,
+]
 
 export const VoidElementsToFilter = ['br', 'wbr']
 

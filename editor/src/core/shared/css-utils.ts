@@ -1,65 +1,38 @@
 import * as csstree from 'css-tree'
 import { CanvasContainerID } from '../../components/canvas/canvas-types'
 
-const SelectorTypes = ['ClassSelector', 'IdSelector', 'TypeSelector']
-const SelectorsToSkip = [
-  // general case type selectors to skip
-  'html',
-  'head',
+function scopePseudoClassSelector(): csstree.PseudoClassSelector {
+  return csstree.fromPlainObject({
+    type: 'PseudoClassSelector',
+    name: 'scope',
+    children: null,
+  }) as csstree.PseudoClassSelector
+}
 
-  // keyframe specific type selectors
-  'from',
-  'to',
-]
+function isSelectorToChange(node: csstree.CssNode): boolean {
+  switch (node.type) {
+    case 'TypeSelector':
+      return ['body', 'html', 'head'].includes(node.name)
+    case 'PseudoClassSelector':
+      return node.name === 'root'
+    default:
+      return false
+  }
+}
 
 export function rescopeCSSToTargetCanvasOnly(input: string): string {
-  let ast = csstree.parse(input)
+  // First wrap it in an @scope
+  const scopedInput = `@scope (#${CanvasContainerID}) {
+    ${input}
+  }`
 
-  csstree.walk(ast, (node) => {
-    // We want to find all selectors, and prepend '#canvas-container ' (i.e. the canvas-container
-    // ID Selector and a ' ' combinator) so that they will only apply to descendents of the canvas
-    if (node.type === 'Selector') {
-      const firstChild = node.children.first()
+  let ast = csstree.parse(scopedInput)
 
-      if (firstChild == null) {
-        return
-      }
-
-      if (!SelectorTypes.includes(firstChild.type)) {
-        return
-      }
-
-      if (firstChild.type === 'TypeSelector' && SelectorsToSkip.includes(firstChild.name)) {
-        // Skip special selectors
-        return
-      }
-
-      if (firstChild.type === 'TypeSelector' && firstChild.name === 'body') {
-        // The closest analogy to the body here is the #canvas-container itself,
-        // so let's just replace it
-        node.children.shift()
-        node.children.prependData(
-          csstree.fromPlainObject({
-            type: 'IdSelector',
-            name: CanvasContainerID,
-          }),
-        )
-      } else {
-        // For everything else we want to prepent '#canvas-container '
-        node.children.prependData(
-          csstree.fromPlainObject({
-            type: 'Combinator',
-            name: ' ',
-          }),
-        )
-
-        node.children.prependData(
-          csstree.fromPlainObject({
-            type: 'IdSelector',
-            name: CanvasContainerID,
-          }),
-        )
-      }
+  csstree.walk(ast, (node, item, list) => {
+    // As we are wrapping in an @scope, we need to redirect certain selectors to :scope
+    if (isSelectorToChange(node) && list != null) {
+      list.insertData(scopePseudoClassSelector(), item)
+      list.remove(item)
     }
   })
 

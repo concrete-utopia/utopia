@@ -169,7 +169,7 @@ projectFileToCodeLens = _Ctor @"ProjectTextFile" . field @"fileContents" . field
 -- Ensure this is kept up to date with:
 -- editor/src/core/es-modules/package-manager/built-in-dependencies-list.ts
 providedDependencies :: [Text]
-providedDependencies = ["utopia-api", "uuiui", "uuiui-deps", "react/jsx-runtime", "react", "react-dom", "@emotion/react", "@emotion/core", "@emotion/styled", "@remix-run/react", "react-router", "@remix-run/server-runtime", "@shopify/hydrogen", "@remix-run/dev", "@shopify/cli", "@shopify/cli-hydrogen"]
+providedDependencies = ["utopia-api", "uuiui", "uuiui-deps", "react/jsx-runtime", "react", "react-dom", "@emotion/react", "@emotion/core", "@emotion/styled", "@remix-run/react", "react-router", "@remix-run/server-runtime", "@shopify/hydrogen", "@remix-run/dev", "@remix-run/eslint-config", "@shopify/cli", "@shopify/cli-hydrogen"]
 
 getProjectDependenciesFromPackageJSON :: DB.DecodedProject -> [ProjectDependency]
 getProjectDependenciesFromPackageJSON decodedProject = either (const []) identity $ do

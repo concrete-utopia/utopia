@@ -70,6 +70,7 @@ import {
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { RightMenuTab, floatingInsertMenuStateSwap } from './store/editor-state'
 import { useIsViewer } from './store/project-server-state-hooks'
+import { useStatus } from '../../../liveblocks.config'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const PlayModeButtonTestId = 'canvas-toolbar-play-mode'
@@ -142,7 +143,10 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
         onChange={props.actionWith}
         options={options}
         menuPortalTarget={menuPortalTarget}
-        filterOption={createFilter({ ignoreAccents: true })}
+        filterOption={createFilter({
+          ignoreAccents: true,
+          stringify: (c) => c.data.source + c.data.label,
+        })}
         styles={{
           ...componentSelectorStyles,
           menuPortal: (styles: CSSObject): CSSObject => {
@@ -413,6 +417,14 @@ export const CanvasToolbar = React.memo(() => {
     'TopMenu loggedIn',
   )
 
+  const roomStatus = useStatus()
+  const commentButtonDisabled = !loggedIn || roomStatus !== 'connected'
+  const commentButtonTooltip = !loggedIn
+    ? 'Sign in to comment'
+    : roomStatus !== 'connected'
+    ? 'Not connected to room'
+    : 'Comment Mode'
+
   const isViewer = useIsViewer()
 
   return (
@@ -486,7 +498,7 @@ export const CanvasToolbar = React.memo(() => {
         </Tooltip>
         {when(
           isFeatureEnabled('Commenting'),
-          <Tooltip title='Comment Mode' placement='bottom'>
+          <Tooltip title={commentButtonTooltip} placement='bottom'>
             <InsertModeButton
               testid={CommentModeButtonTestId}
               iconType={'comment'}
@@ -495,7 +507,7 @@ export const CanvasToolbar = React.memo(() => {
               onClick={toggleCommentMode}
               keepActiveInLiveMode
               style={{ width: 36 }}
-              disabled={!loggedIn}
+              disabled={commentButtonDisabled}
             />
           </Tooltip>,
         )}

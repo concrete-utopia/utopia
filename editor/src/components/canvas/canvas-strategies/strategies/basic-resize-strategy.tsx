@@ -81,13 +81,6 @@ export function basicResizeStrategy(
           height: elementDimensionsProps.height,
         }
 
-  const hasDimensions =
-    elementDimensions != null &&
-    (elementDimensions.width != null || elementDimensions.height != null)
-  const hasSizedParent =
-    elementParentBounds != null &&
-    (elementParentBounds.width !== 0 || elementParentBounds.height !== 0)
-
   return {
     id: BASIC_RESIZE_STRATEGY_ID,
     name: 'Resize (Basic)',
@@ -125,8 +118,7 @@ export function basicResizeStrategy(
     fitness:
       interactionSession != null &&
       interactionSession.interactionData.type === 'DRAG' &&
-      interactionSession.activeControl.type === 'RESIZE_HANDLE' &&
-      (hasDimensions || !hasSizedParent)
+      interactionSession.activeControl.type === 'RESIZE_HANDLE'
         ? 1
         : 0,
     apply: (_strategyLifecycle: InteractionLifecycle) => {
@@ -187,7 +179,7 @@ export function basicResizeStrategy(
             resized: number,
             parent: number | undefined,
           ): void {
-            if (elementDimension == null && (original === resized || hasSizedParent)) {
+            if (original === resized) {
               return
             }
             resizeProperties.push(

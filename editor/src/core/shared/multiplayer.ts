@@ -1,7 +1,7 @@
 import type { User } from '@liveblocks/client'
 import type { Presence, UserMeta } from '../../../liveblocks.config'
 import { possiblyUniqueInArray, safeIndex, stripNulls, uniqBy } from './array-utils'
-import { getPreferredColorScheme } from '../../uuiui'
+import { colorTheme, getPreferredColorScheme } from '../../uuiui'
 import type { ElementPath } from './project-file-types'
 import {
   setHighlightedView,
@@ -14,40 +14,26 @@ export type MultiplayerColor = {
   foreground: string
 }
 
-export const multiplayerColors = {
-  light: [
-    { background: '#0092C0', foreground: 'white' },
-    { background: '#128400', foreground: 'white' },
-    { background: '#2A00D1', foreground: 'white' },
-    { background: '#5C00D1', foreground: 'white' },
-    { background: '#87C700', foreground: 'black' },
-    { background: '#8C6D00', foreground: 'white' },
-    { background: '#9C0000', foreground: 'white' },
-    { background: '#B16CB7', foreground: 'white' },
-    { background: '#B60479', foreground: 'white' },
-    { background: '#E7B400', foreground: 'black' },
-  ],
-  dark: [
-    { background: '#007DA4', foreground: 'white' },
-    { background: '#19B500', foreground: 'black' },
-    { background: '#3EFFF3', foreground: 'black' },
-    { background: '#6842FF', foreground: 'white' },
-    { background: '#C4FF46', foreground: 'black' },
-    { background: '#CE00D3', foreground: 'white' },
-    { background: '#DD0000', foreground: 'white' },
-    { background: '#FF00A8', foreground: 'white' },
-    { background: '#FFBA08', foreground: 'black' },
-    { background: '#FFFF00', foreground: 'black' },
-  ],
-}
+export const multiplayerColors = [
+  { background: '#10C458', foreground: colorTheme.bg0.value },
+  { background: '#25B5B5', foreground: colorTheme.bg0.value },
+  { background: '#6688E0', foreground: colorTheme.bg0.value },
+  { background: '#7382A7', foreground: colorTheme.bg0.value },
+  { background: '#96AB14', foreground: colorTheme.bg0.value },
+  { background: '#A05FD3', foreground: colorTheme.bg0.value },
+  { background: '#B99829', foreground: colorTheme.bg0.value },
+  { background: '#CE72BA', foreground: colorTheme.bg0.value },
+  { background: '#E55A6A', foreground: colorTheme.bg0.value },
+  { background: '#EB6837', foreground: colorTheme.bg0.value },
+]
 
 function randomMultiplayerColor(): number {
-  return Math.floor(Math.random() * multiplayerColors.light.length)
+  return Math.floor(Math.random() * multiplayerColors.length)
 }
 
 export function possiblyUniqueColor(existing: (number | null)[]): number {
   return possiblyUniqueInArray(
-    multiplayerColors.light.map((_, index) => index),
+    multiplayerColors.map((_, index) => index),
     existing,
     randomMultiplayerColor(),
   )
@@ -62,8 +48,7 @@ export function multiplayerColorFromIndex(colorIndex: number | null): Multiplaye
     return fallbackColor
   }
 
-  const colors =
-    getPreferredColorScheme() === 'dark' ? multiplayerColors.dark : multiplayerColors.light
+  const colors = multiplayerColors
   return safeIndex(colors, colorIndex) ?? fallbackColor
 }
 

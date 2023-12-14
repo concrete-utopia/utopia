@@ -27,20 +27,20 @@ import {
   openCommentThreadActions,
 } from '../../../core/shared/multiplayer'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
-import { setRightMenuTab, switchEditorMode } from '../../editor/actions/action-creators'
 import type { Theme } from '../../../uuiui'
 import { UtopiaStyles, colorTheme } from '../../../uuiui'
-import { EditorModes, isCommentMode, isExistingComment } from '../../editor/editor-modes'
+import { isCommentMode, isExistingComment } from '../../editor/editor-modes'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { AvatarPicture } from '../../user-bar'
 import { canvasPointToWindowPoint } from '../dom-lookup'
-import { RightMenuTab } from '../../editor/store/editor-state'
 import { useRemixNavigationContext } from '../remix/utopia-remix-root-component'
 import { assertNever } from '../../../core/shared/utils'
 import { optionalMap } from '../../../core/shared/optional-utils'
+import { setRightMenuTab } from '../../editor/actions/action-creators'
+import { RightMenuTab } from '../../editor/store/editor-state'
 
-const IndicatorSize = 20
+const IndicatorSize = 24
 const MagnifyScale = 1.15
 
 export const CommentIndicators = React.memo(() => {
@@ -189,6 +189,7 @@ interface CommentIndicatorUIProps {
   onClick?: (e: React.MouseEvent) => void
   onMouseDown?: (e: React.MouseEvent) => void
   isActive: boolean
+  read?: boolean
 }
 
 export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) => {
@@ -203,16 +204,24 @@ export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) =>
     opacity,
     resolved,
     isActive,
+    read,
   } = props
 
   function getIndicatorStyle() {
     const base: Interpolation<Theme> = {
       position: 'fixed',
-      top: position.y,
-      left: position.x,
+      top: position.y + 3,
+      left: position.x - 3,
       opacity: opacity,
       filter: resolved ? 'grayscale(1)' : undefined,
       width: IndicatorSize,
+      height: IndicatorSize,
+      background: read ? colorTheme.bg1.value : colorTheme.primary.value,
+      borderRadius: '24px 24px 24px 0px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
     }
 
     const transform: Interpolation<Theme> = {
@@ -223,6 +232,7 @@ export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) =>
 
     const whenActive: Interpolation<Theme> = {
       ...transform,
+      border: `1px solid ${colorTheme.primary.value}`,
     }
 
     const whenInactive: Interpolation<Theme> = {
@@ -238,35 +248,22 @@ export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) =>
   }
 
   return (
-    <div css={getIndicatorStyle()} onClick={onClick} onMouseDown={onMouseDown}>
+    <div onClick={onClick} onMouseDown={onMouseDown} css={getIndicatorStyle()}>
       <div
-        css={{
-          height: 24,
-          width: 24,
-          background: colorTheme.bg1.value,
-          borderRadius: '24px 24px 24px 0px',
+        style={{
+          height: 18,
+          width: 18,
+          borderRadius: 18,
+          background: bgColor,
+          color: fgColor,
+          fontSize: 9,
+          fontWeight: 'bold',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
         }}
       >
-        <div
-          style={{
-            height: 20,
-            width: 20,
-            borderRadius: 10,
-            background: bgColor,
-            color: fgColor,
-            fontSize: 9,
-            fontWeight: 'bold',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <AvatarPicture url={avatarUrl} initials={avatarInitials} />
-        </div>
+        <AvatarPicture url={avatarUrl} initials={avatarInitials} />
       </div>
     </div>
   )
@@ -294,6 +291,8 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
 
   const { location, scene: commentScene } = useCanvasLocationOfThread(thread)
 
+  const { onMouseDown, didDrag, dragPosition } = useDragging(thread, location)
+
   const remixLocationRoute = thread.metadata.remixLocationRoute ?? null
 
   const remixState = useRemixNavigationContext(commentScene)
@@ -304,14 +303,20 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
   const readByMe = useMyThreadReadStatus(thread)
 
   const onClick = React.useCallback(() => {
+    if (didDrag) {
+      return
+    }
     if (isOnAnotherRoute) {
       if (remixState == null) {
         return
       }
       remixState.navigate(remixLocationRoute)
     }
-    dispatch(openCommentThreadActions(thread.id, commentScene))
-  }, [dispatch, thread.id, remixState, remixLocationRoute, isOnAnotherRoute, commentScene])
+    dispatch([
+      ...openCommentThreadActions(thread.id, commentScene),
+      setRightMenuTab(RightMenuTab.Comments),
+    ])
+  }, [dispatch, thread.id, remixState, remixLocationRoute, isOnAnotherRoute, commentScene, didDrag])
 
   const { initials, color, avatar } = (() => {
     const firstComment = thread.comments[0]
@@ -329,25 +334,10 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
     }
   })()
 
-  const { onMouseDown, dragPosition } = useDragging(thread, location)
   const position = React.useMemo(
     () => canvasPointToWindowPoint(dragPosition ?? location, canvasScale, canvasOffset),
     [location, canvasScale, canvasOffset, dragPosition],
   )
-
-  const indicatorOpacity = (() => {
-    if (isOnAnotherRoute || thread.metadata.resolved) {
-      return 0
-    }
-    switch (readByMe) {
-      case 'unread':
-        return 1
-      case 'read':
-        return 0.75
-      default:
-        assertNever(readByMe)
-    }
-  })()
 
   const isActive = useEditorState(
     Substores.restOfEditor,
@@ -362,7 +352,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
   return (
     <CommentIndicatorUI
       position={position}
-      opacity={indicatorOpacity}
+      opacity={isOnAnotherRoute || thread.metadata.resolved ? 0 : 1}
       resolved={thread.metadata.resolved}
       onClick={onClick}
       onMouseDown={onMouseDown}
@@ -371,6 +361,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
       avatarUrl={avatar}
       avatarInitials={initials}
       isActive={isActive}
+      read={readByMe === 'read'}
     />
   )
 })
@@ -380,13 +371,15 @@ const COMMENT_DRAG_THRESHOLD = 5 // square px
 
 function useDragging(thread: ThreadData<ThreadMetadata>, originalLocation: CanvasPoint) {
   const editThreadMetadata = useEditThreadMetadata()
-  const dispatch = useDispatch()
   const [dragPosition, setDragPosition] = React.useState<CanvasPoint | null>(null)
+  const [didDrag, setDidDrag] = React.useState(false)
 
   const canvasScaleRef = useRefEditorState((store) => store.editor.canvas.scale)
 
   const onMouseDown = React.useCallback(
     (event: React.MouseEvent) => {
+      setDidDrag(false)
+
       const mouseDownPoint = windowPoint({ x: event.clientX, y: event.clientY })
 
       let draggedPastThreshold = false
@@ -397,6 +390,7 @@ function useDragging(thread: ThreadData<ThreadMetadata>, originalLocation: Canva
         draggedPastThreshold ||= distance(mouseDownPoint, mouseMovePoint) > COMMENT_DRAG_THRESHOLD
 
         if (draggedPastThreshold) {
+          setDidDrag(true)
           const dragVectorWindow = pointDifference(mouseDownPoint, mouseMovePoint)
           const dragVectorCanvas = canvasPoint({
             x: dragVectorWindow.x / canvasScaleRef.current,
@@ -429,15 +423,11 @@ function useDragging(thread: ThreadData<ThreadMetadata>, originalLocation: Canva
       }
 
       event.stopPropagation()
-      dispatch([
-        switchEditorMode(EditorModes.commentMode(null, 'dragging')),
-        setRightMenuTab(RightMenuTab.Comments),
-      ])
       window.addEventListener('mousemove', onMouseMove)
       window.addEventListener('mouseup', onMouseUp)
     },
-    [dispatch, canvasScaleRef, editThreadMetadata, thread.id, originalLocation, thread.metadata],
+    [canvasScaleRef, editThreadMetadata, thread.id, originalLocation, thread.metadata],
   )
 
-  return { onMouseDown, dragPosition }
+  return { onMouseDown, dragPosition, didDrag }
 }

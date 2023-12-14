@@ -224,6 +224,7 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
+      rm -rf ./dist ./node_modules
       yarn
       yarn run build
     '')
@@ -250,7 +251,7 @@ let
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/puppeteer-tests
       ${pnpm}/bin/pnpm install --unsafe-perm
-      PUPPETEER_EXECUTABLE_PATH=${pkgs.google-chrome}/bin/google-chrome-stable ${pnpm}/bin/pnpm run performance-test
+      ${pnpm}/bin/pnpm run performance-test
     '')
   ];
 
@@ -638,7 +639,7 @@ let
 
   scripts = withCustomDevScripts; # ++ (if needsRelease then releaseScripts else []);
 
-  linuxOnlyPackages = lib.optionals stdenv.isLinux [ pkgs.xvfb_run pkgs.xlibsWrapper pkgs.xorg.libxkbfile pkgs.google-chrome ];
+  linuxOnlyPackages = lib.optionals stdenv.isLinux [ pkgs.xvfb_run pkgs.xlibsWrapper pkgs.xorg.libxkbfile ];
   macOSOnlyPackages = lib.optionals stdenv.isDarwin (with pkgs.darwin.apple_sdk.frameworks; [
     Cocoa
     CoreServices

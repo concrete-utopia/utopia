@@ -284,7 +284,9 @@ export async function renderTestEditorWithProjectContent(
 
 const optedInToCheckFileTimestamps = { current: true }
 export function optOutFromCheckFileTimestamps() {
-  optedInToCheckFileTimestamps.current = false
+  beforeEach(() => {
+    optedInToCheckFileTimestamps.current = false
+  })
   afterEach(() => {
     optedInToCheckFileTimestamps.current = true
   })

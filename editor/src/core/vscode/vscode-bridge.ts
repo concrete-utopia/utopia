@@ -95,12 +95,18 @@ export function initVSCodeBridge(
   openFilePath: string | null,
 ) {
   let loadingScreenHidden = false
+  let seenMessageListenersReadyMessage = false
 
   // Remove any existing message handlers to prevent us accidentally duplicating them
   window.removeEventListener('message', registeredHandlers)
   registeredHandlers = (messageEvent: MessageEvent) => {
     const { data } = messageEvent
-    if (isMessageListenersReady(data) && messageEvent.source != null) {
+    if (
+      isMessageListenersReady(data) &&
+      messageEvent.source != null &&
+      !seenMessageListenersReadyMessage
+    ) {
+      seenMessageListenersReadyMessage = true
       // Don't store the source yet, because we don't want to send any messages
       // until the bridge is ready
 
