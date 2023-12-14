@@ -5,7 +5,8 @@ import { useAtom } from 'jotai'
 import type { CSSProperties } from 'react'
 import React, { useRef } from 'react'
 import { useCreateThread, useStorage } from '../../../../liveblocks.config'
-import '../../../../resources/editor/css/liveblocks-comments.css'
+import '../../../../resources/editor/css/liveblocks/react-comments/styles.css'
+import '../../../../resources/editor/css/liveblocks/react-comments/dark/attributes.css'
 import {
   getCollaboratorById,
   useCanvasCommentThreadAndLocation,
@@ -37,7 +38,7 @@ import {
   isNewComment,
 } from '../../editor/editor-modes'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { RightMenuTab } from '../../editor/store/editor-state'
+import { RightMenuTab, getCurrentTheme } from '../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { stopPropagation } from '../../inspector/common/inspector-utils'
 import { canvasPointToWindowPoint } from '../dom-lookup'
@@ -118,6 +119,12 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
       })
     }
   }, [])
+
+  const theme = useEditorState(
+    Substores.userState,
+    (store) => getCurrentTheme(store.userState),
+    'CommentThread theme',
+  )
 
   const onCreateThread = React.useCallback(
     ({ body }: ComposerSubmitComment, event: React.FormEvent<HTMLFormElement>) => {
@@ -298,7 +305,12 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
       onMouseUp={stopPropagation}
     >
       {thread == null ? (
-        <Composer autoFocus onComposerSubmit={onCreateThread} style={ComposerStyle} />
+        <Composer
+          data-theme={theme}
+          autoFocus
+          onComposerSubmit={onCreateThread}
+          style={ComposerStyle}
+        />
       ) : (
         <>
           <FlexRow
@@ -346,6 +358,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
                 return (
                   <CommentWrapper
                     key={c.id}
+                    data-theme={theme}
                     user={user}
                     comment={c}
                     onCommentDelete={onCommentDelete}
@@ -362,6 +375,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
           </div>
           <Composer
             ref={composerRef}
+            data-theme={theme}
             autoFocus
             threadId={thread.id}
             onComposerSubmit={onSubmitComment}

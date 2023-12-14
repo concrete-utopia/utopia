@@ -1,7 +1,8 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
-import '@liveblocks/react-comments/styles.css'
+import '../../../../resources/editor/css/liveblocks/react-comments/styles.css'
+import '../../../../resources/editor/css/liveblocks/react-comments/dark/attributes.css'
 import React from 'react'
 import {
   Button,
@@ -36,6 +37,7 @@ import { unless, when } from '../../../utils/react-conditionals'
 import { openCommentThreadActions } from '../../../core/shared/multiplayer'
 import { getRemixLocationLabel } from '../../canvas/remix/remix-utils'
 import type { RestOfEditorState } from '../../editor/store/store-hook-substore-types'
+import { getCurrentTheme } from '../../editor/store/editor-state'
 
 export const CommentSection = React.memo(() => {
   return (
@@ -168,6 +170,12 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
 
   const isSelected = useIsSelectedAndScrollToThread(ref, thread.id)
 
+  const theme = useEditorState(
+    Substores.userState,
+    (store) => getCurrentTheme(store.userState),
+    'ThreadPreview theme',
+  )
+
   const comment = thread.comments[0]
   if (comment == null) {
     return null
@@ -194,6 +202,7 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
       }}
     >
       <CommentWrapper
+        data-theme={theme}
         user={user}
         comment={comment}
         showActions={false}
