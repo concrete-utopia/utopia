@@ -1937,18 +1937,6 @@ export const MetadataUtils = {
       return false
     }
   },
-  isManuallyFocusableLeafComponent(
-    path: ElementPath,
-    pathTree: ElementPathTrees,
-    metadata: ElementInstanceMetadataMap,
-    autoFocusedPaths: Array<ElementPath>,
-    filePathMappings: FilePathMappings,
-  ): boolean {
-    return (
-      MetadataUtils.getChildrenPathsOrdered(metadata, pathTree, path).length === 0 &&
-      MetadataUtils.isManuallyFocusableComponent(path, metadata, autoFocusedPaths, filePathMappings)
-    )
-  },
   isEmotionOrStyledComponent(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
     const element = MetadataUtils.findElementByElementPath(metadata, path)
     return element?.isEmotionOrStyledComponent ?? false
