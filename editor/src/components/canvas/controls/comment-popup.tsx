@@ -322,14 +322,14 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
               justifyContent: 'flex-end',
               padding: 6,
               borderBottom: `1px solid ${colorTheme.bg3.value}`,
-              gap: 4,
+              gap: 6,
             }}
           >
             {when(
               readByMe === 'read',
               <Tooltip title='Mark As Unread' placement='top'>
                 <Button onClick={onClickMarkAsUnread}>
-                  <Icn category='semantic' type='unread' width={16} height={16} color='main' />
+                  <Icn category='semantic' type='unread' width={18} height={18} color='main' />
                 </Button>
               </Tooltip>,
             )}
@@ -338,8 +338,8 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
                 <Icn
                   category='semantic'
                   type={thread?.metadata.resolved ? 'resolved' : 'resolve'}
-                  width={16}
-                  height={16}
+                  width={18}
+                  height={18}
                   color='main'
                 />
               </Button>
@@ -348,11 +348,11 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
               onClick={onClickClose}
               css={{
                 '&:hover': {
-                  opacity: 0.7,
+                  opacity: 0.5,
                 },
               }}
             >
-              <Icn category='semantic' type='cross-medium' width={16} height={16} color='main' />
+              <Icn category='semantic' type='cross-large' width={16} height={16} color='main' />
             </Button>
           </FlexRow>
           <div style={{ position: 'relative' }}>
