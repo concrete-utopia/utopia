@@ -46,6 +46,7 @@ import { RemixNavigationAtom } from '../remix/utopia-remix-root-component'
 import { getIdOfScene } from './comment-mode/comment-mode-hooks'
 import { motion, useAnimation } from 'framer-motion'
 import { CSSCursor } from '../canvas-types'
+import type { EditorDispatch } from '../../editor/action-types'
 
 export const ComposerEditorClassName = 'lb-composer-editor'
 
@@ -65,6 +66,12 @@ const ComposerStyle: CSSProperties = {
   wordWrap: 'break-word',
   whiteSpace: 'normal',
   zIndex: 10,
+}
+
+function switchToBasicCommentModeOnEscape(e: React.KeyboardEvent, dispatch: EditorDispatch) {
+  if (e.key === 'Escape') {
+    dispatch([switchEditorMode(EditorModes.commentMode(null, 'not-dragging'))])
+  }
 }
 
 export const CommentPopup = React.memo(() => {
@@ -294,11 +301,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
   }, [threadId, scrollToBottom])
 
   const onExistingCommentComposerKeyDown = React.useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        dispatch([switchEditorMode(EditorModes.commentMode(null, 'not-dragging'))])
-      }
-    },
+    (e: React.KeyboardEvent) => switchToBasicCommentModeOnEscape(e, dispatch),
     [dispatch],
   )
   if (location == null) {
@@ -434,11 +437,7 @@ const NewCommentPopup = React.memo((props: NewCommentPopupProps) => {
   )
 
   const onNewCommentComposerKeyDown = React.useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        dispatch([switchEditorMode(EditorModes.commentMode(null, 'not-dragging'))])
-      }
-    },
+    (e: React.KeyboardEvent) => switchToBasicCommentModeOnEscape(e, dispatch),
     [dispatch],
   )
 
