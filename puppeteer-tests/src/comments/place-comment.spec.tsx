@@ -1,5 +1,5 @@
 import { setupBrowser, wait } from '../utils'
-import type { Browser } from 'puppeteer'
+import type { Browser, ElementHandle } from 'puppeteer'
 
 async function getFirstTab(browser: Browser) {
   const [firstTab] = await browser.pages()
@@ -18,21 +18,34 @@ describe('Comments test', () => {
       )
       await page.waitForSelector('#sign-in-button')
       await page.click('#sign-in-button')
-      await page.waitForSelector('div[data-testid="canvas-toolbar-comment-mode"]')
+      const commentModeButton = await page.waitForSelector(
+        'div[data-testid="canvas-toolbar-comment-mode"]',
+      )
       await wait(5000) // wait for Liveblocks to connect
-      await page.click('div[data-testid="canvas-toolbar-comment-mode"]')
-      await page.waitForSelector('#new-canvas-controls-container')
-      await page.click('#new-canvas-controls-container', { offset: { x: 500, y: 500 } })
+      await commentModeButton!.click()
+      const canvasControlsContainer = await page.waitForSelector('#new-canvas-controls-container')
+      await canvasControlsContainer!.click({ offset: { x: 500, y: 500 } })
 
-      await page.waitForSelector('[contenteditable="true"]')
-      await page.focus('[contenteditable="true"]')
-      await page.type('[contenteditable="true"]', 'hello comments')
+      const commentBox = await page.waitForSelector('[contenteditable="true"]')
+      await commentBox!.focus()
+      await commentBox!.type('hello comments')
       await page.keyboard.press('Enter')
-      await page.waitForFunction(
+      const thread = await page.waitForFunction(
         'document.querySelector("body").innerText.includes("hello comments")',
       )
 
-      expect(1).toEqual(1)
+      expect(thread).not.toBeNull()
+
+      const [resolveButton] = await page.$x("//div[contains(., 'Resolve')]")
+      const resolveButtonBounds = await resolveButton.boundingBox()
+      await (resolveButton as ElementHandle<Element>).click({
+        offset: {
+          x: resolveButtonBounds!.x + resolveButtonBounds!.width / 2,
+          y: resolveButtonBounds!.y + resolveButtonBounds!.height / 2,
+        },
+      })
+
+      await wait(10000)
 
       await page.close()
       await browser.close()
