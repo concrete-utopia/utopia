@@ -12,7 +12,6 @@ import type { CommentId } from '../../../editor/editor-modes'
 import {
   EditorModes,
   canvasCommentLocation,
-  isExistingComment,
   newComment,
   sceneCommentLocation,
 } from '../../../editor/editor-modes'
