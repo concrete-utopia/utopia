@@ -29,7 +29,12 @@ import * as EditorActions from '../components/editor/actions/action-creators'
 import type { HandleInteractionSession } from '../components/editor/actions/meta-actions'
 import { cancelInsertModeActions } from '../components/editor/actions/meta-actions'
 import type { Mode } from '../components/editor/editor-modes'
-import { EditorModes, isFollowMode, isLiveMode } from '../components/editor/editor-modes'
+import {
+  EditorModes,
+  isCommentMode,
+  isFollowMode,
+  isLiveMode,
+} from '../components/editor/editor-modes'
 import { saveAssets } from '../components/editor/server'
 import type {
   CanvasCursor,
@@ -151,7 +156,7 @@ function getDefaultCursorForMode(mode: Mode): CSSCursor {
     case 'textEdit':
       return CSSCursor.Select
     case 'comment':
-      if (mode.comment == null && mode.isDragging === 'not-dragging') {
+      if (isCommentMode(mode)) {
         return CSSCursor.Comment
       }
       return CSSCursor.Select

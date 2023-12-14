@@ -12,6 +12,7 @@ import type { CommentId } from '../../../editor/editor-modes'
 import {
   EditorModes,
   canvasCommentLocation,
+  isExistingComment,
   newComment,
   sceneCommentLocation,
 } from '../../../editor/editor-modes'
@@ -71,7 +72,7 @@ export function useCommentModeSelectAndHover(comment: CommentId | null): MouseCa
 
   const onMouseUp = React.useCallback(
     (event: React.MouseEvent) => {
-      if (comment == null) {
+      if (comment == null || isExistingComment(comment)) {
         const loc = windowToCanvasCoordinates(
           storeRef.current.scale,
           storeRef.current.canvasOffset,
@@ -108,8 +109,6 @@ export function useCommentModeSelectAndHover(comment: CommentId | null): MouseCa
             ),
           ),
         ])
-      } else {
-        dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
       }
     },
     [dispatch, comment, storeRef, scenes],
