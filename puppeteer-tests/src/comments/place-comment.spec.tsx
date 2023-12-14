@@ -19,8 +19,18 @@ describe('Comments test', () => {
       await page.waitForSelector('#sign-in-button')
       await page.click('#sign-in-button')
       await page.waitForSelector('div[data-testid="canvas-toolbar-comment-mode"]')
+      await wait(5000) // wait for Liveblocks to connect
+      await page.click('div[data-testid="canvas-toolbar-comment-mode"]')
+      await page.waitForSelector('#new-canvas-controls-container')
+      await page.click('#new-canvas-controls-container', { offset: { x: 500, y: 500 } })
 
-      await wait(1000000)
+      await page.waitForSelector('[contenteditable="true"]')
+      await page.focus('[contenteditable="true"]')
+      await page.type('[contenteditable="true"]', 'hello comments')
+      await page.keyboard.press('Enter')
+      await page.waitForFunction(
+        'document.querySelector("body").innerText.includes("hello comments")',
+      )
 
       expect(1).toEqual(1)
 
