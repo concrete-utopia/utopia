@@ -1,3 +1,4 @@
+import { mergeImportsResolutionWithImports } from '../../../components/editor/import-utils'
 import { includeToastPatch } from '../../../components/editor/actions/toast-helpers'
 import { insertJSXElementChildren } from '../../../core/model/element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
@@ -52,17 +53,17 @@ export const runInsertElementInsertionSubject: CommandFunction<InsertElementInse
         null,
       )
 
-      const updatedImports = mergeImports(
+      const updatedImports = mergeImportsResolutionWithImports(
         underlyingFilePath,
-        success.imports,
         mergeImports(underlyingFilePath, insertionResult.importsToAdd, subject.importsToAdd),
+        success.imports,
       )
 
       editorStatePatches.push(
         getPatchForComponentChange(
           success.topLevelElements,
           insertionResult.components,
-          updatedImports,
+          updatedImports.imports,
           underlyingFilePath,
         ),
       )

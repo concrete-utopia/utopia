@@ -108,6 +108,24 @@ function adjustElementDuplicateName(
   return element
 }
 
+function changeElementNameByPath(
+  target: ElementPath,
+  projectContents: ProjectContentTreeRoot,
+  duplicateNameMapping: Map<string, string>,
+) {
+  withUnderlyingTarget<void>(
+    target,
+    projectContents,
+    undefined,
+    (success, element, underlyingTarget, underlyingFilePath) => {
+      if (isJSXElement(element)) {
+        element.name.baseVariable =
+          duplicateNameMapping.get(element.name.baseVariable) ?? element.name.baseVariable
+      }
+    },
+  )
+}
+
 export function getReparentOutcome(
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
@@ -140,14 +158,16 @@ export function getReparentOutcome(
 
   switch (toReparent.type) {
     case 'PATH_TO_REPARENT':
-      const importsToAdd = getRequiredImportsForElement(
+      const { imports, duplicateNameMapping } = getRequiredImportsForElement(
         toReparent.target,
         projectContents,
         nodeModules,
         newTargetFilePath,
         builtInDependencies,
       )
-      commands.push(addImportsToFile(whenToRun, newTargetFilePath, importsToAdd))
+      changeElementNameByPath(toReparent.target, projectContents, duplicateNameMapping)
+
+      commands.push(addImportsToFile(whenToRun, newTargetFilePath, imports))
       commands.push(reparentElement(whenToRun, toReparent.target, targetParent, indexPosition))
       commands.push(
         ...getRequiredGroupTrueUps(
@@ -235,14 +255,15 @@ export function getReparentOutcomeMultiselect(
   fastForEach(toReparentMultiple, (toReparent) => {
     switch (toReparent.type) {
       case 'PATH_TO_REPARENT':
-        const importsToAdd = getRequiredImportsForElement(
+        const { imports, duplicateNameMapping } = getRequiredImportsForElement(
           toReparent.target,
           projectContents,
           nodeModules,
           newTargetFilePath,
           builtInDependencies,
         )
-        commands.push(addImportsToFile(whenToRun, newTargetFilePath, importsToAdd))
+        changeElementNameByPath(toReparent.target, projectContents, duplicateNameMapping)
+        commands.push(addImportsToFile(whenToRun, newTargetFilePath, imports))
         commands.push(reparentElement(whenToRun, toReparent.target, newParent, indexPosition))
         break
       case 'ELEMENT_TO_REPARENT':

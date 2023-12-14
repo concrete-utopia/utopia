@@ -13,6 +13,7 @@ import { defaultIfNull, optionalMap } from '../../shared/optional-utils'
 
 import { absolutePathFromRelativePath } from '../../../utils/path-utils'
 import { stripExtension } from '../../../components/custom-code/custom-code-utils'
+import { handleDuplicateImports } from '../../../components/editor/import-utils'
 
 export function codeNeedsPrinting(revisionsState: RevisionsStateType): boolean {
   return revisionsState === RevisionsState.ParsedAhead
@@ -118,7 +119,6 @@ export function mergeImports(
     [absolutePath: string]: string | undefined
   } = {}
   let imports: Imports = {}
-  let duplicateNameMapping = new Map<string, string>()
 
   allImportSources.forEach((importSource) => {
     const rawAbsolutePath = absolutePathFromRelativePath(fileUri, false, importSource)
@@ -149,7 +149,13 @@ export function mergeImports(
       imports[existingImportSourceToUse] = merged
     }
   })
-  return { imports, duplicateNameMapping }
+
+  const { imports: importResult, duplicateNameMapping } = handleDuplicateImports(
+    emptyImports(),
+    imports,
+  )
+
+  return { imports: importResult, duplicateNameMapping }
 }
 
 export function addImport(

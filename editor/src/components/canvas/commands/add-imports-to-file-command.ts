@@ -31,7 +31,12 @@ export const runAddImportsToFile: CommandFunction<AddImportsToFile> = (
     command.targetFile,
     editorState,
     (parseSuccess) => {
-      const updatedImports = mergeImports(command.targetFile, parseSuccess.imports, command.imports)
+      // TODO handle duplicate name mapping
+      const { imports: updatedImports } = mergeImports(
+        command.targetFile,
+        parseSuccess.imports,
+        command.imports,
+      )
       return {
         imports: {
           $set: updatedImports,

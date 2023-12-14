@@ -313,7 +313,7 @@ function pathHash(path: string) {
   return Buffer.from(path).toString('base64').slice(0, 4)
 }
 
-function mergeImportsResolutionWithImports(
+export function mergeImportsResolutionWithImports(
   fileUri: string,
   first: ImportsMergeResolution,
   second: Imports,

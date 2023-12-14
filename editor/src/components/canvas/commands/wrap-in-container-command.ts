@@ -37,6 +37,7 @@ import { generateConsistentUID } from '../../../core/shared/uid-utils'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { getSimpleAttributeAtPath } from '../../../core/model/element-metadata-utils'
 import { forEachRight, right } from '../../../core/shared/either'
+import { mergeImportsResolutionWithImports } from '../../../components/editor/import-utils'
 
 type ContainerToWrapIn = InsertionSubjectWrapper
 
@@ -115,11 +116,11 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
         getPatchForComponentChange(
           success.topLevelElements,
           insertionResult.components,
-          mergeImports(
+          mergeImportsResolutionWithImports(
             underlyingFilePath,
-            success.imports,
             mergeImports(underlyingFilePath, imports, insertionResult.importsToAdd),
-          ),
+            success.imports,
+          ).imports,
           underlyingFilePath,
         ),
       )

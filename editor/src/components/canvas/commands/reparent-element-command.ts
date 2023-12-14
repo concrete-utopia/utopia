@@ -78,7 +78,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
                 underlyingFilePathTarget,
                 successTarget.imports,
                 insertionResult.importsToAdd,
-              ),
+              ).imports,
               underlyingFilePathTarget,
             )
 
@@ -112,7 +112,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
                 underlyingFilePathNewParent,
                 successNewParent.imports,
                 insertionResult.importsToAdd,
-              ),
+              ).imports,
               underlyingFilePathNewParent,
             )
 

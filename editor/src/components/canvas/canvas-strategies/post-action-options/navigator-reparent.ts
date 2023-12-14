@@ -39,6 +39,10 @@ import { pathToReparent } from '../strategies/reparent-utils'
 import type { PostActionChoice } from './post-action-options'
 import type { ElementOrPathToInsert, OldPathToNewPathMapping } from './post-action-paste'
 import { staticReparentAndUpdatePosition } from './post-action-paste'
+import {
+  emptyImports,
+  emptyImportsMergeResolution,
+} from '../../../../core/workers/common/project-file-utils'
 
 function getNavigatorReparentCommands(
   data: NavigatorReparentPostActionMenuData,
@@ -165,7 +169,11 @@ export const PropsReplacedNavigatorReparentPostActionChoice = (
     if (metadata != null) {
       return foldEither(
         (_) => null,
-        (element) => ({ element: element, originalElementPath: target, importsToAdd: {} }),
+        (element) => ({
+          element: element,
+          originalElementPath: target,
+          importsToAdd: emptyImports(),
+        }),
         metadata.element,
       )
     }
