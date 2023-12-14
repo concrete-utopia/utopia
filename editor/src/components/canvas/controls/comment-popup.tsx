@@ -44,6 +44,7 @@ import { stopPropagation } from '../../inspector/common/inspector-utils'
 import { canvasPointToWindowPoint } from '../dom-lookup'
 import { RemixNavigationAtom } from '../remix/utopia-remix-root-component'
 import { getIdOfScene } from './comment-mode/comment-mode-hooks'
+import { Tooltip } from 'antd'
 
 const ComposerEditorClassName = 'lb-composer-editor'
 
@@ -324,19 +325,23 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
           >
             {when(
               readByMe === 'read',
-              <Button onClick={onClickMarkAsUnread}>
-                <Icn category='semantic' type='unread' width={16} height={16} color='main' />
-              </Button>,
+              <Tooltip title='Mark As Unread' placement='top'>
+                <Button onClick={onClickMarkAsUnread}>
+                  <Icn category='semantic' type='unread' width={16} height={16} color='main' />
+                </Button>
+              </Tooltip>,
             )}
-            <Button onClick={onClickResolve}>
-              <Icn
-                category='semantic'
-                type={thread?.metadata.resolved ? 'resolved' : 'resolve'}
-                width={16}
-                height={16}
-                color='main'
-              />
-            </Button>
+            <Tooltip title='Resolve' placement='top'>
+              <Button onClick={onClickResolve}>
+                <Icn
+                  category='semantic'
+                  type={thread?.metadata.resolved ? 'resolved' : 'resolve'}
+                  width={16}
+                  height={16}
+                  color='main'
+                />
+              </Button>
+            </Tooltip>
             <Button onClick={onClickClose}>
               <Icn category='semantic' type='cross-medium' width={16} height={16} color='main' />
             </Button>
