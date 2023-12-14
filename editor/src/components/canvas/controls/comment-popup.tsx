@@ -1,3 +1,6 @@
+/** @jsxRuntime classic */
+/** @jsx jsx */
+import { css, jsx } from '@emotion/react'
 import type { CommentData } from '@liveblocks/client'
 import type { ComposerSubmitComment } from '@liveblocks/react-comments'
 import { Composer } from '@liveblocks/react-comments'
@@ -24,7 +27,7 @@ import { create } from '../../../core/shared/property-path'
 import { assertNever } from '../../../core/shared/utils'
 import { CommentWrapper, MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { when } from '../../../utils/react-conditionals'
-import { Button, FlexRow, Icn, UtopiaStyles, useColorTheme } from '../../../uuiui'
+import { Button, FlexRow, Icn, Tooltip, UtopiaStyles, useColorTheme } from '../../../uuiui'
 import {
   setProp_UNSAFE,
   setRightMenuTab,
@@ -44,7 +47,6 @@ import { stopPropagation } from '../../inspector/common/inspector-utils'
 import { canvasPointToWindowPoint } from '../dom-lookup'
 import { RemixNavigationAtom } from '../remix/utopia-remix-root-component'
 import { getIdOfScene } from './comment-mode/comment-mode-hooks'
-import { Tooltip } from 'antd'
 
 const ComposerEditorClassName = 'lb-composer-editor'
 
@@ -313,7 +315,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
           style={ComposerStyle}
         />
       ) : (
-        <>
+        <div>
           <FlexRow
             style={{
               background: colorTheme.bg1.value,
@@ -342,7 +344,14 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
                 />
               </Button>
             </Tooltip>
-            <Button onClick={onClickClose}>
+            <Button
+              onClick={onClickClose}
+              css={{
+                '&:hover': {
+                  opacity: 0.7,
+                },
+              }}
+            >
               <Icn category='semantic' type='cross-medium' width={16} height={16} color='main' />
             </Button>
           </FlexRow>
@@ -386,7 +395,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
             onComposerSubmit={onSubmitComment}
             style={ComposerStyle}
           />
-        </>
+        </div>
       )}
     </div>
   )
