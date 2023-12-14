@@ -58,7 +58,7 @@ const DesignPanelRootInner = React.memo(() => {
   )
 
   React.useEffect(() => {
-    if (loginStateType === 'LOGGED_IN' && roomStatus !== 'connected') {
+    if (loginStateType === 'LOGGED_IN' && roomStatus === 'disconnected') {
       room.reconnect()
     }
   }, [loginStateType, room, roomStatus])
