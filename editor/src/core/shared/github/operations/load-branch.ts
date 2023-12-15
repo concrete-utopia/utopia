@@ -41,7 +41,7 @@ import type { GithubOperationContext } from './github-operation-context'
 import { createStoryboardFileIfNecessary } from '../../../../components/editor/actions/actions'
 
 export const saveAssetsToProject =
-  (operationContext: GithubOperationContext) =>
+  (operationContext: Pick<GithubOperationContext, 'fetch'>) =>
   async (
     githubRepo: GithubRepo,
     projectID: string,
@@ -207,7 +207,7 @@ export async function getProcessedParsedProjectFromGithubRepo(
   branchName: string,
   githubRepo: GithubRepo,
   onUpdate: (update: UpdateGithubOperations | AddToast) => void,
-  operationContext: GithubOperationContext,
+  operationContext: Pick<GithubOperationContext, 'fetch'>,
   resetBranches: boolean,
   workers: UtopiaTsWorkers,
   projectID: string,
@@ -256,7 +256,7 @@ async function loadBranchFromGithub(
   branchName: string,
   githubRepo: GithubRepo,
   onUpdate: (update: UpdateGithubOperations | AddToast) => void,
-  operationContext: GithubOperationContext,
+  operationContext: Pick<GithubOperationContext, 'fetch'>,
 ) {
   return runGithubOperation2(
     {

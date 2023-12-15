@@ -287,7 +287,7 @@ export async function getBranchContentFromServer(
   branchName: string,
   commitSha: string | null,
   previousCommitSha: string | null,
-  operationContext: GithubOperationContext,
+  operationContext: Pick<GithubOperationContext, 'fetch'>,
 ): Promise<Response> {
   const url = GithubEndpoints.branchContents(githubRepo, branchName)
   let includeQueryParams: boolean = false
@@ -997,7 +997,7 @@ export async function saveGithubAsset(
   projectID: string,
   path: string,
   onUpdate: (update: UpdateGithubOperations | AddToast) => void,
-  operationContext: GithubOperationContext,
+  operationContext: Pick<GithubOperationContext, 'fetch'>,
 ): Promise<void> {
   await runGithubOperation2(
     { name: 'saveAsset', path: path },
