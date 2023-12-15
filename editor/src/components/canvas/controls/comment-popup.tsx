@@ -47,8 +47,19 @@ import { stopPropagation } from '../../inspector/common/inspector-utils'
 import { canvasPointToWindowPoint } from '../dom-lookup'
 import { RemixNavigationAtom } from '../remix/utopia-remix-root-component'
 import { getIdOfScene } from './comment-mode/comment-mode-hooks'
+import { motion, useAnimation } from 'framer-motion'
+import { CSSCursor } from '../canvas-types'
+import type { EditorDispatch } from '../../editor/action-types'
 
-const ComposerEditorClassName = 'lb-composer-editor'
+export const ComposerEditorClassName = 'lb-composer-editor'
+
+export function getComposerTextbox(): HTMLDivElement | null {
+  const editorsByClass = document.getElementsByClassName(ComposerEditorClassName)
+  if (editorsByClass.length < 1) {
+    return null
+  }
+  return editorsByClass[0] as HTMLDivElement
+}
 
 const PopupMaxWidth = 250
 const PopupMaxHeight = 350
@@ -57,6 +68,13 @@ const ComposerStyle: CSSProperties = {
   maxWidth: PopupMaxWidth,
   wordWrap: 'break-word',
   whiteSpace: 'normal',
+  zIndex: 10,
+}
+
+function switchToBasicCommentModeOnEscape(e: React.KeyboardEvent, dispatch: EditorDispatch) {
+  if (e.key === 'Escape') {
+    dispatch([switchEditorMode(EditorModes.commentMode(null, 'not-dragging'))])
+  }
 }
 
 export const CommentPopup = React.memo(() => {
@@ -204,14 +222,15 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
       if (composerRef.current == null) {
         return null
       }
-      const editorsByClass = composerRef.current.getElementsByClassName(ComposerEditorClassName)
-      if (editorsByClass.length < 1) {
+
+      const composerTextbox = getComposerTextbox()
+      if (composerTextbox == null) {
         return null
       }
 
       scrollToBottom()
 
-      return editorsByClass[0] as HTMLDivElement
+      return composerTextbox
     }
     setTimeout(() => {
       getLiveblocksEditorElement()?.focus()
@@ -250,6 +269,10 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
     resolveThread(thread)
   }, [thread, resolveThread])
 
+  const onClickClose = React.useCallback(() => {
+    dispatch([switchEditorMode(EditorModes.commentMode(null, 'not-dragging'))])
+  }, [dispatch])
+
   const onClickMarkAsUnread = React.useCallback(() => {
     if (thread?.id == null) {
       return
@@ -274,16 +297,16 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
     setShowShadowTop(atTop && isOverflowing)
   }
 
-  const onClickClose = React.useCallback(() => {
-    dispatch([switchEditorMode(EditorModes.commentMode(null, 'not-dragging'))])
-  }, [dispatch])
-
   React.useEffect(() => {
     // when the thread id changes, re-check the scroll and set the inset shadow
     onScroll()
     scrollToBottom()
   }, [threadId, scrollToBottom])
 
+  const onExistingCommentComposerKeyDown = React.useCallback(
+    (e: React.KeyboardEvent) => switchToBasicCommentModeOnEscape(e, dispatch),
+    [dispatch],
+  )
   if (location == null) {
     return null
   }
@@ -296,7 +319,6 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
         position: 'fixed',
         top: point.y,
         left: point.x + 30,
-        cursor: 'text',
         minWidth: 250,
         boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
         background: colorTheme.bg0.value,
@@ -308,12 +330,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
       onMouseUp={stopPropagation}
     >
       {thread == null ? (
-        <Composer
-          data-theme={theme}
-          autoFocus
-          onComposerSubmit={onCreateThread}
-          style={ComposerStyle}
-        />
+        <NewCommentPopup onComposerSubmit={onCreateThread} />
       ) : (
         <div>
           <FlexRow
@@ -394,6 +411,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
             threadId={thread.id}
             onComposerSubmit={onSubmitComment}
             style={ComposerStyle}
+            onKeyDown={onExistingCommentComposerKeyDown}
           />
         </div>
       )}
@@ -401,6 +419,107 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
   )
 })
 CommentThread.displayName = 'CommentThread'
+
+type NewCommentPopupProps = {
+  onComposerSubmit: (
+    comment: ComposerSubmitComment,
+    event: React.FormEvent<HTMLFormElement>,
+  ) => void
+}
+
+const NewCommentPopup = React.memo((props: NewCommentPopupProps) => {
+  const colorTheme = useColorTheme()
+  const dispatch = useDispatch()
+
+  const theme = useEditorState(
+    Substores.userState,
+    (store) => getCurrentTheme(store.userState),
+    'NewCommentPopup theme',
+  )
+
+  const onNewCommentComposerKeyDown = React.useCallback(
+    (e: React.KeyboardEvent) => switchToBasicCommentModeOnEscape(e, dispatch),
+    [dispatch],
+  )
+
+  const newCommentComposerAnimation = useAnimation()
+
+  const onClickOutsideNewComment = React.useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+
+      const composerTextbox = getComposerTextbox()
+      if (composerTextbox != null) {
+        function findPlaceholderChild(element: Element) {
+          if (element == null) {
+            return false
+          }
+          if (element.attributes.getNamedItem('data-placeholder') != null) {
+            return true
+          }
+          if (element.children.length < 1) {
+            return false
+          }
+          return findPlaceholderChild(element.children[0])
+        }
+
+        const isEmpty = composerTextbox.innerText.trim().length === 0
+        const isPlaceholder = !isEmpty && findPlaceholderChild(composerTextbox.children[0])
+
+        // if the contents of the new comment are empty...
+        if (isEmpty || isPlaceholder) {
+          // ...just close the popup
+          dispatch([switchEditorMode(EditorModes.commentMode(null, 'not-dragging'))])
+        } else {
+          // ...otherwise, shake the popup and re-focus its text box
+          const shakeDelta = 4 // px
+          void newCommentComposerAnimation.start({
+            x: [-shakeDelta, shakeDelta, -shakeDelta, shakeDelta, 0],
+            borderColor: [
+              colorTheme.error.cssValue,
+              colorTheme.error.cssValue,
+              colorTheme.error.cssValue,
+              colorTheme.error.cssValue,
+              '#00000000', // transparent, animatable
+            ],
+            transition: { duration: 0.2 },
+          })
+        }
+
+        composerTextbox.focus()
+      }
+    },
+    [newCommentComposerAnimation, colorTheme, dispatch],
+  )
+
+  return (
+    <div>
+      <div
+        style={{
+          background: 'transparent',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          bottom: 0,
+          right: 0,
+          cursor: CSSCursor.Comment,
+        }}
+        onClick={onClickOutsideNewComment}
+      />
+      <motion.div animate={newCommentComposerAnimation} style={{ border: '1px solid transparent' }}>
+        <Composer
+          data-theme={theme}
+          autoFocus
+          onComposerSubmit={props.onComposerSubmit}
+          style={ComposerStyle}
+          onKeyDown={onNewCommentComposerKeyDown}
+        />
+      </motion.div>
+    </div>
+  )
+})
+NewCommentPopup.displayName = 'NewCommentPopup'
 
 const ListShadow = React.memo(
   ({ enabled, position }: { enabled: boolean; position: 'top' | 'bottom' }) => {
