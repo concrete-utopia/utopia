@@ -72,6 +72,7 @@ export const saveAssetsToProject =
               )
               break
             case 'ASSET_FILE':
+              // it seems like this is just plain duplicated code from case 'IMAGE_FILE', I should merge the two cases
               await saveGithubAsset(
                 githubRepo,
                 forceNotNull('Commit sha should exist.', projectFile.gitBlobSha),
@@ -110,89 +111,38 @@ export const updateProjectWithBranchContent =
     builtInDependencies: BuiltInDependencies,
     currentProjectContents: ProjectContentTreeRoot,
   ): Promise<void> => {
-    const loadBranchResult = await runGithubOperation2(
-      {
-        name: 'loadBranch',
-        branchName: branchName,
-        githubRepo: githubRepo,
-      },
+    const loadBranchResult = await loadBranchFromGithub(
+      branchName,
+      githubRepo,
       dispatch,
-      async (operation: GithubOperation) => {
-        const response = await getBranchContentFromServer(
-          githubRepo,
-          branchName,
-          null,
-          null,
-          operationContext,
-        )
-        if (!response.ok) {
-          throw githubAPIErrorFromResponse(operation, response)
-        }
-
-        return response
-      },
+      operationContext,
     )
 
     if (loadBranchResult == null) {
       return // throw error? nah
     }
 
-    const parseAndUploadAssetsResult = await runGithubOperation2(
-      {
-        name: 'loadBranch',
-        branchName: branchName,
-        githubRepo: githubRepo,
-      },
+    const parseAndUploadAssetsResult = await parseDownloadedProject(
+      branchName,
+      githubRepo,
       dispatch,
-      async (operation: GithubOperation) => {
-        const responseBody: GetBranchContentResponse = await loadBranchResult.json()
-        switch (responseBody.type) {
-          case 'FAILURE':
-            throw githubAPIError(operation, responseBody.failureReason)
-          case 'SUCCESS':
-            if (responseBody.branch == null) {
-              throw githubAPIError(operation, `Could not find branch ${branchName}`)
-            }
-            const newGithubData: Partial<GithubData> = {
-              upstreamChanges: null,
-            }
-            if (resetBranches) {
-              newGithubData.branches = null
-            }
-
-            // Push any code through the parser so that the representations we end up with are in a state of `BOTH_MATCH`.
-            // So that it will override any existing files that might already exist in the project when sending them to VS Code.
-            const parsedProjectContents = createStoryboardFileIfNecessary(
-              await updateProjectContentsWithParseResults(workers, responseBody.branch.content),
-            )
-
-            // Save assets to the server from Github.
-            await saveAssetsToProject(operationContext)(
-              githubRepo,
-              projectID,
-              responseBody.branch,
-              dispatch,
-              currentProjectContents,
-            )
-
-            return {
-              parsedProjectContents: parsedProjectContents,
-              originCommit: responseBody.branch.originCommit,
-            }
-
-          default:
-            const _exhaustiveCheck: never = responseBody
-            throw githubAPIError(
-              operation,
-              `Unhandled response body ${JSON.stringify(responseBody)}`,
-            )
-        }
-      },
+      loadBranchResult,
+      resetBranches,
+      workers,
     )
 
     if (parseAndUploadAssetsResult == null) {
       return
     }
+
+    // Save assets to the server from Github.
+    await saveAssetsToProject(operationContext)(
+      githubRepo,
+      projectID,
+      parseAndUploadAssetsResult.branch,
+      dispatch,
+      currentProjectContents,
+    )
 
     // Update the editor with everything so that if anything else fails past this point
     // there's no loss of data from the user's perspective.
@@ -201,7 +151,7 @@ export const updateProjectWithBranchContent =
         ...connectRepo(
           resetBranches,
           githubRepo,
-          parseAndUploadAssetsResult.originCommit,
+          parseAndUploadAssetsResult.branch.originCommit,
           branchName,
           true,
         ),
@@ -267,3 +217,83 @@ export const updateProjectWithBranchContent =
       },
     )
   }
+
+async function loadBranchFromGithub(
+  branchName: string,
+  githubRepo: GithubRepo,
+  dispatch: EditorDispatch,
+  operationContext: GithubOperationContext,
+) {
+  return runGithubOperation2(
+    {
+      name: 'loadBranch',
+      branchName: branchName,
+      githubRepo: githubRepo,
+    },
+    dispatch,
+    async (operation: GithubOperation) => {
+      const response = await getBranchContentFromServer(
+        githubRepo,
+        branchName,
+        null,
+        null,
+        operationContext,
+      )
+      if (!response.ok) {
+        throw githubAPIErrorFromResponse(operation, response)
+      }
+
+      return response
+    },
+  )
+}
+
+async function parseDownloadedProject(
+  branchName: string,
+  githubRepo: GithubRepo,
+  dispatch: EditorDispatch,
+  loadBranchResult: Response,
+  resetBranches: boolean,
+  workers: UtopiaTsWorkers,
+) {
+  return runGithubOperation2(
+    {
+      name: 'loadBranch',
+      branchName: branchName,
+      githubRepo: githubRepo,
+    },
+    dispatch,
+    async (operation: GithubOperation) => {
+      const responseBody: GetBranchContentResponse = await loadBranchResult.json()
+      switch (responseBody.type) {
+        case 'FAILURE':
+          throw githubAPIError(operation, responseBody.failureReason)
+        case 'SUCCESS':
+          if (responseBody.branch == null) {
+            throw githubAPIError(operation, `Could not find branch ${branchName}`)
+          }
+          const newGithubData: Partial<GithubData> = {
+            upstreamChanges: null,
+          }
+          if (resetBranches) {
+            newGithubData.branches = null
+          }
+
+          // Push any code through the parser so that the representations we end up with are in a state of `BOTH_MATCH`.
+          // So that it will override any existing files that might already exist in the project when sending them to VS Code.
+          const parsedProjectContents = createStoryboardFileIfNecessary(
+            await updateProjectContentsWithParseResults(workers, responseBody.branch.content),
+          )
+
+          return {
+            parsedProjectContents: parsedProjectContents,
+            branch: responseBody.branch,
+          }
+
+        default:
+          const _exhaustiveCheck: never = responseBody
+          throw githubAPIError(operation, `Unhandled response body ${JSON.stringify(responseBody)}`)
+      }
+    },
+  )
+}
