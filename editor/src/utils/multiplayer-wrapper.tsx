@@ -10,6 +10,7 @@ import {
   normalizeMultiplayerName,
 } from '../core/shared/multiplayer'
 import { ErrorBoundary } from './react-error-boundary'
+import { colorTheme } from 'src/uuiui/styles/theme'
 
 type Fallback = NonNullable<React.ReactNode> | null
 

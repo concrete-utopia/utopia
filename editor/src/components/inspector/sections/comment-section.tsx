@@ -8,7 +8,9 @@ import {
   Button,
   FlexColumn,
   FlexRow,
+  Icn,
   InspectorSubsectionHeader,
+  Tooltip,
   useColorTheme,
 } from '../../../uuiui'
 import { stopPropagation } from '../common/inspector-utils'
@@ -38,6 +40,7 @@ import { openCommentThreadActions } from '../../../core/shared/multiplayer'
 import { getRemixLocationLabel } from '../../canvas/remix/remix-utils'
 import type { RestOfEditorState } from '../../editor/store/store-hook-substore-types'
 import { getCurrentTheme } from '../../editor/store/editor-state'
+import { grayscale } from 'react-syntax-highlighter/dist/esm/styles/hljs'
 
 export const CommentSection = React.memo(() => {
   return (
@@ -193,81 +196,118 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
       className={'thread-preview'}
       key={comment.id}
       onClick={onClick}
-      style={{
-        backgroundColor: isSelected
-          ? colorTheme.primary10.value
-          : thread.metadata.resolved
-          ? colorTheme.bg2.value
-          : 'transparent',
+      css={{
+        display: 'flex',
+        flexDirection: 'row',
+        paddingBottom: 5,
+        position: 'relative',
+        '&:hover': {
+          backgroundColor: isSelected ? colorTheme.primary10.value : colorTheme.bg2.value,
+        },
+        backgroundColor: isSelected ? colorTheme.primary10.value : 'transparent',
       }}
     >
-      <CommentWrapper
-        data-theme={theme}
-        user={user}
-        comment={comment}
-        showActions={false}
-        style={{ backgroundColor: 'transparent' }}
-      />
-      {when(
-        remixLocationRouteLabel != null,
+      <div
+        style={{
+          height: 46,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <div
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: 8,
+            position: 'relative',
+            left: 5,
+            background: readByMe === 'unread' ? colorTheme.primary.value : 'transparent',
+          }}
+        />
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          filter: thread.metadata.resolved ? 'grayscale()' : undefined,
+        }}
+      >
+        <CommentWrapper
+          data-theme={theme}
+          user={user}
+          comment={comment}
+          showActions={false}
+          style={{ backgroundColor: 'transparent' }}
+        />
+
+        {when(
+          remixLocationRouteLabel != null,
+          <div
+            style={{
+              paddingLeft: 44,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <div
+              style={{
+                fontSize: 9,
+                color: colorTheme.fg6.value,
+              }}
+            >
+              {thread.metadata.remixLocationRoute ?? ''}
+            </div>
+          </div>,
+        )}
         <div
           style={{
             paddingLeft: 44,
-            paddingBottom: 11,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
           }}
         >
-          <div
-            style={{
-              fontSize: 9,
-              color: colorTheme.fg6.value,
-            }}
-          >
-            {thread.metadata.remixLocationRoute ?? ''}
-          </div>
-        </div>,
-      )}
-      <div
-        style={{
-          paddingBottom: 11,
-          paddingLeft: 44,
-          paddingRight: 10,
-          marginTop: -5,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        {when(
-          repliesCount > 0,
-          <div
-            style={{
-              fontSize: 9,
-              color: colorTheme.fg6.value,
-            }}
-          >
-            {repliesCount} {repliesCount > 1 ? 'replies' : 'reply'}
-          </div>,
-        )}
-        {unless(repliesCount > 0, <div />)}
-        {when(readByMe === 'unread', 'Unread')}
+          {when(
+            repliesCount > 0,
+            <div
+              style={{
+                fontSize: 9,
+                color: colorTheme.fg6.value,
+              }}
+            >
+              {repliesCount} {repliesCount > 1 ? 'replies' : 'reply'}
+            </div>,
+          )}
+          {/* {unless(repliesCount > 0, <div />)} */}
+        </div>
+      </div>
+      <Tooltip title='Resolve' placement='top'>
         <Button
-          highlight
-          spotlight
           css={{
-            visibility: 'hidden',
-            '.thread-preview:hover &': {
-              visibility: 'visible',
-            },
-            padding: '0 6px',
+            position: 'absolute',
+            right: 10,
+            top: 10,
           }}
           onClick={onResolveThread}
         >
-          {thread.metadata.resolved ? 'Unresolve' : 'Resolve'}
+          <Icn
+            category='semantic'
+            type={thread?.metadata.resolved ? 'resolved' : 'resolve'}
+            width={18}
+            height={18}
+            color='main'
+            css={{
+              visibility: thread?.metadata.resolved ? 'visible' : 'hidden',
+              '.thread-preview:hover &': {
+                visibility: 'visible',
+              },
+            }}
+          />
         </Button>
-      </div>
+      </Tooltip>
     </div>
   )
 })
