@@ -1,6 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-import { css, jsx } from '@emotion/react'
 import type { CommentData } from '@liveblocks/client'
 import type { ComposerSubmitComment } from '@liveblocks/react-comments'
 import { Composer } from '@liveblocks/react-comments'
@@ -27,7 +24,15 @@ import { create } from '../../../core/shared/property-path'
 import { assertNever } from '../../../core/shared/utils'
 import { CommentWrapper, MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { when } from '../../../utils/react-conditionals'
-import { Button, FlexRow, Icn, Tooltip, UtopiaStyles, useColorTheme } from '../../../uuiui'
+import {
+  Button,
+  FlexColumn,
+  FlexRow,
+  Icn,
+  Tooltip,
+  UtopiaStyles,
+  useColorTheme,
+} from '../../../uuiui'
 import {
   setProp_UNSAFE,
   setRightMenuTab,
@@ -361,14 +366,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
                 />
               </Button>
             </Tooltip>
-            <Button
-              onClick={onClickClose}
-              css={{
-                '&:hover': {
-                  opacity: 0.5,
-                },
-              }}
-            >
+            <Button onClick={onClickClose}>
               <Icn category='semantic' type='cross-large' width={16} height={16} color='main' />
             </Button>
           </FlexRow>
@@ -493,6 +491,10 @@ const NewCommentPopup = React.memo((props: NewCommentPopupProps) => {
     [newCommentComposerAnimation, colorTheme, dispatch],
   )
 
+  const onClickClose = React.useCallback(() => {
+    dispatch([switchEditorMode(EditorModes.commentMode(null, 'not-dragging'))])
+  }, [dispatch])
+
   return (
     <div>
       <div
@@ -503,10 +505,22 @@ const NewCommentPopup = React.memo((props: NewCommentPopupProps) => {
           left: 0,
           bottom: 0,
           right: 0,
-          cursor: CSSCursor.Comment,
         }}
         onClick={onClickOutsideNewComment}
       />
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          padding: 6,
+          height: 35,
+          borderBottom: `1px solid ${colorTheme.bg3.value}`,
+        }}
+      >
+        <Button onClick={onClickClose}>
+          <Icn category='semantic' type='cross-large' width={16} height={16} color='main' />
+        </Button>
+      </div>
       <motion.div animate={newCommentComposerAnimation} style={{ border: '1px solid transparent' }}>
         <Composer
           data-theme={theme}
