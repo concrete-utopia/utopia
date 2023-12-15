@@ -6,7 +6,11 @@ import {
   walkContentsTreeAsync,
 } from '../../../../components/assets'
 import { notice } from '../../../../components/common/notice'
-import type { EditorDispatch } from '../../../../components/editor/action-types'
+import type {
+  AddToast,
+  EditorDispatch,
+  UpdateGithubOperations,
+} from '../../../../components/editor/action-types'
 import {
   showToast,
   truncateHistory,
@@ -114,7 +118,7 @@ export const updateProjectWithBranchContent =
     const loadBranchResult = await loadBranchFromGithub(
       branchName,
       githubRepo,
-      dispatch,
+      (action) => dispatch([action]),
       operationContext,
     )
 
@@ -125,7 +129,7 @@ export const updateProjectWithBranchContent =
     const parseAndUploadAssetsResult = await parseDownloadedProject(
       branchName,
       githubRepo,
-      dispatch,
+      (action) => dispatch([action]),
       loadBranchResult,
       resetBranches,
       workers,
@@ -168,7 +172,7 @@ export const updateProjectWithBranchContent =
         branchName: branchName,
         githubRepo: githubRepo,
       },
-      dispatch,
+      (action) => dispatch([action]),
       async (operation: GithubOperation) => {
         // If there's a package.json file, then attempt to load the dependencies for it.
         let dependenciesPromise: Promise<void> = Promise.resolve()
@@ -221,7 +225,7 @@ export const updateProjectWithBranchContent =
 async function loadBranchFromGithub(
   branchName: string,
   githubRepo: GithubRepo,
-  dispatch: EditorDispatch,
+  onUpdate: (update: UpdateGithubOperations | AddToast) => void,
   operationContext: GithubOperationContext,
 ) {
   return runGithubOperation2(
@@ -230,7 +234,7 @@ async function loadBranchFromGithub(
       branchName: branchName,
       githubRepo: githubRepo,
     },
-    dispatch,
+    onUpdate,
     async (operation: GithubOperation) => {
       const response = await getBranchContentFromServer(
         githubRepo,
@@ -251,7 +255,7 @@ async function loadBranchFromGithub(
 async function parseDownloadedProject(
   branchName: string,
   githubRepo: GithubRepo,
-  dispatch: EditorDispatch,
+  onUpdate: (update: UpdateGithubOperations | AddToast) => void,
   loadBranchResult: Response,
   resetBranches: boolean,
   workers: UtopiaTsWorkers,
@@ -262,7 +266,7 @@ async function parseDownloadedProject(
       branchName: branchName,
       githubRepo: githubRepo,
     },
-    dispatch,
+    onUpdate,
     async (operation: GithubOperation) => {
       const responseBody: GetBranchContentResponse = await loadBranchResult.json()
       switch (responseBody.type) {

@@ -15,7 +15,12 @@ import {
   projectContentFile,
 } from '../../../components/assets'
 import { notice } from '../../../components/common/notice'
-import type { EditorAction, EditorDispatch } from '../../../components/editor/action-types'
+import type {
+  AddToast,
+  EditorAction,
+  EditorDispatch,
+  UpdateGithubOperations,
+} from '../../../components/editor/action-types'
 import {
   deleteFile,
   removeFileConflict,
@@ -200,24 +205,21 @@ export async function runGithubOperation(
 
 export async function runGithubOperation2<T>(
   operation: GithubOperation,
-  dispatch: EditorDispatch,
+  onUpdate: (update: UpdateGithubOperations | AddToast) => void,
   logic: GithubOperationLogic2<T>,
 ): Promise<T | null> {
   let result: T | null = null
 
   const opName = githubOperationPrettyName(operation)
   try {
-    dispatch([updateGithubOperations(operation, 'add')], 'everyone')
+    onUpdate(updateGithubOperations(operation, 'add'))
     result = await logic(operation)
   } catch (error: any) {
-    dispatch(
-      [showToast(notice(`${opName} failed. See the console for more information.`, 'ERROR'))],
-      'everyone',
-    )
+    onUpdate(showToast(notice(`${opName} failed. See the console for more information.`, 'ERROR')))
     console.error(`[GitHub] operation "${opName}" failed:`, error)
     throw error
   } finally {
-    dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
+    onUpdate(updateGithubOperations(operation, 'remove'))
   }
 
   return result
