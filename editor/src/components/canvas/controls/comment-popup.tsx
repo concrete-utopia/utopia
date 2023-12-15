@@ -337,7 +337,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
       {thread == null ? (
         <NewCommentPopup onComposerSubmit={onCreateThread} />
       ) : (
-        <div>
+        <>
           <FlexRow
             style={{
               background: colorTheme.bg1.value,
@@ -411,7 +411,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
             style={ComposerStyle}
             onKeyDown={onExistingCommentComposerKeyDown}
           />
-        </div>
+        </>
       )}
     </div>
   )
@@ -496,7 +496,7 @@ const NewCommentPopup = React.memo((props: NewCommentPopupProps) => {
   }, [dispatch])
 
   return (
-    <div>
+    <>
       <div
         style={{
           background: 'transparent',
@@ -530,7 +530,7 @@ const NewCommentPopup = React.memo((props: NewCommentPopupProps) => {
           onKeyDown={onNewCommentComposerKeyDown}
         />
       </motion.div>
-    </div>
+    </>
   )
 })
 NewCommentPopup.displayName = 'NewCommentPopup'
