@@ -6,7 +6,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE OverloadedStrings          #-}
-{-# LANGUAGE QuasiQuotes                #-}
+{-# LANGUAGE QuasiQuotes                #-} 
 {-# LANGUAGE RecordWildCards            #-}
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TypeApplications           #-}
@@ -30,6 +30,7 @@ import           Data.Time
 import           Data.UUID                       hiding (null)
 import           Data.UUID.V4
 import           Database.PostgreSQL.Simple
+import           Database.PostgreSQL.Simple.Transaction
 import           Opaleye
 import           Protolude                       hiding (get)
 import           System.Environment
@@ -39,25 +40,28 @@ import           Utopia.Web.Database.Types
 import           Utopia.Web.Metrics              hiding (count)
 
 data DatabaseMetrics = DatabaseMetrics
-                     { _generateUniqueIDMetrics         :: InvocationMetric
-                     , _insertProjectMetrics            :: InvocationMetric
-                     , _saveProjectMetrics              :: InvocationMetric
-                     , _createProjectMetrics            :: InvocationMetric
-                     , _deleteProjectMetrics            :: InvocationMetric
-                     , _loadProjectMetrics              :: InvocationMetric
-                     , _getProjectsForUserMetrics       :: InvocationMetric
-                     , _getProjectOwnerMetrics          :: InvocationMetric
-                     , _getProjectOwnerDetailsMetrics   :: InvocationMetric
-                     , _checkIfProjectOwnerMetrics      :: InvocationMetric
-                     , _getShowcaseProjectsMetrics      :: InvocationMetric
-                     , _setShowcaseProjectsMetrics      :: InvocationMetric
-                     , _updateUserDetailsMetrics        :: InvocationMetric
-                     , _getUserDetailsMetrics           :: InvocationMetric
-                     , _getUserConfigurationMetrics     :: InvocationMetric
-                     , _saveUserConfigurationMetrics    :: InvocationMetric
-                     , _checkIfProjectIDReservedMetrics :: InvocationMetric
-                     , _updateGithubAuthenticationDetailsMetrics ::InvocationMetric
-                     , _getGithubAuthenticationDetailsMetrics :: InvocationMetric
+                     { _generateUniqueIDMetrics                           :: InvocationMetric
+                     , _insertProjectMetrics                              :: InvocationMetric
+                     , _saveProjectMetrics                                :: InvocationMetric
+                     , _createProjectMetrics                              :: InvocationMetric
+                     , _deleteProjectMetrics                              :: InvocationMetric
+                     , _loadProjectMetrics                                :: InvocationMetric
+                     , _getProjectsForUserMetrics                         :: InvocationMetric
+                     , _getProjectOwnerMetrics                            :: InvocationMetric
+                     , _getProjectOwnerDetailsMetrics                     :: InvocationMetric
+                     , _checkIfProjectOwnerMetrics                        :: InvocationMetric
+                     , _getShowcaseProjectsMetrics                        :: InvocationMetric
+                     , _setShowcaseProjectsMetrics                        :: InvocationMetric
+                     , _updateUserDetailsMetrics                          :: InvocationMetric
+                     , _getUserDetailsMetrics                             :: InvocationMetric
+                     , _getUserConfigurationMetrics                       :: InvocationMetric
+                     , _saveUserConfigurationMetrics                      :: InvocationMetric
+                     , _checkIfProjectIDReservedMetrics                   :: InvocationMetric
+                     , _updateGithubAuthenticationDetailsMetrics          :: InvocationMetric
+                     , _getGithubAuthenticationDetailsMetrics             :: InvocationMetric
+                     , _maybeClaimCollaborationOwnershipMetrics           :: InvocationMetric
+                     , _deleteCollaborationOwnershipByCollaboratorMetrics :: InvocationMetric
+                     , _deleteCollaborationOwnershipByProjectMetrics      :: InvocationMetric
                      }
 
 createDatabaseMetrics :: Store -> IO DatabaseMetrics
@@ -80,7 +84,10 @@ createDatabaseMetrics store = DatabaseMetrics
   <*> createInvocationMetric "utopia.database.saveuserconfiguration" store
   <*> createInvocationMetric "utopia.database.checkifprojectidreserved" store
   <*> createInvocationMetric "utopia.database.updategithubauthenticationdetails" store
-  <*> createInvocationMetric "utopia.database.lookupgithubauthenticationdetails" store
+  <*> createInvocationMetric "utopia.database.getgithubauthenticationdetails" store
+  <*> createInvocationMetric "utopia.database.maybeclaimcollaborationownership" store
+  <*> createInvocationMetric "utopia.database.deletecollaborationownershipbycollaborator" store
+  <*> createInvocationMetric "utopia.database.deletecollaborationownershipbyproject" store
 
 data UserIDIncorrectException = UserIDIncorrectException
                               deriving (Eq, Show)
@@ -437,3 +444,74 @@ lookupGithubAuthenticationDetails metrics pool userId = invokeAndMeasure (_getGi
     where_ $ rowUserId .== toFields userId
     pure githubAuthenticationDetailsRow
   pure $ fmap githubAuthenticationDetailsFromRow $ listToMaybe githubAuthenticationDetails
+
+insertCollaborationOwnership :: Connection -> Text -> Text -> UTCTime -> IO ()
+insertCollaborationOwnership connection projectId collaborationEditor currentTime = do 
+  let newLastSeenTimeout = addUTCTime collaborationLastSeenTimeoutWindow currentTime
+  void $ runInsert_ connection $ Insert 
+                                { iTable = projectCollaborationTable 
+                                , iRows = [toFields (projectId, collaborationEditor, newLastSeenTimeout)]
+                                , iReturning = rCount 
+                                , iOnConflict = Nothing
+                                }
+
+collaborationLastSeenTimeoutWindow :: NominalDiffTime
+collaborationLastSeenTimeoutWindow = secondsToNominalDiffTime 20
+
+updateCollaborationLastSeenTimeout :: Connection -> Text -> Text -> UTCTime -> IO ()
+updateCollaborationLastSeenTimeout connection projectId newCollaborationEditor newLastSeenTimeout = do 
+  void $ runUpdate_ connection $ Update
+                               { uTable = projectCollaborationTable
+                               , uUpdateWith = updateEasy (\(rowProjectId, _, _) -> (rowProjectId, toFields newCollaborationEditor, toFields newLastSeenTimeout))
+                               , uWhere = (\(rowProjectId, _, _) -> rowProjectId .=== toFields projectId)
+                               , uReturning = rCount
+                               }
+
+maybeClaimExistingCollaborationOwnership :: Connection -> Text -> Text -> Text -> UTCTime -> UTCTime -> IO Bool 
+maybeClaimExistingCollaborationOwnership connection projectId currentCollaborationEditor newCollaborationEditor currentLastSeenTimeout currentTime 
+  | currentCollaborationEditor == newCollaborationEditor = updateLastSeen 
+  | currentLastSeenTimeout < currentTime                 = updateLastSeen
+  | otherwise                                            = pure False
+  where 
+    newTimeout = addUTCTime collaborationLastSeenTimeoutWindow currentTime
+    updateLastSeen = updateCollaborationLastSeenTimeout connection projectId newCollaborationEditor newTimeout >> pure True
+
+maybeClaimCollaborationOwnership :: DatabaseMetrics -> DBPool -> Text -> Text -> IO Bool 
+maybeClaimCollaborationOwnership metrics pool projectId collaborationEditor = do 
+  currentTime <- getCurrentTime
+  invokeAndMeasure (_maybeClaimCollaborationOwnershipMetrics metrics) $ usePool pool $ \connection -> do 
+    withTransaction connection $ do 
+      -- Find any existing entries (should only be one).
+      collaborationEditorIdsWithLastSeen <- runSelect connection $ do 
+        (rowProjectId, rowCollaborationEditor, rowLastSeenTimeout) <- projectCollaborationSelect
+        where_ $ rowProjectId .== toFields projectId
+        pure (rowCollaborationEditor, rowLastSeenTimeout)
+      -- Get the first if there is one.
+      let maybeCurrentCollaborationEditorAndLastSeen = listToMaybe collaborationEditorIdsWithLastSeen
+      -- Create the expression that inserts an entry and returns true to indicate this was successfully claimed.
+      let insertCurrent = insertCollaborationOwnership connection projectId collaborationEditor currentTime >> pure True
+      -- Handle the current state.
+      case maybeCurrentCollaborationEditorAndLastSeen of 
+        -- There's no current entry in the table, so add one.
+        Nothing -> insertCurrent
+        -- If the current entry is the same as the one we're trying to insert return true, otherwise 
+        -- return false but in either case make no changes to the database.
+        Just (currentCollaborationEditor, currentLastSeenTimeout) -> 
+          maybeClaimExistingCollaborationOwnership connection projectId currentCollaborationEditor collaborationEditor currentLastSeenTimeout currentTime
+
+deleteCollaborationOwnershipByCollaborator :: DatabaseMetrics -> DBPool -> Text -> IO ()
+deleteCollaborationOwnershipByCollaborator metrics pool collaborationEditor = invokeAndMeasure (_deleteCollaborationOwnershipByCollaboratorMetrics metrics) $ usePool pool $ \connection -> do 
+  void $ runDelete_ connection $ Delete
+                               { dTable = projectCollaborationTable 
+                               , dWhere = (\(_, rowCollaborationEditor, _) -> rowCollaborationEditor .== toFields collaborationEditor)
+                               , dReturning = rCount
+                               }
+
+deleteCollaborationOwnershipByProject :: DatabaseMetrics -> DBPool -> Text -> IO ()
+deleteCollaborationOwnershipByProject metrics pool projectId = invokeAndMeasure (_deleteCollaborationOwnershipByProjectMetrics metrics) $ usePool pool $ \connection -> do 
+  void $ runDelete_ connection $ Delete
+                               { dTable = projectCollaborationTable 
+                               , dWhere = (\(rowProjectId, _, _) -> rowProjectId .== toFields projectId)
+                               , dReturning = rCount
+                               }
+

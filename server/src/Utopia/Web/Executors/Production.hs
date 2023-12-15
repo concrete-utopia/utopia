@@ -340,6 +340,18 @@ innerServerExecutor (AuthLiveblocksUser user roomID action) = do
 innerServerExecutor (IsLiveblocksEnabled action) = do
   possibleLiveblocksResources <- fmap _liveblocksResources ask
   pure $ action $ isJust possibleLiveblocksResources
+innerServerExecutor (ClaimCollaborationOwnership user projectID collaborationEditor action) = do 
+  metrics <- fmap _databaseMetrics ask
+  pool <- fmap _projectPool ask
+  projectOwnershipResult <- liftIO $ DB.checkIfProjectOwner metrics pool user projectID
+  unless projectOwnershipResult $ throwError err400
+  ownershipResult <- liftIO $ DB.maybeClaimCollaborationOwnership metrics pool projectID collaborationEditor 
+  pure $ action ownershipResult
+innerServerExecutor (ClearCollaboratorOwnership collaborationEditor action) = do 
+  metrics <- fmap _databaseMetrics ask
+  pool <- fmap _projectPool ask
+  liftIO $ DB.deleteCollaborationOwnershipByCollaborator metrics pool collaborationEditor
+  pure action
 
 readEditorContentFromDisk :: Maybe BranchDownloads -> Maybe Text -> Text -> IO Text
 readEditorContentFromDisk (Just downloads) (Just branchName) fileName = do

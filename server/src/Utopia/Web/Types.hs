@@ -26,6 +26,7 @@ import           Utopia.Web.Github.Types
 import           Utopia.Web.JSON
 import           Utopia.Web.Servant
 import           Utopia.Web.ServiceTypes
+import           Utopia.Web.Types.Collaboration
 
 {-
   'deriveJSON' as used here creates 'Data.Aeson.FromJSON' and 'Data.Aeson.ToJSON' instances
@@ -211,6 +212,7 @@ type Protected = LogoutAPI
             :<|> GithubSaveAssetAPI
             :<|> GithubUserAPI
             :<|> LiveblocksAuthenticationAPI
+            :<|> CollaborationSocketAPI
 
 type Unprotected = AuthenticateAPI H.Html
               :<|> EmptyProjectPageAPI

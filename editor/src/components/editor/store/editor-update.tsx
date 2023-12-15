@@ -21,6 +21,7 @@ import type { BuiltInDependencies } from '../../../core/es-modules/package-manag
 import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
 import type { ProjectServerState } from './project-server-state'
 import { isTransientAction } from '../actions/action-utils'
+import { allowedToEditProject } from './collaborative-editing'
 
 export function runLocalEditorAction(
   state: EditorState,
@@ -87,18 +88,16 @@ export function gatedActions<T>(
       break
   }
 
+  const canEditProject = allowedToEditProject(serverState)
+
   if (alwaysRun) {
     // If it should always run.
     return updateCallback()
-  } else if (isCollaborationUpdate && serverState.isMyProject === 'yes') {
+  } else if (isCollaborationUpdate && canEditProject) {
     // If this action is something that would've originated with an owner,
     // it shouldn't run on an owner.
     return defaultValue
-  } else if (
-    !isTransientAction(action) &&
-    serverState.isMyProject == 'no' &&
-    !isCollaborationUpdate
-  ) {
+  } else if (!isTransientAction(action) && !canEditProject && !isCollaborationUpdate) {
     // If this is a change that will modify the project contents, the current user
     // is not the owner and it's not a collaboration update (those intended directly
     // for viewers in a collaboration session) do not run the action.

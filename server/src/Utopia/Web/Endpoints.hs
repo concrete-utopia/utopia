@@ -58,6 +58,8 @@ import           Utopia.Web.Servant
 import           Utopia.Web.ServiceTypes
 import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
+import           Utopia.Web.Endpoints.Common
+import           Utopia.Web.Endpoints.Collaboration
 import           WaiAppStatic.Storage.Filesystem
 import           WaiAppStatic.Types
 
@@ -79,17 +81,6 @@ validateSaveRequest saveProjectRequest =
     Just (Left _)                -> False
     -- Parsed content, need to validate the contents tree is not empty.
     Just (Right projectContents) -> not $ M.null projectContents
-
-checkForUser :: Maybe Text -> (Maybe SessionUser -> ServerMonad a) -> ServerMonad a
-checkForUser (Just sessionCookie) action = do
-  maybeSessionUser <- validateAuth sessionCookie -- ServerMonad (Maybe SessionUser)
-  action maybeSessionUser
-checkForUser _ action = action Nothing
-
-requireUser :: Maybe Text -> (SessionUser -> ServerMonad a) -> ServerMonad a
-requireUser cookie action = do
-  let checkAction maybeSessionUser = maybe notAuthenticated action maybeSessionUser -- Maybe SessionUser -> ServerMonad a
-  checkForUser cookie checkAction
 
 renderPageContents :: H.Html -> H.Html
 renderPageContents pageContents = H.docTypeHtml $ do
@@ -485,7 +476,7 @@ loadProjectFileEndpoint (ProjectIdWithSuffix projectID _) possibleETag filePath 
       pure $ const $ sendProjectFileContentsResponse normalizedPath $ code fileContents
     (Right (Just (_, pathFound))) ->
       handleNoAsset $ loadProjectAsset (projectID : pathFound) possibleETag
-
+ 
 saveProjectAssetEndpoint :: Maybe Text -> ProjectIdWithSuffix -> [Text] -> ServerMonad Application
 saveProjectAssetEndpoint cookie (ProjectIdWithSuffix projectID _) path = requireUser cookie $ \sessionUser ->
   saveProjectAsset (view (field @"_id") sessionUser) projectID path
@@ -748,6 +739,7 @@ protected authCookie = logoutPage authCookie
                   :<|> saveGithubAssetEndpoint authCookie
                   :<|> getGithubUserEndpoint authCookie
                   :<|> liveblocksAuthenticationEndpoint authCookie
+                  :<|> collaborationEndpoint authCookie
 
 unprotected :: ServerT Unprotected ServerMonad
 unprotected = authenticate

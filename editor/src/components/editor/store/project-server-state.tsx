@@ -6,6 +6,8 @@ import type { EditorDispatch } from '../action-types'
 import { updateProjectServerState } from '../actions/action-creators'
 import { checkProjectOwned } from '../persistence/persistence-backend'
 import type { ProjectOwnership } from '../persistence/generic/persistence-types'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { claimControlOverProject } from './collaborative-editing'
 
 export interface ProjectMetadataFromServer {
   title: string
@@ -32,6 +34,7 @@ export interface ProjectServerState {
   ownerId: string | null
   projectData: ProjectMetadataFromServer | null
   forkedFromProjectData: ProjectMetadataFromServer | null
+  currentlyHolderOfTheBaton: boolean
 }
 
 export function projectServerState(
@@ -39,17 +42,19 @@ export function projectServerState(
   ownerId: string | null,
   projectData: ProjectMetadataFromServer | null,
   forkedFromProjectData: ProjectMetadataFromServer | null,
+  currentlyHolderOfTheBaton: boolean,
 ): ProjectServerState {
   return {
     isMyProject: isMyProject,
     ownerId: ownerId,
     projectData: projectData,
     forkedFromProjectData: forkedFromProjectData,
+    currentlyHolderOfTheBaton: currentlyHolderOfTheBaton,
   }
 }
 
 export function emptyProjectServerState(): ProjectServerState {
-  return projectServerState('unknown', null, null, null)
+  return projectServerState('unknown', null, null, null, false)
 }
 
 export const ProjectServerStateContext = React.createContext<ProjectServerState>(
@@ -90,11 +95,14 @@ export async function getProjectServerState(
     }
     const ownership = await getOwnership()
 
+    const holderOfTheBaton = (await claimControlOverProject(projectId)) ?? ownership.isOwner
+
     return {
       isMyProject: ownership.isOwner ? 'yes' : 'no',
       ownerId: ownership.ownerId,
       projectData: projectListingToProjectMetadataFromServer(projectListing),
       forkedFromProjectData: projectListingToProjectMetadataFromServer(forkedFromProjectListing),
+      currentlyHolderOfTheBaton: holderOfTheBaton,
     }
   }
 }
@@ -105,26 +113,38 @@ export interface ProjectServerStateUpdaterProps {
   dispatch: EditorDispatch
 }
 
+let serverStateWatcherInstance: number | null = null
+function restartServerStateWatcher(
+  projectId: string | null,
+  forkedFromProjectId: string | null,
+  dispatch: EditorDispatch,
+): void {
+  function updateServerState(): void {
+    void getProjectServerState(projectId, forkedFromProjectId)
+      .then((serverState) => {
+        dispatch([updateProjectServerState(serverState)], 'everyone')
+      })
+      .catch((error) => {
+        console.error('Error while updating server state.', error)
+      })
+  }
+  if (isFeatureEnabled('Baton Passing For Control')) {
+    if (serverStateWatcherInstance != null) {
+      window.clearInterval(serverStateWatcherInstance)
+    }
+    updateServerState()
+    serverStateWatcherInstance = window.setInterval(updateServerState, 10 * 1000)
+  } else {
+    updateServerState()
+  }
+}
+
 export const ProjectServerStateUpdater = React.memo(
   (props: React.PropsWithChildren<ProjectServerStateUpdaterProps>) => {
     const { projectId, forkedFromProjectId, dispatch, children } = props
     React.useEffect(() => {
-      void getProjectServerState(projectId, forkedFromProjectId)
-        .then((serverState) => {
-          dispatch([updateProjectServerState(serverState)], 'everyone')
-        })
-        .catch((error) => {
-          console.error('Error while updating server state.', error)
-        })
+      restartServerStateWatcher(projectId, forkedFromProjectId, dispatch)
     }, [dispatch, projectId, forkedFromProjectId])
     return <>{children}</>
   },
 )
-
-export function isProjectViewerFromState(state: ProjectServerState): boolean {
-  return isProjectViewer(state.isMyProject)
-}
-
-export function isProjectViewer(isMyProject: IsMyProject): boolean {
-  return isMyProject === 'no'
-}
