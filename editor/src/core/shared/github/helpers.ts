@@ -68,7 +68,7 @@ import { updatePullRequestsForBranch } from './operations/list-pull-requests-for
 import { getUsersPublicGithubRepositories } from './operations/load-repositories'
 import { set } from '../optics/optic-utilities'
 import { fromField } from '../optics/optic-creators'
-import type { GithubOperationContext } from './operations/github-operation-context'
+import type { GithubFetch, GithubOperationContext } from './operations/github-operation-context'
 import { GithubEndpoints } from './endpoints'
 
 export function dispatchPromiseActions(
@@ -287,7 +287,7 @@ export async function getBranchContentFromServer(
   branchName: string,
   commitSha: string | null,
   previousCommitSha: string | null,
-  operationContext: GithubOperationContext,
+  operationContext: { fetch: GithubFetch },
 ): Promise<Response> {
   const url = GithubEndpoints.branchContents(githubRepo, branchName)
   let includeQueryParams: boolean = false
@@ -997,7 +997,7 @@ export async function saveGithubAsset(
   projectID: string,
   path: string,
   onUpdate: (update: UpdateGithubOperations | AddToast) => void,
-  operationContext: GithubOperationContext,
+  operationContext: { fetch: GithubFetch },
 ): Promise<void> {
   await runGithubOperation2(
     { name: 'saveAsset', path: path },

@@ -37,11 +37,11 @@ import {
   saveGithubAsset,
 } from '../helpers'
 import { updateProjectContentsWithParseResults } from '../../parser-projectcontents-utils'
-import type { GithubOperationContext } from './github-operation-context'
+import type { GithubFetch, GithubOperationContext } from './github-operation-context'
 import { createStoryboardFileIfNecessary } from '../../../../components/editor/actions/actions'
 
 export const saveAssetsToProject =
-  (operationContext: GithubOperationContext) =>
+  (operationContext: { fetch: GithubFetch }) =>
   async (
     githubRepo: GithubRepo,
     projectID: string,
@@ -207,7 +207,7 @@ export async function getProcessedParsedProjectFromGithubRepo(
   branchName: string,
   githubRepo: GithubRepo,
   onUpdate: (update: UpdateGithubOperations | AddToast) => void,
-  operationContext: GithubOperationContext,
+  operationContext: { fetch: GithubFetch },
   resetBranches: boolean,
   workers: UtopiaTsWorkers,
   projectID: string,
@@ -256,7 +256,7 @@ async function loadBranchFromGithub(
   branchName: string,
   githubRepo: GithubRepo,
   onUpdate: (update: UpdateGithubOperations | AddToast) => void,
-  operationContext: GithubOperationContext,
+  operationContext: { fetch: GithubFetch },
 ) {
   return runGithubOperation2(
     {
