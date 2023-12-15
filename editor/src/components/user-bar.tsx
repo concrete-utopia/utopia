@@ -375,6 +375,7 @@ export const AvatarPicture = React.memo((props: AvatarPictureProps) => {
         height: size ?? '100%',
         borderRadius: '100%',
         filter: props.isOffline ? 'grayscale(1)' : undefined,
+        pointerEvents: 'none',
       }}
       src={url}
       referrerPolicy='no-referrer'
