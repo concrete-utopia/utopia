@@ -171,6 +171,7 @@ export interface GetGithubUserSuccess {
 export type GetGithubUserResponse = GetGithubUserSuccess | GithubFailure
 
 export type GithubOperationLogic = (operation: GithubOperation) => Promise<Array<EditorAction>>
+export type GithubOperationLogic2<T> = (operation: GithubOperation) => Promise<T>
 
 export async function runGithubOperation(
   operation: GithubOperation,
@@ -178,6 +179,31 @@ export async function runGithubOperation(
   logic: GithubOperationLogic,
 ): Promise<Array<EditorAction>> {
   let result: Array<EditorAction> = []
+
+  const opName = githubOperationPrettyName(operation)
+  try {
+    dispatch([updateGithubOperations(operation, 'add')], 'everyone')
+    result = await logic(operation)
+  } catch (error: any) {
+    dispatch(
+      [showToast(notice(`${opName} failed. See the console for more information.`, 'ERROR'))],
+      'everyone',
+    )
+    console.error(`[GitHub] operation "${opName}" failed:`, error)
+    throw error
+  } finally {
+    dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
+  }
+
+  return result
+}
+
+export async function runGithubOperation2<T>(
+  operation: GithubOperation,
+  dispatch: EditorDispatch,
+  logic: GithubOperationLogic2<T>,
+): Promise<T | null> {
+  let result: T | null = null
 
   const opName = githubOperationPrettyName(operation)
   try {

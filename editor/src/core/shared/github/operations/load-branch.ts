@@ -30,6 +30,7 @@ import {
   githubAPIError,
   githubAPIErrorFromResponse,
   runGithubOperation,
+  runGithubOperation2,
   saveGithubAsset,
 } from '../helpers'
 import { updateProjectContentsWithParseResults } from '../../parser-projectcontents-utils'
@@ -88,6 +89,14 @@ export const saveAssetsToProject =
     })
   }
 
+// 1. create and refactor loadBranchAndSaveAssets
+// 2. remove the dispatch dependency from loadBranchAndSaveAssets, create callbacks instead for setting GithubOperations and Error toasts
+// 3. make loadBranchAndSaveAssets return Promise<parsedProjectContents>
+// 4. refactor refreshDependencies into a similarly dispatchless function
+// 5. call refreshDependencies from Editor.tsx, get the project contents, and use those to fire storedState.persistence.createNew
+// 6. once the project is loaded and saved, kick off refreshDependencies
+// 7. revisit what UI we show until the project is loaded
+
 export const updateProjectWithBranchContent =
   (operationContext: GithubOperationContext) =>
   async (
@@ -101,7 +110,7 @@ export const updateProjectWithBranchContent =
     builtInDependencies: BuiltInDependencies,
     currentProjectContents: ProjectContentTreeRoot,
   ): Promise<void> => {
-    await runGithubOperation(
+    const loadBranchResult = await runGithubOperation2(
       {
         name: 'loadBranch',
         branchName: branchName,
@@ -120,7 +129,23 @@ export const updateProjectWithBranchContent =
           throw githubAPIErrorFromResponse(operation, response)
         }
 
-        const responseBody: GetBranchContentResponse = await response.json()
+        return response
+      },
+    )
+
+    if (loadBranchResult == null) {
+      return // throw error? nah
+    }
+
+    const parseAndUploadAssetsResult = await runGithubOperation2(
+      {
+        name: 'loadBranch',
+        branchName: branchName,
+        githubRepo: githubRepo,
+      },
+      dispatch,
+      async (operation: GithubOperation) => {
+        const responseBody: GetBranchContentResponse = await loadBranchResult.json()
         switch (responseBody.type) {
           case 'FAILURE':
             throw githubAPIError(operation, responseBody.failureReason)
@@ -150,67 +175,11 @@ export const updateProjectWithBranchContent =
               currentProjectContents,
             )
 
-            // Update the editor with everything so that if anything else fails past this point
-            // there's no loss of data from the user's perspective.
-            dispatch(
-              [
-                ...connectRepo(
-                  resetBranches,
-                  githubRepo,
-                  responseBody.branch.originCommit,
-                  branchName,
-                  true,
-                ),
-                updateProjectContents(parsedProjectContents),
-                updateBranchContents(parsedProjectContents),
-                truncateHistory(),
-              ],
-              'everyone',
-            )
-
-            // If there's a package.json file, then attempt to load the dependencies for it.
-            let dependenciesPromise: Promise<void> = Promise.resolve()
-            const packageJson = packageJsonFileFromProjectContents(parsedProjectContents)
-            if (packageJson != null && isTextFile(packageJson)) {
-              dependenciesPromise = refreshDependencies(
-                dispatch,
-                packageJson.fileContents.code,
-                currentDeps,
-                builtInDependencies,
-                {},
-              ).then(() => {})
+            return {
+              parsedProjectContents: parsedProjectContents,
+              originCommit: responseBody.branch.originCommit,
             }
 
-            // When the dependencies update has gone through, then indicate that the project was imported.
-            await dependenciesPromise
-              .catch(() => {
-                dispatch(
-                  [
-                    showToast(
-                      notice(
-                        `Github: There was an error when attempting to update the dependencies.`,
-                        'ERROR',
-                      ),
-                    ),
-                  ],
-                  'everyone',
-                )
-              })
-              .finally(() => {
-                dispatch(
-                  [
-                    showToast(
-                      notice(
-                        `Github: Updated the project with the content from ${branchName}`,
-                        'SUCCESS',
-                      ),
-                    ),
-                  ],
-                  'everyone',
-                )
-              })
-
-            break
           default:
             const _exhaustiveCheck: never = responseBody
             throw githubAPIError(
@@ -218,7 +187,83 @@ export const updateProjectWithBranchContent =
               `Unhandled response body ${JSON.stringify(responseBody)}`,
             )
         }
-        return []
+      },
+    )
+
+    if (parseAndUploadAssetsResult == null) {
+      return
+    }
+
+    // Update the editor with everything so that if anything else fails past this point
+    // there's no loss of data from the user's perspective.
+    dispatch(
+      [
+        ...connectRepo(
+          resetBranches,
+          githubRepo,
+          parseAndUploadAssetsResult.originCommit,
+          branchName,
+          true,
+        ),
+        updateProjectContents(parseAndUploadAssetsResult.parsedProjectContents),
+        updateBranchContents(parseAndUploadAssetsResult.parsedProjectContents),
+        truncateHistory(),
+      ],
+      'everyone',
+    )
+
+    await runGithubOperation2(
+      {
+        name: 'loadBranch',
+        branchName: branchName,
+        githubRepo: githubRepo,
+      },
+      dispatch,
+      async (operation: GithubOperation) => {
+        // If there's a package.json file, then attempt to load the dependencies for it.
+        let dependenciesPromise: Promise<void> = Promise.resolve()
+        const packageJson = packageJsonFileFromProjectContents(
+          parseAndUploadAssetsResult.parsedProjectContents,
+        )
+        if (packageJson != null && isTextFile(packageJson)) {
+          dependenciesPromise = refreshDependencies(
+            dispatch,
+            packageJson.fileContents.code,
+            currentDeps,
+            builtInDependencies,
+            {},
+          ).then(() => {})
+        }
+
+        // When the dependencies update has gone through, then indicate that the project was imported.
+        await dependenciesPromise
+          .catch(() => {
+            dispatch(
+              [
+                showToast(
+                  notice(
+                    `Github: There was an error when attempting to update the dependencies.`,
+                    'ERROR',
+                  ),
+                ),
+              ],
+              'everyone',
+            )
+          })
+          // hmmm I think this should be a .then here, because we don't want to show Success if the promise rejected
+          .finally(() => {
+            dispatch(
+              [
+                showToast(
+                  notice(
+                    `Github: Updated the project with the content from ${branchName}`,
+                    'SUCCESS',
+                  ),
+                ),
+              ],
+              'everyone',
+            )
+          })
       },
     )
   }
