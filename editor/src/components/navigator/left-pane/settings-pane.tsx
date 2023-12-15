@@ -254,7 +254,6 @@ export const SettingsPane = React.memo(() => {
               highlight
               spotlight
               outline={false}
-              onClick={onForkProjectClicked}
               style={{
                 width: '100%',
                 cursor: 'pointer',
