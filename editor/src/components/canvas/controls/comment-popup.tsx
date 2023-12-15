@@ -24,7 +24,15 @@ import { create } from '../../../core/shared/property-path'
 import { assertNever } from '../../../core/shared/utils'
 import { CommentWrapper, MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { when } from '../../../utils/react-conditionals'
-import { Button, Icons, UtopiaStyles, useColorTheme } from '../../../uuiui'
+import {
+  Button,
+  FlexColumn,
+  FlexRow,
+  Icn,
+  Tooltip,
+  UtopiaStyles,
+  useColorTheme,
+} from '../../../uuiui'
 import {
   setProp_UNSAFE,
   setRightMenuTab,
@@ -319,58 +327,49 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
         minWidth: 250,
         boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
         background: colorTheme.bg0.value,
+        borderRadius: 4,
+        overflow: 'hidden',
       }}
       onKeyDown={stopPropagation}
       onKeyUp={stopPropagation}
       onMouseUp={stopPropagation}
     >
-      <div
-        style={{
-          position: 'relative',
-        }}
-      >
-        <div
-          style={{
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            top: -40,
-            zIndex: 1,
-            display: 'flex',
-            alignItems: 'flex-end',
-            justifyContent: 'flex-end',
-            height: 40,
-            gap: 8,
-          }}
-        >
-          {when(
-            thread != null,
-            <>
-              {when(
-                readByMe === 'read',
-                <Button
-                  highlight
-                  spotlight
-                  style={{ padding: '0 6px' }}
-                  onClick={onClickMarkAsUnread}
-                >
-                  Mark as unread
-                </Button>,
-              )}
-              <Button highlight spotlight style={{ padding: '0 6px' }} onClick={onClickResolve}>
-                {thread?.metadata.resolved ? 'Unresolve' : 'Resolve'}
-              </Button>
-            </>,
-          )}
-          <Button highlight spotlight style={{ padding: '0 6px' }} onClick={onClickClose}>
-            <Icons.Cross />
-          </Button>
-        </div>
-      </div>
       {thread == null ? (
         <NewCommentPopup onComposerSubmit={onCreateThread} />
       ) : (
         <>
+          <FlexRow
+            style={{
+              background: colorTheme.bg1.value,
+              justifyContent: 'flex-end',
+              padding: 6,
+              borderBottom: `1px solid ${colorTheme.bg3.value}`,
+              gap: 6,
+            }}
+          >
+            {when(
+              readByMe === 'read',
+              <Tooltip title='Mark As Unread' placement='top'>
+                <Button onClick={onClickMarkAsUnread}>
+                  <Icn category='semantic' type='unread' width={18} height={18} color='main' />
+                </Button>
+              </Tooltip>,
+            )}
+            <Tooltip title='Resolve' placement='top'>
+              <Button onClick={onClickResolve}>
+                <Icn
+                  category='semantic'
+                  type={thread?.metadata.resolved ? 'resolved' : 'resolve'}
+                  width={18}
+                  height={18}
+                  color='main'
+                />
+              </Button>
+            </Tooltip>
+            <Button onClick={onClickClose}>
+              <Icn category='semantic' type='cross-large' width={16} height={16} color='main' />
+            </Button>
+          </FlexRow>
           <div style={{ position: 'relative' }}>
             <div
               style={{
@@ -492,6 +491,10 @@ const NewCommentPopup = React.memo((props: NewCommentPopupProps) => {
     [newCommentComposerAnimation, colorTheme, dispatch],
   )
 
+  const onClickClose = React.useCallback(() => {
+    dispatch([switchEditorMode(EditorModes.commentMode(null, 'not-dragging'))])
+  }, [dispatch])
+
   return (
     <>
       <div
@@ -502,10 +505,22 @@ const NewCommentPopup = React.memo((props: NewCommentPopupProps) => {
           left: 0,
           bottom: 0,
           right: 0,
-          cursor: CSSCursor.Comment,
         }}
         onClick={onClickOutsideNewComment}
       />
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          padding: 6,
+          height: 35,
+          borderBottom: `1px solid ${colorTheme.bg3.value}`,
+        }}
+      >
+        <Button onClick={onClickClose}>
+          <Icn category='semantic' type='cross-large' width={16} height={16} color='main' />
+        </Button>
+      </div>
       <motion.div animate={newCommentComposerAnimation} style={{ border: '1px solid transparent' }}>
         <Composer
           data-theme={theme}
@@ -547,23 +562,22 @@ ListShadow.displayName = 'ListShadow'
 
 const HeaderComment = React.memo(
   ({ comment, enabled }: { comment: CommentData; enabled: boolean }) => {
-    const colorTheme = useColorTheme()
     const collabs = useStorage((storage) => storage.collaborators)
     const user = getCollaboratorById(collabs, comment.userId)
     return (
       <div
         style={{
           position: 'absolute',
-          top: -1,
-          left: -1,
+          top: 0,
+          left: 0,
           right: 0,
           backgroundColor: 'white',
           zIndex: 1,
           boxShadow: UtopiaStyles.shadowStyles.highest.boxShadow,
-          border: `1px solid ${colorTheme.primary50.value}`,
           opacity: enabled ? 1 : 0,
-          transition: 'opacity 100ms linear',
+          transition: 'all 100ms linear',
           minHeight: 67,
+          transform: 'scale(1.01)',
         }}
       >
         <CommentWrapper user={user} comment={comment} />
