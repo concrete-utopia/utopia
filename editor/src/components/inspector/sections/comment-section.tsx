@@ -40,7 +40,6 @@ import { openCommentThreadActions } from '../../../core/shared/multiplayer'
 import { getRemixLocationLabel } from '../../canvas/remix/remix-utils'
 import type { RestOfEditorState } from '../../editor/store/store-hook-substore-types'
 import { getCurrentTheme } from '../../editor/store/editor-state'
-import { grayscale } from 'react-syntax-highlighter/dist/esm/styles/hljs'
 
 export const CommentSection = React.memo(() => {
   return (
@@ -241,48 +240,32 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
           showActions={false}
           style={{ backgroundColor: 'transparent' }}
         />
-
         {when(
           remixLocationRouteLabel != null,
           <div
             style={{
               paddingLeft: 44,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
+              fontSize: 9,
+              color: colorTheme.fg6.value,
             }}
           >
-            <div
-              style={{
-                fontSize: 9,
-                color: colorTheme.fg6.value,
-              }}
-            >
-              {thread.metadata.remixLocationRoute ?? ''}
-            </div>
+            Route:{' '}
+            <span style={{ fontWeight: 500 }}>{thread.metadata.remixLocationRoute ?? ''}</span>
           </div>,
         )}
-        <div
-          style={{
-            paddingLeft: 44,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
-          {when(
-            repliesCount > 0,
-            <div
-              style={{
-                fontSize: 9,
-                color: colorTheme.fg6.value,
-              }}
-            >
-              {repliesCount} {repliesCount > 1 ? 'replies' : 'reply'}
-            </div>,
-          )}
-          {/* {unless(repliesCount > 0, <div />)} */}
-        </div>
+        {when(
+          repliesCount > 0,
+          <div
+            style={{
+              paddingLeft: 44,
+              fontSize: 9,
+              color: colorTheme.fg6.value,
+            }}
+          >
+            {repliesCount} {repliesCount > 1 ? 'replies' : 'reply'}
+          </div>,
+        )}
+        {unless(repliesCount > 0, <div />)}
       </div>
       <Tooltip title='Resolve' placement='top'>
         <Button

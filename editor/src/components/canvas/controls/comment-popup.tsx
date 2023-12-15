@@ -548,7 +548,6 @@ ListShadow.displayName = 'ListShadow'
 
 const HeaderComment = React.memo(
   ({ comment, enabled }: { comment: CommentData; enabled: boolean }) => {
-    const colorTheme = useColorTheme()
     const collabs = useStorage((storage) => storage.collaborators)
     const user = getCollaboratorById(collabs, comment.userId)
     return (
@@ -561,7 +560,6 @@ const HeaderComment = React.memo(
           backgroundColor: 'white',
           zIndex: 1,
           boxShadow: UtopiaStyles.shadowStyles.highest.boxShadow,
-          // border: `1px solid ${colorTheme.primary50.value}`,
           opacity: enabled ? 1 : 0,
           transition: 'all 100ms linear',
           minHeight: 67,
