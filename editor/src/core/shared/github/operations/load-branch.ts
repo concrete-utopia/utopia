@@ -33,7 +33,6 @@ import {
   getBranchContentFromServer,
   githubAPIError,
   githubAPIErrorFromResponse,
-  runGithubOperation,
   runGithubOperation2,
   saveGithubAsset,
 } from '../helpers'
@@ -47,7 +46,7 @@ export const saveAssetsToProject =
     githubRepo: GithubRepo,
     projectID: string,
     branchContent: BranchContent,
-    dispatch: EditorDispatch,
+    onUpdate: (update: UpdateGithubOperations | AddToast) => void,
     currentProjectContents: ProjectContentTreeRoot,
   ): Promise<void> => {
     await walkContentsTreeAsync(branchContent.content, async (fullPath, projectFile) => {
@@ -71,7 +70,7 @@ export const saveAssetsToProject =
                 forceNotNull('Commit sha should exist.', projectFile.gitBlobSha),
                 projectID,
                 fullPath,
-                dispatch,
+                onUpdate,
                 operationContext,
               )
               break
@@ -82,7 +81,7 @@ export const saveAssetsToProject =
                 forceNotNull('Commit sha should exist.', projectFile.gitBlobSha),
                 projectID,
                 fullPath,
-                dispatch,
+                onUpdate,
                 operationContext,
               )
               break
@@ -115,38 +114,20 @@ export const updateProjectWithBranchContent =
     builtInDependencies: BuiltInDependencies,
     currentProjectContents: ProjectContentTreeRoot,
   ): Promise<void> => {
-    const loadBranchResult = await loadBranchFromGithub(
+    const parseAndUploadAssetsResult = await getProcessedParsedProjectFromGithubRepo(
       branchName,
       githubRepo,
       (action) => dispatch([action]),
       operationContext,
-    )
-
-    if (loadBranchResult == null) {
-      return // throw error? nah
-    }
-
-    const parseAndUploadAssetsResult = await parseDownloadedProject(
-      branchName,
-      githubRepo,
-      (action) => dispatch([action]),
-      loadBranchResult,
       resetBranches,
       workers,
+      projectID,
+      currentProjectContents,
     )
 
     if (parseAndUploadAssetsResult == null) {
       return
     }
-
-    // Save assets to the server from Github.
-    await saveAssetsToProject(operationContext)(
-      githubRepo,
-      projectID,
-      parseAndUploadAssetsResult.branch,
-      dispatch,
-      currentProjectContents,
-    )
 
     // Update the editor with everything so that if anything else fails past this point
     // there's no loss of data from the user's perspective.
@@ -221,6 +202,55 @@ export const updateProjectWithBranchContent =
       },
     )
   }
+
+export async function getProcessedParsedProjectFromGithubRepo(
+  branchName: string,
+  githubRepo: GithubRepo,
+  onUpdate: (update: UpdateGithubOperations | AddToast) => void,
+  operationContext: GithubOperationContext,
+  resetBranches: boolean,
+  workers: UtopiaTsWorkers,
+  projectID: string,
+  currentProjectContents: ProjectContentTreeRoot,
+): Promise<{
+  parsedProjectContents: ProjectContentTreeRoot
+  branch: BranchContent
+} | null> {
+  const loadBranchResult = await loadBranchFromGithub(
+    branchName,
+    githubRepo,
+    onUpdate,
+    operationContext,
+  )
+
+  if (loadBranchResult == null) {
+    return null // should this throw an error instead?
+  }
+
+  const parseAndUploadAssetsResult = await parseDownloadedProject(
+    branchName,
+    githubRepo,
+    onUpdate,
+    loadBranchResult,
+    resetBranches,
+    workers,
+  )
+
+  if (parseAndUploadAssetsResult == null) {
+    return null
+  }
+
+  // Save assets to the server from Github.
+  await saveAssetsToProject(operationContext)(
+    githubRepo,
+    projectID,
+    parseAndUploadAssetsResult.branch,
+    onUpdate,
+    currentProjectContents,
+  )
+
+  return parseAndUploadAssetsResult
+}
 
 async function loadBranchFromGithub(
   branchName: string,

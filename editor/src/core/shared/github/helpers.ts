@@ -996,12 +996,12 @@ export async function saveGithubAsset(
   assetSha: string,
   projectID: string,
   path: string,
-  dispatch: EditorDispatch,
+  onUpdate: (update: UpdateGithubOperations | AddToast) => void,
   operationContext: GithubOperationContext,
 ): Promise<void> {
-  await runGithubOperation(
+  await runGithubOperation2(
     { name: 'saveAsset', path: path },
-    dispatch,
+    onUpdate,
     async (operation: GithubOperation) => {
       const url = GithubEndpoints.asset(githubRepo, assetSha)
 
@@ -1068,7 +1068,7 @@ export const resolveConflict =
           gitBlobSha,
           projectID,
           path,
-          dispatch,
+          (action) => dispatch([action]),
           operationContext,
         )
       }

@@ -93,7 +93,7 @@ export const updateProjectAgainstGithub =
           githubRepo,
           projectID,
           branchLatestContent.branch,
-          dispatch,
+          (action) => dispatch([action]),
           currentProjectContents,
         )
 
