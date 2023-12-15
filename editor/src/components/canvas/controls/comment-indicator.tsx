@@ -329,10 +329,14 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
 
   const { hovered, onMouseOver, onMouseOut, cancelHover } = useHover()
 
+  const [dragging, setDragging] = React.useState(false)
+
+  const draggingCallback = React.useCallback((isDragging: boolean) => setDragging(isDragging), [])
+
   return (
     <div onMouseOver={onMouseOver} onMouseOut={onMouseOut}>
       {when(
-        isActive || !hovered,
+        (isActive || !hovered) && !dragging,
         <CommentIndicatorUI
           position={position}
           opacity={isOnAnotherRoute || thread.metadata.resolved ? 0 : 1}
@@ -348,7 +352,12 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
 
       {when(
         !isActive,
-        <HoveredCommentIndicator thread={thread} hidden={!hovered} cancelHover={cancelHover} />,
+        <HoveredCommentIndicator
+          thread={thread}
+          hidden={!hovered}
+          cancelHover={cancelHover}
+          draggingCallback={draggingCallback}
+        />,
       )}
     </div>
   )
@@ -359,10 +368,11 @@ interface HoveredCommentIndicatorProps {
   thread: ThreadData<ThreadMetadata>
   hidden: boolean
   cancelHover: () => void
+  draggingCallback: (isDragging: boolean) => void
 }
 
 const HoveredCommentIndicator = React.memo((props: HoveredCommentIndicatorProps) => {
-  const { thread, hidden, cancelHover } = props
+  const { thread, hidden, cancelHover, draggingCallback } = props
 
   const dispatch = useDispatch()
   const theme = useEditorState(
@@ -373,7 +383,7 @@ const HoveredCommentIndicator = React.memo((props: HoveredCommentIndicatorProps)
 
   const { location, scene: commentScene } = useCanvasLocationOfThread(thread)
 
-  const { onMouseDown, didDrag, dragPosition } = useDragging(thread, location)
+  const { onMouseDown, didDrag, dragPosition } = useDragging(thread, location, draggingCallback)
 
   const remixLocationRoute = thread.metadata.remixLocationRoute ?? null
 
@@ -463,7 +473,11 @@ HoveredCommentIndicator.displayName = 'HoveredCommentIndicator'
 
 const COMMENT_DRAG_THRESHOLD = 5 // square px
 
-function useDragging(thread: ThreadData<ThreadMetadata>, originalLocation: CanvasPoint) {
+function useDragging(
+  thread: ThreadData<ThreadMetadata>,
+  originalLocation: CanvasPoint,
+  draggingCallback: (isDragging: boolean) => void,
+) {
   const editThreadMetadata = useEditThreadMetadata()
   const [dragPosition, setDragPosition] = React.useState<CanvasPoint | null>(null)
   const [didDrag, setDidDrag] = React.useState(false)
@@ -473,6 +487,7 @@ function useDragging(thread: ThreadData<ThreadMetadata>, originalLocation: Canva
   const onMouseDown = React.useCallback(
     (event: React.MouseEvent) => {
       setDidDrag(false)
+      draggingCallback(true)
 
       const mouseDownPoint = windowPoint({ x: event.clientX, y: event.clientY })
 
@@ -498,6 +513,7 @@ function useDragging(thread: ThreadData<ThreadMetadata>, originalLocation: Canva
         upEvent.stopPropagation()
         window.removeEventListener('mousemove', onMouseMove)
         window.removeEventListener('mouseup', onMouseUp)
+        draggingCallback(false)
 
         const mouseUpPoint = windowPoint({ x: upEvent.clientX, y: upEvent.clientY })
 
@@ -520,7 +536,14 @@ function useDragging(thread: ThreadData<ThreadMetadata>, originalLocation: Canva
       window.addEventListener('mousemove', onMouseMove)
       window.addEventListener('mouseup', onMouseUp)
     },
-    [canvasScaleRef, editThreadMetadata, thread.id, originalLocation, thread.metadata],
+    [
+      canvasScaleRef,
+      editThreadMetadata,
+      thread.id,
+      originalLocation,
+      thread.metadata,
+      draggingCallback,
+    ],
   )
 
   return { onMouseDown, dragPosition, didDrag }
