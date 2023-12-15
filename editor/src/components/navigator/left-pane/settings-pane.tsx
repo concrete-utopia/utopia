@@ -11,6 +11,7 @@ import {
   FlexRow,
   H2,
   HeadlessStringInput,
+  Icons,
   PopupList,
   Section,
   SectionBodyArea,
@@ -247,6 +248,26 @@ export const SettingsPane = React.memo(() => {
     >
       <Section>
         {isMyProject === 'yes' ? null : <ForksGiven />}
+        <UIGridRow padded variant='<-------------1fr------------->' style={{ marginBottom: 8 }}>
+          <a href='/projects' target='_blank' rel='noopener rofererrer'>
+            <Button
+              highlight
+              spotlight
+              outline={false}
+              onClick={onForkProjectClicked}
+              style={{
+                width: '100%',
+                cursor: 'pointer',
+                height: UtopiaTheme.layout.inputHeight.default,
+                background: colorTheme.dynamicBlue.value,
+                color: colorTheme.bg1.value,
+                gap: 4,
+              }}
+            >
+              <Icons.ExternalLinkSmaller color='black' /> All projects
+            </Button>
+          </a>
+        </UIGridRow>
         <UIGridRow padded variant='<---1fr--->|------172px-------|'>
           <span style={{ color: colorTheme.fg2.value }}>Name</span>
           {userState.loginState.type !== 'LOGGED_IN' ? (
