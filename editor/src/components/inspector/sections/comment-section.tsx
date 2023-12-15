@@ -249,8 +249,7 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
               color: colorTheme.fg6.value,
             }}
           >
-            Route:{' '}
-            <span style={{ fontWeight: 500 }}>{thread.metadata.remixLocationRoute ?? ''}</span>
+            Route: <span style={{ fontWeight: 500 }}>{remixLocationRouteLabel}</span>
           </div>,
         )}
         {when(
