@@ -115,14 +115,14 @@ export const updateProjectWithBranchContent =
     currentProjectContents: ProjectContentTreeRoot,
   ): Promise<void> => {
     const parseAndUploadAssetsResult = await getProcessedParsedProjectFromGithubRepo(
-      branchName,
-      githubRepo,
-      (action) => dispatch([action]),
       operationContext,
-      resetBranches,
       workers,
       projectID,
+      resetBranches,
       currentProjectContents,
+      githubRepo,
+      branchName,
+      (action) => dispatch([action]),
     )
 
     if (parseAndUploadAssetsResult == null) {
@@ -204,14 +204,14 @@ export const updateProjectWithBranchContent =
   }
 
 export async function getProcessedParsedProjectFromGithubRepo(
-  branchName: string,
-  githubRepo: GithubRepo,
-  onUpdate: (update: UpdateGithubOperations | AddToast) => void,
   operationContext: Pick<GithubOperationContext, 'fetch'>,
-  resetBranches: boolean,
   workers: UtopiaTsWorkers,
   projectID: string,
+  resetBranches: boolean,
   currentProjectContents: ProjectContentTreeRoot,
+  githubRepo: GithubRepo,
+  branchName: string,
+  onUpdate: (update: UpdateGithubOperations | AddToast) => void,
 ): Promise<{
   parsedProjectContents: ProjectContentTreeRoot
   branch: BranchContent
