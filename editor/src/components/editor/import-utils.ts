@@ -319,10 +319,10 @@ export function mergeImportsResolutionWithImports(
   second: Imports,
 ): ImportsMergeResolution {
   const { imports, duplicateNameMapping } = mergeImports(fileUri, first.imports, second)
-  const mergedDuplicateNameMapping = new Map<string, string>({
+  const mergedDuplicateNameMapping = new Map<string, string>([
     ...first.duplicateNameMapping,
     ...duplicateNameMapping,
-  })
+  ])
   return {
     imports: imports,
     duplicateNameMapping: mergedDuplicateNameMapping,
