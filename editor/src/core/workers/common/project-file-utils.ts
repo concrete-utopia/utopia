@@ -13,7 +13,7 @@ import { defaultIfNull, optionalMap } from '../../shared/optional-utils'
 
 import { absolutePathFromRelativePath } from '../../../utils/path-utils'
 import { stripExtension } from '../../../components/custom-code/custom-code-utils'
-import { handleDuplicateImports } from '../../../components/editor/import-utils'
+import { handleDuplicateImports } from './import-worker-utils'
 
 export function codeNeedsPrinting(revisionsState: RevisionsStateType): boolean {
   return revisionsState === RevisionsState.ParsedAhead

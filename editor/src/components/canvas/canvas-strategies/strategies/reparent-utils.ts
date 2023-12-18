@@ -10,7 +10,7 @@ import type {
 } from '../../../../core/shared/element-template'
 import { isJSXConditionalExpression, isJSXElement } from '../../../../core/shared/element-template'
 import * as EP from '../../../../core/shared/element-path'
-import { getRequiredImportsForElement, handleDuplicateImports } from '../../../editor/import-utils'
+import { getRequiredImportsForElement } from '../../../editor/import-utils'
 import { forceNotNull } from '../../../../core/shared/optional-utils'
 import { addImportsToFile } from '../../commands/add-imports-to-file-command'
 import type { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
@@ -50,6 +50,7 @@ import { boundingRectangleArray, nullIfInfinity } from '../../../../core/shared/
 import { isElementRenderedBySameComponent } from './reparent-helpers/reparent-helpers'
 import type { ParsedCopyData } from '../../../../utils/clipboard'
 import { getParseSuccessForFilePath } from '../../canvas-utils'
+import { handleDuplicateImports } from '../../../../core/workers/common/import-worker-utils'
 
 interface GetReparentOutcomeResult {
   commands: Array<CanvasCommand>
