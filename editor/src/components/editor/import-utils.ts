@@ -26,7 +26,6 @@ import type { BuiltInDependencies } from '../../core/es-modules/package-manager/
 import { withUnderlyingTarget } from './store/editor-state'
 import * as EP from '../../core/shared/element-path'
 import { renameDuplicateImportsInMergeResolution } from '../../core/workers/common/import-worker-utils'
-import { get } from 'objectPath'
 import { getParseSuccessForFilePath } from '../canvas/canvas-utils'
 
 export function getRequiredImportsForElement(

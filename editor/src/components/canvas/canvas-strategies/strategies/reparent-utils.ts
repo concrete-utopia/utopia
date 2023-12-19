@@ -102,7 +102,7 @@ function adjustElementDuplicateName(
     element.imports,
   )
   // handle element name
-  if (element.element.type === 'JSX_ELEMENT') {
+  if (isJSXElement(element.element)) {
     const elementName = MetadataUtils.getJSXElementName(element.element)?.baseVariable
     if (elementName != null && duplicateNameMapping.has(elementName)) {
       element.element.name.baseVariable = duplicateNameMapping.get(elementName)!

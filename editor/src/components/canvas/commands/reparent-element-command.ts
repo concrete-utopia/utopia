@@ -11,7 +11,6 @@ import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import {
   forUnderlyingTargetFromEditorState,
-  modifyUnderlyingTargetElement,
   removeElementAtPath,
 } from '../../editor/store/editor-state'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
@@ -20,7 +19,6 @@ import type { IndexPosition } from '../../../utils/utils'
 import { insertJSXElementChildren } from '../../../core/model/element-template-utils'
 import type { JSXElement } from '../../../core/shared/element-template'
 import { isJSXElement } from '../../../core/shared/element-template'
-import { renameComponent } from '../../../components/navigator/actions'
 
 export interface ReparentElement extends BaseCommand {
   type: 'REPARENT_ELEMENT'
