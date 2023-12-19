@@ -9,7 +9,7 @@ describe('mergeImports', () => {
       {},
     )
 
-    expect(result).toEqual({
+    expect(result.imports).toEqual({
       '/src/fileA.js': importDetails(null, [importAlias('Card')], null),
     })
   })
@@ -21,7 +21,7 @@ describe('mergeImports', () => {
       { '/src/fileB.js': importDetails(null, [importAlias('FlexRow')], null) },
     )
 
-    expect(result).toEqual({
+    expect(result.imports).toEqual({
       '/src/fileA.js': importDetails(null, [importAlias('Card')], null),
       '/src/fileB.js': importDetails(null, [importAlias('FlexRow')], null),
     })
@@ -34,7 +34,7 @@ describe('mergeImports', () => {
       { '/src/fileA.js': importDetails(null, [importAlias('FlexRow')], null) },
     )
 
-    expect(result).toEqual({
+    expect(result.imports).toEqual({
       '/src/fileA.js': importDetails(null, [importAlias('Card'), importAlias('FlexRow')], null),
     })
   })
@@ -46,7 +46,7 @@ describe('mergeImports', () => {
       { './fileA': importDetails(null, [importAlias('FlexRow')], null) },
     )
 
-    expect(result).toEqual({
+    expect(result.imports).toEqual({
       '/src/fileA.js': importDetails(null, [importAlias('Card'), importAlias('FlexRow')], null),
     })
   })
@@ -58,7 +58,7 @@ describe('mergeImports', () => {
       { '/src/fileA.js': importDetails(null, [importAlias('Card')], null) },
     )
 
-    expect(result).toEqual({
+    expect(result.imports).toEqual({
       '/src/fileA.js': importDetails(null, [importAlias('Card')], null),
     })
   })
@@ -73,7 +73,7 @@ describe('mergeImports', () => {
       },
     )
 
-    expect(result).toEqual({
+    expect(result.imports).toEqual({
       '/src/fileA.js': importDetails(null, [importAlias('Card'), importAlias('FlexRow')], null),
     })
   })
@@ -87,7 +87,7 @@ describe('mergeImports', () => {
       },
     )
 
-    expect(result).toEqual({
+    expect(result.imports).toEqual({
       '/src/fileA.js': importDetails(null, [importAlias('Card'), importAlias('FlexRow')], null),
     })
   })
@@ -99,7 +99,7 @@ describe('mergeImports', () => {
       { '/src/fileA.js': importDetails('Flexrow', [], null) },
     )
 
-    expect(result).toEqual({
+    expect(result.imports).toEqual({
       '/src/fileA.js': importDetails('Card', [], null),
     })
   })
@@ -111,7 +111,7 @@ describe('mergeImports', () => {
       { 'component-library': importDetails('Flexrow', [], null) },
     )
 
-    expect(result).toEqual({
+    expect(result.imports).toEqual({
       '/src/fileA.js': importDetails('Card', [], null),
       'component-library': importDetails('Flexrow', [], null),
     })
@@ -124,7 +124,7 @@ describe('mergeImports', () => {
       { 'component-library': importDetails(null, [importAlias('FlexRow')], null) },
     )
 
-    expect(result).toEqual({
+    expect(result.imports).toEqual({
       'component-library': importDetails(null, [importAlias('Card'), importAlias('FlexRow')], null),
     })
   })
@@ -139,7 +139,7 @@ describe('mergeImports', () => {
       { '/src/fileB': importDetails(null, [importAlias('FlexRow')], null) },
     )
 
-    expect(result).toEqual({
+    expect(result.imports).toEqual({
       '/src/fileA': importDetails(null, [importAlias('Card'), importAlias('OtherCard')], null),
       '/src/fileB': importDetails(null, [importAlias('FlexRow')], null),
     })
@@ -158,7 +158,7 @@ describe('mergeImports', () => {
       },
     )
 
-    expect(result).toEqual({
+    expect(result.imports).toEqual({
       '/src/fileA': importDetails(null, [importAlias('Card'), importAlias('OtherCard')], null),
     })
   })
@@ -179,7 +179,7 @@ describe('mergeImports', () => {
        *
        * import Library from 'library'
        */
-      expect(result).toEqual({ library: importDetails('Library', [], null) })
+      expect(result.imports).toEqual({ library: importDetails('Library', [], null) })
     }
     {
       const result = mergeImports(
@@ -193,7 +193,7 @@ describe('mergeImports', () => {
        * import Library from 'library'
        * (same as the previous test but the other way around)
        */
-      expect(result).toEqual({ LibraryToo: importDetails('library-too', [], null) })
+      expect(result.imports).toEqual({ LibraryToo: importDetails('library-too', [], null) })
     }
     {
       const result = mergeImports(
@@ -223,7 +223,7 @@ describe('mergeImports', () => {
        * import DeathStar, { hello as helloFn, General as GeneralComponent, there as thereFn, Kenobi as KenobiComponent } from 'death-star'
        */
 
-      expect(result).toEqual({
+      expect(result.imports).toEqual({
         'death-star': importDetails(
           'DeathStar',
           [
@@ -253,7 +253,7 @@ describe('addImport', () => {
       },
     )
 
-    expect(result).toEqual({
+    expect(result.imports).toEqual({
       '/src/fileA': importDetails(null, [importAlias('Card'), importAlias('OtherCard')], null),
     })
   })
