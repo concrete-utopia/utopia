@@ -971,14 +971,11 @@ function deleteElements(
 
       function deleteElementFromParseSuccess(success: ParseSuccess): ParseSuccess {
         const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
-        const withTargetRemoved: Array<UtopiaJSXComponent> = removeElementAtPath(
-          targetPath,
-          utopiaComponents,
-        )
+        const withTargetRemoved = removeElementAtPath(targetPath, utopiaComponents, success.imports)
         return modifyParseSuccessWithSimple((simpleSuccess: SimpleParseSuccess) => {
           return {
             ...simpleSuccess,
-            utopiaComponents: withTargetRemoved,
+            utopiaComponents: withTargetRemoved.components,
           }
         }, success)
       }

@@ -1,7 +1,12 @@
 import { resolveModulePathIncludingBuiltIns } from '../../core/es-modules/package-manager/module-resolution'
 import { foldEither } from '../../core/shared/either'
 import { emptyImports, mergeImports } from '../../core/workers/common/project-file-utils'
-import type { ImportInfo, TopLevelElement } from '../../core/shared/element-template'
+import type {
+  ImportInfo,
+  JSXElement,
+  TopLevelElement,
+  UtopiaJSXComponent,
+} from '../../core/shared/element-template'
 import {
   importedOrigin,
   isIntrinsicElement,
@@ -9,8 +14,14 @@ import {
   isJSXFragment,
   sameFileOrigin,
   walkElement,
+  walkElements,
 } from '../../core/shared/element-template'
-import type { ElementPath, Imports, NodeModules } from '../../core/shared/project-file-types'
+import type {
+  ElementPath,
+  ImportDetails,
+  Imports,
+  NodeModules,
+} from '../../core/shared/project-file-types'
 import { importAlias, importDetails } from '../../core/shared/project-file-types'
 import type { ProjectContentTreeRoot } from '../assets'
 import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
@@ -211,4 +222,55 @@ export function getImportsFor(
   }
 
   return emptyImports()
+}
+
+export function removeUnusedImports(
+  element: JSXElement,
+  remainingComponents: UtopiaJSXComponent[],
+  imports: Imports,
+): Imports {
+  const elementName = element.name.baseVariable
+  const remainingComponentNames = new Set()
+  walkElements(remainingComponents, (jsxElement) => {
+    if (isJSXElement(jsxElement)) {
+      remainingComponentNames.add(jsxElement.name)
+    }
+  })
+  // if some other element is using this import, don't remove it
+  if (remainingComponentNames.has(elementName)) {
+    return imports
+  }
+  // remove the import
+  return removeImports(imports, [elementName])
+}
+
+export function removeImports(imports: Imports, namesToRemove: string[]): Imports {
+  let newImports: Imports = {}
+  for (const importPath of Object.keys(imports)) {
+    const newImportDetails = removeImportDetails(imports[importPath], namesToRemove)
+    if (newImportDetails != null) {
+      newImports[importPath] = newImportDetails
+    }
+  }
+  return newImports
+}
+
+function removeImportDetails(details: ImportDetails, namesToRemove: string[]): ImportDetails {
+  const importedFromWithin = details.importedFromWithin.filter(
+    (fromWithin) => !namesToRemove.includes(fromWithin.alias),
+  )
+  const importedWithName =
+    details.importedWithName == null || namesToRemove.includes(details.importedWithName)
+      ? null
+      : details.importedWithName
+  const importedAs =
+    details.importedAs == null || namesToRemove.includes(details.importedAs)
+      ? null
+      : details.importedAs
+
+  return {
+    importedWithName: importedWithName,
+    importedAs: importedAs,
+    importedFromWithin: importedFromWithin,
+  }
 }

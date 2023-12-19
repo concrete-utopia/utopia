@@ -60,12 +60,16 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
         ) => {
           if (underlyingFilePathTarget === underlyingFilePathNewParent) {
             const components = getUtopiaJSXComponentsFromSuccess(successTarget)
-            const withElementRemoved = removeElementAtPath(command.target, components)
+            const withElementRemoved = removeElementAtPath(
+              command.target,
+              components,
+              successTarget.imports,
+            )
 
             const insertionResult = insertJSXElementChildren(
               command.newParent,
               [underlyingElementTarget],
-              withElementRemoved,
+              withElementRemoved.components,
               command.indexPosition,
             )
             const editorStatePatchOldParentFile = getPatchForComponentChange(
@@ -73,7 +77,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
               insertionResult.components,
               mergeImports(
                 underlyingFilePathTarget,
-                successTarget.imports,
+                withElementRemoved.imports,
                 insertionResult.importsToAdd,
               ),
               underlyingFilePathTarget,
@@ -85,7 +89,11 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
             ]
           } else {
             const componentsOldParent = getUtopiaJSXComponentsFromSuccess(successTarget)
-            const withElementRemoved = removeElementAtPath(command.target, componentsOldParent)
+            const withElementRemoved = removeElementAtPath(
+              command.target,
+              componentsOldParent,
+              successTarget.imports,
+            )
             const componentsNewParent = getUtopiaJSXComponentsFromSuccess(successNewParent)
 
             const insertionResult = insertJSXElementChildren(
@@ -97,8 +105,8 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
 
             const editorStatePatchOldParentFile = getPatchForComponentChange(
               successTarget.topLevelElements,
-              withElementRemoved,
-              successTarget.imports,
+              withElementRemoved.components,
+              withElementRemoved.imports,
               underlyingFilePathTarget,
             )
 

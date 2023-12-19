@@ -1611,7 +1611,8 @@ export function reorderComponent(
     if (indexOfRemovedElement < 0) {
       throw new Error(`Unable to determine old element index.`)
     }
-    workingComponents = removeElementAtPath(target, workingComponents)
+    const removeResult = removeElementAtPath(target, workingComponents)
+    workingComponents = removeResult.components
     const adjustedIndexPosition = shiftIndexPositionForRemovedElement(
       indexPosition,
       indexOfRemovedElement,

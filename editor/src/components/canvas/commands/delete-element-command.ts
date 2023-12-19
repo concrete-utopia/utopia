@@ -33,12 +33,16 @@ export const runDeleteElement: CommandFunction<DeleteElement> = (
     editorState,
     (successTarget, _underlyingElementTarget, underlyingTarget, underlyingFilePathTarget) => {
       const components = getUtopiaJSXComponentsFromSuccess(successTarget)
-      const withElementRemoved = removeElementAtPath(underlyingTarget, components)
+      const { components: newComponents, imports: newImports } = removeElementAtPath(
+        underlyingTarget,
+        components,
+        successTarget.imports,
+      )
       editorStatePatches = [
         getPatchForComponentChange(
           successTarget.topLevelElements,
-          withElementRemoved,
-          successTarget.imports,
+          newComponents,
+          newImports,
           underlyingFilePathTarget,
         ),
       ]

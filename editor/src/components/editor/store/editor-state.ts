@@ -1,6 +1,7 @@
 import * as json5 from 'json5'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { MetadataUtils, findJSXElementAtPath } from '../../../core/model/element-metadata-utils'
 import {
+  findJSXElementAtStaticPath,
   findJSXElementChildAtPath,
   removeJSXElementChild,
   transformJSXComponentAtPath,
@@ -182,6 +183,8 @@ import type { VariablesInScope } from '../../canvas/ui-jsx-canvas'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import type { ActiveFrame } from '../../canvas/commands/set-active-frames-command'
 import { Y } from '../../../core/shared/yjs'
+import { removeUnusedImports } from '../import-utils'
+import { emptyImports } from '../../../core/workers/common/project-file-utils'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1898,15 +1901,30 @@ function getJSXComponentsAndImportsForPath(
   }
 }
 
+type RemoveElementResult = {
+  components: Array<UtopiaJSXComponent>
+  imports: Imports
+}
 export function removeElementAtPath(
   target: ElementPath,
   components: Array<UtopiaJSXComponent>,
-): Array<UtopiaJSXComponent> {
+  imports?: Imports,
+): RemoveElementResult {
   const staticTarget = EP.dynamicPathToStaticPath(target)
+  let resultImports = imports ?? emptyImports()
   if (staticTarget == null) {
-    return components
+    return { components, imports: resultImports }
   } else {
-    return removeJSXElementChild(staticTarget, components)
+    const element = findJSXElementAtStaticPath(components, staticTarget)
+    const resultComponents = removeJSXElementChild(staticTarget, components)
+    if (element != null) {
+      resultImports =
+        imports != null ? removeUnusedImports(element, resultComponents, imports) : emptyImports()
+    }
+    return {
+      components: resultComponents,
+      imports: resultImports,
+    }
   }
 }
 
