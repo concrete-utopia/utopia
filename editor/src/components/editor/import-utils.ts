@@ -25,6 +25,7 @@ import type { ProjectContentTreeRoot } from '../assets'
 import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 import { withUnderlyingTarget } from './store/editor-state'
 import * as EP from '../../core/shared/element-path'
+import { renameDuplicateImportsInMergeResolution } from '../../core/workers/common/import-worker-utils'
 
 export function getRequiredImportsForElement(
   target: ElementPath,
@@ -113,8 +114,12 @@ export function getRequiredImportsForElement(
       })
 
       // adjust imports in case of duplicate names
+      const duplicateImportsResolution = renameDuplicateImportsInMergeResolution(
+        importsInOriginFile,
+        importsMergeResolution,
+      )
 
-      return importsMergeResolution
+      return duplicateImportsResolution
     },
   )
 }

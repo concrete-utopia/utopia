@@ -11,12 +11,16 @@ import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import {
   forUnderlyingTargetFromEditorState,
+  modifyUnderlyingTargetElement,
   removeElementAtPath,
 } from '../../editor/store/editor-state'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 import { getPatchForComponentChange } from './commands'
 import type { IndexPosition } from '../../../utils/utils'
 import { insertJSXElementChildren } from '../../../core/model/element-template-utils'
+import type { JSXElement } from '../../../core/shared/element-template'
+import { isJSXElement } from '../../../core/shared/element-template'
+import { renameComponent } from '../../../components/navigator/actions'
 
 export interface ReparentElement extends BaseCommand {
   type: 'REPARENT_ELEMENT'
@@ -61,13 +65,17 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
           _underlyingTargetNewParent,
           underlyingFilePathNewParent,
         ) => {
+          const elementToInsert = isJSXElement(underlyingElementTarget)
+            ? renameUnderlyingTargetIfNeeded(underlyingElementTarget, command.renameElement)
+            : underlyingElementTarget
+
           if (underlyingFilePathTarget === underlyingFilePathNewParent) {
             const components = getUtopiaJSXComponentsFromSuccess(successTarget)
             const withElementRemoved = removeElementAtPath(command.target, components)
 
             const insertionResult = insertJSXElementChildren(
               command.newParent,
-              [underlyingElementTarget],
+              [elementToInsert],
               withElementRemoved,
               command.indexPosition,
             )
@@ -93,7 +101,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
 
             const insertionResult = insertJSXElementChildren(
               command.newParent,
-              [underlyingElementTarget],
+              [elementToInsert],
               componentsNewParent,
               command.indexPosition,
             )
@@ -141,5 +149,22 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
     commandDescription: `Reparent Element ${EP.toUid(
       command.target,
     )} to new parent ${parentDescription}`,
+  }
+}
+
+function renameUnderlyingTargetIfNeeded(
+  underlyingTarget: JSXElement,
+  renameElement: string | null,
+): JSXElement {
+  if (renameElement != null) {
+    return {
+      ...underlyingTarget,
+      name: {
+        ...underlyingTarget.name,
+        baseVariable: renameElement,
+      },
+    }
+  } else {
+    return underlyingTarget
   }
 }

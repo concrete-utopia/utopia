@@ -2,7 +2,7 @@ import type { Imports, ImportsMergeResolution } from '../../../core/shared/proje
 import { mapValues } from '../../../core/shared/object-utils'
 import { importAlias, importDetails } from '../../../core/shared/project-file-types'
 
-export function handleDuplicateImports(
+export function renameDuplicateImports(
   existingImports: Imports,
   toAdd: Imports,
 ): ImportsMergeResolution {
@@ -55,6 +55,18 @@ export function handleDuplicateImports(
   }
 }
 
+export function renameDuplicateImportsInMergeResolution(
+  existingImports: Imports,
+  toAdd: ImportsMergeResolution,
+): ImportsMergeResolution {
+  const importsResolution = renameDuplicateImports(existingImports, toAdd.imports)
+  const mergedDuplicateNameMapping = mergeDuplicateNameMaps(importsResolution, toAdd)
+  return {
+    imports: importsResolution.imports,
+    duplicateNameMapping: mergedDuplicateNameMapping,
+  }
+}
+
 function adjustImportNameIfNeeded(
   existingNames: Map<string, string>,
   importName: string,
@@ -84,4 +96,15 @@ export function getAllImportsUniqueNames(imports: Imports): Map<string, string> 
     })
     return acc
   }, new Map<string, string>())
+}
+
+export function mergeDuplicateNameMaps(
+  first: ImportsMergeResolution,
+  second: ImportsMergeResolution,
+): Map<string, string> {
+  const mergedDuplicateNameMapping = new Map<string, string>([
+    ...first.duplicateNameMapping,
+    ...second.duplicateNameMapping,
+  ])
+  return mergedDuplicateNameMapping
 }

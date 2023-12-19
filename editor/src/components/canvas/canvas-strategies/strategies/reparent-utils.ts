@@ -1,6 +1,9 @@
 import type { ProjectContentTreeRoot } from '../../../assets'
 import type { AllElementProps } from '../../../editor/store/editor-state'
-import { withUnderlyingTarget } from '../../../editor/store/editor-state'
+import {
+  getJSXElementFromProjectContents,
+  withUnderlyingTarget,
+} from '../../../editor/store/editor-state'
 import type { ElementPath, Imports, NodeModules } from '../../../../core/shared/project-file-types'
 import type { CanvasCommand } from '../../commands/commands'
 import { reparentElement } from '../../commands/reparent-element-command'
@@ -50,7 +53,7 @@ import { boundingRectangleArray, nullIfInfinity } from '../../../../core/shared/
 import { isElementRenderedBySameComponent } from './reparent-helpers/reparent-helpers'
 import type { ParsedCopyData } from '../../../../utils/clipboard'
 import { getParseSuccessForFilePath } from '../../canvas-utils'
-import { handleDuplicateImports } from '../../../../core/workers/common/import-worker-utils'
+import { renameDuplicateImports } from '../../../../core/workers/common/import-worker-utils'
 
 interface GetReparentOutcomeResult {
   commands: Array<CanvasCommand>
@@ -94,7 +97,7 @@ function adjustElementDuplicateName(
   if (fileContents == null) {
     return element
   }
-  const { imports, duplicateNameMapping } = handleDuplicateImports(
+  const { imports, duplicateNameMapping } = renameDuplicateImports(
     fileContents.imports,
     element.imports,
   )
@@ -109,22 +112,16 @@ function adjustElementDuplicateName(
   return element
 }
 
-function changeElementNameByPath(
+function getElementName(
   target: ElementPath,
   projectContents: ProjectContentTreeRoot,
   duplicateNameMapping: Map<string, string>,
-) {
-  withUnderlyingTarget<void>(
-    target,
-    projectContents,
-    undefined,
-    (success, element, underlyingTarget, underlyingFilePath) => {
-      if (isJSXElement(element)) {
-        element.name.baseVariable =
-          duplicateNameMapping.get(element.name.baseVariable) ?? element.name.baseVariable
-      }
-    },
-  )
+): string | null {
+  const element = getJSXElementFromProjectContents(target, projectContents)
+  if (element == null) {
+    return null
+  }
+  return duplicateNameMapping.get(element.name.baseVariable) ?? element.name.baseVariable
 }
 
 export function getReparentOutcome(
@@ -166,10 +163,11 @@ export function getReparentOutcome(
         newTargetFilePath,
         builtInDependencies,
       )
-      changeElementNameByPath(toReparent.target, projectContents, duplicateNameMapping)
-
       commands.push(addImportsToFile(whenToRun, newTargetFilePath, imports))
-      commands.push(reparentElement(whenToRun, toReparent.target, targetParent, indexPosition))
+      const elementName = getElementName(toReparent.target, projectContents, duplicateNameMapping)
+      commands.push(
+        reparentElement(whenToRun, toReparent.target, targetParent, indexPosition, elementName),
+      )
       commands.push(
         ...getRequiredGroupTrueUps(
           projectContents,
@@ -263,13 +261,20 @@ export function getReparentOutcomeMultiselect(
           newTargetFilePath,
           builtInDependencies,
         )
-        changeElementNameByPath(toReparent.target, projectContents, duplicateNameMapping)
         commands.push(addImportsToFile(whenToRun, newTargetFilePath, imports))
-        commands.push(reparentElement(whenToRun, toReparent.target, newParent, indexPosition))
+        const elementName = getElementName(toReparent.target, projectContents, duplicateNameMapping)
+        commands.push(
+          reparentElement(whenToRun, toReparent.target, newParent, indexPosition, elementName),
+        )
         break
       case 'ELEMENT_TO_REPARENT':
-        commands.push(addImportsToFile(whenToRun, newTargetFilePath, toReparent.imports))
-        elementsToInsert.push(toReparent.element)
+        const adjustedElement = adjustElementDuplicateName(
+          toReparent,
+          newTargetFilePath,
+          projectContents,
+        )
+        commands.push(addImportsToFile(whenToRun, newTargetFilePath, adjustedElement.imports))
+        elementsToInsert.push(adjustedElement.element)
         break
       default:
         const _exhaustiveCheck: never = toReparent

@@ -13,7 +13,7 @@ import { defaultIfNull, optionalMap } from '../../shared/optional-utils'
 
 import { absolutePathFromRelativePath } from '../../../utils/path-utils'
 import { stripExtension } from '../../../components/custom-code/custom-code-utils'
-import { handleDuplicateImports } from './import-worker-utils'
+import { renameDuplicateImports } from './import-worker-utils'
 
 export function codeNeedsPrinting(revisionsState: RevisionsStateType): boolean {
   return revisionsState === RevisionsState.ParsedAhead
@@ -150,7 +150,7 @@ export function mergeImports(
     }
   })
 
-  const { imports: importResult, duplicateNameMapping } = handleDuplicateImports(
+  const { imports: importResult, duplicateNameMapping } = renameDuplicateImports(
     emptyImports(),
     imports,
   )
