@@ -1,10 +1,10 @@
-import { mergeImportsResolutionWithImports } from '../../../components/editor/import-utils'
+import { mergeImportsResolutions } from '../../../components/editor/import-utils'
 import { includeToastPatch } from '../../../components/editor/actions/toast-helpers'
 import { insertJSXElementChildren } from '../../../core/model/element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import * as EP from '../../../core/shared/element-path'
 import { optionalMap } from '../../../core/shared/optional-utils'
-import type { ElementPath } from '../../../core/shared/project-file-types'
+import { importsResolution, type ElementPath } from '../../../core/shared/project-file-types'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import type { InsertionSubject } from '../../editor/editor-modes'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
@@ -53,10 +53,10 @@ export const runInsertElementInsertionSubject: CommandFunction<InsertElementInse
         null,
       )
 
-      const updatedImports = mergeImportsResolutionWithImports(
+      const updatedImports = mergeImportsResolutions(
         underlyingFilePath,
+        importsResolution(success.imports),
         mergeImports(underlyingFilePath, insertionResult.importsToAdd, subject.importsToAdd),
-        success.imports,
       )
 
       editorStatePatches.push(

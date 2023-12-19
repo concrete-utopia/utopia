@@ -8,7 +8,11 @@ import {
   jsxElement,
   jsxFragment,
 } from '../../../core/shared/element-template'
-import type { ElementPath, Imports } from '../../../core/shared/project-file-types'
+import {
+  importsResolution,
+  type ElementPath,
+  type Imports,
+} from '../../../core/shared/project-file-types'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import {
   forUnderlyingTargetFromEditorState,
@@ -37,7 +41,7 @@ import { generateConsistentUID } from '../../../core/shared/uid-utils'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { getSimpleAttributeAtPath } from '../../../core/model/element-metadata-utils'
 import { forEachRight, right } from '../../../core/shared/either'
-import { mergeImportsResolutionWithImports } from '../../../components/editor/import-utils'
+import { mergeImportsResolutions } from '../../../components/editor/import-utils'
 
 type ContainerToWrapIn = InsertionSubjectWrapper
 
@@ -116,10 +120,10 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
         getPatchForComponentChange(
           success.topLevelElements,
           insertionResult.components,
-          mergeImportsResolutionWithImports(
+          mergeImportsResolutions(
             underlyingFilePath,
+            importsResolution(success.imports),
             mergeImports(underlyingFilePath, imports, insertionResult.importsToAdd),
-            success.imports,
           ).imports,
           underlyingFilePath,
         ),

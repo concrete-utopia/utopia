@@ -127,6 +127,7 @@ import {
   isImageFile,
   isDirectory,
   parseSuccess,
+  importsResolution,
 } from '../../../core/shared/project-file-types'
 import {
   codeFile,
@@ -551,7 +552,7 @@ import { addHookForProjectChanges } from '../store/collaborative-editing'
 import { arrayDeepEquality, objectDeepEquality } from '../../../utils/deep-equality'
 import type { ProjectServerState } from '../store/project-server-state'
 import { fixParseSuccessUIDs } from '../../../core/workers/parser-printer/uid-fix'
-import { mergeImportsResolutionWithImports } from '../import-utils'
+import { mergeImportsResolutions } from '../import-utils'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -2225,10 +2226,10 @@ export const UPDATE_FNS = {
           withInsertedElement.components,
         )
 
-        const updatedImports = mergeImportsResolutionWithImports(
+        const updatedImports = mergeImportsResolutions(
           underlyingFilePath,
+          importsResolution(success.imports),
           mergeImports(underlyingFilePath, action.importsToAdd, withInsertedElement.importsToAdd),
-          success.imports,
         )
 
         // TODO handle duplicate name mapping
@@ -4952,14 +4953,14 @@ export const UPDATE_FNS = {
             withInsertedElement.components,
           )
 
-          const updatedImports = mergeImportsResolutionWithImports(
+          const updatedImports = mergeImportsResolutions(
             underlyingFilePath,
+            importsResolution(success.imports),
             mergeImports(
               underlyingFilePath,
               withInsertedElement.importsToAdd,
               action.toInsert.importsToAdd,
             ),
-            success.imports,
           )
 
           // TODO handle duplicate name mapping

@@ -20,12 +20,14 @@ import type {
   Imports,
   NodeModules,
 } from '../../core/shared/project-file-types'
-import { importAlias, importDetails } from '../../core/shared/project-file-types'
+import { importAlias, importDetails, importsResolution } from '../../core/shared/project-file-types'
 import type { ProjectContentTreeRoot } from '../assets'
 import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 import { withUnderlyingTarget } from './store/editor-state'
 import * as EP from '../../core/shared/element-path'
 import { renameDuplicateImportsInMergeResolution } from '../../core/workers/common/import-worker-utils'
+import { get } from 'objectPath'
+import { getParseSuccessForFilePath } from '../canvas/canvas-utils'
 
 export function getRequiredImportsForElement(
   target: ElementPath,
@@ -61,31 +63,35 @@ export function getRequiredImportsForElement(
             if (importedFromResult != null) {
               switch (importedFromResult.type) {
                 case 'SAME_FILE_ORIGIN':
-                  importsMergeResolution = mergeImportsResolutionWithImports(
+                  importsMergeResolution = mergeImportsResolutions(
                     targetFilePath,
                     importsMergeResolution,
-                    getImportsFor(
-                      builtInDependencies,
-                      importsInOriginFile,
-                      projectContents,
-                      nodeModules,
-                      underlyingFilePath,
-                      elem.name.baseVariable,
-                    ),
-                  )
-                  break
-                case 'IMPORTED_ORIGIN':
-                  if (importedFromResult.exportedName != null) {
-                    importsMergeResolution = mergeImportsResolutionWithImports(
-                      targetFilePath,
-                      importsMergeResolution,
+                    importsResolution(
                       getImportsFor(
                         builtInDependencies,
                         importsInOriginFile,
                         projectContents,
                         nodeModules,
                         underlyingFilePath,
-                        importedFromResult.exportedName,
+                        elem.name.baseVariable,
+                      ),
+                    ),
+                  )
+                  break
+                case 'IMPORTED_ORIGIN':
+                  if (importedFromResult.exportedName != null) {
+                    importsMergeResolution = mergeImportsResolutions(
+                      targetFilePath,
+                      importsMergeResolution,
+                      importsResolution(
+                        getImportsFor(
+                          builtInDependencies,
+                          importsInOriginFile,
+                          projectContents,
+                          nodeModules,
+                          underlyingFilePath,
+                          importedFromResult.exportedName,
+                        ),
                       ),
                     )
                   }
@@ -99,23 +105,24 @@ export function getRequiredImportsForElement(
             }
           }
         } else if (isJSXFragment(elem) && elem.longForm) {
-          importsMergeResolution = mergeImportsResolutionWithImports(
+          importsMergeResolution = mergeImportsResolutions(
             targetFilePath,
             importsMergeResolution,
-            {
+            importsResolution({
               react: {
                 importedAs: 'React',
                 importedFromWithin: [],
                 importedWithName: null,
               },
-            },
+            }),
           )
         }
       })
 
       // adjust imports in case of duplicate names
+      const targetFileContents = getParseSuccessForFilePath(targetFilePath, projectContents)
       const duplicateImportsResolution = renameDuplicateImportsInMergeResolution(
-        importsInOriginFile,
+        targetFileContents.imports,
         importsMergeResolution,
       )
 
@@ -234,14 +241,19 @@ export function getImportsFor(
   return emptyImports()
 }
 
-export function mergeImportsResolutionWithImports(
+export function mergeImportsResolutions(
   fileUri: string,
-  first: ImportsMergeResolution,
-  second: Imports,
+  existing: ImportsMergeResolution,
+  newImports: ImportsMergeResolution,
 ): ImportsMergeResolution {
-  const { imports, duplicateNameMapping } = mergeImports(fileUri, first.imports, second)
+  const { imports, duplicateNameMapping } = mergeImports(
+    fileUri,
+    existing.imports,
+    newImports.imports,
+  )
   const mergedDuplicateNameMapping = new Map<string, string>([
-    ...first.duplicateNameMapping,
+    ...existing.duplicateNameMapping,
+    ...newImports.duplicateNameMapping,
     ...duplicateNameMapping,
   ])
   return {
