@@ -392,6 +392,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
                     user={user}
                     comment={c}
                     onCommentDelete={onCommentDelete}
+                    style={{ background: colorTheme.bg1.value }}
                   />
                 )
               })}
