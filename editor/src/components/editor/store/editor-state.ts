@@ -1908,21 +1908,23 @@ type RemoveElementResult = {
 export function removeElementAtPath(
   target: ElementPath,
   components: Array<UtopiaJSXComponent>,
-  imports?: Imports,
+  originalImports?: Imports,
 ): RemoveElementResult {
   const staticTarget = EP.dynamicPathToStaticPath(target)
-  let resultImports = imports ?? emptyImports()
+  let resultImports = originalImports ?? emptyImports()
   if (staticTarget == null) {
     return { components, imports: resultImports }
   } else {
-    const element = findJSXElementAtStaticPath(components, staticTarget)
-    const resultComponents = removeJSXElementChild(staticTarget, components)
-    if (element != null) {
+    const removedElement = findJSXElementAtStaticPath(components, staticTarget)
+    const remainingComponents = removeJSXElementChild(staticTarget, components)
+    if (removedElement != null) {
       resultImports =
-        imports != null ? removeUnusedImports(element, resultComponents, imports) : emptyImports()
+        originalImports != null
+          ? removeUnusedImports(removedElement, remainingComponents, originalImports)
+          : emptyImports()
     }
     return {
-      components: resultComponents,
+      components: remainingComponents,
       imports: resultImports,
     }
   }

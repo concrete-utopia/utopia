@@ -976,6 +976,7 @@ function deleteElements(
           return {
             ...simpleSuccess,
             utopiaComponents: withTargetRemoved.components,
+            imports: withTargetRemoved.imports,
           }
         }, success)
       }
