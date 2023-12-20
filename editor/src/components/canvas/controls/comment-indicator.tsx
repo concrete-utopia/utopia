@@ -453,14 +453,21 @@ const HoveredCommentIndicator = React.memo((props: HoveredCommentIndicatorProps)
     <div
       style={{
         position: 'fixed',
-        top: position.y,
-        left: position.x,
+        // temporarily moving the hovered comment indicator to align with the not hovered version
+        top: position.y - 40.5,
+        left: position.x - 3,
       }}
       onMouseDown={onMouseDown}
       onClick={onClick}
     >
       <CommentWrapper
-        style={{ borderRadius: '18px 18px 18px 0px' }}
+        style={{
+          borderRadius: '18px 18px 18px 0px',
+          width: 250,
+          boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
+          background: colorTheme.bg1.value,
+          overflow: 'auto',
+        }}
         data-theme={theme}
         user={user}
         comment={comment}
