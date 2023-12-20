@@ -183,7 +183,7 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
     return null
   }
 
-  const repliesCount = thread.comments.length - 1
+  const repliesCount = thread.comments.filter((c) => c.deletedAt == null).length - 1
 
   const remixLocationRouteLabel = getRemixLocationLabel(remixLocationRoute)
 
