@@ -299,7 +299,21 @@ function useIsSelectedAndScrollToThread(ref: React.RefObject<HTMLDivElement>, th
   const scrollToSelectedCallback = React.useCallback(
     (isSelected: boolean) => {
       if (isSelected && ref.current != null) {
-        ref.current.scrollIntoView()
+        const scrollArea = ref.current.offsetParent
+        if (scrollArea != null) {
+          const scrollAreaRect = scrollArea.getBoundingClientRect()
+          const elementRect = ref.current.getBoundingClientRect()
+
+          const fullyVisible =
+            elementRect.top >= scrollAreaRect.top &&
+            elementRect.bottom <= scrollAreaRect.bottom &&
+            elementRect.left >= scrollAreaRect.left &&
+            elementRect.right <= scrollAreaRect.right
+
+          if (!fullyVisible) {
+            ref.current.scrollIntoView()
+          }
+        }
       }
     },
     [ref],
