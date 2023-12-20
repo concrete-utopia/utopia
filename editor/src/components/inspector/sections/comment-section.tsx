@@ -17,7 +17,7 @@ import { stopPropagation } from '../common/inspector-utils'
 import { useStorage, type ThreadMetadata } from '../../../../liveblocks.config'
 import type { ThreadData } from '@liveblocks/client'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { canvasRectangle } from '../../../core/shared/math-utils'
+import { canvasRectangle, rectangleContainsRectangle } from '../../../core/shared/math-utils'
 import {
   scrollToPosition,
   setShowResolvedThreads,
@@ -40,6 +40,8 @@ import { openCommentThreadActions } from '../../../core/shared/multiplayer'
 import { getRemixLocationLabel } from '../../canvas/remix/remix-utils'
 import type { RestOfEditorState } from '../../editor/store/store-hook-substore-types'
 import { getCurrentTheme } from '../../editor/store/editor-state'
+import type { EditorAction } from '../../editor/action-types'
+import { canvasPointToWindowPoint } from '../../canvas/dom-lookup'
 
 export const CommentSection = React.memo(() => {
   return (
@@ -133,6 +135,17 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
   const isOnAnotherRoute =
     remixLocationRoute != null && remixLocationRoute !== remixState?.location.pathname
 
+  const canvasScale = useEditorState(
+    Substores.canvasOffset,
+    (store) => store.editor.canvas.scale,
+    'ThreadPreview canvasScale',
+  )
+  const canvasOffset = useEditorState(
+    Substores.canvasOffset,
+    (store) => store.editor.canvas.roundedCanvasOffset,
+    'ThreadPreview canvasOffset',
+  )
+
   const onClick = React.useCallback(() => {
     if (isOnAnotherRoute) {
       if (remixState == null) {
@@ -140,11 +153,32 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
       }
       remixState.navigate(remixLocationRoute)
     }
-    const rect = canvasRectangle({ x: location.x, y: location.y, width: 25, height: 25 })
-    dispatch([
-      ...openCommentThreadActions(thread.id, commentScene),
-      scrollToPosition(rect, 'to-center'),
-    ])
+    let actions: EditorAction[] = [...openCommentThreadActions(thread.id, commentScene)]
+
+    const canvasDiv = document.getElementById('canvas-root')
+    if (canvasDiv != null) {
+      const canvasArea = canvasDiv.getBoundingClientRect()
+      const visibleAreaTolerance = 200 // px
+      const visibleArea = canvasRectangle({
+        x: canvasArea.x + visibleAreaTolerance,
+        y: canvasArea.y,
+        width: canvasArea.width - visibleAreaTolerance * 2,
+        height: canvasArea.height,
+      })
+      const rect = canvasRectangle({ x: location.x, y: location.y, width: 25, height: 25 })
+      const windowLocation = canvasPointToWindowPoint(location, canvasScale, canvasOffset)
+      const windowRect = canvasRectangle({
+        x: windowLocation.x,
+        y: windowLocation.y,
+        width: rect.width,
+        height: rect.height,
+      })
+      const isVisible = rectangleContainsRectangle(visibleArea, windowRect)
+      if (!isVisible) {
+        actions.push(scrollToPosition(rect, 'to-center'))
+      }
+    }
+    dispatch(actions)
   }, [
     dispatch,
     isOnAnotherRoute,
@@ -153,6 +187,8 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
     location,
     thread.id,
     commentScene,
+    canvasScale,
+    canvasOffset,
   ])
 
   const resolveThread = useResolveThread()
@@ -299,7 +335,21 @@ function useIsSelectedAndScrollToThread(ref: React.RefObject<HTMLDivElement>, th
   const scrollToSelectedCallback = React.useCallback(
     (isSelected: boolean) => {
       if (isSelected && ref.current != null) {
-        ref.current.scrollIntoView()
+        const scrollArea = ref.current.offsetParent
+        if (scrollArea != null) {
+          const scrollAreaRect = scrollArea.getBoundingClientRect()
+          const elementRect = ref.current.getBoundingClientRect()
+
+          const fullyVisible =
+            elementRect.top >= scrollAreaRect.top &&
+            elementRect.bottom <= scrollAreaRect.bottom &&
+            elementRect.left >= scrollAreaRect.left &&
+            elementRect.right <= scrollAreaRect.right
+
+          if (!fullyVisible) {
+            ref.current.scrollIntoView()
+          }
+        }
       }
     },
     [ref],
