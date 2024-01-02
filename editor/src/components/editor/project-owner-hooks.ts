@@ -31,7 +31,7 @@ export function useDisplayOwnershipWarning(): void {
             dispatch([
               showToast(
                 notice(
-                  'Viewer Mode: As you are not the owner of this project, it is read-only.',
+                  'Viewer Mode: Either you are not the owner of this project or you have this project open elsewhere. As a result it is read-only.',
                   'NOTICE',
                   true,
                   OwnershipToastID,

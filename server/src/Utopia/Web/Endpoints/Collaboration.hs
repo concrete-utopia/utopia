@@ -10,7 +10,7 @@
 {-# LANGUAGE TypeOperators         #-}
 
 {-|
-  All the endpoints defined in "Utopia.Web.Types" are implemented here.
+  All the endpoints defined in "Utopia.Web.Types.Collaboration" are implemented here.
 -}
 module Utopia.Web.Endpoints.Collaboration where
 

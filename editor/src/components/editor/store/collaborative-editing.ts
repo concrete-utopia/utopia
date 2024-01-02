@@ -704,6 +704,15 @@ export async function releaseControl(): Promise<void> {
   }
 }
 
+// When the editor becomes hidden (a pre-cursor to being closed fully), then release control
+// of the baton for the project, so that others can claim it. This is also triggered if the
+// tab is hidden or unloaded but not closed.
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    void releaseControl()
+  }
+})
+
 export function allowedToEditProject(serverState: ProjectServerState): boolean {
   if (isFeatureEnabled('Baton Passing For Control')) {
     return serverState.currentlyHolderOfTheBaton
