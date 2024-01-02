@@ -613,51 +613,49 @@ function synchroniseParseSuccessToCollabFile(
   )
 }
 
-export interface ClaimProjectOwnership {
-  type: 'CLAIM_PROJECT_OWNERSHIP'
+export interface ClaimProjectControl {
+  type: 'CLAIM_PROJECT_CONTROL'
   projectID: string
   collaborationEditor: string
 }
 
-export function claimProjectOwnership(
+export function claimProjectControl(
   projectID: string,
   collaborationEditor: string,
-): ClaimProjectOwnership {
+): ClaimProjectControl {
   return {
-    type: 'CLAIM_PROJECT_OWNERSHIP',
+    type: 'CLAIM_PROJECT_CONTROL',
     projectID: projectID,
     collaborationEditor: collaborationEditor,
   }
 }
 
-export interface ClearAllOfCollaboratorsOwnership {
-  type: 'CLEAR_ALL_OF_COLLABORATORS_OWNERSHIP'
+export interface ClearAllOfCollaboratorsControl {
+  type: 'CLEAR_ALL_OF_COLLABORATORS_CONTROL'
   collaborationEditor: string
 }
 
-export function clearAllOfCollaboratorsOwnership(
+export function clearAllOfCollaboratorsControl(
   collaborationEditor: string,
-): ClearAllOfCollaboratorsOwnership {
+): ClearAllOfCollaboratorsControl {
   return {
-    type: 'CLEAR_ALL_OF_COLLABORATORS_OWNERSHIP',
+    type: 'CLEAR_ALL_OF_COLLABORATORS_CONTROL',
     collaborationEditor: collaborationEditor,
   }
 }
 
-export type CollaborationRequest = ClaimProjectOwnership | ClearAllOfCollaboratorsOwnership
+export type CollaborationRequest = ClaimProjectControl | ClearAllOfCollaboratorsControl
 
-export interface ClaimProjectOwnershipResult {
-  type: 'CLAIM_PROJECT_OWNERSHIP_RESULT'
+export interface ClaimProjectControlResult {
+  type: 'CLAIM_PROJECT_CONTROL_RESULT'
   successfullyClaimed: boolean
 }
 
-export interface ClearAllOfCollaboratorsOwnershipResult {
-  type: 'CLEAR_ALL_OF_COLLABORATORS_OWNERSHIP_RESULT'
+export interface ClearAllOfCollaboratorsControlResult {
+  type: 'CLEAR_ALL_OF_COLLABORATORS_CONTROL_RESULT'
 }
 
-export type CollaborationResponse =
-  | ClaimProjectOwnershipResult
-  | ClearAllOfCollaboratorsOwnershipResult
+export type CollaborationResponse = ClaimProjectControlResult | ClearAllOfCollaboratorsControlResult
 
 const collaborationEditor = UUID()
 
@@ -684,9 +682,9 @@ export async function claimControlOverProject(projectID: string | null): Promise
     return null
   }
 
-  const request = claimProjectOwnership(projectID, collaborationEditor)
+  const request = claimProjectControl(projectID, collaborationEditor)
   const response = await callCollaborationEndpoint(request)
-  if (response.type === 'CLAIM_PROJECT_OWNERSHIP_RESULT') {
+  if (response.type === 'CLAIM_PROJECT_CONTROL_RESULT') {
     return response.successfullyClaimed
   } else {
     throw new Error(`Unexpected response: ${JSON.stringify(response)}`)
@@ -695,23 +693,14 @@ export async function claimControlOverProject(projectID: string | null): Promise
 
 export async function releaseControl(): Promise<void> {
   if (isFeatureEnabled('Baton Passing For Control')) {
-    const request = clearAllOfCollaboratorsOwnership(collaborationEditor)
+    const request = clearAllOfCollaboratorsControl(collaborationEditor)
 
     const response = await callCollaborationEndpoint(request)
-    if (response.type !== 'CLEAR_ALL_OF_COLLABORATORS_OWNERSHIP_RESULT') {
+    if (response.type !== 'CLEAR_ALL_OF_COLLABORATORS_CONTROL_RESULT') {
       throw new Error(`Unexpected response: ${JSON.stringify(response)}`)
     }
   }
 }
-
-// When the editor becomes hidden (a pre-cursor to being closed fully), then release control
-// of the baton for the project, so that others can claim it. This is also triggered if the
-// tab is hidden or unloaded but not closed.
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'hidden') {
-    void releaseControl()
-  }
-})
 
 export function allowedToEditProject(serverState: ProjectServerState): boolean {
   if (isFeatureEnabled('Baton Passing For Control')) {

@@ -144,7 +144,7 @@ data ServiceCallsF a = NotFound
                      | GetGithubUserDetails Text (GetGithubUserResponse -> a)
                      | AuthLiveblocksUser Text Text (Text -> a)
                      | IsLiveblocksEnabled (Bool -> a)
-                     | ClaimCollaborationOwnership Text Text Text (Bool -> a)
+                     | ClaimCollaborationControl Text Text Text (Bool -> a)
                      | ClearCollaboratorOwnership Text a
                      deriving Functor
 

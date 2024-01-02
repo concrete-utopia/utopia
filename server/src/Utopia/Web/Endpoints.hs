@@ -14,17 +14,17 @@
 -}
 module Utopia.Web.Endpoints where
 
-import           Control.Arrow                   ((&&&))
+import           Control.Arrow                      ((&&&))
 import           Control.Lens
 import           Control.Monad.Trans.Maybe
 import           Data.Aeson
 import           Data.Aeson.Lens
-import qualified Data.ByteString.Lazy            as BL
-import           Data.CaseInsensitive            hiding (traverse)
+import qualified Data.ByteString.Lazy               as BL
+import           Data.CaseInsensitive               hiding (traverse)
 import           Data.Generics.Product
 import           Data.Generics.Sum
-import qualified Data.HashMap.Strict             as M
-import qualified Data.Text                       as T
+import qualified Data.HashMap.Strict                as M
+import qualified Data.Text                          as T
 import           Data.Text.Encoding
 import           Data.Time
 import           Network.HTTP.Types.Header
@@ -32,24 +32,27 @@ import           Network.HTTP.Types.Status
 import           Network.OAuth.OAuth2
 import           Network.Wai
 import           Network.Wai.Middleware.Gzip
-import           Prelude                         (String)
+import           Prelude                            (String)
 import           Protolude
-import           Servant                         hiding
-                                                 (serveDirectoryFileServer,
-                                                  serveDirectoryWith, uriPath)
-import           Servant.Conduit                 ()
+import           Servant                            hiding
+                                                    (serveDirectoryFileServer,
+                                                     serveDirectoryWith,
+                                                     uriPath)
+import           Servant.Conduit                    ()
 import           Servant.RawM.Server
-import qualified Text.Blaze.Html5                as H
-import           Text.Blaze.Html5                ((!))
-import qualified Text.Blaze.Html5.Attributes     as HA
+import qualified Text.Blaze.Html5                   as H
+import           Text.Blaze.Html5                   ((!))
+import qualified Text.Blaze.Html5.Attributes        as HA
 import           Text.HTML.TagSoup
-import           Text.URI                        hiding (unRText, uriPath)
+import           Text.URI                           hiding (unRText, uriPath)
 import           Text.URI.Lens
 import           Utopia.ClientModel
 import           Utopia.Web.Assets
-import           Utopia.Web.Database             (projectContentTreeFromDecodedProject)
-import qualified Utopia.Web.Database.Types       as DB
+import           Utopia.Web.Database                (projectContentTreeFromDecodedProject)
+import qualified Utopia.Web.Database.Types          as DB
 import           Utopia.Web.Database.Types
+import           Utopia.Web.Endpoints.Collaboration
+import           Utopia.Web.Endpoints.Common
 import           Utopia.Web.Executors.Common
 import           Utopia.Web.Github.Types
 import           Utopia.Web.Packager.NPM
@@ -58,8 +61,6 @@ import           Utopia.Web.Servant
 import           Utopia.Web.ServiceTypes
 import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
-import           Utopia.Web.Endpoints.Common
-import           Utopia.Web.Endpoints.Collaboration
 import           WaiAppStatic.Storage.Filesystem
 import           WaiAppStatic.Types
 
@@ -476,7 +477,7 @@ loadProjectFileEndpoint (ProjectIdWithSuffix projectID _) possibleETag filePath 
       pure $ const $ sendProjectFileContentsResponse normalizedPath $ code fileContents
     (Right (Just (_, pathFound))) ->
       handleNoAsset $ loadProjectAsset (projectID : pathFound) possibleETag
- 
+
 saveProjectAssetEndpoint :: Maybe Text -> ProjectIdWithSuffix -> [Text] -> ServerMonad Application
 saveProjectAssetEndpoint cookie (ProjectIdWithSuffix projectID _) path = requireUser cookie $ \sessionUser ->
   saveProjectAsset (view (field @"_id") sessionUser) projectID path

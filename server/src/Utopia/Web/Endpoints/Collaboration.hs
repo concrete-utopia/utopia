@@ -32,14 +32,14 @@ import           Network.HTTP.Types.Status
 import           Network.OAuth.OAuth2
 import           Network.Wai
 import           Network.Wai.Middleware.Gzip
-import Network.WebSockets
+import           Network.WebSockets
 import           Prelude                         (String)
 import           Protolude
 import           Servant                         hiding
                                                  (serveDirectoryFileServer,
                                                   serveDirectoryWith, uriPath)
-import           Servant.Conduit                 ()
 import           Servant.API.WebSocket
+import           Servant.Conduit                 ()
 import           Text.URI                        hiding (unRText, uriPath)
 import           Text.URI.Lens
 import           Utopia.ClientModel
@@ -47,15 +47,15 @@ import           Utopia.Web.Assets
 import           Utopia.Web.Database             (projectContentTreeFromDecodedProject)
 import qualified Utopia.Web.Database.Types       as DB
 import           Utopia.Web.Database.Types
+import           Utopia.Web.Endpoints.Common
 import           Utopia.Web.Executors.Common
 import           Utopia.Web.Github.Types
 import           Utopia.Web.Packager.NPM
 import           Utopia.Web.Proxy
 import           Utopia.Web.Servant
 import           Utopia.Web.ServiceTypes
+import           Utopia.Web.Types.Collaboration
 import           Utopia.Web.Utils.Files
-import           Utopia.Web.Endpoints.Common
-import Utopia.Web.Types.Collaboration
 import           WaiAppStatic.Storage.Filesystem
 import           WaiAppStatic.Types
 
@@ -63,10 +63,10 @@ collaborationEndpoint:: Maybe Text -> CollaborationRequest -> ServerMonad Collab
 collaborationEndpoint cookie collaborationRequest = do
   requireUser cookie $ \sessionUser -> do
     let idOfUser = view (field @"_id") sessionUser
-    case collaborationRequest of 
-      (ClaimProjectOwnershipRequest ClaimProjectOwnership{..}) -> do 
-        successfullyClaimed <- claimCollaborationOwnership idOfUser projectID collaborationEditor
-        pure $ ClaimProjectOwnershipResultResponse $ ClaimProjectOwnershipResult{..}
-      (ClearAllOfCollaboratorsOwnershipRequest ClearAllOfCollaboratorsOwnership{..}) -> do 
+    case collaborationRequest of
+      (ClaimProjectControlRequest ClaimProjectControl{..}) -> do
+        successfullyClaimed <- claimCollaborationControl idOfUser projectID collaborationEditor
+        pure $ ClaimProjectControlResultResponse $ ClaimProjectControlResult{..}
+      (ClearAllOfCollaboratorsControlRequest ClearAllOfCollaboratorsControl{..}) -> do
         _ <- clearCollaboratorOwnership collaborationEditor
-        pure $ ClearAllOfCollaboratorsOwnershipResponse ClearAllOfCollaboratorsOwnershipResult 
+        pure $ ClearAllOfCollaboratorsControlResponse ClearAllOfCollaboratorsControlResult
