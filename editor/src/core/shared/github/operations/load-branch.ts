@@ -214,7 +214,7 @@ export async function getProcessedParsedProjectFromGithubRepo(
   onUpdate: (update: UpdateGithubOperations | AddToast) => void,
 ): Promise<{
   parsedProjectContents: ProjectContentTreeRoot
-  branch: BranchContent
+  branch: Pick<BranchContent, 'originCommit'>
 } | null> {
   const loadBranchResult = await loadBranchFromGithub(
     branchName,
