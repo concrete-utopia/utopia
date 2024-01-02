@@ -1,6 +1,6 @@
 // This file exists so that the extension can communicate with the Utopia editor
 
-import { FSUser } from './fs/fs-types'
+import type { FSUser } from './fs/fs-types'
 import {
   deletePath,
   ensureDirectoryExists,
@@ -18,15 +18,16 @@ import {
   stopPollingMailbox,
   UtopiaInbox,
 } from './mailbox'
+import type { FromVSCodeMessage } from './messages'
 import {
   clearLoadingScreen,
-  FromVSCodeMessage,
   getUtopiaVSCodeConfig,
   openFileMessage,
   parseFromVSCodeMessage,
   utopiaReady,
 } from './messages'
 import { appendToPath } from './path-utils'
+import type { ProjectFile } from './window-messages'
 import {
   fromVSCodeExtensionMessage,
   indexedDBFailure,
@@ -36,7 +37,6 @@ import {
   isToVSCodeExtensionMessage,
   isWriteProjectFileChange,
   messageListenersReady,
-  ProjectFile,
   vsCodeBridgeReady,
   vsCodeFileChange,
   vsCodeFileDelete,
@@ -118,14 +118,14 @@ function watchForChanges(): void {
 let currentInit: Promise<void> = Promise.resolve()
 
 async function initIndexedDBBridge(
-  projectID: string,
+  vsCodeSessionID: string,
   projectContents: Array<ProjectFile>,
   openFilePath: string | null,
 ): Promise<void> {
   async function innerInit(): Promise<void> {
     stopWatchingAll()
     stopPollingMailbox()
-    await initializeFS(projectID, UtopiaFSUser)
+    await initializeFS(vsCodeSessionID, UtopiaFSUser)
     await clearBothMailboxes()
     for (const projectFile of projectContents) {
       await writeProjectFile(projectFile)
@@ -152,11 +152,15 @@ async function initIndexedDBBridge(
 // Chain off of the previous one to ensure the ordering of changes is maintained.
 let applyProjectChangesCoordinator: Promise<void> = Promise.resolve()
 
-export function setupVSCodeEventListenersForProject(projectID: string) {
+export function setupVSCodeEventListenersForProject(vsCodeSessionID: string) {
+  let intervalID: number | null = null
   window.addEventListener('message', (messageEvent: MessageEvent) => {
     const { data } = messageEvent
     if (isInitProject(data)) {
-      initIndexedDBBridge(projectID, data.projectContents, data.openFilePath)
+      if (intervalID != null) {
+        window.clearInterval(intervalID)
+      }
+      initIndexedDBBridge(vsCodeSessionID, data.projectContents, data.openFilePath)
     } else if (isDeletePathChange(data)) {
       applyProjectChangesCoordinator = applyProjectChangesCoordinator.then(async () => {
         await deletePath(toFSPath(data.fullPath), data.recursive)
@@ -176,5 +180,11 @@ export function setupVSCodeEventListenersForProject(projectID: string) {
     }
   })
 
-  window.top?.postMessage(messageListenersReady(), '*')
+  intervalID = window.setInterval(() => {
+    try {
+      window.top?.postMessage(messageListenersReady(), '*')
+    } catch (error) {
+      console.error('Error posting messageListenersReady', error)
+    }
+  }, 500)
 }

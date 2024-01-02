@@ -264,9 +264,6 @@ import type {
   DesignerFile,
   ResizeOptions,
   EditorState,
-  VSCodeBridgeIdDefault,
-  VSCodeBridgeIdProjectId,
-  VSCodeBridgeId,
   CanvasCursor,
   CursorStackItem,
   CursorImportanceLevel,
@@ -343,8 +340,6 @@ import {
   designerFile,
   resizeOptions,
   editorStateCanvas,
-  vsCodeBridgeIdDefault,
-  vsCodeBridgeIdProjectId,
   cursorStackItem,
   canvasCursor,
   floatingInsertMenuStateClosed,
@@ -2555,34 +2550,6 @@ export const EditorStateCanvasKeepDeepEquality: KeepDeepEqualityCall<EditorState
   }
 }
 
-export const VSCodeBridgeIdDefaultKeepDeepEquality: KeepDeepEqualityCall<VSCodeBridgeIdDefault> =
-  combine1EqualityCall((value) => value.defaultID, StringKeepDeepEquality, vsCodeBridgeIdDefault)
-
-export const VSCodeBridgeIdProjectIdKeepDeepEquality: KeepDeepEqualityCall<VSCodeBridgeIdProjectId> =
-  combine1EqualityCall((value) => value.projectID, StringKeepDeepEquality, vsCodeBridgeIdProjectId)
-
-export const VSCodeBridgeIdKeepDeepEquality: KeepDeepEqualityCall<VSCodeBridgeId> = (
-  oldValue,
-  newValue,
-) => {
-  switch (oldValue.type) {
-    case 'VSCODE_BRIDGE_ID_DEFAULT':
-      if (newValue.type === oldValue.type) {
-        return VSCodeBridgeIdDefaultKeepDeepEquality(oldValue, newValue)
-      }
-      break
-    case 'VSCODE_BRIDGE_ID_PROJECT_ID':
-      if (newValue.type === oldValue.type) {
-        return VSCodeBridgeIdProjectIdKeepDeepEquality(oldValue, newValue)
-      }
-      break
-    default:
-      const _exhaustiveCheck: never = oldValue
-      throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
-  }
-  return keepDeepEqualityResult(newValue, false)
-}
-
 export const ExportVariablesWithModifierKeepDeepEquality: KeepDeepEqualityCall<ExportVariablesWithModifier> =
   combine1EqualityCall(
     (exportVars) => exportVars.variables,
@@ -4287,10 +4254,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   }
 
   const idResult = NullableStringKeepDeepEquality(oldValue.id, newValue.id)
-  const vscodeBridgeIdResult = VSCodeBridgeIdKeepDeepEquality(
-    oldValue.vscodeBridgeId,
-    newValue.vscodeBridgeId,
-  )
   const forkedFromProjectIdResult = NullableStringKeepDeepEquality(
     oldValue.forkedFromProjectId,
     newValue.forkedFromProjectId,
@@ -4577,7 +4540,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
 
   const areEqual =
     idResult.areEqual &&
-    vscodeBridgeIdResult.areEqual &&
     forkedFromProjectIdResult.areEqual &&
     appIDResult.areEqual &&
     projectNameResult.areEqual &&
@@ -4661,7 +4623,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   } else {
     const newEditorState = editorState(
       idResult.value,
-      vscodeBridgeIdResult.value,
       forkedFromProjectIdResult.value,
       appIDResult.value,
       projectNameResult.value,

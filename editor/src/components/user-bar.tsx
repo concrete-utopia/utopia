@@ -64,18 +64,16 @@ export const SinglePlayerUserBar = React.memo(() => {
     'SinglePlayerUserBar amIOwner',
   )
   return (
-    <a href='/projects' target='_blank' rel='noopener rofererrer'>
-      <div
-        style={{
-          width: 24,
-          height: 24,
-          position: 'relative',
-        }}
-      >
-        <Avatar userPicture={userPicture} isLoggedIn={true} />
-        {amIOwner ? <OwnerBadge /> : null}
-      </div>
-    </a>
+    <div
+      style={{
+        width: 24,
+        height: 24,
+        position: 'relative',
+      }}
+    >
+      <Avatar userPicture={userPicture} isLoggedIn={true} />
+      {amIOwner ? <OwnerBadge /> : null}
+    </div>
   )
 })
 SinglePlayerUserBar.displayName = 'SinglePlayerUserBar'
@@ -219,14 +217,12 @@ const MultiplayerUserBar = React.memo(() => {
           )
         }),
       )}
-      <a href='/projects' target='_blank' rel='noopener rofererrer'>
-        <MultiplayerAvatar
-          name={multiplayerInitialsFromName(myUser.name)}
-          color={multiplayerColorFromIndex(myUser.colorIndex)}
-          picture={myUser.avatar}
-          isOwner={amIOwner}
-        />
-      </a>
+      <MultiplayerAvatar
+        name={multiplayerInitialsFromName(myUser.name)}
+        color={multiplayerColorFromIndex(myUser.colorIndex)}
+        picture={myUser.avatar}
+        isOwner={amIOwner}
+      />
     </div>
   )
 })
@@ -375,6 +371,7 @@ export const AvatarPicture = React.memo((props: AvatarPictureProps) => {
         height: size ?? '100%',
         borderRadius: '100%',
         filter: props.isOffline ? 'grayscale(1)' : undefined,
+        pointerEvents: 'none',
       }}
       src={url}
       referrerPolicy='no-referrer'

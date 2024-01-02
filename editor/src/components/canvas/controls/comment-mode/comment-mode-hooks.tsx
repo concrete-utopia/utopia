@@ -109,7 +109,7 @@ export function useCommentModeSelectAndHover(comment: CommentId | null): MouseCa
           ),
         ])
       } else {
-        dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
+        dispatch([switchEditorMode(EditorModes.commentMode(null, 'not-dragging'))])
       }
     },
     [dispatch, comment, storeRef, scenes],

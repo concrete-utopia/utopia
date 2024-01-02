@@ -5,6 +5,7 @@ const darkBase = {
   primary: createUtopiColor('oklch(59% 0.25 254)'),
   primary10: createUtopiColor('oklch(59% 0.25 254 / 10%)'),
   primary30: createUtopiColor('oklch(59% 0.25 254 / 30%)'),
+  primary50: createUtopiColor('oklch(59% 0.25 254 / 50%)'),
   component: createUtopiColor('oklch(53% 0.31 290)'),
   componentChild: createUtopiColor('oklch(83.6% 0.198 81.5)'),
   componentChild20: createUtopiColor('oklch(83.6% 0.198 81.5 / 20%)'),
