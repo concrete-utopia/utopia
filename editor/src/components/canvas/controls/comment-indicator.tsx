@@ -459,6 +459,7 @@ const HoveredCommentIndicator = React.memo((props: HoveredCommentIndicatorProps)
         width: 250,
         boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
         background: colorTheme.bg1.value,
+        zIndex: 1,
         position: 'fixed',
         top: position.y,
         // temporarily moving the hovered comment indicator to align with the not hovered version
