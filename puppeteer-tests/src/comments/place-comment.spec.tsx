@@ -1,5 +1,5 @@
 import { setupBrowser, wait } from '../utils'
-import type { Browser, ElementHandle } from 'puppeteer'
+import type { Browser } from 'puppeteer'
 
 async function getFirstTab(browser: Browser) {
   const [firstTab] = await browser.pages()
@@ -16,12 +16,13 @@ describe('Comments test', () => {
         'http://localhost:8000/p/?fakeUser=alice&Commenting=true',
         TIMEOUT,
       )
-      await page.waitForSelector('#sign-in-button')
-      await page.click('#sign-in-button')
+
+      const signInButton = await page.waitForSelector('#sign-in-button')
+      await signInButton!.click()
+      await wait(10000) // wait for Liveblocks to connect
       const commentModeButton = await page.waitForSelector(
         'div[data-testid="canvas-toolbar-comment-mode"]',
       )
-      await wait(5000) // wait for Liveblocks to connect
       await commentModeButton!.click()
       const canvasControlsContainer = await page.waitForSelector('#new-canvas-controls-container')
       await canvasControlsContainer!.click({ offset: { x: 500, y: 500 } })
@@ -36,14 +37,8 @@ describe('Comments test', () => {
 
       expect(thread).not.toBeNull()
 
-      const [resolveButton] = await page.$x("//div[contains(., 'Resolve')]")
-      const resolveButtonBounds = await resolveButton.boundingBox()
-      await (resolveButton as ElementHandle<Element>).click({
-        offset: {
-          x: resolveButtonBounds!.x + resolveButtonBounds!.width / 2,
-          y: resolveButtonBounds!.y + resolveButtonBounds!.height / 2,
-        },
-      })
+      const resolveButton = await page.waitForSelector('div[data-testid="resolve-thread-button"]')
+      await resolveButton!.click()
 
       await wait(10000)
 
