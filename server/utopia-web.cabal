@@ -36,6 +36,8 @@ executable utopia-web
       Utopia.Web.Database.Types
       Utopia.Web.Editor.Branches
       Utopia.Web.Endpoints
+      Utopia.Web.Endpoints.Collaboration
+      Utopia.Web.Endpoints.Common
       Utopia.Web.Exceptions
       Utopia.Web.Executors.Common
       Utopia.Web.Executors.Development
@@ -56,6 +58,7 @@ executable utopia-web
       Utopia.Web.Server
       Utopia.Web.ServiceTypes
       Utopia.Web.Types
+      Utopia.Web.Types.Collaboration
       Utopia.Web.Utils.Files
       Utopia.Web.Utils.Limits
       Paths_utopia_web
@@ -178,6 +181,8 @@ test-suite utopia-web-test
       Utopia.Web.Database.Types
       Utopia.Web.Editor.Branches
       Utopia.Web.Endpoints
+      Utopia.Web.Endpoints.Collaboration
+      Utopia.Web.Endpoints.Common
       Utopia.Web.Exceptions
       Utopia.Web.Executors.Common
       Utopia.Web.Executors.Development
@@ -198,6 +203,7 @@ test-suite utopia-web-test
       Utopia.Web.Server
       Utopia.Web.ServiceTypes
       Utopia.Web.Types
+      Utopia.Web.Types.Collaboration
       Utopia.Web.Utils.Files
       Utopia.Web.Utils.Limits
       Paths_utopia_web

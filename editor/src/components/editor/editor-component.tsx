@@ -59,11 +59,7 @@ import { useDispatch } from './store/dispatch-context'
 import type { EditorAction } from './action-types'
 import { EditorCommon } from './editor-component-common'
 import { notice } from '../common/notice'
-import {
-  ProjectServerStateUpdater,
-  isProjectViewer,
-  isProjectViewerFromState,
-} from './store/project-server-state'
+import { ProjectServerStateUpdater } from './store/project-server-state'
 import { RoomProvider, initialPresence, useRoom, initialStorage } from '../../../liveblocks.config'
 import { generateUUID } from '../../utils/utils'
 import { isLiveblocksEnabled } from './liveblocks-utils'
@@ -72,6 +68,7 @@ import LiveblocksProvider from '@liveblocks/yjs'
 import { isRoomId, projectIdToRoomId } from '../../core/shared/multiplayer'
 import { useDisplayOwnershipWarning } from './project-owner-hooks'
 import { EditorModes } from './editor-modes'
+import { allowedToEditProject } from './store/collaborative-editing'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -359,9 +356,9 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
 
   useSelectorWithCallback(
     Substores.projectServerState,
-    (store) => store.projectServerState.isMyProject,
+    (store) => store.projectServerState,
     (isMyProject) => {
-      if (isProjectViewer(isMyProject)) {
+      if (!allowedToEditProject(isMyProject)) {
         dispatch([
           EditorActions.switchEditorMode(EditorModes.commentMode(null, 'not-dragging')),
           EditorActions.setRightMenuTab(RightMenuTab.Comments),

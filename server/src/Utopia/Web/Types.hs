@@ -13,19 +13,20 @@ module Utopia.Web.Types where
 import           Conduit
 import           Data.Aeson
 import           Data.Aeson.TH
-import qualified Data.ByteString.Lazy    as BL
+import qualified Data.ByteString.Lazy           as BL
 import           Data.Time
 import           Network.OAuth.OAuth2
 import           Protolude
 import           Servant
 import           Servant.HTML.Blaze
 import           Servant.RawM.Server
-import qualified Text.Blaze.Html5        as H
+import qualified Text.Blaze.Html5               as H
 import           Utopia.ClientModel
 import           Utopia.Web.Github.Types
 import           Utopia.Web.JSON
 import           Utopia.Web.Servant
 import           Utopia.Web.ServiceTypes
+import           Utopia.Web.Types.Collaboration
 
 {-
   'deriveJSON' as used here creates 'Data.Aeson.FromJSON' and 'Data.Aeson.ToJSON' instances
@@ -211,6 +212,7 @@ type Protected = LogoutAPI
             :<|> GithubSaveAssetAPI
             :<|> GithubUserAPI
             :<|> LiveblocksAuthenticationAPI
+            :<|> CollaborationSocketAPI
 
 type Unprotected = AuthenticateAPI H.Html
               :<|> EmptyProjectPageAPI
