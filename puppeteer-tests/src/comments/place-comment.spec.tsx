@@ -1,11 +1,6 @@
 import { setupBrowser, wait } from '../utils'
 import type { Browser } from 'puppeteer'
 
-async function getFirstTab(browser: Browser) {
-  const [firstTab] = await browser.pages()
-  return firstTab
-}
-
 const TIMEOUT = 120000
 
 describe('Comments test', () => {
