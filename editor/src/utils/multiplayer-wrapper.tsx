@@ -10,7 +10,6 @@ import {
   normalizeMultiplayerName,
 } from '../core/shared/multiplayer'
 import { ErrorBoundary } from './react-error-boundary'
-
 type Fallback = NonNullable<React.ReactNode> | null
 
 export const MultiplayerWrapper = React.memo(
@@ -32,7 +31,7 @@ export const CommentWrapper = React.memo(
       return <Comment {...commentProps} />
     }
     return (
-      <div style={{ position: 'relative' }}>
+      <div style={{ position: 'relative', color: undefined }}>
         <MultiplayerAvatar
           name={multiplayerInitialsFromName(normalizeMultiplayerName(user.name))}
           color={multiplayerColorFromIndex(user.colorIndex)}
