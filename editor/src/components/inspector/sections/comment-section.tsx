@@ -35,13 +35,14 @@ import {
   useMyThreadReadStatus,
 } from '../../../core/commenting/comment-hooks'
 import { Substores, useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
-import { unless, when } from '../../../utils/react-conditionals'
+import { when } from '../../../utils/react-conditionals'
 import { openCommentThreadActions } from '../../../core/shared/multiplayer'
 import { getRemixLocationLabel } from '../../canvas/remix/remix-utils'
 import type { RestOfEditorState } from '../../editor/store/store-hook-substore-types'
 import { getCurrentTheme } from '../../editor/store/editor-state'
 import type { EditorAction } from '../../editor/action-types'
 import { canvasPointToWindowPoint } from '../../canvas/dom-lookup'
+import { CommentRepliesCounter } from '../../canvas/controls/comment-replies-counter'
 
 export const CommentSection = React.memo(() => {
   return (
@@ -219,8 +220,6 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
     return null
   }
 
-  const repliesCount = thread.comments.filter((c) => c.deletedAt == null).length - 1
-
   const remixLocationRouteLabel = getRemixLocationLabel(remixLocationRoute)
 
   const user = getCollaboratorById(collabs, comment.userId)
@@ -288,19 +287,7 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
             Route: <span style={{ fontWeight: 500 }}>{remixLocationRouteLabel}</span>
           </div>,
         )}
-        {when(
-          repliesCount > 0,
-          <div
-            style={{
-              paddingLeft: 44,
-              fontSize: 9,
-              color: colorTheme.fg6.value,
-            }}
-          >
-            {repliesCount} {repliesCount > 1 ? 'replies' : 'reply'}
-          </div>,
-        )}
-        {unless(repliesCount > 0, <div />)}
+        <CommentRepliesCounter thread={thread} />
       </div>
       <Tooltip title='Resolve' placement='top'>
         <Button
