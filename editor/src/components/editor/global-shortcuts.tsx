@@ -615,7 +615,7 @@ export function handleKeyDown(
       [INSERT_IMAGE_SHORTCUT]: () => {
         if (allowedToEdit) {
           if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
-            // FIXME: Side effects.
+            // Side effects.
             insertImage(dispatch)
           }
         }
