@@ -1,11 +1,11 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
-import type { CSSObject, Interpolation } from '@emotion/react'
+import type { Interpolation } from '@emotion/react'
 import type { ThreadData } from '@liveblocks/client'
 import React from 'react'
 import type { ThreadMetadata } from '../../../../liveblocks.config'
-import { useEditThreadMetadata, useStorage, useThreads } from '../../../../liveblocks.config'
+import { useEditThreadMetadata, useStorage } from '../../../../liveblocks.config'
 import {
   useCanvasLocationOfThread,
   useActiveThreads,
@@ -40,6 +40,7 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import { setRightMenuTab } from '../../editor/actions/action-creators'
 import { RightMenuTab, getCurrentTheme } from '../../editor/store/editor-state'
 import { when } from '../../../utils/react-conditionals'
+import { CommentRepliesCounter } from './comment-replies-counter'
 
 const IndicatorSize = 24
 const MagnifyScale = 1.15
@@ -452,6 +453,12 @@ const HoveredCommentIndicator = React.memo((props: HoveredCommentIndicatorProps)
   return (
     <div
       style={{
+        display: 'flex',
+        flexDirection: 'column',
+        borderRadius: '18px 18px 18px 0px',
+        width: 250,
+        boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
+        background: colorTheme.bg1.value,
         position: 'fixed',
         // temporarily moving the hovered comment indicator to align with the not hovered version
         top: position.y - 40.5,
@@ -462,10 +469,6 @@ const HoveredCommentIndicator = React.memo((props: HoveredCommentIndicatorProps)
     >
       <CommentWrapper
         style={{
-          borderRadius: '18px 18px 18px 0px',
-          width: 250,
-          boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
-          background: colorTheme.bg1.value,
           overflow: 'auto',
         }}
         data-theme={theme}
@@ -473,6 +476,8 @@ const HoveredCommentIndicator = React.memo((props: HoveredCommentIndicatorProps)
         comment={comment}
         showActions={false}
       />
+      <CommentRepliesCounter thread={thread} />
+      <div style={{ height: 8 }} />
     </div>
   )
 })
