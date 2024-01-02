@@ -8,14 +8,16 @@ import {
   Button,
   FlexColumn,
   FlexRow,
+  Icn,
   InspectorSubsectionHeader,
+  Tooltip,
   useColorTheme,
 } from '../../../uuiui'
 import { stopPropagation } from '../common/inspector-utils'
 import { useStorage, type ThreadMetadata } from '../../../../liveblocks.config'
 import type { ThreadData } from '@liveblocks/client'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { canvasRectangle } from '../../../core/shared/math-utils'
+import { canvasRectangle, rectangleContainsRectangle } from '../../../core/shared/math-utils'
 import {
   scrollToPosition,
   setShowResolvedThreads,
@@ -38,6 +40,8 @@ import { openCommentThreadActions } from '../../../core/shared/multiplayer'
 import { getRemixLocationLabel } from '../../canvas/remix/remix-utils'
 import type { RestOfEditorState } from '../../editor/store/store-hook-substore-types'
 import { getCurrentTheme } from '../../editor/store/editor-state'
+import type { EditorAction } from '../../editor/action-types'
+import { canvasPointToWindowPoint } from '../../canvas/dom-lookup'
 
 export const CommentSection = React.memo(() => {
   return (
@@ -131,6 +135,17 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
   const isOnAnotherRoute =
     remixLocationRoute != null && remixLocationRoute !== remixState?.location.pathname
 
+  const canvasScale = useEditorState(
+    Substores.canvasOffset,
+    (store) => store.editor.canvas.scale,
+    'ThreadPreview canvasScale',
+  )
+  const canvasOffset = useEditorState(
+    Substores.canvasOffset,
+    (store) => store.editor.canvas.roundedCanvasOffset,
+    'ThreadPreview canvasOffset',
+  )
+
   const onClick = React.useCallback(() => {
     if (isOnAnotherRoute) {
       if (remixState == null) {
@@ -138,11 +153,32 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
       }
       remixState.navigate(remixLocationRoute)
     }
-    const rect = canvasRectangle({ x: location.x, y: location.y, width: 25, height: 25 })
-    dispatch([
-      ...openCommentThreadActions(thread.id, commentScene),
-      scrollToPosition(rect, 'to-center'),
-    ])
+    let actions: EditorAction[] = [...openCommentThreadActions(thread.id, commentScene)]
+
+    const canvasDiv = document.getElementById('canvas-root')
+    if (canvasDiv != null) {
+      const canvasArea = canvasDiv.getBoundingClientRect()
+      const visibleAreaTolerance = 200 // px
+      const visibleArea = canvasRectangle({
+        x: canvasArea.x + visibleAreaTolerance,
+        y: canvasArea.y,
+        width: canvasArea.width - visibleAreaTolerance * 2,
+        height: canvasArea.height,
+      })
+      const rect = canvasRectangle({ x: location.x, y: location.y, width: 25, height: 25 })
+      const windowLocation = canvasPointToWindowPoint(location, canvasScale, canvasOffset)
+      const windowRect = canvasRectangle({
+        x: windowLocation.x,
+        y: windowLocation.y,
+        width: rect.width,
+        height: rect.height,
+      })
+      const isVisible = rectangleContainsRectangle(visibleArea, windowRect)
+      if (!isVisible) {
+        actions.push(scrollToPosition(rect, 'to-center'))
+      }
+    }
+    dispatch(actions)
   }, [
     dispatch,
     isOnAnotherRoute,
@@ -151,6 +187,8 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
     location,
     thread.id,
     commentScene,
+    canvasScale,
+    canvasOffset,
   ])
 
   const resolveThread = useResolveThread()
@@ -181,7 +219,7 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
     return null
   }
 
-  const repliesCount = thread.comments.length - 1
+  const repliesCount = thread.comments.filter((c) => c.deletedAt == null).length - 1
 
   const remixLocationRouteLabel = getRemixLocationLabel(remixLocationRoute)
 
@@ -193,57 +231,68 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
       className={'thread-preview'}
       key={comment.id}
       onClick={onClick}
-      style={{
-        backgroundColor: isSelected
-          ? colorTheme.primary10.value
-          : thread.metadata.resolved
-          ? colorTheme.bg2.value
-          : 'transparent',
+      css={{
+        display: 'flex',
+        flexDirection: 'row',
+        paddingBottom: 5,
+        position: 'relative',
+        '&:hover': {
+          backgroundColor: isSelected ? colorTheme.primary10.value : colorTheme.bg2.value,
+        },
+        backgroundColor: isSelected ? colorTheme.primary10.value : 'transparent',
       }}
     >
-      <CommentWrapper
-        data-theme={theme}
-        user={user}
-        comment={comment}
-        showActions={false}
-        style={{ backgroundColor: 'transparent' }}
-      />
-      {when(
-        remixLocationRouteLabel != null,
+      <div
+        style={{
+          height: 46,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
         <div
           style={{
-            paddingLeft: 44,
-            paddingBottom: 11,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
+            width: 8,
+            height: 8,
+            borderRadius: 8,
+            position: 'relative',
+            left: 5,
+            background: readByMe === 'unread' ? colorTheme.primary.value : 'transparent',
           }}
-        >
+        />
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          filter: thread.metadata.resolved ? 'grayscale()' : undefined,
+        }}
+      >
+        <CommentWrapper
+          data-theme={theme}
+          user={user}
+          comment={comment}
+          showActions={false}
+          style={{ backgroundColor: 'transparent' }}
+        />
+        {when(
+          remixLocationRouteLabel != null,
           <div
             style={{
+              paddingLeft: 44,
               fontSize: 9,
               color: colorTheme.fg6.value,
             }}
           >
-            {thread.metadata.remixLocationRoute ?? ''}
-          </div>
-        </div>,
-      )}
-      <div
-        style={{
-          paddingBottom: 11,
-          paddingLeft: 44,
-          paddingRight: 10,
-          marginTop: -5,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
+            Route: <span style={{ fontWeight: 500 }}>{remixLocationRouteLabel}</span>
+          </div>,
+        )}
         {when(
           repliesCount > 0,
           <div
             style={{
+              paddingLeft: 44,
               fontSize: 9,
               color: colorTheme.fg6.value,
             }}
@@ -252,22 +301,31 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
           </div>,
         )}
         {unless(repliesCount > 0, <div />)}
-        {when(readByMe === 'unread', 'Unread')}
+      </div>
+      <Tooltip title='Resolve' placement='top'>
         <Button
-          highlight
-          spotlight
           css={{
-            visibility: 'hidden',
-            '.thread-preview:hover &': {
-              visibility: 'visible',
-            },
-            padding: '0 6px',
+            position: 'absolute',
+            right: 10,
+            top: 10,
           }}
           onClick={onResolveThread}
         >
-          {thread.metadata.resolved ? 'Unresolve' : 'Resolve'}
+          <Icn
+            category='semantic'
+            type={thread?.metadata.resolved ? 'resolved' : 'resolve'}
+            width={18}
+            height={18}
+            color='main'
+            css={{
+              visibility: thread?.metadata.resolved ? 'visible' : 'hidden',
+              '.thread-preview:hover &': {
+                visibility: 'visible',
+              },
+            }}
+          />
         </Button>
-      </div>
+      </Tooltip>
     </div>
   )
 })
@@ -277,7 +335,21 @@ function useIsSelectedAndScrollToThread(ref: React.RefObject<HTMLDivElement>, th
   const scrollToSelectedCallback = React.useCallback(
     (isSelected: boolean) => {
       if (isSelected && ref.current != null) {
-        ref.current.scrollIntoView()
+        const scrollArea = ref.current.offsetParent
+        if (scrollArea != null) {
+          const scrollAreaRect = scrollArea.getBoundingClientRect()
+          const elementRect = ref.current.getBoundingClientRect()
+
+          const fullyVisible =
+            elementRect.top >= scrollAreaRect.top &&
+            elementRect.bottom <= scrollAreaRect.bottom &&
+            elementRect.left >= scrollAreaRect.left &&
+            elementRect.right <= scrollAreaRect.right
+
+          if (!fullyVisible) {
+            ref.current.scrollIntoView()
+          }
+        }
       }
     },
     [ref],
