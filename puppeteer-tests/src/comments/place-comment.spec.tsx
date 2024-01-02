@@ -17,7 +17,7 @@ describe('Comments test', () => {
         TIMEOUT,
       )
 
-      const signInButton = await page.waitForSelector('#sign-in-button')
+      const signInButton = await page.waitForSelector('div[data-testid="sign-in-button"]')
       await signInButton!.click()
       await wait(10000) // wait for Liveblocks to connect
       const commentModeButton = await page.waitForSelector(
@@ -39,8 +39,6 @@ describe('Comments test', () => {
 
       const resolveButton = await page.waitForSelector('div[data-testid="resolve-thread-button"]')
       await resolveButton!.click()
-
-      await wait(10000)
 
       await page.close()
       await browser.close()
