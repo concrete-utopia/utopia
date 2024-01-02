@@ -573,7 +573,6 @@ const HeaderComment = React.memo(
           top: 0,
           left: 0,
           right: 0,
-          backgroundColor: 'white',
           zIndex: 1,
           boxShadow: UtopiaStyles.shadowStyles.highest.boxShadow,
           opacity: enabled ? 1 : 0,

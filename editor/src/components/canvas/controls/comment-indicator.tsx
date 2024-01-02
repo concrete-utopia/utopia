@@ -460,9 +460,10 @@ const HoveredCommentIndicator = React.memo((props: HoveredCommentIndicatorProps)
         boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
         background: colorTheme.bg1.value,
         position: 'fixed',
+        top: position.y,
         // temporarily moving the hovered comment indicator to align with the not hovered version
-        top: position.y - 40.5,
         left: position.x - 3,
+        overflow: 'hidden',
       }}
       onMouseDown={onMouseDown}
       onClick={onClick}
@@ -470,6 +471,7 @@ const HoveredCommentIndicator = React.memo((props: HoveredCommentIndicatorProps)
       <CommentWrapper
         style={{
           overflow: 'auto',
+          background: 'transparent',
         }}
         data-theme={theme}
         user={user}
@@ -477,7 +479,6 @@ const HoveredCommentIndicator = React.memo((props: HoveredCommentIndicatorProps)
         showActions={false}
       />
       <CommentRepliesCounter thread={thread} />
-      <div style={{ height: 8 }} />
     </div>
   )
 })
