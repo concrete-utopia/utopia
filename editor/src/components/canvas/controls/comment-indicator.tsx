@@ -22,6 +22,7 @@ import {
   windowPoint,
 } from '../../../core/shared/math-utils'
 import {
+  getFirstComment,
   multiplayerColorFromIndex,
   multiplayerInitialsFromName,
   normalizeMultiplayerName,
@@ -427,7 +428,7 @@ const HoveredCommentIndicator = React.memo((props: HoveredCommentIndicatorProps)
     return null
   }
 
-  const comment = thread.comments[0]
+  const comment = getFirstComment(thread)
   if (comment == null) {
     return null
   }
