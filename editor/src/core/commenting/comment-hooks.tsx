@@ -262,6 +262,27 @@ export function useUnresolvedThreads() {
   }
 }
 
+export function useReadThreads() {
+  const threads = useThreads()
+  const self = useSelf()
+  const threadReadStatuses = useStorage((store) => store.userReadStatusesByThread)
+
+  const filteredThreads = threads.threads.filter((thread) => {
+    if (thread == null) {
+      return false
+    }
+    if (threadReadStatuses[thread.id] == null) {
+      return false
+    }
+    return threadReadStatuses[thread.id][self.id] === true
+  })
+
+  return {
+    ...threads,
+    threads: filteredThreads,
+  }
+}
+
 export function useSetThreadReadStatusOnMount(thread: ThreadData<ThreadMetadata> | null) {
   const setThreadReadStatus = useSetThreadReadStatus()
 

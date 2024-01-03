@@ -6,6 +6,7 @@ import '../../../../resources/editor/css/liveblocks/react-comments/dark/attribut
 import React from 'react'
 import {
   Button,
+  CheckboxInput,
   FlexColumn,
   FlexRow,
   Icn,
@@ -33,6 +34,7 @@ import {
   useCanvasLocationOfThread,
   getCollaboratorById,
   useMyThreadReadStatus,
+  useReadThreads,
 } from '../../../core/commenting/comment-hooks'
 import { Substores, useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
 import { when } from '../../../utils/react-conditionals'
@@ -95,19 +97,66 @@ const ThreadPreviews = React.memo(() => {
     ])
   }, [showResolved, dispatch])
 
+  const showRead = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.showResolvedThreads,
+    'ThreadPreviews showResolvedThreads',
+  )
+
+  const toggleShowRead = React.useCallback(() => {
+    dispatch([
+      setShowResolvedThreads(!showResolved),
+      switchEditorMode(EditorModes.selectMode(null, false, 'none')),
+    ])
+  }, [showResolved, dispatch])
+
   return (
     <FlexColumn style={{ gap: 5 }}>
-      {when(
-        resolvedThreads.length > 0,
-        <Button
-          highlight
-          spotlight
-          style={{ padding: 10, margin: '10px' }}
-          onClick={toggleShowResolved}
-        >
-          {showResolved ? 'Hide' : 'Show'} resolved threads
-        </Button>,
-      )}
+      <FlexColumn style={{ margin: '0 8px 8px 8px', gap: 6 }}>
+        <FlexRow>
+          <CheckboxInput
+            style={{ marginRight: 8 }}
+            id='showResolved'
+            checked={showResolved}
+            onChange={toggleShowResolved}
+          />
+          <label htmlFor='showResolved'>Sort By Date</label>
+        </FlexRow>
+        <FlexRow>
+          <CheckboxInput
+            style={{ marginRight: 8 }}
+            id='showResolved'
+            checked={showResolved}
+            onChange={toggleShowResolved}
+          />
+          <label htmlFor='showResolved'>Sort By Unread</label>
+        </FlexRow>
+        <div style={{ flexGrow: 1, background: colorTheme.bg2.value, height: 1 }} />
+        {when(
+          resolvedThreads.length > 0,
+          <FlexRow>
+            <CheckboxInput
+              style={{ marginRight: 8 }}
+              id='showResolved'
+              checked={showResolved}
+              onChange={toggleShowResolved}
+            />
+            <label htmlFor='showResolved'>Show Resolved Comments</label>
+          </FlexRow>,
+        )}
+        {when(
+          readThreads.length > 0,
+          <FlexRow>
+            <CheckboxInput
+              style={{ marginRight: 8 }}
+              id='showRead'
+              checked={showRead}
+              onChange={toggleShowRead}
+            />
+            <label htmlFor='showResolved'>Show Read Comments</label>
+          </FlexRow>,
+        )}
+      </FlexColumn>
       {when(
         activeThreads.length === 0,
         <div style={{ padding: '0px 8px', color: colorTheme.fg6.value }}>
