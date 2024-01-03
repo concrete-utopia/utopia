@@ -32,7 +32,7 @@ export function useCanvasCommentThreadAndLocation(comment: CommentId): {
   location: CanvasPoint | null
   thread: ThreadData<ThreadMetadata> | null
 } {
-  const { threads } = useThreads()
+  const threads = useActiveThreads()
 
   const thread = React.useMemo(() => {
     switch (comment.type) {
