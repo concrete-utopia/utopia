@@ -566,6 +566,11 @@ const HeaderComment = React.memo(
   ({ comment, enabled }: { comment: CommentData; enabled: boolean }) => {
     const collabs = useStorage((storage) => storage.collaborators)
     const user = getCollaboratorById(collabs, comment.userId)
+
+    if (!enabled) {
+      return null
+    }
+
     return (
       <div
         style={{
@@ -574,8 +579,7 @@ const HeaderComment = React.memo(
           left: 0,
           right: 0,
           zIndex: 1,
-          boxShadow: UtopiaStyles.shadowStyles.high.boxShadow,
-          opacity: enabled ? 1 : 0,
+          boxShadow: UtopiaStyles.shadowStyles.highest.boxShadow,
           transition: 'all 100ms linear',
           minHeight: 67,
           transform: 'scale(1.01)',
