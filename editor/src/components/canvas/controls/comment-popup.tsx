@@ -273,7 +273,8 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
       return
     }
     resolveThread(thread)
-  }, [thread, resolveThread])
+    dispatch([switchEditorMode(EditorModes.commentMode(null, 'not-dragging'))])
+  }, [thread, resolveThread, dispatch])
 
   const onClickClose = React.useCallback(() => {
     dispatch([switchEditorMode(EditorModes.commentMode(null, 'not-dragging'))])

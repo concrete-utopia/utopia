@@ -16,6 +16,7 @@ export type FeatureName =
   | 'Debug - Print UIDs'
   | 'Steganography'
   | 'Collaboration'
+  | 'Baton Passing For Control'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -32,6 +33,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Debug - Print UIDs',
   'Steganography',
   'Collaboration',
+  'Baton Passing For Control',
 ]
 
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
@@ -48,6 +50,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Debug - Print UIDs': false,
   Steganography: false,
   Collaboration: false,
+  'Baton Passing For Control': false,
 }
 
 let FeatureSwitchLoaded: { [feature in FeatureName]?: boolean } = {}

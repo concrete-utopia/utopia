@@ -55,7 +55,7 @@ import { last } from '../../../core/shared/array-utils'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { isInsertMode } from '../editor-modes'
 import { patchedCreateRemixDerivedDataMemo } from './remix-derived-data'
-import { isProjectViewerFromState } from './project-server-state'
+import { allowedToEditProject } from './collaborative-editing'
 
 interface HandleStrategiesResult {
   unpatchedEditorState: EditorState
@@ -658,11 +658,7 @@ export function handleStrategies(
   let unpatchedEditorState: EditorState
   let patchedEditorState: EditorState
   let newStrategyState: StrategyState
-  if (isProjectViewerFromState(storedState.projectServerState)) {
-    unpatchedEditorState = result.unpatchedEditor
-    patchedEditorState = result.unpatchedEditor
-    newStrategyState = result.strategyState
-  } else {
+  if (allowedToEditProject(storedState.projectServerState)) {
     const strategiesResult = handleStrategiesInner(
       strategies,
       dispatchedActions,
@@ -672,6 +668,10 @@ export function handleStrategies(
     unpatchedEditorState = strategiesResult.unpatchedEditorState
     patchedEditorState = strategiesResult.patchedEditorState
     newStrategyState = strategiesResult.newStrategyState
+  } else {
+    unpatchedEditorState = result.unpatchedEditor
+    patchedEditorState = result.unpatchedEditor
+    newStrategyState = result.strategyState
   }
 
   const patchedEditorWithMetadata: EditorState = {

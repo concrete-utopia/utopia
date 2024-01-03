@@ -36,8 +36,8 @@ import { useRoom, useStatus } from '../../../liveblocks.config'
 import { MultiplayerWrapper } from '../../utils/multiplayer-wrapper'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { CommentsPane } from '../inspector/comments-pane'
-import { useIsViewer } from '../editor/store/project-server-state-hooks'
 import { EditorModes, isCommentMode } from '../editor/editor-modes'
+import { useAllowedToEditProject } from '../editor/store/collaborative-editing'
 
 function isCodeEditorEnabled(): boolean {
   if (typeof window !== 'undefined') {
@@ -170,7 +170,7 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
     onClickTab(RightMenuTab.Settings)
   }, [onClickTab])
 
-  const isViewer = useIsViewer()
+  const allowedToEdit = useAllowedToEditProject()
 
   if (!isRightMenuExpanded) {
     return null
@@ -196,8 +196,8 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
           selected={selectedTab === RightMenuTab.Inspector}
           onClick={onClickInspectorTab}
         />
-        {unless(
-          isViewer,
+        {when(
+          allowedToEdit,
           <>
             <MenuTab
               label={'Insert'}

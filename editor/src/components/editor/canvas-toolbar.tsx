@@ -69,8 +69,8 @@ import {
 } from '../canvas/ui/floating-insert-menu'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { RightMenuTab, floatingInsertMenuStateSwap } from './store/editor-state'
-import { useIsViewer } from './store/project-server-state-hooks'
 import { useStatus } from '../../../liveblocks.config'
+import { useAllowedToEditProject } from './store/collaborative-editing'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const PlayModeButtonTestId = 'canvas-toolbar-play-mode'
@@ -429,7 +429,7 @@ export const CanvasToolbar = React.memo(() => {
     roomStatus !== 'connected'
       ? CommentModeButtonTestId('disconnected')
       : CommentModeButtonTestId('connected')
-  const isViewer = useIsViewer()
+  const allowedToEdit = useAllowedToEditProject()
 
   return (
     <FlexColumn
@@ -463,8 +463,8 @@ export const CanvasToolbar = React.memo(() => {
             style={{ width: 36 }}
           />
         </Tooltip>
-        {unless(
-          isViewer,
+        {when(
+          allowedToEdit,
           <>
             <Tooltip title='Insert or Edit Text' placement='bottom'>
               <InsertModeButton
@@ -548,7 +548,7 @@ export const CanvasToolbar = React.memo(() => {
       {when(
         canvasToolbarMode.primary === 'edit' &&
           canvasToolbarMode.secondary === 'selected' &&
-          !isViewer,
+          allowedToEdit,
         <>
           {when(
             insertMenuMode === 'closed',
@@ -677,7 +677,7 @@ export const CanvasToolbar = React.memo(() => {
       {when(
         canvasToolbarMode.primary === 'edit' &&
           canvasToolbarMode.secondary === 'strategy-active' &&
-          !isViewer,
+          allowedToEdit,
         <StrategyIndicator />,
       )}
       {/* Insert Mode */}
