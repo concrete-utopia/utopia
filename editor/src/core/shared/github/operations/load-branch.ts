@@ -17,10 +17,12 @@ import {
   updateBranchContents,
   updateProjectContents,
 } from '../../../../components/editor/actions/action-creators'
-import type {
-  GithubData,
-  GithubOperation,
-  GithubRepo,
+import {
+  persistentModelForProjectContents,
+  type GithubData,
+  type GithubOperation,
+  type GithubRepo,
+  type PersistentModel,
 } from '../../../../components/editor/store/editor-state'
 import type { BuiltInDependencies } from '../../../es-modules/package-manager/built-in-dependencies-list'
 import { refreshDependencies } from '../../dependencies'
@@ -100,6 +102,44 @@ export const saveAssetsToProject =
 // 5. call refreshDependencies from Editor.tsx, get the project contents, and use those to fire storedState.persistence.createNew
 // 6. once the project is loaded and saved, kick off refreshDependencies
 // 7. revisit what UI we show until the project is loaded
+
+export const cloneProjectFromGithubLoadAssetsAndRefreshDependencies =
+  (operationContext: GithubOperationContext) =>
+  async (
+    workers: UtopiaTsWorkers,
+    onUpdate: (update: UpdateGithubOperations | AddToast) => void,
+    githubRepo: GithubRepo,
+    branchName: string,
+    resetBranches: boolean,
+  ): Promise<PersistentModel> => {
+    const loadBranchResult = await loadBranchFromGithub(
+      branchName,
+      githubRepo,
+      onUpdate,
+      operationContext,
+    )
+
+    if (loadBranchResult == null) {
+      throw new Error('loadBranchResult was null')
+    }
+
+    const parseAndUploadAssetsResult = await parseDownloadedProject(
+      branchName,
+      githubRepo,
+      onUpdate,
+      loadBranchResult,
+      resetBranches,
+      workers,
+    )
+
+    if (parseAndUploadAssetsResult == null) {
+      throw new Error('parseAndUploadAssetsResult was null')
+    }
+
+    // TODO save assets once we have a projectID!
+    // TODO load dependencies using refreshDependencies
+    return persistentModelForProjectContents(parseAndUploadAssetsResult.parsedProjectContents)
+  }
 
 export const updateProjectWithBranchContent =
   (operationContext: GithubOperationContext) =>
@@ -216,6 +256,7 @@ export async function getProcessedParsedProjectFromGithubRepo(
   parsedProjectContents: ProjectContentTreeRoot
   branch: Pick<BranchContent, 'originCommit'>
 } | null> {
+  // TODO deduplicate code
   const loadBranchResult = await loadBranchFromGithub(
     branchName,
     githubRepo,
@@ -239,6 +280,8 @@ export async function getProcessedParsedProjectFromGithubRepo(
   if (parseAndUploadAssetsResult == null) {
     return null
   }
+
+  //end TODO
 
   // Save assets to the server from Github.
   await saveAssetsToProject(operationContext)(

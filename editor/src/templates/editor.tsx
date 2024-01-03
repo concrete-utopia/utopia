@@ -344,7 +344,7 @@ export class Editor {
         void updateUserDetailsWhenAuthenticated(
           this.boundDispatch,
           GithubAuth.isAuthenticatedWithGithub(loginState),
-        ).then((authenticatedWithGithub) => {
+        ).then(async (authenticatedWithGithub) => {
           this.storedState.userState = {
             ...this.storedState.userState,
             githubState: {
@@ -359,41 +359,27 @@ export class Editor {
           const urlParams = new URLSearchParams(window.location.search)
           const githubOwner = urlParams.get('github_owner')
           const githubRepo = urlParams.get('github_repo')
+          const githubBranch = urlParams.get('github_branch')
           const importURL = urlParams.get('import_url')
+
+          console.log('eh', githubOwner, githubRepo, githubBranch)
 
           if (isCookiesOrLocalForageUnavailable(loginState)) {
             this.storedState.persistence.createNew(createNewProjectName(), defaultProject())
           } else if (projectId == null) {
             if (githubOwner != null && githubRepo != null) {
-              replaceLoadingMessage('Downloading Repo...')
+              console.log('attempting to import projecc')
 
-              void downloadGithubRepo(githubOwner, githubRepo).then((repoResult) => {
-                if (isRequestFailure(repoResult)) {
-                  if (repoResult.statusCode === 404) {
-                    void renderProjectNotFound()
-                  } else {
-                    void renderProjectLoadError(repoResult.errorMessage)
-                  }
-                } else {
-                  replaceLoadingMessage('Importing Project...')
-
-                  const projectName = `${githubOwner}-${githubRepo}`
-                  importZippedGitProject(projectName, repoResult.value)
-                    .then((importProjectResult) => {
-                      if (isProjectImportSuccess(importProjectResult)) {
-                        const importedProject = persistentModelForProjectContents(
-                          importProjectResult.contents,
-                        )
-                        this.storedState.persistence.createNew(projectName, importedProject)
-                      } else {
-                        void renderProjectLoadError(importProjectResult.errorMessage)
-                      }
-                    })
-                    .catch((err) => {
-                      console.error('Import error.', err)
-                    })
-                }
-              })
+              try {
+                this.storedState.persistence.loadFromGithub(
+                  this.storedState.workers,
+                  githubOwner,
+                  githubRepo,
+                  githubBranch ?? 'main',
+                )
+              } catch (e) {
+                console.log('Error loading gh project', e)
+              }
             } else if (importURL != null) {
               this.createNewProjectFromImportURL(importURL)
             } else {

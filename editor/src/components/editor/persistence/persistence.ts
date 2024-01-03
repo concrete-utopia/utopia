@@ -25,9 +25,11 @@ import {
   forkEvent,
   userLogInEvent,
   userLogOutEvent,
+  loadFromGithubEvent,
 } from './generic/persistence-machine'
 import type { PersistenceBackendAPI, PersistenceContext } from './generic/persistence-types'
 import { releaseControl } from '../store/collaborative-editing'
+import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 
 export class PersistenceMachine {
   private interpreter: Interpreter<
@@ -197,6 +199,15 @@ export class PersistenceMachine {
 
   createNew = (projectName: string, project: PersistentModel): void => {
     this.interpreter.send(newEvent({ name: projectName, content: project }))
+  }
+
+  loadFromGithub = (
+    workers: UtopiaTsWorkers,
+    githubOwner: string,
+    githubRepo: string,
+    githubBranch: string,
+  ): void => {
+    this.interpreter.send(loadFromGithubEvent(workers, githubOwner, githubRepo, githubBranch))
   }
 
   fork = (projectName: string, project: PersistentModel): void => {

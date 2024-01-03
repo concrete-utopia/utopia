@@ -9,6 +9,9 @@ import type {
   ProjectOwnership,
   ProjectWithFileChanges,
 } from './persistence-types'
+import { wait } from '../../../../utils/utils.test-utils'
+import { GithubOperations } from '../../../../core/shared/github/operations'
+import type { UtopiaTsWorkers } from '../../../../core/workers/common/worker-types'
 const { choose } = actions
 
 // Keep this file as simple as possible so that it can be used in https://stately.ai/viz
@@ -23,6 +26,29 @@ export function newEvent<ModelType>(projectModel: ProjectModel<ModelType>): NewE
   return {
     type: 'NEW',
     projectModel: projectModel,
+  }
+}
+
+interface LoadFromGithubEvent {
+  type: 'LOAD_FROM_GITHUB'
+  workers: UtopiaTsWorkers
+  githubOwner: string
+  githubRepo: string
+  githubBranch: string
+}
+
+export function loadFromGithubEvent(
+  workers: UtopiaTsWorkers,
+  githubOwner: string,
+  githubRepo: string,
+  githubBranch: string,
+): LoadFromGithubEvent {
+  return {
+    type: 'LOAD_FROM_GITHUB',
+    workers: workers,
+    githubOwner: githubOwner,
+    githubRepo: githubRepo,
+    githubBranch: githubBranch,
   }
 }
 
@@ -172,6 +198,7 @@ function checkOwnershipCompleteEvent(ownership: ProjectOwnership): CheckOwnershi
 
 type CoreEvent<ModelType, FileType> =
   | NewEvent<ModelType>
+  | LoadFromGithubEvent
   | ProjectIdCreatedEvent
   | NewProjectCreatedEvent<ModelType>
   | LoadEvent
@@ -321,6 +348,7 @@ export type PersistenceEvent<ModelType, FileType> =
 export const Empty = 'empty'
 export const Ready = 'ready'
 export const CreatingNew = 'creating'
+export const LoadFromGithub = 'load-from-github'
 export const Loading = 'loading'
 export const Saving = 'saving'
 export const Forking = 'forking'
@@ -328,6 +356,12 @@ export const Forking = 'forking'
 // InternalCreatingNewStates
 export const CreatingProjectId = 'creating-project-id'
 export const ProjectCreated = 'project-created'
+
+// InternalLoadFromGithubStates
+export const LoadProjectFromGithub = 'load-project-from-github'
+export const SaveGithubAssetsToProject = 'save-github-assets-to-project'
+export const UpdateDependencies = 'update-dependencies'
+export const ErrorLoadingFromGithub = 'error-loading-from-github'
 
 // InternalLoadingStates
 export const LoadingProject = 'loading-project'
@@ -570,6 +604,7 @@ export function createPersistenceMachine<ModelType, FileType>(
             [Empty]: {
               on: {
                 NEW: CreatingNew,
+                LOAD_FROM_GITHUB: LoadFromGithub,
                 LOAD: Loading,
               },
             },
@@ -578,6 +613,7 @@ export function createPersistenceMachine<ModelType, FileType>(
               exit: queueClear,
               on: {
                 NEW: CreatingNew,
+                LOAD_FROM_GITHUB: LoadFromGithub,
                 LOAD: Loading,
                 SAVE: [
                   {
@@ -629,6 +665,123 @@ export function createPersistenceMachine<ModelType, FileType>(
                   },
                 },
                 [ProjectCreated]: { type: 'final' },
+              },
+              onDone: {
+                actions: send((context, _) => innerSave(context.project!)),
+              },
+              on: {
+                INNER_SAVE: Saving,
+                SAVE: {
+                  actions: queuePush,
+                },
+                BACKEND_ERROR: {
+                  target: Ready,
+                  actions: logError,
+                },
+              },
+            },
+            [LoadFromGithub]: {
+              initial: LoadProjectFromGithub,
+              states: {
+                [LoadProjectFromGithub]: {
+                  entry: [
+                    // Assigning empty initial context
+                    assign((currentContext, event) => {
+                      console.log('creating project ID', currentContext, event)
+                      return {
+                        projectId: undefined,
+                        project: undefined,
+                        queuedSave: undefined,
+                        projectOwnership: {
+                          isOwner: true,
+                          ownerId: currentContext.projectOwnership.ownerId,
+                        },
+                      }
+                    }),
+                  ],
+                  invoke: {
+                    src: async (context, event, meta) => {
+                      const typeUnsafeEvent = event as LoadFromGithubEvent // TODO fix the type safety issue here
+                      console.log('load project from github!', event)
+                      const importedProject =
+                        await GithubOperations.cloneProjectFromGithubLoadAssetsAndRefreshDependencies(
+                          typeUnsafeEvent.workers, // TODO type safety here
+                          (update) => {
+                            console.log('update received!', update)
+                          },
+                          {
+                            owner: typeUnsafeEvent.githubOwner,
+                            repository: typeUnsafeEvent.githubRepo,
+                          },
+                          typeUnsafeEvent.githubBranch,
+                          true,
+                        )
+
+                      return importedProject
+                    },
+                    onDone: {
+                      target: CreatingProjectId,
+                      actions: assign((currentContext, event) => {
+                        console.log('load project promise done', currentContext, event)
+                        return {
+                          project: {
+                            name: 'new-project', // TODO name me!!!
+                            content: event.data,
+                          },
+                        }
+                      }),
+                    },
+                    onError: {
+                      target: ErrorLoadingFromGithub,
+                    },
+                  },
+                },
+                [CreatingProjectId]: {
+                  entry: [send(backendCreateProjectIdEvent())],
+                  on: {
+                    PROJECT_ID_CREATED: {
+                      actions: [
+                        assign({ projectId: (_, event) => event.projectId }),
+                        send((context, event) =>
+                          newProjectCreatedEvent(event.projectId, context.project!),
+                        ),
+                      ],
+                    },
+                    NEW_PROJECT_CREATED: SaveGithubAssetsToProject,
+                  },
+                },
+                [SaveGithubAssetsToProject]: {
+                  invoke: {
+                    src: async (context, event, meta) => {
+                      console.log('oh no! save assets now!')
+                      await wait(1000)
+                      return true
+                    },
+                    onDone: {
+                      target: UpdateDependencies,
+                    },
+                    onError: {
+                      target: ErrorLoadingFromGithub,
+                    },
+                  },
+                },
+                [UpdateDependencies]: {
+                  invoke: {
+                    src: async (context, event, meta) => {
+                      console.log('update dependencies')
+                      await wait(1000)
+                      return true
+                    },
+                    onDone: {
+                      target: ProjectCreated,
+                    },
+                    onError: {
+                      target: ErrorLoadingFromGithub,
+                    },
+                  },
+                },
+                [ProjectCreated]: { type: 'final' },
+                [ErrorLoadingFromGithub]: { type: 'final' },
               },
               onDone: {
                 actions: send((context, _) => innerSave(context.project!)),

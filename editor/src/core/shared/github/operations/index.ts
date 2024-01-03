@@ -5,7 +5,11 @@ import { getBranchChecksums } from './get-branch-checksums'
 import type { GithubOperationContext } from './github-operation-context'
 import { getBranchesForGithubRepository } from './list-branches'
 import { updatePullRequestsForBranch } from './list-pull-requests-for-branch'
-import { saveAssetsToProject, updateProjectWithBranchContent } from './load-branch'
+import {
+  cloneProjectFromGithubLoadAssetsAndRefreshDependencies,
+  saveAssetsToProject,
+  updateProjectWithBranchContent,
+} from './load-branch'
 import { getUsersPublicGithubRepositories } from './load-repositories'
 import { updateProjectAgainstGithub } from './update-against-branch'
 
@@ -25,4 +29,6 @@ export const GithubOperations = {
   startGithubPolling: startGithubPolling(OperationContext),
   resolveConflict: resolveConflict(OperationContext),
   updateProjectWithBranchContent: updateProjectWithBranchContent(OperationContext),
+  cloneProjectFromGithubLoadAssetsAndRefreshDependencies:
+    cloneProjectFromGithubLoadAssetsAndRefreshDependencies(OperationContext),
 } as const
