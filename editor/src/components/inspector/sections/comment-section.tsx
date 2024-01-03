@@ -67,14 +67,9 @@ const ThreadPreviews = React.memo(() => {
     setOpen((prevOpen) => !prevOpen)
   }, [setOpen])
 
-  const { threads: activeThreads } = useUnresolvedThreads()
+  const { threads: threads } = useThreads()
   const { threads: resolvedThreads } = useResolvedThreads()
-
   const { threads: readThreads } = useReadThreads()
-
-  const allThreadsResolvedLast = [...activeThreads, ...resolvedThreads]
-
-  const unreadThreads = allThreadsResolvedLast.filter((thread) => !readThreads.includes(thread))
 
   const showResolved = useEditorState(
     Substores.restOfEditor,
@@ -89,8 +84,8 @@ const ThreadPreviews = React.memo(() => {
     ])
   }, [showResolved, dispatch])
 
-  const [sortedByDateNewestFirst, setSortByDateNewestFirst] = React.useState(true)
-  const [sortedByUnreadFirst, setSortedByUnreadFirst] = React.useState(false)
+  const [sortByDateNewestFirst, setSortByDateNewestFirst] = React.useState(true)
+  const [sortByUnreadFirst, setSortedByUnreadFirst] = React.useState(false)
 
   const toggleSortByDateNewestFirst = React.useCallback(() => {
     setSortByDateNewestFirst((prevValue) => !prevValue)
@@ -99,13 +94,30 @@ const ThreadPreviews = React.memo(() => {
     setSortedByUnreadFirst((prevValue) => !prevValue)
   }, [])
 
-  const sortedActiveThreads = sortedByDateNewestFirst
-    ? activeThreads.slice().reverse()
-    : activeThreads
+  const sortedThreads = React.useMemo(() => {
+    let filteredThreads = threads
 
-  const sortedThreads = sortedByUnreadFirst
-    ? [...unreadThreads, ...sortedActiveThreads.filter((thread) => !unreadThreads.includes(thread))]
-    : sortedActiveThreads
+    if (!showResolved) {
+      filteredThreads = filteredThreads.filter((thread) => !resolvedThreads.includes(thread))
+    }
+    if (sortByDateNewestFirst) {
+      filteredThreads = filteredThreads.slice().reverse()
+    }
+    if (sortByUnreadFirst) {
+      const unreadThreads = filteredThreads.filter((thread) => !readThreads.includes(thread))
+      const theReadThreads = filteredThreads.filter((thread) => readThreads.includes(thread))
+      filteredThreads = [...unreadThreads, ...theReadThreads]
+    }
+
+    return filteredThreads
+  }, [
+    threads,
+    resolvedThreads,
+    readThreads,
+    showResolved,
+    sortByUnreadFirst,
+    sortByDateNewestFirst,
+  ])
 
   return (
     <FlexColumn>
@@ -160,7 +172,7 @@ const ThreadPreviews = React.memo(() => {
         </div>
       </FlexRow>
       {when(
-        activeThreads.length > 0,
+        sortedThreads.length > 0,
         <FlexColumn
           style={{
             gap: 6,
@@ -173,7 +185,7 @@ const ThreadPreviews = React.memo(() => {
             <CheckboxInput
               style={{ marginRight: 8 }}
               id='showNewestFirst'
-              checked={sortedByDateNewestFirst}
+              checked={sortByDateNewestFirst}
               onChange={toggleSortByDateNewestFirst}
             />
             <label htmlFor='showNewestFirst'>Newest First</label>
@@ -182,7 +194,7 @@ const ThreadPreviews = React.memo(() => {
             <CheckboxInput
               style={{ marginRight: 8 }}
               id='showUnreadFirst'
-              checked={sortedByUnreadFirst}
+              checked={sortByUnreadFirst}
               onChange={toggleSortByUnreadFirst}
             />
             <label htmlFor='showUnreadFirst'>Unread First</label>
@@ -206,16 +218,14 @@ const ThreadPreviews = React.memo(() => {
         </FlexColumn>,
       )}
       {when(
-        activeThreads.length === 0,
-        <div style={{ padding: 8, color: colorTheme.fg6.value }}>No active comment threads.</div>,
+        sortedThreads.length === 0,
+        <div style={{ padding: 8, color: colorTheme.fg6.value }}>
+          Leave comments on the canvas.
+        </div>,
       )}
       {sortedThreads.map((thread) => (
         <ThreadPreview key={thread.id} thread={thread} />
       ))}
-      {when(
-        showResolved,
-        resolvedThreads.map((thread) => <ThreadPreview key={thread.id} thread={thread} />),
-      )}
     </FlexColumn>
   )
 })
