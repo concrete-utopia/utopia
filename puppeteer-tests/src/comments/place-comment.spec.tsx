@@ -14,9 +14,8 @@ describe('Comments test', () => {
 
       const signInButton = await page.waitForSelector('div[data-testid="sign-in-button"]')
       await signInButton!.click()
-      await wait(10000) // wait for Liveblocks to connect
       const commentModeButton = await page.waitForSelector(
-        'div[data-testid="canvas-toolbar-comment-mode"]',
+        'div[data-testid="canvas-toolbar-comment-mode-connected"]',
       )
       await commentModeButton!.click()
       const canvasControlsContainer = await page.waitForSelector('#new-canvas-controls-container')
