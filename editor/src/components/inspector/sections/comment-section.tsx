@@ -106,13 +106,22 @@ const ThreadPreviews = React.memo(() => {
   }, [showResolved, dispatch])
 
   const [sortedByDateNewestFirst, setSortByDateNewestFirst] = React.useState(true)
+  const [sortedByUnreadFirst, setSortedByUnreadFirst] = React.useState(false)
+
   const toggleSortByDateNewestFirst = React.useCallback(() => {
     setSortByDateNewestFirst((prevValue) => !prevValue)
+  }, [])
+  const toggleSortByUnreadFirst = React.useCallback(() => {
+    setSortedByUnreadFirst((prevValue) => !prevValue)
   }, [])
 
   const sortedActiveThreads = sortedByDateNewestFirst
     ? activeThreads
     : activeThreads.slice().reverse()
+
+  const sortedThreads = sortedByUnreadFirst
+    ? [...unreadThreads, ...sortedActiveThreads.filter((thread) => !unreadThreads.includes(thread))]
+    : sortedActiveThreads
 
   return (
     <FlexColumn style={{ gap: 5 }}>
@@ -179,20 +188,20 @@ const ThreadPreviews = React.memo(() => {
           <FlexRow>
             <CheckboxInput
               style={{ marginRight: 8 }}
-              id='showResolved'
+              id='showNewestFirst'
               checked={sortedByDateNewestFirst}
               onChange={toggleSortByDateNewestFirst}
             />
-            <label htmlFor='showResolved'>Newest First</label>
+            <label htmlFor='showNewestFirst'>Newest First</label>
           </FlexRow>
           <FlexRow>
             <CheckboxInput
               style={{ marginRight: 8 }}
-              id='showResolved'
-              checked={showResolved}
-              onChange={toggleShowResolved}
+              id='showUnreadFirst'
+              checked={sortedByUnreadFirst}
+              onChange={toggleSortByUnreadFirst}
             />
-            <label htmlFor='showResolved'>Unread First</label>
+            <label htmlFor='showUnreadFirst'>Unread First</label>
           </FlexRow>
           {when(
             resolvedThreads.length > 0 || readThreads.length > 0,
@@ -210,25 +219,13 @@ const ThreadPreviews = React.memo(() => {
               <label htmlFor='showResolved'>Show Resolved Comments</label>
             </FlexRow>,
           )}
-          {when(
-            readThreads.length > 0,
-            <FlexRow>
-              <CheckboxInput
-                style={{ marginRight: 8 }}
-                id='showRead'
-                checked={showRead}
-                onChange={toggleShowRead}
-              />
-              <label htmlFor='showResolved'>Show Read Comments</label>
-            </FlexRow>,
-          )}
         </FlexColumn>,
       )}
       {when(
         activeThreads.length === 0,
         <div style={{ padding: 8, color: colorTheme.fg6.value }}>No active comment threads.</div>,
       )}
-      {sortedActiveThreads.map((thread) => (
+      {sortedThreads.map((thread) => (
         <ThreadPreview key={thread.id} thread={thread} />
       ))}
       {when(
