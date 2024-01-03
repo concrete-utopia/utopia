@@ -62,7 +62,7 @@ const ThreadPreviews = React.memo(() => {
   const dispatch = useDispatch()
   const colorTheme = useColorTheme()
 
-  const [filtersOpen, setOpen] = React.useState(true)
+  const [filtersOpen, setOpen] = React.useState(false)
   const toggleOpen = React.useCallback(() => {
     setOpen((prevOpen) => !prevOpen)
   }, [setOpen])
@@ -108,57 +108,57 @@ const ThreadPreviews = React.memo(() => {
     : sortedActiveThreads
 
   return (
-    <FlexColumn style={{ gap: 5 }}>
-      <InspectorSubsectionHeader>
-        <FlexRow
-          style={{
-            flexGrow: 1,
-            justifyContent: 'space-between',
+    <FlexColumn>
+      <FlexRow
+        style={{
+          flexGrow: 1,
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          fontWeight: 600,
+          margin: 8,
+        }}
+      >
+        <span>Comments</span>
+        <div
+          css={{
+            width: 20,
+            height: 20,
+            borderRadius: 3,
+            display: 'flex',
+            justifyContent: 'center',
             alignItems: 'center',
+            '&:hover': {
+              backgroundColor: colorTheme.bg3.value,
+            },
           }}
         >
-          <span>Comments</span>
           <div
             css={{
-              width: 20,
-              height: 20,
-              borderRadius: 3,
+              height: 14,
+              width: 14,
+              borderRadius: 14,
+              border: `1px solid ${colorTheme.fg1.value}`,
+              cursor: 'pointer',
               display: 'flex',
+              flexDirection: 'column',
               justifyContent: 'center',
               alignItems: 'center',
-              '&:hover': {
-                backgroundColor: colorTheme.bg3.value,
-              },
+              gap: 1,
             }}
+            onClick={toggleOpen}
           >
             <div
-              css={{
-                height: 14,
-                width: 14,
-                borderRadius: 14,
-                border: `1px solid ${colorTheme.fg1.value}`,
-                cursor: 'pointer',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                gap: 1,
-              }}
-              onClick={toggleOpen}
-            >
-              <div
-                style={{ width: 8, height: 1, background: colorTheme.fg1.value, borderRadius: 2 }}
-              />
-              <div
-                style={{ width: 6, height: 1, background: colorTheme.fg1.value, borderRadius: 2 }}
-              />
-              <div
-                style={{ width: 4, height: 1, background: colorTheme.fg1.value, borderRadius: 2 }}
-              />
-            </div>
+              style={{ width: 8, height: 1, background: colorTheme.fg1.value, borderRadius: 2 }}
+            />
+            <div
+              style={{ width: 6, height: 1, background: colorTheme.fg1.value, borderRadius: 2 }}
+            />
+            <div
+              style={{ width: 4, height: 1, background: colorTheme.fg1.value, borderRadius: 2 }}
+            />
           </div>
-        </FlexRow>
-      </InspectorSubsectionHeader>
+        </div>
+      </FlexRow>
       {when(
         activeThreads.length > 0,
         <FlexColumn
