@@ -131,45 +131,47 @@ const ThreadPreviews = React.memo(() => {
         }}
       >
         <span>Comments</span>
-        <div
-          css={{
-            width: 20,
-            height: 20,
-            borderRadius: 3,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            '&:hover': {
-              backgroundColor: colorTheme.bg3.value,
-            },
-          }}
-        >
+        <Tooltip title='Sort/Filter' placement='bottom'>
           <div
             css={{
-              height: 14,
-              width: 14,
-              borderRadius: 14,
-              border: `1px solid ${colorTheme.fg1.value}`,
-              cursor: 'pointer',
+              width: 20,
+              height: 20,
+              borderRadius: 3,
               display: 'flex',
-              flexDirection: 'column',
               justifyContent: 'center',
               alignItems: 'center',
-              gap: 1,
+              '&:hover': {
+                backgroundColor: colorTheme.bg3.value,
+              },
             }}
-            onClick={toggleOpen}
           >
             <div
-              style={{ width: 8, height: 1, background: colorTheme.fg1.value, borderRadius: 2 }}
-            />
-            <div
-              style={{ width: 6, height: 1, background: colorTheme.fg1.value, borderRadius: 2 }}
-            />
-            <div
-              style={{ width: 4, height: 1, background: colorTheme.fg1.value, borderRadius: 2 }}
-            />
+              css={{
+                height: 14,
+                width: 14,
+                borderRadius: 14,
+                border: `1px solid ${colorTheme.fg1.value}`,
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: 1,
+              }}
+              onClick={toggleOpen}
+            >
+              <div
+                style={{ width: 8, height: 1, background: colorTheme.fg1.value, borderRadius: 2 }}
+              />
+              <div
+                style={{ width: 6, height: 1, background: colorTheme.fg1.value, borderRadius: 2 }}
+              />
+              <div
+                style={{ width: 4, height: 1, background: colorTheme.fg1.value, borderRadius: 2 }}
+              />
+            </div>
           </div>
-        </div>
+        </Tooltip>
       </FlexRow>
       {when(
         sortedThreads.length > 0,
@@ -200,7 +202,7 @@ const ThreadPreviews = React.memo(() => {
             <label htmlFor='showUnreadFirst'>Unread First</label>
           </FlexRow>
           {when(
-            resolvedThreads.length > 0 || readThreads.length > 0,
+            resolvedThreads.length > 0,
             <div style={{ width: '100%', background: colorTheme.bg3.value, height: 1 }} />,
           )}
           {when(
