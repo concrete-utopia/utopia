@@ -31,7 +31,7 @@ export const CommentWrapper = React.memo(
       return <Comment {...commentProps} />
     }
     return (
-      <div style={{ position: 'relative', color: undefined }}>
+      <div style={{ position: 'relative' }}>
         <MultiplayerAvatar
           name={multiplayerInitialsFromName(normalizeMultiplayerName(user.name))}
           color={multiplayerColorFromIndex(user.colorIndex)}
