@@ -319,6 +319,7 @@ import type {
   UpdateImportsFromCollaborationUpdate,
   UpdateCodeFromCollaborationUpdate,
   SetShowResolvedThreads,
+  UpdateNodeModulesContentsAndSetPackageStatus,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -3563,7 +3564,7 @@ export const UPDATE_FNS = {
           ? dependenciesFromPackageJsonContents(packageJson.fileContents.code)
           : null
       void refreshDependencies(
-        dispatch,
+        (a) => dispatch([a]),
         updatedFile.fileContents.code,
         currentDeps,
         builtInDependencies,
@@ -4283,6 +4284,29 @@ export const UPDATE_FNS = {
         builtInDependencies,
       ),
     }
+  },
+  UPDATE_NODE_MODULES_CONTENTS_AND_SET_PACKAGE_STATUS: (
+    action: UpdateNodeModulesContentsAndSetPackageStatus,
+    editor: EditorState,
+    dispatch: EditorDispatch,
+    builtInDependencies: BuiltInDependencies,
+  ): EditorState => {
+    const editorAfterPackageStatus = Object.keys(action.packageStatus).reduce(
+      (workingEditor, packageName) => {
+        return UPDATE_FNS.SET_PACKAGE_STATUS(
+          setPackageStatus(packageName, action.packageStatus[packageName].status),
+          workingEditor,
+        )
+      },
+      editor,
+    )
+
+    return UPDATE_FNS.UPDATE_NODE_MODULES_CONTENTS(
+      updateNodeModulesContents(action.contentsToAdd),
+      editorAfterPackageStatus,
+      dispatch,
+      builtInDependencies,
+    )
   },
   UPDATE_PACKAGE_JSON: (action: UpdatePackageJson, editor: EditorState): EditorState => {
     const dependencies = action.dependencies.reduce(

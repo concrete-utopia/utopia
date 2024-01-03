@@ -162,7 +162,7 @@ export const updateProjectWithBranchContent =
         )
         if (packageJson != null && isTextFile(packageJson)) {
           dependenciesPromise = refreshDependencies(
-            dispatch,
+            (update) => dispatch([update]),
             packageJson.fileContents.code,
             currentDeps,
             builtInDependencies,

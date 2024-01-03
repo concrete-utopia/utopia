@@ -21,6 +21,7 @@ import type {
 } from '../../../core/shared/math-utils'
 import type {
   PackageStatus,
+  PackageStatusMap,
   RequestedNpmDependency,
 } from '../../../core/shared/npm-dependency-types'
 import type {
@@ -227,6 +228,7 @@ import type {
   UpdateImportsFromCollaborationUpdate,
   UpdateCodeFromCollaborationUpdate,
   SetShowResolvedThreads,
+  UpdateNodeModulesContentsAndSetPackageStatus,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -1299,6 +1301,17 @@ export function updateNodeModulesContents(contentsToAdd: NodeModules): UpdateNod
   return {
     action: 'UPDATE_NODE_MODULES_CONTENTS',
     contentsToAdd: contentsToAdd,
+  }
+}
+
+export function updateNodeModulesContentsAndSetPackageStatus(
+  contentsToAdd: NodeModules,
+  packageStatus: PackageStatusMap,
+): UpdateNodeModulesContentsAndSetPackageStatus {
+  return {
+    action: 'UPDATE_NODE_MODULES_CONTENTS_AND_SET_PACKAGE_STATUS',
+    contentsToAdd: contentsToAdd,
+    packageStatus: packageStatus,
   }
 }
 
