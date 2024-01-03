@@ -73,11 +73,8 @@ const ThreadPreviews = React.memo(() => {
   const { threads: readThreads } = useReadThreads()
 
   const allThreadsResolvedLast = [...activeThreads, ...resolvedThreads]
-  const { threads: allThreads } = useThreads()
 
   const unreadThreads = allThreadsResolvedLast.filter((thread) => !readThreads.includes(thread))
-
-  const threads = allThreads
 
   const showResolved = useEditorState(
     Substores.restOfEditor,
@@ -86,19 +83,6 @@ const ThreadPreviews = React.memo(() => {
   )
 
   const toggleShowResolved = React.useCallback(() => {
-    dispatch([
-      setShowResolvedThreads(!showResolved),
-      switchEditorMode(EditorModes.selectMode(null, false, 'none')),
-    ])
-  }, [showResolved, dispatch])
-
-  const showRead = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.showResolvedThreads,
-    'ThreadPreviews showResolvedThreads',
-  )
-
-  const toggleShowRead = React.useCallback(() => {
     dispatch([
       setShowResolvedThreads(!showResolved),
       switchEditorMode(EditorModes.selectMode(null, false, 'none')),
@@ -116,8 +100,8 @@ const ThreadPreviews = React.memo(() => {
   }, [])
 
   const sortedActiveThreads = sortedByDateNewestFirst
-    ? activeThreads
-    : activeThreads.slice().reverse()
+    ? activeThreads.slice().reverse()
+    : activeThreads
 
   const sortedThreads = sortedByUnreadFirst
     ? [...unreadThreads, ...sortedActiveThreads.filter((thread) => !unreadThreads.includes(thread))]
