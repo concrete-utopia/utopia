@@ -252,6 +252,7 @@ export function createComponentRendererComponent(params: {
         highlightBounds,
         rerenderUtopiaContext.editedText,
         definedWithinWithValues,
+        false,
       )
 
       if (typeof renderedCoreElement === 'string' || typeof renderedCoreElement === 'number') {

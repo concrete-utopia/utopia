@@ -5,6 +5,7 @@ import {
   UTOPIA_SCENE_ID_KEY,
   UTOPIA_INSTANCE_PATH,
   UTOPIA_UID_KEY,
+  UTOPIA_CHILD_OF_FRAGMENT_KEY,
 } from '../../../core/model/utopia-constants'
 import { forEachRight } from '../../../core/shared/either'
 import type {
@@ -141,6 +142,7 @@ export function createLookupRender(
       highlightBounds,
       editedText,
       {},
+      false, // FIXME Do we need to calculate this?
     )
   }
 }
@@ -187,6 +189,7 @@ export function renderCoreElement(
   highlightBounds: HighlightBoundsForUids | null,
   editedText: ElementPath | null,
   variablesInScope: VariableData,
+  childOfFragment: boolean,
 ): React.ReactChild {
   if (codeError != null) {
     throw codeError
@@ -268,6 +271,7 @@ export function renderCoreElement(
         highlightBounds,
         editedText,
         variablesInScope,
+        childOfFragment,
       )
     }
     case 'JSX_MAP_EXPRESSION':
@@ -415,6 +419,7 @@ export function renderCoreElement(
         highlightBounds,
         editedText,
         variablesInScope,
+        childOfFragment,
       )
     }
     case 'JSX_TEXT_BLOCK': {
@@ -541,6 +546,7 @@ export function renderCoreElement(
         highlightBounds,
         editedText,
         variablesInScope,
+        childOfFragment,
       )
     }
     case 'ATTRIBUTE_VALUE':
@@ -727,7 +733,10 @@ function renderJSXElement(
   highlightBounds: HighlightBoundsForUids | null,
   editedText: ElementPath | null,
   variablesInScope: VariableData,
+  childOfFragment: boolean,
 ): React.ReactElement {
+  const elementIsFragment = isJSXFragment(jsx)
+
   const createChildrenElement = (child: JSXElementChild): React.ReactChild => {
     const childPath = optionalMap((path) => EP.appendToPath(path, getUtopiaID(child)), elementPath)
     return renderCoreElement(
@@ -754,11 +763,11 @@ function renderJSXElement(
       highlightBounds,
       editedText,
       variablesInScope,
+      elementIsFragment,
     )
   }
 
   const elementIsIntrinsic = isJSXElement(jsx) && isIntrinsicElement(jsx.name)
-  const elementIsFragment = isJSXFragment(jsx)
   const elementIsBaseHTML = elementIsIntrinsic && isIntrinsicHTMLElement(jsx.name)
   const elementInScope = elementIsIntrinsic ? null : getElementFromScope(jsx, inScope)
   const elementFromImport = elementIsIntrinsic ? null : getElementFromScope(jsx, requireResult)
@@ -827,12 +836,19 @@ function renderJSXElement(
     [UTOPIA_PATH_KEY]: optionalMap(EP.toString, elementPath),
   }
 
+  const propsIncludingChildOfFragmentKey = childOfFragment
+    ? {
+        ...propsIncludingElementPath,
+        [UTOPIA_CHILD_OF_FRAGMENT_KEY]: true,
+      }
+    : propsIncludingElementPath
+
   const looksLikeReactIntrinsicButNotHTML = elementIsIntrinsic && !elementIsBaseHTML
 
   const finalProps =
     looksLikeReactIntrinsicButNotHTML || elementIsFragment
-      ? filterDataProps(propsIncludingElementPath)
-      : propsIncludingElementPath
+      ? filterDataProps(propsIncludingChildOfFragmentKey)
+      : propsIncludingChildOfFragmentKey
 
   if (!elementIsFragment && FinalElement == null) {
     throw canvasMissingJSXElementError(jsxFactoryFunctionName, code, jsx, filePath, highlightBounds)

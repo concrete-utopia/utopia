@@ -48,6 +48,11 @@ import {
   infinityCanvasRectangle,
   infinityLocalRectangle,
   stretchRect,
+  boundingRectangle,
+  boundingRectangleArray,
+  nullIfInfinity,
+  zeroCanvasRect,
+  zeroLocalRect,
 } from '../../core/shared/math-utils'
 import type { CSSNumber, CSSPosition } from '../inspector/common/css-utils'
 import {
@@ -61,6 +66,7 @@ import {
 import { camelCaseToDashed } from '../../core/shared/string-utils'
 import type { UtopiaStoreAPI } from '../editor/store/store-hook'
 import {
+  UTOPIA_CHILD_OF_FRAGMENT_KEY,
   UTOPIA_DO_NOT_TRAVERSE_KEY,
   UTOPIA_PATH_KEY,
   UTOPIA_SCENE_ID_KEY,
@@ -70,11 +76,12 @@ import { PERFORMANCE_MARKS_ALLOWED } from '../../common/env-vars'
 import { CanvasContainerID } from './canvas-types'
 import { emptySet } from '../../core/shared/set-utils'
 import {
+  PathWithString,
   getDeepestPathOnDomElement,
   getPathStringsOnDomElement,
   getPathWithStringsOnDomElement,
 } from '../../core/shared/uid-utils'
-import { pluck, uniqBy } from '../../core/shared/array-utils'
+import { mapDropNulls, pluck, uniqBy } from '../../core/shared/array-utils'
 import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
@@ -277,7 +284,47 @@ function mergeMetadataMaps_MUTATE(
 ): void {
   fastForEach(Object.values(otherMetadata), (elementMetadata) => {
     const pathString = EP.toString(elementMetadata.elementPath)
-    metadataToMutate[pathString] = elementMetadata
+    const existingMetadata = metadataToMutate[pathString]
+    if (existingMetadata == null || existingMetadata.element.value !== 'fragment') {
+      metadataToMutate[pathString] = elementMetadata
+    } else {
+      const combinedBoundingGlobalFrame =
+        boundingRectangleArray(
+          mapDropNulls(
+            (rect) => nullIfInfinity(rect),
+            [existingMetadata.globalFrame, elementMetadata.globalFrame],
+          ),
+        ) ?? zeroCanvasRect
+
+      const combinedBoundingLocalFrame =
+        boundingRectangleArray(
+          mapDropNulls(
+            (rect) => nullIfInfinity(rect),
+            [existingMetadata.localFrame, elementMetadata.localFrame],
+          ),
+        ) ?? zeroLocalRect
+
+      const combinedBoundingGlobalFrameWithTextContent =
+        boundingRectangleArray(
+          mapDropNulls(
+            (rect) => nullIfInfinity(rect),
+            [
+              existingMetadata.specialSizeMeasurements.globalFrameWithTextContent,
+              elementMetadata.specialSizeMeasurements.globalFrameWithTextContent,
+            ],
+          ),
+        ) ?? zeroCanvasRect
+
+      metadataToMutate[pathString] = {
+        ...existingMetadata,
+        globalFrame: combinedBoundingGlobalFrame,
+        localFrame: combinedBoundingLocalFrame,
+        specialSizeMeasurements: {
+          ...existingMetadata.specialSizeMeasurements,
+          globalFrameWithTextContent: combinedBoundingGlobalFrameWithTextContent,
+        },
+      }
+    }
   })
 }
 
@@ -1395,6 +1442,78 @@ function walkElements(
 
     mergeMetadataMaps_MUTATE(rootMetadataAccumulator, collectedMetadata)
     cachedPathsAccumulator = [...cachedPathsAccumulator, ...cachedPaths]
+
+    // If this is a child of a fragment, capture the frame for the fragment
+    const childofFragment = getDOMAttribute(element, UTOPIA_CHILD_OF_FRAGMENT_KEY) === 'true'
+    const validParentFragmentMetadata: Array<{ path: string; metadata: ElementInstanceMetadata }> =
+      childofFragment
+        ? pathsWithStrings.flatMap((pathWithString) => {
+            const parentPath = EP.parentPath(pathWithString.path)
+            const allParentPathStrings = EP.getAllElementPathStringsForPathString(
+              EP.toString(parentPath),
+            )
+
+            let working: Array<{ path: string; metadata: ElementInstanceMetadata }> = []
+
+            allParentPathStrings.forEach((pathString) => {
+              const parsedPath = EP.fromString(pathString)
+              if (EP.isElementPath(parsedPath)) {
+                const staticParentPath = EP.makeLastPartOfPathStatic(parsedPath)
+                const isValid = globalProps.validPaths.some((validPath) => {
+                  return EP.pathsEqual(staticParentPath, validPath)
+                })
+
+                if (isValid) {
+                  // Collect metadata for the child of the fragment
+                  const { collectedMetadata: childMetadata } = collectMetadata(
+                    element,
+                    [pathWithString.path],
+                    [pathWithString.asString],
+                    parentPoint,
+                    closestOffsetParentPath,
+                    uniqueChildPaths,
+                    invalidatedElement,
+                    globalProps,
+                  )
+
+                  const childMetadataToUse = childMetadata[pathWithString.asString]
+
+                  working.push({
+                    path: pathString,
+                    metadata: {
+                      element: left('fragment'),
+                      elementPath: parsedPath,
+                      globalFrame: childMetadataToUse.globalFrame,
+                      localFrame: childMetadataToUse.localFrame,
+                      nonRoundedGlobalFrame: null,
+                      componentInstance: false,
+                      isEmotionOrStyledComponent: false,
+                      specialSizeMeasurements: {
+                        ...emptySpecialSizeMeasurements,
+                        globalFrameWithTextContent:
+                          childMetadataToUse.specialSizeMeasurements.globalFrameWithTextContent,
+                      },
+                      computedStyle: emptyComputedStyle,
+                      attributeMetadatada: emptyAttributeMetadata,
+                      label: null,
+                      importInfo: null,
+                      conditionValue: 'not-a-conditional',
+                      textContent: null,
+                    },
+                  })
+                }
+              }
+            })
+
+            return working
+          })
+        : []
+
+    validParentFragmentMetadata.forEach(({ path, metadata }) => {
+      rootMetadataAccumulator[path] = metadata
+    })
+    // Do we need to update the cached paths?
+
     return {
       rootMetadata: rootMetadataAccumulator,
       childPaths: collectedPaths,
