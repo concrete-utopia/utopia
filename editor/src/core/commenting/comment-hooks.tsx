@@ -32,7 +32,7 @@ export function useCanvasCommentThreadAndLocation(comment: CommentId): {
   location: CanvasPoint | null
   thread: ThreadData<ThreadMetadata> | null
 } {
-  const threads = useActiveThreads()
+  const { threads } = useThreads()
 
   const thread = React.useMemo(() => {
     switch (comment.type) {
@@ -233,37 +233,32 @@ export function useResolveThread() {
 }
 
 export function useActiveThreads() {
-  const { threads: unresolvedThreads } = useUnresolvedThreads()
-  const { threads: resolvedThreads } = useResolvedThreads()
+  const { threads } = useThreads()
   const showResolved = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.showResolvedThreads,
     'useActiveThreads showResolved',
   )
   if (!showResolved) {
-    return unresolvedThreads
+    return threads.filter((t) => !t.metadata.resolved)
   }
-  return [...unresolvedThreads, ...resolvedThreads]
+  return threads
 }
 
 export function useResolvedThreads() {
-  return useThreads({
-    query: {
-      metadata: {
-        resolved: true,
-      },
-    },
-  })
+  const threads = useThreads()
+  return {
+    ...threads,
+    threads: threads.threads.filter((t) => t.metadata.resolved),
+  }
 }
 
 export function useUnresolvedThreads() {
-  return useThreads({
-    query: {
-      metadata: {
-        resolved: false,
-      },
-    },
-  })
+  const threads = useThreads()
+  return {
+    ...threads,
+    threads: threads.threads.filter((t) => !t.metadata.resolved),
+  }
 }
 
 export function useSetThreadReadStatusOnMount(thread: ThreadData<ThreadMetadata> | null) {
