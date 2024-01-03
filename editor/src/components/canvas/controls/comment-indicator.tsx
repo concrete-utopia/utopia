@@ -166,7 +166,6 @@ const CommentIndicatorsInner = React.memo(() => {
       {temporaryIndicatorData != null ? (
         <CommentIndicatorUI
           position={temporaryIndicatorData.position}
-          opacity={1}
           resolved={false}
           bgColor={temporaryIndicatorData.bgColor}
           fgColor={temporaryIndicatorData.fgColor}
@@ -182,7 +181,6 @@ CommentIndicatorsInner.displayName = 'CommentIndicatorInner'
 
 interface CommentIndicatorUIProps {
   position: WindowPoint
-  opacity: number
   resolved: boolean
   bgColor: string
   fgColor: string
@@ -193,24 +191,13 @@ interface CommentIndicatorUIProps {
 }
 
 export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) => {
-  const {
-    position,
-    bgColor,
-    fgColor,
-    avatarUrl,
-    avatarInitials,
-    opacity,
-    resolved,
-    isActive,
-    read,
-  } = props
+  const { position, bgColor, fgColor, avatarUrl, avatarInitials, resolved, isActive, read } = props
 
   function getIndicatorStyle() {
     const base: Interpolation<Theme> = {
       position: 'fixed',
       top: position.y + 3,
       left: position.x - 3,
-      opacity: opacity,
       filter: resolved ? 'grayscale(1)' : undefined,
       width: IndicatorSize,
       height: IndicatorSize,
@@ -340,7 +327,6 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
         (isActive || !hovered) && !dragging,
         <CommentIndicatorUI
           position={position}
-          opacity={isOnAnotherRoute || thread.metadata.resolved ? 0 : 1}
           resolved={thread.metadata.resolved}
           bgColor={color.background}
           fgColor={color.foreground}
