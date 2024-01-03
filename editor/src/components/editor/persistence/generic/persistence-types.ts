@@ -20,7 +20,7 @@ export interface ProjectModelWithId<ModelType> {
 
 export interface PersistenceContext<ModelType> {
   projectId?: string
-  project?: ProjectModel<ModelType>
+  project?: ProjectModel<ModelType> // TODO move project name out
   rollbackProjectId?: string
   rollbackProject?: ProjectModel<ModelType>
   queuedSave?: ProjectModel<ModelType>

@@ -686,11 +686,14 @@ export function createPersistenceMachine<ModelType, FileType>(
                 [LoadProjectFromGithub]: {
                   entry: [
                     // Assigning empty initial context
+
                     assign((currentContext, event) => {
                       console.log('creating project ID', currentContext, event)
+                      const typeUnsafeEvent = event as LoadFromGithubEvent // TODO fix the type safety issue here
+                      const projectName = `${typeUnsafeEvent.githubOwner}-${typeUnsafeEvent.githubRepo}`
                       return {
                         projectId: undefined,
-                        project: undefined,
+                        project: { name: projectName, content: undefined as any },
                         queuedSave: undefined,
                         projectOwnership: {
                           isOwner: true,
@@ -725,7 +728,7 @@ export function createPersistenceMachine<ModelType, FileType>(
                         console.log('load project promise done', currentContext, event)
                         return {
                           project: {
-                            name: 'new-project', // TODO name me!!!
+                            name: currentContext.project?.name,
                             content: event.data,
                           },
                         }
