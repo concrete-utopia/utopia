@@ -233,24 +233,23 @@ export function useResolveThread() {
 }
 
 export function useActiveThreads() {
-  const { threads: unresolvedThreads } = useUnresolvedThreads()
-  const { threads: resolvedThreads } = useResolvedThreads()
+  const { threads } = useThreads()
   const showResolved = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.showResolvedThreads,
     'useActiveThreads showResolved',
   )
   if (!showResolved) {
-    return unresolvedThreads
+    return threads.filter((t) => !t.metadata.resolved)
   }
-  return [...unresolvedThreads, ...resolvedThreads]
+  return threads
 }
 
 export function useResolvedThreads() {
   const threads = useThreads()
   return {
     ...threads,
-    threads: threads.threads.filter((t) => t.metadata.resolved === true),
+    threads: threads.threads.filter((t) => t.metadata.resolved),
   }
 }
 

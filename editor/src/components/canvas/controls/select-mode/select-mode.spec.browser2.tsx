@@ -1,4 +1,4 @@
-/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "checkFocusedPath", "checkSelectedPaths"] }] */
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "checkFocusedPath", "checkSelectedPaths", "selectInjectedDivAndCheckAllPaths"] }] */
 /// <reference types="karma-viewport" />
 import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
 import * as EP from '../../../../core/shared/element-path'
@@ -1736,6 +1736,86 @@ describe('mouseup selection', () => {
   })
 })
 
+describe('Problematic selection', () => {
+  // This was a real world bug caused by the unholy combination of these things
+
+  async function selectInjectedDivAndCheckAllPaths(
+    renderResult: EditorRenderResult,
+    injectedDiv: HTMLElement,
+    desiredPaths: Array<ElementPath>,
+  ) {
+    const injectedDivBounds = injectedDiv.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const doubleClick = createDoubleClicker(
+      canvasControlsLayer,
+      injectedDivBounds.left + injectedDivBounds.width / 2,
+      injectedDivBounds.top + injectedDivBounds.height / 2,
+    )
+
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      injectedDivBounds.left + injectedDivBounds.width / 2,
+      injectedDivBounds.top + injectedDivBounds.height / 2,
+    )
+
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPaths[0]])
+
+    await doubleClick()
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPaths[1]])
+
+    await doubleClick()
+    checkFocusedPath(renderResult, desiredPaths[1])
+    checkSelectedPaths(renderResult, [desiredPaths[1]])
+
+    await doubleClick()
+    checkFocusedPath(renderResult, desiredPaths[1])
+    checkSelectedPaths(renderResult, [desiredPaths[2]])
+  }
+
+  it('Can keep clicking to select the parent of a dangerouslySetInnerHTML element, inside a component with a fragment', async () => {
+    // prettier-ignore
+    const desiredPaths = createConsecutivePaths(
+      'sb' +                   // Skipped as it's the storyboard
+      '/div-a',                // Single click to select
+      '/FragmentAtRoot',       // Double click to select, double click again to focus
+      ':FragmentAtRoot-root' + // Skipped as it's locked
+      '/FragmentAtRoot-target' // Third double click to select
+    )
+
+    const renderResult = await renderTestEditorWithCode(
+      DangerouslySetInnerHTMLProject,
+      'await-first-dom-report',
+    )
+
+    const injectedDiv = renderResult.renderedDOM.getAllByTestId('injected-div')[0]
+
+    await selectInjectedDivAndCheckAllPaths(renderResult, injectedDiv, desiredPaths)
+  })
+
+  it('Can keep clicking to select the parent of a dangerouslySetInnerHTML element, inside a component with a div', async () => {
+    // prettier-ignore
+    const desiredPaths = createConsecutivePaths(
+      'sb' +              // Skipped as it's the storyboard
+      '/div-b',           // Single click to select
+      '/DivAtRoot',       // Double click to select, double click again to focus
+      ':DivAtRoot-root' + // Skipped as it's locked
+      '/DivAtRoot-target' // Third double click
+    )
+
+    const renderResult = await renderTestEditorWithCode(
+      DangerouslySetInnerHTMLProject,
+      'await-first-dom-report',
+    )
+
+    const injectedDiv = renderResult.renderedDOM.getAllByTestId('injected-div')[1]
+
+    await selectInjectedDivAndCheckAllPaths(renderResult, injectedDiv, desiredPaths)
+  })
+})
+
 function createConsecutivePaths(...partialPathStrings: Array<string>): Array<ElementPath> {
   return partialPathStrings.map((_value, index, arr) => {
     const joinedParts = arr.slice(0, index + 1).join('')
@@ -1760,6 +1840,80 @@ function checkWithKey<T>(key: string, actual: T, expected: T) {
     value: expected,
   })
 }
+
+const DangerouslySetInnerHTMLProject = `
+import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+const content =
+  '<div ' +
+  ' style=" ' +
+  ' background-color: lightblue;' +
+  ' width: 150px;' +
+  ' height: 150px;' +
+  ' " ' +
+  ' data-testid="injected-div" ' +
+  ' >Click me if you can!</div> '
+
+const UnSelectable = () => {
+  return (
+    <React.Fragment data-uid='FragmentAtRoot-root'>
+      You can't select this
+      <div
+        dangerouslySetInnerHTML={{ __html: content }}
+        data-uid='FragmentAtRoot-target'
+      />
+    </React.Fragment>
+  )
+}
+
+const Selectable = () => {
+  return (
+    <div data-uid='DivAtRoot-root'>
+      You can select this
+      <div
+        dangerouslySetInnerHTML={{ __html: content }}
+        data-uid='DivAtRoot-target'
+      />
+    </div>
+  )
+}
+
+const Card = (props) => {
+  return <div style={props.style}>{props.children}</div>
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 400,
+        top: 50,
+        width: 300,
+        height: 300,
+      }}
+      data-uid='div-a'
+    >
+      <UnSelectable data-uid='FragmentAtRoot' />
+    </div>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 400,
+        top: 364,
+        width: 300,
+        height: 300,
+      }}
+      data-uid='div-b'
+    >
+      <Selectable data-uid='DivAtRoot' />
+    </div>
+  </Storyboard>
+)
+`
 
 const generateTestProjectAlpineClimb = (conditional: boolean, conditionalSiblings: boolean) => `
 import * as React from "react";
