@@ -14,7 +14,7 @@ import {
   useColorTheme,
 } from '../../../uuiui'
 import { stopPropagation } from '../common/inspector-utils'
-import { useStorage, type ThreadMetadata } from '../../../../liveblocks.config'
+import { useStorage, type ThreadMetadata, useThreads } from '../../../../liveblocks.config'
 import type { ThreadData } from '@liveblocks/client'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { canvasRectangle, rectangleContainsRectangle } from '../../../core/shared/math-utils'
@@ -73,6 +73,15 @@ const ThreadPreviews = React.memo(() => {
   const { threads: activeThreads } = useUnresolvedThreads()
   const { threads: resolvedThreads } = useResolvedThreads()
 
+  const { threads: readThreads } = useReadThreads()
+
+  const allThreadsResolvedLast = [...activeThreads, ...resolvedThreads]
+  const { threads: allThreads } = useThreads()
+
+  const unreadThreads = allThreadsResolvedLast.filter((thread) => !readThreads.includes(thread))
+
+  const threads = allThreads
+
   const showResolved = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.showResolvedThreads,
@@ -88,15 +97,6 @@ const ThreadPreviews = React.memo(() => {
 
   return (
     <FlexColumn style={{ gap: 5 }}>
-      {activeThreads.map((thread) => (
-        <ThreadPreview key={thread.id} thread={thread} />
-      ))}
-      {when(
-        activeThreads.length === 0,
-        <div style={{ padding: '0px 8px', color: colorTheme.fg6.value }}>
-          No active comment threads.
-        </div>,
-      )}
       {when(
         resolvedThreads.length > 0,
         <Button
@@ -108,6 +108,15 @@ const ThreadPreviews = React.memo(() => {
           {showResolved ? 'Hide' : 'Show'} resolved threads
         </Button>,
       )}
+      {when(
+        activeThreads.length === 0,
+        <div style={{ padding: '0px 8px', color: colorTheme.fg6.value }}>
+          No active comment threads.
+        </div>,
+      )}
+      {activeThreads.map((thread) => (
+        <ThreadPreview key={thread.id} thread={thread} />
+      ))}
       {when(
         showResolved,
         resolvedThreads.map((thread) => <ThreadPreview key={thread.id} thread={thread} />),

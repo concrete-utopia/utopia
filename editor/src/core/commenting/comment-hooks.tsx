@@ -247,23 +247,19 @@ export function useActiveThreads() {
 }
 
 export function useResolvedThreads() {
-  return useThreads({
-    query: {
-      metadata: {
-        resolved: true,
-      },
-    },
-  })
+  const threads = useThreads()
+  return {
+    ...threads,
+    threads: threads.threads.filter((t) => t.metadata.resolved === true),
+  }
 }
 
 export function useUnresolvedThreads() {
-  return useThreads({
-    query: {
-      metadata: {
-        resolved: false,
-      },
-    },
-  })
+  const threads = useThreads()
+  return {
+    ...threads,
+    threads: threads.threads.filter((t) => t.metadata.resolved !== true),
+  }
 }
 
 export function useSetThreadReadStatusOnMount(thread: ThreadData<ThreadMetadata> | null) {
