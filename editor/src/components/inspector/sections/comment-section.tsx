@@ -46,7 +46,6 @@ import { getCurrentTheme } from '../../editor/store/editor-state'
 import type { EditorAction } from '../../editor/action-types'
 import { canvasPointToWindowPoint } from '../../canvas/dom-lookup'
 import { CommentRepliesCounter } from '../../canvas/controls/comment-replies-counter'
-import { filter } from 'jszip'
 
 export const CommentSection = React.memo(() => {
   return (
@@ -106,6 +105,15 @@ const ThreadPreviews = React.memo(() => {
     ])
   }, [showResolved, dispatch])
 
+  const [sortedByDateNewestFirst, setSortByDateNewestFirst] = React.useState(true)
+  const toggleSortByDateNewestFirst = React.useCallback(() => {
+    setSortByDateNewestFirst((prevValue) => !prevValue)
+  }, [])
+
+  const sortedActiveThreads = sortedByDateNewestFirst
+    ? activeThreads
+    : activeThreads.slice().reverse()
+
   return (
     <FlexColumn style={{ gap: 5 }}>
       <InspectorSubsectionHeader>
@@ -132,9 +140,9 @@ const ThreadPreviews = React.memo(() => {
           >
             <div
               css={{
-                height: 16,
-                width: 16,
-                borderRadius: 16,
+                height: 14,
+                width: 14,
+                borderRadius: 14,
                 border: `1px solid ${colorTheme.fg1.value}`,
                 cursor: 'pointer',
                 display: 'flex',
@@ -145,9 +153,15 @@ const ThreadPreviews = React.memo(() => {
               }}
               onClick={toggleOpen}
             >
-              <div style={{ width: 6, height: 1, background: colorTheme.fg1.value }} />
-              <div style={{ width: 4, height: 1, background: colorTheme.fg1.value }} />
-              <div style={{ width: 3, height: 1, background: colorTheme.fg1.value }} />
+              <div
+                style={{ width: 8, height: 1, background: colorTheme.fg1.value, borderRadius: 2 }}
+              />
+              <div
+                style={{ width: 6, height: 1, background: colorTheme.fg1.value, borderRadius: 2 }}
+              />
+              <div
+                style={{ width: 4, height: 1, background: colorTheme.fg1.value, borderRadius: 2 }}
+              />
             </div>
           </div>
         </FlexRow>
@@ -166,10 +180,10 @@ const ThreadPreviews = React.memo(() => {
             <CheckboxInput
               style={{ marginRight: 8 }}
               id='showResolved'
-              checked={showResolved}
-              onChange={toggleShowResolved}
+              checked={sortedByDateNewestFirst}
+              onChange={toggleSortByDateNewestFirst}
             />
-            <label htmlFor='showResolved'>Sort By Date</label>
+            <label htmlFor='showResolved'>Newest First</label>
           </FlexRow>
           <FlexRow>
             <CheckboxInput
@@ -178,7 +192,7 @@ const ThreadPreviews = React.memo(() => {
               checked={showResolved}
               onChange={toggleShowResolved}
             />
-            <label htmlFor='showResolved'>Sort By Unread</label>
+            <label htmlFor='showResolved'>Unread First</label>
           </FlexRow>
           {when(
             resolvedThreads.length > 0 || readThreads.length > 0,
@@ -214,7 +228,7 @@ const ThreadPreviews = React.memo(() => {
         activeThreads.length === 0,
         <div style={{ padding: 8, color: colorTheme.fg6.value }}>No active comment threads.</div>,
       )}
-      {activeThreads.map((thread) => (
+      {sortedActiveThreads.map((thread) => (
         <ThreadPreview key={thread.id} thread={thread} />
       ))}
       {when(
