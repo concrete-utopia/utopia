@@ -1,5 +1,5 @@
-import type { User } from '@liveblocks/client'
-import type { Presence, UserMeta } from '../../../liveblocks.config'
+import type { CommentData, ThreadData, User } from '@liveblocks/client'
+import type { Presence, ThreadMetadata, UserMeta } from '../../../liveblocks.config'
 import { possiblyUniqueInArray, safeIndex, stripNulls, uniqBy } from './array-utils'
 import { colorTheme, getPreferredColorScheme } from '../../uuiui'
 import type { ElementPath } from './project-file-types'
@@ -160,4 +160,8 @@ export function openCommentThreadActions(threadId: string, scene: ElementPath | 
     switchEditorMode(EditorModes.commentMode(existingComment(threadId), 'not-dragging')),
     scene != null ? setHighlightedView(scene) : null,
   ])
+}
+
+export function getFirstComment(thread: ThreadData<ThreadMetadata>): CommentData | null {
+  return thread.comments.filter((c) => c.deletedAt == null)[0] ?? null
 }

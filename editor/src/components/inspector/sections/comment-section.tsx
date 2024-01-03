@@ -36,7 +36,7 @@ import {
 } from '../../../core/commenting/comment-hooks'
 import { Substores, useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
 import { when } from '../../../utils/react-conditionals'
-import { openCommentThreadActions } from '../../../core/shared/multiplayer'
+import { getFirstComment, openCommentThreadActions } from '../../../core/shared/multiplayer'
 import { getRemixLocationLabel } from '../../canvas/remix/remix-utils'
 import type { RestOfEditorState } from '../../editor/store/store-hook-substore-types'
 import { getCurrentTheme } from '../../editor/store/editor-state'
@@ -215,7 +215,8 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
     'ThreadPreview theme',
   )
 
-  const comment = thread.comments[0]
+  const comment = getFirstComment(thread)
+
   if (comment == null) {
     return null
   }
