@@ -111,6 +111,10 @@ export function firstAncestorOrItselfWithValidElementPath(
 ): ElementPath | null {
   const staticAndDynamicTargetElementPaths = getStaticAndDynamicElementPathsForDomElement(target)
 
+  if (staticAndDynamicTargetElementPaths.length === 0) {
+    return null
+  }
+
   const validStaticElementPaths = getValidStaticElementPathsForDomElement(
     target,
     parentSceneValidPathsCache,

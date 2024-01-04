@@ -146,7 +146,8 @@ import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { createPasteToReplacePostActionActions } from '../canvas/canvas-strategies/post-action-options/post-action-options'
 import { wrapInDivStrategy } from './wrap-in-callbacks'
 import { isFeatureEnabled } from '../../utils/feature-switches'
-import { isProjectViewerFromState, type ProjectServerState } from './store/project-server-state'
+import { type ProjectServerState } from './store/project-server-state'
+import { allowedToEditProject } from './store/collaborative-editing'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -364,7 +365,7 @@ export function handleKeyDown(
   // Stop the browser from firing things like save dialogs.
   preventBrowserShortcuts(editor, event)
 
-  const isViewer = isProjectViewerFromState(projectServerState)
+  const allowedToEdit = allowedToEditProject(projectServerState)
 
   // Ensure that any key presses are appropriately recorded.
   const key = Keyboard.keyCharacterForCode(event.keyCode)
@@ -612,12 +613,11 @@ export function handleKeyDown(
         return [EditorActions.toggleHidden()]
       },
       [INSERT_IMAGE_SHORTCUT]: () => {
-        if (isViewer) {
-          return []
-        }
-        if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
-          // FIXME: Side effects.
-          insertImage(dispatch)
+        if (allowedToEdit) {
+          if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
+            // Side effects.
+            insertImage(dispatch)
+          }
         }
         return []
       },
@@ -752,20 +752,18 @@ export function handleKeyDown(
         }
       },
       [ADD_ELEMENT_SHORTCUT]: () => {
-        if (isViewer) {
-          return []
+        if (allowedToEdit) {
+          if (isSelectMode(editor.mode)) {
+            return [
+              EditorActions.openFloatingInsertMenu({
+                insertMenuMode: 'insert',
+                parentPath: null,
+                indexPosition: null,
+              }),
+            ]
+          }
         }
-        if (isSelectMode(editor.mode)) {
-          return [
-            EditorActions.openFloatingInsertMenu({
-              insertMenuMode: 'insert',
-              parentPath: null,
-              indexPosition: null,
-            }),
-          ]
-        } else {
-          return []
-        }
+        return []
       },
       [OPEN_EYEDROPPER]: () => {
         const selectedViews = editor.selectedViews
@@ -788,30 +786,29 @@ export function handleKeyDown(
         return []
       },
       [TEXT_EDIT_MODE]: () => {
-        if (isViewer) {
-          return []
-        }
-        const newUID = generateUidWithExistingComponents(editor.projectContents)
+        if (allowedToEdit) {
+          const newUID = generateUidWithExistingComponents(editor.projectContents)
 
-        actions.push(
-          EditorActions.enableInsertModeForJSXElement(
-            defaultSpanElement(newUID),
-            newUID,
-            {},
-            null,
-            {
-              textEdit: true,
-            },
-          ),
-          CanvasActions.createInteractionSession(
-            createHoverInteractionViaMouse(
-              CanvasMousePositionRaw!,
-              modifiers,
-              boundingArea(),
-              'zero-drag-permitted',
+          actions.push(
+            EditorActions.enableInsertModeForJSXElement(
+              defaultSpanElement(newUID),
+              newUID,
+              {},
+              null,
+              {
+                textEdit: true,
+              },
             ),
-          ),
-        )
+            CanvasActions.createInteractionSession(
+              createHoverInteractionViaMouse(
+                CanvasMousePositionRaw!,
+                modifiers,
+                boundingArea(),
+                'zero-drag-permitted',
+              ),
+            ),
+          )
+        }
         return actions
       },
       [TOGGLE_TEXT_BOLD]: () => {
@@ -965,13 +962,14 @@ export function handleKeyDown(
         return [EditorActions.applyCommandsAction(commands)]
       },
       [OPEN_INSERT_MENU]: () => {
-        if (isViewer) {
+        if (allowedToEdit) {
+          return [
+            EditorActions.setPanelVisibility('rightmenu', true),
+            EditorActions.setRightMenuTab(RightMenuTab.Insert),
+          ]
+        } else {
           return []
         }
-        return [
-          EditorActions.setPanelVisibility('rightmenu', true),
-          EditorActions.setRightMenuTab(RightMenuTab.Insert),
-        ]
       },
       [WRAP_IN_DIV]: () => {
         if (!isSelectMode(editor.mode)) {
