@@ -19,29 +19,44 @@ export function renameDuplicateImports(
         existingNames,
         original.importedWithName,
         importSource,
+        'importedWithName',
       )
       if (importedWithName !== original.importedWithName) {
         duplicateNameMapping.set(original.importedWithName, importedWithName)
-        existingNames.set(importedWithName, importSource)
+        existingNames.set(importedWithName, { source: importSource, type: 'importedWithName' })
       }
     }
 
     // importedAs
     if (original.importedAs != null) {
-      importedAs = adjustImportNameIfNeeded(existingNames, original.importedAs, importSource)
+      importedAs = adjustImportNameIfNeeded(
+        existingNames,
+        original.importedAs,
+        importSource,
+        'importedAs',
+      )
       if (importedAs !== original.importedAs) {
         duplicateNameMapping.set(original.importedAs, importedAs)
-        existingNames.set(importedAs, importSource)
+        existingNames.set(importedAs, { source: importSource, type: 'importedAs' })
       }
     }
 
     // importedFromWithin
     const importedFromWithin = original.importedFromWithin.map((importAliasDetails) => {
       let alias = importAliasDetails.alias
-      alias = adjustImportNameIfNeeded(existingNames, importAliasDetails.alias, importSource)
+      alias = adjustImportNameIfNeeded(
+        existingNames,
+        importAliasDetails.alias,
+        importSource,
+        'importedFromWithin',
+      )
       if (alias !== importAliasDetails.alias) {
         duplicateNameMapping.set(importAliasDetails.alias, alias)
-        existingNames.set(alias, importSource)
+        existingNames.set(alias, {
+          source: importSource,
+          type: 'importedFromWithin',
+          originalName: importAliasDetails.name,
+        })
       }
       return importAlias(importAliasDetails.name, alias)
     })
@@ -68,34 +83,90 @@ export function renameDuplicateImportsInMergeResolution(
 }
 
 function adjustImportNameIfNeeded(
-  existingNames: Map<string, string>,
+  existingNames: ImportUniqueNames,
   importName: string,
   importSource: string,
+  type: ImportType,
 ): string {
-  if (existingNames.has(importName) && existingNames.get(importName) !== importSource) {
-    const newName = `${importName}_${pathHash(importSource)}`
-    return newName
+  const currentImportData = existingNames.get(importName)
+  if (currentImportData! != null) {
+    // first - check to see if the new import is already in the existing imports, renamed
+    const existingImportAlias = findOriginalNameInExistingImports(
+      importName,
+      importSource,
+      existingNames,
+    )
+    if (existingImportAlias != null) {
+      return existingImportAlias
+    }
+    // different source - we always rename the new import
+    if (currentImportData.source !== importSource) {
+      return findNewImportName(importName, existingNames)
+    }
+    // same source with a different type - we always rename the new import
+    if (currentImportData.type !== type) {
+      return findNewImportName(importName, existingNames)
+    }
+    // edge case - same source, same alias, different originalName
+    if (
+      currentImportData.type === 'importedFromWithin' &&
+      type === 'importedFromWithin' &&
+      currentImportData.originalName !== importName
+    ) {
+      return findNewImportName(importName, existingNames)
+    }
   }
   return importName
 }
 
-function pathHash(path: string) {
-  return Buffer.from(path).toString('base64').slice(0, 4)
+function findNewImportName(currentName: string, existingNames: ImportUniqueNames) {
+  let newName = currentName
+  let i = 2
+  while (existingNames.has(newName)) {
+    newName = `${currentName}_${i}`
+    i++
+  }
+  return newName
 }
 
-export function getAllImportsUniqueNames(imports: Imports): Map<string, string> {
+function findOriginalNameInExistingImports(
+  currentName: string,
+  importSource: string,
+  existingNames: ImportUniqueNames,
+): string | null {
+  let existingImportAlias: string | null = null
+  // check to see if the new import is already in the existing imports, renamed
+  existingNames.forEach((existingImportData, existingName) => {
+    if (existingImportData.source === importSource) {
+      if (existingImportData.type === 'importedFromWithin') {
+        if (existingImportData.originalName === currentName) {
+          existingImportAlias = existingName
+        }
+      } else {
+        existingImportAlias = existingName
+      }
+    }
+  })
+  return existingImportAlias
+}
+
+export function getAllImportsUniqueNames(imports: Imports): ImportUniqueNames {
   return Object.entries(imports).reduce((acc, [importSource, details]) => {
     if (details.importedAs !== null) {
-      acc.set(details.importedAs, importSource)
+      acc.set(details.importedAs, { source: importSource, type: 'importedAs' })
     }
     if (details.importedWithName !== null) {
-      acc.set(details.importedWithName, importSource)
+      acc.set(details.importedWithName, { source: importSource, type: 'importedWithName' })
     }
     details.importedFromWithin.forEach((importedFromWithin) => {
-      acc.set(importedFromWithin.alias, importSource)
+      acc.set(importedFromWithin.alias, {
+        source: importSource,
+        type: 'importedFromWithin',
+        originalName: importedFromWithin.name,
+      })
     })
     return acc
-  }, new Map<string, string>())
+  }, new Map())
 }
 
 export function mergeDuplicateNameMaps(
@@ -108,3 +179,6 @@ export function mergeDuplicateNameMaps(
   ])
   return mergedDuplicateNameMapping
 }
+
+type ImportType = 'importedAs' | 'importedWithName' | 'importedFromWithin'
+type ImportUniqueNames = Map<string, { source: string; type: ImportType; originalName?: string }>
