@@ -92,11 +92,11 @@ const ThreadPreviews = React.memo(() => {
     ])
   }, [showResolved, dispatch])
 
-  const [sortByDateNewestFirst, setSortByDateNewestFirst] = React.useState(true)
+  const [sortByLastUpdatedFirst, setSortByLastUpdatedFirst] = React.useState(true)
   const [sortByUnreadFirst, setSortedByUnreadFirst] = React.useState(false)
 
-  const toggleSortByDateNewestFirst = React.useCallback(() => {
-    setSortByDateNewestFirst((prevValue) => !prevValue)
+  const toggleSortByLastUpdatedFirst = React.useCallback(() => {
+    setSortByLastUpdatedFirst((prevValue) => !prevValue)
   }, [])
   const toggleSortByUnreadFirst = React.useCallback(() => {
     setSortedByUnreadFirst((prevValue) => !prevValue)
@@ -108,7 +108,7 @@ const ThreadPreviews = React.memo(() => {
     if (!showResolved) {
       filteredThreads = filteredThreads.filter((thread) => !resolvedThreads.includes(thread))
     }
-    if (sortByDateNewestFirst) {
+    if (!sortByLastUpdatedFirst) {
       filteredThreads = filteredThreads.slice().reverse()
     }
     if (sortByUnreadFirst) {
@@ -124,7 +124,7 @@ const ThreadPreviews = React.memo(() => {
     readThreads,
     showResolved,
     sortByUnreadFirst,
-    sortByDateNewestFirst,
+    sortByLastUpdatedFirst,
   ])
 
   return (
@@ -195,10 +195,10 @@ const ThreadPreviews = React.memo(() => {
             <CheckboxInput
               style={{ marginRight: 8 }}
               id='showNewestFirst'
-              checked={sortByDateNewestFirst}
-              onChange={toggleSortByDateNewestFirst}
+              checked={sortByLastUpdatedFirst}
+              onChange={toggleSortByLastUpdatedFirst}
             />
-            <label htmlFor='showNewestFirst'>Newest First</label>
+            <label htmlFor='showNewestFirst'>Last Updated First</label>
           </FlexRow>
           <FlexRow>
             <CheckboxInput
