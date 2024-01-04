@@ -123,6 +123,7 @@ export function getRequiredImportsForElement(
       const duplicateImportsResolution = renameDuplicateImportsInMergeResolution(
         targetFileContents.imports,
         importsMergeResolution,
+        targetFilePath,
       )
 
       return duplicateImportsResolution

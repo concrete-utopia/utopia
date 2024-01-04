@@ -153,6 +153,7 @@ export function mergeImports(
   const { imports: importResult, duplicateNameMapping } = renameDuplicateImports(
     emptyImports(),
     imports,
+    fileUri,
   )
 
   return { imports: importResult, duplicateNameMapping }

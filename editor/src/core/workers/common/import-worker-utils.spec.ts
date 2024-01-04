@@ -56,11 +56,20 @@ describe('renameDuplicateImports', () => {
       expected: { 'fileB.js': importDetails(null, [importAlias('Card', 'Card_2')], null) },
       expectedMap: new Map([['Card', 'Card_2']]),
     },
+    {
+      name: 'can match different relative sources and not rename',
+      existingImports: {
+        './utils.js': importDetails(null, [importAlias('Card')], null),
+      },
+      toAdd: { '/src/utils.js': importDetails(null, [importAlias('Card')], null) },
+      expected: { '/src/utils.js': importDetails(null, [importAlias('Card')], null) },
+      expectedMap: new Map(),
+    },
   ]
 
   tests.forEach((test) => {
     it(`${test.name}`, () => {
-      const result = renameDuplicateImports(test.existingImports, test.toAdd)
+      const result = renameDuplicateImports(test.existingImports, test.toAdd, './src/app.js')
       expect(result.imports).toEqual(test.expected)
       expect(result.duplicateNameMapping).toEqual(test.expectedMap)
     })

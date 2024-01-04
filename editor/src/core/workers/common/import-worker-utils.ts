@@ -1,11 +1,19 @@
 import type { Imports, ImportsMergeResolution } from '../../../core/shared/project-file-types'
 import { mapValues } from '../../../core/shared/object-utils'
 import { importAlias, importDetails } from '../../../core/shared/project-file-types'
+import { absolutePathFromRelativePath } from '../../../utils/path-utils'
+import { stripExtension } from '../../../components/custom-code/custom-code-utils'
 
 export function renameDuplicateImports(
   existingImports: Imports,
   toAdd: Imports,
+  targetFilePath: string,
 ): ImportsMergeResolution {
+  function absolutePath(relativePath: string): string {
+    const rawAbsolutePath = absolutePathFromRelativePath(targetFilePath, false, relativePath)
+    const absoluteImportSource = stripExtension(rawAbsolutePath)
+    return absoluteImportSource
+  }
   const existingNames = getAllImportsUniqueNames(existingImports)
   const duplicateNameMapping = new Map<string, string>()
 
@@ -20,6 +28,7 @@ export function renameDuplicateImports(
         original.importedWithName,
         importSource,
         'importedWithName',
+        absolutePath,
       )
       if (importedWithName !== original.importedWithName) {
         duplicateNameMapping.set(original.importedWithName, importedWithName)
@@ -34,6 +43,7 @@ export function renameDuplicateImports(
         original.importedAs,
         importSource,
         'importedAs',
+        absolutePath,
       )
       if (importedAs !== original.importedAs) {
         duplicateNameMapping.set(original.importedAs, importedAs)
@@ -49,6 +59,7 @@ export function renameDuplicateImports(
         importAliasDetails.alias,
         importSource,
         'importedFromWithin',
+        absolutePath,
       )
       if (alias !== importAliasDetails.alias) {
         duplicateNameMapping.set(importAliasDetails.alias, alias)
@@ -73,8 +84,9 @@ export function renameDuplicateImports(
 export function renameDuplicateImportsInMergeResolution(
   existingImports: Imports,
   toAdd: ImportsMergeResolution,
+  targetFilePath: string,
 ): ImportsMergeResolution {
-  const importsResolution = renameDuplicateImports(existingImports, toAdd.imports)
+  const importsResolution = renameDuplicateImports(existingImports, toAdd.imports, targetFilePath)
   const mergedDuplicateNameMapping = mergeDuplicateNameMaps(importsResolution, toAdd)
   return {
     imports: importsResolution.imports,
@@ -87,32 +99,34 @@ function adjustImportNameIfNeeded(
   importName: string,
   importSource: string,
   type: ImportType,
+  absolutePath: (relativePath: string) => string,
 ): string {
-  const currentImportData = existingNames.get(importName)
-  if (currentImportData! != null) {
+  const existingImport = existingNames.get(importName)
+  if (existingImport! != null) {
     // first - check to see if the new import is already in the existing imports, renamed
     const existingImportAlias = findOriginalNameInExistingImports(
       importName,
       importSource,
       type,
       existingNames,
+      absolutePath,
     )
     if (existingImportAlias != null) {
       return existingImportAlias
     }
     // different source - we always rename the new import
-    if (currentImportData.source !== importSource) {
+    if (absolutePath(existingImport.source) !== absolutePath(importSource)) {
       return findNewImportName(importName, existingNames)
     }
     // same source with a different type - we always rename the new import
-    if (currentImportData.type !== type) {
+    if (existingImport.type !== type) {
       return findNewImportName(importName, existingNames)
     }
     // edge case - same source, same alias, different originalName
     if (
-      currentImportData.type === 'importedFromWithin' &&
+      existingImport.type === 'importedFromWithin' &&
       type === 'importedFromWithin' &&
-      currentImportData.originalName !== importName
+      existingImport.originalName !== importName
     ) {
       return findNewImportName(importName, existingNames)
     }
@@ -135,11 +149,12 @@ function findOriginalNameInExistingImports(
   importSource: string,
   importType: ImportType,
   existingNames: ImportUniqueNames,
+  absolutePath: (relativePath: string) => string,
 ): string | null {
   let existingImportAlias: string | null = null
   // check to see if the new import is already in the existing imports, renamed
   existingNames.forEach((existingImportData, existingName) => {
-    if (existingImportData.source === importSource) {
+    if (absolutePath(existingImportData.source) === absolutePath(importSource)) {
       if (existingImportData.type === importType) {
         if (
           importType !== 'importedFromWithin' ||

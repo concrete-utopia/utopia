@@ -100,6 +100,7 @@ function adjustElementDuplicateName(
   const { imports, duplicateNameMapping } = renameDuplicateImports(
     fileContents.imports,
     element.imports,
+    targetFile,
   )
   // handle element name
   if (isJSXElement(element.element)) {
