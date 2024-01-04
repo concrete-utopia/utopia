@@ -75,8 +75,9 @@ const ThreadPreviews = React.memo(() => {
   const { threads: resolvedThreads } = useResolvedThreads()
   const { threads: readThreads } = useReadThreads()
 
-  sortThreadsByDescendingUpdateTimeInPlace(activeThreads)
+  sortThreadsByDescendingUpdateTimeInPlace(threads)
   sortThreadsByDescendingUpdateTimeInPlace(resolvedThreads)
+  sortThreadsByDescendingUpdateTimeInPlace(readThreads)
 
   const showResolved = useEditorState(
     Substores.restOfEditor,
