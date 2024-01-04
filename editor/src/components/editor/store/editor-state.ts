@@ -433,7 +433,7 @@ export function emptyCollaborativeEditingSupportSession(): CollaborativeEditingS
 
 export function emptyCollaborativeEditingSupport(): CollaborativeEditingSupport {
   let session: CollaborativeEditingSupportSession | null = null
-  if (isFeatureEnabled('Collaboration')) {
+  if (isFeatureEnabled('Multiplayer')) {
     session = emptyCollaborativeEditingSupportSession()
   }
   return {

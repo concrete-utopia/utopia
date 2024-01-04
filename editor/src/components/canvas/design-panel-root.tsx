@@ -212,7 +212,7 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
           </>,
         )}
         {when(
-          isFeatureEnabled('Commenting'),
+          isFeatureEnabled('Multiplayer'),
           <MenuTab
             label={'Comments'}
             selected={selectedTab === RightMenuTab.Comments}

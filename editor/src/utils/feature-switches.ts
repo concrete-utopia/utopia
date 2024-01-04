@@ -12,10 +12,9 @@ export type FeatureName =
   | 'Performance Test Triggers'
   | 'Canvas Strategies Debug Panel'
   | 'Project Thumbnail Generation'
-  | 'Commenting'
   | 'Debug - Print UIDs'
   | 'Steganography'
-  | 'Collaboration'
+  | 'Multiplayer'
   | 'Baton Passing For Control'
 
 export const AllFeatureNames: FeatureName[] = [
@@ -29,10 +28,9 @@ export const AllFeatureNames: FeatureName[] = [
   'Performance Test Triggers',
   'Canvas Strategies Debug Panel',
   'Project Thumbnail Generation',
-  'Commenting',
   'Debug - Print UIDs',
   'Steganography',
-  'Collaboration',
+  'Multiplayer',
   'Baton Passing For Control',
 ]
 
@@ -46,10 +44,9 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Performance Test Triggers': !(PRODUCTION_CONFIG as boolean),
   'Canvas Strategies Debug Panel': false,
   'Project Thumbnail Generation': false,
-  Commenting: false,
   'Debug - Print UIDs': false,
   Steganography: false,
-  Collaboration: false,
+  Multiplayer: false,
   'Baton Passing For Control': false,
 }
 
