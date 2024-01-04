@@ -21,12 +21,11 @@ import {
 } from '../../../components/assets'
 import type { EditorAction, EditorDispatch } from '../action-types'
 import { updateTopLevelElementsFromCollaborationUpdate } from '../actions/action-creators'
-import { assertNever, isBrowserEnvironment } from '../../../core/shared/utils'
+import { assertNever } from '../../../core/shared/utils'
 import type {
   ExportDetail,
   ImportDetails,
   ParseSuccess,
-  ParsedTextFile,
 } from '../../../core/shared/project-file-types'
 import { isTextFile } from '../../../core/shared/project-file-types'
 import {
@@ -36,18 +35,22 @@ import {
   TopLevelElementKeepDeepEquality,
 } from './store-deep-equality-instances'
 import type { WriteProjectFileChange } from './vscode-changes'
+import { v4 as UUID } from 'uuid'
 import {
   deletePathChange,
   ensureDirectoryExistsChange,
   writeProjectFileChange,
-  type ProjectChanges,
   type ProjectFileChange,
 } from './vscode-changes'
-import { unparsedCode, type TopLevelElement } from '../../../core/shared/element-template'
+import { type TopLevelElement } from '../../../core/shared/element-template'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import type { KeepDeepEqualityCall } from '../../../utils/deep-equality'
 import type { MapLike } from 'typescript'
 import { Y } from '../../../core/shared/yjs'
+import { HEADERS, MODE } from '../../../common/server'
+import { UTOPIA_BACKEND } from '../../../common/env-vars'
+import type { ProjectServerState } from './project-server-state'
+import { Substores, useEditorState } from './store-hook'
 
 const CodeKey = 'code'
 const TopLevelElementsKey = 'topLevelElements'
@@ -607,5 +610,110 @@ function synchroniseParseSuccessToCollabFile(
     collabFile,
     ImportsKey,
     ImportDetailsKeepDeepEquality,
+  )
+}
+
+export interface ClaimProjectControl {
+  type: 'CLAIM_PROJECT_CONTROL'
+  projectID: string
+  collaborationEditor: string
+}
+
+export function claimProjectControl(
+  projectID: string,
+  collaborationEditor: string,
+): ClaimProjectControl {
+  return {
+    type: 'CLAIM_PROJECT_CONTROL',
+    projectID: projectID,
+    collaborationEditor: collaborationEditor,
+  }
+}
+
+export interface ClearAllOfCollaboratorsControl {
+  type: 'CLEAR_ALL_OF_COLLABORATORS_CONTROL'
+  collaborationEditor: string
+}
+
+export function clearAllOfCollaboratorsControl(
+  collaborationEditor: string,
+): ClearAllOfCollaboratorsControl {
+  return {
+    type: 'CLEAR_ALL_OF_COLLABORATORS_CONTROL',
+    collaborationEditor: collaborationEditor,
+  }
+}
+
+export type CollaborationRequest = ClaimProjectControl | ClearAllOfCollaboratorsControl
+
+export interface ClaimProjectControlResult {
+  type: 'CLAIM_PROJECT_CONTROL_RESULT'
+  successfullyClaimed: boolean
+}
+
+export interface ClearAllOfCollaboratorsControlResult {
+  type: 'CLEAR_ALL_OF_COLLABORATORS_CONTROL_RESULT'
+}
+
+export type CollaborationResponse = ClaimProjectControlResult | ClearAllOfCollaboratorsControlResult
+
+const collaborationEditor = UUID()
+
+async function callCollaborationEndpoint(
+  request: CollaborationRequest,
+): Promise<CollaborationResponse> {
+  const url = `${UTOPIA_BACKEND}collaboration`
+  const response = await fetch(url, {
+    method: 'PUT',
+    credentials: 'include',
+    headers: HEADERS,
+    mode: MODE,
+    body: JSON.stringify(request),
+  })
+  if (response.ok) {
+    return response.json()
+  } else {
+    throw new Error(`server responded with ${response.status} ${response.statusText}`)
+  }
+}
+
+export async function claimControlOverProject(projectID: string | null): Promise<boolean | null> {
+  if (projectID == null || !isFeatureEnabled('Baton Passing For Control')) {
+    return null
+  }
+
+  const request = claimProjectControl(projectID, collaborationEditor)
+  const response = await callCollaborationEndpoint(request)
+  if (response.type === 'CLAIM_PROJECT_CONTROL_RESULT') {
+    return response.successfullyClaimed
+  } else {
+    throw new Error(`Unexpected response: ${JSON.stringify(response)}`)
+  }
+}
+
+export async function releaseControl(): Promise<void> {
+  if (isFeatureEnabled('Baton Passing For Control')) {
+    const request = clearAllOfCollaboratorsControl(collaborationEditor)
+
+    const response = await callCollaborationEndpoint(request)
+    if (response.type !== 'CLEAR_ALL_OF_COLLABORATORS_CONTROL_RESULT') {
+      throw new Error(`Unexpected response: ${JSON.stringify(response)}`)
+    }
+  }
+}
+
+export function allowedToEditProject(serverState: ProjectServerState): boolean {
+  if (isFeatureEnabled('Baton Passing For Control')) {
+    return serverState.currentlyHolderOfTheBaton
+  } else {
+    return serverState.isMyProject === 'yes'
+  }
+}
+
+export function useAllowedToEditProject(): boolean {
+  return useEditorState(
+    Substores.projectServerState,
+    (store) => allowedToEditProject(store.projectServerState),
+    'useAllowedToEditProject',
   )
 }

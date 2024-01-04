@@ -31,6 +31,7 @@ import {
   Icn,
   Tooltip,
   UtopiaStyles,
+  colorTheme,
   useColorTheme,
 } from '../../../uuiui'
 import {
@@ -74,6 +75,7 @@ const ComposerStyle: CSSProperties = {
   wordWrap: 'break-word',
   whiteSpace: 'normal',
   zIndex: 10,
+  background: colorTheme.bg1.value,
 }
 
 function switchToBasicCommentModeOnEscape(e: React.KeyboardEvent, dispatch: EditorDispatch) {
@@ -110,7 +112,6 @@ interface CommentThreadProps {
 
 const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
   const dispatch = useDispatch()
-  const colorTheme = useColorTheme()
 
   const composerRef = useRef<HTMLFormElement | null>(null)
   const listRef = React.useRef<HTMLDivElement | null>(null)
@@ -272,7 +273,8 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
       return
     }
     resolveThread(thread)
-  }, [thread, resolveThread])
+    dispatch([switchEditorMode(EditorModes.commentMode(null, 'not-dragging'))])
+  }, [thread, resolveThread, dispatch])
 
   const onClickClose = React.useCallback(() => {
     dispatch([switchEditorMode(EditorModes.commentMode(null, 'not-dragging'))])
@@ -391,6 +393,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
                     user={user}
                     comment={c}
                     onCommentDelete={onCommentDelete}
+                    style={{ background: colorTheme.bg1.value }}
                   />
                 )
               })}
@@ -426,7 +429,6 @@ type NewCommentPopupProps = {
 }
 
 const NewCommentPopup = React.memo((props: NewCommentPopupProps) => {
-  const colorTheme = useColorTheme()
   const dispatch = useDispatch()
 
   const theme = useEditorState(
@@ -488,7 +490,7 @@ const NewCommentPopup = React.memo((props: NewCommentPopupProps) => {
         composerTextbox.focus()
       }
     },
-    [newCommentComposerAnimation, colorTheme, dispatch],
+    [newCommentComposerAnimation, dispatch],
   )
 
   const onClickClose = React.useCallback(() => {
@@ -514,6 +516,7 @@ const NewCommentPopup = React.memo((props: NewCommentPopupProps) => {
           justifyContent: 'flex-end',
           padding: 6,
           height: 35,
+          background: colorTheme.bg1.value,
           borderBottom: `1px solid ${colorTheme.bg3.value}`,
         }}
       >
@@ -521,7 +524,7 @@ const NewCommentPopup = React.memo((props: NewCommentPopupProps) => {
           <Icn category='semantic' type='cross-large' width={16} height={16} color='main' />
         </Button>
       </div>
-      <motion.div animate={newCommentComposerAnimation} style={{ border: '1px solid transparent' }}>
+      <motion.div animate={newCommentComposerAnimation}>
         <Composer
           data-theme={theme}
           autoFocus
@@ -537,7 +540,6 @@ NewCommentPopup.displayName = 'NewCommentPopup'
 
 const ListShadow = React.memo(
   ({ enabled, position }: { enabled: boolean; position: 'top' | 'bottom' }) => {
-    const colorTheme = useColorTheme()
     return (
       <div
         style={{
@@ -564,6 +566,11 @@ const HeaderComment = React.memo(
   ({ comment, enabled }: { comment: CommentData; enabled: boolean }) => {
     const collabs = useStorage((storage) => storage.collaborators)
     const user = getCollaboratorById(collabs, comment.userId)
+
+    if (!enabled) {
+      return null
+    }
+
     return (
       <div
         style={{
@@ -574,7 +581,6 @@ const HeaderComment = React.memo(
           backgroundColor: 'white',
           zIndex: 1,
           boxShadow: UtopiaStyles.shadowStyles.highest.boxShadow,
-          opacity: enabled ? 1 : 0,
           transition: 'all 100ms linear',
           minHeight: 67,
           transform: 'scale(1.01)',

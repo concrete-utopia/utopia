@@ -1,11 +1,11 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
-import type { CSSObject, Interpolation } from '@emotion/react'
+import type { Interpolation } from '@emotion/react'
 import type { ThreadData } from '@liveblocks/client'
 import React from 'react'
 import type { ThreadMetadata } from '../../../../liveblocks.config'
-import { useEditThreadMetadata, useStorage, useThreads } from '../../../../liveblocks.config'
+import { useEditThreadMetadata, useStorage } from '../../../../liveblocks.config'
 import {
   useCanvasLocationOfThread,
   useActiveThreads,
@@ -22,6 +22,7 @@ import {
   windowPoint,
 } from '../../../core/shared/math-utils'
 import {
+  getFirstComment,
   multiplayerColorFromIndex,
   multiplayerInitialsFromName,
   normalizeMultiplayerName,
@@ -40,6 +41,7 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import { setRightMenuTab } from '../../editor/actions/action-creators'
 import { RightMenuTab, getCurrentTheme } from '../../editor/store/editor-state'
 import { when } from '../../../utils/react-conditionals'
+import { CommentRepliesCounter } from './comment-replies-counter'
 
 const IndicatorSize = 24
 const MagnifyScale = 1.15
@@ -165,7 +167,6 @@ const CommentIndicatorsInner = React.memo(() => {
       {temporaryIndicatorData != null ? (
         <CommentIndicatorUI
           position={temporaryIndicatorData.position}
-          opacity={1}
           resolved={false}
           bgColor={temporaryIndicatorData.bgColor}
           fgColor={temporaryIndicatorData.fgColor}
@@ -181,7 +182,6 @@ CommentIndicatorsInner.displayName = 'CommentIndicatorInner'
 
 interface CommentIndicatorUIProps {
   position: WindowPoint
-  opacity: number
   resolved: boolean
   bgColor: string
   fgColor: string
@@ -192,24 +192,13 @@ interface CommentIndicatorUIProps {
 }
 
 export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) => {
-  const {
-    position,
-    bgColor,
-    fgColor,
-    avatarUrl,
-    avatarInitials,
-    opacity,
-    resolved,
-    isActive,
-    read,
-  } = props
+  const { position, bgColor, fgColor, avatarUrl, avatarInitials, resolved, isActive, read } = props
 
   function getIndicatorStyle() {
     const base: Interpolation<Theme> = {
       position: 'fixed',
       top: position.y + 3,
       left: position.x - 3,
-      opacity: opacity,
       filter: resolved ? 'grayscale(1)' : undefined,
       width: IndicatorSize,
       height: IndicatorSize,
@@ -339,7 +328,6 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
         (isActive || !hovered) && !dragging,
         <CommentIndicatorUI
           position={position}
-          opacity={isOnAnotherRoute || thread.metadata.resolved ? 0 : 1}
           resolved={thread.metadata.resolved}
           bgColor={color.background}
           fgColor={color.foreground}
@@ -440,7 +428,7 @@ const HoveredCommentIndicator = React.memo((props: HoveredCommentIndicatorProps)
     return null
   }
 
-  const comment = thread.comments[0]
+  const comment = getFirstComment(thread)
   if (comment == null) {
     return null
   }
@@ -452,20 +440,31 @@ const HoveredCommentIndicator = React.memo((props: HoveredCommentIndicatorProps)
   return (
     <div
       style={{
+        display: 'flex',
+        flexDirection: 'column',
+        borderRadius: '18px 18px 18px 0px',
+        width: 250,
+        boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
+        background: colorTheme.bg1.value,
         position: 'fixed',
-        top: position.y,
-        left: position.x,
+        // temporarily moving the hovered comment indicator to align with the not hovered version
+        top: position.y - 40.5,
+        left: position.x - 3,
       }}
       onMouseDown={onMouseDown}
       onClick={onClick}
     >
       <CommentWrapper
-        style={{ borderRadius: '18px 18px 18px 0px' }}
+        style={{
+          overflow: 'auto',
+        }}
         data-theme={theme}
         user={user}
         comment={comment}
         showActions={false}
       />
+      <CommentRepliesCounter thread={thread} />
+      <div style={{ height: 8 }} />
     </div>
   )
 })

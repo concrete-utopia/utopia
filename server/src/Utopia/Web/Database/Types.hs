@@ -120,7 +120,6 @@ data DecodedUserConfiguration = DecodedUserConfiguration
 
 type DBPool = Pool Connection
 
-
 type GithubAuthenticationFields = (Field SqlText, Field SqlText, FieldNullable SqlText, FieldNullable SqlTimestamptz)
 
 githubAuthenticationTable :: Table GithubAuthenticationFields GithubAuthenticationFields
@@ -141,3 +140,22 @@ data GithubAuthenticationDetails = GithubAuthenticationDetails
                  , refreshToken :: Maybe Text
                  , expiresAt    :: Maybe UTCTime
                  } deriving (Eq, Show, Generic)
+
+type ProjectCollaborationFields = (Field SqlText, Field SqlText, Field SqlTimestamptz)
+
+projectCollaborationTable :: Table ProjectCollaborationFields ProjectCollaborationFields
+projectCollaborationTable = table "project_collaboration" (p3
+                            ( tableField "project_id"
+                            , tableField "collaboration_editor"
+                            , tableField "last_seen_timeout"
+                            )
+                          )
+
+projectCollaborationSelect :: Select ProjectCollaborationFields
+projectCollaborationSelect = selectTable projectCollaborationTable
+
+data ProjectCollaborationDetails = ProjectCollaborationDetails
+                  { projectId           :: Text
+                  , collaborationEditor :: Text
+                  , lastSeenTimeout     :: UTCTime
+                  } deriving (Eq, Show, Generic)
