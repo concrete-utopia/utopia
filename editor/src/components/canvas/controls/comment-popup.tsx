@@ -285,7 +285,8 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
       return
     }
     setThreadReadStatus(thread.id, 'unread')
-  }, [thread?.id, setThreadReadStatus])
+    dispatch([switchEditorMode(EditorModes.commentMode(null, 'not-dragging'))])
+  }, [thread?.id, setThreadReadStatus, dispatch])
 
   const collabs = useStorage((storage) => storage.collaborators)
 
