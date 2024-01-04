@@ -46,7 +46,6 @@ import {
 } from '../../../core/shared/multiplayer'
 import { getRemixLocationLabel } from '../../canvas/remix/remix-utils'
 import type { RestOfEditorState } from '../../editor/store/store-hook-substore-types'
-import { getCurrentTheme } from '../../editor/store/editor-state'
 import type { EditorAction } from '../../editor/action-types'
 import { canvasPointToWindowPoint } from '../../canvas/dom-lookup'
 import { CommentRepliesCounter } from '../../canvas/controls/comment-replies-counter'
@@ -333,12 +332,6 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
 
   const isSelected = useIsSelectedAndScrollToThread(ref, thread.id)
 
-  const theme = useEditorState(
-    Substores.userState,
-    (store) => getCurrentTheme(store.userState),
-    'ThreadPreview theme',
-  )
-
   const comment = getFirstComment(thread)
 
   if (comment == null) {
@@ -394,7 +387,6 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
         }}
       >
         <CommentWrapper
-          data-theme={theme}
           user={user}
           comment={comment}
           showActions={false}
