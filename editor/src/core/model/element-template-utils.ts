@@ -485,20 +485,17 @@ export interface InsertChildAndDetails {
   components: Array<UtopiaJSXComponent>
   insertionDetails: string | null
   insertedChildrenPaths: Array<ElementPath>
-  importsToAdd: Imports
 }
 
 export function insertChildAndDetails(
   components: Array<UtopiaJSXComponent>,
   insertionDetails: string | null,
   insertedChildrenPaths: Array<ElementPath>,
-  importsToAdd: Imports = {},
 ): InsertChildAndDetails {
   return {
     components: components,
     insertionDetails: insertionDetails,
     insertedChildrenPaths: insertedChildrenPaths,
-    importsToAdd: importsToAdd,
   }
 }
 
@@ -509,7 +506,6 @@ export function insertJSXElementChildren(
   indexPosition: IndexPosition | null,
 ): InsertChildAndDetails {
   const parentPath: StaticElementPath = targetParent.intendedParentPath
-  let importsToAdd: Imports = {}
   let insertedChildrenPaths: Array<ElementPath> = []
   const updatedComponents = transformJSXComponentAtPath(components, parentPath, (parentElement) => {
     if (isChildInsertionPath(targetParent)) {
@@ -601,7 +597,7 @@ export function insertJSXElementChildren(
       assertNever(targetParent)
     }
   })
-  return insertChildAndDetails(updatedComponents, null, insertedChildrenPaths, importsToAdd)
+  return insertChildAndDetails(updatedComponents, null, insertedChildrenPaths)
 }
 
 export function elementPathFromInsertionPath(
