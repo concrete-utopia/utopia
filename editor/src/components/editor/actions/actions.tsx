@@ -2225,7 +2225,7 @@ export const UPDATE_FNS = {
         const updatedImports = mergeImports(
           underlyingFilePath,
           success.imports,
-          mergeImports(underlyingFilePath, action.importsToAdd, withInsertedElement.importsToAdd),
+          action.importsToAdd,
         )
         return {
           ...success,
@@ -4946,11 +4946,7 @@ export const UPDATE_FNS = {
           const updatedImports = mergeImports(
             underlyingFilePath,
             success.imports,
-            mergeImports(
-              underlyingFilePath,
-              withInsertedElement.importsToAdd,
-              action.toInsert.importsToAdd,
-            ),
+            action.toInsert.importsToAdd,
           )
           return {
             ...success,

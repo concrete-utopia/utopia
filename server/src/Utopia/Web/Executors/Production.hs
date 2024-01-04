@@ -72,9 +72,17 @@ data ProductionServerResources = ProductionServerResources
                                , _logger                  :: FastLogger
                                , _loggerShutdown          :: IO ()
                                , _liveblocksResources     :: Maybe LiveblocksResources
+                               , _shouldUseFakeUser       :: Bool
                                }
 
 type ProductionProcessMonad a = ServerProcessMonad ProductionServerResources a
+
+dummyUserAlice :: UserDetails
+dummyUserAlice = UserDetails { userId  = "ab9401d8-f6f0-4642-8239-2435656bf0b2"
+                             , email   = Just "team1@utopia.app"
+                             , name    = Just "A real human being"
+                             , picture = Just "/editor/avatars/utopino3.png"
+                             }
 
 {-|
   Interpretor for a service call, which converts it into side effecting calls ready to be invoked.
@@ -95,7 +103,10 @@ innerServerExecutor (CheckAuthCode authCode action) = do
   sessionStore <- fmap _sessionState ask
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask
-  auth0CodeCheck metrics pool sessionStore auth0 authCode action
+  canUseFakeUser <- fmap _shouldUseFakeUser ask
+  case (canUseFakeUser, authCode) of
+    (True, "alice") -> successfulAuthCheck metrics pool sessionStore action dummyUserAlice
+    _ -> auth0CodeCheck metrics pool sessionStore auth0 authCode action
 innerServerExecutor (Logout cookie pageContents action) = do
   sessionStore <- fmap _sessionState ask
   logoutOfSession sessionStore cookie pageContents action
@@ -383,6 +394,10 @@ assetPathsAndBuilders =
   [ simplePathAndBuilders "/server/editor/icons" "/server" "" "/server" ""
   ]
 
+shouldUseFakeUser :: Maybe Text -> Bool
+shouldUseFakeUser (Just "USE_FAKE_USER") = True
+shouldUseFakeUser _ = False
+
 initialiseResources :: IO ProductionServerResources
 initialiseResources = do
   _commitHash <- toS <$> getEnv "UTOPIA_SHA"
@@ -409,6 +424,7 @@ initialiseResources = do
   _matchingVersionsCache <- newMatchingVersionsCache
   (_logger, _loggerShutdown) <- newFastLogger (LogStdout defaultBufSize)
   _liveblocksResources <- makeLiveblocksResources
+  _shouldUseFakeUser <- shouldUseFakeUser <$> (fmap toS) <$> lookupEnv "FAKE_USER_SETTING"
   return $ ProductionServerResources{..}
 
 startup :: ProductionServerResources -> IO Stop

@@ -1568,7 +1568,7 @@ export function duplicate(
 
             return {
               ...success,
-              imports: mergeImports(underlyingFilePath, success.imports, insertResult.importsToAdd),
+              imports: success.imports,
               topLevelElements: applyUtopiaJSXComponentsChanges(
                 success.topLevelElements,
                 utopiaComponents,
