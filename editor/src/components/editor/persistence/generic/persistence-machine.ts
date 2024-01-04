@@ -12,7 +12,10 @@ import type {
 import { wait } from '../../../../utils/utils.test-utils'
 import { GithubOperations } from '../../../../core/shared/github/operations'
 import type { UtopiaTsWorkers } from '../../../../core/workers/common/worker-types'
-import type { PersistentModel } from '../../store/editor-state'
+import { persistentModelForProjectContents, type PersistentModel } from '../../store/editor-state'
+import invariant from '../../../../third-party/remix/invariant'
+import type { BranchContent } from '../../../../core/shared/github/helpers'
+import type { LoadFromGithubResult } from '../../../../core/shared/github/operations/load-branch'
 const { choose } = actions
 
 // Keep this file as simple as possible so that it can be used in https://stately.ai/viz
@@ -714,7 +717,7 @@ export function createPersistenceMachine<ModelType, FileType>(
                       meta,
                     ): Promise<{
                       type: 'LOAD_FROM_GITHUB_DONE'
-                      project: ProjectModel
+                      project: ProjectModel<PersistentModel>
                       branch: BranchContent
                     }> => {
                       const typeUnsafeEvent = event as LoadFromGithubEvent // TODO fix the type safety issue here
@@ -747,8 +750,9 @@ export function createPersistenceMachine<ModelType, FileType>(
                       target: CreatingProjectId,
                       actions: assign((currentContext, event) => {
                         const typedEventData: {
+                          // TODO share type
                           type: 'LOAD_FROM_GITHUB_DONE'
-                          project: ProjectModel
+                          project: ProjectModel<ModelType>
                           branch: BranchContent
                         } = event.data
 
@@ -794,7 +798,7 @@ export function createPersistenceMachine<ModelType, FileType>(
                         (update) => {
                           // TODO handle update
                         },
-                        context.project.content.projectContents,
+                        (context.project.content as PersistentModel).projectContents, // TODO type fix me!
                       )
                       return true
                     },
