@@ -2226,10 +2226,10 @@ export const UPDATE_FNS = {
           withInsertedElement.components,
         )
 
-        const updatedImports = mergeImportsResolutions(
+        const updatedImports = mergeImports(
           underlyingFilePath,
-          importsResolution(success.imports),
-          mergeImports(underlyingFilePath, action.importsToAdd, withInsertedElement.importsToAdd),
+          success.imports,
+          action.importsToAdd,
         )
 
         // TODO handle duplicate name mapping
@@ -4953,14 +4953,10 @@ export const UPDATE_FNS = {
             withInsertedElement.components,
           )
 
-          const updatedImports = mergeImportsResolutions(
+          const updatedImports = mergeImports(
             underlyingFilePath,
-            importsResolution(success.imports),
-            mergeImports(
-              underlyingFilePath,
-              withInsertedElement.importsToAdd,
-              action.toInsert.importsToAdd,
-            ),
+            success.imports,
+            action.toInsert.importsToAdd,
           )
 
           // TODO handle duplicate name mapping

@@ -1566,16 +1566,9 @@ export function duplicate(
                 metadata,
               )
 
-            // TODO handle duplicate name mapping
-            const { imports } = mergeImports(
-              underlyingFilePath,
-              success.imports,
-              insertResult.importsToAdd,
-            )
-
             return {
               ...success,
-              imports: imports,
+              imports: success.imports,
               topLevelElements: applyUtopiaJSXComponentsChanges(
                 success.topLevelElements,
                 utopiaComponents,

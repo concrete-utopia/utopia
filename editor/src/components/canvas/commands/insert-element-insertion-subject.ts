@@ -53,11 +53,7 @@ export const runInsertElementInsertionSubject: CommandFunction<InsertElementInse
         null,
       )
 
-      const updatedImports = mergeImportsResolutions(
-        underlyingFilePath,
-        importsResolution(success.imports),
-        mergeImports(underlyingFilePath, insertionResult.importsToAdd, subject.importsToAdd),
-      )
+      const updatedImports = mergeImports(underlyingFilePath, success.imports, subject.importsToAdd)
 
       editorStatePatches.push(
         getPatchForComponentChange(

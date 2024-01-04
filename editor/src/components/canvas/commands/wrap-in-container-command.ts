@@ -120,11 +120,7 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
         getPatchForComponentChange(
           success.topLevelElements,
           insertionResult.components,
-          mergeImportsResolutions(
-            underlyingFilePath,
-            importsResolution(success.imports),
-            mergeImports(underlyingFilePath, imports, insertionResult.importsToAdd),
-          ).imports,
+          mergeImports(underlyingFilePath, success.imports, imports).imports,
           underlyingFilePath,
         ),
       )
