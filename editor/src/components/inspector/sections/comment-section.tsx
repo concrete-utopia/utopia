@@ -36,7 +36,11 @@ import {
 } from '../../../core/commenting/comment-hooks'
 import { Substores, useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
 import { when } from '../../../utils/react-conditionals'
-import { getFirstComment, openCommentThreadActions } from '../../../core/shared/multiplayer'
+import {
+  getFirstComment,
+  openCommentThreadActions,
+  sortThreadsByDescendingUpdateTimeInPlace,
+} from '../../../core/shared/multiplayer'
 import { getRemixLocationLabel } from '../../canvas/remix/remix-utils'
 import type { RestOfEditorState } from '../../editor/store/store-hook-substore-types'
 import { getCurrentTheme } from '../../editor/store/editor-state'
@@ -72,6 +76,9 @@ const ThreadPreviews = React.memo(() => {
 
   const { threads: activeThreads } = useUnresolvedThreads()
   const { threads: resolvedThreads } = useResolvedThreads()
+
+  sortThreadsByDescendingUpdateTimeInPlace(activeThreads)
+  sortThreadsByDescendingUpdateTimeInPlace(resolvedThreads)
 
   const showResolved = useEditorState(
     Substores.restOfEditor,
