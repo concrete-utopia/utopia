@@ -79,7 +79,7 @@ async function getFromUrl(featureName: FeatureName): Promise<boolean | null> {
 
 async function loadStoredValue(featureName: FeatureName) {
   if (isBrowserEnvironment && !IS_TEST_ENVIRONMENT) {
-    const existing = (await getFromUrl(featureName)) || (await getFromLocalForage(featureName))
+    const existing = (await getFromUrl(featureName)) ?? (await getFromLocalForage(featureName))
     FeatureSwitchLoaded[featureName] = true
     if (existing != null) {
       FeatureSwitches[featureName] = existing
