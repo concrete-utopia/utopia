@@ -457,6 +457,7 @@ const HoveredCommentIndicator = React.memo((props: HoveredCommentIndicatorProps)
       <CommentWrapper
         style={{
           overflow: 'auto',
+          backgroundColor: 'transparent',
         }}
         data-theme={theme}
         user={user}

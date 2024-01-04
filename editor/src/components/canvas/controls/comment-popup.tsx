@@ -389,7 +389,6 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
                 return (
                   <CommentWrapper
                     key={c.id}
-                    data-theme={theme}
                     user={user}
                     comment={c}
                     onCommentDelete={onCommentDelete}
@@ -578,7 +577,7 @@ const HeaderComment = React.memo(
           top: 0,
           left: 0,
           right: 0,
-          backgroundColor: 'white',
+          backgroundColor: colorTheme.bg1.value,
           zIndex: 1,
           boxShadow: UtopiaStyles.shadowStyles.highest.boxShadow,
           transition: 'all 100ms linear',
