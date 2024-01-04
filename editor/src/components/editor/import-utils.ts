@@ -230,10 +230,10 @@ export function removeUnusedImports(
   imports: Imports,
 ): Imports {
   const elementName = element.name.baseVariable
-  const remainingComponentNames = new Set()
+  const remainingComponentNames = new Set<string>()
   walkElements(remainingComponents, (jsxElement) => {
     if (isJSXElement(jsxElement)) {
-      remainingComponentNames.add(jsxElement.name)
+      remainingComponentNames.add(jsxElement.name.baseVariable)
     }
   })
   // if some other element is using this import, don't remove it
