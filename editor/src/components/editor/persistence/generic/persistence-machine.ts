@@ -12,6 +12,7 @@ import type {
 import { wait } from '../../../../utils/utils.test-utils'
 import { GithubOperations } from '../../../../core/shared/github/operations'
 import type { UtopiaTsWorkers } from '../../../../core/workers/common/worker-types'
+import type { PersistentModel } from '../../store/editor-state'
 const { choose } = actions
 
 // Keep this file as simple as possible so that it can be used in https://stately.ai/viz
@@ -688,29 +689,33 @@ export function createPersistenceMachine<ModelType, FileType>(
                     // Assigning empty initial context
 
                     assign((currentContext, event) => {
-                      console.log('creating project ID', currentContext, event)
                       const typeUnsafeEvent = event as LoadFromGithubEvent // TODO fix the type safety issue here
-                      const projectName = `${typeUnsafeEvent.githubOwner}-${typeUnsafeEvent.githubRepo}`
+
                       return {
                         projectId: undefined,
-                        project: { name: projectName, content: undefined as any },
+                        project: undefined,
                         queuedSave: undefined,
                         projectOwnership: {
                           isOwner: true,
                           ownerId: currentContext.projectOwnership.ownerId,
                         },
+                        githubRepo: {
+                          owner: typeUnsafeEvent.githubOwner,
+                          repository: typeUnsafeEvent.githubRepo,
+                          branch: typeUnsafeEvent.githubBranch,
+                        },
                       }
                     }),
                   ],
                   invoke: {
-                    src: async (context, event, meta) => {
+                    src: async (context, event, meta): Promise<ProjectModel<PersistentModel>> => {
                       const typeUnsafeEvent = event as LoadFromGithubEvent // TODO fix the type safety issue here
-                      console.log('load project from github!', event)
+                      const projectName = `${typeUnsafeEvent.githubOwner}-${typeUnsafeEvent.githubRepo}`
                       const importedProject =
                         await GithubOperations.cloneProjectFromGithubLoadAssetsAndRefreshDependencies(
                           typeUnsafeEvent.workers, // TODO type safety here
                           (update) => {
-                            console.log('update received!', update)
+                            // TODO figure out how to handle updates
                           },
                           {
                             owner: typeUnsafeEvent.githubOwner,
@@ -720,17 +725,13 @@ export function createPersistenceMachine<ModelType, FileType>(
                           true,
                         )
 
-                      return importedProject
+                      return { content: importedProject, name: projectName }
                     },
                     onDone: {
                       target: CreatingProjectId,
                       actions: assign((currentContext, event) => {
-                        console.log('load project promise done', currentContext, event)
                         return {
-                          project: {
-                            name: currentContext.project?.name,
-                            content: event.data,
-                          },
+                          project: event.data, // TODO TYPE ME
                         }
                       }),
                     },
@@ -756,7 +757,6 @@ export function createPersistenceMachine<ModelType, FileType>(
                 [SaveGithubAssetsToProject]: {
                   invoke: {
                     src: async (context, event, meta) => {
-                      console.log('oh no! save assets now!')
                       await wait(1000)
                       return true
                     },
@@ -771,7 +771,6 @@ export function createPersistenceMachine<ModelType, FileType>(
                 [UpdateDependencies]: {
                   invoke: {
                     src: async (context, event, meta) => {
-                      console.log('update dependencies')
                       await wait(1000)
                       return true
                     },
