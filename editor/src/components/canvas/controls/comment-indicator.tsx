@@ -199,7 +199,6 @@ export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) =>
       position: 'fixed',
       top: position.y + 3,
       left: position.x - 3,
-      filter: resolved ? 'grayscale(1)' : undefined,
       width: IndicatorSize,
       height: IndicatorSize,
       background: read ? colorTheme.bg1.value : colorTheme.primary.value,
@@ -208,6 +207,7 @@ export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) =>
       alignItems: 'center',
       justifyContent: 'center',
       boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
+      opacity: resolved ? 0.6 : 'undefined',
     }
 
     const transform: Interpolation<Theme> = {
@@ -249,7 +249,7 @@ export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) =>
           justifyContent: 'center',
         }}
       >
-        <AvatarPicture url={avatarUrl} initials={avatarInitials} />
+        <AvatarPicture url={avatarUrl} initials={avatarInitials} resolved={resolved} />
       </div>
     </div>
   )
