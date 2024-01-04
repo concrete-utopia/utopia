@@ -8,7 +8,7 @@ describe('Comments test', () => {
     'can place a comment',
     async () => {
       const { page, browser } = await setupBrowser(
-        'http://localhost:8000/p/?fakeUser=alice&Commenting=true',
+        'http://localhost:8000/p/?fakeUser=alice&Multiplayer=true',
         TIMEOUT,
       )
 
