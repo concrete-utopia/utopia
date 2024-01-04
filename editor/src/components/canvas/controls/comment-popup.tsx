@@ -358,7 +358,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
               </Tooltip>,
             )}
             <Tooltip title='Resolve' placement='top'>
-              <Button onClick={onClickResolve}>
+              <Button onClick={onClickResolve} data-testid='resolve-thread-button'>
                 <Icn
                   category='semantic'
                   type={thread?.metadata.resolved ? 'resolved' : 'resolve'}
