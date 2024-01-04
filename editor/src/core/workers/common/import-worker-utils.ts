@@ -94,6 +94,7 @@ function adjustImportNameIfNeeded(
     const existingImportAlias = findOriginalNameInExistingImports(
       importName,
       importSource,
+      type,
       existingNames,
     )
     if (existingImportAlias != null) {
@@ -132,18 +133,20 @@ function findNewImportName(currentName: string, existingNames: ImportUniqueNames
 function findOriginalNameInExistingImports(
   currentName: string,
   importSource: string,
+  importType: ImportType,
   existingNames: ImportUniqueNames,
 ): string | null {
   let existingImportAlias: string | null = null
   // check to see if the new import is already in the existing imports, renamed
   existingNames.forEach((existingImportData, existingName) => {
     if (existingImportData.source === importSource) {
-      if (existingImportData.type === 'importedFromWithin') {
-        if (existingImportData.originalName === currentName) {
+      if (existingImportData.type === importType) {
+        if (
+          importType !== 'importedFromWithin' ||
+          existingImportData.originalName === currentName
+        ) {
           existingImportAlias = existingName
         }
-      } else {
-        existingImportAlias = existingName
       }
     }
   })
