@@ -426,9 +426,9 @@ export const CanvasToolbar = React.memo(() => {
     : 'Comment Mode'
 
   const commentButtonTestId =
-    roomStatus !== 'connected'
-      ? CommentModeButtonTestId('disconnected')
-      : CommentModeButtonTestId('connected')
+    roomStatus === 'connected'
+      ? CommentModeButtonTestId('connected')
+      : CommentModeButtonTestId('disconnected')
   const allowedToEdit = useAllowedToEditProject()
 
   return (
