@@ -364,7 +364,6 @@ export const ProjectCreated = 'project-created'
 // InternalLoadFromGithubStates
 export const LoadProjectFromGithub = 'load-project-from-github'
 export const SaveGithubAssetsToProject = 'save-github-assets-to-project'
-export const UpdateDependencies = 'update-dependencies'
 export const ErrorLoadingFromGithub = 'error-loading-from-github'
 
 // InternalLoadingStates
@@ -800,20 +799,6 @@ export function createPersistenceMachine<ModelType, FileType>(
                         },
                         (context.project.content as PersistentModel).projectContents, // TODO type fix me!
                       )
-                      return true
-                    },
-                    onDone: {
-                      target: UpdateDependencies,
-                    },
-                    onError: {
-                      target: ErrorLoadingFromGithub,
-                    },
-                  },
-                },
-                [UpdateDependencies]: {
-                  invoke: {
-                    src: async (context, event, meta) => {
-                      await wait(1000)
                       return true
                     },
                     onDone: {
