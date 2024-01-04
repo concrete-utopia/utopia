@@ -41,5 +41,5 @@ export async function checkLiveblocksEnabledOnServer(): Promise<void> {
 }
 
 export function isLiveblocksEnabled(): boolean {
-  return isLiveblocksEnabledOnServer && isFeatureEnabled('Collaboration')
+  return isLiveblocksEnabledOnServer && isFeatureEnabled('Multiplayer')
 }
