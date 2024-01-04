@@ -577,7 +577,6 @@ const HeaderComment = React.memo(
           top: 0,
           left: 0,
           right: 0,
-          backgroundColor: colorTheme.bg1.value,
           zIndex: 1,
           boxShadow: UtopiaStyles.shadowStyles.highest.boxShadow,
           transition: 'all 100ms linear',
@@ -585,7 +584,11 @@ const HeaderComment = React.memo(
           transform: 'scale(1.01)',
         }}
       >
-        <CommentWrapper user={user} comment={comment} />
+        <CommentWrapper
+          user={user}
+          comment={comment}
+          style={{ background: colorTheme.bg1.value, color: colorTheme.fg1.value }}
+        />
       </div>
     )
   },
