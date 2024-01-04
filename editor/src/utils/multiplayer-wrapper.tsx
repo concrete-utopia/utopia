@@ -10,7 +10,6 @@ import {
   normalizeMultiplayerName,
 } from '../core/shared/multiplayer'
 import { ErrorBoundary } from './react-error-boundary'
-
 type Fallback = NonNullable<React.ReactNode> | null
 
 export const MultiplayerWrapper = React.memo(

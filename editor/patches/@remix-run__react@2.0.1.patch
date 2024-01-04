@@ -1,0 +1,26 @@
+diff --git a/dist/esm/routeModules.js b/dist/esm/routeModules.js
+index 1b15029f2772719232ddf4ae95a2010163321630..891709ac14f533aad20f54709d00e3d35ee914d7 100644
+--- a/dist/esm/routeModules.js
++++ b/dist/esm/routeModules.js
+@@ -44,7 +44,7 @@ async function loadRouteModule(route, routeModulesCache) {
+     // asset we're trying to import! Reload from the server and the user
+     // (should) get the new manifest--unless the developer purged the static
+     // assets, the manifest path, but not the documents 😬
+-    window.location.reload();
++    console.warn('window.location.reload prevented from running.')
+     return new Promise(() => {
+       // check out of this hook cause the DJs never gonna re[s]olve this
+     });
+diff --git a/dist/routeModules.js b/dist/routeModules.js
+index 5f878eaae5262cc68d6b4599dc887413bf359960..76deff82943c55b7f5f0560f8e8d624e8b4ec53c 100644
+--- a/dist/routeModules.js
++++ b/dist/routeModules.js
+@@ -66,7 +66,7 @@ async function loadRouteModule(route, routeModulesCache) {
+     // asset we're trying to import! Reload from the server and the user
+     // (should) get the new manifest--unless the developer purged the static
+     // assets, the manifest path, but not the documents 😬
+-    window.location.reload();
++    console.warn('window.location.reload prevented from running.')
+     return new Promise(() => {
+       // check out of this hook cause the DJs never gonna re[s]olve this
+     });

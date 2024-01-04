@@ -11,6 +11,7 @@ jobs:
 
   test-editor-code:
     name: Test Editor - TypeScript, ESLint, dependency-cruiser
+    timeout-minutes: 15
     runs-on: ubuntu-latest
     needs: [cache-pnpm-store]
     env:
@@ -44,6 +45,7 @@ jobs:
 
   test-editor-jest:
     name: Test Editor - Jest tests
+    timeout-minutes: 15
     runs-on: ubuntu-latest
     needs: [cache-pnpm-store]
     env:
@@ -97,6 +99,7 @@ jobs:
 
   test-server:
     name: Test Server
+    timeout-minutes: 15
     runs-on: ubuntu-latest
     env:
       UTOPIA_SHA: ${{ github.sha }}
@@ -137,6 +140,7 @@ jobs:
 
   trigger-deploy:
     name: Trigger Deploy
+    timeout-minutes: 5
     needs:
       [
         test-editor-code,
@@ -156,6 +160,7 @@ jobs:
 
   post-failure-to-discord:
     name: Post Failure Message To Discord
+    timeout-minutes: 5
     runs-on: ubuntu-latest
     if: failure()
     needs: [trigger-deploy]

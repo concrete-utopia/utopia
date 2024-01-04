@@ -90,6 +90,7 @@ import { unpatchedCreateRemixDerivedDataMemo } from './remix-derived-data'
 import { maybeClearPseudoInsertMode } from '../canvas-toolbar-states'
 import { isSteganographyEnabled } from '../../../core/shared/stegano-text'
 import { updateCollaborativeProjectContents } from './collaborative-editing'
+import { updateProjectServerStateInStore } from './project-server-state'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -165,6 +166,11 @@ function processAction(
           userState: UPDATE_FNS.SET_CURRENT_THEME(action, working.userState),
         }
       } else if (action.action === 'SET_LOGIN_STATE') {
+        updateProjectServerStateInStore(
+          editorStoreUnpatched.unpatchedEditor.id,
+          editorStoreUnpatched.unpatchedEditor.forkedFromProjectId,
+          dispatchEvent,
+        )
         return {
           ...working,
           userState: UPDATE_FNS.SET_LOGIN_STATE(action, working.userState),

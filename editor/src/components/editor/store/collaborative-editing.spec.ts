@@ -107,7 +107,7 @@ async function runAddHookForProjectChangesTest(test: AddHookForProjectChangesTes
 }
 
 describe('addHookForProjectChanges', () => {
-  setFeatureForUnitTestsUseInDescribeBlockOnly('Collaboration', true)
+  setFeatureForUnitTestsUseInDescribeBlockOnly('Multiplayer', true)
 
   it('adding file causes it to be added to the project contents', async () => {
     const code = 'export const A = <div />'
