@@ -60,11 +60,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
         ) => {
           if (underlyingFilePathTarget === underlyingFilePathNewParent) {
             const components = getUtopiaJSXComponentsFromSuccess(successTarget)
-            const withElementRemoved = removeElementAtPath(
-              command.target,
-              components,
-              successTarget.imports,
-            )
+            const withElementRemoved = removeElementAtPath(command.target, components)
 
             const insertionResult = insertJSXElementChildren(
               command.newParent,
@@ -77,7 +73,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
               insertionResult.components,
               mergeImports(
                 underlyingFilePathTarget,
-                withElementRemoved.imports,
+                successTarget.imports,
                 insertionResult.importsToAdd,
               ),
               underlyingFilePathTarget,
