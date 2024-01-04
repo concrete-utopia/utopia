@@ -497,7 +497,7 @@ export const CanvasToolbar = React.memo(() => {
           />
         </Tooltip>
         {when(
-          isFeatureEnabled('Commenting'),
+          isFeatureEnabled('Multiplayer'),
           <Tooltip title={commentButtonTooltip} placement='bottom'>
             <InsertModeButton
               testid={CommentModeButtonTestId}

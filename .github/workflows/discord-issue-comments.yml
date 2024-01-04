@@ -20,6 +20,7 @@ permissions:
 jobs:
   post-to-discord:
     name: Post Comment To Discord
+    timeout-minutes: 5
     runs-on: ubuntu-latest
     if: ${{ !github.event.issue.pull_request }}
     steps:

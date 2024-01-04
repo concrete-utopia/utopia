@@ -165,3 +165,13 @@ export function openCommentThreadActions(threadId: string, scene: ElementPath | 
 export function getFirstComment(thread: ThreadData<ThreadMetadata>): CommentData | null {
   return thread.comments.filter((c) => c.deletedAt == null)[0] ?? null
 }
+
+export function sortThreadsByDescendingUpdateTimeInPlace(
+  threads: Array<ThreadData<ThreadMetadata>>,
+) {
+  function lastModificationDate(t: ThreadData<ThreadMetadata>) {
+    return t.updatedAt ?? t.createdAt
+  }
+
+  threads.sort((t1, t2) => lastModificationDate(t2).getTime() - lastModificationDate(t1).getTime())
+}

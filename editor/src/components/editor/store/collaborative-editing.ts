@@ -149,7 +149,7 @@ export function collateCollaborativeProjectChanges(
       }
     }
   }
-  if (isFeatureEnabled('Collaboration')) {
+  if (isFeatureEnabled('Multiplayer')) {
     if (oldContents != newContents) {
       zipContentsTree(oldContents, newContents, onElement)
     }

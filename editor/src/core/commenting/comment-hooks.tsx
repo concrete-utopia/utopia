@@ -257,7 +257,28 @@ export function useUnresolvedThreads() {
   const threads = useThreads()
   return {
     ...threads,
-    threads: threads.threads.filter((t) => !t.metadata.resolved),
+    threads: threads.threads.filter((t) => t.metadata.resolved !== true),
+  }
+}
+
+export function useReadThreads() {
+  const threads = useThreads()
+  const self = useSelf()
+  const threadReadStatuses = useStorage((store) => store.userReadStatusesByThread)
+
+  const filteredThreads = threads.threads.filter((thread) => {
+    if (thread == null) {
+      return false
+    }
+    if (threadReadStatuses[thread.id] == null) {
+      return false
+    }
+    return threadReadStatuses[thread.id][self.id] === true
+  })
+
+  return {
+    ...threads,
+    threads: filteredThreads,
   }
 }
 
