@@ -389,7 +389,6 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
                 return (
                   <CommentWrapper
                     key={c.id}
-                    data-theme={theme}
                     user={user}
                     comment={c}
                     onCommentDelete={onCommentDelete}
