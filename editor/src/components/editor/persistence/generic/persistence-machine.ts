@@ -9,7 +9,6 @@ import type {
   ProjectOwnership,
   ProjectWithFileChanges,
 } from './persistence-types'
-import { wait } from '../../../../utils/utils.test-utils'
 import { GithubOperations } from '../../../../core/shared/github/operations'
 import type { UtopiaTsWorkers } from '../../../../core/workers/common/worker-types'
 import { persistentModelForProjectContents, type PersistentModel } from '../../store/editor-state'

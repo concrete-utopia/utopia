@@ -362,24 +362,16 @@ export class Editor {
           const githubBranch = urlParams.get('github_branch')
           const importURL = urlParams.get('import_url')
 
-          console.log('eh', githubOwner, githubRepo, githubBranch)
-
           if (isCookiesOrLocalForageUnavailable(loginState)) {
             this.storedState.persistence.createNew(createNewProjectName(), defaultProject())
           } else if (projectId == null) {
             if (githubOwner != null && githubRepo != null) {
-              console.log('attempting to import projecc')
-
-              try {
-                this.storedState.persistence.loadFromGithub(
-                  this.storedState.workers,
-                  githubOwner,
-                  githubRepo,
-                  githubBranch ?? 'main',
-                )
-              } catch (e) {
-                console.log('Error loading gh project', e)
-              }
+              this.storedState.persistence.loadFromGithub(
+                this.storedState.workers,
+                githubOwner,
+                githubRepo,
+                githubBranch ?? 'main',
+              )
             } else if (importURL != null) {
               this.createNewProjectFromImportURL(importURL)
             } else {
