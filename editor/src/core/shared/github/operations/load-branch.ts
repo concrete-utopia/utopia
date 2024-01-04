@@ -102,7 +102,10 @@ export const saveAssetsToProject =
 // 5. call refreshDependencies from Editor.tsx, get the project contents, and use those to fire storedState.persistence.createNew
 // 6. once the project is loaded and saved, kick off refreshDependencies
 // 7. revisit what UI we show until the project is loaded
-
+export type LoadFromGithubResult = {
+  parsedProjectContents: ProjectContentTreeRoot
+  branch: BranchContent
+}
 export const cloneProjectFromGithubLoadAssetsAndRefreshDependencies =
   (operationContext: GithubOperationContext) =>
   async (
@@ -111,7 +114,7 @@ export const cloneProjectFromGithubLoadAssetsAndRefreshDependencies =
     githubRepo: GithubRepo,
     branchName: string,
     resetBranches: boolean,
-  ): Promise<PersistentModel> => {
+  ): Promise<LoadFromGithubResult> => {
     const loadBranchResult = await loadBranchFromGithub(
       branchName,
       githubRepo,
@@ -123,7 +126,7 @@ export const cloneProjectFromGithubLoadAssetsAndRefreshDependencies =
       throw new Error('loadBranchResult was null')
     }
 
-    const parseAndUploadAssetsResult = await parseDownloadedProject(
+    const parseDownloadedProjectResult = await parseDownloadedProject(
       branchName,
       githubRepo,
       onUpdate,
@@ -132,13 +135,12 @@ export const cloneProjectFromGithubLoadAssetsAndRefreshDependencies =
       workers,
     )
 
-    if (parseAndUploadAssetsResult == null) {
-      throw new Error('parseAndUploadAssetsResult was null')
+    if (parseDownloadedProjectResult == null) {
+      throw new Error('parseDownloadedProjectResult was null')
     }
 
-    // TODO save assets once we have a projectID!
     // TODO load dependencies using refreshDependencies
-    return persistentModelForProjectContents(parseAndUploadAssetsResult.parsedProjectContents)
+    return parseDownloadedProjectResult
   }
 
 export const updateProjectWithBranchContent =

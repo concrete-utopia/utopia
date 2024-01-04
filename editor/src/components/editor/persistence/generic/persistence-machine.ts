@@ -708,10 +708,18 @@ export function createPersistenceMachine<ModelType, FileType>(
                     }),
                   ],
                   invoke: {
-                    src: async (context, event, meta): Promise<ProjectModel<PersistentModel>> => {
+                    src: async (
+                      context,
+                      event,
+                      meta,
+                    ): Promise<{
+                      type: 'LOAD_FROM_GITHUB_DONE'
+                      project: ProjectModel
+                      branch: BranchContent
+                    }> => {
                       const typeUnsafeEvent = event as LoadFromGithubEvent // TODO fix the type safety issue here
                       const projectName = `${typeUnsafeEvent.githubOwner}-${typeUnsafeEvent.githubRepo}`
-                      const importedProject =
+                      const loadFromGithubResult: LoadFromGithubResult =
                         await GithubOperations.cloneProjectFromGithubLoadAssetsAndRefreshDependencies(
                           typeUnsafeEvent.workers, // TODO type safety here
                           (update) => {
@@ -725,13 +733,30 @@ export function createPersistenceMachine<ModelType, FileType>(
                           true,
                         )
 
-                      return { content: importedProject, name: projectName }
+                      const parsedPersistentModel = persistentModelForProjectContents(
+                        loadFromGithubResult.parsedProjectContents,
+                      )
+
+                      return {
+                        type: 'LOAD_FROM_GITHUB_DONE',
+                        project: { content: parsedPersistentModel, name: projectName },
+                        branch: loadFromGithubResult.branch,
+                      }
                     },
                     onDone: {
                       target: CreatingProjectId,
                       actions: assign((currentContext, event) => {
+                        const typedEventData: {
+                          type: 'LOAD_FROM_GITHUB_DONE'
+                          project: ProjectModel
+                          branch: BranchContent
+                        } = event.data
+
+                        invariant(typedEventData.type === 'LOAD_FROM_GITHUB_DONE')
+
                         return {
-                          project: event.data, // TODO TYPE ME
+                          project: typedEventData.project,
+                          githubBranchContent: typedEventData.branch,
                         }
                       }),
                     },
@@ -757,7 +782,20 @@ export function createPersistenceMachine<ModelType, FileType>(
                 [SaveGithubAssetsToProject]: {
                   invoke: {
                     src: async (context, event, meta) => {
-                      await wait(1000)
+                      invariant(context.githubRepo != null)
+                      invariant(context.projectId != null)
+                      invariant(context.githubBranchContent != null)
+                      invariant(context.project != null)
+
+                      await GithubOperations.saveAssetsToProject(
+                        context.githubRepo,
+                        context.projectId,
+                        context.githubBranchContent,
+                        (update) => {
+                          // TODO handle update
+                        },
+                        context.project.content.projectContents,
+                      )
                       return true
                     },
                     onDone: {

@@ -1,5 +1,6 @@
 // Keep this file as simple as possible so that it can be used in https://stately.ai/viz
 
+import type { BranchContent } from '../../../../core/shared/github/helpers'
 export interface LocalProject<ModelType> {
   model: ModelType
   createdAt: string
@@ -31,6 +32,7 @@ export interface PersistenceContext<ModelType> {
     repository: string
     branch: string
   }
+  githubBranchContent?: BranchContent
 }
 
 export interface ProjectLoadSuccess<ModelType> extends ProjectModelWithId<ModelType> {
