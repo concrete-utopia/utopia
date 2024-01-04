@@ -224,12 +224,12 @@ export function getImportsFor(
   return emptyImports()
 }
 
-export function removeUnusedImports(
-  element: JSXElement,
+export function removeUnusedImportsForRemovedElement(
+  removedElement: JSXElement,
   remainingComponents: UtopiaJSXComponent[],
   imports: Imports,
 ): Imports {
-  const elementName = element.name.baseVariable
+  const elementName = removedElement.name.baseVariable
   const remainingComponentNames = new Set<string>()
   walkElements(remainingComponents, (jsxElement) => {
     if (isJSXElement(jsxElement)) {

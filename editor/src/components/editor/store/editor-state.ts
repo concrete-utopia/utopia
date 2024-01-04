@@ -1,5 +1,5 @@
 import * as json5 from 'json5'
-import { MetadataUtils, findJSXElementAtPath } from '../../../core/model/element-metadata-utils'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   findJSXElementAtStaticPath,
   findJSXElementChildAtPath,
@@ -115,7 +115,7 @@ import { dynamicPathToStaticPath, toUid } from '../../../core/shared/element-pat
 
 import * as friendlyWords from 'friendly-words'
 import type { UtopiaVSCodeConfig } from 'utopia-vscode-common'
-import { ProjectIDPlaceholderPrefix, defaultConfig } from 'utopia-vscode-common'
+import { defaultConfig } from 'utopia-vscode-common'
 import { loginNotYetKnown } from '../../../common/user'
 import * as EP from '../../../core/shared/element-path'
 import { assertNever } from '../../../core/shared/utils'
@@ -183,7 +183,7 @@ import type { VariablesInScope } from '../../canvas/ui-jsx-canvas'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import type { ActiveFrame } from '../../canvas/commands/set-active-frames-command'
 import { Y } from '../../../core/shared/yjs'
-import { removeUnusedImports } from '../import-utils'
+import { removeUnusedImportsForRemovedElement } from '../import-utils'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
 
 const ObjectPathImmutable: any = OPI
@@ -1920,7 +1920,11 @@ export function removeElementAtPath(
     if (removedElement != null) {
       resultImports =
         originalImports != null
-          ? removeUnusedImports(removedElement, remainingComponents, originalImports)
+          ? removeUnusedImportsForRemovedElement(
+              removedElement,
+              remainingComponents,
+              originalImports,
+            )
           : emptyImports()
     }
     return {
