@@ -69,6 +69,7 @@ import { isRoomId, projectIdToRoomId } from '../../core/shared/multiplayer'
 import { useDisplayOwnershipWarning } from './project-owner-hooks'
 import { EditorModes } from './editor-modes'
 import { allowedToEditProject } from './store/collaborative-editing'
+import { useDataThemeAttributeOnBody } from '../../core/commenting/comment-hooks'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -533,6 +534,8 @@ export function EditorComponent(props: EditorProps) {
   )
 
   const dispatch = useDispatch()
+
+  useDataThemeAttributeOnBody()
 
   const roomId = React.useMemo(
     () => (projectId == null ? generateUUID() : projectIdToRoomId(projectId)),

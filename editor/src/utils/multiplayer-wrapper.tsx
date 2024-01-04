@@ -10,8 +10,6 @@ import {
   normalizeMultiplayerName,
 } from '../core/shared/multiplayer'
 import { ErrorBoundary } from './react-error-boundary'
-import { Substores, useEditorState } from '../components/editor/store/store-hook'
-import { getCurrentTheme } from '../components/editor/store/editor-state'
 
 type Fallback = NonNullable<React.ReactNode> | null
 
@@ -30,14 +28,8 @@ MultiplayerWrapper.displayName = 'MultiplayerWrapper'
 
 export const CommentWrapper = React.memo(
   ({ user, ...commentProps }: { user: UserMeta | null } & CommentProps) => {
-    const theme = useEditorState(
-      Substores.userState,
-      (store) => getCurrentTheme(store.userState),
-      'CommentWrapper theme',
-    )
-
     if (user == null) {
-      return <Comment data-theme={theme} {...commentProps} />
+      return <Comment {...commentProps} />
     }
     return (
       <div style={{ position: 'relative' }}>
@@ -54,7 +46,7 @@ export const CommentWrapper = React.memo(
           }}
           picture={user.avatar}
         />
-        <Comment data-theme={theme} {...commentProps} />
+        <Comment {...commentProps} />
       </div>
     )
   },
