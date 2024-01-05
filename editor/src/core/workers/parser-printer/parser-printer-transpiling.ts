@@ -16,7 +16,11 @@ import { fastForEach } from '../../shared/utils'
 import type { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 import infiniteLoopPrevention from './transform-prevent-infinite-loops'
 import type { ElementsWithinInPosition, CodeWithMap } from './parser-printer-utils'
-import { wrapCodeInParens, wrapCodeInParensWithMap } from './parser-printer-utils'
+import {
+  wrapCodeInAnonFunctionWithMap,
+  wrapCodeInParens,
+  wrapCodeInParensWithMap,
+} from './parser-printer-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../shared/dom-utils'
 import type { SteganoTextData } from '../../shared/stegano-text'
 import { cleanSteganoTextData, encodeSteganoData } from '../../shared/stegano-text'
@@ -317,6 +321,7 @@ export function transpileJavascriptFromCode(
   elementsWithin: ElementsWithinInPosition,
   wrapInParens: boolean,
   applySteganography: SteganographyMode,
+  wrapInAnonFunction: boolean = false,
 ): Either<string, TranspileResult> {
   try {
     let codeToUse: string = code
@@ -331,6 +336,15 @@ export function transpileJavascriptFromCode(
       )
       codeToUse = wrappedInParens.code
       mapToUse = wrappedInParens.sourceMap
+    } else if (wrapInAnonFunction) {
+      const wrappedInAnonFunction = wrapCodeInAnonFunctionWithMap(
+        sourceFileName,
+        sourceFileText,
+        codeToUse,
+        mapToUse,
+      )
+      codeToUse = wrappedInAnonFunction.code
+      mapToUse = wrappedInAnonFunction.sourceMap
     }
 
     let plugins: Array<any> =
