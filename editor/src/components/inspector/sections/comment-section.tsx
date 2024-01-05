@@ -3,18 +3,8 @@
 import { jsx } from '@emotion/react'
 import '../../../../resources/editor/css/liveblocks/react-comments/styles.css'
 import '../../../../resources/editor/css/liveblocks/react-comments/dark/attributes.css'
-import React, { useState } from 'react'
-import {
-  Button,
-  CheckboxInput,
-  FlexColumn,
-  FlexRow,
-  Icn,
-  InspectorSubsectionHeader,
-  Tooltip,
-  color,
-  useColorTheme,
-} from '../../../uuiui'
+import React from 'react'
+import { Button, FlexColumn, FlexRow, Icn, PopupList, Tooltip, useColorTheme } from '../../../uuiui'
 import { stopPropagation } from '../common/inspector-utils'
 import { useStorage, type ThreadMetadata, useThreads } from '../../../../liveblocks.config'
 import type { ThreadData } from '@liveblocks/client'
@@ -22,16 +12,14 @@ import { useDispatch } from '../../editor/store/dispatch-context'
 import { canvasRectangle, rectangleContainsRectangle } from '../../../core/shared/math-utils'
 import {
   scrollToPosition,
-  setShowResolvedThreads,
+  setCommentFilterMode,
   switchEditorMode,
 } from '../../editor/actions/action-creators'
 import { EditorModes, isCommentMode, isExistingComment } from '../../editor/editor-modes'
 import { CommentWrapper, MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { useRemixNavigationContext } from '../../canvas/remix/utopia-remix-root-component'
 import {
-  useUnresolvedThreads,
   useResolveThread,
-  useResolvedThreads,
   useCanvasLocationOfThread,
   getCollaboratorById,
   useMyThreadReadStatus,
@@ -49,6 +37,25 @@ import type { RestOfEditorState } from '../../editor/store/store-hook-substore-t
 import type { EditorAction } from '../../editor/action-types'
 import { canvasPointToWindowPoint } from '../../canvas/dom-lookup'
 import { CommentRepliesCounter } from '../../canvas/controls/comment-replies-counter'
+import type { SelectOption } from '../controls/select-control'
+import { assertNever } from '../../../core/shared/utils'
+
+export type CommentFilterMode = 'all' | 'all-including-resolved' | 'unread-only'
+
+const filterOptions = [
+  {
+    label: 'All',
+    value: 'all',
+  },
+  {
+    label: 'All including resolved',
+    value: 'all-including-resolved',
+  },
+  {
+    label: 'Unread only',
+    value: 'unread-only',
+  },
+]
 
 export const CommentSection = React.memo(() => {
   return (
@@ -70,61 +77,45 @@ const ThreadPreviews = React.memo(() => {
     setOpen((prevOpen) => !prevOpen)
   }, [setOpen])
 
-  const { threads: threads } = useThreads()
-  const { threads: resolvedThreads } = useResolvedThreads()
+  const { threads } = useThreads()
   const { threads: readThreads } = useReadThreads()
 
   sortThreadsByDescendingUpdateTimeInPlace(threads)
-  sortThreadsByDescendingUpdateTimeInPlace(resolvedThreads)
-  sortThreadsByDescendingUpdateTimeInPlace(readThreads)
 
-  const showResolved = useEditorState(
+  const commentFilterMode = useEditorState(
     Substores.restOfEditor,
-    (store) => store.editor.showResolvedThreads,
-    'ThreadPreviews showResolvedThreads',
+    (store) => store.editor.commentFilterMode,
+    'ThreadPreviews commentFilterMode',
   )
 
-  const toggleShowResolved = React.useCallback(() => {
-    dispatch([
-      setShowResolvedThreads(!showResolved),
-      switchEditorMode(EditorModes.selectMode(null, false, 'none')),
-    ])
-  }, [showResolved, dispatch])
-
-  const [sortByDateNewestFirst, setSortByDateNewestFirst] = React.useState(true)
-  const [sortByUnreadFirst, setSortedByUnreadFirst] = React.useState(false)
-
-  const toggleSortByDateNewestFirst = React.useCallback(() => {
-    setSortByDateNewestFirst((prevValue) => !prevValue)
-  }, [])
-  const toggleSortByUnreadFirst = React.useCallback(() => {
-    setSortedByUnreadFirst((prevValue) => !prevValue)
-  }, [])
+  const filter = React.useMemo(
+    () =>
+      filterOptions.find((option) => option.value === commentFilterMode) ?? {
+        label: 'All',
+        value: 'all',
+      },
+    [commentFilterMode],
+  )
 
   const sortedThreads = React.useMemo(() => {
-    let filteredThreads = threads
+    switch (commentFilterMode) {
+      case 'all':
+        return threads.filter((t) => !t.metadata.resolved)
+      case 'all-including-resolved':
+        return threads
+      case 'unread-only':
+        return threads.filter((t) => !readThreads.includes(t))
+      default:
+        assertNever(commentFilterMode)
+    }
+  }, [threads, readThreads, commentFilterMode])
 
-    if (!showResolved) {
-      filteredThreads = filteredThreads.filter((thread) => !resolvedThreads.includes(thread))
-    }
-    if (sortByDateNewestFirst) {
-      filteredThreads = filteredThreads.slice().reverse()
-    }
-    if (sortByUnreadFirst) {
-      const unreadThreads = filteredThreads.filter((thread) => !readThreads.includes(thread))
-      const theReadThreads = filteredThreads.filter((thread) => readThreads.includes(thread))
-      filteredThreads = [...unreadThreads, ...theReadThreads]
-    }
-
-    return filteredThreads
-  }, [
-    threads,
-    resolvedThreads,
-    readThreads,
-    showResolved,
-    sortByUnreadFirst,
-    sortByDateNewestFirst,
-  ])
+  const handleSubmitValueFilter = React.useCallback(
+    (option: SelectOption) => {
+      dispatch([setCommentFilterMode(option.value)])
+    },
+    [dispatch],
+  )
 
   return (
     <FlexColumn>
@@ -190,40 +181,12 @@ const ThreadPreviews = React.memo(() => {
             height: filtersOpen ? 'auto' : 0,
           }}
         >
-          <FlexRow>
-            <CheckboxInput
-              style={{ marginRight: 8 }}
-              id='showNewestFirst'
-              checked={sortByDateNewestFirst}
-              onChange={toggleSortByDateNewestFirst}
-            />
-            <label htmlFor='showNewestFirst'>Newest First</label>
-          </FlexRow>
-          <FlexRow>
-            <CheckboxInput
-              style={{ marginRight: 8 }}
-              id='showUnreadFirst'
-              checked={sortByUnreadFirst}
-              onChange={toggleSortByUnreadFirst}
-            />
-            <label htmlFor='showUnreadFirst'>Unread First</label>
-          </FlexRow>
-          {when(
-            resolvedThreads.length > 0,
-            <div style={{ width: '100%', background: colorTheme.bg3.value, height: 1 }} />,
-          )}
-          {when(
-            resolvedThreads.length > 0,
-            <FlexRow>
-              <CheckboxInput
-                style={{ marginRight: 8 }}
-                id='showResolved'
-                checked={showResolved}
-                onChange={toggleShowResolved}
-              />
-              <label htmlFor='showResolved'>Show Resolved Comments</label>
-            </FlexRow>,
-          )}
+          <PopupList
+            value={filter}
+            options={filterOptions}
+            onSubmitValue={handleSubmitValueFilter}
+            style={{ width: 150 }}
+          />
         </FlexColumn>,
       )}
       {when(
