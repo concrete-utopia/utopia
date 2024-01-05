@@ -370,7 +370,7 @@ export class Editor {
                 this.storedState.workers,
                 githubOwner,
                 githubRepo,
-                githubBranch ?? 'main',
+                githubBranch, // if omitted, figure out the default branch!
               )
             } else if (importURL != null) {
               this.createNewProjectFromImportURL(importURL)

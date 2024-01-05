@@ -112,11 +112,19 @@ export const cloneProjectFromGithubLoadAssetsAndRefreshDependencies =
     workers: UtopiaTsWorkers,
     onUpdate: (update: UpdateGithubOperations | AddToast) => void,
     githubRepo: GithubRepo,
-    branchName: string,
+    branchName: string | null,
     resetBranches: boolean,
   ): Promise<LoadFromGithubResult> => {
+    const resolvedBranchName: string = await (async () => {
+      if (branchName != null) {
+        return branchName
+      }
+      // TODO load the default branch name from the server
+      return 'main'
+    })()
+
     const loadBranchResult = await loadBranchFromGithub(
-      branchName,
+      resolvedBranchName,
       githubRepo,
       onUpdate,
       operationContext,
@@ -127,7 +135,7 @@ export const cloneProjectFromGithubLoadAssetsAndRefreshDependencies =
     }
 
     const parseDownloadedProjectResult = await parseDownloadedProject(
-      branchName,
+      resolvedBranchName,
       githubRepo,
       onUpdate,
       loadBranchResult,

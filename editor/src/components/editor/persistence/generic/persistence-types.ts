@@ -30,7 +30,7 @@ export interface PersistenceContext<ModelType> {
   githubRepo?: {
     owner: string
     repository: string
-    branch: string
+    branch: string | null
   }
   githubBranchContent?: BranchContent
 }

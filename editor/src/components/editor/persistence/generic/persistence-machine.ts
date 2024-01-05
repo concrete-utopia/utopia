@@ -37,14 +37,14 @@ interface LoadFromGithubEvent {
   workers: UtopiaTsWorkers
   githubOwner: string
   githubRepo: string
-  githubBranch: string
+  githubBranch: string | null
 }
 
 export function loadFromGithubEvent(
   workers: UtopiaTsWorkers,
   githubOwner: string,
   githubRepo: string,
-  githubBranch: string,
+  githubBranch: string | null,
 ): LoadFromGithubEvent {
   return {
     type: 'LOAD_FROM_GITHUB',

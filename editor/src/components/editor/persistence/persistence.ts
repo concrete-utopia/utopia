@@ -205,7 +205,7 @@ export class PersistenceMachine {
     workers: UtopiaTsWorkers,
     githubOwner: string,
     githubRepo: string,
-    githubBranch: string,
+    githubBranch: string | null,
   ): void => {
     this.interpreter.send(loadFromGithubEvent(workers, githubOwner, githubRepo, githubBranch))
   }
