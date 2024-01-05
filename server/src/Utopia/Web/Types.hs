@@ -146,6 +146,8 @@ type GithubSaveAssetAPI = "v1" :> "github" :> "branches" :> Capture "owner" Text
 
 type GithubBranchLoadAPI = "v1" :> "github" :> "branches" :> Capture "owner" Text :> Capture "repository" Text :> "branch" :> Capture "branchName" Text :> QueryParam "commit_sha" Text :> QueryParam "previous_commit_sha" Text :> Get '[JSON] GetBranchContentResponse
 
+type GithubDefaultBranchLoadAPI = "v1" :> "github" :> "branches" :> Capture "owner" Text :> Capture "repository" Text :> "default-branch" :> QueryParam "commit_sha" Text :> QueryParam "previous_commit_sha" Text :> Get '[JSON] GetBranchContentResponse
+
 type GithubBranchPullRequestAPI = "v1" :> "github" :> "branches" :> Capture "owner" Text :> Capture "repository" Text :> "branch" :> Capture "branchName" Text :> "pullrequest" :> Get '[JSON] GetBranchPullRequestResponse
 
 type GithubUsersRepositoriesAPI = "v1" :> "github" :> "user" :> "repositories" :> Get '[JSON] GetUsersPublicRepositoriesResponse
@@ -207,6 +209,7 @@ type Protected = LogoutAPI
             :<|> GithubSaveAPI
             :<|> GithubBranchesAPI
             :<|> GithubBranchLoadAPI
+            :<|> GithubDefaultBranchLoadAPI
             :<|> GithubBranchPullRequestAPI
             :<|> GithubUsersRepositoriesAPI
             :<|> GithubSaveAssetAPI
