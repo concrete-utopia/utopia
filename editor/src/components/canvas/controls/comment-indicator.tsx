@@ -323,7 +323,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
   const draggingCallback = React.useCallback((isDragging: boolean) => setDragging(isDragging), [])
 
   return (
-    <div onMouseOver={onMouseOver} onMouseOut={onMouseOut}>
+    <div onMouseOver={onMouseOver} onMouseOut={onMouseOut} data-testid='comment-indicator'>
       {when(
         (isActive || !hovered) && !dragging,
         <CommentIndicatorUI

@@ -34,6 +34,10 @@ describe('Comments test', () => {
 
       expect(thread).not.toBeNull()
 
+      const commentIndicator = await page.waitForSelector('div[data-testid="comment-indicator"]')
+
+      expect(commentIndicator).not.toBeNull()
+
       const resolveButton = await page.waitForSelector('div[data-testid="resolve-thread-button"]')
       await resolveButton!.click()
 
