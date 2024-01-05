@@ -39,7 +39,7 @@ import { canvasPointToWindowPoint } from '../dom-lookup'
 import { useRemixNavigationContext } from '../remix/utopia-remix-root-component'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import { setRightMenuTab } from '../../editor/actions/action-creators'
-import { RightMenuTab, getCurrentTheme } from '../../editor/store/editor-state'
+import { RightMenuTab } from '../../editor/store/editor-state'
 import { when } from '../../../utils/react-conditionals'
 import { CommentRepliesCounter } from './comment-replies-counter'
 
@@ -363,11 +363,6 @@ const HoveredCommentIndicator = React.memo((props: HoveredCommentIndicatorProps)
   const { thread, hidden, cancelHover, draggingCallback } = props
 
   const dispatch = useDispatch()
-  const theme = useEditorState(
-    Substores.userState,
-    (store) => getCurrentTheme(store.userState),
-    'HoveredCommentIndicator theme',
-  )
 
   const { location, scene: commentScene } = useCanvasLocationOfThread(thread)
 
@@ -461,7 +456,6 @@ const HoveredCommentIndicator = React.memo((props: HoveredCommentIndicatorProps)
           overflow: 'auto',
           background: 'transparent',
         }}
-        data-theme={theme}
         user={user}
         comment={comment}
         showActions={false}
