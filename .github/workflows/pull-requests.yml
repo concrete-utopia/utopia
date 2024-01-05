@@ -359,7 +359,7 @@ jobs:
         run: |
           nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "cd puppeteer-tests; pnpm install --unsafe-perm; pnpm run system-test"
 
-  system-test:
+  comments-test:
     name: Run System Tests
     timeout-minutes: 12
     runs-on: ubuntu-latest
