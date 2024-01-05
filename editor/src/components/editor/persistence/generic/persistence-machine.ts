@@ -716,7 +716,7 @@ export function createPersistenceMachine<ModelType, FileType>(
                     ): Promise<{
                       type: 'LOAD_FROM_GITHUB_DONE'
                       project: ProjectModel<PersistentModel>
-                      branch: BranchContent
+                      branch: Omit<BranchContent, 'content'>
                     }> => {
                       const typeUnsafeEvent = event as LoadFromGithubEvent // TODO fix the type safety issue here
                       const projectName = `${typeUnsafeEvent.githubOwner}-${typeUnsafeEvent.githubRepo}`

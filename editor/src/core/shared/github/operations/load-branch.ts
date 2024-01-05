@@ -104,7 +104,7 @@ export const saveAssetsToProject =
 // 7. revisit what UI we show until the project is loaded
 export type LoadFromGithubResult = {
   parsedProjectContents: ProjectContentTreeRoot
-  branch: BranchContent
+  branch: Omit<BranchContent, 'content'>
 }
 export const cloneProjectFromGithubLoadAssetsAndRefreshDependencies =
   (operationContext: GithubOperationContext) =>
@@ -115,16 +115,8 @@ export const cloneProjectFromGithubLoadAssetsAndRefreshDependencies =
     branchName: string | null,
     resetBranches: boolean,
   ): Promise<LoadFromGithubResult> => {
-    const resolvedBranchName: string = await (async () => {
-      if (branchName != null) {
-        return branchName
-      }
-      // TODO load the default branch name from the server
-      return 'main'
-    })()
-
     const loadBranchResult = await loadBranchFromGithub(
-      resolvedBranchName,
+      branchName,
       githubRepo,
       onUpdate,
       operationContext,
@@ -135,7 +127,7 @@ export const cloneProjectFromGithubLoadAssetsAndRefreshDependencies =
     }
 
     const parseDownloadedProjectResult = await parseDownloadedProject(
-      resolvedBranchName,
+      branchName,
       githubRepo,
       onUpdate,
       loadBranchResult,
@@ -148,7 +140,13 @@ export const cloneProjectFromGithubLoadAssetsAndRefreshDependencies =
     }
 
     // TODO load dependencies using refreshDependencies
-    return parseDownloadedProjectResult
+    return {
+      parsedProjectContents: parseDownloadedProjectResult.parsedProjectContents,
+      branch: {
+        originCommit: parseDownloadedProjectResult.branch.originCommit,
+        branchName: parseDownloadedProjectResult.branch.branchName,
+      },
+    }
   }
 
 export const updateProjectWithBranchContent =
@@ -306,7 +304,7 @@ export async function getProcessedParsedProjectFromGithubRepo(
 }
 
 async function loadBranchFromGithub(
-  branchName: string,
+  branchName: string | null,
   githubRepo: GithubRepo,
   onUpdate: (update: UpdateGithubOperations | AddToast) => void,
   operationContext: Pick<GithubOperationContext, 'fetch'>,
@@ -336,7 +334,7 @@ async function loadBranchFromGithub(
 }
 
 async function parseDownloadedProject(
-  branchName: string,
+  branchName: string | null,
   githubRepo: GithubRepo,
   onUpdate: (update: UpdateGithubOperations | AddToast) => void,
   loadBranchResult: Response,
@@ -357,7 +355,10 @@ async function parseDownloadedProject(
           throw githubAPIError(operation, responseBody.failureReason)
         case 'SUCCESS':
           if (responseBody.branch == null) {
-            throw githubAPIError(operation, `Could not find branch ${branchName}`)
+            throw githubAPIError(
+              operation,
+              `Could not find branch ${branchName ?? '<default-branch>'}`,
+            )
           }
           const newGithubData: Partial<GithubData> = {
             upstreamChanges: null,

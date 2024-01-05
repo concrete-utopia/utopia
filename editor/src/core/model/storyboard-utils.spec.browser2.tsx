@@ -180,6 +180,7 @@ describe('Storyboard utils', () => {
             type: 'SUCCESS',
             branch: {
               originCommit: 'initial',
+              branchName: 'main',
               content: projectContents,
             },
           }),

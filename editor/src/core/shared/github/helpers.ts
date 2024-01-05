@@ -108,6 +108,7 @@ export interface GithubFailure {
 export interface BranchContent {
   content: ProjectContentTreeRoot
   originCommit: string
+  branchName: string
 }
 
 export interface GetBranchContentSuccess {
@@ -284,12 +285,16 @@ export function connectRepo(
 
 export async function getBranchContentFromServer(
   githubRepo: GithubRepo,
-  branchName: string,
+  branchName: string | null,
   commitSha: string | null,
   previousCommitSha: string | null,
   operationContext: Pick<GithubOperationContext, 'fetch'>,
 ): Promise<Response> {
-  const url = GithubEndpoints.branchContents(githubRepo, branchName)
+  const url =
+    branchName != null
+      ? GithubEndpoints.branchContents(githubRepo, branchName)
+      : GithubEndpoints.defaultBranchContents(githubRepo)
+
   let includeQueryParams: boolean = false
   let paramsRecord: Record<string, string> = {}
   if (commitSha != null) {

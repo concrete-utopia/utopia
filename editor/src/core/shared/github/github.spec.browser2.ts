@@ -55,6 +55,7 @@ describe('Github integration', () => {
           type: 'SUCCESS',
           branch: {
             originCommit: 'initial',
+            branchName: 'main',
             content: createTestProjectWithCode(
               makeTestProjectCodeWithSnippet(`
             <h1>Editor from Github</h1>
