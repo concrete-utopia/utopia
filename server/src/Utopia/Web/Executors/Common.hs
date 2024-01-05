@@ -471,7 +471,7 @@ getGithubBranch githubSemaphore githubResources logger metrics pool userID owner
           let getContentFromGit = getRecursiveGitTreeAsContent githubSemaphore accessToken owner repository treeSha
           let fallbackForSameCommit = pure mempty
           projectContent <- if Just commitSha == possiblePreviousCommitSha then fallbackForSameCommit else getContentFromGit
-          pure $ Just (projectContent, commitSha)
+          pure $ Just (projectContent, commitSha, branchName)
         Nothing -> pure Nothing
   pure $ either getBranchContentFailureFromReason getBranchContentSuccessFromContent result
 

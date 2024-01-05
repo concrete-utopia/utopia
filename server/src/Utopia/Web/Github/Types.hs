@@ -499,6 +499,7 @@ instance ToJSON GetBranchPullRequestResponse where
 data BranchContent = BranchContent
                    { content      :: ProjectContentTreeRoot
                    , originCommit :: Text
+                   , branchName :: Text
                    }
                    deriving (Eq, Show, Generic, Data, Typeable)
 
@@ -526,8 +527,8 @@ data GetBranchContentResponse = GetBranchContentResponseSuccess GetBranchContent
 getBranchContentFailureFromReason :: Text -> GetBranchContentResponse
 getBranchContentFailureFromReason failureReason = GetBranchContentResponseFailure GithubFailure{..}
 
-getBranchContentSuccessFromContent :: Maybe (ProjectContentTreeRoot, Text) -> GetBranchContentResponse
-getBranchContentSuccessFromContent (Just (content, originCommit)) = GetBranchContentResponseSuccess (GetBranchContentSuccess (Just BranchContent{..}))
+getBranchContentSuccessFromContent :: Maybe (ProjectContentTreeRoot, Text, Text) -> GetBranchContentResponse
+getBranchContentSuccessFromContent (Just (content, originCommit, branchName)) = GetBranchContentResponseSuccess (GetBranchContentSuccess (Just BranchContent{..}))
 getBranchContentSuccessFromContent Nothing                        = GetBranchContentResponseSuccess (GetBranchContentSuccess Nothing)
 
 instance FromJSON GetBranchContentResponse where
