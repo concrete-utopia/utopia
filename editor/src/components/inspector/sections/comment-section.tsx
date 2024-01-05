@@ -39,6 +39,7 @@ import { canvasPointToWindowPoint } from '../../canvas/dom-lookup'
 import { CommentRepliesCounter } from '../../canvas/controls/comment-replies-counter'
 import type { SelectOption } from '../controls/select-control'
 import { assertNever } from '../../../core/shared/utils'
+import { pluck } from '../../../core/shared/array-utils'
 
 export type CommentFilterMode = 'all' | 'all-including-resolved' | 'unread-only'
 
@@ -104,7 +105,8 @@ const ThreadPreviews = React.memo(() => {
       case 'all-including-resolved':
         return threads
       case 'unread-only':
-        return threads.filter((t) => !readThreads.includes(t))
+        const readThreadIds = pluck(readThreads, 'id')
+        return threads.filter((t) => !readThreadIds.includes(t.id))
       default:
         assertNever(commentFilterMode)
     }
