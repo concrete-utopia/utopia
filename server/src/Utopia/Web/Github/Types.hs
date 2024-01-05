@@ -499,7 +499,7 @@ instance ToJSON GetBranchPullRequestResponse where
 data BranchContent = BranchContent
                    { content      :: ProjectContentTreeRoot
                    , originCommit :: Text
-                   , branchName :: Text
+                   , branchName   :: Text
                    }
                    deriving (Eq, Show, Generic, Data, Typeable)
 

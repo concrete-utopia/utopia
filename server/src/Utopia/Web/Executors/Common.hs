@@ -486,7 +486,7 @@ getDefaultGithubBranch githubSemaphore githubResources logger metrics pool userI
 
   pure $ either getBranchContentFailureFromReason identity defaultBranchResult
 
-    
+
 convertUsersRepositoriesResultToUnfold :: Int -> GetUsersPublicRepositoriesResult -> Maybe (GetUsersPublicRepositoriesResult, Maybe Int)
 convertUsersRepositoriesResultToUnfold page result =
   -- We expect some X elements per page, if we get less than that, assume we've hit the end and should not
