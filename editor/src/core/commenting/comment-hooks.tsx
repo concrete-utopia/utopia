@@ -27,6 +27,7 @@ import { getIdOfScene } from '../../components/canvas/controls/comment-mode/comm
 import type { ElementPath } from '../shared/project-file-types'
 import type { ElementInstanceMetadata } from '../shared/element-template'
 import * as EP from '../shared/element-path'
+import { getCurrentTheme } from '../../components/editor/store/editor-state'
 
 export function useCanvasCommentThreadAndLocation(comment: CommentId): {
   location: CanvasPoint | null
@@ -356,4 +357,15 @@ export function useDeleteThreadReadStatus() {
       statusesForThread.delete(threadId)
     }
   }, [])
+}
+
+export function useDataThemeAttributeOnBody() {
+  const theme = useEditorState(
+    Substores.userState,
+    (store) => getCurrentTheme(store.userState),
+    'useDataThemeAttributeOnBody theme',
+  )
+  React.useEffect(() => {
+    document.body.setAttribute('data-theme', theme)
+  }, [theme])
 }

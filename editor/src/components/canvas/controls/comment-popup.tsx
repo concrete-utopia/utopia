@@ -24,16 +24,7 @@ import { create } from '../../../core/shared/property-path'
 import { assertNever } from '../../../core/shared/utils'
 import { CommentWrapper, MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { when } from '../../../utils/react-conditionals'
-import {
-  Button,
-  FlexColumn,
-  FlexRow,
-  Icn,
-  Tooltip,
-  UtopiaStyles,
-  colorTheme,
-  useColorTheme,
-} from '../../../uuiui'
+import { Button, FlexRow, Icn, Tooltip, UtopiaStyles, colorTheme } from '../../../uuiui'
 import {
   setProp_UNSAFE,
   setRightMenuTab,
@@ -47,14 +38,13 @@ import {
   isNewComment,
 } from '../../editor/editor-modes'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { RightMenuTab, getCurrentTheme } from '../../editor/store/editor-state'
+import { RightMenuTab } from '../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { stopPropagation } from '../../inspector/common/inspector-utils'
 import { canvasPointToWindowPoint } from '../dom-lookup'
 import { RemixNavigationAtom } from '../remix/utopia-remix-root-component'
 import { getIdOfScene } from './comment-mode/comment-mode-hooks'
 import { motion, useAnimation } from 'framer-motion'
-import { CSSCursor } from '../canvas-types'
 import type { EditorDispatch } from '../../editor/action-types'
 
 export const ComposerEditorClassName = 'lb-composer-editor'
@@ -146,12 +136,6 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
       })
     }
   }, [])
-
-  const theme = useEditorState(
-    Substores.userState,
-    (store) => getCurrentTheme(store.userState),
-    'CommentThread theme',
-  )
 
   const onCreateThread = React.useCallback(
     ({ body }: ComposerSubmitComment, event: React.FormEvent<HTMLFormElement>) => {
@@ -406,7 +390,6 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
           </div>
           <Composer
             ref={composerRef}
-            data-theme={theme}
             autoFocus
             threadId={thread.id}
             onComposerSubmit={onSubmitComment}
@@ -429,12 +412,6 @@ type NewCommentPopupProps = {
 
 const NewCommentPopup = React.memo((props: NewCommentPopupProps) => {
   const dispatch = useDispatch()
-
-  const theme = useEditorState(
-    Substores.userState,
-    (store) => getCurrentTheme(store.userState),
-    'NewCommentPopup theme',
-  )
 
   const onNewCommentComposerKeyDown = React.useCallback(
     (e: React.KeyboardEvent) => switchToBasicCommentModeOnEscape(e, dispatch),
@@ -525,7 +502,6 @@ const NewCommentPopup = React.memo((props: NewCommentPopupProps) => {
       </div>
       <motion.div animate={newCommentComposerAnimation}>
         <Composer
-          data-theme={theme}
           autoFocus
           onComposerSubmit={props.onComposerSubmit}
           style={ComposerStyle}
