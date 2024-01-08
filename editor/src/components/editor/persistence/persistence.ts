@@ -25,11 +25,10 @@ import {
   forkEvent,
   userLogInEvent,
   userLogOutEvent,
-  loadFromGithubEvent,
 } from './generic/persistence-machine'
 import type { PersistenceBackendAPI, PersistenceContext } from './generic/persistence-types'
 import { releaseControl } from '../store/collaborative-editing'
-import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
+import { defer } from '../../../utils/utils'
 
 export class PersistenceMachine {
   private interpreter: Interpreter<
@@ -197,17 +196,18 @@ export class PersistenceMachine {
     this.interpreter.send(loadEvent(projectId))
   }
 
-  createNew = (projectName: string, project: PersistentModel): void => {
-    this.interpreter.send(newEvent({ name: projectName, content: project }))
-  }
+  createNew = (projectName: string, project: PersistentModel): Promise<CreateNewProjectResult> => {
+    const onDone = defer<CreateNewProjectResult>()
 
-  loadFromGithub = (
-    workers: UtopiaTsWorkers,
-    githubOwner: string,
-    githubRepo: string,
-    githubBranch: string | null,
-  ): void => {
-    this.interpreter.send(loadFromGithubEvent(workers, githubOwner, githubRepo, githubBranch))
+    this.interpreter.onTransition((state, event) => {
+      if (state.matches({ core: Ready })) {
+        onDone.resolve({ projectID: state.context.projectId! })
+      }
+    })
+
+    this.interpreter.send(newEvent({ name: projectName, content: project }))
+
+    return onDone
   }
 
   fork = (projectName: string, project: PersistentModel): void => {
@@ -227,3 +227,5 @@ export class PersistenceMachine {
     this.clearThrottledSave()
   }
 }
+
+export type CreateNewProjectResult = { projectID: string }

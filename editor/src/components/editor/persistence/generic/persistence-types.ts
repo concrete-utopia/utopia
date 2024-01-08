@@ -27,12 +27,6 @@ export interface PersistenceContext<ModelType> {
   queuedSave?: ProjectModel<ModelType>
   projectOwnership: ProjectOwnership
   loggedIn: boolean
-  githubRepo?: {
-    owner: string
-    repository: string
-    branch: string | null
-  }
-  githubBranchContent?: BranchContent
 }
 
 export interface ProjectLoadSuccess<ModelType> extends ProjectModelWithId<ModelType> {

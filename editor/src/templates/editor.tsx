@@ -45,6 +45,7 @@ import type {
   EditorStoreFull,
   PersistentModel,
   ElementsToRerender,
+  GithubRepo,
 } from '../components/editor/store/editor-state'
 import {
   createEditorState,
@@ -131,6 +132,7 @@ import {
 import { GithubOperations } from '../core/shared/github/operations'
 import { GithubAuth } from '../utils/github-auth'
 import { Provider as JotaiProvider } from 'jotai'
+import type { LoadFromGithubResult } from '../core/shared/github/operations/load-branch'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -363,19 +365,58 @@ export class Editor {
           const importURL = urlParams.get('import_url')
 
           if (isCookiesOrLocalForageUnavailable(loginState)) {
-            this.storedState.persistence.createNew(createNewProjectName(), defaultProject())
+            await this.storedState.persistence.createNew(createNewProjectName(), defaultProject())
           } else if (projectId == null) {
             if (githubOwner != null && githubRepo != null) {
-              this.storedState.persistence.loadFromGithub(
-                this.storedState.workers,
-                githubOwner,
-                githubRepo,
-                githubBranch, // if omitted, figure out the default branch!
+              const githubRepoIdentifier: GithubRepo = {
+                owner: githubOwner,
+                repository: githubRepo,
+              }
+              const { parsedModel, githubBranchContent } = await (async () => {
+                const loadFromGithubResult: LoadFromGithubResult =
+                  await GithubOperations.cloneProjectFromGithubLoadAssetsAndRefreshDependencies(
+                    this.storedState.workers, // TODO type safety here
+                    (update) => {
+                      this.boundDispatch([update])
+                    },
+                    githubRepoIdentifier,
+                    githubBranch,
+                    true,
+                  )
+
+                const parsedPersistentModel = persistentModelForProjectContents(
+                  loadFromGithubResult.parsedProjectContents,
+                )
+
+                return {
+                  parsedModel: parsedPersistentModel,
+                  githubBranchContent: loadFromGithubResult.branch,
+                }
+              })()
+
+              const projectName = `${githubOwner}-${githubRepo}`
+
+              const { projectID: createdProjectID } = await this.storedState.persistence.createNew(
+                projectName,
+                parsedModel,
+              )
+
+              await GithubOperations.saveAssetsToProject(
+                githubRepoIdentifier,
+                createdProjectID,
+                githubBranchContent,
+                (update) => {
+                  this.boundDispatch([update])
+                },
+                {}, // the existing project is assumed empty, as we are in the process of loading it parallel to this async function, triggered by createNew
               )
             } else if (importURL != null) {
               this.createNewProjectFromImportURL(importURL)
             } else {
-              this.storedState.persistence.createNew(emptyEditorState.projectName, defaultProject())
+              await this.storedState.persistence.createNew(
+                emptyEditorState.projectName,
+                defaultProject(),
+              )
             }
           } else {
             this.storedState.persistence.load(projectId)

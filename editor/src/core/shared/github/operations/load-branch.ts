@@ -47,7 +47,7 @@ export const saveAssetsToProject =
   async (
     githubRepo: GithubRepo,
     projectID: string,
-    branchContent: BranchContent,
+    branchContent: Pick<BranchContent, 'content'>, // TODO Fix this type
     onUpdate: (update: UpdateGithubOperations | AddToast) => void,
     currentProjectContents: ProjectContentTreeRoot,
   ): Promise<void> => {
@@ -104,7 +104,7 @@ export const saveAssetsToProject =
 // 7. revisit what UI we show until the project is loaded
 export type LoadFromGithubResult = {
   parsedProjectContents: ProjectContentTreeRoot
-  branch: Omit<BranchContent, 'content'>
+  branch: BranchContent
 }
 export const cloneProjectFromGithubLoadAssetsAndRefreshDependencies =
   (operationContext: GithubOperationContext) =>
@@ -142,10 +142,7 @@ export const cloneProjectFromGithubLoadAssetsAndRefreshDependencies =
     // TODO load dependencies using refreshDependencies
     return {
       parsedProjectContents: parseDownloadedProjectResult.parsedProjectContents,
-      branch: {
-        originCommit: parseDownloadedProjectResult.branch.originCommit,
-        branchName: parseDownloadedProjectResult.branch.branchName,
-      },
+      branch: parseDownloadedProjectResult.branch,
     }
   }
 
