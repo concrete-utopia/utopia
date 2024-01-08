@@ -237,7 +237,7 @@ export function useActiveThreads() {
   const { threads } = useThreads()
   const showResolved = useEditorState(
     Substores.restOfEditor,
-    (store) => store.editor.showResolvedThreads,
+    (store) => store.editor.commentFilterMode === 'all-including-resolved',
     'useActiveThreads showResolved',
   )
   if (!showResolved) {
@@ -247,19 +247,23 @@ export function useActiveThreads() {
 }
 
 export function useResolvedThreads() {
-  const threads = useThreads()
-  return {
-    ...threads,
-    threads: threads.threads.filter((t) => t.metadata.resolved),
-  }
+  return useThreads({
+    query: {
+      metadata: {
+        resolved: true,
+      },
+    },
+  })
 }
 
 export function useUnresolvedThreads() {
-  const threads = useThreads()
-  return {
-    ...threads,
-    threads: threads.threads.filter((t) => t.metadata.resolved !== true),
-  }
+  return useThreads({
+    query: {
+      metadata: {
+        resolved: false,
+      },
+    },
+  })
 }
 
 export function useReadThreads() {

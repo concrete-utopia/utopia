@@ -253,6 +253,13 @@ let
       ${pnpm}/bin/pnpm install --unsafe-perm
       ${pnpm}/bin/pnpm run performance-test
     '')
+    (pkgs.writeScriptBin "run-comments-test" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/puppeteer-tests
+      ${pnpm}/bin/pnpm install --unsafe-perm
+      ${pnpm}/bin/pnpm run comments-test
+    '')
   ];
 
   withPuppeteerScripts = withBaseEditorScripts ++ (lib.optionals stdenv.isLinux puppeteerScripts);

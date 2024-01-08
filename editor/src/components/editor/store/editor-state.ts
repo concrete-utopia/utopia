@@ -185,6 +185,7 @@ import type { ActiveFrame } from '../../canvas/commands/set-active-frames-comman
 import { Y } from '../../../core/shared/yjs'
 import { removeUnusedImportsForRemovedElement } from '../import-utils'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
+import type { CommentFilterMode } from '../../inspector/sections/comment-section'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1453,7 +1454,7 @@ export interface EditorState {
   internalClipboard: InternalClipboard
   filesModifiedByAnotherUser: Array<string>
   activeFrames: ActiveFrame[]
-  showResolvedThreads: boolean
+  commentFilterMode: CommentFilterMode
 }
 
 export function editorState(
@@ -1535,7 +1536,7 @@ export function editorState(
   internalClipboardData: InternalClipboard,
   filesModifiedByAnotherUser: Array<string>,
   activeFrames: ActiveFrame[],
-  showResolvedThreads: boolean,
+  commentFilterMode: CommentFilterMode,
 ): EditorState {
   return {
     id: id,
@@ -1616,7 +1617,7 @@ export function editorState(
     internalClipboard: internalClipboardData,
     filesModifiedByAnotherUser: filesModifiedByAnotherUser,
     activeFrames: activeFrames,
-    showResolvedThreads: showResolvedThreads,
+    commentFilterMode: commentFilterMode,
   }
 }
 
@@ -2513,7 +2514,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     },
     filesModifiedByAnotherUser: [],
     activeFrames: [],
-    showResolvedThreads: false,
+    commentFilterMode: 'all',
   }
 }
 
@@ -2889,7 +2890,7 @@ export function editorModelFromPersistentModel(
     },
     filesModifiedByAnotherUser: [],
     activeFrames: [],
-    showResolvedThreads: false,
+    commentFilterMode: 'all',
   }
   return editor
 }
