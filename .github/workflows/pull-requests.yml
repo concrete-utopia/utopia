@@ -9,6 +9,7 @@ jobs:
 
   test-editor-code:
     name: Test Editor PR – TypeScript, ESLint, dependency-cruiser
+    timeout-minutes: 15
     runs-on: ubuntu-latest
     needs: [cache-pnpm-store]
     env:
@@ -41,8 +42,10 @@ jobs:
       - name: Run tsc, eslint, depdendency-cruiser and the website tests
         if: steps.cache-editor-tests.outputs.cache-hit != 'true'
         run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run check-editor-code-ci
+
   test-editor-jest:
     name: Test Editor PR – Jest tests
+    timeout-minutes: 15
     runs-on: ubuntu-latest
     needs: [cache-pnpm-store]
     env:
@@ -96,6 +99,7 @@ jobs:
 
   deploy-staging:
     name: Deploy Staging Editor
+    timeout-minutes: 15
     runs-on: ubuntu-latest
     needs: [cache-pnpm-store]
     env:
@@ -212,6 +216,7 @@ jobs:
 
   performance-test:
     name: Run Performance Tests
+    timeout-minutes: 15
     runs-on: self-hosted
     needs: [deploy-staging, cache-pnpm-store]
     env:
@@ -317,6 +322,7 @@ jobs:
 
   system-test:
     name: Run System Tests
+    timeout-minutes: 15
     runs-on: ubuntu-latest
     needs: [deploy-staging, cache-pnpm-store]
     env:

@@ -12,10 +12,9 @@ export type FeatureName =
   | 'Performance Test Triggers'
   | 'Canvas Strategies Debug Panel'
   | 'Project Thumbnail Generation'
-  | 'Commenting'
   | 'Debug - Print UIDs'
   | 'Steganography'
-  | 'Collaboration'
+  | 'Multiplayer'
   | 'Baton Passing For Control'
 
 export const AllFeatureNames: FeatureName[] = [
@@ -29,10 +28,9 @@ export const AllFeatureNames: FeatureName[] = [
   'Performance Test Triggers',
   'Canvas Strategies Debug Panel',
   'Project Thumbnail Generation',
-  'Commenting',
   'Debug - Print UIDs',
   'Steganography',
-  'Collaboration',
+  'Multiplayer',
   'Baton Passing For Control',
 ]
 
@@ -46,10 +44,9 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Performance Test Triggers': !(PRODUCTION_CONFIG as boolean),
   'Canvas Strategies Debug Panel': false,
   'Project Thumbnail Generation': false,
-  Commenting: false,
   'Debug - Print UIDs': false,
   Steganography: false,
-  Collaboration: false,
+  Multiplayer: false,
   'Baton Passing For Control': false,
 }
 
@@ -59,9 +56,27 @@ function settingKeyForName(featureName: FeatureName): string {
   return `Feature-Switch-${featureName}`
 }
 
+async function getFromLocalForage(featureName: FeatureName): Promise<boolean | null> {
+  return localforage.getItem<boolean | null>(settingKeyForName(featureName))
+}
+
+async function getFromUrl(featureName: FeatureName): Promise<boolean | null> {
+  const search = window?.location?.search
+  if (search == null) {
+    return null
+  }
+  const params = new URLSearchParams(search)
+  const value = params.get(featureName)
+  if (value === 'true') {
+    return true
+  }
+
+  return null
+}
+
 async function loadStoredValue(featureName: FeatureName) {
   if (isBrowserEnvironment && !IS_TEST_ENVIRONMENT) {
-    const existing = await localforage.getItem<boolean | null>(settingKeyForName(featureName))
+    const existing = (await getFromUrl(featureName)) ?? (await getFromLocalForage(featureName))
     FeatureSwitchLoaded[featureName] = true
     if (existing != null) {
       FeatureSwitches[featureName] = existing

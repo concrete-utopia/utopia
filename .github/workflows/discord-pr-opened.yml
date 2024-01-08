@@ -20,6 +20,7 @@ permissions:
 jobs:
   post-to-discord:
     name: Post Notification To Discord
+    timeout-minutes: 5
     runs-on: ubuntu-latest
     if: ${{ !github.event.pull_request.draft }}
     steps:

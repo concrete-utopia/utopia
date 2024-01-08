@@ -71,11 +71,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
             const editorStatePatchOldParentFile = getPatchForComponentChange(
               successTarget.topLevelElements,
               insertionResult.components,
-              mergeImports(
-                underlyingFilePathTarget,
-                successTarget.imports,
-                insertionResult.importsToAdd,
-              ),
+              successTarget.imports,
               underlyingFilePathTarget,
             )
 
@@ -105,11 +101,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
             const editorStatePatchNewParentFile = getPatchForComponentChange(
               successNewParent.topLevelElements,
               insertionResult.components,
-              mergeImports(
-                underlyingFilePathNewParent,
-                successNewParent.imports,
-                insertionResult.importsToAdd,
-              ),
+              successNewParent.imports,
               underlyingFilePathNewParent,
             )
 
