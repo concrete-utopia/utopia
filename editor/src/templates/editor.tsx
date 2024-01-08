@@ -396,7 +396,7 @@ export class Editor {
                 this.boundDispatch,
                 forceNotNull('Should have a project ID by now.', createdProjectID),
                 githubRepoObj,
-                githubBranch ?? 'main', // TODO make it optional!!
+                githubBranch,
                 false,
                 [],
                 builtInDependencies,

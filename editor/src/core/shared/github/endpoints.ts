@@ -18,6 +18,15 @@ export const GithubEndpoints = {
       'branch',
       branchName,
     ),
+  defaultBranchContents: (githubRepo: GithubRepo) =>
+    urljoin(
+      UTOPIA_BACKEND,
+      'github',
+      'branches',
+      githubRepo.owner,
+      githubRepo.repository,
+      'default-branch',
+    ),
   asset: (githubRepo: GithubRepo, assetSha: string) =>
     urljoin(
       UTOPIA_BACKEND,

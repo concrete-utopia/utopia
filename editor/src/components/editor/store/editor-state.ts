@@ -279,7 +279,7 @@ export interface GithubListBranches {
 export interface GithubLoadBranch {
   name: 'loadBranch'
   githubRepo: GithubRepo
-  branchName: string
+  branchName: string | null
 }
 
 export interface GithubLoadRepositories {

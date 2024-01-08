@@ -387,6 +387,17 @@ innerServerExecutor (GetBranchContent user owner repository branchName possibleC
     Just githubResources -> do
       result <- getGithubBranch githubSemaphore githubResources logger metrics pool user owner repository branchName possibleCommitSha possiblePreviousCommitSha
       pure $ action result
+innerServerExecutor (GetDefaultBranchContent user owner repository possibleCommitSha possiblePreviousCommitSha action) = do
+  githubSemaphore <- fmap _githubSemaphore ask
+  possibleGithubResources <- fmap _githubResources ask
+  metrics <- fmap _databaseMetrics ask
+  logger <- fmap _logger ask
+  pool <- fmap _projectPool ask
+  case possibleGithubResources of
+    Nothing -> throwError err501
+    Just githubResources -> do
+      result <- getDefaultGithubBranch githubSemaphore githubResources logger metrics pool user owner repository possibleCommitSha possiblePreviousCommitSha
+      pure $ action result
 innerServerExecutor (GetUsersRepositories user action) = do
   githubSemaphore <- fmap _githubSemaphore ask
   possibleGithubResources <- fmap _githubResources ask

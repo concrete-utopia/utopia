@@ -95,7 +95,7 @@ export const updateProjectWithBranchContent =
     dispatch: EditorDispatch,
     projectID: string,
     githubRepo: GithubRepo,
-    branchName: string,
+    branchName: string | null,
     resetBranches: boolean,
     currentDeps: Array<RequestedNpmDependency>,
     builtInDependencies: BuiltInDependencies,
