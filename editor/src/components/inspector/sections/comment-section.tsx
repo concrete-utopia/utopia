@@ -106,7 +106,7 @@ const ThreadPreviews = React.memo(() => {
         return threads
       case 'unread-only':
         const readThreadIds = pluck(readThreads, 'id')
-        return threads.filter((t) => !readThreadIds.includes(t.id))
+        return threads.filter((t) => !t.metadata.resolved && !readThreadIds.includes(t.id))
       default:
         assertNever(commentFilterMode)
     }
