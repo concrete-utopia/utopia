@@ -193,8 +193,15 @@ const ThreadPreviews = React.memo(() => {
       )}
       {when(
         sortedThreads.length === 0,
-        <div style={{ padding: 8, color: colorTheme.fg6.value }}>
-          Leave comments on the canvas.
+        <div
+          style={{
+            padding: 8,
+            color: colorTheme.fg6.value,
+            whiteSpace: 'normal',
+            overflowWrap: 'break-word',
+          }}
+        >
+          Use the commenting tool to leave comments on the canvas. They will also show up here.
         </div>,
       )}
       {sortedThreads.map((thread) => (

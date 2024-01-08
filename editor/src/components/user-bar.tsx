@@ -341,6 +341,7 @@ interface AvatarPictureProps {
   initials: string
   size?: number
   isOffline?: boolean
+  resolved?: boolean
 }
 
 export const AvatarPicture = React.memo((props: AvatarPictureProps) => {
@@ -370,7 +371,7 @@ export const AvatarPicture = React.memo((props: AvatarPictureProps) => {
         width: size ?? '100%',
         height: size ?? '100%',
         borderRadius: '100%',
-        filter: props.isOffline ? 'grayscale(1)' : undefined,
+        filter: props.isOffline || props.resolved ? 'grayscale(1)' : undefined,
         pointerEvents: 'none',
       }}
       src={url}
