@@ -11,6 +11,16 @@ async function signIn(page: Page) {
   await page.waitForSelector('#playground-scene') // wait for the scene to render
 }
 
+async function clickCanvasContainer(page: Page, { x, y }: { x: number; y: number }) {
+  const canvasControlsContainer = await page.waitForSelector('#new-canvas-controls-container')
+  await canvasControlsContainer!.click({ offset: { x, y } })
+}
+
+async function expectNSelectors(page: Page, selector: string, n: number) {
+  const elementsMatchingSelector = await page.$$(selector)
+  expect(elementsMatchingSelector).toHaveLength(n)
+}
+
 describe('Comments test', () => {
   it(
     'can place a comment',
@@ -29,38 +39,27 @@ describe('Comments test', () => {
 
       await Promise.all([signIn(page1), signIn(page2)])
 
-      {
-        const canvasControlsContainer = await page1.waitForSelector(
-          '#new-canvas-controls-container',
-        )
-        await canvasControlsContainer!.click({ offset: { x: 500, y: 500 } })
-      }
+      await expectNSelectors(page2, 'div[data-testid="scene-label"]', 2)
+
+      await clickCanvasContainer(page1, { x: 500, y: 500 })
 
       const sceneLabel = await page1.waitForSelector('div[data-testid="scene-label"]')
       sceneLabel!.click({ offset: { x: 5, y: 5 } })
 
-      await wait(2000)
+      await wait(5000)
 
       await page1.keyboard.press('Backspace')
-      await wait(5000)
-      {
-        const canvasControlsContainer = await page2.waitForSelector(
-          '#new-canvas-controls-container',
-        )
-        await canvasControlsContainer!.click({ offset: { x: 500, y: 500 } })
-        await wait(5000)
-      }
+      await clickCanvasContainer(page2, { x: 500, y: 500 })
+
+      // This is here so that the edit can propagate from one tab to the other
+      // maybe TODO?
+      await wait(2000)
+
+      await expectNSelectors(page2, 'div[data-testid="scene-label"]', 1)
+
       await page1.keyboard.down('MetaLeft')
       await page1.keyboard.press('z', {})
       await page1.keyboard.up('MetaLeft')
-
-      //   const thread = await page1.waitForFunction(
-      //     'document.querySelector("body").innerText.includes("hello comments")',
-      //   )
-
-      //   expect(thread).not.toBeNull()
-
-      await wait(100000)
 
       await page1.close()
       await browser1.close()
