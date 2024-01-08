@@ -103,7 +103,14 @@ function adjustImportNameIfNeeded(
 ): string {
   const existingImport = existingNames.get(importName)
   if (existingImport != null) {
-    // first - check to see if the new import is already in the existing imports, renamed
+    /** first - check to see if the new import is already in the existing imports, renamed
+     * import { Card } from './fileA'
+     * import { Card as Card_2 } from './fileB'
+     * ++ import { Card } from './fileB'
+     * turns to:
+     * import { Card } from './fileA'
+     * import { Card as Card_2 } from './fileB'
+     * */
     const existingImportAlias = findOriginalNameInExistingImports(
       importName,
       importSource,
@@ -114,15 +121,37 @@ function adjustImportNameIfNeeded(
     if (existingImportAlias != null) {
       return existingImportAlias
     }
-    // different source - we always rename the new import
+    /** different source - we always rename the new import
+     * import { Card } from './fileA'
+     * ++ import { Card } from './fileB'
+     * turns to:
+     * import { Card } from './fileA'
+     * ++ import { Card as Card_2 } from './fileB'
+     * */
     if (absolutePath(existingImport.source) !== absolutePath(importSource)) {
       return findNewImportName(importName, existingNames)
     }
-    // same source with a different type - we always rename the new import
-    if (existingImport.type !== type) {
+    /** same source with a different type - we always rename the new import -
+     * unless it's a default and named import (to maintain existing behavior)
+     * import Card from './fileA'
+     * ++ import { Card } from './fileA'
+     * turns to:
+     * import Card from './fileA'
+     * ++ import { Card as Card_2 } from './fileA'
+     * */
+    if (
+      existingImport.type !== type &&
+      [existingImport.type, type].includes('importedFromWithin')
+    ) {
       return findNewImportName(importName, existingNames)
     }
-    // edge case - same source, same alias, different originalName
+    /** edge case - same source, same alias, different originalName
+     * import { Card as Card_2 } from './fileA'
+     * ++ import { Card_New as Card_2 } from './fileA'
+     * turns to:
+     * import { Card as Card_2 } from './fileA'
+     * ++ import { Card_New as Card_3 } from './fileA'
+     * */
     if (
       existingImport.type === 'importedFromWithin' &&
       type === 'importedFromWithin' &&
