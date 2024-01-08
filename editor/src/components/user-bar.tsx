@@ -21,6 +21,7 @@ import { showToast, switchEditorMode } from './editor/actions/action-creators'
 import { EditorModes, isFollowMode } from './editor/editor-modes'
 import { useDispatch } from './editor/store/dispatch-context'
 import { Substores, useEditorState } from './editor/store/store-hook'
+import { loadAvatarImage } from './user-avatar'
 
 const MAX_VISIBLE_OTHER_PLAYERS = 4
 
@@ -345,24 +346,21 @@ interface AvatarPictureProps {
 }
 
 export const AvatarPicture = React.memo((props: AvatarPictureProps) => {
-  const url = React.useMemo(() => {
-    return isDefaultAuth0AvatarURL(props.url ?? null) ? null : props.url
-  }, [props.url])
-
   const { initials, size } = props
 
-  const [pictureNotFound, setPictureNotFound] = React.useState(false)
+  const [url, setUrl] = React.useState<string | null>(null)
 
   React.useEffect(() => {
-    setPictureNotFound(false)
-  }, [url])
+    if (props.url == null || isDefaultAuth0AvatarURL(props.url ?? null)) {
+      return
+    }
+    void loadAvatarImage(props.url, (data) => {
+      const base64String = Buffer.from(data).toString('base64')
+      setUrl(`data:image;base64,${base64String}`)
+    })
+  }, [props.url])
 
-  const onPictureError = React.useCallback(() => {
-    console.warn('cannot get picture', url)
-    setPictureNotFound(true)
-  }, [url])
-
-  if (url == null || pictureNotFound) {
+  if (url == null) {
     return <span>{initials}</span>
   }
   return (
@@ -376,7 +374,6 @@ export const AvatarPicture = React.memo((props: AvatarPictureProps) => {
       }}
       src={url}
       referrerPolicy='no-referrer'
-      onError={onPictureError}
       draggable={false}
     />
   )
