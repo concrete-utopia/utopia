@@ -141,6 +141,9 @@ import { GithubAuth } from '../utils/github-auth'
 import { Provider as JotaiProvider } from 'jotai'
 import { forceNotNull } from '../core/shared/optional-utils'
 import { Defer } from '../utils/utils'
+import invariant from '../third-party/remix/invariant'
+
+const LoadActionsDispatched = 'loadActionDispatched'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -254,11 +257,14 @@ export class Editor {
     )
 
     const builtInDependencies = createBuiltInDependenciesList(workers)
-    const onCreatedOrLoadedProject = (
+    const onCreatedOrLoadedProject = async (
       projectId: string,
       projectName: string,
       project: PersistentModel,
-    ) => load(this.boundDispatch, project, projectName, projectId, builtInDependencies)
+    ) => {
+      await load(this.boundDispatch, project, projectName, projectId, builtInDependencies)
+      PubSub.publish(LoadActionsDispatched, { projectId: projectId })
+    }
 
     this.storedState = {
       unpatchedEditor: emptyEditorState,
@@ -382,7 +388,7 @@ export class Editor {
               this.storedState.persistence.createNew(projectName, totallyEmptyDefaultProject())
 
               const loadActionDispatchedByPersistenceMachine =
-                await this.awaitActionDispatched<Load>('LOAD')
+                await this.awaitLoadActionDispatchedByPersistenceMachine()
 
               const createdProjectID = loadActionDispatchedByPersistenceMachine.projectId
 
@@ -441,20 +447,17 @@ export class Editor {
     )
   }
 
-  awaitActionDispatched = <Action extends EditorAction>(
-    actionToBeAwaited: Action['action'],
-  ): Promise<Action> => {
+  awaitLoadActionDispatchedByPersistenceMachine = (): Promise<{ projectId: string }> => {
+    invariant(
+      PubSub.countSubscriptions(LoadActionsDispatched) === 0,
+      'At this point, awaitLoadActionDispatchedByPersistenceMachine should have zero listeners',
+    )
     return new Promise((resolve, reject) => {
-      const listener = (message: string, dispatchedActions: readonly EditorAction[]) => {
-        const awaitedAction = dispatchedActions.find(
-          (a): a is Action => a.action === actionToBeAwaited,
-        )
-        if (awaitedAction != null) {
-          PubSub.unsubscribe(listener)
-          resolve(awaitedAction)
-        }
+      const listener = (message: string, data: { projectId: string }) => {
+        PubSub.unsubscribe(listener)
+        resolve(data)
       }
-      PubSub.subscribe('actionDispatched', listener)
+      PubSub.subscribe(LoadActionsDispatched, listener)
     })
   }
 
@@ -664,8 +667,6 @@ export class Editor {
       logSelectorTimings('re-render phase')
     }
     Measure.printMeasurements()
-
-    PubSub.publish('actionDispatched', dispatchedActions)
 
     return result
   }
