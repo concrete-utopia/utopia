@@ -32,8 +32,8 @@ export function renameDuplicateImports(
       )
       if (importedWithName !== original.importedWithName) {
         duplicateNameMapping.set(original.importedWithName, importedWithName)
-        existingNames.set(importedWithName, { source: importSource, type: 'importedWithName' })
       }
+      existingNames.set(importedWithName, { source: importSource, type: 'importedWithName' })
     }
 
     // importedAs
@@ -47,8 +47,8 @@ export function renameDuplicateImports(
       )
       if (importedAs !== original.importedAs) {
         duplicateNameMapping.set(original.importedAs, importedAs)
-        existingNames.set(importedAs, { source: importSource, type: 'importedAs' })
       }
+      existingNames.set(importedAs, { source: importSource, type: 'importedAs' })
     }
 
     // importedFromWithin
@@ -63,12 +63,12 @@ export function renameDuplicateImports(
       )
       if (alias !== importAliasDetails.alias) {
         duplicateNameMapping.set(importAliasDetails.alias, alias)
-        existingNames.set(alias, {
-          source: importSource,
-          type: 'importedFromWithin',
-          originalName: importAliasDetails.name,
-        })
       }
+      existingNames.set(alias, {
+        source: importSource,
+        type: 'importedFromWithin',
+        originalName: importAliasDetails.name,
+      })
       return importAlias(importAliasDetails.name, alias)
     })
 

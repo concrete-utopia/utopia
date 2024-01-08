@@ -12,6 +12,7 @@ import { forUnderlyingTargetFromEditorState } from '../../editor/store/editor-st
 import type { InsertionPath } from '../../editor/store/insertion-path'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 import { getPatchForComponentChange } from './commands'
+import { isJSXElement, type JSXElement } from '../../../core/shared/element-template'
 
 export interface InsertElementInsertionSubject extends BaseCommand {
   type: 'INSERT_ELEMENT_INSERTION_SUBJECT'
@@ -40,20 +41,24 @@ export const runInsertElementInsertionSubject: CommandFunction<InsertElementInse
   let selectedViews: Array<ElementPath> = []
   const { subject, insertionPath } = command
 
+  let subjectElement: JSXElement = subject.element
+
   forUnderlyingTargetFromEditorState(
     insertionPath.intendedParentPath,
     editor,
     (success, _element, _underlyingTarget, underlyingFilePath) => {
       const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
 
+      const updatedImports = mergeImports(underlyingFilePath, success.imports, subject.importsToAdd)
+
+      subjectElement = renameIfNeeded(subject.element, updatedImports.duplicateNameMapping)
+
       const insertionResult = insertJSXElementChildren(
         insertionPath,
-        [subject.element],
+        [subjectElement],
         utopiaComponents,
         null,
       )
-
-      const updatedImports = mergeImports(underlyingFilePath, success.imports, subject.importsToAdd)
 
       editorStatePatches.push(
         getPatchForComponentChange(
@@ -64,7 +69,7 @@ export const runInsertElementInsertionSubject: CommandFunction<InsertElementInse
         ),
       )
       editorStatePatches.push(includeToastPatch(insertionResult.insertionDetails, editor))
-      selectedViews.push(EP.appendToPath(insertionPath.intendedParentPath, subject.element.uid))
+      selectedViews.push(EP.appendToPath(insertionPath.intendedParentPath, subjectElement.uid))
     },
   )
 
@@ -78,9 +83,34 @@ export const runInsertElementInsertionSubject: CommandFunction<InsertElementInse
 
   return {
     editorStatePatches: editorStatePatches,
-    commandDescription: `Insert element ${subject.element.uid} to parent ${optionalMap(
+    commandDescription: `Insert element ${subjectElement.uid} to parent ${optionalMap(
       EP.toUid,
       insertionPath.intendedParentPath,
     )}`,
+  }
+}
+
+function renameIfNeeded(
+  element: JSXElement,
+  duplicateNameMapping: Map<string, string>,
+): JSXElement {
+  const newElementName = duplicateNameMapping.get(element.name.baseVariable)
+  if (newElementName != null) {
+    return {
+      ...element,
+      name: {
+        ...element.name,
+        baseVariable: newElementName,
+      },
+      children: element.children.map((child) => {
+        if (isJSXElement(child)) {
+          return renameIfNeeded(child, duplicateNameMapping)
+        } else {
+          return child
+        }
+      }),
+    }
+  } else {
+    return element
   }
 }
