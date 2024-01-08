@@ -5,7 +5,7 @@ import ReactSyntaxPlugin from 'babel-plugin-syntax-jsx'
 import ReactTransformPlugin from 'babel-plugin-transform-react-jsx'
 import type { SourceNode } from 'source-map'
 import type { Either } from '../../shared/either'
-import { left, right } from '../../shared/either'
+import { isRight, left, right } from '../../shared/either'
 import type { JSXElement } from '../../shared/element-template'
 import {
   getDefinedElsewhereFromElement,
@@ -200,7 +200,6 @@ export function transpileJavascript(
   sourceFileText: string,
   fileSourceNode: typeof SourceNode,
   elementsWithin: ElementsWithinInPosition,
-  wrapInParens: boolean,
   applySteganography: SteganographyMode,
 ): Either<string, TranspileResult> {
   try {
@@ -212,7 +211,7 @@ export function transpileJavascript(
       code,
       rawMap,
       elementsWithin,
-      wrapInParens,
+      'do-not-wrap',
       applySteganography,
     )
   } catch (e: any) {
@@ -313,21 +312,53 @@ function applySteganographyPlugin(
   })
 }
 
+export function wrapAndTranspileJavascript(
+  sourceFileName: string,
+  sourceFileText: string,
+  code: string,
+  map: RawSourceMap,
+  elementsWithin: ElementsWithinInPosition,
+  applySteganography: SteganographyMode,
+): Either<string, TranspileResult> {
+  const wrappedInParensResult = transpileJavascriptFromCode(
+    sourceFileName,
+    sourceFileText,
+    code,
+    map,
+    elementsWithin,
+    'wrap-in-parens',
+    applySteganography,
+  )
+
+  if (isRight(wrappedInParensResult)) {
+    return wrappedInParensResult
+  } else {
+    return transpileJavascriptFromCode(
+      sourceFileName,
+      sourceFileText,
+      code,
+      map,
+      elementsWithin,
+      'wrap-in-anon-fn',
+      applySteganography,
+    )
+  }
+}
+
 export function transpileJavascriptFromCode(
   sourceFileName: string,
   sourceFileText: string,
   code: string,
   map: RawSourceMap,
   elementsWithin: ElementsWithinInPosition,
-  wrapInParens: boolean,
+  wrap: 'wrap-in-parens' | 'wrap-in-anon-fn' | 'do-not-wrap',
   applySteganography: SteganographyMode,
-  wrapInAnonFunction: boolean = false,
 ): Either<string, TranspileResult> {
   try {
     let codeToUse: string = code
     let mapToUse: RawSourceMap = map
 
-    if (wrapInParens) {
+    if (wrap === 'wrap-in-parens') {
       const wrappedInParens = wrapCodeInParensWithMap(
         sourceFileName,
         sourceFileText,
@@ -336,7 +367,7 @@ export function transpileJavascriptFromCode(
       )
       codeToUse = wrappedInParens.code
       mapToUse = wrappedInParens.sourceMap
-    } else if (wrapInAnonFunction) {
+    } else if (wrap === 'wrap-in-anon-fn') {
       const wrappedInAnonFunction = wrapCodeInAnonFunctionWithMap(
         sourceFileName,
         sourceFileText,

@@ -103,6 +103,8 @@ export function wrapCodeInAnonFunctionWithMap(
   code: string,
   sourceMap: RawSourceMap,
 ): CodeWithMap {
+  // Used for when we wish to transpile and / or operate on e.g. the contents of a
+  // function without wanting to pass in the entire function itself
   const wrappedCode = wrapCodeInAnonFunction(code)
 
   const consumer = new SourceMapConsumer(sourceMap)
