@@ -410,6 +410,7 @@ export class Editor {
                 },
                 {}, // the existing project is assumed empty, as we are in the process of loading it parallel to this async function, triggered by createNew
               )
+              // TODO make sure the EditorState knows we have a github repo connected!!
             } else if (importURL != null) {
               this.createNewProjectFromImportURL(importURL)
             } else {
