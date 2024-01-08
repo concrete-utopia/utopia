@@ -237,7 +237,7 @@ export function useActiveThreads() {
   const { threads } = useThreads()
   const showResolved = useEditorState(
     Substores.restOfEditor,
-    (store) => store.editor.showResolvedThreads,
+    (store) => store.editor.commentFilterMode === 'all-including-resolved',
     'useActiveThreads showResolved',
   )
   if (!showResolved) {
