@@ -25,6 +25,9 @@ export function useApplyCanvasOffsetToStyle(setScaleToo: boolean): React.RefObje
   const elementRef = React.useRef<HTMLDivElement>(null)
   const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
   const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
+  const isScrollAnimationActiveRef = useRefEditorState(
+    (store) => store.editor.canvas.scrollAnimation,
+  )
 
   const mode = useEditorState(
     Substores.restOfEditor,
@@ -45,13 +48,15 @@ export function useApplyCanvasOffsetToStyle(setScaleToo: boolean): React.RefObje
           setScaleToo && scaleRef.current >= 1 ? `${scaleRef.current * 100}%` : '1',
         )
 
-        elementRef.current.style.setProperty(
-          'transition',
-          isFollowMode(mode) ? `transform ${liveblocksThrottle}ms linear` : 'none',
-        )
+        if (!isScrollAnimationActiveRef.current) {
+          elementRef.current.style.setProperty(
+            'transition',
+            isFollowMode(mode) ? `transform ${liveblocksThrottle}ms linear` : 'none',
+          )
+        }
       }
     },
-    [elementRef, setScaleToo, scaleRef, mode],
+    [setScaleToo, scaleRef, isScrollAnimationActiveRef, mode],
   )
 
   useSelectorWithCallback(
