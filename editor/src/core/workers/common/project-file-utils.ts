@@ -114,7 +114,13 @@ export function mergeImports(
   first: Imports,
   second: Imports,
 ): ImportsMergeResolution {
-  const allImportSources = new Set([...Object.keys(first), ...Object.keys(second)])
+  const { imports: secondWithoutDuplicates, duplicateNameMapping } = renameDuplicateImports(
+    first,
+    second,
+    fileUri,
+  )
+
+  const allImportSources = new Set([...Object.keys(first), ...Object.keys(secondWithoutDuplicates)])
   let absoluteImportSourcePathsToRelativeImportSourcePaths: {
     [absolutePath: string]: string | undefined
   } = {}
@@ -138,7 +144,8 @@ export function mergeImports(
     }
 
     const importDetailsFromFirst: ImportDetails | null = first[importSource] ?? null
-    const importDetailsFromSecond: ImportDetails | null = second[importSource] ?? null
+    const importDetailsFromSecond: ImportDetails | null =
+      secondWithoutDuplicates[importSource] ?? null
     const existingImport: ImportDetails | null = imports[existingImportSourceToUse] ?? null
     const merged: ImportDetails | null = mergeMaybeImportDetails(
       existingImport,
@@ -150,13 +157,7 @@ export function mergeImports(
     }
   })
 
-  const { imports: importResult, duplicateNameMapping } = renameDuplicateImports(
-    emptyImports(),
-    imports,
-    fileUri,
-  )
-
-  return { imports: importResult, duplicateNameMapping }
+  return { imports, duplicateNameMapping }
 }
 
 export function addImport(
