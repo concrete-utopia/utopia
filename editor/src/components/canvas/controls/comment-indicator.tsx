@@ -207,6 +207,7 @@ export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) =>
       alignItems: 'center',
       justifyContent: 'center',
       boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
+      border: '.4px solid #a3a3a340',
       opacity: resolved ? 0.6 : 'undefined',
     }
 
@@ -445,6 +446,7 @@ const HoveredCommentIndicator = React.memo((props: HoveredCommentIndicatorProps)
         width: 250,
         boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
         background: colorTheme.bg1.value,
+        border: '.4px solid #a3a3a340',
         zIndex: 1,
         position: 'fixed',
         bottom: canvasHeight - IndicatorSize - position.y,
