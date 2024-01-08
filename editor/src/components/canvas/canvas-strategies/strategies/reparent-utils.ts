@@ -54,6 +54,8 @@ import { isElementRenderedBySameComponent } from './reparent-helpers/reparent-he
 import type { ParsedCopyData } from '../../../../utils/clipboard'
 import { getParseSuccessForFilePath } from '../../canvas-utils'
 import { renameDuplicateImports } from '../../../../core/workers/common/import-worker-utils'
+import { set } from 'src/core/shared/optics/optic-utilities'
+import { fromField } from 'src/core/shared/optics/optic-creators'
 
 interface GetReparentOutcomeResult {
   commands: Array<CanvasCommand>
@@ -93,9 +95,10 @@ function adjustElementDuplicateName(
   targetFile: string,
   projectContents: ProjectContentTreeRoot,
 ): ElementToReparent {
+  let elementToReturn = element
   const fileContents = getParseSuccessForFilePath(targetFile, projectContents)
   if (fileContents == null) {
-    return element
+    return elementToReturn
   }
   const { imports, duplicateNameMapping } = renameDuplicateImports(
     fileContents.imports,
@@ -106,11 +109,23 @@ function adjustElementDuplicateName(
   if (isJSXElement(element.element)) {
     const elementName = MetadataUtils.getJSXElementName(element.element)?.baseVariable
     if (elementName != null && duplicateNameMapping.has(elementName)) {
-      element.element.name.baseVariable = duplicateNameMapping.get(elementName)!
+      elementToReturn = {
+        ...element,
+        element: {
+          ...element.element,
+          name: {
+            ...element.element.name,
+            baseVariable: duplicateNameMapping.get(elementName)!,
+          },
+        },
+      }
     }
   }
-  element.imports = imports
-  return element
+  elementToReturn = {
+    ...elementToReturn,
+    imports: imports,
+  }
+  return elementToReturn
 }
 
 function getElementName(

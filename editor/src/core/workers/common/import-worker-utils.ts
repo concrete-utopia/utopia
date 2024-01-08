@@ -102,7 +102,7 @@ function adjustImportNameIfNeeded(
   absolutePath: (relativePath: string) => string,
 ): string {
   const existingImport = existingNames.get(importName)
-  if (existingImport! != null) {
+  if (existingImport != null) {
     // first - check to see if the new import is already in the existing imports, renamed
     const existingImportAlias = findOriginalNameInExistingImports(
       importName,
