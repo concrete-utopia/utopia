@@ -22,6 +22,7 @@ export const CommentRepliesCounter = React.memo((props: CommentRepliesCounterPro
         paddingLeft: 44,
         fontSize: 9,
         color: colorTheme.fg6.value,
+        marginBottom: 8,
       }}
     >
       {repliesCount} {repliesCount > 1 ? 'replies' : 'reply'}

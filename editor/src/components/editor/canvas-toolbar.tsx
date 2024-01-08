@@ -74,7 +74,7 @@ import { useAllowedToEditProject } from './store/collaborative-editing'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const PlayModeButtonTestId = 'canvas-toolbar-play-mode'
-export const CommentModeButtonTestId = 'canvas-toolbar-comment-mode'
+export const CommentModeButtonTestId = (status: string) => `canvas-toolbar-comment-mode-${status}`
 export const InsertConditionalButtonTestId = 'insert-mode-conditional'
 export const CanvasToolbarId = 'canvas-toolbar'
 
@@ -425,6 +425,10 @@ export const CanvasToolbar = React.memo(() => {
     ? 'Not connected to room'
     : 'Comment Mode'
 
+  const commentButtonTestId =
+    roomStatus === 'connected'
+      ? CommentModeButtonTestId('connected')
+      : CommentModeButtonTestId('disconnected')
   const allowedToEdit = useAllowedToEditProject()
 
   return (
@@ -500,7 +504,7 @@ export const CanvasToolbar = React.memo(() => {
           isFeatureEnabled('Multiplayer'),
           <Tooltip title={commentButtonTooltip} placement='bottom'>
             <InsertModeButton
-              testid={CommentModeButtonTestId}
+              testid={commentButtonTestId}
               iconType={'comment'}
               iconCategory='tools'
               primary={canvasToolbarMode.primary === 'comment'}

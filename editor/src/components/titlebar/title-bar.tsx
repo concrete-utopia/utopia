@@ -308,7 +308,7 @@ export const TitleBarUserProfile = React.memo((props: { panelData: StoredPanel }
         <PanelButton onClick={toggleInspectorVisible} color='#FF5F57' isHovered={isHovered} />
         <PanelButton isHovered={isHovered} color={colorTheme.unavailableGrey.value} />
       </FlexRow>
-      <div style={{ flex: '0 0 0px' }}>
+      <div style={{ flex: '0 0 0px' }} data-testid='sign-in-button'>
         {unless(
           loggedIn,
           <Button

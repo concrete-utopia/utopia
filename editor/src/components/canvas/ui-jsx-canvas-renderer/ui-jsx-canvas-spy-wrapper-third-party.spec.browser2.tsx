@@ -173,7 +173,8 @@ async function waitForFullMetadata(getEditorState: () => EditorStorePatched): Pr
   throw new Error('heat death of the universe')
 }
 
-describe('Spy Wrapper Tests For React Three Fiber', () => {
+// This test has started failing with `Error creating WebGL context`, and causes other tests to fail
+xdescribe('Spy Wrapper Tests For React Three Fiber', () => {
   it('a simple Canvas element in a scene where spy and jsx metadata has extra elements', async () => {
     // Code kept commented for any future person who needs it.
     // const currentWindow = require('electron').remote.getCurrentWindow()

@@ -39,7 +39,7 @@ import { canvasPointToWindowPoint } from '../dom-lookup'
 import { useRemixNavigationContext } from '../remix/utopia-remix-root-component'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import { setRightMenuTab } from '../../editor/actions/action-creators'
-import { RightMenuTab, getCurrentTheme } from '../../editor/store/editor-state'
+import { RightMenuTab } from '../../editor/store/editor-state'
 import { when } from '../../../utils/react-conditionals'
 import { CommentRepliesCounter } from './comment-replies-counter'
 
@@ -199,7 +199,6 @@ export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) =>
       position: 'fixed',
       top: position.y + 3,
       left: position.x - 3,
-      filter: resolved ? 'grayscale(1)' : undefined,
       width: IndicatorSize,
       height: IndicatorSize,
       background: read ? colorTheme.bg1.value : colorTheme.primary.value,
@@ -208,6 +207,7 @@ export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) =>
       alignItems: 'center',
       justifyContent: 'center',
       boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
+      opacity: resolved ? 0.6 : 'undefined',
     }
 
     const transform: Interpolation<Theme> = {
@@ -249,7 +249,7 @@ export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) =>
           justifyContent: 'center',
         }}
       >
-        <AvatarPicture url={avatarUrl} initials={avatarInitials} />
+        <AvatarPicture url={avatarUrl} initials={avatarInitials} resolved={resolved} />
       </div>
     </div>
   )
@@ -363,11 +363,6 @@ const HoveredCommentIndicator = React.memo((props: HoveredCommentIndicatorProps)
   const { thread, hidden, cancelHover, draggingCallback } = props
 
   const dispatch = useDispatch()
-  const theme = useEditorState(
-    Substores.userState,
-    (store) => getCurrentTheme(store.userState),
-    'HoveredCommentIndicator theme',
-  )
 
   const { location, scene: commentScene } = useCanvasLocationOfThread(thread)
 
@@ -446,10 +441,12 @@ const HoveredCommentIndicator = React.memo((props: HoveredCommentIndicatorProps)
         width: 250,
         boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
         background: colorTheme.bg1.value,
+        zIndex: 1,
         position: 'fixed',
+        top: position.y,
         // temporarily moving the hovered comment indicator to align with the not hovered version
-        top: position.y - 40.5,
         left: position.x - 3,
+        overflow: 'hidden',
       }}
       onMouseDown={onMouseDown}
       onClick={onClick}
@@ -457,14 +454,13 @@ const HoveredCommentIndicator = React.memo((props: HoveredCommentIndicatorProps)
       <CommentWrapper
         style={{
           overflow: 'auto',
+          background: 'transparent',
         }}
-        data-theme={theme}
         user={user}
         comment={comment}
         showActions={false}
       />
       <CommentRepliesCounter thread={thread} />
-      <div style={{ height: 8 }} />
     </div>
   )
 })
