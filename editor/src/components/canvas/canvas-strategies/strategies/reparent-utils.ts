@@ -54,8 +54,6 @@ import { isElementRenderedBySameComponent } from './reparent-helpers/reparent-he
 import type { ParsedCopyData } from '../../../../utils/clipboard'
 import { getParseSuccessForFilePath } from '../../canvas-utils'
 import { renameDuplicateImports } from '../../../../core/workers/common/import-worker-utils'
-import { set } from 'src/core/shared/optics/optic-utilities'
-import { fromField } from 'src/core/shared/optics/optic-creators'
 
 interface GetReparentOutcomeResult {
   commands: Array<CanvasCommand>
