@@ -2948,8 +2948,13 @@ const defaultDependencies = Utils.mapArrayToDictionary(
 
 export const defaultIndexHtmlFilePath = 'public/index.html'
 
+export const EmptyPackageJson = {
+  name: 'utopia-project',
+  version: '0.1.0',
+}
+
 export const DefaultPackageJson = {
-  name: 'Utopia Project',
+  name: 'utopia-project',
   version: '0.1.0',
   utopia: {
     'main-ui': StoryboardFilePath.slice(1),

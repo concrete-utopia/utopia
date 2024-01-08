@@ -2,6 +2,7 @@
 import '../utils/feature-switches'
 
 import React from 'react'
+import * as PubSub from 'pubsub-js'
 import { createRoot } from 'react-dom/client'
 import * as ReactDOM from 'react-dom'
 import { hot } from 'react-hot-loader/root'
@@ -20,6 +21,7 @@ import type {
   DispatchPriority,
   EditorAction,
   EditorDispatch,
+  Load,
 } from '../components/editor/action-types'
 import { isLoggedIn } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
@@ -45,6 +47,7 @@ import type {
   EditorStoreFull,
   PersistentModel,
   ElementsToRerender,
+  GithubRepo,
 } from '../components/editor/store/editor-state'
 import {
   createEditorState,
@@ -55,6 +58,7 @@ import {
   patchedStoreFromFullStore,
   getCurrentTheme,
   emptyCollaborativeEditingSupport,
+  persistentModelFromEditorModel,
 } from '../components/editor/store/editor-state'
 import type { UtopiaStoreAPI } from '../components/editor/store/store-hook'
 import {
@@ -94,7 +98,11 @@ import type { LoginState } from '../common/user'
 import { isCookiesOrLocalForageUnavailable } from '../common/user'
 import { PersistenceMachine } from '../components/editor/persistence/persistence'
 import { PersistenceBackend } from '../components/editor/persistence/persistence-backend'
-import { defaultProject } from '../sample-projects/sample-project-utils'
+import {
+  defaultProject,
+  simpleDefaultProject,
+  totallyEmptyDefaultProject,
+} from '../sample-projects/sample-project-utils'
 import { createBuiltInDependenciesList } from '../core/es-modules/package-manager/built-in-dependencies-list'
 import { createEmptyStrategyState } from '../components/canvas/canvas-strategies/interaction-state'
 import type { DomWalkerMutableStateData } from '../components/canvas/dom-walker'
@@ -131,6 +139,8 @@ import {
 import { GithubOperations } from '../core/shared/github/operations'
 import { GithubAuth } from '../utils/github-auth'
 import { Provider as JotaiProvider } from 'jotai'
+import { forceNotNull } from '../core/shared/optional-utils'
+import { Defer } from '../utils/utils'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -344,7 +354,7 @@ export class Editor {
         void updateUserDetailsWhenAuthenticated(
           this.boundDispatch,
           GithubAuth.isAuthenticatedWithGithub(loginState),
-        ).then((authenticatedWithGithub) => {
+        ).then(async (authenticatedWithGithub) => {
           this.storedState.userState = {
             ...this.storedState.userState,
             githubState: {
@@ -359,45 +369,48 @@ export class Editor {
           const urlParams = new URLSearchParams(window.location.search)
           const githubOwner = urlParams.get('github_owner')
           const githubRepo = urlParams.get('github_repo')
+          const githubBranch = urlParams.get('github_branch')
           const importURL = urlParams.get('import_url')
 
           if (isCookiesOrLocalForageUnavailable(loginState)) {
             this.storedState.persistence.createNew(createNewProjectName(), defaultProject())
           } else if (projectId == null) {
             if (githubOwner != null && githubRepo != null) {
-              replaceLoadingMessage('Downloading Repo...')
+              const projectName = `${githubOwner}-${githubRepo}`
 
-              void downloadGithubRepo(githubOwner, githubRepo).then((repoResult) => {
-                if (isRequestFailure(repoResult)) {
-                  if (repoResult.statusCode === 404) {
-                    void renderProjectNotFound()
-                  } else {
-                    void renderProjectLoadError(repoResult.errorMessage)
-                  }
-                } else {
-                  replaceLoadingMessage('Importing Project...')
+              // Obtain a projectID from the server, and save an empty initial project
+              this.storedState.persistence.createNew(projectName, totallyEmptyDefaultProject())
 
-                  const projectName = `${githubOwner}-${githubRepo}`
-                  importZippedGitProject(projectName, repoResult.value)
-                    .then((importProjectResult) => {
-                      if (isProjectImportSuccess(importProjectResult)) {
-                        const importedProject = persistentModelForProjectContents(
-                          importProjectResult.contents,
-                        )
-                        this.storedState.persistence.createNew(projectName, importedProject)
-                      } else {
-                        void renderProjectLoadError(importProjectResult.errorMessage)
-                      }
-                    })
-                    .catch((err) => {
-                      console.error('Import error.', err)
-                    })
-                }
-              })
+              const loadActionDispatchedByPersistenceMachine =
+                await this.awaitActionDispatched<Load>('LOAD')
+
+              const createdProjectID = loadActionDispatchedByPersistenceMachine.projectId
+
+              const githubRepoObj: GithubRepo = {
+                owner: githubOwner,
+                repository: githubRepo,
+              }
+
+              await GithubOperations.updateProjectWithBranchContent(
+                this.storedState.workers,
+                this.boundDispatch,
+                forceNotNull('Should have a project ID by now.', createdProjectID),
+                githubRepoObj,
+                githubBranch ?? 'main', // TODO make it optional!!
+                false,
+                [],
+                builtInDependencies,
+                {}, // Assuming a totally empty project (that is being saved probably parallel to this operation, hopefully not causing any race conditions)
+              )
+
+              // TODO make sure the EditorState knows we have a github repo connected!!
             } else if (importURL != null) {
               this.createNewProjectFromImportURL(importURL)
             } else {
-              this.storedState.persistence.createNew(emptyEditorState.projectName, defaultProject())
+              await this.storedState.persistence.createNew(
+                emptyEditorState.projectName,
+                defaultProject(),
+              )
             }
           } else {
             this.storedState.persistence.load(projectId)
@@ -426,6 +439,23 @@ export class Editor {
       ],
       'everyone',
     )
+  }
+
+  awaitActionDispatched = <Action extends EditorAction>(
+    actionToBeAwaited: Action['action'],
+  ): Promise<Action> => {
+    return new Promise((resolve, reject) => {
+      const listener = (message: string, dispatchedActions: readonly EditorAction[]) => {
+        const awaitedAction = dispatchedActions.find(
+          (a): a is Action => a.action === actionToBeAwaited,
+        )
+        if (awaitedAction != null) {
+          PubSub.unsubscribe(listener)
+          resolve(awaitedAction)
+        }
+      }
+      PubSub.subscribe('actionDispatched', listener)
+    })
   }
 
   boundDispatch = (
@@ -634,6 +664,9 @@ export class Editor {
       logSelectorTimings('re-render phase')
     }
     Measure.printMeasurements()
+
+    PubSub.publish('actionDispatched', dispatchedActions)
+
     return result
   }
 
