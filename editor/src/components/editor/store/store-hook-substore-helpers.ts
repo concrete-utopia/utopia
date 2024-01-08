@@ -172,5 +172,5 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   },
   filesModifiedByAnotherUser: [],
   activeFrames: [],
-  showResolvedThreads: false,
+  commentFilterMode: 'all',
 }

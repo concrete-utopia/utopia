@@ -24,16 +24,7 @@ import { create } from '../../../core/shared/property-path'
 import { assertNever } from '../../../core/shared/utils'
 import { CommentWrapper, MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { when } from '../../../utils/react-conditionals'
-import {
-  Button,
-  FlexColumn,
-  FlexRow,
-  Icn,
-  Tooltip,
-  UtopiaStyles,
-  colorTheme,
-  useColorTheme,
-} from '../../../uuiui'
+import { Button, FlexRow, Icn, Tooltip, UtopiaStyles, colorTheme } from '../../../uuiui'
 import {
   setProp_UNSAFE,
   setRightMenuTab,
@@ -47,14 +38,13 @@ import {
   isNewComment,
 } from '../../editor/editor-modes'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { RightMenuTab, getCurrentTheme } from '../../editor/store/editor-state'
+import { RightMenuTab } from '../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { stopPropagation } from '../../inspector/common/inspector-utils'
 import { canvasPointToWindowPoint } from '../dom-lookup'
 import { RemixNavigationAtom } from '../remix/utopia-remix-root-component'
 import { getIdOfScene } from './comment-mode/comment-mode-hooks'
 import { motion, useAnimation } from 'framer-motion'
-import { CSSCursor } from '../canvas-types'
 import type { EditorDispatch } from '../../editor/action-types'
 
 export const ComposerEditorClassName = 'lb-composer-editor'
@@ -146,12 +136,6 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
       })
     }
   }, [])
-
-  const theme = useEditorState(
-    Substores.userState,
-    (store) => getCurrentTheme(store.userState),
-    'CommentThread theme',
-  )
 
   const onCreateThread = React.useCallback(
     ({ body }: ComposerSubmitComment, event: React.FormEvent<HTMLFormElement>) => {
@@ -358,7 +342,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
               </Tooltip>,
             )}
             <Tooltip title='Resolve' placement='top'>
-              <Button onClick={onClickResolve}>
+              <Button onClick={onClickResolve} data-testid='resolve-thread-button'>
                 <Icn
                   category='semantic'
                   type={thread?.metadata.resolved ? 'resolved' : 'resolve'}
@@ -389,7 +373,6 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
                 return (
                   <CommentWrapper
                     key={c.id}
-                    data-theme={theme}
                     user={user}
                     comment={c}
                     onCommentDelete={onCommentDelete}
@@ -407,7 +390,6 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
           </div>
           <Composer
             ref={composerRef}
-            data-theme={theme}
             autoFocus
             threadId={thread.id}
             onComposerSubmit={onSubmitComment}
@@ -430,12 +412,6 @@ type NewCommentPopupProps = {
 
 const NewCommentPopup = React.memo((props: NewCommentPopupProps) => {
   const dispatch = useDispatch()
-
-  const theme = useEditorState(
-    Substores.userState,
-    (store) => getCurrentTheme(store.userState),
-    'NewCommentPopup theme',
-  )
 
   const onNewCommentComposerKeyDown = React.useCallback(
     (e: React.KeyboardEvent) => switchToBasicCommentModeOnEscape(e, dispatch),
@@ -526,7 +502,6 @@ const NewCommentPopup = React.memo((props: NewCommentPopupProps) => {
       </div>
       <motion.div animate={newCommentComposerAnimation}>
         <Composer
-          data-theme={theme}
           autoFocus
           onComposerSubmit={props.onComposerSubmit}
           style={ComposerStyle}
@@ -566,6 +541,11 @@ const HeaderComment = React.memo(
   ({ comment, enabled }: { comment: CommentData; enabled: boolean }) => {
     const collabs = useStorage((storage) => storage.collaborators)
     const user = getCollaboratorById(collabs, comment.userId)
+
+    if (!enabled) {
+      return null
+    }
+
     return (
       <div
         style={{
@@ -573,16 +553,18 @@ const HeaderComment = React.memo(
           top: 0,
           left: 0,
           right: 0,
-          backgroundColor: 'white',
           zIndex: 1,
           boxShadow: UtopiaStyles.shadowStyles.highest.boxShadow,
-          opacity: enabled ? 1 : 0,
           transition: 'all 100ms linear',
           minHeight: 67,
           transform: 'scale(1.01)',
         }}
       >
-        <CommentWrapper user={user} comment={comment} />
+        <CommentWrapper
+          user={user}
+          comment={comment}
+          style={{ background: colorTheme.bg1.value, color: colorTheme.fg1.value }}
+        />
       </div>
     )
   },

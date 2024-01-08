@@ -131,7 +131,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'START_POST_ACTION_SESSION':
     case 'TRUNCATE_HISTORY':
     case 'UPDATE_PROJECT_SERVER_STATE':
-    case 'SET_SHOW_RESOLVED_THREADS':
+    case 'SET_COMMENT_FILTER_MODE':
       return true
 
     case 'TRUE_UP_ELEMENTS':

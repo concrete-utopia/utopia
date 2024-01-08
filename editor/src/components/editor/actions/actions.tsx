@@ -318,8 +318,8 @@ import type {
   UpdateExportsDetailFromCollaborationUpdate,
   UpdateImportsFromCollaborationUpdate,
   UpdateCodeFromCollaborationUpdate,
-  SetShowResolvedThreads,
   UpdateNodeModulesContentsAndSetPackageStatus,
+  SetCommentFilterMode,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -921,7 +921,7 @@ export function restoreEditorState(
     internalClipboard: currentEditor.internalClipboard,
     filesModifiedByAnotherUser: currentEditor.filesModifiedByAnotherUser,
     activeFrames: currentEditor.activeFrames,
-    showResolvedThreads: currentEditor.showResolvedThreads,
+    commentFilterMode: currentEditor.commentFilterMode,
   }
 }
 
@@ -2228,7 +2228,7 @@ export const UPDATE_FNS = {
         const updatedImports = mergeImports(
           underlyingFilePath,
           success.imports,
-          mergeImports(underlyingFilePath, action.importsToAdd, withInsertedElement.importsToAdd),
+          action.importsToAdd,
         )
         return {
           ...success,
@@ -4972,11 +4972,7 @@ export const UPDATE_FNS = {
           const updatedImports = mergeImports(
             underlyingFilePath,
             success.imports,
-            mergeImports(
-              underlyingFilePath,
-              withInsertedElement.importsToAdd,
-              action.toInsert.importsToAdd,
-            ),
+            action.toInsert.importsToAdd,
           )
           return {
             ...success,
@@ -5533,8 +5529,8 @@ export const UPDATE_FNS = {
     const updateAction = updateFile(action.fullPath, updatedFile, true)
     return UPDATE_FNS.UPDATE_FILE(updateAction, editor, dispatch, builtInDependencies)
   },
-  SET_SHOW_RESOLVED_THREADS: (action: SetShowResolvedThreads, editor: EditorModel): EditorModel => {
-    return { ...editor, showResolvedThreads: action.showResolvedThreads }
+  SET_SHOW_RESOLVED_THREADS: (action: SetCommentFilterMode, editor: EditorModel): EditorModel => {
+    return { ...editor, commentFilterMode: action.commentFilterMode }
   },
 }
 

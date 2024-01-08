@@ -453,7 +453,7 @@ export function handleKeyDown(
         return []
       },
       [COMMENT_SHORTCUT]: () => {
-        if (isFeatureEnabled('Commenting')) {
+        if (isFeatureEnabled('Multiplayer')) {
           return [
             EditorActions.switchEditorMode(EditorModes.commentMode(null, 'not-dragging')),
             EditorActions.setRightMenuTab(RightMenuTab.Comments),

@@ -27,6 +27,7 @@ import { getIdOfScene } from '../../components/canvas/controls/comment-mode/comm
 import type { ElementPath } from '../shared/project-file-types'
 import type { ElementInstanceMetadata } from '../shared/element-template'
 import * as EP from '../shared/element-path'
+import { getCurrentTheme } from '../../components/editor/store/editor-state'
 
 export function useCanvasCommentThreadAndLocation(comment: CommentId): {
   location: CanvasPoint | null
@@ -233,17 +234,16 @@ export function useResolveThread() {
 }
 
 export function useActiveThreads() {
-  const { threads: unresolvedThreads } = useUnresolvedThreads()
-  const { threads: resolvedThreads } = useResolvedThreads()
+  const { threads } = useThreads()
   const showResolved = useEditorState(
     Substores.restOfEditor,
-    (store) => store.editor.showResolvedThreads,
+    (store) => store.editor.commentFilterMode === 'all-including-resolved',
     'useActiveThreads showResolved',
   )
   if (!showResolved) {
-    return unresolvedThreads
+    return threads.filter((t) => !t.metadata.resolved)
   }
-  return [...unresolvedThreads, ...resolvedThreads]
+  return threads
 }
 
 export function useResolvedThreads() {
@@ -264,6 +264,27 @@ export function useUnresolvedThreads() {
       },
     },
   })
+}
+
+export function useReadThreads() {
+  const threads = useThreads()
+  const self = useSelf()
+  const threadReadStatuses = useStorage((store) => store.userReadStatusesByThread)
+
+  const filteredThreads = threads.threads.filter((thread) => {
+    if (thread == null) {
+      return false
+    }
+    if (threadReadStatuses[thread.id] == null) {
+      return false
+    }
+    return threadReadStatuses[thread.id][self.id] === true
+  })
+
+  return {
+    ...threads,
+    threads: filteredThreads,
+  }
 }
 
 export function useSetThreadReadStatusOnMount(thread: ThreadData<ThreadMetadata> | null) {
@@ -340,4 +361,15 @@ export function useDeleteThreadReadStatus() {
       statusesForThread.delete(threadId)
     }
   }, [])
+}
+
+export function useDataThemeAttributeOnBody() {
+  const theme = useEditorState(
+    Substores.userState,
+    (store) => getCurrentTheme(store.userState),
+    'useDataThemeAttributeOnBody theme',
+  )
+  React.useEffect(() => {
+    document.body.setAttribute('data-theme', theme)
+  }, [theme])
 }

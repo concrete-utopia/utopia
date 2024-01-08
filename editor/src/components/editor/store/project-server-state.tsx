@@ -107,6 +107,20 @@ export async function getProjectServerState(
   }
 }
 
+export function updateProjectServerStateInStore(
+  projectId: string | null,
+  forkedFromProjectId: string | null,
+  dispatch: EditorDispatch,
+) {
+  void getProjectServerState(projectId, forkedFromProjectId)
+    .then((serverState) => {
+      dispatch([updateProjectServerState(serverState)], 'everyone')
+    })
+    .catch((error) => {
+      console.error('Error while updating server state.', error)
+    })
+}
+
 export interface ProjectServerStateUpdaterProps {
   projectId: string | null
   forkedFromProjectId: string | null
@@ -119,23 +133,17 @@ function restartServerStateWatcher(
   forkedFromProjectId: string | null,
   dispatch: EditorDispatch,
 ): void {
-  function updateServerState(): void {
-    void getProjectServerState(projectId, forkedFromProjectId)
-      .then((serverState) => {
-        dispatch([updateProjectServerState(serverState)], 'everyone')
-      })
-      .catch((error) => {
-        console.error('Error while updating server state.', error)
-      })
-  }
   if (isFeatureEnabled('Baton Passing For Control')) {
     if (serverStateWatcherInstance != null) {
       window.clearInterval(serverStateWatcherInstance)
     }
-    updateServerState()
-    serverStateWatcherInstance = window.setInterval(updateServerState, 10 * 1000)
+    updateProjectServerStateInStore(projectId, forkedFromProjectId, dispatch)
+    serverStateWatcherInstance = window.setInterval(
+      () => updateProjectServerStateInStore(projectId, forkedFromProjectId, dispatch),
+      10 * 1000,
+    )
   } else {
-    updateServerState()
+    updateProjectServerStateInStore(projectId, forkedFromProjectId, dispatch)
   }
 }
 

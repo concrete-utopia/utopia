@@ -22,6 +22,7 @@ import {
   windowPoint,
 } from '../../../core/shared/math-utils'
 import {
+  getFirstComment,
   multiplayerColorFromIndex,
   multiplayerInitialsFromName,
   normalizeMultiplayerName,
@@ -38,7 +39,7 @@ import { canvasPointToWindowPoint } from '../dom-lookup'
 import { useRemixNavigationContext } from '../remix/utopia-remix-root-component'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import { setRightMenuTab } from '../../editor/actions/action-creators'
-import { RightMenuTab, getCurrentTheme } from '../../editor/store/editor-state'
+import { RightMenuTab } from '../../editor/store/editor-state'
 import { when } from '../../../utils/react-conditionals'
 import { CommentRepliesCounter } from './comment-replies-counter'
 
@@ -166,7 +167,6 @@ const CommentIndicatorsInner = React.memo(() => {
       {temporaryIndicatorData != null ? (
         <CommentIndicatorUI
           position={temporaryIndicatorData.position}
-          opacity={1}
           resolved={false}
           bgColor={temporaryIndicatorData.bgColor}
           fgColor={temporaryIndicatorData.fgColor}
@@ -182,7 +182,6 @@ CommentIndicatorsInner.displayName = 'CommentIndicatorInner'
 
 interface CommentIndicatorUIProps {
   position: WindowPoint
-  opacity: number
   resolved: boolean
   bgColor: string
   fgColor: string
@@ -193,25 +192,13 @@ interface CommentIndicatorUIProps {
 }
 
 export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) => {
-  const {
-    position,
-    bgColor,
-    fgColor,
-    avatarUrl,
-    avatarInitials,
-    opacity,
-    resolved,
-    isActive,
-    read,
-  } = props
+  const { position, bgColor, fgColor, avatarUrl, avatarInitials, resolved, isActive, read } = props
 
   function getIndicatorStyle() {
     const base: Interpolation<Theme> = {
       position: 'fixed',
       top: position.y + 3,
       left: position.x - 3,
-      opacity: opacity,
-      filter: resolved ? 'grayscale(1)' : undefined,
       width: IndicatorSize,
       height: IndicatorSize,
       background: read ? colorTheme.bg1.value : colorTheme.primary.value,
@@ -220,6 +207,7 @@ export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) =>
       alignItems: 'center',
       justifyContent: 'center',
       boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
+      opacity: resolved ? 0.6 : 'undefined',
     }
 
     const transform: Interpolation<Theme> = {
@@ -261,7 +249,7 @@ export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) =>
           justifyContent: 'center',
         }}
       >
-        <AvatarPicture url={avatarUrl} initials={avatarInitials} />
+        <AvatarPicture url={avatarUrl} initials={avatarInitials} resolved={resolved} />
       </div>
     </div>
   )
@@ -335,12 +323,11 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
   const draggingCallback = React.useCallback((isDragging: boolean) => setDragging(isDragging), [])
 
   return (
-    <div onMouseOver={onMouseOver} onMouseOut={onMouseOut}>
+    <div onMouseOver={onMouseOver} onMouseOut={onMouseOut} data-testid='comment-indicator'>
       {when(
         (isActive || !hovered) && !dragging,
         <CommentIndicatorUI
           position={position}
-          opacity={isOnAnotherRoute || thread.metadata.resolved ? 0 : 1}
           resolved={thread.metadata.resolved}
           bgColor={color.background}
           fgColor={color.foreground}
@@ -376,11 +363,6 @@ const HoveredCommentIndicator = React.memo((props: HoveredCommentIndicatorProps)
   const { thread, hidden, cancelHover, draggingCallback } = props
 
   const dispatch = useDispatch()
-  const theme = useEditorState(
-    Substores.userState,
-    (store) => getCurrentTheme(store.userState),
-    'HoveredCommentIndicator theme',
-  )
 
   const { location, scene: commentScene } = useCanvasLocationOfThread(thread)
 
@@ -436,12 +418,16 @@ const HoveredCommentIndicator = React.memo((props: HoveredCommentIndicatorProps)
     cancelHover,
   ])
 
+  const canvasDiv = document.getElementById('canvas-root')
+
+  const canvasHeight = canvasDiv?.clientHeight ?? 0
+
   const collabs = useStorage((storage) => storage.collaborators)
   if (hidden && dragPosition == null) {
     return null
   }
 
-  const comment = thread.comments[0]
+  const comment = getFirstComment(thread)
   if (comment == null) {
     return null
   }
@@ -459,10 +445,12 @@ const HoveredCommentIndicator = React.memo((props: HoveredCommentIndicatorProps)
         width: 250,
         boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
         background: colorTheme.bg1.value,
+        zIndex: 1,
         position: 'fixed',
+        bottom: canvasHeight - IndicatorSize - position.y,
         // temporarily moving the hovered comment indicator to align with the not hovered version
-        top: position.y - 40.5,
         left: position.x - 3,
+        overflow: 'hidden',
       }}
       onMouseDown={onMouseDown}
       onClick={onClick}
@@ -470,14 +458,13 @@ const HoveredCommentIndicator = React.memo((props: HoveredCommentIndicatorProps)
       <CommentWrapper
         style={{
           overflow: 'auto',
+          background: 'transparent',
         }}
-        data-theme={theme}
         user={user}
         comment={comment}
         showActions={false}
       />
       <CommentRepliesCounter thread={thread} />
-      <div style={{ height: 8 }} />
     </div>
   )
 })

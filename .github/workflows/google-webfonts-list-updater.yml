@@ -5,6 +5,7 @@ on:
 jobs:
   google-web-fonts-updater:
     name: Google Web Fonts Updater
+    timeout-minutes: 5
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout code

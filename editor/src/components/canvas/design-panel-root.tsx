@@ -58,7 +58,8 @@ const DesignPanelRootInner = React.memo(() => {
   )
 
   React.useEffect(() => {
-    if (loginStateType === 'LOGGED_IN' && roomStatus === 'disconnected') {
+    const roomConsideredDisconnected = roomStatus === 'disconnected' || roomStatus === 'initial'
+    if (loginStateType === 'LOGGED_IN' && roomConsideredDisconnected) {
       room.reconnect()
     }
   }, [loginStateType, room, roomStatus])
@@ -211,7 +212,7 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
           </>,
         )}
         {when(
-          isFeatureEnabled('Commenting'),
+          isFeatureEnabled('Multiplayer'),
           <MenuTab
             label={'Comments'}
             selected={selectedTab === RightMenuTab.Comments}

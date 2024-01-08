@@ -73,11 +73,7 @@ export const runAddElements: CommandFunction<AddElements> = (
         mergeImports(
           underlyingFilePathNewParent,
           parentSuccess.imports,
-          mergeImports(
-            underlyingFilePathNewParent,
-            insertionResult.importsToAdd,
-            command.importsToAdd ?? {},
-          ),
+          command.importsToAdd ?? {},
         ),
         underlyingFilePathNewParent,
       )

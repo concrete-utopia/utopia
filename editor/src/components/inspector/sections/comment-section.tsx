@@ -4,60 +4,63 @@ import { jsx } from '@emotion/react'
 import '../../../../resources/editor/css/liveblocks/react-comments/styles.css'
 import '../../../../resources/editor/css/liveblocks/react-comments/dark/attributes.css'
 import React from 'react'
-import {
-  Button,
-  FlexColumn,
-  FlexRow,
-  Icn,
-  InspectorSubsectionHeader,
-  Tooltip,
-  useColorTheme,
-} from '../../../uuiui'
+import { Button, FlexColumn, FlexRow, Icn, PopupList, Tooltip, useColorTheme } from '../../../uuiui'
 import { stopPropagation } from '../common/inspector-utils'
-import { useStorage, type ThreadMetadata } from '../../../../liveblocks.config'
+import { useStorage, type ThreadMetadata, useThreads } from '../../../../liveblocks.config'
 import type { ThreadData } from '@liveblocks/client'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { canvasRectangle, rectangleContainsRectangle } from '../../../core/shared/math-utils'
 import {
   scrollToPosition,
-  setShowResolvedThreads,
+  setCommentFilterMode,
   switchEditorMode,
 } from '../../editor/actions/action-creators'
 import { EditorModes, isCommentMode, isExistingComment } from '../../editor/editor-modes'
 import { CommentWrapper, MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { useRemixNavigationContext } from '../../canvas/remix/utopia-remix-root-component'
 import {
-  useUnresolvedThreads,
   useResolveThread,
-  useResolvedThreads,
   useCanvasLocationOfThread,
   getCollaboratorById,
   useMyThreadReadStatus,
+  useReadThreads,
 } from '../../../core/commenting/comment-hooks'
 import { Substores, useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
 import { when } from '../../../utils/react-conditionals'
-import { openCommentThreadActions } from '../../../core/shared/multiplayer'
+import {
+  getFirstComment,
+  openCommentThreadActions,
+  sortThreadsByDescendingUpdateTimeInPlace,
+} from '../../../core/shared/multiplayer'
 import { getRemixLocationLabel } from '../../canvas/remix/remix-utils'
 import type { RestOfEditorState } from '../../editor/store/store-hook-substore-types'
-import { getCurrentTheme } from '../../editor/store/editor-state'
 import type { EditorAction } from '../../editor/action-types'
 import { canvasPointToWindowPoint } from '../../canvas/dom-lookup'
 import { CommentRepliesCounter } from '../../canvas/controls/comment-replies-counter'
+import type { SelectOption } from '../controls/select-control'
+import { assertNever } from '../../../core/shared/utils'
+import { pluck } from '../../../core/shared/array-utils'
+
+export type CommentFilterMode = 'all' | 'all-including-resolved' | 'unread-only'
+
+const filterOptions = [
+  {
+    label: 'All',
+    value: 'all',
+  },
+  {
+    label: 'All including resolved',
+    value: 'all-including-resolved',
+  },
+  {
+    label: 'Unread only',
+    value: 'unread-only',
+  },
+]
 
 export const CommentSection = React.memo(() => {
   return (
     <div onKeyDown={stopPropagation} onKeyUp={stopPropagation}>
-      <InspectorSubsectionHeader>
-        <FlexRow
-          style={{
-            flexGrow: 1,
-            gap: 8,
-            height: 42,
-          }}
-        >
-          <span>Comments</span>
-        </FlexRow>
-      </InspectorSubsectionHeader>
       <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
         <ThreadPreviews />
       </MultiplayerWrapper>
@@ -70,48 +73,140 @@ const ThreadPreviews = React.memo(() => {
   const dispatch = useDispatch()
   const colorTheme = useColorTheme()
 
-  const { threads: activeThreads } = useUnresolvedThreads()
-  const { threads: resolvedThreads } = useResolvedThreads()
+  const [filtersOpen, setOpen] = React.useState(false)
+  const toggleOpen = React.useCallback(() => {
+    setOpen((prevOpen) => !prevOpen)
+  }, [setOpen])
 
-  const showResolved = useEditorState(
+  const { threads } = useThreads()
+  const { threads: readThreads } = useReadThreads()
+
+  sortThreadsByDescendingUpdateTimeInPlace(threads)
+
+  const commentFilterMode = useEditorState(
     Substores.restOfEditor,
-    (store) => store.editor.showResolvedThreads,
-    'ThreadPreviews showResolvedThreads',
+    (store) => store.editor.commentFilterMode,
+    'ThreadPreviews commentFilterMode',
   )
 
-  const toggleShowResolved = React.useCallback(() => {
-    dispatch([
-      setShowResolvedThreads(!showResolved),
-      switchEditorMode(EditorModes.selectMode(null, false, 'none')),
-    ])
-  }, [showResolved, dispatch])
+  const filter = React.useMemo(
+    () =>
+      filterOptions.find((option) => option.value === commentFilterMode) ?? {
+        label: 'All',
+        value: 'all',
+      },
+    [commentFilterMode],
+  )
+
+  const sortedThreads = React.useMemo(() => {
+    switch (commentFilterMode) {
+      case 'all':
+        return threads.filter((t) => !t.metadata.resolved)
+      case 'all-including-resolved':
+        return threads
+      case 'unread-only':
+        const readThreadIds = pluck(readThreads, 'id')
+        return threads.filter((t) => !t.metadata.resolved && !readThreadIds.includes(t.id))
+      default:
+        assertNever(commentFilterMode)
+    }
+  }, [threads, readThreads, commentFilterMode])
+
+  const handleSubmitValueFilter = React.useCallback(
+    (option: SelectOption) => {
+      dispatch([setCommentFilterMode(option.value)])
+    },
+    [dispatch],
+  )
 
   return (
-    <FlexColumn style={{ gap: 5 }}>
-      {activeThreads.map((thread) => (
-        <ThreadPreview key={thread.id} thread={thread} />
-      ))}
+    <FlexColumn>
+      <FlexRow
+        style={{
+          flexGrow: 1,
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          fontWeight: 600,
+          margin: 8,
+        }}
+      >
+        <span>Comments</span>
+        <Tooltip title='Sort/Filter' placement='bottom'>
+          <div
+            css={{
+              width: 20,
+              height: 20,
+              borderRadius: 3,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              '&:hover': {
+                backgroundColor: colorTheme.bg3.value,
+              },
+            }}
+          >
+            <div
+              css={{
+                height: 14,
+                width: 14,
+                borderRadius: 14,
+                border: `1px solid ${colorTheme.fg1.value}`,
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: 1,
+              }}
+              onClick={toggleOpen}
+            >
+              <div
+                style={{ width: 8, height: 1, background: colorTheme.fg1.value, borderRadius: 2 }}
+              />
+              <div
+                style={{ width: 6, height: 1, background: colorTheme.fg1.value, borderRadius: 2 }}
+              />
+              <div
+                style={{ width: 4, height: 1, background: colorTheme.fg1.value, borderRadius: 2 }}
+              />
+            </div>
+          </div>
+        </Tooltip>
+      </FlexRow>
       {when(
-        activeThreads.length === 0,
-        <div style={{ padding: '0px 8px', color: colorTheme.fg6.value }}>
-          No active comment threads.
+        sortedThreads.length > 0,
+        <FlexColumn
+          style={{
+            gap: 6,
+            overflow: 'hidden',
+            padding: filtersOpen ? 8 : 0,
+            height: filtersOpen ? 'auto' : 0,
+          }}
+        >
+          <PopupList
+            value={filter}
+            options={filterOptions}
+            onSubmitValue={handleSubmitValueFilter}
+            style={{ width: 150 }}
+          />
+        </FlexColumn>,
+      )}
+      {when(
+        sortedThreads.length === 0,
+        <div
+          style={{
+            padding: 8,
+            color: colorTheme.fg6.value,
+            whiteSpace: 'normal',
+            overflowWrap: 'break-word',
+          }}
+        >
+          Use the commenting tool to leave comments on the canvas. They will also show up here.
         </div>,
       )}
-      {when(
-        resolvedThreads.length > 0,
-        <Button
-          highlight
-          spotlight
-          style={{ padding: 10, margin: '10px' }}
-          onClick={toggleShowResolved}
-        >
-          {showResolved ? 'Hide' : 'Show'} resolved threads
-        </Button>,
-      )}
-      {when(
-        showResolved,
-        resolvedThreads.map((thread) => <ThreadPreview key={thread.id} thread={thread} />),
-      )}
+      {sortedThreads.map((thread) => (
+        <ThreadPreview key={thread.id} thread={thread} />
+      ))}
     </FlexColumn>
   )
 })
@@ -209,13 +304,8 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
 
   const isSelected = useIsSelectedAndScrollToThread(ref, thread.id)
 
-  const theme = useEditorState(
-    Substores.userState,
-    (store) => getCurrentTheme(store.userState),
-    'ThreadPreview theme',
-  )
+  const comment = getFirstComment(thread)
 
-  const comment = thread.comments[0]
   if (comment == null) {
     return null
   }
@@ -269,7 +359,6 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
         }}
       >
         <CommentWrapper
-          data-theme={theme}
           user={user}
           comment={comment}
           showActions={false}

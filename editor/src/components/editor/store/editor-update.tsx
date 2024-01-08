@@ -457,7 +457,7 @@ export function runSimpleLocalEditorAction(
         dispatch,
         builtInDependencies,
       )
-    case 'SET_SHOW_RESOLVED_THREADS':
+    case 'SET_COMMENT_FILTER_MODE':
       return UPDATE_FNS.SET_SHOW_RESOLVED_THREADS(action, state)
     default:
       return state
