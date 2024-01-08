@@ -15,7 +15,7 @@ const imageCache: {
 export async function loadAvatarImage(url: string, onLoaded: (data: ArrayBuffer) => void) {
   const cacheEntry = imageCache[url] ?? {
     status: 'not-loaded',
-    retry: 0,
+    retry: 1,
   }
 
   switch (cacheEntry.status) {
