@@ -6,7 +6,7 @@ const TIMEOUT = 120000
 const BRANCH_NAME = process.env.BRANCH_NAME ? `&branch_name=${process.env.BRANCH_NAME}` : ''
 
 describe('Comments test', () => {
-  xit(
+  it(
     'can place a comment',
     async () => {
       const { page, browser } = await setupBrowser(
