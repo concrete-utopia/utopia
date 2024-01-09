@@ -228,7 +228,7 @@ export function getImportsFor(
       return { [resolvedImportPath]: importDetails(importedName, [], null) }
     }
     for (const fromWithin of details.importedFromWithin) {
-      if (fromWithin.alias === importedName) {
+      if (importedAlias == null && fromWithin.alias === importedName) {
         return {
           [resolvedImportPath]: importDetails(
             null,
