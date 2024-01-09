@@ -411,7 +411,7 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
         )}
         <CommentRepliesCounter thread={thread} />
       </div>
-      <Tooltip title='Resolve' placement='top'>
+      <Tooltip title={thread.metadata.resolved ? 'Unresolve' : 'Mark Resolved'} placement='top'>
         <Button
           css={{
             position: 'absolute',
