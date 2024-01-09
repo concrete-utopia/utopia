@@ -49,7 +49,7 @@ const filterOptions = [
     value: 'all',
   },
   {
-    label: 'All Including Resolved',
+    label: 'All (and Resolved)',
     value: 'all-including-resolved',
   },
   {
@@ -172,6 +172,8 @@ const ThreadPreviews = React.memo(() => {
                   background:
                     commentFilterMode !== 'all' ? colorTheme.bg1.value : colorTheme.fg1.value,
                   borderRadius: 2,
+                  flexGrow: 0,
+                  flexShrink: 0,
                 }}
               />
               <div
@@ -181,6 +183,8 @@ const ThreadPreviews = React.memo(() => {
                   background:
                     commentFilterMode !== 'all' ? colorTheme.bg1.value : colorTheme.fg1.value,
                   borderRadius: 2,
+                  flexGrow: 0,
+                  flexShrink: 0,
                 }}
               />
               <div
@@ -190,6 +194,8 @@ const ThreadPreviews = React.memo(() => {
                   background:
                     commentFilterMode !== 'all' ? colorTheme.bg1.value : colorTheme.fg1.value,
                   borderRadius: 2,
+                  flexGrow: 0,
+                  flexShrink: 0,
                 }}
               />
             </div>
@@ -205,12 +211,13 @@ const ThreadPreviews = React.memo(() => {
             padding: 8,
           }}
         >
-          Filter By
+          Filter By:
           <PopupList
             value={filter}
             options={filterOptions}
             onSubmitValue={handleSubmitValueFilter}
-            style={{ width: 150 }}
+            style={{ marginLeft: 5 }}
+            containerMode='noBorder'
           />
         </FlexRow>,
       )}
