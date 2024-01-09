@@ -1,4 +1,4 @@
-import type { Page } from 'puppeteer'
+import type { ElementHandle, Page } from 'puppeteer'
 import { setupBrowser, wait } from '../utils'
 
 const TIMEOUT = 120000
@@ -21,11 +21,7 @@ async function expectNSelectors(page: Page, selector: string, n: number) {
   expect(elementsMatchingSelector).toHaveLength(n)
 }
 
-async function waitForCoeditPropagation() {
-  await wait(2000)
-}
-
-describe('Comments test', () => {
+describe('Collaboration test', () => {
   it(
     'can place a comment',
     async () => {
@@ -42,23 +38,29 @@ describe('Comments test', () => {
         ])
 
       await Promise.all([signIn(page1), signIn(page2)])
+      await Promise.all([
+        clickCanvasContainer(page1, { x: 500, y: 500 }),
+        clickCanvasContainer(page2, { x: 500, y: 500 }),
+      ])
 
-      await expectNSelectors(page2, 'div[data-testid="scene-label"]', 2)
+      const insertTab = (await page1.$x(
+        "//div[contains(text(), 'Insert')]",
+      )) as ElementHandle<Element>[]
+      await insertTab!.at(0)!.click()
+
+      const sampleTextOptions = (await page1.$x(
+        "//span[contains(text(), 'Sample text')]",
+      )) as ElementHandle<Element>[]
+      await sampleTextOptions!.at(0)!.click()
+      await clickCanvasContainer(page1, { x: 500, y: 500 })
 
       await clickCanvasContainer(page1, { x: 500, y: 500 })
-      await clickCanvasContainer(page2, { x: 500, y: 500 })
 
-      const sceneLabel = await page1.waitForSelector('div[data-testid="scene-label"]')
-      sceneLabel!.click({ offset: { x: 5, y: 5 } })
+      const sampleText = await page2.waitForFunction(
+        'document.querySelector("body").innerText.includes("Sample text")',
+      )
 
-      await wait(5000)
-
-      await page1.keyboard.press('Backspace')
-      await clickCanvasContainer(page2, { x: 500, y: 500 })
-
-      await waitForCoeditPropagation()
-
-      await expectNSelectors(page2, 'div[data-testid="scene-label"]', 1)
+      expect(sampleText).not.toBeNull()
 
       await page1.keyboard.down('MetaLeft')
       await page1.keyboard.press('z', {})
