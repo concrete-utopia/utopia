@@ -261,17 +261,25 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
         width: canvasArea.width - visibleAreaTolerance * 2,
         height: canvasArea.height,
       })
-      const rect = canvasRectangle({ x: location.x, y: location.y, width: 25, height: 25 })
+
       const windowLocation = canvasPointToWindowPoint(location, canvasScale, canvasOffset)
+
+      // adds a padding of 250px around `location`
       const windowRect = canvasRectangle({
-        x: windowLocation.x,
-        y: windowLocation.y,
-        width: rect.width,
-        height: rect.height,
+        x: windowLocation.x - 250,
+        y: windowLocation.y - 250,
+        width: 500,
+        height: 500,
       })
       const isVisible = rectangleContainsRectangle(visibleArea, windowRect)
       if (!isVisible) {
-        actions.push(scrollToPosition(rect, 'to-center'))
+        const scrollToRect = canvasRectangle({
+          x: location.x,
+          y: location.y,
+          width: 25,
+          height: 25,
+        })
+        actions.push(scrollToPosition(scrollToRect, 'to-center'))
       }
     }
     dispatch(actions)
