@@ -810,7 +810,6 @@ function printRawComment(comment: Comment): string {
 }
 
 function printArbitraryJSBlock(block: ArbitraryJSBlock): TS.Node {
-  // FIXME Should this be using `originalJavascript`?
   return TS.createUnparsedSourceFile(block.javascript)
 }
 
