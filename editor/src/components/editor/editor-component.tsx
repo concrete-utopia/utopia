@@ -460,6 +460,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
           </SimpleFlexRow>
         </SimpleFlexColumn>
         <ModalComponent />
+        <GithubRepositoryCloneFlow />
         <LockedOverlay />
       </SimpleFlexRow>
       <EditorCommon
@@ -596,23 +597,7 @@ function handleEventNoop(e: React.MouseEvent | React.KeyboardEvent) {
   e.preventDefault()
 }
 
-const LockedOverlay = React.memo(() => {
-  const colorTheme = useColorTheme()
-
-  const githubOperations = useEditorState(
-    Substores.github,
-    (store) => store.editor.githubOperations.filter((op) => githubOperationLocksEditor(op)),
-    'EditorComponentInner githubOperations',
-  )
-
-  const editorLocked = React.useMemo(() => githubOperations.length > 0, [githubOperations])
-
-  const refreshingDependencies = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.refreshingDependencies,
-    'EditorComponentInner refreshingDependencies',
-  )
-
+const FullScreenOverlay = (props: React.PropsWithChildren<{ style?: React.CSSProperties }>) => {
   const anim = keyframes`
     from {
       opacity: 0;
@@ -621,24 +606,6 @@ const LockedOverlay = React.memo(() => {
       opacity: 0.2;
     }
   `
-
-  const locked = React.useMemo(() => {
-    return editorLocked || refreshingDependencies
-  }, [editorLocked, refreshingDependencies])
-
-  const dialogContent = React.useMemo((): string | null => {
-    if (refreshingDependencies) {
-      return 'Refreshing dependencies…'
-    }
-    if (githubOperations.length > 0) {
-      return `${githubOperationPrettyName(githubOperations[0])}…`
-    }
-    return null
-  }, [refreshingDependencies, githubOperations])
-
-  if (!locked) {
-    return null
-  }
 
   return (
     <div
@@ -661,11 +628,54 @@ const LockedOverlay = React.memo(() => {
         alignItems: 'center',
         justifyContent: 'center',
         cursor: 'wait',
+        ...props.style,
       }}
       css={css`
         animation: ${anim} 0.3s ease-in-out;
       `}
     >
+      {props.children}
+    </div>
+  )
+}
+
+const LockedOverlay = React.memo(() => {
+  const colorTheme = useColorTheme()
+
+  const githubOperations = useEditorState(
+    Substores.github,
+    (store) => store.editor.githubOperations.filter((op) => githubOperationLocksEditor(op)),
+    'EditorComponentInner githubOperations',
+  )
+
+  const editorLocked = React.useMemo(() => githubOperations.length > 0, [githubOperations])
+
+  const refreshingDependencies = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.refreshingDependencies,
+    'EditorComponentInner refreshingDependencies',
+  )
+
+  const locked = React.useMemo(() => {
+    return editorLocked || refreshingDependencies
+  }, [editorLocked, refreshingDependencies])
+
+  const dialogContent = React.useMemo((): string | null => {
+    if (refreshingDependencies) {
+      return 'Refreshing dependencies…'
+    }
+    if (githubOperations.length > 0) {
+      return `${githubOperationPrettyName(githubOperations[0])}…`
+    }
+    return null
+  }, [refreshingDependencies, githubOperations])
+
+  if (!locked) {
+    return null
+  }
+
+  return (
+    <FullScreenOverlay>
       {when(
         dialogContent != null,
         <div
@@ -683,6 +693,43 @@ const LockedOverlay = React.memo(() => {
           {dialogContent}
         </div>,
       )}
-    </div>
+    </FullScreenOverlay>
+  )
+})
+
+const GithubRepositoryCloneFlow = React.memo(() => {
+  // const projectName = `${githubRepoObj.owner}-${githubRepoObj.repository}`
+
+  // // Obtain a projectID from the server, and save an empty initial project
+  // this.storedState.persistence.createNew(projectName, totallyEmptyDefaultProject())
+
+  // const loadActionDispatchedByPersistenceMachine =
+  //   await this.awaitLoadActionDispatchedByPersistenceMachine()
+
+  // const createdProjectID = loadActionDispatchedByPersistenceMachine.projectId
+
+  // await GithubOperations.updateProjectWithBranchContent(
+  //   this.storedState.workers,
+  //   this.boundDispatch,
+  //   forceNotNull('Should have a project ID by now.', createdProjectID),
+  //   githubRepoObj,
+  //   githubBranch,
+  //   false,
+  //   [],
+  //   builtInDependencies,
+  //   {}, // Assuming a totally empty project (that is being saved probably parallel to this operation, hopefully not causing any race conditions)
+  // )
+
+  // TODO make sure the EditorState knows we have a github repo connected!!
+
+  return (
+    <FullScreenOverlay
+      style={{
+        backgroundColor: '#000000',
+        cursor: 'auto',
+      }}
+    >
+      <div style={{ color: 'white' }}>hello</div>
+    </FullScreenOverlay>
   )
 })
