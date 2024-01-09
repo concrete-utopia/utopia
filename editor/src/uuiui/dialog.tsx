@@ -33,7 +33,7 @@ export const Dialog = (props: DialogProps) => {
             color: colorTheme.fg1.value,
             overflow: 'hidden',
             borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
-            boxShadow: UtopiaStyles.shadowStyles.high.boxShadow,
+            boxShadow: UtopiaStyles.shadowStyles.highest.boxShadow,
           }}
         >
           <FlexColumn
