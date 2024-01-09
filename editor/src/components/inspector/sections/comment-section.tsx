@@ -198,21 +198,21 @@ const ThreadPreviews = React.memo(() => {
       </FlexRow>
       {when(
         threads.length > 1,
-        <FlexColumn
+        <FlexRow
           style={{
-            gap: 6,
-            overflow: 'hidden',
-            padding: filtersOpen ? 8 : 0,
-            height: filtersOpen ? 'auto' : 0,
+            justifyContent: 'space-between',
+            display: filtersOpen ? 'inherit' : 'none',
+            padding: 8,
           }}
         >
+          Filter By
           <PopupList
             value={filter}
             options={filterOptions}
             onSubmitValue={handleSubmitValueFilter}
             style={{ width: 150 }}
           />
-        </FlexColumn>,
+        </FlexRow>,
       )}
       {when(
         sortedThreads.length === 0,
@@ -224,7 +224,6 @@ const ThreadPreviews = React.memo(() => {
             overflowWrap: 'break-word',
           }}
         >
-          {' '}
           {commentFilterMode == 'unread-only'
             ? 'No Unread Comments.'
             : 'Use the commenting tool to leave comments on the canvas. They will also show up here.'}
