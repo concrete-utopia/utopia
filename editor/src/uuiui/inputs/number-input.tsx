@@ -50,6 +50,7 @@ import {
   InspectorInput,
 } from './base-input'
 import { usePropControlledStateV2 } from '../../components/inspector/common/inspector-utils'
+import { useAllowedToEditProject } from '../../components/editor/store/collaborative-editing'
 
 export type LabelDragDirection = 'horizontal' | 'vertical'
 
@@ -187,6 +188,8 @@ export const NumberInput = React.memo<NumberInputProps>(
   }) => {
     const ref = React.useRef<HTMLInputElement>(null)
     const colorTheme = useColorTheme()
+
+    const allowedToEdit = useAllowedToEditProject()
 
     const controlStyles = React.useMemo((): ControlStyles => {
       return {
@@ -553,6 +556,9 @@ export const NumberInput = React.memo<NumberInputProps>(
 
     const onIncrementMouseDown = React.useCallback(
       (e: React.MouseEvent) => {
+        if (!allowedToEdit) {
+          return
+        }
         if (e.button === 0) {
           e.stopPropagation()
           setIsFauxcused(true)
@@ -564,7 +570,7 @@ export const NumberInput = React.memo<NumberInputProps>(
           }, repeatThreshold)
         }
       },
-      [incrementBy, stepSize, repeatIncrement, onIncrementMouseUp],
+      [incrementBy, stepSize, repeatIncrement, onIncrementMouseUp, allowedToEdit],
     )
 
     const onDecrementMouseUp = React.useCallback(() => {
@@ -596,6 +602,9 @@ export const NumberInput = React.memo<NumberInputProps>(
 
     const onDecrementMouseDown = React.useCallback(
       (e: React.MouseEvent) => {
+        if (!allowedToEdit) {
+          return
+        }
         if (e.button === 0) {
           e.stopPropagation()
           setIsFauxcused(true)
@@ -608,11 +617,14 @@ export const NumberInput = React.memo<NumberInputProps>(
           )
         }
       },
-      [incrementBy, stepSize, repeatIncrement, onDecrementMouseUp],
+      [incrementBy, stepSize, repeatIncrement, onDecrementMouseUp, allowedToEdit],
     )
 
     const onLabelMouseDown = React.useCallback(
       (e: React.MouseEvent<HTMLDivElement>) => {
+        if (!allowedToEdit) {
+          return
+        }
         if (e.button === 0) {
           e.stopPropagation()
           setIsFauxcused(true)
@@ -625,7 +637,7 @@ export const NumberInput = React.memo<NumberInputProps>(
           setGlobalCursor?.(CSSCursor.ResizeEW)
         }
       },
-      [scrubOnMouseMove, scrubOnMouseUp, setGlobalCursor, value],
+      [scrubOnMouseMove, scrubOnMouseUp, setGlobalCursor, value, allowedToEdit],
     )
 
     const placeholder = getControlStylesAwarePlaceholder(controlStyles)
@@ -678,6 +690,7 @@ export const NumberInput = React.memo<NumberInputProps>(
             controlStyles={controlStyles}
             controlStatus={controlStatus}
             testId={testId}
+            disabled={!allowedToEdit}
             focused={isFocused}
             hasLabel={labelInner != null}
             roundCorners={roundCorners}

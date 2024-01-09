@@ -81,6 +81,7 @@ import { strictEvery } from '../../core/shared/array-utils'
 import { SimplifiedLayoutSubsection } from './sections/layout-section/self-layout-subsection/simplified-layout-subsection'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { ConstraintsSection } from './constraints-section'
+import { useAllowedToEditProject } from '../editor/store/collaborative-editing'
 
 export interface ElementPathElement {
   name?: string
@@ -336,6 +337,8 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     'Inspector anyKnownElements',
   )
 
+  const allowedToEdit = useAllowedToEditProject()
+
   function renderInspectorContents() {
     return (
       <React.Fragment>
@@ -378,18 +381,20 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
             )}
             <CodeElementSection paths={selectedViews} />
             <ConditionalSection paths={selectedViews} />
-
             {unless(
               hideAllSections,
               <>
-                <TargetSelectorSection
-                  targets={props.targets}
-                  selectedTargetPath={props.selectedTargetPath}
-                  onSelectTarget={props.onSelectTarget}
-                  onStyleSelectorRename={props.onStyleSelectorRename}
-                  onStyleSelectorDelete={props.onStyleSelectorDelete}
-                  onStyleSelectorInsert={props.onStyleSelectorInsert}
-                />
+                {when(
+                  allowedToEdit,
+                  <TargetSelectorSection
+                    targets={props.targets}
+                    selectedTargetPath={props.selectedTargetPath}
+                    onSelectTarget={props.onSelectTarget}
+                    onStyleSelectorRename={props.onStyleSelectorRename}
+                    onStyleSelectorDelete={props.onStyleSelectorDelete}
+                    onStyleSelectorInsert={props.onStyleSelectorInsert}
+                  />,
+                )}
                 {when(multiselectedContract === 'fragment', <FragmentSection />)}
                 {unless(
                   multiselectedContract === 'fragment',

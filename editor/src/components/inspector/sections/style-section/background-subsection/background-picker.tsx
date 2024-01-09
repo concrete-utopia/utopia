@@ -73,6 +73,7 @@ import { GradientStopsEditor } from './gradient-stop-editor'
 import { getIndexedUpdateCSSBackgroundLayerLinearGradientAngle } from './linear-gradient-layer'
 import { PickerImagePreview } from './picker-image-preview'
 import { setProp_UNSAFE } from '../../../../editor/actions/action-creators'
+import { useAllowedToEditProject } from '../../../../editor/store/collaborative-editing'
 
 const backgroundLayerOptionsByValue: {
   [key in CSSBackgroundLayerType]: CSSBackgroundLayerTypeSelectOption
@@ -545,6 +546,8 @@ export const BackgroundPicker: React.FunctionComponent<
     }
   })()
 
+  const allowedToEdit = useAllowedToEditProject()
+
   return (
     <InspectorModal
       offsetX={props.offsetX - colorPickerWidth}
@@ -631,6 +634,7 @@ export const BackgroundPicker: React.FunctionComponent<
                   offsetY={props.offsetY}
                   id={props.id}
                   testId={props.testId}
+                  disabled={!allowedToEdit}
                 />
               ) : (
                 <ColorPickerInner
@@ -641,6 +645,7 @@ export const BackgroundPicker: React.FunctionComponent<
                   offsetY={props.offsetY}
                   id={props.id}
                   testId={props.testId}
+                  disabled={!allowedToEdit}
                 />
               )
             ) : null}

@@ -66,6 +66,7 @@ import {
 import { useSelectionArea } from './selection-area-hooks'
 import { RemixSceneLabelControl } from './select-mode/remix-scene-label'
 import { NO_OP } from '../../../core/shared/utils'
+import { useAllowedToEditProject } from '../../editor/store/collaborative-editing'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -496,6 +497,8 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       })
   }
 
+  const allowedToEdit = useAllowedToEditProject()
+
   const resizeStatus = getResizeStatus()
 
   return (
@@ -526,42 +529,56 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         {when(
           resizeStatus !== 'disabled',
           <>
-            {inspectorFocusedControls.map((c) => (
-              <RenderControlMemoized key={c.key} control={c.control} propsForControl={c.props} />
-            ))}
-            {inspectorHoveredControls.map((c) => (
-              <RenderControlMemoized key={c.key} control={c.control} propsForControl={c.props} />
-            ))}
-            {when(
-              isSelectMode(editorMode),
-              <RemixSceneLabelControl
-                maybeHighlightOnHover={maybeHighlightOnHover}
-                maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
-              />,
-            )}
-            {when(isSelectMode(editorMode) && !anyStrategyActive, <PinLines />)}
-            {when(isSelectMode(editorMode), <InsertionControls />)}
             {renderHighlightControls()}
-            {renderTextEditableControls()}
             {unless(dragInteractionActive, <LayoutParentControl />)}
-            {when(isSelectMode(editorMode), <AbsoluteChildrenOutline />)}
             <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />
             <ZeroSizedElementControls.control showAllPossibleElements={false} />
+
             {when(
-              isSelectOrInsertMode(editorMode) &&
-                !EP.multiplePathsAllWithTheSameUID(localSelectedViews),
+              allowedToEdit,
               <>
-                {strategyControls.map((c) => (
+                {inspectorFocusedControls.map((c) => (
                   <RenderControlMemoized
                     key={c.key}
-                    control={c.control.control}
+                    control={c.control}
                     propsForControl={c.props}
                   />
                 ))}
+                {inspectorHoveredControls.map((c) => (
+                  <RenderControlMemoized
+                    key={c.key}
+                    control={c.control}
+                    propsForControl={c.props}
+                  />
+                ))}
+                {when(
+                  isSelectMode(editorMode),
+                  <RemixSceneLabelControl
+                    maybeHighlightOnHover={maybeHighlightOnHover}
+                    maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
+                  />,
+                )}
+                {when(isSelectMode(editorMode) && !anyStrategyActive, <PinLines />)}
+                {when(isSelectMode(editorMode), <InsertionControls />)}
+                {renderTextEditableControls()}
+                {when(isSelectMode(editorMode), <AbsoluteChildrenOutline />)}
+                {when(
+                  isSelectOrInsertMode(editorMode) &&
+                    !EP.multiplePathsAllWithTheSameUID(localSelectedViews),
+                  <>
+                    {strategyControls.map((c) => (
+                      <RenderControlMemoized
+                        key={c.key}
+                        control={c.control.control}
+                        propsForControl={c.props}
+                      />
+                    ))}
+                  </>,
+                )}
+                {when(isSelectMode(editorMode), <DistanceGuidelineControl />)}
+                <GuidelineControls />
               </>,
             )}
-            {when(isSelectMode(editorMode), <DistanceGuidelineControl />)}
-            <GuidelineControls />
           </>,
         )}
       </div>

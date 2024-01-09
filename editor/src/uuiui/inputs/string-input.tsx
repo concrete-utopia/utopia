@@ -10,6 +10,7 @@ import { getControlStyles } from '../../components/inspector/common/control-styl
 import { preventDefault, stopPropagation } from '../../components/inspector/common/inspector-utils'
 import { useColorTheme } from '../styles/theme'
 import { InspectorInputEmotionStyle, getControlStylesAwarePlaceholder } from './base-input'
+import { useAllowedToEditProject } from '../../components/editor/store/collaborative-editing'
 
 interface StringInputOptions {
   focusOnMount?: boolean
@@ -50,8 +51,10 @@ export const StringInput = React.memo(
         }
       }, [focusOnMount, ref])
 
+      const allowedToEdit = useAllowedToEditProject()
+
       const controlStyles: ControlStyles = getControlStyles(controlStatus)
-      const disabled = !controlStyles.interactive
+      const disabled = !controlStyles.interactive || !allowedToEdit
 
       const inputPropsKeyDown = inputProps.onKeyDown
 

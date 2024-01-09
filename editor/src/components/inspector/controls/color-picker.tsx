@@ -31,6 +31,7 @@ const checkerboardBackground = UtopiaStyles.backgrounds.checkerboardBackground
 export interface ColorPickerProps extends ColorPickerInnerProps {
   closePopup: () => void
   portalTarget?: HTMLElement
+  disabled: boolean
 }
 
 export const colorPickerWidth = 290
@@ -96,6 +97,7 @@ export interface ColorPickerInnerProps {
   offsetY: number
   id: string
   testId: string
+  disabled: boolean
 }
 
 function toPassedInColorType(
@@ -340,6 +342,9 @@ export class ColorPickerInner extends React.Component<
 
   onMouseDownSV = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation()
+    if (this.props.disabled) {
+      return
+    }
     this.setState({
       isScrubbing: true,
     })
@@ -399,6 +404,9 @@ export class ColorPickerInner extends React.Component<
 
   onHueSliderMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation()
+    if (this.props.disabled) {
+      return
+    }
 
     if (this.HueControlRef.current != null) {
       this.HueOriginLeft = this.HueControlRef.current.getBoundingClientRect().left
@@ -437,6 +445,10 @@ export class ColorPickerInner extends React.Component<
 
   onAlphaSliderMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation()
+    if (this.props.disabled) {
+      return
+    }
+
     if (this.AlphaControlRef.current != null) {
       this.setState({
         isScrubbing: true,
