@@ -48,7 +48,6 @@ import { ActiveRemixSceneAtom, RemixNavigationAtom } from './remix/utopia-remix-
 import { useRemixPresence } from '../../core/shared/multiplayer-hooks'
 import { CanvasOffsetWrapper } from './controls/canvas-offset-wrapper'
 import { when } from '../../utils/react-conditionals'
-import { isFeatureEnabled } from '../../utils/feature-switches'
 import { CommentIndicators } from './controls/comment-indicator'
 import { CommentPopup } from './controls/comment-popup'
 
@@ -247,6 +246,7 @@ const MultiplayerCursor = React.memo(
             style={{
               filter: 'drop-shadow(1px 2px 3px rgb(0 0 0 / 0.3))',
               transform: 'translate(0px, 0px)',
+              zoom: canvasScale > 1 ? 1 / canvasScale : 1,
             }}
           >
             <OtherUserPointer color={color.background} />
@@ -264,6 +264,10 @@ const MultiplayerCursor = React.memo(
               left: 6,
               top: 15,
               zoom: canvasScale > 1 ? 1 / canvasScale : 1,
+              minHeight: 16,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
             {name}
