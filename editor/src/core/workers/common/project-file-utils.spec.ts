@@ -104,7 +104,7 @@ describe('mergeImports', () => {
         '/src/fileA.js': importDetails(null, [importAlias('Card')], null),
         '/src/fileB.js': importDetails(null, [importAlias('Card', 'Card_2')], null),
       },
-      { '/src/fileB.js': importDetails(null, [importAlias('Card')], null) },
+      { '/src/fileB.js': importDetails(null, [importAlias('Card', 'Card_2')], null) },
     )
 
     expect(result.imports).toEqual({
@@ -112,7 +112,7 @@ describe('mergeImports', () => {
       '/src/fileB.js': importDetails(null, [importAlias('Card', 'Card_2')], null),
     })
 
-    expect(result.duplicateNameMapping).toEqual(new Map([['Card', 'Card_2']]))
+    expect(result.duplicateNameMapping).toEqual(new Map())
   })
 
   it('combines the same thing imported smartly, even if the relative path are written differently, with omitted file extension', () => {
