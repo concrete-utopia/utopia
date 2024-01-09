@@ -6,17 +6,23 @@ import {
   walkContentsTreeAsync,
 } from '../../../../components/assets'
 import { notice } from '../../../../components/common/notice'
-import type { EditorDispatch } from '../../../../components/editor/action-types'
+import type {
+  AddToast,
+  EditorDispatch,
+  UpdateGithubOperations,
+} from '../../../../components/editor/action-types'
 import {
   showToast,
   truncateHistory,
   updateBranchContents,
   updateProjectContents,
 } from '../../../../components/editor/actions/action-creators'
-import type {
-  GithubData,
-  GithubOperation,
-  GithubRepo,
+import {
+  persistentModelForProjectContents,
+  type GithubData,
+  type GithubOperation,
+  type GithubRepo,
+  type PersistentModel,
 } from '../../../../components/editor/store/editor-state'
 import type { BuiltInDependencies } from '../../../es-modules/package-manager/built-in-dependencies-list'
 import { refreshDependencies } from '../../dependencies'
@@ -29,7 +35,7 @@ import {
   getBranchContentFromServer,
   githubAPIError,
   githubAPIErrorFromResponse,
-  runGithubOperation,
+  runGithubOperation2,
   saveGithubAsset,
 } from '../helpers'
 import { updateProjectContentsWithParseResults } from '../../parser-projectcontents-utils'
@@ -37,12 +43,12 @@ import type { GithubOperationContext } from './github-operation-context'
 import { createStoryboardFileIfNecessary } from '../../../../components/editor/actions/actions'
 
 export const saveAssetsToProject =
-  (operationContext: GithubOperationContext) =>
+  (operationContext: Pick<GithubOperationContext, 'fetch'>) =>
   async (
     githubRepo: GithubRepo,
     projectID: string,
-    branchContent: BranchContent,
-    dispatch: EditorDispatch,
+    branchContent: Pick<BranchContent, 'content'>, // TODO Fix this type
+    onUpdate: (update: UpdateGithubOperations | AddToast) => void,
     currentProjectContents: ProjectContentTreeRoot,
   ): Promise<void> => {
     await walkContentsTreeAsync(branchContent.content, async (fullPath, projectFile) => {
@@ -66,17 +72,18 @@ export const saveAssetsToProject =
                 forceNotNull('Commit sha should exist.', projectFile.gitBlobSha),
                 projectID,
                 fullPath,
-                dispatch,
+                onUpdate,
                 operationContext,
               )
               break
             case 'ASSET_FILE':
+              // it seems like this is just plain duplicated code from case 'IMAGE_FILE', I should merge the two cases
               await saveGithubAsset(
                 githubRepo,
                 forceNotNull('Commit sha should exist.', projectFile.gitBlobSha),
                 projectID,
                 fullPath,
-                dispatch,
+                onUpdate,
                 operationContext,
               )
               break
@@ -86,6 +93,57 @@ export const saveAssetsToProject =
         }
       }
     })
+  }
+
+// 1. create and refactor loadBranchAndSaveAssets
+// 2. remove the dispatch dependency from loadBranchAndSaveAssets, create callbacks instead for setting GithubOperations and Error toasts
+// 3. make loadBranchAndSaveAssets return Promise<parsedProjectContents>
+// 4. refactor refreshDependencies into a similarly dispatchless function
+// 5. call refreshDependencies from Editor.tsx, get the project contents, and use those to fire storedState.persistence.createNew
+// 6. once the project is loaded and saved, kick off refreshDependencies
+// 7. revisit what UI we show until the project is loaded
+export type LoadFromGithubResult = {
+  parsedProjectContents: ProjectContentTreeRoot
+  branch: BranchContent
+}
+export const cloneProjectFromGithubLoadAssetsAndRefreshDependencies =
+  (operationContext: GithubOperationContext) =>
+  async (
+    workers: UtopiaTsWorkers,
+    onUpdate: (update: UpdateGithubOperations | AddToast) => void,
+    githubRepo: GithubRepo,
+    branchName: string | null,
+    resetBranches: boolean,
+  ): Promise<LoadFromGithubResult> => {
+    const loadBranchResult = await loadBranchFromGithub(
+      branchName,
+      githubRepo,
+      onUpdate,
+      operationContext,
+    )
+
+    if (loadBranchResult == null) {
+      throw new Error('loadBranchResult was null')
+    }
+
+    const parseDownloadedProjectResult = await parseDownloadedProject(
+      branchName,
+      githubRepo,
+      onUpdate,
+      loadBranchResult,
+      resetBranches,
+      workers,
+    )
+
+    if (parseDownloadedProjectResult == null) {
+      throw new Error('parseDownloadedProjectResult was null')
+    }
+
+    // TODO load dependencies using refreshDependencies
+    return {
+      parsedProjectContents: parseDownloadedProjectResult.parsedProjectContents,
+      branch: parseDownloadedProjectResult.branch,
+    }
   }
 
 export const updateProjectWithBranchContent =
@@ -101,124 +159,226 @@ export const updateProjectWithBranchContent =
     builtInDependencies: BuiltInDependencies,
     currentProjectContents: ProjectContentTreeRoot,
   ): Promise<void> => {
-    await runGithubOperation(
+    const parseAndUploadAssetsResult = await getProcessedParsedProjectFromGithubRepo(
+      operationContext,
+      workers,
+      projectID,
+      resetBranches,
+      currentProjectContents,
+      githubRepo,
+      branchName,
+      (action) => dispatch([action]),
+    )
+
+    if (parseAndUploadAssetsResult == null) {
+      return
+    }
+
+    // Update the editor with everything so that if anything else fails past this point
+    // there's no loss of data from the user's perspective.
+    dispatch(
+      [
+        ...connectRepo(
+          resetBranches,
+          githubRepo,
+          parseAndUploadAssetsResult.branch.originCommit,
+          branchName,
+          true,
+        ),
+        updateProjectContents(parseAndUploadAssetsResult.parsedProjectContents),
+        updateBranchContents(parseAndUploadAssetsResult.parsedProjectContents),
+        truncateHistory(),
+      ],
+      'everyone',
+    )
+
+    await runGithubOperation2(
       {
         name: 'loadBranch',
         branchName: branchName,
         githubRepo: githubRepo,
       },
-      dispatch,
+      (action) => dispatch([action]),
       async (operation: GithubOperation) => {
-        const response = await getBranchContentFromServer(
-          githubRepo,
-          branchName,
-          null,
-          null,
-          operationContext,
+        // If there's a package.json file, then attempt to load the dependencies for it.
+        let dependenciesPromise: Promise<void> = Promise.resolve()
+        const packageJson = packageJsonFileFromProjectContents(
+          parseAndUploadAssetsResult.parsedProjectContents,
         )
-        if (!response.ok) {
-          throw githubAPIErrorFromResponse(operation, response)
+        if (packageJson != null && isTextFile(packageJson)) {
+          dependenciesPromise = refreshDependencies(
+            (update) => dispatch([update]),
+            packageJson.fileContents.code,
+            currentDeps,
+            builtInDependencies,
+            {},
+          ).then(() => {})
         }
 
-        const responseBody: GetBranchContentResponse = await response.json()
-        switch (responseBody.type) {
-          case 'FAILURE':
-            throw githubAPIError(operation, responseBody.failureReason)
-          case 'SUCCESS':
-            if (responseBody.branch == null) {
-              throw githubAPIError(operation, `Could not find branch ${branchName}`)
-            }
-            const newGithubData: Partial<GithubData> = {
-              upstreamChanges: null,
-            }
-            if (resetBranches) {
-              newGithubData.branches = null
-            }
-
-            // Push any code through the parser so that the representations we end up with are in a state of `BOTH_MATCH`.
-            // So that it will override any existing files that might already exist in the project when sending them to VS Code.
-            const parsedProjectContents = createStoryboardFileIfNecessary(
-              await updateProjectContentsWithParseResults(workers, responseBody.branch.content),
-            )
-
-            // Save assets to the server from Github.
-            await saveAssetsToProject(operationContext)(
-              githubRepo,
-              projectID,
-              responseBody.branch,
-              dispatch,
-              currentProjectContents,
-            )
-
-            // Update the editor with everything so that if anything else fails past this point
-            // there's no loss of data from the user's perspective.
+        // When the dependencies update has gone through, then indicate that the project was imported.
+        await dependenciesPromise
+          .catch(() => {
             dispatch(
               [
-                ...connectRepo(
-                  resetBranches,
-                  githubRepo,
-                  responseBody.branch.originCommit,
-                  branchName,
-                  true,
+                showToast(
+                  notice(
+                    `Github: There was an error when attempting to update the dependencies.`,
+                    'ERROR',
+                  ),
                 ),
-                updateProjectContents(parsedProjectContents),
-                updateBranchContents(parsedProjectContents),
-                truncateHistory(),
               ],
               'everyone',
             )
-
-            // If there's a package.json file, then attempt to load the dependencies for it.
-            let dependenciesPromise: Promise<void> = Promise.resolve()
-            const packageJson = packageJsonFileFromProjectContents(parsedProjectContents)
-            if (packageJson != null && isTextFile(packageJson)) {
-              dependenciesPromise = refreshDependencies(
-                dispatch,
-                packageJson.fileContents.code,
-                currentDeps,
-                builtInDependencies,
-                {},
-              ).then(() => {})
-            }
-
-            // When the dependencies update has gone through, then indicate that the project was imported.
-            await dependenciesPromise
-              .catch(() => {
-                dispatch(
-                  [
-                    showToast(
-                      notice(
-                        `Github: There was an error when attempting to update the dependencies.`,
-                        'ERROR',
-                      ),
-                    ),
-                  ],
-                  'everyone',
-                )
-              })
-              .finally(() => {
-                dispatch(
-                  [
-                    showToast(
-                      notice(
-                        `Github: Updated the project with the content from ${branchName}`,
-                        'SUCCESS',
-                      ),
-                    ),
-                  ],
-                  'everyone',
-                )
-              })
-
-            break
-          default:
-            const _exhaustiveCheck: never = responseBody
-            throw githubAPIError(
-              operation,
-              `Unhandled response body ${JSON.stringify(responseBody)}`,
+          })
+          // hmmm I think this should be a .then here, because we don't want to show Success if the promise rejected
+          .finally(() => {
+            dispatch(
+              [
+                showToast(
+                  notice(
+                    `Github: Updated the project with the content from ${branchName}`,
+                    'SUCCESS',
+                  ),
+                ),
+              ],
+              'everyone',
             )
-        }
-        return []
+          })
       },
     )
   }
+
+export async function getProcessedParsedProjectFromGithubRepo(
+  operationContext: Pick<GithubOperationContext, 'fetch'>,
+  workers: UtopiaTsWorkers,
+  projectID: string,
+  resetBranches: boolean,
+  currentProjectContents: ProjectContentTreeRoot,
+  githubRepo: GithubRepo,
+  branchName: string,
+  onUpdate: (update: UpdateGithubOperations | AddToast) => void,
+): Promise<{
+  parsedProjectContents: ProjectContentTreeRoot
+  branch: Pick<BranchContent, 'originCommit'>
+} | null> {
+  // TODO deduplicate code
+  const loadBranchResult = await loadBranchFromGithub(
+    branchName,
+    githubRepo,
+    onUpdate,
+    operationContext,
+  )
+
+  if (loadBranchResult == null) {
+    return null // should this throw an error instead?
+  }
+
+  const parseAndUploadAssetsResult = await parseDownloadedProject(
+    branchName,
+    githubRepo,
+    onUpdate,
+    loadBranchResult,
+    resetBranches,
+    workers,
+  )
+
+  if (parseAndUploadAssetsResult == null) {
+    return null
+  }
+
+  //end TODO
+
+  // Save assets to the server from Github.
+  await saveAssetsToProject(operationContext)(
+    githubRepo,
+    projectID,
+    parseAndUploadAssetsResult.branch,
+    onUpdate,
+    currentProjectContents,
+  )
+
+  return parseAndUploadAssetsResult
+}
+
+async function loadBranchFromGithub(
+  branchName: string | null,
+  githubRepo: GithubRepo,
+  onUpdate: (update: UpdateGithubOperations | AddToast) => void,
+  operationContext: Pick<GithubOperationContext, 'fetch'>,
+) {
+  return runGithubOperation2(
+    {
+      name: 'loadBranch',
+      branchName: branchName,
+      githubRepo: githubRepo,
+    },
+    onUpdate,
+    async (operation: GithubOperation) => {
+      const response = await getBranchContentFromServer(
+        githubRepo,
+        branchName,
+        null,
+        null,
+        operationContext,
+      )
+      if (!response.ok) {
+        throw githubAPIErrorFromResponse(operation, response)
+      }
+
+      return response
+    },
+  )
+}
+
+async function parseDownloadedProject(
+  branchName: string | null,
+  githubRepo: GithubRepo,
+  onUpdate: (update: UpdateGithubOperations | AddToast) => void,
+  loadBranchResult: Response,
+  resetBranches: boolean,
+  workers: UtopiaTsWorkers,
+) {
+  return runGithubOperation2(
+    {
+      name: 'loadBranch',
+      branchName: branchName,
+      githubRepo: githubRepo,
+    },
+    onUpdate,
+    async (operation: GithubOperation) => {
+      const responseBody: GetBranchContentResponse = await loadBranchResult.json()
+      switch (responseBody.type) {
+        case 'FAILURE':
+          throw githubAPIError(operation, responseBody.failureReason)
+        case 'SUCCESS':
+          if (responseBody.branch == null) {
+            throw githubAPIError(
+              operation,
+              `Could not find branch ${branchName ?? '<default-branch>'}`,
+            )
+          }
+          const newGithubData: Partial<GithubData> = {
+            upstreamChanges: null,
+          }
+          if (resetBranches) {
+            newGithubData.branches = null
+          }
+
+          // Push any code through the parser so that the representations we end up with are in a state of `BOTH_MATCH`.
+          // So that it will override any existing files that might already exist in the project when sending them to VS Code.
+          const parsedProjectContents = createStoryboardFileIfNecessary(
+            await updateProjectContentsWithParseResults(workers, responseBody.branch.content),
+          )
+
+          return {
+            parsedProjectContents: parsedProjectContents,
+            branch: responseBody.branch,
+          }
+
+        default:
+          const _exhaustiveCheck: never = responseBody
+          throw githubAPIError(operation, `Unhandled response body ${JSON.stringify(responseBody)}`)
+      }
+    },
+  )
+}

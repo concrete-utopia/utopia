@@ -1,10 +1,16 @@
 import { createSelector } from 'reselect'
 import { packageJsonFileFromProjectContents } from '../../components/assets'
-import type { EditorDispatch } from '../../components/editor/action-types'
+import type {
+  SetPackageStatus,
+  SetRefreshingDependencies,
+  UpdateNodeModulesContents,
+  UpdateNodeModulesContentsAndSetPackageStatus,
+} from '../../components/editor/action-types'
 import {
   setPackageStatus,
   setRefreshingDependencies,
   updateNodeModulesContents,
+  updateNodeModulesContentsAndSetPackageStatus,
 } from '../../components/editor/actions/action-creators'
 import {
   createLoadedPackageStatusMapFromDependencies,
@@ -14,7 +20,7 @@ import type { EditorStorePatched } from '../../components/editor/store/editor-st
 import type { BuiltInDependencies } from '../es-modules/package-manager/built-in-dependencies-list'
 import { fetchNodeModules } from '../es-modules/package-manager/fetch-packages'
 import type { RequestedNpmDependency } from './npm-dependency-types'
-import { objectFilter } from './object-utils'
+import { objectFilter, objectMap } from './object-utils'
 import type { NodeModules } from './project-file-types'
 import { isTextFile } from './project-file-types'
 import { fastForEach } from './utils'
@@ -33,7 +39,9 @@ export function removeModulesFromNodeModules(
 }
 
 export async function refreshDependencies(
-  dispatch: EditorDispatch,
+  onUpdate: (
+    updates: SetRefreshingDependencies | UpdateNodeModulesContentsAndSetPackageStatus,
+  ) => void,
   packageJsonContents: string,
   currentDeps: RequestedNpmDependency[] | null,
   builtInDependencies: BuiltInDependencies,
@@ -83,20 +91,19 @@ export async function refreshDependencies(
       fetchNodeModulesResult.dependenciesWithError,
       fetchNodeModulesResult.dependenciesNotFound,
     )
-    const packageErrorActions = Object.keys(loadedPackagesStatus).map((dependencyName) =>
-      setPackageStatus(dependencyName, loadedPackagesStatus[dependencyName].status),
+    onUpdate(
+      updateNodeModulesContentsAndSetPackageStatus(
+        fetchNodeModulesResult.nodeModules,
+        loadedPackagesStatus,
+      ),
     )
-    dispatch([
-      ...packageErrorActions,
-      updateNodeModulesContents(fetchNodeModulesResult.nodeModules),
-    ])
 
     return updatedNodeModulesFiles
   }
 
-  dispatch([setRefreshingDependencies(true)], 'everyone')
+  onUpdate(setRefreshingDependencies(true))
   return doRefresh().finally(() => {
-    dispatch([setRefreshingDependencies(false)], 'everyone')
+    onUpdate(setRefreshingDependencies(false))
   })
 }
 

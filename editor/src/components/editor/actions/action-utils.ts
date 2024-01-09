@@ -81,6 +81,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_SAVE_ERROR':
     case 'REMOVE_FROM_NODE_MODULES_CONTENTS':
     case 'UPDATE_NODE_MODULES_CONTENTS':
+    case 'UPDATE_NODE_MODULES_CONTENTS_AND_SET_PACKAGE_STATUS':
     case 'START_CHECKPOINT_TIMER':
     case 'SET_PACKAGE_STATUS':
     case 'SET_SHORTCUT':

@@ -15,7 +15,12 @@ import {
   projectContentFile,
 } from '../../../components/assets'
 import { notice } from '../../../components/common/notice'
-import type { EditorAction, EditorDispatch } from '../../../components/editor/action-types'
+import type {
+  AddToast,
+  EditorAction,
+  EditorDispatch,
+  UpdateGithubOperations,
+} from '../../../components/editor/action-types'
 import {
   deleteFile,
   removeFileConflict,
@@ -103,6 +108,7 @@ export interface GithubFailure {
 export interface BranchContent {
   content: ProjectContentTreeRoot
   originCommit: string
+  branchName: string
 }
 
 export interface GetBranchContentSuccess {
@@ -171,6 +177,7 @@ export interface GetGithubUserSuccess {
 export type GetGithubUserResponse = GetGithubUserSuccess | GithubFailure
 
 export type GithubOperationLogic = (operation: GithubOperation) => Promise<Array<EditorAction>>
+export type GithubOperationLogic2<T> = (operation: GithubOperation) => Promise<T>
 
 export async function runGithubOperation(
   operation: GithubOperation,
@@ -192,6 +199,28 @@ export async function runGithubOperation(
     throw error
   } finally {
     dispatch([updateGithubOperations(operation, 'remove')], 'everyone')
+  }
+
+  return result
+}
+
+export async function runGithubOperation2<T>(
+  operation: GithubOperation,
+  onUpdate: (update: UpdateGithubOperations | AddToast) => void,
+  logic: GithubOperationLogic2<T>,
+): Promise<T | null> {
+  let result: T | null = null
+
+  const opName = githubOperationPrettyName(operation)
+  try {
+    onUpdate(updateGithubOperations(operation, 'add'))
+    result = await logic(operation)
+  } catch (error: any) {
+    onUpdate(showToast(notice(`${opName} failed. See the console for more information.`, 'ERROR')))
+    console.error(`[GitHub] operation "${opName}" failed:`, error)
+    throw error
+  } finally {
+    onUpdate(updateGithubOperations(operation, 'remove'))
   }
 
   return result
@@ -256,12 +285,16 @@ export function connectRepo(
 
 export async function getBranchContentFromServer(
   githubRepo: GithubRepo,
-  branchName: string,
+  branchName: string | null,
   commitSha: string | null,
   previousCommitSha: string | null,
-  operationContext: GithubOperationContext,
+  operationContext: Pick<GithubOperationContext, 'fetch'>,
 ): Promise<Response> {
-  const url = GithubEndpoints.branchContents(githubRepo, branchName)
+  const url =
+    branchName != null
+      ? GithubEndpoints.branchContents(githubRepo, branchName)
+      : GithubEndpoints.defaultBranchContents(githubRepo)
+
   let includeQueryParams: boolean = false
   let paramsRecord: Record<string, string> = {}
   if (commitSha != null) {
@@ -968,12 +1001,12 @@ export async function saveGithubAsset(
   assetSha: string,
   projectID: string,
   path: string,
-  dispatch: EditorDispatch,
-  operationContext: GithubOperationContext,
+  onUpdate: (update: UpdateGithubOperations | AddToast) => void,
+  operationContext: Pick<GithubOperationContext, 'fetch'>,
 ): Promise<void> {
-  await runGithubOperation(
+  await runGithubOperation2(
     { name: 'saveAsset', path: path },
-    dispatch,
+    onUpdate,
     async (operation: GithubOperation) => {
       const url = GithubEndpoints.asset(githubRepo, assetSha)
 
@@ -1040,7 +1073,7 @@ export const resolveConflict =
           gitBlobSha,
           projectID,
           path,
-          dispatch,
+          (action) => dispatch([action]),
           operationContext,
         )
       }

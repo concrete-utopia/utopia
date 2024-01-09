@@ -349,6 +349,13 @@ export function runSimpleLocalEditorAction(
       )
     case 'UPDATE_NODE_MODULES_CONTENTS':
       return UPDATE_FNS.UPDATE_NODE_MODULES_CONTENTS(action, state, dispatch, builtInDependencies)
+    case 'UPDATE_NODE_MODULES_CONTENTS_AND_SET_PACKAGE_STATUS':
+      return UPDATE_FNS.UPDATE_NODE_MODULES_CONTENTS_AND_SET_PACKAGE_STATUS(
+        action,
+        state,
+        dispatch,
+        builtInDependencies,
+      )
     case 'UPDATE_PACKAGE_JSON':
       return UPDATE_FNS.UPDATE_PACKAGE_JSON(action, state)
     case 'START_CHECKPOINT_TIMER':

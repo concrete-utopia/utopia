@@ -28,6 +28,7 @@ import {
 } from './generic/persistence-machine'
 import type { PersistenceBackendAPI, PersistenceContext } from './generic/persistence-types'
 import { releaseControl } from '../store/collaborative-editing'
+import { defer } from '../../../utils/utils'
 
 export class PersistenceMachine {
   private interpreter: Interpreter<
@@ -195,8 +196,18 @@ export class PersistenceMachine {
     this.interpreter.send(loadEvent(projectId))
   }
 
-  createNew = (projectName: string, project: PersistentModel): void => {
+  createNew = (projectName: string, project: PersistentModel): Promise<CreateNewProjectResult> => {
+    const onDone = defer<CreateNewProjectResult>()
+
+    this.interpreter.onTransition((state, event) => {
+      if (state.matches({ core: Ready })) {
+        onDone.resolve({ projectID: state.context.projectId! })
+      }
+    })
+
     this.interpreter.send(newEvent({ name: projectName, content: project }))
+
+    return onDone
   }
 
   fork = (projectName: string, project: PersistentModel): void => {
@@ -216,3 +227,5 @@ export class PersistenceMachine {
     this.clearThrottledSave()
   }
 }
+
+export type CreateNewProjectResult = { projectID: string }

@@ -820,6 +820,12 @@ export interface UpdateNodeModulesContents {
   contentsToAdd: NodeModules
 }
 
+export interface UpdateNodeModulesContentsAndSetPackageStatus {
+  action: 'UPDATE_NODE_MODULES_CONTENTS_AND_SET_PACKAGE_STATUS'
+  contentsToAdd: NodeModules
+  packageStatus: PackageStatusMap
+}
+
 export interface UpdatePackageJson {
   action: 'UPDATE_PACKAGE_JSON'
   dependencies: Array<RequestedNpmDependency>
@@ -1205,6 +1211,7 @@ export type EditorAction =
   | InsertDroppedImage
   | RemoveFromNodeModulesContents
   | UpdateNodeModulesContents
+  | UpdateNodeModulesContentsAndSetPackageStatus
   | UpdatePackageJson
   | StartCheckpointTimer
   | FinishCheckpointTimer
