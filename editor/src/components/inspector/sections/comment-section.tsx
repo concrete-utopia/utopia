@@ -134,10 +134,10 @@ const ThreadPreviews = React.memo(() => {
         <Tooltip title='Sort/Filter' placement='bottom'>
           <div
             css={{
+              display: threads.length > 1 ? 'flex' : 'none',
               width: 20,
               height: 20,
               borderRadius: 3,
-              display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
               '&:hover': {
@@ -174,7 +174,7 @@ const ThreadPreviews = React.memo(() => {
         </Tooltip>
       </FlexRow>
       {when(
-        sortedThreads.length > 0,
+        threads.length > 1,
         <FlexColumn
           style={{
             gap: 6,
