@@ -194,6 +194,12 @@ interface CommentIndicatorUIProps {
 export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) => {
   const { position, bgColor, fgColor, avatarUrl, avatarInitials, resolved, isActive, read } = props
 
+  const canvasScale = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.scale,
+    'CommentIndicatorUI scale',
+  )
+
   function getIndicatorStyle() {
     const base: Interpolation<Theme> = {
       position: 'fixed',
@@ -208,6 +214,7 @@ export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) =>
       justifyContent: 'center',
       boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
       opacity: resolved ? 0.6 : 'undefined',
+      zoom: 1 / canvasScale,
     }
 
     const transform: Interpolation<Theme> = {
@@ -451,6 +458,7 @@ const HoveredCommentIndicator = React.memo((props: HoveredCommentIndicatorProps)
         // temporarily moving the hovered comment indicator to align with the not hovered version
         left: position.x - 3,
         overflow: 'hidden',
+        zoom: 1 / canvasScale,
       }}
       onMouseDown={onMouseDown}
       onClick={onClick}

@@ -160,6 +160,12 @@ const MultiplayerCursors = React.memo(() => {
   })
   const myRemixPresence = me.presence.remix ?? null
 
+  const canvasScale = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.scale,
+    'MultiplayerCursors canvasScale',
+  )
+
   return (
     <div
       style={{
@@ -167,6 +173,7 @@ const MultiplayerCursors = React.memo(() => {
         top: 0,
         left: 0,
         pointerEvents: 'none',
+        zoom: 1 / canvasScale,
       }}
     >
       {others.map((other) => {
@@ -389,6 +396,7 @@ const FollowingOverlay = React.memo(() => {
         justifyContent: 'center',
         paddingBottom: 14,
         cursor: 'default',
+        zoom: 1 / canvasScale,
       }}
     >
       <div
