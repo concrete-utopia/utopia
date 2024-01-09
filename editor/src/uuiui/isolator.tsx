@@ -1,5 +1,4 @@
 import React from 'react'
-import { colorTheme } from './styles/theme'
 
 type IsolatorProps = {
   onAbandonIntent: () => void
