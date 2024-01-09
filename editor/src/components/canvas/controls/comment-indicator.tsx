@@ -418,6 +418,10 @@ const HoveredCommentIndicator = React.memo((props: HoveredCommentIndicatorProps)
     cancelHover,
   ])
 
+  const canvasDiv = document.getElementById('canvas-root')
+
+  const canvasHeight = canvasDiv?.clientHeight ?? 0
+
   const collabs = useStorage((storage) => storage.collaborators)
   if (hidden && dragPosition == null) {
     return null
@@ -443,7 +447,7 @@ const HoveredCommentIndicator = React.memo((props: HoveredCommentIndicatorProps)
         background: colorTheme.bg1.value,
         zIndex: 1,
         position: 'fixed',
-        top: position.y,
+        bottom: canvasHeight - IndicatorSize - position.y,
         // temporarily moving the hovered comment indicator to align with the not hovered version
         left: position.x - 3,
         overflow: 'hidden',
