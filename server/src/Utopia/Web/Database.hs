@@ -60,8 +60,9 @@ data DatabaseMetrics = DatabaseMetrics
                      , _updateGithubAuthenticationDetailsMetrics          :: InvocationMetric
                      , _getGithubAuthenticationDetailsMetrics             :: InvocationMetric
                      , _maybeClaimCollaborationControlMetrics           :: InvocationMetric
+                     , _forceClaimCollaborationControlMetrics           :: InvocationMetric
+                     , _releaseCollaborationControlMetrics           :: InvocationMetric
                      , _deleteCollaborationControlByCollaboratorMetrics :: InvocationMetric
-                     , _deleteCollaborationControlByProjectMetrics      :: InvocationMetric
                      }
 
 createDatabaseMetrics :: Store -> IO DatabaseMetrics
@@ -86,8 +87,9 @@ createDatabaseMetrics store = DatabaseMetrics
   <*> createInvocationMetric "utopia.database.updategithubauthenticationdetails" store
   <*> createInvocationMetric "utopia.database.getgithubauthenticationdetails" store
   <*> createInvocationMetric "utopia.database.maybeclaimcollaborationownership" store
+  <*> createInvocationMetric "utopia.database.forceclaimcollaborationownership" store
+  <*> createInvocationMetric "utopia.database.releasecollaborationownership" store
   <*> createInvocationMetric "utopia.database.deletecollaborationownershipbycollaborator" store
-  <*> createInvocationMetric "utopia.database.deletecollaborationownershipbyproject" store
 
 data UserIDIncorrectException = UserIDIncorrectException
                               deriving (Eq, Show)
@@ -445,12 +447,12 @@ lookupGithubAuthenticationDetails metrics pool userId = invokeAndMeasure (_getGi
     pure githubAuthenticationDetailsRow
   pure $ fmap githubAuthenticationDetailsFromRow $ listToMaybe githubAuthenticationDetails
 
-insertCollaborationControl :: Connection -> Text -> Text -> UTCTime -> IO ()
-insertCollaborationControl connection projectId collaborationEditor currentTime = do
+insertCollaborationControl :: Connection -> Text -> Text -> Text -> UTCTime -> IO ()
+insertCollaborationControl connection ownerId projectId collaborationEditor currentTime = do
   let newLastSeenTimeout = addUTCTime collaborationLastSeenTimeoutWindow currentTime
   void $ runInsert_ connection $ Insert
                                 { iTable = projectCollaborationTable
-                                , iRows = [toFields (projectId, collaborationEditor, newLastSeenTimeout)]
+                                , iRows = [toFields (projectId, collaborationEditor, newLastSeenTimeout, Just ownerId)]
                                 , iReturning = rCount
                                 , iOnConflict = Nothing
                                 }
@@ -458,38 +460,45 @@ insertCollaborationControl connection projectId collaborationEditor currentTime 
 collaborationLastSeenTimeoutWindow :: NominalDiffTime
 collaborationLastSeenTimeoutWindow = secondsToNominalDiffTime 20
 
-updateCollaborationLastSeenTimeout :: Connection -> Text -> Text -> UTCTime -> IO ()
-updateCollaborationLastSeenTimeout connection projectId newCollaborationEditor newLastSeenTimeout = do
+sameOwner :: FieldNullable SqlText -> Text -> Field SqlBool
+sameOwner rowPossibleOwnerId ownerId = matchNullable (toFields True) (.== toFields ownerId) rowPossibleOwnerId
+
+sameProjectAndOwner :: Field SqlText -> FieldNullable SqlText -> Text -> Text -> Field SqlBool
+sameProjectAndOwner rowProjectId rowPossibleOwnerId projectId ownerId =
+  rowProjectId .== toFields projectId .&& sameOwner rowPossibleOwnerId ownerId
+
+updateCollaborationLastSeenTimeout :: Connection -> Text -> Text -> Text -> UTCTime -> IO ()
+updateCollaborationLastSeenTimeout connection ownerId projectId newCollaborationEditor newLastSeenTimeout = do
   void $ runUpdate_ connection $ Update
                                { uTable = projectCollaborationTable
-                               , uUpdateWith = updateEasy (\(rowProjectId, _, _) -> (rowProjectId, toFields newCollaborationEditor, toFields newLastSeenTimeout))
-                               , uWhere = (\(rowProjectId, _, _) -> rowProjectId .=== toFields projectId)
+                               , uUpdateWith = updateEasy (\(rowProjectId, _, _, _) -> (rowProjectId, toFields newCollaborationEditor, toFields newLastSeenTimeout, toFields $ Just ownerId))
+                               , uWhere = (\(rowProjectId, _, _, rowPossibleOwnerId) -> sameProjectAndOwner rowProjectId rowPossibleOwnerId projectId ownerId)
                                , uReturning = rCount
                                }
 
-maybeClaimExistingCollaborationControl :: Connection -> Text -> Text -> Text -> UTCTime -> UTCTime -> IO Bool
-maybeClaimExistingCollaborationControl connection projectId currentCollaborationEditor newCollaborationEditor currentLastSeenTimeout currentTime
+maybeClaimExistingCollaborationControl :: Connection -> Text -> Text -> Text -> Text -> UTCTime -> UTCTime -> IO Bool
+maybeClaimExistingCollaborationControl connection ownerId projectId currentCollaborationEditor newCollaborationEditor currentLastSeenTimeout currentTime
   | currentCollaborationEditor == newCollaborationEditor = updateLastSeen
   | currentLastSeenTimeout < currentTime                 = updateLastSeen
   | otherwise                                            = pure False
   where
     newTimeout = addUTCTime collaborationLastSeenTimeoutWindow currentTime
-    updateLastSeen = updateCollaborationLastSeenTimeout connection projectId newCollaborationEditor newTimeout >> pure True
+    updateLastSeen = updateCollaborationLastSeenTimeout connection ownerId projectId newCollaborationEditor newTimeout >> pure True
 
-maybeClaimCollaborationControl :: DatabaseMetrics -> DBPool -> Text -> Text -> IO Bool
-maybeClaimCollaborationControl metrics pool projectId collaborationEditor = do
+maybeClaimCollaborationControl :: DatabaseMetrics -> DBPool -> Text -> Text -> Text -> IO Bool
+maybeClaimCollaborationControl metrics pool ownerId projectId collaborationEditor = do
   currentTime <- getCurrentTime
   invokeAndMeasure (_maybeClaimCollaborationControlMetrics metrics) $ usePool pool $ \connection -> do
     withTransaction connection $ do
       -- Find any existing entries (should only be one).
       collaborationEditorIdsWithLastSeen <- runSelect connection $ do
-        (rowProjectId, rowCollaborationEditor, rowLastSeenTimeout) <- projectCollaborationSelect
-        where_ $ rowProjectId .== toFields projectId
+        (rowProjectId, rowCollaborationEditor, rowLastSeenTimeout, rowPossibleOwnerId) <- projectCollaborationSelect
+        where_ $ sameProjectAndOwner rowProjectId rowPossibleOwnerId projectId ownerId
         pure (rowCollaborationEditor, rowLastSeenTimeout)
       -- Get the first if there is one.
       let maybeCurrentCollaborationEditorAndLastSeen = listToMaybe collaborationEditorIdsWithLastSeen
       -- Create the expression that inserts an entry and returns true to indicate this was successfully claimed.
-      let insertCurrent = insertCollaborationControl connection projectId collaborationEditor currentTime >> pure True
+      let insertCurrent = insertCollaborationControl connection ownerId projectId collaborationEditor currentTime >> pure True
       -- Handle the current state.
       case maybeCurrentCollaborationEditorAndLastSeen of
         -- There's no current entry in the table, so add one.
@@ -497,21 +506,36 @@ maybeClaimCollaborationControl metrics pool projectId collaborationEditor = do
         -- If the current entry is the same as the one we're trying to insert return true, otherwise
         -- return false but in either case make no changes to the database.
         Just (currentCollaborationEditor, currentLastSeenTimeout) ->
-          maybeClaimExistingCollaborationControl connection projectId currentCollaborationEditor collaborationEditor currentLastSeenTimeout currentTime
+          maybeClaimExistingCollaborationControl connection ownerId projectId currentCollaborationEditor collaborationEditor currentLastSeenTimeout currentTime
 
-deleteCollaborationControlByCollaborator :: DatabaseMetrics -> DBPool -> Text -> IO ()
-deleteCollaborationControlByCollaborator metrics pool collaborationEditor = invokeAndMeasure (_deleteCollaborationControlByCollaboratorMetrics metrics) $ usePool pool $ \connection -> do
-  void $ runDelete_ connection $ Delete
+forceClaimCollaborationControl :: DatabaseMetrics -> DBPool -> Text -> Text -> Text -> IO ()
+forceClaimCollaborationControl metrics pool ownerId projectId collaborationEditor = do
+  currentTime <- getCurrentTime
+  invokeAndMeasure (_forceClaimCollaborationControlMetrics metrics) $ usePool pool $ \connection -> do
+    withTransaction connection $ do
+      -- Delete any and all values for this project.
+      void $ runDelete_ connection $ Delete
                                { dTable = projectCollaborationTable
-                               , dWhere = (\(_, rowCollaborationEditor, _) -> rowCollaborationEditor .== toFields collaborationEditor)
+                               , dWhere = (\(rowProjectId, _, _, _) -> rowProjectId .=== toFields projectId)
                                , dReturning = rCount
                                }
+      -- Inserts an entry for this collaborator.
+      insertCollaborationControl connection ownerId projectId collaborationEditor currentTime
 
-deleteCollaborationControlByProject :: DatabaseMetrics -> DBPool -> Text -> IO ()
-deleteCollaborationControlByProject metrics pool projectId = invokeAndMeasure (_deleteCollaborationControlByProjectMetrics metrics) $ usePool pool $ \connection -> do
+releaseCollaborationControl :: DatabaseMetrics -> DBPool -> Text -> Text -> Text -> IO ()
+releaseCollaborationControl metrics pool ownerId projectId collaborationEditor = do
+  invokeAndMeasure (_releaseCollaborationControlMetrics metrics) $ usePool pool $ \connection -> do
+    -- Delete any matching values for this project and collaboration editor.
+    void $ runDelete_ connection $ Delete
+                              { dTable = projectCollaborationTable
+                              , dWhere = (\(rowProjectId, rowCollaborationEditor, _, rowPossibleOwnerId) -> sameProjectAndOwner rowProjectId rowPossibleOwnerId projectId ownerId .&& rowCollaborationEditor .== toFields collaborationEditor)
+                              , dReturning = rCount
+                              }
+
+deleteCollaborationControlByCollaborator :: DatabaseMetrics -> DBPool -> Text -> Text -> IO ()
+deleteCollaborationControlByCollaborator metrics pool ownerId collaborationEditor = invokeAndMeasure (_deleteCollaborationControlByCollaboratorMetrics metrics) $ usePool pool $ \connection -> do
   void $ runDelete_ connection $ Delete
                                { dTable = projectCollaborationTable
-                               , dWhere = (\(rowProjectId, _, _) -> rowProjectId .== toFields projectId)
+                               , dWhere = (\(_, rowCollaborationEditor, _, rowPossibleOwnerId) -> sameOwner rowPossibleOwnerId ownerId .&& rowCollaborationEditor .== toFields collaborationEditor)
                                , dReturning = rCount
                                }
-

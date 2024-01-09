@@ -66,7 +66,14 @@ collaborationEndpoint cookie collaborationRequest = do
     case collaborationRequest of
       (ClaimProjectControlRequest ClaimProjectControl{..}) -> do
         successfullyClaimed <- claimCollaborationControl idOfUser projectID collaborationEditor
-        pure $ ClaimProjectControlResultResponse $ ClaimProjectControlResult{..}
+        pure $ RequestProjectControlResultResponse $ RequestProjectControlResult{..}
+      (SnatchProjectControlRequest SnatchProjectControl{..}) -> do
+        snatchCollaborationControl idOfUser projectID collaborationEditor
+        let successfullyClaimed = True
+        pure $ RequestProjectControlResultResponse $ RequestProjectControlResult{..}
+      (ReleaseProjectControlRequest ReleaseProjectControl{..}) -> do
+        releaseCollaborationControl idOfUser projectID collaborationEditor
+        pure $ ReleaseControlResponse ReleaseControlResult
       (ClearAllOfCollaboratorsControlRequest ClearAllOfCollaboratorsControl{..}) -> do
-        _ <- clearCollaboratorOwnership collaborationEditor
-        pure $ ClearAllOfCollaboratorsControlResponse ClearAllOfCollaboratorsControlResult
+        _ <- clearCollaboratorOwnership idOfUser collaborationEditor
+        pure $ ReleaseControlResponse ReleaseControlResult

@@ -80,7 +80,11 @@ export async function getProjectServerState(
   forkedFromProjectId: string | null,
 ): Promise<ProjectServerState> {
   if (IS_TEST_ENVIRONMENT) {
-    return emptyProjectServerState()
+    return {
+      ...emptyProjectServerState(),
+      isMyProject: 'yes',
+      currentlyHolderOfTheBaton: true,
+    }
   } else {
     const projectListing = projectId == null ? null : await fetchProjectMetadata(projectId)
     const forkedFromProjectListing =
@@ -95,7 +99,9 @@ export async function getProjectServerState(
     }
     const ownership = await getOwnership()
 
-    const holderOfTheBaton = (await claimControlOverProject(projectId)) ?? ownership.isOwner
+    const holderOfTheBaton = ownership.isOwner
+      ? (await claimControlOverProject(projectId)) ?? ownership.isOwner
+      : false
 
     return {
       isMyProject: ownership.isOwner ? 'yes' : 'no',

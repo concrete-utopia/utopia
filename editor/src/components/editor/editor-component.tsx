@@ -70,6 +70,7 @@ import { useDisplayOwnershipWarning } from './project-owner-hooks'
 import { EditorModes } from './editor-modes'
 import { allowedToEditProject } from './store/collaborative-editing'
 import { useDataThemeAttributeOnBody } from '../../core/commenting/comment-hooks'
+import { CollaborationStateUpdater } from './store/collaboration-state'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -556,7 +557,9 @@ export function EditorComponent(props: EditorProps) {
           forkedFromProjectId={forkedFromProjectId}
           dispatch={dispatch}
         >
-          <EditorComponentInner {...props} />
+          <CollaborationStateUpdater projectId={projectId} dispatch={dispatch}>
+            <EditorComponentInner {...props} />
+          </CollaborationStateUpdater>
         </ProjectServerStateUpdater>
       </DndProvider>
     </RoomProvider>

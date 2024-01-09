@@ -1052,7 +1052,7 @@ export interface ClearPostActionSession {
 
 export interface UpdateProjectServerState {
   action: 'UPDATE_PROJECT_SERVER_STATE'
-  serverState: ProjectServerState
+  serverState: Partial<ProjectServerState>
 }
 
 export interface UpdateTopLevelElementsFromCollaborationUpdate {

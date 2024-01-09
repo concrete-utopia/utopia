@@ -27,7 +27,7 @@ import {
   userLogOutEvent,
 } from './generic/persistence-machine'
 import type { PersistenceBackendAPI, PersistenceContext } from './generic/persistence-types'
-import { releaseControl } from '../store/collaborative-editing'
+import { clearAllControlFromThisEditor } from '../store/collaborative-editing'
 
 export class PersistenceMachine {
   private interpreter: Interpreter<
@@ -136,7 +136,7 @@ export class PersistenceMachine {
 
     window.addEventListener('beforeunload', async (e) => {
       if (this.isSafeToClose()) {
-        void releaseControl()
+        void clearAllControlFromThisEditor()
       } else {
         this.sendThrottledSave()
         e.preventDefault()
