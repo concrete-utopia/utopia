@@ -509,6 +509,7 @@ const MultiplayerShadows = React.memo(() => {
                 pointerEvents: 'none',
                 border: `1px dashed ${color.background}`,
                 opacity: 0.5,
+                zoom: 1 / canvasScale,
               }}
             />
             <motion.div
@@ -540,6 +541,7 @@ const MultiplayerShadows = React.memo(() => {
                 fontSize: 9,
                 color: color.background,
                 border: `1px dashed ${color.background}`,
+                zoom: 1 / canvasScale,
               }}
             >
               {activeFrameActionToString(action)}
