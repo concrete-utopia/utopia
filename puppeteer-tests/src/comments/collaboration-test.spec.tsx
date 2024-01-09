@@ -25,17 +25,16 @@ describe('Collaboration test', () => {
   it(
     'can place a comment',
     async () => {
-      const [{ page: page1, browser: browser1 }, { page: page2, browser: browser2 }] =
-        await Promise.all([
-          setupBrowser(
-            `http://localhost:8000/p/56a2ac40-caramel-yew?fakeUser=alice&Multiplayer=true${BRANCH_NAME}`,
-            TIMEOUT,
-          ),
-          setupBrowser(
-            `http://localhost:8000/p/56a2ac40-caramel-yew?fakeUser=bob&Multiplayer=true${BRANCH_NAME}`,
-            TIMEOUT,
-          ),
-        ])
+      const setupBrowser1Promise = setupBrowser(
+        `http://localhost:8000/p/56a2ac40-caramel-yew?fakeUser=alice&Multiplayer=true${BRANCH_NAME}`,
+        TIMEOUT,
+      )
+      const setupBrowser2Promise = setupBrowser(
+        `http://localhost:8000/p/56a2ac40-caramel-yew?fakeUser=bob&Multiplayer=true${BRANCH_NAME}`,
+        TIMEOUT,
+      )
+      const { page: page1, browser: browser1 } = await setupBrowser1Promise
+      const { page: page2, browser: browser2 } = await setupBrowser2Promise
 
       await Promise.all([signIn(page1), signIn(page2)])
       await Promise.all([
