@@ -402,29 +402,7 @@ export class Editor {
             this.storedState.persistence.createNew(createNewProjectName(), defaultProject())
           } else if (projectId == null) {
             if (githubRepoObj != null) {
-              const projectName = `${githubRepoObj.owner}-${githubRepoObj.repository}`
-
-              // Obtain a projectID from the server, and save an empty initial project
-              this.storedState.persistence.createNew(projectName, totallyEmptyDefaultProject())
-
-              const loadActionDispatchedByPersistenceMachine =
-                await this.awaitLoadActionDispatchedByPersistenceMachine()
-
-              const createdProjectID = loadActionDispatchedByPersistenceMachine.projectId
-
-              await GithubOperations.updateProjectWithBranchContent(
-                this.storedState.workers,
-                this.boundDispatch,
-                forceNotNull('Should have a project ID by now.', createdProjectID),
-                githubRepoObj,
-                githubBranch,
-                false,
-                [],
-                builtInDependencies,
-                {}, // Assuming a totally empty project (that is being saved probably parallel to this operation, hopefully not causing any race conditions)
-              )
-
-              // TODO make sure the EditorState knows we have a github repo connected!!
+              // we let github-clone-overlay.tsx take over
             } else if (importURL != null) {
               this.createNewProjectFromImportURL(importURL)
             } else {
@@ -463,6 +441,7 @@ export class Editor {
   }
 
   awaitLoadActionDispatchedByPersistenceMachine = (): Promise<{ projectId: string }> => {
+    // TODO move this WAY out of Editor.tsx
     invariant(
       PubSub.countSubscriptions(LoadActionsDispatched) === 0,
       'At this point, awaitLoadActionDispatchedByPersistenceMachine should have zero listeners',
