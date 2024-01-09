@@ -373,16 +373,36 @@ export class Editor {
           }
 
           const urlParams = new URLSearchParams(window.location.search)
-          const githubOwner = urlParams.get('github_owner')
-          const githubRepo = urlParams.get('github_repo')
           const githubBranch = urlParams.get('github_branch')
           const importURL = urlParams.get('import_url')
+
+          const githubRepoObj: GithubRepo | null = (() => {
+            const githubCloneUrl = urlParams.get('clone')
+            if (githubCloneUrl != null) {
+              const splitGitRepoUrl = githubCloneUrl.split('/')
+              return {
+                owner: splitGitRepoUrl[0],
+                repository: splitGitRepoUrl[1],
+              }
+            }
+
+            const githubOwner = urlParams.get('github_owner')
+            const githubRepo = urlParams.get('github_repo')
+            if (githubOwner != null && githubRepo != null) {
+              return {
+                owner: githubOwner,
+                repository: githubRepo,
+              }
+            }
+
+            return null
+          })()
 
           if (isCookiesOrLocalForageUnavailable(loginState)) {
             this.storedState.persistence.createNew(createNewProjectName(), defaultProject())
           } else if (projectId == null) {
-            if (githubOwner != null && githubRepo != null) {
-              const projectName = `${githubOwner}-${githubRepo}`
+            if (githubRepoObj != null) {
+              const projectName = `${githubRepoObj.owner}-${githubRepoObj.repository}`
 
               // Obtain a projectID from the server, and save an empty initial project
               this.storedState.persistence.createNew(projectName, totallyEmptyDefaultProject())
@@ -391,11 +411,6 @@ export class Editor {
                 await this.awaitLoadActionDispatchedByPersistenceMachine()
 
               const createdProjectID = loadActionDispatchedByPersistenceMachine.projectId
-
-              const githubRepoObj: GithubRepo = {
-                owner: githubOwner,
-                repository: githubRepo,
-              }
 
               await GithubOperations.updateProjectWithBranchContent(
                 this.storedState.workers,
