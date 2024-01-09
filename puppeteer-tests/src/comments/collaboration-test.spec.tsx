@@ -1,9 +1,11 @@
 import type { ElementHandle, Page } from 'puppeteer'
 import { setupBrowser, wait } from '../utils'
+import * as url from 'url'
 
 const TIMEOUT = 120000
 
 const BRANCH_NAME = process.env.BRANCH_NAME ? `&branch_name=${process.env.BRANCH_NAME}` : ''
+const BASE_URL = process.env.BASE_URL ?? 'http://localhost:8000'
 
 async function signIn(page: Page) {
   const signInButton = await page.waitForSelector('div[data-testid="sign-in-button"]')
@@ -21,20 +23,28 @@ async function expectNSelectors(page: Page, selector: string, n: number) {
   expect(elementsMatchingSelector).toHaveLength(n)
 }
 
+// TODO: CI job
+
 describe('Collaboration test', () => {
   it(
-    'can place a comment',
+    'can collaboratively add an element',
     async () => {
-      const setupBrowser1Promise = setupBrowser(
-        `http://localhost:8000/p/56a2ac40-caramel-yew?fakeUser=alice&Multiplayer=true${BRANCH_NAME}`,
+      const { page: page1, browser: browser1 } = await setupBrowser(
+        `${BASE_URL}/p/?fakeUser=alice&Multiplayer=true${BRANCH_NAME}`,
         TIMEOUT,
       )
-      const setupBrowser2Promise = setupBrowser(
-        `http://localhost:8000/p/56a2ac40-caramel-yew?fakeUser=bob&Multiplayer=true${BRANCH_NAME}`,
+
+      await page1.waitForNavigation()
+      await signIn(page1)
+      await wait(5000) // TODO
+
+      const newProjectUrl = new url.URL(page1.url()).pathname
+
+      const { page: page2, browser: browser2 } = await setupBrowser(
+        `${BASE_URL}${newProjectUrl}?fakeUser=bob&Multiplayer=true${BRANCH_NAME}`,
         TIMEOUT,
       )
-      const { page: page1, browser: browser1 } = await setupBrowser1Promise
-      const { page: page2, browser: browser2 } = await setupBrowser2Promise
+      await signIn(page2)
 
       await Promise.all([signIn(page1), signIn(page2)])
       await Promise.all([
