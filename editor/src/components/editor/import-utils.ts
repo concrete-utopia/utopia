@@ -90,6 +90,7 @@ export function getRequiredImportsForElement(
                           nodeModules,
                           underlyingFilePath,
                           importedFromResult.exportedName,
+                          importedFromResult.variableName,
                         ),
                       ),
                     )
@@ -199,6 +200,7 @@ export function getImportsFor(
   nodeModules: NodeModules,
   importOrigin: string,
   importedName: string,
+  importedAlias?: string,
 ): Imports {
   for (const fileKey of Object.keys(currentImports)) {
     const details = currentImports[fileKey]
@@ -231,6 +233,14 @@ export function getImportsFor(
           [resolvedImportPath]: importDetails(
             null,
             [importAlias(importedName, importedName)],
+            null,
+          ),
+        }
+      } else if (fromWithin.alias === importedAlias) {
+        return {
+          [resolvedImportPath]: importDetails(
+            null,
+            [importAlias(importedName, importedAlias)],
             null,
           ),
         }
