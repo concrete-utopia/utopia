@@ -651,14 +651,12 @@ function printUtopiaJSXComponent(
     TS.isJsxSelfClosingElement(asJSX) ||
     TS.isJsxFragment(asJSX) ||
     TS.isConditionalExpression(asJSX) ||
-    TS.isJsxText(asJSX) ||
+    TS.isJsxText(asJSX) || // Needed for when the root element is an arbitrary js expression, as we print that as raw text
     asJSX.kind === TS.SyntaxKind.NullKeyword
   ) {
     let elementNode: TS.Node
     const jsxElementExpression = TS.isJsxText(asJSX)
-      ? TS.createUnparsedSourceFile(
-          (element.rootElement as JSExpressionOtherJavaScript).originalJavascript,
-        )
+      ? (printOtherJS(element.rootElement as JSExpressionOtherJavaScript) as TS.Expression)
       : asJSX
     const modifiers = getModifersForComponent(element, detailOfExports)
     const nodeFlags =
@@ -678,7 +676,7 @@ function printUtopiaJSXComponent(
         }
 
         const returnStatement = TS.isUnparsedSource(jsxElementExpression)
-          ? (jsxElementExpression as any)
+          ? (jsxElementExpression as any as TS.Statement) // See above comment about the space time continuum
           : TS.createReturn(jsxElementExpression)
         addCommentsToNode(returnStatement, element.returnStatementComments)
         statements.push(returnStatement)
@@ -689,13 +687,11 @@ function printUtopiaJSXComponent(
         if (element.arbitraryJSBlock != null || element.blockOrExpression === 'block') {
           return bodyForFunction()
         } else if (element.blockOrExpression === 'parenthesized-expression') {
-          const bodyExpression = TS.factory.createParenthesizedExpression(
-            jsxElementExpression as any, // FIXME
-          )
+          const bodyExpression = TS.factory.createParenthesizedExpression(jsxElementExpression)
           addCommentsToNode(bodyExpression, element.returnStatementComments)
           return bodyExpression
         } else {
-          return jsxElementExpression as any // FIXME
+          return jsxElementExpression
         }
       }
 
@@ -733,14 +729,10 @@ function printUtopiaJSXComponent(
           undefined,
           modifiers,
           undefined,
-          jsxElementExpression as any, // FIXME
+          jsxElementExpression,
         )
       } else {
-        const varDec = TS.createVariableDeclaration(
-          element.name,
-          undefined,
-          jsxElementExpression as any, // FIXME
-        )
+        const varDec = TS.createVariableDeclaration(element.name, undefined, jsxElementExpression)
         const varDecList = TS.createVariableDeclarationList([varDec], nodeFlags)
         elementNode = TS.createVariableStatement(modifiers, varDecList)
       }
@@ -818,7 +810,12 @@ function printRawComment(comment: Comment): string {
 }
 
 function printArbitraryJSBlock(block: ArbitraryJSBlock): TS.Node {
+  // FIXME Should this be using `originalJavascript`?
   return TS.createUnparsedSourceFile(block.javascript)
+}
+
+function printOtherJS(block: JSExpressionOtherJavaScript): TS.Node {
+  return TS.createUnparsedSourceFile(block.originalJavascript)
 }
 
 export const printCode = memoize(printCodeImpl, {
