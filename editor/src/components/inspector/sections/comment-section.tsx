@@ -49,11 +49,11 @@ const filterOptions = [
     value: 'all',
   },
   {
-    label: 'All including resolved',
+    label: 'All Including Resolved',
     value: 'all-including-resolved',
   },
   {
-    label: 'Unread only',
+    label: 'Unread Only',
     value: 'unread-only',
   },
 ]
@@ -150,7 +150,12 @@ const ThreadPreviews = React.memo(() => {
                 height: 14,
                 width: 14,
                 borderRadius: 14,
-                border: `1px solid ${colorTheme.fg1.value}`,
+                border:
+                  commentFilterMode !== 'all'
+                    ? `1px solid ${colorTheme.dynamicBlue.value}`
+                    : `1px solid ${colorTheme.fg1.value}`,
+                background:
+                  commentFilterMode !== 'all' ? colorTheme.dynamicBlue.value : 'transparent',
                 cursor: 'pointer',
                 display: 'flex',
                 flexDirection: 'column',
@@ -161,13 +166,31 @@ const ThreadPreviews = React.memo(() => {
               onClick={toggleOpen}
             >
               <div
-                style={{ width: 8, height: 1, background: colorTheme.fg1.value, borderRadius: 2 }}
+                style={{
+                  width: 8,
+                  height: 1,
+                  background:
+                    commentFilterMode !== 'all' ? colorTheme.bg1.value : colorTheme.fg1.value,
+                  borderRadius: 2,
+                }}
               />
               <div
-                style={{ width: 6, height: 1, background: colorTheme.fg1.value, borderRadius: 2 }}
+                style={{
+                  width: 6,
+                  height: 1,
+                  background:
+                    commentFilterMode !== 'all' ? colorTheme.bg1.value : colorTheme.fg1.value,
+                  borderRadius: 2,
+                }}
               />
               <div
-                style={{ width: 4, height: 1, background: colorTheme.fg1.value, borderRadius: 2 }}
+                style={{
+                  width: 4,
+                  height: 1,
+                  background:
+                    commentFilterMode !== 'all' ? colorTheme.bg1.value : colorTheme.fg1.value,
+                  borderRadius: 2,
+                }}
               />
             </div>
           </div>
@@ -201,7 +224,10 @@ const ThreadPreviews = React.memo(() => {
             overflowWrap: 'break-word',
           }}
         >
-          Use the commenting tool to leave comments on the canvas. They will also show up here.
+          {' '}
+          {commentFilterMode == 'unread-only'
+            ? 'No Unread Comments.'
+            : 'Use the commenting tool to leave comments on the canvas. They will also show up here.'}
         </div>,
       )}
       {sortedThreads.map((thread) => (
