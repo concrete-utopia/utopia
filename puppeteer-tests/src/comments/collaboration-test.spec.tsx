@@ -21,6 +21,10 @@ async function expectNSelectors(page: Page, selector: string, n: number) {
   expect(elementsMatchingSelector).toHaveLength(n)
 }
 
+async function waitForCoeditPropagation() {
+  await wait(2000)
+}
+
 describe('Comments test', () => {
   it(
     'can place a comment',
@@ -42,6 +46,7 @@ describe('Comments test', () => {
       await expectNSelectors(page2, 'div[data-testid="scene-label"]', 2)
 
       await clickCanvasContainer(page1, { x: 500, y: 500 })
+      await clickCanvasContainer(page2, { x: 500, y: 500 })
 
       const sceneLabel = await page1.waitForSelector('div[data-testid="scene-label"]')
       sceneLabel!.click({ offset: { x: 5, y: 5 } })
@@ -51,9 +56,7 @@ describe('Comments test', () => {
       await page1.keyboard.press('Backspace')
       await clickCanvasContainer(page2, { x: 500, y: 500 })
 
-      // This is here so that the edit can propagate from one tab to the other
-      // maybe TODO?
-      await wait(2000)
+      await waitForCoeditPropagation()
 
       await expectNSelectors(page2, 'div[data-testid="scene-label"]', 1)
 
