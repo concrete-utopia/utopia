@@ -125,7 +125,7 @@ const ThreadPreviews = React.memo(() => {
       >
         <span style={{ fontWeight: 600 }}>Comments</span>
         {when(
-          threads.length > 1,
+          threads.length > 0,
           <FlexRow
             style={{
               justifyContent: 'flex-end',
