@@ -42,6 +42,7 @@ import { setRightMenuTab } from '../../editor/actions/action-creators'
 import { RightMenuTab } from '../../editor/store/editor-state'
 import { when } from '../../../utils/react-conditionals'
 import { CommentRepliesCounter } from './comment-replies-counter'
+import { useMyUserId } from '../../../core/shared/multiplayer-hooks'
 
 const IndicatorSize = 24
 const MagnifyScale = 1.15
@@ -113,20 +114,10 @@ function useCommentBeingComposed(): TemporaryCommentIndicatorProps | null {
 
   const collabs = useStorage((storage) => storage.collaborators)
 
-  const userId = useEditorState(
-    Substores.userState,
-    (store) => {
-      if (store.userState.loginState.type !== 'LOGGED_IN') {
-        return null
-      }
-
-      return store.userState.loginState.user.userId
-    },
-    'CommentThread userId',
-  )
+  const myUserId = useMyUserId()
 
   const collaboratorInfo = React.useMemo(() => {
-    const collaborator = optionalMap((id) => collabs[id], userId)
+    const collaborator = optionalMap((id) => collabs[id], myUserId)
     if (collaborator == null) {
       return {
         initials: 'AN',
@@ -140,7 +131,7 @@ function useCommentBeingComposed(): TemporaryCommentIndicatorProps | null {
       color: multiplayerColorFromIndex(collaborator.colorIndex),
       avatar: collaborator.avatar,
     }
-  }, [collabs, userId])
+  }, [collabs, myUserId])
 
   if (position == null) {
     return null
@@ -275,14 +266,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
     'CommentIndicator canvasOffset',
   )
 
-  const { location, scene: commentScene } = useCanvasLocationOfThread(thread)
-
-  const remixLocationRoute = thread.metadata.remixLocationRoute ?? null
-
-  const remixState = useRemixNavigationContext(commentScene)
-
-  const isOnAnotherRoute =
-    remixLocationRoute != null && remixLocationRoute !== remixState?.location.pathname
+  const { location } = useCanvasLocationOfThread(thread)
 
   const readByMe = useMyThreadReadStatus(thread)
 

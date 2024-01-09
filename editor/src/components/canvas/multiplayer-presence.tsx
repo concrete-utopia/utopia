@@ -45,10 +45,9 @@ import CanvasActions from './canvas-actions'
 import { activeFrameActionToString } from './commands/set-active-frames-command'
 import { canvasPointToWindowPoint, windowToCanvasCoordinates } from './dom-lookup'
 import { ActiveRemixSceneAtom, RemixNavigationAtom } from './remix/utopia-remix-root-component'
-import { useRemixPresence } from '../../core/shared/multiplayer-hooks'
+import { useMyUserId, useRemixPresence } from '../../core/shared/multiplayer-hooks'
 import { CanvasOffsetWrapper } from './controls/canvas-offset-wrapper'
 import { when } from '../../utils/react-conditionals'
-import { isFeatureEnabled } from '../../utils/feature-switches'
 import { CommentIndicators } from './controls/comment-indicator'
 import { CommentPopup } from './controls/comment-popup'
 
@@ -408,12 +407,15 @@ const FollowingOverlay = React.memo(() => {
 FollowingOverlay.displayName = 'FollowingOverlay'
 
 const MultiplayerShadows = React.memo(() => {
-  const me = useSelf()
+  const myUserId = useMyUserId()
   const updateMyPresence = useUpdateMyPresence()
 
   const collabs = useStorage((store) => store.collaborators)
   const others = useOthers((list) => {
-    const presences = normalizeOthersList(me.id, list)
+    if (myUserId == null) {
+      return []
+    }
+    const presences = normalizeOthersList(myUserId, list)
     return presences.map((p) => ({
       presenceInfo: p,
       userInfo: collabs[p.id],

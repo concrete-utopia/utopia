@@ -6,6 +6,8 @@ import {
 } from '../../components/canvas/remix/utopia-remix-root-component'
 import type { RemixPresence } from './multiplayer'
 import * as EP from './element-path'
+import { Substores, useEditorState } from '../../components/editor/store/store-hook'
+import { isLoggedIn } from '../../common/user'
 
 export function useRemixPresence(): RemixPresence | null {
   const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
@@ -24,4 +26,14 @@ export function useRemixPresence(): RemixPresence | null {
   }, [activeRemixScene, remixNavigationState])
 
   return remixPresence
+}
+
+export function useMyUserId(): string | null {
+  const myUserId = useEditorState(
+    Substores.userState,
+    (store) =>
+      isLoggedIn(store.userState.loginState) ? store.userState.loginState.user.userId : null,
+    'useMyUserId myUserId',
+  )
+  return myUserId
 }
