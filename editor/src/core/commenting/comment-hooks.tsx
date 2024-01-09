@@ -28,6 +28,7 @@ import type { ElementPath } from '../shared/project-file-types'
 import type { ElementInstanceMetadata } from '../shared/element-template'
 import * as EP from '../shared/element-path'
 import { getCurrentTheme } from '../../components/editor/store/editor-state'
+import { useMyUserId } from '../shared/multiplayer-hooks'
 
 export function useCanvasCommentThreadAndLocation(comment: CommentId): {
   location: CanvasPoint | null
@@ -268,17 +269,20 @@ export function useUnresolvedThreads() {
 
 export function useReadThreads() {
   const threads = useThreads()
-  const self = useSelf()
+  const myUserId = useMyUserId()
   const threadReadStatuses = useStorage((store) => store.userReadStatusesByThread)
 
   const filteredThreads = threads.threads.filter((thread) => {
+    if (myUserId == null) {
+      return false
+    }
     if (thread == null) {
       return false
     }
     if (threadReadStatuses[thread.id] == null) {
       return false
     }
-    return threadReadStatuses[thread.id][self.id] === true
+    return threadReadStatuses[thread.id][myUserId] === true
   })
 
   return {
@@ -301,8 +305,11 @@ export function useSetThreadReadStatusOnMount(thread: ThreadData<ThreadMetadata>
 }
 
 export function useMyThreadReadStatus(thread: ThreadData<ThreadMetadata> | null): ThreadReadStatus {
-  const self = useSelf()
+  const myUserId = useMyUserId()
   return useStorage((store) => {
+    if (myUserId == null) {
+      return 'unread'
+    }
     if (thread == null) {
       return 'unread'
     }
@@ -310,7 +317,7 @@ export function useMyThreadReadStatus(thread: ThreadData<ThreadMetadata> | null)
     if (statusesForThread == null) {
       return 'unread'
     }
-    return statusesForThread[self.id] === true ? 'read' : 'unread'
+    return statusesForThread[myUserId] === true ? 'read' : 'unread'
   })
 }
 
