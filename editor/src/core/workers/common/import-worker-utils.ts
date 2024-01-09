@@ -54,12 +54,14 @@ export function renameDuplicateImports(
     // importedFromWithin
     const importedFromWithin = original.importedFromWithin.map((importAliasDetails) => {
       let alias = importAliasDetails.alias
+      let originalName = importAliasDetails.name
       alias = adjustImportNameIfNeeded(
         existingNames,
         importAliasDetails.alias,
         importSource,
         'importedFromWithin',
         absolutePath,
+        originalName,
       )
       if (alias !== importAliasDetails.alias) {
         duplicateNameMapping.set(importAliasDetails.alias, alias)
@@ -100,6 +102,7 @@ function adjustImportNameIfNeeded(
   importSource: string,
   type: ImportType,
   absolutePath: (relativePath: string) => string,
+  originalName?: string,
 ): string {
   const existingImport = existingNames.get(importName)
   if (existingImport != null) {
@@ -117,6 +120,7 @@ function adjustImportNameIfNeeded(
       type,
       existingNames,
       absolutePath,
+      originalName,
     )
     if (existingImportAlias != null) {
       return existingImportAlias
@@ -179,6 +183,7 @@ function findOriginalNameInExistingImports(
   importType: ImportType,
   existingNames: ImportUniqueNames,
   absolutePath: (relativePath: string) => string,
+  originalName?: string,
 ): string | null {
   let existingImportAlias: string | null = null
   // check to see if the new import is already in the existing imports, renamed
@@ -187,7 +192,8 @@ function findOriginalNameInExistingImports(
       if (existingImportData.type === importType) {
         if (
           importType !== 'importedFromWithin' ||
-          existingImportData.originalName === currentName
+          existingImportData.originalName === currentName ||
+          existingImportData.originalName === originalName
         ) {
           existingImportAlias = existingName
         }

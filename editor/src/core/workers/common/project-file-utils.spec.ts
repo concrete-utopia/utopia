@@ -97,6 +97,24 @@ describe('mergeImports', () => {
     expect(result.duplicateNameMapping).toEqual(new Map([['Card', 'Card_3']]))
   })
 
+  it('handles existing duplicate imports', () => {
+    const result = mergeImports(
+      '/src/code.js',
+      {
+        '/src/fileA.js': importDetails(null, [importAlias('Card')], null),
+        '/src/fileB.js': importDetails(null, [importAlias('Card', 'Card_2')], null),
+      },
+      { '/src/fileB.js': importDetails(null, [importAlias('Card')], null) },
+    )
+
+    expect(result.imports).toEqual({
+      '/src/fileA.js': importDetails(null, [importAlias('Card')], null),
+      '/src/fileB.js': importDetails(null, [importAlias('Card', 'Card_2')], null),
+    })
+
+    expect(result.duplicateNameMapping).toEqual(new Map([['Card', 'Card_2']]))
+  })
+
   it('combines the same thing imported smartly, even if the relative path are written differently, with omitted file extension', () => {
     const result = mergeImports(
       '/src/code.js',
