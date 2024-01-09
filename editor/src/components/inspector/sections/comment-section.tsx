@@ -25,7 +25,12 @@ import {
   useMyThreadReadStatus,
   useReadThreads,
 } from '../../../core/commenting/comment-hooks'
-import { Substores, useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
+import {
+  Substores,
+  useEditorState,
+  useRefEditorState,
+  useSelectorWithCallback,
+} from '../../editor/store/store-hook'
 import { when } from '../../../utils/react-conditionals'
 import {
   getFirstComment,
@@ -231,16 +236,10 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
   const isOnAnotherRoute =
     remixLocationRoute != null && remixLocationRoute !== remixState?.location.pathname
 
-  const canvasScale = useEditorState(
-    Substores.canvasOffset,
-    (store) => store.editor.canvas.scale,
-    'ThreadPreview canvasScale',
-  )
-  const canvasOffset = useEditorState(
-    Substores.canvasOffset,
-    (store) => store.editor.canvas.roundedCanvasOffset,
-    'ThreadPreview canvasOffset',
-  )
+  const editorRef = useRefEditorState((store) => ({
+    canvasScale: store.editor.canvas.scale,
+    canvasOffset: store.editor.canvas.roundedCanvasOffset,
+  }))
 
   const onClick = React.useCallback(() => {
     if (isOnAnotherRoute) {
@@ -262,7 +261,11 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
         height: canvasArea.height,
       })
 
-      const windowLocation = canvasPointToWindowPoint(location, canvasScale, canvasOffset)
+      const windowLocation = canvasPointToWindowPoint(
+        location,
+        editorRef.current.canvasScale,
+        editorRef.current.canvasOffset,
+      )
 
       // adds a padding of 250px around `location`
       const windowRect = canvasRectangle({
@@ -291,8 +294,7 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
     location,
     thread.id,
     commentScene,
-    canvasScale,
-    canvasOffset,
+    editorRef,
   ])
 
   const resolveThread = useResolveThread()
