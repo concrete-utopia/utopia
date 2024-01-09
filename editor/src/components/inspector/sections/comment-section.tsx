@@ -73,11 +73,6 @@ const ThreadPreviews = React.memo(() => {
   const dispatch = useDispatch()
   const colorTheme = useColorTheme()
 
-  const [filtersOpen, setOpen] = React.useState(false)
-  const toggleOpen = React.useCallback(() => {
-    setOpen((prevOpen) => !prevOpen)
-  }, [setOpen])
-
   const { threads } = useThreads()
   const { threads: readThreads } = useReadThreads()
 
@@ -123,104 +118,27 @@ const ThreadPreviews = React.memo(() => {
     <FlexColumn>
       <FlexRow
         style={{
-          flexGrow: 1,
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          fontWeight: 600,
           margin: 8,
+          gap: 12,
         }}
       >
-        <span>Comments</span>
-        <Tooltip title='Sort/Filter' placement='bottom'>
-          <div
-            css={{
-              display: threads.length > 1 ? 'flex' : 'none',
-              width: 20,
-              height: 20,
-              borderRadius: 3,
-              justifyContent: 'center',
-              alignItems: 'center',
-              '&:hover': {
-                backgroundColor: colorTheme.bg3.value,
-              },
+        <span style={{ fontWeight: 600 }}>Comments</span>
+        {when(
+          threads.length > 1,
+          <FlexRow
+            style={{
+              justifyContent: 'flex-end',
             }}
           >
-            <div
-              css={{
-                height: 14,
-                width: 14,
-                borderRadius: 14,
-                border:
-                  commentFilterMode !== 'all'
-                    ? `1px solid ${colorTheme.dynamicBlue.value}`
-                    : `1px solid ${colorTheme.fg1.value}`,
-                background:
-                  commentFilterMode !== 'all' ? colorTheme.dynamicBlue.value : 'transparent',
-                cursor: 'pointer',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                gap: 1,
-              }}
-              onClick={toggleOpen}
-            >
-              <div
-                style={{
-                  width: 8,
-                  height: 1,
-                  background:
-                    commentFilterMode !== 'all' ? colorTheme.bg1.value : colorTheme.fg1.value,
-                  borderRadius: 2,
-                  flexGrow: 0,
-                  flexShrink: 0,
-                }}
-              />
-              <div
-                style={{
-                  width: 6,
-                  height: 1,
-                  background:
-                    commentFilterMode !== 'all' ? colorTheme.bg1.value : colorTheme.fg1.value,
-                  borderRadius: 2,
-                  flexGrow: 0,
-                  flexShrink: 0,
-                }}
-              />
-              <div
-                style={{
-                  width: 4,
-                  height: 1,
-                  background:
-                    commentFilterMode !== 'all' ? colorTheme.bg1.value : colorTheme.fg1.value,
-                  borderRadius: 2,
-                  flexGrow: 0,
-                  flexShrink: 0,
-                }}
-              />
-            </div>
-          </div>
-        </Tooltip>
+            <PopupList
+              value={filter}
+              options={filterOptions}
+              onSubmitValue={handleSubmitValueFilter}
+              containerMode='noBorder'
+            />
+          </FlexRow>,
+        )}
       </FlexRow>
-      {when(
-        threads.length > 1,
-        <FlexRow
-          style={{
-            justifyContent: 'space-between',
-            display: filtersOpen ? 'inherit' : 'none',
-            padding: 8,
-          }}
-        >
-          Filter By:
-          <PopupList
-            value={filter}
-            options={filterOptions}
-            onSubmitValue={handleSubmitValueFilter}
-            style={{ marginLeft: 5 }}
-            containerMode='noBorder'
-          />
-        </FlexRow>,
-      )}
       {when(
         sortedThreads.length === 0,
         <div
