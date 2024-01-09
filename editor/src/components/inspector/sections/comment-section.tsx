@@ -120,6 +120,7 @@ const ThreadPreviews = React.memo(() => {
         style={{
           margin: 8,
           gap: 12,
+          height: 22,
         }}
       >
         <span style={{ fontWeight: 600 }}>Comments</span>
