@@ -1,5 +1,4 @@
-import { setupBrowser, wait } from '../utils'
-import type { Browser } from 'puppeteer'
+import { createUtopiaPuppeteerBrowser } from './test-utils'
 
 const TIMEOUT = 120000
 
@@ -7,13 +6,15 @@ const BRANCH_NAME = process.env.BRANCH_NAME ? `&branch_name=${process.env.BRANCH
 const BASE_URL = process.env.BASE_URL ?? 'http://localhost:8000'
 
 describe('Comments test', () => {
+  let utopiaBrowser = createUtopiaPuppeteerBrowser()
+
   it(
     'can place a comment',
     async () => {
-      const { page, browser } = await setupBrowser(
-        `${BASE_URL}/p/?fakeUser=alice&Multiplayer=true${BRANCH_NAME}`,
-        TIMEOUT,
-      )
+      const { page } = await utopiaBrowser.setup({
+        url: `${BASE_URL}/p/?fakeUser=alice&Multiplayer=true${BRANCH_NAME}`,
+        timeout: TIMEOUT,
+      })
 
       const signInButton = await page.waitForSelector('div[data-testid="sign-in-button"]')
       await signInButton!.click()
@@ -41,9 +42,6 @@ describe('Comments test', () => {
 
       const resolveButton = await page.waitForSelector('div[data-testid="resolve-thread-button"]')
       await resolveButton!.click()
-
-      await page.close()
-      await browser.close()
     },
     TIMEOUT,
   )
