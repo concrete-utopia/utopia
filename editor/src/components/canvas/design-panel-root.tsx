@@ -20,7 +20,7 @@ import {
 import { ConsoleAndErrorsPane } from '../code-editor/console-and-errors-pane'
 import { CanvasStrategyInspector } from './canvas-strategies/canvas-strategy-inspector'
 import { getQueryParam } from '../../common/env-vars'
-import { unless, when } from '../../utils/react-conditionals'
+import { when } from '../../utils/react-conditionals'
 import { InsertMenuPane } from '../navigator/insert-menu-pane'
 import { VariablesMenuPane } from '../navigator/variables-menu-pane'
 import { useDispatch } from '../editor/store/dispatch-context'
@@ -31,13 +31,11 @@ import { SettingsPane } from '../navigator/left-pane/settings-pane'
 import { MenuTab } from '../../uuiui/menu-tab'
 import { FlexRow } from 'utopia-api'
 import type { StoredPanel } from './stored-layout'
-import { MultiplayerPresence } from './multiplayer-presence'
 import { useRoom, useStatus } from '../../../liveblocks.config'
-import { MultiplayerWrapper } from '../../utils/multiplayer-wrapper'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { CommentsPane } from '../inspector/comments-pane'
 import { EditorModes, isCommentMode } from '../editor/editor-modes'
-import { useAllowedToEditProject } from '../editor/store/collaborative-editing'
+import { useIsMyProject } from '../editor/store/collaborative-editing'
 
 function isCodeEditorEnabled(): boolean {
   if (typeof window !== 'undefined') {
@@ -164,7 +162,7 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
     onClickTab(RightMenuTab.Settings)
   }, [onClickTab])
 
-  const allowedToEdit = useAllowedToEditProject()
+  const isMyProject = useIsMyProject()
 
   if (!isRightMenuExpanded) {
     return null
@@ -191,7 +189,7 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
           onClick={onClickInspectorTab}
         />
         {when(
-          allowedToEdit,
+          isMyProject,
           <>
             <MenuTab
               label={'Insert'}

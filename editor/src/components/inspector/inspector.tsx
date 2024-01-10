@@ -79,9 +79,8 @@ import { FlexCol } from 'utopia-api'
 import { SettingsPanel } from './sections/settings-panel/inspector-settingspanel'
 import { strictEvery } from '../../core/shared/array-utils'
 import { SimplifiedLayoutSubsection } from './sections/layout-section/self-layout-subsection/simplified-layout-subsection'
-import { isFeatureEnabled } from '../../utils/feature-switches'
 import { ConstraintsSection } from './constraints-section'
-import { useAllowedToEditProject } from '../editor/store/collaborative-editing'
+import { useIsMyProject } from '../editor/store/collaborative-editing'
 
 export interface ElementPathElement {
   name?: string
@@ -337,7 +336,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     'Inspector anyKnownElements',
   )
 
-  const allowedToEdit = useAllowedToEditProject()
+  const isMyProject = useIsMyProject()
 
   function renderInspectorContents() {
     return (
@@ -385,7 +384,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
               hideAllSections,
               <>
                 {when(
-                  allowedToEdit,
+                  isMyProject,
                   <TargetSelectorSection
                     targets={props.targets}
                     selectedTargetPath={props.selectedTargetPath}

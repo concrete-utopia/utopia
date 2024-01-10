@@ -6,7 +6,7 @@ import type { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './
 import { colorTheme } from '../../../uuiui'
 import type { IcnProps } from '../../../uuiui'
 import { UtopiaTheme, Tooltip, Icn } from '../../../uuiui'
-import { useAllowedToEditProject } from '../../editor/store/collaborative-editing'
+import { useIsMyProject } from '../../editor/store/collaborative-editing'
 
 export interface DEPRECATEDOptionControlOptions extends DEPRECATEDGenericControlOptions {
   icon?: IcnProps
@@ -61,7 +61,7 @@ export const OptionControl: React.FunctionComponent<
     }
   }
 
-  const allowedToEdit = useAllowedToEditProject()
+  const isMyProject = useIsMyProject()
 
   const background = (() => {
     if (props.controlStatus === 'overridden' && props.value) {
@@ -134,7 +134,7 @@ export const OptionControl: React.FunctionComponent<
             }}
             type='checkbox'
             checked={isChecked}
-            disabled={!props.controlStyles.interactive || !allowedToEdit}
+            disabled={!props.controlStyles.interactive || !isMyProject}
             onChange={onSubmitValue}
           />
           <div

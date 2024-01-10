@@ -8,7 +8,7 @@ import type { ControlStyles } from '../common/control-styles'
 import type { ControlStatus } from '../common/control-status'
 import { useColorTheme, UtopiaTheme } from '../../../uuiui'
 import Utils from '../../../utils/utils'
-import { useAllowedToEditProject } from '../../editor/store/collaborative-editing'
+import { useIsMyProject } from '../../editor/store/collaborative-editing'
 
 export interface ColorControlProps {
   value: CSSColor
@@ -82,7 +82,7 @@ export const ColorControl = React.memo((props: ColorControlProps) => {
 
   const closePopup = React.useCallback(() => setPopupOpen(false), [setPopupOpen])
 
-  const allowedToEdit = useAllowedToEditProject()
+  const isMyProject = useIsMyProject()
 
   const picker = !popupOpen ? null : (
     <ColorPicker
@@ -94,7 +94,7 @@ export const ColorControl = React.memo((props: ColorControlProps) => {
       value={props.value}
       onSubmitValue={props.onSubmitValue}
       onTransientSubmitValue={props.onTransientSubmitValue}
-      disabled={!allowedToEdit}
+      disabled={!isMyProject}
     />
   )
 

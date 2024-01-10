@@ -27,7 +27,7 @@ import type { ControlStyles, SelectOption } from '../../../uuiui-deps'
 import { CommonUtils, getControlStyles } from '../../../uuiui-deps'
 import { SmallerIcons } from '../../../uuiui/icons'
 import { Tooltip } from '../../tooltip'
-import { useAllowedToEditProject } from '../../../components/editor/store/collaborative-editing'
+import { useIsMyProject } from '../../../components/editor/store/collaborative-editing'
 
 type ContainerMode = 'default' | 'showBorderOnHover' | 'noBorder'
 
@@ -592,8 +592,8 @@ export const PopupList = React.memo<PopupListProps>(
       },
       ref,
     ) => {
-      const allowedToEdit = useAllowedToEditProject()
-      const disabled = initialDisabled || !controlStyles.interactive || !allowedToEdit
+      const isMyProject = useIsMyProject()
+      const disabled = initialDisabled || !controlStyles.interactive || !isMyProject
 
       const selectOnSubmitValue = React.useCallback(
         (newValue: ValueType<SelectOption>) => {

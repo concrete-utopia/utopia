@@ -66,7 +66,7 @@ import {
 import { useSelectionArea } from './selection-area-hooks'
 import { RemixSceneLabelControl } from './select-mode/remix-scene-label'
 import { NO_OP } from '../../../core/shared/utils'
-import { useAllowedToEditProject } from '../../editor/store/collaborative-editing'
+import { useIsMyProject } from '../../editor/store/collaborative-editing'
 import { useStatus } from '../../../../liveblocks.config'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { MultiplayerPresence } from '../multiplayer-presence'
@@ -502,7 +502,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       })
   }
 
-  const allowedToEdit = useAllowedToEditProject()
+  const isMyProject = useIsMyProject()
 
   const resizeStatus = getResizeStatus()
 
@@ -540,7 +540,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
             <ZeroSizedElementControls.control showAllPossibleElements={false} />
 
             {when(
-              allowedToEdit,
+              isMyProject,
               <>
                 {inspectorFocusedControls.map((c) => (
                   <RenderControlMemoized

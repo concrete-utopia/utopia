@@ -3,7 +3,7 @@ import Slider from 'rc-slider'
 import React from 'react'
 import { FlexRow, UtopiaTheme } from '../../../uuiui'
 import type { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './control'
-import { useAllowedToEditProject } from '../../editor/store/collaborative-editing'
+import { useIsMyProject } from '../../editor/store/collaborative-editing'
 
 export interface DEPRECATEDSliderControlOptions extends DEPRECATEDGenericControlOptions {
   minimum: number
@@ -102,7 +102,7 @@ export const SliderControl: React.FunctionComponent<React.PropsWithChildren<Slid
     }
   }
 
-  const allowedToEdit = useAllowedToEditProject()
+  const isMyProject = useIsMyProject()
 
   return (
     <FlexRow
@@ -118,7 +118,7 @@ export const SliderControl: React.FunctionComponent<React.PropsWithChildren<Slid
       onContextMenu={props.onContextMenu}
     >
       <Slider
-        disabled={!props.controlStyles.interactive || !allowedToEdit}
+        disabled={!props.controlStyles.interactive || !isMyProject}
         value={isSliding ? slidingValue : value}
         onBeforeChange={handleBeforeChange}
         onChange={handleDragging}

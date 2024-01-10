@@ -50,7 +50,7 @@ import {
   InspectorInput,
 } from './base-input'
 import { usePropControlledStateV2 } from '../../components/inspector/common/inspector-utils'
-import { useAllowedToEditProject } from '../../components/editor/store/collaborative-editing'
+import { useIsMyProject } from '../../components/editor/store/collaborative-editing'
 
 export type LabelDragDirection = 'horizontal' | 'vertical'
 
@@ -189,7 +189,7 @@ export const NumberInput = React.memo<NumberInputProps>(
     const ref = React.useRef<HTMLInputElement>(null)
     const colorTheme = useColorTheme()
 
-    const allowedToEdit = useAllowedToEditProject()
+    const isMyProject = useIsMyProject()
 
     const controlStyles = React.useMemo((): ControlStyles => {
       return {
@@ -556,7 +556,7 @@ export const NumberInput = React.memo<NumberInputProps>(
 
     const onIncrementMouseDown = React.useCallback(
       (e: React.MouseEvent) => {
-        if (!allowedToEdit) {
+        if (!isMyProject) {
           return
         }
         if (e.button === 0) {
@@ -570,7 +570,7 @@ export const NumberInput = React.memo<NumberInputProps>(
           }, repeatThreshold)
         }
       },
-      [incrementBy, stepSize, repeatIncrement, onIncrementMouseUp, allowedToEdit],
+      [incrementBy, stepSize, repeatIncrement, onIncrementMouseUp, isMyProject],
     )
 
     const onDecrementMouseUp = React.useCallback(() => {
@@ -602,7 +602,7 @@ export const NumberInput = React.memo<NumberInputProps>(
 
     const onDecrementMouseDown = React.useCallback(
       (e: React.MouseEvent) => {
-        if (!allowedToEdit) {
+        if (!isMyProject) {
           return
         }
         if (e.button === 0) {
@@ -617,12 +617,12 @@ export const NumberInput = React.memo<NumberInputProps>(
           )
         }
       },
-      [incrementBy, stepSize, repeatIncrement, onDecrementMouseUp, allowedToEdit],
+      [incrementBy, stepSize, repeatIncrement, onDecrementMouseUp, isMyProject],
     )
 
     const onLabelMouseDown = React.useCallback(
       (e: React.MouseEvent<HTMLDivElement>) => {
-        if (!allowedToEdit) {
+        if (!isMyProject) {
           return
         }
         if (e.button === 0) {
@@ -637,7 +637,7 @@ export const NumberInput = React.memo<NumberInputProps>(
           setGlobalCursor?.(CSSCursor.ResizeEW)
         }
       },
-      [scrubOnMouseMove, scrubOnMouseUp, setGlobalCursor, value, allowedToEdit],
+      [scrubOnMouseMove, scrubOnMouseUp, setGlobalCursor, value, isMyProject],
     )
 
     const placeholder = getControlStylesAwarePlaceholder(controlStyles)
@@ -690,7 +690,7 @@ export const NumberInput = React.memo<NumberInputProps>(
             controlStyles={controlStyles}
             controlStatus={controlStatus}
             testId={testId}
-            disabled={!allowedToEdit}
+            disabled={!isMyProject}
             focused={isFocused}
             hasLabel={labelInner != null}
             roundCorners={roundCorners}

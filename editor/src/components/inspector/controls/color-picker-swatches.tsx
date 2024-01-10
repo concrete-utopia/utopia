@@ -15,7 +15,7 @@ import { useDispatch } from '../../editor/store/dispatch-context'
 import type { ColorSwatch } from '../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { cssColorToChromaColorOrDefault } from '../common/css-utils'
-import { useAllowedToEditProject } from '../../editor/store/collaborative-editing'
+import { useIsMyProject } from '../../editor/store/collaborative-editing'
 
 const { checkerboardBackground } = UtopiaStyles.backgrounds
 
@@ -54,14 +54,14 @@ export const ColorPickerSwatches = React.memo((props: ColorPickerSwatchesProps) 
     }
   }, [colorSwatches])
 
-  const allowedToEdit = useAllowedToEditProject()
+  const isMyProject = useIsMyProject()
 
   const toggleEditing = React.useCallback(() => {
-    if (!allowedToEdit) {
+    if (!isMyProject) {
       return
     }
     setEditing(!editing)
-  }, [editing, allowedToEdit])
+  }, [editing, isMyProject])
 
   const onAddColor = React.useCallback(() => {
     if (currentColor == null) {
@@ -112,7 +112,7 @@ export const ColorPickerSwatches = React.memo((props: ColorPickerSwatchesProps) 
             style={{
               padding: '0 6px',
             }}
-            disabled={!allowedToEdit}
+            disabled={!isMyProject}
             onMouseDown={toggleEditing}
           >
             {when(editing, <Icons.Checkmark />)}
