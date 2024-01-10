@@ -84,6 +84,14 @@ dummyUserAlice = UserDetails { userId  = "ab9401d8-f6f0-4642-8239-2435656bf0b2"
                              , picture = Just "/editor/avatars/utopino3.png"
                              }
 
+dummyUserBob :: UserDetails
+dummyUserBob = UserDetails { userId  = "231f5f05-cac7-4910-8006-d7645c44051c"
+                            , email   = Just "team1@utopia.app"
+                            , name    = Just "Also a real human being"
+                            , picture = Just "/editor/avatars/utopino2.png"
+                            }
+
+
 {-|
   Interpretor for a service call, which converts it into side effecting calls ready to be invoked.
 -}
@@ -106,6 +114,7 @@ innerServerExecutor (CheckAuthCode authCode action) = do
   canUseFakeUser <- fmap _shouldUseFakeUser ask
   case (canUseFakeUser, authCode) of
     (True, "alice") -> successfulAuthCheck metrics pool sessionStore action dummyUserAlice
+    (True, "bob") -> successfulAuthCheck metrics pool sessionStore action dummyUserBob
     _ -> auth0CodeCheck metrics pool sessionStore auth0 authCode action
 innerServerExecutor (Logout cookie pageContents action) = do
   sessionStore <- fmap _sessionState ask

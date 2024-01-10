@@ -109,11 +109,18 @@ dummyUser cdnRoot = UserDetails { userId  = "1"
                                 }
 
 dummyUserAlice :: Text -> UserDetails
-dummyUserAlice cdnRoot = UserDetails { userId  = "ab9401d8-f6f0-4642-8239-2435656bf0b2 "
+dummyUserAlice cdnRoot = UserDetails { userId  = "ab9401d8-f6f0-4642-8239-2435656bf0b2"
                                      , email   = Just "team1@utopia.app"
                                      , name    = Just "A real human being"
                                      , picture = Just (cdnRoot <> "/editor/avatars/utopino3.png")
                                      }
+
+dummyUserBob :: Text -> UserDetails
+dummyUserBob cdnRoot = UserDetails { userId  = "231f5f05-cac7-4910-8006-d7645c44051c"
+                                    , email   = Just "team1@utopia.app"
+                                    , name    = Just "Also a real human being"
+                                    , picture = Just (cdnRoot <> "/editor/avatars/utopino2.png")
+                                    }
 
 {-|
   Fallback for validating the authentication code in the case where Auth0 isn't setup locally.
@@ -167,6 +174,7 @@ innerServerExecutor (CheckAuthCode authCode action) = do
   let codeCheck = maybe localAuthCodeCheck (auth0CodeCheck metrics pool sessionStore) auth0
   case authCode of
     "alice" -> successfulAuthCheck metrics pool sessionStore action (dummyUserAlice cdnRoot)
+    "bob" -> successfulAuthCheck metrics pool sessionStore action (dummyUserBob cdnRoot)
     _ -> codeCheck authCode action
 innerServerExecutor (Logout cookie pageContents action) = do
   sessionStore <- fmap _sessionState ask

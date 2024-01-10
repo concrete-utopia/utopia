@@ -739,6 +739,11 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       // Due to the introduction of this https://www.chromestatus.com/features/6662647093133312 combined with
       // React's lack of support for event handler options (https://github.com/facebook/react/issues/6436) we
       // have to add this event handler in a rather clunky way to enable us to call preventDefault() on it
+      // Balint 2024: I commented this out and it did not seem to break anything. I'm not sure we still need this,
+      // and it can cause headaches: the listener callback here runs earlier than any handlers of the React synthetic events,
+      // which means all the wheel events will be preventDefaulted in the descendants of EditorCanvas. Which means
+      // it is not possible to scroll elements inside the canvas, except if you add an event listener manually with
+      // a ref to stop propagation. In that case the event will not reach the listener here.
       this.canvasWrapperRef.addEventListener('wheel', this.suppressBrowserNavigation, {
         passive: false,
       })

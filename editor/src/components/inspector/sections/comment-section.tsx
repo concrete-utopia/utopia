@@ -25,7 +25,12 @@ import {
   useMyThreadReadStatus,
   useReadThreads,
 } from '../../../core/commenting/comment-hooks'
-import { Substores, useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
+import {
+  Substores,
+  useEditorState,
+  useRefEditorState,
+  useSelectorWithCallback,
+} from '../../editor/store/store-hook'
 import { when } from '../../../utils/react-conditionals'
 import {
   getFirstComment,
@@ -231,16 +236,10 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
   const isOnAnotherRoute =
     remixLocationRoute != null && remixLocationRoute !== remixState?.location.pathname
 
-  const canvasScale = useEditorState(
-    Substores.canvasOffset,
-    (store) => store.editor.canvas.scale,
-    'ThreadPreview canvasScale',
-  )
-  const canvasOffset = useEditorState(
-    Substores.canvasOffset,
-    (store) => store.editor.canvas.roundedCanvasOffset,
-    'ThreadPreview canvasOffset',
-  )
+  const editorRef = useRefEditorState((store) => ({
+    canvasScale: store.editor.canvas.scale,
+    canvasOffset: store.editor.canvas.roundedCanvasOffset,
+  }))
 
   const onClick = React.useCallback(() => {
     if (isOnAnotherRoute) {
@@ -261,17 +260,29 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
         width: canvasArea.width - visibleAreaTolerance * 2,
         height: canvasArea.height,
       })
-      const rect = canvasRectangle({ x: location.x, y: location.y, width: 25, height: 25 })
-      const windowLocation = canvasPointToWindowPoint(location, canvasScale, canvasOffset)
+
+      const windowLocation = canvasPointToWindowPoint(
+        location,
+        editorRef.current.canvasScale,
+        editorRef.current.canvasOffset,
+      )
+
+      // adds a padding of 250px around `location`
       const windowRect = canvasRectangle({
-        x: windowLocation.x,
-        y: windowLocation.y,
-        width: rect.width,
-        height: rect.height,
+        x: windowLocation.x - 250,
+        y: windowLocation.y - 250,
+        width: 500,
+        height: 500,
       })
       const isVisible = rectangleContainsRectangle(visibleArea, windowRect)
       if (!isVisible) {
-        actions.push(scrollToPosition(rect, 'to-center'))
+        const scrollToRect = canvasRectangle({
+          x: location.x,
+          y: location.y,
+          width: 25,
+          height: 25,
+        })
+        actions.push(scrollToPosition(scrollToRect, 'to-center'))
       }
     }
     dispatch(actions)
@@ -283,8 +294,7 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
     location,
     thread.id,
     commentScene,
-    canvasScale,
-    canvasOffset,
+    editorRef,
   ])
 
   const resolveThread = useResolveThread()
