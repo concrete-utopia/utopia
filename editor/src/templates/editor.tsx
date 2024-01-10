@@ -142,6 +142,8 @@ import { Provider as JotaiProvider } from 'jotai'
 import { forceNotNull } from '../core/shared/optional-utils'
 import { Defer } from '../utils/utils'
 import invariant from '../third-party/remix/invariant'
+import { GitRepoToLoadAtom } from '../components/github/github-clone-overlay'
+import { updatePubSubAtomFromOutsideReact } from '../core/shared/atom-with-pub-sub'
 
 const LoadActionsDispatched = 'loadActionDispatched'
 
@@ -373,7 +375,6 @@ export class Editor {
           }
 
           const urlParams = new URLSearchParams(window.location.search)
-          const githubBranch = urlParams.get('github_branch')
           const importURL = urlParams.get('import_url')
 
           const githubRepoObj: GithubRepo | null = (() => {
@@ -402,7 +403,9 @@ export class Editor {
             this.storedState.persistence.createNew(createNewProjectName(), defaultProject())
           } else if (projectId == null) {
             if (githubRepoObj != null) {
-              // we let github-clone-overlay.tsx take over
+              // by setting GitRepoToLoadAtom, we trigger github-clone-overlay.tsx which will take over the clone flow
+              updatePubSubAtomFromOutsideReact(GitRepoToLoadAtom, 'async', githubRepoObj)
+              // TODO somehow make it a compile error if we don't give the control over to the component
             } else if (importURL != null) {
               this.createNewProjectFromImportURL(importURL)
             } else {
