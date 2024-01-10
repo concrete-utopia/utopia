@@ -131,8 +131,8 @@ describe('modifyUnderlyingTarget', () => {
           null,
           [importAlias('Spring')],
           null,
-          addImport('', 'react', null, [], 'React', emptyImports()),
-        ),
+          addImport('', 'react', null, [], 'React', emptyImports()).imports,
+        ).imports,
       )
     } else {
       throw new Error('No parsed version of the file.')

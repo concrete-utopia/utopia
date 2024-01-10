@@ -150,6 +150,27 @@ export function importDetailsEquals(first: ImportDetails, second: ImportDetails)
 
 export type Imports = { [importSource: string]: ImportDetails }
 
+export type ImportsMergeResolution = {
+  imports: Imports
+  duplicateNameMapping: Map<string, string>
+}
+
+export function importsResolution(
+  imports: Imports,
+  duplicateNameMapping: Map<string, string> = new Map<string, string>(),
+): ImportsMergeResolution {
+  return {
+    imports: imports,
+    duplicateNameMapping: duplicateNameMapping,
+  }
+}
+
+export function isImportsMergeResolution(
+  imports: Imports | ImportsMergeResolution,
+): imports is ImportsMergeResolution {
+  return imports.hasOwnProperty('imports')
+}
+
 export function importsEquals(first: Imports, second: Imports): boolean {
   return objectEquals(first, second, importDetailsEquals)
 }

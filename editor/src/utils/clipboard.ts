@@ -349,7 +349,12 @@ export function createClipboardDataFromSelection(
       builtInDependencies,
     )
 
-    return EditorActions.elementPaste(elementToPaste, requiredImports, target)
+    return EditorActions.elementPaste(
+      elementToPaste,
+      requiredImports.imports,
+      target,
+      requiredImports.duplicateNameMapping,
+    )
   }, filteredSelectedViews)
 
   const copyDataWithPropsPreserved: ElementPasteWithMetadata = {

@@ -5,6 +5,7 @@ import type {
   ParsedJSONSuccess,
   ImportAlias,
   RevisionsStateType,
+  ImportsMergeResolution,
 } from '../../shared/project-file-types'
 import { RevisionsState } from '../../shared/project-file-types'
 import { fastForEach } from '../../shared/utils'
@@ -12,6 +13,7 @@ import { defaultIfNull, optionalMap } from '../../shared/optional-utils'
 
 import { absolutePathFromRelativePath } from '../../../utils/path-utils'
 import { stripExtension } from '../../../components/custom-code/custom-code-utils'
+import { renameDuplicateImports } from '../../shared/import-shared-utils'
 
 export function codeNeedsPrinting(revisionsState: RevisionsStateType): boolean {
   return revisionsState === RevisionsState.ParsedAhead
@@ -26,6 +28,13 @@ export function codeNeedsParsing(revisionsState: RevisionsStateType): boolean {
 
 export function emptyImports(): Imports {
   return {}
+}
+
+export function emptyImportsMergeResolution(): ImportsMergeResolution {
+  return {
+    imports: emptyImports(),
+    duplicateNameMapping: new Map<string, string>(),
+  }
 }
 
 function mergeImportedFromWithin(
@@ -100,8 +109,18 @@ function mergeMaybeImportDetails(
   )
 }
 
-export function mergeImports(fileUri: string, first: Imports, second: Imports): Imports {
-  const allImportSources = new Set([...Object.keys(first), ...Object.keys(second)])
+export function mergeImports(
+  fileUri: string,
+  first: Imports,
+  second: Imports,
+): ImportsMergeResolution {
+  const { imports: secondWithoutDuplicates, duplicateNameMapping } = renameDuplicateImports(
+    first,
+    second,
+    fileUri,
+  )
+
+  const allImportSources = new Set([...Object.keys(first), ...Object.keys(secondWithoutDuplicates)])
   let absoluteImportSourcePathsToRelativeImportSourcePaths: {
     [absolutePath: string]: string | undefined
   } = {}
@@ -125,7 +144,8 @@ export function mergeImports(fileUri: string, first: Imports, second: Imports): 
     }
 
     const importDetailsFromFirst: ImportDetails | null = first[importSource] ?? null
-    const importDetailsFromSecond: ImportDetails | null = second[importSource] ?? null
+    const importDetailsFromSecond: ImportDetails | null =
+      secondWithoutDuplicates[importSource] ?? null
     const existingImport: ImportDetails | null = imports[existingImportSourceToUse] ?? null
     const merged: ImportDetails | null = mergeMaybeImportDetails(
       existingImport,
@@ -136,7 +156,8 @@ export function mergeImports(fileUri: string, first: Imports, second: Imports): 
       imports[existingImportSourceToUse] = merged
     }
   })
-  return imports
+
+  return { imports, duplicateNameMapping }
 }
 
 export function addImport(
@@ -146,7 +167,7 @@ export function addImport(
   importedFromWithin: Array<ImportAlias>,
   importedAs: string | null,
   imports: Imports,
-): Imports {
+): ImportsMergeResolution {
   const toAdd: Imports = {
     [importedFrom]: {
       importedWithName: importedWithName,

@@ -3,7 +3,7 @@ import { insertJSXElementChildren } from '../../../core/model/element-template-u
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import * as EP from '../../../core/shared/element-path'
 import { optionalMap } from '../../../core/shared/optional-utils'
-import type { ElementPath } from '../../../core/shared/project-file-types'
+import { type ElementPath } from '../../../core/shared/project-file-types'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import type { InsertionSubject } from '../../editor/editor-modes'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
@@ -11,6 +11,7 @@ import { forUnderlyingTargetFromEditorState } from '../../editor/store/editor-st
 import type { InsertionPath } from '../../editor/store/insertion-path'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 import { getPatchForComponentChange } from './commands'
+import { renameIfNeeded, type JSXElement } from '../../../core/shared/element-template'
 
 export interface InsertElementInsertionSubject extends BaseCommand {
   type: 'INSERT_ELEMENT_INSERTION_SUBJECT'
@@ -39,31 +40,35 @@ export const runInsertElementInsertionSubject: CommandFunction<InsertElementInse
   let selectedViews: Array<ElementPath> = []
   const { subject, insertionPath } = command
 
+  let subjectElement: JSXElement = subject.element
+
   forUnderlyingTargetFromEditorState(
     insertionPath.intendedParentPath,
     editor,
     (success, _element, _underlyingTarget, underlyingFilePath) => {
       const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
 
+      const updatedImports = mergeImports(underlyingFilePath, success.imports, subject.importsToAdd)
+
+      subjectElement = renameIfNeeded(subject.element, updatedImports.duplicateNameMapping)
+
       const insertionResult = insertJSXElementChildren(
         insertionPath,
-        [subject.element],
+        [subjectElement],
         utopiaComponents,
         null,
       )
-
-      const updatedImports = mergeImports(underlyingFilePath, success.imports, subject.importsToAdd)
 
       editorStatePatches.push(
         getPatchForComponentChange(
           success.topLevelElements,
           insertionResult.components,
-          updatedImports,
+          updatedImports.imports,
           underlyingFilePath,
         ),
       )
       editorStatePatches.push(includeToastPatch(insertionResult.insertionDetails, editor))
-      selectedViews.push(EP.appendToPath(insertionPath.intendedParentPath, subject.element.uid))
+      selectedViews.push(EP.appendToPath(insertionPath.intendedParentPath, subjectElement.uid))
     },
   )
 
@@ -77,7 +82,7 @@ export const runInsertElementInsertionSubject: CommandFunction<InsertElementInse
 
   return {
     editorStatePatches: editorStatePatches,
-    commandDescription: `Insert element ${subject.element.uid} to parent ${optionalMap(
+    commandDescription: `Insert element ${subjectElement.uid} to parent ${optionalMap(
       EP.toUid,
       insertionPath.intendedParentPath,
     )}`,

@@ -8,7 +8,7 @@ import {
   jsxElement,
   jsxFragment,
 } from '../../../core/shared/element-template'
-import type { ElementPath, Imports } from '../../../core/shared/project-file-types'
+import { type ElementPath, type Imports } from '../../../core/shared/project-file-types'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import {
   forUnderlyingTargetFromEditorState,
@@ -115,7 +115,7 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
         getPatchForComponentChange(
           success.topLevelElements,
           insertionResult.components,
-          mergeImports(underlyingFilePath, withElementRemoved.imports, imports),
+          mergeImports(underlyingFilePath, withElementRemoved.imports, imports).imports,
           underlyingFilePath,
         ),
       )

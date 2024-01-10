@@ -154,7 +154,8 @@ export var Card = (props) => {
                 \\"card-element-to-copy\\"
               ]
             ]
-          }
+          },
+          duplicateNameMap: {}
         }
       ]"
     `)
