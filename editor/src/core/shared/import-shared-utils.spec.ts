@@ -1,6 +1,6 @@
-import type { ImportDetails } from '../../../core/shared/project-file-types'
-import { importAlias, importDetails } from '../../../core/shared/project-file-types'
-import { renameDuplicateImports } from './import-worker-utils'
+import type { ImportDetails } from './project-file-types'
+import { importAlias, importDetails } from './project-file-types'
+import { renameDuplicateImports } from './import-shared-utils'
 
 describe('renameDuplicateImports', () => {
   const tests: {

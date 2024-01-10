@@ -1,8 +1,8 @@
-import type { Imports, ImportsMergeResolution } from '../../../core/shared/project-file-types'
-import { mapValues } from '../../../core/shared/object-utils'
-import { importAlias, importDetails } from '../../../core/shared/project-file-types'
-import { absolutePathFromRelativePath } from '../../../utils/path-utils'
-import { stripExtension } from '../../../components/custom-code/custom-code-utils'
+import type { Imports, ImportsMergeResolution } from './project-file-types'
+import { mapValues } from './object-utils'
+import { importAlias, importDetails } from './project-file-types'
+import { absolutePathFromRelativePath } from '../../utils/path-utils'
+import { stripExtension } from '../../components/custom-code/custom-code-utils'
 
 export function renameDuplicateImports(
   existingImports: Imports,

@@ -25,7 +25,7 @@ import type { ProjectContentTreeRoot } from '../assets'
 import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 import { withUnderlyingTarget } from './store/editor-state'
 import * as EP from '../../core/shared/element-path'
-import { renameDuplicateImportsInMergeResolution } from '../../core/workers/common/import-worker-utils'
+import { renameDuplicateImportsInMergeResolution } from '../../core/shared/import-shared-utils'
 import { getParseSuccessForFilePath } from '../canvas/canvas-utils'
 
 export function getRequiredImportsForElement(

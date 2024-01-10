@@ -53,7 +53,7 @@ import { boundingRectangleArray, nullIfInfinity } from '../../../../core/shared/
 import { isElementRenderedBySameComponent } from './reparent-helpers/reparent-helpers'
 import type { ParsedCopyData } from '../../../../utils/clipboard'
 import { getParseSuccessForFilePath } from '../../canvas-utils'
-import { renameDuplicateImports } from '../../../../core/workers/common/import-worker-utils'
+import { renameDuplicateImports } from '../../../../core/shared/import-shared-utils'
 
 interface GetReparentOutcomeResult {
   commands: Array<CanvasCommand>
