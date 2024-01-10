@@ -1662,7 +1662,7 @@ export function clearPostActionData(): ClearPostActionSession {
 }
 
 export function updateProjectServerState(
-  projectServerState: ProjectServerState,
+  projectServerState: Partial<ProjectServerState>,
 ): UpdateProjectServerState {
   return {
     action: 'UPDATE_PROJECT_SERVER_STATE',

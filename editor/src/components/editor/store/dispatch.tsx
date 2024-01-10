@@ -628,7 +628,7 @@ export function editorDispatchClosingOut(
     ]),
     saveCountThisSession: saveCountThisSession + (shouldSave ? 1 : 0),
     builtInDependencies: storedState.builtInDependencies,
-    projectServerState: storedState.projectServerState,
+    projectServerState: result.projectServerState,
     collaborativeEditingSupport: storedState.collaborativeEditingSupport,
   }
 
@@ -830,6 +830,7 @@ function editorDispatchInner(
       storedState.nothingChanged &&
       storedState.unpatchedEditor === result.unpatchedEditor &&
       storedState.userState === result.userState &&
+      storedState.projectServerState === result.projectServerState &&
       storedState.postActionInteractionSession === result.postActionInteractionSession
 
     const domMetadataChanged =

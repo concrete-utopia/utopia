@@ -7,7 +7,7 @@ import { updateProjectServerState } from '../actions/action-creators'
 import { checkProjectOwned } from '../persistence/persistence-backend'
 import type { ProjectOwnership } from '../persistence/generic/persistence-types'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { claimControlOverProject } from './collaborative-editing'
+import { claimControlOverProject, displayControlErrorToast } from './collaborative-editing'
 
 export interface ProjectMetadataFromServer {
   title: string
@@ -76,11 +76,16 @@ function projectListingToProjectMetadataFromServer(
 }
 
 export async function getProjectServerState(
+  dispatch: EditorDispatch,
   projectId: string | null,
   forkedFromProjectId: string | null,
 ): Promise<ProjectServerState> {
   if (IS_TEST_ENVIRONMENT) {
-    return emptyProjectServerState()
+    return {
+      ...emptyProjectServerState(),
+      isMyProject: 'yes',
+      currentlyHolderOfTheBaton: true,
+    }
   } else {
     const projectListing = projectId == null ? null : await fetchProjectMetadata(projectId)
     const forkedFromProjectListing =
@@ -95,7 +100,19 @@ export async function getProjectServerState(
     }
     const ownership = await getOwnership()
 
-    const holderOfTheBaton = (await claimControlOverProject(projectId)) ?? ownership.isOwner
+    const holderOfTheBaton = ownership.isOwner
+      ? await claimControlOverProject(projectId)
+          .then((result) => {
+            return result ?? ownership.isOwner
+          })
+          .catch(() => {
+            displayControlErrorToast(
+              dispatch,
+              'Error while attempting to claim control over this project.',
+            )
+            return false
+          })
+      : false
 
     return {
       isMyProject: ownership.isOwner ? 'yes' : 'no',
@@ -112,7 +129,7 @@ export function updateProjectServerStateInStore(
   forkedFromProjectId: string | null,
   dispatch: EditorDispatch,
 ) {
-  void getProjectServerState(projectId, forkedFromProjectId)
+  void getProjectServerState(dispatch, projectId, forkedFromProjectId)
     .then((serverState) => {
       dispatch([updateProjectServerState(serverState)], 'everyone')
     })

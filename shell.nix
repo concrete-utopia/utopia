@@ -405,7 +405,7 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)
       PGLOCK_DIR="`pwd`/.pglock/"
       mkdir -p $PGLOCK_DIR
-      ${postgres}/bin/psql -h "$PGLOCK_DIR" -d utopia
+      ${postgres}/bin/psql -h "$PGLOCK_DIR" -d utopia "$@"
     '')
   ];
 

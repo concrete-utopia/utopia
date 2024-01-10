@@ -41,6 +41,22 @@ data ClaimProjectControl = ClaimProjectControl
 instance FromJSON ClaimProjectControl where
   parseJSON = genericParseJSON defaultOptions
 
+data SnatchProjectControl = SnatchProjectControl
+                           { projectID           :: Text
+                           , collaborationEditor :: Text
+                           } deriving (Eq, Show, Generic)
+
+instance FromJSON SnatchProjectControl where
+  parseJSON = genericParseJSON defaultOptions
+
+data ReleaseProjectControl = ReleaseProjectControl
+                           { projectID           :: Text
+                           , collaborationEditor :: Text
+                           } deriving (Eq, Show, Generic)
+
+instance FromJSON ReleaseProjectControl where
+  parseJSON = genericParseJSON defaultOptions
+
 data ClearAllOfCollaboratorsControl = ClearAllOfCollaboratorsControl
                            { collaborationEditor   :: Text
                            } deriving (Eq, Show, Generic)
@@ -49,6 +65,8 @@ instance FromJSON ClearAllOfCollaboratorsControl where
   parseJSON = genericParseJSON defaultOptions
 
 data CollaborationRequest = ClaimProjectControlRequest ClaimProjectControl
+                          | SnatchProjectControlRequest SnatchProjectControl
+                          | ReleaseProjectControlRequest ReleaseProjectControl
                           | ClearAllOfCollaboratorsControlRequest ClearAllOfCollaboratorsControl
                           deriving (Eq, Show, Generic)
 
@@ -57,29 +75,31 @@ instance FromJSON CollaborationRequest where
     let fileType = firstOf (key "type" . _String) value
      in case fileType of
           (Just "CLAIM_PROJECT_CONTROL") -> fmap ClaimProjectControlRequest $ parseJSON value
+          (Just "SNATCH_PROJECT_CONTROL") -> fmap SnatchProjectControlRequest $ parseJSON value
+          (Just "RELEASE_PROJECT_CONTROL") -> fmap ReleaseProjectControlRequest $ parseJSON value
           (Just "CLEAR_ALL_OF_COLLABORATORS_CONTROL") -> fmap ClearAllOfCollaboratorsControlRequest $ parseJSON value
           (Just unknownType)               -> fail ("Unknown type: " <> T.unpack unknownType)
           _                                -> fail "No type for CollaborationRequest specified."
 
-data ClaimProjectControlResult = ClaimProjectControlResult
+data RequestProjectControlResult = RequestProjectControlResult
                                  { successfullyClaimed   :: Bool
                                  } deriving (Eq, Show, Generic)
 
-instance ToJSON ClaimProjectControlResult where
+instance ToJSON RequestProjectControlResult where
   toJSON = genericToJSON defaultOptions
 
-data ClearAllOfCollaboratorsControlResult = ClearAllOfCollaboratorsControlResult
+data ReleaseControlResult = ReleaseControlResult
                                             deriving (Eq, Show, Generic)
 
-instance ToJSON ClearAllOfCollaboratorsControlResult where
+instance ToJSON ReleaseControlResult where
   toJSON _ = object []
 
-data CollaborationResponse = ClaimProjectControlResultResponse ClaimProjectControlResult
-                           | ClearAllOfCollaboratorsControlResponse ClearAllOfCollaboratorsControlResult
+data CollaborationResponse = RequestProjectControlResultResponse RequestProjectControlResult
+                           | ReleaseControlResponse ReleaseControlResult
                            deriving (Eq, Show, Generic)
 
 instance ToJSON CollaborationResponse where
-  toJSON (ClaimProjectControlResultResponse claimResult) = over _Object (M.insert "type" "CLAIM_PROJECT_CONTROL_RESULT") $ toJSON claimResult
-  toJSON (ClearAllOfCollaboratorsControlResponse clearResult) = over _Object (M.insert "type" "CLEAR_ALL_OF_COLLABORATORS_CONTROL_RESULT") $ toJSON clearResult
+  toJSON (RequestProjectControlResultResponse claimResult) = over _Object (M.insert "type" "REQUEST_PROJECT_CONTROL_RESULT") $ toJSON claimResult
+  toJSON (ReleaseControlResponse releaseResult) = over _Object (M.insert "type" "RELEASE_CONTROL_RESULT") $ toJSON releaseResult
 
 type CollaborationSocketAPI = "v1" :> "collaboration" :>  ReqBody '[JSON] CollaborationRequest :> Put '[JSON] CollaborationResponse

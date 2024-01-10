@@ -521,6 +521,9 @@ export function runUpdateProjectServerState(
 ): EditorStoreUnpatched {
   return {
     ...working,
-    projectServerState: action.serverState,
+    projectServerState: {
+      ...working.projectServerState,
+      ...action.serverState,
+    },
   }
 }
