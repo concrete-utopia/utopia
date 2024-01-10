@@ -16,7 +16,11 @@ import invariant from '../../third-party/remix/invariant'
 import { UtopiaStyles, colorTheme } from '../../uuiui'
 import type { EditorDispatch } from '../editor/action-types'
 import { useDispatch } from '../editor/store/dispatch-context'
-import type { EditorStorePatched, GithubRepoWithBranch } from '../editor/store/editor-state'
+import {
+  githubRepoFullName,
+  type EditorStorePatched,
+  type GithubRepoWithBranch,
+} from '../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { AuthenticateWithGithubButton } from '../navigator/left-pane/github-pane'
 import { SignInButton } from '../titlebar/title-bar'
@@ -55,10 +59,11 @@ export const GithubRepositoryCloneFlow = React.memo(() => {
         }}
       >
         <GithubCloneDialogBox>
-          <div style={{}}>
-            You need to log in!
-            <br />
-            <SignInButton />
+          <span style={{ paddingBottom: 12 }}>
+            To load a GitHub repository, please sign in to Utopia
+          </span>
+          <div style={{ alignSelf: 'center' }}>
+            <SignInButton text='load' />
           </div>
         </GithubCloneDialogBox>
       </FullScreenOverlay>
@@ -73,9 +78,10 @@ export const GithubRepositoryCloneFlow = React.memo(() => {
         }}
       >
         <GithubCloneDialogBox>
-          <div style={{}}>
-            You have to authenticate with Github in order to clone the repository
-            <br />
+          <span style={{ paddingBottom: 12 }}>
+            Please authenticate with Github in order to clone the repository
+          </span>
+          <div style={{ alignSelf: 'center' }}>
             <AuthenticateWithGithubButton />
           </div>
         </GithubCloneDialogBox>
@@ -83,18 +89,8 @@ export const GithubRepositoryCloneFlow = React.memo(() => {
     )
   }
 
-  return (
-    <FullScreenOverlay
-      style={{
-        cursor: 'auto',
-      }}
-    >
-      <GitClonePseudoElement githubRepo={githubRepo} />
-      <GithubCloneDialogBox>
-        <div style={{}}>Cloning repository RepoName...</div>
-      </GithubCloneDialogBox>
-    </FullScreenOverlay>
-  )
+  // The GitClonePseudoElement triggers the actual repo cloning
+  return <GitClonePseudoElement githubRepo={githubRepo} />
 })
 
 let githubRepoAlreadyCloning = false
@@ -144,6 +140,8 @@ const GitClonePseudoElement = React.memo((props: { githubRepo: GithubRepoWithBra
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // The GitClonePseudoElement's sole job is to call cloneGithubRepo in a useEffect.
+  // I pulled it to a dedicated component so it's purpose remains clear and this useEffect doesn't get lost in the noise
   return null
 })
 
@@ -166,6 +164,9 @@ const GithubCloneDialogBox = (props: React.PropsWithChildren<unknown>) => {
   return (
     <div
       style={{
+        display: 'flex',
+        flexDirection: 'column',
+        width: 300,
         opacity: 1,
         fontSize: 12,
         fontWeight: 500,
@@ -174,6 +175,7 @@ const GithubCloneDialogBox = (props: React.PropsWithChildren<unknown>) => {
         padding: 30,
         borderRadius: 2,
         boxShadow: UtopiaStyles.shadowStyles.high.boxShadow,
+        whiteSpace: 'initial',
       }}
     >
       {props.children}

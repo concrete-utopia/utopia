@@ -301,14 +301,14 @@ export const TitleBarUserProfile = React.memo((props: { panelData: StoredPanel }
         <PanelButton isHovered={isHovered} color={colorTheme.unavailableGrey.value} />
       </FlexRow>
       <div style={{ flex: '0 0 0px' }}>
-        {unless(loggedIn, <SignInButton />)}
+        {unless(loggedIn, <SignInButton text='save' />)}
         <UserBar />
       </div>
     </div>
   )
 })
 
-export const SignInButton = React.memo(() => {
+export const SignInButton = React.memo((props: { text: 'save' | 'load' }) => {
   const onClickLoginNewTab = useCallback(() => {
     window.open(auth0Url('auto-close'), '_blank')
   }, [])
@@ -331,7 +331,7 @@ export const SignInButton = React.memo(() => {
       onClick={onClickLoginNewTab}
       onMouseDown={onMouseDown}
     >
-      Sign In To Save
+      {props.text === 'save' ? 'Sign In To Save' : 'Sign In To Load'}
     </Button>
   )
 })
