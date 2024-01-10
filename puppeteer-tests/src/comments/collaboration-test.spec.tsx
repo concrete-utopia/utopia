@@ -18,11 +18,6 @@ async function clickCanvasContainer(page: Page, { x, y }: { x: number; y: number
   await canvasControlsContainer!.click({ offset: { x, y } })
 }
 
-async function expectNSelectors(page: Page, selector: string, n: number) {
-  const elementsMatchingSelector = await page.$$(selector)
-  expect(elementsMatchingSelector).toHaveLength(n)
-}
-
 describe('Collaboration test', () => {
   it(
     'can collaboratively add an element',
@@ -35,7 +30,10 @@ describe('Collaboration test', () => {
       await page1.waitForNavigation()
       await signIn(page1)
       // wait for project to be saved
-      await wait(5000) // TODO
+      await page1.waitForFunction(
+        'document.querySelector("body").innerText.includes("Project successfully uploaded!")',
+        { polling: 'mutation' },
+      )
 
       const newProjectUrl = new url.URL(page1.url()).pathname
 
