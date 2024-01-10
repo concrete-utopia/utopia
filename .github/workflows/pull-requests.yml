@@ -396,5 +396,6 @@ jobs:
         id: run-comments-test
         env:
           BRANCH_NAME: ${{ steps.extract_branch.outputs.branch }}
+          BASE_URL: 'https://utopia.pizza'
         run: |
           nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "xvfb-run --server-args='-screen 0 1920x1080x24 -ac -nolisten tcp -dpi 96 +extension RANDR' run-comments-test"
