@@ -109,14 +109,17 @@ export function saveEvent<ModelType>(projectModel: ProjectModel<ModelType>): Sav
 interface SaveCompleteEvent<ModelType, FileType> {
   type: 'SAVE_COMPLETE'
   saveResult: ProjectWithFileChanges<ModelType, FileType>
+  source: 'local' | 'server'
 }
 
 function saveCompleteEvent<ModelType, FileType>(
   saveResult: ProjectWithFileChanges<ModelType, FileType>,
+  source: 'local' | 'server',
 ): SaveCompleteEvent<ModelType, FileType> {
   return {
     type: 'SAVE_COMPLETE',
     saveResult: saveResult,
+    source: source,
   }
 }
 
@@ -486,7 +489,7 @@ export function createPersistenceMachine<ModelType, FileType>(
                   target: BackendIdle,
                   actions: send(
                     (_, event: DoneInvokeEvent<ProjectWithFileChanges<ModelType, FileType>>) =>
-                      saveCompleteEvent(event.data),
+                      saveCompleteEvent(event.data, 'server'),
                   ),
                 },
                 onError: {
@@ -503,7 +506,7 @@ export function createPersistenceMachine<ModelType, FileType>(
                   target: BackendIdle,
                   actions: send(
                     (_, event: DoneInvokeEvent<ProjectWithFileChanges<ModelType, FileType>>) =>
-                      saveCompleteEvent(event.data),
+                      saveCompleteEvent(event.data, 'local'),
                   ),
                 },
                 onError: {
