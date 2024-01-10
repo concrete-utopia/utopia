@@ -67,6 +67,9 @@ import { useSelectionArea } from './selection-area-hooks'
 import { RemixSceneLabelControl } from './select-mode/remix-scene-label'
 import { NO_OP } from '../../../core/shared/utils'
 import { useAllowedToEditProject } from '../../editor/store/collaborative-editing'
+import { useStatus } from '../../../../liveblocks.config'
+import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
+import { MultiplayerPresence } from '../multiplayer-presence'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -376,6 +379,8 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     [editorMode, selectModeHooks],
   )
 
+  const roomStatus = useStatus()
+
   const getResizeStatus = () => {
     const selectedViews = localSelectedViews
     if (textEditor != null || keysPressed['z']) {
@@ -578,6 +583,14 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
                 {when(isSelectMode(editorMode), <DistanceGuidelineControl />)}
                 <GuidelineControls />
               </>,
+            )}
+            {when(isSelectMode(editorMode), <DistanceGuidelineControl />)}
+            <GuidelineControls />
+            {when(
+              roomStatus === 'connected',
+              <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
+                <MultiplayerPresence />
+              </MultiplayerWrapper>,
             )}
           </>,
         )}
