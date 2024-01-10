@@ -6,13 +6,15 @@ const path = require('path')
 const AWS = require('aws-sdk')
 const yn = require('yn')
 
+export interface BrowserForPuppeteerTest {
+  page: puppeteer.Page
+  browser: puppeteer.Browser
+}
+
 export const setupBrowser = async (
   url: string,
   defaultTimeout: number,
-): Promise<{
-  page: puppeteer.Page
-  browser: puppeteer.Browser
-}> => {
+): Promise<BrowserForPuppeteerTest> => {
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--enable-thread-instruction-count'],
     headless: yn(process.env.HEADLESS) ?? false,

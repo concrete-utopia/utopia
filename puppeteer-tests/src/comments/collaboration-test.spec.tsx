@@ -1,6 +1,7 @@
 import type { ElementHandle, Page } from 'puppeteer'
 import { setupBrowser, wait } from '../utils'
 import * as url from 'url'
+import { createUtopiaPuppeteerBrowser } from './test-utils'
 
 const TIMEOUT = 120000
 
@@ -19,13 +20,15 @@ async function clickCanvasContainer(page: Page, { x, y }: { x: number; y: number
 }
 
 describe('Collaboration test', () => {
+  let utopiaBrowser1 = createUtopiaPuppeteerBrowser()
+  let utopiaBrowser2 = createUtopiaPuppeteerBrowser()
   it(
     'can collaboratively add an element',
     async () => {
-      const { page: page1, browser: browser1 } = await setupBrowser(
-        `${BASE_URL}/p/?fakeUser=alice&Multiplayer=true${BRANCH_NAME}`,
-        TIMEOUT,
-      )
+      const { page: page1 } = await utopiaBrowser1.setup({
+        url: `${BASE_URL}/p/?fakeUser=alice&Multiplayer=true${BRANCH_NAME}`,
+        timeout: TIMEOUT,
+      })
 
       await page1.waitForNavigation()
       await signIn(page1)
@@ -37,10 +40,11 @@ describe('Collaboration test', () => {
 
       const newProjectUrl = new url.URL(page1.url()).pathname
 
-      const { page: page2, browser: browser2 } = await setupBrowser(
-        `${BASE_URL}${newProjectUrl}?fakeUser=bob&Multiplayer=true${BRANCH_NAME}`,
-        TIMEOUT,
-      )
+      const { page: page2 } = await utopiaBrowser2.setup({
+        url: `${BASE_URL}${newProjectUrl}?fakeUser=bob&Multiplayer=true${BRANCH_NAME}`,
+        timeout: TIMEOUT,
+      })
+
       await signIn(page2)
 
       await Promise.all([signIn(page1), signIn(page2)])
@@ -71,11 +75,6 @@ describe('Collaboration test', () => {
       await page1.keyboard.down('MetaLeft')
       await page1.keyboard.press('z', {})
       await page1.keyboard.up('MetaLeft')
-
-      await page1.close()
-      await browser1.close()
-      await page2.close()
-      await browser2.close()
     },
     TIMEOUT,
   )
