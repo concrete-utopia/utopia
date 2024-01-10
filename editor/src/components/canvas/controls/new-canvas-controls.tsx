@@ -584,8 +584,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
                 <GuidelineControls />
               </>,
             )}
-            {when(isSelectMode(editorMode), <DistanceGuidelineControl />)}
-            <GuidelineControls />
             {when(
               roomStatus === 'connected',
               <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
