@@ -255,7 +255,25 @@ export function removeImports(imports: Imports, namesToRemove: string[]): Import
   return newImports
 }
 
-function removeImportDetails(details: ImportDetails, namesToRemove: string[]): ImportDetails {
+export function purgeEmptyImports(imports: Imports): Imports {
+  let newImports: Imports = {}
+  for (const importPath of Object.keys(imports)) {
+    const details = imports[importPath]
+    if (
+      details.importedWithName != null ||
+      details.importedAs != null ||
+      details.importedFromWithin.length > 0
+    ) {
+      newImports[importPath] = details
+    }
+  }
+  return newImports
+}
+
+function removeImportDetails(
+  details: ImportDetails,
+  namesToRemove: string[],
+): ImportDetails | null {
   const importedFromWithin = details.importedFromWithin.filter(
     (fromWithin) => !namesToRemove.includes(fromWithin.alias),
   )
@@ -267,6 +285,10 @@ function removeImportDetails(details: ImportDetails, namesToRemove: string[]): I
     details.importedAs == null || namesToRemove.includes(details.importedAs)
       ? null
       : details.importedAs
+
+  if (importedWithName == null && importedAs == null && importedFromWithin.length === 0) {
+    return null
+  }
 
   return {
     importedWithName: importedWithName,
