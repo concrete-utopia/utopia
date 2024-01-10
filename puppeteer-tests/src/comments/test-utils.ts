@@ -8,7 +8,6 @@ export interface UtopiaPuppeteerBrowserOptions {
 
 interface UtopiaPuppeteerBrowser {
   setup: (options: UtopiaPuppeteerBrowserOptions) => Promise<BrowserForPuppeteerTest>
-  browserForTest: { current: BrowserForPuppeteerTest | null }
 }
 
 export const createUtopiaPuppeteerBrowser = (): UtopiaPuppeteerBrowser => {
@@ -23,7 +22,6 @@ export const createUtopiaPuppeteerBrowser = (): UtopiaPuppeteerBrowser => {
   })
 
   return {
-    browserForTest: browserForTest,
     setup: async (options: UtopiaPuppeteerBrowserOptions) => {
       browserForTest.current = await setupBrowser(options.url, options.timeout)
       return browserForTest.current
