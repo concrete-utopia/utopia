@@ -260,6 +260,13 @@ let
       ${pnpm}/bin/pnpm install --unsafe-perm
       ${pnpm}/bin/pnpm run comments-test
     '')
+    (pkgs.writeScriptBin "run-collaboration-test" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/puppeteer-tests
+      ${pnpm}/bin/pnpm install --unsafe-perm
+      ${pnpm}/bin/pnpm run collaboration-test
+    '')
   ];
 
   withPuppeteerScripts = withBaseEditorScripts ++ (lib.optionals stdenv.isLinux puppeteerScripts);

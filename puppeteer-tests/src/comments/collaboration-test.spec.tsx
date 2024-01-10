@@ -23,8 +23,6 @@ async function expectNSelectors(page: Page, selector: string, n: number) {
   expect(elementsMatchingSelector).toHaveLength(n)
 }
 
-// TODO: CI job
-
 describe('Collaboration test', () => {
   it(
     'can collaboratively add an element',
@@ -36,6 +34,7 @@ describe('Collaboration test', () => {
 
       await page1.waitForNavigation()
       await signIn(page1)
+      // wait for project to be saved
       await wait(5000) // TODO
 
       const newProjectUrl = new url.URL(page1.url()).pathname
