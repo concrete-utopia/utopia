@@ -47,7 +47,7 @@ import type {
   EditorStoreFull,
   PersistentModel,
   ElementsToRerender,
-  GithubRepo,
+  GithubRepoWithBranch,
 } from '../components/editor/store/editor-state'
 import {
   createEditorState,
@@ -142,10 +142,8 @@ import { Provider as JotaiProvider } from 'jotai'
 import { forceNotNull } from '../core/shared/optional-utils'
 import { Defer } from '../utils/utils'
 import invariant from '../third-party/remix/invariant'
-import { GitRepoToLoadAtom } from '../components/github/github-clone-overlay'
+import { GitRepoToLoadAtom, LoadActionsDispatched } from '../components/github/github-clone-overlay'
 import { updatePubSubAtomFromOutsideReact } from '../core/shared/atom-with-pub-sub'
-
-const LoadActionsDispatched = 'loadActionDispatched'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -377,13 +375,16 @@ export class Editor {
           const urlParams = new URLSearchParams(window.location.search)
           const importURL = urlParams.get('import_url')
 
-          const githubRepoObj: GithubRepo | null = (() => {
+          const githubRepoObj: GithubRepoWithBranch | null = (() => {
+            const githubBranch = urlParams.get('github_branch')
+
             const githubCloneUrl = urlParams.get('clone')
             if (githubCloneUrl != null) {
               const splitGitRepoUrl = githubCloneUrl.split('/')
               return {
                 owner: splitGitRepoUrl[0],
                 repository: splitGitRepoUrl[1],
+                branch: githubBranch,
               }
             }
 
@@ -393,6 +394,7 @@ export class Editor {
               return {
                 owner: githubOwner,
                 repository: githubRepo,
+                branch: githubBranch,
               }
             }
 
@@ -441,21 +443,6 @@ export class Editor {
       ],
       'everyone',
     )
-  }
-
-  awaitLoadActionDispatchedByPersistenceMachine = (): Promise<{ projectId: string }> => {
-    // TODO move this WAY out of Editor.tsx
-    invariant(
-      PubSub.countSubscriptions(LoadActionsDispatched) === 0,
-      'At this point, awaitLoadActionDispatchedByPersistenceMachine should have zero listeners',
-    )
-    return new Promise((resolve, reject) => {
-      const listener = (message: string, data: { projectId: string }) => {
-        PubSub.unsubscribe(listener)
-        resolve(data)
-      }
-      PubSub.subscribe(LoadActionsDispatched, listener)
-    })
   }
 
   boundDispatch = (

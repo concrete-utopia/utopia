@@ -1161,6 +1161,8 @@ export interface GithubRepo {
   repository: string
 }
 
+export type GithubRepoWithBranch = GithubRepo & { branch: string | null }
+
 export function githubRepoFullName(repo: GithubRepo | null): string | null {
   if (repo == null) {
     return null
