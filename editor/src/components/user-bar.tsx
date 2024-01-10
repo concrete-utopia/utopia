@@ -82,15 +82,17 @@ const MultiplayerUserBar = React.memo(() => {
   const dispatch = useDispatch()
   const collabs = useStorage((store) => store.collaborators)
 
-  const { user: myUser } = useMyUserAndPresence()
+  const { user: myUser, presence: myPresence } = useMyUserAndPresence()
 
   const others = useOthers((list) =>
-    normalizeOthersList(myUser.id, list).map((other) => {
-      return {
-        ...getCollaborator(collabs, other),
-        following: other.presence.following,
-      }
-    }),
+    list
+      .filter((entry) => entry.connectionId !== myPresence.connectionId)
+      .map((other) => {
+        return {
+          ...getCollaborator(collabs, other),
+          following: other.presence.following,
+        }
+      }),
   )
 
   const visibleOthers = React.useMemo(() => {
