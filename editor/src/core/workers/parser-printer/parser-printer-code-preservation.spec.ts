@@ -82,6 +82,7 @@ import { GithubPicker } from "react-color";
 function Picker() {
   const [color, setColor] = useThemeContext();
   const [visible, setVisible] = usePickerVisibilityContext();
+
   if (visible) {
     return <GithubPicker
       style={{ position: "absolute" }}

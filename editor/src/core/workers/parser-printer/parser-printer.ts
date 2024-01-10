@@ -31,6 +31,7 @@ import type {
   ImportStatement,
   ParsedComments,
   JSExpressionMapOrOtherJavascript,
+  JSExpressionOtherJavaScript,
 } from '../../shared/element-template'
 import {
   destructuredArray,
@@ -51,6 +52,7 @@ import {
   isImportStatement,
   unparsedCode,
   emptyComments,
+  canBeRootElementOfComponent,
 } from '../../shared/element-template'
 import { messageisFatal } from '../../shared/error-messages'
 import { memoize } from '../../shared/memoize'
@@ -649,10 +651,13 @@ function printUtopiaJSXComponent(
     TS.isJsxSelfClosingElement(asJSX) ||
     TS.isJsxFragment(asJSX) ||
     TS.isConditionalExpression(asJSX) ||
+    TS.isJsxText(asJSX) || // Needed for when the root element is an arbitrary js expression, as we print that as raw text
     asJSX.kind === TS.SyntaxKind.NullKeyword
   ) {
     let elementNode: TS.Node
-    const jsxElementExpression = asJSX
+    const jsxElementExpression = TS.isJsxText(asJSX)
+      ? (printOtherJS(element.rootElement as JSExpressionOtherJavaScript) as TS.Expression)
+      : asJSX
     const modifiers = getModifersForComponent(element, detailOfExports)
     const nodeFlags =
       element.declarationSyntax === 'function'
@@ -670,7 +675,9 @@ function printUtopiaJSXComponent(
           statements.push(printArbitraryJSBlock(element.arbitraryJSBlock) as any)
         }
 
-        const returnStatement = TS.createReturn(jsxElementExpression)
+        const returnStatement = TS.isUnparsedSource(jsxElementExpression)
+          ? (jsxElementExpression as any as TS.Statement) // See above comment about the space time continuum
+          : TS.createReturn(jsxElementExpression)
         addCommentsToNode(returnStatement, element.returnStatementComments)
         statements.push(returnStatement)
         return TS.createBlock(statements, printOptions.insertLinesBetweenStatements)
@@ -718,9 +725,14 @@ function printUtopiaJSXComponent(
       }
     } else {
       if (element.name == null) {
-        elementNode = TS.createExportAssignment(undefined, modifiers, undefined, asJSX)
+        elementNode = TS.createExportAssignment(
+          undefined,
+          modifiers,
+          undefined,
+          jsxElementExpression,
+        )
       } else {
-        const varDec = TS.createVariableDeclaration(element.name, undefined, asJSX)
+        const varDec = TS.createVariableDeclaration(element.name, undefined, jsxElementExpression)
         const varDecList = TS.createVariableDeclarationList([varDec], nodeFlags)
         elementNode = TS.createVariableStatement(modifiers, varDecList)
       }
@@ -799,6 +811,10 @@ function printRawComment(comment: Comment): string {
 
 function printArbitraryJSBlock(block: ArbitraryJSBlock): TS.Node {
   return TS.createUnparsedSourceFile(block.javascript)
+}
+
+function printOtherJS(block: JSExpressionOtherJavaScript): TS.Node {
+  return TS.createUnparsedSourceFile(block.originalJavascript)
 }
 
 export const printCode = memoize(printCodeImpl, {
@@ -1514,35 +1530,41 @@ export function parseCode(
               ),
             )
           }
-          if (isLeft(parsedContents) || (isFunction && isLeft(parsedFunctionParam))) {
-            pushArbitraryNode(topLevelElement)
-            if (isExported(topLevelElement)) {
-              if (name == null) {
+
+          // push any export details
+          if (isExported(topLevelElement)) {
+            if (name == null) {
+              detailOfExports = mergeExportsDetail(detailOfExports, [
+                exportDefaultFunctionOrClass(null),
+              ])
+            } else {
+              const defaultExport = markedAsDefault(topLevelElement)
+              if (defaultExport) {
                 detailOfExports = mergeExportsDetail(detailOfExports, [
-                  exportDefaultFunctionOrClass(null),
+                  exportDefaultFunctionOrClass(name),
                 ])
               } else {
-                const defaultExport = markedAsDefault(topLevelElement)
-                if (defaultExport) {
-                  detailOfExports = mergeExportsDetail(detailOfExports, [
-                    exportDefaultFunctionOrClass(name),
-                  ])
-                } else {
-                  detailOfExports = mergeExportsDetail(detailOfExports, [exportFunction(name)])
-                }
+                detailOfExports = mergeExportsDetail(detailOfExports, [exportFunction(name)])
               }
             }
+          }
+
+          if (isLeft(parsedContents) || (isFunction && isLeft(parsedFunctionParam))) {
+            pushArbitraryNode(topLevelElement)
           } else {
-            highlightBounds = {
-              ...highlightBounds,
-              ...parsedContents.value.highlightBounds,
-            }
             const contents = parsedContents.value.value
             // If propsUsed is already populated, it's because the user used destructuring, so we can
             // use that. Otherwise, we have to use the list retrieved during parsing
             propsUsed = propsUsed.length > 0 ? propsUsed : uniq(parsedContents.value.propsUsed)
-            if (contents.elements.length === 1) {
-              const exported = isExported(topLevelElement)
+            if (
+              contents.elements.length === 1 &&
+              canBeRootElementOfComponent(contents.elements[0].value)
+            ) {
+              highlightBounds = {
+                ...highlightBounds,
+                ...parsedContents.value.highlightBounds,
+              }
+
               // capture var vs let vs const vs function here
               const utopiaComponent = utopiaJSXComponent(
                 name,
@@ -1560,23 +1582,6 @@ export function parseCode(
                 false,
                 contents.returnStatementComments,
               )
-
-              const defaultExport = markedAsDefault(topLevelElement)
-              if (exported) {
-                if (name == null) {
-                  detailOfExports = mergeExportsDetail(detailOfExports, [
-                    exportDefaultFunctionOrClass(null),
-                  ])
-                } else {
-                  if (defaultExport) {
-                    detailOfExports = mergeExportsDetail(detailOfExports, [
-                      exportDefaultFunctionOrClass(name),
-                    ])
-                  } else {
-                    detailOfExports = mergeExportsDetail(detailOfExports, [exportFunction(name)])
-                  }
-                }
-              }
 
               topLevelElements.push(right(utopiaComponent))
             } else {

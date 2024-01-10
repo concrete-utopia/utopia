@@ -167,6 +167,16 @@ export var whatever = (props) => {
 }
 `
 
+const codeWithComponentWithTopLevelIf = `import React from "react";
+import { View } from "utopia-api";
+export var whatever = (props) => {
+  if (props.showA) {
+    return <View data-uid={'aaa'} />
+  } else {
+    return <View data-uid={'bbb'} />
+  }
+}`
+
 describe('Parsing a function component with props', () => {
   it('Correctly parses a basic props object', () => {
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
@@ -903,6 +913,63 @@ describe('Parsing a function component with props', () => {
     )
     expect(actualResult).toEqual(expectedResult)
   })
+
+  it('Correctly parses a component with a top level if statement', () => {
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
+      testParseCode(codeWithComponentWithTopLevelIf),
+    )
+    const viewA = clearJSXElementChildUniqueIDs(
+      jsxElement(
+        'View',
+        'aaa',
+        jsxAttributesFromMap({
+          'data-uid': jsExpressionValue('aaa', emptyComments),
+        }),
+        [],
+      ),
+    )
+    const viewB = clearJSXElementChildUniqueIDs(
+      jsxElement(
+        'View',
+        'bbb',
+        jsxAttributesFromMap({
+          'data-uid': jsExpressionValue('bbb', emptyComments),
+        }),
+        [],
+      ),
+    )
+    const exported = utopiaJSXComponent(
+      'whatever',
+      true,
+      'var',
+      'block',
+      defaultPropsParam,
+      ['showA'],
+      expect.objectContaining({
+        javascript: `if (props.showA) {\n    return <View data-uid={'aaa'} />\n  } else {\n    return <View data-uid={'bbb'} />\n  }`,
+        definedElsewhere: expect.arrayContaining(['props']),
+        elementsWithin: {
+          aaa: viewA,
+          bbb: viewB,
+        },
+      }),
+      expect.objectContaining({}),
+      false,
+      emptyComments,
+    )
+
+    const topLevelElements = [exported]
+    const expectedResult = parseSuccess(
+      JustImportViewAndReact,
+      expect.arrayContaining(topLevelElements),
+      expect.objectContaining({}),
+      null,
+      null,
+      [exportFunction('whatever')],
+      expect.objectContaining({}),
+    )
+    expect(actualResult).toEqual(expectedResult)
+  })
 })
 
 describe('Parsing, printing, reparsing a function component with props', () => {
@@ -995,5 +1062,9 @@ describe('Parsing, printing, reparsing a function component with props', () => {
 
   it('Correctly parses back and forth a component with a renamed function', () => {
     testParsePrintParse(codeWithARenamedFunction)
+  })
+
+  it('Correctly parses back and forth a component with a top level if statement', () => {
+    testParsePrintParse(codeWithComponentWithTopLevelIf)
   })
 })

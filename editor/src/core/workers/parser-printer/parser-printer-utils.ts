@@ -93,6 +93,27 @@ export function wrapCodeInParensWithMap(
   return { code: result.code, sourceMap: result.map }
 }
 
+function wrapCodeInAnonFunction(code: string): string {
+  return `(() => {${removeTrailingSemicolon(code)}})()`
+}
+
+export function wrapCodeInAnonFunctionWithMap(
+  sourceFileName: string,
+  sourceFileText: string,
+  code: string,
+  sourceMap: RawSourceMap,
+): CodeWithMap {
+  // Used for when we wish to transpile and / or operate on e.g. the contents of a
+  // function without wanting to pass in the entire function itself
+  const wrappedCode = wrapCodeInAnonFunction(code)
+
+  const consumer = new SourceMapConsumer(sourceMap)
+  const node = SourceNode.fromStringWithSourceMap(wrappedCode, consumer)
+  node.setSourceContent(sourceFileName, sourceFileText)
+  const result = node.toStringWithSourceMap({ file: sourceFileName })
+  return { code: result.code, sourceMap: result.map }
+}
+
 export function prependToSourceString(
   sourceFileName: string,
   sourceFileText: string,

@@ -5360,7 +5360,7 @@ export var App = (props) => {
         code,
         sourceMap,
         [],
-        false,
+        'do-not-wrap',
         'do-not-apply-steganography',
       ),
     ).toMatchSnapshot()
