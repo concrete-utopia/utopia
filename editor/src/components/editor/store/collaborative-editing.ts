@@ -1,5 +1,6 @@
 import {
   deleteFileFromCollaboration,
+  showToast,
   updateCodeFromCollaborationUpdate,
   updateExportsDetailFromCollaborationUpdate,
   updateImportsFromCollaborationUpdate,
@@ -51,6 +52,7 @@ import { HEADERS, MODE } from '../../../common/server'
 import { UTOPIA_BACKEND } from '../../../common/env-vars'
 import type { ProjectServerState } from './project-server-state'
 import { Substores, useEditorState } from './store-hook'
+import { notice } from '../../common/notice'
 
 const CodeKey = 'code'
 const TopLevelElementsKey = 'topLevelElements'
@@ -756,6 +758,10 @@ export async function releaseControlOverProject(projectID: string | null): Promi
   if (response.type !== 'RELEASE_CONTROL_RESULT') {
     throw new Error(`Unexpected response: ${JSON.stringify(response)}`)
   }
+}
+
+export function displayControlErrorToast(dispatch: EditorDispatch, message: string): void {
+  dispatch([showToast(notice(message, 'ERROR', false, 'control-error'))])
 }
 
 export async function clearAllControlFromThisEditor(): Promise<void> {
