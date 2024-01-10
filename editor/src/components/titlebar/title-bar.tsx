@@ -265,14 +265,6 @@ export const TitleBarUserProfile = React.memo((props: { panelData: StoredPanel }
 
   const loggedIn = React.useMemo(() => loginState.type === 'LOGGED_IN', [loginState])
 
-  const onMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    e.stopPropagation()
-  }, [])
-
-  const onClickLoginNewTab = useCallback(() => {
-    window.open(auth0Url('auto-close'), '_blank')
-  }, [])
-
   const toggleInspectorVisible = React.useCallback(() => {
     dispatch([togglePanel('rightmenu')])
   }, [dispatch])
@@ -308,27 +300,39 @@ export const TitleBarUserProfile = React.memo((props: { panelData: StoredPanel }
         <PanelButton onClick={toggleInspectorVisible} color='#FF5F57' isHovered={isHovered} />
         <PanelButton isHovered={isHovered} color={colorTheme.unavailableGrey.value} />
       </FlexRow>
-      <div style={{ flex: '0 0 0px' }} data-testid='sign-in-button'>
-        {unless(
-          loggedIn,
-          <Button
-            highlight
-            style={{
-              paddingLeft: 8,
-              paddingRight: 8,
-              background: colorTheme.dynamicBlue.value,
-              color: colorTheme.bg1.value,
-              fontWeight: 600,
-            }}
-            onClick={onClickLoginNewTab}
-            onMouseDown={onMouseDown}
-          >
-            Sign In To Save
-          </Button>,
-        )}
+      <div style={{ flex: '0 0 0px' }}>
+        {unless(loggedIn, <SignInButton />)}
         <UserBar />
       </div>
     </div>
+  )
+})
+
+export const SignInButton = React.memo(() => {
+  const onClickLoginNewTab = useCallback(() => {
+    window.open(auth0Url('auto-close'), '_blank')
+  }, [])
+
+  const onMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation()
+  }, [])
+
+  return (
+    <Button
+      data-testid='sign-in-button'
+      highlight
+      style={{
+        paddingLeft: 8,
+        paddingRight: 8,
+        background: colorTheme.dynamicBlue.value,
+        color: colorTheme.bg1.value,
+        fontWeight: 600,
+      }}
+      onClick={onClickLoginNewTab}
+      onMouseDown={onMouseDown}
+    >
+      Sign In To Save
+    </Button>
   )
 })
 
