@@ -382,6 +382,8 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
 
   const roomStatus = useStatus()
 
+  const multiplayerEnabled = isFeatureEnabled('Multiplayer') && roomStatus === 'connected'
+
   const getResizeStatus = () => {
     const selectedViews = localSelectedViews
     if (textEditor != null || keysPressed['z']) {
@@ -586,7 +588,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
               </>,
             )}
             {when(
-              isFeatureEnabled('Multiplayer') && roomStatus === 'connected',
+              multiplayerEnabled,
               <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
                 <MultiplayerPresence />
               </MultiplayerWrapper>,
