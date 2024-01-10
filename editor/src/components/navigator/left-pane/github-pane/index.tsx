@@ -57,17 +57,13 @@ const compactTimeagoFormatter = (value: number, unit: string) => {
 
 type IndicatorState = 'incomplete' | 'failed' | 'successful' | 'pending'
 
-const AccountBlock = () => {
+const AccountBlock = React.memo(() => {
   const authenticated = useEditorState(
     Substores.restOfStore,
     (store) => store.userState.githubState.authenticated,
     'Github authenticated',
   )
   const state = React.useMemo(() => (authenticated ? 'successful' : 'incomplete'), [authenticated])
-  const dispatch = useDispatch()
-  const triggerAuthentication = React.useCallback(() => {
-    void GithubAuth.startGithubAuthentication(dispatch)
-  }, [dispatch])
 
   if (authenticated) {
     return null
@@ -75,27 +71,38 @@ const AccountBlock = () => {
 
   return (
     <Block title='Account' status={state} first={true} last={true} expanded={true}>
-      <Button
-        spotlight
-        highlight
-        style={{
-          padding: '1em',
-          borderRadius: 3,
-          background: colorTheme.dynamicBlue.value,
-          color: colorTheme.bg1.value,
-        }}
-        css={{
-          '&:hover': {
-            opacity: 0.7,
-          },
-        }}
-        onMouseUp={triggerAuthentication}
-      >
-        Authenticate With Github
-      </Button>
+      <AuthenticateWithGithubButton />
     </Block>
   )
-}
+})
+
+export const AuthenticateWithGithubButton = React.memo(() => {
+  const dispatch = useDispatch()
+  const triggerAuthentication = React.useCallback(() => {
+    void GithubAuth.startGithubAuthentication(dispatch)
+  }, [dispatch])
+
+  return (
+    <Button
+      spotlight
+      highlight
+      style={{
+        padding: '1em',
+        borderRadius: 3,
+        background: colorTheme.dynamicBlue.value,
+        color: colorTheme.bg1.value,
+      }}
+      css={{
+        '&:hover': {
+          opacity: 0.7,
+        },
+      }}
+      onMouseUp={triggerAuthentication}
+    >
+      Authenticate With Github
+    </Button>
+  )
+})
 
 const RepositoryBlock = () => {
   const repo = useEditorState(
