@@ -74,7 +74,7 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
     editor,
     (success, elementToWrap, _underlyingTarget, underlyingFilePath) => {
       const components = getUtopiaJSXComponentsFromSuccess(success)
-      const withElementRemoved = removeElementAtPath(command.target, components)
+      const withElementRemoved = removeElementAtPath(command.target, components, success.imports)
       const indexInParent = getIndexInParent(
         success.topLevelElements,
         EP.dynamicPathToStaticPath(command.target),
@@ -107,7 +107,7 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
       const insertionResult = insertJSXElementChildren(
         insertionPath,
         [wrapper],
-        withElementRemoved,
+        withElementRemoved.components,
         index,
       )
 
@@ -115,7 +115,7 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
         getPatchForComponentChange(
           success.topLevelElements,
           insertionResult.components,
-          mergeImports(underlyingFilePath, success.imports, imports),
+          mergeImports(underlyingFilePath, withElementRemoved.imports, imports),
           underlyingFilePath,
         ),
       )
