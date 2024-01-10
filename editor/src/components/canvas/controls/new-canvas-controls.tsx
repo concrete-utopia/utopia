@@ -70,6 +70,7 @@ import { useIsMyProject } from '../../editor/store/collaborative-editing'
 import { useStatus } from '../../../../liveblocks.config'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { MultiplayerPresence } from '../multiplayer-presence'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -585,7 +586,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
               </>,
             )}
             {when(
-              roomStatus === 'connected',
+              isFeatureEnabled('Multiplayer') && roomStatus === 'connected',
               <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
                 <MultiplayerPresence />
               </MultiplayerWrapper>,
