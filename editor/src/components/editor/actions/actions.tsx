@@ -320,7 +320,7 @@ import type {
   UpdateExportsDetailFromCollaborationUpdate,
   UpdateImportsFromCollaborationUpdate,
   UpdateCodeFromCollaborationUpdate,
-  SetShowResolvedThreads,
+  SetCommentFilterMode,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -923,7 +923,7 @@ export function restoreEditorState(
     internalClipboard: currentEditor.internalClipboard,
     filesModifiedByAnotherUser: currentEditor.filesModifiedByAnotherUser,
     activeFrames: currentEditor.activeFrames,
-    showResolvedThreads: currentEditor.showResolvedThreads,
+    commentFilterMode: currentEditor.commentFilterMode,
   }
 }
 
@@ -974,14 +974,12 @@ function deleteElements(
 
       function deleteElementFromParseSuccess(success: ParseSuccess): ParseSuccess {
         const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
-        const withTargetRemoved: Array<UtopiaJSXComponent> = removeElementAtPath(
-          targetPath,
-          utopiaComponents,
-        )
+        const withTargetRemoved = removeElementAtPath(targetPath, utopiaComponents, success.imports)
         return modifyParseSuccessWithSimple((simpleSuccess: SimpleParseSuccess) => {
           return {
             ...simpleSuccess,
-            utopiaComponents: withTargetRemoved,
+            utopiaComponents: withTargetRemoved.components,
+            imports: withTargetRemoved.imports,
           }
         }, success)
       }
@@ -5519,8 +5517,8 @@ export const UPDATE_FNS = {
     const updateAction = updateFile(action.fullPath, updatedFile, true)
     return UPDATE_FNS.UPDATE_FILE(updateAction, editor, dispatch, builtInDependencies)
   },
-  SET_SHOW_RESOLVED_THREADS: (action: SetShowResolvedThreads, editor: EditorModel): EditorModel => {
-    return { ...editor, showResolvedThreads: action.showResolvedThreads }
+  SET_SHOW_RESOLVED_THREADS: (action: SetCommentFilterMode, editor: EditorModel): EditorModel => {
+    return { ...editor, commentFilterMode: action.commentFilterMode }
   },
 }
 

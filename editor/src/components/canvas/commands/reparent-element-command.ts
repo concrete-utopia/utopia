@@ -7,7 +7,6 @@ import {
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPath } from '../../../core/shared/project-file-types'
-import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import {
   forUnderlyingTargetFromEditorState,
@@ -74,7 +73,7 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
             const insertionResult = insertJSXElementChildren(
               command.newParent,
               [elementToInsert],
-              withElementRemoved,
+              withElementRemoved.components,
               command.indexPosition,
             )
             const editorStatePatchOldParentFile = getPatchForComponentChange(
@@ -90,7 +89,11 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
             ]
           } else {
             const componentsOldParent = getUtopiaJSXComponentsFromSuccess(successTarget)
-            const withElementRemoved = removeElementAtPath(command.target, componentsOldParent)
+            const withElementRemoved = removeElementAtPath(
+              command.target,
+              componentsOldParent,
+              successTarget.imports,
+            )
             const componentsNewParent = getUtopiaJSXComponentsFromSuccess(successNewParent)
 
             const insertionResult = insertJSXElementChildren(
@@ -102,8 +105,8 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
 
             const editorStatePatchOldParentFile = getPatchForComponentChange(
               successTarget.topLevelElements,
-              withElementRemoved,
-              successTarget.imports,
+              withElementRemoved.components,
+              withElementRemoved.imports,
               underlyingFilePathTarget,
             )
 

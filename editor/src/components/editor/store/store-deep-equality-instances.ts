@@ -550,6 +550,7 @@ import type {
   ActiveFrameTargetPath,
   ActiveFrameTargetRect,
 } from '../../canvas/commands/set-active-frames-command'
+import type { CommentFilterMode } from '../../inspector/sections/comment-section'
 
 export const ProjectMetadataFromServerKeepDeepEquality: KeepDeepEqualityCall<ProjectMetadataFromServer> =
   combine3EqualityCalls(
@@ -4535,9 +4536,9 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.activeFrames,
   )
 
-  const showResolvedThreadsResults = BooleanKeepDeepEquality(
-    oldValue.showResolvedThreads,
-    newValue.showResolvedThreads,
+  const commentFilterModeResults = createCallWithTripleEquals<CommentFilterMode>()(
+    oldValue.commentFilterMode,
+    newValue.commentFilterMode,
   )
 
   const areEqual =
@@ -4618,7 +4619,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     internalClipboardResults.areEqual &&
     filesModifiedByAnotherUserResults.areEqual &&
     activeFramesResults.areEqual &&
-    showResolvedThreadsResults.areEqual
+    commentFilterModeResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -4702,7 +4703,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       internalClipboardResults.value,
       filesModifiedByAnotherUserResults.value,
       activeFramesResults.value,
-      showResolvedThreadsResults.value,
+      commentFilterModeResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

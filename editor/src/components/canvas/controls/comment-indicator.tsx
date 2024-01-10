@@ -39,9 +39,10 @@ import { canvasPointToWindowPoint } from '../dom-lookup'
 import { useRemixNavigationContext } from '../remix/utopia-remix-root-component'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import { setRightMenuTab } from '../../editor/actions/action-creators'
-import { RightMenuTab, getCurrentTheme } from '../../editor/store/editor-state'
+import { RightMenuTab } from '../../editor/store/editor-state'
 import { when } from '../../../utils/react-conditionals'
 import { CommentRepliesCounter } from './comment-replies-counter'
+import { useMyUserId } from '../../../core/shared/multiplayer-hooks'
 
 const IndicatorSize = 24
 const MagnifyScale = 1.15
@@ -113,20 +114,10 @@ function useCommentBeingComposed(): TemporaryCommentIndicatorProps | null {
 
   const collabs = useStorage((storage) => storage.collaborators)
 
-  const userId = useEditorState(
-    Substores.userState,
-    (store) => {
-      if (store.userState.loginState.type !== 'LOGGED_IN') {
-        return null
-      }
-
-      return store.userState.loginState.user.userId
-    },
-    'CommentThread userId',
-  )
+  const myUserId = useMyUserId()
 
   const collaboratorInfo = React.useMemo(() => {
-    const collaborator = optionalMap((id) => collabs[id], userId)
+    const collaborator = optionalMap((id) => collabs[id], myUserId)
     if (collaborator == null) {
       return {
         initials: 'AN',
@@ -140,7 +131,7 @@ function useCommentBeingComposed(): TemporaryCommentIndicatorProps | null {
       color: multiplayerColorFromIndex(collaborator.colorIndex),
       avatar: collaborator.avatar,
     }
-  }, [collabs, userId])
+  }, [collabs, myUserId])
 
   if (position == null) {
     return null
@@ -194,12 +185,17 @@ interface CommentIndicatorUIProps {
 export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) => {
   const { position, bgColor, fgColor, avatarUrl, avatarInitials, resolved, isActive, read } = props
 
+  const canvasScale = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.scale,
+    'CommentIndicatorUI scale',
+  )
+
   function getIndicatorStyle() {
     const base: Interpolation<Theme> = {
       position: 'fixed',
       top: position.y + 3,
       left: position.x - 3,
-      filter: resolved ? 'grayscale(1)' : undefined,
       width: IndicatorSize,
       height: IndicatorSize,
       background: read ? colorTheme.bg1.value : colorTheme.primary.value,
@@ -208,6 +204,9 @@ export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) =>
       alignItems: 'center',
       justifyContent: 'center',
       boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
+      border: '.4px solid #a3a3a340',
+      opacity: resolved ? 0.6 : 'undefined',
+      zoom: 1 / canvasScale,
     }
 
     const transform: Interpolation<Theme> = {
@@ -249,7 +248,7 @@ export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) =>
           justifyContent: 'center',
         }}
       >
-        <AvatarPicture url={avatarUrl} initials={avatarInitials} />
+        <AvatarPicture url={avatarUrl} initials={avatarInitials} resolved={resolved} />
       </div>
     </div>
   )
@@ -274,14 +273,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
     'CommentIndicator canvasOffset',
   )
 
-  const { location, scene: commentScene } = useCanvasLocationOfThread(thread)
-
-  const remixLocationRoute = thread.metadata.remixLocationRoute ?? null
-
-  const remixState = useRemixNavigationContext(commentScene)
-
-  const isOnAnotherRoute =
-    remixLocationRoute != null && remixLocationRoute !== remixState?.location.pathname
+  const { location } = useCanvasLocationOfThread(thread)
 
   const readByMe = useMyThreadReadStatus(thread)
 
@@ -323,7 +315,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
   const draggingCallback = React.useCallback((isDragging: boolean) => setDragging(isDragging), [])
 
   return (
-    <div onMouseOver={onMouseOver} onMouseOut={onMouseOut}>
+    <div onMouseOver={onMouseOver} onMouseOut={onMouseOut} data-testid='comment-indicator'>
       {when(
         (isActive || !hovered) && !dragging,
         <CommentIndicatorUI
@@ -363,11 +355,6 @@ const HoveredCommentIndicator = React.memo((props: HoveredCommentIndicatorProps)
   const { thread, hidden, cancelHover, draggingCallback } = props
 
   const dispatch = useDispatch()
-  const theme = useEditorState(
-    Substores.userState,
-    (store) => getCurrentTheme(store.userState),
-    'HoveredCommentIndicator theme',
-  )
 
   const { location, scene: commentScene } = useCanvasLocationOfThread(thread)
 
@@ -423,6 +410,10 @@ const HoveredCommentIndicator = React.memo((props: HoveredCommentIndicatorProps)
     cancelHover,
   ])
 
+  const canvasDiv = document.getElementById('canvas-root')
+
+  const canvasHeight = canvasDiv?.clientHeight ?? 0
+
   const collabs = useStorage((storage) => storage.collaborators)
   if (hidden && dragPosition == null) {
     return null
@@ -446,12 +437,14 @@ const HoveredCommentIndicator = React.memo((props: HoveredCommentIndicatorProps)
         width: 250,
         boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
         background: colorTheme.bg1.value,
+        border: '.4px solid #a3a3a340',
         zIndex: 1,
         position: 'fixed',
-        top: position.y,
+        bottom: canvasHeight - IndicatorSize - position.y,
         // temporarily moving the hovered comment indicator to align with the not hovered version
         left: position.x - 3,
         overflow: 'hidden',
+        zoom: 1 / canvasScale,
       }}
       onMouseDown={onMouseDown}
       onClick={onClick}
@@ -461,7 +454,6 @@ const HoveredCommentIndicator = React.memo((props: HoveredCommentIndicatorProps)
           overflow: 'auto',
           background: 'transparent',
         }}
-        data-theme={theme}
         user={user}
         comment={comment}
         showActions={false}

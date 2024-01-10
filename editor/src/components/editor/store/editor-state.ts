@@ -1,6 +1,7 @@
 import * as json5 from 'json5'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
+  findJSXElementAtStaticPath,
   findJSXElementChildAtPath,
   removeJSXElementChild,
   transformJSXComponentAtPath,
@@ -114,7 +115,7 @@ import { dynamicPathToStaticPath, toUid } from '../../../core/shared/element-pat
 
 import * as friendlyWords from 'friendly-words'
 import type { UtopiaVSCodeConfig } from 'utopia-vscode-common'
-import { ProjectIDPlaceholderPrefix, defaultConfig } from 'utopia-vscode-common'
+import { defaultConfig } from 'utopia-vscode-common'
 import { loginNotYetKnown } from '../../../common/user'
 import * as EP from '../../../core/shared/element-path'
 import { assertNever } from '../../../core/shared/utils'
@@ -182,6 +183,9 @@ import type { VariablesInScope } from '../../canvas/ui-jsx-canvas'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import type { ActiveFrame } from '../../canvas/commands/set-active-frames-command'
 import { Y } from '../../../core/shared/yjs'
+import { removeUnusedImportsForRemovedElement } from '../import-utils'
+import { emptyImports } from '../../../core/workers/common/project-file-utils'
+import type { CommentFilterMode } from '../../inspector/sections/comment-section'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1450,7 +1454,7 @@ export interface EditorState {
   internalClipboard: InternalClipboard
   filesModifiedByAnotherUser: Array<string>
   activeFrames: ActiveFrame[]
-  showResolvedThreads: boolean
+  commentFilterMode: CommentFilterMode
 }
 
 export function editorState(
@@ -1532,7 +1536,7 @@ export function editorState(
   internalClipboardData: InternalClipboard,
   filesModifiedByAnotherUser: Array<string>,
   activeFrames: ActiveFrame[],
-  showResolvedThreads: boolean,
+  commentFilterMode: CommentFilterMode,
 ): EditorState {
   return {
     id: id,
@@ -1613,7 +1617,7 @@ export function editorState(
     internalClipboard: internalClipboardData,
     filesModifiedByAnotherUser: filesModifiedByAnotherUser,
     activeFrames: activeFrames,
-    showResolvedThreads: showResolvedThreads,
+    commentFilterMode: commentFilterMode,
   }
 }
 
@@ -1898,15 +1902,36 @@ function getJSXComponentsAndImportsForPath(
   }
 }
 
+type RemoveElementResult = {
+  components: Array<UtopiaJSXComponent>
+  imports: Imports
+}
 export function removeElementAtPath(
   target: ElementPath,
   components: Array<UtopiaJSXComponent>,
-): Array<UtopiaJSXComponent> {
+  originalImports?: Imports,
+): RemoveElementResult {
   const staticTarget = EP.dynamicPathToStaticPath(target)
+  let resultImports = originalImports ?? emptyImports()
   if (staticTarget == null) {
-    return components
+    return { components, imports: resultImports }
   } else {
-    return removeJSXElementChild(staticTarget, components)
+    const removedElement = findJSXElementAtStaticPath(components, staticTarget)
+    const remainingComponents = removeJSXElementChild(staticTarget, components)
+    if (removedElement != null) {
+      resultImports =
+        originalImports != null
+          ? removeUnusedImportsForRemovedElement(
+              removedElement,
+              remainingComponents,
+              originalImports,
+            )
+          : emptyImports()
+    }
+    return {
+      components: remainingComponents,
+      imports: resultImports,
+    }
   }
 }
 
@@ -2489,7 +2514,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     },
     filesModifiedByAnotherUser: [],
     activeFrames: [],
-    showResolvedThreads: false,
+    commentFilterMode: 'all',
   }
 }
 
@@ -2865,7 +2890,7 @@ export function editorModelFromPersistentModel(
     },
     filesModifiedByAnotherUser: [],
     activeFrames: [],
-    showResolvedThreads: false,
+    commentFilterMode: 'all',
   }
   return editor
 }

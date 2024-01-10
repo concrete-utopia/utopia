@@ -27,6 +27,8 @@ import { getIdOfScene } from '../../components/canvas/controls/comment-mode/comm
 import type { ElementPath } from '../shared/project-file-types'
 import type { ElementInstanceMetadata } from '../shared/element-template'
 import * as EP from '../shared/element-path'
+import { getCurrentTheme } from '../../components/editor/store/editor-state'
+import { useMyUserId } from '../shared/multiplayer-hooks'
 
 export function useCanvasCommentThreadAndLocation(comment: CommentId): {
   location: CanvasPoint | null
@@ -236,7 +238,7 @@ export function useActiveThreads() {
   const { threads } = useThreads()
   const showResolved = useEditorState(
     Substores.restOfEditor,
-    (store) => store.editor.showResolvedThreads,
+    (store) => store.editor.commentFilterMode === 'all-including-resolved',
     'useActiveThreads showResolved',
   )
   if (!showResolved) {
@@ -246,34 +248,41 @@ export function useActiveThreads() {
 }
 
 export function useResolvedThreads() {
-  const threads = useThreads()
-  return {
-    ...threads,
-    threads: threads.threads.filter((t) => t.metadata.resolved),
-  }
+  return useThreads({
+    query: {
+      metadata: {
+        resolved: true,
+      },
+    },
+  })
 }
 
 export function useUnresolvedThreads() {
-  const threads = useThreads()
-  return {
-    ...threads,
-    threads: threads.threads.filter((t) => t.metadata.resolved !== true),
-  }
+  return useThreads({
+    query: {
+      metadata: {
+        resolved: false,
+      },
+    },
+  })
 }
 
 export function useReadThreads() {
   const threads = useThreads()
-  const self = useSelf()
+  const myUserId = useMyUserId()
   const threadReadStatuses = useStorage((store) => store.userReadStatusesByThread)
 
   const filteredThreads = threads.threads.filter((thread) => {
+    if (myUserId == null) {
+      return false
+    }
     if (thread == null) {
       return false
     }
     if (threadReadStatuses[thread.id] == null) {
       return false
     }
-    return threadReadStatuses[thread.id][self.id] === true
+    return threadReadStatuses[thread.id][myUserId] === true
   })
 
   return {
@@ -296,8 +305,11 @@ export function useSetThreadReadStatusOnMount(thread: ThreadData<ThreadMetadata>
 }
 
 export function useMyThreadReadStatus(thread: ThreadData<ThreadMetadata> | null): ThreadReadStatus {
-  const self = useSelf()
+  const myUserId = useMyUserId()
   return useStorage((store) => {
+    if (myUserId == null) {
+      return 'unread'
+    }
     if (thread == null) {
       return 'unread'
     }
@@ -305,7 +317,7 @@ export function useMyThreadReadStatus(thread: ThreadData<ThreadMetadata> | null)
     if (statusesForThread == null) {
       return 'unread'
     }
-    return statusesForThread[self.id] === true ? 'read' : 'unread'
+    return statusesForThread[myUserId] === true ? 'read' : 'unread'
   })
 }
 
@@ -356,4 +368,15 @@ export function useDeleteThreadReadStatus() {
       statusesForThread.delete(threadId)
     }
   }, [])
+}
+
+export function useDataThemeAttributeOnBody() {
+  const theme = useEditorState(
+    Substores.userState,
+    (store) => getCurrentTheme(store.userState),
+    'useDataThemeAttributeOnBody theme',
+  )
+  React.useEffect(() => {
+    document.body.setAttribute('data-theme', theme)
+  }, [theme])
 }

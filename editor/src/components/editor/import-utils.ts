@@ -1,11 +1,18 @@
 import { resolveModulePathIncludingBuiltIns } from '../../core/es-modules/package-manager/module-resolution'
 import { foldEither } from '../../core/shared/either'
+
 import {
   emptyImports,
   emptyImportsMergeResolution,
   mergeImports,
 } from '../../core/workers/common/project-file-utils'
-import type { ImportInfo, TopLevelElement } from '../../core/shared/element-template'
+import type {
+  ImportInfo,
+  JSXElement,
+  TopLevelElement,
+  UtopiaJSXComponent,
+} from '../../core/shared/element-template'
+
 import {
   importedOrigin,
   isIntrinsicElement,
@@ -13,10 +20,12 @@ import {
   isJSXFragment,
   sameFileOrigin,
   walkElement,
+  walkElements,
 } from '../../core/shared/element-template'
 import type {
-  ImportsMergeResolution,
   ElementPath,
+  ImportsMergeResolution,
+  ImportDetails,
   Imports,
   NodeModules,
 } from '../../core/shared/project-file-types'
@@ -269,5 +278,78 @@ export function mergeImportsResolutions(
   return {
     imports: imports,
     duplicateNameMapping: mergedDuplicateNameMapping,
+  }
+}
+
+export function removeUnusedImportsForRemovedElement(
+  removedElement: JSXElement,
+  remainingComponents: UtopiaJSXComponent[],
+  imports: Imports,
+): Imports {
+  const elementName = removedElement.name.baseVariable
+  const remainingComponentNames = new Set<string>()
+  walkElements(remainingComponents, (jsxElement) => {
+    if (isJSXElement(jsxElement)) {
+      remainingComponentNames.add(jsxElement.name.baseVariable)
+    }
+  })
+  // if some other element is using this import, don't remove it
+  if (remainingComponentNames.has(elementName)) {
+    return imports
+  }
+  // remove the import
+  return removeImports(imports, [elementName])
+}
+
+export function removeImports(imports: Imports, namesToRemove: string[]): Imports {
+  let newImports: Imports = {}
+  for (const importPath of Object.keys(imports)) {
+    const newImportDetails = removeImportDetails(imports[importPath], namesToRemove)
+    if (newImportDetails != null) {
+      newImports[importPath] = newImportDetails
+    }
+  }
+  return newImports
+}
+
+export function purgeEmptyImports(imports: Imports): Imports {
+  let newImports: Imports = {}
+  for (const importPath of Object.keys(imports)) {
+    const details = imports[importPath]
+    if (
+      details.importedWithName != null ||
+      details.importedAs != null ||
+      details.importedFromWithin.length > 0
+    ) {
+      newImports[importPath] = details
+    }
+  }
+  return newImports
+}
+
+function removeImportDetails(
+  details: ImportDetails,
+  namesToRemove: string[],
+): ImportDetails | null {
+  const importedFromWithin = details.importedFromWithin.filter(
+    (fromWithin) => !namesToRemove.includes(fromWithin.alias),
+  )
+  const importedWithName =
+    details.importedWithName == null || namesToRemove.includes(details.importedWithName)
+      ? null
+      : details.importedWithName
+  const importedAs =
+    details.importedAs == null || namesToRemove.includes(details.importedAs)
+      ? null
+      : details.importedAs
+
+  if (importedWithName == null && importedAs == null && importedFromWithin.length === 0) {
+    return null
+  }
+
+  return {
+    importedWithName: importedWithName,
+    importedAs: importedAs,
+    importedFromWithin: importedFromWithin,
   }
 }

@@ -1,5 +1,3 @@
-import { LayoutSystem } from 'utopia-api/core' // TODO fixme this imports utopia-api
-import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import type { LoginState } from '../../../common/user'
 import type { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 import type {
@@ -7,10 +5,7 @@ import type {
   JSXElement,
   JSXElementName,
   ElementInstanceMetadataMap,
-  SettableLayoutSystem,
   JSXElementChild,
-  JSXConditionalExpression,
-  JSXFragment,
   TopLevelElement,
 } from '../../../core/shared/element-template'
 import type {
@@ -24,13 +19,11 @@ import type {
   RequestedNpmDependency,
 } from '../../../core/shared/npm-dependency-types'
 import type {
-  HighlightBoundsForUids,
   Imports,
   NodeModules,
   ParsedTextFile,
   ProjectFile,
   PropertyPath,
-  StaticElementPathPart,
   ElementPath,
   ImageFile,
   ExportDetail,
@@ -227,7 +220,7 @@ import type {
   UpdateExportsDetailFromCollaborationUpdate,
   UpdateImportsFromCollaborationUpdate,
   UpdateCodeFromCollaborationUpdate,
-  SetShowResolvedThreads,
+  SetCommentFilterMode,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -236,7 +229,6 @@ import type {
   DuplicationState,
   ErrorMessages,
   FloatingInsertMenuState,
-  GithubRepo,
   GithubState,
   LeftMenuTab,
   ModalDialog,
@@ -244,20 +236,18 @@ import type {
   ProjectGithubSettings,
   RightMenuTab,
   GithubOperation,
-  FileChecksums,
   GithubData,
   UserConfiguration,
   ThemeSetting,
   ColorSwatch,
   PostActionMenuData,
-  CollabFile,
 } from '../store/editor-state'
 import type { InsertionPath } from '../store/insertion-path'
 import type { TextProp } from '../../text-editor/text-editor'
-import { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import type { PostActionChoice } from '../../canvas/canvas-strategies/post-action-options/post-action-options'
 import type { ProjectServerState } from '../store/project-server-state'
 import type { SetHuggingParentToFixed } from '../../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
+import type { CommentFilterMode } from '../../inspector/sections/comment-section'
 
 export function clearSelection(): EditorAction {
   return {
@@ -1724,9 +1714,9 @@ export function updateCodeFromCollaborationUpdate(
   }
 }
 
-export function setShowResolvedThreads(showResolvedThreads: boolean): SetShowResolvedThreads {
+export function setCommentFilterMode(commentFilterMode: CommentFilterMode): SetCommentFilterMode {
   return {
-    action: 'SET_SHOW_RESOLVED_THREADS',
-    showResolvedThreads: showResolvedThreads,
+    action: 'SET_COMMENT_FILTER_MODE',
+    commentFilterMode: commentFilterMode,
   }
 }

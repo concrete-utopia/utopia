@@ -3,17 +3,21 @@ import type { Browser } from 'puppeteer'
 
 const TIMEOUT = 120000
 
+const BRANCH_NAME = process.env.BRANCH_NAME ? `&branch_name=${process.env.BRANCH_NAME}` : ''
+const BASE_URL = process.env.BASE_URL ?? 'http://localhost:8000'
+
 describe('Comments test', () => {
   it(
     'can place a comment',
     async () => {
       const { page, browser } = await setupBrowser(
-        'http://localhost:8000/p/?fakeUser=alice&Multiplayer=true',
+        `${BASE_URL}/p/?fakeUser=alice&Multiplayer=true${BRANCH_NAME}`,
         TIMEOUT,
       )
 
       const signInButton = await page.waitForSelector('div[data-testid="sign-in-button"]')
       await signInButton!.click()
+      await page.waitForSelector('#playground-scene') // wait for the scene to render
       const commentModeButton = await page.waitForSelector(
         'div[data-testid="canvas-toolbar-comment-mode-connected"]',
       )
@@ -30,6 +34,10 @@ describe('Comments test', () => {
       )
 
       expect(thread).not.toBeNull()
+
+      const commentIndicator = await page.waitForSelector('div[data-testid="comment-indicator"]')
+
+      expect(commentIndicator).not.toBeNull()
 
       const resolveButton = await page.waitForSelector('div[data-testid="resolve-thread-button"]')
       await resolveButton!.click()

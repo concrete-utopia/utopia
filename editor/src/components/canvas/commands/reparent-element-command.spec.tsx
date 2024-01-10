@@ -1,3 +1,4 @@
+import { getProjectFileByFilePath } from '../../../components/assets'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import * as EP from '../../../core/shared/element-path'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
@@ -6,6 +7,12 @@ import { childInsertionPath } from '../../editor/store/insertion-path'
 import { DefaultStartingFeatureSwitches, renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import { updateEditorStateWithPatches } from './commands'
 import { reparentElement, runReparentElement } from './reparent-element-command'
+import {
+  importAlias,
+  importDetails,
+  isParseSuccess,
+  type TextFile,
+} from '../../../core/shared/project-file-types'
 
 describe('runReparentElement', () => {
   it('reparent works', async () => {
@@ -84,14 +91,14 @@ describe('runReparentElement', () => {
 
     const result = runReparentElement(originalEditorState, reparentCommand)
 
-    const oldFile = withUnderlyingTargetFromEditorState(
+    const { oldFile, oldFilePreviousImports } = withUnderlyingTargetFromEditorState(
       targetPath,
       originalEditorState,
       null,
       (success, element, underlyingTarget, underlyingFilePath) => {
-        return underlyingFilePath
+        return { oldFile: underlyingFilePath, oldFilePreviousImports: success.imports }
       },
-    )
+    )!
 
     const patchedEditor = updateEditorStateWithPatches(
       originalEditorState,
@@ -118,11 +125,21 @@ describe('runReparentElement', () => {
       (success, element, underlyingTarget, underlyingFilePath) => {
         return element
       },
-    )
+    )!
+
+    const oldFileParsed = (
+      getProjectFileByFilePath(patchedEditor.projectContents, oldFile) as TextFile
+    ).fileContents.parsed
+    const oldFileImports = isParseSuccess(oldFileParsed) ? oldFileParsed.imports : null
 
     expect(oldElement).toBeNull()
     expect(newElement).not.toBeNull()
     expect(oldFile).toBe('/src/card.js')
     expect(newFile).toBe('/src/app.js')
+    // make sure we removed the unnecessary import
+    expect(oldFilePreviousImports?.['non-existant-dummy-library']).toEqual(
+      importDetails(null, [importAlias('Spring')], null),
+    )
+    expect(oldFileImports?.['non-existant-dummy-library']).toBeUndefined()
   })
 })

@@ -3,18 +3,8 @@
 import { jsx } from '@emotion/react'
 import '../../../../resources/editor/css/liveblocks/react-comments/styles.css'
 import '../../../../resources/editor/css/liveblocks/react-comments/dark/attributes.css'
-import React, { useState } from 'react'
-import {
-  Button,
-  CheckboxInput,
-  FlexColumn,
-  FlexRow,
-  Icn,
-  InspectorSubsectionHeader,
-  Tooltip,
-  color,
-  useColorTheme,
-} from '../../../uuiui'
+import React from 'react'
+import { Button, FlexColumn, FlexRow, Icn, PopupList, Tooltip, useColorTheme } from '../../../uuiui'
 import { stopPropagation } from '../common/inspector-utils'
 import { useStorage, type ThreadMetadata, useThreads } from '../../../../liveblocks.config'
 import type { ThreadData } from '@liveblocks/client'
@@ -22,22 +12,25 @@ import { useDispatch } from '../../editor/store/dispatch-context'
 import { canvasRectangle, rectangleContainsRectangle } from '../../../core/shared/math-utils'
 import {
   scrollToPosition,
-  setShowResolvedThreads,
+  setCommentFilterMode,
   switchEditorMode,
 } from '../../editor/actions/action-creators'
 import { EditorModes, isCommentMode, isExistingComment } from '../../editor/editor-modes'
 import { CommentWrapper, MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { useRemixNavigationContext } from '../../canvas/remix/utopia-remix-root-component'
 import {
-  useUnresolvedThreads,
   useResolveThread,
-  useResolvedThreads,
   useCanvasLocationOfThread,
   getCollaboratorById,
   useMyThreadReadStatus,
   useReadThreads,
 } from '../../../core/commenting/comment-hooks'
-import { Substores, useEditorState, useSelectorWithCallback } from '../../editor/store/store-hook'
+import {
+  Substores,
+  useEditorState,
+  useRefEditorState,
+  useSelectorWithCallback,
+} from '../../editor/store/store-hook'
 import { when } from '../../../utils/react-conditionals'
 import {
   getFirstComment,
@@ -49,6 +42,26 @@ import type { RestOfEditorState } from '../../editor/store/store-hook-substore-t
 import type { EditorAction } from '../../editor/action-types'
 import { canvasPointToWindowPoint } from '../../canvas/dom-lookup'
 import { CommentRepliesCounter } from '../../canvas/controls/comment-replies-counter'
+import type { SelectOption } from '../controls/select-control'
+import { assertNever } from '../../../core/shared/utils'
+import { pluck } from '../../../core/shared/array-utils'
+
+export type CommentFilterMode = 'all' | 'all-including-resolved' | 'unread-only'
+
+const filterOptions = [
+  {
+    label: 'All',
+    value: 'all',
+  },
+  {
+    label: 'All (and Resolved)',
+    value: 'all-including-resolved',
+  },
+  {
+    label: 'Unread Only',
+    value: 'unread-only',
+  },
+]
 
 export const CommentSection = React.memo(() => {
   return (
@@ -65,171 +78,86 @@ const ThreadPreviews = React.memo(() => {
   const dispatch = useDispatch()
   const colorTheme = useColorTheme()
 
-  const [filtersOpen, setOpen] = React.useState(false)
-  const toggleOpen = React.useCallback(() => {
-    setOpen((prevOpen) => !prevOpen)
-  }, [setOpen])
-
-  const { threads: threads } = useThreads()
-  const { threads: resolvedThreads } = useResolvedThreads()
+  const { threads } = useThreads()
   const { threads: readThreads } = useReadThreads()
 
   sortThreadsByDescendingUpdateTimeInPlace(threads)
-  sortThreadsByDescendingUpdateTimeInPlace(resolvedThreads)
-  sortThreadsByDescendingUpdateTimeInPlace(readThreads)
 
-  const showResolved = useEditorState(
+  const commentFilterMode = useEditorState(
     Substores.restOfEditor,
-    (store) => store.editor.showResolvedThreads,
-    'ThreadPreviews showResolvedThreads',
+    (store) => store.editor.commentFilterMode,
+    'ThreadPreviews commentFilterMode',
   )
 
-  const toggleShowResolved = React.useCallback(() => {
-    dispatch([
-      setShowResolvedThreads(!showResolved),
-      switchEditorMode(EditorModes.selectMode(null, false, 'none')),
-    ])
-  }, [showResolved, dispatch])
-
-  const [sortByDateNewestFirst, setSortByDateNewestFirst] = React.useState(true)
-  const [sortByUnreadFirst, setSortedByUnreadFirst] = React.useState(false)
-
-  const toggleSortByDateNewestFirst = React.useCallback(() => {
-    setSortByDateNewestFirst((prevValue) => !prevValue)
-  }, [])
-  const toggleSortByUnreadFirst = React.useCallback(() => {
-    setSortedByUnreadFirst((prevValue) => !prevValue)
-  }, [])
+  const filter = React.useMemo(
+    () =>
+      filterOptions.find((option) => option.value === commentFilterMode) ?? {
+        label: 'All',
+        value: 'all',
+      },
+    [commentFilterMode],
+  )
 
   const sortedThreads = React.useMemo(() => {
-    let filteredThreads = threads
+    switch (commentFilterMode) {
+      case 'all':
+        return threads.filter((t) => !t.metadata.resolved)
+      case 'all-including-resolved':
+        return threads
+      case 'unread-only':
+        const readThreadIds = pluck(readThreads, 'id')
+        return threads.filter((t) => !t.metadata.resolved && !readThreadIds.includes(t.id))
+      default:
+        assertNever(commentFilterMode)
+    }
+  }, [threads, readThreads, commentFilterMode])
 
-    if (!showResolved) {
-      filteredThreads = filteredThreads.filter((thread) => !resolvedThreads.includes(thread))
-    }
-    if (sortByDateNewestFirst) {
-      filteredThreads = filteredThreads.slice().reverse()
-    }
-    if (sortByUnreadFirst) {
-      const unreadThreads = filteredThreads.filter((thread) => !readThreads.includes(thread))
-      const theReadThreads = filteredThreads.filter((thread) => readThreads.includes(thread))
-      filteredThreads = [...unreadThreads, ...theReadThreads]
-    }
-
-    return filteredThreads
-  }, [
-    threads,
-    resolvedThreads,
-    readThreads,
-    showResolved,
-    sortByUnreadFirst,
-    sortByDateNewestFirst,
-  ])
+  const handleSubmitValueFilter = React.useCallback(
+    (option: SelectOption) => {
+      dispatch([setCommentFilterMode(option.value)])
+    },
+    [dispatch],
+  )
 
   return (
     <FlexColumn>
       <FlexRow
         style={{
-          flexGrow: 1,
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          fontWeight: 600,
           margin: 8,
+          gap: 12,
+          height: 22,
         }}
       >
-        <span>Comments</span>
-        <Tooltip title='Sort/Filter' placement='bottom'>
-          <div
-            css={{
-              width: 20,
-              height: 20,
-              borderRadius: 3,
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              '&:hover': {
-                backgroundColor: colorTheme.bg3.value,
-              },
+        <span style={{ fontWeight: 600 }}>Comments</span>
+        {when(
+          threads.length > 0,
+          <FlexRow
+            style={{
+              justifyContent: 'flex-end',
             }}
           >
-            <div
-              css={{
-                height: 14,
-                width: 14,
-                borderRadius: 14,
-                border: `1px solid ${colorTheme.fg1.value}`,
-                cursor: 'pointer',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                gap: 1,
-              }}
-              onClick={toggleOpen}
-            >
-              <div
-                style={{ width: 8, height: 1, background: colorTheme.fg1.value, borderRadius: 2 }}
-              />
-              <div
-                style={{ width: 6, height: 1, background: colorTheme.fg1.value, borderRadius: 2 }}
-              />
-              <div
-                style={{ width: 4, height: 1, background: colorTheme.fg1.value, borderRadius: 2 }}
-              />
-            </div>
-          </div>
-        </Tooltip>
+            <PopupList
+              value={filter}
+              options={filterOptions}
+              onSubmitValue={handleSubmitValueFilter}
+              containerMode='noBorder'
+            />
+          </FlexRow>,
+        )}
       </FlexRow>
       {when(
-        sortedThreads.length > 0,
-        <FlexColumn
+        sortedThreads.length === 0,
+        <div
           style={{
-            gap: 6,
-            overflow: 'hidden',
-            padding: filtersOpen ? 8 : 0,
-            height: filtersOpen ? 'auto' : 0,
+            padding: 8,
+            color: colorTheme.fg6.value,
+            whiteSpace: 'normal',
+            overflowWrap: 'break-word',
           }}
         >
-          <FlexRow>
-            <CheckboxInput
-              style={{ marginRight: 8 }}
-              id='showNewestFirst'
-              checked={sortByDateNewestFirst}
-              onChange={toggleSortByDateNewestFirst}
-            />
-            <label htmlFor='showNewestFirst'>Newest First</label>
-          </FlexRow>
-          <FlexRow>
-            <CheckboxInput
-              style={{ marginRight: 8 }}
-              id='showUnreadFirst'
-              checked={sortByUnreadFirst}
-              onChange={toggleSortByUnreadFirst}
-            />
-            <label htmlFor='showUnreadFirst'>Unread First</label>
-          </FlexRow>
-          {when(
-            resolvedThreads.length > 0,
-            <div style={{ width: '100%', background: colorTheme.bg3.value, height: 1 }} />,
-          )}
-          {when(
-            resolvedThreads.length > 0,
-            <FlexRow>
-              <CheckboxInput
-                style={{ marginRight: 8 }}
-                id='showResolved'
-                checked={showResolved}
-                onChange={toggleShowResolved}
-              />
-              <label htmlFor='showResolved'>Show Resolved Comments</label>
-            </FlexRow>,
-          )}
-        </FlexColumn>,
-      )}
-      {when(
-        sortedThreads.length === 0,
-        <div style={{ padding: 8, color: colorTheme.fg6.value }}>
-          Leave comments on the canvas.
+          {commentFilterMode == 'unread-only'
+            ? 'No Unread Comments.'
+            : 'Use the commenting tool to leave comments on the canvas. They will also show up here.'}
         </div>,
       )}
       {sortedThreads.map((thread) => (
@@ -259,16 +187,10 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
   const isOnAnotherRoute =
     remixLocationRoute != null && remixLocationRoute !== remixState?.location.pathname
 
-  const canvasScale = useEditorState(
-    Substores.canvasOffset,
-    (store) => store.editor.canvas.scale,
-    'ThreadPreview canvasScale',
-  )
-  const canvasOffset = useEditorState(
-    Substores.canvasOffset,
-    (store) => store.editor.canvas.roundedCanvasOffset,
-    'ThreadPreview canvasOffset',
-  )
+  const editorRef = useRefEditorState((store) => ({
+    canvasScale: store.editor.canvas.scale,
+    canvasOffset: store.editor.canvas.roundedCanvasOffset,
+  }))
 
   const onClick = React.useCallback(() => {
     if (isOnAnotherRoute) {
@@ -289,17 +211,29 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
         width: canvasArea.width - visibleAreaTolerance * 2,
         height: canvasArea.height,
       })
-      const rect = canvasRectangle({ x: location.x, y: location.y, width: 25, height: 25 })
-      const windowLocation = canvasPointToWindowPoint(location, canvasScale, canvasOffset)
+
+      const windowLocation = canvasPointToWindowPoint(
+        location,
+        editorRef.current.canvasScale,
+        editorRef.current.canvasOffset,
+      )
+
+      // adds a padding of 250px around `location`
       const windowRect = canvasRectangle({
-        x: windowLocation.x,
-        y: windowLocation.y,
-        width: rect.width,
-        height: rect.height,
+        x: windowLocation.x - 250,
+        y: windowLocation.y - 250,
+        width: 500,
+        height: 500,
       })
       const isVisible = rectangleContainsRectangle(visibleArea, windowRect)
       if (!isVisible) {
-        actions.push(scrollToPosition(rect, 'to-center'))
+        const scrollToRect = canvasRectangle({
+          x: location.x,
+          y: location.y,
+          width: 25,
+          height: 25,
+        })
+        actions.push(scrollToPosition(scrollToRect, 'to-center'))
       }
     }
     dispatch(actions)
@@ -311,8 +245,7 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
     location,
     thread.id,
     commentScene,
-    canvasScale,
-    canvasOffset,
+    editorRef,
   ])
 
   const resolveThread = useResolveThread()
@@ -406,7 +339,7 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
         )}
         <CommentRepliesCounter thread={thread} />
       </div>
-      <Tooltip title='Resolve' placement='top'>
+      <Tooltip title={thread.metadata.resolved ? 'Unresolve' : 'Mark Resolved'} placement='top'>
         <Button
           css={{
             position: 'absolute',

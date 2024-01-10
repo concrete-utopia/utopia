@@ -8,7 +8,6 @@ import type {
   JSXFragment,
   TopLevelElement,
 } from '../../core/shared/element-template'
-import { SettableLayoutSystem } from '../../core/shared/element-template'
 import type { KeysPressed, Key } from '../../utils/keyboard'
 import type { IndexPosition } from '../../utils/utils'
 import type { CanvasRectangle, Size, WindowPoint, CanvasPoint } from '../../core/shared/math-utils'
@@ -31,7 +30,6 @@ import type {
   ImportDetails,
   ImportsMergeResolution,
 } from '../../core/shared/project-file-types'
-import { StaticElementPathPart } from '../../core/shared/project-file-types'
 import type { CodeResultCache, PropertyControlsInfo } from '../custom-code/code-file'
 import type { ElementContextMenuInstance } from '../element-context-menu'
 import type { FontSettings } from '../inspector/common/css-utils'
@@ -64,9 +62,7 @@ import type {
   ThemeSetting,
   ColorSwatch,
   PostActionMenuData,
-  CollabFile,
 } from './store/editor-state'
-import { NavigatorEntry } from './store/editor-state'
 import type { Notice } from '../common/notice'
 import type { LoginState } from '../../common/user'
 import type { InsertableComponent, StylePropOption } from '../shared/project-components'
@@ -77,12 +73,12 @@ import type { GithubOperationType } from './actions/action-creators'
 import type { CanvasCommand } from '../canvas/commands/commands'
 import type { InsertionPath } from './store/insertion-path'
 import type { TextProp } from '../text-editor/text-editor'
-import { ElementPathTrees } from '../../core/shared/element-path-tree'
 import type { PostActionChoice } from '../canvas/canvas-strategies/post-action-options/post-action-options'
 import type { FromVSCodeAction } from './actions/actions-from-vscode'
 import type { ProjectServerState } from './store/project-server-state'
 import type { SetHuggingParentToFixed } from '../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
 import type { MapLike } from 'typescript'
+import type { CommentFilterMode } from '../inspector/sections/comment-section'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -1085,9 +1081,9 @@ export interface UpdateCodeFromCollaborationUpdate {
   code: string
 }
 
-export interface SetShowResolvedThreads {
-  action: 'SET_SHOW_RESOLVED_THREADS'
-  showResolvedThreads: boolean
+export interface SetCommentFilterMode {
+  action: 'SET_COMMENT_FILTER_MODE'
+  commentFilterMode: CommentFilterMode
 }
 
 export type EditorAction =
@@ -1265,7 +1261,7 @@ export type EditorAction =
   | UpdateExportsDetailFromCollaborationUpdate
   | UpdateImportsFromCollaborationUpdate
   | UpdateCodeFromCollaborationUpdate
-  | SetShowResolvedThreads
+  | SetCommentFilterMode
 
 export type DispatchPriority =
   | 'everyone'

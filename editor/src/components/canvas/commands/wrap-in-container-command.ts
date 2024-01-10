@@ -8,11 +8,7 @@ import {
   jsxElement,
   jsxFragment,
 } from '../../../core/shared/element-template'
-import {
-  importsResolution,
-  type ElementPath,
-  type Imports,
-} from '../../../core/shared/project-file-types'
+import { type ElementPath, type Imports } from '../../../core/shared/project-file-types'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import {
   forUnderlyingTargetFromEditorState,
@@ -41,7 +37,6 @@ import { generateConsistentUID } from '../../../core/shared/uid-utils'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { getSimpleAttributeAtPath } from '../../../core/model/element-metadata-utils'
 import { forEachRight, right } from '../../../core/shared/either'
-import { mergeImportsResolutions } from '../../../components/editor/import-utils'
 
 type ContainerToWrapIn = InsertionSubjectWrapper
 
@@ -79,7 +74,7 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
     editor,
     (success, elementToWrap, _underlyingTarget, underlyingFilePath) => {
       const components = getUtopiaJSXComponentsFromSuccess(success)
-      const withElementRemoved = removeElementAtPath(command.target, components)
+      const withElementRemoved = removeElementAtPath(command.target, components, success.imports)
       const indexInParent = getIndexInParent(
         success.topLevelElements,
         EP.dynamicPathToStaticPath(command.target),
@@ -112,7 +107,7 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
       const insertionResult = insertJSXElementChildren(
         insertionPath,
         [wrapper],
-        withElementRemoved,
+        withElementRemoved.components,
         index,
       )
 
@@ -120,7 +115,7 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
         getPatchForComponentChange(
           success.topLevelElements,
           insertionResult.components,
-          mergeImports(underlyingFilePath, success.imports, imports).imports,
+          mergeImports(underlyingFilePath, withElementRemoved.imports, imports).imports,
           underlyingFilePath,
         ),
       )
