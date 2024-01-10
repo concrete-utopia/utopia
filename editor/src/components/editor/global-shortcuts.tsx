@@ -686,6 +686,9 @@ export function handleKeyDown(
         )
       },
       [INSERT_DIV_SHORTCUT]: () => {
+        if (!allowedToEdit) {
+          return []
+        }
         if (!isSelectMode(editor.mode) && !isInsertMode(editor.mode)) {
           return []
         }

@@ -790,3 +790,11 @@ export function useAllowedToEditProject(): boolean {
     'useAllowedToEditProject',
   )
 }
+
+export function useIsMyProject(): boolean {
+  return useEditorState(
+    Substores.projectServerState,
+    (store) => store.projectServerState.isMyProject === 'yes',
+    'useIsMyProject',
+  )
+}
