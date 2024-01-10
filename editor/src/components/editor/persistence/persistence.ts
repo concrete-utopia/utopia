@@ -40,6 +40,7 @@ export class PersistenceMachine {
   private waitingThrottledSaveEvent: SaveEvent<PersistentModel> | null = null
   private queuedActions: Array<EditorAction> = [] // Queue up actions during events and transitions, then dispatch when ready
   private projectCreatedOrLoadedThisTick: boolean = false
+  private projectUploadedToServer: boolean = false
 
   constructor(
     backendAPI: PersistenceBackendAPI<PersistentModel, ProjectFile>,
@@ -63,6 +64,7 @@ export class PersistenceMachine {
         switch (event.type) {
           case 'NEW_PROJECT_CREATED':
             if (state.matches({ user: LoggedIn })) {
+              this.projectUploadedToServer = true
               this.queuedActions.push(showToast(notice('Project successfully uploaded!')))
             } else {
               this.queuedActions.push(
@@ -73,6 +75,7 @@ export class PersistenceMachine {
             this.projectCreatedOrLoadedThisTick = true
             break
           case 'LOAD_COMPLETE':
+            this.projectUploadedToServer = true
             this.projectCreatedOrLoadedThisTick = true
             break
           case 'PROJECT_ID_CREATED':
@@ -100,7 +103,10 @@ export class PersistenceMachine {
             )
             this.queuedActions.push(...updateFileActions)
             this.lastSavedTS = Date.now()
-            // TODO Show toasts after first server save of a previously local project
+            if (!this.projectUploadedToServer && event.source === 'server') {
+              this.projectUploadedToServer = true
+              this.queuedActions.push(showToast(notice('Project successfully uploaded!')))
+            }
             break
           case 'BACKEND_ERROR':
             // Clear the queued actions and instead show a toast with the error

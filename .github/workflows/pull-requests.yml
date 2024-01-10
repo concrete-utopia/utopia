@@ -399,3 +399,44 @@ jobs:
           BASE_URL: 'https://utopia.pizza'
         run: |
           nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "xvfb-run --server-args='-screen 0 1920x1080x24 -ac -nolisten tcp -dpi 96 +extension RANDR' run-comments-test"
+
+  collaboration-test:
+    name: Run Collaboration Tests
+    timeout-minutes: 12
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, cache-pnpm-store]
+    env:
+      UTOPIA_SHA: ${{ github.sha }}
+      AUTH0_CLIENT_ID: KB7euFO46rVYeOaWmrEdktdhAFxEO266
+      AUTH0_ENDPOINT: enter.utopia.app
+      AUTH0_REDIRECT_URI: https://utopia.pizza/authenticate
+    steps:
+      # Gets the branch that this PR is targeting and replaces forward slashes in the name with hyphens.
+      # So that later steps can produce a bundle incorporating that into the name and upload it.
+      - name: Extract branch name
+        shell: bash
+        run: |
+          FIXED_REF="${GITHUB_HEAD_REF////-}"
+          echo "##[set-output name=branch;]$FIXED_REF"
+        id: extract_branch
+      - name: Install nix
+        uses: cachix/install-nix-action@v12
+        with:
+          nix_path: nixpkgs=https://github.com/NixOS/nixpkgs/archive/6120ac5cd201f6cb593d1b80e861be0342495be9.tar.gz
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Cache .pnpm-store
+        uses: actions/cache@v2
+        with:
+          path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
+      - name: Build Comments Tests
+        run: |
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "build-puppeteer-tests"
+      - name: Run Comments Test
+        id: run-comments-test
+        env:
+          BRANCH_NAME: ${{ steps.extract_branch.outputs.branch }}
+          BASE_URL: 'https://utopia.pizza'
+        run: |
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "xvfb-run --server-args='-screen 0 1920x1080x24 -ac -nolisten tcp -dpi 96 +extension RANDR' run-collaboration-test"
