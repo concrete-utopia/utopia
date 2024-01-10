@@ -70,11 +70,8 @@ export const runAddElements: CommandFunction<AddElements> = (
       const editorStatePatchNewParentFile = getPatchForComponentChange(
         parentSuccess.topLevelElements,
         withElementsInserted,
-        mergeImports(
-          underlyingFilePathNewParent,
-          parentSuccess.imports,
-          command.importsToAdd ?? {},
-        ),
+        mergeImports(underlyingFilePathNewParent, parentSuccess.imports, command.importsToAdd ?? {})
+          .imports,
         underlyingFilePathNewParent,
       )
 

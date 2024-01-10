@@ -278,14 +278,14 @@ function addStoryboardFileForComponent(
   projectContents: ProjectContentTreeRoot,
 ): ProjectContentTreeRoot {
   // Add import of storyboard and scene components.
-  let imports = addImport(StoryboardFilePath, 'react', null, [], 'React', {})
-  imports = addImport(
+  let importsResolution = addImport(StoryboardFilePath, 'react', null, [], 'React', {})
+  importsResolution = addImport(
     StoryboardFilePath,
     'utopia-api',
     null,
     [importAlias('Storyboard'), importAlias('Scene')],
     null,
-    imports,
+    importsResolution.imports,
   )
   // Create the storyboard variable.
   let sceneElement: JSXElement
@@ -297,24 +297,24 @@ function addStoryboardFileForComponent(
         createFileWithComponent.toImport,
         'scene-1',
       )
-      imports = addImport(
+      importsResolution = addImport(
         StoryboardFilePath,
         createFileWithComponent.path,
         null,
         [importAlias(createFileWithComponent.toImport)],
         null,
-        imports,
+        importsResolution.imports,
       )
       break
     case 'DEFAULT_COMPONENT_TO_IMPORT':
       sceneElement = createSceneFromComponent(StoryboardFilePath, 'StoryboardComponent', 'scene-1')
-      imports = addImport(
+      importsResolution = addImport(
         StoryboardFilePath,
         createFileWithComponent.path,
         'StoryboardComponent',
         [],
         null,
-        imports,
+        importsResolution.imports,
       )
       break
     case 'UNEXPORTED_RENDERED_COMPONENT':
@@ -323,13 +323,13 @@ function addStoryboardFileForComponent(
         createFileWithComponent.elementName,
         'scene-1',
       )
-      imports = addImport(
+      importsResolution = addImport(
         StoryboardFilePath,
         createFileWithComponent.path,
         null,
         [importAlias(createFileWithComponent.elementName)],
         null,
-        imports,
+        importsResolution.imports,
       )
       // Modify the targeted file to export the component we're interested in.
       const fileToModify = forceNotNull(
@@ -394,7 +394,7 @@ function addStoryboardFileForComponent(
   // Add the component import.
   // Create the file.
   const success = parseSuccess(
-    imports,
+    importsResolution.imports,
     [unparsedCode('\n\n'), storyboardComponent],
     {},
     null,

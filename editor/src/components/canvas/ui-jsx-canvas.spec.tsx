@@ -1565,18 +1565,20 @@ import Utopia, {
 } from 'utopia-api'
 
 export var A = (props) => {
+  // @utopia/uid=aaa-root
   if (props.x === 0) {
-    return <div>great</div>
+    return <div data-uid='aaa-root-true'>great</div>
   } else {
-    return <B data-uid={'bbb-unparsed-no-template-path'} x={props.x - 1} />
+    return <B data-uid='aaa-root-false' x={props.x - 1} />
   }
 }
 
 export var B = (props) => {
+  // @utopia/uid=bbb-root
   if (props.x === 0) {
-    return <div>great</div>
+    return <div data-uid='bbb-root-true'>great</div>
   } else {
-    return <A data-uid={'aaa-unparsed-no-template-path'} x={props.x - 1} />
+    return <A data-uid='bbb-root-false' x={props.x - 1} />
   }
 }
 

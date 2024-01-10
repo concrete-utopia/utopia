@@ -217,7 +217,6 @@ export function testParseCode(
     fastForEach(success.topLevelElements, (topLevelElement) => {
       if (isUtopiaJSXComponent(topLevelElement)) {
         ensureElementsHaveUID(topLevelElement.rootElement, uids, () => true, 'walk-attributes')
-        ensureArbitraryJSXBlockCodeHasUIDs(topLevelElement.rootElement)
       }
     })
   }, result)
@@ -1196,26 +1195,6 @@ function babelCheckForDataUID(): { visitor: BabelTraverse.Visitor } {
   }
 }
 
-export function ensureArbitraryJSXBlockCodeHasUIDs(jsxElementChild: JSXElementChild): void {
-  walkElements(
-    jsxElementChild,
-    'do-not-include-data-uid-attribute',
-    (element) => {
-      if (isJSExpressionMapOrOtherJavaScript(element)) {
-        const plugins: Array<any> = [ReactSyntaxPlugin, babelCheckForDataUID]
-
-        Babel.transform(element.javascript, {
-          presets: [],
-          plugins: plugins,
-          sourceType: 'script',
-        })
-      }
-    },
-    () => true,
-    'walk-attributes',
-  )
-}
-
 export interface ArbitraryProject {
   code: string
   parsed: ParsedTextFile
@@ -1291,7 +1270,7 @@ export function printedProjectContentArbitrary(stripUIDs: boolean): Arbitrary<Ar
         if (componentExistsInFile) {
           return workingImports
         } else {
-          return addImport('code.jsx', 'testlib', baseVariable, [], null, workingImports)
+          return addImport('code.jsx', 'testlib', baseVariable, [], null, workingImports).imports
         }
       }, JustImportViewAndReact)
 

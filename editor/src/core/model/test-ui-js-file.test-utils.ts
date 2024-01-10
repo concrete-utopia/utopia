@@ -41,17 +41,17 @@ export const sampleDefaultImports: Imports = mergeImports('/code.js', onlyImport
     importedFromWithin: [importAlias('UtopiaUtils')],
     importedAs: null,
   },
-})
+}).imports
 
 export const sampleImportsForTests: Imports = mergeImports(
   '/code.js',
   sampleDefaultImports,
   sampleIncludedElementTypes.reduce<Imports>(
     (working, elementType) =>
-      addImport('/code.js', 'utopia-api', null, [importAlias(elementType)], null, working),
+      addImport('/code.js', 'utopia-api', null, [importAlias(elementType)], null, working).imports,
     emptyImports(),
   ),
-)
+).imports
 
 const MainComponentForTestsName = 'Test'
 

@@ -520,10 +520,13 @@ function insertElementIntoJSXConditional(
         updatedComponents,
       )
 
+      // TODO handle duplicate name mapping
+      const { imports } = mergeImports(underlyingFilePath, success.imports, importsToAdd)
+
       return {
         ...success,
         topLevelElements: updatedTopLevelElements,
-        imports: mergeImports(underlyingFilePath, success.imports, importsToAdd),
+        imports: imports,
       }
     },
   )
@@ -564,10 +567,13 @@ function insertConditionalIntoConditionalClause(
         updatedComponents,
       )
 
+      // TODO handle duplicate name mapping
+      const { imports } = mergeImports(underlyingFilePath, success.imports, importsToAdd)
+
       return {
         ...success,
         topLevelElements: updatedTopLevelElements,
-        imports: mergeImports(underlyingFilePath, success.imports, importsToAdd),
+        imports: imports,
       }
     },
   )

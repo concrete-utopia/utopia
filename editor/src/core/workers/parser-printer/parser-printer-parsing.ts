@@ -104,6 +104,7 @@ import {
   transpileJavascriptFromCode,
   transpileJavascript,
   insertDataUIDsIntoCode,
+  wrapAndTranspileJavascript,
 } from './parser-printer-transpiling'
 import * as PP from '../../shared/property-path'
 import type { ElementsWithinInPosition } from './parser-printer-utils'
@@ -824,6 +825,12 @@ function parseOtherJavaScript<E extends TS.Node, T extends { uid: string }>(
               addIfDefinedElsewhere(scope, node.condition, false)
               addIfDefinedElsewhere(scope, node.whenTrue, false)
               addIfDefinedElsewhere(scope, node.whenFalse, false)
+            } else if (TS.isIfStatement(node)) {
+              addIfDefinedElsewhere(scope, node.expression, false)
+              addIfDefinedElsewhere(scope, node.thenStatement, false)
+              if (node.elseStatement != null) {
+                addIfDefinedElsewhere(scope, node.elseStatement, false)
+              }
             } else if (TS.isDecorator(node)) {
               addIfDefinedElsewhere(scope, node.expression, false)
             } else if (TS.isDeleteExpression(node)) {
@@ -1053,15 +1060,16 @@ export function parseAttributeOtherJavaScript(
     (code, _, definedElsewhere, fileSourceNode, parsedElementsWithin, isList) => {
       const { code: codeFromFile, map } = fileSourceNode.toStringWithSourceMap({ file: filename })
       const rawMap = JSON.parse(map.toString())
-      const transpileEither = transpileJavascriptFromCode(
+
+      const transpileEither = wrapAndTranspileJavascript(
         sourceFile.fileName,
         sourceFile.text,
         codeFromFile,
         rawMap,
         parsedElementsWithin,
-        true,
         applySteganography,
       )
+
       return mapEither((transpileResult) => {
         const prependedWithReturn = prependToSourceString(
           sourceFile.fileName,
@@ -1183,13 +1191,12 @@ function parseJSExpression(
           sourceFile.fileName,
         )
         return flatMapEither((dataUIDFixResult) => {
-          const transpileEither = transpileJavascriptFromCode(
+          const transpileEither = wrapAndTranspileJavascript(
             sourceFile.fileName,
             sourceFile.text,
             dataUIDFixResult.code,
             dataUIDFixResult.sourceMap,
             parsedElementsWithin,
-            true,
             applySteganography,
           )
 
@@ -2889,7 +2896,6 @@ export function parseArbitraryNodes(
         // which resulted in the `data-uid` and `data-path` being created as if they were generated elements.
         // In those cases that is incorrect as they are just regularly used elements which were in a class component (for example).
         rootLevel ? [] : parsedElementsWithin,
-        false,
         applySteganography,
       )
       const dataUIDFixed = insertDataUIDsIntoCode(
@@ -3047,15 +3053,51 @@ export function parseOutFunctionContents(
         alreadyExistingUIDs,
         applySteganography,
       )
-      return mapEither((parsed) => {
-        highlightBounds = mergeHighlightBounds(highlightBounds, parsed.highlightBounds)
-        return withParserMetadata(
-          functionContents(jsBlock, 'block', parsed.value, returnStatementComments),
-          highlightBounds,
-          propsUsed.concat(parsed.propsUsed),
-          definedElsewhere.concat(parsed.definedElsewhere),
-        )
-      }, parsedElements)
+      return foldEither(
+        () => {
+          // If we aren't able to parse out the individual JSX elements (because they don't form part of a simple return statement)
+          // we attempt to parse the entire function body as arbitrary JS
+          const parsedAsArbitrary = parseAttributeOtherJavaScript(
+            sourceFile,
+            sourceText,
+            filename,
+            imports,
+            topLevelNames,
+            propsObjectName,
+            possibleElement,
+            highlightBounds,
+            alreadyExistingUIDs,
+            applySteganography,
+          )
+
+          return bimapEither(
+            (failure) => failure,
+            (success) => {
+              highlightBounds = mergeHighlightBounds(highlightBounds, success.highlightBounds)
+              const elem = successfullyParsedElement(sourceFile, possibleElement, success.value)
+              return withParserMetadata(
+                functionContents(jsBlock, 'block', [elem], returnStatementComments),
+                highlightBounds,
+                propsUsed.concat(success.propsUsed),
+                definedElsewhere.concat(success.definedElsewhere),
+              )
+            },
+            parsedAsArbitrary,
+          )
+        },
+        (parsed) => {
+          highlightBounds = mergeHighlightBounds(highlightBounds, parsed.highlightBounds)
+          return right(
+            withParserMetadata(
+              functionContents(jsBlock, 'block', parsed.value, returnStatementComments),
+              highlightBounds,
+              propsUsed.concat(parsed.propsUsed),
+              definedElsewhere.concat(parsed.definedElsewhere),
+            ),
+          )
+        },
+        parsedElements,
+      )
     }
   } else {
     const parsedElements = parseOutJSXElements(

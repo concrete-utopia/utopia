@@ -132,7 +132,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       false,
       emptyComments,
     )
-    const imports = addImport(
+    const { imports } = addImport(
       '/code.js',
       'cake',
       null,
@@ -197,7 +197,7 @@ export var whatever = () => <View data-uid='aaa'>
       false,
       emptyComments,
     )
-    const imports = addImport(
+    const { imports } = addImport(
       '/code.js',
       'cake',
       null,
@@ -274,7 +274,7 @@ export function whatever(props) {
       false,
       emptyComments,
     )
-    const imports = addImport(
+    const { imports } = addImport(
       '/code.js',
       'cake',
       null,
@@ -343,7 +343,7 @@ export function whatever() {
       false,
       emptyComments,
     )
-    const imports = addImport(
+    const { imports } = addImport(
       '/code.js',
       'cake',
       null,
@@ -420,7 +420,7 @@ export default function whatever(props) {
       false,
       emptyComments,
     )
-    const imports = addImport(
+    const { imports } = addImport(
       '/code.js',
       'cake',
       null,
@@ -489,7 +489,7 @@ export default function whatever() {
       false,
       emptyComments,
     )
-    const imports = addImport(
+    const { imports } = addImport(
       '/code.js',
       'cake',
       null,
@@ -563,8 +563,15 @@ export var whatever = (props) => <View data-uid='aaa'>
       false,
       emptyComments,
     )
-    const importsWithCake = addImport('/code.js', 'cake', 'cake', [], null, sampleImportsForTests)
-    const importsWithStylecss = addImport(
+    const { imports: importsWithCake } = addImport(
+      '/code.js',
+      'cake',
+      'cake',
+      [],
+      null,
+      sampleImportsForTests,
+    )
+    const { imports: importsWithStylecss } = addImport(
       '/code.js',
       './style.css',
       null,
@@ -654,7 +661,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       false,
       emptyComments,
     )
-    const imports = addImport(
+    const { imports } = addImport(
       '/code.js',
       'cake',
       'cake',
@@ -727,7 +734,7 @@ export var whatever = (props) => <View data-uid='aaa'>
         false,
         emptyComments,
       )
-      const imports = addImport(
+      const { imports } = addImport(
         '/code.js',
         'cake',
         null,
@@ -819,7 +826,7 @@ export var whatever = (props) => <View data-uid='aaa'>
         false,
         emptyComments,
       )
-      const imports = addImport(
+      const { imports } = addImport(
         '/code.js',
         'cake',
         null,
@@ -901,7 +908,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       false,
       emptyComments,
     )
-    const imports = addImport(
+    const { imports } = addImport(
       '/code.js',
       'cake',
       null,
@@ -1056,7 +1063,7 @@ return { getSizing: getSizing, spacing: spacing };`
     const topLevelElements = [arbitraryBlock1, arbitraryBlock2, exported].map(
       clearTopLevelElementUniqueIDsAndEmptyBlocks,
     )
-    const imports = addImport(
+    const { imports } = addImport(
       '/code.js',
       'cake',
       null,
@@ -1154,7 +1161,7 @@ return { getSizing: getSizing };`
     const topLevelElements = [arbitraryBlock, exported].map(
       clearTopLevelElementUniqueIDsAndEmptyBlocks,
     )
-    const imports = addImport(
+    const { imports } = addImport(
       '/code.js',
       'cake',
       null,
@@ -1268,7 +1275,7 @@ return { getSizing: getSizing };`
     const topLevelElements = [arbitraryBlock, exported].map(
       clearTopLevelElementUniqueIDsAndEmptyBlocks,
     )
-    const imports = addImport(
+    const { imports } = addImport(
       '/code.js',
       'cake',
       null,
@@ -1366,7 +1373,7 @@ return {  };`
     const topLevelElements = [arbitraryBlock, exported].map(
       clearTopLevelElementUniqueIDsAndEmptyBlocks,
     )
-    const imports = addImport(
+    const { imports } = addImport(
       '/code.js',
       'cake',
       null,
@@ -1459,7 +1466,7 @@ return { spacing: spacing };`
       {},
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
-    const imports = addImport(
+    const { imports } = addImport(
       '/code.js',
       'cake',
       null,
@@ -2163,7 +2170,7 @@ return { count: count };`
       {},
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
-    const imports = addImport(
+    const { imports } = addImport(
       '/code.js',
       'cake',
       null,
@@ -2257,7 +2264,7 @@ return { use20: use20 };`
       {},
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
-    const imports = addImport(
+    const { imports } = addImport(
       '/code.js',
       'cake',
       null,
@@ -2415,7 +2422,7 @@ return { spacing: spacing };`
       {},
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
-    const imports = addImport(
+    const { imports } = addImport(
       '/code.js',
       'cake',
       null,
@@ -2816,7 +2823,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       false,
       emptyComments,
     )
-    const imports = addImport(
+    const { imports } = addImport(
       '/code.js',
       'cake',
       null,
@@ -2886,7 +2893,7 @@ export var whatever = () => <View data-uid='aaa'>
       false,
       emptyComments,
     )
-    const imports = addImport(
+    const { imports } = addImport(
       '/code.js',
       'cake',
       null,
@@ -3016,7 +3023,7 @@ export var App = (props) => <View data-uid='bbb'>
       false,
       emptyComments,
     )
-    const imports = addImport(
+    const { imports } = addImport(
       '/code.js',
       'cake',
       null,
@@ -3146,7 +3153,7 @@ return { getSizing: getSizing, spacing: spacing };`
     const topLevelElements = [arbitraryBlock1, arbitraryBlock2, exported].map(
       clearTopLevelElementUniqueIDsAndEmptyBlocks,
     )
-    const imports = addImport(
+    const { imports } = addImport(
       '/code.js',
       'cake',
       null,
@@ -3209,7 +3216,7 @@ return { getSizing: getSizing, spacing: spacing };`
       false,
       emptyComments,
     )
-    const imports = addImport(
+    const { imports } = addImport(
       '/code.js',
       'cake',
       null,
@@ -3347,7 +3354,7 @@ export var whatever = props => {
       false,
       emptyComments,
     )
-    const imports = addImport(
+    const { imports } = addImport(
       '/code.js',
       'cake',
       null,
@@ -3414,7 +3421,7 @@ export var whatever = props => {
       false,
       emptyComments,
     )
-    const imports = addImport(
+    const { imports } = addImport(
       '/code.js',
       'cake',
       null,
@@ -3514,7 +3521,7 @@ export var whatever = props => {
       false,
       emptyComments,
     )
-    const imports = addImport(
+    const { imports } = addImport(
       '/code.js',
       'cake',
       null,
@@ -3610,7 +3617,7 @@ return { test: test };`
     const actualResult = simplifyParsedTextFileAttributes(
       clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
-    const imports = addImport(
+    const { imports } = addImport(
       '/code.js',
       'cake',
       null,
@@ -3694,7 +3701,7 @@ return { test: test };`
   return n * 2;
 }
 return { test: test };`
-    const imports = addImport(
+    const { imports } = addImport(
       'code.jsx',
       'cake',
       null,
@@ -5360,7 +5367,7 @@ export var App = (props) => {
         code,
         sourceMap,
         [],
-        false,
+        'do-not-wrap',
         'do-not-apply-steganography',
       ),
     ).toMatchSnapshot()

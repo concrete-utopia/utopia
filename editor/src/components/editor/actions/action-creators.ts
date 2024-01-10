@@ -27,6 +27,7 @@ import type {
   ElementPath,
   ImageFile,
   ExportDetail,
+  ImportsMergeResolution,
 } from '../../../core/shared/project-file-types'
 import type { BuildType } from '../../../core/workers/common/worker-types'
 import type { Key, KeysPressed } from '../../../utils/keyboard'
@@ -418,11 +419,13 @@ export function elementPaste(
   element: JSXElementChild,
   importsToAdd: Imports,
   originalElementPath: ElementPath,
+  duplicateNameMap?: Map<string, string>,
 ): ElementPaste {
   return {
     element: element,
     importsToAdd: importsToAdd,
     originalElementPath: originalElementPath,
+    duplicateNameMap: duplicateNameMap,
   }
 }
 

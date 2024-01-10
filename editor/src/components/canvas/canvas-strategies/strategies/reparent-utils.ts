@@ -1,6 +1,9 @@
 import type { ProjectContentTreeRoot } from '../../../assets'
 import type { AllElementProps } from '../../../editor/store/editor-state'
-import { withUnderlyingTarget } from '../../../editor/store/editor-state'
+import {
+  getJSXElementFromProjectContents,
+  withUnderlyingTarget,
+} from '../../../editor/store/editor-state'
 import type { ElementPath, Imports, NodeModules } from '../../../../core/shared/project-file-types'
 import type { CanvasCommand } from '../../commands/commands'
 import { reparentElement } from '../../commands/reparent-element-command'
@@ -46,13 +49,11 @@ import {
   lastOfNonEmptyArray,
 } from '../../../../core/shared/array-utils'
 import type { CanvasRectangle } from '../../../../core/shared/math-utils'
-import {
-  boundingRectangleArray,
-  isInfinityRectangle,
-  nullIfInfinity,
-} from '../../../../core/shared/math-utils'
+import { boundingRectangleArray, nullIfInfinity } from '../../../../core/shared/math-utils'
 import { isElementRenderedBySameComponent } from './reparent-helpers/reparent-helpers'
 import type { ParsedCopyData } from '../../../../utils/clipboard'
+import { getParseSuccessForFilePath } from '../../canvas-utils'
+import { renameDuplicateImports } from '../../../../core/shared/import-shared-utils'
 
 interface GetReparentOutcomeResult {
   commands: Array<CanvasCommand>
@@ -87,6 +88,56 @@ export function elementToReparent(element: JSXElementChild, imports: Imports): E
 
 export type ToReparent = PathToReparent | ElementToReparent
 
+function adjustElementDuplicateName(
+  element: ElementToReparent,
+  targetFile: string,
+  projectContents: ProjectContentTreeRoot,
+): ElementToReparent {
+  let elementToReturn = element
+  const fileContents = getParseSuccessForFilePath(targetFile, projectContents)
+  if (fileContents == null) {
+    return elementToReturn
+  }
+  const { imports, duplicateNameMapping } = renameDuplicateImports(
+    fileContents.imports,
+    element.imports,
+    targetFile,
+  )
+  // handle element name
+  if (isJSXElement(element.element)) {
+    const elementName = MetadataUtils.getJSXElementName(element.element)?.baseVariable
+    if (elementName != null && duplicateNameMapping.has(elementName)) {
+      elementToReturn = {
+        ...element,
+        element: {
+          ...element.element,
+          name: {
+            ...element.element.name,
+            baseVariable: duplicateNameMapping.get(elementName)!,
+          },
+        },
+      }
+    }
+  }
+  elementToReturn = {
+    ...elementToReturn,
+    imports: imports,
+  }
+  return elementToReturn
+}
+
+function getElementName(
+  target: ElementPath,
+  projectContents: ProjectContentTreeRoot,
+  duplicateNameMapping: Map<string, string>,
+): string | null {
+  const element = getJSXElementFromProjectContents(target, projectContents)
+  if (element == null) {
+    return null
+  }
+  return duplicateNameMapping.get(element.name.baseVariable) ?? element.name.baseVariable
+}
+
 export function getReparentOutcome(
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
@@ -119,15 +170,18 @@ export function getReparentOutcome(
 
   switch (toReparent.type) {
     case 'PATH_TO_REPARENT':
-      const importsToAdd = getRequiredImportsForElement(
+      const { imports, duplicateNameMapping } = getRequiredImportsForElement(
         toReparent.target,
         projectContents,
         nodeModules,
         newTargetFilePath,
         builtInDependencies,
       )
-      commands.push(addImportsToFile(whenToRun, newTargetFilePath, importsToAdd))
-      commands.push(reparentElement(whenToRun, toReparent.target, targetParent, indexPosition))
+      commands.push(addImportsToFile(whenToRun, newTargetFilePath, imports))
+      const elementName = getElementName(toReparent.target, projectContents, duplicateNameMapping)
+      commands.push(
+        reparentElement(whenToRun, toReparent.target, targetParent, indexPosition, elementName),
+      )
       commands.push(
         ...getRequiredGroupTrueUps(
           projectContents,
@@ -140,10 +194,15 @@ export function getReparentOutcome(
       newPath = EP.appendToPath(newParentElementPath, EP.toUid(toReparent.target))
       break
     case 'ELEMENT_TO_REPARENT':
-      newPath = EP.appendToPath(newParentElementPath, getUtopiaID(toReparent.element))
-      commands.push(addImportsToFile(whenToRun, newTargetFilePath, toReparent.imports))
+      const adjustedElement = adjustElementDuplicateName(
+        toReparent,
+        newTargetFilePath,
+        projectContents,
+      )
+      newPath = EP.appendToPath(newParentElementPath, getUtopiaID(adjustedElement.element))
+      commands.push(addImportsToFile(whenToRun, newTargetFilePath, adjustedElement.imports))
       commands.push(
-        addElement(whenToRun, targetParent, toReparent.element, {
+        addElement(whenToRun, targetParent, adjustedElement.element, {
           indexPosition: indexPosition ?? undefined,
         }),
       )
@@ -209,19 +268,27 @@ export function getReparentOutcomeMultiselect(
   fastForEach(toReparentMultiple, (toReparent) => {
     switch (toReparent.type) {
       case 'PATH_TO_REPARENT':
-        const importsToAdd = getRequiredImportsForElement(
+        const { imports, duplicateNameMapping } = getRequiredImportsForElement(
           toReparent.target,
           projectContents,
           nodeModules,
           newTargetFilePath,
           builtInDependencies,
         )
-        commands.push(addImportsToFile(whenToRun, newTargetFilePath, importsToAdd))
-        commands.push(reparentElement(whenToRun, toReparent.target, newParent, indexPosition))
+        commands.push(addImportsToFile(whenToRun, newTargetFilePath, imports))
+        const elementName = getElementName(toReparent.target, projectContents, duplicateNameMapping)
+        commands.push(
+          reparentElement(whenToRun, toReparent.target, newParent, indexPosition, elementName),
+        )
         break
       case 'ELEMENT_TO_REPARENT':
-        commands.push(addImportsToFile(whenToRun, newTargetFilePath, toReparent.imports))
-        elementsToInsert.push(toReparent.element)
+        const adjustedElement = adjustElementDuplicateName(
+          toReparent,
+          newTargetFilePath,
+          projectContents,
+        )
+        commands.push(addImportsToFile(whenToRun, newTargetFilePath, adjustedElement.imports))
+        elementsToInsert.push(adjustedElement.element)
         break
       default:
         const _exhaustiveCheck: never = toReparent

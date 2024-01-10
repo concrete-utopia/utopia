@@ -1323,6 +1323,20 @@ export type JSXElementChild =
   | JSXFragment
   | JSXConditionalExpression
 
+export function canBeRootElementOfComponent(element: JSXElementChild): boolean {
+  if (isJSXElement(element) || isJSXFragment(element) || isJSXConditionalExpression(element)) {
+    return true
+  }
+
+  if (isJSExpression(element)) {
+    if (hasElementsWithin(element)) {
+      return Object.keys(element.elementsWithin).length > 0
+    }
+  }
+
+  return false
+}
+
 export function isJSXElement(element: JSXElementChild): element is JSXElement {
   return element.type === 'JSX_ELEMENT'
 }
@@ -2310,4 +2324,29 @@ export function getElementsByUIDFromTopLevelElements(
     }
   })
   return result
+}
+
+export function renameIfNeeded(
+  element: JSXElement,
+  duplicateNameMapping: Map<string, string>,
+): JSXElement {
+  const newElementName = duplicateNameMapping.get(element.name.baseVariable)
+  if (newElementName != null) {
+    return {
+      ...element,
+      name: {
+        ...element.name,
+        baseVariable: newElementName,
+      },
+      children: element.children.map((child) => {
+        if (isJSXElement(child)) {
+          return renameIfNeeded(child, duplicateNameMapping)
+        } else {
+          return child
+        }
+      }),
+    }
+  } else {
+    return element
+  }
 }

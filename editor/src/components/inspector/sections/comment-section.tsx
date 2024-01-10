@@ -54,11 +54,11 @@ const filterOptions = [
     value: 'all',
   },
   {
-    label: 'All including resolved',
+    label: 'All (and Resolved)',
     value: 'all-including-resolved',
   },
   {
-    label: 'Unread only',
+    label: 'Unread Only',
     value: 'unread-only',
   },
 ]
@@ -77,11 +77,6 @@ CommentSection.displayName = 'CommentSection'
 const ThreadPreviews = React.memo(() => {
   const dispatch = useDispatch()
   const colorTheme = useColorTheme()
-
-  const [filtersOpen, setOpen] = React.useState(false)
-  const toggleOpen = React.useCallback(() => {
-    setOpen((prevOpen) => !prevOpen)
-  }, [setOpen])
 
   const { threads } = useThreads()
   const { threads: readThreads } = useReadThreads()
@@ -128,74 +123,28 @@ const ThreadPreviews = React.memo(() => {
     <FlexColumn>
       <FlexRow
         style={{
-          flexGrow: 1,
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          fontWeight: 600,
           margin: 8,
+          gap: 12,
+          height: 22,
         }}
       >
-        <span>Comments</span>
-        <Tooltip title='Sort/Filter' placement='bottom'>
-          <div
-            css={{
-              width: 20,
-              height: 20,
-              borderRadius: 3,
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              '&:hover': {
-                backgroundColor: colorTheme.bg3.value,
-              },
+        <span style={{ fontWeight: 600 }}>Comments</span>
+        {when(
+          threads.length > 0,
+          <FlexRow
+            style={{
+              justifyContent: 'flex-end',
             }}
           >
-            <div
-              css={{
-                height: 14,
-                width: 14,
-                borderRadius: 14,
-                border: `1px solid ${colorTheme.fg1.value}`,
-                cursor: 'pointer',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                gap: 1,
-              }}
-              onClick={toggleOpen}
-            >
-              <div
-                style={{ width: 8, height: 1, background: colorTheme.fg1.value, borderRadius: 2 }}
-              />
-              <div
-                style={{ width: 6, height: 1, background: colorTheme.fg1.value, borderRadius: 2 }}
-              />
-              <div
-                style={{ width: 4, height: 1, background: colorTheme.fg1.value, borderRadius: 2 }}
-              />
-            </div>
-          </div>
-        </Tooltip>
+            <PopupList
+              value={filter}
+              options={filterOptions}
+              onSubmitValue={handleSubmitValueFilter}
+              containerMode='noBorder'
+            />
+          </FlexRow>,
+        )}
       </FlexRow>
-      {when(
-        sortedThreads.length > 0,
-        <FlexColumn
-          style={{
-            gap: 6,
-            overflow: 'hidden',
-            padding: filtersOpen ? 8 : 0,
-            height: filtersOpen ? 'auto' : 0,
-          }}
-        >
-          <PopupList
-            value={filter}
-            options={filterOptions}
-            onSubmitValue={handleSubmitValueFilter}
-            style={{ width: 150 }}
-          />
-        </FlexColumn>,
-      )}
       {when(
         sortedThreads.length === 0,
         <div
@@ -206,7 +155,9 @@ const ThreadPreviews = React.memo(() => {
             overflowWrap: 'break-word',
           }}
         >
-          Use the commenting tool to leave comments on the canvas. They will also show up here.
+          {commentFilterMode == 'unread-only'
+            ? 'No Unread Comments.'
+            : 'Use the commenting tool to leave comments on the canvas. They will also show up here.'}
         </div>,
       )}
       {sortedThreads.map((thread) => (
@@ -388,7 +339,7 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
         )}
         <CommentRepliesCounter thread={thread} />
       </div>
-      <Tooltip title='Resolve' placement='top'>
+      <Tooltip title={thread.metadata.resolved ? 'Unresolve' : 'Mark Resolved'} placement='top'>
         <Button
           css={{
             position: 'absolute',

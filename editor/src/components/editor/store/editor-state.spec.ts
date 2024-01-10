@@ -3,6 +3,7 @@ import {
   createEditorState,
   defaultModifyParseSuccess,
   modifyUnderlyingTargetElement,
+  removeElementAtPath,
   StoryboardFilePath,
 } from './editor-state'
 import {
@@ -17,9 +18,11 @@ import {
   jsxElement,
   JSXElement,
   setJSXAttributesAttribute,
+  utopiaJSXComponent,
 } from '../../../core/shared/element-template'
 import { printCode, printCodeOptions } from '../../../core/workers/parser-printer/parser-printer'
 import type { Imports, ParseSuccess } from '../../../core/shared/project-file-types'
+import { importDetails } from '../../../core/shared/project-file-types'
 import {
   importAlias,
   isParseSuccess,
@@ -29,6 +32,7 @@ import {
 import { addImport, emptyImports } from '../../../core/workers/common/project-file-utils'
 import { omit } from '../../../core/shared/object-utils'
 import * as EP from '../../../core/shared/element-path'
+import { sampleJsxComponents } from '../../../core/model/test-ui-js-file.test-utils'
 
 function getCodeForFile(actualResult: EditorState, filename: string): string {
   const codeFile = getTextFileByPath(actualResult.projectContents, filename)
@@ -127,8 +131,8 @@ describe('modifyUnderlyingTarget', () => {
           null,
           [importAlias('Spring')],
           null,
-          addImport('', 'react', null, [], 'React', emptyImports()),
-        ),
+          addImport('', 'react', null, [], 'React', emptyImports()).imports,
+        ).imports,
       )
     } else {
       throw new Error('No parsed version of the file.')
@@ -231,5 +235,36 @@ describe('Revision state management', () => {
     )
     const resultingFile = getTextFileByPath(actualResult.projectContents, '/src/app.js')
     expect(resultingFile.fileContents.revisionsState).toEqual('PARSED_AHEAD')
+  })
+})
+
+describe('removeElementAtPath', () => {
+  it('should remove the elements imports', () => {
+    const removeElementResult = removeElementAtPath(
+      EP.fromString('aaa/mycomponent'),
+      sampleJsxComponents,
+      { 'my-component': importDetails(null, [importAlias('MyComponent')], null) },
+    )
+    expect(removeElementResult.imports['my-component']).toEqual(undefined)
+  })
+
+  it('should remove correct import', () => {
+    const removeElementResult = removeElementAtPath(
+      EP.fromString('aaa/mycomponent'),
+      sampleJsxComponents,
+      { 'my-component': importDetails('OtherImport', [importAlias('MyComponent')], null) },
+    )
+    expect(removeElementResult.imports['my-component']).toEqual(
+      importDetails('OtherImport', [], null),
+    )
+  })
+
+  it('shouldnt remove an import if another component is using it', () => {
+    const removeElementResult = removeElementAtPath(EP.fromString('aaa/ggg'), sampleJsxComponents, {
+      'utopia-api': importDetails(null, [importAlias('View')], null),
+    })
+    expect(removeElementResult.imports['utopia-api']).toEqual(
+      importDetails(null, [importAlias('View')], null),
+    )
   })
 })
