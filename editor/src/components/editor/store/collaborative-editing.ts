@@ -719,7 +719,7 @@ export async function claimControlOverProject(projectID: string | null): Promise
   if (projectID == null || !isFeatureEnabled('Baton Passing For Control')) {
     return null
   }
-  if (document.hidden) {
+  if (!document.hasFocus()) {
     return false
   }
 

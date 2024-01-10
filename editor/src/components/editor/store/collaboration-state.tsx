@@ -1,8 +1,9 @@
 import React from 'react'
-import type { EditorDispatch } from '../action-types'
+import type { EditorAction, EditorDispatch } from '../action-types'
 import { releaseControlOverProject, snatchControlOverProject } from './collaborative-editing'
 import { Substores, useEditorState } from './store-hook'
-import { updateProjectServerState } from '../actions/action-creators'
+import { switchEditorMode, updateProjectServerState } from '../actions/action-creators'
+import { EditorModes } from '../editor-modes'
 
 interface CollaborationStateUpdaterProps {
   projectId: string | null
@@ -26,9 +27,16 @@ export const CollaborationStateUpdater = React.memo(
           // Only attempt to do any kind of snatching of control if the project is "mine".
           if (isMyProject === 'yes') {
             void snatchControlOverProject(projectId).then((controlResult) => {
-              dispatch([
-                updateProjectServerState({ currentlyHolderOfTheBaton: controlResult ?? false }),
-              ])
+              const newHolderOfTheBaton = controlResult ?? false
+              let actions: Array<EditorAction> = [
+                updateProjectServerState({ currentlyHolderOfTheBaton: newHolderOfTheBaton }),
+              ]
+              // Makes sense for the editing user to be in control and they probably want to be editing
+              // when they regain control.
+              if (newHolderOfTheBaton) {
+                actions.push(switchEditorMode(EditorModes.selectMode(null, false, 'none')))
+              }
+              dispatch(actions)
             })
           }
         }
