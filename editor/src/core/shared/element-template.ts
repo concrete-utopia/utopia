@@ -2311,3 +2311,28 @@ export function getElementsByUIDFromTopLevelElements(
   })
   return result
 }
+
+export function renameIfNeeded(
+  element: JSXElement,
+  duplicateNameMapping: Map<string, string>,
+): JSXElement {
+  const newElementName = duplicateNameMapping.get(element.name.baseVariable)
+  if (newElementName != null) {
+    return {
+      ...element,
+      name: {
+        ...element.name,
+        baseVariable: newElementName,
+      },
+      children: element.children.map((child) => {
+        if (isJSXElement(child)) {
+          return renameIfNeeded(child, duplicateNameMapping)
+        } else {
+          return child
+        }
+      }),
+    }
+  } else {
+    return element
+  }
+}

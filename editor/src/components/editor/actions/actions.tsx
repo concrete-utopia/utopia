@@ -74,6 +74,7 @@ import {
   modifiableAttributeIsAttributeValue,
   isJSExpression,
   isJSXMapExpression,
+  renameIfNeeded,
 } from '../../../core/shared/element-template'
 import type { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import {
@@ -396,7 +397,7 @@ import {
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
 
-import { defaultConfig } from 'utopia-vscode-common'
+import { defaultConfig, rename } from 'utopia-vscode-common'
 import { reorderElement } from '../../../components/canvas/commands/reorder-element-command'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
@@ -2210,14 +2211,24 @@ export const UPDATE_FNS = {
           return success
         }
 
+        const updatedImports = mergeImports(
+          underlyingFilePath,
+          success.imports,
+          action.importsToAdd,
+        )
+
+        const { imports, duplicateNameMapping } = updatedImports
+
+        const renamedJsxElement = renameIfNeeded(action.jsxElement, duplicateNameMapping)
+
         const withInsertedElement = insertJSXElementChildren(
           childInsertionPath(targetParent),
-          [action.jsxElement],
+          [renamedJsxElement],
           utopiaComponents,
           null,
         )
 
-        const uid = getUtopiaID(action.jsxElement)
+        const uid = getUtopiaID(renamedJsxElement)
         const newPath = EP.appendToPath(targetParent, uid)
         newSelectedViews.push(newPath)
 
@@ -2225,15 +2236,6 @@ export const UPDATE_FNS = {
           success.topLevelElements,
           withInsertedElement.components,
         )
-
-        const updatedImports = mergeImports(
-          underlyingFilePath,
-          success.imports,
-          action.importsToAdd,
-        )
-
-        // TODO handle duplicate name mapping
-        const { imports } = updatedImports
 
         return {
           ...success,

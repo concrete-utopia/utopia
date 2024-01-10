@@ -1,10 +1,9 @@
-import { mergeImportsResolutions } from '../../../components/editor/import-utils'
 import { includeToastPatch } from '../../../components/editor/actions/toast-helpers'
 import { insertJSXElementChildren } from '../../../core/model/element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import * as EP from '../../../core/shared/element-path'
 import { optionalMap } from '../../../core/shared/optional-utils'
-import { importsResolution, type ElementPath } from '../../../core/shared/project-file-types'
+import { type ElementPath } from '../../../core/shared/project-file-types'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import type { InsertionSubject } from '../../editor/editor-modes'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
@@ -12,7 +11,7 @@ import { forUnderlyingTargetFromEditorState } from '../../editor/store/editor-st
 import type { InsertionPath } from '../../editor/store/insertion-path'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 import { getPatchForComponentChange } from './commands'
-import { isJSXElement, type JSXElement } from '../../../core/shared/element-template'
+import { renameIfNeeded, type JSXElement } from '../../../core/shared/element-template'
 
 export interface InsertElementInsertionSubject extends BaseCommand {
   type: 'INSERT_ELEMENT_INSERTION_SUBJECT'
@@ -87,30 +86,5 @@ export const runInsertElementInsertionSubject: CommandFunction<InsertElementInse
       EP.toUid,
       insertionPath.intendedParentPath,
     )}`,
-  }
-}
-
-function renameIfNeeded(
-  element: JSXElement,
-  duplicateNameMapping: Map<string, string>,
-): JSXElement {
-  const newElementName = duplicateNameMapping.get(element.name.baseVariable)
-  if (newElementName != null) {
-    return {
-      ...element,
-      name: {
-        ...element.name,
-        baseVariable: newElementName,
-      },
-      children: element.children.map((child) => {
-        if (isJSXElement(child)) {
-          return renameIfNeeded(child, duplicateNameMapping)
-        } else {
-          return child
-        }
-      }),
-    }
-  } else {
-    return element
   }
 }
