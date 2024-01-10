@@ -319,7 +319,9 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
       onMouseOver={onMouseOver}
       onMouseOut={onMouseOut}
       data-testid='comment-indicator'
-      style={{ cursor: 'auto' }}
+      style={{
+        cursor: 'auto',
+      }}
     >
       {when(
         (isActive || !hovered) && !dragging,
