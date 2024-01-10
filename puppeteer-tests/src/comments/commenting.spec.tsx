@@ -1,6 +1,11 @@
 import { setupBrowser, wait } from '../utils'
 import type { Browser } from 'puppeteer'
-import { TIMEOUT, enterCommentMode, init, placeCommentOnCanvas } from './comment-utils'
+import {
+  TIMEOUT,
+  enterCommentMode,
+  initSignedInBrowserTest,
+  placeCommentOnCanvas,
+} from './comment-utils'
 import { createUtopiaPuppeteerBrowser } from './test-utils'
 
 describe('Comments test', () => {
@@ -8,7 +13,7 @@ describe('Comments test', () => {
   it(
     'Basic comment workflow (place, reply)',
     async () => {
-      const page = await init(utopiaBrowser)
+      const page = await initSignedInBrowserTest(utopiaBrowser)
 
       // Enter comment mode using the toolbar
       const commentModeButton = await page.waitForSelector(
@@ -81,7 +86,7 @@ describe('Comments test', () => {
   it(
     'Placing a comment without submitting does not create a comment',
     async () => {
-      const page = await init(utopiaBrowser)
+      const page = await initSignedInBrowserTest(utopiaBrowser)
 
       await enterCommentMode(page)
 
@@ -101,7 +106,7 @@ describe('Comments test', () => {
   it(
     'Resolve comment',
     async () => {
-      const page = await init(utopiaBrowser)
+      const page = await initSignedInBrowserTest(utopiaBrowser)
 
       await enterCommentMode(page)
       await placeCommentOnCanvas(page, 'hello comments', 500, 500)
@@ -120,7 +125,7 @@ describe('Comments test', () => {
   it(
     'Close comment popup with the mouse',
     async () => {
-      const page = await init(utopiaBrowser)
+      const page = await initSignedInBrowserTest(utopiaBrowser)
 
       await enterCommentMode(page)
       await placeCommentOnCanvas(page, 'hello comments', 500, 500)

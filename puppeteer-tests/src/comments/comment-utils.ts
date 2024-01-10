@@ -6,7 +6,7 @@ export const TIMEOUT = 120000
 const BRANCH_NAME = process.env.BRANCH_NAME ? `&branch_name=${process.env.BRANCH_NAME}` : ''
 const BASE_URL = process.env.BASE_URL ?? 'http://localhost:8000'
 
-export async function init(utopiaBrowser: UtopiaPuppeteerBrowser) {
+export async function initSignedInBrowserTest(utopiaBrowser: UtopiaPuppeteerBrowser) {
   const { page } = await utopiaBrowser.setup({
     url: `${BASE_URL}/p/?fakeUser=alice&Multiplayer=true${BRANCH_NAME}`,
     timeout: TIMEOUT,
