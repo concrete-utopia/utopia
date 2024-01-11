@@ -21,6 +21,7 @@ import { showToast, switchEditorMode } from './editor/actions/action-creators'
 import { EditorModes, isFollowMode } from './editor/editor-modes'
 import { useDispatch } from './editor/store/dispatch-context'
 import { Substores, useEditorState } from './editor/store/store-hook'
+import { useIsMyProject } from './editor/store/collaborative-editing'
 
 const MAX_VISIBLE_OTHER_PLAYERS = 4
 
@@ -58,11 +59,8 @@ export const SinglePlayerUserBar = React.memo(() => {
     (store) => getUserPicture(store.userState.loginState),
     'SinglePlayerUserBar userPicture',
   )
-  const amIOwner = useEditorState(
-    Substores.projectServerState,
-    (store) => store.projectServerState.isMyProject === 'yes',
-    'SinglePlayerUserBar amIOwner',
-  )
+  const isMyProject = useIsMyProject()
+
   return (
     <div
       style={{
@@ -72,7 +70,7 @@ export const SinglePlayerUserBar = React.memo(() => {
       }}
     >
       <Avatar userPicture={userPicture} isLoggedIn={true} />
-      {amIOwner ? <OwnerBadge /> : null}
+      {isMyProject ? <OwnerBadge /> : null}
     </div>
   )
 })
@@ -82,15 +80,17 @@ const MultiplayerUserBar = React.memo(() => {
   const dispatch = useDispatch()
   const collabs = useStorage((store) => store.collaborators)
 
-  const { user: myUser } = useMyUserAndPresence()
+  const { user: myUser, presence: myPresence } = useMyUserAndPresence()
 
   const others = useOthers((list) =>
-    normalizeOthersList(myUser.id, list).map((other) => {
-      return {
-        ...getCollaborator(collabs, other),
-        following: other.presence.following,
-      }
-    }),
+    list
+      .filter((entry) => entry.connectionId !== myPresence.connectionId)
+      .map((other) => {
+        return {
+          ...getCollaborator(collabs, other),
+          following: other.presence.following,
+        }
+      }),
   )
 
   const visibleOthers = React.useMemo(() => {

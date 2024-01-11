@@ -308,6 +308,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
 
   return (
     <div
+      data-testid='comment-popup'
       style={{
         position: 'fixed',
         top: point.y,
@@ -318,6 +319,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
         borderRadius: 4,
         overflow: 'hidden',
         zoom: 1 / canvasScale,
+        cursor: 'auto',
       }}
       onKeyDown={stopPropagation}
       onKeyUp={stopPropagation}
@@ -355,7 +357,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
                 />
               </Button>
             </Tooltip>
-            <Button onClick={onClickClose}>
+            <Button data-testid='close-comment' onClick={onClickClose}>
               <Icn category='semantic' type='cross-large' width={16} height={16} color='main' />
             </Button>
           </FlexRow>

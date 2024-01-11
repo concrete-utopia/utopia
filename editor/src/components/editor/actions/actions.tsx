@@ -74,6 +74,7 @@ import {
   modifiableAttributeIsAttributeValue,
   isJSExpression,
   isJSXMapExpression,
+  renameIfNeeded,
 } from '../../../core/shared/element-template'
 import type { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import {
@@ -127,6 +128,7 @@ import {
   isImageFile,
   isDirectory,
   parseSuccess,
+  importsResolution,
 } from '../../../core/shared/project-file-types'
 import {
   codeFile,
@@ -395,7 +397,7 @@ import {
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
 
-import { defaultConfig } from 'utopia-vscode-common'
+import { defaultConfig, rename } from 'utopia-vscode-common'
 import { reorderElement } from '../../../components/canvas/commands/reorder-element-command'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
@@ -551,6 +553,7 @@ import { addHookForProjectChanges } from '../store/collaborative-editing'
 import { arrayDeepEquality, objectDeepEquality } from '../../../utils/deep-equality'
 import type { ProjectServerState } from '../store/project-server-state'
 import { fixParseSuccessUIDs } from '../../../core/workers/parser-printer/uid-fix'
+import { mergeImportsResolutions } from '../import-utils'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -971,14 +974,12 @@ function deleteElements(
 
       function deleteElementFromParseSuccess(success: ParseSuccess): ParseSuccess {
         const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
-        const withTargetRemoved: Array<UtopiaJSXComponent> = removeElementAtPath(
-          targetPath,
-          utopiaComponents,
-        )
+        const withTargetRemoved = removeElementAtPath(targetPath, utopiaComponents, success.imports)
         return modifyParseSuccessWithSimple((simpleSuccess: SimpleParseSuccess) => {
           return {
             ...simpleSuccess,
-            utopiaComponents: withTargetRemoved,
+            utopiaComponents: withTargetRemoved.components,
+            imports: withTargetRemoved.imports,
           }
         }, success)
       }
@@ -2208,14 +2209,24 @@ export const UPDATE_FNS = {
           return success
         }
 
+        const updatedImports = mergeImports(
+          underlyingFilePath,
+          success.imports,
+          action.importsToAdd,
+        )
+
+        const { imports, duplicateNameMapping } = updatedImports
+
+        const renamedJsxElement = renameIfNeeded(action.jsxElement, duplicateNameMapping)
+
         const withInsertedElement = insertJSXElementChildren(
           childInsertionPath(targetParent),
-          [action.jsxElement],
+          [renamedJsxElement],
           utopiaComponents,
           null,
         )
 
-        const uid = getUtopiaID(action.jsxElement)
+        const uid = getUtopiaID(renamedJsxElement)
         const newPath = EP.appendToPath(targetParent, uid)
         newSelectedViews.push(newPath)
 
@@ -2224,15 +2235,10 @@ export const UPDATE_FNS = {
           withInsertedElement.components,
         )
 
-        const updatedImports = mergeImports(
-          underlyingFilePath,
-          success.imports,
-          action.importsToAdd,
-        )
         return {
           ...success,
           topLevelElements: updatedTopLevelElements,
-          imports: updatedImports,
+          imports: imports,
         }
       },
     )
@@ -4150,9 +4156,11 @@ export const UPDATE_FNS = {
       editor,
       (element) => element,
       (success, _, underlyingFilePath) => {
+        // TODO handle duplicate name mapping
+        const { imports } = mergeImports(underlyingFilePath, success.imports, action.importsToAdd)
         return {
           ...success,
-          imports: mergeImports(underlyingFilePath, success.imports, action.importsToAdd),
+          imports: imports,
         }
       },
     )
@@ -4950,10 +4958,14 @@ export const UPDATE_FNS = {
             success.imports,
             action.toInsert.importsToAdd,
           )
+
+          // TODO handle duplicate name mapping
+          const { imports } = updatedImports
+
           return {
             ...success,
             topLevelElements: updatedTopLevelElements,
-            imports: updatedImports,
+            imports: imports,
           }
         },
       )

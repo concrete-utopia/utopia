@@ -373,12 +373,24 @@ innerServerExecutor (ClaimCollaborationControl user projectID collaborationEdito
   pool <- fmap _projectPool ask
   projectOwnershipResult <- liftIO $ DB.checkIfProjectOwner metrics pool user projectID
   unless projectOwnershipResult $ throwError err400
-  ownershipResult <- liftIO $ DB.maybeClaimCollaborationControl metrics pool projectID collaborationEditor
+  ownershipResult <- liftIO $ DB.maybeClaimCollaborationControl metrics pool user projectID collaborationEditor
   pure $ action ownershipResult
-innerServerExecutor (ClearCollaboratorOwnership collaborationEditor action) = do
+innerServerExecutor (SnatchCollaborationControl user projectID collaborationEditor action) = do
   metrics <- fmap _databaseMetrics ask
   pool <- fmap _projectPool ask
-  liftIO $ DB.deleteCollaborationControlByCollaborator metrics pool collaborationEditor
+  projectOwnershipResult <- liftIO $ DB.checkIfProjectOwner metrics pool user projectID
+  unless projectOwnershipResult $ throwError err400
+  liftIO $ DB.forceClaimCollaborationControl metrics pool user projectID collaborationEditor
+  pure action
+innerServerExecutor (ReleaseCollaborationControl user projectID collaborationEditor action) = do
+  metrics <- fmap _databaseMetrics ask
+  pool <- fmap _projectPool ask
+  liftIO $ DB.releaseCollaborationControl metrics pool user projectID collaborationEditor
+  pure action
+innerServerExecutor (ClearCollaboratorOwnership user collaborationEditor action) = do
+  metrics <- fmap _databaseMetrics ask
+  pool <- fmap _projectPool ask
+  liftIO $ DB.deleteCollaborationControlByCollaborator metrics pool user collaborationEditor
   pure action
 
 readEditorContentFromDisk :: Maybe BranchDownloads -> Maybe Text -> Text -> IO Text

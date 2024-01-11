@@ -1,7 +1,18 @@
 import { resolveModulePathIncludingBuiltIns } from '../../core/es-modules/package-manager/module-resolution'
 import { foldEither } from '../../core/shared/either'
-import { emptyImports, mergeImports } from '../../core/workers/common/project-file-utils'
-import type { ImportInfo, TopLevelElement } from '../../core/shared/element-template'
+
+import {
+  emptyImports,
+  emptyImportsMergeResolution,
+  mergeImports,
+} from '../../core/workers/common/project-file-utils'
+import type {
+  ImportInfo,
+  JSXElement,
+  TopLevelElement,
+  UtopiaJSXComponent,
+} from '../../core/shared/element-template'
+
 import {
   importedOrigin,
   isIntrinsicElement,
@@ -9,13 +20,22 @@ import {
   isJSXFragment,
   sameFileOrigin,
   walkElement,
+  walkElements,
 } from '../../core/shared/element-template'
-import type { ElementPath, Imports, NodeModules } from '../../core/shared/project-file-types'
-import { importAlias, importDetails } from '../../core/shared/project-file-types'
+import type {
+  ElementPath,
+  ImportsMergeResolution,
+  ImportDetails,
+  Imports,
+  NodeModules,
+} from '../../core/shared/project-file-types'
+import { importAlias, importDetails, importsResolution } from '../../core/shared/project-file-types'
 import type { ProjectContentTreeRoot } from '../assets'
 import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 import { withUnderlyingTarget } from './store/editor-state'
 import * as EP from '../../core/shared/element-path'
+import { renameDuplicateImportsInMergeResolution } from '../../core/shared/import-shared-utils'
+import { getParseSuccessForFilePath } from '../canvas/canvas-utils'
 
 export function getRequiredImportsForElement(
   target: ElementPath,
@@ -23,18 +43,19 @@ export function getRequiredImportsForElement(
   nodeModules: NodeModules,
   targetFilePath: string,
   builtInDependencies: BuiltInDependencies,
-): Imports {
-  return withUnderlyingTarget<Imports>(
+): ImportsMergeResolution {
+  return withUnderlyingTarget<ImportsMergeResolution>(
     target,
     projectContents,
-    emptyImports(),
+    emptyImportsMergeResolution(),
     (success, element, underlyingTarget, underlyingFilePath) => {
       const importsInOriginFile = success.imports
       const topLevelElementsInOriginFile = success.topLevelElements
       const lastPathPart =
         EP.lastElementPathForPath(underlyingTarget) ?? EP.emptyStaticElementPathPart()
 
-      let importsToAdd: Imports = emptyImports()
+      let importsMergeResolution = emptyImportsMergeResolution()
+
       // Walk down through the elements as elements within the element being reparented might also be imported.
       walkElement(element, lastPathPart, 0, (elem, subPath, depth) => {
         if (isJSXElement(elem)) {
@@ -50,31 +71,36 @@ export function getRequiredImportsForElement(
             if (importedFromResult != null) {
               switch (importedFromResult.type) {
                 case 'SAME_FILE_ORIGIN':
-                  importsToAdd = mergeImports(
+                  importsMergeResolution = mergeImportsResolutions(
                     targetFilePath,
-                    importsToAdd,
-                    getImportsFor(
-                      builtInDependencies,
-                      importsInOriginFile,
-                      projectContents,
-                      nodeModules,
-                      underlyingFilePath,
-                      elem.name.baseVariable,
-                    ),
-                  )
-                  break
-                case 'IMPORTED_ORIGIN':
-                  if (importedFromResult.exportedName != null) {
-                    importsToAdd = mergeImports(
-                      targetFilePath,
-                      importsToAdd,
+                    importsMergeResolution,
+                    importsResolution(
                       getImportsFor(
                         builtInDependencies,
                         importsInOriginFile,
                         projectContents,
                         nodeModules,
                         underlyingFilePath,
-                        importedFromResult.exportedName,
+                        elem.name.baseVariable,
+                      ),
+                    ),
+                  )
+                  break
+                case 'IMPORTED_ORIGIN':
+                  if (importedFromResult.exportedName != null) {
+                    importsMergeResolution = mergeImportsResolutions(
+                      targetFilePath,
+                      importsMergeResolution,
+                      importsResolution(
+                        getImportsFor(
+                          builtInDependencies,
+                          importsInOriginFile,
+                          projectContents,
+                          nodeModules,
+                          underlyingFilePath,
+                          importedFromResult.exportedName,
+                          importedFromResult.variableName,
+                        ),
                       ),
                     )
                   }
@@ -88,17 +114,29 @@ export function getRequiredImportsForElement(
             }
           }
         } else if (isJSXFragment(elem) && elem.longForm) {
-          importsToAdd = mergeImports(targetFilePath, importsToAdd, {
-            react: {
-              importedAs: 'React',
-              importedFromWithin: [],
-              importedWithName: null,
-            },
-          })
+          importsMergeResolution = mergeImportsResolutions(
+            targetFilePath,
+            importsMergeResolution,
+            importsResolution({
+              react: {
+                importedAs: 'React',
+                importedFromWithin: [],
+                importedWithName: null,
+              },
+            }),
+          )
         }
       })
 
-      return importsToAdd
+      // adjust imports in case of duplicate names
+      const targetFileContents = getParseSuccessForFilePath(targetFilePath, projectContents)
+      const duplicateImportsResolution = renameDuplicateImportsInMergeResolution(
+        targetFileContents.imports,
+        importsMergeResolution,
+        targetFilePath,
+      )
+
+      return duplicateImportsResolution
     },
   )
 }
@@ -171,6 +209,7 @@ export function getImportsFor(
   nodeModules: NodeModules,
   importOrigin: string,
   importedName: string,
+  importedAlias?: string,
 ): Imports {
   for (const fileKey of Object.keys(currentImports)) {
     const details = currentImports[fileKey]
@@ -198,11 +237,19 @@ export function getImportsFor(
       return { [resolvedImportPath]: importDetails(importedName, [], null) }
     }
     for (const fromWithin of details.importedFromWithin) {
-      if (fromWithin.alias === importedName) {
+      if (importedAlias == null && fromWithin.alias === importedName) {
         return {
           [resolvedImportPath]: importDetails(
             null,
             [importAlias(importedName, importedName)],
+            null,
+          ),
+        }
+      } else if (fromWithin.alias === importedAlias) {
+        return {
+          [resolvedImportPath]: importDetails(
+            null,
+            [importAlias(importedName, importedAlias)],
             null,
           ),
         }
@@ -211,4 +258,98 @@ export function getImportsFor(
   }
 
   return emptyImports()
+}
+
+export function mergeImportsResolutions(
+  fileUri: string,
+  existing: ImportsMergeResolution,
+  newImports: ImportsMergeResolution,
+): ImportsMergeResolution {
+  const { imports, duplicateNameMapping } = mergeImports(
+    fileUri,
+    existing.imports,
+    newImports.imports,
+  )
+  const mergedDuplicateNameMapping = new Map<string, string>([
+    ...existing.duplicateNameMapping,
+    ...newImports.duplicateNameMapping,
+    ...duplicateNameMapping,
+  ])
+  return {
+    imports: imports,
+    duplicateNameMapping: mergedDuplicateNameMapping,
+  }
+}
+
+export function removeUnusedImportsForRemovedElement(
+  removedElement: JSXElement,
+  remainingComponents: UtopiaJSXComponent[],
+  imports: Imports,
+): Imports {
+  const elementName = removedElement.name.baseVariable
+  const remainingComponentNames = new Set<string>()
+  walkElements(remainingComponents, (jsxElement) => {
+    if (isJSXElement(jsxElement)) {
+      remainingComponentNames.add(jsxElement.name.baseVariable)
+    }
+  })
+  // if some other element is using this import, don't remove it
+  if (remainingComponentNames.has(elementName)) {
+    return imports
+  }
+  // remove the import
+  return removeImports(imports, [elementName])
+}
+
+export function removeImports(imports: Imports, namesToRemove: string[]): Imports {
+  let newImports: Imports = {}
+  for (const importPath of Object.keys(imports)) {
+    const newImportDetails = removeImportDetails(imports[importPath], namesToRemove)
+    if (newImportDetails != null) {
+      newImports[importPath] = newImportDetails
+    }
+  }
+  return newImports
+}
+
+export function purgeEmptyImports(imports: Imports): Imports {
+  let newImports: Imports = {}
+  for (const importPath of Object.keys(imports)) {
+    const details = imports[importPath]
+    if (
+      details.importedWithName != null ||
+      details.importedAs != null ||
+      details.importedFromWithin.length > 0
+    ) {
+      newImports[importPath] = details
+    }
+  }
+  return newImports
+}
+
+function removeImportDetails(
+  details: ImportDetails,
+  namesToRemove: string[],
+): ImportDetails | null {
+  const importedFromWithin = details.importedFromWithin.filter(
+    (fromWithin) => !namesToRemove.includes(fromWithin.alias),
+  )
+  const importedWithName =
+    details.importedWithName == null || namesToRemove.includes(details.importedWithName)
+      ? null
+      : details.importedWithName
+  const importedAs =
+    details.importedAs == null || namesToRemove.includes(details.importedAs)
+      ? null
+      : details.importedAs
+
+  if (importedWithName == null && importedAs == null && importedFromWithin.length === 0) {
+    return null
+  }
+
+  return {
+    importedWithName: importedWithName,
+    importedAs: importedAs,
+    importedFromWithin: importedFromWithin,
+  }
 }

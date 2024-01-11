@@ -141,13 +141,14 @@ data GithubAuthenticationDetails = GithubAuthenticationDetails
                  , expiresAt    :: Maybe UTCTime
                  } deriving (Eq, Show, Generic)
 
-type ProjectCollaborationFields = (Field SqlText, Field SqlText, Field SqlTimestamptz)
+type ProjectCollaborationFields = (Field SqlText, Field SqlText, Field SqlTimestamptz, FieldNullable SqlText)
 
 projectCollaborationTable :: Table ProjectCollaborationFields ProjectCollaborationFields
-projectCollaborationTable = table "project_collaboration" (p3
+projectCollaborationTable = table "project_collaboration" (p4
                             ( tableField "project_id"
                             , tableField "collaboration_editor"
                             , tableField "last_seen_timeout"
+                            , tableField "owner_id"
                             )
                           )
 
@@ -158,4 +159,5 @@ data ProjectCollaborationDetails = ProjectCollaborationDetails
                   { projectId           :: Text
                   , collaborationEditor :: Text
                   , lastSeenTimeout     :: UTCTime
+                  , ownerId             :: Maybe Text
                   } deriving (Eq, Show, Generic)

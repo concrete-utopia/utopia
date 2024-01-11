@@ -146,7 +146,9 @@ data ServiceCallsF a = NotFound
                      | AuthLiveblocksUser Text Text (Text -> a)
                      | IsLiveblocksEnabled (Bool -> a)
                      | ClaimCollaborationControl Text Text Text (Bool -> a)
-                     | ClearCollaboratorOwnership Text a
+                     | SnatchCollaborationControl Text Text Text a
+                     | ReleaseCollaborationControl Text Text Text a
+                     | ClearCollaboratorOwnership Text Text a
                      deriving Functor
 
 {-

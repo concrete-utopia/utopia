@@ -27,6 +27,7 @@ import type { ControlStyles, SelectOption } from '../../../uuiui-deps'
 import { CommonUtils, getControlStyles } from '../../../uuiui-deps'
 import { SmallerIcons } from '../../../uuiui/icons'
 import { Tooltip } from '../../tooltip'
+import { useIsMyProject } from '../../../components/editor/store/collaborative-editing'
 
 type ContainerMode = 'default' | 'showBorderOnHover' | 'noBorder'
 
@@ -587,10 +588,13 @@ export const PopupList = React.memo<PopupListProps>(
         style,
         containerMode = 'default',
         controlStyles = getControlStyles('simple'),
-        disabled = !controlStyles.interactive,
+        disabled: initialDisabled,
       },
       ref,
     ) => {
+      const isMyProject = useIsMyProject()
+      const disabled = initialDisabled || !controlStyles.interactive || !isMyProject
+
       const selectOnSubmitValue = React.useCallback(
         (newValue: ValueType<SelectOption>) => {
           if (isOptionType(newValue)) {

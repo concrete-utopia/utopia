@@ -177,7 +177,7 @@ const originalModel = deepFreeze(
       [importAlias('View'), importAlias('Scene'), importAlias('Storyboard')],
       null,
       sampleImportsForTests,
-    ),
+    ).imports,
     [
       utopiaJSXComponent(
         'MyView1',

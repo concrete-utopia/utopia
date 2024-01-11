@@ -1,5 +1,6 @@
 import {
   deleteFileFromCollaboration,
+  showToast,
   updateCodeFromCollaborationUpdate,
   updateExportsDetailFromCollaborationUpdate,
   updateImportsFromCollaborationUpdate,
@@ -51,6 +52,7 @@ import { HEADERS, MODE } from '../../../common/server'
 import { UTOPIA_BACKEND } from '../../../common/env-vars'
 import type { ProjectServerState } from './project-server-state'
 import { Substores, useEditorState } from './store-hook'
+import { notice } from '../../common/notice'
 
 const CodeKey = 'code'
 const TopLevelElementsKey = 'topLevelElements'
@@ -630,6 +632,40 @@ export function claimProjectControl(
   }
 }
 
+export interface SnatchProjectControl {
+  type: 'SNATCH_PROJECT_CONTROL'
+  projectID: string
+  collaborationEditor: string
+}
+
+export function snatchProjectControl(
+  projectID: string,
+  collaborationEditor: string,
+): SnatchProjectControl {
+  return {
+    type: 'SNATCH_PROJECT_CONTROL',
+    projectID: projectID,
+    collaborationEditor: collaborationEditor,
+  }
+}
+
+export interface ReleaseProjectControl {
+  type: 'RELEASE_PROJECT_CONTROL'
+  projectID: string
+  collaborationEditor: string
+}
+
+export function releaseProjectControl(
+  projectID: string,
+  collaborationEditor: string,
+): ReleaseProjectControl {
+  return {
+    type: 'RELEASE_PROJECT_CONTROL',
+    projectID: projectID,
+    collaborationEditor: collaborationEditor,
+  }
+}
+
 export interface ClearAllOfCollaboratorsControl {
   type: 'CLEAR_ALL_OF_COLLABORATORS_CONTROL'
   collaborationEditor: string
@@ -644,18 +680,22 @@ export function clearAllOfCollaboratorsControl(
   }
 }
 
-export type CollaborationRequest = ClaimProjectControl | ClearAllOfCollaboratorsControl
+export type CollaborationRequest =
+  | ClaimProjectControl
+  | SnatchProjectControl
+  | ReleaseProjectControl
+  | ClearAllOfCollaboratorsControl
 
-export interface ClaimProjectControlResult {
-  type: 'CLAIM_PROJECT_CONTROL_RESULT'
+export interface RequestProjectControlResult {
+  type: 'REQUEST_PROJECT_CONTROL_RESULT'
   successfullyClaimed: boolean
 }
 
-export interface ClearAllOfCollaboratorsControlResult {
-  type: 'CLEAR_ALL_OF_COLLABORATORS_CONTROL_RESULT'
+export interface ReleaseControlResponse {
+  type: 'RELEASE_CONTROL_RESULT'
 }
 
-export type CollaborationResponse = ClaimProjectControlResult | ClearAllOfCollaboratorsControlResult
+export type CollaborationResponse = RequestProjectControlResult | ReleaseControlResponse
 
 const collaborationEditor = UUID()
 
@@ -681,22 +721,55 @@ export async function claimControlOverProject(projectID: string | null): Promise
   if (projectID == null || !isFeatureEnabled('Baton Passing For Control')) {
     return null
   }
+  if (!document.hasFocus()) {
+    return false
+  }
 
   const request = claimProjectControl(projectID, collaborationEditor)
   const response = await callCollaborationEndpoint(request)
-  if (response.type === 'CLAIM_PROJECT_CONTROL_RESULT') {
+  if (response.type === 'REQUEST_PROJECT_CONTROL_RESULT') {
     return response.successfullyClaimed
   } else {
     throw new Error(`Unexpected response: ${JSON.stringify(response)}`)
   }
 }
 
-export async function releaseControl(): Promise<void> {
+export async function snatchControlOverProject(projectID: string | null): Promise<boolean | null> {
+  if (projectID == null || !isFeatureEnabled('Baton Passing For Control')) {
+    return null
+  }
+
+  const request = snatchProjectControl(projectID, collaborationEditor)
+  const response = await callCollaborationEndpoint(request)
+  if (response.type === 'REQUEST_PROJECT_CONTROL_RESULT') {
+    return response.successfullyClaimed
+  } else {
+    throw new Error(`Unexpected response: ${JSON.stringify(response)}`)
+  }
+}
+
+export async function releaseControlOverProject(projectID: string | null): Promise<void> {
+  if (projectID == null || !isFeatureEnabled('Baton Passing For Control')) {
+    return
+  }
+
+  const request = releaseProjectControl(projectID, collaborationEditor)
+  const response = await callCollaborationEndpoint(request)
+  if (response.type !== 'RELEASE_CONTROL_RESULT') {
+    throw new Error(`Unexpected response: ${JSON.stringify(response)}`)
+  }
+}
+
+export function displayControlErrorToast(dispatch: EditorDispatch, message: string): void {
+  dispatch([showToast(notice(message, 'ERROR', false, 'control-error'))])
+}
+
+export async function clearAllControlFromThisEditor(): Promise<void> {
   if (isFeatureEnabled('Baton Passing For Control')) {
     const request = clearAllOfCollaboratorsControl(collaborationEditor)
 
     const response = await callCollaborationEndpoint(request)
-    if (response.type !== 'CLEAR_ALL_OF_COLLABORATORS_CONTROL_RESULT') {
+    if (response.type !== 'RELEASE_CONTROL_RESULT') {
       throw new Error(`Unexpected response: ${JSON.stringify(response)}`)
     }
   }
@@ -715,5 +788,13 @@ export function useAllowedToEditProject(): boolean {
     Substores.projectServerState,
     (store) => allowedToEditProject(store.projectServerState),
     'useAllowedToEditProject',
+  )
+}
+
+export function useIsMyProject(): boolean {
+  return useEditorState(
+    Substores.projectServerState,
+    (store) => store.projectServerState.isMyProject === 'yes',
+    'useIsMyProject',
   )
 }

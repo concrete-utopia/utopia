@@ -1,9 +1,12 @@
 import type { ElementHandle, Page } from 'puppeteer'
 import { setupBrowser, wait } from '../utils'
+import * as url from 'url'
+import { createUtopiaPuppeteerBrowser } from './test-utils'
 
 const TIMEOUT = 120000
 
 const BRANCH_NAME = process.env.BRANCH_NAME ? `&branch_name=${process.env.BRANCH_NAME}` : ''
+const BASE_URL = process.env.BASE_URL ?? 'http://localhost:8000'
 
 async function signIn(page: Page) {
   const signInButton = await page.waitForSelector('div[data-testid="sign-in-button"]')
@@ -16,25 +19,33 @@ async function clickCanvasContainer(page: Page, { x, y }: { x: number; y: number
   await canvasControlsContainer!.click({ offset: { x, y } })
 }
 
-async function expectNSelectors(page: Page, selector: string, n: number) {
-  const elementsMatchingSelector = await page.$$(selector)
-  expect(elementsMatchingSelector).toHaveLength(n)
-}
-
 describe('Collaboration test', () => {
+  let utopiaBrowser1 = createUtopiaPuppeteerBrowser()
+  let utopiaBrowser2 = createUtopiaPuppeteerBrowser()
   it(
-    'can place a comment',
+    'can collaboratively add an element',
     async () => {
-      const setupBrowser1Promise = setupBrowser(
-        `http://localhost:8000/p/56a2ac40-caramel-yew?fakeUser=alice&Multiplayer=true${BRANCH_NAME}`,
-        TIMEOUT,
+      const { page: page1 } = await utopiaBrowser1.setup({
+        url: `${BASE_URL}/p/?fakeUser=alice&Multiplayer=true${BRANCH_NAME}`,
+        timeout: TIMEOUT,
+      })
+
+      await page1.waitForNavigation()
+      await signIn(page1)
+      // wait for project to be saved
+      await page1.waitForFunction(
+        'document.querySelector("body").innerText.includes("Project successfully uploaded!")',
+        { polling: 'mutation' },
       )
-      const setupBrowser2Promise = setupBrowser(
-        `http://localhost:8000/p/56a2ac40-caramel-yew?fakeUser=bob&Multiplayer=true${BRANCH_NAME}`,
-        TIMEOUT,
-      )
-      const { page: page1, browser: browser1 } = await setupBrowser1Promise
-      const { page: page2, browser: browser2 } = await setupBrowser2Promise
+
+      const newProjectUrl = new url.URL(page1.url()).pathname
+
+      const { page: page2 } = await utopiaBrowser2.setup({
+        url: `${BASE_URL}${newProjectUrl}?fakeUser=bob&Multiplayer=true${BRANCH_NAME}`,
+        timeout: TIMEOUT,
+      })
+
+      await signIn(page2)
 
       await Promise.all([signIn(page1), signIn(page2)])
       await Promise.all([
@@ -64,11 +75,6 @@ describe('Collaboration test', () => {
       await page1.keyboard.down('MetaLeft')
       await page1.keyboard.press('z', {})
       await page1.keyboard.up('MetaLeft')
-
-      await page1.close()
-      await browser1.close()
-      await page2.close()
-      await browser2.close()
     },
     TIMEOUT,
   )
