@@ -906,7 +906,7 @@ export interface SetLoginState {
 
 export interface SetGithubState {
   action: 'SET_GITHUB_STATE'
-  githubState: GithubState
+  githubState: Partial<GithubState>
 }
 
 export interface SetUserConfiguration {

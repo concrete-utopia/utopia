@@ -139,6 +139,7 @@ export const updateProjectWithBranchContent =
             // So that it will override any existing files that might already exist in the project when sending them to VS Code.
             const parsedProjectContents = createStoryboardFileIfNecessary(
               await updateProjectContentsWithParseResults(workers, responseBody.branch.content),
+              'create-placeholder',
             )
 
             // Save assets to the server from Github.

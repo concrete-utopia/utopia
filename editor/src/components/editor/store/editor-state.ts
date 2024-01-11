@@ -264,6 +264,7 @@ export function emptyUserConfiguration(): UserConfiguration {
 
 export interface GithubState {
   authenticated: boolean
+  gitRepoToLoad: GithubRepoWithBranch | null
 }
 
 export interface UserState extends UserConfiguration {
@@ -399,6 +400,7 @@ export const defaultUserState: UserState = {
   themeConfig: 'system',
   githubState: {
     authenticated: false,
+    gitRepoToLoad: null,
   },
 }
 

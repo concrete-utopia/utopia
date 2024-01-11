@@ -3,12 +3,6 @@
 /** @jsxFrag React.Fragment */
 import { css, jsx, keyframes } from '@emotion/react'
 import React from 'react'
-import {
-  AlwaysTrue,
-  atomWithPubSub,
-  updatePubSubAtomFromOutsideReact,
-  usePubSubAtomReadOnly,
-} from '../../core/shared/atom-with-pub-sub'
 import { GithubOperations } from '../../core/shared/github/operations'
 import { forceNotNull } from '../../core/shared/optional-utils'
 import { NO_OP } from '../../core/shared/utils'
@@ -21,16 +15,16 @@ import { type EditorStorePatched, type GithubRepoWithBranch } from '../editor/st
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { AuthenticateWithGithubButton } from '../navigator/left-pane/github-pane'
 import { onClickSignIn } from '../titlebar/title-bar'
+import { setGithubState } from '../editor/actions/action-creators'
 
 export const LoadActionsDispatched = 'loadActionDispatched'
 
-export const GitRepoToLoadAtom = atomWithPubSub<GithubRepoWithBranch | null>({
-  key: 'GitRepoToLoadAtom',
-  defaultValue: null,
-})
-
 export const GithubRepositoryCloneFlow = React.memo(() => {
-  const githubRepo = usePubSubAtomReadOnly(GitRepoToLoadAtom, AlwaysTrue)
+  const githubRepo = useEditorState(
+    Substores.userState,
+    (store) => store.userState.githubState.gitRepoToLoad,
+    'GithubRepositoryCloneFlow gitRepoToLoad',
+  )
   const userLoggedIn = useEditorState(
     Substores.userState,
     (store) => store.userState.loginState.type === 'LOGGED_IN',
@@ -126,7 +120,11 @@ async function cloneGithubRepo(
   )
 
   // at this point we can assume the repo is loaded and we can finally hide the overlay
-  updatePubSubAtomFromOutsideReact(GitRepoToLoadAtom, 'async', null)
+  dispatch([
+    setGithubState({
+      gitRepoToLoad: null,
+    }),
+  ])
 
   // TODO make sure the EditorState knows we have a github repo connected!!!
 }

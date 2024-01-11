@@ -142,8 +142,7 @@ import { Provider as JotaiProvider } from 'jotai'
 import { forceNotNull } from '../core/shared/optional-utils'
 import { Defer } from '../utils/utils'
 import invariant from '../third-party/remix/invariant'
-import { GitRepoToLoadAtom, LoadActionsDispatched } from '../components/github/github-clone-overlay'
-import { updatePubSubAtomFromOutsideReact } from '../core/shared/atom-with-pub-sub'
+import { LoadActionsDispatched } from '../components/github/github-clone-overlay'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -361,14 +360,10 @@ export class Editor {
           this.boundDispatch,
           GithubAuth.isAuthenticatedWithGithub(loginState),
         ).then(async (authenticatedWithGithub) => {
-          this.storedState.userState = {
-            ...this.storedState.userState,
-            githubState: {
-              authenticated: authenticatedWithGithub,
-            },
-          }
           this.boundDispatch([
-            EditorActions.setGithubState({ authenticated: authenticatedWithGithub }),
+            EditorActions.setGithubState({
+              authenticated: authenticatedWithGithub,
+            }),
           ])
           const projectId = getProjectID()
           if (isLoggedIn(loginState)) {
@@ -378,6 +373,7 @@ export class Editor {
           const urlParams = new URLSearchParams(window.location.search)
           const importURL = urlParams.get('import_url')
 
+          // TODO move to helper function
           const githubRepoObj: GithubRepoWithBranch | null = (() => {
             const githubBranch = urlParams.get('github_branch')
 
@@ -408,8 +404,12 @@ export class Editor {
             this.storedState.persistence.createNew(createNewProjectName(), defaultProject())
           } else if (projectId == null) {
             if (githubRepoObj != null) {
-              // by setting GitRepoToLoadAtom, we trigger github-clone-overlay.tsx which will take over the clone flow
-              updatePubSubAtomFromOutsideReact(GitRepoToLoadAtom, 'async', githubRepoObj)
+              // by setting GithubState.gitRepoToLoad, we trigger github-clone-overlay.tsx which will take over the clone flow
+              this.boundDispatch([
+                EditorActions.setGithubState({
+                  gitRepoToLoad: githubRepoObj,
+                }),
+              ])
               // TODO somehow make it a compile error if we don't give the control over to the component
             } else if (importURL != null) {
               this.createNewProjectFromImportURL(importURL)

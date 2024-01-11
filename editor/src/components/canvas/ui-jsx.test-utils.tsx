@@ -558,6 +558,7 @@ export async function renderTestEditorWithModel(
       themeConfig: 'system',
       githubState: {
         authenticated: false,
+        gitRepoToLoad: null,
       },
     },
     workers: workers,
