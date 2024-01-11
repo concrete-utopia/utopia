@@ -895,7 +895,6 @@ export function restoreEditorState(
     localProjectList: currentEditor.localProjectList,
     projectList: currentEditor.projectList,
     showcaseProjects: currentEditor.showcaseProjects,
-    codeEditingEnabled: desiredEditor.codeEditingEnabled,
     thumbnailLastGenerated: currentEditor.thumbnailLastGenerated,
     pasteTargetsToIgnore: desiredEditor.pasteTargetsToIgnore,
     codeEditorErrors: currentEditor.codeEditorErrors,
@@ -3385,7 +3384,10 @@ export const UPDATE_FNS = {
   ): EditorModel => {
     return {
       ...editor,
-      codeEditingEnabled: action.value,
+      interfaceDesigner: {
+        ...editor.interfaceDesigner,
+        codePaneVisible: action.value,
+      },
     }
   },
   OPEN_CODE_EDITOR: (editor: EditorModel): EditorModel => {
