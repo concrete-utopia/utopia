@@ -4428,10 +4428,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.showcaseProjects,
     newValue.showcaseProjects,
   )
-  const codeEditingEnabledResults = BooleanKeepDeepEquality(
-    oldValue.codeEditingEnabled,
-    newValue.codeEditingEnabled,
-  )
   const codeEditorErrorsResults = EditorStateCodeEditorErrorsKeepDeepEquality(
     oldValue.codeEditorErrors,
     newValue.codeEditorErrors,
@@ -4592,7 +4588,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     localProjectListResults.areEqual &&
     projectListResults.areEqual &&
     showcaseProjectsResults.areEqual &&
-    codeEditingEnabledResults.areEqual &&
     codeEditorErrorsResults.areEqual &&
     thumbnailLastGeneratedResults.areEqual &&
     pasteTargetsToIgnoreResults.areEqual &&
@@ -4675,7 +4670,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       localProjectListResults.value,
       projectListResults.value,
       showcaseProjectsResults.value,
-      codeEditingEnabledResults.value,
       codeEditorErrorsResults.value,
       thumbnailLastGeneratedResults.value,
       pasteTargetsToIgnoreResults.value,

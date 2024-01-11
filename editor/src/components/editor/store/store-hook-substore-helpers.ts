@@ -138,7 +138,6 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   localProjectList: [],
   projectList: [],
   showcaseProjects: [],
-  codeEditingEnabled: false,
   codeEditorErrors: {
     buildErrors: {},
     lintErrors: {},
