@@ -10,7 +10,6 @@ import {
 import {
   appJSFile,
   getDefaultUIJsFile,
-  getEmptyUIJsFile,
   getSamplePreviewFile,
   getSamplePreviewHTMLFile,
 } from '../core/model/new-project-files'

@@ -21,7 +21,6 @@ import type {
   DispatchPriority,
   EditorAction,
   EditorDispatch,
-  Load,
 } from '../components/editor/action-types'
 import { isLoggedIn } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'

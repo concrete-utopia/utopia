@@ -49,7 +49,7 @@ import { PullRequestPane } from './pull-request-pane'
 import { RefreshIcon } from './refresh-icon'
 import { RepositoryListing } from './repository-listing'
 import { GithubOperations } from '../../../../core/shared/github/operations'
-import { GithubAuth } from '../../../../utils/github-auth'
+import { useOnClickAuthenticateWithGithub } from '../../../../utils/github-auth'
 
 const compactTimeagoFormatter = (value: number, unit: string) => {
   return `${value}${unit.charAt(0)}`
@@ -57,7 +57,7 @@ const compactTimeagoFormatter = (value: number, unit: string) => {
 
 type IndicatorState = 'incomplete' | 'failed' | 'successful' | 'pending'
 
-const AccountBlock = React.memo(() => {
+const AccountBlock = () => {
   const authenticated = useEditorState(
     Substores.restOfStore,
     (store) => store.userState.githubState.authenticated,
@@ -65,44 +65,35 @@ const AccountBlock = React.memo(() => {
   )
   const state = React.useMemo(() => (authenticated ? 'successful' : 'incomplete'), [authenticated])
 
+  const triggerAuthentication = useOnClickAuthenticateWithGithub()
+
   if (authenticated) {
     return null
   }
 
   return (
     <Block title='Account' status={state} first={true} last={true} expanded={true}>
-      <AuthenticateWithGithubButton />
+      <Button
+        spotlight
+        highlight
+        style={{
+          padding: '1em',
+          borderRadius: 3,
+          background: colorTheme.dynamicBlue.value,
+          color: colorTheme.bg1.value,
+        }}
+        css={{
+          '&:hover': {
+            opacity: 0.7,
+          },
+        }}
+        onMouseUp={triggerAuthentication}
+      >
+        Authenticate With Github
+      </Button>
     </Block>
   )
-})
-
-export const AuthenticateWithGithubButton = React.memo(() => {
-  const dispatch = useDispatch()
-  const triggerAuthentication = React.useCallback(() => {
-    void GithubAuth.startGithubAuthentication(dispatch)
-  }, [dispatch])
-
-  return (
-    <Button
-      spotlight
-      highlight
-      style={{
-        padding: '1em',
-        borderRadius: 3,
-        background: colorTheme.dynamicBlue.value,
-        color: colorTheme.bg1.value,
-      }}
-      css={{
-        '&:hover': {
-          opacity: 0.7,
-        },
-      }}
-      onMouseUp={triggerAuthentication}
-    >
-      Authenticate With Github
-    </Button>
-  )
-})
+}
 
 const RepositoryBlock = () => {
   const repo = useEditorState(

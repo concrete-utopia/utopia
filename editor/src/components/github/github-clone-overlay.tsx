@@ -8,14 +8,14 @@ import { forceNotNull } from '../../core/shared/optional-utils'
 import { NO_OP } from '../../core/shared/utils'
 import { totallyEmptyDefaultProject } from '../../sample-projects/sample-project-utils'
 import invariant from '../../third-party/remix/invariant'
+import { useOnClickAuthenticateWithGithub } from '../../utils/github-auth'
 import { Dialog, FormButton, UtopiaStyles, colorTheme } from '../../uuiui'
 import type { EditorDispatch } from '../editor/action-types'
+import { setGithubState } from '../editor/actions/action-creators'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { type EditorStorePatched, type GithubRepoWithBranch } from '../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
-import { AuthenticateWithGithubButton } from '../navigator/left-pane/github-pane'
 import { onClickSignIn } from '../titlebar/title-bar'
-import { setGithubState } from '../editor/actions/action-creators'
 
 export const LoadActionsDispatched = 'loadActionDispatched'
 
@@ -36,6 +36,8 @@ export const GithubRepositoryCloneFlow = React.memo(() => {
     (store) => store.userState.githubState.authenticated,
     'GithubRepositoryCloneFlow githubAuthenticated',
   )
+
+  const onClickAuthenticateWithGithub = useOnClickAuthenticateWithGithub()
 
   if (githubRepo == null) {
     // we don't want to load anything, so just return null to hide this overlay
@@ -79,7 +81,11 @@ export const GithubRepositoryCloneFlow = React.memo(() => {
             </>
           }
           closeCallback={NO_OP}
-          defaultButton={<AuthenticateWithGithubButton />}
+          defaultButton={
+            <FormButton primary onClick={onClickAuthenticateWithGithub}>
+              Authenticate with Github
+            </FormButton>
+          }
         />
       </FullScreenOverlay>
     )

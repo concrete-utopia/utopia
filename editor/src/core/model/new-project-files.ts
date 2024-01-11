@@ -51,29 +51,6 @@ export var storyboard = (
 
 `
 
-export function getEmptyUIJsFile(): TextFile {
-  return textFile(
-    textFileContents(emptyUiJsSampleCode, unparsed, RevisionsState.CodeAhead),
-    null,
-    null,
-    0,
-  )
-}
-
-export const emptyUiJsSampleCode = `
-import * as React from 'react'
-import Utopia, {
-  Scene,
-  Storyboard,
-  registerModule,
-} from 'utopia-api'
-export var storyboard = (
-  <Storyboard data-uid='sample-storyboard'>
-  </Storyboard>
-)
-
-`
-
 export function getSamplePreviewFile(): TextFile {
   return codeFile(samplePreviewFile, null)
 }
