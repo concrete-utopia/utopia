@@ -70,9 +70,8 @@ import { useDisplayOwnershipWarning } from './project-owner-hooks'
 import { EditorModes } from './editor-modes'
 import { allowedToEditProject } from './store/collaborative-editing'
 import { useDataThemeAttributeOnBody } from '../../core/commenting/comment-hooks'
-import { GithubRepositoryCloneFlow } from '../github/github-clone-overlay'
 import { CollaborationStateUpdater } from './store/collaboration-state'
-import { FullScreenOverlay } from './full-screen-overlay'
+import { GithubRepositoryCloneFlow } from '../github/github-clone-overlay'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -597,6 +596,11 @@ export const ToastRenderer = React.memo(() => {
   )
 })
 
+function handleEventNoop(e: React.MouseEvent | React.KeyboardEvent) {
+  e.stopPropagation()
+  e.preventDefault()
+}
+
 const LockedOverlay = React.memo(() => {
   const colorTheme = useColorTheme()
 
@@ -613,6 +617,15 @@ const LockedOverlay = React.memo(() => {
     (store) => store.editor.refreshingDependencies,
     'EditorComponentInner refreshingDependencies',
   )
+
+  const anim = keyframes`
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 0.2;
+    }
+  `
 
   const locked = React.useMemo(() => {
     return editorLocked || refreshingDependencies
@@ -633,7 +646,31 @@ const LockedOverlay = React.memo(() => {
   }
 
   return (
-    <FullScreenOverlay>
+    <div
+      onMouseDown={handleEventNoop}
+      onMouseUp={handleEventNoop}
+      onClick={handleEventNoop}
+      onKeyDown={handleEventNoop}
+      onKeyUp={handleEventNoop}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: '#00000033',
+        zIndex: 30,
+        transition: 'all .1s ease-in-out',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'wait',
+      }}
+      css={css`
+        animation: ${anim} 0.3s ease-in-out;
+      `}
+    >
       {when(
         dialogContent != null,
         <div
@@ -651,6 +688,6 @@ const LockedOverlay = React.memo(() => {
           {dialogContent}
         </div>,
       )}
-    </FullScreenOverlay>
+    </div>
   )
 })

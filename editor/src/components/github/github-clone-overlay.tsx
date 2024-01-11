@@ -8,7 +8,6 @@ import { useOnClickAuthenticateWithGithub } from '../../utils/github-auth'
 import { Dialog, FormButton } from '../../uuiui'
 import type { EditorDispatch } from '../editor/action-types'
 import { setGithubState } from '../editor/actions/action-creators'
-import { FullScreenOverlay } from '../editor/full-screen-overlay'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { type EditorStorePatched, type GithubRepoWithBranch } from '../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
@@ -43,48 +42,36 @@ export const GithubRepositoryCloneFlow = React.memo(() => {
   if (!userLoggedIn) {
     // we want to prompt the user to log in
     return (
-      <FullScreenOverlay
-        style={{
-          cursor: 'auto',
-        }}
-      >
-        <Dialog
-          title='Not Signed In'
-          content={<>You need to be signed in to be able to clone a repository from GitHub</>}
-          closeCallback={NO_OP}
-          defaultButton={
-            <FormButton primary onClick={onClickSignIn}>
-              Sign In To Utopia
-            </FormButton>
-          }
-        />
-      </FullScreenOverlay>
+      <Dialog
+        title='Not Signed In'
+        content={<>You need to be signed in to be able to clone a repository from GitHub</>}
+        closeCallback={NO_OP}
+        defaultButton={
+          <FormButton primary onClick={onClickSignIn}>
+            Sign In To Utopia
+          </FormButton>
+        }
+      />
     )
   }
   if (!githubAuthenticated) {
     // we want to prompt the user to log authenticate their github
     return (
-      <FullScreenOverlay
-        style={{
-          cursor: 'auto',
-        }}
-      >
-        <Dialog
-          title='Connect to Github'
-          content={
-            <>
-              You need to connect Utopia with your Github account to be able to access Github
-              repositories
-            </>
-          }
-          closeCallback={NO_OP}
-          defaultButton={
-            <FormButton primary onClick={onClickAuthenticateWithGithub}>
-              Authenticate with Github
-            </FormButton>
-          }
-        />
-      </FullScreenOverlay>
+      <Dialog
+        title='Connect to Github'
+        content={
+          <>
+            You need to connect Utopia with your Github account to be able to access Github
+            repositories
+          </>
+        }
+        closeCallback={NO_OP}
+        defaultButton={
+          <FormButton primary onClick={onClickAuthenticateWithGithub}>
+            Authenticate with Github
+          </FormButton>
+        }
+      />
     )
   }
 
