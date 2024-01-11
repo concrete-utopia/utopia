@@ -4855,7 +4855,7 @@ export const UPDATE_FNS = {
 
       const newPath = EP.appendToPath(action.insertionPath.intendedParentPath, newUID)
 
-      const element = action.toInsert.element()
+      let element = action.toInsert.element()
 
       const withNewElement = modifyUnderlyingTargetElement(
         insertionPath.intendedParentPath,
@@ -4864,7 +4864,16 @@ export const UPDATE_FNS = {
         (success, _, underlyingFilePath) => {
           const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
 
+          const updatedImports = mergeImports(
+            underlyingFilePath,
+            success.imports,
+            action.toInsert.importsToAdd,
+          )
+
+          const { imports, duplicateNameMapping } = updatedImports
+
           if (element.type === 'JSX_ELEMENT') {
+            element = renameIfNeeded(element, duplicateNameMapping)
             const propsWithUid = forceRight(
               setJSXValueAtPath(
                 element.props,
@@ -4952,15 +4961,6 @@ export const UPDATE_FNS = {
             success.topLevelElements,
             withInsertedElement.components,
           )
-
-          const updatedImports = mergeImports(
-            underlyingFilePath,
-            success.imports,
-            action.toInsert.importsToAdd,
-          )
-
-          // TODO handle duplicate name mapping
-          const { imports } = updatedImports
 
           return {
             ...success,
