@@ -6,7 +6,7 @@ export interface UtopiaPuppeteerBrowserOptions {
   timeout: number
 }
 
-interface UtopiaPuppeteerBrowser {
+export interface UtopiaPuppeteerBrowser {
   setup: (options: UtopiaPuppeteerBrowserOptions) => Promise<BrowserForPuppeteerTest>
 }
 
