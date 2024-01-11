@@ -276,6 +276,7 @@ export function updateCollaborativeProjectContents(
       totalSize += size
 
       if (!filesModifiedByAnotherUser.includes(change.fullPath)) {
+        // only a single change is applied at at time
         session.mergeDoc.transact(() => {
           if (size < MAX_CHANGE_SIZE) {
             applyFileChangeToMap(change, projectContentsMap)
