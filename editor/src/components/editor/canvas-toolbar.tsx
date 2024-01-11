@@ -69,8 +69,10 @@ import {
 } from '../canvas/ui/floating-insert-menu'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { RightMenuTab, floatingInsertMenuStateSwap } from './store/editor-state'
-import { useStatus } from '../../../liveblocks.config'
+import { useStatus, useThreads } from '../../../liveblocks.config'
 import { useAllowedToEditProject } from './store/collaborative-editing'
+import { useReadThreads } from '../../core/commenting/comment-hooks'
+import { pluck } from '../../core/shared/array-utils'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const PlayModeButtonTestId = 'canvas-toolbar-play-mode'
@@ -431,6 +433,16 @@ export const CanvasToolbar = React.memo(() => {
       : CommentModeButtonTestId('disconnected')
   const allowedToEdit = useAllowedToEditProject()
 
+  const { threads } = useThreads()
+  const { threads: readThreads } = useReadThreads()
+
+  // const unreadThreads = threads.filter((t) => !t.metadata.resolved && !readThreadIds.includes(t.id))
+
+  const unreadThreads = React.useMemo(() => {
+    const readThreadIds = pluck(readThreads, 'id')
+    return threads.filter((t) => !t.metadata.resolved && !readThreadIds.includes(t.id))
+  }, [threads, readThreads])
+
   return (
     <FlexColumn
       style={{ alignItems: 'start', justifySelf: 'center' }}
@@ -527,6 +539,7 @@ export const CanvasToolbar = React.memo(() => {
                 position: 'relative',
                 top: 8,
                 left: -15,
+                opacity: unreadThreads.length > 0 ? 1 : 0,
               }}
             />
           </div>,
