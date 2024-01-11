@@ -10,7 +10,7 @@ interface DialogProps {
   title: string
   content: React.ReactElement
   defaultButton: React.ReactElement
-  secondaryButton: React.ReactElement
+  secondaryButton?: React.ReactElement
   subduedButton?: React.ReactElement
   closeCallback: () => void
 }
