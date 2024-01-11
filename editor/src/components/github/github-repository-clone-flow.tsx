@@ -6,7 +6,7 @@ import { totallyEmptyDefaultProject } from '../../sample-projects/sample-project
 import invariant from '../../third-party/remix/invariant'
 import { useOnClickAuthenticateWithGithub } from '../../utils/github-auth'
 import { Dialog, FormButton } from '../../uuiui'
-import type { EditorDispatch } from '../editor/action-types'
+import { isLoggedIn, type EditorDispatch } from '../editor/action-types'
 import { setGithubState } from '../editor/actions/action-creators'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { type EditorStorePatched, type GithubRepoWithBranch } from '../editor/store/editor-state'
@@ -23,7 +23,7 @@ export const GithubRepositoryCloneFlow = React.memo(() => {
   )
   const userLoggedIn = useEditorState(
     Substores.userState,
-    (store) => store.userState.loginState.type === 'LOGGED_IN',
+    (store) => isLoggedIn(store.userState.loginState),
     'GithubRepositoryCloneFlow userLoggedIn',
   )
 
