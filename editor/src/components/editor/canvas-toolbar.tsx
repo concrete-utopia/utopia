@@ -1,11 +1,11 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
+import { css, jsx } from '@emotion/react'
 import type { CSSObject } from '@emotion/react'
-import { jsx } from '@emotion/react'
 import React, { useState } from 'react'
 import type { TooltipProps } from '../../uuiui'
-import { Tile, UtopiaStyles } from '../../uuiui'
+import { Tile, UtopiaStyles, opacity } from '../../uuiui'
 import { UtopiaTheme } from '../../uuiui'
 import {
   colorTheme,
@@ -546,7 +546,12 @@ export const CanvasToolbar = React.memo(() => {
           />
         </Tooltip>
         <ElementsOutsideVisibleAreaIndicator />
-        {when(!isMyProject, <ViewOnlyBadge />)}
+        {when(
+          !isMyProject,
+          <Tooltip title={'You do not own this project or you have it open elsewhere.'}>
+            <ViewOnlyBadge />
+          </Tooltip>,
+        )}
       </div>
       {/* Edit Mode submenus */}
       {when(
@@ -834,14 +839,18 @@ const Separator = React.memo((props) => {
 const ViewOnlyBadge = React.memo((props) => {
   return (
     <FlexRow
-      style={{
+      css={{
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: colorTheme.primary30.value,
         height: 'min-content',
+        marginLeft: 6,
         padding: '4px 7px',
         borderRadius: 6,
         fontWeight: 500,
+        backgroundColor: colorTheme.primary30.value,
+        '&:hover': {
+          opacity: 0.7,
+        },
       }}
     >
       View Only
