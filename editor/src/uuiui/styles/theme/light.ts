@@ -72,6 +72,7 @@ const lightPrimitives = {
   subtleBackground: lightBase.bg3,
   neutralInvertedBackground: lightBase.fg1,
   dialogBackground: lightBase.bg1,
+  dialogBackground2: lightBase.bg4,
 
   emphasizedForeground: lightBase.fg0,
   neutralForeground: lightBase.fg1,
