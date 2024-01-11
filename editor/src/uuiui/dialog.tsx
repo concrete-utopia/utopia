@@ -29,7 +29,7 @@ export const Dialog = (props: DialogProps) => {
             width: '450px',
             height: '220px',
             transform: 'translateY(-150px)',
-            backgroundColor: colorTheme.bg1.value,
+            backgroundColor: colorTheme.bg2.value,
             color: colorTheme.fg1.value,
             overflow: 'hidden',
             borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,

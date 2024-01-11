@@ -34,7 +34,7 @@ export const Isolator: React.FunctionComponent<React.PropsWithChildren<IsolatorP
         top: 0,
         right: 0,
         bottom: 0,
-        background: colorTheme.shadow55.value,
+        background: colorTheme.isolator.value,
         transition: 'all .1s ease-in-out',
       }}
       onClick={() => props.onAbandonIntent()}

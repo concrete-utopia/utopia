@@ -105,7 +105,7 @@ export const FormButton = styled.button<ButtonProps>((props: ButtonProps) => ({
     ? props.danger
       ? colorTheme.errorForeground.value
       : colorTheme.primary.value
-    : colorTheme.bg1.value,
+    : 'transparent',
 
   color: props.primary ? 'white' : props.danger ? colorTheme.errorForeground.value : 'inherit',
 

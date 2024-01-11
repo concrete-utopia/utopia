@@ -71,6 +71,7 @@ const darkPrimitives = {
   secondaryBackground: darkBase.bg2,
   subtleBackground: darkBase.bg2,
   neutralInvertedBackground: darkBase.fg1,
+  dialogBackground: darkBase.bg2,
 
   emphasizedForeground: darkBase.fg0,
   neutralForeground: darkBase.fg1,
@@ -98,6 +99,7 @@ const darkErrorStates = {
 
 // TEMP colors with preset opacity pulled from within the app
 const colorsWithOpacity = {
+  isolator: createUtopiColor('#00000080'),
   shadow90: createUtopiColor('#00000090'),
   shadow85: createUtopiColor('#00000085'),
   shadow80: createUtopiColor('#00000080'),
