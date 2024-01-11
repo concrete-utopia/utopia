@@ -367,6 +367,9 @@ export class Editor {
               authenticated: authenticatedWithGithub,
             },
           }
+          this.boundDispatch([
+            EditorActions.setGithubState({ authenticated: authenticatedWithGithub }),
+          ])
           const projectId = getProjectID()
           if (isLoggedIn(loginState)) {
             this.storedState.persistence.login()
