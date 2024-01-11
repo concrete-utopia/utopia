@@ -231,3 +231,30 @@ export const FullScreenOverlay = (
     </div>
   )
 }
+
+export function getGithubRepoToLoad(urlSearchParams: string): GithubRepoWithBranch | null {
+  const urlParams = new URLSearchParams(urlSearchParams)
+  const githubBranch = urlParams.get('github_branch')
+
+  const githubCloneUrl = urlParams.get('clone')
+  if (githubCloneUrl != null) {
+    const splitGitRepoUrl = githubCloneUrl.split('/')
+    return {
+      owner: splitGitRepoUrl[0],
+      repository: splitGitRepoUrl[1],
+      branch: githubBranch,
+    }
+  }
+
+  const githubOwner = urlParams.get('github_owner')
+  const githubRepo = urlParams.get('github_repo')
+  if (githubOwner != null && githubRepo != null) {
+    return {
+      owner: githubOwner,
+      repository: githubRepo,
+      branch: githubBranch,
+    }
+  }
+
+  return null
+}

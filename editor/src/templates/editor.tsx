@@ -142,7 +142,10 @@ import { Provider as JotaiProvider } from 'jotai'
 import { forceNotNull } from '../core/shared/optional-utils'
 import { Defer } from '../utils/utils'
 import invariant from '../third-party/remix/invariant'
-import { LoadActionsDispatched } from '../components/github/github-clone-overlay'
+import {
+  getGithubRepoToLoad,
+  LoadActionsDispatched,
+} from '../components/github/github-clone-overlay'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -373,41 +376,18 @@ export class Editor {
           const urlParams = new URLSearchParams(window.location.search)
           const importURL = urlParams.get('import_url')
 
-          // TODO move to helper function
-          const githubRepoObj: GithubRepoWithBranch | null = (() => {
-            const githubBranch = urlParams.get('github_branch')
-
-            const githubCloneUrl = urlParams.get('clone')
-            if (githubCloneUrl != null) {
-              const splitGitRepoUrl = githubCloneUrl.split('/')
-              return {
-                owner: splitGitRepoUrl[0],
-                repository: splitGitRepoUrl[1],
-                branch: githubBranch,
-              }
-            }
-
-            const githubOwner = urlParams.get('github_owner')
-            const githubRepo = urlParams.get('github_repo')
-            if (githubOwner != null && githubRepo != null) {
-              return {
-                owner: githubOwner,
-                repository: githubRepo,
-                branch: githubBranch,
-              }
-            }
-
-            return null
-          })()
+          const githubRepoToLoad: GithubRepoWithBranch | null = getGithubRepoToLoad(
+            window.location.search,
+          )
 
           if (isCookiesOrLocalForageUnavailable(loginState)) {
             this.storedState.persistence.createNew(createNewProjectName(), defaultProject())
           } else if (projectId == null) {
-            if (githubRepoObj != null) {
+            if (githubRepoToLoad != null) {
               // by setting GithubState.gitRepoToLoad, we trigger github-clone-overlay.tsx which will take over the clone flow
               this.boundDispatch([
                 EditorActions.setGithubState({
-                  gitRepoToLoad: githubRepoObj,
+                  gitRepoToLoad: githubRepoToLoad,
                 }),
               ])
               // TODO somehow make it a compile error if we don't give the control over to the component
