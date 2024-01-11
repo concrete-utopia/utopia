@@ -79,16 +79,18 @@ export const GithubRepositoryCloneFlow = React.memo(() => {
   return <GitClonePseudoElement githubRepo={githubRepo} />
 })
 
-let githubRepoAlreadyCloning = false
+// The git repo clone flow is initiated from the URL, which means we only ever want to do it once per editor load
+let didWeInitiateGitRepoDownloadSinceTheEditorLoaded = false
+
 async function cloneGithubRepo(
   dispatch: EditorDispatch,
   storeRef: { current: EditorStorePatched },
   githubRepo: GithubRepoWithBranch,
 ) {
-  if (githubRepoAlreadyCloning) {
+  if (didWeInitiateGitRepoDownloadSinceTheEditorLoaded) {
     return
   }
-  githubRepoAlreadyCloning = true
+  didWeInitiateGitRepoDownloadSinceTheEditorLoaded = true
   const projectName = `${githubRepo.owner}-${githubRepo.repository}`
 
   const githubBranch = githubRepo.branch
