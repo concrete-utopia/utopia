@@ -70,7 +70,7 @@ import {
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { RightMenuTab, floatingInsertMenuStateSwap } from './store/editor-state'
 import { useStatus } from '../../../liveblocks.config'
-import { useAllowedToEditProject } from './store/collaborative-editing'
+import { useAllowedToEditProject, useIsMyProject } from './store/collaborative-editing'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const PlayModeButtonTestId = 'canvas-toolbar-play-mode'
@@ -431,6 +431,8 @@ export const CanvasToolbar = React.memo(() => {
       : CommentModeButtonTestId('disconnected')
   const allowedToEdit = useAllowedToEditProject()
 
+  const isMyProject = useIsMyProject()
+
   return (
     <FlexColumn
       style={{ alignItems: 'start', justifySelf: 'center' }}
@@ -544,7 +546,7 @@ export const CanvasToolbar = React.memo(() => {
           />
         </Tooltip>
         <ElementsOutsideVisibleAreaIndicator />
-        <ViewOnlyBadge />
+        {when(!isMyProject, <ViewOnlyBadge />)}
       </div>
       {/* Edit Mode submenus */}
       {when(
