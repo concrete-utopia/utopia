@@ -535,7 +535,10 @@ export const CanvasToolbar = React.memo(() => {
                 flexShrink: 0,
                 flexGrow: 0,
                 background: 'red',
-                outline: `1.5px solid ${colorTheme.bg1.value}`,
+                outline:
+                  canvasToolbarMode.primary === 'comment'
+                    ? `1.5px solid ${colorTheme.primary.value}`
+                    : `1.5px solid ${colorTheme.bg1.value}`,
                 position: 'relative',
                 top: 8,
                 left: -15,
