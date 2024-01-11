@@ -135,7 +135,7 @@ import { Provider as JotaiProvider } from 'jotai'
 import {
   getGithubRepoToLoad,
   LoadActionsDispatched,
-} from '../components/github/github-clone-overlay'
+} from '../components/github/github-repository-clone-flow'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
