@@ -280,7 +280,7 @@ export function updateCollaborativeProjectContents(
           if (size < MAX_CHANGE_SIZE) {
             applyFileChangeToMap(change, projectContentsMap)
           } else {
-            // console.log('change too big, skipped', totalSize, change.fullPath)
+            // console.log('change too big, skipped', size, change.fullPath)
           }
         })
       }
