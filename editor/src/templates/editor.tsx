@@ -54,11 +54,9 @@ import {
   deriveState,
   defaultUserState,
   createNewProjectName,
-  persistentModelForProjectContents,
   patchedStoreFromFullStore,
   getCurrentTheme,
   emptyCollaborativeEditingSupport,
-  persistentModelFromEditorModel,
 } from '../components/editor/store/editor-state'
 import type { UtopiaStoreAPI } from '../components/editor/store/store-hook'
 import {
@@ -98,11 +96,7 @@ import type { LoginState } from '../common/user'
 import { isCookiesOrLocalForageUnavailable } from '../common/user'
 import { PersistenceMachine } from '../components/editor/persistence/persistence'
 import { PersistenceBackend } from '../components/editor/persistence/persistence-backend'
-import {
-  defaultProject,
-  simpleDefaultProject,
-  totallyEmptyDefaultProject,
-} from '../sample-projects/sample-project-utils'
+import { defaultProject } from '../sample-projects/sample-project-utils'
 import { createBuiltInDependenciesList } from '../core/es-modules/package-manager/built-in-dependencies-list'
 import { createEmptyStrategyState } from '../components/canvas/canvas-strategies/interaction-state'
 import type { DomWalkerMutableStateData } from '../components/canvas/dom-walker'
@@ -139,9 +133,6 @@ import {
 import { GithubOperations } from '../core/shared/github/operations'
 import { GithubAuth } from '../utils/github-auth'
 import { Provider as JotaiProvider } from 'jotai'
-import { forceNotNull } from '../core/shared/optional-utils'
-import { Defer } from '../utils/utils'
-import invariant from '../third-party/remix/invariant'
 import {
   getGithubRepoToLoad,
   LoadActionsDispatched,
