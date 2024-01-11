@@ -172,7 +172,6 @@ function looksLikeParseableSourceCode(filePath: string): boolean {
 function applyFileChangeToMap(
   change: ProjectFileChange,
   projectContentsMap: CollaborativeEditingSupportSession['projectContents'],
-  mergeDoc: Y.Doc,
 ): void {
   switch (change.type) {
     case 'DELETE_PATH':
@@ -251,20 +250,42 @@ function updateFromParseSuccess(
   synchroniseParseSuccessToCollabFile(parsedPart, collabFile)
 }
 
+// from https://stackoverflow.com/a/63805778
+function sizeOf(obj: any) {
+  const size = new TextEncoder().encode(JSON.stringify(obj)).length
+  const kiloBytes = size / 1024
+  const megaBytes = kiloBytes / 1024
+  return megaBytes
+}
+
+// tweak this
+// largest file: 1.94
+// smallest: 0.005
+const MAX_CHANGE_SIZE = 1.9
+
 export function updateCollaborativeProjectContents(
   session: CollaborativeEditingSupportSession,
   collabProjectChanges: Array<ProjectFileChange>,
   filesModifiedByAnotherUser: Array<string>,
 ): void {
   if (collabProjectChanges.length > 0) {
-    session.mergeDoc.transact(() => {
-      const projectContentsMap = session.projectContents
-      for (const change of collabProjectChanges) {
-        if (!filesModifiedByAnotherUser.includes(change.fullPath)) {
-          applyFileChangeToMap(change, projectContentsMap, session.mergeDoc)
-        }
+    let totalSize = 0
+    const projectContentsMap = session.projectContents
+    for (const change of collabProjectChanges) {
+      const size = sizeOf(change)
+      totalSize += size
+
+      if (!filesModifiedByAnotherUser.includes(change.fullPath)) {
+        session.mergeDoc.transact(() => {
+          if (size < MAX_CHANGE_SIZE) {
+            applyFileChangeToMap(change, projectContentsMap)
+          } else {
+            // console.log('change too big, skipped', totalSize, change.fullPath)
+          }
+        })
       }
-    })
+    }
+    // console.log('total size', totalSize)
   }
 }
 
