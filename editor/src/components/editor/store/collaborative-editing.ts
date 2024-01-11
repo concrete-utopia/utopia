@@ -257,14 +257,14 @@ export function updateCollaborativeProjectContents(
   filesModifiedByAnotherUser: Array<string>,
 ): void {
   if (collabProjectChanges.length > 0) {
-    session.mergeDoc.transact(() => {
-      const projectContentsMap = session.projectContents
-      for (const change of collabProjectChanges) {
-        if (!filesModifiedByAnotherUser.includes(change.fullPath)) {
+    const projectContentsMap = session.projectContents
+    for (const change of collabProjectChanges) {
+      if (!filesModifiedByAnotherUser.includes(change.fullPath)) {
+        session.mergeDoc.transact(() => {
           applyFileChangeToMap(change, projectContentsMap, session.mergeDoc)
-        }
+        })
       }
-    })
+    }
   }
 }
 
