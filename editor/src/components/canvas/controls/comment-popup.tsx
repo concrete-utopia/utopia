@@ -319,6 +319,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
         borderRadius: 4,
         overflow: 'hidden',
         zoom: 1 / canvasScale,
+        cursor: 'auto',
       }}
       onKeyDown={stopPropagation}
       onKeyUp={stopPropagation}
