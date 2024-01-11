@@ -100,9 +100,22 @@ function usePubSubAtomWriteOnlyInner<T>(
 ): (newValueOrUpdater: T | ((oldValue: T) => T)) => void {
   return React.useCallback(
     (newValueOrUpdater: T | ((oldValue: T) => T)) => {
-      updatePubSubAtomFromOutsideReact(atom, publishMode, newValueOrUpdater)
+      let newValue: T
+      if (typeof newValueOrUpdater === 'function') {
+        // if the new value is a function, we assume it is an updater
+        newValue = (newValueOrUpdater as (oldValue: T) => T)(atom.currentValue)
+      } else {
+        newValue = newValueOrUpdater
+      }
+      atom.currentValue = newValue
+      if (publishMode === 'sync') {
+        PubSub.publishSync(atom.key, newValue)
+      } else {
+        PubSub.publish(atom.key, newValue)
+      }
     },
-    [atom, publishMode],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [atom.key],
   )
 }
 
@@ -116,24 +129,4 @@ export function usePubSubAtom<T>(
   atom: AtomWithPubSub<T>,
 ): [T, (newValueOrUpdater: T | ((oldValue: T) => T)) => void] {
   return [usePubSubAtomReadOnly(atom, AlwaysTrue), usePubSubAtomWriteOnly(atom)]
-}
-
-export function updatePubSubAtomFromOutsideReact<T>(
-  atom: AtomWithPubSub<T>,
-  publishMode: 'sync' | 'async',
-  newValueOrUpdater: T | ((oldValue: T) => T),
-): void {
-  let newValue: T
-  if (typeof newValueOrUpdater === 'function') {
-    // if the new value is a function, we assume it is an updater
-    newValue = (newValueOrUpdater as (oldValue: T) => T)(atom.currentValue)
-  } else {
-    newValue = newValueOrUpdater
-  }
-  atom.currentValue = newValue
-  if (publishMode === 'sync') {
-    PubSub.publishSync(atom.key, newValue)
-  } else {
-    PubSub.publish(atom.key, newValue)
-  }
 }
