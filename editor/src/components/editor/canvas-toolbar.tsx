@@ -546,12 +546,7 @@ export const CanvasToolbar = React.memo(() => {
           />
         </Tooltip>
         <ElementsOutsideVisibleAreaIndicator />
-        {when(
-          !isMyProject,
-          <Tooltip title={'You do not own this project or you have it open elsewhere.'}>
-            <ViewOnlyBadge />
-          </Tooltip>,
-        )}
+        {when(!isMyProject, <ViewOnlyBadge />)}
       </div>
       {/* Edit Mode submenus */}
       {when(
@@ -839,7 +834,7 @@ const Separator = React.memo((props) => {
 const ViewOnlyBadge = React.memo((props) => {
   return (
     <FlexRow
-      css={{
+      style={{
         alignItems: 'center',
         justifyContent: 'center',
         height: 'min-content',
@@ -848,9 +843,6 @@ const ViewOnlyBadge = React.memo((props) => {
         borderRadius: 6,
         fontWeight: 500,
         backgroundColor: colorTheme.primary30.value,
-        '&:hover': {
-          opacity: 0.7,
-        },
       }}
     >
       View Only
