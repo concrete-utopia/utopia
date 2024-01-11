@@ -70,8 +70,9 @@ import { useDisplayOwnershipWarning } from './project-owner-hooks'
 import { EditorModes } from './editor-modes'
 import { allowedToEditProject } from './store/collaborative-editing'
 import { useDataThemeAttributeOnBody } from '../../core/commenting/comment-hooks'
-import { FullScreenOverlay, GithubRepositoryCloneFlow } from '../github/github-clone-overlay'
+import { GithubRepositoryCloneFlow } from '../github/github-clone-overlay'
 import { CollaborationStateUpdater } from './store/collaboration-state'
+import { FullScreenOverlay } from './full-screen-overlay'
 
 const liveModeToastId = 'play-mode-toast'
 
