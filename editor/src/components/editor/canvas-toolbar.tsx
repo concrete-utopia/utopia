@@ -502,18 +502,34 @@ export const CanvasToolbar = React.memo(() => {
         </Tooltip>
         {when(
           isFeatureEnabled('Multiplayer'),
-          <Tooltip title={commentButtonTooltip} placement='bottom'>
-            <InsertModeButton
-              testid={commentButtonTestId}
-              iconType={'comment'}
-              iconCategory='tools'
-              primary={canvasToolbarMode.primary === 'comment'}
-              onClick={toggleCommentMode}
-              keepActiveInLiveMode
-              style={{ width: 36 }}
-              disabled={commentButtonDisabled}
+          <div style={{ display: 'flex', width: 36 }}>
+            <Tooltip title={commentButtonTooltip} placement='bottom'>
+              <InsertModeButton
+                testid={commentButtonTestId}
+                iconType={'comment'}
+                iconCategory='tools'
+                primary={canvasToolbarMode.primary === 'comment'}
+                onClick={toggleCommentMode}
+                keepActiveInLiveMode
+                style={{ width: 36 }}
+                disabled={commentButtonDisabled}
+              />
+            </Tooltip>
+            <div
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: 6,
+                flexShrink: 0,
+                flexGrow: 0,
+                background: 'red',
+                outline: `1.5px solid ${colorTheme.bg1.value}`,
+                position: 'relative',
+                top: 8,
+                left: -15,
+              }}
             />
-          </Tooltip>,
+          </div>,
         )}
         <Separator />
         <Tooltip title='Zoom to 100%' placement='bottom'>
