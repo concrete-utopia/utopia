@@ -436,8 +436,6 @@ export const CanvasToolbar = React.memo(() => {
   const { threads } = useThreads()
   const { threads: readThreads } = useReadThreads()
 
-  // const unreadThreads = threads.filter((t) => !t.metadata.resolved && !readThreadIds.includes(t.id))
-
   const unreadThreads = React.useMemo(() => {
     const readThreadIds = pluck(readThreads, 'id')
     return threads.filter((t) => !t.metadata.resolved && !readThreadIds.includes(t.id))
