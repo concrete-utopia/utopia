@@ -449,7 +449,8 @@ export const CanvasToolbar = React.memo(() => {
           pointerEvents: 'initial',
           display: 'flex',
           flexDirection: 'row',
-          padding: '0 8px',
+          alignItems: 'center',
+          padding: '0 6px 0 8px',
         }}
       >
         <Tooltip title='Edit' placement='bottom'>
@@ -543,6 +544,7 @@ export const CanvasToolbar = React.memo(() => {
           />
         </Tooltip>
         <ElementsOutsideVisibleAreaIndicator />
+        <ViewOnlyBadge />
       </div>
       {/* Edit Mode submenus */}
       {when(
@@ -824,5 +826,23 @@ const Separator = React.memo((props) => {
         backgroundColor: colorTheme.seperator.value,
       }}
     ></div>
+  )
+})
+
+const ViewOnlyBadge = React.memo((props) => {
+  return (
+    <FlexRow
+      style={{
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: colorTheme.primary30.value,
+        height: 'min-content',
+        padding: '4px 7px',
+        borderRadius: 6,
+        fontWeight: 500,
+      }}
+    >
+      View Only
+    </FlexRow>
   )
 })
