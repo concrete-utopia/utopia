@@ -11,19 +11,16 @@ import {
 } from '../../core/shared/atom-with-pub-sub'
 import { GithubOperations } from '../../core/shared/github/operations'
 import { forceNotNull } from '../../core/shared/optional-utils'
+import { NO_OP } from '../../core/shared/utils'
 import { totallyEmptyDefaultProject } from '../../sample-projects/sample-project-utils'
 import invariant from '../../third-party/remix/invariant'
-import { UtopiaStyles, colorTheme } from '../../uuiui'
+import { Dialog, FormButton, UtopiaStyles, colorTheme } from '../../uuiui'
 import type { EditorDispatch } from '../editor/action-types'
 import { useDispatch } from '../editor/store/dispatch-context'
-import {
-  githubRepoFullName,
-  type EditorStorePatched,
-  type GithubRepoWithBranch,
-} from '../editor/store/editor-state'
+import { type EditorStorePatched, type GithubRepoWithBranch } from '../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { AuthenticateWithGithubButton } from '../navigator/left-pane/github-pane'
-import { SignInButton } from '../titlebar/title-bar'
+import { onClickSignIn } from '../titlebar/title-bar'
 
 export const LoadActionsDispatched = 'loadActionDispatched'
 
@@ -41,9 +38,9 @@ export const GithubRepositoryCloneFlow = React.memo(() => {
   )
 
   const githubAuthenticated = useEditorState(
-    Substores.github,
-    (store) => store.editor.githubData.githubUserDetails != null,
-    'GithubRepositoryCloneFlow githubUserDetails',
+    Substores.userState,
+    (store) => store.userState.githubState.authenticated,
+    'GithubRepositoryCloneFlow githubAuthenticated',
   )
 
   if (githubRepo == null) {
@@ -58,14 +55,16 @@ export const GithubRepositoryCloneFlow = React.memo(() => {
           cursor: 'auto',
         }}
       >
-        <GithubCloneDialogBox>
-          <span style={{ paddingBottom: 12 }}>
-            To load a GitHub repository, please sign in to Utopia
-          </span>
-          <div style={{ alignSelf: 'center' }}>
-            <SignInButton text='load' />
-          </div>
-        </GithubCloneDialogBox>
+        <Dialog
+          title='Not Signed In'
+          content={<>You need to be signed in to be able to clone a repository from GitHub</>}
+          closeCallback={NO_OP}
+          defaultButton={
+            <FormButton primary onClick={onClickSignIn}>
+              Sign In To Utopia
+            </FormButton>
+          }
+        />
       </FullScreenOverlay>
     )
   }
@@ -77,14 +76,17 @@ export const GithubRepositoryCloneFlow = React.memo(() => {
           cursor: 'auto',
         }}
       >
-        <GithubCloneDialogBox>
-          <span style={{ paddingBottom: 12 }}>
-            Please authenticate with Github in order to clone the repository
-          </span>
-          <div style={{ alignSelf: 'center' }}>
-            <AuthenticateWithGithubButton />
-          </div>
-        </GithubCloneDialogBox>
+        <Dialog
+          title='Connect to Github'
+          content={
+            <>
+              You need to connect Utopia with your Github account to be able to access Github
+              repositories
+            </>
+          }
+          closeCallback={NO_OP}
+          defaultButton={<AuthenticateWithGithubButton />}
+        />
       </FullScreenOverlay>
     )
   }
