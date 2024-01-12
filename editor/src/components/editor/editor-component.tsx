@@ -66,7 +66,6 @@ import { isLiveblocksEnabled } from './liveblocks-utils'
 import type { Storage, Presence, RoomEvent, UserMeta } from '../../../liveblocks.config'
 import LiveblocksProvider from '@liveblocks/yjs'
 import { isRoomId, projectIdToRoomId } from '../../core/shared/multiplayer'
-import { useDisplayOwnershipWarning } from './project-owner-hooks'
 import { EditorModes } from './editor-modes'
 import { checkIsMyProject } from './store/collaborative-editing'
 import { useDataThemeAttributeOnBody } from '../../core/commenting/comment-hooks'
@@ -159,7 +158,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
       }
     }, 0)
   }, [mode.type, dispatch])
-  useDisplayOwnershipWarning()
 
   const onWindowKeyDown = React.useCallback(
     (event: KeyboardEvent) => {
