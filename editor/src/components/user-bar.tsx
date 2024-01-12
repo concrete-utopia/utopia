@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import React from 'react'
+import React, { useCallback } from 'react'
 import { useOthers, useStatus, useStorage } from '../../liveblocks.config'
 import { getUserPicture, isLoggedIn } from '../common/user'
 import { getCollaborator, useMyUserAndPresence } from '../core/commenting/comment-hooks'
@@ -63,6 +63,7 @@ export const SinglePlayerUserBar = React.memo(() => {
 
   return (
     <FlexRow
+      // onClick={handleClick}
       style={{
         background: colorTheme.primary30.value,
         borderRadius: 26,
@@ -84,6 +85,11 @@ export const SinglePlayerUserBar = React.memo(() => {
 SinglePlayerUserBar.displayName = 'SinglePlayerUserBar'
 
 const MultiplayerUserBar = React.memo(() => {
+  const url = window.location.href
+  const handleCopyToClipboard = React.useCallback(() => {
+    window.navigator.clipboard.writeText(url)
+  }, [url])
+
   const dispatch = useDispatch()
   const collabs = useStorage((store) => store.collaborators)
 
@@ -225,6 +231,7 @@ const MultiplayerUserBar = React.memo(() => {
         }),
       )}
       <FlexRow
+        onClick={handleCopyToClipboard}
         style={{
           background: colorTheme.primary30.value,
           borderRadius: 26,
