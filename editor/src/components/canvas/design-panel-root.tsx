@@ -209,6 +209,7 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
         {when(
           isLoggedIn && isFeatureEnabled('Multiplayer'),
           <MenuTab
+            testId='comments-tab'
             label={'Comments'}
             selected={selectedTab === RightMenuTab.Comments}
             onClick={onClickCommentsTab}
