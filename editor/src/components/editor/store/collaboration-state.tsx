@@ -5,7 +5,7 @@ import {
   displayControlErrorToast,
   snatchControlOverProject,
 } from './collaborative-editing'
-import { Substores, useEditorState } from './store-hook'
+import { Substores, useEditorState, useRefEditorState } from './store-hook'
 import { switchEditorMode, updateProjectServerState } from '../actions/action-creators'
 import { EditorModes } from '../editor-modes'
 import type { ControlChangedRoomEvent } from '../../../../liveblocks.config'
@@ -23,11 +23,11 @@ const controlChangedEvent: ControlChangedRoomEvent = {
 export const CollaborationStateUpdater = React.memo(
   (props: React.PropsWithChildren<CollaborationStateUpdaterProps>) => {
     const { projectId, dispatch, children } = props
-    const isMyProject = useEditorState(
-      Substores.projectServerState,
-      (store) => store.projectServerState.isMyProject,
-      'CollaborationStateUpdater isMyProject',
+    const isMyProjectRef = useRefEditorState((store) => store.projectServerState.isMyProject)
+    const currentlyHolderOfTheBatonRef = useRefEditorState(
+      (store) => store.projectServerState.currentlyHolderOfTheBaton,
     )
+    const [currentlyAttemptingToSnatch, setCurrentlyAttemptingToSnatch] = React.useState(false)
 
     const handleControlUpdate = React.useCallback(
       (newHolderOfTheBaton: boolean) => {
@@ -49,7 +49,7 @@ export const CollaborationStateUpdater = React.memo(
     // Handle events that appear to have come from the above broadcast call.
     useEventListener((data) => {
       if (data.event.type === 'CONTROL_CHANGED') {
-        if (isMyProject === 'yes') {
+        if (isMyProjectRef.current === 'yes') {
           void claimControlOverProject(projectId)
             .then((controlResult) => {
               const newHolderOfTheBaton = controlResult ?? false
@@ -68,10 +68,18 @@ export const CollaborationStateUpdater = React.memo(
 
     React.useEffect(() => {
       // If the window becomes focused then snatch control of the project.
-      function didFocus(): void {
+      function attemptToSnatchControl(): void {
         if (projectId != null) {
-          // Only attempt to do any kind of snatching of control if the project is "mine".
-          if (isMyProject === 'yes') {
+          // Only attempt to do any kind of snatching of control if:
+          // - The project is "mine".
+          // - This instance does not already hold control of the project.
+          // - There isn't already an attempt to snatch control inflight.
+          if (
+            isMyProjectRef.current === 'yes' &&
+            !currentlyHolderOfTheBatonRef.current &&
+            !currentlyAttemptingToSnatch
+          ) {
+            setCurrentlyAttemptingToSnatch(true)
             void snatchControlOverProject(projectId)
               .then((controlResult) => {
                 const newHolderOfTheBaton = controlResult ?? false
@@ -85,14 +93,27 @@ export const CollaborationStateUpdater = React.memo(
                   'Error while attempting to gain control over this project.',
                 )
               })
+              .finally(() => {
+                setCurrentlyAttemptingToSnatch(false)
+              })
           }
         }
       }
-      window.addEventListener('focus', didFocus)
+      window.addEventListener('focus', attemptToSnatchControl)
+      window.addEventListener('click', attemptToSnatchControl, { capture: true })
       return () => {
-        window.removeEventListener('focus', didFocus)
+        window.removeEventListener('focus', attemptToSnatchControl)
+        window.removeEventListener('click', attemptToSnatchControl, { capture: true })
       }
-    }, [dispatch, projectId, isMyProject, handleControlUpdate, broadcast])
+    }, [
+      dispatch,
+      projectId,
+      handleControlUpdate,
+      broadcast,
+      isMyProjectRef,
+      currentlyHolderOfTheBatonRef,
+      currentlyAttemptingToSnatch,
+    ])
     return <>{children}</>
   },
 )
