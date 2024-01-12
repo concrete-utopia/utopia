@@ -3,7 +3,6 @@ import type { EditorAction, EditorDispatch } from '../action-types'
 import {
   claimControlOverProject,
   displayControlErrorToast,
-  releaseControlOverProject,
   snatchControlOverProject,
 } from './collaborative-editing'
 import { Substores, useEditorState } from './store-hook'
@@ -89,28 +88,9 @@ export const CollaborationStateUpdater = React.memo(
           }
         }
       }
-      // If the window is blurred, that means the editor is no longer focused, so release control.
-      function didBlur(): void {
-        if (projectId != null) {
-          void releaseControlOverProject(projectId)
-            .then(() => {
-              dispatch([updateProjectServerState({ currentlyHolderOfTheBaton: false })])
-              broadcast(controlChangedEvent)
-            })
-            .catch((error) => {
-              console.error('Error when releasing control.', error)
-              displayControlErrorToast(
-                dispatch,
-                'Error while attempting to release control over this project.',
-              )
-            })
-        }
-      }
       window.addEventListener('focus', didFocus)
-      window.addEventListener('blur', didBlur)
       return () => {
         window.removeEventListener('focus', didFocus)
-        window.removeEventListener('blur', didBlur)
       }
     }, [dispatch, projectId, isMyProject, handleControlUpdate, broadcast])
     return <>{children}</>
