@@ -1,11 +1,7 @@
 import React from 'react'
 import type { EditorAction, EditorDispatch } from '../action-types'
-import {
-  claimControlOverProject,
-  displayControlErrorToast,
-  snatchControlOverProject,
-} from './collaborative-editing'
-import { Substores, useEditorState, useRefEditorState } from './store-hook'
+import { CollaborationEndpoints } from '../collaborative-endpoints'
+import { useRefEditorState } from './store-hook'
 import { switchEditorMode, updateProjectServerState } from '../actions/action-creators'
 import { EditorModes } from '../editor-modes'
 import type { ControlChangedRoomEvent } from '../../../../liveblocks.config'
@@ -50,14 +46,14 @@ export const CollaborationStateUpdater = React.memo(
     useEventListener((data) => {
       if (data.event.type === 'CONTROL_CHANGED') {
         if (isMyProjectRef.current === 'yes') {
-          void claimControlOverProject(projectId)
+          void CollaborationEndpoints.claimControlOverProject(projectId)
             .then((controlResult) => {
               const newHolderOfTheBaton = controlResult ?? false
               handleControlUpdate(newHolderOfTheBaton ?? false)
             })
             .catch((error) => {
               console.error('Error when claiming control.', error)
-              displayControlErrorToast(
+              CollaborationEndpoints.displayControlErrorToast(
                 dispatch,
                 'Error while attempting to claim control over this project.',
               )
@@ -80,7 +76,7 @@ export const CollaborationStateUpdater = React.memo(
             !currentlyAttemptingToSnatch
           ) {
             setCurrentlyAttemptingToSnatch(true)
-            void snatchControlOverProject(projectId)
+            void CollaborationEndpoints.snatchControlOverProject(projectId)
               .then((controlResult) => {
                 const newHolderOfTheBaton = controlResult ?? false
                 handleControlUpdate(newHolderOfTheBaton)
@@ -88,7 +84,7 @@ export const CollaborationStateUpdater = React.memo(
               })
               .catch((error) => {
                 console.error('Error when snatching control.', error)
-                displayControlErrorToast(
+                CollaborationEndpoints.displayControlErrorToast(
                   dispatch,
                   'Error while attempting to gain control over this project.',
                 )
