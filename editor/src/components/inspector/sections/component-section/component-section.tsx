@@ -716,6 +716,7 @@ const RowForUnionControl = React.memo((props: RowForUnionControlProps) => {
           maxWidth: '100%',
           overflow: 'hidden',
         }}
+        permissions='owner'
       />
     ),
     [controlToUse, labelOptions, onLabelChangeValue, simpleControlStyles, title],

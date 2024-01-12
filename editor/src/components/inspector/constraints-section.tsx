@@ -526,6 +526,7 @@ const ChildConstraintSelect = React.memo(
           ...styles,
           mainColor: activeOption.invalid ? colorTheme.error.value : styles.mainColor,
         }}
+        permissions='owner'
       />
     )
   },

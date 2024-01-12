@@ -134,6 +134,7 @@ export const RenderAsRow = React.memo(() => {
           onSubmitValue={onSelect}
           options={insertableComponents}
           containerMode='default'
+          permissions='owner'
         />
       ) : null}
     </UIGridRow>

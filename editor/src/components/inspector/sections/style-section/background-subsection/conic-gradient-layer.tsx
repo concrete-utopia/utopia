@@ -107,6 +107,7 @@ export const ConicGradientBackgroundLayer = React.memo<ConicGradientBackgroundLa
                 onSubmitValue={backgroundLayerType}
                 controlStyles={props.controlStyles}
                 containerMode='default'
+                permissions='owner'
               />
             </FlexRow>
             <ChainedNumberInput

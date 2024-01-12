@@ -589,6 +589,7 @@ export const BackgroundPicker: React.FunctionComponent<
               options={backgroundLayerTypeSelectOptions}
               onSubmitValue={onSubmitBackgroundLayerType}
               containerMode='noBorder'
+              permissions='owner'
             />
           </div>
           {isCSSBackgroundImageLayer(props.value) ? <Icons.Gear onClick={toggleSettings} /> : null}

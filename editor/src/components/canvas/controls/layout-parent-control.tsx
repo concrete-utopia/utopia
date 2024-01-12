@@ -203,6 +203,7 @@ export const LayoutParentControl = React.memo((): JSX.Element | null => {
                   options={allAlignmentOptions}
                   value={selectedAlignment}
                   onSubmitValue={onSubmitValueAlignment}
+                  permissions='owner'
                 />
               ) : null}
             </div>,

@@ -141,6 +141,7 @@ const ThreadPreviews = React.memo(() => {
               options={filterOptions}
               onSubmitValue={handleSubmitValueFilter}
               containerMode='noBorder'
+              permissions='owner'
             />
           </FlexRow>,
         )}

@@ -119,6 +119,7 @@ export const URLBackgroundLayer = React.memo<URLBackgroundLayerProps>((props) =>
             onSubmitValue={backgroundLayerType}
             controlStyles={props.controlStyles}
             containerMode='default'
+            permissions='owner'
           />
           <StringControl
             id={`background-layer-image-${props.index}`}
