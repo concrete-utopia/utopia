@@ -53,7 +53,12 @@ export const UserBar = React.memo(() => {
 })
 UserBar.displayName = 'UserBar'
 
-export const SinglePlayerUserBar = React.memo(() => {
+const SinglePlayerUserBar = React.memo(() => {
+  const url = window.location.href
+  const handleCopyToClipboard = React.useCallback(() => {
+    window.navigator.clipboard.writeText(url)
+  }, [url])
+
   const userPicture = useEditorState(
     Substores.userState,
     (store) => getUserPicture(store.userState.loginState),
@@ -63,7 +68,7 @@ export const SinglePlayerUserBar = React.memo(() => {
 
   return (
     <FlexRow
-      // onClick={handleClick}
+      onClick={handleCopyToClipboard}
       style={{
         background: colorTheme.primary30.value,
         borderRadius: 26,
