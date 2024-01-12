@@ -27,8 +27,8 @@ import type { ControlStyles, SelectOption } from '../../../uuiui-deps'
 import { CommonUtils, getControlStyles } from '../../../uuiui-deps'
 import { SmallerIcons } from '../../../uuiui/icons'
 import { Tooltip } from '../../tooltip'
-import type { Role } from '../../../components/editor/store/collaborative-editing'
-import { useRolePermissions } from '../../../components/editor/store/collaborative-editing'
+import type { InputPermissions } from '../../../components/editor/store/permissions'
+import { useMyRole } from '../../../components/editor/store/permissions'
 
 type ContainerMode = 'default' | 'showBorderOnHover' | 'noBorder'
 
@@ -43,7 +43,7 @@ interface PopupListProps {
   autoFocus?: boolean
   disabled?: boolean
   icon?: IcnProps
-  permissions: Role
+  permissions: InputPermissions
 }
 
 const WindowEdgePadding = 4
@@ -595,7 +595,8 @@ export const PopupList = React.memo<PopupListProps>(
       },
       ref,
     ) => {
-      const enabled = useRolePermissions(permissions ?? null)
+      const myRole = useMyRole()
+      const enabled = myRole === 'unknown' || permissions[myRole] === 'write'
 
       const disabled = initialDisabled || !controlStyles.interactive || !enabled
 

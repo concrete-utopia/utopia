@@ -799,38 +799,3 @@ export function useIsMyProject(): boolean {
 export function checkIsMyProject(serverState: ProjectServerState): boolean {
   return serverState.isMyProject === 'yes'
 }
-
-export type Role = 'viewer' | 'owner'
-
-function roleWeight(role: Role) {
-  // roles should be listed in ascending order of permissions
-  switch (role) {
-    case 'viewer':
-      return 1
-    case 'owner':
-      return 2
-    default:
-      assertNever(role)
-  }
-}
-
-function isRolePermitted(role: Role, wanted: Role): boolean {
-  return roleWeight(role) >= roleWeight(wanted)
-}
-
-export function useMyRole(): Role | 'unknown' {
-  const isMyProject = useIsMyProject()
-  const isMultiplayer = isFeatureEnabled('Multiplayer')
-  if (!isMultiplayer) {
-    return 'unknown'
-  }
-  return isMyProject ? 'owner' : 'viewer'
-}
-
-export function useRolePermissions(wantRole: Role): boolean {
-  const myRole = useMyRole()
-  if (myRole == 'unknown') {
-    return false
-  }
-  return isRolePermitted(myRole, wantRole)
-}
