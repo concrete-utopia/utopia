@@ -90,12 +90,16 @@ const SinglePlayerUserBar = React.memo(() => {
 SinglePlayerUserBar.displayName = 'SinglePlayerUserBar'
 
 const MultiplayerUserBar = React.memo(() => {
+  const dispatch = useDispatch()
+
   const url = window.location.href
   const handleCopyToClipboard = React.useCallback(() => {
+    let actions: EditorAction[] = []
+    actions.push(showToast(notice('Project URL copied to clipboard!', 'NOTICE', false)))
     window.navigator.clipboard.writeText(url)
-  }, [url])
+    dispatch(actions)
+  }, [dispatch, url])
 
-  const dispatch = useDispatch()
   const collabs = useStorage((store) => store.collaborators)
 
   const { user: myUser, presence: myPresence } = useMyUserAndPresence()
