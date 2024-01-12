@@ -11,6 +11,7 @@ export const liveblocksThrottle = 100 // ms
 export const liveblocksClient = createClient({
   throttle: liveblocksThrottle,
   authEndpoint: '/v1/liveblocks/authentication',
+  unstable_fallbackToHTTP: true,
 })
 
 // Presence represents the properties that exist on every user in the Room
