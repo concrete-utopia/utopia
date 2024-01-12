@@ -4,6 +4,7 @@ import type { light } from './light'
 const darkBase = {
   primary: createUtopiColor('oklch(59% 0.25 254)'),
   primary10: createUtopiColor('oklch(59% 0.25 254 / 10%)'),
+  primary25: createUtopiColor('oklch(59% 0.25 254 / 25%)'),
   primary30: createUtopiColor('oklch(59% 0.25 254 / 30%)'),
   primary50: createUtopiColor('oklch(59% 0.25 254 / 50%)'),
   component: createUtopiColor('oklch(53% 0.31 290)'),

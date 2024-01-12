@@ -1,5 +1,8 @@
+/** @jsxRuntime classic */
+/** @jsx jsx */
+import React from 'react'
+import { css, jsx } from '@emotion/react'
 import type { CSSProperties } from 'react'
-import React, { useCallback } from 'react'
 import { useOthers, useStatus, useStorage } from '../../liveblocks.config'
 import { getUserPicture, isLoggedIn } from '../common/user'
 import { getCollaborator, useMyUserAndPresence } from '../core/commenting/comment-hooks'
@@ -60,7 +63,7 @@ const SinglePlayerUserBar = React.memo(() => {
   const handleCopyToClipboard = React.useCallback(async () => {
     try {
       let actions: EditorAction[] = []
-      actions.push(showToast(notice('Project URL copied to clipboard!', 'NOTICE', false)))
+      actions.push(showToast(notice('Project link copied to clipboard!', 'NOTICE', false)))
       await window.navigator.clipboard.writeText(url)
       dispatch(actions)
     } catch (error) {
@@ -78,11 +81,14 @@ const SinglePlayerUserBar = React.memo(() => {
   return (
     <FlexRow
       onClick={handleCopyToClipboard}
-      style={{
+      css={{
         background: colorTheme.primary30.value,
         borderRadius: 26,
         height: 26,
         padding: 2,
+        '&:hover': {
+          background: colorTheme.primary25.value,
+        },
       }}
     >
       <Avatar
@@ -105,7 +111,7 @@ const MultiplayerUserBar = React.memo(() => {
   const handleCopyToClipboard = React.useCallback(async () => {
     try {
       let actions: EditorAction[] = []
-      actions.push(showToast(notice('Project URL copied to clipboard!', 'NOTICE', false)))
+      actions.push(showToast(notice('Project link copied to clipboard!', 'NOTICE', false)))
       await window.navigator.clipboard.writeText(url)
       dispatch(actions)
     } catch (error) {
@@ -254,11 +260,19 @@ const MultiplayerUserBar = React.memo(() => {
       )}
       <FlexRow
         onClick={handleCopyToClipboard}
-        style={{
+        css={{
           background: colorTheme.primary30.value,
           borderRadius: 26,
           height: 26,
           padding: 2,
+          border: `1px solid ${colorTheme.transparent.value}`,
+          transition: 'all .1s ease-in-out',
+          '&:hover': {
+            background: colorTheme.primary25.value,
+          },
+          '&:active': {
+            border: `1px solid ${colorTheme.primary30.value}`,
+          },
         }}
       >
         <MultiplayerAvatar
@@ -300,11 +314,11 @@ export const MultiplayerAvatar = React.memo((props: MultiplayerAvatarProps) => {
     props.follower === true ? ' following you' : props.isOffline ? ' offline' : ''
 
   const tooltipWithLineBreak = (
-    <>
+    <div>
       {tooltipText}
       {<br />}
       {tooltipSubtext}
-    </>
+    </div>
   )
 
   return (
