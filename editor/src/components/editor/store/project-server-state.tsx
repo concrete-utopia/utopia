@@ -124,17 +124,21 @@ export async function getProjectServerState(
   }
 }
 
-export function updateProjectServerStateInStore(
+type SuccessOrFailure = 'success' | 'failure'
+
+export async function updateProjectServerStateInStore(
   projectId: string | null,
   forkedFromProjectId: string | null,
   dispatch: EditorDispatch,
-) {
-  void getProjectServerState(dispatch, projectId, forkedFromProjectId)
-    .then((serverState) => {
+): Promise<SuccessOrFailure> {
+  return getProjectServerState(dispatch, projectId, forkedFromProjectId)
+    .then<SuccessOrFailure, SuccessOrFailure>((serverState) => {
       dispatch([updateProjectServerState(serverState)], 'everyone')
+      return 'success'
     })
     .catch((error) => {
       console.error('Error while updating server state.', error)
+      return 'failure'
     })
 }
 
@@ -145,22 +149,49 @@ export interface ProjectServerStateUpdaterProps {
 }
 
 let serverStateWatcherInstance: number | null = null
+const baseWatcherIntervalTime: number = 10 * 1000
+let currentWatcherIntervalMultiplier: number = 1
+
 function restartServerStateWatcher(
   projectId: string | null,
   forkedFromProjectId: string | null,
   dispatch: EditorDispatch,
 ): void {
   if (isFeatureEnabled('Baton Passing For Control')) {
-    if (serverStateWatcherInstance != null) {
-      window.clearInterval(serverStateWatcherInstance)
+    void updateProjectServerStateInStore(projectId, forkedFromProjectId, dispatch)
+    // Reset the multiplier if triggered from outside of `restartWatcherInterval`.
+    currentWatcherIntervalMultiplier = 1
+
+    function restartWatcherInterval(): void {
+      if (serverStateWatcherInstance != null) {
+        window.clearInterval(serverStateWatcherInstance)
+      }
+      serverStateWatcherInstance = window.setInterval(() => {
+        void updateProjectServerStateInStore(projectId, forkedFromProjectId, dispatch).then(
+          (result) => {
+            // If there's a failure, then double the multiplier and recreate the interval.
+            if (result === 'failure') {
+              if (currentWatcherIntervalMultiplier < 10) {
+                currentWatcherIntervalMultiplier = currentWatcherIntervalMultiplier * 2
+                restartWatcherInterval()
+              }
+            }
+
+            // If this call succeeds, reset the multiplier and recreate the interval if the multiplier
+            // has changed.
+            if (result === 'success') {
+              if (currentWatcherIntervalMultiplier !== 1) {
+                currentWatcherIntervalMultiplier = 1
+                restartWatcherInterval()
+              }
+            }
+          },
+        )
+      }, baseWatcherIntervalTime * currentWatcherIntervalMultiplier)
     }
-    updateProjectServerStateInStore(projectId, forkedFromProjectId, dispatch)
-    serverStateWatcherInstance = window.setInterval(
-      () => updateProjectServerStateInStore(projectId, forkedFromProjectId, dispatch),
-      10 * 1000,
-    )
+    restartWatcherInterval()
   } else {
-    updateProjectServerStateInStore(projectId, forkedFromProjectId, dispatch)
+    void updateProjectServerStateInStore(projectId, forkedFromProjectId, dispatch)
   }
 }
 
