@@ -360,7 +360,10 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
               onSubmitValue={this.setSelectedValue}
               options={this.scaleDropdownOptions}
               containerMode='noBorder'
-              permissions='owner'
+              permissions={{
+                owner: 'write',
+                viewer: 'read',
+              }}
             />
             <SquareButton
               highlight

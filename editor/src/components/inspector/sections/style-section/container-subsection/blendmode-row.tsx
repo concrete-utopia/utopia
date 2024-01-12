@@ -45,7 +45,10 @@ export const BlendModeRow = React.memo(() => {
           options={blendModeOptions}
           onSubmitValue={onSubmitBlendModeOption}
           controlStyles={blendModeMetadata.controlStyles}
-          permissions='owner'
+          permissions={{
+            owner: 'write',
+            viewer: 'read',
+          }}
         />
       </UIGridRow>
     </InspectorContextMenuWrapper>

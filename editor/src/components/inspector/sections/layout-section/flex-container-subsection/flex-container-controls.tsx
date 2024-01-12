@@ -186,7 +186,10 @@ export const FlexWrapControl = React.memo((props: FlexWrapControlProps) => {
         options={FlexWrapOptions}
         onSubmitValue={onSubmitValue}
         controlStyles={props.controlStyles}
-        permissions='owner'
+        permissions={{
+          owner: 'write',
+          viewer: 'read',
+        }}
       />
     </InspectorContextMenuWrapper>
   )

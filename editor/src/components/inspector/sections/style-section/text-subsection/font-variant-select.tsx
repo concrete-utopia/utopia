@@ -149,7 +149,10 @@ export const FontVariantSelect = React.memo(() => {
           value={selectValue}
           options={fontWeightAndStyleOptions}
           controlStyles={controlStyles}
-          permissions='owner'
+          permissions={{
+            owner: 'write',
+            viewer: 'read',
+          }}
         />
       </Tooltip>
     </InspectorContextMenuWrapper>

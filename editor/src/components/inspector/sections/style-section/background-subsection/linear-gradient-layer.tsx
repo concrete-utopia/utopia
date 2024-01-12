@@ -126,7 +126,10 @@ export const LinearGradientBackgroundLayer = React.memo<LinearGradientBackground
                 onSubmitValue={backgroundLayerType}
                 controlStyles={props.controlStyles}
                 containerMode='default'
-                permissions='owner'
+                permissions={{
+                  owner: 'write',
+                  viewer: 'read',
+                }}
               />
             </FlexRow>
             <NumberInput

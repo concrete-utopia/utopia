@@ -215,7 +215,10 @@ export const PopUpListPropertyControl = React.memo(
         options={options}
         containerMode={'default'}
         autoFocus={props.focusOnMount}
-        permissions='owner'
+        permissions={{
+          owner: 'write',
+          viewer: 'read',
+        }}
       />
     )
   },
@@ -297,7 +300,10 @@ export const ExpressionPopUpListPropertyControl = React.memo(
         options={options}
         containerMode={'default'}
         autoFocus={props.focusOnMount}
-        permissions='owner'
+        permissions={{
+          owner: 'write',
+          viewer: 'read',
+        }}
       />
     )
   },

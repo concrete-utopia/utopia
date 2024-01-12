@@ -226,7 +226,10 @@ export const BGSizeMetadataControl: React.FunctionComponent<
         options={BGSizeKeywordValueSelectOptions}
         value={bgSizeValueToSelectOption(bgSizeValue)}
         onSubmitValue={onSubmitPopupListValue}
-        permissions='owner'
+        permissions={{
+          owner: 'write',
+          viewer: 'read',
+        }}
       />
       {widthValue != null && heightValue != null ? (
         <>

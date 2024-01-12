@@ -350,7 +350,10 @@ export const EditorContractDropdown = React.memo(() => {
         controlStyles={simpleControlStyles}
         containerMode={'noBorder'}
         style={{ position: 'relative', left: -8 }}
-        permissions='owner'
+        permissions={{
+          owner: 'write',
+          viewer: 'read',
+        }}
       />
       {when(
         groupProblems.length > 0,

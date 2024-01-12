@@ -30,7 +30,10 @@ export const LightSelectControl: React.FunctionComponent<
         value={mixed ? { value: props.value, label: 'mixed' } : { value: props.value, label }}
         onSubmitValue={onSubmitValue}
         options={options}
-        permissions='owner'
+        permissions={{
+          owner: 'write',
+          viewer: 'read',
+        }}
       />
     </FlexRow>
   )

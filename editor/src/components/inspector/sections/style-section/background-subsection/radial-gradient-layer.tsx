@@ -107,7 +107,10 @@ export const RadialGradientBackgroundLayer = React.memo<RadialGradientBackground
                 onSubmitValue={backgroundLayerType}
                 controlStyles={props.controlStyles}
                 containerMode='default'
-                permissions='owner'
+                permissions={{
+                  owner: 'write',
+                  viewer: 'read',
+                }}
               />
             </FlexRow>
             <ChainedNumberInput

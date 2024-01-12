@@ -290,7 +290,10 @@ export const FixedHugDropdown = React.memo((props: { dimension: 'width' | 'heigh
       options={fixedHugFillOptions}
       onSubmitValue={onSubmitFixedFillHugType}
       controlStyles={getControlStyles(currentValue.controlStatus)}
-      permissions='owner'
+      permissions={{
+        owner: 'write',
+        viewer: 'read',
+      }}
     />
   )
 })
@@ -377,7 +380,10 @@ export const GroupConstraintSelect = React.memo(
           ...getControlStyles('simple'),
           mainColor: mainColor,
         }}
-        permissions='owner'
+        permissions={{
+          owner: 'write',
+          viewer: 'read',
+        }}
       />
     )
   },
