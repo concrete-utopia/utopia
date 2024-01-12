@@ -546,7 +546,7 @@ export const CanvasToolbar = React.memo(() => {
           />
         </Tooltip>
         <ElementsOutsideVisibleAreaIndicator />
-        {when(!isMyProject, <ViewOnlyBadge />)}
+        {unless(isMyProject, <ViewOnlyBadge />)}
       </div>
       {/* Edit Mode submenus */}
       {when(
