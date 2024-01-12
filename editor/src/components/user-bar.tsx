@@ -54,10 +54,19 @@ export const UserBar = React.memo(() => {
 UserBar.displayName = 'UserBar'
 
 const SinglePlayerUserBar = React.memo(() => {
+  const dispatch = useDispatch()
+
   const url = window.location.href
-  const handleCopyToClipboard = React.useCallback(() => {
-    window.navigator.clipboard.writeText(url)
-  }, [url])
+  const handleCopyToClipboard = React.useCallback(async () => {
+    try {
+      let actions: EditorAction[] = []
+      actions.push(showToast(notice('Project URL copied to clipboard!', 'NOTICE', false)))
+      await window.navigator.clipboard.writeText(url)
+      dispatch(actions)
+    } catch (error) {
+      console.error('Error copying to clipboard:', error)
+    }
+  }, [dispatch, url])
 
   const userPicture = useEditorState(
     Substores.userState,
@@ -93,11 +102,15 @@ const MultiplayerUserBar = React.memo(() => {
   const dispatch = useDispatch()
 
   const url = window.location.href
-  const handleCopyToClipboard = React.useCallback(() => {
-    let actions: EditorAction[] = []
-    actions.push(showToast(notice('Project URL copied to clipboard!', 'NOTICE', false)))
-    window.navigator.clipboard.writeText(url)
-    dispatch(actions)
+  const handleCopyToClipboard = React.useCallback(async () => {
+    try {
+      let actions: EditorAction[] = []
+      actions.push(showToast(notice('Project URL copied to clipboard!', 'NOTICE', false)))
+      await window.navigator.clipboard.writeText(url)
+      dispatch(actions)
+    } catch (error) {
+      console.error('Error copying to clipboard:', error)
+    }
   }, [dispatch, url])
 
   const collabs = useStorage((store) => store.collaborators)
