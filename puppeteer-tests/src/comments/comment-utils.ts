@@ -11,15 +11,20 @@ export async function initBrowserTest(utopiaBrowser: UtopiaPuppeteerBrowser) {
     url: `${BASE_URL}/p/?fakeUser=alice&Multiplayer=true${BRANCH_NAME}`,
     timeout: TIMEOUT,
   })
+  await page.waitForSelector('#playground-scene') // wait for the scene to render
 
   return page
 }
 
 export async function initSignedInBrowserTest(utopiaBrowser: UtopiaPuppeteerBrowser) {
-  const page = await initBrowserTest(utopiaBrowser)
+  const { page } = await utopiaBrowser.setup({
+    url: `${BASE_URL}/p/?fakeUser=alice&Multiplayer=true${BRANCH_NAME}`,
+    timeout: TIMEOUT,
+  })
 
   const signInButton = await page.waitForSelector('div[data-testid="sign-in-button"]')
   await signInButton!.click()
+
   await page.waitForSelector('#playground-scene') // wait for the scene to render
 
   return page
