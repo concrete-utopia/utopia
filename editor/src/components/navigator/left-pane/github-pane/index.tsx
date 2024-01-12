@@ -49,7 +49,7 @@ import { PullRequestPane } from './pull-request-pane'
 import { RefreshIcon } from './refresh-icon'
 import { RepositoryListing } from './repository-listing'
 import { GithubOperations } from '../../../../core/shared/github/operations'
-import { useOnClickAuthenticateWithGithub } from '../../../../utils/github-auth'
+import { useOnClickAuthenticateWithGithub } from '../../../../utils/github-auth-hooks'
 
 const compactTimeagoFormatter = (value: number, unit: string) => {
   return `${value}${unit.charAt(0)}`

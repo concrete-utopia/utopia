@@ -66,11 +66,3 @@ export const GithubAuth = {
   isAuthenticatedWithGithub: isAuthenticatedWithGithub,
   startGithubAuthentication: startGithubAuthentication,
 } as const
-
-export function useOnClickAuthenticateWithGithub() {
-  const dispatch = useDispatch()
-  const triggerAuthentication = React.useCallback(() => {
-    void GithubAuth.startGithubAuthentication(dispatch)
-  }, [dispatch])
-  return triggerAuthentication
-}
