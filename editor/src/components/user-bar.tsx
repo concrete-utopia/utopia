@@ -62,16 +62,23 @@ export const SinglePlayerUserBar = React.memo(() => {
   const isMyProject = useIsMyProject()
 
   return (
-    <div
+    <FlexRow
       style={{
-        width: 24,
-        height: 24,
-        position: 'relative',
+        background: colorTheme.primary30.value,
+        borderRadius: 26,
+        height: 26,
+        padding: 2,
       }}
     >
-      <Avatar userPicture={userPicture} isLoggedIn={true} />
+      <Avatar
+        userPicture={userPicture}
+        isLoggedIn={true}
+        size={22}
+        style={{ outline: 'undefined' }}
+      />
       {isMyProject ? <OwnerBadge /> : null}
-    </div>
+      <div style={{ padding: '0 8px 0 5px', fontWeight: 500 }}>Share</div>
+    </FlexRow>
   )
 })
 SinglePlayerUserBar.displayName = 'SinglePlayerUserBar'
@@ -217,12 +224,24 @@ const MultiplayerUserBar = React.memo(() => {
           )
         }),
       )}
-      <MultiplayerAvatar
-        name={multiplayerInitialsFromName(myUser.name)}
-        color={multiplayerColorFromIndex(myUser.colorIndex)}
-        picture={myUser.avatar}
-        isOwner={amIOwner}
-      />
+      <FlexRow
+        style={{
+          background: colorTheme.primary30.value,
+          borderRadius: 26,
+          height: 26,
+          padding: 2,
+        }}
+      >
+        <MultiplayerAvatar
+          name={multiplayerInitialsFromName(myUser.name)}
+          color={multiplayerColorFromIndex(myUser.colorIndex)}
+          picture={myUser.avatar}
+          isOwner={amIOwner}
+          size={22}
+          style={{ outline: 'undefined' }}
+        />
+        <div style={{ padding: '0 8px 0 5px', fontWeight: 500 }}>Share</div>
+      </FlexRow>
     </div>
   )
 })
@@ -269,8 +288,8 @@ export const MultiplayerAvatar = React.memo((props: MultiplayerAvatarProps) => {
     >
       <div
         style={{
-          width: props.size ?? 24,
-          height: props.size ?? 24,
+          width: props.size ?? 25.5,
+          height: props.size ?? 25.5,
           backgroundColor: props.isOffline ? colorTheme.bg4.value : props.color.background,
           color: props.isOffline ? colorTheme.fg2.value : props.color.foreground,
           display: 'flex',
@@ -286,11 +305,17 @@ export const MultiplayerAvatar = React.memo((props: MultiplayerAvatarProps) => {
             props.isBeingFollowed === true
               ? `0px 0px 8px ${colorTheme.dynamicBlue.value}`
               : undefined,
+
           ...props.style,
         }}
         onClick={props.onClick}
       >
-        <AvatarPicture url={picture} size={24} initials={props.name} isOffline={props.isOffline} />
+        <AvatarPicture
+          url={picture}
+          size={props.size ?? 25.5}
+          initials={props.name}
+          isOffline={props.isOffline}
+        />
         {props.isOwner ? <OwnerBadge /> : null}
         {props.follower ? <FollowerBadge /> : null}
       </div>
