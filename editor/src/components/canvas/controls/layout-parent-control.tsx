@@ -19,6 +19,7 @@ import {
   getDirectionAwareLabels,
 } from '../../inspector/sections/layout-section/flex-container-subsection/flex-container-controls'
 import { isInfinityRectangle } from '../../../core/shared/math-utils'
+import { usePermissions } from '../../editor/store/permissions'
 
 const getFlexDirectionIcon = (
   flexWrap: FlexWrap | null,
@@ -145,6 +146,8 @@ export const LayoutParentControl = React.memo((): JSX.Element | null => {
     event.stopPropagation()
   }, [])
 
+  const perms = usePermissions()
+
   if (parentFrame == null || isInfinityRectangle(parentFrame)) {
     return null
   }
@@ -203,10 +206,7 @@ export const LayoutParentControl = React.memo((): JSX.Element | null => {
                   options={allAlignmentOptions}
                   value={selectedAlignment}
                   onSubmitValue={onSubmitValueAlignment}
-                  permissions={{
-                    owner: 'write',
-                    viewer: 'read',
-                  }}
+                  disabled={!perms.edit}
                 />
               ) : null}
             </div>,

@@ -6,6 +6,7 @@ import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { PopupList } from '../../../../../uuiui'
 import type { SelectOption } from '../../../../../uuiui-deps'
 import { InspectorContextMenuItems, InspectorContextMenuWrapper } from '../../../../../uuiui-deps'
+import { usePermissions } from '../../../../editor/store/permissions'
 
 const blendModeOptions = [
   { value: 'normal', label: 'Normal' },
@@ -31,6 +32,8 @@ export const BlendModeRow = React.memo(() => {
     blendModeMetadata.onUnsetValues,
   )
 
+  const perms = usePermissions()
+
   return (
     <InspectorContextMenuWrapper
       id='blendmode-row-context-menu'
@@ -45,10 +48,7 @@ export const BlendModeRow = React.memo(() => {
           options={blendModeOptions}
           onSubmitValue={onSubmitBlendModeOption}
           controlStyles={blendModeMetadata.controlStyles}
-          permissions={{
-            owner: 'write',
-            viewer: 'read',
-          }}
+          disabled={!perms.edit}
         />
       </UIGridRow>
     </InspectorContextMenuWrapper>

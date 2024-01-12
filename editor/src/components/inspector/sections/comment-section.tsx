@@ -45,6 +45,7 @@ import { CommentRepliesCounter } from '../../canvas/controls/comment-replies-cou
 import type { SelectOption } from '../controls/select-control'
 import { assertNever } from '../../../core/shared/utils'
 import { pluck } from '../../../core/shared/array-utils'
+import { usePermissions } from '../../editor/store/permissions'
 
 export type CommentFilterMode = 'all' | 'all-including-resolved' | 'unread-only'
 
@@ -119,6 +120,8 @@ const ThreadPreviews = React.memo(() => {
     [dispatch],
   )
 
+  const perms = usePermissions()
+
   return (
     <FlexColumn>
       <FlexRow
@@ -141,10 +144,7 @@ const ThreadPreviews = React.memo(() => {
               options={filterOptions}
               onSubmitValue={handleSubmitValueFilter}
               containerMode='noBorder'
-              permissions={{
-                owner: 'write',
-                viewer: 'read',
-              }}
+              disabled={!perms.edit}
             />
           </FlexRow>,
         )}

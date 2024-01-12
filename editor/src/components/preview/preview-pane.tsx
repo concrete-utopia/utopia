@@ -29,6 +29,7 @@ import {
   UIRow,
 } from '../../uuiui'
 import { setBranchNameFromURL } from '../../utils/branches'
+import { usePermissions } from '../editor/store/permissions'
 
 export const PreviewIframeId = 'preview-column-container'
 
@@ -351,19 +352,10 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
             >
               <LargerIcons.MagnifyingGlassMinus />
             </SquareButton>
-            <PopupList
-              style={{ minWidth: 56 }}
-              value={{
-                value: this.state.scale,
-                label: `${Math.round(this.state.scale * 100)}%`,
-              }}
+            <ScaleDropdown
+              scale={this.state.scale}
               onSubmitValue={this.setSelectedValue}
               options={this.scaleDropdownOptions}
-              containerMode='noBorder'
-              permissions={{
-                owner: 'write',
-                viewer: 'read',
-              }}
             />
             <SquareButton
               highlight
@@ -409,3 +401,27 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
     )
   }
 }
+
+const ScaleDropdown = React.memo(
+  (props: {
+    scale: number
+    onSubmitValue: (option: SelectOption) => void
+    options: SelectOption[]
+  }) => {
+    const perms = usePermissions()
+    return (
+      <PopupList
+        style={{ minWidth: 56 }}
+        value={{
+          value: props.scale,
+          label: `${Math.round(props.scale * 100)}%`,
+        }}
+        onSubmitValue={props.onSubmitValue}
+        options={props.options}
+        containerMode='noBorder'
+        disabled={!perms.edit}
+      />
+    )
+  },
+)
+ScaleDropdown.displayName = 'ScaleDropdown'

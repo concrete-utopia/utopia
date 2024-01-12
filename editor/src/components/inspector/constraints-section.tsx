@@ -51,6 +51,7 @@ import {
 import { UIGridRow } from './widgets/ui-grid-row'
 import { allSelectedElementsContractSelector } from './editor-contract-section'
 import * as EP from '../../core/shared/element-path'
+import { usePermissions } from '../editor/store/permissions'
 
 export const InspectorSectionConstraintsTestId = 'inspector-section-constraints'
 
@@ -513,6 +514,8 @@ const ChildConstraintSelect = React.memo(
 
     const colorTheme = useColorTheme()
 
+    const perms = usePermissions()
+
     return (
       <PopupList
         id={`frame-child-constraint-${dimension}`}
@@ -526,10 +529,7 @@ const ChildConstraintSelect = React.memo(
           ...styles,
           mainColor: activeOption.invalid ? colorTheme.error.value : styles.mainColor,
         }}
-        permissions={{
-          owner: 'write',
-          viewer: 'read',
-        }}
+        disabled={!perms.edit}
       />
     )
   },

@@ -49,6 +49,7 @@ import type { MetadataSubstate } from '../editor/store/store-hook-substore-types
 import type { SelectOption } from './controls/select-control'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import { WarningIcon } from '../../uuiui/warning-icon'
+import { usePermissions } from '../editor/store/permissions'
 
 const simpleControlStyles = getControlStyles('simple')
 const disabledControlStyles: ControlStyles = {
@@ -340,6 +341,8 @@ export const EditorContractDropdown = React.memo(() => {
     }
   }, [groupProblems, dispatch, metadataRef])
 
+  const perms = usePermissions()
+
   return (
     <FlexRow data-testid={EditorContractSelectorTestID} style={{ flex: 1 }}>
       <PopupList
@@ -350,10 +353,7 @@ export const EditorContractDropdown = React.memo(() => {
         controlStyles={simpleControlStyles}
         containerMode={'noBorder'}
         style={{ position: 'relative', left: -8 }}
-        permissions={{
-          owner: 'write',
-          viewer: 'read',
-        }}
+        disabled={!perms.edit}
       />
       {when(
         groupProblems.length > 0,

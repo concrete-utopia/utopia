@@ -27,8 +27,6 @@ import type { ControlStyles, SelectOption } from '../../../uuiui-deps'
 import { CommonUtils, getControlStyles } from '../../../uuiui-deps'
 import { SmallerIcons } from '../../../uuiui/icons'
 import { Tooltip } from '../../tooltip'
-import type { InputPermissions } from '../../../components/editor/store/permissions'
-import { useMyRole } from '../../../components/editor/store/permissions'
 
 type ContainerMode = 'default' | 'showBorderOnHover' | 'noBorder'
 
@@ -43,7 +41,6 @@ interface PopupListProps {
   autoFocus?: boolean
   disabled?: boolean
   icon?: IcnProps
-  permissions: InputPermissions
 }
 
 const WindowEdgePadding = 4
@@ -591,14 +588,10 @@ export const PopupList = React.memo<PopupListProps>(
         containerMode = 'default',
         controlStyles = getControlStyles('simple'),
         disabled: initialDisabled,
-        permissions,
       },
       ref,
     ) => {
-      const myRole = useMyRole()
-      const enabled = myRole === 'unknown' || permissions[myRole] === 'write'
-
-      const disabled = initialDisabled || !controlStyles.interactive || !enabled
+      const disabled = initialDisabled || !controlStyles.interactive
 
       const selectOnSubmitValue = React.useCallback(
         (newValue: ValueType<SelectOption>) => {
