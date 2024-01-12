@@ -68,7 +68,7 @@ import LiveblocksProvider from '@liveblocks/yjs'
 import { isRoomId, projectIdToRoomId } from '../../core/shared/multiplayer'
 import { useDisplayOwnershipWarning } from './project-owner-hooks'
 import { EditorModes } from './editor-modes'
-import { allowedToEditProject } from './store/collaborative-editing'
+import { checkIsMyProject } from './store/collaborative-editing'
 import { useDataThemeAttributeOnBody } from '../../core/commenting/comment-hooks'
 import { CollaborationStateUpdater } from './store/collaboration-state'
 
@@ -359,13 +359,18 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
   useSelectorWithCallback(
     Substores.projectServerState,
     (store) => store.projectServerState,
-    (isMyProject) => {
-      if (!allowedToEditProject(isMyProject)) {
-        dispatch([
+    (serverState) => {
+      let actions: EditorAction[] = []
+      if (!checkIsMyProject(serverState)) {
+        actions.push(
           EditorActions.switchEditorMode(EditorModes.commentMode(null, 'not-dragging')),
           EditorActions.setRightMenuTab(RightMenuTab.Comments),
-        ])
+          EditorActions.setCodeEditorVisibility(false),
+        )
+      } else {
+        actions.push(EditorActions.setCodeEditorVisibility(true))
       }
+      dispatch(actions)
     },
     'EditorComponentInner viewer mode',
   )
