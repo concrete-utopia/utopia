@@ -86,8 +86,13 @@ const SinglePlayerUserBar = React.memo(() => {
         borderRadius: 26,
         height: 26,
         padding: 2,
+        border: `1px solid ${colorTheme.transparent.value}`,
+        transition: 'all .1s ease-in-out',
         '&:hover': {
           background: colorTheme.primary25.value,
+        },
+        '&:active': {
+          border: `1px solid ${colorTheme.primary30.value}`,
         },
       }}
     >
