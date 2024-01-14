@@ -166,7 +166,7 @@ function processAction(
           userState: UPDATE_FNS.SET_CURRENT_THEME(action, working.userState),
         }
       } else if (action.action === 'SET_LOGIN_STATE') {
-        updateProjectServerStateInStore(
+        void updateProjectServerStateInStore(
           editorStoreUnpatched.unpatchedEditor.id,
           editorStoreUnpatched.unpatchedEditor.forkedFromProjectId,
           dispatchEvent,

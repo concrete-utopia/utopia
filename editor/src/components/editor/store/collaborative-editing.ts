@@ -721,9 +721,6 @@ export async function claimControlOverProject(projectID: string | null): Promise
   if (projectID == null || !isFeatureEnabled('Baton Passing For Control')) {
     return null
   }
-  if (!document.hasFocus()) {
-    return false
-  }
 
   const request = claimProjectControl(projectID, collaborationEditor)
   const response = await callCollaborationEndpoint(request)
@@ -779,7 +776,7 @@ export function allowedToEditProject(serverState: ProjectServerState): boolean {
   if (isFeatureEnabled('Baton Passing For Control')) {
     return serverState.currentlyHolderOfTheBaton
   } else {
-    return serverState.isMyProject === 'yes'
+    return checkIsMyProject(serverState)
   }
 }
 
@@ -794,7 +791,11 @@ export function useAllowedToEditProject(): boolean {
 export function useIsMyProject(): boolean {
   return useEditorState(
     Substores.projectServerState,
-    (store) => store.projectServerState.isMyProject === 'yes',
+    (store) => checkIsMyProject(store.projectServerState),
     'useIsMyProject',
   )
+}
+
+export function checkIsMyProject(serverState: ProjectServerState): boolean {
+  return serverState.isMyProject === 'yes'
 }

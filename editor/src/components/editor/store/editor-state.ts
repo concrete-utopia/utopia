@@ -1431,7 +1431,6 @@ export interface EditorState {
   localProjectList: Array<ProjectListing>
   projectList: Array<ProjectListing>
   showcaseProjects: Array<ProjectListing>
-  codeEditingEnabled: boolean
   codeEditorErrors: EditorStateCodeEditorErrors
   thumbnailLastGenerated: number
   pasteTargetsToIgnore: ElementPath[]
@@ -1512,7 +1511,6 @@ export function editorState(
   localProjectList: Array<ProjectListing>,
   projectList: Array<ProjectListing>,
   showcaseProjects: Array<ProjectListing>,
-  codeEditingEnabled: boolean,
   codeEditorErrors: EditorStateCodeEditorErrors,
   thumbnailLastGenerated: number,
   pasteTargetsToIgnore: ElementPath[],
@@ -1594,7 +1592,6 @@ export function editorState(
     localProjectList: localProjectList,
     projectList: projectList,
     showcaseProjects: showcaseProjects,
-    codeEditingEnabled: codeEditingEnabled,
     codeEditorErrors: codeEditorErrors,
     thumbnailLastGenerated: thumbnailLastGenerated,
     pasteTargetsToIgnore: pasteTargetsToIgnore,
@@ -2484,7 +2481,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     localProjectList: [],
     projectList: [],
     showcaseProjects: [],
-    codeEditingEnabled: false,
     codeEditorErrors: {
       buildErrors: {},
       lintErrors: {},
@@ -2850,7 +2846,6 @@ export function editorModelFromPersistentModel(
     localProjectList: [],
     projectList: [],
     showcaseProjects: [],
-    codeEditingEnabled: false,
     thumbnailLastGenerated: 0,
     pasteTargetsToIgnore: [],
     parseOrPrintInFlight: false,

@@ -36,6 +36,7 @@ import { isFeatureEnabled } from '../../utils/feature-switches'
 import { CommentsPane } from '../inspector/comments-pane'
 import { EditorModes, isCommentMode } from '../editor/editor-modes'
 import { useAllowedToEditProject } from '../editor/store/collaborative-editing'
+import { useIsLoggedIn } from '../../core/shared/multiplayer-hooks'
 
 function isCodeEditorEnabled(): boolean {
   if (typeof window !== 'undefined') {
@@ -162,6 +163,8 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
     onClickTab(RightMenuTab.Settings)
   }, [onClickTab])
 
+  const isLoggedIn = useIsLoggedIn()
+
   const allowedToEdit = useAllowedToEditProject()
 
   if (!isRightMenuExpanded) {
@@ -204,8 +207,9 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
           </>,
         )}
         {when(
-          isFeatureEnabled('Multiplayer'),
+          isLoggedIn && isFeatureEnabled('Multiplayer'),
           <MenuTab
+            testId='comments-tab'
             label={'Comments'}
             selected={selectedTab === RightMenuTab.Comments}
             onClick={onClickCommentsTab}
