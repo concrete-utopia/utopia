@@ -2,10 +2,8 @@ import { useIsLoggedIn } from '../../../core/shared/multiplayer-hooks'
 import { useIsMyProject } from './collaborative-editing'
 
 export type Permissions = {
-  // change stuff on the canvas, inspector, code editor
-  edit: boolean
-  // add comments
-  comment: boolean
+  edit: boolean // Edit the open project via the canvas, inspector, code editor
+  comment: boolean // Add comments
 }
 
 export function usePermissions(): Permissions {
