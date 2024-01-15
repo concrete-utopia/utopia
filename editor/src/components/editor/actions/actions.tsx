@@ -1516,9 +1516,9 @@ function createStoryboardFileIfMainComponentPresent(
 
 function createStoryboardFileWithPlaceholderContents(
   projectContents: ProjectContentTreeRoot,
-  isItNecessary: 'create-placeholder' | 'skip-creating-placeholder',
+  createPlaceholder: 'create-placeholder' | 'skip-creating-placeholder',
 ): ProjectContentTreeRoot {
-  if (isItNecessary === 'skip-creating-placeholder') {
+  if (createPlaceholder === 'skip-creating-placeholder') {
     return projectContents
   }
   const updatedProjectContents = addFileToProjectContents(
@@ -1531,7 +1531,7 @@ function createStoryboardFileWithPlaceholderContents(
 
 export function createStoryboardFileIfNecessary(
   projectContents: ProjectContentTreeRoot,
-  isItNecessary: 'create-placeholder' | 'skip-creating-placeholder',
+  createPlaceholder: 'create-placeholder' | 'skip-creating-placeholder',
 ): ProjectContentTreeRoot {
   const storyboardFile = getProjectFileByFilePath(projectContents, StoryboardFilePath)
   if (storyboardFile != null) {
@@ -1541,7 +1541,7 @@ export function createStoryboardFileIfNecessary(
   return (
     createStoryboardFileIfRemixProject(projectContents) ??
     createStoryboardFileIfMainComponentPresent(projectContents) ??
-    createStoryboardFileWithPlaceholderContents(projectContents, isItNecessary)
+    createStoryboardFileWithPlaceholderContents(projectContents, createPlaceholder)
   )
 }
 
