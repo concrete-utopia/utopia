@@ -250,6 +250,10 @@ export const TitleBarProjectTitle = React.memo((props: { panelData: StoredPanel 
   )
 })
 
+export const onClickSignIn = () => {
+  window.open(auth0Url('auto-close'), '_blank')
+}
+
 export const TitleBarUserProfile = React.memo((props: { panelData: StoredPanel }) => {
   const { drag } = useGridPanelDraggable(props.panelData)
   const dispatch = useDispatch()
@@ -267,10 +271,6 @@ export const TitleBarUserProfile = React.memo((props: { panelData: StoredPanel }
 
   const onMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation()
-  }, [])
-
-  const onClickLoginNewTab = useCallback(() => {
-    window.open(auth0Url('auto-close'), '_blank')
   }, [])
 
   const toggleInspectorVisible = React.useCallback(() => {
@@ -320,7 +320,7 @@ export const TitleBarUserProfile = React.memo((props: { panelData: StoredPanel }
               color: colorTheme.bg1.value,
               fontWeight: 600,
             }}
-            onClick={onClickLoginNewTab}
+            onClick={onClickSignIn}
             onMouseDown={onMouseDown}
           >
             Sign In To Save

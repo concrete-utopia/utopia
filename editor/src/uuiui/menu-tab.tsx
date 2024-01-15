@@ -21,6 +21,7 @@ interface MenuTabProps {
   onClick?: () => void
   onMouseDown?: () => void
   className?: string
+  testId?: string
 }
 
 export const MenuTab: React.FunctionComponent<React.PropsWithChildren<MenuTabProps>> = React.memo(
@@ -49,9 +50,9 @@ export const MenuTab: React.FunctionComponent<React.PropsWithChildren<MenuTabPro
         : colorTheme.tabSelectedForeground.value,
       opacity: selected ? 1 : 0.4,
     }
-
     return (
       <SimpleFlexRow
+        data-testid={props.testId}
         onClick={props.onClick}
         onMouseDown={props.onMouseDown}
         css={{

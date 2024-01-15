@@ -1015,7 +1015,7 @@ describe('updating package.json', () => {
       expect(packageJsonFile.fileContents).toMatchInlineSnapshot(`
         Object {
           "code": "{
-          \\"name\\": \\"Utopia Project\\",
+          \\"name\\": \\"utopia-project\\",
           \\"version\\": \\"0.1.0\\",
           \\"utopia\\": {
             \\"main-ui\\": \\"utopia/storyboard.js\\",

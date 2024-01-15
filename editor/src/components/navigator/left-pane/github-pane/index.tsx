@@ -49,7 +49,7 @@ import { PullRequestPane } from './pull-request-pane'
 import { RefreshIcon } from './refresh-icon'
 import { RepositoryListing } from './repository-listing'
 import { GithubOperations } from '../../../../core/shared/github/operations'
-import { GithubAuth } from '../../../../utils/github-auth'
+import { useOnClickAuthenticateWithGithub } from '../../../../utils/github-auth-hooks'
 
 const compactTimeagoFormatter = (value: number, unit: string) => {
   return `${value}${unit.charAt(0)}`
@@ -64,10 +64,8 @@ const AccountBlock = () => {
     'Github authenticated',
   )
   const state = React.useMemo(() => (authenticated ? 'successful' : 'incomplete'), [authenticated])
-  const dispatch = useDispatch()
-  const triggerAuthentication = React.useCallback(() => {
-    void GithubAuth.startGithubAuthentication(dispatch)
-  }, [dispatch])
+
+  const triggerAuthentication = useOnClickAuthenticateWithGithub()
 
   if (authenticated) {
     return null

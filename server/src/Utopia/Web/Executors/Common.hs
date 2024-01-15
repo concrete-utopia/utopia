@@ -471,9 +471,21 @@ getGithubBranch githubSemaphore githubResources logger metrics pool userID owner
           let getContentFromGit = getRecursiveGitTreeAsContent githubSemaphore accessToken owner repository treeSha
           let fallbackForSameCommit = pure mempty
           projectContent <- if Just commitSha == possiblePreviousCommitSha then fallbackForSameCommit else getContentFromGit
-          pure $ Just (projectContent, commitSha)
+          pure $ Just (projectContent, commitSha, branchName)
         Nothing -> pure Nothing
   pure $ either getBranchContentFailureFromReason getBranchContentSuccessFromContent result
+
+getDefaultGithubBranch :: (MonadBaseControl IO m, MonadIO m, MonadThrow m) => QSem -> GithubAuthResources -> FastLogger -> DB.DatabaseMetrics -> DBPool -> Text -> Text -> Text -> Maybe Text -> Maybe Text -> m GetBranchContentResponse
+getDefaultGithubBranch githubSemaphore githubResources logger metrics pool userID owner repository possibleCommitSha possiblePreviousCommitSha = do
+  defaultBranchResult <- runExceptT $ do
+    useAccessToken githubResources logger metrics pool userID $ \accessToken -> do
+      possibleRepo <- getRepository githubSemaphore accessToken owner repository
+      usersRepository <- maybe (throwE ("Repository " <> repository <> " not found.")) pure possibleRepo
+      let defaultBranch = view (field @"default_branch") usersRepository
+      lift $ getGithubBranch githubSemaphore githubResources logger metrics pool userID owner repository defaultBranch possibleCommitSha possiblePreviousCommitSha
+
+  pure $ either getBranchContentFailureFromReason identity defaultBranchResult
+
 
 convertUsersRepositoriesResultToUnfold :: Int -> GetUsersPublicRepositoriesResult -> Maybe (GetUsersPublicRepositoriesResult, Maybe Int)
 convertUsersRepositoriesResultToUnfold page result =

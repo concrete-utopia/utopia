@@ -70,6 +70,7 @@ import { EditorModes } from './editor-modes'
 import { checkIsMyProject } from './store/collaborative-editing'
 import { useDataThemeAttributeOnBody } from '../../core/commenting/comment-hooks'
 import { CollaborationStateUpdater } from './store/collaboration-state'
+import { GithubRepositoryCloneFlow } from '../github/github-repository-clone-flow'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -464,6 +465,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
           </SimpleFlexRow>
         </SimpleFlexColumn>
         <ModalComponent />
+        <GithubRepositoryCloneFlow />
         <LockedOverlay />
       </SimpleFlexRow>
       <EditorCommon
