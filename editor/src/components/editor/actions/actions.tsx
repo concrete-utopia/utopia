@@ -895,7 +895,6 @@ export function restoreEditorState(
     localProjectList: currentEditor.localProjectList,
     projectList: currentEditor.projectList,
     showcaseProjects: currentEditor.showcaseProjects,
-    codeEditingEnabled: desiredEditor.codeEditingEnabled,
     thumbnailLastGenerated: currentEditor.thumbnailLastGenerated,
     pasteTargetsToIgnore: desiredEditor.pasteTargetsToIgnore,
     codeEditorErrors: currentEditor.codeEditorErrors,
@@ -1517,7 +1516,11 @@ function createStoryboardFileIfMainComponentPresent(
 
 function createStoryboardFileWithPlaceholderContents(
   projectContents: ProjectContentTreeRoot,
+  createPlaceholder: 'create-placeholder' | 'skip-creating-placeholder',
 ): ProjectContentTreeRoot {
+  if (createPlaceholder === 'skip-creating-placeholder') {
+    return projectContents
+  }
   const updatedProjectContents = addFileToProjectContents(
     projectContents,
     StoryboardFilePath,
@@ -1528,6 +1531,7 @@ function createStoryboardFileWithPlaceholderContents(
 
 export function createStoryboardFileIfNecessary(
   projectContents: ProjectContentTreeRoot,
+  createPlaceholder: 'create-placeholder' | 'skip-creating-placeholder',
 ): ProjectContentTreeRoot {
   const storyboardFile = getProjectFileByFilePath(projectContents, StoryboardFilePath)
   if (storyboardFile != null) {
@@ -1537,7 +1541,7 @@ export function createStoryboardFileIfNecessary(
   return (
     createStoryboardFileIfRemixProject(projectContents) ??
     createStoryboardFileIfMainComponentPresent(projectContents) ??
-    createStoryboardFileWithPlaceholderContents(projectContents)
+    createStoryboardFileWithPlaceholderContents(projectContents, createPlaceholder)
   )
 }
 
@@ -3385,7 +3389,10 @@ export const UPDATE_FNS = {
   ): EditorModel => {
     return {
       ...editor,
-      codeEditingEnabled: action.value,
+      interfaceDesigner: {
+        ...editor.interfaceDesigner,
+        codePaneVisible: action.value,
+      },
     }
   },
   OPEN_CODE_EDITOR: (editor: EditorModel): EditorModel => {
@@ -3649,7 +3656,11 @@ export const UPDATE_FNS = {
       },
     }
   },
-  UPDATE_FROM_WORKER: (action: UpdateFromWorker, editor: EditorModel): EditorModel => {
+  UPDATE_FROM_WORKER: (
+    action: UpdateFromWorker,
+    editor: EditorModel,
+    userState: UserState,
+  ): EditorModel => {
     let workingProjectContents: ProjectContentTreeRoot = editor.projectContents
     let anyParsedUpdates: boolean = false
 
@@ -3680,7 +3691,13 @@ export const UPDATE_FNS = {
     }
     return {
       ...editor,
-      projectContents: createStoryboardFileIfNecessary(workingProjectContents),
+      projectContents: createStoryboardFileIfNecessary(
+        workingProjectContents,
+        // If we are in the process of cloning a Github repository, do not create placeholder Storyboard
+        userState.githubState.gitRepoToLoad != null
+          ? 'skip-creating-placeholder'
+          : 'create-placeholder',
+      ),
       canvas: {
         ...editor.canvas,
         canvasContentInvalidateCount: anyParsedUpdates
@@ -4745,7 +4762,10 @@ export const UPDATE_FNS = {
   SET_GITHUB_STATE: (action: SetGithubState, userState: UserState): UserState => {
     return {
       ...userState,
-      githubState: action.githubState,
+      githubState: {
+        ...userState.githubState,
+        ...action.githubState,
+      },
     }
   },
   SET_USER_CONFIGURATION: (action: SetUserConfiguration, userState: UserState): UserState => {

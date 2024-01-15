@@ -11,6 +11,7 @@ export const liveblocksThrottle = 100 // ms
 export const liveblocksClient = createClient({
   throttle: liveblocksThrottle,
   authEndpoint: '/v1/liveblocks/authentication',
+  unstable_fallbackToHTTP: true,
 })
 
 // Presence represents the properties that exist on every user in the Room
@@ -75,10 +76,10 @@ export type UserMeta = {
 
 // Optionally, the type of custom events broadcast and listened to in this
 // room. Use a union for multiple events. Must be JSON-serializable.
-export type RoomEvent = {
-  // type: "NOTIFICATION",
-  // ...
+export type ControlChangedRoomEvent = {
+  type: 'CONTROL_CHANGED'
 }
+export type RoomEvent = ControlChangedRoomEvent
 
 // Optionally, when using Comments, ThreadMetadata represents metadata on
 // each thread. Can only contain booleans, strings, and numbers.

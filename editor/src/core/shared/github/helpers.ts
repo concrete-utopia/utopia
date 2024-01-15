@@ -256,12 +256,16 @@ export function connectRepo(
 
 export async function getBranchContentFromServer(
   githubRepo: GithubRepo,
-  branchName: string,
+  branchName: string | null,
   commitSha: string | null,
   previousCommitSha: string | null,
   operationContext: GithubOperationContext,
 ): Promise<Response> {
-  const url = GithubEndpoints.branchContents(githubRepo, branchName)
+  const url =
+    branchName != null
+      ? GithubEndpoints.branchContents(githubRepo, branchName)
+      : GithubEndpoints.defaultBranchContents(githubRepo)
+
   let includeQueryParams: boolean = false
   let paramsRecord: Record<string, string> = {}
   if (commitSha != null) {

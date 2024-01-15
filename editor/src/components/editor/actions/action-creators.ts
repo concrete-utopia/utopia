@@ -1419,7 +1419,7 @@ export function setLoginState(loginState: LoginState): SetLoginState {
   }
 }
 
-export function setGithubState(githubState: GithubState): SetGithubState {
+export function setGithubState(githubState: Partial<GithubState>): SetGithubState {
   return {
     action: 'SET_GITHUB_STATE',
     githubState: githubState,

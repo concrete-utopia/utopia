@@ -2,6 +2,7 @@
 import '../utils/feature-switches'
 
 import React from 'react'
+import * as PubSub from 'pubsub-js'
 import { createRoot } from 'react-dom/client'
 import * as ReactDOM from 'react-dom'
 import { hot } from 'react-hot-loader/root'
@@ -45,13 +46,13 @@ import type {
   EditorStoreFull,
   PersistentModel,
   ElementsToRerender,
+  GithubRepoWithBranch,
 } from '../components/editor/store/editor-state'
 import {
   createEditorState,
   deriveState,
   defaultUserState,
   createNewProjectName,
-  persistentModelForProjectContents,
   patchedStoreFromFullStore,
   getCurrentTheme,
   emptyCollaborativeEditingSupport,
@@ -131,6 +132,10 @@ import {
 import { GithubOperations } from '../core/shared/github/operations'
 import { GithubAuth } from '../utils/github-auth'
 import { Provider as JotaiProvider } from 'jotai'
+import {
+  getGithubRepoToLoad,
+  LoadActionsDispatched,
+} from '../components/github/github-repository-clone-flow'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -244,11 +249,14 @@ export class Editor {
     )
 
     const builtInDependencies = createBuiltInDependenciesList(workers)
-    const onCreatedOrLoadedProject = (
+    const onCreatedOrLoadedProject = async (
       projectId: string,
       projectName: string,
       project: PersistentModel,
-    ) => load(this.boundDispatch, project, projectName, projectId, builtInDependencies)
+    ) => {
+      await load(this.boundDispatch, project, projectName, projectId, builtInDependencies)
+      PubSub.publish(LoadActionsDispatched, { projectId: projectId })
+    }
 
     this.storedState = {
       unpatchedEditor: emptyEditorState,
@@ -344,60 +352,42 @@ export class Editor {
         void updateUserDetailsWhenAuthenticated(
           this.boundDispatch,
           GithubAuth.isAuthenticatedWithGithub(loginState),
-        ).then((authenticatedWithGithub) => {
-          this.storedState.userState = {
-            ...this.storedState.userState,
-            githubState: {
+        ).then(async (authenticatedWithGithub) => {
+          this.boundDispatch([
+            EditorActions.setGithubState({
               authenticated: authenticatedWithGithub,
-            },
-          }
+            }),
+          ])
           const projectId = getProjectID()
           if (isLoggedIn(loginState)) {
             this.storedState.persistence.login()
           }
 
           const urlParams = new URLSearchParams(window.location.search)
-          const githubOwner = urlParams.get('github_owner')
-          const githubRepo = urlParams.get('github_repo')
           const importURL = urlParams.get('import_url')
+
+          const githubRepoToLoad: GithubRepoWithBranch | null = getGithubRepoToLoad(
+            window.location.search,
+          )
 
           if (isCookiesOrLocalForageUnavailable(loginState)) {
             this.storedState.persistence.createNew(createNewProjectName(), defaultProject())
           } else if (projectId == null) {
-            if (githubOwner != null && githubRepo != null) {
-              replaceLoadingMessage('Downloading Repo...')
-
-              void downloadGithubRepo(githubOwner, githubRepo).then((repoResult) => {
-                if (isRequestFailure(repoResult)) {
-                  if (repoResult.statusCode === 404) {
-                    void renderProjectNotFound()
-                  } else {
-                    void renderProjectLoadError(repoResult.errorMessage)
-                  }
-                } else {
-                  replaceLoadingMessage('Importing Project...')
-
-                  const projectName = `${githubOwner}-${githubRepo}`
-                  importZippedGitProject(projectName, repoResult.value)
-                    .then((importProjectResult) => {
-                      if (isProjectImportSuccess(importProjectResult)) {
-                        const importedProject = persistentModelForProjectContents(
-                          importProjectResult.contents,
-                        )
-                        this.storedState.persistence.createNew(projectName, importedProject)
-                      } else {
-                        void renderProjectLoadError(importProjectResult.errorMessage)
-                      }
-                    })
-                    .catch((err) => {
-                      console.error('Import error.', err)
-                    })
-                }
-              })
+            if (githubRepoToLoad != null) {
+              // by setting GithubState.gitRepoToLoad, we trigger github-clone-overlay.tsx which will take over the clone flow
+              this.boundDispatch([
+                EditorActions.setGithubState({
+                  gitRepoToLoad: githubRepoToLoad,
+                }),
+              ])
+              // TODO somehow make it a compile error if we don't give the control over to the component
             } else if (importURL != null) {
               this.createNewProjectFromImportURL(importURL)
             } else {
-              this.storedState.persistence.createNew(emptyEditorState.projectName, defaultProject())
+              await this.storedState.persistence.createNew(
+                emptyEditorState.projectName,
+                defaultProject(),
+              )
             }
           } else {
             this.storedState.persistence.load(projectId)
@@ -634,6 +624,7 @@ export class Editor {
       logSelectorTimings('re-render phase')
     }
     Measure.printMeasurements()
+
     return result
   }
 

@@ -1,7 +1,9 @@
+import * as React from 'react'
 import { MODE } from '../common/server'
 import type { LoginState } from '../common/user'
 import type { EditorDispatch } from '../components/editor/action-types'
 import { setGithubState } from '../components/editor/actions/action-creators'
+import { useDispatch } from '../components/editor/store/dispatch-context'
 import { GithubEndpoints } from '../core/shared/github/endpoints'
 import { updateUserDetailsWhenAuthenticated } from '../core/shared/github/helpers'
 

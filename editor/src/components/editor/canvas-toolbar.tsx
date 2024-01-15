@@ -1,11 +1,11 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
+import { css, jsx } from '@emotion/react'
 import type { CSSObject } from '@emotion/react'
-import { jsx } from '@emotion/react'
 import React, { useState } from 'react'
 import type { TooltipProps } from '../../uuiui'
-import { Tile, UtopiaStyles } from '../../uuiui'
+import { Tile, UtopiaStyles, opacity } from '../../uuiui'
 import { UtopiaTheme } from '../../uuiui'
 import {
   colorTheme,
@@ -70,7 +70,7 @@ import {
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { RightMenuTab, floatingInsertMenuStateSwap } from './store/editor-state'
 import { useStatus } from '../../../liveblocks.config'
-import { useAllowedToEditProject } from './store/collaborative-editing'
+import { useAllowedToEditProject, useIsMyProject } from './store/collaborative-editing'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const PlayModeButtonTestId = 'canvas-toolbar-play-mode'
@@ -431,6 +431,8 @@ export const CanvasToolbar = React.memo(() => {
       : CommentModeButtonTestId('disconnected')
   const allowedToEdit = useAllowedToEditProject()
 
+  const isMyProject = useIsMyProject()
+
   return (
     <FlexColumn
       style={{ alignItems: 'start', justifySelf: 'center' }}
@@ -449,7 +451,8 @@ export const CanvasToolbar = React.memo(() => {
           pointerEvents: 'initial',
           display: 'flex',
           flexDirection: 'row',
-          padding: '0 8px',
+          alignItems: 'center',
+          padding: '0 6px 0 8px',
         }}
       >
         <Tooltip title='Edit' placement='bottom'>
@@ -543,6 +546,7 @@ export const CanvasToolbar = React.memo(() => {
           />
         </Tooltip>
         <ElementsOutsideVisibleAreaIndicator />
+        {unless(isMyProject, <ViewOnlyBadge />)}
       </div>
       {/* Edit Mode submenus */}
       {when(
@@ -824,5 +828,24 @@ const Separator = React.memo((props) => {
         backgroundColor: colorTheme.seperator.value,
       }}
     ></div>
+  )
+})
+
+const ViewOnlyBadge = React.memo((props) => {
+  return (
+    <FlexRow
+      style={{
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 'min-content',
+        marginLeft: 6,
+        padding: '4px 7px',
+        borderRadius: 6,
+        fontWeight: 500,
+        backgroundColor: colorTheme.primary30.value,
+      }}
+    >
+      View Only
+    </FlexRow>
   )
 })
