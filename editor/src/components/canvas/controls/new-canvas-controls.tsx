@@ -70,6 +70,7 @@ import { useIsMyProject } from '../../editor/store/collaborative-editing'
 import { useStatus } from '../../../../liveblocks.config'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { MultiplayerPresence } from '../multiplayer-presence'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -381,6 +382,8 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
 
   const roomStatus = useStatus()
 
+  const multiplayerActive = isFeatureEnabled('Multiplayer') && roomStatus === 'connected'
+
   const getResizeStatus = () => {
     const selectedViews = localSelectedViews
     if (textEditor != null || keysPressed['z']) {
@@ -585,7 +588,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
               </>,
             )}
             {when(
-              roomStatus === 'connected',
+              multiplayerActive,
               <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
                 <MultiplayerPresence />
               </MultiplayerWrapper>,
