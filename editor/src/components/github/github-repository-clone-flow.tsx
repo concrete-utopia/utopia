@@ -137,7 +137,7 @@ const GitClonePseudoElement = React.memo((props: { githubRepo: GithubRepoWithBra
   return null
 })
 
-const awaitLoadActionDispatchedByPersistenceMachine = (): Promise<{ projectId: string }> => {
+function awaitLoadActionDispatchedByPersistenceMachine(): Promise<{ projectId: string }> {
   invariant(
     PubSub.countSubscriptions(LoadActionsDispatched) === 0,
     'At this point, awaitLoadActionDispatchedByPersistenceMachine should have zero listeners',
