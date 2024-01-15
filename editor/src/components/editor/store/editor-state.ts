@@ -264,6 +264,7 @@ export function emptyUserConfiguration(): UserConfiguration {
 
 export interface GithubState {
   authenticated: boolean
+  gitRepoToLoad: GithubRepoWithBranch | null
 }
 
 export interface UserState extends UserConfiguration {
@@ -282,7 +283,7 @@ export interface GithubListBranches {
 export interface GithubLoadBranch {
   name: 'loadBranch'
   githubRepo: GithubRepo
-  branchName: string
+  branchName: string | null
 }
 
 export interface GithubLoadRepositories {
@@ -399,6 +400,7 @@ export const defaultUserState: UserState = {
   themeConfig: 'system',
   githubState: {
     authenticated: false,
+    gitRepoToLoad: null,
   },
 }
 
@@ -1163,6 +1165,8 @@ export interface GithubRepo {
   owner: string
   repository: string
 }
+
+export type GithubRepoWithBranch = GithubRepo & { branch: string | null }
 
 export function githubRepoFullName(repo: GithubRepo | null): string | null {
   if (repo == null) {
@@ -2967,8 +2971,13 @@ const defaultDependencies = Utils.mapArrayToDictionary(
 
 export const defaultIndexHtmlFilePath = 'public/index.html'
 
+export const EmptyPackageJson = {
+  name: 'utopia-project',
+  version: '0.1.0',
+}
+
 export const DefaultPackageJson = {
-  name: 'Utopia Project',
+  name: 'utopia-project',
   version: '0.1.0',
   utopia: {
     'main-ui': StoryboardFilePath.slice(1),

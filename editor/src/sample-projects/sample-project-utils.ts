@@ -3,6 +3,7 @@ import { contentsToTree } from '../components/assets'
 import type { PersistentModel } from '../components/editor/store/editor-state'
 import {
   DefaultPackageJson,
+  EmptyPackageJson,
   persistentModelForProjectContents,
   StoryboardFilePath,
 } from '../components/editor/store/editor-state'
@@ -21,6 +22,24 @@ import {
   textFileContents,
   unparsed,
 } from '../core/shared/project-file-types'
+
+export function totallyEmptyDefaultProject(): PersistentModel {
+  const projectContents: ProjectContents = {
+    '/package.json': textFile(
+      textFileContents(
+        JSON.stringify(EmptyPackageJson, null, 2),
+        unparsed,
+        RevisionsState.CodeAhead,
+      ),
+      null,
+      null,
+      0,
+    ),
+  }
+
+  let persistentModel = persistentModelForProjectContents(contentsToTree(projectContents))
+  return persistentModel
+}
 
 export function simpleDefaultProject(): PersistentModel {
   const projectContents: ProjectContents = {
