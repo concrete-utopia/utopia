@@ -1,20 +1,19 @@
 import React from 'react'
-import { LoginState, User } from '../../../uuiui-deps'
-
+import type { CSSProperties } from 'react'
 import { useColorTheme } from '../../styles/theme'
 
 interface AvatarProps {
   userPicture: string | null
   isLoggedIn: boolean
   size?: number
+  style?: CSSProperties
 }
 
 export const Avatar = React.memo((props: AvatarProps) => {
   const colorTheme = useColorTheme()
-  const size: string = (props.size ?? '24') + 'px'
 
   /* Make the user wish they'd never logged in with an avatar-providing service. */
-  /* Change these in   avatars.sketch and export from there */
+  /* Change these in avatars.sketch and export from there */
   const utopinoIndex = Math.round(Math.random() * 13)
   const anonyminoIndex = Math.round(Math.random() * 10)
 
@@ -43,10 +42,11 @@ export const Avatar = React.memo((props: AvatarProps) => {
         ...backgroundStyle,
         justifyContent: 'center',
         overflow: 'hidden',
-        width: size,
-        height: size,
-        borderRadius: size,
+        width: props.size ?? 25.5,
+        height: props.size ?? 25.5,
+        borderRadius: props.size ?? 25.5,
         backgroundColor: colorTheme.emphasizedBackground.value,
+        ...props.style,
       }}
     />
   )
