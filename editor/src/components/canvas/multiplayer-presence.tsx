@@ -17,6 +17,7 @@ import { mapDropNulls } from '../../core/shared/array-utils'
 import * as EP from '../../core/shared/element-path'
 import type { CanvasPoint } from '../../core/shared/math-utils'
 import {
+  canvasPoint,
   pointsEqual,
   scaleRect,
   windowPoint,
@@ -50,6 +51,7 @@ import { CanvasOffsetWrapper } from './controls/canvas-offset-wrapper'
 import { when } from '../../utils/react-conditionals'
 import { CommentIndicators } from './controls/comment-indicator'
 import { CommentPopup } from './controls/comment-popup'
+import { getSceneUnderPoint } from './controls/comment-mode/comment-mode-hooks'
 
 export const OtherUserPointer = (props: any) => {
   return (
@@ -226,6 +228,32 @@ const MultiplayerCursor = React.memo(
     )
     const color = multiplayerColorFromIndex(colorIndex)
 
+    const [isOverScene, setIsOverScene] = React.useState<boolean>(false)
+
+    const scenesRef = useRefEditorState((store) =>
+      MetadataUtils.getScenesMetadata(store.editor.jsxMetadata),
+    )
+
+    const timeoutHandle = React.useRef<ReturnType<typeof setTimeout> | null>(null)
+    React.useEffect(() => {
+      timeoutHandle.current = setTimeout(() => {
+        const isPointerOverScene =
+          // making a new canvasPoint here so that the memo array contains only primitive types
+          getSceneUnderPoint(canvasPoint({ x: position.x, y: position.y }), scenesRef.current) !=
+          null
+        setIsOverScene(isPointerOverScene)
+        timeoutHandle.current = null
+      }, 1000)
+
+      return () => {
+        if (timeoutHandle.current != null) {
+          clearTimeout(timeoutHandle.current)
+        }
+      }
+    }, [position.x, position.y, scenesRef])
+
+    const shouldShowGhostPointer = isOverScene && isOnAnotherRoute
+
     return (
       <CanvasOffsetWrapper setScaleToo={true}>
         <motion.div
@@ -239,7 +267,7 @@ const MultiplayerCursor = React.memo(
           }}
           style={{
             scale: canvasScale <= 1 ? 1 / canvasScale : 1,
-            opacity: isOnAnotherRoute ? 0.3 : 1,
+            opacity: shouldShowGhostPointer ? 0.3 : 1,
           }}
         >
           <div
