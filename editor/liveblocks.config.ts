@@ -41,6 +41,8 @@ export function initialPresence(): Presence {
   }
 }
 
+type SceneIdToRouteMapping = LiveObject<{ [sceneDataLabel: string]: string }>
+
 // Optionally, Storage represents the shared document that persists in the
 // Room, even after all users leave. Fields under Storage typically are
 // LiveList, LiveMap, LiveObject instances, for which updates are
@@ -50,6 +52,7 @@ export type Storage = {
   // ...
   collaborators: LiveObject<{ [userId: string]: User }> // this is an object (and not a list) so we can quickly check if a user is a collaborator, but later we can extend the information by storing something more than a boolean (e.g. a permission level)
   userReadStatusesByThread: LiveObject<{ [threadId: string]: UserReadStatuses }>
+  remixSceneRoutes: LiveObject<{ [userId: string]: SceneIdToRouteMapping }>
 }
 
 export type User = LiveObject<UserMeta>
@@ -61,6 +64,7 @@ export function initialStorage(): Storage {
   return {
     collaborators: new LiveObject(),
     userReadStatusesByThread: new LiveObject(),
+    remixSceneRoutes: new LiveObject(),
   }
 }
 
