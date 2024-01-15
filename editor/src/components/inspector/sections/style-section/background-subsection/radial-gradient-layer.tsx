@@ -26,6 +26,7 @@ import {
   PopupList,
   ChainedNumberInput,
 } from '../../../../../uuiui'
+import { usePermissions } from '../../../../editor/store/permissions'
 
 interface RadialGradientBackgroundLayerProps extends BackgroundLayerProps {
   value: CSSRadialGradientBackgroundLayer
@@ -58,6 +59,9 @@ export const RadialGradientBackgroundLayer = React.memo<RadialGradientBackground
     const [onRemoveRowSubmit] = props.useSubmitTransformedValuesFactory(
       getIndexedSpliceArrayItem<CSSBackgroundLayer | CSSUnknownArrayItem>(props.index),
     )
+
+    const perms = usePermissions()
+
     return (
       <InspectorContextMenuWrapper
         id={`background-layer-subsection-context-menu-row-${props.index}`}
@@ -99,6 +103,7 @@ export const RadialGradientBackgroundLayer = React.memo<RadialGradientBackground
           >
             <FlexRow style={{ alignItems: 'start' }} onMouseDown={stopPropagation}>
               <PopupList
+                permission={perms.edit ? 'edit' : 'view'}
                 value={{
                   value: radialGradientSelectOption.value,
                   label: radialGradientSelectOption.label,

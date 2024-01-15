@@ -19,6 +19,7 @@ import { PropertyLabel } from '../../../widgets/property-label'
 import { PopupList, useWrappedEmptyOrUnknownOnSubmitValue, NumberInput } from '../../../../../uuiui'
 import { useContextSelector } from 'use-context-selector'
 import type { FlexDirection } from '../../../common/css-utils'
+import { usePermissions } from '../../../../editor/store/permissions'
 
 type uglyLabel =
   | 'left'
@@ -170,6 +171,8 @@ export const FlexWrapControl = React.memo((props: FlexWrapControlProps) => {
     [onSubmit],
   )
 
+  const perms = usePermissions()
+
   return (
     <InspectorContextMenuWrapper
       id={`flexWrap-context-menu`}
@@ -182,6 +185,7 @@ export const FlexWrapControl = React.memo((props: FlexWrapControlProps) => {
       }}
     >
       <PopupList
+        permission={perms.edit ? 'edit' : 'view'}
         value={FlexWrapOptions.find((option) => option.value === props.value)}
         options={FlexWrapOptions}
         onSubmitValue={onSubmitValue}

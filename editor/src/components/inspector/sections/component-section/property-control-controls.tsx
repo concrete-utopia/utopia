@@ -55,6 +55,7 @@ import {
   normalisePathToUnderlyingTarget,
 } from '../../../custom-code/code-file'
 import { useDispatch } from '../../../editor/store/dispatch-context'
+import { usePermissions } from '../../../editor/store/permissions'
 
 export interface ControlForPropProps<T extends BaseControlDescription> {
   propPath: PropertyPath
@@ -207,8 +208,11 @@ export const PopUpListPropertyControl = React.memo(
       propMetadata.onSubmitValue(option.value)
     }
 
+    const perms = usePermissions()
+
     return (
       <PopupList
+        permission={perms.edit ? 'edit' : 'view'}
         disabled={!propMetadata.controlStyles.interactive}
         value={currentValue}
         onSubmitValue={submitValue}
@@ -288,8 +292,11 @@ export const ExpressionPopUpListPropertyControl = React.memo(
       [dispatch, baseOnSubmit, targetFilePaths, target, controlDescription.options],
     )
 
+    const perms = usePermissions()
+
     return (
       <PopupList
+        permission={perms.edit ? 'edit' : 'view'}
         disabled={!propMetadata.controlStyles.interactive}
         value={currentValue}
         onSubmitValue={submitValue}

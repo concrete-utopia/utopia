@@ -21,13 +21,6 @@ export type Permissions = {
   comment: boolean
 }
 
-export function defaultPermissions(): Permissions {
-  return {
-    edit: false,
-    comment: false,
-  }
-}
-
 function getPermissionsForRole(role: Role): Permissions {
   switch (role) {
     case 'owner':
@@ -55,8 +48,3 @@ export function usePermissions(): Permissions {
   }
   return getPermissionsForRole(myRole)
 }
-
-export const PermissionsContext = React.createContext<Permissions>({
-  edit: false,
-  comment: false,
-})

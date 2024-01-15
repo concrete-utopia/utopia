@@ -26,6 +26,7 @@ import {
   PopupList,
   ChainedNumberInput,
 } from '../../../../../uuiui'
+import { usePermissions } from '../../../../editor/store/permissions'
 
 interface ConicGradientBackgroundLayerProps extends BackgroundLayerProps {
   value: CSSConicGradientBackgroundLayer
@@ -58,6 +59,9 @@ export const ConicGradientBackgroundLayer = React.memo<ConicGradientBackgroundLa
     const [onRemoveRowSubmit] = props.useSubmitTransformedValuesFactory(
       getIndexedSpliceArrayItem<CSSBackgroundLayer | CSSUnknownArrayItem>(props.index),
     )
+
+    const perms = usePermissions()
+
     return (
       <InspectorContextMenuWrapper
         id={`background-layer-subsection-context-menu-row-${props.index}`}
@@ -99,6 +103,7 @@ export const ConicGradientBackgroundLayer = React.memo<ConicGradientBackgroundLa
           >
             <FlexRow style={{ alignItems: 'start' }} onMouseDown={stopPropagation}>
               <PopupList
+                permission={perms.edit ? 'edit' : 'view'}
                 value={{
                   value: conicGradientSelectOption.value,
                   label: conicGradientSelectOption.label,

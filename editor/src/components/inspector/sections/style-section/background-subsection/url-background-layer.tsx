@@ -27,6 +27,7 @@ import {
   getIndexedUpdateEnabled,
   imageSelectOption,
 } from './background-layer-helpers'
+import { usePermissions } from '../../../../editor/store/permissions'
 
 interface URLBackgroundLayerProps extends BackgroundLayerProps {
   value: CSSURLFunctionBackgroundLayer
@@ -74,6 +75,8 @@ export const URLBackgroundLayer = React.memo<URLBackgroundLayerProps>((props) =>
     getIndexedSpliceArrayItem<CSSBackgroundLayer | CSSUnknownArrayItem>(props.index),
   )
 
+  const perms = usePermissions()
+
   return (
     <InspectorContextMenuWrapper
       id={`background-layer-subsection-context-menu-row-${props.index}`}
@@ -114,6 +117,7 @@ export const URLBackgroundLayer = React.memo<URLBackgroundLayerProps>((props) =>
           variant='<-------1fr------>|----80px----|'
         >
           <PopupList
+            permission={perms.edit ? 'edit' : 'view'}
             value={imageSelectOption}
             options={backgroundLayerTypeSelectOptions}
             onSubmitValue={backgroundLayerType}

@@ -32,6 +32,7 @@ import type { UseSubmitTransformedValuesFactory } from '../sections/style-sectio
 import { MetadataControlsStyle } from '../sections/style-section/background-subsection/background-picker'
 import { KeywordControl } from './keyword-control'
 import { NO_OP } from '../../../core/shared/utils'
+import { usePermissions } from '../../editor/store/permissions'
 
 interface BGSizeMetadataControlProps {
   index: number
@@ -219,9 +220,13 @@ export const BGSizeMetadataControl: React.FunctionComponent<
     widthValue = bgSizeValue.value[0]
     heightValue = bgSizeValue.value[1] ?? widthValue
   }
+
+  const perms = usePermissions()
+
   return (
     <div style={MetadataControlsStyle}>
       <PopupList
+        permission={perms.edit ? 'edit' : 'view'}
         style={{ gridColumn: '1 / span 3' }}
         options={BGSizeKeywordValueSelectOptions}
         value={bgSizeValueToSelectOption(bgSizeValue)}

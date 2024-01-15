@@ -71,7 +71,6 @@ import { EditorModes } from './editor-modes'
 import { checkIsMyProject } from './store/collaborative-editing'
 import { useDataThemeAttributeOnBody } from '../../core/commenting/comment-hooks'
 import { CollaborationStateUpdater } from './store/collaboration-state'
-import { PermissionsContext, usePermissions } from './store/permissions'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -376,10 +375,8 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     'EditorComponentInner viewer mode',
   )
 
-  const perms = usePermissions()
-
   return (
-    <PermissionsContext.Provider value={perms}>
+    <>
       <ColorThemeComponent />
       <SimpleFlexRow
         className='editor-main-vertical-and-modals'
@@ -477,7 +474,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
         keyDown={onWindowKeyDown}
         keyUp={onWindowKeyUp}
       />
-    </PermissionsContext.Provider>
+    </>
   )
 })
 
