@@ -80,7 +80,6 @@ export const LinearGradientBackgroundLayer = React.memo<LinearGradientBackground
     )
 
     const enabled = props.value.enabled
-
     return (
       <InspectorContextMenuWrapper
         id={`background-layer-subsection-context-menu-row-${props.index}`}

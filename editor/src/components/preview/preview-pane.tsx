@@ -351,10 +351,15 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
             >
               <LargerIcons.MagnifyingGlassMinus />
             </SquareButton>
-            <ScaleDropdown
-              scale={this.state.scale}
+            <PopupList
+              style={{ minWidth: 56 }}
+              value={{
+                value: this.state.scale,
+                label: `${Math.round(this.state.scale * 100)}%`,
+              }}
               onSubmitValue={this.setSelectedValue}
               options={this.scaleDropdownOptions}
+              containerMode='noBorder'
             />
             <SquareButton
               highlight
@@ -400,25 +405,3 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
     )
   }
 }
-
-const ScaleDropdown = React.memo(
-  (props: {
-    scale: number
-    onSubmitValue: (option: SelectOption) => void
-    options: SelectOption[]
-  }) => {
-    return (
-      <PopupList
-        style={{ minWidth: 56 }}
-        value={{
-          value: props.scale,
-          label: `${Math.round(props.scale * 100)}%`,
-        }}
-        onSubmitValue={props.onSubmitValue}
-        options={props.options}
-        containerMode='noBorder'
-      />
-    )
-  },
-)
-ScaleDropdown.displayName = 'ScaleDropdown'

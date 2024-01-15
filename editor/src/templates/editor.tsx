@@ -110,7 +110,10 @@ import { waitUntil } from '../core/shared/promise-utils'
 import { sendSetVSCodeTheme } from '../core/vscode/vscode-bridge'
 import type { ElementPath } from '../core/shared/project-file-types'
 import { uniqBy } from '../core/shared/array-utils'
-import { updateUserDetailsWhenAuthenticated } from '../core/shared/github/helpers'
+import {
+  startGithubPolling,
+  updateUserDetailsWhenAuthenticated,
+} from '../core/shared/github/helpers'
 import { DispatchContext } from '../components/editor/store/dispatch-context'
 import {
   logSelectorTimings,
@@ -120,7 +123,11 @@ import { createPerformanceMeasure } from '../components/editor/store/editor-disp
 import { runDomWalkerAndSaveResults } from '../components/canvas/editor-dispatch-flow'
 import { simpleStringifyActions } from '../components/editor/actions/action-utils'
 import { unpatchedCreateRemixDerivedDataMemo } from '../components/editor/store/remix-derived-data'
-import { emptyProjectServerState } from '../components/editor/store/project-server-state'
+import {
+  emptyProjectServerState,
+  ProjectServerState,
+  ProjectServerStateUpdater,
+} from '../components/editor/store/project-server-state'
 import { GithubOperations } from '../core/shared/github/operations'
 import { GithubAuth } from '../utils/github-auth'
 import { Provider as JotaiProvider } from 'jotai'

@@ -219,7 +219,6 @@ export const BGSizeMetadataControl: React.FunctionComponent<
     widthValue = bgSizeValue.value[0]
     heightValue = bgSizeValue.value[1] ?? widthValue
   }
-
   return (
     <div style={MetadataControlsStyle}>
       <PopupList

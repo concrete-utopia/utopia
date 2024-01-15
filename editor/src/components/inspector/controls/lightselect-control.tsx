@@ -23,7 +23,6 @@ export const LightSelectControl: React.FunctionComponent<
     },
     [propsOnSubmitValue],
   )
-
   return (
     <FlexRow className={props.controlClassName} style={props.style}>
       <PopupList

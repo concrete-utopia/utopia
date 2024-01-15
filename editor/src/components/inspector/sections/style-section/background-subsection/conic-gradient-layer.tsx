@@ -58,7 +58,6 @@ export const ConicGradientBackgroundLayer = React.memo<ConicGradientBackgroundLa
     const [onRemoveRowSubmit] = props.useSubmitTransformedValuesFactory(
       getIndexedSpliceArrayItem<CSSBackgroundLayer | CSSUnknownArrayItem>(props.index),
     )
-
     return (
       <InspectorContextMenuWrapper
         id={`background-layer-subsection-context-menu-row-${props.index}`}
