@@ -13,6 +13,7 @@ import {
   generateUidWithExistingComponents,
   getIndexInParent,
   insertJSXElementChildren,
+  renameJsxElementChild,
 } from '../../../core/model/element-template-utils'
 import {
   applyToAllUIJSFiles,
@@ -74,7 +75,6 @@ import {
   modifiableAttributeIsAttributeValue,
   isJSExpression,
   isJSXMapExpression,
-  renameIfNeeded,
 } from '../../../core/shared/element-template'
 import type { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import {
@@ -2221,7 +2221,7 @@ export const UPDATE_FNS = {
 
         const { imports, duplicateNameMapping } = updatedImports
 
-        const renamedJsxElement = renameIfNeeded(action.jsxElement, duplicateNameMapping)
+        const renamedJsxElement = renameJsxElementChild(action.jsxElement, duplicateNameMapping)
 
         const withInsertedElement = insertJSXElementChildren(
           childInsertionPath(targetParent),
