@@ -13,6 +13,7 @@ import {
   jsxElement,
   jsxPropertyAssignment,
   setJSXAttributesAttribute,
+  jsxConditionalExpression,
 } from './element-template'
 
 describe('setJSXAttributesAttribute', () => {
