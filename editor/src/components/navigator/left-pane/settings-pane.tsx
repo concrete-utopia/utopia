@@ -42,6 +42,7 @@ import { saveUserPreferencesDefaultLayout } from '../../common/user-preferences'
 import { useGridPanelState } from '../../canvas/grid-panels-state'
 import { notice } from '../../common/notice'
 import { gridMenuDefaultPanels } from '../../canvas/stored-layout'
+import { usePermissions } from '../../editor/store/permissions'
 
 const themeOptions = [
   {
@@ -234,6 +235,8 @@ export const SettingsPane = React.memo(() => {
     dispatch([EditorActions.addToast(notice('Restored default panels layout.', 'SUCCESS'))])
   }, [dispatch, setPanelState])
 
+  const canEditProject = usePermissions().edit
+
   return (
     <FlexColumn
       id='leftPaneSettings'
@@ -269,7 +272,7 @@ export const SettingsPane = React.memo(() => {
         </UIGridRow>
         <UIGridRow padded variant='<---1fr--->|------172px-------|'>
           <span style={{ color: colorTheme.fg2.value }}>Name</span>
-          {userState.loginState.type !== 'LOGGED_IN' ? (
+          {!canEditProject ? (
             <span>{name}</span>
           ) : (
             <StringInput
@@ -284,7 +287,7 @@ export const SettingsPane = React.memo(() => {
         </UIGridRow>
         <UIGridRow padded variant='<---1fr--->|------172px-------|'>
           <span style={{ color: colorTheme.fg2.value }}> Description </span>
-          {userState.loginState.type !== 'LOGGED_IN' ? (
+          {!canEditProject ? (
             <span>{description}</span>
           ) : (
             <StringInput
