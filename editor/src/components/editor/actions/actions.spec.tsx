@@ -1001,7 +1001,11 @@ describe('UPDATE_FROM_WORKER', () => {
         versionNumberOfAppJS - 1,
       ),
     ])
-    const updatedEditorState = UPDATE_FNS.UPDATE_FROM_WORKER(updateToCheck, startingEditorState)
+    const updatedEditorState = UPDATE_FNS.UPDATE_FROM_WORKER(
+      updateToCheck,
+      startingEditorState,
+      defaultUserState,
+    )
 
     // Check that the model hasn't changed, because of the stale revised time.
     expect(updatedEditorState).toBe(startingEditorState)
@@ -1041,7 +1045,11 @@ describe('UPDATE_FROM_WORKER', () => {
         versionNumberOfAppJS + 1,
       ),
     ])
-    const updatedEditorState = UPDATE_FNS.UPDATE_FROM_WORKER(updateToCheck, startingEditorState)
+    const updatedEditorState = UPDATE_FNS.UPDATE_FROM_WORKER(
+      updateToCheck,
+      startingEditorState,
+      defaultUserState,
+    )
 
     // Get the same values that we started with but from the updated editor state.
     const updatedStoryboardVersionNumberFromState = unsafeGet(

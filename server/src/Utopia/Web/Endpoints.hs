@@ -682,6 +682,20 @@ getGithubBranchContentEndpoint cookie owner repository branchName possibleCommit
     then notModified
     else pure contentResponse
 
+getGithubDefaultBranchContentEndpoint :: Maybe Text -> Text -> Text -> Maybe Text -> Maybe Text -> ServerMonad GetBranchContentResponse
+getGithubDefaultBranchContentEndpoint cookie owner repository possibleCommitSha Nothing = requireUser cookie $ \sessionUser -> do
+  -- No previous commit SHA was supplied.
+  getDefaultBranchContent (view (field @"_id") sessionUser) owner repository possibleCommitSha Nothing
+getGithubDefaultBranchContentEndpoint cookie owner repository possibleCommitSha justPreviousCommitSha@(Just _) = requireUser cookie $ \sessionUser -> do
+  -- A previous commit SHA was supplied, which may mean we want to return a 304.
+  contentResponse <- getDefaultBranchContent (view (field @"_id") sessionUser) owner repository possibleCommitSha justPreviousCommitSha
+  -- Check the previous commit SHA against the newly returned content.
+  let possibleNewCommitSha = firstOf (_Ctor @"GetBranchContentResponseSuccess" . field @"branch" . _Just . field @"originCommit") contentResponse
+  -- Return a 304 if the commits match.
+  if possibleNewCommitSha == justPreviousCommitSha
+    then notModified
+    else pure contentResponse
+
 getGithubUsersRepositoriesEndpoint :: Maybe Text -> ServerMonad GetUsersPublicRepositoriesResponse
 getGithubUsersRepositoriesEndpoint cookie = requireUser cookie $ \sessionUser -> do
   getUsersRepositories (view (field @"_id") sessionUser)
@@ -735,6 +749,7 @@ protected authCookie = logoutPage authCookie
                   :<|> githubSaveEndpoint authCookie
                   :<|> getGithubBranchesEndpoint authCookie
                   :<|> getGithubBranchContentEndpoint authCookie
+                  :<|> getGithubDefaultBranchContentEndpoint authCookie
                   :<|> getGithubBranchPullRequestEndpoint authCookie
                   :<|> getGithubUsersRepositoriesEndpoint authCookie
                   :<|> saveGithubAssetEndpoint authCookie

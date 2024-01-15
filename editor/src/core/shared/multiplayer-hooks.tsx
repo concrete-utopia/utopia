@@ -37,3 +37,11 @@ export function useMyUserId(): string | null {
   )
   return myUserId
 }
+
+export function useIsLoggedIn(): boolean {
+  return useEditorState(
+    Substores.restOfStore,
+    (store) => isLoggedIn(store.userState.loginState),
+    'useIsLoggedIn',
+  )
+}
