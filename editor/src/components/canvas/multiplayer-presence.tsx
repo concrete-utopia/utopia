@@ -8,6 +8,7 @@ import {
   useOthersListener,
   useRoom,
   useSelf,
+  useStatus,
   useStorage,
   useUpdateMyPresence,
 } from '../../../liveblocks.config'
@@ -27,6 +28,7 @@ import {
   isPlayerOnAnotherRemixRoute,
   multiplayerColorFromIndex,
   normalizeOthersList,
+  useIsOnSameRemixRoute,
 } from '../../core/shared/multiplayer'
 import { assertNever } from '../../core/shared/utils'
 import { UtopiaStyles, useColorTheme } from '../../uuiui'
@@ -52,6 +54,7 @@ import { when } from '../../utils/react-conditionals'
 import { CommentIndicators } from './controls/comment-indicator'
 import { CommentPopup } from './controls/comment-popup'
 import { getSceneUnderPoint } from './controls/comment-mode/comment-mode-hooks'
+import { getRemixSceneDataLabel } from './remix/remix-utils'
 
 export const OtherUserPointer = (props: any) => {
   return (
@@ -159,7 +162,6 @@ const MultiplayerCursors = React.memo(() => {
       userInfo: getCollaborator(collabs, p),
     }))
   })
-  const myRemixPresence = me.presence.remix ?? null
 
   const canvasScale = useEditorState(
     Substores.canvas,
@@ -178,10 +180,6 @@ const MultiplayerCursors = React.memo(() => {
       }}
     >
       {others.map((other) => {
-        const isOnAnotherRoute = isPlayerOnAnotherRemixRoute(
-          myRemixPresence,
-          other.presenceInfo.presence.remix ?? null,
-        )
         if (
           other.presenceInfo.presence.cursor == null ||
           other.presenceInfo.presence.canvasOffset == null ||
@@ -200,7 +198,7 @@ const MultiplayerCursors = React.memo(() => {
             name={other.userInfo.name}
             colorIndex={other.userInfo.colorIndex}
             position={position}
-            isOnAnotherRoute={isOnAnotherRoute}
+            userId={other.userInfo.id}
           />
         )
       })}
@@ -214,12 +212,12 @@ const MultiplayerCursor = React.memo(
     name,
     colorIndex,
     position,
-    isOnAnotherRoute,
+    userId,
   }: {
     name: string | null
     colorIndex: number | null
     position: CanvasPoint
-    isOnAnotherRoute: boolean
+    userId: string
   }) => {
     const canvasScale = useEditorState(
       Substores.canvasOffset,
@@ -228,21 +226,30 @@ const MultiplayerCursor = React.memo(
     )
     const color = multiplayerColorFromIndex(colorIndex)
 
-    const [isOverScene, setIsOverScene] = React.useState<boolean>(false)
+    const [shouldShowGhostPointer, setShouldShowGhostPointer] = React.useState<boolean>(false)
 
     const scenesRef = useRefEditorState((store) =>
       MetadataUtils.getScenesMetadata(store.editor.jsxMetadata),
     )
 
+    const isOnSameRemixRoute = useIsOnSameRemixRoute()
+
     const timeoutHandle = React.useRef<ReturnType<typeof setTimeout> | null>(null)
     React.useEffect(() => {
       timeoutHandle.current = setTimeout(() => {
-        const isPointerOverScene =
-          // making a new canvasPoint here so that the memo array contains only primitive types
-          getSceneUnderPoint(canvasPoint({ x: position.x, y: position.y }), scenesRef.current) !=
-          null
-        setIsOverScene(isPointerOverScene)
         timeoutHandle.current = null
+        const instance =
+          // making a new canvasPoint here so that the memo array contains only primitive types
+          getSceneUnderPoint(canvasPoint({ x: position.x, y: position.y }), scenesRef.current)
+        const dataLabel = getRemixSceneDataLabel(instance)
+
+        if (instance == null || dataLabel == null) {
+          setShouldShowGhostPointer(false)
+        } else {
+          setShouldShowGhostPointer(
+            !isOnSameRemixRoute({ otherUserId: userId, remixSceneDataLabel: dataLabel }),
+          )
+        }
       }, 1000)
 
       return () => {
@@ -250,9 +257,7 @@ const MultiplayerCursor = React.memo(
           clearTimeout(timeoutHandle.current)
         }
       }
-    }, [position.x, position.y, scenesRef])
-
-    const shouldShowGhostPointer = isOverScene && isOnAnotherRoute
+    }, [isOnSameRemixRoute, position.x, position.y, scenesRef, userId])
 
     return (
       <CanvasOffsetWrapper setScaleToo={true}>

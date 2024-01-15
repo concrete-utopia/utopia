@@ -18,7 +18,8 @@ import { useAtom } from 'jotai'
 import { RemixNavigationAtom } from '../../remix/utopia-remix-root-component'
 import { matchRoutes } from 'react-router'
 import { unless } from '../../../../utils/react-conditionals'
-import { getRemixLocationLabel } from '../../remix/remix-utils'
+import { getRemixLocationLabel, getRemixSceneDataLabel } from '../../remix/remix-utils'
+import { useUpdateRemixSceneRouteInLiveblocks } from '../../../../core/shared/multiplayer'
 
 export const RemixSceneLabelPathTestId = (path: ElementPath): string =>
   `${EP.toString(path)}-remix-scene-label-path`
@@ -93,7 +94,22 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
 
   const [navigationData] = useAtom(RemixNavigationAtom)
 
+  const sceneDataLabelRef = useRefEditorState((store) =>
+    getRemixSceneDataLabel(store.editor.jsxMetadata[EP.toString(props.target)]),
+  )
+
+  const updateRemixScenePathInLiveblocks = useUpdateRemixSceneRouteInLiveblocks()
   const currentPath = (navigationData[EP.toString(props.target)] ?? null)?.location.pathname
+  React.useEffect(() => {
+    if (sceneDataLabelRef.current == null || currentPath == null) {
+      return
+    }
+
+    updateRemixScenePathInLiveblocks({
+      sceneDataLabel: sceneDataLabelRef.current,
+      location: currentPath,
+    })
+  }, [currentPath, sceneDataLabelRef, updateRemixScenePathInLiveblocks])
 
   const pathLabel = getRemixLocationLabel(currentPath)
 
