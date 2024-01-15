@@ -1,3 +1,4 @@
+import { useIsLoggedIn } from '../../../core/shared/multiplayer-hooks'
 import { useIsMyProject } from './collaborative-editing'
 
 export type Permissions = {
@@ -10,6 +11,6 @@ export type Permissions = {
 export function usePermissions(): Permissions {
   return {
     edit: useIsMyProject(),
-    comment: true, // this is a placeholder
+    comment: useIsLoggedIn(),
   }
 }
