@@ -340,6 +340,7 @@ export const SettingsPane = React.memo(() => {
               options={themeOptions}
               onSubmitValue={handleSubmitValueTheme}
               style={{ width: 150 }}
+              permissions={{ edit: true }}
             />
           </UIGridRow>
           <UIGridRow

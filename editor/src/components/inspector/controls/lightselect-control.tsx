@@ -5,7 +5,6 @@ import React from 'react'
 import { FlexRow, PopupList } from '../../../uuiui'
 import type { DEPRECATEDControlProps } from './control'
 import type { SelectOption } from './select-control'
-import { usePermissions } from '../../editor/store/permissions'
 
 // TODO stronger type for this control
 export const LightSelectControl: React.FunctionComponent<
@@ -25,12 +24,10 @@ export const LightSelectControl: React.FunctionComponent<
     [propsOnSubmitValue],
   )
 
-  const perms = usePermissions()
-
   return (
     <FlexRow className={props.controlClassName} style={props.style}>
       <PopupList
-        disabled={!props.controlStyles.interactive || !perms.edit}
+        disabled={!props.controlStyles.interactive}
         value={mixed ? { value: props.value, label: 'mixed' } : { value: props.value, label }}
         onSubmitValue={onSubmitValue}
         options={options}

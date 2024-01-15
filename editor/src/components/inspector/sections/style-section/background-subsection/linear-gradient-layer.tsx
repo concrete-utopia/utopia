@@ -32,7 +32,6 @@ import {
   PopupList,
   NumberInput,
 } from '../../../../../uuiui'
-import { usePermissions } from '../../../../editor/store/permissions'
 
 export function getIndexedUpdateCSSBackgroundLayerLinearGradientAngle(index: number) {
   return function updateCSSBackgroundLayersLinearGradientAngle(
@@ -81,7 +80,6 @@ export const LinearGradientBackgroundLayer = React.memo<LinearGradientBackground
     )
 
     const enabled = props.value.enabled
-    const perms = usePermissions()
 
     return (
       <InspectorContextMenuWrapper
@@ -129,7 +127,6 @@ export const LinearGradientBackgroundLayer = React.memo<LinearGradientBackground
                 onSubmitValue={backgroundLayerType}
                 controlStyles={props.controlStyles}
                 containerMode='default'
-                disabled={!perms.edit}
               />
             </FlexRow>
             <NumberInput

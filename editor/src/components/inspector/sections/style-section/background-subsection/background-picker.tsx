@@ -74,7 +74,6 @@ import { getIndexedUpdateCSSBackgroundLayerLinearGradientAngle } from './linear-
 import { PickerImagePreview } from './picker-image-preview'
 import { setProp_UNSAFE } from '../../../../editor/actions/action-creators'
 import { useIsMyProject } from '../../../../editor/store/collaborative-editing'
-import { usePermissions } from '../../../../editor/store/permissions'
 
 const backgroundLayerOptionsByValue: {
   [key in CSSBackgroundLayerType]: CSSBackgroundLayerTypeSelectOption
@@ -549,8 +548,6 @@ export const BackgroundPicker: React.FunctionComponent<
 
   const isMyProject = useIsMyProject()
 
-  const perms = usePermissions()
-
   return (
     <InspectorModal
       offsetX={props.offsetX - colorPickerWidth}
@@ -592,7 +589,6 @@ export const BackgroundPicker: React.FunctionComponent<
               options={backgroundLayerTypeSelectOptions}
               onSubmitValue={onSubmitBackgroundLayerType}
               containerMode='noBorder'
-              disabled={!perms.edit}
             />
           </div>
           {isCSSBackgroundImageLayer(props.value) ? <Icons.Gear onClick={toggleSettings} /> : null}

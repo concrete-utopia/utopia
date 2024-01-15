@@ -86,7 +86,6 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { getFilePathForImportedComponent } from '../../../../core/model/project-file-utils'
 import { safeIndex } from '../../../../core/shared/array-utils'
 import { useDispatch } from '../../../editor/store/dispatch-context'
-import { usePermissions } from '../../../editor/store/permissions'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -702,8 +701,6 @@ const RowForUnionControl = React.memo((props: RowForUnionControlProps) => {
 
   const simpleControlStyles = getControlStyles('simple')
 
-  const perms = usePermissions()
-
   const label = React.useMemo(
     () => (
       <PopupList
@@ -719,10 +716,9 @@ const RowForUnionControl = React.memo((props: RowForUnionControlProps) => {
           maxWidth: '100%',
           overflow: 'hidden',
         }}
-        disabled={!perms.edit}
       />
     ),
-    [controlToUse, labelOptions, onLabelChangeValue, simpleControlStyles, title, perms],
+    [controlToUse, labelOptions, onLabelChangeValue, simpleControlStyles, title],
   )
 
   const labelAsRenderProp = React.useCallback(() => label, [label])

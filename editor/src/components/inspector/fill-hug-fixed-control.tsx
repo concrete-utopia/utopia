@@ -67,7 +67,6 @@ import { executeFirstApplicableStrategy } from './inspector-strategies/inspector
 import type { GridRowVariant } from './widgets/ui-grid-row'
 import { UIGridRow } from './widgets/ui-grid-row'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
-import { usePermissions } from '../editor/store/permissions'
 
 export const FillFixedHugControlId = (segment: 'width' | 'height'): string =>
   `hug-fixed-fill-${segment}`
@@ -284,8 +283,6 @@ export const FixedHugDropdown = React.memo((props: { dimension: 'width' | 'heigh
 
   const onSubmitFixedFillHugType = useOnSubmitFixedFillHugType(dimension)
 
-  const perms = usePermissions()
-
   return (
     <PopupList
       id={getFixedHugDropdownId(dimension)}
@@ -293,7 +290,6 @@ export const FixedHugDropdown = React.memo((props: { dimension: 'width' | 'heigh
       options={fixedHugFillOptions}
       onSubmitValue={onSubmitFixedFillHugType}
       controlStyles={getControlStyles(currentValue.controlStatus)}
-      disabled={!perms.edit}
     />
   )
 })
@@ -365,8 +361,6 @@ export const GroupConstraintSelect = React.memo(
       [dispatch, editorRef, dimension],
     )
 
-    const perms = usePermissions()
-
     return (
       <PopupList
         id={`group-child-resize-${dimension}`}
@@ -382,7 +376,6 @@ export const GroupConstraintSelect = React.memo(
           ...getControlStyles('simple'),
           mainColor: mainColor,
         }}
-        disabled={!perms.edit}
       />
     )
   },

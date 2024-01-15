@@ -29,7 +29,6 @@ import {
   UIRow,
 } from '../../uuiui'
 import { setBranchNameFromURL } from '../../utils/branches'
-import { usePermissions } from '../editor/store/permissions'
 
 export const PreviewIframeId = 'preview-column-container'
 
@@ -408,7 +407,6 @@ const ScaleDropdown = React.memo(
     onSubmitValue: (option: SelectOption) => void
     options: SelectOption[]
   }) => {
-    const perms = usePermissions()
     return (
       <PopupList
         style={{ minWidth: 56 }}
@@ -419,7 +417,6 @@ const ScaleDropdown = React.memo(
         onSubmitValue={props.onSubmitValue}
         options={props.options}
         containerMode='noBorder'
-        disabled={!perms.edit}
       />
     )
   },

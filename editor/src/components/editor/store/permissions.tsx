@@ -1,3 +1,4 @@
+import React from 'react'
 import { assertNever } from '../../../core/shared/utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { useIsMyProject } from './collaborative-editing'
@@ -18,6 +19,13 @@ export type Permissions = {
   edit: boolean
   // add comments
   comment: boolean
+}
+
+export function defaultPermissions(): Permissions {
+  return {
+    edit: false,
+    comment: false,
+  }
 }
 
 function getPermissionsForRole(role: Role): Permissions {
@@ -47,3 +55,8 @@ export function usePermissions(): Permissions {
   }
   return getPermissionsForRole(myRole)
 }
+
+export const PermissionsContext = React.createContext<Permissions>({
+  edit: false,
+  comment: false,
+})

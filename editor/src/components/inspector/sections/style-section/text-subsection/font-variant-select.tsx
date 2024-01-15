@@ -23,7 +23,6 @@ import {
   useInspectorInfo,
   useInspectorStyleInfo,
 } from '../../../common/property-path-hooks'
-import { usePermissions } from '../../../../editor/store/permissions'
 
 const weightAndStylePaths: Array<'fontWeight' | 'fontStyle'> = ['fontWeight', 'fontStyle']
 
@@ -136,8 +135,6 @@ export const FontVariantSelect = React.memo(() => {
       v.value.fontVariant.webFontWeight === value.fontWeight,
   )
 
-  const perms = usePermissions()
-
   return (
     <InspectorContextMenuWrapper
       id='fontWeightAndStyle-context-menu'
@@ -152,7 +149,6 @@ export const FontVariantSelect = React.memo(() => {
           value={selectValue}
           options={fontWeightAndStyleOptions}
           controlStyles={controlStyles}
-          disabled={!perms.edit}
         />
       </Tooltip>
     </InspectorContextMenuWrapper>

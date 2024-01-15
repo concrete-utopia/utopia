@@ -13,7 +13,6 @@ import { getComponentGroupsAsSelectOptions } from '../../../components/shared/pr
 import { usePossiblyResolvedPackageDependencies } from '../../../components/editor/npm-dependency/npm-dependency'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { usePermissions } from '../../editor/store/permissions'
 
 export const RenderAsRow = React.memo(() => {
   const dispatch = useDispatch()
@@ -117,8 +116,6 @@ export const RenderAsRow = React.memo(() => {
     return undefined
   }, [insertableComponents, selectedElementName])
 
-  const perms = usePermissions()
-
   return (
     <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
       <span
@@ -132,7 +129,6 @@ export const RenderAsRow = React.memo(() => {
       </span>
       {insertableComponents.length > 0 ? (
         <PopupList
-          disabled={!perms.edit}
           value={currentInsertableComponent}
           onSubmitValue={onSelect}
           options={insertableComponents}
