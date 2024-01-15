@@ -4,6 +4,7 @@ import React from 'react'
 import { FlexRow, UtopiaTheme } from '../../../uuiui'
 import type { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './control'
 import { useIsMyProject } from '../../editor/store/collaborative-editing'
+import { useControlsDisabledInSubtree } from '../../../uuiui/utilities/disable-subtree'
 
 export interface DEPRECATEDSliderControlOptions extends DEPRECATEDGenericControlOptions {
   minimum: number
@@ -102,7 +103,8 @@ export const SliderControl: React.FunctionComponent<React.PropsWithChildren<Slid
     }
   }
 
-  const isMyProject = useIsMyProject()
+  const controlsDisabled = useControlsDisabledInSubtree()
+  const disabled = !props.controlStyles.interactive || controlsDisabled
 
   return (
     <FlexRow
@@ -118,7 +120,7 @@ export const SliderControl: React.FunctionComponent<React.PropsWithChildren<Slid
       onContextMenu={props.onContextMenu}
     >
       <Slider
-        disabled={!props.controlStyles.interactive || !isMyProject}
+        disabled={disabled}
         value={isSliding ? slidingValue : value}
         onBeforeChange={handleBeforeChange}
         onChange={handleDragging}

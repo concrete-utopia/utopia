@@ -74,6 +74,7 @@ import { getIndexedUpdateCSSBackgroundLayerLinearGradientAngle } from './linear-
 import { PickerImagePreview } from './picker-image-preview'
 import { setProp_UNSAFE } from '../../../../editor/actions/action-creators'
 import { useIsMyProject } from '../../../../editor/store/collaborative-editing'
+import { useControlsDisabledInSubtree } from '../../../../../uuiui/utilities/disable-subtree'
 
 const backgroundLayerOptionsByValue: {
   [key in CSSBackgroundLayerType]: CSSBackgroundLayerTypeSelectOption
@@ -546,7 +547,8 @@ export const BackgroundPicker: React.FunctionComponent<
     }
   })()
 
-  const isMyProject = useIsMyProject()
+  const controlsDisabled = useControlsDisabledInSubtree()
+  const disabled = controlsDisabled
 
   return (
     <InspectorModal
@@ -634,7 +636,7 @@ export const BackgroundPicker: React.FunctionComponent<
                   offsetY={props.offsetY}
                   id={props.id}
                   testId={props.testId}
-                  disabled={!isMyProject}
+                  disabled={disabled}
                 />
               ) : (
                 <ColorPickerInner
@@ -645,7 +647,7 @@ export const BackgroundPicker: React.FunctionComponent<
                   offsetY={props.offsetY}
                   id={props.id}
                   testId={props.testId}
-                  disabled={!isMyProject}
+                  disabled={disabled}
                 />
               )
             ) : null}

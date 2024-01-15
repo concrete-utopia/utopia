@@ -11,6 +11,7 @@ import { preventDefault, stopPropagation } from '../../components/inspector/comm
 import { useColorTheme } from '../styles/theme'
 import { InspectorInputEmotionStyle, getControlStylesAwarePlaceholder } from './base-input'
 import { useIsMyProject } from '../../components/editor/store/collaborative-editing'
+import { useControlsDisabledInSubtree } from '../utilities/disable-subtree'
 
 interface StringInputOptions {
   focusOnMount?: boolean
@@ -51,10 +52,9 @@ export const StringInput = React.memo(
         }
       }, [focusOnMount, ref])
 
-      const isMyProject = useIsMyProject()
-
       const controlStyles: ControlStyles = getControlStyles(controlStatus)
-      const disabled = !controlStyles.interactive || !isMyProject
+      const controlsDisabled = useControlsDisabledInSubtree()
+      const disabled = !controlStyles.interactive || controlsDisabled
 
       const inputPropsKeyDown = inputProps.onKeyDown
 
