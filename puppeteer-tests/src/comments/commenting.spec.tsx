@@ -1,13 +1,14 @@
 import { setupBrowser, wait } from '../utils'
 import type { Browser } from 'puppeteer'
 import {
-  TIMEOUT,
   enterCommentMode,
   initBrowserTest,
   initSignedInBrowserTest,
   placeCommentOnCanvas,
 } from './comment-utils'
 import { createUtopiaPuppeteerBrowser } from './test-utils'
+
+const TIMEOUT = 120001
 
 describe('Comments test', () => {
   let utopiaBrowser = createUtopiaPuppeteerBrowser()
