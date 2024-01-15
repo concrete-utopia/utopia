@@ -31,14 +31,14 @@ import {
 import { CommentWrapper, MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import type { Theme } from '../../../uuiui'
 import { UtopiaStyles, colorTheme } from '../../../uuiui'
-import { isCommentMode, isExistingComment } from '../../editor/editor-modes'
+import { EditorModes, isCommentMode, isExistingComment } from '../../editor/editor-modes'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { AvatarPicture } from '../../user-bar'
 import { canvasPointToWindowPoint } from '../dom-lookup'
 import { useRemixNavigationContext } from '../remix/utopia-remix-root-component'
 import { optionalMap } from '../../../core/shared/optional-utils'
-import { setRightMenuTab } from '../../editor/actions/action-creators'
+import { setRightMenuTab, switchEditorMode } from '../../editor/actions/action-creators'
 import { RightMenuTab } from '../../editor/store/editor-state'
 import { when } from '../../../utils/react-conditionals'
 import { CommentRepliesCounter } from './comment-replies-counter'
@@ -483,6 +483,7 @@ function useDragging(
   const [didDrag, setDidDrag] = React.useState(false)
 
   const canvasScaleRef = useRefEditorState((store) => store.editor.canvas.scale)
+  const dispatch = useDispatch()
 
   const onMouseDown = React.useCallback(
     (event: React.MouseEvent) => {
@@ -499,6 +500,8 @@ function useDragging(
         draggedPastThreshold ||= distance(mouseDownPoint, mouseMovePoint) > COMMENT_DRAG_THRESHOLD
 
         if (draggedPastThreshold) {
+          dispatch([switchEditorMode(EditorModes.commentMode(null, 'dragging'))])
+
           setDidDrag(true)
           const dragVectorWindow = pointDifference(mouseDownPoint, mouseMovePoint)
           const dragVectorCanvas = canvasPoint({
@@ -518,6 +521,8 @@ function useDragging(
         const mouseUpPoint = windowPoint({ x: upEvent.clientX, y: upEvent.clientY })
 
         if (draggedPastThreshold) {
+          dispatch([switchEditorMode(EditorModes.commentMode(null, 'not-dragging'))])
+
           const dragVectorWindow = pointDifference(mouseDownPoint, mouseUpPoint)
           const dragVectorCanvas = canvasPoint({
             x: dragVectorWindow.x / canvasScaleRef.current,
@@ -543,6 +548,7 @@ function useDragging(
       originalLocation,
       thread.metadata,
       draggingCallback,
+      dispatch,
     ],
   )
 
