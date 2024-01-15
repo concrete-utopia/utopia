@@ -6,17 +6,10 @@ export function useControlsDisabledInSubtree() {
   return React.useContext(ControlsDisabledContext)
 }
 
-export const DisableControlsInSubtree = (props: React.PropsWithChildren<unknown>) => {
+export const DisableControlsInSubtree = (props: React.PropsWithChildren<{ disable: boolean }>) => {
+  const { disable } = props
   return (
-    <ControlsDisabledContext.Provider value={true}>
-      {props.children}
-    </ControlsDisabledContext.Provider>
-  )
-}
-
-export const EnableControlsInSubtree = (props: React.PropsWithChildren<unknown>) => {
-  return (
-    <ControlsDisabledContext.Provider value={false}>
+    <ControlsDisabledContext.Provider value={disable}>
       {props.children}
     </ControlsDisabledContext.Provider>
   )
