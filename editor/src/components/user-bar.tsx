@@ -62,10 +62,8 @@ const SinglePlayerUserBar = React.memo(() => {
   const url = window.location.href
   const handleCopyToClipboard = React.useCallback(async () => {
     try {
-      let actions: EditorAction[] = []
-      actions.push(showToast(notice('Project link copied to clipboard!', 'NOTICE', false)))
       await window.navigator.clipboard.writeText(url)
-      dispatch(actions)
+      dispatch([showToast(notice('Project link copied to clipboard!', 'NOTICE', false))])
     } catch (error) {
       console.error('Error copying to clipboard:', error)
     }
