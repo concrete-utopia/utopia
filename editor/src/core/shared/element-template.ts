@@ -10,7 +10,7 @@ import type {
   MaybeInfinityCanvasRectangle,
   MaybeInfinityLocalRectangle,
 } from './math-utils'
-import { LocalRectangle, zeroCanvasRect } from './math-utils'
+import { zeroCanvasRect } from './math-utils'
 import type { Either } from './either'
 import { isRight } from './either'
 import { v4 as UUID } from 'uuid'
@@ -19,8 +19,8 @@ import * as PP from './property-path'
 import type { Sides, LayoutSystem } from 'utopia-api/core'
 import { sides } from 'utopia-api/core'
 import { assertNever, fastForEach, unknownObjectProperty } from './utils'
-import { addAllUniquely, mapDropNulls, reverse } from './array-utils'
-import { mapValues, objectMap } from './object-utils'
+import { addAllUniquely, mapDropNulls } from './array-utils'
+import { objectMap } from './object-utils'
 import type { CSSPosition, FlexDirection } from '../../components/inspector/common/css-utils'
 import type { ModifiableAttribute } from './jsx-attributes'
 import { jsxSimpleAttributeToValue } from './jsx-attributes'
@@ -31,7 +31,6 @@ import type { MapLike } from 'typescript'
 import { forceNotNull } from './optional-utils'
 import type { FlexAlignment, FlexJustifyContent } from '../../components/inspector/inspector-common'
 import { allComments } from './comment-flags'
-import { is } from './equality-utils'
 
 export interface ParsedComments {
   leadingComments: Array<Comment>
@@ -1323,6 +1322,11 @@ export type JSXElementChild =
   | JSXTextBlock
   | JSXFragment
   | JSXConditionalExpression
+
+export type JSXElementChildWithoutUID =
+  | JSXElementWithoutUID
+  | JSXConditionalExpressionWithoutUID
+  | JSXFragmentWithoutUID
 
 export function canBeRootElementOfComponent(element: JSXElementChild): boolean {
   if (isJSXElement(element) || isJSXFragment(element) || isJSXConditionalExpression(element)) {
