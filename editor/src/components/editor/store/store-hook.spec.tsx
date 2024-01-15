@@ -29,6 +29,7 @@ const initialEditorStore: EditorStorePatched = {
     loginState: notLoggedIn,
     githubState: {
       authenticated: false,
+      gitRepoToLoad: null,
     },
   },
   workers: null as any,

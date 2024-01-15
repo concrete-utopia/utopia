@@ -66,11 +66,11 @@ import { isLiveblocksEnabled } from './liveblocks-utils'
 import type { Storage, Presence, RoomEvent, UserMeta } from '../../../liveblocks.config'
 import LiveblocksProvider from '@liveblocks/yjs'
 import { isRoomId, projectIdToRoomId } from '../../core/shared/multiplayer'
-import { useDisplayOwnershipWarning } from './project-owner-hooks'
 import { EditorModes } from './editor-modes'
 import { checkIsMyProject } from './store/collaborative-editing'
 import { useDataThemeAttributeOnBody } from '../../core/commenting/comment-hooks'
 import { CollaborationStateUpdater } from './store/collaboration-state'
+import { GithubRepositoryCloneFlow } from '../github/github-repository-clone-flow'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -159,7 +159,17 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
       }
     }, 0)
   }, [mode.type, dispatch])
-  useDisplayOwnershipWarning()
+
+  const onBeforeUnload = React.useCallback(
+    (event: BeforeUnloadEvent) => {
+      if (mode.type === 'live') {
+        // Catch and check unintended navigation when the user is in live mode
+        event.preventDefault()
+        event.returnValue = ''
+      }
+    },
+    [mode.type],
+  )
 
   const onWindowKeyDown = React.useCallback(
     (event: KeyboardEvent) => {
@@ -274,18 +284,13 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
   React.useEffect(() => {
     window.addEventListener('contextmenu', preventDefault)
     window.addEventListener('mousedown', inputBlurForce, true)
+    window.addEventListener('beforeunload', onBeforeUnload)
     return function cleanup() {
       window.removeEventListener('contextmenu', preventDefault)
       window.removeEventListener('mousedown', inputBlurForce, true)
+      window.addEventListener('beforeunload', onBeforeUnload)
     }
-  }, [
-    onWindowMouseDown,
-    onWindowMouseUp,
-    onWindowKeyDown,
-    onWindowKeyUp,
-    preventDefault,
-    inputBlurForce,
-  ])
+  }, [onBeforeUnload, preventDefault, inputBlurForce])
 
   const projectName = useEditorState(
     Substores.restOfEditor,
@@ -466,6 +471,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
           </SimpleFlexRow>
         </SimpleFlexColumn>
         <ModalComponent />
+        <GithubRepositoryCloneFlow />
         <LockedOverlay />
       </SimpleFlexRow>
       <EditorCommon

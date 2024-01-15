@@ -3,6 +3,7 @@ import type { Browser } from 'puppeteer'
 import {
   TIMEOUT,
   enterCommentMode,
+  initBrowserTest,
   initSignedInBrowserTest,
   placeCommentOnCanvas,
 } from './comment-utils'
@@ -141,5 +142,25 @@ describe('Comments test', () => {
       expect(commentIndicators).toHaveLength(1)
     },
     TIMEOUT,
-  )
+  ),
+    it(
+      'There is a comment tab when logged in',
+      async () => {
+        const page = await initSignedInBrowserTest(utopiaBrowser)
+
+        const commentTabs = await page.waitForSelector('div[data-testid="comments-tab"]')
+        expect(commentTabs).not.toBeNull()
+      },
+      TIMEOUT,
+    ),
+    it(
+      'There is no comment tab when logged out',
+      async () => {
+        const page = await initBrowserTest(utopiaBrowser)
+
+        const commentsTabs = await page.$$('div[data-testid="comments-tab"]')
+        expect(commentsTabs).toHaveLength(0)
+      },
+      TIMEOUT,
+    )
 })

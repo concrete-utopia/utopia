@@ -7,7 +7,7 @@ import { updateProjectServerState } from '../actions/action-creators'
 import { checkProjectOwned } from '../persistence/persistence-backend'
 import type { ProjectOwnership } from '../persistence/generic/persistence-types'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { claimControlOverProject, displayControlErrorToast } from './collaborative-editing'
+import { CollaborationEndpoints } from '../collaborative-endpoints'
 
 export interface ProjectMetadataFromServer {
   title: string
@@ -101,12 +101,12 @@ export async function getProjectServerState(
     const ownership = await getOwnership()
 
     const holderOfTheBaton = ownership.isOwner
-      ? await claimControlOverProject(projectId)
+      ? await CollaborationEndpoints.claimControlOverProject(projectId)
           .then((result) => {
             return result ?? ownership.isOwner
           })
           .catch(() => {
-            displayControlErrorToast(
+            CollaborationEndpoints.displayControlErrorToast(
               dispatch,
               'Error while attempting to claim control over this project.',
             )

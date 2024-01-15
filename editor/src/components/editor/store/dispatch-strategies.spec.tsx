@@ -100,6 +100,7 @@ function createEditorStore(
       themeConfig: 'light',
       githubState: {
         authenticated: false,
+        gitRepoToLoad: null,
       },
     },
     workers: new UtopiaTsWorkersImplementation(
