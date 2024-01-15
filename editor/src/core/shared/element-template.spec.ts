@@ -10,7 +10,6 @@ import {
   jsxAttributesEntry,
   jsxAttributesSpread,
   jsExpressionValue,
-  jsxElement,
   jsxPropertyAssignment,
   setJSXAttributesAttribute,
 } from './element-template'

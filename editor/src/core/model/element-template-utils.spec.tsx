@@ -51,6 +51,8 @@ import {
   jsxTextBlock,
   utopiaJSXComponent,
   JSXAttributes,
+  jsxConditionalExpression,
+  jsxFragment,
 } from '../shared/element-template'
 import {
   fromArrayIndex,
@@ -73,6 +75,7 @@ import {
   insertJSXElementChildren,
   rearrangeJsxChildren,
   removeJSXElementChild,
+  renameJsxElementChild,
   transformJSXComponentAtPath,
 } from './element-template-utils'
 import { FOR_TESTS_setNextGeneratedUids } from './element-template-utils.test-utils'
@@ -1952,5 +1955,58 @@ describe('transformJSXComponentAtPath', () => {
     expect(updatedElement.children).toHaveLength(1)
     expect(updatedElement.children[0].type).toEqual('JSX_TEXT_BLOCK')
     expect((updatedElement.children[0] as JSXTextBlock).text).toEqual('hello')
+  })
+})
+
+describe('renameJSXElementChild', () => {
+  it('should rename a simple element', () => {
+    const jsxElementToRename = jsxElement('Flex', 'flex-1', [], [])
+    const expected = jsxElement('Flex2', 'flex-1', [], [])
+    const actual = renameJsxElementChild(jsxElementToRename, new Map([['Flex', 'Flex2']]))
+    expect(actual).toEqual(expected)
+  })
+
+  it('should rename a nested element', () => {
+    const jsxElementToRename = jsxElement(
+      'Flex',
+      'flex-1',
+      [],
+      [jsxElement('Flex', 'flex-2', [], [])],
+    )
+    const expected = jsxElement('Flex2', 'flex-1', [], [jsxElement('Flex2', 'flex-2', [], [])])
+    const actual = renameJsxElementChild(jsxElementToRename, new Map([['Flex', 'Flex2']]))
+    expect(actual).toEqual(expected)
+  })
+
+  it('should rename an element inside a conditional', () => {
+    const jsxConditionalToRename = jsxConditionalExpression(
+      'cond-1',
+      jsExpressionValue('true', emptyComments, 'x'),
+      'true',
+      jsxElement('View', 'view-1', [], []),
+      jsxElement('Flex', 'flex-2', [], []),
+      emptyComments,
+    )
+    const expected = jsxConditionalExpression(
+      'cond-1',
+      jsExpressionValue('true', emptyComments, 'x'),
+      'true',
+      jsxElement('View', 'view-1', [], []),
+      jsxElement('Flex2', 'flex-2', [], []),
+      emptyComments,
+    )
+    const actual = renameJsxElementChild(jsxConditionalToRename, new Map([['Flex', 'Flex2']]))
+    expect(actual).toEqual(expected)
+  })
+
+  it('should rename an element inside a fragment', () => {
+    const jsxFragmentToRename = jsxFragment(
+      'fragment-1',
+      [jsxElement('Flex', 'flex-1', [], [])],
+      true,
+    )
+    const expected = jsxFragment('fragment-1', [jsxElement('Flex2', 'flex-1', [], [])], true)
+    const actual = renameJsxElementChild(jsxFragmentToRename, new Map([['Flex', 'Flex2']]))
+    expect(actual).toEqual(expected)
   })
 })

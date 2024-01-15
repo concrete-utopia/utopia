@@ -1,5 +1,8 @@
 import { includeToastPatch } from '../../../components/editor/actions/toast-helpers'
-import { insertJSXElementChildren } from '../../../core/model/element-template-utils'
+import {
+  insertJSXElementChildren,
+  renameJsxElementChild,
+} from '../../../core/model/element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import * as EP from '../../../core/shared/element-path'
 import { optionalMap } from '../../../core/shared/optional-utils'
@@ -11,7 +14,7 @@ import { forUnderlyingTargetFromEditorState } from '../../editor/store/editor-st
 import type { InsertionPath } from '../../editor/store/insertion-path'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 import { getPatchForComponentChange } from './commands'
-import { renameIfNeeded, type JSXElement } from '../../../core/shared/element-template'
+import { type JSXElement } from '../../../core/shared/element-template'
 
 export interface InsertElementInsertionSubject extends BaseCommand {
   type: 'INSERT_ELEMENT_INSERTION_SUBJECT'
@@ -50,7 +53,7 @@ export const runInsertElementInsertionSubject: CommandFunction<InsertElementInse
 
       const updatedImports = mergeImports(underlyingFilePath, success.imports, subject.importsToAdd)
 
-      subjectElement = renameIfNeeded(subject.element, updatedImports.duplicateNameMapping)
+      subjectElement = renameJsxElementChild(subject.element, updatedImports.duplicateNameMapping)
 
       const insertionResult = insertJSXElementChildren(
         insertionPath,

@@ -20,7 +20,7 @@ import type { Sides, LayoutSystem } from 'utopia-api/core'
 import { sides } from 'utopia-api/core'
 import { assertNever, fastForEach, unknownObjectProperty } from './utils'
 import { addAllUniquely, mapDropNulls, reverse } from './array-utils'
-import { objectMap } from './object-utils'
+import { mapValues, objectMap } from './object-utils'
 import type { CSSPosition, FlexDirection } from '../../components/inspector/common/css-utils'
 import type { ModifiableAttribute } from './jsx-attributes'
 import { jsxSimpleAttributeToValue } from './jsx-attributes'
@@ -31,6 +31,7 @@ import type { MapLike } from 'typescript'
 import { forceNotNull } from './optional-utils'
 import type { FlexAlignment, FlexJustifyContent } from '../../components/inspector/inspector-common'
 import { allComments } from './comment-flags'
+import { is } from './equality-utils'
 
 export interface ParsedComments {
   leadingComments: Array<Comment>
@@ -2324,29 +2325,4 @@ export function getElementsByUIDFromTopLevelElements(
     }
   })
   return result
-}
-
-export function renameIfNeeded(
-  element: JSXElement,
-  duplicateNameMapping: Map<string, string>,
-): JSXElement {
-  const newElementName = duplicateNameMapping.get(element.name.baseVariable)
-  if (newElementName != null) {
-    return {
-      ...element,
-      name: {
-        ...element.name,
-        baseVariable: newElementName,
-      },
-      children: element.children.map((child) => {
-        if (isJSXElement(child)) {
-          return renameIfNeeded(child, duplicateNameMapping)
-        } else {
-          return child
-        }
-      }),
-    }
-  } else {
-    return element
-  }
 }
