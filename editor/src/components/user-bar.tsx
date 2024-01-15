@@ -1,5 +1,8 @@
-import type { CSSProperties } from 'react'
+/** @jsxRuntime classic */
+/** @jsx jsx */
 import React from 'react'
+import { css, jsx } from '@emotion/react'
+import type { CSSProperties } from 'react'
 import { useOthers, useStatus, useStorage } from '../../liveblocks.config'
 import { getUserPicture, isLoggedIn } from '../common/user'
 import { getCollaborator, useMyUserAndPresence } from '../core/commenting/comment-hooks'
@@ -53,7 +56,19 @@ export const UserBar = React.memo(() => {
 })
 UserBar.displayName = 'UserBar'
 
-export const SinglePlayerUserBar = React.memo(() => {
+const SinglePlayerUserBar = React.memo(() => {
+  const dispatch = useDispatch()
+
+  const url = window.location.href
+  const handleCopyToClipboard = React.useCallback(async () => {
+    try {
+      await window.navigator.clipboard.writeText(url)
+      dispatch([showToast(notice('Project link copied to clipboard!', 'NOTICE', false))])
+    } catch (error) {
+      console.error('Error copying to clipboard:', error)
+    }
+  }, [dispatch, url])
+
   const userPicture = useEditorState(
     Substores.userState,
     (store) => getUserPicture(store.userState.loginState),
@@ -62,22 +77,51 @@ export const SinglePlayerUserBar = React.memo(() => {
   const isMyProject = useIsMyProject()
 
   return (
-    <div
-      style={{
-        width: 24,
-        height: 24,
-        position: 'relative',
+    <FlexRow
+      onClick={handleCopyToClipboard}
+      css={{
+        background: colorTheme.primary30.value,
+        borderRadius: 26,
+        height: 26,
+        padding: 2,
+        border: `1px solid ${colorTheme.transparent.value}`,
+        transition: 'all .1s ease-in-out',
+        '&:hover': {
+          background: colorTheme.primary25.value,
+        },
+        '&:active': {
+          border: `1px solid ${colorTheme.primary30.value}`,
+        },
       }}
     >
-      <Avatar userPicture={userPicture} isLoggedIn={true} />
+      <Avatar
+        userPicture={userPicture}
+        isLoggedIn={true}
+        size={22}
+        style={{ outline: 'undefined' }}
+      />
       {isMyProject ? <OwnerBadge /> : null}
-    </div>
+      <div style={{ padding: '0 8px 0 5px', fontWeight: 500 }}>Share</div>
+    </FlexRow>
   )
 })
 SinglePlayerUserBar.displayName = 'SinglePlayerUserBar'
 
 const MultiplayerUserBar = React.memo(() => {
   const dispatch = useDispatch()
+
+  const url = window.location.href
+  const handleCopyToClipboard = React.useCallback(async () => {
+    try {
+      let actions: EditorAction[] = []
+      actions.push(showToast(notice('Project link copied to clipboard!', 'NOTICE', false)))
+      await window.navigator.clipboard.writeText(url)
+      dispatch(actions)
+    } catch (error) {
+      console.error('Error copying to clipboard:', error)
+    }
+  }, [dispatch, url])
+
   const collabs = useStorage((store) => store.collaborators)
 
   const { user: myUser, presence: myPresence } = useMyUserAndPresence()
@@ -217,12 +261,33 @@ const MultiplayerUserBar = React.memo(() => {
           )
         }),
       )}
-      <MultiplayerAvatar
-        name={multiplayerInitialsFromName(myUser.name)}
-        color={multiplayerColorFromIndex(myUser.colorIndex)}
-        picture={myUser.avatar}
-        isOwner={amIOwner}
-      />
+      <FlexRow
+        onClick={handleCopyToClipboard}
+        css={{
+          background: colorTheme.primary30.value,
+          borderRadius: 26,
+          height: 26,
+          padding: 2,
+          border: `1px solid ${colorTheme.transparent.value}`,
+          transition: 'all .1s ease-in-out',
+          '&:hover': {
+            background: colorTheme.primary25.value,
+          },
+          '&:active': {
+            border: `1px solid ${colorTheme.primary30.value}`,
+          },
+        }}
+      >
+        <MultiplayerAvatar
+          name={multiplayerInitialsFromName(myUser.name)}
+          color={multiplayerColorFromIndex(myUser.colorIndex)}
+          picture={myUser.avatar}
+          isOwner={amIOwner}
+          size={22}
+          style={{ outline: 'undefined' }}
+        />
+        <div style={{ padding: '0 8px 0 5px', fontWeight: 500 }}>Share</div>
+      </FlexRow>
     </div>
   )
 })
@@ -252,11 +317,11 @@ export const MultiplayerAvatar = React.memo((props: MultiplayerAvatarProps) => {
     props.follower === true ? ' following you' : props.isOffline ? ' offline' : ''
 
   const tooltipWithLineBreak = (
-    <>
+    <div>
       {tooltipText}
       {<br />}
       {tooltipSubtext}
-    </>
+    </div>
   )
 
   return (
@@ -269,8 +334,8 @@ export const MultiplayerAvatar = React.memo((props: MultiplayerAvatarProps) => {
     >
       <div
         style={{
-          width: props.size ?? 24,
-          height: props.size ?? 24,
+          width: props.size ?? 25.5,
+          height: props.size ?? 25.5,
           backgroundColor: props.isOffline ? colorTheme.bg4.value : props.color.background,
           color: props.isOffline ? colorTheme.fg2.value : props.color.foreground,
           display: 'flex',
@@ -286,11 +351,17 @@ export const MultiplayerAvatar = React.memo((props: MultiplayerAvatarProps) => {
             props.isBeingFollowed === true
               ? `0px 0px 8px ${colorTheme.dynamicBlue.value}`
               : undefined,
+
           ...props.style,
         }}
         onClick={props.onClick}
       >
-        <AvatarPicture url={picture} size={24} initials={props.name} isOffline={props.isOffline} />
+        <AvatarPicture
+          url={picture}
+          size={props.size ?? 25.5}
+          initials={props.name}
+          isOffline={props.isOffline}
+        />
         {props.isOwner ? <OwnerBadge /> : null}
         {props.follower ? <FollowerBadge /> : null}
       </div>
