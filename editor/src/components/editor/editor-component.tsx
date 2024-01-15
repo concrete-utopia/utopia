@@ -160,6 +160,17 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     }, 0)
   }, [mode.type, dispatch])
 
+  const onBeforeUnload = React.useCallback(
+    (event: BeforeUnloadEvent) => {
+      if (mode.type === 'live') {
+        // Catch and check unintended navigation when the user is in live mode
+        event.preventDefault()
+        event.returnValue = ''
+      }
+    },
+    [mode.type],
+  )
+
   const onWindowKeyDown = React.useCallback(
     (event: KeyboardEvent) => {
       let actions: Array<EditorAction> = []
@@ -273,18 +284,13 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
   React.useEffect(() => {
     window.addEventListener('contextmenu', preventDefault)
     window.addEventListener('mousedown', inputBlurForce, true)
+    window.addEventListener('beforeunload', onBeforeUnload)
     return function cleanup() {
       window.removeEventListener('contextmenu', preventDefault)
       window.removeEventListener('mousedown', inputBlurForce, true)
+      window.addEventListener('beforeunload', onBeforeUnload)
     }
-  }, [
-    onWindowMouseDown,
-    onWindowMouseUp,
-    onWindowKeyDown,
-    onWindowKeyUp,
-    preventDefault,
-    inputBlurForce,
-  ])
+  }, [onBeforeUnload, preventDefault, inputBlurForce])
 
   const projectName = useEditorState(
     Substores.restOfEditor,
