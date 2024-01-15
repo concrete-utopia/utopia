@@ -10,10 +10,8 @@ import {
   jsxAttributesEntry,
   jsxAttributesSpread,
   jsExpressionValue,
-  jsxElement,
   jsxPropertyAssignment,
   setJSXAttributesAttribute,
-  jsxConditionalExpression,
 } from './element-template'
 
 describe('setJSXAttributesAttribute', () => {
