@@ -1,7 +1,14 @@
-import type { CommentData, ThreadData, User } from '@liveblocks/client'
-import type { Presence, ThreadMetadata, UserMeta } from '../../../liveblocks.config'
+import { LiveObject, type CommentData, type ThreadData, type User } from '@liveblocks/client'
+import {
+  useMutation,
+  type Presence,
+  type ThreadMetadata,
+  type UserMeta,
+  useSelf,
+  useStorage,
+} from '../../../liveblocks.config'
 import { possiblyUniqueInArray, safeIndex, stripNulls, uniqBy } from './array-utils'
-import { colorTheme, getPreferredColorScheme } from '../../uuiui'
+import { colorTheme } from '../../uuiui'
 import type { ElementPath } from './project-file-types'
 import {
   setHighlightedView,
@@ -174,4 +181,35 @@ export function sortThreadsByDescendingUpdateTimeInPlace(
   }
 
   threads.sort((t1, t2) => lastModificationDate(t2).getTime() - lastModificationDate(t1).getTime())
+}
+
+export function useUpdateRemixSceneRouteInLiveblocks() {
+  return useMutation(({ storage, self }, params: { sceneDataLabel: string; location: string }) => {
+    const sceneRoutes = storage.get('remixSceneRoutes')
+    const mySceneRoutes = sceneRoutes.get(self.id)
+    if (mySceneRoutes == null) {
+      const myNewSceneRoutes = new LiveObject({ [params.sceneDataLabel]: params.location })
+      sceneRoutes.set(self.id, myNewSceneRoutes)
+    } else {
+      mySceneRoutes.set(params.sceneDataLabel, params.location)
+    }
+  }, [])
+}
+
+export function useIsOnSameRemixRoute() {
+  const { id } = useSelf()
+  const remixSceneRoutes = useStorage((store) => store.remixSceneRoutes)
+
+  return (params: { otherUserId: string; remixSceneDataLabel: string }): boolean => {
+    const remixScenePathForMe: string | null =
+      remixSceneRoutes[id]?.[params.remixSceneDataLabel] ?? null
+    const remixScenePathForOther: string | null =
+      remixSceneRoutes[params.otherUserId]?.[params.remixSceneDataLabel] ?? null
+
+    if (remixScenePathForMe == null || remixScenePathForOther == null) {
+      return true
+    }
+
+    return remixScenePathForMe === remixScenePathForOther
+  }
 }
