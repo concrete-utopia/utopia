@@ -207,6 +207,43 @@ const MultiplayerCursors = React.memo(() => {
 })
 MultiplayerCursors.displayName = 'MultiplayerCursors'
 
+function useGhostPointerState(position: CanvasPoint, userId: string) {
+  const [shouldShowGhostPointer, setShouldShowGhostPointer] = React.useState<boolean>(false)
+
+  const scenesRef = useRefEditorState((store) =>
+    MetadataUtils.getScenesMetadata(store.editor.jsxMetadata),
+  )
+
+  const isOnSameRemixRoute = useIsOnSameRemixRoute()
+
+  const timeoutHandle = React.useRef<ReturnType<typeof setTimeout> | null>(null)
+  React.useEffect(() => {
+    timeoutHandle.current = setTimeout(() => {
+      timeoutHandle.current = null
+      const instance =
+        // making a new canvasPoint here so that the memo array contains only primitive types
+        getSceneUnderPoint(canvasPoint({ x: position.x, y: position.y }), scenesRef.current)
+      const dataLabel = getRemixSceneDataLabel(instance)
+
+      if (instance == null || dataLabel == null) {
+        setShouldShowGhostPointer(false)
+      } else {
+        setShouldShowGhostPointer(
+          !isOnSameRemixRoute({ otherUserId: userId, remixSceneDataLabel: dataLabel }),
+        )
+      }
+    }, 1000)
+
+    return () => {
+      if (timeoutHandle.current != null) {
+        clearTimeout(timeoutHandle.current)
+      }
+    }
+  }, [isOnSameRemixRoute, position.x, position.y, scenesRef, userId])
+
+  return shouldShowGhostPointer
+}
+
 const MultiplayerCursor = React.memo(
   ({
     name,
@@ -226,38 +263,7 @@ const MultiplayerCursor = React.memo(
     )
     const color = multiplayerColorFromIndex(colorIndex)
 
-    const [shouldShowGhostPointer, setShouldShowGhostPointer] = React.useState<boolean>(false)
-
-    const scenesRef = useRefEditorState((store) =>
-      MetadataUtils.getScenesMetadata(store.editor.jsxMetadata),
-    )
-
-    const isOnSameRemixRoute = useIsOnSameRemixRoute()
-
-    const timeoutHandle = React.useRef<ReturnType<typeof setTimeout> | null>(null)
-    React.useEffect(() => {
-      timeoutHandle.current = setTimeout(() => {
-        timeoutHandle.current = null
-        const instance =
-          // making a new canvasPoint here so that the memo array contains only primitive types
-          getSceneUnderPoint(canvasPoint({ x: position.x, y: position.y }), scenesRef.current)
-        const dataLabel = getRemixSceneDataLabel(instance)
-
-        if (instance == null || dataLabel == null) {
-          setShouldShowGhostPointer(false)
-        } else {
-          setShouldShowGhostPointer(
-            !isOnSameRemixRoute({ otherUserId: userId, remixSceneDataLabel: dataLabel }),
-          )
-        }
-      }, 1000)
-
-      return () => {
-        if (timeoutHandle.current != null) {
-          clearTimeout(timeoutHandle.current)
-        }
-      }
-    }, [isOnSameRemixRoute, position.x, position.y, scenesRef, userId])
+    const shouldShowGhostPointer = useGhostPointerState(position, userId)
 
     return (
       <CanvasOffsetWrapper setScaleToo={true}>
