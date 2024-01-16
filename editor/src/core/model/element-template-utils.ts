@@ -45,6 +45,7 @@ import {
   JSXConditionalExpression,
   isJSExpression,
   ArbitraryJSBlock,
+  hasElementsWithin,
 } from '../shared/element-template'
 import type {
   StaticElementPathPart,
@@ -86,6 +87,7 @@ import { isNullJSXAttributeValue } from '../shared/element-template'
 import { getAllUniqueUids } from './get-unique-ids'
 import type { ElementPathTrees } from '../shared/element-path-tree'
 import { MetadataUtils } from './element-metadata-utils'
+import { mapValues } from '../shared/object-utils'
 
 export function generateUidWithExistingComponents(projectContents: ProjectContentTreeRoot): string {
   const mockUID = generateMockNextGeneratedUID()
@@ -1201,4 +1203,47 @@ export function findPathToJSXElementChild(
     default:
       assertNever(element)
   }
+}
+
+export function renameJsxElementChild<T extends JSXElementChild>(
+  element: T,
+  duplicateNameMapping: Map<string, string>,
+): T {
+  if (isJSXElement(element)) {
+    const newElementName = duplicateNameMapping.get(element.name.baseVariable)
+    if (newElementName != null) {
+      return {
+        ...element,
+        name: {
+          ...element.name,
+          baseVariable: newElementName,
+        },
+        children: element.children.map((child) => {
+          return renameJsxElementChild(child, duplicateNameMapping)
+        }),
+      }
+    }
+  } else if (isJSXFragment(element)) {
+    return {
+      ...element,
+      children: element.children.map((child) => {
+        return renameJsxElementChild(child, duplicateNameMapping)
+      }),
+    }
+  } else if (isJSXConditionalExpression(element)) {
+    return {
+      ...element,
+      whenTrue: renameJsxElementChild(element.whenTrue, duplicateNameMapping),
+      whenFalse: renameJsxElementChild(element.whenFalse, duplicateNameMapping),
+    }
+  } else if (isJSExpression(element) && hasElementsWithin(element)) {
+    return {
+      ...element,
+      elementsWithin: mapValues(
+        (child) => renameJsxElementChild(child, duplicateNameMapping),
+        element.elementsWithin,
+      ),
+    }
+  }
+  return element
 }
