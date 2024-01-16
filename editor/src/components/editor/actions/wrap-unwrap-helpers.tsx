@@ -12,6 +12,7 @@ import {
 import {
   generateUidWithExistingComponents,
   insertJSXElementChildren,
+  renameJsxElementChild,
   transformJSXComponentAtPath,
 } from '../../../core/model/element-template-utils'
 import {
@@ -515,13 +516,22 @@ function insertElementIntoJSXConditional(
         },
       )
 
+      const { imports, duplicateNameMapping } = mergeImports(
+        underlyingFilePath,
+        success.imports,
+        importsToAdd,
+      )
+      const renamedUpdatedComponents = updatedComponents.map((component) => {
+        return {
+          ...component,
+          rootElement: renameJsxElementChild(component.rootElement, duplicateNameMapping),
+        }
+      })
+
       const updatedTopLevelElements = applyUtopiaJSXComponentsChanges(
         success.topLevelElements,
-        updatedComponents,
+        renamedUpdatedComponents,
       )
-
-      // TODO handle duplicate name mapping
-      const { imports } = mergeImports(underlyingFilePath, success.imports, importsToAdd)
 
       return {
         ...success,
@@ -562,13 +572,23 @@ function insertConditionalIntoConditionalClause(
         },
       )
 
-      const updatedTopLevelElements = applyUtopiaJSXComponentsChanges(
-        success.topLevelElements,
-        updatedComponents,
+      const { imports, duplicateNameMapping } = mergeImports(
+        underlyingFilePath,
+        success.imports,
+        importsToAdd,
       )
 
-      // TODO handle duplicate name mapping
-      const { imports } = mergeImports(underlyingFilePath, success.imports, importsToAdd)
+      const renamedUpdatedComponents = updatedComponents.map((component) => {
+        return {
+          ...component,
+          rootElement: renameJsxElementChild(component.rootElement, duplicateNameMapping),
+        }
+      })
+
+      const updatedTopLevelElements = applyUtopiaJSXComponentsChanges(
+        success.topLevelElements,
+        renamedUpdatedComponents,
+      )
 
       return {
         ...success,
