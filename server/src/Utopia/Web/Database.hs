@@ -115,6 +115,11 @@ createLocalDatabasePool = do
   let connectInfo = defaultConnectInfo { connectUser = username, connectDatabase = "utopia" }
   createDatabasePoolFromConnection $ connect connectInfo
 
+getDatabaseMetrics :: IO DatabaseMetrics
+getDatabaseMetrics = do
+  store <- newStore
+  createDatabaseMetrics store
+
 createRemoteDatabasePool :: String -> IO DBPool
 createRemoteDatabasePool connectionString = createDatabasePoolFromConnection $ connectPostgreSQL $ encodeUtf8 $ toS connectionString
 
@@ -463,9 +468,13 @@ collaborationLastSeenTimeoutWindow = secondsToNominalDiffTime 20
 sameOwner :: FieldNullable SqlText -> Text -> Field SqlBool
 sameOwner rowPossibleOwnerId ownerId = matchNullable (toFields True) (.== toFields ownerId) rowPossibleOwnerId
 
+sameProject :: Field SqlText -> Text -> Field SqlBool
+sameProject rowProjectId projectId =
+  rowProjectId .== toFields projectId
+
 sameProjectAndOwner :: Field SqlText -> FieldNullable SqlText -> Text -> Text -> Field SqlBool
 sameProjectAndOwner rowProjectId rowPossibleOwnerId projectId ownerId =
-  rowProjectId .== toFields projectId .&& sameOwner rowPossibleOwnerId ownerId
+  sameProject rowProjectId projectId .&& sameOwner rowPossibleOwnerId ownerId
 
 updateCollaborationLastSeenTimeout :: Connection -> Text -> Text -> Text -> UTCTime -> IO ()
 updateCollaborationLastSeenTimeout connection ownerId projectId newCollaborationEditor newLastSeenTimeout = do
@@ -476,8 +485,9 @@ updateCollaborationLastSeenTimeout connection ownerId projectId newCollaboration
                                , uReturning = rCount
                                }
 
-maybeClaimExistingCollaborationControl :: Connection -> Text -> Text -> Text -> Text -> UTCTime -> UTCTime -> IO Bool
-maybeClaimExistingCollaborationControl connection ownerId projectId currentCollaborationEditor newCollaborationEditor currentLastSeenTimeout currentTime
+maybeClaimExistingCollaborationControl :: Connection -> Text -> Maybe Text -> Text -> Text -> Text -> UTCTime -> UTCTime -> IO Bool
+maybeClaimExistingCollaborationControl connection ownerId currentPossibleOwnerId projectId currentCollaborationEditor newCollaborationEditor currentLastSeenTimeout currentTime
+  | Just ownerId /= currentPossibleOwnerId && isJust currentPossibleOwnerId && currentLastSeenTimeout >= currentTime= pure False
   | currentCollaborationEditor == newCollaborationEditor = updateLastSeen
   | currentLastSeenTimeout < currentTime                 = updateLastSeen
   | otherwise                                            = pure False
@@ -485,16 +495,16 @@ maybeClaimExistingCollaborationControl connection ownerId projectId currentColla
     newTimeout = addUTCTime collaborationLastSeenTimeoutWindow currentTime
     updateLastSeen = updateCollaborationLastSeenTimeout connection ownerId projectId newCollaborationEditor newTimeout >> pure True
 
-maybeClaimCollaborationControl :: DatabaseMetrics -> DBPool -> Text -> Text -> Text -> IO Bool
-maybeClaimCollaborationControl metrics pool ownerId projectId collaborationEditor = do
-  currentTime <- getCurrentTime
+maybeClaimCollaborationControl :: DatabaseMetrics -> DBPool -> IO UTCTime -> Text -> Text -> Text -> IO Bool
+maybeClaimCollaborationControl metrics pool getTime ownerId projectId collaborationEditor = do
+  currentTime <- getTime
   invokeAndMeasure (_maybeClaimCollaborationControlMetrics metrics) $ usePool pool $ \connection -> do
     withTransaction connection $ do
       -- Find any existing entries (should only be one).
       collaborationEditorIdsWithLastSeen <- runSelect connection $ do
         (rowProjectId, rowCollaborationEditor, rowLastSeenTimeout, rowPossibleOwnerId) <- projectCollaborationSelect
-        where_ $ sameProjectAndOwner rowProjectId rowPossibleOwnerId projectId ownerId
-        pure (rowCollaborationEditor, rowLastSeenTimeout)
+        where_ $ sameProject rowProjectId projectId
+        pure (rowCollaborationEditor, rowLastSeenTimeout, rowPossibleOwnerId)
       -- Get the first if there is one.
       let maybeCurrentCollaborationEditorAndLastSeen = listToMaybe collaborationEditorIdsWithLastSeen
       -- Create the expression that inserts an entry and returns true to indicate this was successfully claimed.
@@ -505,12 +515,12 @@ maybeClaimCollaborationControl metrics pool ownerId projectId collaborationEdito
         Nothing -> insertCurrent
         -- If the current entry is the same as the one we're trying to insert return true, otherwise
         -- return false but in either case make no changes to the database.
-        Just (currentCollaborationEditor, currentLastSeenTimeout) ->
-          maybeClaimExistingCollaborationControl connection ownerId projectId currentCollaborationEditor collaborationEditor currentLastSeenTimeout currentTime
+        Just (currentCollaborationEditor, currentLastSeenTimeout, currentPossibleOwnerId) ->
+          maybeClaimExistingCollaborationControl connection ownerId currentPossibleOwnerId projectId currentCollaborationEditor collaborationEditor currentLastSeenTimeout currentTime
 
-forceClaimCollaborationControl :: DatabaseMetrics -> DBPool -> Text -> Text -> Text -> IO ()
-forceClaimCollaborationControl metrics pool ownerId projectId collaborationEditor = do
-  currentTime <- getCurrentTime
+forceClaimCollaborationControl :: DatabaseMetrics -> DBPool -> IO UTCTime -> Text -> Text -> Text -> IO ()
+forceClaimCollaborationControl metrics pool getTime ownerId projectId collaborationEditor = do
+  currentTime <- getTime
   invokeAndMeasure (_forceClaimCollaborationControlMetrics metrics) $ usePool pool $ \connection -> do
     withTransaction connection $ do
       -- Delete any and all values for this project.

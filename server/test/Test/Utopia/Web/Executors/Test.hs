@@ -23,29 +23,6 @@ import           Utopia.Web.Executors.Development
 import           Utopia.Web.Metrics
 import           Utopia.Web.Packager.NPM
 
-createRandomDatabaseName :: IO String
-createRandomDatabaseName = do
-  startingGen <- newStdGen
-  let generateCharacters gen =
-        let (char, nextGen) = randomR ('a', 'z') gen
-         in char : generateCharacters nextGen
-  let randomPart = take 8 $ generateCharacters startingGen
-  pure ("utopia_test_" <> randomPart)
-
-createLocalTestDatabasePool :: IO (DB.DBPool, DB.DBPool, String)
-createLocalTestDatabasePool = do
-  utopiaPool <- DB.createLocalDatabasePool
-  databaseName <- createRandomDatabaseName
-  username <- getEffectiveUserName
-  void $ DB.usePool utopiaPool $ \connection -> execute connection (fromString ("CREATE DATABASE " <> databaseName)) ()
-  let connectInfo = defaultConnectInfo { connectUser = username, connectDatabase = databaseName }
-  testPool <- DB.createDatabasePoolFromConnection $ connect connectInfo
-  pure (utopiaPool, testPool, databaseName)
-
-dropTestDatabase :: DB.DBPool -> String -> IO ()
-dropTestDatabase utopiaPool databaseName = do
-  void $ DB.usePool utopiaPool $ \connection -> execute connection (fromString ("DROP DATABASE " <> databaseName)) ()
-
 initialiseTestResources :: DB.DBPool -> IO DevServerResources
 initialiseTestResources databasePool = do
   proxyHttpManager <- newManager defaultManagerSettings

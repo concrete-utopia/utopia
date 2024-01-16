@@ -12,7 +12,7 @@ import           Data.Aeson.Lens
 import qualified Data.ByteString.Lazy           as BL
 import           Data.Generics.Product
 import qualified Data.HashMap.Strict            as M
-import           Data.Pool
+import           Data.Pool                      hiding (withResource)
 import           Data.Time
 import           GHC.Conc
 import           Network.HTTP.Client            (CookieJar, cookie_value,
@@ -29,9 +29,13 @@ import           Servant.Client                 hiding ((//))
 import           Servant.Client.Core
 import           Servant.RawM.Client
 import           System.Timeout
-import           Test.Hspec
+import           Test.Tasty
+import           Test.Tasty.HUnit
+import           Test.Utopia.Web.Database.Utils
 import           Test.Utopia.Web.Executors.Test
 import           Utopia.ClientModel
+import qualified Utopia.Web.Database            as DB
+import qualified Utopia.Web.Database.Types      as DB
 import           Utopia.Web.Database.Types
 import           Utopia.Web.Executors.Common
 import           Utopia.Web.Servant
@@ -40,10 +44,21 @@ import           Utopia.Web.ServiceTypes
 import           Utopia.Web.Types
 import           Web.Cookie                     (SetCookie)
 
-timeLimited :: Text -> IO a -> IO a
-timeLimited message action = do
-  possibleResult <- timeout (10 * 1000 * 1000) action
-  maybe (panic message) return possibleResult
+type ServerPrequisites = (DB.DBPool, String, Stop)
+
+createServerPrerequisites :: IO ServerPrequisites
+createServerPrerequisites = do
+  (utopiaPool, testPool, testPoolName) <- createLocalTestDatabasePool
+  let runtime = testEnvironmentRuntime testPool
+  serverStop <- runServerWithResources runtime
+  W.wait "127.0.0.1" 8888
+  pure (utopiaPool, testPoolName, serverStop)
+
+cleanupServerPrerequisites :: ServerPrequisites -> IO ()
+cleanupServerPrerequisites (utopiaPool, testPoolName, serverStop) = do
+  _ <- serverStop
+  dropTestDatabase utopiaPool testPoolName
+  destroyAllResources utopiaPool
 
 testWithResources :: IO Stop
 testWithResources = do
@@ -54,27 +69,20 @@ testWithResources = do
   let stopUtopiaPool = destroyAllResources utopiaPool
   pure (serverStop >> dropTestDB >> stopUtopiaPool)
 
-withServer :: IO () -> IO ()
-withServer action = do
-  let waitUntilServerUp = W.wait "127.0.0.1" 8888
-  bracket testWithResources
-    identity
-    (const (waitUntilServerUp >> action))
-
 errorWithStatusCode :: Status -> Either ClientError a -> Bool
 errorWithStatusCode expectedStatus (Left (FailureResponse _ response)) = responseStatusCode response == expectedStatus
 errorWithStatusCode _ _                                                = False
 
-withClientAndCookieJar :: ((ClientEnv, TVar CookieJar) -> IO a) -> IO a
-withClientAndCookieJar specCall = do
-  let testBaseUrl = BaseUrl Http "localhost" 8888 mempty
-  httpManager <- newManager defaultManagerSettings
-  httpCookieJar <- newTVarIO mempty
-  let clientEnv = ClientEnv httpManager testBaseUrl (Just httpCookieJar) defaultMakeClientRequest
-  specCall (clientEnv, httpCookieJar)
-
-withClient :: (ClientEnv -> IO a) -> IO a
-withClient specCall = withClientAndCookieJar (\(clientEnv, _) -> specCall clientEnv)
+withClientAndCookieJar :: TestName -> ((ClientEnv, TVar CookieJar) -> Assertion) -> TestTree
+withClientAndCookieJar testName specCall =
+  let wrapper = withResource createServerPrerequisites cleanupServerPrerequisites
+  in  wrapper $ \serverPrequisites -> testCase testName $ do
+        _ <- serverPrequisites
+        let testBaseUrl = BaseUrl Http "localhost" 8888 mempty
+        httpManager <- newManager defaultManagerSettings
+        httpCookieJar <- newTVarIO mempty
+        let clientEnv = ClientEnv httpManager testBaseUrl (Just httpCookieJar) defaultMakeClientRequest
+        specCall (clientEnv, httpCookieJar)
 
 getCookieHeader :: TVar CookieJar -> ClientM (Maybe Text)
 getCookieHeader cookieJarTVar = do
@@ -171,16 +179,9 @@ setBodyAsText = setRequestBody (RequestBodyBS textBytes) textMediaType
 validAuthenticate :: ClientM (Headers '[Header "Set-Cookie" SetCookie] Text)
 validAuthenticate = authenticateClient (Just "logmein") (Just "auto-close")
 
-databaseAround :: HasCallStack => Bool -> ((String -> SpecWith a -> SpecWith a) -> SpecWith a) -> SpecWith a
-databaseAround enableExternalTests specDefinition = do
-  if enableExternalTests
-    then around_ withServer $ specDefinition describe
-    else specDefinition xdescribe
-
-updateAssetPathSpec :: Bool -> Spec
-updateAssetPathSpec enableExternalTests = databaseAround enableExternalTests $ \describeFn -> do
-  describeFn "PUT v1/asset/{project_id}/{asset_path}?old_file_name={old_asset_path}" $ do
-    it "should update the asset path" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
+updateAssetPathSpec :: TestTree
+updateAssetPathSpec = sequentialTestGroup "PUT v1/asset/{project_id}/{asset_path}?old_file_name={old_asset_path}" AllSucceed
+  [ withClientAndCookieJar "should update the asset path" $ \(clientEnv, cookieJarTVar) -> do
       projectContents <- getSampleProject
       -- Create a project, save an asset, rename it and try to load it from the new path.
       assetFromNewPathResult <- withClientEnv clientEnv $ do
@@ -195,20 +196,20 @@ updateAssetPathSpec enableExternalTests = databaseAround enableExternalTests $ \
         return (fromNewPath, projectId)
       -- Check the contents.
       (assetFromNewPath, savedProjectId) <- either throwIO return assetFromNewPathResult
-      (responseBody assetFromNewPath) `shouldBe` (BL.fromStrict jpgBytes)
+      assertEqual "Response body should match the original file." (BL.fromStrict jpgBytes) (responseBody assetFromNewPath)
       -- Attempt to load the asset from the old path.
       assetFromOldPathResult <- withClientEnv clientEnv $ do
         fromOldPath <- loadProjectFileClient savedProjectId Nothing ["assets", "picture.jpg"] identity
         return fromOldPath
       case assetFromOldPathResult of
-        (Left (FailureResponse _ response)) -> responseStatusCode response `shouldBe` notFound404
-        (Left _)                            -> expectationFailure "Unexpected response type."
-        (Right _)                           -> expectationFailure "Unexpected successful response."
+        (Left (FailureResponse _ response)) -> assertEqual "Response should be a 404." notFound404 (responseStatusCode response)
+        (Left _)                            -> assertFailure "Unexpected response type."
+        (Right _)                           -> assertFailure "Unexpected successful response."
+  ]
 
-deleteAssetSpec :: Bool -> Spec
-deleteAssetSpec enableExternalTests = databaseAround enableExternalTests $ \describeFn -> do
-  describeFn "DELETE v1/asset/{project_id}/{asset_path}?old_file_name={old_asset_path}" $ do
-    it "should delete the asset" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
+deleteAssetSpec :: TestTree
+deleteAssetSpec = sequentialTestGroup "DELETE v1/asset/{project_id}/{asset_path}?old_file_name={old_asset_path}" AllSucceed
+  [ withClientAndCookieJar "should delete the asset" $ \(clientEnv, cookieJarTVar) -> do
       let projectContents = toJSON
                           $ M.singleton ("storyboard.js" :: Text)
                           $ ProjectContentsTreeFile
@@ -227,20 +228,20 @@ deleteAssetSpec enableExternalTests = databaseAround enableExternalTests $ \desc
         _ <- deleteProjectAssetClient cookieHeader projectId ["assets", "picture.jpg"]
         loadProjectFileClient projectId Nothing ["assets", "picture.jpg"] identity
       case loadedFromPath of
-        (Left (FailureResponse _ response)) -> responseStatusCode response `shouldBe` notFound404
-        (Left _)                            -> expectationFailure "Unexpected response type."
-        (Right _)                           -> expectationFailure "Unexpected successful response."
+        (Left (FailureResponse _ response)) -> assertEqual "Response should be a 404." notFound404 (responseStatusCode response)
+        (Left _)                            -> assertFailure "Unexpected response type."
+        (Right _)                           -> assertFailure "Unexpected successful response."
+  ]
 
-saveUserConfigurationSpec :: Bool -> Spec
-saveUserConfigurationSpec enableExternalTests = databaseAround enableExternalTests $ \describeFn -> do
-  describeFn "GET v1/user/config" $ do
-    it "should return an empty result when nothing has been set" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
+saveUserConfigurationSpec :: TestTree
+saveUserConfigurationSpec = sequentialTestGroup "GET v1/user/config" AllSucceed
+  [ withClientAndCookieJar "should return an empty result when nothing has been set" $ \(clientEnv, cookieJarTVar) -> do
       userConfig <- withClientEnv clientEnv $ do
         _ <- validAuthenticate
         cookieHeader <- getCookieHeader cookieJarTVar
         getUserConfigurationClient cookieHeader
-      userConfig `shouldBe` (Right $ UserConfigurationResponse Nothing Nothing)
-    it "should return the previously set config" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
+      assertEqual "Should be an empty config." (Right $ UserConfigurationResponse Nothing Nothing) userConfig
+  , withClientAndCookieJar "should return the previously set config" $ \(clientEnv, cookieJarTVar) -> do
       let shortcutConf = Just $ object ["ctrl+m" .= ("do something" :: Text), "ctrl+n" .= ("do something else" :: Text)]
       let themeConf = Just $ toJSON ("light" :: Text)
       userConfig <- withClientEnv clientEnv $ do
@@ -248,236 +249,245 @@ saveUserConfigurationSpec enableExternalTests = databaseAround enableExternalTes
         cookieHeader <- getCookieHeader cookieJarTVar
         _ <- saveUserConfigurationClient cookieHeader (UserConfigurationRequest shortcutConf themeConf)
         getUserConfigurationClient cookieHeader
-      userConfig `shouldBe` (Right $ UserConfigurationResponse shortcutConf themeConf)
+      assertEqual "Should be the previous config." (Right $ UserConfigurationResponse shortcutConf themeConf) userConfig
+  ]
 
-projectsSpec :: Bool -> Spec
-projectsSpec enableExternalTests = databaseAround enableExternalTests $ \describeFn -> do
-  describeFn "GET /authenticate" $ do
-    it "should set a cookie for valid login" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
-      result <- runClientM validAuthenticate clientEnv
-      traverse_ (\l -> putText $ show l) $ lefts [result]
-      isRight result `shouldBe` True
-      httpCookieJar <- readTVarIO cookieJarTVar
-      let cookies = destroyCookieJar httpCookieJar
-      length cookies `shouldBe` 1
-  describeFn "GET /project/{project_id}/owner" $ do
-    it "return the owner of the project" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
-      projectContents <- getSampleProject
-      projectOwnerResponse <- withClientEnv clientEnv $ do
-        _ <- validAuthenticate
-        cookieHeader <- getCookieHeader cookieJarTVar
-        createProjectResult <- createProjectClient
-        let projectId = ProjectIdWithSuffix (view (field @"_id") createProjectResult) ""
-        _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
-        projectOwnerClient cookieHeader projectId
-      (projectOwnerResponse ^? _Right . isOwner) `shouldBe` Just True
-  describeFn "GET /projects" $ do
-    it "return an empty list of projects when nothing has been added" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
-      projectListingResponse <- withClientEnv clientEnv $ do
-        _ <- validAuthenticate
-        cookieHeader <- getCookieHeader cookieJarTVar
-        projectsClient cookieHeader
-      projectListingResponse `shouldBe` (Right $ ProjectListResponse [])
-    it "return a list of the user's projects when a project has been created" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
-      projectContents <- getSampleProject
-      projectIdAndListingResult <- withClientEnv clientEnv $ do
-        _ <- validAuthenticate
-        cookieHeader <- getCookieHeader cookieJarTVar
-        createProjectResult <- createProjectClient
-        let projectId = ProjectIdWithSuffix (view (field @"_id") createProjectResult) ""
-        _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
-        listing <- projectsClient cookieHeader
-        return $ (projectId, listing)
-      ((ProjectIdWithSuffix projectId _), listing) <- either throwIO return projectIdAndListingResult
-      (listing ^.. projects . traverse . field @"_id") `shouldBe` [projectId]
-  describeFn "GET /showcase" $ do
-    it "return an empty list of projects when nothing has been added" $ withClientAndCookieJar $ \(clientEnv, _) -> do
-      projectListingResponse <- (flip runClientM) clientEnv $ do
-        getShowcaseClient
-      projectListingResponse `shouldBe` (Right $ ProjectListResponse [])
-    it "return a list containing whatever project that has been added" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
-      projectContents <- getSampleProject
-      projectIdAndListingResult <- withClientEnv clientEnv $ do
-        _ <- validAuthenticate
-        cookieHeader <- getCookieHeader cookieJarTVar
-        createProjectResult <- createProjectClient
-        let projectId = ProjectIdWithSuffix (view (field @"_id") createProjectResult) ""
-        _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
-        _ <- setShowcaseClient $ toUrlPiece projectId
-        listing <- getShowcaseClient
-        return $ (projectId, listing)
-      (projectId, listing) <- either throwIO return projectIdAndListingResult
-      (listing ^.. projects . traverse . field @"_id") `shouldBe` [toUrlPiece projectId]
-  describeFn "GET /project/{project_id}" $ do
-    it "returns the not changed result if the last updated data is the same" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
-      projectContents <- getSampleProject
-      earlyTime <- getCurrentTime
-      loadedProjectResult <- withClientEnv clientEnv $ do
-        _ <- validAuthenticate
-        cookieHeader <- getCookieHeader cookieJarTVar
-        createProjectResult <- createProjectClient
-        let projectId = ProjectIdWithSuffix (view (field @"_id") createProjectResult) ""
-        _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
-        firstLoad <- loadProjectClient cookieHeader projectId (Just earlyTime)
-        let possibleModifiedAt = getPossibleModifiedAt firstLoad
-        lastModifiedAt <- maybe (panic "No modified at value.") return possibleModifiedAt
-        secondLoad <- loadProjectClient cookieHeader projectId (Just lastModifiedAt)
-        return (projectId, firstLoad, secondLoad)
-      (projectId, firstLoad, secondLoad) <- either throwIO return loadedProjectResult
-      (getLoadedTitleAndContents firstLoad) `shouldBe` (Just ("My Project", projectContents))
-      secondLoad `shouldBe` (ProjectUnchanged $ toUrlPiece projectId)
-  describeFn "GET /project/{project_id}/{file_path} (using the sample project)" $ do
-    it "should return the contents of the file if it is a text file" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
-      projectContents <- getSampleProject
-      fileFromPathResult <- withClientEnv clientEnv $ do
-        _ <- validAuthenticate
-        cookieHeader <- getCookieHeader cookieJarTVar
-        createProjectResult <- createProjectClient
-        let projectId = ProjectIdWithSuffix (view (field @"_id") createProjectResult) ""
-        _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
-        loadProjectFileClient projectId Nothing ["src", "index.js"] identity
-      isRight fileFromPathResult `shouldBe` True
-    it "should return 404 for a non existent file (using the sample project)" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
-      projectContents <- getSampleProject
-      fileFromPathResult <- withClientEnv clientEnv $ do
-        _ <- validAuthenticate
-        cookieHeader <- getCookieHeader cookieJarTVar
-        createProjectResult <- createProjectClient
-        let projectId = ProjectIdWithSuffix (view (field @"_id") createProjectResult) ""
-        _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
-        loadProjectFileClient projectId Nothing ["src", "non-existent-file", "index.js"] identity
-      case fileFromPathResult of
-        (Left (FailureResponse _ response)) -> responseStatusCode response `shouldBe` notFound404
-        (Left _)                            -> expectationFailure "Unexpected response type."
-        (Right _)                           -> expectationFailure "Unexpected successful response."
-    it "should fallback to using the asset load logic" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
-      projectContents <- getSampleProject
-      fileFromPathResult <- withClientEnv clientEnv $ do
-        _ <- validAuthenticate
-        cookieHeader <- getCookieHeader cookieJarTVar
-        createProjectResult <- createProjectClient
-        let projectId = ProjectIdWithSuffix (view (field @"_id") createProjectResult) ""
-        _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
-        _ <- saveProjectAssetClient cookieHeader projectId ["assets", "picture.jpg"] setBodyAsJPG
-        loadProjectFileClient projectId Nothing ["assets", "picture.jpg"] identity
-      fileFromPath <- either throwIO return fileFromPathResult
-      (responseBody fileFromPath) `shouldBe` (BL.fromStrict jpgBytes)
-    it "should load from /public/ ahead of /" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
-      projectContents <- getSampleProject
-      fileFromPathResult <- withClientEnv clientEnv $ do
-        _ <- validAuthenticate
-        cookieHeader <- getCookieHeader cookieJarTVar
-        createProjectResult <- createProjectClient
-        let projectId = ProjectIdWithSuffix (view (field @"_id") createProjectResult) ""
-        _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
-        _ <- saveProjectAssetClient cookieHeader projectId ["public", "picture.jpg"] setBodyAsJPG
-        loadProjectFileClient projectId Nothing ["picture.jpg"] identity
-      fileFromPath <- either throwIO return fileFromPathResult
-      (responseBody fileFromPath) `shouldBe` (BL.fromStrict jpgBytes)
-    it "should load an asset the same as an image" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
-      projectContents <- getSampleProject
-      fileFromPathResult <- withClientEnv clientEnv $ do
-        _ <- validAuthenticate
-        let assetFile = object [("type", "ASSET_FILE")]
-        let projectContentFile = object [("type", "PROJECT_CONTENT_FILE"), ("fullPath", "/public/text.txt"), ("content", assetFile)]
-        let addAssetJSON = M.insert "text.txt" projectContentFile
-        let lensToAsset = key "projectContents" . key "public" . key "children" . _Object
-        let projectContentsWithAsset = over lensToAsset addAssetJSON projectContents
-        cookieHeader <- getCookieHeader cookieJarTVar
-        createProjectResult <- createProjectClient
-        let projectId = ProjectIdWithSuffix (view (field @"_id") createProjectResult) ""
-        _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContentsWithAsset)
-        _ <- saveProjectAssetClient cookieHeader projectId ["public", "text.txt"] setBodyAsText
-        loadProjectFileClient projectId Nothing ["text.txt"] identity
-      fileFromPath <- either throwIO return fileFromPathResult
-      (responseBody fileFromPath) `shouldBe` (BL.fromStrict textBytes)
-  describeFn "POST /project" $ do
-    it "should create a project if a request body is supplied" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
-      earlyTime <- getCurrentTime
-      projectContents <- getSampleProject
-      loadedProjectResult <- withClientEnv clientEnv $ do
-        _ <- validAuthenticate
-        cookieHeader <- getCookieHeader cookieJarTVar
-        createProjectResult <- createProjectClient
-        let projectId = ProjectIdWithSuffix (view (field @"_id") createProjectResult) ""
-        _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
-        loadProjectClient cookieHeader projectId (Just earlyTime)
-      loadedProject <- either throwIO return loadedProjectResult
-      (getLoadedTitleAndContents loadedProject) `shouldBe` (Just ("My Project", projectContents))
-    it "should fail to save if the projectContents is empty" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
-      unmodifiedProject <- getSampleProject
-      let modifiedProject = set (key "projectContents") (object []) unmodifiedProject
-      saveResult <- withClientEnv clientEnv $ do
-            _ <- validAuthenticate
-            cookieHeader <- getCookieHeader cookieJarTVar
-            createProjectResult <- createProjectClient
-            let projectId = ProjectIdWithSuffix (view (field @"_id") createProjectResult) ""
-            saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just modifiedProject)
-      saveResult `shouldSatisfy` errorWithStatusCode badRequest400
-    it "should fork a project if an original project ID was passed in with no request body" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
-      earlyTime <- getCurrentTime
-      projectContents <- getSampleProject
-      loadedProjectResult <- withClientEnv clientEnv $ do
-        _ <- validAuthenticate
-        cookieHeader <- getCookieHeader cookieJarTVar
-        createProjectResult <- createProjectClient
-        let projectId = ProjectIdWithSuffix (view (field @"_id") createProjectResult) ""
-        _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
-        forkProjectResult <- forkProjectClient cookieHeader projectId (Just "My Project")
-        let forkedProjectId = ProjectIdWithSuffix (view (field @"_id") forkProjectResult) ""
-        loadProjectClient cookieHeader forkedProjectId (Just earlyTime)
-      loadedProject <- either throwIO return loadedProjectResult
-      (getLoadedTitleAndContents loadedProject) `shouldBe` (Just ("My Project", projectContents))
-  describeFn "PUT /project" $ do
-    it "should update a project's contents if the project contents are supplied" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
-      earlyTime <- getCurrentTime
-      firstProjectContents <- getSampleProject
-      let secondProjectContents = set (key "firstThing" . _Bool) False firstProjectContents
-      loadedProjectResult <- withClientEnv clientEnv $ do
-        _ <- validAuthenticate
-        cookieHeader <- getCookieHeader cookieJarTVar
-        createProjectResult <- createProjectClient
-        let projectId = ProjectIdWithSuffix (view (field @"_id") createProjectResult) ""
-        _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just firstProjectContents)
-        _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest Nothing (Just secondProjectContents)
-        loadProjectClient cookieHeader projectId (Just earlyTime)
-      loadedProject <- either throwIO return loadedProjectResult
-      (getLoadedTitleAndContents loadedProject) `shouldBe` Just ("My Project", secondProjectContents)
-    it "should update a project title if the project title is supplied" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
-      projectContents <- getSampleProject
-      earlyTime <- getCurrentTime
-      loadedProjectResult <- withClientEnv clientEnv $ do
-        _ <- validAuthenticate
-        cookieHeader <- getCookieHeader cookieJarTVar
-        createProjectResult <- createProjectClient
-        let projectId = ProjectIdWithSuffix (view (field @"_id") createProjectResult) ""
-        _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
-        _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "Best Project Ever") Nothing
-        loadProjectClient cookieHeader projectId (Just earlyTime)
-      loadedProject <- either throwIO return loadedProjectResult
-      (getLoadedTitleAndContents loadedProject) `shouldBe` Just ("Best Project Ever", projectContents)
-  describeFn "DELETE /project" $ do
-    it "should delete a project" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
-      earlyTime <- getCurrentTime
-      projectContents <- getSampleProject
-      loadedProjectResult <- withClientEnv clientEnv $ do
-        _ <- validAuthenticate
-        cookieHeader <- getCookieHeader cookieJarTVar
-        createProjectResult <- createProjectClient
-        let projectId = ProjectIdWithSuffix (view (field @"_id") createProjectResult) ""
-        _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
-        _ <- deleteProjectClient cookieHeader projectId
-        loadProjectClient cookieHeader projectId (Just earlyTime)
-      projectListingResponse <- withClientEnv clientEnv $ do
-        _ <- validAuthenticate
-        cookieHeader <- getCookieHeader cookieJarTVar
-        projectsClient cookieHeader
-      loadedProjectResult `shouldSatisfy` errorWithStatusCode notFound404
-      projectListingResponse `shouldBe` (Right $ ProjectListResponse [])
+projectsSpec :: TestTree
+projectsSpec = sequentialTestGroup "Projects" AllSucceed
+  [ sequentialTestGroup "GET /authenticate" AllSucceed
+    [ withClientAndCookieJar "should set a cookie for valid login" $ \(clientEnv, cookieJarTVar) -> do
+        result <- runClientM validAuthenticate clientEnv
+        traverse_ (\l -> putText $ show l) $ lefts [result]
+        assertBool "Result should be successful." $ isRight result
+        httpCookieJar <- readTVarIO cookieJarTVar
+        let cookies = destroyCookieJar httpCookieJar
+        assertEqual "There should be a single cookie." 1 (length cookies)
+    ]
+  , sequentialTestGroup "GET /project/{project_id}/owner" AllSucceed
+    [ withClientAndCookieJar "return the owner of the project" $ \(clientEnv, cookieJarTVar) -> do
+        projectContents <- getSampleProject
+        projectOwnerResponse <- withClientEnv clientEnv $ do
+          _ <- validAuthenticate
+          cookieHeader <- getCookieHeader cookieJarTVar
+          createProjectResult <- createProjectClient
+          let projectId = ProjectIdWithSuffix (view (field @"_id") createProjectResult) ""
+          _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
+          projectOwnerClient cookieHeader projectId
+        assertEqual "User should be the project owner." (Just True) (projectOwnerResponse ^? _Right . isOwner)
+    ]
+  , sequentialTestGroup "GET /projects" AllSucceed
+    [ withClientAndCookieJar "return an empty list of projects when nothing has been added" $ \(clientEnv, cookieJarTVar) -> do
+        projectListingResponse <- withClientEnv clientEnv $ do
+          _ <- validAuthenticate
+          cookieHeader <- getCookieHeader cookieJarTVar
+          projectsClient cookieHeader
+        assertEqual "Should receive empty project listing response." (Right $ ProjectListResponse []) projectListingResponse
+    , withClientAndCookieJar "return a list of the user's projects when a project has been created" $ \(clientEnv, cookieJarTVar) -> do
+        projectContents <- getSampleProject
+        projectIdAndListingResult <- withClientEnv clientEnv $ do
+          _ <- validAuthenticate
+          cookieHeader <- getCookieHeader cookieJarTVar
+          createProjectResult <- createProjectClient
+          let projectId = ProjectIdWithSuffix (view (field @"_id") createProjectResult) ""
+          _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
+          listing <- projectsClient cookieHeader
+          return $ (projectId, listing)
+        ((ProjectIdWithSuffix projectId _), listing) <- either throwIO return projectIdAndListingResult
+        assertEqual "Should receive listing containing a single project ID." [projectId] (listing ^.. projects . traverse . field @"_id")
+    ]
+  , sequentialTestGroup "GET /showcase" AllSucceed
+    [ withClientAndCookieJar "return an empty list of projects when nothing has been added" $ \(clientEnv, _) -> do
+        projectListingResponse <- (flip runClientM) clientEnv $ do
+          getShowcaseClient
+        assertEqual "Should be an empty project listing." (Right $ ProjectListResponse []) projectListingResponse
+    , withClientAndCookieJar "return a list containing whatever project that has been added" $ \(clientEnv, cookieJarTVar) -> do
+        projectContents <- getSampleProject
+        projectIdAndListingResult <- withClientEnv clientEnv $ do
+          _ <- validAuthenticate
+          cookieHeader <- getCookieHeader cookieJarTVar
+          createProjectResult <- createProjectClient
+          let projectId = ProjectIdWithSuffix (view (field @"_id") createProjectResult) ""
+          _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
+          _ <- setShowcaseClient $ toUrlPiece projectId
+          listing <- getShowcaseClient
+          return $ (projectId, listing)
+        (projectId, listing) <- either throwIO return projectIdAndListingResult
+        assertEqual "Should receive listing containing a single project ID." [toUrlPiece projectId] (listing ^.. projects . traverse . field @"_id")
+    ]
+  , sequentialTestGroup "GET /project/{project_id}" AllSucceed
+    [ withClientAndCookieJar "returns the not changed result if the last updated data is the same" $ \(clientEnv, cookieJarTVar) -> do
+        projectContents <- getSampleProject
+        earlyTime <- getCurrentTime
+        loadedProjectResult <- withClientEnv clientEnv $ do
+          _ <- validAuthenticate
+          cookieHeader <- getCookieHeader cookieJarTVar
+          createProjectResult <- createProjectClient
+          let projectId = ProjectIdWithSuffix (view (field @"_id") createProjectResult) ""
+          _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
+          firstLoad <- loadProjectClient cookieHeader projectId (Just earlyTime)
+          let possibleModifiedAt = getPossibleModifiedAt firstLoad
+          lastModifiedAt <- maybe (panic "No modified at value.") return possibleModifiedAt
+          secondLoad <- loadProjectClient cookieHeader projectId (Just lastModifiedAt)
+          return (projectId, firstLoad, secondLoad)
+        (projectId, firstLoad, secondLoad) <- either throwIO return loadedProjectResult
+        assertEqual "Should receive original project contents." (Just ("My Project", projectContents)) (getLoadedTitleAndContents firstLoad)
+        assertEqual "Should have unchanged project." (ProjectUnchanged $ toUrlPiece projectId) secondLoad
+    ]
+  , sequentialTestGroup "GET /project/{project_id}/{file_path} (using the sample project)" AllSucceed
+    [ withClientAndCookieJar "should return the contents of the file if it is a text file" $ \(clientEnv, cookieJarTVar) -> do
+        projectContents <- getSampleProject
+        fileFromPathResult <- withClientEnv clientEnv $ do
+          _ <- validAuthenticate
+          cookieHeader <- getCookieHeader cookieJarTVar
+          createProjectResult <- createProjectClient
+          let projectId = ProjectIdWithSuffix (view (field @"_id") createProjectResult) ""
+          _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
+          loadProjectFileClient projectId Nothing ["src", "index.js"] identity
+        assertBool "Result should be a success." $ isRight fileFromPathResult
+      , withClientAndCookieJar "should return 404 for a non existent file (using the sample project)" $ \(clientEnv, cookieJarTVar) -> do
+        projectContents <- getSampleProject
+        fileFromPathResult <- withClientEnv clientEnv $ do
+          _ <- validAuthenticate
+          cookieHeader <- getCookieHeader cookieJarTVar
+          createProjectResult <- createProjectClient
+          let projectId = ProjectIdWithSuffix (view (field @"_id") createProjectResult) ""
+          _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
+          loadProjectFileClient projectId Nothing ["src", "non-existent-file", "index.js"] identity
+        case fileFromPathResult of
+          (Left (FailureResponse _ response)) -> assertEqual "Should be a 404." notFound404 (responseStatusCode response)
+          (Left _)                            -> assertFailure "Unexpected response type."
+          (Right _)                           -> assertFailure "Unexpected successful response."
+    , withClientAndCookieJar "should fallback to using the asset load logic" $ \(clientEnv, cookieJarTVar) -> do
+        projectContents <- getSampleProject
+        fileFromPathResult <- withClientEnv clientEnv $ do
+          _ <- validAuthenticate
+          cookieHeader <- getCookieHeader cookieJarTVar
+          createProjectResult <- createProjectClient
+          let projectId = ProjectIdWithSuffix (view (field @"_id") createProjectResult) ""
+          _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
+          _ <- saveProjectAssetClient cookieHeader projectId ["assets", "picture.jpg"] setBodyAsJPG
+          loadProjectFileClient projectId Nothing ["assets", "picture.jpg"] identity
+        fileFromPath <- either throwIO return fileFromPathResult
+        assertEqual "Response should contain the original content." (BL.fromStrict jpgBytes) (responseBody fileFromPath)
+    , withClientAndCookieJar "should load from /public/ ahead of /" $ \(clientEnv, cookieJarTVar) -> do
+        projectContents <- getSampleProject
+        fileFromPathResult <- withClientEnv clientEnv $ do
+          _ <- validAuthenticate
+          cookieHeader <- getCookieHeader cookieJarTVar
+          createProjectResult <- createProjectClient
+          let projectId = ProjectIdWithSuffix (view (field @"_id") createProjectResult) ""
+          _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
+          _ <- saveProjectAssetClient cookieHeader projectId ["public", "picture.jpg"] setBodyAsJPG
+          loadProjectFileClient projectId Nothing ["picture.jpg"] identity
+        fileFromPath <- either throwIO return fileFromPathResult
+        assertEqual "Response should contain the original content." (BL.fromStrict jpgBytes) (responseBody fileFromPath)
+    , withClientAndCookieJar "should load an asset the same as an image" $ \(clientEnv, cookieJarTVar) -> do
+        projectContents <- getSampleProject
+        fileFromPathResult <- withClientEnv clientEnv $ do
+          _ <- validAuthenticate
+          let assetFile = object [("type", "ASSET_FILE")]
+          let projectContentFile = object [("type", "PROJECT_CONTENT_FILE"), ("fullPath", "/public/text.txt"), ("content", assetFile)]
+          let addAssetJSON = M.insert "text.txt" projectContentFile
+          let lensToAsset = key "projectContents" . key "public" . key "children" . _Object
+          let projectContentsWithAsset = over lensToAsset addAssetJSON projectContents
+          cookieHeader <- getCookieHeader cookieJarTVar
+          createProjectResult <- createProjectClient
+          let projectId = ProjectIdWithSuffix (view (field @"_id") createProjectResult) ""
+          _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContentsWithAsset)
+          _ <- saveProjectAssetClient cookieHeader projectId ["public", "text.txt"] setBodyAsText
+          loadProjectFileClient projectId Nothing ["text.txt"] identity
+        fileFromPath <- either throwIO return fileFromPathResult
+        assertEqual "Response should contain the original content." (BL.fromStrict textBytes) (responseBody fileFromPath)
+    ]
+  , sequentialTestGroup "POST /project" AllSucceed
+    [ withClientAndCookieJar "should create a project if a request body is supplied" $ \(clientEnv, cookieJarTVar) -> do
+        earlyTime <- getCurrentTime
+        projectContents <- getSampleProject
+        loadedProjectResult <- withClientEnv clientEnv $ do
+          _ <- validAuthenticate
+          cookieHeader <- getCookieHeader cookieJarTVar
+          createProjectResult <- createProjectClient
+          let projectId = ProjectIdWithSuffix (view (field @"_id") createProjectResult) ""
+          _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
+          loadProjectClient cookieHeader projectId (Just earlyTime)
+        loadedProject <- either throwIO return loadedProjectResult
+        assertEqual "Original project should be returned." (Just ("My Project", projectContents)) (getLoadedTitleAndContents loadedProject)
+    , withClientAndCookieJar "should fail to save if the projectContents is empty" $ \(clientEnv, cookieJarTVar) -> do
+        unmodifiedProject <- getSampleProject
+        let modifiedProject = set (key "projectContents") (object []) unmodifiedProject
+        saveResult <- withClientEnv clientEnv $ do
+              _ <- validAuthenticate
+              cookieHeader <- getCookieHeader cookieJarTVar
+              createProjectResult <- createProjectClient
+              let projectId = ProjectIdWithSuffix (view (field @"_id") createProjectResult) ""
+              saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just modifiedProject)
+        assertBool "Should get bad request response." $ errorWithStatusCode badRequest400 saveResult
+    , withClientAndCookieJar "should fork a project if an original project ID was passed in with no request body" $ \(clientEnv, cookieJarTVar) -> do
+        earlyTime <- getCurrentTime
+        projectContents <- getSampleProject
+        loadedProjectResult <- withClientEnv clientEnv $ do
+          _ <- validAuthenticate
+          cookieHeader <- getCookieHeader cookieJarTVar
+          createProjectResult <- createProjectClient
+          let projectId = ProjectIdWithSuffix (view (field @"_id") createProjectResult) ""
+          _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
+          forkProjectResult <- forkProjectClient cookieHeader projectId (Just "My Project")
+          let forkedProjectId = ProjectIdWithSuffix (view (field @"_id") forkProjectResult) ""
+          loadProjectClient cookieHeader forkedProjectId (Just earlyTime)
+        loadedProject <- either throwIO return loadedProjectResult
+        assertEqual "Should get project contents with expected title." (Just ("My Project", projectContents)) (getLoadedTitleAndContents loadedProject)
+    ]
+  , sequentialTestGroup "PUT /project" AllSucceed
+    [ withClientAndCookieJar "should update a project's contents if the project contents are supplied" $ \(clientEnv, cookieJarTVar) -> do
+        earlyTime <- getCurrentTime
+        firstProjectContents <- getSampleProject
+        let secondProjectContents = set (key "firstThing" . _Bool) False firstProjectContents
+        loadedProjectResult <- withClientEnv clientEnv $ do
+          _ <- validAuthenticate
+          cookieHeader <- getCookieHeader cookieJarTVar
+          createProjectResult <- createProjectClient
+          let projectId = ProjectIdWithSuffix (view (field @"_id") createProjectResult) ""
+          _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just firstProjectContents)
+          _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest Nothing (Just secondProjectContents)
+          loadProjectClient cookieHeader projectId (Just earlyTime)
+        loadedProject <- either throwIO return loadedProjectResult
+        assertEqual "Should get the updated project contents." (Just ("My Project", secondProjectContents)) (getLoadedTitleAndContents loadedProject)
+    , withClientAndCookieJar "should update a project title if the project title is supplied" $ \(clientEnv, cookieJarTVar) -> do
+        projectContents <- getSampleProject
+        earlyTime <- getCurrentTime
+        loadedProjectResult <- withClientEnv clientEnv $ do
+          _ <- validAuthenticate
+          cookieHeader <- getCookieHeader cookieJarTVar
+          createProjectResult <- createProjectClient
+          let projectId = ProjectIdWithSuffix (view (field @"_id") createProjectResult) ""
+          _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
+          _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "Best Project Ever") Nothing
+          loadProjectClient cookieHeader projectId (Just earlyTime)
+        loadedProject <- either throwIO return loadedProjectResult
+        assertEqual "Should get the original project contents with the new title." (Just ("Best Project Ever", projectContents)) (getLoadedTitleAndContents loadedProject)
+    ]
+  , sequentialTestGroup "DELETE /project" AllSucceed
+    [ withClientAndCookieJar "should delete a project" $ \(clientEnv, cookieJarTVar) -> do
+        earlyTime <- getCurrentTime
+        projectContents <- getSampleProject
+        loadedProjectResult <- withClientEnv clientEnv $ do
+          _ <- validAuthenticate
+          cookieHeader <- getCookieHeader cookieJarTVar
+          createProjectResult <- createProjectClient
+          let projectId = ProjectIdWithSuffix (view (field @"_id") createProjectResult) ""
+          _ <- saveProjectClient cookieHeader projectId $ SaveProjectRequest (Just "My Project") (Just projectContents)
+          _ <- deleteProjectClient cookieHeader projectId
+          loadProjectClient cookieHeader projectId (Just earlyTime)
+        projectListingResponse <- withClientEnv clientEnv $ do
+          _ <- validAuthenticate
+          cookieHeader <- getCookieHeader cookieJarTVar
+          projectsClient cookieHeader
+        assertBool "Should get a 404." (errorWithStatusCode notFound404 loadedProjectResult)
+        assertEqual "Project listing should not include the deleted project." (Right $ ProjectListResponse []) projectListingResponse
+    ]
+  ]
 
-routingSpec :: Bool -> Spec
-routingSpec enableExternalTests = do
-  projectsSpec enableExternalTests
-  updateAssetPathSpec enableExternalTests
-  deleteAssetSpec enableExternalTests
-  saveUserConfigurationSpec enableExternalTests
+routingSpec :: Bool -> TestTree
+routingSpec enableExternalTests =
+  let toggledGroup groupName tests = if enableExternalTests then sequentialTestGroup groupName AllSucceed tests else testGroup groupName []
+  in  toggledGroup "Routing" [ projectsSpec, updateAssetPathSpec, deleteAssetSpec, saveUserConfigurationSpec]

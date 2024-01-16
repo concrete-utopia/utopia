@@ -13,7 +13,7 @@ import           Utopia.Web.Servant
 
 servantTestTree :: TestTree
 servantTestTree = do
-  testGroup "ProjectIdWithSuffix"
+  sequentialTestGroup "ProjectIdWithSuffix" AllSucceed
     [ testProperty "parseUrlPiece handles a bare bones project id correctly" $
         property $ do
           projectId <- forAll $ Gen.text (Range.constant 0 10) Gen.alphaNum

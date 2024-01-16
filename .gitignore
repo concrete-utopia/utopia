@@ -114,6 +114,7 @@ editor/test/mocha.opts
 
 # Server executable from the release build.
 server/utopia-web
+server/utopia-web-test
 
 # Redis
 *.rdb
