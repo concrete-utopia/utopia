@@ -543,6 +543,14 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
             <ZeroSizedElementControls.control showAllPossibleElements={false} />
 
             {when(
+              isSelectMode(editorMode),
+              <RemixSceneLabelControl
+                maybeHighlightOnHover={maybeHighlightOnHover}
+                maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
+              />,
+            )}
+
+            {when(
               isMyProject,
               <>
                 {inspectorFocusedControls.map((c) => (
@@ -559,13 +567,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
                     propsForControl={c.props}
                   />
                 ))}
-                {when(
-                  isSelectMode(editorMode),
-                  <RemixSceneLabelControl
-                    maybeHighlightOnHover={maybeHighlightOnHover}
-                    maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
-                  />,
-                )}
                 {when(isSelectMode(editorMode) && !anyStrategyActive, <PinLines />)}
                 {when(isSelectMode(editorMode), <InsertionControls />)}
                 {renderTextEditableControls()}
