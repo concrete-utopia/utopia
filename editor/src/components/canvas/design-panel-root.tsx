@@ -183,7 +183,13 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
     >
       <TitleBarUserProfile panelData={props.panelData} />
       <FlexRow
-        style={{ marginBottom: 10, gap: 2, alignSelf: 'stretch', flexShrink: 0 }}
+        style={{
+          marginBottom: 10,
+          gap: 2,
+          alignSelf: 'stretch',
+          flexShrink: 0,
+          overflowX: 'scroll',
+        }}
         css={undefined}
       >
         <MenuTab
