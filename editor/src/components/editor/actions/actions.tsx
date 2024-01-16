@@ -4160,13 +4160,18 @@ export const UPDATE_FNS = {
     )
   },
   ADD_IMPORTS: (action: AddImports, editor: EditorModel): EditorModel => {
+    let duplicateNames = new Map<string, string>()
     return modifyUnderlyingTargetElement(
       action.target,
       editor,
-      (element) => element,
+      (element) => renameJsxElementChild(element, duplicateNames),
       (success, _, underlyingFilePath) => {
-        // TODO handle duplicate name mapping
-        const { imports } = mergeImports(underlyingFilePath, success.imports, action.importsToAdd)
+        const { imports, duplicateNameMapping } = mergeImports(
+          underlyingFilePath,
+          success.imports,
+          action.importsToAdd,
+        )
+        duplicateNames = duplicateNameMapping
         return {
           ...success,
           imports: imports,
