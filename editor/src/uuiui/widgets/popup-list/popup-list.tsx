@@ -28,6 +28,7 @@ import { CommonUtils, getControlStyles } from '../../../uuiui-deps'
 import { SmallerIcons } from '../../../uuiui/icons'
 import { Tooltip } from '../../tooltip'
 import { useIsMyProject } from '../../../components/editor/store/collaborative-editing'
+import { useControlsDisabledInSubtree } from '../../utilities/disable-subtree'
 
 type ContainerMode = 'default' | 'showBorderOnHover' | 'noBorder'
 
@@ -592,8 +593,8 @@ export const PopupList = React.memo<PopupListProps>(
       },
       ref,
     ) => {
-      const isMyProject = useIsMyProject()
-      const disabled = initialDisabled || !controlStyles.interactive || !isMyProject
+      const controlsDisabled = useControlsDisabledInSubtree()
+      const disabled = initialDisabled || !controlStyles.interactive || controlsDisabled
 
       const selectOnSubmitValue = React.useCallback(
         (newValue: ValueType<SelectOption>) => {

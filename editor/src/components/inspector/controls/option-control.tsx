@@ -7,6 +7,7 @@ import { colorTheme } from '../../../uuiui'
 import type { IcnProps } from '../../../uuiui'
 import { UtopiaTheme, Tooltip, Icn } from '../../../uuiui'
 import { useIsMyProject } from '../../editor/store/collaborative-editing'
+import { useControlsDisabledInSubtree } from '../../../uuiui/utilities/disable-subtree'
 
 export interface DEPRECATEDOptionControlOptions extends DEPRECATEDGenericControlOptions {
   icon?: IcnProps
@@ -61,7 +62,8 @@ export const OptionControl: React.FunctionComponent<
     }
   }
 
-  const isMyProject = useIsMyProject()
+  const controlsDisabled = useControlsDisabledInSubtree()
+  const disabled = !props.controlStyles.interactive || controlsDisabled
 
   const background = (() => {
     if (props.controlStatus === 'overridden' && props.value) {
@@ -134,7 +136,7 @@ export const OptionControl: React.FunctionComponent<
             }}
             type='checkbox'
             checked={isChecked}
-            disabled={!props.controlStyles.interactive || !isMyProject}
+            disabled={disabled}
             onChange={onSubmitValue}
           />
           <div
