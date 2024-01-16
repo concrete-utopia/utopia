@@ -69,8 +69,11 @@ import {
 } from '../canvas/ui/floating-insert-menu'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { RightMenuTab, floatingInsertMenuStateSwap } from './store/editor-state'
-import { useStatus } from '../../../liveblocks.config'
+import { useStatus, useThreads } from '../../../liveblocks.config'
 import { useAllowedToEditProject, useIsMyProject } from './store/collaborative-editing'
+import { useReadThreads } from '../../core/commenting/comment-hooks'
+import { pluck } from '../../core/shared/array-utils'
+import { MultiplayerWrapper } from '../../utils/multiplayer-wrapper'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const PlayModeButtonTestId = 'canvas-toolbar-play-mode'
@@ -209,6 +212,55 @@ function switchToSelectModeCloseMenus(dispatch: EditorDispatch) {
 }
 
 export const WrapInDivButtonTestId = 'wrap-in-div-button'
+
+const UnreadThreadsIndicatorWrapper = React.memo(() => {
+  const roomStatus = useStatus()
+
+  // without the roomStatus check, Liveblocks will flood the server with authentication requests
+  return (
+    <>
+      {when(
+        roomStatus === 'connected',
+        <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
+          <UnreadThreadsIndicator />
+        </MultiplayerWrapper>,
+      )}
+    </>
+  )
+})
+
+const UnreadThreadsIndicator = React.memo(() => {
+  const canvasToolbarMode = useToolbarMode()
+
+  const { threads } = useThreads()
+  const { threads: readThreads } = useReadThreads()
+
+  const unreadThreads = React.useMemo(() => {
+    const readThreadIds = pluck(readThreads, 'id')
+    return threads.filter((t) => !t.metadata.resolved && !readThreadIds.includes(t.id))
+  }, [threads, readThreads])
+
+  return (
+    <div
+      style={{
+        width: 6,
+        height: 6,
+        borderRadius: 6,
+        flexShrink: 0,
+        flexGrow: 0,
+        background: 'red',
+        outline:
+          canvasToolbarMode.primary === 'comment'
+            ? `1.5px solid ${colorTheme.primary.value}`
+            : `1.5px solid ${colorTheme.bg1.value}`,
+        position: 'relative',
+        top: 8,
+        left: -15,
+        opacity: unreadThreads.length > 0 ? 1 : 0,
+      }}
+    />
+  )
+})
 
 export const CanvasToolbar = React.memo(() => {
   const dispatch = useDispatch()
@@ -505,18 +557,21 @@ export const CanvasToolbar = React.memo(() => {
         </Tooltip>
         {when(
           isFeatureEnabled('Multiplayer'),
-          <Tooltip title={commentButtonTooltip} placement='bottom'>
-            <InsertModeButton
-              testid={commentButtonTestId}
-              iconType={'comment'}
-              iconCategory='tools'
-              primary={canvasToolbarMode.primary === 'comment'}
-              onClick={toggleCommentMode}
-              keepActiveInLiveMode
-              style={{ width: 36 }}
-              disabled={commentButtonDisabled}
-            />
-          </Tooltip>,
+          <div style={{ display: 'flex', width: 36 }}>
+            <Tooltip title={commentButtonTooltip} placement='bottom'>
+              <InsertModeButton
+                testid={commentButtonTestId}
+                iconType={'comment'}
+                iconCategory='tools'
+                primary={canvasToolbarMode.primary === 'comment'}
+                onClick={toggleCommentMode}
+                keepActiveInLiveMode
+                style={{ width: 36 }}
+                disabled={commentButtonDisabled}
+              />
+            </Tooltip>
+            <UnreadThreadsIndicatorWrapper />
+          </div>,
         )}
         <Separator />
         <Tooltip title='Zoom to 100%' placement='bottom'>
