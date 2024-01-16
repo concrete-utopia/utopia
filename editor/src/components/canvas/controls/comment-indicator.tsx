@@ -210,6 +210,7 @@ function getIndicatorStyle(
     border: '.4px solid #a3a3a340',
     opacity: resolved ? 0.6 : 'undefined',
     zoom: 1 / canvasScale,
+    zIndex: expanded ? 1 : 0,
   }
 
   const whenActive: Interpolation<Theme> = {
