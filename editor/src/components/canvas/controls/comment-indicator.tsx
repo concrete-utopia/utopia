@@ -42,7 +42,7 @@ import { EditorModes, isCommentMode, isExistingComment } from '../../editor/edit
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { RightMenuTab } from '../../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
-import { AvatarPicture, MultiplayerAvatar } from '../../user-bar'
+import { MultiplayerAvatar } from '../../user-bar'
 import { canvasPointToWindowPoint } from '../dom-lookup'
 import { useRemixNavigationContext } from '../remix/utopia-remix-root-component'
 import { CommentRepliesCounter } from './comment-replies-counter'
@@ -191,6 +191,7 @@ function getIndicatorStyle(
   resolved: boolean,
   canvasScale: number,
   isActive: boolean,
+  expanded: boolean,
 ) {
   const base: Interpolation<Theme> = {
     cursor: 'auto',
@@ -200,7 +201,7 @@ function getIndicatorStyle(
     left: position.x - 3,
     minWidth: IndicatorSize,
     minHeight: IndicatorSize,
-    background: read ? colorTheme.bg1.value : colorTheme.primary.value,
+    background: read || expanded ? colorTheme.bg1.value : colorTheme.primary.value,
     borderRadius: '24px 24px 24px 0px',
     display: 'flex',
     alignItems: 'center',
@@ -239,24 +240,21 @@ export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) =>
 
   return (
     <div
-      css={getIndicatorStyle(canvasHeight, position, read ?? true, resolved, canvasScale, isActive)}
+      css={getIndicatorStyle(
+        canvasHeight,
+        position,
+        read ?? true,
+        resolved,
+        canvasScale,
+        isActive,
+        true,
+      )}
     >
-      <div
-        style={{
-          height: 18,
-          width: 18,
-          borderRadius: 18,
-          background: bgColor,
-          color: fgColor,
-          fontSize: 9,
-          fontWeight: 'bold',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <AvatarPicture url={avatarUrl} initials={avatarInitials} resolved={resolved} />
-      </div>
+      <MultiplayerAvatar
+        color={{ background: bgColor, foreground: fgColor }}
+        picture={avatarUrl}
+        name={avatarInitials}
+      />
     </div>
   )
 })
@@ -380,6 +378,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
         thread.metadata.resolved,
         canvasScale,
         isActive,
+        preview,
       )}
     >
       <CommentIndicatorWrapper
@@ -549,6 +548,7 @@ const CommentIndicatorWrapper = React.memo((props: CommentIndicatorWrapper) => {
           name={multiplayerInitialsFromName(normalizeMultiplayerName(user.name))}
           color={multiplayerColorFromIndex(user.colorIndex)}
           picture={user.avatar}
+          style={{ outline: 'none' }}
         />
       </motion.div>
 
