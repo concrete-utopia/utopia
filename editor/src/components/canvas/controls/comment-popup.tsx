@@ -311,8 +311,8 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
       data-testid='comment-popup'
       style={{
         position: 'fixed',
-        top: point.y,
-        left: point.x + 30,
+        top: point.y - 20,
+        left: point.x + 35,
         minWidth: 250,
         boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
         background: colorTheme.bg0.value,
@@ -378,6 +378,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
                 return (
                   <CommentWrapper
                     key={c.id}
+                    thread={thread}
                     user={user}
                     comment={c}
                     onCommentDelete={onCommentDelete}
