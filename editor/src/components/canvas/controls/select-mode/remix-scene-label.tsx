@@ -110,7 +110,7 @@ const RemixScenePathUpdater = React.memo<{ targetPathString: string }>((props) =
     })
   }, [currentPath, sceneDataLabelRef, updateRemixScenePathInLiveblocks])
 
-  return <></>
+  return null
 })
 
 const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
