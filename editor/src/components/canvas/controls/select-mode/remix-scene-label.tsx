@@ -17,9 +17,11 @@ import { isSelectModeWithArea } from '../../../editor/editor-modes'
 import { useAtom } from 'jotai'
 import { RemixNavigationAtom } from '../../remix/utopia-remix-root-component'
 import { matchRoutes } from 'react-router'
-import { unless } from '../../../../utils/react-conditionals'
+import { unless, when } from '../../../../utils/react-conditionals'
 import { getRemixLocationLabel, getRemixSceneDataLabel } from '../../remix/remix-utils'
 import { useUpdateRemixSceneRouteInLiveblocks } from '../../../../core/shared/multiplayer'
+import { useStatus } from '../../../../../liveblocks.config'
+import { MultiplayerWrapper } from '../../../../utils/multiplayer-wrapper'
 
 export const RemixSceneLabelPathTestId = (path: ElementPath): string =>
   `${EP.toString(path)}-remix-scene-label-path`
@@ -88,18 +90,15 @@ export const RemixSceneLabelControl = React.memo<RemixSceneLabelControlProps>((p
   )
 })
 
-const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
-  const colorTheme = useColorTheme()
-  const dispatch = useDispatch()
-
+const RemixScenePathUpdater = React.memo<{ targetPathString: string }>((props) => {
   const [navigationData] = useAtom(RemixNavigationAtom)
 
   const sceneDataLabelRef = useRefEditorState((store) =>
-    getRemixSceneDataLabel(store.editor.jsxMetadata[EP.toString(props.target)]),
+    getRemixSceneDataLabel(store.editor.jsxMetadata[props.targetPathString]),
   )
 
   const updateRemixScenePathInLiveblocks = useUpdateRemixSceneRouteInLiveblocks()
-  const currentPath = (navigationData[EP.toString(props.target)] ?? null)?.location.pathname
+  const currentPath = (navigationData[props.targetPathString] ?? null)?.location.pathname
   React.useEffect(() => {
     if (sceneDataLabelRef.current == null || currentPath == null) {
       return
@@ -110,6 +109,18 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
       location: currentPath,
     })
   }, [currentPath, sceneDataLabelRef, updateRemixScenePathInLiveblocks])
+
+  return <></>
+})
+
+const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
+  const colorTheme = useColorTheme()
+  const dispatch = useDispatch()
+
+  const [navigationData] = useAtom(RemixNavigationAtom)
+
+  const roomStatus = useStatus()
+  const currentPath = (navigationData[EP.toString(props.target)] ?? null)?.location.pathname
 
   const pathLabel = getRemixLocationLabel(currentPath)
 
@@ -264,6 +275,12 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
 
   return (
     <CanvasOffsetWrapper>
+      {when(
+        roomStatus === 'connected',
+        <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
+          <RemixScenePathUpdater targetPathString={EP.toString(props.target)} />
+        </MultiplayerWrapper>,
+      )}
       <FlexRow
         onMouseOver={labelSelectable ? onMouseOver : NO_OP}
         onMouseOut={labelSelectable ? onMouseLeave : NO_OP}
