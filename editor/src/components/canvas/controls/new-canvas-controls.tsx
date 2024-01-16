@@ -177,6 +177,10 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
 
   const ref = React.useRef<HTMLDivElement | null>(null)
 
+  const roomStatus = useStatus()
+
+  const multiplayerActive = isFeatureEnabled('Multiplayer') && roomStatus === 'connected'
+
   if (isLiveMode(canvasControlProps.editorMode) && !canvasControlProps.keysPressed.cmd) {
     return (
       <div
@@ -248,9 +252,16 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
               setLocalHighlightedViews={setLocalHighlightedViews}
             />
           </div>
+
           <ElementContextMenu contextMenuInstance='context-menu-canvas' />
           <ElementContextMenu contextMenuInstance='context-menu-canvas-no-selection' />
         </div>
+        {when(
+          roomStatus === 'connected',
+          <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
+            <MultiplayerPresence />
+          </MultiplayerWrapper>,
+        )}
       </>
     )
   }
@@ -379,10 +390,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     },
     [editorMode, selectModeHooks],
   )
-
-  const roomStatus = useStatus()
-
-  const multiplayerActive = isFeatureEnabled('Multiplayer') && roomStatus === 'connected'
 
   const getResizeStatus = () => {
     const selectedViews = localSelectedViews
@@ -586,12 +593,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
                 {when(isSelectMode(editorMode), <DistanceGuidelineControl />)}
                 <GuidelineControls />
               </>,
-            )}
-            {when(
-              multiplayerActive,
-              <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
-                <MultiplayerPresence />
-              </MultiplayerWrapper>,
             )}
           </>,
         )}
