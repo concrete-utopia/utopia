@@ -163,12 +163,6 @@ const MultiplayerCursors = React.memo(() => {
     }))
   })
 
-  const canvasScale = useEditorState(
-    Substores.canvas,
-    (store) => store.editor.canvas.scale,
-    'MultiplayerCursors canvasScale',
-  )
-
   return (
     <div
       style={{
@@ -176,7 +170,6 @@ const MultiplayerCursors = React.memo(() => {
         top: 0,
         left: 0,
         pointerEvents: 'none',
-        zoom: 1 / canvasScale,
       }}
     >
       {others.map((other) => {
@@ -303,10 +296,6 @@ const MultiplayerCursor = React.memo(
               left: 6,
               top: 15,
               zoom: canvasScale > 1 ? 1 / canvasScale : 1,
-              minHeight: 16,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
             }}
           >
             {name}
@@ -439,7 +428,6 @@ const FollowingOverlay = React.memo(() => {
         justifyContent: 'center',
         paddingBottom: 14,
         cursor: 'default',
-        zoom: 1 / canvasScale,
       }}
     >
       <div
@@ -555,7 +543,6 @@ const MultiplayerShadows = React.memo(() => {
                 pointerEvents: 'none',
                 border: `1px dashed ${color.background}`,
                 opacity: 0.5,
-                zoom: 1 / canvasScale,
               }}
             />
             <motion.div
@@ -587,7 +574,6 @@ const MultiplayerShadows = React.memo(() => {
                 fontSize: 9,
                 color: color.background,
                 border: `1px dashed ${color.background}`,
-                zoom: 1 / canvasScale,
               }}
             >
               {activeFrameActionToString(action)}
