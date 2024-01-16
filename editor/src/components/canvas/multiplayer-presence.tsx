@@ -239,6 +239,7 @@ const MultiplayerCursor = React.memo(
             style={{
               filter: 'drop-shadow(1px 2px 3px rgb(0 0 0 / 0.3))',
               transform: 'translate(0px, 0px)',
+              zoom: canvasScale > 1 ? 1 / canvasScale : 1,
             }}
           >
             <OtherUserPointer color={color.background} />
