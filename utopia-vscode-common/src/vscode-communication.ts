@@ -126,6 +126,7 @@ async function initIndexedDBBridge(
     stopWatchingAll()
     stopPollingMailbox()
     await initializeFS(vsCodeSessionID, UtopiaFSUser)
+    await ensureDirectoryExists(RootDir)
     await clearBothMailboxes()
     for (const projectFile of projectContents) {
       await writeProjectFile(projectFile)

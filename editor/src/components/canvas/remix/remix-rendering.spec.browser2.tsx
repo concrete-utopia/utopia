@@ -38,6 +38,7 @@ import {
 import { REMIX_SCENE_TESTID } from '../ui-jsx-canvas-renderer/remix-scene-component'
 import type { EditorRenderResult } from '../ui-jsx.test-utils'
 import {
+  DefaultStartingFeatureSwitches,
   getPrintedUiJsCode,
   getPrintedUiJsCodeWithoutUIDs,
   makeTestProjectCodeWithSnippet,
@@ -55,6 +56,10 @@ import {
 } from '../controls/select-mode/simple-outline-control'
 import { updateFromCodeEditor } from '../../editor/actions/actions-from-vscode'
 import { RemixIndexPathLabel } from './remix-utils'
+import {
+  type MetaCanvasStrategy,
+  RegisteredCanvasStrategies,
+} from '../canvas-strategies/canvas-strategies'
 
 const DefaultRouteTextContent = 'Hello Remix!'
 const RootTextContent = 'This is root!'
@@ -62,8 +67,17 @@ const AboutTextContent = 'About'
 
 /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectRemixSceneToBeRendered"] }] */
 
-async function renderRemixProject(project: PersistentModel) {
-  const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+async function renderRemixProject(
+  project: PersistentModel,
+  strategiesToUse: Array<MetaCanvasStrategy> = RegisteredCanvasStrategies,
+) {
+  const renderResult = await renderTestEditorWithModel(
+    project,
+    'await-first-dom-report',
+    DefaultStartingFeatureSwitches,
+    undefined,
+    strategiesToUse,
+  )
   await renderResult.dispatch([runDOMWalker()], true)
   return renderResult
 }
@@ -1816,6 +1830,57 @@ export default function Index() {
       left: '82px',
       top: '97px',
     })
+  })
+
+  it('a failed canvas interaction does not trash the metadata', async () => {
+    // Attempt to interact with the project when no strategies are available, which should
+    // then trigger a re-render with no changes to the project model
+    const renderResult = await renderRemixProject(remixProjectForEditingTests, [])
+
+    const absoluteDiv = await clickElementOnCanvasControlsLayer(renderResult, AbsoluteDivTestId)
+    const styleBefore = { left: absoluteDiv.style.left, top: absoluteDiv.style.top }
+    expect(styleBefore).toEqual({
+      left: '46px',
+      top: '64px',
+    })
+
+    const absoluteDivBounds = absoluteDiv.getBoundingClientRect()
+    await dragMouse(
+      renderResult,
+      windowPoint({ x: absoluteDivBounds.x + 1, y: absoluteDivBounds.y + 1 }),
+      windowPoint({ x: 33, y: 33 }),
+    )
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    // Nothing should have changed
+    expect({ left: absoluteDiv.style.left, top: absoluteDiv.style.top }).toEqual(styleBefore)
+
+    // Ensure we have both types of metadata for all paths
+    expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual([
+      'sb',
+      'sb/remix-scene',
+      'sb/remix-scene:app',
+      'sb/remix-scene:app/outlet',
+      'sb/remix-scene:app/outlet:index',
+      'sb/remix-scene:app/outlet:index/absolute-div',
+      'sb/remix-scene:app/outlet:index/flex-div',
+      'sb/remix-scene:app/outlet:index/flex-div/child-1',
+      'sb/remix-scene:app/outlet:index/flex-div/child-2',
+      'sb/remix-scene:app/outlet:index/flex-div/child-3',
+    ])
+    expect(Object.keys(renderResult.getEditorState().editor.domMetadata)).toEqual([
+      'sb/remix-scene:app/outlet:index/absolute-div',
+      'sb/remix-scene:app/outlet:index/flex-div/child-1',
+      'sb/remix-scene:app/outlet:index/flex-div/child-2',
+      'sb/remix-scene:app/outlet:index/flex-div/child-3',
+      'sb/remix-scene:app/outlet:index/flex-div',
+      'sb/remix-scene:app/outlet:index',
+      'sb/remix-scene:app/outlet',
+      'sb/remix-scene:app',
+      'sb/remix-scene',
+      'sb',
+    ])
   })
 
   it('draw to insert into Remix', async () => {

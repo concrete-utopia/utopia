@@ -8,6 +8,7 @@ import {
   useOthersListener,
   useRoom,
   useSelf,
+  useStatus,
   useStorage,
   useUpdateMyPresence,
 } from '../../../liveblocks.config'
@@ -17,6 +18,7 @@ import { mapDropNulls } from '../../core/shared/array-utils'
 import * as EP from '../../core/shared/element-path'
 import type { CanvasPoint } from '../../core/shared/math-utils'
 import {
+  canvasPoint,
   pointsEqual,
   scaleRect,
   windowPoint,
@@ -26,6 +28,7 @@ import {
   isPlayerOnAnotherRemixRoute,
   multiplayerColorFromIndex,
   normalizeOthersList,
+  useIsOnSameRemixRoute,
 } from '../../core/shared/multiplayer'
 import { assertNever } from '../../core/shared/utils'
 import { UtopiaStyles, useColorTheme } from '../../uuiui'
@@ -50,6 +53,8 @@ import { CanvasOffsetWrapper } from './controls/canvas-offset-wrapper'
 import { when } from '../../utils/react-conditionals'
 import { CommentIndicators } from './controls/comment-indicator'
 import { CommentPopup } from './controls/comment-popup'
+import { getSceneUnderPoint } from './controls/comment-mode/comment-mode-hooks'
+import { getRemixSceneDataLabel } from './remix/remix-utils'
 
 export const OtherUserPointer = (props: any) => {
   return (
@@ -157,13 +162,6 @@ const MultiplayerCursors = React.memo(() => {
       userInfo: getCollaborator(collabs, p),
     }))
   })
-  const myRemixPresence = me.presence.remix ?? null
-
-  const canvasScale = useEditorState(
-    Substores.canvas,
-    (store) => store.editor.canvas.scale,
-    'MultiplayerCursors canvasScale',
-  )
 
   return (
     <div
@@ -172,14 +170,9 @@ const MultiplayerCursors = React.memo(() => {
         top: 0,
         left: 0,
         pointerEvents: 'none',
-        zoom: 1 / canvasScale,
       }}
     >
       {others.map((other) => {
-        const isOnAnotherRoute = isPlayerOnAnotherRemixRoute(
-          myRemixPresence,
-          other.presenceInfo.presence.remix ?? null,
-        )
         if (
           other.presenceInfo.presence.cursor == null ||
           other.presenceInfo.presence.canvasOffset == null ||
@@ -198,7 +191,7 @@ const MultiplayerCursors = React.memo(() => {
             name={other.userInfo.name}
             colorIndex={other.userInfo.colorIndex}
             position={position}
-            isOnAnotherRoute={isOnAnotherRoute}
+            userId={other.userInfo.id}
           />
         )
       })}
@@ -207,17 +200,54 @@ const MultiplayerCursors = React.memo(() => {
 })
 MultiplayerCursors.displayName = 'MultiplayerCursors'
 
+function useGhostPointerState(position: CanvasPoint, userId: string) {
+  const [shouldShowGhostPointer, setShouldShowGhostPointer] = React.useState<boolean>(false)
+
+  const scenesRef = useRefEditorState((store) =>
+    MetadataUtils.getScenesMetadata(store.editor.jsxMetadata),
+  )
+
+  const isOnSameRemixRoute = useIsOnSameRemixRoute()
+
+  const timeoutHandle = React.useRef<ReturnType<typeof setTimeout> | null>(null)
+  React.useEffect(() => {
+    timeoutHandle.current = setTimeout(() => {
+      timeoutHandle.current = null
+      const instance =
+        // making a new canvasPoint here so that the memo array contains only primitive types
+        getSceneUnderPoint(canvasPoint({ x: position.x, y: position.y }), scenesRef.current)
+      const dataLabel = getRemixSceneDataLabel(instance)
+
+      if (instance == null || dataLabel == null) {
+        setShouldShowGhostPointer(false)
+      } else {
+        setShouldShowGhostPointer(
+          !isOnSameRemixRoute({ otherUserId: userId, remixSceneDataLabel: dataLabel }),
+        )
+      }
+    }, 1000)
+
+    return () => {
+      if (timeoutHandle.current != null) {
+        clearTimeout(timeoutHandle.current)
+      }
+    }
+  }, [isOnSameRemixRoute, position.x, position.y, scenesRef, userId])
+
+  return shouldShowGhostPointer
+}
+
 const MultiplayerCursor = React.memo(
   ({
     name,
     colorIndex,
     position,
-    isOnAnotherRoute,
+    userId,
   }: {
     name: string | null
     colorIndex: number | null
     position: CanvasPoint
-    isOnAnotherRoute: boolean
+    userId: string
   }) => {
     const canvasScale = useEditorState(
       Substores.canvasOffset,
@@ -225,6 +255,8 @@ const MultiplayerCursor = React.memo(
       'MultiplayerCursor canvasScale',
     )
     const color = multiplayerColorFromIndex(colorIndex)
+
+    const shouldShowGhostPointer = useGhostPointerState(position, userId)
 
     return (
       <CanvasOffsetWrapper setScaleToo={true}>
@@ -239,7 +271,7 @@ const MultiplayerCursor = React.memo(
           }}
           style={{
             scale: canvasScale <= 1 ? 1 / canvasScale : 1,
-            opacity: isOnAnotherRoute ? 0.3 : 1,
+            opacity: shouldShowGhostPointer ? 0.3 : 1,
           }}
         >
           <div
@@ -264,10 +296,6 @@ const MultiplayerCursor = React.memo(
               left: 6,
               top: 15,
               zoom: canvasScale > 1 ? 1 / canvasScale : 1,
-              minHeight: 16,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
             }}
           >
             {name}
@@ -400,7 +428,6 @@ const FollowingOverlay = React.memo(() => {
         justifyContent: 'center',
         paddingBottom: 14,
         cursor: 'default',
-        zoom: 1 / canvasScale,
       }}
     >
       <div
@@ -516,7 +543,6 @@ const MultiplayerShadows = React.memo(() => {
                 pointerEvents: 'none',
                 border: `1px dashed ${color.background}`,
                 opacity: 0.5,
-                zoom: 1 / canvasScale,
               }}
             />
             <motion.div
@@ -548,7 +574,6 @@ const MultiplayerShadows = React.memo(() => {
                 fontSize: 9,
                 color: color.background,
                 border: `1px dashed ${color.background}`,
-                zoom: 1 / canvasScale,
               }}
             >
               {activeFrameActionToString(action)}

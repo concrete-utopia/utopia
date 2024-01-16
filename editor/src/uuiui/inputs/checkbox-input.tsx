@@ -7,6 +7,7 @@ import type { ControlStatus } from '../../components/inspector/common/control-st
 import type { ControlStyles } from '../../components/inspector/common/control-styles'
 import { getControlStyles } from '../../components/inspector/common/control-styles'
 import { useColorTheme, UtopiaTheme } from '../styles/theme'
+import { useControlsDisabledInSubtree } from '../utilities/disable-subtree'
 
 export interface CheckboxInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   controlStatus?: ControlStatus
@@ -20,6 +21,9 @@ export const CheckboxInput = React.memo(
       const ref = React.useRef<HTMLInputElement>(null)
 
       const controlStyles: ControlStyles = getControlStyles(controlStatus)
+
+      const controlsDisabled = useControlsDisabledInSubtree()
+      const disabled = !controlStyles.interactive || controlsDisabled
 
       React.useEffect(() => {
         if (ref.current != null) {
@@ -43,7 +47,7 @@ export const CheckboxInput = React.memo(
         <input
           {...props}
           type='checkbox'
-          disabled={!controlStyles.interactive}
+          disabled={disabled}
           style={style}
           css={{
             WebkitAppearance: 'none',

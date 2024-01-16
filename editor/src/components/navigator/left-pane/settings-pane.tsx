@@ -42,6 +42,8 @@ import { saveUserPreferencesDefaultLayout } from '../../common/user-preferences'
 import { useGridPanelState } from '../../canvas/grid-panels-state'
 import { notice } from '../../common/notice'
 import { gridMenuDefaultPanels } from '../../canvas/stored-layout'
+import { usePermissions } from '../../editor/store/permissions'
+import { DisableControlsInSubtree } from '../../../uuiui/utilities/disable-subtree'
 
 const themeOptions = [
   {
@@ -234,6 +236,8 @@ export const SettingsPane = React.memo(() => {
     dispatch([EditorActions.addToast(notice('Restored default panels layout.', 'SUCCESS'))])
   }, [dispatch, setPanelState])
 
+  const canEditProject = usePermissions().edit
+
   return (
     <FlexColumn
       id='leftPaneSettings'
@@ -267,11 +271,9 @@ export const SettingsPane = React.memo(() => {
             </Button>
           </a>
         </UIGridRow>
-        <UIGridRow padded variant='<---1fr--->|------172px-------|'>
-          <span style={{ color: colorTheme.fg2.value }}>Name</span>
-          {userState.loginState.type !== 'LOGGED_IN' ? (
-            <span>{name}</span>
-          ) : (
+        <DisableControlsInSubtree disable={!canEditProject}>
+          <UIGridRow padded variant='<---1fr--->|------172px-------|'>
+            <span style={{ color: colorTheme.fg2.value }}>Name</span>
             <StringInput
               testId='projectName'
               value={name}
@@ -280,13 +282,9 @@ export const SettingsPane = React.memo(() => {
               style={{ width: 150 }}
               onBlur={handleBlurProjectName}
             />
-          )}
-        </UIGridRow>
-        <UIGridRow padded variant='<---1fr--->|------172px-------|'>
-          <span style={{ color: colorTheme.fg2.value }}> Description </span>
-          {userState.loginState.type !== 'LOGGED_IN' ? (
-            <span>{description}</span>
-          ) : (
+          </UIGridRow>
+          <UIGridRow padded variant='<---1fr--->|------172px-------|'>
+            <span style={{ color: colorTheme.fg2.value }}> Description </span>
             <StringInput
               testId='projectDescription'
               value={description}
@@ -295,8 +293,8 @@ export const SettingsPane = React.memo(() => {
               onBlur={handleBlurProjectDescription}
               style={{ width: 150 }}
             />
-          )}
-        </UIGridRow>
+          </UIGridRow>
+        </DisableControlsInSubtree>
         {when(
           userState.loginState.type === 'LOGGED_IN',
           <div

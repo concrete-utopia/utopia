@@ -9,6 +9,7 @@ import type { ControlStatus } from '../common/control-status'
 import { useColorTheme, UtopiaTheme } from '../../../uuiui'
 import Utils from '../../../utils/utils'
 import { useIsMyProject } from '../../editor/store/collaborative-editing'
+import { useControlsDisabledInSubtree } from '../../../uuiui/utilities/disable-subtree'
 
 export interface ColorControlProps {
   value: CSSColor
@@ -82,7 +83,8 @@ export const ColorControl = React.memo((props: ColorControlProps) => {
 
   const closePopup = React.useCallback(() => setPopupOpen(false), [setPopupOpen])
 
-  const isMyProject = useIsMyProject()
+  const controlsDisabled = useControlsDisabledInSubtree()
+  const disabled = controlsDisabled
 
   const picker = !popupOpen ? null : (
     <ColorPicker
@@ -94,7 +96,7 @@ export const ColorControl = React.memo((props: ColorControlProps) => {
       value={props.value}
       onSubmitValue={props.onSubmitValue}
       onTransientSubmitValue={props.onTransientSubmitValue}
-      disabled={!isMyProject}
+      disabled={disabled}
     />
   )
 
