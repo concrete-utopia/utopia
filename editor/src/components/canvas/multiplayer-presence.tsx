@@ -255,6 +255,7 @@ const MultiplayerCursor = React.memo(
               position: 'absolute',
               left: 6,
               top: 15,
+              zoom: canvasScale > 1 ? 1 / canvasScale : 1,
             }}
           >
             {name}
