@@ -19,21 +19,15 @@ import { NO_OP } from '../../shared/utils'
 import type { NodeModules } from '../../shared/project-file-types'
 import { getPackagerUrl, getJsDelivrFileUrl } from './packager-url'
 import type { VersionLookupResult } from '../../../components/editor/npm-dependency/npm-dependency'
-import {
-  npmVersion,
-  npmVersionLookupSuccess,
-} from '../../../components/editor/npm-dependency/npm-dependency'
 import type { PackagerServerResponse } from '../../shared/npm-dependency-types'
 import { requestedNpmDependency } from '../../shared/npm-dependency-types'
 import {
   InjectedCSSFilePrefix,
   unimportAllButTheseCSSFiles,
 } from '../../webpack-loaders/css-loader'
-import { svgToBase64 } from '../../shared/file-utils'
 import { createBuiltInDependenciesList } from './built-in-dependencies-list'
 import * as moduleResolutionExamples from '../test-cases/module-resolution-examples.json'
 import { createNodeModules } from './test-utils'
-import { CanvasContainerID } from '../../../components/canvas/canvas-types'
 
 require('jest-fetch-mock').enableMocks()
 
@@ -60,6 +54,10 @@ jest.mock('../../../components/editor/npm-dependency/npm-dependency', () => ({
   checkPackageVersionExists: async (packageName: string, version: string): Promise<boolean> => {
     return Promise.resolve(true)
   },
+}))
+
+jest.mock('../../shared/css-utils', () => ({
+  rescopeCSSToTargetCanvasOnly: (input: string): string => input,
 }))
 
 describe('ES Dependency Package Manager', () => {
@@ -379,8 +377,7 @@ describe('ES Dependency Manager — Downloads extra files as-needed', () => {
         const styleTag = document.getElementById(
           `${InjectedCSSFilePrefix}/node_modules/mypackage/dist/style.css`,
         )
-        const rescopedCSS = `@scope (#${CanvasContainerID}){${simpleCssContent}}`
-        expect(styleTag?.innerHTML).toEqual(rescopedCSS)
+        expect(styleTag?.innerHTML).toEqual(simpleCssContent)
         expect(innerOnRemoteModuleDownload).toBeCalledTimes(0)
 
         done()
