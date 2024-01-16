@@ -4,7 +4,6 @@ import {
   type Presence,
   type ThreadMetadata,
   type UserMeta,
-  useSelf,
   useStorage,
 } from '../../../liveblocks.config'
 import { possiblyUniqueInArray, safeIndex, stripNulls, uniqBy } from './array-utils'
@@ -15,6 +14,7 @@ import {
   switchEditorMode,
 } from '../../components/editor/actions/action-creators'
 import { EditorModes, existingComment } from '../../components/editor/editor-modes'
+import { useMyUserId } from './multiplayer-hooks'
 
 export type MultiplayerColor = {
   background: string
@@ -197,7 +197,7 @@ export function useUpdateRemixSceneRouteInLiveblocks() {
 }
 
 export function useIsOnSameRemixRoute() {
-  const { id } = useSelf()
+  const id = useMyUserId()
   const remixSceneRoutes = useStorage((store) => store.remixSceneRoutes)
 
   return (params: { otherUserId: string; remixSceneDataLabel: string }): boolean => {
