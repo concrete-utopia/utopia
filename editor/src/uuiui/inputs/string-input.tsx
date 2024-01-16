@@ -10,7 +10,6 @@ import { getControlStyles } from '../../components/inspector/common/control-styl
 import { preventDefault, stopPropagation } from '../../components/inspector/common/inspector-utils'
 import { useColorTheme } from '../styles/theme'
 import { InspectorInputEmotionStyle, getControlStylesAwarePlaceholder } from './base-input'
-import { useIsMyProject } from '../../components/editor/store/collaborative-editing'
 import { useControlsDisabledInSubtree } from '../utilities/disable-subtree'
 
 interface StringInputOptions {
@@ -200,6 +199,7 @@ export const HeadlessStringInput = React.forwardRef<HTMLInputElement, HeadlessSt
       <input
         ref={composeRefs(ref, propsRef)}
         {...otherProps}
+        disabled={disabled}
         onKeyDown={handleOnKeyDown}
         onFocus={handleOnFocus}
       />

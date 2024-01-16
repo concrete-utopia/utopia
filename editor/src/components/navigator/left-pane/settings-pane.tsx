@@ -43,6 +43,7 @@ import { useGridPanelState } from '../../canvas/grid-panels-state'
 import { notice } from '../../common/notice'
 import { gridMenuDefaultPanels } from '../../canvas/stored-layout'
 import { usePermissions } from '../../editor/store/permissions'
+import { DisableControlsInSubtree } from '../../../uuiui/utilities/disable-subtree'
 
 const themeOptions = [
   {
@@ -270,11 +271,9 @@ export const SettingsPane = React.memo(() => {
             </Button>
           </a>
         </UIGridRow>
-        <UIGridRow padded variant='<---1fr--->|------172px-------|'>
-          <span style={{ color: colorTheme.fg2.value }}>Name</span>
-          {!canEditProject ? (
-            <span>{name}</span>
-          ) : (
+        <DisableControlsInSubtree disable={!canEditProject}>
+          <UIGridRow padded variant='<---1fr--->|------172px-------|'>
+            <span style={{ color: colorTheme.fg2.value }}>Name</span>
             <StringInput
               testId='projectName'
               value={name}
@@ -283,13 +282,9 @@ export const SettingsPane = React.memo(() => {
               style={{ width: 150 }}
               onBlur={handleBlurProjectName}
             />
-          )}
-        </UIGridRow>
-        <UIGridRow padded variant='<---1fr--->|------172px-------|'>
-          <span style={{ color: colorTheme.fg2.value }}> Description </span>
-          {!canEditProject ? (
-            <span>{description}</span>
-          ) : (
+          </UIGridRow>
+          <UIGridRow padded variant='<---1fr--->|------172px-------|'>
+            <span style={{ color: colorTheme.fg2.value }}> Description </span>
             <StringInput
               testId='projectDescription'
               value={description}
@@ -298,8 +293,8 @@ export const SettingsPane = React.memo(() => {
               onBlur={handleBlurProjectDescription}
               style={{ width: 150 }}
             />
-          )}
-        </UIGridRow>
+          </UIGridRow>
+        </DisableControlsInSubtree>
         {when(
           userState.loginState.type === 'LOGGED_IN',
           <div
