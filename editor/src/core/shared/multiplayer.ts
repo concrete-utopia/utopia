@@ -199,6 +199,9 @@ export function useUpdateRemixSceneRouteInLiveblocks() {
 export function useIsOnSameRemixRoute() {
   const id = useMyUserId()
   const remixSceneRoutes = useStorage((store) => store.remixSceneRoutes)
+  if (id == null) {
+    return () => true
+  }
 
   return (params: { otherUserId: string; remixSceneDataLabel: string }): boolean => {
     const remixScenePathForMe: string | null =
