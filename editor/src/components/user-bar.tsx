@@ -415,7 +415,7 @@ interface AvatarPictureProps {
   resolved?: boolean
 }
 
-export const AvatarPicture = React.memo((props: AvatarPictureProps) => {
+const AvatarPicture = React.memo((props: AvatarPictureProps) => {
   const url = React.useMemo(() => {
     return isDefaultAuth0AvatarURL(props.url ?? null) ? null : props.url
   }, [props.url])
