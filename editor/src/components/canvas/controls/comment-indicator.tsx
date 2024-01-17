@@ -495,25 +495,20 @@ const CommentIndicatorWrapper = React.memo((props: CommentIndicatorWrapper) => {
   const animDuration = 0.1
 
   React.useEffect(() => {
-    if (expanded) {
-      void animateAvatar(
-        avatarRef.current,
-        { top: baseMultiplayerAvatarStyle.top, left: baseMultiplayerAvatarStyle.left },
-        { duration: animDuration },
-      )
-    } else {
-      void animateAvatar(avatarRef.current, { top: 0, left: 0 }, { duration: animDuration / 2 })
-    }
+    void animateAvatar(
+      avatarRef.current,
+      {
+        top: expanded ? baseMultiplayerAvatarStyle.top : 0,
+        left: expanded ? baseMultiplayerAvatarStyle.left : 0,
+      },
+      {
+        duration: expanded ? animDuration : animDuration / 2,
+      },
+    )
   }, [expanded, avatarRef, animateAvatar])
 
   if (user == null) {
     return <Comment {...commentProps} />
-  }
-
-  const initialCommentAnimationTarget: Target = {
-    width: 0,
-    height: 0,
-    opacity: 0,
   }
 
   return (
@@ -540,9 +535,21 @@ const CommentIndicatorWrapper = React.memo((props: CommentIndicatorWrapper) => {
         {when(
           expanded,
           <motion.div
-            initial={initialCommentAnimationTarget}
-            animate={{ width: 250, height: 'auto', opacity: 1 }}
-            exit={initialCommentAnimationTarget}
+            initial={{
+              width: 0,
+              height: 0,
+              opacity: 0,
+            }}
+            animate={{
+              width: 250,
+              height: 'auto',
+              opacity: 1,
+            }}
+            exit={{
+              width: 0,
+              height: 0,
+              opacity: 0,
+            }}
             transition={{ duration: animDuration }}
           >
             <Comment {...commentProps} />
