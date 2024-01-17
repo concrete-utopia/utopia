@@ -453,11 +453,11 @@ lookupGithubAuthenticationDetails metrics pool userId = invokeAndMeasure (_getGi
   pure $ fmap githubAuthenticationDetailsFromRow $ listToMaybe githubAuthenticationDetails
 
 insertCollaborationControl :: Connection -> Text -> Text -> Text -> UTCTime -> IO ()
-insertCollaborationControl connection ownerId projectId collaborationEditor currentTime = do
+insertCollaborationControl connection userId projectId collaborationEditor currentTime = do
   let newLastSeenTimeout = addUTCTime collaborationLastSeenTimeoutWindow currentTime
   void $ runInsert_ connection $ Insert
                                 { iTable = projectCollaborationTable
-                                , iRows = [toFields (projectId, collaborationEditor, newLastSeenTimeout, Just ownerId)]
+                                , iRows = [toFields (projectId, collaborationEditor, newLastSeenTimeout, Just userId)]
                                 , iReturning = rCount
                                 , iOnConflict = Nothing
                                 }
@@ -466,60 +466,66 @@ collaborationLastSeenTimeoutWindow :: NominalDiffTime
 collaborationLastSeenTimeoutWindow = secondsToNominalDiffTime 20
 
 sameOwner :: FieldNullable SqlText -> Text -> Field SqlBool
-sameOwner rowPossibleOwnerId ownerId = matchNullable (toFields True) (.== toFields ownerId) rowPossibleOwnerId
+sameOwner rowPossibleUserId userId = matchNullable (toFields True) (.== toFields userId) rowPossibleUserId
 
 sameProject :: Field SqlText -> Text -> Field SqlBool
 sameProject rowProjectId projectId =
   rowProjectId .== toFields projectId
 
 sameProjectAndOwner :: Field SqlText -> FieldNullable SqlText -> Text -> Text -> Field SqlBool
-sameProjectAndOwner rowProjectId rowPossibleOwnerId projectId ownerId =
-  sameProject rowProjectId projectId .&& sameOwner rowPossibleOwnerId ownerId
+sameProjectAndOwner rowProjectId rowPossibleUserId projectId userId =
+  sameProject rowProjectId projectId .&& sameOwner rowPossibleUserId userId
 
 updateCollaborationLastSeenTimeout :: Connection -> Text -> Text -> Text -> UTCTime -> IO ()
-updateCollaborationLastSeenTimeout connection ownerId projectId newCollaborationEditor newLastSeenTimeout = do
+updateCollaborationLastSeenTimeout connection userId projectId newCollaborationEditor newLastSeenTimeout = do
   void $ runUpdate_ connection $ Update
                                { uTable = projectCollaborationTable
-                               , uUpdateWith = updateEasy (\(rowProjectId, _, _, _) -> (rowProjectId, toFields newCollaborationEditor, toFields newLastSeenTimeout, toFields $ Just ownerId))
-                               , uWhere = (\(rowProjectId, _, _, rowPossibleOwnerId) -> sameProjectAndOwner rowProjectId rowPossibleOwnerId projectId ownerId)
+                               , uUpdateWith = updateEasy (\(rowProjectId, _, _, _) -> (rowProjectId, toFields newCollaborationEditor, toFields newLastSeenTimeout, toFields $ Just userId))
+                               , uWhere = (\(rowProjectId, _, _, rowPossibleUserId) -> sameProjectAndOwner rowProjectId rowPossibleUserId projectId userId)
                                , uReturning = rCount
                                }
 
 maybeClaimExistingCollaborationControl :: Connection -> Text -> Maybe Text -> Text -> Text -> Text -> UTCTime -> UTCTime -> IO Bool
-maybeClaimExistingCollaborationControl connection ownerId currentPossibleOwnerId projectId currentCollaborationEditor newCollaborationEditor currentLastSeenTimeout currentTime
-  | Just ownerId /= currentPossibleOwnerId && isJust currentPossibleOwnerId && currentLastSeenTimeout >= currentTime= pure False
-  | currentCollaborationEditor == newCollaborationEditor = updateLastSeen
-  | currentLastSeenTimeout < currentTime                 = updateLastSeen
-  | otherwise                                            = pure False
+maybeClaimExistingCollaborationControl connection userId currentPossibleUserId projectId currentCollaborationEditor newCollaborationEditor currentLastSeenTimeout currentTime
+  -- Different user, but the current entry means they cannot claim control because the timeout hasn't expired.
+  | Just userId /= currentPossibleUserId 
+      && isJust currentPossibleUserId
+      && currentLastSeenTimeout >= currentTime              = pure False
+  -- The same editor is trying to claim control again, so allow them to update it.
+  | currentCollaborationEditor == newCollaborationEditor    = updateLastSeen
+  -- The same user is trying to claim control but for what must be a different editor and the timeout has expired.
+  | currentLastSeenTimeout < currentTime                    = updateLastSeen
+  -- Refuse in all other cases.
+  | otherwise                                               = pure False
   where
     newTimeout = addUTCTime collaborationLastSeenTimeoutWindow currentTime
-    updateLastSeen = updateCollaborationLastSeenTimeout connection ownerId projectId newCollaborationEditor newTimeout >> pure True
+    updateLastSeen = updateCollaborationLastSeenTimeout connection userId projectId newCollaborationEditor newTimeout >> pure True
 
 maybeClaimCollaborationControl :: DatabaseMetrics -> DBPool -> IO UTCTime -> Text -> Text -> Text -> IO Bool
-maybeClaimCollaborationControl metrics pool getTime ownerId projectId collaborationEditor = do
+maybeClaimCollaborationControl metrics pool getTime userId projectId collaborationEditor = do
   currentTime <- getTime
   invokeAndMeasure (_maybeClaimCollaborationControlMetrics metrics) $ usePool pool $ \connection -> do
     withTransaction connection $ do
       -- Find any existing entries (should only be one).
       collaborationEditorIdsWithLastSeen <- runSelect connection $ do
-        (rowProjectId, rowCollaborationEditor, rowLastSeenTimeout, rowPossibleOwnerId) <- projectCollaborationSelect
+        (rowProjectId, rowCollaborationEditor, rowLastSeenTimeout, rowPossibleUserId) <- projectCollaborationSelect
         where_ $ sameProject rowProjectId projectId
-        pure (rowCollaborationEditor, rowLastSeenTimeout, rowPossibleOwnerId)
+        pure (rowCollaborationEditor, rowLastSeenTimeout, rowPossibleUserId)
       -- Get the first if there is one.
       let maybeCurrentCollaborationEditorAndLastSeen = listToMaybe collaborationEditorIdsWithLastSeen
       -- Create the expression that inserts an entry and returns true to indicate this was successfully claimed.
-      let insertCurrent = insertCollaborationControl connection ownerId projectId collaborationEditor currentTime >> pure True
+      let insertCurrent = insertCollaborationControl connection userId projectId collaborationEditor currentTime >> pure True
       -- Handle the current state.
       case maybeCurrentCollaborationEditorAndLastSeen of
         -- There's no current entry in the table, so add one.
         Nothing -> insertCurrent
         -- If the current entry is the same as the one we're trying to insert return true, otherwise
         -- return false but in either case make no changes to the database.
-        Just (currentCollaborationEditor, currentLastSeenTimeout, currentPossibleOwnerId) ->
-          maybeClaimExistingCollaborationControl connection ownerId currentPossibleOwnerId projectId currentCollaborationEditor collaborationEditor currentLastSeenTimeout currentTime
+        Just (currentCollaborationEditor, currentLastSeenTimeout, currentPossibleUserId) ->
+          maybeClaimExistingCollaborationControl connection userId currentPossibleUserId projectId currentCollaborationEditor collaborationEditor currentLastSeenTimeout currentTime
 
 forceClaimCollaborationControl :: DatabaseMetrics -> DBPool -> IO UTCTime -> Text -> Text -> Text -> IO ()
-forceClaimCollaborationControl metrics pool getTime ownerId projectId collaborationEditor = do
+forceClaimCollaborationControl metrics pool getTime userId projectId collaborationEditor = do
   currentTime <- getTime
   invokeAndMeasure (_forceClaimCollaborationControlMetrics metrics) $ usePool pool $ \connection -> do
     withTransaction connection $ do
@@ -530,22 +536,22 @@ forceClaimCollaborationControl metrics pool getTime ownerId projectId collaborat
                                , dReturning = rCount
                                }
       -- Inserts an entry for this collaborator.
-      insertCollaborationControl connection ownerId projectId collaborationEditor currentTime
+      insertCollaborationControl connection userId projectId collaborationEditor currentTime
 
 releaseCollaborationControl :: DatabaseMetrics -> DBPool -> Text -> Text -> Text -> IO ()
-releaseCollaborationControl metrics pool ownerId projectId collaborationEditor = do
+releaseCollaborationControl metrics pool userId projectId collaborationEditor = do
   invokeAndMeasure (_releaseCollaborationControlMetrics metrics) $ usePool pool $ \connection -> do
     -- Delete any matching values for this project and collaboration editor.
     void $ runDelete_ connection $ Delete
                               { dTable = projectCollaborationTable
-                              , dWhere = (\(rowProjectId, rowCollaborationEditor, _, rowPossibleOwnerId) -> sameProjectAndOwner rowProjectId rowPossibleOwnerId projectId ownerId .&& rowCollaborationEditor .== toFields collaborationEditor)
+                              , dWhere = (\(rowProjectId, rowCollaborationEditor, _, rowPossibleUserId) -> sameProjectAndOwner rowProjectId rowPossibleUserId projectId userId .&& rowCollaborationEditor .== toFields collaborationEditor)
                               , dReturning = rCount
                               }
 
 deleteCollaborationControlByCollaborator :: DatabaseMetrics -> DBPool -> Text -> Text -> IO ()
-deleteCollaborationControlByCollaborator metrics pool ownerId collaborationEditor = invokeAndMeasure (_deleteCollaborationControlByCollaboratorMetrics metrics) $ usePool pool $ \connection -> do
+deleteCollaborationControlByCollaborator metrics pool userId collaborationEditor = invokeAndMeasure (_deleteCollaborationControlByCollaboratorMetrics metrics) $ usePool pool $ \connection -> do
   void $ runDelete_ connection $ Delete
                                { dTable = projectCollaborationTable
-                               , dWhere = (\(_, rowCollaborationEditor, _, rowPossibleOwnerId) -> sameOwner rowPossibleOwnerId ownerId .&& rowCollaborationEditor .== toFields collaborationEditor)
+                               , dWhere = (\(_, rowCollaborationEditor, _, rowPossibleUserId) -> sameOwner rowPossibleUserId userId .&& rowCollaborationEditor .== toFields collaborationEditor)
                                , dReturning = rCount
                                }
