@@ -29,6 +29,8 @@ import type { ElementInstanceMetadata } from '../shared/element-template'
 import * as EP from '../shared/element-path'
 import { getCurrentTheme } from '../../components/editor/store/editor-state'
 import { useMyUserId } from '../shared/multiplayer-hooks'
+import { usePermissions } from '../../components/editor/store/permissions'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 export function useCanvasCommentThreadAndLocation(comment: CommentId): {
   location: CanvasPoint | null
@@ -379,4 +381,10 @@ export function useDataThemeAttributeOnBody() {
   React.useEffect(() => {
     document.body.setAttribute('data-theme', theme)
   }, [theme])
+}
+
+export function useCanComment() {
+  const canComment = usePermissions().comment
+
+  return isFeatureEnabled('Multiplayer') && canComment
 }

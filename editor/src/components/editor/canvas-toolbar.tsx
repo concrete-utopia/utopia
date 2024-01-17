@@ -67,11 +67,10 @@ import {
   useComponentSelectorStyles,
   useGetInsertableComponents,
 } from '../canvas/ui/floating-insert-menu'
-import { isFeatureEnabled } from '../../utils/feature-switches'
 import { RightMenuTab, floatingInsertMenuStateSwap } from './store/editor-state'
 import { useStatus, useThreads } from '../../../liveblocks.config'
 import { useAllowedToEditProject, useIsMyProject } from './store/collaborative-editing'
-import { useReadThreads } from '../../core/commenting/comment-hooks'
+import { useCanComment, useReadThreads } from '../../core/commenting/comment-hooks'
 import { pluck } from '../../core/shared/array-utils'
 import { MultiplayerWrapper } from '../../utils/multiplayer-wrapper'
 
@@ -383,6 +382,8 @@ export const CanvasToolbar = React.memo(() => {
     'TopMenu editorMode',
   )
 
+  const canComment = useCanComment()
+
   const isFollowMode = editorMode === 'follow'
   const zoom100pct = React.useCallback(() => {
     if (!isFollowMode) {
@@ -556,7 +557,7 @@ export const CanvasToolbar = React.memo(() => {
           />
         </Tooltip>
         {when(
-          isFeatureEnabled('Multiplayer'),
+          canComment,
           <div style={{ display: 'flex', width: 36 }}>
             <Tooltip title={commentButtonTooltip} placement='bottom'>
               <InsertModeButton
