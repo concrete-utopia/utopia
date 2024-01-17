@@ -22,7 +22,7 @@ import {
   toggleStylePropPath,
   toggleStylePropPaths,
 } from '../inspector/common/css-utils'
-import type { EditorAction, EditorDispatch, SwitchEditorMode } from './action-types'
+import type { EditorAction, EditorDispatch, LoginState, SwitchEditorMode } from './action-types'
 import * as EditorActions from './actions/action-creators'
 import * as MetaActions from './actions/meta-actions'
 import {
@@ -108,7 +108,7 @@ import {
   WRAP_IN_DIV,
   COMMENT_SHORTCUT,
 } from './shortcut-definitions'
-import type { EditorState, LockedElements, NavigatorEntry } from './store/editor-state'
+import type { EditorState, LockedElements, NavigatorEntry, UserState } from './store/editor-state'
 import { floatingInsertMenuStateSwap, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
 import { pickColorWithEyeDropper } from '../canvas/canvas-utils'
@@ -148,6 +148,7 @@ import { wrapInDivStrategy } from './wrap-in-callbacks'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { type ProjectServerState } from './store/project-server-state'
 import { allowedToEditProject } from './store/collaborative-editing'
+import { hasCommentPermission, getPermissions } from './store/permissions'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -357,6 +358,7 @@ export function handleKeyDown(
   event: KeyboardEvent,
   editor: EditorState,
   projectServerState: ProjectServerState,
+  loginState: LoginState,
   metadataRef: { current: ElementInstanceMetadataMap },
   navigatorTargetsRef: { current: Array<NavigatorEntry> },
   namesByKey: ShortcutNamesByKey,
@@ -366,6 +368,7 @@ export function handleKeyDown(
   preventBrowserShortcuts(editor, event)
 
   const allowedToEdit = allowedToEditProject(projectServerState)
+  const canComment = isFeatureEnabled('Multiplayer') && hasCommentPermission(loginState)
 
   // Ensure that any key presses are appropriately recorded.
   const key = Keyboard.keyCharacterForCode(event.keyCode)
@@ -453,7 +456,7 @@ export function handleKeyDown(
         return []
       },
       [COMMENT_SHORTCUT]: () => {
-        if (isFeatureEnabled('Multiplayer')) {
+        if (canComment) {
           return [
             EditorActions.switchEditorMode(EditorModes.commentMode(null, 'not-dragging')),
             EditorActions.setRightMenuTab(RightMenuTab.Comments),

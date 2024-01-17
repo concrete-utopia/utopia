@@ -8,7 +8,7 @@ import {
   NavigatorStateKeepDeepEquality,
   ProjectServerStateKeepDeepEquality,
 } from './store-deep-equality-instances'
-import type { DerivedState, EditorStorePatched } from './editor-state'
+import type { DerivedState, EditorStorePatched, UserState } from './editor-state'
 import {
   logAfterStoreUpdate,
   logBeforeStoreUpdate,
@@ -307,6 +307,15 @@ export const Substores = {
   },
   projectServerState: (a: ProjectServerStateSubstate, b: ProjectServerStateSubstate) => {
     return ProjectServerStateKeepDeepEquality(a.projectServerState, b.projectServerState).areEqual
+  },
+  userStateAndProjectServerState: (
+    a: ProjectServerStateSubstate & UserStateSubstate,
+    b: ProjectServerStateSubstate & UserStateSubstate,
+  ) => {
+    return (
+      a.userState === b.userState &&
+      ProjectServerStateKeepDeepEquality(a.projectServerState, b.projectServerState).areEqual
+    )
   },
   variablesInScope: (a: VariablesInScopeSubstate, b: VariablesInScopeSubstate) => {
     return keysEquality(variablesInScopeSubstateKeys, a.editor, b.editor)

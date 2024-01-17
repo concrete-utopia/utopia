@@ -12,7 +12,11 @@ import {
   useStorage,
   useUpdateMyPresence,
 } from '../../../liveblocks.config'
-import { getCollaborator, useAddMyselfToCollaborators } from '../../core/commenting/comment-hooks'
+import {
+  getCollaborator,
+  useAddMyselfToCollaborators,
+  useCanComment,
+} from '../../core/commenting/comment-hooks'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../core/shared/array-utils'
 import * as EP from '../../core/shared/element-path'
@@ -136,6 +140,8 @@ export const MultiplayerPresence = React.memo(() => {
     }
   }, [room.id, roomId, dispatch])
 
+  const canComment = useCanComment()
+
   if (!isLoggedIn(loginState)) {
     return null
   }
@@ -144,9 +150,9 @@ export const MultiplayerPresence = React.memo(() => {
     <>
       <FollowingOverlay />
       <MultiplayerShadows />
-      <CommentIndicators />
+      {when(canComment, <CommentIndicators />)}
       <MultiplayerCursors />
-      {when(isCommentMode(mode) && mode.comment != null, <CommentPopup />)}
+      {when(canComment && isCommentMode(mode) && mode.comment != null, <CommentPopup />)}
     </>
   )
 })
