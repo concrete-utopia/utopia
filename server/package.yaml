@@ -131,17 +131,15 @@ tests:
         else:
           cpp-options: -DENABLE_EXTERNAL_TESTS=False
     main: Main.hs
-    ghc-options: +RTS -N1 -RTS
     source-dirs:
       - test
       - src
     dependencies:
       - hedgehog
-      - hspec
       - port-utils
       - random
       - servant-client-core
-      - tasty
+      - tasty ==1.5
       - tasty-hedgehog
-      - tasty-hspec
       - tasty-hunit
+      - HUnit

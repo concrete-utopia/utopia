@@ -18,9 +18,11 @@ import           Control.Lens
 import           Control.Monad.Free
 import           Control.Monad.RWS.Strict
 import           Data.IORef
+import           Data.Pool
 import           Data.Text
 import qualified Data.Text.Lazy                 as TL
 import           Data.Text.Lazy.Lens
+import           Data.Time.Clock
 import           Network.HTTP.Client            (Manager,
                                                  defaultManagerSettings,
                                                  newManager)
@@ -470,14 +472,14 @@ innerServerExecutor (ClaimCollaborationControl user projectID collaborationEdito
   pool <- fmap _projectPool ask
   projectOwnershipResult <- liftIO $ DB.checkIfProjectOwner metrics pool user projectID
   unless projectOwnershipResult $ throwError err400
-  ownershipResult <- liftIO $ DB.maybeClaimCollaborationControl metrics pool user projectID collaborationEditor
+  ownershipResult <- liftIO $ DB.maybeClaimCollaborationControl metrics pool getCurrentTime user projectID collaborationEditor
   pure $ action ownershipResult
 innerServerExecutor (SnatchCollaborationControl user projectID collaborationEditor action) = do
   metrics <- fmap _databaseMetrics ask
   pool <- fmap _projectPool ask
   projectOwnershipResult <- liftIO $ DB.checkIfProjectOwner metrics pool user projectID
   unless projectOwnershipResult $ throwError err400
-  liftIO $ DB.forceClaimCollaborationControl metrics pool user projectID collaborationEditor
+  liftIO $ DB.forceClaimCollaborationControl metrics pool getCurrentTime user projectID collaborationEditor
   pure action
 innerServerExecutor (ReleaseCollaborationControl user projectID collaborationEditor action) = do
   metrics <- fmap _databaseMetrics ask
@@ -516,6 +518,7 @@ startup DevServerResources{..} = do
   hashedFilenamesThread <- forkIO $ watchFilenamesWithHashes (_hashCache _assetsCaches) (_assetResultCache _assetsCaches) assetPathsAndBuilders
   return $ do
         killThread hashedFilenamesThread
+        destroyAllResources _projectPool
 
 serverPortFromResources :: DevServerResources -> [Int]
 serverPortFromResources resources = [_serverPort resources, _serverPort resources + 1]

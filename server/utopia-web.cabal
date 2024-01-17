@@ -167,6 +167,8 @@ test-suite utopia-web-test
   type: exitcode-stdio-1.0
   main-is: Main.hs
   other-modules:
+      Test.Utopia.Web.Database
+      Test.Utopia.Web.Database.Utils
       Test.Utopia.Web.Endpoints
       Test.Utopia.Web.Executors.Test
       Test.Utopia.Web.Packager.NPM
@@ -212,11 +214,12 @@ test-suite utopia-web-test
       src
   default-extensions:
       NoImplicitPrelude
-  ghc-options: -Wall -Werror -threaded -fno-warn-orphans -Wno-unused-imports -Wno-deprecations -rtsopts -O2 +RTS -N1 -RTS
+  ghc-options: -Wall -Werror -threaded -fno-warn-orphans -Wno-unused-imports -Wno-deprecations -rtsopts -O2
   extra-libraries:
       z
   build-depends:
-      JuicyPixels
+      HUnit
+    , JuicyPixels
     , aeson ==2.0.3.0
     , aeson-pretty
     , aws
@@ -245,7 +248,6 @@ test-suite utopia-web-test
     , hashable
     , hedgehog
     , hoauth2
-    , hspec
     , http-api-data
     , http-client
     , http-client-tls
@@ -290,9 +292,8 @@ test-suite utopia-web-test
     , string-conversions
     , tagsoup
     , tar
-    , tasty
+    , tasty ==1.5
     , tasty-hedgehog
-    , tasty-hspec
     , tasty-hunit
     , temporary
     , text

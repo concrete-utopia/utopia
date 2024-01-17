@@ -97,6 +97,48 @@ jobs:
       branch: PR
       pnpm-store-path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
 
+  test-server:
+    name: Test Server
+    timeout-minutes: 25
+    runs-on: ubuntu-latest
+    env:
+      UTOPIA_SHA: ${{ github.sha }}
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Cache .cabal/packages
+        uses: actions/cache@v2
+        with:
+          path: .cabal/packages
+          key: ${{ runner.os }}-${{ matrix.ghc }}-cabal-packages-2
+      - name: Cache .cabal/store
+        uses: actions/cache@v2
+        with:
+          path: .cabal/store
+          key: ${{ runner.os }}-${{ matrix.ghc }}-cabal-store-2
+      - name: Cache dist-newstyle
+        uses: actions/cache@v2
+        with:
+          path: server/dist-newstyle
+          key: ${{ runner.os }}-${{ matrix.ghc }}-server-dist-newstyle-2
+      - name: Cache server test result
+        id: cache-server-tests
+        uses: actions/cache@v2
+        with:
+          # For the tests it doesn't really matter what we cache
+          path: server/src
+          key: ${{ runner.os }}-server-tests-master-${{ hashFiles('server/src/**') }}-${{ hashFiles('server/test/**') }}-${{ hashFiles('server/cabal.project.freeze') }}
+      - name: Install nix
+        uses: cachix/install-nix-action@v12
+        with:
+          nix_path: nixpkgs=https://github.com/NixOS/nixpkgs/archive/6120ac5cd201f6cb593d1b80e861be0342495be9.tar.gz
+      - name: Start PostgreSQL
+        if: steps.cache-server-tests.outputs.cache-hit != 'true'
+        run: nix-shell --arg includeEditorBuildSupport false --arg includeRunLocallySupport false --arg includeDatabaseSupport true --run start-postgres-background
+      - name: Run the tests
+        if: steps.cache-server-tests.outputs.cache-hit != 'true'
+        run: nix-shell --arg includeEditorBuildSupport false --arg includeRunLocallySupport false --run test-server-ci
+
   deploy-staging:
     name: Deploy Staging Editor
     timeout-minutes: 15

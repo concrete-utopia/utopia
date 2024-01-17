@@ -17,6 +17,8 @@ module Utopia.Web.Executors.Production where
 import           Control.Monad.Free
 import           Control.Monad.RWS.Strict
 import           Data.IORef
+import           Data.Pool
+import           Data.Time.Clock
 import           Network.HTTP.Client            (Manager, newManager)
 import           Network.HTTP.Client.TLS
 import           Protolude                      hiding (Handler)
@@ -373,14 +375,14 @@ innerServerExecutor (ClaimCollaborationControl user projectID collaborationEdito
   pool <- fmap _projectPool ask
   projectOwnershipResult <- liftIO $ DB.checkIfProjectOwner metrics pool user projectID
   unless projectOwnershipResult $ throwError err400
-  ownershipResult <- liftIO $ DB.maybeClaimCollaborationControl metrics pool user projectID collaborationEditor
+  ownershipResult <- liftIO $ DB.maybeClaimCollaborationControl metrics pool getCurrentTime user projectID collaborationEditor
   pure $ action ownershipResult
 innerServerExecutor (SnatchCollaborationControl user projectID collaborationEditor action) = do
   metrics <- fmap _databaseMetrics ask
   pool <- fmap _projectPool ask
   projectOwnershipResult <- liftIO $ DB.checkIfProjectOwner metrics pool user projectID
   unless projectOwnershipResult $ throwError err400
-  liftIO $ DB.forceClaimCollaborationControl metrics pool user projectID collaborationEditor
+  liftIO $ DB.forceClaimCollaborationControl metrics pool getCurrentTime user projectID collaborationEditor
   pure action
 innerServerExecutor (ReleaseCollaborationControl user projectID collaborationEditor action) = do
   metrics <- fmap _databaseMetrics ask
@@ -462,6 +464,7 @@ startup ProductionServerResources{..} = do
   hashedFilenamesThread <- forkIO $ watchFilenamesWithHashes (_hashCache _assetsCaches) (_assetResultCache _assetsCaches) assetPathsAndBuilders
   return $ do
         killThread hashedFilenamesThread
+        destroyAllResources _projectPool
 
 serverPortFromResources :: ProductionServerResources -> [Int]
 serverPortFromResources resources = [_serverPort resources]

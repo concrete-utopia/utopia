@@ -9,7 +9,8 @@ import           Data.Text               (pack)
 import           Protolude
 import           System.FilePath
 import           System.Log.FastLogger
-import           Test.Hspec
+import           Test.Tasty
+import           Test.Tasty.HUnit
 import           Utopia.Web.Metrics
 import           Utopia.Web.Packager.NPM
 
@@ -44,22 +45,35 @@ createPrerequisites = do
 cleanupPrerequisites :: Prerequisites -> IO ()
 cleanupPrerequisites (_, loggerShutdown, _, _, _) = loggerShutdown
 
-withPrerequisites :: (Prerequisites -> IO ()) -> IO ()
-withPrerequisites = bracket createPrerequisites cleanupPrerequisites
+withPrerequisites :: TestName -> (IO Prerequisites -> Assertion) -> TestTree
+withPrerequisites testName prerequisiteToAssertion =
+  let wrapper = withResource createPrerequisites cleanupPrerequisites
+  in  wrapper (\ioResource -> testCase testName $ prerequisiteToAssertion ioResource)
 
-npmSpec :: Bool -> Spec
-npmSpec enableExternalTests = do
-  let toggledDescribe = if enableExternalTests then describe else xdescribe
-  around withPrerequisites $ do
-    toggledDescribe "withInstalledProject" $ do
-      it "should have the various dependencies in node_modules for react" $ \(logger, _, _, npmMetrics, semaphore) -> do
-        result <- runResourceT $ sourceToList $ withInstalledProject logger npmMetrics semaphore "react@16.13.1" getNodeModulesSubDirectories
-        (sort result) `shouldBe` [".bin", ".yarn-integrity", "js-tokens", "loose-envify", "object-assign", "prop-types", "react", "react-is"]
-      it "should fail for a non-existent project" $ \(logger, _, _, npmMetrics, semaphore) -> do
-        (runResourceT $ sourceToList $ withInstalledProject logger npmMetrics semaphore "non-existent-project-that-will-never-exist@9.9.9.9.9.9" getNodeModulesSubDirectories) `shouldThrow` anyIOException
-    toggledDescribe "getModuleAndDependenciesFiles" $ do
-      it "should get a bunch of .cjs, .js, .mjs and package.json files" $ \(logger, _, _, npmMetrics, semaphore) -> do
-        result <- runResourceT $ sourceToList $ withInstalledProject logger npmMetrics semaphore "fflate@0.7.1" getModuleAndDependenciesFiles
-        let filteredResult = filter (\(_, v) -> v /= encodedPlaceholder) result
-        let sortedFilenames = sort $ fmap pack $ toListOf (traverse . _1) filteredResult
-        sortedFilenames `shouldBe` expectedFilenames
+npmSpec :: Bool -> TestTree
+npmSpec enableExternalTests =
+  let toggledGroup groupName tests = if enableExternalTests then sequentialTestGroup groupName AllSucceed tests else testGroup groupName []
+      withInstalledProjectTests = toggledGroup "withInstalledProject"
+        [ withPrerequisites "should have the various dependencies in node_modules for react" $ \getPrerequisites -> do
+            (logger, _, _, npmMetrics, semaphore) <- getPrerequisites
+            result <- runResourceT $ sourceToList $ withInstalledProject logger npmMetrics semaphore "react@16.13.1" getNodeModulesSubDirectories
+            assertEqual "Dependencies returned incorrectly" (sort result) [".bin", ".yarn-integrity", "js-tokens", "loose-envify", "object-assign", "prop-types", "react", "react-is"]
+        , withPrerequisites "should have the various dependencies in node_modules for react" $ \getPrerequisites -> do
+            (logger, _, _, npmMetrics, semaphore) <- getPrerequisites
+            result <- runResourceT $ sourceToList $ withInstalledProject logger npmMetrics semaphore "react@16.13.1" getNodeModulesSubDirectories
+            assertEqual "Dependencies returned incorrectly" (sort result) [".bin", ".yarn-integrity", "js-tokens", "loose-envify", "object-assign", "prop-types", "react", "react-is"]
+        , withPrerequisites "should fail for a non-existent project" $ \getPrerequisites -> do
+            (logger, _, _, npmMetrics, semaphore) <- getPrerequisites
+            let toCheck = runResourceT $ sourceToList $ withInstalledProject logger npmMetrics semaphore "non-existent-project-that-will-never-exist@9.9.9.9.9.9" getNodeModulesSubDirectories
+            result <- catch (toCheck >> pure True) (const $ pure False :: SomeException -> IO Bool)
+            assertBool "Non-existent project should cause failure." $ not result
+        ]
+      getModuleAndDependenciesFilesTests = toggledGroup "getModuleAndDependenciesFiles"
+        [ withPrerequisites "should get a bunch of .cjs, .js, .mjs and package.json files" $ \getPrerequisites -> do
+            (logger, _, _, npmMetrics, semaphore) <- getPrerequisites
+            result <- runResourceT $ sourceToList $ withInstalledProject logger npmMetrics semaphore "fflate@0.7.1" getModuleAndDependenciesFiles
+            let filteredResult = filter (\(_, v) -> v /= encodedPlaceholder) result
+            let sortedFilenames = sort $ fmap pack $ toListOf (traverse . _1) filteredResult
+            assertEqual "Filenames of the dependencies are incorrect" sortedFilenames expectedFilenames
+        ]
+  in  sequentialTestGroup "NPM" AllSucceed [withInstalledProjectTests, getModuleAndDependenciesFilesTests]
