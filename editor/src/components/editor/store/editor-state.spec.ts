@@ -8,6 +8,7 @@ import {
 } from './editor-state'
 import {
   defaultProjectContentsForNormalising,
+  getCodeForFile,
   getTextFileByPath,
 } from '../../custom-code/code-file.test-utils'
 import {
@@ -33,23 +34,6 @@ import { addImport, emptyImports } from '../../../core/workers/common/project-fi
 import { omit } from '../../../core/shared/object-utils'
 import * as EP from '../../../core/shared/element-path'
 import { sampleJsxComponents } from '../../../core/model/test-ui-js-file.test-utils'
-
-function getCodeForFile(actualResult: EditorState, filename: string): string {
-  const codeFile = getTextFileByPath(actualResult.projectContents, filename)
-  const parsed = codeFile.fileContents.parsed
-  if (isParseSuccess(parsed)) {
-    return printCode(
-      filename,
-      printCodeOptions(false, true, false, true),
-      parsed.imports,
-      parsed.topLevelElements,
-      parsed.jsxFactoryFunction,
-      parsed.exportsDetail,
-    )
-  } else {
-    throw new Error('No parsed version of the file.')
-  }
-}
 
 describe('modifyUnderlyingTarget', () => {
   const startingEditorModel = {

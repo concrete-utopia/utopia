@@ -479,7 +479,7 @@ function findIndexPositionInParent(
   )
 }
 
-function insertElementIntoJSXConditional(
+export function insertElementIntoJSXConditional(
   editor: EditorState,
   staticTarget: ConditionalClauseInsertionPath,
   elementToInsert: JSXElement | JSXFragment,
@@ -491,6 +491,15 @@ function insertElementIntoJSXConditional(
     (element) => element,
     (success, _, underlyingFilePath) => {
       const components = getUtopiaJSXComponentsFromSuccess(success)
+
+      const { imports, duplicateNameMapping } = mergeImports(
+        underlyingFilePath,
+        success.imports,
+        importsToAdd,
+      )
+
+      let elementToInsertRenamed = renameJsxElementChild(elementToInsert, duplicateNameMapping)
+
       const updatedComponents = transformJSXComponentAtPath(
         components,
         getElementPathFromInsertionPath(staticTarget),
@@ -501,36 +510,24 @@ function insertElementIntoJSXConditional(
               clauseOptic,
               (clauseElement) => {
                 return {
-                  ...elementToInsert,
-                  children: [...elementToInsert.children, clauseElement],
+                  ...elementToInsertRenamed,
+                  children: [...elementToInsertRenamed.children, clauseElement],
                 }
               },
               oldRoot,
             )
           } else {
             return {
-              ...elementToInsert,
-              children: [...elementToInsert.children, oldRoot],
+              ...elementToInsertRenamed,
+              children: [...elementToInsertRenamed.children, oldRoot],
             }
           }
         },
       )
 
-      const { imports, duplicateNameMapping } = mergeImports(
-        underlyingFilePath,
-        success.imports,
-        importsToAdd,
-      )
-      const renamedUpdatedComponents = updatedComponents.map((component) => {
-        return {
-          ...component,
-          rootElement: renameJsxElementChild(component.rootElement, duplicateNameMapping),
-        }
-      })
-
       const updatedTopLevelElements = applyUtopiaJSXComponentsChanges(
         success.topLevelElements,
-        renamedUpdatedComponents,
+        updatedComponents,
       )
 
       return {
@@ -552,6 +549,14 @@ function insertConditionalIntoConditionalClause(
     editor,
     (element) => element,
     (success, _, underlyingFilePath) => {
+      const { imports, duplicateNameMapping } = mergeImports(
+        underlyingFilePath,
+        success.imports,
+        importsToAdd,
+      )
+
+      let elementToInsertRenamed = renameJsxElementChild(elementToInsert, duplicateNameMapping)
+
       const components = getUtopiaJSXComponentsFromSuccess(success)
       const updatedComponents = transformJSXComponentAtPath(
         components,
@@ -562,7 +567,7 @@ function insertConditionalIntoConditionalClause(
             return modify(
               clauseOptic,
               (clauseElement) => {
-                return { ...elementToInsert, whenTrue: clauseElement }
+                return { ...elementToInsertRenamed, whenTrue: clauseElement }
               },
               oldRoot,
             )
@@ -572,22 +577,9 @@ function insertConditionalIntoConditionalClause(
         },
       )
 
-      const { imports, duplicateNameMapping } = mergeImports(
-        underlyingFilePath,
-        success.imports,
-        importsToAdd,
-      )
-
-      const renamedUpdatedComponents = updatedComponents.map((component) => {
-        return {
-          ...component,
-          rootElement: renameJsxElementChild(component.rootElement, duplicateNameMapping),
-        }
-      })
-
       const updatedTopLevelElements = applyUtopiaJSXComponentsChanges(
         success.topLevelElements,
-        renamedUpdatedComponents,
+        updatedComponents,
       )
 
       return {
