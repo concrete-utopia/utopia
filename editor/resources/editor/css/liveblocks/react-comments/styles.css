@@ -633,7 +633,7 @@
 .lb-comment-avatar {
   inline-size: var(--lb-comment-avatar-size);
   flex: none;
-  visibility: hidden;
+  visibility: hidden; /* we're rolling our own avatars, for now we just ignore the default LB ones */
 }
 .lb-comment-details-labels {
   gap: calc(0.5 * var(--lb-spacing));
