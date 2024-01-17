@@ -513,7 +513,7 @@ const CommentIndicatorWrapper = React.memo((props: CommentIndicatorWrapper) => {
 
   return (
     <div
-      data-testid='animated-comment-wrapper'
+      data-testid='comment-indicator-wrapper'
       style={{
         position: 'relative',
         overflow: 'hidden',
