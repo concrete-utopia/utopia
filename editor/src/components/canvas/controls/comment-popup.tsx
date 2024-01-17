@@ -311,8 +311,8 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
       data-testid='comment-popup'
       style={{
         position: 'fixed',
-        top: point.y - 20,
-        left: point.x + 35,
+        top: point.y - 44,
+        left: point.x + 40,
         minWidth: 250,
         boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
         background: colorTheme.bg0.value,

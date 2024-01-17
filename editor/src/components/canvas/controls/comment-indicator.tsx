@@ -47,8 +47,6 @@ import { canvasPointToWindowPoint } from '../dom-lookup'
 import { useRemixNavigationContext } from '../remix/utopia-remix-root-component'
 import { CommentRepliesCounter } from './comment-replies-counter'
 
-const IndicatorSize = 24
-
 export const CommentIndicators = React.memo(() => {
   const projectId = useEditorState(
     Substores.restOfEditor,
@@ -185,22 +183,25 @@ interface CommentIndicatorUIProps {
 }
 
 function getIndicatorStyle(
-  canvasHeight: number,
   position: WindowPoint,
-  read: boolean,
-  resolved: boolean,
-  canvasScale: number,
-  isActive: boolean,
-  expanded: boolean,
+  params: {
+    read: boolean
+    resolved: boolean
+    isActive: boolean
+    expanded: boolean
+  },
 ) {
+  const { read, resolved, isActive, expanded } = params
+  const canvasHeight = getCanvasHeight()
+
+  const positionAdjust = 3 // px
+
   const base: Interpolation<Theme> = {
     cursor: 'auto',
     padding: 2,
     position: 'fixed',
-    bottom: canvasHeight - IndicatorSize - position.y - 3,
-    left: position.x - 3,
-    minWidth: IndicatorSize,
-    minHeight: IndicatorSize,
+    bottom: canvasHeight - position.y - positionAdjust,
+    left: position.x,
     background: read || expanded ? colorTheme.bg1.value : colorTheme.primary.value,
     borderRadius: '24px 24px 24px 0px',
     display: 'flex',
@@ -208,9 +209,8 @@ function getIndicatorStyle(
     justifyContent: 'center',
     boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
     border: '.4px solid #a3a3a340',
-    opacity: resolved ? 0.6 : 'undefined',
-    zoom: 1 / canvasScale,
-    zIndex: expanded ? 1 : 0,
+    opacity: resolved ? 0.6 : undefined,
+    zIndex: expanded ? 1 : 'auto',
   }
 
   const whenActive: Interpolation<Theme> = {
@@ -230,26 +230,14 @@ function getIndicatorStyle(
 export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) => {
   const { position, bgColor, fgColor, avatarUrl, avatarInitials, resolved, isActive, read } = props
 
-  const canvasScale = useEditorState(
-    Substores.canvas,
-    (store) => store.editor.canvas.scale,
-    'CommentIndicatorUI scale',
-  )
-
-  const canvasDiv = document.getElementById('canvas-root')
-  const canvasHeight = canvasDiv?.clientHeight ?? 0
-
   return (
     <div
-      css={getIndicatorStyle(
-        canvasHeight,
-        position,
-        read ?? true,
-        resolved,
-        canvasScale,
-        isActive,
-        true,
-      )}
+      css={getIndicatorStyle(position, {
+        read: read ?? true,
+        resolved: resolved,
+        isActive: isActive,
+        expanded: true,
+      })}
     >
       <MultiplayerAvatar
         color={{ background: bgColor, foreground: fgColor }}
@@ -362,9 +350,6 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
     cancelHover,
   ])
 
-  const canvasDiv = document.getElementById('canvas-root')
-  const canvasHeight = canvasDiv?.clientHeight ?? 0
-
   return (
     <div
       onMouseOver={onMouseOver}
@@ -372,15 +357,12 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
       onMouseDown={onMouseDown}
       onClick={onClick}
       data-testid='comment-indicator'
-      css={getIndicatorStyle(
-        canvasHeight,
-        position,
-        readByMe === 'read',
-        thread.metadata.resolved,
-        canvasScale,
-        isActive,
-        preview,
-      )}
+      css={getIndicatorStyle(position, {
+        read: readByMe === 'read',
+        resolved: thread.metadata.resolved,
+        isActive: isActive,
+        expanded: preview,
+      })}
     >
       <CommentIndicatorWrapper
         thread={thread}
@@ -571,3 +553,9 @@ const CommentIndicatorWrapper = React.memo((props: CommentIndicatorWrapper) => {
     </div>
   )
 })
+
+function getCanvasHeight(): number {
+  const canvasDiv = document.getElementById('canvas-root')
+  const canvasHeight = canvasDiv?.clientHeight ?? 0
+  return canvasHeight
+}
