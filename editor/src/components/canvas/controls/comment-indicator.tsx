@@ -368,7 +368,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
         thread={thread}
         expanded={preview}
         user={user}
-        comment={firstComment!}
+        comment={firstComment}
         showActions={false}
         style={{
           overflow: 'auto',
