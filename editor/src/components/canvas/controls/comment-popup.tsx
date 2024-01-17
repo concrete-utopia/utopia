@@ -317,7 +317,6 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
         boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
         background: colorTheme.bg0.value,
         borderRadius: 4,
-        overflow: 'hidden',
         cursor: 'auto',
       }}
       onKeyDown={stopPropagation}
