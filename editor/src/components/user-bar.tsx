@@ -97,7 +97,7 @@ const SinglePlayerUserBar = React.memo(() => {
       <Avatar
         userPicture={userPicture}
         isLoggedIn={true}
-        size={22}
+        size={20}
         style={{ outline: 'undefined' }}
       />
       {isMyProject ? <OwnerBadge /> : null}
@@ -229,6 +229,7 @@ const MultiplayerUserBar = React.memo(() => {
             isBeingFollowed={isFollowMode(mode) && mode.connectionId === other.connectionId}
             follower={other.following === myUser.id}
             isOwner={isOwner}
+            size={20}
           />
         )
       })}
@@ -245,6 +246,7 @@ const MultiplayerUserBar = React.memo(() => {
             foreground: colorTheme.fg0.value,
           }}
           picture={null}
+          size={20}
         />,
       )}
       {when(
@@ -264,6 +266,7 @@ const MultiplayerUserBar = React.memo(() => {
               picture={other.avatar}
               isOwner={isOwner}
               isOffline={true}
+              size={20}
             />
           )
         }),
@@ -290,7 +293,7 @@ const MultiplayerUserBar = React.memo(() => {
           color={multiplayerColorFromIndex(myUser.colorIndex)}
           picture={myUser.avatar}
           isOwner={amIOwner}
-          size={22}
+          size={20}
           style={{ outline: 'undefined' }}
         />
         <div style={{ padding: '0 8px 0 5px', fontWeight: 500 }}>Share</div>
@@ -353,12 +356,14 @@ export const MultiplayerAvatar = React.memo((props: MultiplayerAvatarProps) => {
           fontWeight: 700,
           cursor: props.onClick != null ? 'pointer' : 'inherit',
           position: 'relative',
-          outline: `.3px solid ${colorTheme.bg1.value}`,
+          outline:
+            props.isBeingFollowed === true
+              ? `1px solid ${colorTheme.bg1.value}`
+              : `1px solid ${colorTheme.transparent.value}`,
           boxShadow:
             props.isBeingFollowed === true
-              ? `0px 0px 8px ${colorTheme.dynamicBlue.value}`
-              : undefined,
-
+              ? `0px 0px 0px 2.5px ${props.color.background}`
+              : `0px 0px 0px 2.5px ${colorTheme.transparent.value}`,
           ...props.style,
         }}
         onClick={props.onClick}
@@ -407,7 +412,7 @@ const OwnerBadge = React.memo(() => {
       width={14}
       height={14}
       color='main'
-      style={{ position: 'absolute', zIndex: 1, bottom: -1, left: -2 }}
+      style={{ position: 'absolute', zIndex: 1, bottom: -4, left: -4 }}
     />
   )
 })
