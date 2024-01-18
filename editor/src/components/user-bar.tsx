@@ -81,8 +81,8 @@ const SinglePlayerUserBar = React.memo(() => {
       onClick={handleCopyToClipboard}
       css={{
         background: colorTheme.primary30.value,
-        borderRadius: 26,
-        height: 26,
+        borderRadius: 24,
+        height: 24,
         padding: 2,
         border: `1px solid ${colorTheme.transparent.value}`,
         transition: 'all .1s ease-in-out',
@@ -275,8 +275,8 @@ const MultiplayerUserBar = React.memo(() => {
         onClick={handleCopyToClipboard}
         css={{
           background: colorTheme.primary30.value,
-          borderRadius: 26,
-          height: 26,
+          borderRadius: 24,
+          height: 24,
           padding: 2,
           border: `1px solid ${colorTheme.transparent.value}`,
           transition: 'all .1s ease-in-out',
