@@ -1,5 +1,5 @@
 import type { User } from '@liveblocks/client'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useAtom, useSetAtom } from 'jotai'
 import React from 'react'
 import type { Presence, PresenceActiveFrame, UserMeta } from '../../../liveblocks.config'
@@ -421,53 +421,64 @@ const FollowingOverlay = React.memo(() => {
     dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
   }, [dispatch])
 
-  if (followed == null || followedUser == null) {
-    return null
-  }
+  const followedUserColor = React.useMemo(() => {
+    return multiplayerColorFromIndex(followedUser?.colorIndex ?? null)
+  }, [followedUser])
+
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        bottom: 0,
-        right: 0,
-        background: 'transparent',
-        display: 'flex',
-        alignItems: 'flex-end',
-        justifyContent: 'center',
-        paddingBottom: 14,
-        cursor: 'default',
-      }}
-    >
-      <div
-        style={{
-          backgroundColor: multiplayerColorFromIndex(followedUser.colorIndex).background,
-          color: multiplayerColorFromIndex(followedUser.colorIndex).foreground,
-          padding: '4px 4px 4px 12px',
-          borderRadius: 100,
-          boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 10,
-        }}
-      >
-        <div>You're following {followedUser.name}</div>
-        <Button
-          highlight
-          spotlight
-          onClick={stopFollowing}
+    <AnimatePresence>
+      {when(
+        followedUser != null,
+        <motion.div
           style={{
-            backgroundColor: '#00000015',
-            padding: '4px 10px',
-            borderRadius: 100,
-            cursor: 'pointer',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            bottom: 0,
+            right: 0,
+            background: 'transparent',
+            display: 'flex',
+            alignItems: 'flex-end',
+            justifyContent: 'center',
+            paddingBottom: 14,
+            cursor: 'default',
+            border: `3px solid ${followedUserColor.background}`,
           }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.1 }}
         >
-          Stop following
-        </Button>
-      </div>
-    </div>
+          <motion.div
+            style={{
+              backgroundColor: followedUserColor.background,
+              color: followedUserColor.foreground,
+              padding: '4px 4px 4px 12px',
+              borderRadius: 100,
+              boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+            }}
+          >
+            <div>You're following {followedUser?.name}</div>
+            <Button
+              highlight
+              spotlight
+              onClick={stopFollowing}
+              style={{
+                backgroundColor: '#00000015',
+                padding: '4px 10px',
+                borderRadius: 100,
+                cursor: 'pointer',
+              }}
+            >
+              Stop following
+            </Button>
+          </motion.div>
+        </motion.div>,
+      )}
+    </AnimatePresence>
   )
 })
 FollowingOverlay.displayName = 'FollowingOverlay'
