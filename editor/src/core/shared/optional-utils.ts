@@ -22,13 +22,17 @@ export function forceNotNull<T>(description: string, value: T | null | undefined
   }
 }
 
-// FIXME This shouldn't be converting null into undefined
-export function optionalMap<T, U>(fn: (param: T) => U, t: T | null | undefined): U | null {
+export function optionalMap<T, U>(
+  fn: (param: T) => U,
+  t: T | null | undefined,
+): U | null | undefined {
+  if (typeof t === 'undefined') {
+    return undefined
+  }
   if (t == null) {
     return null
-  } else {
-    return fn(t)
   }
+  return fn(t)
 }
 
 export function forEachOptional<T>(fn: (param: T) => void, t: T | null | undefined): void {
