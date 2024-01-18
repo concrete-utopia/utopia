@@ -1,4 +1,6 @@
 import React from 'react'
+import { useAtomCallback } from 'jotai/utils'
+import type { Atom } from 'jotai'
 
 export function useValueResetState<T>(
   defaultValue: T,
@@ -37,4 +39,32 @@ export function useInputFocusOnCountIncrease<T extends { focus: () => void }>(
     ref.current?.focus()
   }
   return ref
+}
+
+export class Getter<T> {
+  public getter: (() => T) | null = null
+
+  get current(): T {
+    if (this.getter == null) {
+      throw new Error('Getter.getter is null')
+    }
+    return this.getter()
+  }
+}
+
+export function useRefAtom<T>(atom: Atom<T>): Getter<T> {
+  const getAtomValue = useAtomCallback(
+    React.useCallback(
+      (get) => {
+        const currCount = get(atom)
+        return currCount
+      },
+      [atom],
+    ),
+  )
+
+  const getterShell = React.useMemo(() => new Getter<T>(), [])
+  getterShell.getter = () => getAtomValue()
+
+  return getterShell
 }
