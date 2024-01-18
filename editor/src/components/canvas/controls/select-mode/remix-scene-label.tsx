@@ -119,7 +119,6 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
 
   const [navigationData] = useAtom(RemixNavigationAtom)
 
-  const roomStatus = useStatus()
   const currentPath = (navigationData[EP.toString(props.target)] ?? null)?.location.pathname
 
   const pathLabel = getRemixLocationLabel(currentPath)
@@ -275,12 +274,9 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
 
   return (
     <CanvasOffsetWrapper>
-      {when(
-        roomStatus === 'connected',
-        <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
-          <RemixScenePathUpdater targetPathString={EP.toString(props.target)} />
-        </MultiplayerWrapper>,
-      )}
+      <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
+        <RemixScenePathUpdater targetPathString={EP.toString(props.target)} />
+      </MultiplayerWrapper>
       <FlexRow
         onMouseOver={labelSelectable ? onMouseOver : NO_OP}
         onMouseOut={labelSelectable ? onMouseLeave : NO_OP}

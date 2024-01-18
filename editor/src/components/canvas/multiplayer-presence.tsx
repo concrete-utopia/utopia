@@ -8,7 +8,6 @@ import {
   useOthersListener,
   useRoom,
   useSelf,
-  useStatus,
   useStorage,
   useUpdateMyPresence,
 } from '../../../liveblocks.config'

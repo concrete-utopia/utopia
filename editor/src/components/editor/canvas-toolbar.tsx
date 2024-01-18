@@ -213,22 +213,6 @@ function switchToSelectModeCloseMenus(dispatch: EditorDispatch) {
 
 export const WrapInDivButtonTestId = 'wrap-in-div-button'
 
-const UnreadThreadsIndicatorWrapper = React.memo(() => {
-  const roomStatus = useStatus()
-
-  // without the roomStatus check, Liveblocks will flood the server with authentication requests
-  return (
-    <>
-      {when(
-        roomStatus === 'connected',
-        <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
-          <UnreadThreadsIndicator />
-        </MultiplayerWrapper>,
-      )}
-    </>
-  )
-})
-
 const UnreadThreadsIndicator = React.memo(() => {
   const canvasToolbarMode = useToolbarMode()
 
@@ -570,7 +554,9 @@ export const CanvasToolbar = React.memo(() => {
                 disabled={commentButtonDisabled}
               />
             </Tooltip>
-            <UnreadThreadsIndicatorWrapper />
+            <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
+              <UnreadThreadsIndicator />
+            </MultiplayerWrapper>
           </div>,
         )}
         <Separator />
