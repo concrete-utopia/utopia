@@ -56,8 +56,8 @@ import { CanvasOffsetWrapper } from './controls/canvas-offset-wrapper'
 import { when } from '../../utils/react-conditionals'
 import { CommentIndicators } from './controls/comment-indicator'
 import { CommentPopup } from './controls/comment-popup'
-import { getSceneUnderPoint } from './controls/comment-mode/comment-mode-hooks'
-import { getRemixSceneDataLabel } from './remix/remix-utils'
+import { getIdOfScene, getSceneUnderPoint } from './controls/comment-mode/comment-mode-hooks'
+import { optionalMap } from '../../core/shared/optional-utils'
 
 export const OtherUserPointer = (props: any) => {
   return (
@@ -221,13 +221,13 @@ function useGhostPointerState(position: CanvasPoint, userId: string) {
       const instance =
         // making a new canvasPoint here so that the memo array contains only primitive types
         getSceneUnderPoint(canvasPoint({ x: position.x, y: position.y }), scenesRef.current)
-      const dataLabel = getRemixSceneDataLabel(instance)
+      const remixSceneId = optionalMap(getIdOfScene, instance)
 
-      if (instance == null || dataLabel == null) {
+      if (instance == null || remixSceneId == null) {
         setShouldShowGhostPointer(false)
       } else {
         setShouldShowGhostPointer(
-          !isOnSameRemixRoute({ otherUserId: userId, remixSceneDataLabel: dataLabel }),
+          !isOnSameRemixRoute({ otherUserId: userId, remixSceneId: remixSceneId }),
         )
       }
     }, 1000)

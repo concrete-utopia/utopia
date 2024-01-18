@@ -5,7 +5,7 @@ import { isInfinityRectangle, windowPoint } from '../../../../core/shared/math-u
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { NO_OP } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
-import { FlexRow, Icn, Tooltip, useColorTheme } from '../../../../uuiui'
+import { FlexRow, Tooltip, useColorTheme } from '../../../../uuiui'
 import { clearHighlightedViews, selectComponents } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
@@ -17,11 +17,12 @@ import { isSelectModeWithArea } from '../../../editor/editor-modes'
 import { useAtom } from 'jotai'
 import { RemixNavigationAtom } from '../../remix/utopia-remix-root-component'
 import { matchRoutes } from 'react-router'
-import { unless, when } from '../../../../utils/react-conditionals'
-import { getRemixLocationLabel, getRemixSceneDataLabel } from '../../remix/remix-utils'
+import { unless } from '../../../../utils/react-conditionals'
+import { getRemixLocationLabel } from '../../remix/remix-utils'
 import { useUpdateRemixSceneRouteInLiveblocks } from '../../../../core/shared/multiplayer'
-import { useStatus } from '../../../../../liveblocks.config'
 import { MultiplayerWrapper } from '../../../../utils/multiplayer-wrapper'
+import { getIdOfScene } from '../comment-mode/comment-mode-hooks'
+import { optionalMap } from '../../../../core/shared/optional-utils'
 
 export const RemixSceneLabelPathTestId = (path: ElementPath): string =>
   `${EP.toString(path)}-remix-scene-label-path`
@@ -93,22 +94,22 @@ export const RemixSceneLabelControl = React.memo<RemixSceneLabelControlProps>((p
 const RemixScenePathUpdater = React.memo<{ targetPathString: string }>((props) => {
   const [navigationData] = useAtom(RemixNavigationAtom)
 
-  const sceneDataLabelRef = useRefEditorState((store) =>
-    getRemixSceneDataLabel(store.editor.jsxMetadata[props.targetPathString]),
+  const sceneIdRef = useRefEditorState((store) =>
+    optionalMap(getIdOfScene, store.editor.jsxMetadata[props.targetPathString]),
   )
 
   const updateRemixScenePathInLiveblocks = useUpdateRemixSceneRouteInLiveblocks()
   const currentPath = (navigationData[props.targetPathString] ?? null)?.location.pathname
   React.useEffect(() => {
-    if (sceneDataLabelRef.current == null || currentPath == null) {
+    if (sceneIdRef.current == null || currentPath == null) {
       return
     }
 
     updateRemixScenePathInLiveblocks({
-      sceneDataLabel: sceneDataLabelRef.current,
+      sceneDataLabel: sceneIdRef.current,
       location: currentPath,
     })
-  }, [currentPath, sceneDataLabelRef, updateRemixScenePathInLiveblocks])
+  }, [currentPath, sceneIdRef, updateRemixScenePathInLiveblocks])
 
   return null
 })

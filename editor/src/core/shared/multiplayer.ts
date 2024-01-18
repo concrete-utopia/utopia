@@ -207,11 +207,10 @@ export function useIsOnSameRemixRoute() {
     return () => true
   }
 
-  return (params: { otherUserId: string; remixSceneDataLabel: string }): boolean => {
-    const remixScenePathForMe: string | null =
-      remixSceneRoutes[id]?.[params.remixSceneDataLabel] ?? null
+  return (params: { otherUserId: string; remixSceneId: string }): boolean => {
+    const remixScenePathForMe: string | null = remixSceneRoutes[id]?.[params.remixSceneId] ?? null
     const remixScenePathForOther: string | null =
-      remixSceneRoutes[params.otherUserId]?.[params.remixSceneDataLabel] ?? null
+      remixSceneRoutes[params.otherUserId]?.[params.remixSceneId] ?? null
 
     if (remixScenePathForMe == null || remixScenePathForOther == null) {
       return true

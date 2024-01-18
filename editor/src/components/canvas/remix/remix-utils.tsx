@@ -470,27 +470,3 @@ export function getRemixLocationLabel(location: string | undefined): string | nu
 
   return location
 }
-
-export function getRemixSceneDataLabel(
-  instance: ElementInstanceMetadata | null | undefined,
-): string | null {
-  if (instance == null) {
-    return null
-  }
-
-  const jsxElement = foldEither(() => null, identity, instance.element)
-  if (jsxElement == null || jsxElement.type !== 'JSX_ELEMENT') {
-    return null
-  }
-
-  let dataLabelAttribute = getJSXAttribute(jsxElement.props, 'data-label')
-  if (
-    dataLabelAttribute == null ||
-    dataLabelAttribute.type !== 'ATTRIBUTE_VALUE' ||
-    typeof dataLabelAttribute.value !== 'string'
-  ) {
-    return null
-  }
-
-  return dataLabelAttribute.value
-}
