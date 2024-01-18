@@ -439,8 +439,8 @@ const FollowingOverlay = React.memo(() => {
     >
       <div
         style={{
-          backgroundColor: colorTheme.primary.value,
-          color: colorTheme.white.value,
+          backgroundColor: multiplayerColorFromIndex(followedUser.colorIndex).background,
+          color: multiplayerColorFromIndex(followedUser.colorIndex).foreground,
           padding: '2px 10px',
           borderRadius: 10,
           boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
