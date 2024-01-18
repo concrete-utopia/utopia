@@ -1,20 +1,20 @@
 import { LiveObject, type CommentData, type ThreadData, type User } from '@liveblocks/client'
 import {
   useMutation,
+  useStorage,
   type Presence,
   type ThreadMetadata,
   type UserMeta,
-  useStorage,
 } from '../../../liveblocks.config'
-import { possiblyUniqueInArray, safeIndex, stripNulls, uniqBy } from './array-utils'
-import { colorTheme } from '../../uuiui'
-import type { ElementPath } from './project-file-types'
 import {
   setHighlightedView,
   switchEditorMode,
 } from '../../components/editor/actions/action-creators'
 import { EditorModes, existingComment } from '../../components/editor/editor-modes'
+import { colorTheme } from '../../uuiui'
+import { possiblyUniqueInArray, safeIndex, stripNulls, uniqBy } from './array-utils'
 import { useMyUserId } from './multiplayer-hooks'
+import type { ElementPath } from './project-file-types'
 
 export type MultiplayerColor = {
   background: string
@@ -105,25 +105,29 @@ export function isDefaultAuth0AvatarURL(s: string | null): boolean {
   )
 }
 
-export function canFollowTarget(
-  selfId: string,
-  targetId: string | null,
-  others: { id: string; following: string | null }[],
-): boolean {
-  let followChain: Set<string> = new Set()
+export type FollowTarget = {
+  playerId: string
+  connectionId: number
+}
 
-  let id = targetId
-  while (id != null) {
-    if (followChain.has(id)) {
-      return false
-    }
-    followChain.add(id)
-
-    const target = others.find((o) => o.id === id)
-    id = target?.following ?? null
+export function followTarget(playerId: string, connectionId: number): FollowTarget {
+  return {
+    playerId: playerId,
+    connectionId: connectionId,
   }
+}
 
-  return !followChain.has(selfId)
+export function canFollowTarget(
+  from: FollowTarget,
+  to: FollowTarget,
+  others: { id: string; following: string | null; connectionId: number }[],
+): boolean {
+  if (from.playerId === to.playerId && from.connectionId === to.connectionId) {
+    return false
+  }
+  return !others.some(
+    (o) => o.id === to.playerId && o.connectionId === to.connectionId && o.following != null,
+  )
 }
 
 const roomIdPrefix = `project-room-`

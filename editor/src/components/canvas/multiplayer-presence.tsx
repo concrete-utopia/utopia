@@ -338,7 +338,9 @@ const FollowingOverlay = React.memo(() => {
 
   const isFollowTarget = React.useCallback(
     (other: User<Presence, UserMeta>): boolean => {
-      return isFollowMode(mode) && other.id === mode.playerId
+      return (
+        isFollowMode(mode) && other.id === mode.playerId && other.connectionId === mode.connectionId
+      )
     },
     [mode],
   )
