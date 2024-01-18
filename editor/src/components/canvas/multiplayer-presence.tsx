@@ -34,7 +34,7 @@ import {
   useIsOnSameRemixRoute,
 } from '../../core/shared/multiplayer'
 import { assertNever } from '../../core/shared/utils'
-import { UtopiaStyles, useColorTheme } from '../../uuiui'
+import { Button, UtopiaStyles, useColorTheme } from '../../uuiui'
 import { notice } from '../common/notice'
 import type { EditorAction } from '../editor/action-types'
 import { isLoggedIn } from '../editor/action-types'
@@ -315,7 +315,6 @@ MultiplayerCursor.displayName = 'MultiplayerCursor'
 const remixRouteChangedToastId = 'follow-changed-scene'
 
 const FollowingOverlay = React.memo(() => {
-  const colorTheme = useColorTheme()
   const dispatch = useDispatch()
 
   const room = useRoom()
@@ -418,6 +417,10 @@ const FollowingOverlay = React.memo(() => {
     }
   })
 
+  const stopFollowing = React.useCallback(() => {
+    dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
+  }, [dispatch])
+
   if (followed == null || followedUser == null) {
     return null
   }
@@ -441,12 +444,28 @@ const FollowingOverlay = React.memo(() => {
         style={{
           backgroundColor: multiplayerColorFromIndex(followedUser.colorIndex).background,
           color: multiplayerColorFromIndex(followedUser.colorIndex).foreground,
-          padding: '2px 10px',
-          borderRadius: 10,
+          padding: '4px 4px 4px 12px',
+          borderRadius: 100,
           boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
         }}
       >
-        You're following {followedUser.name}
+        <div>You're following {followedUser.name}</div>
+        <Button
+          highlight
+          spotlight
+          onClick={stopFollowing}
+          style={{
+            backgroundColor: '#00000015',
+            padding: '4px 10px',
+            borderRadius: 100,
+            cursor: 'pointer',
+          }}
+        >
+          Stop following
+        </Button>
       </div>
     </div>
   )
