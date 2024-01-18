@@ -15,11 +15,14 @@ import {
   useCanvasCommentThreadAndLocation,
   useCanvasLocationOfThread,
   useMyThreadReadStatus,
+  useScenes,
 } from '../../../core/commenting/comment-hooks'
 import type { CanvasPoint, WindowPoint } from '../../../core/shared/math-utils'
 import {
   canvasPoint,
   distance,
+  getLocalPointInNewParentContext,
+  isNotNullFiniteRectangle,
   offsetPoint,
   pointDifference,
   windowPoint,
@@ -44,8 +47,15 @@ import { RightMenuTab } from '../../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { MultiplayerAvatar } from '../../user-bar'
 import { canvasPointToWindowPoint } from '../dom-lookup'
-import { useRemixNavigationContext } from '../remix/utopia-remix-root-component'
+import {
+  RemixNavigationAtom,
+  useRemixNavigationContext,
+} from '../remix/utopia-remix-root-component'
 import { CommentRepliesCounter } from './comment-replies-counter'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { getIdOfScene, getSceneUnderPoint } from './comment-mode/comment-mode-hooks'
+import * as EP from '../../../core/shared/element-path'
+import { useRefAtom } from '../../editor/hook-utils'
 
 export const CommentIndicators = React.memo(() => {
   const projectId = useEditorState(
@@ -189,14 +199,16 @@ function getIndicatorStyle(
     resolved: boolean
     isActive: boolean
     expanded: boolean
+    dragging: boolean
   },
 ) {
-  const { read, resolved, isActive, expanded } = params
+  const { read, resolved, isActive, expanded, dragging } = params
   const canvasHeight = getCanvasHeight()
 
   const positionAdjust = 3 // px
 
   const base: Interpolation<Theme> = {
+    pointerEvents: dragging ? 'none' : undefined,
     cursor: 'auto',
     padding: 2,
     position: 'fixed',
@@ -237,6 +249,7 @@ export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) =>
         resolved: resolved,
         isActive: isActive,
         expanded: true,
+        dragging: false,
       })}
     >
       <MultiplayerAvatar
@@ -362,6 +375,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
         resolved: thread.metadata.resolved,
         isActive: isActive,
         expanded: preview,
+        dragging: dragging,
       })}
     >
       <CommentIndicatorWrapper
@@ -393,6 +407,12 @@ function useDragging(
 
   const canvasScaleRef = useRefEditorState((store) => store.editor.canvas.scale)
   const dispatch = useDispatch()
+
+  const scenesRef = useRefEditorState((store) =>
+    MetadataUtils.getScenesMetadata(store.editor.jsxMetadata),
+  )
+
+  const remixSceneRoutesRef = useRefAtom(RemixNavigationAtom)
 
   const onMouseDown = React.useCallback(
     (event: React.MouseEvent) => {
@@ -439,10 +459,42 @@ function useDragging(
           })
           setDragPosition(null)
 
-          editThreadMetadata({
-            threadId: thread.id,
-            metadata: offsetPoint(canvasPoint(thread.metadata), dragVectorCanvas),
-          })
+          const newPositionOnCanvas = offsetPoint(canvasPoint(thread.metadata), dragVectorCanvas)
+          const maybeSceneUnderPoint = getSceneUnderPoint(newPositionOnCanvas, scenesRef.current)
+          const localPointInScene =
+            maybeSceneUnderPoint != null &&
+            isNotNullFiniteRectangle(maybeSceneUnderPoint.globalFrame)
+              ? getLocalPointInNewParentContext(
+                  maybeSceneUnderPoint.globalFrame,
+                  newPositionOnCanvas,
+                )
+              : newPositionOnCanvas
+
+          const sceneId = optionalMap(getIdOfScene, maybeSceneUnderPoint)
+          const remixRoute =
+            maybeSceneUnderPoint != null
+              ? remixSceneRoutesRef.current[EP.toString(maybeSceneUnderPoint?.elementPath)]
+              : undefined
+
+          if (sceneId != null) {
+            editThreadMetadata({
+              threadId: thread.id,
+              metadata: {
+                x: localPointInScene.x,
+                y: localPointInScene.y,
+                sceneId: sceneId,
+                remixLocationRoute: remixRoute != null ? remixRoute.location.pathname : undefined,
+              },
+            })
+          } else {
+            editThreadMetadata({
+              threadId: thread.id,
+              metadata: {
+                x: newPositionOnCanvas.x,
+                y: newPositionOnCanvas.y,
+              },
+            })
+          }
         }
       }
 
@@ -451,13 +503,15 @@ function useDragging(
       window.addEventListener('mouseup', onMouseUp)
     },
     [
-      canvasScaleRef,
-      editThreadMetadata,
-      thread.id,
-      originalLocation,
-      thread.metadata,
       draggingCallback,
       dispatch,
+      canvasScaleRef,
+      originalLocation,
+      thread.metadata,
+      thread.id,
+      scenesRef,
+      remixSceneRoutesRef,
+      editThreadMetadata,
     ],
   )
 
