@@ -215,18 +215,32 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
-.lb-button:where(:enabled:hover, :enabled:focus-visible, [aria-expanded='true'], [aria-selected='true']) {
+.lb-button:where(
+    :enabled:hover,
+    :enabled:focus-visible,
+    [aria-expanded='true'],
+    [aria-selected='true']
+  ) {
   --lb-button-background: var(--lb-foreground-subtle);
   color: var(--lb-foreground-tertiary);
 }
-.lb-button:where([data-variant='default']:not(:is(:enabled:hover, :enabled:focus-visible, [aria-expanded='true'], [aria-selected='true']))) {
+.lb-button:where(
+    [data-variant='default']:not(
+        :is(:enabled:hover, :enabled:focus-visible, [aria-expanded='true'], [aria-selected='true'])
+      )
+  ) {
   background: 0 0;
 }
 .lb-button:where([data-variant='primary']) {
   --lb-button-background: var(--lb-accent);
   color: var(--lb-accent-foreground);
 }
-.lb-button:where([data-variant='primary']):where(:enabled:hover, :enabled:focus-visible, [aria-expanded='true'], [aria-selected='true']) {
+.lb-button:where([data-variant='primary']):where(
+    :enabled:hover,
+    :enabled:focus-visible,
+    [aria-expanded='true'],
+    [aria-selected='true']
+  ) {
   --lb-button-background: var(--lb-accent-secondary);
   color: var(--lb-accent-foreground);
 }
@@ -360,7 +374,7 @@
 .lb-emoji-picker-category-header-title {
   color: var(--lb-elevation-foreground-tertiary);
   text-transform: uppercase;
-  font-size: 0.675em;
+  font-size: 1em;
   font-weight: 600;
 }
 .lb-emoji-picker-grid {
@@ -690,7 +704,12 @@
   color: var(--lb-accent-secondary);
   box-shadow: inset 0 0 0 1px var(--lb-accent-moderate);
 }
-.lb-comment-reaction:where([data-self]):where(:enabled:hover, :enabled:focus-visible, [aria-expanded='true'], [aria-selected='true']) {
+.lb-comment-reaction:where([data-self]):where(
+    :enabled:hover,
+    :enabled:focus-visible,
+    [aria-expanded='true'],
+    [aria-selected='true']
+  ) {
   color: var(--lb-accent);
 }
 .lb-comment-reaction-count {
@@ -805,7 +824,13 @@
   outline: none;
   transition-property: background, color, opacity;
 }
-:is(.lb-dropdown-item, .lb-composer-suggestions-list-item, .lb-emoji-picker-emoji):where([data-highlighted], [data-selected]),
+.lb-emoji-picker-emoji {
+  font-size: 1.6em;
+}
+:is(.lb-dropdown-item, .lb-composer-suggestions-list-item, .lb-emoji-picker-emoji):where(
+    [data-highlighted],
+    [data-selected]
+  ),
 .lb-quick-emoji-picker-emoji:where(:enabled:hover, :enabled:focus-visible) {
   background: var(--lb-elevation-foreground-subtle);
   transition-duration: calc(var(--lb-transition-duration) / 2);
@@ -819,13 +844,25 @@
   animation-timing-function: var(--lb-transition-easing);
   will-change: transform, opacity;
 }
-:is(.lb-dropdown, .lb-emoji-picker, .lb-quick-emoji-picker, .lb-tooltip:where([data-state='delayed-open'])):where([data-side='top']) {
+:is(
+    .lb-dropdown,
+    .lb-emoji-picker,
+    .lb-quick-emoji-picker,
+    .lb-tooltip:where([data-state='delayed-open'])
+  ):where([data-side='top']) {
   animation-name: lb-animation-slide-up;
 }
-:is(.lb-dropdown, .lb-emoji-picker, .lb-quick-emoji-picker, .lb-tooltip:where([data-state='delayed-open'])):where([data-side='bottom']) {
+:is(
+    .lb-dropdown,
+    .lb-emoji-picker,
+    .lb-quick-emoji-picker,
+    .lb-tooltip:where([data-state='delayed-open'])
+  ):where([data-side='bottom']) {
   animation-name: lb-animation-slide-down;
 }
-:is(.lb-dropdown, .lb-emoji-picker, .lb-quick-emoji-picker, .lb-tooltip):where([data-state='closed']) {
+:is(.lb-dropdown, .lb-emoji-picker, .lb-quick-emoji-picker, .lb-tooltip):where(
+    [data-state='closed']
+  ) {
   animation-name: lb-animation-disappear;
 }
 .lb-composer-suggestions:where([data-side='top']) {
@@ -887,7 +924,9 @@
   .lb-comment:where(.lb-comment\:show-actions-hover) :where(.lb-comment-actions) {
     opacity: 0;
   }
-  .lb-comment:where(.lb-comment\:show-actions-hover):where(:is(:hover, :focus-within, .lb-comment\:action-open))
+  .lb-comment:where(.lb-comment\:show-actions-hover):where(
+      :is(:hover, :focus-within, .lb-comment\:action-open)
+    )
     :where(.lb-comment-actions),
   .lb-thread:where(.lb-thread\:show-actions-hover :is(:hover, :focus-within))
     :where(.lb-thread-actions) {
