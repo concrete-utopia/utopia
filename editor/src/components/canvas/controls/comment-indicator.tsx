@@ -164,6 +164,7 @@ const CommentIndicatorsInner = React.memo(() => {
           avatarUrl={temporaryIndicatorData.avatarUrl}
           avatarInitials={temporaryIndicatorData.initials}
           isActive={true}
+          isRead={false}
         />
       ) : null}
     </React.Fragment>
@@ -179,19 +180,19 @@ interface CommentIndicatorUIProps {
   avatarInitials: string
   avatarUrl?: string | null
   isActive: boolean
-  read?: boolean
+  isRead: boolean
 }
 
 function getIndicatorStyle(
   position: WindowPoint,
   params: {
-    read: boolean
+    isRead: boolean
     resolved: boolean
     isActive: boolean
     expanded: boolean
   },
 ) {
-  const { read, resolved, isActive, expanded } = params
+  const { isRead, resolved, isActive, expanded } = params
   const canvasHeight = getCanvasHeight()
 
   const positionAdjust = 3 // px
@@ -202,7 +203,7 @@ function getIndicatorStyle(
     position: 'fixed',
     bottom: canvasHeight - position.y - positionAdjust,
     left: position.x,
-    background: read || expanded ? colorTheme.bg1.value : colorTheme.primary.value,
+    background: isRead ? colorTheme.bg1.value : colorTheme.primary.value,
     borderRadius: '24px 24px 24px 0px',
     display: 'flex',
     alignItems: 'center',
@@ -228,12 +229,13 @@ function getIndicatorStyle(
 }
 
 export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) => {
-  const { position, bgColor, fgColor, avatarUrl, avatarInitials, resolved, isActive, read } = props
+  const { position, bgColor, fgColor, avatarUrl, avatarInitials, resolved, isActive, isRead } =
+    props
 
   return (
     <div
       css={getIndicatorStyle(position, {
-        read: read ?? true,
+        isRead: isRead ?? true,
         resolved: resolved,
         isActive: isActive,
         expanded: true,
@@ -269,6 +271,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
   const { location, scene: commentScene } = useCanvasLocationOfThread(thread)
 
   const readByMe = useMyThreadReadStatus(thread)
+  const isRead = readByMe === 'read'
 
   const { hovered, onMouseOver, onMouseOut: onHoverMouseOut, cancelHover } = useHover()
 
@@ -350,6 +353,10 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
     cancelHover,
   ])
 
+  // This is a hack: when the comment is unread, we show a dark background, so we need light foreground colors.
+  // So we trick the Liveblocks Comment component and lie to it that the theme is dark mode.
+  const dataThemeProp = isRead ? {} : { 'data-theme': 'dark' }
+
   return (
     <div
       onMouseOver={onMouseOver}
@@ -358,7 +365,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
       onClick={onClick}
       data-testid='comment-indicator'
       css={getIndicatorStyle(position, {
-        read: readByMe === 'read',
+        isRead: isRead,
         resolved: thread.metadata.resolved,
         isActive: isActive,
         expanded: preview,
@@ -374,6 +381,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
           overflow: 'auto',
           background: 'transparent',
         }}
+        {...dataThemeProp}
       />
     </div>
   )
