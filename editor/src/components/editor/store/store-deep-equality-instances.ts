@@ -3295,9 +3295,11 @@ export const CommentModeKeepDeepEquality: KeepDeepEqualityCall<CommentMode> = co
   EditorModes.commentMode,
 )
 
-export const FollowModeKeepDeepEquality: KeepDeepEqualityCall<FollowMode> = combine1EqualityCall(
+export const FollowModeKeepDeepEquality: KeepDeepEqualityCall<FollowMode> = combine2EqualityCalls(
   (mode) => mode.playerId,
   StringKeepDeepEquality,
+  (mode) => mode.connectionId,
+  NumberKeepDeepEquality,
   EditorModes.followMode,
 )
 

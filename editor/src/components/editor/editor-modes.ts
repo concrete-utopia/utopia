@@ -191,6 +191,7 @@ export interface LiveCanvasMode {
 export interface FollowMode {
   type: 'follow'
   playerId: string // the ID of the followed player
+  connectionId: number // the connection ID of the followed player
 }
 
 export type Mode =
@@ -248,10 +249,11 @@ export const EditorModes = {
       isDragging: isDragging,
     }
   },
-  followMode: function (playerId: string): FollowMode {
+  followMode: function (playerId: string, connectionId: number): FollowMode {
     return {
       type: 'follow',
       playerId: playerId,
+      connectionId: connectionId,
     }
   },
 }

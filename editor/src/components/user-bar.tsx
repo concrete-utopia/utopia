@@ -1,19 +1,19 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import React from 'react'
-import { css, jsx } from '@emotion/react'
+import { jsx } from '@emotion/react'
 import type { CSSProperties } from 'react'
 import { useOthers, useStatus, useStorage } from '../../liveblocks.config'
 import { getUserPicture, isLoggedIn } from '../common/user'
 import { getCollaborator, useMyUserAndPresence } from '../core/commenting/comment-hooks'
-import type { MultiplayerColor } from '../core/shared/multiplayer'
+import type { FollowTarget, MultiplayerColor } from '../core/shared/multiplayer'
 import {
   canFollowTarget,
+  followTarget,
   isDefaultAuth0AvatarURL,
   multiplayerColorFromIndex,
   multiplayerInitialsFromName,
   normalizeMultiplayerName,
-  normalizeOthersList,
 } from '../core/shared/multiplayer'
 import { MultiplayerWrapper } from '../utils/multiplayer-wrapper'
 import { unless, when } from '../utils/react-conditionals'
@@ -133,6 +133,7 @@ const MultiplayerUserBar = React.memo(() => {
         return {
           ...getCollaborator(collabs, other),
           following: other.presence.following,
+          connectionId: other.connectionId,
         }
       }),
   )
@@ -165,9 +166,13 @@ const MultiplayerUserBar = React.memo(() => {
   }, [ownerId, myUser])
 
   const toggleFollowing = React.useCallback(
-    (targetId: string) => () => {
+    (target: FollowTarget) => () => {
       let actions: EditorAction[] = []
-      const canFollow = canFollowTarget(myUser.id, targetId, others)
+      const canFollow = canFollowTarget(
+        followTarget(myUser.id, myPresence.connectionId),
+        target,
+        others,
+      )
       if (!canFollow) {
         actions.push(
           showToast(
@@ -181,14 +186,16 @@ const MultiplayerUserBar = React.memo(() => {
         )
       } else {
         const newMode =
-          isFollowMode(mode) && mode.playerId === targetId
+          isFollowMode(mode) &&
+          mode.playerId === target.playerId &&
+          mode.connectionId === target.connectionId
             ? EditorModes.selectMode(null, false, 'none')
-            : EditorModes.followMode(targetId)
+            : EditorModes.followMode(target.playerId, target.connectionId)
         actions.push(switchEditorMode(newMode))
       }
       dispatch(actions)
     },
-    [dispatch, mode, myUser, others],
+    [dispatch, mode, others, myUser, myPresence],
   )
 
   if (myUser.name == null) {
@@ -218,8 +225,8 @@ const MultiplayerUserBar = React.memo(() => {
             tooltip={{ text: name, colored: true }}
             color={multiplayerColorFromIndex(other.colorIndex)}
             picture={other.avatar}
-            onClick={toggleFollowing(other.id)}
-            isBeingFollowed={isFollowMode(mode) && mode.playerId === other.id}
+            onClick={toggleFollowing(followTarget(other.id, other.connectionId))}
+            isBeingFollowed={isFollowMode(mode) && mode.connectionId === other.connectionId}
             follower={other.following === myUser.id}
             isOwner={isOwner}
           />
