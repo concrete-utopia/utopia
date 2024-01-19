@@ -70,7 +70,7 @@ export function initialStorage(): Storage {
   }
 }
 
-export type Connections = { [key: number]: number } // the key is the connection id, the value is the connection timestamp (Unix)
+export type Connections = { [connectionId: number]: number } // the key is the connection id, the value is the connection timestamp (Unix)
 
 // Optionally, UserMeta represents static/readonly metadata on each user, as
 // provided by your own custom auth back end (if used). Useful for data that
