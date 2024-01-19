@@ -41,7 +41,7 @@ export function initialPresence(): Presence {
   }
 }
 
-type SceneIdToRouteMapping = LiveObject<{ [sceneDataLabel: string]: string }>
+type SceneIdToRouteMapping = LiveObject<{ [sceneId: string]: string }>
 
 // Optionally, Storage represents the shared document that persists in the
 // Room, even after all users leave. Fields under Storage typically are
