@@ -52,9 +52,10 @@ import { activeFrameActionToString } from './commands/set-active-frames-command'
 import { canvasPointToWindowPoint, windowToCanvasCoordinates } from './dom-lookup'
 import { ActiveRemixSceneAtom, RemixNavigationAtom } from './remix/utopia-remix-root-component'
 import {
-  useAddConnection,
+  useStoreConnection,
   useMyUserId,
   useRemixPresence,
+  useMonitorConnection,
 } from '../../core/shared/multiplayer-hooks'
 import { CanvasOffsetWrapper } from './controls/canvas-offset-wrapper'
 import { when } from '../../utils/react-conditionals'
@@ -104,7 +105,8 @@ export const MultiplayerPresence = React.memo(() => {
   )
 
   useAddMyselfToCollaborators()
-  useAddConnection()
+  useStoreConnection()
+  useMonitorConnection()
 
   const remixPresence = useRemixPresence()
 
