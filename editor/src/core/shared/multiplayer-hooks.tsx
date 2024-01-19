@@ -1,20 +1,20 @@
+import { LiveObject } from '@liveblocks/client'
 import { useAtom } from 'jotai'
 import React from 'react'
+import type { ConnectionInfo } from '../../../liveblocks.config'
+import { useMutation, useStorage } from '../../../liveblocks.config'
+import { isLoggedIn } from '../../common/user'
 import {
   ActiveRemixSceneAtom,
   RemixNavigationAtom,
 } from '../../components/canvas/remix/utopia-remix-root-component'
-import type { RemixPresence } from './multiplayer'
-import * as EP from './element-path'
-import { Substores, useEditorState } from '../../components/editor/store/store-hook'
-import { isLoggedIn } from '../../common/user'
 import { isFollowMode } from '../../components/editor/editor-modes'
-import type { Connections } from '../../../liveblocks.config'
-import { useStorage, useMutation } from '../../../liveblocks.config'
-import { LiveObject } from '@liveblocks/client'
+import { Substores, useEditorState } from '../../components/editor/store/store-hook'
+import * as EP from './element-path'
+import type { RemixPresence } from './multiplayer'
 
-const ConnectionHeartbeatInterval = 10 * 1000 // ms
-const ConnectionExpiredTime = 60 * 1000 // 1 minute
+const ConnectionHeartbeatInterval = 3 * 1000 // ms
+const ConnectionExpiredTime = 3 * 1000 * 2 // 1 minute
 
 export function useRemixPresence(): RemixPresence | null {
   const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
@@ -88,13 +88,13 @@ export function useSortMultiplayerUsers() {
   )
 }
 
-export function useMyConnections(): Connections {
+export function useMyConnections(): ConnectionInfo[] {
   const myUserId = useMyUserId()
   const conns = useStorage((store) => store.connections)
   if (myUserId == null) {
-    return {}
+    return []
   }
-  return conns[myUserId] ?? {}
+  return conns[myUserId] ?? []
 }
 
 export function useAddConnection() {
@@ -104,22 +104,8 @@ export function useAddConnection() {
     'useAddConnection loginState',
   )
 
-  const updateLastSeen = useMutation(
-    ({ storage, self }) => {
-      if (!isLoggedIn(loginState)) {
-        return
-      }
-      const selfConns: Connections = storage.get('connections').get(self.id) ?? {}
-      if (selfConns[self.connectionId] != null) {
-        const now = Date.now()
-        selfConns[self.connectionId].lastSeen = now
-        storage.get('connections').update({ [self.id]: selfConns })
-      }
-    },
-    [loginState],
-  )
+  const [connectionStored, setConnectionStored] = React.useState(false)
 
-  // cleanup inactive connections, if found
   const cleanupInactive = useMutation(
     ({ storage }) => {
       if (!isLoggedIn(loginState)) {
@@ -134,21 +120,16 @@ export function useAddConnection() {
 
       // for each player id...
       for (const id of Object.keys(allConns)) {
-        const playerConns = allConns[id]
         // iterate its connections...
-        for (const connIdKey of Object.keys(playerConns)) {
-          const connId = parseInt(connIdKey)
-          // if the connection is expired, delete it
-          const expired = now - playerConns[connId].lastSeen > ConnectionHeartbeatInterval * 2
-          if (expired) {
-            delete playerConns[connId]
-            changed = true
-          }
-        }
-        allConns[id] = playerConns
+        allConns[id] = allConns[id].filter((conn) => {
+          // ...and if a connection is expired, remove it
+          const expired = now - conn.lastSeen > ConnectionExpiredTime
+          changed ||= expired
+          return !expired
+        })
       }
 
-      // if any connections were deleted, update the connections
+      // if any connections were deleted, update the connections.
       if (changed) {
         storage.set('connections', new LiveObject(allConns))
       }
@@ -156,22 +137,45 @@ export function useAddConnection() {
     [loginState],
   )
 
-  const update = useMutation(
+  const updateLastSeen = useMutation(
     ({ storage, self }) => {
       if (!isLoggedIn(loginState)) {
         return
       }
-      const selfConns: Connections = storage.get('connections').get(self.id) ?? {}
-      if (selfConns[self.connectionId] == null) {
+
+      const selfConns: ConnectionInfo[] = storage.get('connections').get(self.id) ?? []
+      // if the current connection is stored, bump its lastSeen field
+      const connIndex = selfConns.findIndex((c) => c.id === self.connectionId)
+      if (connIndex >= 0) {
         const now = Date.now()
-        selfConns[self.connectionId] = {
+        const updatedConns = selfConns.map((c) =>
+          c.id === self.connectionId ? { ...c, lastSeen: now } : c,
+        )
+        storage.get('connections').update({ [self.id]: updatedConns })
+      }
+    },
+    [loginState],
+  )
+
+  const storeConnectionAndMonitor = useMutation(
+    ({ storage, self }) => {
+      if (!isLoggedIn(loginState)) {
+        return
+      }
+
+      const selfConns: ConnectionInfo[] = storage.get('connections').get(self.id) ?? []
+
+      // if the current connection is not stored yet...
+      if (!selfConns.some((c) => c.id === self.connectionId)) {
+        // ...store it...
+        const now = Date.now()
+        selfConns.push({
+          id: self.connectionId,
           startedAt: now,
           lastSeen: now,
-        }
+        })
         storage.get('connections').update({ [self.id]: selfConns })
-
-        window.setInterval(updateLastSeen, ConnectionHeartbeatInterval)
-        window.setInterval(cleanupInactive, ConnectionExpiredTime)
+        setConnectionStored(true)
       }
     },
     [loginState, updateLastSeen],
@@ -183,6 +187,19 @@ export function useAddConnection() {
     if (connections == null) {
       return
     }
-    update()
-  }, [connections, update])
+    storeConnectionAndMonitor()
+  }, [connections, storeConnectionAndMonitor])
+
+  React.useEffect(() => {
+    if (!connectionStored) {
+      return
+    }
+    // ...and start the heartbeat monitoring.
+    let updateLastSeenInterval = window.setInterval(updateLastSeen, ConnectionHeartbeatInterval)
+    let cleanupInactiveInterval = window.setInterval(cleanupInactive, ConnectionHeartbeatInterval)
+    return function () {
+      window.clearInterval(updateLastSeenInterval)
+      window.clearInterval(cleanupInactiveInterval)
+    }
+  }, [updateLastSeen, cleanupInactive, connectionStored])
 }
