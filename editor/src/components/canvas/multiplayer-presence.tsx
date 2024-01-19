@@ -13,10 +13,8 @@ import {
 } from '../../../liveblocks.config'
 import {
   getCollaborator,
-  useAddConnection,
   useAddMyselfToCollaborators,
   useCanComment,
-  useMyConnections,
 } from '../../core/commenting/comment-hooks'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../core/shared/array-utils'
@@ -36,7 +34,7 @@ import {
   useIsOnSameRemixRoute,
 } from '../../core/shared/multiplayer'
 import { assertNever } from '../../core/shared/utils'
-import { Button, UtopiaStyles, useColorTheme } from '../../uuiui'
+import { Button, UtopiaStyles } from '../../uuiui'
 import { notice } from '../common/notice'
 import type { EditorAction } from '../editor/action-types'
 import { isLoggedIn } from '../editor/action-types'
@@ -53,7 +51,11 @@ import CanvasActions from './canvas-actions'
 import { activeFrameActionToString } from './commands/set-active-frames-command'
 import { canvasPointToWindowPoint, windowToCanvasCoordinates } from './dom-lookup'
 import { ActiveRemixSceneAtom, RemixNavigationAtom } from './remix/utopia-remix-root-component'
-import { useMyUserId, useRemixPresence } from '../../core/shared/multiplayer-hooks'
+import {
+  useAddConnection,
+  useMyUserId,
+  useRemixPresence,
+} from '../../core/shared/multiplayer-hooks'
 import { CanvasOffsetWrapper } from './controls/canvas-offset-wrapper'
 import { when } from '../../utils/react-conditionals'
 import { CommentIndicators } from './controls/comment-indicator'

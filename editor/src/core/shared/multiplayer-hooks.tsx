@@ -9,6 +9,8 @@ import * as EP from './element-path'
 import { Substores, useEditorState } from '../../components/editor/store/store-hook'
 import { isLoggedIn } from '../../common/user'
 import { isFollowMode } from '../../components/editor/editor-modes'
+import type { Connections } from '../../../liveblocks.config'
+import { useStorage, useMutation } from '../../../liveblocks.config'
 
 export function useRemixPresence(): RemixPresence | null {
   const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
@@ -80,4 +82,45 @@ export function useSortMultiplayerUsers() {
     },
     [isBeingFollowed],
   )
+}
+
+export function useMyConnections(): Connections {
+  const myUserId = useMyUserId()
+  const conns = useStorage((store) => store.connections)
+  if (myUserId == null) {
+    return {}
+  }
+  return conns[myUserId] ?? {}
+}
+
+export function useAddConnection() {
+  const loginState = useEditorState(
+    Substores.userState,
+    (store) => store.userState.loginState,
+    'useAddConnection loginState',
+  )
+
+  const update = useMutation(
+    ({ storage, self }) => {
+      if (!isLoggedIn(loginState)) {
+        return
+      }
+      const conns: Connections = storage.get('connections').get(self.id) ?? {}
+      if (conns[self.connectionId] != null) {
+        return
+      }
+      conns[self.connectionId] = Date.now()
+      storage.get('connections').update({ [self.id]: conns })
+    },
+    [loginState],
+  )
+
+  const connections = useStorage((store) => store.connections)
+
+  React.useEffect(() => {
+    if (connections == null) {
+      return
+    }
+    update()
+  }, [connections, update])
 }
