@@ -208,8 +208,8 @@ export function useMonitorConnection() {
 
       const selfConns: ConnectionInfo[] = storage.get('connections').get(self.id) ?? []
       // if the current connection is stored, bump its lastSeen field
-      const connIndex = selfConns.findIndex((c) => c.id === self.connectionId)
-      if (connIndex >= 0) {
+      const doUpdate = selfConns.some((c) => c.id === self.connectionId)
+      if (doUpdate) {
         if (debug) {
           console.info(`heartbeat ${self.id}-${self.connectionId}`)
         }
