@@ -15,7 +15,9 @@ var FullConsoleMessages = function (baseReporterDecorator, formatError, config) 
   function printCleanConsoleMessages(consoleMessages) {
     var messagesFiltered = []
     consoleMessages.forEach((message) => {
-      self.write(`${message.type.toUpperCase()} ${message.log}\n`)
+      self.write(
+        `${message.timestamp.toISOString()} ${message.type.toUpperCase()} ${message.log}\n`,
+      )
       self.write(`this console message is from: \n  ${message.specName}\n`)
       self.write(`\n`)
     })
@@ -23,6 +25,7 @@ var FullConsoleMessages = function (baseReporterDecorator, formatError, config) 
 
   self.onBrowserLog = function (browser, log, type) {
     consoleMessagesForSpec.push({
+      timestamp: new Date(),
       type: type,
       log: log,
     })

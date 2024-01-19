@@ -106,7 +106,7 @@ import {
   treeToContents,
 } from '../assets'
 import { testStaticElementPath } from '../../core/shared/element-path.test-utils'
-import { createFakeMetadataForParseSuccess } from '../../utils/utils.test-utils'
+import { createFakeMetadataForParseSuccess, wait } from '../../utils/utils.test-utils'
 import {
   mergeWithPrevUndo,
   saveDOMReport,
@@ -146,7 +146,10 @@ import { carryDispatchResultFields } from './editor-dispatch-flow'
 import type { FeatureName } from '../../utils/feature-switches'
 import { setFeatureEnabled } from '../../utils/feature-switches'
 import { unpatchedCreateRemixDerivedDataMemo } from '../editor/store/remix-derived-data'
-import { emptyProjectServerState } from '../editor/store/project-server-state'
+import {
+  emptyProjectServerState,
+  getUpdateProjectServerStateInStoreRunCount,
+} from '../editor/store/project-server-state'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -626,6 +629,8 @@ label {
     </React.Profiler>,
   )
 
+  const beforeLoadUpdateStoreRunCount = getUpdateProjectServerStateInStoreRunCount()
+
   await act(async () => {
     await new Promise<void>((resolve, reject) => {
       void load(
@@ -655,6 +660,11 @@ label {
       )
     })
   })
+
+  while (getUpdateProjectServerStateInStoreRunCount() <= beforeLoadUpdateStoreRunCount + 1) {
+    // eslint-disable-next-line no-await-in-loop
+    await wait(1)
+  }
 
   return {
     dispatch: async (

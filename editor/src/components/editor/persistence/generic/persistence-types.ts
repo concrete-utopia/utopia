@@ -75,7 +75,7 @@ export type ProjectOwnership = {
 
 export interface PersistenceBackendAPI<ModelType, FileType> {
   getNewProjectId: () => Promise<string>
-  checkProjectOwned: (projectId: string) => Promise<ProjectOwnership>
+  checkProjectOwned: (loggedIn: boolean, projectId: string) => Promise<ProjectOwnership>
   loadProject: (projectId: string) => Promise<ProjectLoadResult<ModelType>>
   saveProjectToServer: (
     projectId: string,

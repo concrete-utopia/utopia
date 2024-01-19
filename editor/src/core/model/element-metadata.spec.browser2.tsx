@@ -37,6 +37,7 @@ import { elementOnlyHasTextChildren } from './element-template-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from './scene-utils'
 import type { HugPropertyWidthHeight } from '../shared/element-template'
 import { contentsToTree } from '../../components/assets'
+import { CanvasContainerID } from '../../components/canvas/canvas-types'
 
 describe('Frame calculation for fragments', () => {
   // Components with root fragments do not appear in the DOM, so the dom walker does not find them, and they

@@ -1,7 +1,13 @@
 import localforage from 'localforage'
-import { UTOPIA_BACKEND, THUMBNAIL_ENDPOINT, ASSET_ENDPOINT, BASE_URL } from './env-vars'
+import {
+  UTOPIA_BACKEND,
+  THUMBNAIL_ENDPOINT,
+  ASSET_ENDPOINT,
+  BASE_URL,
+  IS_TEST_ENVIRONMENT,
+} from './env-vars'
 import type { ProjectListing } from './persistence'
-import type { LoginState } from './user'
+import { loggedInUser, LoginState } from './user'
 import {
   cookiesOrLocalForageUnavailable,
   isLoggedIn,
@@ -77,12 +83,16 @@ export function userConfigURL(): string {
 let CachedLoginStatePromise: Promise<LoginState> | null = null
 
 export async function getLoginState(useCache: 'cache' | 'no-cache'): Promise<LoginState> {
-  if (useCache === 'cache' && CachedLoginStatePromise != null) {
-    return CachedLoginStatePromise
+  if (IS_TEST_ENVIRONMENT) {
+    return Promise.resolve(loggedInUser({ userId: '1' }))
   } else {
-    const promise = createGetLoginStatePromise(CachedLoginStatePromise)
-    CachedLoginStatePromise = promise
-    return promise
+    if (useCache === 'cache' && CachedLoginStatePromise != null) {
+      return CachedLoginStatePromise
+    } else {
+      const promise = createGetLoginStatePromise(CachedLoginStatePromise)
+      CachedLoginStatePromise = promise
+      return promise
+    }
   }
 }
 
@@ -153,23 +163,30 @@ function getLoginStateFromResponse(
 }
 
 export async function checkProjectOwnership(projectId: string): Promise<ProjectOwnerState> {
-  const url = `${projectURL(projectId)}/owner`
-  const response = await fetch(url, {
-    method: 'GET',
-    credentials: 'include',
-    headers: HEADERS,
-    mode: MODE,
-  })
-  if (response.ok) {
-    return response.json()
-  } else if (response.status === 404) {
-    return 'unowned'
-  } else {
-    // FIXME Client should show an error if server requests fail
-    console.error(`server responded with ${response.status} ${response.statusText}`)
+  if (IS_TEST_ENVIRONMENT) {
     return {
-      isOwner: false,
-      ownerId: null,
+      isOwner: true,
+      ownerId: '1',
+    }
+  } else {
+    const url = `${projectURL(projectId)}/owner`
+    const response = await fetch(url, {
+      method: 'GET',
+      credentials: 'include',
+      headers: HEADERS,
+      mode: MODE,
+    })
+    if (response.ok) {
+      return response.json()
+    } else if (response.status === 404) {
+      return 'unowned'
+    } else {
+      // FIXME Client should show an error if server requests fail
+      console.error(`server responded with ${response.status} ${response.statusText}`)
+      return {
+        isOwner: false,
+        ownerId: null,
+      }
     }
   }
 }
@@ -228,19 +245,23 @@ export async function fetchShowcaseProjects(): Promise<Array<ProjectListing>> {
 }
 
 export async function fetchProjectMetadata(projectId: string): Promise<ProjectListing | null> {
-  // GETs the metadata for a given project ID
-  const url = urljoin(UTOPIA_BACKEND, 'project', projectId, 'metadata')
-  const response = await fetch(url, {
-    method: 'GET',
-    credentials: 'include',
-    headers: HEADERS,
-    mode: MODE,
-  })
-  if (response.ok) {
-    const responseBody: ServerProjectListing = await response.json()
-    return serverProjectListingToProjectListing(responseBody)
-  } else {
+  if (IS_TEST_ENVIRONMENT) {
     return null
+  } else {
+    // GETs the metadata for a given project ID
+    const url = urljoin(UTOPIA_BACKEND, 'project', projectId, 'metadata')
+    const response = await fetch(url, {
+      method: 'GET',
+      credentials: 'include',
+      headers: HEADERS,
+      mode: MODE,
+    })
+    if (response.ok) {
+      const responseBody: ServerProjectListing = await response.json()
+      return serverProjectListingToProjectListing(responseBody)
+    } else {
+      return null
+    }
   }
 }
 
