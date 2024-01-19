@@ -130,6 +130,8 @@ const MultiplayerUserBar = React.memo(() => {
   const connections = useStorage((store) => store.connections)
 
   const { user: myUser, presence: myPresence } = useMyUserAndPresence()
+  const sortAvatars = useSortMultiplayerUsers()
+  const isBeingFollowed = useIsBeingFollowed()
 
   const others = useOthers((list) =>
     list
@@ -150,8 +152,11 @@ const MultiplayerUserBar = React.memo(() => {
     'MultiplayerUserBar mode',
   )
 
-  const sortAvatars = useSortMultiplayerUsers()
-  const isBeingFollowed = useIsBeingFollowed()
+  const ownerId = useEditorState(
+    Substores.projectServerState,
+    (store) => store.projectServerState.ownerId,
+    'MultiplayerUserBar ownerId',
+  )
 
   const sortedOthers = React.useMemo(() => {
     return others.sort(sortAvatars)
@@ -167,12 +172,6 @@ const MultiplayerUserBar = React.memo(() => {
   const offlineOthers = Object.values(collabs).filter((collab) => {
     return collab.id !== myUser.id && !sortedOthers.some((other) => other.id === collab.id)
   })
-
-  const ownerId = useEditorState(
-    Substores.projectServerState,
-    (store) => store.projectServerState.ownerId,
-    'MultiplayerUserBar ownerId',
-  )
 
   const amIOwner = React.useMemo(() => {
     return ownerId === myUser.id
@@ -242,7 +241,7 @@ const MultiplayerUserBar = React.memo(() => {
               color={multiplayerColorFromIndex(other.colorIndex)}
               picture={other.avatar}
               onClick={toggleFollowing(followTarget(other.id, other.connectionId))}
-              isBeingFollowed={isFollowMode(mode) && mode.connectionId === other.connectionId}
+              isBeingFollowed={isBeingFollowed(other.connectionId)}
               follower={other.following === myUser.id}
               isOwner={isOwner}
               size={AvatarSize}
