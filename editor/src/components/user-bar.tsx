@@ -28,6 +28,8 @@ import { useIsMyProject } from './editor/store/collaborative-editing'
 
 const MAX_VISIBLE_OTHER_PLAYERS = 4
 
+const AvatarSize = 20
+
 export const cannotFollowToastId = 'cannot-follow-toast-id'
 
 export const UserBar = React.memo(() => {
@@ -97,7 +99,7 @@ const SinglePlayerUserBar = React.memo(() => {
       <Avatar
         userPicture={userPicture}
         isLoggedIn={true}
-        size={20}
+        size={AvatarSize}
         style={{ outline: 'undefined' }}
       />
       {isMyProject ? <OwnerBadge /> : null}
@@ -229,7 +231,7 @@ const MultiplayerUserBar = React.memo(() => {
             isBeingFollowed={isFollowMode(mode) && mode.connectionId === other.connectionId}
             follower={other.following === myUser.id}
             isOwner={isOwner}
-            size={20}
+            size={AvatarSize}
           />
         )
       })}
@@ -246,7 +248,7 @@ const MultiplayerUserBar = React.memo(() => {
             foreground: colorTheme.fg0.value,
           }}
           picture={null}
-          size={20}
+          size={AvatarSize}
         />,
       )}
       {when(
@@ -266,7 +268,7 @@ const MultiplayerUserBar = React.memo(() => {
               picture={other.avatar}
               isOwner={isOwner}
               isOffline={true}
-              size={20}
+              size={AvatarSize}
             />
           )
         }),
@@ -293,7 +295,7 @@ const MultiplayerUserBar = React.memo(() => {
           color={multiplayerColorFromIndex(myUser.colorIndex)}
           picture={myUser.avatar}
           isOwner={amIOwner}
-          size={20}
+          size={AvatarSize}
           style={{ outline: 'undefined' }}
         />
         <div style={{ padding: '0 8px 0 5px', fontWeight: 500 }}>Share</div>
