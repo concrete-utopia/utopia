@@ -643,7 +643,11 @@ const CommentIndicatorWrapper = React.memo((props: CommentIndicatorWrapper) => {
         minHeight: baseMultiplayerAvatarStyle.height,
       }}
     >
-      <motion.div ref={avatarRef} style={{ ...baseMultiplayerAvatarStyle, left: 0, top: 0 }}>
+      <motion.div
+        data-testid='comment-indicator-div'
+        ref={avatarRef}
+        style={{ ...baseMultiplayerAvatarStyle, left: 0, top: 0 }}
+      >
         <MultiplayerAvatar
           name={multiplayerInitialsFromName(normalizeMultiplayerName(user.name))}
           color={multiplayerColorFromIndex(user.colorIndex)}

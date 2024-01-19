@@ -1,5 +1,5 @@
 import { setupBrowser, wait } from '../utils'
-import type { Browser } from 'puppeteer'
+import type { BoundingBox, Browser, Page, Point } from 'puppeteer'
 import {
   TIMEOUT,
   enterCommentMode,
@@ -8,6 +8,48 @@ import {
   placeCommentOnCanvas,
 } from './comment-utils'
 import { createUtopiaPuppeteerBrowser } from './test-utils'
+
+const CommentIndicatorSelector = 'div[data-testid="comment-indicator-div"]'
+const PlaygroundSceneSelector = '#playground-scene'
+
+async function getBoundingBox(page: Page, selector: string): Promise<BoundingBox> {
+  const element = await page.waitForSelector(selector)
+  const boundingBox = await element!.boundingBox()
+  return boundingBox!
+}
+
+function roundTo(number: number, digits: number = 0): number {
+  const multiplicator = Math.pow(10, digits)
+  const n = parseFloat((number * multiplicator).toFixed(11))
+  return Math.round(n) / multiplicator
+}
+const roundToNearestWhole = (x: number) => roundTo(x, 0)
+
+const roundBoundingBox = (bb: BoundingBox): BoundingBox => ({
+  x: roundToNearestWhole(bb.x),
+  y: roundToNearestWhole(bb.y),
+  width: roundToNearestWhole(bb.width),
+  height: roundToNearestWhole(bb.height),
+})
+
+const roundPoint = (bb: Point): Point => ({
+  x: roundToNearestWhole(bb.x),
+  y: roundToNearestWhole(bb.y),
+})
+
+const center = (bb: BoundingBox): Point => ({ x: bb.x + bb.width / 2, y: bb.y + bb.height / 2 })
+
+const offsetPoint = (point: Point, by: { offsetX: number; offsetY: number }) => ({
+  x: point.x + by.offsetX,
+  y: point.y + by.offsetY,
+})
+
+async function drag(page: Page, from: { x: number; y: number }, to: { x: number; y: number }) {
+  await page.mouse.move(from.x, from.y)
+  await page.mouse.down()
+  await page.mouse.move(to.x, to.y)
+  await page.mouse.up()
+}
 
 describe('Comments test', () => {
   let utopiaBrowser = createUtopiaPuppeteerBrowser()
@@ -42,7 +84,7 @@ describe('Comments test', () => {
       await canvasControlsContainer!.click({ offset: { x: 700, y: 700 } })
 
       // Check if the comment indicator is still visible
-      const commentIndicator = await page.waitForSelector('div[data-testid="comment-indicator"]')
+      const commentIndicator = await page.waitForSelector(CommentIndicatorSelector)
 
       expect(commentIndicator).not.toBeNull()
 
@@ -99,7 +141,7 @@ describe('Comments test', () => {
       await page.keyboard.press('Escape')
 
       // There are no comment indicators on the canvas
-      const commentIndicators = await page.$$('div[data-testid="comment-indicator"]')
+      const commentIndicators = await page.$$(CommentIndicatorSelector)
       expect(commentIndicators).toHaveLength(0)
     },
     TIMEOUT,
@@ -118,7 +160,7 @@ describe('Comments test', () => {
       await resolveButton!.click()
 
       // Check that the comment indicator is gone
-      const commentIndicators = await page.$$('div[data-testid="comment-indicator"]')
+      const commentIndicators = await page.$$(CommentIndicatorSelector)
       expect(commentIndicators).toHaveLength(0)
     },
     TIMEOUT,
@@ -138,7 +180,7 @@ describe('Comments test', () => {
       const commentPopups = await page.$$('div[data-testid="comment-popup"]')
       expect(commentPopups).toHaveLength(0)
 
-      const commentIndicators = await page.$$('div[data-testid="comment-indicator"]')
+      const commentIndicators = await page.$$(CommentIndicatorSelector)
       expect(commentIndicators).toHaveLength(1)
     },
     TIMEOUT,
@@ -160,6 +202,101 @@ describe('Comments test', () => {
 
         const commentsTabs = await page.$$('div[data-testid="comments-tab"]')
         expect(commentsTabs).toHaveLength(0)
+      },
+      TIMEOUT,
+    ),
+    it(
+      'can reparent comment',
+      async () => {
+        const page = await initSignedInBrowserTest(utopiaBrowser)
+        await enterCommentMode(page)
+        await placeCommentOnCanvas(page, 'hello comments', 500, 500)
+
+        const originalCommentIndicatorBoundingBox = roundBoundingBox(
+          await getBoundingBox(page, CommentIndicatorSelector),
+        )
+
+        const playgroundSceneBoundingBox = roundBoundingBox(
+          await getBoundingBox(page, PlaygroundSceneSelector),
+        )
+
+        await drag(
+          page,
+          center(originalCommentIndicatorBoundingBox),
+          center(playgroundSceneBoundingBox),
+        )
+
+        const commentBoundingBoxInScene = roundBoundingBox(
+          await getBoundingBox(page, CommentIndicatorSelector),
+        )
+        expect(commentBoundingBoxInScene).toEqual({
+          height: 26,
+          width: 26,
+          x: 929,
+          y: 524,
+        })
+        expect(commentBoundingBoxInScene).not.toEqual(originalCommentIndicatorBoundingBox)
+
+        const sceneToolBarBoundingBox = roundBoundingBox(
+          await getBoundingBox(page, 'div[data-testid="scene-label"]'),
+        )
+        const sceneToolBarCenter = roundPoint(center(sceneToolBarBoundingBox))
+        await drag(
+          page,
+          sceneToolBarCenter,
+          offsetPoint(sceneToolBarCenter, { offsetX: 50, offsetY: 50 }),
+        )
+
+        const commentBoundingBoxInMovedScene = roundBoundingBox(
+          await getBoundingBox(page, CommentIndicatorSelector),
+        )
+        expect(commentBoundingBoxInMovedScene).toEqual({
+          height: 26,
+          width: 26,
+          x: 968,
+          y: 605,
+        })
+
+        const movedSceneBoundingBox = roundBoundingBox(
+          await getBoundingBox(page, PlaygroundSceneSelector),
+        )
+        const commentBoundingBoxInMovedSceneCenter = center(commentBoundingBoxInMovedScene)
+        await drag(page, commentBoundingBoxInMovedSceneCenter, {
+          x: movedSceneBoundingBox.x - 50,
+          y: movedSceneBoundingBox.y - 50,
+        })
+
+        const commentBoundingBoxBackOnCanvasBeforeMove = roundBoundingBox(
+          await getBoundingBox(page, CommentIndicatorSelector),
+        )
+        expect(commentBoundingBoxInMovedScene).toEqual({
+          height: 26,
+          width: 26,
+          x: 968,
+          y: 605,
+        })
+
+        const movedSceneLabelCenter = center(
+          roundBoundingBox(await getBoundingBox(page, 'div[data-testid="scene-label"]')),
+        )
+        await drag(
+          page,
+          movedSceneLabelCenter,
+          offsetPoint(movedSceneLabelCenter, { offsetX: 50, offsetY: 50 }),
+        )
+
+        const commentBoundingBoxBackOnCanvasAfterMove = roundBoundingBox(
+          await getBoundingBox(page, CommentIndicatorSelector),
+        )
+        expect(commentBoundingBoxBackOnCanvasAfterMove).toEqual({
+          height: 26,
+          width: 26,
+          x: 568,
+          y: 176,
+        })
+        expect(commentBoundingBoxBackOnCanvasBeforeMove).toEqual(
+          commentBoundingBoxBackOnCanvasAfterMove,
+        )
       },
       TIMEOUT,
     )
