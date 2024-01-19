@@ -13,8 +13,10 @@ import {
 } from '../../../liveblocks.config'
 import {
   getCollaborator,
+  useAddConnection,
   useAddMyselfToCollaborators,
   useCanComment,
+  useMyConnections,
 } from '../../core/commenting/comment-hooks'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../core/shared/array-utils'
@@ -100,6 +102,7 @@ export const MultiplayerPresence = React.memo(() => {
   )
 
   useAddMyselfToCollaborators()
+  useAddConnection()
 
   const remixPresence = useRemixPresence()
 

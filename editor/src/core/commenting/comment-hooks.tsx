@@ -1,7 +1,7 @@
 import React from 'react'
 import type { User } from '@liveblocks/client'
 import { LiveObject, type ThreadData } from '@liveblocks/client'
-import type { Presence, ThreadMetadata, UserMeta } from '../../../liveblocks.config'
+import type { Connections, Presence, ThreadMetadata, UserMeta } from '../../../liveblocks.config'
 import {
   useEditThreadMetadata,
   useMutation,
@@ -136,6 +136,47 @@ export function useMyUserAndPresence(): {
 export function useMyMultiplayerColorIndex() {
   const me = useMyUserAndPresence()
   return me.user.colorIndex
+}
+
+export function useMyConnections(): Connections {
+  const myUserId = useMyUserId()
+  const conns = useStorage((store) => store.connections)
+  if (myUserId == null) {
+    return {}
+  }
+  return conns[myUserId] ?? {}
+}
+
+export function useAddConnection() {
+  const loginState = useEditorState(
+    Substores.userState,
+    (store) => store.userState.loginState,
+    'useAddConnection loginState',
+  )
+
+  const update = useMutation(
+    ({ storage, self }) => {
+      if (!isLoggedIn(loginState)) {
+        return
+      }
+      const conns: Connections = storage.get('connections').get(self.id) ?? {}
+      if (conns[self.connectionId] != null) {
+        return
+      }
+      conns[self.connectionId] = Date.now()
+      storage.get('connections').update({ [self.id]: conns })
+    },
+    [loginState],
+  )
+
+  const connections = useStorage((store) => store.connections)
+
+  React.useEffect(() => {
+    if (connections == null) {
+      return
+    }
+    update()
+  }, [connections, update])
 }
 
 export function useAddMyselfToCollaborators() {
