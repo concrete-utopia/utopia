@@ -12,9 +12,20 @@ import { isFollowMode } from '../../components/editor/editor-modes'
 import { Substores, useEditorState } from '../../components/editor/store/store-hook'
 import * as EP from './element-path'
 import type { RemixPresence } from './multiplayer'
+import { PRODUCTION_ENV } from '../../common/env-vars'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
-const ConnectionHeartbeatInterval = 5 * 1000 // ms
-const ConnectionExpiredTime = 10 * 1000 // 1 minute
+/**
+ * How often to perform heartbeat bumps on connections.
+ * 10s on production, 5s on local/test.
+ */
+const ConnectionHeartbeatInterval = PRODUCTION_ENV ? 10 * 1000 : 5 * 1000
+
+/**
+ * How often to perform heartbeat bumps on connections.
+ * 1 minute on production, 10s on local/test.
+ */
+const ConnectionExpiredTime = PRODUCTION_ENV ? 60 * 1000 : 10 * 1000
 
 export function useRemixPresence(): RemixPresence | null {
   const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
@@ -143,7 +154,8 @@ export function useStoreConnection() {
 /**
  * Update the stored connection's heartbeat field and cleanup stale connections.
  */
-export function useMonitorConnection(debug: boolean = false) {
+export function useMonitorConnection() {
+  const debug = isFeatureEnabled('Debug – Connections')
   const loginState = useEditorState(
     Substores.userState,
     (store) => store.userState.loginState,
