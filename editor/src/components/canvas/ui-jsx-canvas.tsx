@@ -520,7 +520,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
         }
 
   const {
-    StoryboardRootComponent,
+    StoryboardRootComponent: ParsedStoryboardRootComponent,
     rootValidPathsArray,
     rootValidPathsSet,
     storyboardRootElementPath,
@@ -534,6 +534,9 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     resolve,
     getRemixPathValidationContext,
   )
+
+  const StoryboardRootComponent =
+    ParsedStoryboardRootComponent ?? (() => executionScope.require(uiFilePath)?.['storyboard'])
 
   clearSpyCollectorInvalidPaths(rootValidPathsSet, metadataContext)
 

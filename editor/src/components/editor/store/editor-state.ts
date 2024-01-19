@@ -1703,7 +1703,7 @@ export function getOpenUIJSFileKey(model: EditorState): string | null {
     return null
   } else {
     const projectFile = getProjectFileByFilePath(model.projectContents, openFilename)
-    if (isParsedTextFile(projectFile)) {
+    if (projectFile != null && isTextFile(projectFile)) {
       return openFilename
     } else {
       return null
@@ -1722,7 +1722,7 @@ export function getOpenUIJSFile(model: EditorState): TextFile | null {
     return null
   } else {
     const projectFile = getProjectFileByFilePath(model.projectContents, openFilename)
-    if (isParsedTextFile(projectFile)) {
+    if (projectFile != null && isTextFile(projectFile)) {
       return projectFile
     } else {
       return null

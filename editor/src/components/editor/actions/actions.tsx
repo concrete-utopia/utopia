@@ -3691,22 +3691,22 @@ export const UPDATE_FNS = {
     }
     return {
       ...editor,
-      projectContents: createStoryboardFileIfNecessary(
-        workingProjectContents,
-        // If we are in the process of cloning a Github repository, do not create placeholder Storyboard
-        userState.githubState.gitRepoToLoad != null
-          ? 'skip-creating-placeholder'
-          : 'create-placeholder',
-      ),
-      canvas: {
-        ...editor.canvas,
-        canvasContentInvalidateCount: anyParsedUpdates
-          ? editor.canvas.canvasContentInvalidateCount + 1
-          : editor.canvas.canvasContentInvalidateCount,
-        domWalkerInvalidateCount: anyParsedUpdates
-          ? editor.canvas.domWalkerInvalidateCount + 1
-          : editor.canvas.domWalkerInvalidateCount,
-      },
+      // projectContents: createStoryboardFileIfNecessary(
+      //   workingProjectContents,
+      //   // If we are in the process of cloning a Github repository, do not create placeholder Storyboard
+      //   userState.githubState.gitRepoToLoad != null
+      //     ? 'skip-creating-placeholder'
+      //     : 'create-placeholder',
+      // ),
+      // canvas: {
+      //   ...editor.canvas,
+      //   canvasContentInvalidateCount: anyParsedUpdates
+      //     ? editor.canvas.canvasContentInvalidateCount + 1
+      //     : editor.canvas.canvasContentInvalidateCount,
+      //   domWalkerInvalidateCount: anyParsedUpdates
+      //     ? editor.canvas.domWalkerInvalidateCount + 1
+      //     : editor.canvas.domWalkerInvalidateCount,
+      // },
       parseOrPrintInFlight: false, // only ever clear it here
     }
   },
