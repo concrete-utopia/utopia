@@ -26,6 +26,7 @@ import { useDispatch } from './editor/store/dispatch-context'
 import { Substores, useEditorState } from './editor/store/store-hook'
 import { useIsMyProject } from './editor/store/collaborative-editing'
 import { motion } from 'framer-motion'
+import { useIsBeingFollowed, useSortMultiplayerUsers } from '../core/shared/multiplayer-hooks'
 
 const MAX_VISIBLE_OTHER_PLAYERS = 4
 
@@ -147,30 +148,12 @@ const MultiplayerUserBar = React.memo(() => {
     'MultiplayerUserBar mode',
   )
 
-  const isBeingFollowed = React.useCallback(
-    (connectionId: number) => {
-      return isFollowMode(mode) && mode.connectionId === connectionId
-    },
-    [mode],
-  )
+  const sortAvatars = useSortMultiplayerUsers()
+  const isBeingFollowed = useIsBeingFollowed()
 
   const sortedOthers = React.useMemo(() => {
-    return others.sort((a, b) => {
-      if (isBeingFollowed(a.connectionId)) {
-        return -1
-      }
-      if (isBeingFollowed(b.connectionId)) {
-        return 1
-      }
-      if (a.connectionId < b.connectionId) {
-        return -1
-      }
-      if (b.connectionId < a.connectionId) {
-        return 1
-      }
-      return 0
-    })
-  }, [others, isBeingFollowed])
+    return others.sort(sortAvatars)
+  }, [others, sortAvatars])
 
   const visibleOthers = React.useMemo(() => {
     return sortedOthers.slice(0, MAX_VISIBLE_OTHER_PLAYERS)
@@ -247,8 +230,9 @@ const MultiplayerUserBar = React.memo(() => {
         }
         const name = normalizeMultiplayerName(other.name)
         const isOwner = ownerId === other.id
+        const key = `avatar-${other.id}-${other.connectionId}`
         return (
-          <motion.div key={`avatar-${other.id}-${other.connectionId}`} layout={true}>
+          <motion.div key={key} layout={'position'}>
             <MultiplayerAvatar
               name={multiplayerInitialsFromName(name)}
               tooltip={{ text: name, colored: true }}
