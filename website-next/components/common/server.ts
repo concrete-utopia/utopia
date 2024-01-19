@@ -7,7 +7,8 @@ import {
   IS_TEST_ENVIRONMENT,
 } from './env-vars'
 import type { ProjectListing } from './persistence'
-import { loggedInUser, LoginState } from './user'
+import type { LoginState } from './user'
+import { loggedInUser } from './user'
 import {
   cookiesOrLocalForageUnavailable,
   isLoggedIn,
