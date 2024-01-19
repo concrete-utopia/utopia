@@ -11,6 +11,10 @@ import { isLoggedIn } from '../../common/user'
 import { isFollowMode } from '../../components/editor/editor-modes'
 import type { Connections } from '../../../liveblocks.config'
 import { useStorage, useMutation } from '../../../liveblocks.config'
+import { LiveObject } from '@liveblocks/client'
+
+const ConnectionHeartbeatInterval = 10 * 1000 // ms
+const ConnectionExpiredTime = 60 * 1000 // 1 minute
 
 export function useRemixPresence(): RemixPresence | null {
   const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
@@ -100,19 +104,77 @@ export function useAddConnection() {
     'useAddConnection loginState',
   )
 
+  const updateLastSeen = useMutation(
+    ({ storage, self }) => {
+      if (!isLoggedIn(loginState)) {
+        return
+      }
+      const selfConns: Connections = storage.get('connections').get(self.id) ?? {}
+      if (selfConns[self.connectionId] != null) {
+        const now = Date.now()
+        selfConns[self.connectionId].lastSeen = now
+        storage.get('connections').update({ [self.id]: selfConns })
+      }
+    },
+    [loginState],
+  )
+
+  // cleanup inactive connections, if found
+  const cleanupInactive = useMutation(
+    ({ storage }) => {
+      if (!isLoggedIn(loginState)) {
+        return
+      }
+
+      // get all conns by player ids
+      const allConns = storage.get('connections').toObject()
+
+      let changed = false
+      const now = Date.now()
+
+      // for each player id...
+      for (const id of Object.keys(allConns)) {
+        const playerConns = allConns[id]
+        // iterate its connections...
+        for (const connIdKey of Object.keys(playerConns)) {
+          const connId = parseInt(connIdKey)
+          // if the connection is expired, delete it
+          const expired = now - playerConns[connId].lastSeen > ConnectionHeartbeatInterval * 2
+          if (expired) {
+            delete playerConns[connId]
+            changed = true
+          }
+        }
+        allConns[id] = playerConns
+      }
+
+      // if any connections were deleted, update the connections
+      if (changed) {
+        storage.set('connections', new LiveObject(allConns))
+      }
+    },
+    [loginState],
+  )
+
   const update = useMutation(
     ({ storage, self }) => {
       if (!isLoggedIn(loginState)) {
         return
       }
-      const conns: Connections = storage.get('connections').get(self.id) ?? {}
-      if (conns[self.connectionId] != null) {
-        return
+      const selfConns: Connections = storage.get('connections').get(self.id) ?? {}
+      if (selfConns[self.connectionId] == null) {
+        const now = Date.now()
+        selfConns[self.connectionId] = {
+          startedAt: now,
+          lastSeen: now,
+        }
+        storage.get('connections').update({ [self.id]: selfConns })
+
+        window.setInterval(updateLastSeen, ConnectionHeartbeatInterval)
+        window.setInterval(cleanupInactive, ConnectionExpiredTime)
       }
-      conns[self.connectionId] = Date.now()
-      storage.get('connections').update({ [self.id]: conns })
     },
-    [loginState],
+    [loginState, updateLastSeen],
   )
 
   const connections = useStorage((store) => store.connections)

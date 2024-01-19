@@ -141,7 +141,7 @@ const MultiplayerUserBar = React.memo(() => {
           ...getCollaborator(collabs, other),
           following: other.presence.following,
           connectionId: other.connectionId,
-          connectedAt: connections?.[other.id]?.[other.connectionId] ?? 0,
+          connectedAt: connections?.[other.id]?.[other.connectionId]?.startedAt ?? 0,
         }
       }),
   )
