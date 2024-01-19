@@ -13,8 +13,8 @@ import { Substores, useEditorState } from '../../components/editor/store/store-h
 import * as EP from './element-path'
 import type { RemixPresence } from './multiplayer'
 
-const ConnectionHeartbeatInterval = 3 * 1000 // ms
-const ConnectionExpiredTime = 3 * 1000 * 2 // 1 minute
+const ConnectionHeartbeatInterval = 10 * 1000 // ms
+const ConnectionExpiredTime = 60 * 1000 // 1 minute
 
 export function useRemixPresence(): RemixPresence | null {
   const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
