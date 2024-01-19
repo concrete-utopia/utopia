@@ -353,10 +353,6 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
     cancelHover,
   ])
 
-  // This is a hack: when the comment is unread, we show a dark background, so we need light foreground colors.
-  // So we trick the Liveblocks Comment component and lie to it that the theme is dark mode.
-  const dataThemeProp = isRead ? {} : { 'data-theme': 'dark' }
-
   return (
     <div
       onMouseOver={onMouseOver}
@@ -381,7 +377,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
           overflow: 'auto',
           background: 'transparent',
         }}
-        {...dataThemeProp}
+        forceDarkMode={!isRead}
       />
     </div>
   )
@@ -493,10 +489,11 @@ function useHover() {
 type CommentIndicatorWrapper = {
   thread: ThreadData<ThreadMetadata>
   expanded: boolean
+  forceDarkMode: boolean
 } & CommentWrapperProps
 
 const CommentIndicatorWrapper = React.memo((props: CommentIndicatorWrapper) => {
-  const { thread, expanded, user, ...commentProps } = props
+  const { thread, expanded, user, forceDarkMode, ...commentProps } = props
 
   const [avatarRef, animateAvatar] = useAnimate()
 
@@ -515,8 +512,14 @@ const CommentIndicatorWrapper = React.memo((props: CommentIndicatorWrapper) => {
     )
   }, [expanded, avatarRef, animateAvatar])
 
+  // This is a hack: when the comment is unread, we show a dark background, so we need light foreground colors.
+  // So we trick the Liveblocks Comment component and lie to it that the theme is dark mode.
+  const updatedCommentProps = forceDarkMode
+    ? { ...commentProps, 'data-theme': 'dark' }
+    : commentProps
+
   if (user == null) {
-    return <Comment {...commentProps} />
+    return <Comment {...updatedCommentProps} />
   }
 
   return (
@@ -560,8 +563,8 @@ const CommentIndicatorWrapper = React.memo((props: CommentIndicatorWrapper) => {
             }}
             transition={{ duration: animDuration }}
           >
-            <Comment {...commentProps} />
-            <CommentRepliesCounter thread={thread} />
+            <Comment {...updatedCommentProps} />
+            <CommentRepliesCounter thread={thread} forceDarkMode={forceDarkMode} />
           </motion.div>,
         )}
       </AnimatePresence>
