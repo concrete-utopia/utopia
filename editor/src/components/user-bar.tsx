@@ -240,7 +240,7 @@ const MultiplayerUserBar = React.memo(() => {
               color={multiplayerColorFromIndex(other.colorIndex)}
               picture={other.avatar}
               onClick={toggleFollowing(followTarget(other.id, other.connectionId))}
-              isBeingFollowed={isBeingFollowed(other.connectionId)}
+              isBeingFollowed={isBeingFollowed(other.id, other.connectionId)}
               follower={other.following === myUser.id}
               isOwner={isOwner}
               size={AvatarSize}

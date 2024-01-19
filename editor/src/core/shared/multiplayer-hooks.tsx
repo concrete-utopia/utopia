@@ -64,8 +64,8 @@ export function useIsBeingFollowed() {
   )
 
   const isBeingFollowed = React.useCallback(
-    (connectionId: number) => {
-      return isFollowMode(mode) && mode.connectionId === connectionId
+    (playerId: string, connectionId: number) => {
+      return isFollowMode(mode) && mode.connectionId === connectionId && mode.playerId === playerId
     },
     [mode],
   )
@@ -74,6 +74,7 @@ export function useIsBeingFollowed() {
 }
 
 export interface SortableUser {
+  id: string
   connectionId: number
 }
 
@@ -81,10 +82,10 @@ export function useSortMultiplayerUsers() {
   const isBeingFollowed = useIsBeingFollowed()
   return React.useCallback(
     (a: SortableUser, b: SortableUser) => {
-      if (isBeingFollowed(a.connectionId)) {
+      if (isBeingFollowed(a.id, a.connectionId)) {
         return -1
       }
-      if (isBeingFollowed(b.connectionId)) {
+      if (isBeingFollowed(b.id, b.connectionId)) {
         return 1
       }
       if (a.connectionId < b.connectionId) {
