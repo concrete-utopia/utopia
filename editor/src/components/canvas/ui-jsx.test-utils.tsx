@@ -629,6 +629,7 @@ label {
     </React.Profiler>,
   )
 
+  // Capture how many times the project server state update has been triggered.
   const beforeLoadUpdateStoreRunCount = getUpdateProjectServerStateInStoreRunCount()
 
   await act(async () => {
@@ -661,6 +662,10 @@ label {
     })
   })
 
+  // Check that the project server state update has been triggered twice, which (currently at least)
+  // is the number of times that it runs as a result of the above logic. Once without a project ID and
+  // the second time with the project ID '0', which should then mean that it has stabilised and unless other
+  // changes occur the `UPDATE_PROJECT_SERVER_STATE` action shouldn't be triggered anymore after that.
   while (getUpdateProjectServerStateInStoreRunCount() <= beforeLoadUpdateStoreRunCount + 1) {
     // eslint-disable-next-line no-await-in-loop
     await wait(1)
