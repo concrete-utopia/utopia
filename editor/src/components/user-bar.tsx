@@ -235,7 +235,6 @@ const MultiplayerUserBar = React.memo(() => {
         return (
           <motion.div key={key} layout={'position'}>
             <MultiplayerAvatar
-              key={`avatar-${other.id}`}
               name={multiplayerInitialsFromName(name)}
               tooltip={{ text: name, colored: true }}
               color={multiplayerColorFromIndex(other.colorIndex)}
@@ -273,17 +272,19 @@ const MultiplayerUserBar = React.memo(() => {
           }
           const name = normalizeMultiplayerName(other.name)
           const isOwner = ownerId === other.id
+          const key = `avatar-${other.id}-offline`
           return (
-            <MultiplayerAvatar
-              key={`avatar-${other.id}`}
-              name={multiplayerInitialsFromName(name)}
-              tooltip={{ text: name, colored: false }}
-              color={multiplayerColorFromIndex(other.colorIndex)}
-              picture={other.avatar}
-              isOwner={isOwner}
-              isOffline={true}
-              size={AvatarSize}
-            />
+            <motion.div key={key} layout={'position'}>
+              <MultiplayerAvatar
+                name={multiplayerInitialsFromName(name)}
+                tooltip={{ text: name, colored: false }}
+                color={multiplayerColorFromIndex(other.colorIndex)}
+                picture={other.avatar}
+                isOwner={isOwner}
+                isOffline={true}
+                size={AvatarSize}
+              />
+            </motion.div>
           )
         }),
       )}
