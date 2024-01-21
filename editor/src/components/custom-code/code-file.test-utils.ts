@@ -1,14 +1,20 @@
 import type { NodeModules, ProjectContents, TextFile } from '../../core/shared/project-file-types'
 import {
   esCodeFile,
+  isParseSuccess,
   isTextFile,
   RevisionsState,
   textFile,
   textFileContents,
 } from '../../core/shared/project-file-types'
-import { lintAndParse } from '../../core/workers/parser-printer/parser-printer'
+import {
+  lintAndParse,
+  printCode,
+  printCodeOptions,
+} from '../../core/workers/parser-printer/parser-printer'
 import type { ProjectContentTreeRoot } from '../assets'
 import { contentsToTree, getProjectFileByFilePath, treeToContents } from '../assets'
+import type { EditorState } from '../editor/store/editor-state'
 import { StoryboardFilePath } from '../editor/store/editor-state'
 import { createComplexDefaultProjectContents } from '../../sample-projects/sample-project-utils'
 import { replaceAll } from '../../core/shared/string-utils'
@@ -78,5 +84,26 @@ export function getTextFileByPath(projectContents: ProjectContentTreeRoot, path:
     return possibleResult
   } else {
     throw new Error(`Unable to find a text file at path ${path}.`)
+  }
+}
+
+export function printParsedCodeForFile(
+  actualResult: EditorState,
+  filename: string,
+  stripUIDs: boolean = true,
+): string {
+  const codeFile = getTextFileByPath(actualResult.projectContents, filename)
+  const parsed = codeFile.fileContents.parsed
+  if (isParseSuccess(parsed)) {
+    return printCode(
+      filename,
+      printCodeOptions(false, true, false, stripUIDs),
+      parsed.imports,
+      parsed.topLevelElements,
+      parsed.jsxFactoryFunction,
+      parsed.exportsDetail,
+    )
+  } else {
+    throw new Error('No parsed version of the file.')
   }
 }
