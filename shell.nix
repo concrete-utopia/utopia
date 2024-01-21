@@ -283,33 +283,35 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
-      ${cabal}/bin/cabal new-update 'hackage.haskell.org,2021-11-26T13:12:52Z'
+      ${cabal}/bin/cabal new-update 'hackage.haskell.org,2024-01-16T13:02:28Z'
     '')
     (pkgs.writeScriptBin "test-server-inner" ''
       #!/usr/bin/env bash
       set -e
       rebuild-cabal
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
-      nix-shell --run "${cabal}/bin/cabal new-test --disable-optimization --disable-profiling --disable-documentation --disable-library-coverage --disable-benchmarks utopia-web-test"
+      nix-shell --run "${cabal}/bin/cabal build --disable-optimization --disable-profiling --disable-documentation --disable-library-coverage --disable-benchmarks utopia-web-test"
+      cp --verbose $(${pkgs.haskellPackages.cabal-plan}/bin/cabal-plan list-bin test:utopia-web-test) .
+      ./utopia-web-test +RTS -N -RTS "$@"
     '')
     (pkgs.writeScriptBin "test-server" ''
       #!/usr/bin/env bash
       set -e
       cabal-update
-      test-server-inner
+      test-server-inner "$@"
     '')
     (pkgs.writeScriptBin "watch-tests" ''
       #!/usr/bin/env bash
       set -e
       cabal-update
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
-      ${pkgs.nodePackages.nodemon}/bin/nodemon -e hs,yaml --watch src --watch test --watch package.yaml --exec test-server-inner
+      ${pkgs.nodePackages.nodemon}/bin/nodemon -e hs,yaml --watch src --watch test --watch package.yaml --exec test-server-inner "$@"
     '')
     (pkgs.writeScriptBin "test-server-ci" ''
       #!/usr/bin/env bash
       set -e
       cabal-update
-      test-server-inner
+      test-server-inner "$@"
     '')
   ];
 

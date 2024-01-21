@@ -81,6 +81,8 @@ import { strictEvery } from '../../core/shared/array-utils'
 import { SimplifiedLayoutSubsection } from './sections/layout-section/self-layout-subsection/simplified-layout-subsection'
 import { ConstraintsSection } from './constraints-section'
 import { useIsMyProject } from '../editor/store/collaborative-editing'
+import { usePermissions } from '../editor/store/permissions'
+import { DisableControlsInSubtree } from '../../uuiui/utilities/disable-subtree'
 
 export interface ElementPathElement {
   name?: string
@@ -336,7 +338,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     'Inspector anyKnownElements',
   )
 
-  const isMyProject = useIsMyProject()
+  const canEdit = usePermissions().edit
 
   function renderInspectorContents() {
     return (
@@ -355,73 +357,75 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           }}
           data-testid={InspectorSectionsContainerTestID}
         >
-          <FlexCol
-            css={{
-              overflowY: 'scroll',
-              width: '100%',
-              height: '100%',
-              position: 'relative',
-              paddingBottom: 50,
-            }}
-          >
-            {rootElementIsSelected ? (
-              <RootElementIndicator />
-            ) : (
-              unless(hideAllSections, <AlignmentButtons numberOfTargets={selectedViews.length} />)
-            )}
-            {unless(
-              hideAllSections,
-              <>
-                {when(isTwindEnabled(), <ClassNameSubsection />)}
-                {anyComponents || multiselectedContract === 'fragment' ? (
-                  <ComponentSection isScene={false} />
-                ) : null}
-              </>,
-            )}
-            <CodeElementSection paths={selectedViews} />
-            <ConditionalSection paths={selectedViews} />
-            {unless(
-              hideAllSections,
-              <>
-                {when(
-                  isMyProject,
-                  <TargetSelectorSection
-                    targets={props.targets}
-                    selectedTargetPath={props.selectedTargetPath}
-                    onSelectTarget={props.onSelectTarget}
-                    onStyleSelectorRename={props.onStyleSelectorRename}
-                    onStyleSelectorDelete={props.onStyleSelectorDelete}
-                    onStyleSelectorInsert={props.onStyleSelectorInsert}
-                  />,
-                )}
-                {when(multiselectedContract === 'fragment', <FragmentSection />)}
-                {unless(
-                  multiselectedContract === 'fragment',
-                  // Position and Sizing sections are shown if Frame or Group is selected
-                  <>
-                    <SimplifiedLayoutSubsection />
-                    <ConstraintsSection />
-                  </>,
-                )}
-                {when(
-                  multiselectedContract === 'frame',
-                  <>
-                    <FlexSection />
-                  </>,
-                )}
-                {when(
-                  multiselectedContract === 'frame' || multiselectedContract === 'wrapper-div',
-                  // All the regular inspector sections are only visible if frames are selected
-                  <>
-                    <StyleSection />
-                    <WarningSubsection />
-                    <ImgSection />
-                    <EventHandlersSection />
-                  </>,
-                )}
-              </>,
-            )}
-          </FlexCol>
+          <DisableControlsInSubtree disable={!canEdit}>
+            <FlexCol
+              css={{
+                overflowY: 'scroll',
+                width: '100%',
+                height: '100%',
+                position: 'relative',
+                paddingBottom: 50,
+              }}
+            >
+              {rootElementIsSelected ? (
+                <RootElementIndicator />
+              ) : (
+                unless(hideAllSections, <AlignmentButtons numberOfTargets={selectedViews.length} />)
+              )}
+              {unless(
+                hideAllSections,
+                <>
+                  {when(isTwindEnabled(), <ClassNameSubsection />)}
+                  {anyComponents || multiselectedContract === 'fragment' ? (
+                    <ComponentSection isScene={false} />
+                  ) : null}
+                </>,
+              )}
+              <CodeElementSection paths={selectedViews} />
+              <ConditionalSection paths={selectedViews} />
+              {unless(
+                hideAllSections,
+                <>
+                  {when(
+                    canEdit,
+                    <TargetSelectorSection
+                      targets={props.targets}
+                      selectedTargetPath={props.selectedTargetPath}
+                      onSelectTarget={props.onSelectTarget}
+                      onStyleSelectorRename={props.onStyleSelectorRename}
+                      onStyleSelectorDelete={props.onStyleSelectorDelete}
+                      onStyleSelectorInsert={props.onStyleSelectorInsert}
+                    />,
+                  )}
+                  {when(multiselectedContract === 'fragment', <FragmentSection />)}
+                  {unless(
+                    multiselectedContract === 'fragment',
+                    // Position and Sizing sections are shown if Frame or Group is selected
+                    <>
+                      <SimplifiedLayoutSubsection />
+                      <ConstraintsSection />
+                    </>,
+                  )}
+                  {when(
+                    multiselectedContract === 'frame',
+                    <>
+                      <FlexSection />
+                    </>,
+                  )}
+                  {when(
+                    multiselectedContract === 'frame' || multiselectedContract === 'wrapper-div',
+                    // All the regular inspector sections are only visible if frames are selected
+                    <>
+                      <StyleSection />
+                      <WarningSubsection />
+                      <ImgSection />
+                      <EventHandlersSection />
+                    </>,
+                  )}
+                </>,
+              )}
+            </FlexCol>
+          </DisableControlsInSubtree>
         </div>
       </React.Fragment>
     )

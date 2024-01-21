@@ -70,6 +70,7 @@ import { useIsMyProject } from '../../editor/store/collaborative-editing'
 import { useStatus } from '../../../../liveblocks.config'
 import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { MultiplayerPresence } from '../multiplayer-presence'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -247,9 +248,13 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
               setLocalHighlightedViews={setLocalHighlightedViews}
             />
           </div>
+
           <ElementContextMenu contextMenuInstance='context-menu-canvas' />
           <ElementContextMenu contextMenuInstance='context-menu-canvas-no-selection' />
         </div>
+        <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
+          <MultiplayerPresence />
+        </MultiplayerWrapper>
       </>
     )
   }
@@ -378,8 +383,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     },
     [editorMode, selectModeHooks],
   )
-
-  const roomStatus = useStatus()
 
   const getResizeStatus = () => {
     const selectedViews = localSelectedViews
@@ -540,6 +543,14 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
             <ZeroSizedElementControls.control showAllPossibleElements={false} />
 
             {when(
+              isSelectMode(editorMode),
+              <RemixSceneLabelControl
+                maybeHighlightOnHover={maybeHighlightOnHover}
+                maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
+              />,
+            )}
+
+            {when(
               isMyProject,
               <>
                 {inspectorFocusedControls.map((c) => (
@@ -556,13 +567,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
                     propsForControl={c.props}
                   />
                 ))}
-                {when(
-                  isSelectMode(editorMode),
-                  <RemixSceneLabelControl
-                    maybeHighlightOnHover={maybeHighlightOnHover}
-                    maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
-                  />,
-                )}
                 {when(isSelectMode(editorMode) && !anyStrategyActive, <PinLines />)}
                 {when(isSelectMode(editorMode), <InsertionControls />)}
                 {renderTextEditableControls()}
@@ -583,12 +587,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
                 {when(isSelectMode(editorMode), <DistanceGuidelineControl />)}
                 <GuidelineControls />
               </>,
-            )}
-            {when(
-              roomStatus === 'connected',
-              <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
-                <MultiplayerPresence />
-              </MultiplayerWrapper>,
             )}
           </>,
         )}

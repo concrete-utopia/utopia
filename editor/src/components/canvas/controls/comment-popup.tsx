@@ -305,20 +305,22 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
   }
 
   const point = canvasPointToWindowPoint(location, canvasScale, canvasOffset)
+  const locationAdjustment = {
+    top: -44,
+    left: 40,
+  }
 
   return (
     <div
       data-testid='comment-popup'
       style={{
         position: 'fixed',
-        top: point.y,
-        left: point.x + 30,
+        top: point.y + locationAdjustment.top,
+        left: point.x + locationAdjustment.left,
         minWidth: 250,
         boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
         background: colorTheme.bg0.value,
         borderRadius: 4,
-        overflow: 'hidden',
-        zoom: 1 / canvasScale,
         cursor: 'auto',
       }}
       onKeyDown={stopPropagation}

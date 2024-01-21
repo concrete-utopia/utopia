@@ -211,7 +211,7 @@ export interface UtopiaRemixRootComponentProps {
   getLoadContext?: (request: Request) => Promise<AppLoadContext> | AppLoadContext
 }
 
-export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootComponentProps) => {
+export const UtopiaRemixRootComponent = (props: UtopiaRemixRootComponentProps) => {
   const remixDerivedDataRef = useRefEditorState((store) => store.derived.remixData)
 
   const routes = useGetRoutes(props.getLoadContext)
@@ -335,4 +335,4 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
       </OutletPathContext.Provider>
     </RemixContext.Provider>
   )
-})
+}

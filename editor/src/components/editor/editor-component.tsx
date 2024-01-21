@@ -68,9 +68,10 @@ import LiveblocksProvider from '@liveblocks/yjs'
 import { isRoomId, projectIdToRoomId } from '../../core/shared/multiplayer'
 import { EditorModes } from './editor-modes'
 import { checkIsMyProject } from './store/collaborative-editing'
-import { useDataThemeAttributeOnBody } from '../../core/commenting/comment-hooks'
+import { useCanComment, useDataThemeAttributeOnBody } from '../../core/commenting/comment-hooks'
 import { CollaborationStateUpdater } from './store/collaboration-state'
 import { GithubRepositoryCloneFlow } from '../github/github-repository-clone-flow'
+import { getPermissions } from './store/permissions'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -230,6 +231,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
           event,
           editorStoreRef.current.editor,
           editorStoreRef.current.projectServerState,
+          editorStoreRef.current.userState.loginState,
           metadataRef,
           navigatorTargetsRef,
           namesByKey,
@@ -361,12 +363,15 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     [dispatch],
   )
 
+  const canComment = useCanComment()
+
   useSelectorWithCallback(
-    Substores.projectServerState,
-    (store) => store.projectServerState,
-    (serverState) => {
+    Substores.userStateAndProjectServerState,
+    (store) => ({ projectServerState: store.projectServerState, userState: store.userState }),
+    (state) => {
       let actions: EditorAction[] = []
-      if (!checkIsMyProject(serverState)) {
+      const permissions = getPermissions(state)
+      if (!permissions.edit && permissions.comment) {
         actions.push(
           EditorActions.switchEditorMode(EditorModes.commentMode(null, 'not-dragging')),
           EditorActions.setRightMenuTab(RightMenuTab.Comments),

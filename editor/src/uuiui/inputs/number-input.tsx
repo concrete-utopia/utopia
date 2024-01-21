@@ -51,6 +51,7 @@ import {
 } from './base-input'
 import { usePropControlledStateV2 } from '../../components/inspector/common/inspector-utils'
 import { useIsMyProject } from '../../components/editor/store/collaborative-editing'
+import { useControlsDisabledInSubtree } from '../utilities/disable-subtree'
 
 export type LabelDragDirection = 'horizontal' | 'vertical'
 
@@ -189,14 +190,16 @@ export const NumberInput = React.memo<NumberInputProps>(
     const ref = React.useRef<HTMLInputElement>(null)
     const colorTheme = useColorTheme()
 
-    const isMyProject = useIsMyProject()
-
     const controlStyles = React.useMemo((): ControlStyles => {
       return {
         ...getControlStyles(controlStatus),
         invalid: invalid ?? false,
       }
     }, [controlStatus, invalid])
+
+    const controlsDisabledInSubtree = useControlsDisabledInSubtree()
+
+    const disabled = !controlStyles.interactive || controlsDisabledInSubtree
 
     const { mixed, showContent } = React.useMemo(
       () => ({
@@ -556,7 +559,7 @@ export const NumberInput = React.memo<NumberInputProps>(
 
     const onIncrementMouseDown = React.useCallback(
       (e: React.MouseEvent) => {
-        if (!isMyProject) {
+        if (disabled) {
           return
         }
         if (e.button === 0) {
@@ -570,7 +573,7 @@ export const NumberInput = React.memo<NumberInputProps>(
           }, repeatThreshold)
         }
       },
-      [incrementBy, stepSize, repeatIncrement, onIncrementMouseUp, isMyProject],
+      [incrementBy, stepSize, repeatIncrement, onIncrementMouseUp, disabled],
     )
 
     const onDecrementMouseUp = React.useCallback(() => {
@@ -602,7 +605,7 @@ export const NumberInput = React.memo<NumberInputProps>(
 
     const onDecrementMouseDown = React.useCallback(
       (e: React.MouseEvent) => {
-        if (!isMyProject) {
+        if (disabled) {
           return
         }
         if (e.button === 0) {
@@ -617,12 +620,12 @@ export const NumberInput = React.memo<NumberInputProps>(
           )
         }
       },
-      [incrementBy, stepSize, repeatIncrement, onDecrementMouseUp, isMyProject],
+      [incrementBy, stepSize, repeatIncrement, onDecrementMouseUp, disabled],
     )
 
     const onLabelMouseDown = React.useCallback(
       (e: React.MouseEvent<HTMLDivElement>) => {
-        if (!isMyProject) {
+        if (disabled) {
           return
         }
         if (e.button === 0) {
@@ -637,7 +640,7 @@ export const NumberInput = React.memo<NumberInputProps>(
           setGlobalCursor?.(CSSCursor.ResizeEW)
         }
       },
-      [scrubOnMouseMove, scrubOnMouseUp, setGlobalCursor, value, isMyProject],
+      [scrubOnMouseMove, scrubOnMouseUp, setGlobalCursor, value, disabled],
     )
 
     const placeholder = getControlStylesAwarePlaceholder(controlStyles)
@@ -690,7 +693,7 @@ export const NumberInput = React.memo<NumberInputProps>(
             controlStyles={controlStyles}
             controlStatus={controlStatus}
             testId={testId}
-            disabled={!isMyProject}
+            disabled={disabled}
             focused={isFocused}
             hasLabel={labelInner != null}
             roundCorners={roundCorners}
@@ -750,7 +753,7 @@ export const NumberInput = React.memo<NumberInputProps>(
               </div>
             </div>
           ) : null}
-          {incrementControls && controlStyles.interactive ? (
+          {incrementControls && !disabled ? (
             <div
               className='number-input-increment-controls'
               css={{

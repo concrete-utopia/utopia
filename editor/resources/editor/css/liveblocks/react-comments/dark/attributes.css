@@ -3,7 +3,7 @@
 .lb-root:where(:is(.dark, [data-theme='dark'], [data-dark])),
 :is(.dark, [data-theme='dark'], [data-dark]) :where(.lb-root) {
   --lb-accent: #4af;
-  --lb-background: #222;
+  --lb-background: transparent;
   --lb-foreground: #fff;
   --lb-elevation-background: #333;
   --lb-tooltip-background: #333;

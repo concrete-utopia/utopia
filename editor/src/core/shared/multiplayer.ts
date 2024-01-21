@@ -1,13 +1,20 @@
-import type { CommentData, ThreadData, User } from '@liveblocks/client'
-import type { Presence, ThreadMetadata, UserMeta } from '../../../liveblocks.config'
-import { possiblyUniqueInArray, safeIndex, stripNulls, uniqBy } from './array-utils'
-import { colorTheme, getPreferredColorScheme } from '../../uuiui'
-import type { ElementPath } from './project-file-types'
+import { LiveObject, type CommentData, type ThreadData, type User } from '@liveblocks/client'
+import {
+  useMutation,
+  useStorage,
+  type Presence,
+  type ThreadMetadata,
+  type UserMeta,
+} from '../../../liveblocks.config'
 import {
   setHighlightedView,
   switchEditorMode,
 } from '../../components/editor/actions/action-creators'
 import { EditorModes, existingComment } from '../../components/editor/editor-modes'
+import { colorTheme } from '../../uuiui'
+import { possiblyUniqueInArray, safeIndex, stripNulls, uniqBy } from './array-utils'
+import { useMyUserId } from './multiplayer-hooks'
+import type { ElementPath } from './project-file-types'
 
 export type MultiplayerColor = {
   background: string
@@ -98,25 +105,29 @@ export function isDefaultAuth0AvatarURL(s: string | null): boolean {
   )
 }
 
-export function canFollowTarget(
-  selfId: string,
-  targetId: string | null,
-  others: { id: string; following: string | null }[],
-): boolean {
-  let followChain: Set<string> = new Set()
+export type FollowTarget = {
+  playerId: string
+  connectionId: number
+}
 
-  let id = targetId
-  while (id != null) {
-    if (followChain.has(id)) {
-      return false
-    }
-    followChain.add(id)
-
-    const target = others.find((o) => o.id === id)
-    id = target?.following ?? null
+export function followTarget(playerId: string, connectionId: number): FollowTarget {
+  return {
+    playerId: playerId,
+    connectionId: connectionId,
   }
+}
 
-  return !followChain.has(selfId)
+export function canFollowTarget(
+  from: FollowTarget,
+  to: FollowTarget,
+  others: { id: string; following: string | null; connectionId: number }[],
+): boolean {
+  if (from.playerId === to.playerId && from.connectionId === to.connectionId) {
+    return false
+  }
+  return !others.some(
+    (o) => o.id === to.playerId && o.connectionId === to.connectionId && o.following != null,
+  )
 }
 
 const roomIdPrefix = `project-room-`
@@ -174,4 +185,37 @@ export function sortThreadsByDescendingUpdateTimeInPlace(
   }
 
   threads.sort((t1, t2) => lastModificationDate(t2).getTime() - lastModificationDate(t1).getTime())
+}
+
+export function useUpdateRemixSceneRouteInLiveblocks() {
+  return useMutation(({ storage, self }, params: { sceneDataLabel: string; location: string }) => {
+    const sceneRoutes = storage.get('remixSceneRoutes')
+    const mySceneRoutes = sceneRoutes.get(self.id)
+    if (mySceneRoutes == null) {
+      const myNewSceneRoutes = new LiveObject({ [params.sceneDataLabel]: params.location })
+      sceneRoutes.set(self.id, myNewSceneRoutes)
+    } else {
+      mySceneRoutes.set(params.sceneDataLabel, params.location)
+    }
+  }, [])
+}
+
+export function useIsOnSameRemixRoute() {
+  const id = useMyUserId()
+  const remixSceneRoutes = useStorage((store) => store.remixSceneRoutes)
+  if (id == null) {
+    return () => true
+  }
+
+  return (params: { otherUserId: string; remixSceneId: string }): boolean => {
+    const remixScenePathForMe: string | null = remixSceneRoutes[id]?.[params.remixSceneId] ?? null
+    const remixScenePathForOther: string | null =
+      remixSceneRoutes[params.otherUserId]?.[params.remixSceneId] ?? null
+
+    if (remixScenePathForMe == null || remixScenePathForOther == null) {
+      return true
+    }
+
+    return remixScenePathForMe === remixScenePathForOther
+  }
 }

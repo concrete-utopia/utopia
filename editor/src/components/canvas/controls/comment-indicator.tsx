@@ -1,17 +1,20 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
-import { jsx } from '@emotion/react'
 import type { Interpolation } from '@emotion/react'
+import { jsx } from '@emotion/react'
 import type { ThreadData } from '@liveblocks/client'
+import { Comment } from '@liveblocks/react-comments'
+import type { Target } from 'framer-motion'
+import { AnimatePresence, motion, useAnimate } from 'framer-motion'
 import React from 'react'
 import type { ThreadMetadata } from '../../../../liveblocks.config'
 import { useEditThreadMetadata, useStorage } from '../../../../liveblocks.config'
 import {
-  useCanvasLocationOfThread,
+  getCollaboratorById,
   useActiveThreads,
   useCanvasCommentThreadAndLocation,
+  useCanvasLocationOfThread,
   useMyThreadReadStatus,
-  getCollaboratorById,
 } from '../../../core/commenting/comment-hooks'
 import type { CanvasPoint, WindowPoint } from '../../../core/shared/math-utils'
 import {
@@ -22,30 +25,27 @@ import {
   windowPoint,
 } from '../../../core/shared/math-utils'
 import {
-  getFirstComment,
   multiplayerColorFromIndex,
   multiplayerInitialsFromName,
   normalizeMultiplayerName,
   openCommentThreadActions,
 } from '../../../core/shared/multiplayer'
-import { CommentWrapper, MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
+import { useMyUserId } from '../../../core/shared/multiplayer-hooks'
+import { optionalMap } from '../../../core/shared/optional-utils'
+import type { CommentWrapperProps } from '../../../utils/multiplayer-wrapper'
+import { MultiplayerWrapper, baseMultiplayerAvatarStyle } from '../../../utils/multiplayer-wrapper'
+import { when } from '../../../utils/react-conditionals'
 import type { Theme } from '../../../uuiui'
 import { UtopiaStyles, colorTheme } from '../../../uuiui'
-import { isCommentMode, isExistingComment } from '../../editor/editor-modes'
+import { setRightMenuTab, switchEditorMode } from '../../editor/actions/action-creators'
+import { EditorModes, isCommentMode, isExistingComment } from '../../editor/editor-modes'
 import { useDispatch } from '../../editor/store/dispatch-context'
+import { RightMenuTab } from '../../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
-import { AvatarPicture } from '../../user-bar'
+import { MultiplayerAvatar } from '../../user-bar'
 import { canvasPointToWindowPoint } from '../dom-lookup'
 import { useRemixNavigationContext } from '../remix/utopia-remix-root-component'
-import { optionalMap } from '../../../core/shared/optional-utils'
-import { setRightMenuTab } from '../../editor/actions/action-creators'
-import { RightMenuTab } from '../../editor/store/editor-state'
-import { when } from '../../../utils/react-conditionals'
 import { CommentRepliesCounter } from './comment-replies-counter'
-import { useMyUserId } from '../../../core/shared/multiplayer-hooks'
-
-const IndicatorSize = 24
-const MagnifyScale = 1.15
 
 export const CommentIndicators = React.memo(() => {
   const projectId = useEditorState(
@@ -164,6 +164,7 @@ const CommentIndicatorsInner = React.memo(() => {
           avatarUrl={temporaryIndicatorData.avatarUrl}
           avatarInitials={temporaryIndicatorData.initials}
           isActive={true}
+          isRead={false}
         />
       ) : null}
     </React.Fragment>
@@ -179,77 +180,72 @@ interface CommentIndicatorUIProps {
   avatarInitials: string
   avatarUrl?: string | null
   isActive: boolean
-  read?: boolean
+  isRead: boolean
+}
+
+function getIndicatorStyle(
+  position: WindowPoint,
+  params: {
+    isRead: boolean
+    resolved: boolean
+    isActive: boolean
+    expanded: boolean
+  },
+) {
+  const { isRead, resolved, isActive, expanded } = params
+  const canvasHeight = getCanvasHeight()
+
+  const positionAdjust = 3 // px
+
+  const base: Interpolation<Theme> = {
+    cursor: 'auto',
+    padding: 2,
+    position: 'fixed',
+    bottom: canvasHeight - position.y - positionAdjust,
+    left: position.x,
+    background: isRead ? colorTheme.bg1.value : colorTheme.primary.value,
+    borderRadius: '24px 24px 24px 0px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
+    border: '.4px solid #a3a3a340',
+    opacity: resolved ? 0.6 : undefined,
+    zIndex: expanded ? 1 : 'auto',
+  }
+
+  const whenActive: Interpolation<Theme> = {
+    border: `1px solid ${colorTheme.primary.value}`,
+  }
+
+  const whenInactive: Interpolation<Theme> = {
+    ':hover': {},
+  }
+
+  return {
+    ...base,
+    ...(isActive ? whenActive : whenInactive),
+  }
 }
 
 export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) => {
-  const { position, bgColor, fgColor, avatarUrl, avatarInitials, resolved, isActive, read } = props
-
-  const canvasScale = useEditorState(
-    Substores.canvas,
-    (store) => store.editor.canvas.scale,
-    'CommentIndicatorUI scale',
-  )
-
-  function getIndicatorStyle() {
-    const base: Interpolation<Theme> = {
-      position: 'fixed',
-      top: position.y + 3,
-      left: position.x - 3,
-      width: IndicatorSize,
-      height: IndicatorSize,
-      background: read ? colorTheme.bg1.value : colorTheme.primary.value,
-      borderRadius: '24px 24px 24px 0px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
-      border: '.4px solid #a3a3a340',
-      opacity: resolved ? 0.6 : 'undefined',
-      zoom: 1 / canvasScale,
-    }
-
-    const transform: Interpolation<Theme> = {
-      transform: `scale(${MagnifyScale})`,
-      transformOrigin: 'bottom left',
-      transitionDuration: 'transform 0.1s ease',
-    }
-
-    const whenActive: Interpolation<Theme> = {
-      ...transform,
-      border: `1px solid ${colorTheme.primary.value}`,
-    }
-
-    const whenInactive: Interpolation<Theme> = {
-      ':hover': {
-        ...transform,
-      },
-    }
-
-    return {
-      ...base,
-      ...(isActive ? whenActive : whenInactive),
-    }
-  }
+  const { position, bgColor, fgColor, avatarUrl, avatarInitials, resolved, isActive, isRead } =
+    props
 
   return (
-    <div css={getIndicatorStyle()}>
-      <div
-        style={{
-          height: 18,
-          width: 18,
-          borderRadius: 18,
-          background: bgColor,
-          color: fgColor,
-          fontSize: 9,
-          fontWeight: 'bold',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <AvatarPicture url={avatarUrl} initials={avatarInitials} resolved={resolved} />
-      </div>
+    <div
+      css={getIndicatorStyle(position, {
+        isRead: isRead ?? true,
+        resolved: resolved,
+        isActive: isActive,
+        expanded: true,
+      })}
+    >
+      <MultiplayerAvatar
+        color={{ background: bgColor, foreground: fgColor }}
+        picture={avatarUrl}
+        name={avatarInitials}
+      />
     </div>
   )
 })
@@ -260,7 +256,39 @@ interface CommentIndicatorProps {
 }
 
 const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
+  const dispatch = useDispatch()
+
   const collabs = useStorage((storage) => storage.collaborators)
+
+  const firstComment = React.useMemo(() => {
+    return thread.comments[0]
+  }, [thread])
+
+  const user = React.useMemo(() => {
+    return getCollaboratorById(collabs, firstComment.userId)
+  }, [firstComment, collabs])
+
+  const { location, scene: commentScene } = useCanvasLocationOfThread(thread)
+
+  const readByMe = useMyThreadReadStatus(thread)
+  const isRead = readByMe === 'read'
+
+  const { hovered, onMouseOver, onMouseOut: onHoverMouseOut, cancelHover } = useHover()
+
+  const [dragging, setDragging] = React.useState(false)
+  const draggingCallback = React.useCallback((isDragging: boolean) => setDragging(isDragging), [])
+
+  const { onMouseDown, didDrag, dragPosition } = useDragging(thread, location, draggingCallback)
+
+  const remixLocationRoute = React.useMemo(() => {
+    return thread.metadata.remixLocationRoute ?? null
+  }, [thread])
+
+  const remixState = useRemixNavigationContext(commentScene)
+
+  const isOnAnotherRoute = React.useMemo(() => {
+    return remixLocationRoute != null && remixLocationRoute !== remixState?.location.pathname
+  }, [remixLocationRoute, remixState])
 
   const canvasScale = useEditorState(
     Substores.canvasOffset,
@@ -273,31 +301,6 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
     'CommentIndicator canvasOffset',
   )
 
-  const { location } = useCanvasLocationOfThread(thread)
-
-  const readByMe = useMyThreadReadStatus(thread)
-
-  const { initials, color, avatar } = (() => {
-    const firstComment = thread.comments[0]
-    if (firstComment == null) {
-      return { initials: 'AN', color: multiplayerColorFromIndex(null), avatar: null }
-    }
-    const author = collabs[firstComment.userId]
-    if (author == null) {
-      return { initials: 'AN', color: multiplayerColorFromIndex(null), avatar: null }
-    }
-    return {
-      initials: multiplayerInitialsFromName(normalizeMultiplayerName(author.name)),
-      color: multiplayerColorFromIndex(author.colorIndex),
-      avatar: author.avatar,
-    }
-  })()
-
-  const position = React.useMemo(
-    () => canvasPointToWindowPoint(location, canvasScale, canvasOffset),
-    [location, canvasScale, canvasOffset],
-  )
-
   const isActive = useEditorState(
     Substores.restOfEditor,
     (store) =>
@@ -308,94 +311,27 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
     'CommentIndicator isActive',
   )
 
-  const { hovered, onMouseOver, onMouseOut, cancelHover } = useHover()
-
-  const [dragging, setDragging] = React.useState(false)
-
-  const draggingCallback = React.useCallback((isDragging: boolean) => setDragging(isDragging), [])
-
-  return (
-    <div
-      onMouseOver={onMouseOver}
-      onMouseOut={onMouseOut}
-      data-testid='comment-indicator'
-      style={{
-        cursor: 'auto',
-      }}
-    >
-      {when(
-        (isActive || !hovered) && !dragging,
-        <CommentIndicatorUI
-          position={position}
-          resolved={thread.metadata.resolved}
-          bgColor={color.background}
-          fgColor={color.foreground}
-          avatarUrl={avatar}
-          avatarInitials={initials}
-          isActive={isActive}
-          read={readByMe === 'read'}
-        />,
-      )}
-
-      {when(
-        !isActive,
-        <HoveredCommentIndicator
-          thread={thread}
-          hidden={!hovered}
-          cancelHover={cancelHover}
-          draggingCallback={draggingCallback}
-        />,
-      )}
-    </div>
-  )
-})
-CommentIndicator.displayName = 'CommentIndicator'
-
-interface HoveredCommentIndicatorProps {
-  thread: ThreadData<ThreadMetadata>
-  hidden: boolean
-  cancelHover: () => void
-  draggingCallback: (isDragging: boolean) => void
-}
-
-const HoveredCommentIndicator = React.memo((props: HoveredCommentIndicatorProps) => {
-  const { thread, hidden, cancelHover, draggingCallback } = props
-
-  const dispatch = useDispatch()
-
-  const { location, scene: commentScene } = useCanvasLocationOfThread(thread)
-
-  const { onMouseDown, didDrag, dragPosition } = useDragging(thread, location, draggingCallback)
-
-  const remixLocationRoute = thread.metadata.remixLocationRoute ?? null
-
-  const remixState = useRemixNavigationContext(commentScene)
-
-  const isOnAnotherRoute =
-    remixLocationRoute != null && remixLocationRoute !== remixState?.location.pathname
-
-  const canvasScale = useEditorState(
-    Substores.canvasOffset,
-    (store) => store.editor.canvas.scale,
-    'HoveredCommentIndicator canvasScale',
-  )
-
-  const canvasOffset = useEditorState(
-    Substores.canvasOffset,
-    (store) => store.editor.canvas.roundedCanvasOffset,
-    'HoveredCommentIndicator canvasOffset',
-  )
+  const preview = React.useMemo(() => {
+    return !isActive && (hovered || dragging)
+  }, [hovered, isActive, dragging])
 
   const position = React.useMemo(
     () => canvasPointToWindowPoint(dragPosition ?? location, canvasScale, canvasOffset),
     [location, canvasScale, canvasOffset, dragPosition],
   )
 
+  const onMouseOut = React.useCallback(() => {
+    if (dragging) {
+      return
+    }
+    onHoverMouseOut()
+  }, [dragging, onHoverMouseOut])
+
   const onClick = React.useCallback(() => {
     if (didDrag) {
       return
     }
-    if (isOnAnotherRoute) {
+    if (isOnAnotherRoute && remixLocationRoute != null) {
       if (remixState == null) {
         return
       }
@@ -417,59 +353,40 @@ const HoveredCommentIndicator = React.memo((props: HoveredCommentIndicatorProps)
     cancelHover,
   ])
 
-  const canvasDiv = document.getElementById('canvas-root')
-
-  const canvasHeight = canvasDiv?.clientHeight ?? 0
-
-  const collabs = useStorage((storage) => storage.collaborators)
-  if (hidden && dragPosition == null) {
-    return null
-  }
-
-  const comment = getFirstComment(thread)
-  if (comment == null) {
-    return null
-  }
-  const user = getCollaboratorById(collabs, comment.userId)
-  if (user == null) {
-    return null
-  }
+  // This is a hack: when the comment is unread, we show a dark background, so we need light foreground colors.
+  // So we trick the Liveblocks Comment component and lie to it that the theme is dark mode.
+  const dataThemeProp = isRead ? {} : { 'data-theme': 'dark' }
 
   return (
     <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        borderRadius: '18px 18px 18px 0px',
-        width: 250,
-        boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
-        background: colorTheme.bg1.value,
-        border: '.4px solid #a3a3a340',
-        zIndex: 1,
-        position: 'fixed',
-        bottom: canvasHeight - IndicatorSize - position.y,
-        // temporarily moving the hovered comment indicator to align with the not hovered version
-        left: position.x - 3,
-        overflow: 'hidden',
-        zoom: 1 / canvasScale,
-      }}
+      onMouseOver={onMouseOver}
+      onMouseOut={onMouseOut}
       onMouseDown={onMouseDown}
       onClick={onClick}
+      data-testid='comment-indicator'
+      css={getIndicatorStyle(position, {
+        isRead: isRead,
+        resolved: thread.metadata.resolved,
+        isActive: isActive,
+        expanded: preview,
+      })}
     >
-      <CommentWrapper
+      <CommentIndicatorWrapper
+        thread={thread}
+        expanded={preview}
+        user={user}
+        comment={firstComment}
+        showActions={false}
         style={{
           overflow: 'auto',
           background: 'transparent',
         }}
-        user={user}
-        comment={comment}
-        showActions={false}
+        {...dataThemeProp}
       />
-      <CommentRepliesCounter thread={thread} />
     </div>
   )
 })
-HoveredCommentIndicator.displayName = 'HoveredCommentIndicator'
+CommentIndicator.displayName = 'CommentIndicator'
 
 const COMMENT_DRAG_THRESHOLD = 5 // square px
 
@@ -483,6 +400,7 @@ function useDragging(
   const [didDrag, setDidDrag] = React.useState(false)
 
   const canvasScaleRef = useRefEditorState((store) => store.editor.canvas.scale)
+  const dispatch = useDispatch()
 
   const onMouseDown = React.useCallback(
     (event: React.MouseEvent) => {
@@ -499,6 +417,8 @@ function useDragging(
         draggedPastThreshold ||= distance(mouseDownPoint, mouseMovePoint) > COMMENT_DRAG_THRESHOLD
 
         if (draggedPastThreshold) {
+          dispatch([switchEditorMode(EditorModes.commentMode(null, 'dragging'))])
+
           setDidDrag(true)
           const dragVectorWindow = pointDifference(mouseDownPoint, mouseMovePoint)
           const dragVectorCanvas = canvasPoint({
@@ -518,6 +438,8 @@ function useDragging(
         const mouseUpPoint = windowPoint({ x: upEvent.clientX, y: upEvent.clientY })
 
         if (draggedPastThreshold) {
+          dispatch([switchEditorMode(EditorModes.commentMode(null, 'not-dragging'))])
+
           const dragVectorWindow = pointDifference(mouseDownPoint, mouseUpPoint)
           const dragVectorCanvas = canvasPoint({
             x: dragVectorWindow.x / canvasScaleRef.current,
@@ -543,6 +465,7 @@ function useDragging(
       originalLocation,
       thread.metadata,
       draggingCallback,
+      dispatch,
     ],
   )
 
@@ -565,4 +488,89 @@ function useHover() {
   }, [])
 
   return { hovered, onMouseOver, onMouseOut, cancelHover }
+}
+
+type CommentIndicatorWrapper = {
+  thread: ThreadData<ThreadMetadata>
+  expanded: boolean
+} & CommentWrapperProps
+
+const CommentIndicatorWrapper = React.memo((props: CommentIndicatorWrapper) => {
+  const { thread, expanded, user, ...commentProps } = props
+
+  const [avatarRef, animateAvatar] = useAnimate()
+
+  const animDuration = 0.1
+
+  React.useEffect(() => {
+    void animateAvatar(
+      avatarRef.current,
+      {
+        top: expanded ? baseMultiplayerAvatarStyle.top : 0,
+        left: expanded ? baseMultiplayerAvatarStyle.left : 0,
+      },
+      {
+        duration: expanded ? animDuration : animDuration / 2,
+      },
+    )
+  }, [expanded, avatarRef, animateAvatar])
+
+  if (user == null) {
+    return <Comment {...commentProps} />
+  }
+
+  return (
+    <div
+      data-testid='comment-indicator-wrapper'
+      style={{
+        position: 'relative',
+        overflow: 'hidden',
+        minWidth: baseMultiplayerAvatarStyle.width,
+        minHeight: baseMultiplayerAvatarStyle.height,
+      }}
+    >
+      <motion.div ref={avatarRef} style={{ ...baseMultiplayerAvatarStyle, left: 0, top: 0 }}>
+        <MultiplayerAvatar
+          name={multiplayerInitialsFromName(normalizeMultiplayerName(user.name))}
+          color={multiplayerColorFromIndex(user.colorIndex)}
+          picture={user.avatar}
+          style={{ outline: 'none' }}
+        />
+      </motion.div>
+
+      {/* AnimatePresence required to trigger the exit animation */}
+      <AnimatePresence>
+        {when(
+          expanded,
+          <motion.div
+            initial={{
+              width: 0,
+              height: 0,
+              opacity: 0,
+            }}
+            animate={{
+              width: 250,
+              height: 'auto',
+              opacity: 1,
+            }}
+            exit={{
+              width: 0,
+              height: 0,
+              opacity: 0,
+            }}
+            transition={{ duration: animDuration }}
+          >
+            <Comment {...commentProps} />
+            <CommentRepliesCounter thread={thread} />
+          </motion.div>,
+        )}
+      </AnimatePresence>
+    </div>
+  )
+})
+
+function getCanvasHeight(): number {
+  const canvasDiv = document.getElementById('canvas-root')
+  const canvasHeight = canvasDiv?.clientHeight ?? 0
+  return canvasHeight
 }

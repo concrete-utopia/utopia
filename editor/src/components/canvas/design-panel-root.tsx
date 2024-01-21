@@ -32,11 +32,10 @@ import { MenuTab } from '../../uuiui/menu-tab'
 import { FlexRow } from 'utopia-api'
 import type { StoredPanel } from './stored-layout'
 import { useRoom, useStatus } from '../../../liveblocks.config'
-import { isFeatureEnabled } from '../../utils/feature-switches'
 import { CommentsPane } from '../inspector/comments-pane'
 import { EditorModes, isCommentMode } from '../editor/editor-modes'
 import { useAllowedToEditProject } from '../editor/store/collaborative-editing'
-import { useIsLoggedIn } from '../../core/shared/multiplayer-hooks'
+import { useCanComment } from '../../core/commenting/comment-hooks'
 
 function isCodeEditorEnabled(): boolean {
   if (typeof window !== 'undefined') {
@@ -163,7 +162,7 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
     onClickTab(RightMenuTab.Settings)
   }, [onClickTab])
 
-  const isLoggedIn = useIsLoggedIn()
+  const canComment = useCanComment()
 
   const allowedToEdit = useAllowedToEditProject()
 
@@ -183,7 +182,13 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
     >
       <TitleBarUserProfile panelData={props.panelData} />
       <FlexRow
-        style={{ marginBottom: 10, gap: 2, alignSelf: 'stretch', flexShrink: 0 }}
+        style={{
+          marginBottom: 10,
+          gap: 2,
+          alignSelf: 'stretch',
+          flexShrink: 0,
+          overflowX: 'scroll',
+        }}
         css={undefined}
       >
         <MenuTab
@@ -207,7 +212,7 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
           </>,
         )}
         {when(
-          isLoggedIn && isFeatureEnabled('Multiplayer'),
+          canComment,
           <MenuTab
             testId='comments-tab'
             label={'Comments'}

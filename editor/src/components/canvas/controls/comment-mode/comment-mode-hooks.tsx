@@ -122,7 +122,7 @@ export function useCommentModeSelectAndHover(comment: CommentId | null): MouseCa
   })
 }
 
-function getSceneUnderPoint(
+export function getSceneUnderPoint(
   location: CanvasPoint,
   scenes: ElementInstanceMetadata[],
 ): ElementInstanceMetadata | null {
