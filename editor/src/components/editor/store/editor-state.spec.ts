@@ -8,7 +8,7 @@ import {
 } from './editor-state'
 import {
   defaultProjectContentsForNormalising,
-  getCodeForFile,
+  printParsedCodeForFile,
   getTextFileByPath,
 } from '../../custom-code/code-file.test-utils'
 import {
@@ -57,7 +57,7 @@ describe('modifyUnderlyingTarget', () => {
         return jsxElement(element.name, element.uid, updatedAttributes, element.children)
       },
     )
-    const resultingCode = getCodeForFile(actualResult, '/src/app.js')
+    const resultingCode = printParsedCodeForFile(actualResult, '/src/app.js')
     expect(resultingCode).toMatchInlineSnapshot(`
       "import * as React from 'react'
       import { Card } from '/src/card.js'
@@ -141,7 +141,7 @@ describe('modifyUnderlyingTarget', () => {
         return jsxElement(element.name, element.uid, updatedAttributes, element.children)
       },
     )
-    const resultingCode = getCodeForFile(actualResult, '/src/card.js')
+    const resultingCode = printParsedCodeForFile(actualResult, '/src/card.js')
     expect(resultingCode).toMatchInlineSnapshot(`
       "import * as React from 'react'
       import { Spring } from 'non-existant-dummy-library'

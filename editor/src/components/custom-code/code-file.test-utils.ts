@@ -87,7 +87,7 @@ export function getTextFileByPath(projectContents: ProjectContentTreeRoot, path:
   }
 }
 
-export function getCodeForFile(
+export function printParsedCodeForFile(
   actualResult: EditorState,
   filename: string,
   stripUIDs: boolean = true,

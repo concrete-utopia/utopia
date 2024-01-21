@@ -14,7 +14,7 @@ import {
   BakedInStoryboardUID,
   BakedInStoryboardVariableName,
 } from '../../../core/model/scene-utils'
-import { getCodeForFile } from '../../../components/custom-code/code-file.test-utils'
+import { printParsedCodeForFile } from '../../../components/custom-code/code-file.test-utils'
 
 describe('insertElementIntoJSXConditional', () => {
   it('inserts an element into a conditional, and duplicate name', async () => {
@@ -136,6 +136,8 @@ describe('insertElementIntoJSXConditional', () => {
       )
     }`)
     const requiredString = `${required}`
-    expect(getCodeForFile(newEditorState, '/utopia/storyboard.js', false)).toEqual(requiredString)
+    expect(printParsedCodeForFile(newEditorState, '/utopia/storyboard.js', false)).toEqual(
+      requiredString,
+    )
   })
 })
