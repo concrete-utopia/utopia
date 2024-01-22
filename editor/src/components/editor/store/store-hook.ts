@@ -50,6 +50,7 @@ import {
   selectedViewsSubstateKeys,
   variablesInScopeSubstateKeys,
 } from './store-hook-substore-types'
+import { Getter } from '../hook-utils'
 
 // This is how to officially type the store with a subscribeWithSelector middleware as of Zustand 4.1.5 https://github.com/pmndrs/zustand#using-subscribe-with-selector
 type Store<S> = UseBoundStore<Mutate<StoreApi<S>, [['zustand/subscribeWithSelector', never]]>>
@@ -201,17 +202,6 @@ export const useSelectorWithCallback = <K extends StoreKey, S extends (typeof Su
       unsubscribe()
     }
   }, [api, innerCallback, explainMe])
-}
-
-class Getter<T> {
-  public getter: (() => T) | null = null
-
-  get current(): T {
-    if (this.getter == null) {
-      throw new Error('Getter.getter is null')
-    }
-    return this.getter()
-  }
 }
 
 /**
