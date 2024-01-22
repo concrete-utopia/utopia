@@ -22,17 +22,16 @@ export function forceNotNull<T>(description: string, value: T | null | undefined
   }
 }
 
-export function optionalMap<T, U>(
-  fn: (param: T) => U,
-  t: T | null | undefined,
-): U | null | undefined {
+export function optionalMap<T, U>(fn: (param: T) => U, t: T | null | undefined): U | null {
   if (typeof t === 'undefined') {
-    return undefined
+    // FIXME This shouldn't use an any cast
+    return undefined as any as null
   }
   if (t == null) {
     return null
+  } else {
+    return fn(t)
   }
-  return fn(t)
 }
 
 export function forEachOptional<T>(fn: (param: T) => void, t: T | null | undefined): void {
