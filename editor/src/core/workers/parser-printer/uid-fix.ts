@@ -143,14 +143,7 @@ function updateUID<T>(
   baseValue: T,
 ): T {
   function addMapping(originalUID: string, newUID: string): void {
-    const priorMapping = fixUIDsState.mappings.find((mapping) => {
-      return mapping.newUID === originalUID
-    })
-    if (priorMapping == null) {
-      fixUIDsState.mappings.push({ originalUID: originalUID, newUID: newUID })
-    } else {
-      priorMapping.newUID = newUID
-    }
+    fixUIDsState.mappings.push({ originalUID: originalUID, newUID: newUID })
   }
 
   const newUID = unsafeGet(uidOptic, baseValue)

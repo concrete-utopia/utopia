@@ -8,6 +8,7 @@ import {
 } from './editor-state'
 import {
   defaultProjectContentsForNormalising,
+  printParsedCodeForFile,
   getTextFileByPath,
 } from '../../custom-code/code-file.test-utils'
 import {
@@ -34,23 +35,6 @@ import { omit } from '../../../core/shared/object-utils'
 import * as EP from '../../../core/shared/element-path'
 import { sampleJsxComponents } from '../../../core/model/test-ui-js-file.test-utils'
 
-function getCodeForFile(actualResult: EditorState, filename: string): string {
-  const codeFile = getTextFileByPath(actualResult.projectContents, filename)
-  const parsed = codeFile.fileContents.parsed
-  if (isParseSuccess(parsed)) {
-    return printCode(
-      filename,
-      printCodeOptions(false, true, false, true),
-      parsed.imports,
-      parsed.topLevelElements,
-      parsed.jsxFactoryFunction,
-      parsed.exportsDetail,
-    )
-  } else {
-    throw new Error('No parsed version of the file.')
-  }
-}
-
 describe('modifyUnderlyingTarget', () => {
   const startingEditorModel = {
     ...createEditorState(() => {}),
@@ -73,7 +57,7 @@ describe('modifyUnderlyingTarget', () => {
         return jsxElement(element.name, element.uid, updatedAttributes, element.children)
       },
     )
-    const resultingCode = getCodeForFile(actualResult, '/src/app.js')
+    const resultingCode = printParsedCodeForFile(actualResult, '/src/app.js')
     expect(resultingCode).toMatchInlineSnapshot(`
       "import * as React from 'react'
       import { Card } from '/src/card.js'
@@ -157,7 +141,7 @@ describe('modifyUnderlyingTarget', () => {
         return jsxElement(element.name, element.uid, updatedAttributes, element.children)
       },
     )
-    const resultingCode = getCodeForFile(actualResult, '/src/card.js')
+    const resultingCode = printParsedCodeForFile(actualResult, '/src/card.js')
     expect(resultingCode).toMatchInlineSnapshot(`
       "import * as React from 'react'
       import { Spring } from 'non-existant-dummy-library'

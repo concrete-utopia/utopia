@@ -375,7 +375,7 @@ function createFakeMetadataForJSXElement(
     )
     elements.push(...children)
   } else {
-    throw new Error(`Not a JSX element ${element}`)
+    throw new Error(`Not a JSX element ${JSON.stringify(element)}`)
   }
 
   return elements
