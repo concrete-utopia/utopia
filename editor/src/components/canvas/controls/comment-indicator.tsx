@@ -356,10 +356,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
     if (didDrag) {
       return
     }
-    if (isOnAnotherRoute && remixLocationRoute != null) {
-      if (remixState == null) {
-        return
-      }
+    if (isOnAnotherRoute && remixLocationRoute != null && remixState != null) {
       remixState.navigate(remixLocationRoute)
     }
     cancelHover()
