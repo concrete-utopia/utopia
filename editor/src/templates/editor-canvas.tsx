@@ -299,21 +299,20 @@ function on(
   }
 
   if (isDragToPan(canvas.editorState.canvas.interactionSession, canvas.keysPressed['space'])) {
-    if (isFollowMode(canvas.mode)) {
+    const canPan =
+      !isFollowMode(canvas.mode) && event.event === 'MOVE' && event.nativeEvent.buttons === 1
+    if (!canPan) {
       return []
     }
-    if (event.event === 'MOVE' && event.nativeEvent.buttons === 1) {
-      return [
-        CanvasActions.scrollCanvas(
-          canvasPoint({
-            x: -event.nativeEvent.movementX / canvas.scale,
-            y: -event.nativeEvent.movementY / canvas.scale,
-          }),
-        ),
-      ]
-    } else {
-      return []
-    }
+
+    return [
+      CanvasActions.scrollCanvas(
+        canvasPoint({
+          x: -event.nativeEvent.movementX / canvas.scale,
+          y: -event.nativeEvent.movementY / canvas.scale,
+        }),
+      ),
+    ]
   } else if (canvas.keysPressed['z']) {
     if (event.event === 'MOUSE_UP') {
       let scale: number
