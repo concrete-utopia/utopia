@@ -22,11 +22,8 @@ export function forceNotNull<T>(description: string, value: T | null | undefined
   }
 }
 
+// FIXME This shouldn't be converting null into undefined
 export function optionalMap<T, U>(fn: (param: T) => U, t: T | null | undefined): U | null {
-  if (typeof t === 'undefined') {
-    // FIXME This shouldn't use an any cast
-    return undefined as any as null
-  }
   if (t == null) {
     return null
   } else {
