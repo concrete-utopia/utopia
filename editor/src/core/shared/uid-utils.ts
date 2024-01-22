@@ -169,8 +169,6 @@ export function updateHighlightBounds(
         ...bounds,
         uid: newUID,
       }
-    } else {
-      throw new Error(`Invalid mapping: ${JSON.stringify(mapping)}`)
     }
   }
 

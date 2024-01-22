@@ -12,6 +12,7 @@ import {
 import {
   generateUidWithExistingComponents,
   insertJSXElementChildren,
+  renameJsxElementChild,
   transformJSXComponentAtPath,
 } from '../../../core/model/element-template-utils'
 import {
@@ -478,7 +479,7 @@ function findIndexPositionInParent(
   )
 }
 
-function insertElementIntoJSXConditional(
+export function insertElementIntoJSXConditional(
   editor: EditorState,
   staticTarget: ConditionalClauseInsertionPath,
   elementToInsert: JSXElement | JSXFragment,
@@ -490,6 +491,15 @@ function insertElementIntoJSXConditional(
     (element) => element,
     (success, _, underlyingFilePath) => {
       const components = getUtopiaJSXComponentsFromSuccess(success)
+
+      const { imports, duplicateNameMapping } = mergeImports(
+        underlyingFilePath,
+        success.imports,
+        importsToAdd,
+      )
+
+      let elementToInsertRenamed = renameJsxElementChild(elementToInsert, duplicateNameMapping)
+
       const updatedComponents = transformJSXComponentAtPath(
         components,
         getElementPathFromInsertionPath(staticTarget),
@@ -500,16 +510,16 @@ function insertElementIntoJSXConditional(
               clauseOptic,
               (clauseElement) => {
                 return {
-                  ...elementToInsert,
-                  children: [...elementToInsert.children, clauseElement],
+                  ...elementToInsertRenamed,
+                  children: [...elementToInsertRenamed.children, clauseElement],
                 }
               },
               oldRoot,
             )
           } else {
             return {
-              ...elementToInsert,
-              children: [...elementToInsert.children, oldRoot],
+              ...elementToInsertRenamed,
+              children: [...elementToInsertRenamed.children, oldRoot],
             }
           }
         },
@@ -519,9 +529,6 @@ function insertElementIntoJSXConditional(
         success.topLevelElements,
         updatedComponents,
       )
-
-      // TODO handle duplicate name mapping
-      const { imports } = mergeImports(underlyingFilePath, success.imports, importsToAdd)
 
       return {
         ...success,
@@ -542,6 +549,14 @@ function insertConditionalIntoConditionalClause(
     editor,
     (element) => element,
     (success, _, underlyingFilePath) => {
+      const { imports, duplicateNameMapping } = mergeImports(
+        underlyingFilePath,
+        success.imports,
+        importsToAdd,
+      )
+
+      let elementToInsertRenamed = renameJsxElementChild(elementToInsert, duplicateNameMapping)
+
       const components = getUtopiaJSXComponentsFromSuccess(success)
       const updatedComponents = transformJSXComponentAtPath(
         components,
@@ -552,7 +567,7 @@ function insertConditionalIntoConditionalClause(
             return modify(
               clauseOptic,
               (clauseElement) => {
-                return { ...elementToInsert, whenTrue: clauseElement }
+                return { ...elementToInsertRenamed, whenTrue: clauseElement }
               },
               oldRoot,
             )
@@ -566,9 +581,6 @@ function insertConditionalIntoConditionalClause(
         success.topLevelElements,
         updatedComponents,
       )
-
-      // TODO handle duplicate name mapping
-      const { imports } = mergeImports(underlyingFilePath, success.imports, importsToAdd)
 
       return {
         ...success,
