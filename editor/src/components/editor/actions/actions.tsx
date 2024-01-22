@@ -14,6 +14,7 @@ import {
   getIndexInParent,
   insertJSXElementChildren,
   renameJsxElementChild,
+  renameJsxElementChildWithoutId,
 } from '../../../core/model/element-template-utils'
 import {
   applyToAllUIJSFiles,
@@ -49,8 +50,6 @@ import type {
   JSExpressionValue,
   JSXElement,
   JSXElementChildren,
-  SettableLayoutSystem,
-  UtopiaJSXComponent,
   JSXElementChild,
 } from '../../../core/shared/element-template'
 import {
@@ -128,7 +127,6 @@ import {
   isImageFile,
   isDirectory,
   parseSuccess,
-  importsResolution,
 } from '../../../core/shared/project-file-types'
 import {
   codeFile,
@@ -397,7 +395,7 @@ import {
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
 
-import { defaultConfig, rename } from 'utopia-vscode-common'
+import { defaultConfig } from 'utopia-vscode-common'
 import { reorderElement } from '../../../components/canvas/commands/reorder-element-command'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
@@ -485,7 +483,6 @@ import {
 import { styleStringInArray } from '../../../utils/common-constants'
 import { collapseTextElements } from '../../../components/text-editor/text-handling'
 import { LayoutPropertyList, StyleProperties } from '../../inspector/common/css-utils'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { isUtopiaCommentFlag, makeUtopiaFlagComment } from '../../../core/shared/comment-flags'
 import { toArrayOf } from '../../../core/shared/optics/optic-utilities'
 import { fromField, traverseArray } from '../../../core/shared/optics/optic-creators'
@@ -501,10 +498,7 @@ import {
 } from '../store/insertion-path'
 import { getConditionalCaseCorrespondingToBranchPath } from '../../../core/model/conditionals'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
-import {
-  replaceFragmentLikePathsWithTheirChildrenRecursive,
-  treatElementAsFragmentLike,
-} from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
+import { treatElementAsFragmentLike } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import {
   fixParentContainingBlockSettings,
   isTextContainingConditional,
@@ -552,8 +546,6 @@ import { convertToAbsoluteAndReparentToUnwrapStrategy } from '../one-shot-unwrap
 import { addHookForProjectChanges } from '../store/collaborative-editing'
 import { arrayDeepEquality, objectDeepEquality } from '../../../utils/deep-equality'
 import type { ProjectServerState } from '../store/project-server-state'
-import { fixParseSuccessUIDs } from '../../../core/workers/parser-printer/uid-fix'
-import { mergeImportsResolutions } from '../import-utils'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -4168,13 +4160,18 @@ export const UPDATE_FNS = {
     )
   },
   ADD_IMPORTS: (action: AddImports, editor: EditorModel): EditorModel => {
+    let duplicateNames = new Map<string, string>()
     return modifyUnderlyingTargetElement(
       action.target,
       editor,
-      (element) => element,
+      (element) => renameJsxElementChild(element, duplicateNames),
       (success, _, underlyingFilePath) => {
-        // TODO handle duplicate name mapping
-        const { imports } = mergeImports(underlyingFilePath, success.imports, action.importsToAdd)
+        const { imports, duplicateNameMapping } = mergeImports(
+          underlyingFilePath,
+          success.imports,
+          action.importsToAdd,
+        )
+        duplicateNames = duplicateNameMapping
         return {
           ...success,
           imports: imports,
@@ -4875,7 +4872,7 @@ export const UPDATE_FNS = {
 
       const newPath = EP.appendToPath(action.insertionPath.intendedParentPath, newUID)
 
-      const element = action.toInsert.element()
+      let element = action.toInsert.element()
 
       const withNewElement = modifyUnderlyingTargetElement(
         insertionPath.intendedParentPath,
@@ -4883,6 +4880,15 @@ export const UPDATE_FNS = {
         identity,
         (success, _, underlyingFilePath) => {
           const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
+
+          const updatedImports = mergeImports(
+            underlyingFilePath,
+            success.imports,
+            action.toInsert.importsToAdd,
+          )
+
+          const { imports, duplicateNameMapping } = updatedImports
+          element = renameJsxElementChildWithoutId(element, duplicateNameMapping)
 
           if (element.type === 'JSX_ELEMENT') {
             const propsWithUid = forceRight(
@@ -4972,15 +4978,6 @@ export const UPDATE_FNS = {
             success.topLevelElements,
             withInsertedElement.components,
           )
-
-          const updatedImports = mergeImports(
-            underlyingFilePath,
-            success.imports,
-            action.toInsert.importsToAdd,
-          )
-
-          // TODO handle duplicate name mapping
-          const { imports } = updatedImports
 
           return {
             ...success,

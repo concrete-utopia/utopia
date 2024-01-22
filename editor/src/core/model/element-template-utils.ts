@@ -1,11 +1,7 @@
 import type { ProjectContentTreeRoot } from '../../components/assets'
-import { getProjectFileByFilePath, walkContentsTreeForParseSuccess } from '../../components/assets'
+import { getProjectFileByFilePath } from '../../components/assets'
 import type { IndexPosition } from '../../utils/utils'
-import Utils, {
-  addElementsToArrayAtIndexPosition,
-  addToArrayAtIndexPosition,
-  front,
-} from '../../utils/utils'
+import Utils, { addElementsToArrayAtIndexPosition } from '../../utils/utils'
 import type {
   ElementsWithin,
   JSXElement,
@@ -19,19 +15,15 @@ import type {
   JSExpression,
   JSXArrayElement,
   JSXProperty,
-  JSXFragment,
   ElementInstanceMetadataMap,
-  JSExpressionOtherJavaScript,
   JSExpressionMapOrOtherJavascript,
+  JSXElementChildWithoutUID,
 } from '../shared/element-template'
 import {
   isJSExpressionMapOrOtherJavaScript,
-  isJSXAttributeValue,
   isJSXElement,
   isJSXTextBlock,
-  isUtopiaJSXComponent,
   isJSXFragment,
-  getJSXAttribute,
   isSpreadAssignment,
   modifiableAttributeIsAttributeOtherJavaScript,
   jsxElementName,
@@ -42,16 +34,13 @@ import {
   jsExpressionValue,
   isIntrinsicElement,
   jsxFragment,
-  JSXConditionalExpression,
   isJSExpression,
-  ArbitraryJSBlock,
   hasElementsWithin,
 } from '../shared/element-template'
 import type {
   StaticElementPathPart,
   StaticElementPath,
   ElementPath,
-  Imports,
   ElementPathPart,
 } from '../shared/project-file-types'
 import { isParseSuccess, isTextFile } from '../shared/project-file-types'
@@ -64,12 +53,11 @@ import {
   generateUID,
   getUtopiaID,
 } from '../shared/uid-utils'
-import { assertNever, fastForEach } from '../shared/utils'
+import { assertNever } from '../shared/utils'
 import { getComponentsFromTopLevelElements, isSceneAgainstImports } from './project-file-utils'
 import type { GetJSXAttributeResult } from '../shared/jsx-attributes'
 import { getJSXAttributesAtPath } from '../shared/jsx-attributes'
 import { forceNotNull } from '../shared/optional-utils'
-import { getStoryboardElementPath } from './scene-utils'
 import {
   conditionalWhenFalseOptic,
   conditionalWhenTrueOptic,
@@ -1203,6 +1191,18 @@ export function findPathToJSXElementChild(
     default:
       assertNever(element)
   }
+}
+
+export function renameJsxElementChildWithoutId(
+  element: JSXElementChildWithoutUID,
+  duplicateNameMapping: Map<string, string>,
+): JSXElementChildWithoutUID {
+  const newElement = {
+    uid: 'temp',
+    ...element,
+  }
+  const { uid, ...renamed } = renameJsxElementChild(newElement, duplicateNameMapping)
+  return renamed
 }
 
 export function renameJsxElementChild<T extends JSXElementChild>(
