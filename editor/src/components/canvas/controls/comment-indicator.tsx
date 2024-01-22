@@ -68,6 +68,7 @@ import * as EP from '../../../core/shared/element-path'
 import { useRefAtom } from '../../editor/hook-utils'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import * as PP from '../../../core/shared/property-path'
+import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
 export const CommentIndicators = React.memo(() => {
   const projectId = useEditorState(
@@ -173,7 +174,7 @@ const CommentIndicatorsInner = React.memo(() => {
   const temporaryIndicatorData = useCommentBeingComposed()
 
   return (
-    <React.Fragment>
+    <CanvasOffsetWrapper>
       {threads.map((thread) => (
         <CommentIndicator key={thread.id} thread={thread} />
       ))}
@@ -189,7 +190,7 @@ const CommentIndicatorsInner = React.memo(() => {
           isRead={false}
         />
       ) : null}
-    </React.Fragment>
+    </CanvasOffsetWrapper>
   )
 })
 CommentIndicatorsInner.displayName = 'CommentIndicatorInner'
@@ -224,8 +225,8 @@ function getIndicatorStyle(
     pointerEvents: dragging ? 'none' : undefined,
     cursor: 'auto',
     padding: 2,
-    position: 'fixed',
-    bottom: canvasHeight - position.y - positionAdjust,
+    position: 'absolute',
+    top: position.y, // warning this is no longer bottom positioned, it should be shifted downwards by the height
     left: position.x,
     background: isRead ? colorTheme.bg1.value : colorTheme.primary.value,
     borderRadius: '24px 24px 24px 0px',
@@ -340,11 +341,6 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
     return !isActive && (hovered || dragging)
   }, [hovered, isActive, dragging])
 
-  const position = React.useMemo(
-    () => canvasPointToWindowPoint(dragPosition ?? location, canvasScale, canvasOffset),
-    [location, canvasScale, canvasOffset, dragPosition],
-  )
-
   const onMouseOut = React.useCallback(() => {
     if (dragging) {
       return
@@ -386,7 +382,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
       onMouseDown={onMouseDown}
       onClick={onClick}
       data-testid='comment-indicator'
-      css={getIndicatorStyle(position, {
+      css={getIndicatorStyle(location, {
         isRead: isRead,
         resolved: thread.metadata.resolved,
         isActive: isActive,
