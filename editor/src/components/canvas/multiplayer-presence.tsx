@@ -521,7 +521,7 @@ const FollowingOverlay = React.memo(() => {
               style={{
                 backgroundColor: colorTheme.primary.value,
                 color: colorTheme.white.value,
-                padding: '4px 10px',
+                padding: '4px 12px',
                 borderRadius: 100,
                 boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
                 display: 'flex',
@@ -530,11 +530,11 @@ const FollowingOverlay = React.memo(() => {
             >
               {followers === 1 ? (
                 <FlexRow style={{ height: 22, alignItems: 'center', justifyContent: 'center' }}>
-                  There is 1 person following you.
+                  1 person is following you
                 </FlexRow>
               ) : (
                 <FlexRow style={{ height: 22, alignItems: 'center', justifyContent: 'center' }}>
-                  There are {followers} people following you.
+                  {followers} people are following you
                 </FlexRow>
               )}
             </motion.div>,
