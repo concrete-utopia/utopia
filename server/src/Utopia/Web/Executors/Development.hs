@@ -515,6 +515,7 @@ serverAPI resources = hoistServer apiProxy (serverMonadToHandler resources) serv
 startup :: DevServerResources -> IO Stop
 startup DevServerResources{..} = do
   migrateDatabase (not _silentMigration) True _projectPool
+  DB.cleanupCollaborationControl _databaseMetrics _projectPool getCurrentTime
   hashedFilenamesThread <- forkIO $ watchFilenamesWithHashes (_hashCache _assetsCaches) (_assetResultCache _assetsCaches) assetPathsAndBuilders
   return $ do
         killThread hashedFilenamesThread

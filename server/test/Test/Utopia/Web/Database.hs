@@ -30,6 +30,9 @@ import           Utopia.Web.Database
 import           Utopia.Web.Database.Types
 import           Utopia.Web.Executors.Common
 
+fifteenthOfJanuaryMorning :: IO UTCTime
+fifteenthOfJanuaryMorning = pure $ UTCTime (fromOrdinalDate 2024 15) (secondsToDiffTime (9 * 60 * 60))
+
 sixteenthOfJanuaryMorning :: IO UTCTime
 sixteenthOfJanuaryMorning = pure $ UTCTime (fromOrdinalDate 2024 16) (secondsToDiffTime (9 * 60 * 60))
 
@@ -65,5 +68,14 @@ controlSpec enableExternalTests =
             assertBool "First claim result should be successful." firstClaimResult
             secondClaimResult <- maybeClaimCollaborationControl metrics pool sixteenthOfJanuaryAfternoon "secondowner" "testproject" "secondeditor"
             assertBool "Second claim result should be successful." secondClaimResult
-
+        , withTestPool "cleanup removes old entries from the database" $ \pool -> do
+            metrics <- getDatabaseMetrics
+            _ <- maybeClaimCollaborationControl metrics pool fifteenthOfJanuaryMorning "firstowner" "testproject1" "firsteditor"
+            let sixteenthOfJanuaryAfternoonSlightlyEarlier = fmap (addUTCTime (negate $ secondsToNominalDiffTime 5)) sixteenthOfJanuaryAfternoon
+            _ <- maybeClaimCollaborationControl metrics pool sixteenthOfJanuaryAfternoonSlightlyEarlier "secondowner" "testproject2" "secondeditor"
+            _ <- cleanupCollaborationControl metrics pool sixteenthOfJanuaryAfternoon
+            project1ClaimResult <- maybeClaimCollaborationControl metrics pool sixteenthOfJanuaryMorning "thirdowner" "testproject1" "thirdeditor"
+            assertBool "Claiming control of the project claimed a day ago should succeed." project1ClaimResult
+            project2ClaimResult <- maybeClaimCollaborationControl metrics pool sixteenthOfJanuaryAfternoon "fourthowner" "testproject2" "fourtheditor"
+            assertBool "Claiming control of the project claimed a minute ago should fail." $ not project2ClaimResult
         ]

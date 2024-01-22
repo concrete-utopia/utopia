@@ -59,10 +59,11 @@ data DatabaseMetrics = DatabaseMetrics
                      , _checkIfProjectIDReservedMetrics                   :: InvocationMetric
                      , _updateGithubAuthenticationDetailsMetrics          :: InvocationMetric
                      , _getGithubAuthenticationDetailsMetrics             :: InvocationMetric
-                     , _maybeClaimCollaborationControlMetrics           :: InvocationMetric
-                     , _forceClaimCollaborationControlMetrics           :: InvocationMetric
-                     , _releaseCollaborationControlMetrics           :: InvocationMetric
-                     , _deleteCollaborationControlByCollaboratorMetrics :: InvocationMetric
+                     , _maybeClaimCollaborationControlMetrics             :: InvocationMetric
+                     , _forceClaimCollaborationControlMetrics             :: InvocationMetric
+                     , _releaseCollaborationControlMetrics                :: InvocationMetric
+                     , _deleteCollaborationControlByCollaboratorMetrics   :: InvocationMetric
+                     , _cleanupCollaborationControlMetrics                :: InvocationMetric
                      }
 
 createDatabaseMetrics :: Store -> IO DatabaseMetrics
@@ -90,6 +91,7 @@ createDatabaseMetrics store = DatabaseMetrics
   <*> createInvocationMetric "utopia.database.forceclaimcollaborationownership" store
   <*> createInvocationMetric "utopia.database.releasecollaborationownership" store
   <*> createInvocationMetric "utopia.database.deletecollaborationownershipbycollaborator" store
+  <*> createInvocationMetric "utopia.database.cleanupcollaborationownership" store
 
 data UserIDIncorrectException = UserIDIncorrectException
                               deriving (Eq, Show)
@@ -175,7 +177,7 @@ projectToDecodedProject (projectId, ownerId, title, _, modifiedAt, content, _) =
 createProject :: DatabaseMetrics -> DBPool -> IO Text
 createProject metrics pool = invokeAndMeasure (_createProjectMetrics metrics) $ usePool pool $ \connection -> do
   projectID <- generateUniqueID metrics
-  void $ runInsert_ connection $ Insert
+  void $ runInsert connection $ Insert
                                  { iTable = projectIDTable
                                  , iRows = [toFields projectID]
                                  , iReturning = rCount
@@ -191,7 +193,7 @@ insertProject metrics connection userId projectId timestamp (Just pTitle) (Just 
                       , iReturning = rCount
                       , iOnConflict = Nothing
                       }
-  void $ runInsert_ connection projectInsert
+  void $ runInsert connection projectInsert
 insertProject _ _ _ _ _ _ _ = throwM MissingFieldsException
 
 saveProject :: DatabaseMetrics -> DBPool -> Text -> Text -> UTCTime -> Maybe Text -> Maybe Value -> IO ()
@@ -211,7 +213,7 @@ saveProjectInner _ connection userId projectId timestamp possibleTitle possibleP
                     , uWhere = \(projId, _, _, _, _, _, _) -> projId .== toFields projectId
                     , uReturning = rCount
                     }
-  when correctUser $ void $ runUpdate_ connection projectUpdate
+  when correctUser $ void $ runUpdate connection projectUpdate
   unless correctUser $ throwM UserIDIncorrectException
 saveProjectInner metrics connection userId projectId timestamp possibleTitle possibleProjectContents Nothing =
   insertProject metrics connection userId projectId timestamp possibleTitle possibleProjectContents
@@ -225,7 +227,7 @@ deleteProject metrics pool userId projectId = invokeAndMeasure (_deleteProjectMe
                     , uWhere = \(projId, _, _, _, _, _, _) -> projId .=== toFields projectId
                     , uReturning = rCount
                     }
-  when correctUser $ void $ runUpdate_ connection projectUpdate
+  when correctUser $ void $ runUpdate connection projectUpdate
   unless correctUser $ throwM UserIDIncorrectException
 
 projectMetadataFields :: Text
@@ -306,12 +308,12 @@ getShowcaseProjects metrics pool = invokeAndMeasure (_getShowcaseProjectsMetrics
 setShowcaseProjects :: DatabaseMetrics -> DBPool -> [Text] -> IO ()
 setShowcaseProjects metrics pool projectIds = invokeAndMeasure (_setShowcaseProjectsMetrics metrics) $ usePool pool $ \connection -> do
   let records = zip projectIds ([1..] :: [Int])
-  void $ runDelete_ connection $ Delete
+  void $ runDelete connection $ Delete
                                { dTable = showcaseTable
                                , dWhere = const $ toFields True
                                , dReturning = rCount
                                }
-  void $ runInsert_ connection $ Insert
+  void $ runInsert connection $ Insert
                                { iTable = showcaseTable
                                , iRows = fmap toFields records
                                , iReturning = rCount
@@ -330,13 +332,13 @@ getBool = getSingleValue False
 updateUserDetails :: DatabaseMetrics -> DBPool -> UserDetails -> IO ()
 updateUserDetails metrics pool UserDetails{..} = invokeAndMeasure (_updateUserDetailsMetrics metrics) $ usePool pool $ \connection -> do
   let userDetailsEntry = toFields (userId, email, name, picture)
-  let insertNew = void $ runInsert_ connection $ Insert
+  let insertNew = void $ runInsert connection $ Insert
                                                { iTable = userDetailsTable
                                                , iRows = [userDetailsEntry]
                                                , iReturning = rCount
                                                , iOnConflict = Nothing
                                                }
-  let updateOld = void $ runUpdate_ connection $ Update
+  let updateOld = void $ runUpdate connection $ Update
                                                { uTable = userDetailsTable
                                                , uUpdateWith = updateEasy (\_ -> toFields (userId, email, name, picture))
                                                , uWhere = (\(rowUserId, _, _, _) -> rowUserId .=== toFields userId)
@@ -390,13 +392,13 @@ saveUserConfiguration metrics pool userId updatedShortcutConfig updatedTheme = i
     let encoded = fmap encode updatedTheme
     either (fail . show) pure $ traverse decodeUtf8' $ fmap BL.toStrict encoded
   let newRecord = (toFields userId, toFields encodedShortcutConfig, toFields encodedTheme)
-  let insertConfig = void $ runInsert_ connection $ Insert
+  let insertConfig = void $ runInsert connection $ Insert
                                                   { iTable = userConfigurationTable
                                                   , iRows = [newRecord]
                                                   , iReturning = rCount
                                                   , iOnConflict = Nothing
                                                   }
-  let updateConfig = const $ void $ runUpdate_ connection $ Update
+  let updateConfig = const $ void $ runUpdate connection $ Update
                                                           { uTable = userConfigurationTable
                                                           , uUpdateWith = updateEasy (\(rowUserId, _, _) -> (rowUserId, toFields encodedShortcutConfig, toFields encodedTheme))
                                                           , uWhere = (\(rowUserId, _, _) -> rowUserId .=== toFields userId)
@@ -429,12 +431,12 @@ projectContentTreeFromDecodedProject decodedProject = do
 updateGithubAuthenticationDetails :: DatabaseMetrics -> DBPool -> GithubAuthenticationDetails -> IO ()
 updateGithubAuthenticationDetails metrics pool GithubAuthenticationDetails{..} = invokeAndMeasure (_updateGithubAuthenticationDetailsMetrics metrics) $ usePool pool $ \connection -> do
   let githubAuthenticationDetailsEntry = toFields (userId, accessToken, refreshToken, expiresAt)
-  void $ runDelete_ connection $ Delete
+  void $ runDelete connection $ Delete
                                { dTable = githubAuthenticationTable
                                , dWhere = (\(rowUserId, _, _, _) -> rowUserId .=== toFields userId)
                                , dReturning = rCount
                                }
-  void $ runInsert_ connection $ Insert
+  void $ runInsert connection $ Insert
                                { iTable = githubAuthenticationTable
                                , iRows = [githubAuthenticationDetailsEntry]
                                , iReturning = rCount
@@ -455,7 +457,7 @@ lookupGithubAuthenticationDetails metrics pool userId = invokeAndMeasure (_getGi
 insertCollaborationControl :: Connection -> Text -> Text -> Text -> UTCTime -> IO ()
 insertCollaborationControl connection userId projectId collaborationEditor currentTime = do
   let newLastSeenTimeout = addUTCTime collaborationLastSeenTimeoutWindow currentTime
-  void $ runInsert_ connection $ Insert
+  void $ runInsert connection $ Insert
                                 { iTable = projectCollaborationTable
                                 , iRows = [toFields (projectId, collaborationEditor, newLastSeenTimeout, Just userId)]
                                 , iReturning = rCount
@@ -478,7 +480,7 @@ sameProjectAndOwner rowProjectId rowPossibleUserId projectId userId =
 
 updateCollaborationLastSeenTimeout :: Connection -> Text -> Text -> Text -> UTCTime -> IO ()
 updateCollaborationLastSeenTimeout connection userId projectId newCollaborationEditor newLastSeenTimeout = do
-  void $ runUpdate_ connection $ Update
+  void $ runUpdate connection $ Update
                                { uTable = projectCollaborationTable
                                , uUpdateWith = updateEasy (\(rowProjectId, _, _, _) -> (rowProjectId, toFields newCollaborationEditor, toFields newLastSeenTimeout, toFields $ Just userId))
                                , uWhere = (\(rowProjectId, _, _, rowPossibleUserId) -> sameProjectAndOwner rowProjectId rowPossibleUserId projectId userId)
@@ -488,7 +490,7 @@ updateCollaborationLastSeenTimeout connection userId projectId newCollaborationE
 maybeClaimExistingCollaborationControl :: Connection -> Text -> Maybe Text -> Text -> Text -> Text -> UTCTime -> UTCTime -> IO Bool
 maybeClaimExistingCollaborationControl connection userId currentPossibleUserId projectId currentCollaborationEditor newCollaborationEditor currentLastSeenTimeout currentTime
   -- Different user, but the current entry means they cannot claim control because the timeout hasn't expired.
-  | Just userId /= currentPossibleUserId 
+  | Just userId /= currentPossibleUserId
       && isJust currentPossibleUserId
       && currentLastSeenTimeout >= currentTime              = pure False
   -- The same editor is trying to claim control again, so allow them to update it.
@@ -530,7 +532,7 @@ forceClaimCollaborationControl metrics pool getTime userId projectId collaborati
   invokeAndMeasure (_forceClaimCollaborationControlMetrics metrics) $ usePool pool $ \connection -> do
     withTransaction connection $ do
       -- Delete any and all values for this project.
-      void $ runDelete_ connection $ Delete
+      void $ runDelete connection $ Delete
                                { dTable = projectCollaborationTable
                                , dWhere = (\(rowProjectId, _, _, _) -> rowProjectId .=== toFields projectId)
                                , dReturning = rCount
@@ -542,7 +544,7 @@ releaseCollaborationControl :: DatabaseMetrics -> DBPool -> Text -> Text -> Text
 releaseCollaborationControl metrics pool userId projectId collaborationEditor = do
   invokeAndMeasure (_releaseCollaborationControlMetrics metrics) $ usePool pool $ \connection -> do
     -- Delete any matching values for this project and collaboration editor.
-    void $ runDelete_ connection $ Delete
+    void $ runDelete connection $ Delete
                               { dTable = projectCollaborationTable
                               , dWhere = (\(rowProjectId, rowCollaborationEditor, _, rowPossibleUserId) -> sameProjectAndOwner rowProjectId rowPossibleUserId projectId userId .&& rowCollaborationEditor .== toFields collaborationEditor)
                               , dReturning = rCount
@@ -550,8 +552,22 @@ releaseCollaborationControl metrics pool userId projectId collaborationEditor = 
 
 deleteCollaborationControlByCollaborator :: DatabaseMetrics -> DBPool -> Text -> Text -> IO ()
 deleteCollaborationControlByCollaborator metrics pool userId collaborationEditor = invokeAndMeasure (_deleteCollaborationControlByCollaboratorMetrics metrics) $ usePool pool $ \connection -> do
-  void $ runDelete_ connection $ Delete
+  void $ runDelete connection $ Delete
                                { dTable = projectCollaborationTable
                                , dWhere = (\(_, rowCollaborationEditor, _, rowPossibleUserId) -> sameOwner rowPossibleUserId userId .&& rowCollaborationEditor .== toFields collaborationEditor)
+                               , dReturning = rCount
+                               }
+
+-- Treat anything last seen more than 1 hour ago as sufficiently in the past so as to be a candidate to be deleted.
+cleanupCollaborationControlThreshold :: NominalDiffTime
+cleanupCollaborationControlThreshold = negate $ secondsToNominalDiffTime (60 * 60)
+
+cleanupCollaborationControl :: DatabaseMetrics -> DBPool -> IO UTCTime -> IO ()
+cleanupCollaborationControl metrics pool getTime = invokeAndMeasure (_cleanupCollaborationControlMetrics metrics) $ usePool pool $ \connection -> do
+  currentTime <- getTime
+  let lastSeenThreshold = addUTCTime cleanupCollaborationControlThreshold currentTime
+  void $ runDelete connection $ Delete
+                               { dTable = projectCollaborationTable
+                               , dWhere = (\(_, _, rowLastSeenTimeout, _) -> rowLastSeenTimeout .< toFields lastSeenThreshold)
                                , dReturning = rCount
                                }
