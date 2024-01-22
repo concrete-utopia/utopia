@@ -1,7 +1,10 @@
+/** @jsxRuntime classic */
+/** @jsx jsx */
+import React from 'react'
+import { jsx } from '@emotion/react'
 import type { User } from '@liveblocks/client'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useAtom, useSetAtom } from 'jotai'
-import React from 'react'
 import type { Presence, PresenceActiveFrame, UserMeta } from '../../../liveblocks.config'
 import {
   useOthers,
@@ -465,7 +468,7 @@ const FollowingOverlay = React.memo(() => {
               boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
               display: 'flex',
               alignItems: 'center',
-              gap: 10,
+              gap: 5,
             }}
           >
             <div>You're following {followedUser?.name}</div>
@@ -473,11 +476,14 @@ const FollowingOverlay = React.memo(() => {
               highlight
               spotlight
               onClick={stopFollowing}
-              style={{
-                backgroundColor: '#00000015',
+              css={{
                 padding: '4px 10px',
                 borderRadius: 100,
                 cursor: 'pointer',
+                backgroundColor: '#00000025',
+                '&:hover': {
+                  backgroundColor: '#00000015',
+                },
               }}
             >
               Stop following
