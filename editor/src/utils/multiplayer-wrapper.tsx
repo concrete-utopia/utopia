@@ -3,7 +3,7 @@ import type { CommentProps } from '@liveblocks/react-comments'
 import { Comment } from '@liveblocks/react-comments'
 import type { CSSProperties } from 'react'
 import React from 'react'
-import type { UserMeta } from '../../liveblocks.config'
+import { useStatus, type UserMeta } from '../../liveblocks.config'
 import { MultiplayerAvatar } from '../components/user-bar'
 import {
   multiplayerColorFromIndex,
@@ -16,6 +16,11 @@ type Fallback = NonNullable<React.ReactNode> | null
 
 export const MultiplayerWrapper = React.memo(
   (props: { errorFallback: Fallback; suspenseFallback: Fallback; children: any }) => {
+    const roomStatus = useStatus()
+    if (roomStatus !== 'connected') {
+      return null
+    }
+
     return (
       <ErrorBoundary fallback={props.errorFallback}>
         <ClientSideSuspense fallback={props.suspenseFallback}>

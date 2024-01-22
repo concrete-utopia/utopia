@@ -1,4 +1,4 @@
-import { canFollowTarget, multiplayerInitialsFromName } from './multiplayer'
+import { canFollowTarget, followTarget, multiplayerInitialsFromName } from './multiplayer'
 
 describe('multiplayer', () => {
   describe('multiplayerInitialsFromName', () => {
@@ -21,34 +21,56 @@ describe('multiplayer', () => {
 
   describe('canFollowTarget', () => {
     it('can follow a single player', () => {
-      expect(canFollowTarget('foo', 'bar', [{ id: 'bar', following: null }])).toBe(true)
-    })
-    it('can follow a player that follows another player', () => {
       expect(
-        canFollowTarget('foo', 'bar', [
-          { id: 'bar', following: 'baz' },
-          { id: 'baz', following: null },
+        canFollowTarget(followTarget('foo', 0), followTarget('bar', 0), [
+          { id: 'bar', connectionId: 0, following: null },
         ]),
       ).toBe(true)
     })
-    it('can follow a player that follows another player indirectly', () => {
+    it('cannot follow self', () => {
       expect(
-        canFollowTarget('foo', 'bar', [
-          { id: 'bar', following: 'baz' },
-          { id: 'baz', following: 'qux' },
-          { id: 'qux', following: null },
+        canFollowTarget(followTarget('foo', 0), followTarget('foo', 0), [
+          { id: 'foo', connectionId: 1, following: null },
+        ]),
+      ).toBe(false)
+    })
+    it('can follow a single player with the same ID but on another connection', () => {
+      expect(
+        canFollowTarget(followTarget('foo', 0), followTarget('foo', 1), [
+          { id: 'foo', connectionId: 1, following: null },
         ]),
       ).toBe(true)
+    })
+    it('cannot follow a player that follows another player', () => {
+      expect(
+        canFollowTarget(followTarget('foo', 0), followTarget('bar', 0), [
+          { id: 'bar', connectionId: 0, following: 'baz' },
+          { id: 'baz', connectionId: 0, following: null },
+        ]),
+      ).toBe(false)
+    })
+    it('cannot follow a player that follows another player indirectly', () => {
+      expect(
+        canFollowTarget(followTarget('foo', 0), followTarget('bar', 0), [
+          { id: 'bar', connectionId: 0, following: 'baz' },
+          { id: 'baz', connectionId: 0, following: 'qux' },
+          { id: 'qux', connectionId: 0, following: null },
+        ]),
+      ).toBe(false)
     })
     it('cannot follow a player back', () => {
-      expect(canFollowTarget('foo', 'bar', [{ id: 'bar', following: 'foo' }])).toBe(false)
+      expect(
+        canFollowTarget(followTarget('foo', 0), followTarget('bar', 0), [
+          { id: 'bar', connectionId: 0, following: 'foo' },
+        ]),
+      ).toBe(false)
     })
     it('cannot follow a player that has an indirect loop', () => {
       expect(
-        canFollowTarget('foo', 'bar', [
-          { id: 'bar', following: 'baz' },
-          { id: 'baz', following: 'qux' },
-          { id: 'qux', following: 'foo' },
+        canFollowTarget(followTarget('foo', 0), followTarget('bar', 0), [
+          { id: 'bar', connectionId: 0, following: 'baz' },
+          { id: 'baz', connectionId: 0, following: 'qux' },
+          { id: 'qux', connectionId: 0, following: 'foo' },
         ]),
       ).toBe(false)
     })

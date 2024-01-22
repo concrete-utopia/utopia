@@ -1,19 +1,19 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import React from 'react'
-import { css, jsx } from '@emotion/react'
+import { jsx } from '@emotion/react'
 import type { CSSProperties } from 'react'
 import { useOthers, useStatus, useStorage } from '../../liveblocks.config'
 import { getUserPicture, isLoggedIn } from '../common/user'
 import { getCollaborator, useMyUserAndPresence } from '../core/commenting/comment-hooks'
-import type { MultiplayerColor } from '../core/shared/multiplayer'
+import type { FollowTarget, MultiplayerColor } from '../core/shared/multiplayer'
 import {
   canFollowTarget,
+  followTarget,
   isDefaultAuth0AvatarURL,
   multiplayerColorFromIndex,
   multiplayerInitialsFromName,
   normalizeMultiplayerName,
-  normalizeOthersList,
 } from '../core/shared/multiplayer'
 import { MultiplayerWrapper } from '../utils/multiplayer-wrapper'
 import { unless, when } from '../utils/react-conditionals'
@@ -27,6 +27,8 @@ import { Substores, useEditorState } from './editor/store/store-hook'
 import { useIsMyProject } from './editor/store/collaborative-editing'
 
 const MAX_VISIBLE_OTHER_PLAYERS = 4
+
+const AvatarSize = 20
 
 export const cannotFollowToastId = 'cannot-follow-toast-id'
 
@@ -81,8 +83,8 @@ const SinglePlayerUserBar = React.memo(() => {
       onClick={handleCopyToClipboard}
       css={{
         background: colorTheme.primary30.value,
-        borderRadius: 26,
-        height: 26,
+        borderRadius: 24,
+        height: 24,
         padding: 2,
         border: `1px solid ${colorTheme.transparent.value}`,
         transition: 'all .1s ease-in-out',
@@ -97,7 +99,7 @@ const SinglePlayerUserBar = React.memo(() => {
       <Avatar
         userPicture={userPicture}
         isLoggedIn={true}
-        size={22}
+        size={AvatarSize}
         style={{ outline: 'undefined' }}
       />
       {isMyProject ? <OwnerBadge /> : null}
@@ -133,6 +135,7 @@ const MultiplayerUserBar = React.memo(() => {
         return {
           ...getCollaborator(collabs, other),
           following: other.presence.following,
+          connectionId: other.connectionId,
         }
       }),
   )
@@ -165,9 +168,13 @@ const MultiplayerUserBar = React.memo(() => {
   }, [ownerId, myUser])
 
   const toggleFollowing = React.useCallback(
-    (targetId: string) => () => {
+    (target: FollowTarget) => () => {
       let actions: EditorAction[] = []
-      const canFollow = canFollowTarget(myUser.id, targetId, others)
+      const canFollow = canFollowTarget(
+        followTarget(myUser.id, myPresence.connectionId),
+        target,
+        others,
+      )
       if (!canFollow) {
         actions.push(
           showToast(
@@ -181,14 +188,16 @@ const MultiplayerUserBar = React.memo(() => {
         )
       } else {
         const newMode =
-          isFollowMode(mode) && mode.playerId === targetId
+          isFollowMode(mode) &&
+          mode.playerId === target.playerId &&
+          mode.connectionId === target.connectionId
             ? EditorModes.selectMode(null, false, 'none')
-            : EditorModes.followMode(targetId)
+            : EditorModes.followMode(target.playerId, target.connectionId)
         actions.push(switchEditorMode(newMode))
       }
       dispatch(actions)
     },
-    [dispatch, mode, myUser, others],
+    [dispatch, mode, others, myUser, myPresence],
   )
 
   if (myUser.name == null) {
@@ -218,10 +227,11 @@ const MultiplayerUserBar = React.memo(() => {
             tooltip={{ text: name, colored: true }}
             color={multiplayerColorFromIndex(other.colorIndex)}
             picture={other.avatar}
-            onClick={toggleFollowing(other.id)}
-            isBeingFollowed={isFollowMode(mode) && mode.playerId === other.id}
+            onClick={toggleFollowing(followTarget(other.id, other.connectionId))}
+            isBeingFollowed={isFollowMode(mode) && mode.connectionId === other.connectionId}
             follower={other.following === myUser.id}
             isOwner={isOwner}
+            size={AvatarSize}
           />
         )
       })}
@@ -238,6 +248,7 @@ const MultiplayerUserBar = React.memo(() => {
             foreground: colorTheme.fg0.value,
           }}
           picture={null}
+          size={AvatarSize}
         />,
       )}
       {when(
@@ -257,6 +268,7 @@ const MultiplayerUserBar = React.memo(() => {
               picture={other.avatar}
               isOwner={isOwner}
               isOffline={true}
+              size={AvatarSize}
             />
           )
         }),
@@ -265,8 +277,8 @@ const MultiplayerUserBar = React.memo(() => {
         onClick={handleCopyToClipboard}
         css={{
           background: colorTheme.primary30.value,
-          borderRadius: 26,
-          height: 26,
+          borderRadius: 24,
+          height: 24,
           padding: 2,
           border: `1px solid ${colorTheme.transparent.value}`,
           transition: 'all .1s ease-in-out',
@@ -283,7 +295,7 @@ const MultiplayerUserBar = React.memo(() => {
           color={multiplayerColorFromIndex(myUser.colorIndex)}
           picture={myUser.avatar}
           isOwner={amIOwner}
-          size={22}
+          size={AvatarSize}
           style={{ outline: 'undefined' }}
         />
         <div style={{ padding: '0 8px 0 5px', fontWeight: 500 }}>Share</div>
@@ -346,12 +358,14 @@ export const MultiplayerAvatar = React.memo((props: MultiplayerAvatarProps) => {
           fontWeight: 700,
           cursor: props.onClick != null ? 'pointer' : 'inherit',
           position: 'relative',
-          outline: `.3px solid ${colorTheme.bg1.value}`,
+          outline:
+            props.isBeingFollowed === true
+              ? `1px solid ${colorTheme.bg1.value}`
+              : `1px solid ${colorTheme.transparent.value}`,
           boxShadow:
             props.isBeingFollowed === true
-              ? `0px 0px 8px ${colorTheme.dynamicBlue.value}`
-              : undefined,
-
+              ? `0px 0px 0px 2.5px ${props.color.background}`
+              : `0px 0px 0px 2.5px ${colorTheme.transparent.value}`,
           ...props.style,
         }}
         onClick={props.onClick}
@@ -400,7 +414,7 @@ const OwnerBadge = React.memo(() => {
       width={14}
       height={14}
       color='main'
-      style={{ position: 'absolute', zIndex: 1, bottom: -1, left: -2 }}
+      style={{ position: 'absolute', zIndex: 1, bottom: -4, left: -4 }}
     />
   )
 })
