@@ -194,19 +194,6 @@ index 7b60eac641d..b37ebcd9f73 100644
 +		"version": "1.62.0"
 +	}
  }
-diff --git a/src/vs/editor/common/config/editorOptions.ts b/src/vs/editor/common/config/editorOptions.ts
-index 1c6b481c70..87caa70c5e 100644
---- a/src/vs/editor/common/config/editorOptions.ts
-+++ b/src/vs/editor/common/config/editorOptions.ts
-@@ -2434,7 +2434,7 @@ class EditorMinimap extends BaseEditorOption<EditorOption.minimap, EditorMinimap
- 
-        constructor() {
-                const defaults: EditorMinimapOptions = {
--                       enabled: true,
-+                       enabled: false,
-                        size: 'proportional',
-                        side: 'right',
-                        showSlider: 'mouseover',
 diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
 index 6148eb30092..6948ededa4a 100644
 --- a/src/vs/base/browser/dom.ts
