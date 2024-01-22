@@ -282,7 +282,11 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
   const [dragging, setDragging] = React.useState(false)
   const draggingCallback = React.useCallback((isDragging: boolean) => setDragging(isDragging), [])
 
-  const { onMouseDown, didDrag, dragPosition } = useDragging(thread, location, draggingCallback)
+  const { onMouseDown: onMouseDownDrag, dragPosition } = useDragging(
+    thread,
+    location,
+    draggingCallback,
+  )
 
   const remixLocationRoute = React.useMemo(() => {
     return thread.metadata.remixLocationRoute ?? null
@@ -315,28 +319,33 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
     onHoverMouseOut()
   }, [dragging, onHoverMouseOut])
 
-  const onClick = React.useCallback(() => {
-    if (didDrag) {
-      return
-    }
-    if (isOnAnotherRoute && remixLocationRoute != null && remixState != null) {
-      remixState.navigate(remixLocationRoute)
-    }
-    cancelHover()
-    dispatch([
-      ...openCommentThreadActions(thread.id, commentScene),
-      setRightMenuTab(RightMenuTab.Comments),
-    ])
-  }, [
-    dispatch,
-    thread.id,
-    remixState,
-    remixLocationRoute,
-    isOnAnotherRoute,
-    commentScene,
-    didDrag,
-    cancelHover,
-  ])
+  const onMouseDown = React.useCallback(
+    (e: React.MouseEvent) => {
+      onMouseDownDrag(e, (dragged) => {
+        if (dragged) {
+          return
+        }
+        if (isOnAnotherRoute && remixLocationRoute != null && remixState != null) {
+          remixState.navigate(remixLocationRoute)
+        }
+        cancelHover()
+        dispatch([
+          ...openCommentThreadActions(thread.id, commentScene),
+          setRightMenuTab(RightMenuTab.Comments),
+        ])
+      })
+    },
+    [
+      dispatch,
+      thread.id,
+      remixState,
+      remixLocationRoute,
+      isOnAnotherRoute,
+      commentScene,
+      cancelHover,
+      onMouseDownDrag,
+    ],
+  )
 
   // This is a hack: when the comment is unread, we show a dark background, so we need light foreground colors.
   // So we trick the Liveblocks Comment component and lie to it that the theme is dark mode.
@@ -355,7 +364,6 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
       onMouseOver={onMouseOver}
       onMouseOut={onMouseOut}
       onMouseDown={onMouseDown}
-      onClick={onClick}
       data-testid='comment-indicator'
       style={style}
     >
@@ -415,7 +423,6 @@ function useDragging(
 ) {
   const editThreadMetadata = useEditThreadMetadata()
   const [dragPosition, setDragPosition] = React.useState<CanvasPoint | null>(null)
-  const [didDrag, setDidDrag] = React.useState(false)
 
   const canvasScaleRef = useRefEditorState((store) => store.editor.canvas.scale)
   const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
@@ -428,8 +435,7 @@ function useDragging(
   const remixSceneRoutesRef = useRefAtom(RemixNavigationAtom)
 
   const onMouseDown = React.useCallback(
-    (event: React.MouseEvent) => {
-      setDidDrag(false)
+    (event: React.MouseEvent, onHandled: (dragged: boolean) => void) => {
       draggingCallback(true)
 
       const mouseDownPoint = windowPoint({ x: event.clientX, y: event.clientY })
@@ -459,7 +465,6 @@ function useDragging(
         if (draggedPastThreshold) {
           dispatch([switchEditorMode(EditorModes.commentMode(null, 'dragging'))])
 
-          setDidDrag(true)
           const dragVectorWindow = pointDifference(mouseDownPoint, mouseMovePoint)
           const dragVectorCanvas = canvasPoint({
             x: dragVectorWindow.x / canvasScaleRef.current,
@@ -473,9 +478,11 @@ function useDragging(
         upEvent.stopPropagation()
         window.removeEventListener('mousemove', onMouseMove)
         window.removeEventListener('mouseup', onMouseUp)
-        draggingCallback(false)
 
         const mouseUpPoint = windowPoint({ x: upEvent.clientX, y: upEvent.clientY })
+
+        draggingCallback(false)
+        onHandled(draggedPastThreshold)
 
         if (!draggedPastThreshold) {
           return
@@ -553,7 +560,7 @@ function useDragging(
     ],
   )
 
-  return { onMouseDown, dragPosition, didDrag }
+  return { onMouseDown, dragPosition }
 }
 
 function useHover() {
