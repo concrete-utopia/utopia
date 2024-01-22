@@ -475,7 +475,7 @@ const FollowingOverlay = React.memo(() => {
             justifyContent: 'center',
             paddingBottom: 14,
             cursor: 'default',
-            border: `4px solid ${followedUserColor.background}`,
+            border: hasFollowers ? `undefined` : `4px solid ${followedUserColor.background}`,
           }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
