@@ -16,6 +16,7 @@ export type FeatureName =
   | 'Steganography'
   | 'Multiplayer'
   | 'Baton Passing For Control'
+  | 'Debug – Connections'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -32,6 +33,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Steganography',
   'Multiplayer',
   'Baton Passing For Control',
+  'Debug – Connections',
 ]
 
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
@@ -48,6 +50,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   Steganography: false,
   Multiplayer: false,
   'Baton Passing For Control': false,
+  'Debug – Connections': false,
 }
 
 let FeatureSwitchLoaded: { [feature in FeatureName]?: boolean } = {}
