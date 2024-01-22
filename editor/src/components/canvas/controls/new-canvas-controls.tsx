@@ -24,6 +24,7 @@ import { ElementContextMenu } from '../../element-context-menu'
 import type { Mode } from '../../editor/editor-modes'
 import {
   isCommentMode,
+  isFollowMode,
   isLiveMode,
   isSelectMode,
   isSelectModeWithArea,
@@ -529,7 +530,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         onMouseUp={onMouseUp}
       >
         {when(
-          isSelectMode(editorMode) || isCommentMode(editorMode),
+          isSelectMode(editorMode) || isCommentMode(editorMode) || isFollowMode(editorMode),
           <SceneLabelControl
             maybeHighlightOnHover={maybeHighlightOnHover}
             maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
@@ -544,7 +545,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
             <ZeroSizedElementControls.control showAllPossibleElements={false} />
 
             {when(
-              isSelectMode(editorMode) || isCommentMode(editorMode),
+              isSelectMode(editorMode) || isCommentMode(editorMode) || isFollowMode(editorMode),
               <RemixSceneLabelControl
                 maybeHighlightOnHover={maybeHighlightOnHover}
                 maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
@@ -573,7 +574,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
                 {renderTextEditableControls()}
                 {when(isSelectMode(editorMode), <AbsoluteChildrenOutline />)}
                 {when(
-                  isSelectOrInsertMode(editorMode) &&
+                  (isSelectOrInsertMode(editorMode) || isFollowMode(editorMode)) &&
                     !EP.multiplePathsAllWithTheSameUID(localSelectedViews),
                   <>
                     {strategyControls.map((c) => (
