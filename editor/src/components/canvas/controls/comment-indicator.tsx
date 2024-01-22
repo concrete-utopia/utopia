@@ -51,7 +51,12 @@ import {
   setRightMenuTab,
   switchEditorMode,
 } from '../../editor/actions/action-creators'
-import { EditorModes, isCommentMode, isExistingComment } from '../../editor/editor-modes'
+import {
+  EditorModes,
+  isCommentMode,
+  isExistingComment,
+  isFollowMode,
+} from '../../editor/editor-modes'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { RightMenuTab } from '../../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
@@ -336,6 +341,12 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
     'CommentIndicator isActive',
   )
 
+  const isFollowing = useEditorState(
+    Substores.restOfEditor,
+    (store) => isFollowMode(store.editor.mode),
+    'CommentIndicator isFollowing',
+  )
+
   const preview = React.useMemo(() => {
     return !isActive && (hovered || dragging)
   }, [hovered, isActive, dragging])
@@ -386,13 +397,16 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
       onMouseDown={onMouseDown}
       onClick={onClick}
       data-testid='comment-indicator'
-      css={getIndicatorStyle(position, {
-        isRead: isRead,
-        resolved: thread.metadata.resolved,
-        isActive: isActive,
-        expanded: preview,
-        dragging: dragging,
-      })}
+      css={{
+        ...getIndicatorStyle(position, {
+          isRead: isRead,
+          resolved: thread.metadata.resolved,
+          isActive: isActive,
+          expanded: preview,
+          dragging: dragging,
+        }),
+        transition: isFollowing ? '0.1s linear' : undefined,
+      }}
     >
       <CommentIndicatorWrapper
         thread={thread}
