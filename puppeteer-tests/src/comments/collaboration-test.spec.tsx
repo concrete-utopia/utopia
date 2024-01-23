@@ -2,9 +2,7 @@ import type { ElementHandle, Page } from 'puppeteer'
 import { setupBrowser, wait } from '../utils'
 import * as url from 'url'
 import { createUtopiaPuppeteerBrowser } from './test-utils'
-import { PUPPETEER_TIMEOUT, getElementWithSelector } from './comment-utils'
-
-const TIMEOUT = 30000
+import { PUPPETEER_TIMEOUT, TIMEOUT, getElementWithSelector } from './comment-utils'
 
 const BRANCH_NAME = process.env.BRANCH_NAME ? `&branch_name=${process.env.BRANCH_NAME}` : ''
 const BASE_URL = process.env.BASE_URL ?? 'http://localhost:8000'
