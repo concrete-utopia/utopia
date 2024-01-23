@@ -54,17 +54,17 @@ import {
   runLocalEditorAction,
   runUpdateProjectServerState,
 } from './editor-update'
-import { fastForEach, isBrowserEnvironment } from '../../../core/shared/utils'
+import { assertNever, fastForEach, isBrowserEnvironment } from '../../../core/shared/utils'
 import type { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import type { ProjectContentTreeRoot } from '../../assets'
-import { treeToContents, walkContentsTree } from '../../assets'
+import { transformContentsTree, treeToContents, walkContentsTree } from '../../assets'
 import { isSendPreviewModel, restoreDerivedState, UPDATE_FNS } from '../actions/actions'
 import { getTransitiveReverseDependencies } from '../../../core/shared/project-contents-dependencies'
 import {
   reduxDevtoolsSendActions,
   reduxDevtoolsUpdateState,
 } from '../../../core/shared/redux-devtools'
-import { isEmptyObject, pick } from '../../../core/shared/object-utils'
+import { isEmptyObject, objectMap, pick } from '../../../core/shared/object-utils'
 import type { ProjectChanges } from './vscode-changes'
 import {
   emptyProjectChanges,
@@ -91,6 +91,21 @@ import { maybeClearPseudoInsertMode } from '../canvas-toolbar-states'
 import { isSteganographyEnabled } from '../../../core/shared/stegano-text'
 import { updateCollaborativeProjectContents } from './collaborative-editing'
 import { updateProjectServerStateInStore } from './project-server-state'
+import {
+  jsExpressionValue,
+  type ElementsWithin,
+  type JSXElement,
+  type JSXElementChild,
+  emptyComments,
+  getJSXAttribute,
+} from '../../../core/shared/element-template'
+import {
+  isRemixSceneAgainstImports,
+  isSceneAgainstImports,
+} from '../../../core/model/project-file-utils'
+import * as PP from '../../../core/shared/property-path'
+import { setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
+import { isLeft } from '../../../core/shared/either'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -798,6 +813,130 @@ function applyProjectChangesToEditor(
   }
 }
 
+function walkJSXElementChild(
+  element: JSXElementChild,
+  transform: (_: JSXElementChild) => JSXElementChild,
+): JSXElementChild {
+  switch (element.type) {
+    case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'ATTRIBUTE_NESTED_ARRAY':
+    case 'ATTRIBUTE_NESTED_OBJECT':
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+    case 'ATTRIBUTE_VALUE':
+    case 'JSX_TEXT_BLOCK':
+      return element
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      const whenTrue = transform(element.whenTrue)
+      const whenFalse = transform(element.whenTrue)
+      return transform({ ...element, whenTrue, whenFalse })
+    case 'JSX_FRAGMENT': {
+      const children = element.children.map((c) => transform(c))
+      return transform({ ...element, children })
+    }
+    case 'JSX_MAP_EXPRESSION':
+      let elementsWithin: ElementsWithin = {}
+      for (const [key, value] of Object.entries(element.elementsWithin)) {
+        elementsWithin[key] = transform(value) as JSXElement
+      }
+      return transform({ ...element, elementsWithin })
+    case 'JSX_ELEMENT':
+      const children = element.children.map((c) => transform(c))
+      return transform({ ...element, children })
+    default:
+      assertNever(element)
+  }
+}
+
+const IdPropName = 'id'
+
+function getIdPropFromJSXElement(element: JSXElement): string | null {
+  const maybeIdProp = getJSXAttribute(element.props, IdPropName)
+  if (
+    maybeIdProp == null ||
+    maybeIdProp.type !== 'ATTRIBUTE_VALUE' ||
+    typeof maybeIdProp.value !== 'string'
+  ) {
+    return null
+  }
+  return maybeIdProp.value
+}
+
+function setIdPropOnJSXElement(element: JSXElement, idPropValueToUse: string): JSXElement | null {
+  const updatedProps = setJSXValueAtPath(
+    element.props,
+    PP.create(IdPropName),
+    jsExpressionValue(idPropValueToUse, emptyComments),
+  )
+
+  if (isLeft(updatedProps)) {
+    return element
+  }
+  return { ...element, props: updatedProps.value }
+}
+
+function ensureSceneIdsExist(editor: EditorState): EditorState {
+  let seenIdProps: Set<string> = new Set()
+
+  const nextProjectContents = transformContentsTree(editor.projectContents, (tree) => {
+    if (
+      tree.type !== 'PROJECT_CONTENT_FILE' ||
+      tree.content.type !== 'TEXT_FILE' ||
+      tree.content.fileContents.parsed.type !== 'PARSE_SUCCESS'
+    ) {
+      return tree
+    }
+
+    const imports = tree.content.fileContents.parsed.imports
+
+    const nextToplevelElements = tree.content.fileContents.parsed.topLevelElements.map((e) => {
+      if (e.type !== 'UTOPIA_JSX_COMPONENT') {
+        return e
+      }
+
+      const nextRootElement = walkJSXElementChild(e.rootElement, (child) => {
+        const isConsideredScene =
+          isSceneAgainstImports(child, imports) || isRemixSceneAgainstImports(child, imports)
+
+        if (child.type !== 'JSX_ELEMENT' || !isConsideredScene) {
+          return child
+        }
+
+        const idPropValue = getIdPropFromJSXElement(child)
+
+        if (idPropValue != null && !seenIdProps.has(idPropValue)) {
+          seenIdProps.add(idPropValue)
+          return child
+        }
+
+        const idPropValueToUse = child.uid
+        const updatedChild = setIdPropOnJSXElement(child, idPropValueToUse)
+        if (updatedChild == null) {
+          return child
+        }
+
+        seenIdProps.add(idPropValueToUse)
+        return updatedChild
+      })
+
+      return { ...e, rootElement: nextRootElement }
+    })
+
+    // TODO: optic
+    return {
+      ...tree,
+      content: {
+        ...tree.content,
+        fileContents: {
+          ...tree.content.fileContents,
+          parsed: { ...tree.content.fileContents.parsed, topLevelElements: nextToplevelElements },
+        },
+      },
+    }
+  })
+
+  return { ...editor, projectContents: nextProjectContents }
+}
+
 export const UTOPIA_IRRECOVERABLE_ERROR_MESSAGE = `Utopia has suffered from an irrecoverable error, please reload the editor.`
 function editorDispatchInner(
   boundDispatch: EditorDispatch,
@@ -819,6 +958,7 @@ function editorDispatchInner(
   if (dispatchedActions.length > 0) {
     // Run everything in a big chain.
     let result = processActions(boundDispatch, storedState, dispatchedActions, spyCollector)
+    result.unpatchedEditor = ensureSceneIdsExist(result.unpatchedEditor)
 
     const anyUndoOrRedo = dispatchedActions.some(isUndoOrRedo)
 
