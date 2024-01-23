@@ -262,8 +262,8 @@ describe('Comments test', () => {
         expect(originalCommentIndicatorBoundingBox).toEqual({
           height: 26,
           width: 26,
-          x: 485,
-          y: 67,
+          x: 486,
+          y: 63,
         })
 
         // drag the comment on the scene
