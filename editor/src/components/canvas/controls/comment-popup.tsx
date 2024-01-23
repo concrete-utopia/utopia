@@ -155,7 +155,6 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
               body,
               metadata: {
                 resolved: false,
-                type: 'canvas',
                 x: comment.location.position.x,
                 y: comment.location.position.y,
               },
@@ -184,10 +183,11 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
               body,
               metadata: {
                 resolved: false,
-                type: 'canvas',
-                x: comment.location.offset.x,
-                y: comment.location.offset.y,
+                x: comment.location.position.x,
+                y: comment.location.position.x,
                 sceneId: sceneId,
+                sceneX: comment.location.offset.x,
+                sceneY: comment.location.offset.y,
                 remixLocationRoute: remixRoute != null ? remixRoute.location.pathname : undefined,
               },
             })

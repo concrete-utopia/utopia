@@ -3,6 +3,7 @@ import type { User } from '@liveblocks/client'
 import { LiveObject, type ThreadData } from '@liveblocks/client'
 import type { Presence, ThreadMetadata, UserMeta } from '../../../liveblocks.config'
 import {
+  liveblocksClient,
   useEditThreadMetadata,
   useMutation,
   useSelf,
@@ -10,7 +11,11 @@ import {
   useThreads,
 } from '../../../liveblocks.config'
 import { Substores, useEditorState } from '../../components/editor/store/store-hook'
-import { normalizeMultiplayerName, possiblyUniqueColor } from '../shared/multiplayer'
+import {
+  normalizeMultiplayerName,
+  possiblyUniqueColor,
+  projectIdToRoomId,
+} from '../shared/multiplayer'
 import { isLoggedIn } from '../../common/user'
 import type { CommentId, SceneCommentLocation } from '../../components/editor/editor-modes'
 import { assertNever } from '../shared/utils'
@@ -25,7 +30,10 @@ import {
 import { MetadataUtils } from '../model/element-metadata-utils'
 import { getIdOfScene } from '../../components/canvas/controls/comment-mode/comment-mode-hooks'
 import type { ElementPath } from '../shared/project-file-types'
-import type { ElementInstanceMetadata } from '../shared/element-template'
+import {
+  type ElementInstanceMetadata,
+  type ElementInstanceMetadataMap,
+} from '../shared/element-template'
 import * as EP from '../shared/element-path'
 import { getCurrentTheme } from '../../components/editor/store/editor-state'
 import { useMyUserId } from '../shared/multiplayer-hooks'
@@ -218,7 +226,10 @@ export function useCanvasLocationOfThread(thread: ThreadData<ThreadMetadata>): {
     return { location: canvasPoint(thread.metadata), scene: null }
   }
   return {
-    location: getCanvasPointWithCanvasOffset(scene.globalFrame, localPoint(thread.metadata)),
+    location: getCanvasPointWithCanvasOffset(
+      scene.globalFrame,
+      localPoint({ x: thread.metadata.sceneX!, y: thread.metadata.sceneY! }),
+    ),
     scene: scene.elementPath,
   }
 }
@@ -387,4 +398,75 @@ export function useCanComment() {
   const canComment = usePermissions().comment
 
   return isFeatureEnabled('Multiplayer') && canComment
+}
+
+export async function maintainComments(
+  projectId: string | null,
+  prevMetadata: ElementInstanceMetadataMap,
+  metadata: ElementInstanceMetadataMap,
+) {
+  if (projectId == null) {
+    return
+  }
+  const room = liveblocksClient.getRoom(projectIdToRoomId(projectId))
+  if (room == null) {
+    return
+  }
+
+  const prevSceneElements = MetadataUtils.getScenesMetadata(metadata)
+  const sceneElements = MetadataUtils.getScenesMetadata(metadata)
+
+  const threads = await room.getThreads()
+  threads.forEach(async (t): Promise<void> => {
+    const sceneId = t.metadata.sceneId
+    if (sceneId == null) {
+      return
+    }
+
+    const prevScene = prevSceneElements.find(
+      (s) => getIdOfScene(s) === sceneId || EP.toUid(s.elementPath) === sceneId,
+    )
+    if (prevScene == null) {
+      return
+    }
+    const scene = sceneElements.find(
+      (s) => getIdOfScene(s) === sceneId || EP.toUid(s.elementPath) === sceneId,
+    )
+
+    const prevGlobalFrame = prevScene.globalFrame
+    if (!isNotNullFiniteRectangle(prevGlobalFrame)) {
+      return
+    }
+
+    const globalFrame = scene?.globalFrame ?? null
+    if (!isNotNullFiniteRectangle(globalFrame)) {
+      await room.editThreadMetadata({
+        threadId: t.id,
+        metadata: {
+          sceneId: undefined,
+          x: undefined,
+          y: undefined,
+        },
+      })
+      return
+    }
+
+    if (prevGlobalFrame.x === globalFrame.x && prevGlobalFrame.y === globalFrame.y) {
+      // scene exists and the location did not change
+      return
+    }
+
+    const p = getCanvasPointWithCanvasOffset(
+      globalFrame,
+      localPoint({ x: t.metadata.sceneX, y: t.metadata.sceneY }),
+    )
+
+    await room.editThreadMetadata({
+      threadId: t.id,
+      metadata: {
+        x: p.x,
+        y: p.y,
+      },
+    })
+  })
 }

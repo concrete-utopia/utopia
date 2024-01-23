@@ -399,18 +399,14 @@ function getThreadOriginalLocationOnCanvas(
   startingSceneGlobalFrame: MaybeInfinityCanvasRectangle | null,
 ): CanvasPoint {
   const sceneId = thread.metadata.sceneId
-  if (sceneId == null) {
-    return canvasPoint({ x: thread.metadata.x, y: thread.metadata.y })
-  }
-
   const globalFrame = nullIfInfinity(startingSceneGlobalFrame)
-  if (globalFrame == null) {
-    throw new Error('Found thread attached to scene with invalid global frame')
+  if (sceneId == null || globalFrame == null) {
+    return canvasPoint({ x: thread.metadata.x, y: thread.metadata.y })
   }
 
   return canvasPositionOfThread(
     globalFrame,
-    localPoint({ x: thread.metadata.x, y: thread.metadata.y }),
+    localPoint({ x: thread.metadata.sceneX!, y: thread.metadata.sceneY! }),
   )
 }
 
@@ -534,9 +530,11 @@ function useDragging(
         editThreadMetadata({
           threadId: thread.id,
           metadata: {
-            x: localPointInScene.x,
-            y: localPointInScene.y,
+            sceneX: localPointInScene.x,
+            sceneY: localPointInScene.y,
             sceneId: sceneIdToUse,
+            x: newPositionOnCanvas.x,
+            y: newPositionOnCanvas.y,
             remixLocationRoute: remixRoute != null ? remixRoute.location.pathname : undefined,
           },
         })

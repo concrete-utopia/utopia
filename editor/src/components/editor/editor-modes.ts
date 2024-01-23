@@ -116,13 +116,19 @@ export interface SceneCommentLocation {
   type: 'scene'
   sceneId: string
   offset: LocalPoint
+  position: CanvasPoint
 }
 
-export function sceneCommentLocation(sceneId: string, offset: LocalPoint): SceneCommentLocation {
+export function sceneCommentLocation(
+  sceneId: string,
+  offset: LocalPoint,
+  position: CanvasPoint,
+): SceneCommentLocation {
   return {
     type: 'scene',
     sceneId: sceneId,
     offset: offset,
+    position: position,
   }
 }
 

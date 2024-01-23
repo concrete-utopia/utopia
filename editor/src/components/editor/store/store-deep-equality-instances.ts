@@ -3231,11 +3231,13 @@ export const CanvasCommentLocationKeepDeepEquality: KeepDeepEqualityCall<CanvasC
   combine1EqualityCall((loc) => loc.position, CanvasPointKeepDeepEquality, canvasCommentLocation)
 
 export const SceneCommentLocationKeepDeepEquality: KeepDeepEqualityCall<SceneCommentLocation> =
-  combine2EqualityCalls(
+  combine3EqualityCalls(
     (loc) => loc.sceneId,
     StringKeepDeepEquality,
     (loc) => loc.offset,
     LocalPointKeepDeepEquality,
+    (loc) => loc.position,
+    CanvasPointKeepDeepEquality,
     sceneCommentLocation,
   )
 
