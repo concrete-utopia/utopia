@@ -180,11 +180,12 @@ export function getFirstComment(thread: ThreadData<ThreadMetadata>): CommentData
 export function sortThreadsByDescendingUpdateTimeInPlace(
   threads: Array<ThreadData<ThreadMetadata>>,
 ) {
-  function lastModificationDate(t: ThreadData<ThreadMetadata>) {
-    return t.updatedAt ?? t.createdAt
+  function lastModifiedAt(t: ThreadData<ThreadMetadata>) {
+    const commentsUpdatedAt = t.comments.map((c) => (c.editedAt ?? c.createdAt)?.getTime())
+    return Math.max(...commentsUpdatedAt)
   }
 
-  threads.sort((t1, t2) => lastModificationDate(t2).getTime() - lastModificationDate(t1).getTime())
+  threads.sort((t1, t2) => lastModifiedAt(t2) - lastModifiedAt(t1))
 }
 
 export function useUpdateRemixSceneRouteInLiveblocks() {

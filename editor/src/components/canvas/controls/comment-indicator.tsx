@@ -436,8 +436,6 @@ function useDragging(
 
   const onMouseDown = React.useCallback(
     (event: React.MouseEvent, onHandled: (dragged: boolean) => void) => {
-      draggingCallback(true)
-
       const mouseDownPoint = windowPoint({ x: event.clientX, y: event.clientY })
       const mouseDownCanvasPoint = windowToCanvasCoordinates(
         canvasScaleRef.current,
@@ -463,6 +461,7 @@ function useDragging(
         draggedPastThreshold ||= distance(mouseDownPoint, mouseMovePoint) > COMMENT_DRAG_THRESHOLD
 
         if (draggedPastThreshold) {
+          draggingCallback(true)
           dispatch([switchEditorMode(EditorModes.commentMode(null, 'dragging'))])
 
           const dragVectorWindow = pointDifference(mouseDownPoint, mouseMovePoint)
