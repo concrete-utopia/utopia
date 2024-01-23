@@ -34,13 +34,11 @@ describe('Collaboration test', () => {
         timeout: TIMEOUT,
       })
 
-      // eslint-disable-next-line no-console
-      console.log('waiting for page to navigate to the new project')
+      console.info('waiting for page to navigate to the new project')
       await page1.waitForNavigation()
       await signIn(page1)
       // wait for project to be saved
-      // eslint-disable-next-line no-console
-      console.log(
+      console.info(
         'waiting for element with function',
         'document.querySelector("body").innerText.includes("Project successfully uploaded!")',
       )
@@ -77,8 +75,7 @@ describe('Collaboration test', () => {
 
       await clickCanvasContainer(page1, { x: 500, y: 500 })
 
-      // eslint-disable-next-line no-console
-      console.log(
+      console.info(
         'waiting for element with function',
         'document.querySelector("body").innerText.includes("Sample text")',
       )

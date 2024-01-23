@@ -87,8 +87,7 @@ describe('Comments test', () => {
       await page.keyboard.press('Enter')
 
       // Check if the comment text is on the screen
-      // eslint-disable-next-line no-console
-      console.log(
+      console.info(
         'waiting for element with function',
         'document.querySelector("body").innerText.includes("hello comments")',
       )
@@ -124,8 +123,7 @@ describe('Comments test', () => {
       await page.keyboard.press('Enter')
 
       // Check if the original comment and the reply comment are both on the screen
-      // eslint-disable-next-line no-console
-      console.log(
+      console.info(
         'waiting for element with function',
         'document.querySelector("body").innerText.includes("hello comments")',
       )
@@ -134,8 +132,7 @@ describe('Comments test', () => {
       )
       expect(originalComment).not.toBeNull()
 
-      // eslint-disable-next-line no-console
-      console.log(
+      console.info(
         'waiting for element with function',
         'document.querySelector("body").innerText.includes("this is a reply")',
       )

@@ -10,8 +10,7 @@ export async function getElementWithSelector(
   page: Page,
   selector: string,
 ): Promise<ElementHandle<Element> | null> {
-  // eslint-disable-next-line no-console
-  console.log('waiting for element with selector', selector)
+  console.info('waiting for element with selector', selector)
   const element = await page.waitForSelector(selector)
   return element!
 }
