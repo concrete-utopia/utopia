@@ -19,6 +19,7 @@ export const setupBrowser = async (
     args: ['--no-sandbox', '--enable-thread-instruction-count'],
     headless: yn(process.env.HEADLESS) ?? false,
     executablePath: process.env.BROWSER,
+    timeout: 30000,
   })
   const page = await browser.newPage()
   page.on('dialog', async (dialog) => {

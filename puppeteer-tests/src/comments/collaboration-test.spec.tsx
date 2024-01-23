@@ -2,9 +2,9 @@ import type { ElementHandle, Page } from 'puppeteer'
 import { setupBrowser, wait } from '../utils'
 import * as url from 'url'
 import { createUtopiaPuppeteerBrowser } from './test-utils'
-import { getElementWithSelector } from './comment-utils'
+import { PUPPETEER_TIMEOUT, getElementWithSelector } from './comment-utils'
 
-const TIMEOUT = 120000
+const TIMEOUT = 30000
 
 const BRANCH_NAME = process.env.BRANCH_NAME ? `&branch_name=${process.env.BRANCH_NAME}` : ''
 const BASE_URL = process.env.BASE_URL ?? 'http://localhost:8000'
@@ -31,7 +31,7 @@ describe('Collaboration test', () => {
     async () => {
       const { page: page1 } = await utopiaBrowser1.setup({
         url: `${BASE_URL}/p/?fakeUser=alice&Multiplayer=true${BRANCH_NAME}`,
-        timeout: TIMEOUT,
+        timeout: PUPPETEER_TIMEOUT,
       })
 
       console.info('waiting for page to navigate to the new project')
@@ -51,7 +51,7 @@ describe('Collaboration test', () => {
 
       const { page: page2 } = await utopiaBrowser2.setup({
         url: `${BASE_URL}${newProjectUrl}?fakeUser=bob&Multiplayer=true${BRANCH_NAME}`,
-        timeout: TIMEOUT,
+        timeout: PUPPETEER_TIMEOUT,
       })
 
       await signIn(page2)

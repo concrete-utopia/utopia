@@ -2,6 +2,7 @@ import type { ElementHandle, Page } from 'puppeteer'
 import type { UtopiaPuppeteerBrowser } from './test-utils'
 
 export const TIMEOUT = 120000
+export const PUPPETEER_TIMEOUT = 30000
 
 const BRANCH_NAME = process.env.BRANCH_NAME ? `&branch_name=${process.env.BRANCH_NAME}` : ''
 const BASE_URL = process.env.BASE_URL ?? 'http://localhost:8000'
@@ -18,7 +19,7 @@ export async function getElementWithSelector(
 export async function initBrowserTest(utopiaBrowser: UtopiaPuppeteerBrowser) {
   const { page } = await utopiaBrowser.setup({
     url: `${BASE_URL}/p/?fakeUser=alice&Multiplayer=true${BRANCH_NAME}`,
-    timeout: TIMEOUT,
+    timeout: PUPPETEER_TIMEOUT,
   })
   await getElementWithSelector(page, '#playground-scene') // wait for the scene to render
 
@@ -28,7 +29,7 @@ export async function initBrowserTest(utopiaBrowser: UtopiaPuppeteerBrowser) {
 export async function initSignedInBrowserTest(utopiaBrowser: UtopiaPuppeteerBrowser) {
   const { page } = await utopiaBrowser.setup({
     url: `${BASE_URL}/p/?fakeUser=alice&Multiplayer=true${BRANCH_NAME}`,
-    timeout: TIMEOUT,
+    timeout: PUPPETEER_TIMEOUT,
   })
 
   const signInButton = await getElementWithSelector(page, 'div[data-testid="sign-in-button"]')
