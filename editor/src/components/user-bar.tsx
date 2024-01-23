@@ -391,7 +391,7 @@ export const MultiplayerAvatar = React.memo((props: MultiplayerAvatarProps) => {
           initials={props.name}
           isOffline={props.isOffline}
         />
-        {props.isOwner ? <OwnerBadge /> : null}
+        {props.isOwner ? <OwnerBadge isOffline={props.isOffline} /> : null}
         {props.follower ? <FollowerBadge /> : null}
       </div>
     </Tooltip>
@@ -421,7 +421,11 @@ const FollowerBadge = React.memo(() => {
 })
 FollowerBadge.displayName = 'FollowerBadge'
 
-const OwnerBadge = React.memo(() => {
+interface OwnerBadge {
+  isOffline?: boolean
+}
+
+const OwnerBadge = React.memo((props: OwnerBadge) => {
   return (
     <Icn
       category='semantic'
@@ -429,7 +433,13 @@ const OwnerBadge = React.memo(() => {
       width={14}
       height={14}
       color='main'
-      style={{ position: 'absolute', zIndex: 1, bottom: -4, left: -4 }}
+      style={{
+        position: 'absolute',
+        zIndex: 1,
+        bottom: -4,
+        left: -4,
+        filter: props.isOffline ? 'grayscale(1)' : 'undefined',
+      }}
     />
   )
 })
@@ -472,6 +482,7 @@ const AvatarPicture = React.memo((props: AvatarPictureProps) => {
         height: size ?? '100%',
         borderRadius: '100%',
         filter: props.isOffline || props.resolved ? 'grayscale(1)' : undefined,
+        opacity: props.isOffline ? 0.6 : 'undefined',
         pointerEvents: 'none',
       }}
       src={url}
