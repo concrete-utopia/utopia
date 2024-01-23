@@ -13,8 +13,8 @@ import { setBranchNameFromURL } from '../../utils/branches'
 
 const WORKER_BASE_URL = `${BASE_URL}editor/`
 
-function createBranchedURL(urlString: string): URL {
-  const url = new URL(urlString, import.meta.url)
+function createBranchedURL(urlString: string, base: string): URL {
+  const url = new URL(urlString, base)
   setBranchNameFromURL(url.searchParams)
   return url
 }
@@ -22,7 +22,7 @@ function createBranchedURL(urlString: string): URL {
 export function createTsWorker(): Worker {
   const oldPublicPath = __webpack_public_path__
   __webpack_public_path__ = WORKER_BASE_URL
-  const worker = new Worker(createBranchedURL('./ts/ts.worker.ts'))
+  const worker = new Worker(createBranchedURL('./ts/ts.worker.ts', import.meta.url))
   __webpack_public_path__ = oldPublicPath
   return worker
 }
@@ -30,7 +30,9 @@ export function createTsWorker(): Worker {
 export function createParserPrinterWorker(): Worker {
   const oldPublicPath = __webpack_public_path__
   __webpack_public_path__ = WORKER_BASE_URL
-  const worker = new Worker(createBranchedURL('./parser-printer/parser-printer.worker.ts'))
+  const worker = new Worker(
+    createBranchedURL('./parser-printer/parser-printer.worker.ts', import.meta.url),
+  )
   __webpack_public_path__ = oldPublicPath
   return worker
 }
@@ -38,7 +40,7 @@ export function createParserPrinterWorker(): Worker {
 export function createLinterWorker(): Worker {
   const oldPublicPath = __webpack_public_path__
   __webpack_public_path__ = WORKER_BASE_URL
-  const worker = new Worker(createBranchedURL('./linter/linter.worker.ts'))
+  const worker = new Worker(createBranchedURL('./linter/linter.worker.ts', import.meta.url))
   __webpack_public_path__ = oldPublicPath
   return worker
 }
@@ -46,7 +48,7 @@ export function createLinterWorker(): Worker {
 export function createWatchdogWorker(): Worker {
   const oldPublicPath = __webpack_public_path__
   __webpack_public_path__ = WORKER_BASE_URL
-  const worker = new Worker(createBranchedURL('./watchdog.worker.ts'))
+  const worker = new Worker(createBranchedURL('./watchdog.worker.ts', import.meta.url))
   __webpack_public_path__ = oldPublicPath
   return worker
 }
