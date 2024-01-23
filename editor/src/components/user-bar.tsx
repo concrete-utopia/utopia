@@ -392,34 +392,11 @@ export const MultiplayerAvatar = React.memo((props: MultiplayerAvatarProps) => {
           isOffline={props.isOffline}
         />
         {props.isOwner ? <OwnerBadge isOffline={props.isOffline} /> : null}
-        {props.follower ? <FollowerBadge /> : null}
       </div>
     </Tooltip>
   )
 })
 MultiplayerAvatar.displayName = 'MultiplayerAvatar'
-
-const FollowerBadge = React.memo(() => {
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        top: -1,
-        left: -1,
-        borderRadius: '100%',
-        backgroundColor: colorTheme.primary.value,
-        color: colorTheme.white.value,
-        width: 8,
-        height: 8,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        border: `1px solid ${colorTheme.bg1.value}`,
-      }}
-    />
-  )
-})
-FollowerBadge.displayName = 'FollowerBadge'
 
 interface OwnerBadge {
   isOffline?: boolean
