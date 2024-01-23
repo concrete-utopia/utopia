@@ -438,6 +438,7 @@ const FollowingOverlay = React.memo(() => {
   }, [followedUser])
 
   const collabs = useStorage((store) => store.collaborators)
+  const connections = useStorage((store) => store.connections)
 
   const { user: myUser, presence: myPresence } = useMyUserAndPresence()
   const others = useOthers((list) =>
@@ -447,6 +448,8 @@ const FollowingOverlay = React.memo(() => {
         return {
           ...getCollaborator(collabs, other),
           following: other.presence.following,
+          connectionId: other.connectionId,
+          connectedAt: connections?.[other.id]?.[other.connectionId]?.startedAt ?? 0,
         }
       }),
   )
