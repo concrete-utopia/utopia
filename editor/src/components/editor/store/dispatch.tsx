@@ -705,7 +705,7 @@ export function editorDispatchClosingOut(
   }
 
   maybeCullElementPathCache(
-    storedState.unpatchedEditor.projectContents,
+    finalStoreV1Final.unpatchedEditor.projectContents,
     anyWorkerUpdates ? 'schedule-now' : 'dont-schedule',
   )
 
