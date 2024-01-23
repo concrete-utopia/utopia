@@ -4,7 +4,6 @@ import type { Interpolation } from '@emotion/react'
 import { jsx } from '@emotion/react'
 import type { ThreadData } from '@liveblocks/client'
 import { Comment } from '@liveblocks/react-comments'
-import type { Target } from 'framer-motion'
 import { AnimatePresence, motion, useAnimate } from 'framer-motion'
 import React from 'react'
 import type { ThreadMetadata } from '../../../../liveblocks.config'
@@ -16,10 +15,20 @@ import {
   useCanvasLocationOfThread,
   useMyThreadReadStatus,
 } from '../../../core/commenting/comment-hooks'
-import type { CanvasPoint, WindowPoint } from '../../../core/shared/math-utils'
+import type {
+  CanvasPoint,
+  CanvasRectangle,
+  LocalPoint,
+  MaybeInfinityCanvasRectangle,
+  WindowPoint,
+} from '../../../core/shared/math-utils'
 import {
   canvasPoint,
   distance,
+  getLocalPointInNewParentContext,
+  isNotNullFiniteRectangle,
+  localPoint,
+  nullIfInfinity,
   offsetPoint,
   pointDifference,
   windowPoint,
@@ -37,15 +46,28 @@ import { MultiplayerWrapper, baseMultiplayerAvatarStyle } from '../../../utils/m
 import { when } from '../../../utils/react-conditionals'
 import type { Theme } from '../../../uuiui'
 import { UtopiaStyles, colorTheme } from '../../../uuiui'
-import { setRightMenuTab, switchEditorMode } from '../../editor/actions/action-creators'
+import {
+  setProp_UNSAFE,
+  setRightMenuTab,
+  switchEditorMode,
+} from '../../editor/actions/action-creators'
 import { EditorModes, isCommentMode, isExistingComment } from '../../editor/editor-modes'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { RightMenuTab } from '../../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { MultiplayerAvatar } from '../../user-bar'
-import { canvasPointToWindowPoint } from '../dom-lookup'
-import { useRemixNavigationContext } from '../remix/utopia-remix-root-component'
+import { canvasPointToWindowPoint, windowToCanvasCoordinates } from '../dom-lookup'
+import {
+  RemixNavigationAtom,
+  useRemixNavigationContext,
+} from '../remix/utopia-remix-root-component'
 import { CommentRepliesCounter } from './comment-replies-counter'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { getIdOfScene, getSceneUnderPoint } from './comment-mode/comment-mode-hooks'
+import * as EP from '../../../core/shared/element-path'
+import { useRefAtom } from '../../editor/hook-utils'
+import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
+import * as PP from '../../../core/shared/property-path'
 
 export const CommentIndicators = React.memo(() => {
   const projectId = useEditorState(
@@ -190,14 +212,16 @@ function getIndicatorStyle(
     resolved: boolean
     isActive: boolean
     expanded: boolean
+    dragging: boolean
   },
 ) {
-  const { isRead, resolved, isActive, expanded } = params
+  const { isRead, resolved, isActive, expanded, dragging } = params
   const canvasHeight = getCanvasHeight()
 
   const positionAdjust = 3 // px
 
   const base: Interpolation<Theme> = {
+    pointerEvents: dragging ? 'none' : undefined,
     cursor: 'auto',
     padding: 2,
     position: 'fixed',
@@ -239,6 +263,7 @@ export const CommentIndicatorUI = React.memo<CommentIndicatorUIProps>((props) =>
         resolved: resolved,
         isActive: isActive,
         expanded: true,
+        dragging: false,
       })}
     >
       <MultiplayerAvatar
@@ -331,10 +356,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
     if (didDrag) {
       return
     }
-    if (isOnAnotherRoute && remixLocationRoute != null) {
-      if (remixState == null) {
-        return
-      }
+    if (isOnAnotherRoute && remixLocationRoute != null && remixState != null) {
       remixState.navigate(remixLocationRoute)
     }
     cancelHover()
@@ -369,6 +391,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
         resolved: thread.metadata.resolved,
         isActive: isActive,
         expanded: preview,
+        dragging: dragging,
       })}
     >
       <CommentIndicatorWrapper
@@ -388,6 +411,36 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
 })
 CommentIndicator.displayName = 'CommentIndicator'
 
+function canvasPositionOfThread(
+  sceneGlobalFrame: CanvasRectangle,
+  locationInScene: LocalPoint,
+): CanvasPoint {
+  return canvasPoint({
+    x: sceneGlobalFrame.x + locationInScene.x,
+    y: sceneGlobalFrame.y + locationInScene.y,
+  })
+}
+
+function getThreadOriginalLocationOnCanvas(
+  thread: ThreadData<ThreadMetadata>,
+  startingSceneGlobalFrame: MaybeInfinityCanvasRectangle | null,
+): CanvasPoint {
+  const sceneId = thread.metadata.sceneId
+  if (sceneId == null) {
+    return canvasPoint({ x: thread.metadata.x, y: thread.metadata.y })
+  }
+
+  const globalFrame = nullIfInfinity(startingSceneGlobalFrame)
+  if (globalFrame == null) {
+    throw new Error('Found thread attached to scene with invalid global frame')
+  }
+
+  return canvasPositionOfThread(
+    globalFrame,
+    localPoint({ x: thread.metadata.x, y: thread.metadata.y }),
+  )
+}
+
 const COMMENT_DRAG_THRESHOLD = 5 // square px
 
 function useDragging(
@@ -400,7 +453,14 @@ function useDragging(
   const [didDrag, setDidDrag] = React.useState(false)
 
   const canvasScaleRef = useRefEditorState((store) => store.editor.canvas.scale)
+  const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
   const dispatch = useDispatch()
+
+  const scenesRef = useRefEditorState((store) =>
+    MetadataUtils.getScenesMetadata(store.editor.jsxMetadata),
+  )
+
+  const remixSceneRoutesRef = useRefAtom(RemixNavigationAtom)
 
   const onMouseDown = React.useCallback(
     (event: React.MouseEvent) => {
@@ -408,6 +468,21 @@ function useDragging(
       draggingCallback(true)
 
       const mouseDownPoint = windowPoint({ x: event.clientX, y: event.clientY })
+      const mouseDownCanvasPoint = windowToCanvasCoordinates(
+        canvasScaleRef.current,
+        canvasOffsetRef.current,
+        windowPoint({ x: event.clientX, y: event.clientY }),
+      ).canvasPositionRounded
+
+      const maybeStartingSceneUnderPoint = getSceneUnderPoint(
+        mouseDownCanvasPoint,
+        scenesRef.current,
+      )
+
+      const originalThreadPosition = getThreadOriginalLocationOnCanvas(
+        thread,
+        maybeStartingSceneUnderPoint?.globalFrame ?? null,
+      )
 
       let draggedPastThreshold = false
       function onMouseMove(moveEvent: MouseEvent) {
@@ -437,21 +512,63 @@ function useDragging(
 
         const mouseUpPoint = windowPoint({ x: upEvent.clientX, y: upEvent.clientY })
 
-        if (draggedPastThreshold) {
-          dispatch([switchEditorMode(EditorModes.commentMode(null, 'not-dragging'))])
+        if (!draggedPastThreshold) {
+          return
+        }
 
-          const dragVectorWindow = pointDifference(mouseDownPoint, mouseUpPoint)
-          const dragVectorCanvas = canvasPoint({
-            x: dragVectorWindow.x / canvasScaleRef.current,
-            y: dragVectorWindow.y / canvasScaleRef.current,
-          })
-          setDragPosition(null)
+        dispatch([switchEditorMode(EditorModes.commentMode(null, 'not-dragging'))])
 
+        const dragVectorWindow = pointDifference(mouseDownPoint, mouseUpPoint)
+        const dragVectorCanvas = canvasPoint({
+          x: dragVectorWindow.x / canvasScaleRef.current,
+          y: dragVectorWindow.y / canvasScaleRef.current,
+        })
+        setDragPosition(null)
+
+        const newPositionOnCanvas = offsetPoint(originalThreadPosition, dragVectorCanvas)
+        const maybeSceneUnderPoint = getSceneUnderPoint(newPositionOnCanvas, scenesRef.current)
+
+        if (maybeSceneUnderPoint == null) {
           editThreadMetadata({
             threadId: thread.id,
-            metadata: offsetPoint(canvasPoint(thread.metadata), dragVectorCanvas),
+            metadata: {
+              x: newPositionOnCanvas.x,
+              y: newPositionOnCanvas.y,
+              sceneId: null,
+              remixLocationRoute: null,
+            },
           })
+          return
         }
+
+        const localPointInScene = isNotNullFiniteRectangle(maybeSceneUnderPoint.globalFrame)
+          ? getLocalPointInNewParentContext(maybeSceneUnderPoint.globalFrame, newPositionOnCanvas)
+          : newPositionOnCanvas
+
+        const sceneId = getIdOfScene(maybeSceneUnderPoint)
+        const sceneIdToUse = sceneId ?? EP.toUid(maybeSceneUnderPoint.elementPath)
+
+        const remixRoute =
+          remixSceneRoutesRef.current[EP.toString(maybeSceneUnderPoint?.elementPath)]
+
+        if (sceneId == null) {
+          dispatch([
+            setProp_UNSAFE(
+              maybeSceneUnderPoint.elementPath,
+              PP.create('id'),
+              jsExpressionValue(sceneIdToUse, emptyComments),
+            ),
+          ])
+        }
+        editThreadMetadata({
+          threadId: thread.id,
+          metadata: {
+            x: localPointInScene.x,
+            y: localPointInScene.y,
+            sceneId: sceneIdToUse,
+            remixLocationRoute: remixRoute != null ? remixRoute.location.pathname : undefined,
+          },
+        })
       }
 
       event.stopPropagation()
@@ -459,13 +576,15 @@ function useDragging(
       window.addEventListener('mouseup', onMouseUp)
     },
     [
-      canvasScaleRef,
-      editThreadMetadata,
-      thread.id,
-      originalLocation,
-      thread.metadata,
       draggingCallback,
+      canvasScaleRef,
+      canvasOffsetRef,
+      scenesRef,
+      thread,
       dispatch,
+      originalLocation,
+      remixSceneRoutesRef,
+      editThreadMetadata,
     ],
   )
 
@@ -529,7 +648,11 @@ const CommentIndicatorWrapper = React.memo((props: CommentIndicatorWrapper) => {
         minHeight: baseMultiplayerAvatarStyle.height,
       }}
     >
-      <motion.div ref={avatarRef} style={{ ...baseMultiplayerAvatarStyle, left: 0, top: 0 }}>
+      <motion.div
+        data-testid='comment-indicator-div'
+        ref={avatarRef}
+        style={{ ...baseMultiplayerAvatarStyle, left: 0, top: 0 }}
+      >
         <MultiplayerAvatar
           name={multiplayerInitialsFromName(normalizeMultiplayerName(user.name))}
           color={multiplayerColorFromIndex(user.colorIndex)}

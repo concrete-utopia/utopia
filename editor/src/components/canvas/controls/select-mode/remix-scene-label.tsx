@@ -13,7 +13,7 @@ import CanvasActions from '../../canvas-actions'
 import { boundingArea, createInteractionViaMouse } from '../../canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
-import { isSelectModeWithArea } from '../../../editor/editor-modes'
+import { isCommentMode, isSelectModeWithArea } from '../../../editor/editor-modes'
 import { useAtom } from 'jotai'
 import { RemixNavigationAtom } from '../../remix/utopia-remix-root-component'
 import { matchRoutes } from 'react-router'
@@ -202,7 +202,8 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
   const onMouseMove = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       const isSelectingArea = isSelectModeWithArea(editorModeRef.current.mode)
-      if (!isSelectingArea) {
+      const shouldStopPropagation = !isSelectingArea && !isCommentMode(editorModeRef.current.mode)
+      if (shouldStopPropagation) {
         event.stopPropagation()
       }
     },

@@ -13,7 +13,7 @@ import CanvasActions from '../../canvas-actions'
 import { boundingArea, createInteractionViaMouse } from '../../canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
-import { isSelectModeWithArea } from '../../../editor/editor-modes'
+import { isCommentMode, isSelectModeWithArea } from '../../../editor/editor-modes'
 import { getSubTree } from '../../../../core/shared/element-path-tree'
 
 interface SceneLabelControlProps {
@@ -128,7 +128,8 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
   const onMouseMove = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       const isSelectingArea = isSelectModeWithArea(storeRef.current.mode)
-      if (!isSelectingArea) {
+      const shouldStopPropagation = !isSelectingArea && !isCommentMode(storeRef.current.mode)
+      if (shouldStopPropagation) {
         event.stopPropagation()
       }
     },

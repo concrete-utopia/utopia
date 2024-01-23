@@ -1,5 +1,5 @@
 import { setupBrowser, wait } from '../utils'
-import type { Browser } from 'puppeteer'
+import type { BoundingBox, Browser, Page, Point } from 'puppeteer'
 import {
   TIMEOUT,
   enterCommentMode,
@@ -8,6 +8,55 @@ import {
   placeCommentOnCanvas,
 } from './comment-utils'
 import { createUtopiaPuppeteerBrowser } from './test-utils'
+
+const CommentIndicatorSelector = 'div[data-testid="comment-indicator-div"]'
+const PlaygroundSceneSelector = '#playground-scene'
+const SceneToolbarSelector = 'div[data-testid="scene-label"]'
+
+async function getBoundingBox(page: Page, selector: string): Promise<BoundingBox> {
+  const element = await page.waitForSelector(selector)
+  const boundingBox = await element!.boundingBox()
+  return boundingBox!
+}
+
+function roundTo(number: number, digits: number = 0): number {
+  const multiplicator = Math.pow(10, digits)
+  const n = parseFloat((number * multiplicator).toFixed(11))
+  return Math.round(n) / multiplicator
+}
+const roundToNearestWhole = (x: number) => roundTo(x, 0)
+
+const roundBoundingBox = (bb: BoundingBox): BoundingBox => ({
+  x: roundToNearestWhole(bb.x),
+  y: roundToNearestWhole(bb.y),
+  width: roundToNearestWhole(bb.width),
+  height: roundToNearestWhole(bb.height),
+})
+
+const roundPoint = (bb: Point): Point => ({
+  x: roundToNearestWhole(bb.x),
+  y: roundToNearestWhole(bb.y),
+})
+
+const center = (bb: BoundingBox): Point => ({ x: bb.x + bb.width / 2, y: bb.y + bb.height / 2 })
+
+const offsetPoint = (point: Point, by: { offsetX: number; offsetY: number }) => ({
+  x: point.x + by.offsetX,
+  y: point.y + by.offsetY,
+})
+
+async function drag(page: Page, from: { x: number; y: number }, to: { x: number; y: number }) {
+  await page.mouse.move(from.x, from.y)
+  await page.mouse.down()
+
+  await page.mouse.move(to.x, to.y, { steps: 10 })
+  await page.mouse.up()
+}
+
+async function dismissHoverPreview(page: Page) {
+  await page.mouse.move(500, 500)
+  await wait(101) // the duration of the comment hover animation + 1ms
+}
 
 describe('Comments test', () => {
   let utopiaBrowser = createUtopiaPuppeteerBrowser()
@@ -42,7 +91,7 @@ describe('Comments test', () => {
       await canvasControlsContainer!.click({ offset: { x: 700, y: 700 } })
 
       // Check if the comment indicator is still visible
-      const commentIndicator = await page.waitForSelector('div[data-testid="comment-indicator"]')
+      const commentIndicator = await page.waitForSelector(CommentIndicatorSelector)
 
       expect(commentIndicator).not.toBeNull()
 
@@ -99,7 +148,7 @@ describe('Comments test', () => {
       await page.keyboard.press('Escape')
 
       // There are no comment indicators on the canvas
-      const commentIndicators = await page.$$('div[data-testid="comment-indicator"]')
+      const commentIndicators = await page.$$(CommentIndicatorSelector)
       expect(commentIndicators).toHaveLength(0)
     },
     TIMEOUT,
@@ -118,7 +167,7 @@ describe('Comments test', () => {
       await resolveButton!.click()
 
       // Check that the comment indicator is gone
-      const commentIndicators = await page.$$('div[data-testid="comment-indicator"]')
+      const commentIndicators = await page.$$(CommentIndicatorSelector)
       expect(commentIndicators).toHaveLength(0)
     },
     TIMEOUT,
@@ -138,7 +187,7 @@ describe('Comments test', () => {
       const commentPopups = await page.$$('div[data-testid="comment-popup"]')
       expect(commentPopups).toHaveLength(0)
 
-      const commentIndicators = await page.$$('div[data-testid="comment-indicator"]')
+      const commentIndicators = await page.$$(CommentIndicatorSelector)
       expect(commentIndicators).toHaveLength(1)
     },
     TIMEOUT,
@@ -160,6 +209,124 @@ describe('Comments test', () => {
 
         const commentsTabs = await page.$$('div[data-testid="comments-tab"]')
         expect(commentsTabs).toHaveLength(0)
+      },
+      TIMEOUT,
+    ),
+    it(
+      'can reparent comment',
+      async () => {
+        const page = await initSignedInBrowserTest(utopiaBrowser)
+        await enterCommentMode(page)
+
+        const playgroundSceneBoundingBox = roundBoundingBox(
+          await getBoundingBox(page, PlaygroundSceneSelector),
+        )
+
+        await placeCommentOnCanvas(
+          page,
+          'hello comments',
+          playgroundSceneBoundingBox.x - 100,
+          playgroundSceneBoundingBox.y - 100,
+        )
+
+        const originalCommentIndicatorBoundingBox = roundBoundingBox(
+          await getBoundingBox(page, CommentIndicatorSelector),
+        )
+
+        expect(originalCommentIndicatorBoundingBox).toEqual({
+          height: 26,
+          width: 26,
+          x: 485,
+          y: 67,
+        })
+
+        // drag the comment on the scene
+        await drag(
+          page,
+          center(originalCommentIndicatorBoundingBox),
+          center(playgroundSceneBoundingBox),
+        )
+
+        await dismissHoverPreview(page)
+        const commentBoundingBoxInScene = roundBoundingBox(
+          await getBoundingBox(page, CommentIndicatorSelector),
+        )
+        expect(commentBoundingBoxInScene).toEqual({
+          height: 26,
+          width: 26,
+          x: 918,
+          y: 555,
+        })
+        expect(commentBoundingBoxInScene).not.toEqual(originalCommentIndicatorBoundingBox)
+
+        const sceneToolBarBoundingBox = roundBoundingBox(
+          await getBoundingBox(page, SceneToolbarSelector),
+        )
+        const sceneToolBarCenter = roundPoint(center(sceneToolBarBoundingBox))
+
+        // move the scene, the comment indicator shoud move with the scene
+        await drag(
+          page,
+          sceneToolBarCenter,
+          offsetPoint(sceneToolBarCenter, { offsetX: 50, offsetY: 50 }),
+        )
+
+        const commentBoundingBoxInMovedScene = roundBoundingBox(
+          await getBoundingBox(page, CommentIndicatorSelector),
+        )
+        expect(commentBoundingBoxInMovedScene).toEqual({
+          height: 26,
+          width: 26,
+          x: 968,
+          y: 605,
+        })
+
+        const movedSceneBoundingBox = roundBoundingBox(
+          await getBoundingBox(page, PlaygroundSceneSelector),
+        )
+        const commentBoundingBoxInMovedSceneCenter = center(commentBoundingBoxInMovedScene)
+
+        // drag the comment indicator out of the scene, back to the canvas
+        await drag(page, commentBoundingBoxInMovedSceneCenter, {
+          x: movedSceneBoundingBox.x - 50,
+          y: movedSceneBoundingBox.y - 50,
+        })
+
+        await dismissHoverPreview(page)
+        const commentBoundingBoxBackOnCanvasBeforeMove = roundBoundingBox(
+          await getBoundingBox(page, CommentIndicatorSelector),
+        )
+
+        expect(commentBoundingBoxBackOnCanvasBeforeMove).toEqual({
+          height: 26,
+          width: 26,
+          x: 568,
+          y: 176,
+        })
+
+        const movedSceneLabelCenter = center(
+          roundBoundingBox(await getBoundingBox(page, SceneToolbarSelector)),
+        )
+
+        // drag the scene, the comment indicator should not move with it
+        await drag(
+          page,
+          movedSceneLabelCenter,
+          offsetPoint(movedSceneLabelCenter, { offsetX: 150, offsetY: 150 }),
+        )
+        const commentBoundingBoxBackOnCanvasAfterMove = roundBoundingBox(
+          await getBoundingBox(page, CommentIndicatorSelector),
+        )
+
+        expect(commentBoundingBoxBackOnCanvasAfterMove).toEqual({
+          height: 26,
+          width: 26,
+          x: 568,
+          y: 176,
+        })
+        expect(commentBoundingBoxBackOnCanvasBeforeMove).toEqual(
+          commentBoundingBoxBackOnCanvasAfterMove,
+        )
       },
       TIMEOUT,
     )
