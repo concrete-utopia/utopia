@@ -471,8 +471,10 @@ const FollowingOverlay = React.memo(() => {
             right: 0,
             background: 'transparent',
             display: 'flex',
-            alignItems: 'flex-end',
-            justifyContent: 'center',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            gap: 5,
             paddingBottom: 14,
             cursor: 'default',
             border: hasFollowers ? `undefined` : `4px solid ${followedUserColor.background}`,
@@ -482,6 +484,30 @@ const FollowingOverlay = React.memo(() => {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.1 }}
         >
+          {when(
+            followers > 0,
+            <motion.div
+              style={{
+                backgroundColor: colorTheme.primary.value,
+                color: colorTheme.white.value,
+                padding: '4px 12px',
+                borderRadius: 100,
+                boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              {followers === 1 ? (
+                <FlexRow style={{ height: 22, alignItems: 'center', justifyContent: 'center' }}>
+                  1 person is following you
+                </FlexRow>
+              ) : (
+                <FlexRow style={{ height: 22, alignItems: 'center', justifyContent: 'center' }}>
+                  {followers} people are following you
+                </FlexRow>
+              )}
+            </motion.div>,
+          )}
           {when(
             followedUser != null,
             <motion.div
@@ -513,30 +539,6 @@ const FollowingOverlay = React.memo(() => {
               >
                 Stop following
               </Button>
-            </motion.div>,
-          )}
-          {when(
-            followers > 0,
-            <motion.div
-              style={{
-                backgroundColor: colorTheme.primary.value,
-                color: colorTheme.white.value,
-                padding: '4px 12px',
-                borderRadius: 100,
-                boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
-                display: 'flex',
-                alignItems: 'center',
-              }}
-            >
-              {followers === 1 ? (
-                <FlexRow style={{ height: 22, alignItems: 'center', justifyContent: 'center' }}>
-                  1 person is following you
-                </FlexRow>
-              ) : (
-                <FlexRow style={{ height: 22, alignItems: 'center', justifyContent: 'center' }}>
-                  {followers} people are following you
-                </FlexRow>
-              )}
             </motion.div>,
           )}
         </motion.div>,
