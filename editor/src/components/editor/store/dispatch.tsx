@@ -1,5 +1,5 @@
-import { IS_TEST_ENVIRONMENT, PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
-import type { TextFile } from '../../../core/shared/project-file-types'
+import { PERFORMANCE_MARKS_ALLOWED, PRODUCTION_ENV } from '../../../common/env-vars'
+import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
 import {
   codeNeedsParsing,
   codeNeedsPrinting,
@@ -41,7 +41,6 @@ import type {
   EditorStoreUnpatched,
 } from './editor-state'
 import {
-  StoryboardFilePath,
   deriveState,
   persistentModelFromEditorModel,
   reconstructJSXMetadata,
@@ -55,17 +54,17 @@ import {
   runLocalEditorAction,
   runUpdateProjectServerState,
 } from './editor-update'
-import { assertNever, isBrowserEnvironment } from '../../../core/shared/utils'
+import { fastForEach, isBrowserEnvironment } from '../../../core/shared/utils'
 import type { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import type { ProjectContentTreeRoot } from '../../assets'
-import { addFileToProjectContents, getContentsTreeFromPath, treeToContents } from '../../assets'
+import { treeToContents, walkContentsTree } from '../../assets'
 import { isSendPreviewModel, restoreDerivedState, UPDATE_FNS } from '../actions/actions'
 import { getTransitiveReverseDependencies } from '../../../core/shared/project-contents-dependencies'
 import {
   reduxDevtoolsSendActions,
   reduxDevtoolsUpdateState,
 } from '../../../core/shared/redux-devtools'
-import { isEmptyObject, objectMap, pick } from '../../../core/shared/object-utils'
+import { isEmptyObject, pick } from '../../../core/shared/object-utils'
 import type { ProjectChanges } from './vscode-changes'
 import {
   emptyProjectChanges,
@@ -92,22 +91,7 @@ import { maybeClearPseudoInsertMode } from '../canvas-toolbar-states'
 import { isSteganographyEnabled } from '../../../core/shared/stegano-text'
 import { updateCollaborativeProjectContents } from './collaborative-editing'
 import { updateProjectServerStateInStore } from './project-server-state'
-import {
-  jsExpressionValue,
-  type ElementsWithin,
-  type JSXElement,
-  type JSXElementChild,
-  emptyComments,
-  getJSXAttribute,
-} from '../../../core/shared/element-template'
-import {
-  isRemixSceneAgainstImports,
-  isSceneAgainstImports,
-} from '../../../core/model/project-file-utils'
-import * as PP from '../../../core/shared/property-path'
-import { setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
-import { isLeft } from '../../../core/shared/either'
-import { transformJSXElementChildRecursively } from '../../../core/model/element-template-utils'
+import { ensureSceneIdsExist } from '../../../core/model/scene-utils'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -813,107 +797,6 @@ function applyProjectChangesToEditor(
   for (const fileToDelete of updatedAndReverseDepFilenames) {
     delete frozenEditorState.codeResultCache.evaluationCache[fileToDelete]
   }
-}
-
-const IdPropName = 'id'
-
-function getIdPropFromJSXElement(element: JSXElement): string | null {
-  const maybeIdProp = getJSXAttribute(element.props, IdPropName)
-  if (
-    maybeIdProp == null ||
-    maybeIdProp.type !== 'ATTRIBUTE_VALUE' ||
-    typeof maybeIdProp.value !== 'string'
-  ) {
-    return null
-  }
-  return maybeIdProp.value
-}
-
-function setIdPropOnJSXElement(element: JSXElement, idPropValueToUse: string): JSXElement | null {
-  const updatedProps = setJSXValueAtPath(
-    element.props,
-    PP.create(IdPropName),
-    jsExpressionValue(idPropValueToUse, emptyComments),
-  )
-
-  if (IS_TEST_ENVIRONMENT || isLeft(updatedProps)) {
-    return null
-  }
-  return { ...element, props: updatedProps.value }
-}
-
-function ensureSceneIdsExist(editor: EditorState): EditorState {
-  const storyboardFile = getContentsTreeFromPath(editor.projectContents, StoryboardFilePath)
-  if (
-    storyboardFile == null ||
-    storyboardFile.type !== 'PROJECT_CONTENT_FILE' ||
-    storyboardFile.content.type !== 'TEXT_FILE' ||
-    storyboardFile.content.fileContents.parsed.type !== 'PARSE_SUCCESS'
-  ) {
-    return editor
-  }
-
-  let seenIdProps: Set<string> = new Set()
-  let anyIdPropUpdated = false
-  const imports = storyboardFile.content.fileContents.parsed.imports
-
-  const nextToplevelElements = storyboardFile.content.fileContents.parsed.topLevelElements.map(
-    (e) => {
-      if (e.type !== 'UTOPIA_JSX_COMPONENT') {
-        return e
-      }
-
-      const nextRootElement = transformJSXElementChildRecursively(e.rootElement, (child) => {
-        const isConsideredScene =
-          isSceneAgainstImports(child, imports) || isRemixSceneAgainstImports(child, imports)
-
-        if (child.type !== 'JSX_ELEMENT' || !isConsideredScene) {
-          return child
-        }
-
-        const idPropValue = getIdPropFromJSXElement(child)
-
-        if (idPropValue != null && !seenIdProps.has(idPropValue)) {
-          seenIdProps.add(idPropValue)
-          return child
-        }
-
-        const idPropValueToUse = child.uid
-        const updatedChild = setIdPropOnJSXElement(child, idPropValueToUse)
-        if (updatedChild == null) {
-          return child
-        }
-
-        seenIdProps.add(idPropValueToUse)
-        anyIdPropUpdated = true
-        return updatedChild
-      })
-
-      return { ...e, rootElement: nextRootElement }
-    },
-  )
-
-  if (!anyIdPropUpdated) {
-    return editor
-  }
-
-  const nextStoryboardFile: TextFile = {
-    ...storyboardFile.content,
-    fileContents: {
-      ...storyboardFile.content.fileContents,
-      parsed: {
-        ...storyboardFile.content.fileContents.parsed,
-        topLevelElements: nextToplevelElements,
-      },
-    },
-  }
-
-  const nextProjectContents = addFileToProjectContents(
-    editor.projectContents,
-    StoryboardFilePath,
-    nextStoryboardFile,
-  )
-  return { ...editor, projectContents: nextProjectContents }
 }
 
 export const UTOPIA_IRRECOVERABLE_ERROR_MESSAGE = `Utopia has suffered from an irrecoverable error, please reload the editor.`
