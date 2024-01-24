@@ -1,5 +1,5 @@
 import { BASE_URL } from '../../common/env-vars'
-import { setBranchNameFromURL } from '../../utils/branches'
+import { BranchNameParameterKey, getEditorBranchNameFromURL } from '../../utils/branches'
 
 /**
  * Webpack 5 only supports a single public path for assets and feeding the Worker url via `import.meta.url`
@@ -13,42 +13,54 @@ import { setBranchNameFromURL } from '../../utils/branches'
 
 const WORKER_BASE_URL = `${BASE_URL}editor/`
 
-function createBranchedURL(urlString: string, base: string): URL {
-  const url = new URL(urlString, base)
-  setBranchNameFromURL(url.searchParams)
-  return url
-}
-
 export function createTsWorker(): Worker {
+  const branchName = getEditorBranchNameFromURL()
+  const baseUrl =
+    branchName == null
+      ? WORKER_BASE_URL
+      : `${WORKER_BASE_URL}?${BranchNameParameterKey}=${branchName}`
   const oldPublicPath = __webpack_public_path__
-  __webpack_public_path__ = WORKER_BASE_URL
-  const worker = new Worker(createBranchedURL('./ts/ts.worker.ts', import.meta.url))
+  __webpack_public_path__ = baseUrl
+  const worker = new Worker(new URL('./ts/ts.worker.ts', import.meta.url))
   __webpack_public_path__ = oldPublicPath
   return worker
 }
 
 export function createParserPrinterWorker(): Worker {
+  const branchName = getEditorBranchNameFromURL()
+  const baseUrl =
+    branchName == null
+      ? WORKER_BASE_URL
+      : `${WORKER_BASE_URL}?${BranchNameParameterKey}=${branchName}`
   const oldPublicPath = __webpack_public_path__
-  __webpack_public_path__ = WORKER_BASE_URL
-  const worker = new Worker(
-    createBranchedURL('./parser-printer/parser-printer.worker.ts', import.meta.url),
-  )
+  __webpack_public_path__ = baseUrl
+  const worker = new Worker(new URL('./parser-printer/parser-printer.worker.ts', import.meta.url))
   __webpack_public_path__ = oldPublicPath
   return worker
 }
 
 export function createLinterWorker(): Worker {
+  const branchName = getEditorBranchNameFromURL()
+  const baseUrl =
+    branchName == null
+      ? WORKER_BASE_URL
+      : `${WORKER_BASE_URL}?${BranchNameParameterKey}=${branchName}`
   const oldPublicPath = __webpack_public_path__
-  __webpack_public_path__ = WORKER_BASE_URL
-  const worker = new Worker(createBranchedURL('./linter/linter.worker.ts', import.meta.url))
+  __webpack_public_path__ = baseUrl
+  const worker = new Worker(new URL('./linter/linter.worker.ts', import.meta.url))
   __webpack_public_path__ = oldPublicPath
   return worker
 }
 
 export function createWatchdogWorker(): Worker {
+  const branchName = getEditorBranchNameFromURL()
+  const baseUrl =
+    branchName == null
+      ? WORKER_BASE_URL
+      : `${WORKER_BASE_URL}?${BranchNameParameterKey}=${branchName}`
   const oldPublicPath = __webpack_public_path__
-  __webpack_public_path__ = WORKER_BASE_URL
-  const worker = new Worker(createBranchedURL('./watchdog.worker.ts', import.meta.url))
+  __webpack_public_path__ = baseUrl
+  const worker = new Worker(new URL('./watchdog.worker.ts', import.meta.url))
   __webpack_public_path__ = oldPublicPath
   return worker
 }
