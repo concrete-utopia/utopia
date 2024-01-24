@@ -3,6 +3,7 @@ import type { User } from '@liveblocks/client'
 import { LiveObject, type ThreadData } from '@liveblocks/client'
 import type { Presence, ThreadMetadata, UserMeta } from '../../../liveblocks.config'
 import {
+  isSceneThreadMetadata,
   useEditThreadMetadata,
   useMutation,
   useSelf,
@@ -80,7 +81,8 @@ export function useCanvasCommentThreadAndLocation(comment: CommentId): {
         if (thread == null) {
           return null
         }
-        if (thread.metadata.sceneId == null) {
+
+        if (!isSceneThreadMetadata(thread.metadata)) {
           return canvasPoint(thread.metadata)
         }
         const scene = scenes.find((s) => getIdOfScene(s) === thread.metadata.sceneId)
@@ -93,7 +95,7 @@ export function useCanvasCommentThreadAndLocation(comment: CommentId): {
         }
         return getCanvasPointWithCanvasOffset(
           scene.globalFrame,
-          localPoint({ x: thread.metadata.sceneX!, y: thread.metadata.sceneY! }),
+          localPoint({ x: thread.metadata.sceneX, y: thread.metadata.sceneY }),
         )
 
       default:
@@ -217,7 +219,7 @@ export function useCanvasLocationOfThread(thread: ThreadData<ThreadMetadata>): {
 } {
   const scenes = useScenesWithId()
 
-  if (thread.metadata.sceneId == null) {
+  if (!isSceneThreadMetadata(thread.metadata)) {
     return { location: canvasPoint(thread.metadata), scene: null }
   }
   const scene = scenes.find((s) => getIdOfScene(s) === thread.metadata.sceneId)
@@ -228,7 +230,7 @@ export function useCanvasLocationOfThread(thread: ThreadData<ThreadMetadata>): {
   return {
     location: getCanvasPointWithCanvasOffset(
       scene.globalFrame,
-      localPoint({ x: thread.metadata.sceneX!, y: thread.metadata.sceneY! }),
+      localPoint({ x: thread.metadata.sceneX, y: thread.metadata.sceneY }),
     ),
     scene: scene.elementPath,
   }
@@ -404,15 +406,14 @@ export function getThreadOriginalLocationOnCanvas(
   thread: ThreadData<ThreadMetadata>,
   startingSceneGlobalFrame: MaybeInfinityCanvasRectangle | null,
 ): CanvasPoint {
-  const sceneId = thread.metadata.sceneId
   const globalFrame = nullIfInfinity(startingSceneGlobalFrame)
-  if (sceneId == null || globalFrame == null) {
+  if (!isSceneThreadMetadata(thread.metadata) || globalFrame == null) {
     return canvasPoint(thread.metadata)
   }
 
   return canvasPositionOfThread(
     globalFrame,
-    localPoint({ x: thread.metadata.sceneX!, y: thread.metadata.sceneY! }),
+    localPoint({ x: thread.metadata.sceneX, y: thread.metadata.sceneY }),
   )
 }
 

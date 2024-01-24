@@ -107,6 +107,22 @@ export type ThreadMetadata = {
   resolved: boolean
 }
 
+export type SceneThreadMetadata = {
+  // quote: string;
+  // time: number;
+  x: number
+  y: number
+  sceneId: string
+  sceneX: number
+  sceneY: number
+  remixLocationRoute?: string
+  resolved: boolean
+}
+
+export function isSceneThreadMetadata(metadata: ThreadMetadata): metadata is SceneThreadMetadata {
+  return metadata.sceneId != null && metadata.sceneX != null && metadata.sceneY != null
+}
+
 export const {
   suspense: {
     RoomProvider,
