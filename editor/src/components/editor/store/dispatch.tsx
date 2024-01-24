@@ -90,6 +90,8 @@ import { unpatchedCreateRemixDerivedDataMemo } from './remix-derived-data'
 import { maybeClearPseudoInsertMode } from '../canvas-toolbar-states'
 import { isSteganographyEnabled } from '../../../core/shared/stegano-text'
 import { updateCollaborativeProjectContents } from './collaborative-editing'
+import { updateProjectServerStateInStore } from './project-server-state'
+import { ensureSceneIdsExist } from '../../../core/model/scene-utils'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -814,6 +816,7 @@ function editorDispatchInner(
   if (dispatchedActions.length > 0) {
     // Run everything in a big chain.
     let result = processActions(boundDispatch, storedState, dispatchedActions, spyCollector)
+    result.unpatchedEditor = ensureSceneIdsExist(result.unpatchedEditor)
 
     const anyUndoOrRedo = dispatchedActions.some(isUndoOrRedo)
 
