@@ -658,7 +658,7 @@ export function handleStrategies(
   let unpatchedEditorState: EditorState
   let patchedEditorState: EditorState
   let newStrategyState: StrategyState
-  if (allowedToEditProject(storedState.projectServerState)) {
+  if (allowedToEditProject(storedState.userState.loginState, storedState.projectServerState)) {
     const strategiesResult = handleStrategiesInner(
       strategies,
       dispatchedActions,

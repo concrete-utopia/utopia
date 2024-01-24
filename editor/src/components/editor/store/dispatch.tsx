@@ -110,6 +110,7 @@ function processAction(
 ): EditorStoreUnpatched {
   return gatedActions(
     action,
+    editorStoreUnpatched.userState.loginState,
     editorStoreUnpatched.projectServerState,
     editorStoreUnpatched.unpatchedEditor,
     editorStoreUnpatched,
@@ -167,11 +168,6 @@ function processAction(
           userState: UPDATE_FNS.SET_CURRENT_THEME(action, working.userState),
         }
       } else if (action.action === 'SET_LOGIN_STATE') {
-        void updateProjectServerStateInStore(
-          editorStoreUnpatched.unpatchedEditor.id,
-          editorStoreUnpatched.unpatchedEditor.forkedFromProjectId,
-          dispatchEvent,
-        )
         return {
           ...working,
           userState: UPDATE_FNS.SET_LOGIN_STATE(action, working.userState),
@@ -711,7 +707,7 @@ export function editorDispatchClosingOut(
   }
 
   maybeCullElementPathCache(
-    storedState.unpatchedEditor.projectContents,
+    finalStoreV1Final.unpatchedEditor.projectContents,
     anyWorkerUpdates ? 'schedule-now' : 'dont-schedule',
   )
 

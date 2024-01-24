@@ -811,9 +811,9 @@ export function createPersistenceMachine<ModelType, FileType>(
     {
       services: {
         getNewProjectId: backendAPI.getNewProjectId,
-        checkProjectOwned: (_, event) => {
+        checkProjectOwned: (context, event) => {
           if (event.type === 'BACKEND_CHECK_OWNERSHIP') {
-            return backendAPI.checkProjectOwned(event.projectId)
+            return backendAPI.checkProjectOwned(context.loggedIn, event.projectId)
           } else {
             throw new Error(
               `Incorrect event type triggered check ownership, ${JSON.stringify(event)}`,
