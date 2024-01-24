@@ -394,14 +394,14 @@ function canvasPositionOfThread(
   })
 }
 
-function getThreadOriginalLocationOnCanvas(
+export function getThreadOriginalLocationOnCanvas(
   thread: ThreadData<ThreadMetadata>,
   startingSceneGlobalFrame: MaybeInfinityCanvasRectangle | null,
 ): CanvasPoint {
   const sceneId = thread.metadata.sceneId
   const globalFrame = nullIfInfinity(startingSceneGlobalFrame)
   if (sceneId == null || globalFrame == null) {
-    return canvasPoint({ x: thread.metadata.x, y: thread.metadata.y })
+    return canvasPoint(thread.metadata)
   }
 
   return canvasPositionOfThread(

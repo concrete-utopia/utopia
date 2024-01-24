@@ -39,6 +39,7 @@ import { getCurrentTheme } from '../../components/editor/store/editor-state'
 import { useMyUserId } from '../shared/multiplayer-hooks'
 import { usePermissions } from '../../components/editor/store/permissions'
 import { isFeatureEnabled } from '../../utils/feature-switches'
+import { getThreadOriginalLocationOnCanvas } from '../../components/canvas/controls/comment-indicator'
 
 export function useCanvasCommentThreadAndLocation(comment: CommentId): {
   location: CanvasPoint | null
@@ -72,7 +73,7 @@ export function useCanvasCommentThreadAndLocation(comment: CommentId): {
             })
 
             if (scene == null || !isNotNullFiniteRectangle(scene.globalFrame)) {
-              return getCanvasPointWithCanvasOffset(zeroCanvasPoint, comment.location.offset)
+              return comment.location.position
             }
             return getCanvasPointWithCanvasOffset(scene.globalFrame, comment.location.offset)
           default:
@@ -94,7 +95,10 @@ export function useCanvasCommentThreadAndLocation(comment: CommentId): {
         if (!isNotNullFiniteRectangle(scene.globalFrame)) {
           return canvasPoint(thread.metadata)
         }
-        return getCanvasPointWithCanvasOffset(scene.globalFrame, localPoint(thread.metadata))
+        return getCanvasPointWithCanvasOffset(
+          scene.globalFrame,
+          localPoint({ x: thread.metadata.sceneX!, y: thread.metadata.sceneY! }),
+        )
 
       default:
         assertNever(comment)
@@ -412,8 +416,7 @@ export async function maintainComments(
   if (room == null) {
     return
   }
-
-  const prevSceneElements = MetadataUtils.getScenesMetadata(metadata)
+  const prevSceneElements = MetadataUtils.getScenesMetadata(prevMetadata)
   const sceneElements = MetadataUtils.getScenesMetadata(metadata)
 
   const threads = await room.getThreads()
@@ -440,14 +443,6 @@ export async function maintainComments(
 
     const globalFrame = scene?.globalFrame ?? null
     if (!isNotNullFiniteRectangle(globalFrame)) {
-      await room.editThreadMetadata({
-        threadId: t.id,
-        metadata: {
-          sceneId: undefined,
-          x: undefined,
-          y: undefined,
-        },
-      })
       return
     }
 
@@ -456,10 +451,7 @@ export async function maintainComments(
       return
     }
 
-    const p = getCanvasPointWithCanvasOffset(
-      globalFrame,
-      localPoint({ x: t.metadata.sceneX, y: t.metadata.sceneY }),
-    )
+    const p = getThreadOriginalLocationOnCanvas(t, globalFrame)
 
     await room.editThreadMetadata({
       threadId: t.id,
