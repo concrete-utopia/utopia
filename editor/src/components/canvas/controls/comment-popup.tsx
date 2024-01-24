@@ -154,6 +154,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
             const newThreadOnCanvas = createThread({
               body,
               metadata: {
+                type: 'canvas',
                 resolved: false,
                 x: comment.location.position.x,
                 y: comment.location.position.y,
@@ -182,6 +183,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
             const newThreadOnScene = createThread({
               body,
               metadata: {
+                type: 'scene',
                 resolved: false,
                 x: comment.location.position.x,
                 y: comment.location.position.x,
