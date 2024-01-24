@@ -299,7 +299,9 @@ function on(
   }
 
   if (isDragToPan(canvas.editorState.canvas.interactionSession, canvas.keysPressed['space'])) {
-    if (event.event === 'MOVE' && event.nativeEvent.buttons === 1) {
+    const canPan =
+      !isFollowMode(canvas.mode) && event.event === 'MOVE' && event.nativeEvent.buttons === 1
+    if (canPan) {
       return [
         CanvasActions.scrollCanvas(
           canvasPoint({

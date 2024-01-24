@@ -25,6 +25,8 @@ import { EditorModes, isFollowMode } from './editor/editor-modes'
 import { useDispatch } from './editor/store/dispatch-context'
 import { Substores, useEditorState } from './editor/store/store-hook'
 import { useIsMyProject } from './editor/store/collaborative-editing'
+import { motion } from 'framer-motion'
+import { useIsBeingFollowed, useSortMultiplayerUsers } from '../core/shared/multiplayer-hooks'
 
 const MAX_VISIBLE_OTHER_PLAYERS = 4
 
@@ -125,8 +127,11 @@ const MultiplayerUserBar = React.memo(() => {
   }, [dispatch, url])
 
   const collabs = useStorage((store) => store.collaborators)
+  const connections = useStorage((store) => store.connections)
 
   const { user: myUser, presence: myPresence } = useMyUserAndPresence()
+  const sortAvatars = useSortMultiplayerUsers()
+  const isBeingFollowed = useIsBeingFollowed()
 
   const others = useOthers((list) =>
     list
@@ -136,20 +141,10 @@ const MultiplayerUserBar = React.memo(() => {
           ...getCollaborator(collabs, other),
           following: other.presence.following,
           connectionId: other.connectionId,
+          connectedAt: connections?.[other.id]?.[other.connectionId]?.startedAt ?? 0,
         }
       }),
   )
-
-  const visibleOthers = React.useMemo(() => {
-    return others.slice(0, MAX_VISIBLE_OTHER_PLAYERS)
-  }, [others])
-  const hiddenOthers = React.useMemo(() => {
-    return others.slice(MAX_VISIBLE_OTHER_PLAYERS)
-  }, [others])
-
-  const offlineOthers = Object.values(collabs).filter((collab) => {
-    return collab.id !== myUser.id && !others.some((other) => other.id === collab.id)
-  })
 
   const mode = useEditorState(
     Substores.restOfEditor,
@@ -163,6 +158,21 @@ const MultiplayerUserBar = React.memo(() => {
     'MultiplayerUserBar ownerId',
   )
 
+  const sortedOthers = React.useMemo(() => {
+    return others.sort(sortAvatars)
+  }, [others, sortAvatars])
+
+  const visibleOthers = React.useMemo(() => {
+    return sortedOthers.slice(0, MAX_VISIBLE_OTHER_PLAYERS)
+  }, [sortedOthers])
+  const hiddenOthers = React.useMemo(() => {
+    return sortedOthers.slice(MAX_VISIBLE_OTHER_PLAYERS)
+  }, [sortedOthers])
+
+  const offlineOthers = Object.values(collabs).filter((collab) => {
+    return collab.id !== myUser.id && !sortedOthers.some((other) => other.id === collab.id)
+  })
+
   const amIOwner = React.useMemo(() => {
     return ownerId === myUser.id
   }, [ownerId, myUser])
@@ -173,7 +183,7 @@ const MultiplayerUserBar = React.memo(() => {
       const canFollow = canFollowTarget(
         followTarget(myUser.id, myPresence.connectionId),
         target,
-        others,
+        sortedOthers,
       )
       if (!canFollow) {
         actions.push(
@@ -197,7 +207,7 @@ const MultiplayerUserBar = React.memo(() => {
       }
       dispatch(actions)
     },
-    [dispatch, mode, others, myUser, myPresence],
+    [dispatch, mode, sortedOthers, myUser, myPresence],
   )
 
   if (myUser.name == null) {
@@ -206,7 +216,8 @@ const MultiplayerUserBar = React.memo(() => {
   }
 
   return (
-    <div
+    <motion.div
+      layoutRoot={true}
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -220,19 +231,21 @@ const MultiplayerUserBar = React.memo(() => {
         }
         const name = normalizeMultiplayerName(other.name)
         const isOwner = ownerId === other.id
+        const key = `avatar-${other.id}-${other.connectionId}`
         return (
-          <MultiplayerAvatar
-            key={`avatar-${other.id}`}
-            name={multiplayerInitialsFromName(name)}
-            tooltip={{ text: name, colored: true }}
-            color={multiplayerColorFromIndex(other.colorIndex)}
-            picture={other.avatar}
-            onClick={toggleFollowing(followTarget(other.id, other.connectionId))}
-            isBeingFollowed={isFollowMode(mode) && mode.connectionId === other.connectionId}
-            follower={other.following === myUser.id}
-            isOwner={isOwner}
-            size={AvatarSize}
-          />
+          <motion.div key={key} layout={'position'}>
+            <MultiplayerAvatar
+              name={multiplayerInitialsFromName(name)}
+              tooltip={{ text: name, colored: true }}
+              color={multiplayerColorFromIndex(other.colorIndex)}
+              picture={other.avatar}
+              onClick={toggleFollowing(followTarget(other.id, other.connectionId))}
+              isBeingFollowed={isBeingFollowed(other.id, other.connectionId)}
+              follower={other.following === myUser.id}
+              isOwner={isOwner}
+              size={AvatarSize}
+            />
+          </motion.div>
         )
       })}
       {when(
@@ -259,17 +272,19 @@ const MultiplayerUserBar = React.memo(() => {
           }
           const name = normalizeMultiplayerName(other.name)
           const isOwner = ownerId === other.id
+          const key = `avatar-${other.id}-offline`
           return (
-            <MultiplayerAvatar
-              key={`avatar-${other.id}`}
-              name={multiplayerInitialsFromName(name)}
-              tooltip={{ text: name, colored: false }}
-              color={multiplayerColorFromIndex(other.colorIndex)}
-              picture={other.avatar}
-              isOwner={isOwner}
-              isOffline={true}
-              size={AvatarSize}
-            />
+            <motion.div key={key} layout={'position'}>
+              <MultiplayerAvatar
+                name={multiplayerInitialsFromName(name)}
+                tooltip={{ text: name, colored: false }}
+                color={multiplayerColorFromIndex(other.colorIndex)}
+                picture={other.avatar}
+                isOwner={isOwner}
+                isOffline={true}
+                size={AvatarSize}
+              />
+            </motion.div>
           )
         }),
       )}
@@ -300,7 +315,7 @@ const MultiplayerUserBar = React.memo(() => {
         />
         <div style={{ padding: '0 8px 0 5px', fontWeight: 500 }}>Share</div>
       </FlexRow>
-    </div>
+    </motion.div>
   )
 })
 MultiplayerUserBar.displayName = 'MultiplayerUserBar'
@@ -376,37 +391,18 @@ export const MultiplayerAvatar = React.memo((props: MultiplayerAvatarProps) => {
           initials={props.name}
           isOffline={props.isOffline}
         />
-        {props.isOwner ? <OwnerBadge /> : null}
-        {props.follower ? <FollowerBadge /> : null}
+        {props.isOwner ? <OwnerBadge isOffline={props.isOffline} /> : null}
       </div>
     </Tooltip>
   )
 })
 MultiplayerAvatar.displayName = 'MultiplayerAvatar'
 
-const FollowerBadge = React.memo(() => {
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        top: -1,
-        left: -1,
-        borderRadius: '100%',
-        backgroundColor: colorTheme.primary.value,
-        color: colorTheme.white.value,
-        width: 8,
-        height: 8,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        border: `1px solid ${colorTheme.bg1.value}`,
-      }}
-    />
-  )
-})
-FollowerBadge.displayName = 'FollowerBadge'
+interface OwnerBadge {
+  isOffline?: boolean
+}
 
-const OwnerBadge = React.memo(() => {
+const OwnerBadge = React.memo((props: OwnerBadge) => {
   return (
     <Icn
       category='semantic'
@@ -414,7 +410,13 @@ const OwnerBadge = React.memo(() => {
       width={14}
       height={14}
       color='main'
-      style={{ position: 'absolute', zIndex: 1, bottom: -4, left: -4 }}
+      style={{
+        position: 'absolute',
+        zIndex: 1,
+        bottom: -4,
+        left: -4,
+        filter: props.isOffline ? 'grayscale(1)' : 'undefined',
+      }}
     />
   )
 })
@@ -457,6 +459,7 @@ const AvatarPicture = React.memo((props: AvatarPictureProps) => {
         height: size ?? '100%',
         borderRadius: '100%',
         filter: props.isOffline || props.resolved ? 'grayscale(1)' : undefined,
+        opacity: props.isOffline ? 0.6 : 'undefined',
         pointerEvents: 'none',
       }}
       src={url}

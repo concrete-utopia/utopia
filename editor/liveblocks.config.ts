@@ -53,6 +53,7 @@ export type Storage = {
   collaborators: LiveObject<{ [userId: string]: User }> // this is an object (and not a list) so we can quickly check if a user is a collaborator, but later we can extend the information by storing something more than a boolean (e.g. a permission level)
   userReadStatusesByThread: LiveObject<{ [threadId: string]: UserReadStatuses }>
   remixSceneRoutes: LiveObject<{ [userId: string]: SceneIdToRouteMapping }>
+  connections: LiveObject<{ [userId: string]: ConnectionInfo[] }>
 }
 
 export type User = LiveObject<UserMeta>
@@ -65,7 +66,14 @@ export function initialStorage(): Storage {
     collaborators: new LiveObject(),
     userReadStatusesByThread: new LiveObject(),
     remixSceneRoutes: new LiveObject(),
+    connections: new LiveObject(),
   }
+}
+
+export type ConnectionInfo = {
+  id: number
+  startedAt: number
+  lastSeen: number
 }
 
 // Optionally, UserMeta represents static/readonly metadata on each user, as

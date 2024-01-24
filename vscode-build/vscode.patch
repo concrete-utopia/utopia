@@ -854,6 +854,19 @@ index 534fe232636..b41446430f0 100644
 +  create(document.body, config)
 +})()
 \ No newline at end of file
+diff --git a/src/vs/editor/common/config/editorOptions.ts b/src/vs/editor/common/config/editorOptions.ts
+index 7d8189c50be..125b6c89d0b 100644
+--- a/src/vs/editor/common/config/editorOptions.ts
++++ b/src/vs/editor/common/config/editorOptions.ts
+@@ -2560,7 +2560,7 @@ class EditorMinimap extends BaseEditorOption<EditorOption.minimap, EditorMinimap
+ 
+ 	constructor() {
+ 		const defaults: EditorMinimapOptions = {
+-			enabled: true,
++			enabled: false,
+ 			size: 'proportional',
+ 			side: 'right',
+ 			showSlider: 'mouseover',
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
 index 6b59c1e9faa..a9192e938ef 100644
 --- a/src/vs/workbench/browser/layout.ts

@@ -1,7 +1,11 @@
+/** @jsxRuntime classic */
+/** @jsx jsx */
+import React from 'react'
+import { Fragment } from 'react'
+import { jsx } from '@emotion/react'
 import type { User } from '@liveblocks/client'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useAtom, useSetAtom } from 'jotai'
-import React from 'react'
 import type { Presence, PresenceActiveFrame, UserMeta } from '../../../liveblocks.config'
 import {
   useOthers,
@@ -15,6 +19,7 @@ import {
   getCollaborator,
   useAddMyselfToCollaborators,
   useCanComment,
+  useMyUserAndPresence,
 } from '../../core/commenting/comment-hooks'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../core/shared/array-utils'
@@ -34,7 +39,7 @@ import {
   useIsOnSameRemixRoute,
 } from '../../core/shared/multiplayer'
 import { assertNever } from '../../core/shared/utils'
-import { Button, UtopiaStyles, useColorTheme } from '../../uuiui'
+import { Button, FlexRow, UtopiaStyles, colorTheme } from '../../uuiui'
 import { notice } from '../common/notice'
 import type { EditorAction } from '../editor/action-types'
 import { isLoggedIn } from '../editor/action-types'
@@ -51,7 +56,12 @@ import CanvasActions from './canvas-actions'
 import { activeFrameActionToString } from './commands/set-active-frames-command'
 import { canvasPointToWindowPoint, windowToCanvasCoordinates } from './dom-lookup'
 import { ActiveRemixSceneAtom, RemixNavigationAtom } from './remix/utopia-remix-root-component'
-import { useMyUserId, useRemixPresence } from '../../core/shared/multiplayer-hooks'
+import {
+  useStoreConnection,
+  useMyUserId,
+  useRemixPresence,
+  useMonitorConnection,
+} from '../../core/shared/multiplayer-hooks'
 import { CanvasOffsetWrapper } from './controls/canvas-offset-wrapper'
 import { when } from '../../utils/react-conditionals'
 import { CommentIndicators } from './controls/comment-indicator'
@@ -100,6 +110,8 @@ export const MultiplayerPresence = React.memo(() => {
   )
 
   useAddMyselfToCollaborators()
+  useStoreConnection()
+  useMonitorConnection()
 
   const remixPresence = useRemixPresence()
 
@@ -146,13 +158,13 @@ export const MultiplayerPresence = React.memo(() => {
   }
 
   return (
-    <>
+    <Fragment>
       <FollowingOverlay />
       <MultiplayerShadows />
       {when(canComment, <CommentIndicators />)}
       <MultiplayerCursors />
       {when(canComment && isCommentMode(mode) && mode.comment != null, <CommentPopup />)}
-    </>
+    </Fragment>
   )
 })
 MultiplayerPresence.displayName = 'MultiplayerPresence'
@@ -425,10 +437,31 @@ const FollowingOverlay = React.memo(() => {
     return multiplayerColorFromIndex(followedUser?.colorIndex ?? null)
   }, [followedUser])
 
+  const collabs = useStorage((store) => store.collaborators)
+  const connections = useStorage((store) => store.connections)
+
+  const { user: myUser, presence: myPresence } = useMyUserAndPresence()
+  const others = useOthers((list) =>
+    list
+      .filter((entry) => entry.connectionId !== myPresence.connectionId)
+      .map((other) => {
+        return {
+          ...getCollaborator(collabs, other),
+          following: other.presence.following,
+          connectionId: other.connectionId,
+          connectedAt: connections?.[other.id]?.[other.connectionId]?.startedAt ?? 0,
+        }
+      }),
+  )
+
+  const myFollowers = others.filter((other) => other.following === myUser.id)
+  const followers = myFollowers.length
+  const hasFollowers = followers > 0
+
   return (
     <AnimatePresence>
       {when(
-        followedUser != null,
+        followedUser != null || hasFollowers,
         <motion.div
           style={{
             position: 'fixed',
@@ -438,44 +471,76 @@ const FollowingOverlay = React.memo(() => {
             right: 0,
             background: 'transparent',
             display: 'flex',
-            alignItems: 'flex-end',
-            justifyContent: 'center',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            gap: 5,
             paddingBottom: 14,
             cursor: 'default',
-            border: `4px solid ${followedUserColor.background}`,
+            border: hasFollowers ? `undefined` : `4px solid ${followedUserColor.background}`,
           }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.1 }}
         >
-          <motion.div
-            style={{
-              backgroundColor: followedUserColor.background,
-              color: followedUserColor.foreground,
-              padding: '4px 4px 4px 12px',
-              borderRadius: 100,
-              boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-            }}
-          >
-            <div>You're following {followedUser?.name}</div>
-            <Button
-              highlight
-              spotlight
-              onClick={stopFollowing}
+          {when(
+            followers > 0,
+            <motion.div
               style={{
-                backgroundColor: '#00000015',
-                padding: '4px 10px',
+                backgroundColor: colorTheme.primary.value,
+                color: colorTheme.white.value,
+                padding: '4px 12px',
                 borderRadius: 100,
-                cursor: 'pointer',
+                boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
+                display: 'flex',
+                alignItems: 'center',
               }}
             >
-              Stop following
-            </Button>
-          </motion.div>
+              {followers === 1 ? (
+                <FlexRow style={{ height: 22, alignItems: 'center', justifyContent: 'center' }}>
+                  1 person is following you
+                </FlexRow>
+              ) : (
+                <FlexRow style={{ height: 22, alignItems: 'center', justifyContent: 'center' }}>
+                  {followers} people are following you
+                </FlexRow>
+              )}
+            </motion.div>,
+          )}
+          {when(
+            followedUser != null,
+            <motion.div
+              style={{
+                backgroundColor: followedUserColor.background,
+                color: followedUserColor.foreground,
+                padding: '4px 4px 4px 12px',
+                borderRadius: 100,
+                boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 5,
+              }}
+            >
+              <div>You're following {followedUser?.name}</div>
+              <Button
+                highlight
+                spotlight
+                onClick={stopFollowing}
+                css={{
+                  padding: '4px 10px',
+                  borderRadius: 100,
+                  cursor: 'pointer',
+                  backgroundColor: '#00000025',
+                  '&:hover': {
+                    backgroundColor: '#00000015',
+                  },
+                }}
+              >
+                Stop following
+              </Button>
+            </motion.div>,
+          )}
         </motion.div>,
       )}
     </AnimatePresence>
@@ -557,7 +622,7 @@ const MultiplayerShadows = React.memo(() => {
   )
 
   return (
-    <>
+    <Fragment>
       {shadows.map((shadow, index) => {
         const { frame, action, source } = shadow.activeFrame
         const color = multiplayerColorFromIndex(shadow.colorIndex)
@@ -618,7 +683,7 @@ const MultiplayerShadows = React.memo(() => {
           </React.Fragment>
         )
       })}
-    </>
+    </Fragment>
   )
 })
 MultiplayerShadows.displayName = 'MultiplayerShadows'
