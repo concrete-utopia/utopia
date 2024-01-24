@@ -4,7 +4,7 @@ import { IS_TEST_ENVIRONMENT } from '../../../common/env-vars'
 import { fetchProjectMetadata } from '../../../common/server'
 import type { EditorDispatch } from '../action-types'
 import { updateProjectServerState } from '../actions/action-creators'
-import { checkProjectOwned } from '../persistence/persistence-backend'
+import { checkProjectOwned, projectIsStoredLocally } from '../persistence/persistence-backend'
 import type { ProjectOwnership } from '../persistence/generic/persistence-types'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { CollaborationEndpoints } from '../collaborative-endpoints'
@@ -76,75 +76,91 @@ function projectListingToProjectMetadataFromServer(
 }
 
 export async function getProjectServerState(
+  loggedIn: boolean,
   dispatch: EditorDispatch,
   projectId: string | null,
   forkedFromProjectId: string | null,
 ): Promise<ProjectServerState> {
-  if (IS_TEST_ENVIRONMENT) {
-    return {
-      ...emptyProjectServerState(),
-      isMyProject: 'yes',
-      currentlyHolderOfTheBaton: true,
-    }
-  } else {
-    const projectListing = projectId == null ? null : await fetchProjectMetadata(projectId)
-    const forkedFromProjectListing =
-      forkedFromProjectId == null ? null : await fetchProjectMetadata(forkedFromProjectId)
+  const existsLocally = projectId == null ? true : await projectIsStoredLocally(projectId)
+  const projectListing =
+    projectId == null || existsLocally ? null : await fetchProjectMetadata(projectId)
+  const forkedFromProjectListing =
+    forkedFromProjectId == null || existsLocally
+      ? null
+      : await fetchProjectMetadata(forkedFromProjectId)
 
-    async function getOwnership(): Promise<ProjectOwnership> {
-      if (projectId == null) {
-        return { isOwner: true, ownerId: null }
-      }
-      const { isOwner, ownerId } = await checkProjectOwned(projectId)
-      return { isOwner, ownerId }
+  async function getOwnership(): Promise<ProjectOwnership> {
+    if (projectId == null) {
+      return { isOwner: true, ownerId: null }
     }
-    const ownership = await getOwnership()
+    const { isOwner, ownerId } = await checkProjectOwned(loggedIn, projectId)
+    return { isOwner, ownerId }
+  }
+  const ownership = await getOwnership()
 
-    const holderOfTheBaton = ownership.isOwner
-      ? await CollaborationEndpoints.claimControlOverProject(projectId)
-          .then((result) => {
-            return result ?? ownership.isOwner
-          })
-          .catch(() => {
-            CollaborationEndpoints.displayControlErrorToast(
-              dispatch,
-              'Error while attempting to claim control over this project.',
-            )
-            return false
-          })
-      : false
-
-    return {
-      isMyProject: ownership.isOwner ? 'yes' : 'no',
-      ownerId: ownership.ownerId,
-      projectData: projectListingToProjectMetadataFromServer(projectListing),
-      forkedFromProjectData: projectListingToProjectMetadataFromServer(forkedFromProjectListing),
-      currentlyHolderOfTheBaton: holderOfTheBaton,
+  async function getHolderOfTheBaton(): Promise<boolean> {
+    if (!loggedIn) {
+      return false
+    } else if (ownership.isOwner) {
+      return CollaborationEndpoints.claimControlOverProject(projectId)
+        .then((result) => {
+          return result ?? ownership.isOwner
+        })
+        .catch(() => {
+          CollaborationEndpoints.displayControlErrorToast(
+            dispatch,
+            'Error while attempting to claim control over this project.',
+          )
+          return false
+        })
+    } else {
+      return false
     }
+  }
+
+  const holderOfTheBaton = await getHolderOfTheBaton()
+
+  return {
+    isMyProject: ownership.isOwner ? 'yes' : 'no',
+    ownerId: ownership.ownerId,
+    projectData: projectListingToProjectMetadataFromServer(projectListing),
+    forkedFromProjectData: projectListingToProjectMetadataFromServer(forkedFromProjectListing),
+    currentlyHolderOfTheBaton: holderOfTheBaton,
   }
 }
 
 type SuccessOrFailure = 'success' | 'failure'
 
+let updateProjectServerStateInStoreRunCount: number = 0
+
+export function getUpdateProjectServerStateInStoreRunCount(): number {
+  return updateProjectServerStateInStoreRunCount
+}
+
 export async function updateProjectServerStateInStore(
+  loggedIn: boolean,
   projectId: string | null,
   forkedFromProjectId: string | null,
   dispatch: EditorDispatch,
 ): Promise<SuccessOrFailure> {
-  return getProjectServerState(dispatch, projectId, forkedFromProjectId)
+  return getProjectServerState(loggedIn, dispatch, projectId, forkedFromProjectId)
     .then<SuccessOrFailure, SuccessOrFailure>((serverState) => {
       dispatch([updateProjectServerState(serverState)], 'everyone')
       return 'success'
     })
-    .catch((error) => {
+    .catch<SuccessOrFailure>((error) => {
       console.error('Error while updating server state.', error)
       return 'failure'
+    })
+    .finally(() => {
+      updateProjectServerStateInStoreRunCount++
     })
 }
 
 export interface ProjectServerStateUpdaterProps {
   projectId: string | null
   forkedFromProjectId: string | null
+  loggedIn: boolean
   dispatch: EditorDispatch
 }
 
@@ -153,12 +169,13 @@ const baseWatcherIntervalTime: number = 10 * 1000
 let currentWatcherIntervalMultiplier: number = 1
 
 function restartServerStateWatcher(
+  loggedIn: boolean,
   projectId: string | null,
   forkedFromProjectId: string | null,
   dispatch: EditorDispatch,
 ): void {
   if (isFeatureEnabled('Baton Passing For Control')) {
-    void updateProjectServerStateInStore(projectId, forkedFromProjectId, dispatch)
+    void updateProjectServerStateInStore(loggedIn, projectId, forkedFromProjectId, dispatch)
     // Reset the multiplier if triggered from outside of `restartWatcherInterval`.
     currentWatcherIntervalMultiplier = 1
 
@@ -167,40 +184,43 @@ function restartServerStateWatcher(
         window.clearInterval(serverStateWatcherInstance)
       }
       serverStateWatcherInstance = window.setInterval(() => {
-        void updateProjectServerStateInStore(projectId, forkedFromProjectId, dispatch).then(
-          (result) => {
-            // If there's a failure, then double the multiplier and recreate the interval.
-            if (result === 'failure') {
-              if (currentWatcherIntervalMultiplier < 10) {
-                currentWatcherIntervalMultiplier = currentWatcherIntervalMultiplier * 2
-                restartWatcherInterval()
-              }
+        void updateProjectServerStateInStore(
+          loggedIn,
+          projectId,
+          forkedFromProjectId,
+          dispatch,
+        ).then((result) => {
+          // If there's a failure, then double the multiplier and recreate the interval.
+          if (result === 'failure') {
+            if (currentWatcherIntervalMultiplier < 10) {
+              currentWatcherIntervalMultiplier = currentWatcherIntervalMultiplier * 2
+              restartWatcherInterval()
             }
+          }
 
-            // If this call succeeds, reset the multiplier and recreate the interval if the multiplier
-            // has changed.
-            if (result === 'success') {
-              if (currentWatcherIntervalMultiplier !== 1) {
-                currentWatcherIntervalMultiplier = 1
-                restartWatcherInterval()
-              }
+          // If this call succeeds, reset the multiplier and recreate the interval if the multiplier
+          // has changed.
+          if (result === 'success') {
+            if (currentWatcherIntervalMultiplier !== 1) {
+              currentWatcherIntervalMultiplier = 1
+              restartWatcherInterval()
             }
-          },
-        )
+          }
+        })
       }, baseWatcherIntervalTime * currentWatcherIntervalMultiplier)
     }
     restartWatcherInterval()
   } else {
-    void updateProjectServerStateInStore(projectId, forkedFromProjectId, dispatch)
+    void updateProjectServerStateInStore(loggedIn, projectId, forkedFromProjectId, dispatch)
   }
 }
 
 export const ProjectServerStateUpdater = React.memo(
   (props: React.PropsWithChildren<ProjectServerStateUpdaterProps>) => {
-    const { projectId, forkedFromProjectId, dispatch, children } = props
+    const { projectId, forkedFromProjectId, dispatch, loggedIn, children } = props
     React.useEffect(() => {
-      restartServerStateWatcher(projectId, forkedFromProjectId, dispatch)
-    }, [dispatch, projectId, forkedFromProjectId])
+      restartServerStateWatcher(loggedIn, projectId, forkedFromProjectId, dispatch)
+    }, [dispatch, projectId, forkedFromProjectId, loggedIn])
     return <>{children}</>
   },
 )

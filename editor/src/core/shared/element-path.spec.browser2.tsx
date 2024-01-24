@@ -17,7 +17,11 @@ describe('ElementPath Caching', () => {
     const realPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
     const fakePath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc'])
 
-    // Rendering alone will be enough to trigger the timer for culling the cache
+    // let's make sure the paths are currently still in the cache
+    expect(EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])).toBe(realPath)
+    expect(EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc'])).toBe(fakePath)
+
+    // Rendering alone will usually be enough to trigger the timer for culling the cache.
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
       <div data-uid='aaa'>
@@ -26,11 +30,6 @@ describe('ElementPath Caching', () => {
     `),
       'await-first-dom-report',
     )
-
-    // let's make sure the paths are currently still in the cache
-    expect(EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])).toBe(realPath)
-    expect(EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc'])).toBe(fakePath)
-
     setLastProjectContentsForTesting(renderResult.getEditorState().editor.projectContents)
     cullElementPathCache()
 

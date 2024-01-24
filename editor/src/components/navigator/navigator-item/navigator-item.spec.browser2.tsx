@@ -171,6 +171,8 @@ describe('Navigator item row icons', () => {
     )
   `
 
+  // The navigator appears to be a little buggy:
+  // https://github.com/concrete-utopia/utopia/issues/4773
   it('Should show the correct icons for each type of row', async () => {
     const editor = await renderTestEditorWithCode(testProjectCode, 'await-first-dom-report')
     const visibleNavigatorTargets = editor.getEditorState().derived.visibleNavigatorTargets
@@ -302,6 +304,8 @@ describe('Navigator item row icons', () => {
     )
   })
 
+  // The navigator appears to be a little buggy:
+  // https://github.com/concrete-utopia/utopia/issues/4773
   it('Should show the correct labels for each type of row', async () => {
     const editor = await renderTestEditorWithCode(testProjectCode, 'await-first-dom-report')
     const visibleNavigatorTargets = editor.getEditorState().derived.visibleNavigatorTargets
