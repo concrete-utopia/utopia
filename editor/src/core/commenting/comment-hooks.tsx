@@ -87,18 +87,19 @@ export function useCanvasCommentThreadAndLocation(comment: CommentId): {
           return null
         }
 
-        if (!isSceneThreadMetadata(thread.metadata)) {
-          return canvasPoint(thread.metadata)
+        const { metadata } = thread
+        if (!isSceneThreadMetadata(metadata)) {
+          return canvasPoint(metadata)
         }
-        const scene = scenes.find((s) => getIdOfScene(s) === thread.metadata.sceneId)
+        const scene = scenes.find((s) => getIdOfScene(s) === metadata.sceneId)
 
         if (scene == null) {
           return canvasPoint(thread.metadata)
         }
         if (!isNotNullFiniteRectangle(scene.globalFrame)) {
-          return canvasPoint(thread.metadata)
+          return canvasPoint(metadata)
         }
-        return getCanvasPointWithCanvasOffset(scene.globalFrame, positionInScene(thread.metadata))
+        return getCanvasPointWithCanvasOffset(scene.globalFrame, positionInScene(metadata))
 
       default:
         assertNever(comment)
@@ -221,16 +222,17 @@ export function useCanvasLocationOfThread(thread: ThreadData<ThreadMetadata>): {
 } {
   const scenes = useScenesWithId()
 
-  if (!isSceneThreadMetadata(thread.metadata)) {
-    return { location: canvasPoint(thread.metadata), scene: null }
+  const { metadata } = thread
+  if (!isSceneThreadMetadata(metadata)) {
+    return { location: canvasPoint(metadata), scene: null }
   }
-  const scene = scenes.find((s) => getIdOfScene(s) === thread.metadata.sceneId)
+  const scene = scenes.find((s) => getIdOfScene(s) === metadata.sceneId)
 
   if (scene == null || !isNotNullFiniteRectangle(scene.globalFrame)) {
-    return { location: canvasPoint(thread.metadata), scene: null }
+    return { location: canvasPoint(metadata), scene: null }
   }
   return {
-    location: getCanvasPointWithCanvasOffset(scene.globalFrame, positionInScene(thread.metadata)),
+    location: getCanvasPointWithCanvasOffset(scene.globalFrame, positionInScene(metadata)),
     scene: scene.elementPath,
   }
 }

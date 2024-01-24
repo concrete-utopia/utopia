@@ -1,7 +1,11 @@
 import React from 'react'
 import { MultiplayerWrapper } from '../../utils/multiplayer-wrapper'
 import { getThreadLocationOnCanvas, useCanComment, useScenes } from './comment-hooks'
-import { useEditThreadMetadata, useThreads } from '../../../liveblocks.config'
+import {
+  isSceneThreadMetadata,
+  useEditThreadMetadata,
+  useThreads,
+} from '../../../liveblocks.config'
 import { getIdOfScene } from '../../components/canvas/controls/comment-mode/comment-mode-hooks'
 import * as EP from '../shared/element-path'
 import { isNotNullFiniteRectangle } from '../shared/math-utils'
@@ -34,10 +38,10 @@ function useMaintainComments() {
   const editThreadMetadata = useEditThreadMetadata()
 
   threads.forEach(async (t): Promise<void> => {
-    const sceneId = t.metadata.sceneId
-    if (sceneId == null) {
+    if (!isSceneThreadMetadata(t.metadata)) {
       return
     }
+    const { sceneId } = t.metadata
 
     const scene = scenes.find(
       (s) => getIdOfScene(s) === sceneId || EP.toUid(s.elementPath) === sceneId,
