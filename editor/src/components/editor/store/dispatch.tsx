@@ -58,7 +58,12 @@ import {
   runLocalEditorAction,
   runUpdateProjectServerState,
 } from './editor-update'
-import { assertNever, fastForEach, isBrowserEnvironment } from '../../../core/shared/utils'
+import {
+  assertNever,
+  fastForEach,
+  identity,
+  isBrowserEnvironment,
+} from '../../../core/shared/utils'
 import type { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import type { ProjectContentTreeRoot } from '../../assets'
 import { transformContentsTree, treeToContents, walkContentsTree } from '../../assets'
@@ -880,6 +885,7 @@ function setIdPropOnJSXElement(element: JSXElement, idPropValueToUse: string): J
 
 function ensureSceneIdsExist(editor: EditorState): EditorState {
   let seenIdProps: Set<string> = new Set()
+  let anyIdPropUpdated = false
 
   const nextProjectContents = transformContentsTree(editor.projectContents, (tree) => {
     if (
@@ -919,6 +925,7 @@ function ensureSceneIdsExist(editor: EditorState): EditorState {
         }
 
         seenIdProps.add(idPropValueToUse)
+        anyIdPropUpdated = true
         return updatedChild
       })
 
@@ -937,6 +944,10 @@ function ensureSceneIdsExist(editor: EditorState): EditorState {
       },
     }
   })
+
+  if (!anyIdPropUpdated) {
+    return editor
+  }
 
   return { ...editor, projectContents: nextProjectContents }
 }
