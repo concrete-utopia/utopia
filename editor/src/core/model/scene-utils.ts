@@ -1,5 +1,10 @@
 import Hash from 'object-hash'
-import type { SceneMetadata, StaticElementPath, PropertyPath } from '../shared/project-file-types'
+import type {
+  SceneMetadata,
+  StaticElementPath,
+  PropertyPath,
+  TextFile,
+} from '../shared/project-file-types'
 import { isTextFile, isParseSuccess } from '../shared/project-file-types'
 import type {
   UtopiaJSXComponent,
@@ -21,6 +26,7 @@ import {
   ElementInstanceMetadata,
   walkElements,
   emptyComments,
+  getJSXAttribute,
 } from '../shared/element-template'
 import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
@@ -37,14 +43,27 @@ import fastDeepEqual from 'fast-deep-equal'
 import {
   getModifiableJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
+  setJSXValueAtPath,
 } from '../shared/jsx-attributes'
 import { stripNulls } from '../shared/array-utils'
 import { UTOPIA_UID_KEY } from './utopia-constants'
 import type { ProjectContentTreeRoot } from '../../components/assets'
-import { getProjectFileByFilePath } from '../../components/assets'
-import { getUtopiaJSXComponentsFromSuccess } from './project-file-utils'
+import {
+  addFileToProjectContents,
+  getContentsTreeFromPath,
+  getProjectFileByFilePath,
+} from '../../components/assets'
+import {
+  getUtopiaJSXComponentsFromSuccess,
+  isRemixSceneAgainstImports,
+  isSceneAgainstImports,
+} from './project-file-utils'
 import { generateConsistentUID, generateUID, getUtopiaID } from '../shared/uid-utils'
 import { emptySet } from '../shared/set-utils'
+import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
+import type { EditorState } from '../../components/editor/store/editor-state'
+import { StoryboardFilePath } from '../../components/editor/store/editor-state'
+import { transformJSXElementChildRecursively } from './element-template-utils'
 
 export const PathForSceneComponent = PP.create('component')
 export const PathForSceneDataUid = PP.create('data-uid')
@@ -297,4 +316,105 @@ export function getStoryboardElementPath(
     }
   }
   return null
+}
+
+const IdPropName = 'id'
+
+function getIdPropFromJSXElement(element: JSXElement): string | null {
+  const maybeIdProp = getJSXAttribute(element.props, IdPropName)
+  if (
+    maybeIdProp == null ||
+    maybeIdProp.type !== 'ATTRIBUTE_VALUE' ||
+    typeof maybeIdProp.value !== 'string'
+  ) {
+    return null
+  }
+  return maybeIdProp.value
+}
+
+function setIdPropOnJSXElement(element: JSXElement, idPropValueToUse: string): JSXElement | null {
+  const updatedProps = setJSXValueAtPath(
+    element.props,
+    PP.create(IdPropName),
+    jsExpressionValue(idPropValueToUse, emptyComments),
+  )
+
+  if (IS_TEST_ENVIRONMENT || isLeft(updatedProps)) {
+    return null
+  }
+  return { ...element, props: updatedProps.value }
+}
+
+export function ensureSceneIdsExist(editor: EditorState): EditorState {
+  const storyboardFile = getContentsTreeFromPath(editor.projectContents, StoryboardFilePath)
+  if (
+    storyboardFile == null ||
+    storyboardFile.type !== 'PROJECT_CONTENT_FILE' ||
+    storyboardFile.content.type !== 'TEXT_FILE' ||
+    storyboardFile.content.fileContents.parsed.type !== 'PARSE_SUCCESS'
+  ) {
+    return editor
+  }
+
+  let seenIdProps: Set<string> = new Set()
+  let anyIdPropUpdated = false
+  const imports = storyboardFile.content.fileContents.parsed.imports
+
+  const nextToplevelElements = storyboardFile.content.fileContents.parsed.topLevelElements.map(
+    (e) => {
+      if (e.type !== 'UTOPIA_JSX_COMPONENT') {
+        return e
+      }
+
+      const nextRootElement = transformJSXElementChildRecursively(e.rootElement, (child) => {
+        const isConsideredScene =
+          isSceneAgainstImports(child, imports) || isRemixSceneAgainstImports(child, imports)
+
+        if (child.type !== 'JSX_ELEMENT' || !isConsideredScene) {
+          return child
+        }
+
+        const idPropValue = getIdPropFromJSXElement(child)
+
+        if (idPropValue != null && !seenIdProps.has(idPropValue)) {
+          seenIdProps.add(idPropValue)
+          return child
+        }
+
+        const idPropValueToUse = child.uid
+        const updatedChild = setIdPropOnJSXElement(child, idPropValueToUse)
+        if (updatedChild == null) {
+          return child
+        }
+
+        seenIdProps.add(idPropValueToUse)
+        anyIdPropUpdated = true
+        return updatedChild
+      })
+
+      return { ...e, rootElement: nextRootElement }
+    },
+  )
+
+  if (!anyIdPropUpdated) {
+    return editor
+  }
+
+  const nextStoryboardFile: TextFile = {
+    ...storyboardFile.content,
+    fileContents: {
+      ...storyboardFile.content.fileContents,
+      parsed: {
+        ...storyboardFile.content.fileContents.parsed,
+        topLevelElements: nextToplevelElements,
+      },
+    },
+  }
+
+  const nextProjectContents = addFileToProjectContents(
+    editor.projectContents,
+    StoryboardFilePath,
+    nextStoryboardFile,
+  )
+  return { ...editor, projectContents: nextProjectContents }
 }
