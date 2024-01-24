@@ -11,6 +11,7 @@ import type {
   CollabTextFileImports,
   CollabTextFileTopLevelElements,
   CollaborativeEditingSupportSession,
+  UserState,
 } from './editor-state'
 import type { ProjectContentsTree } from '../../../components/assets'
 import {
@@ -19,7 +20,8 @@ import {
   isProjectContentFile,
   zipContentsTree,
 } from '../../../components/assets'
-import type { EditorAction, EditorDispatch } from '../action-types'
+import type { LoginState } from '../action-types'
+import { isLoggedIn, type EditorAction, type EditorDispatch } from '../action-types'
 import { updateTopLevelElementsFromCollaborationUpdate } from '../actions/action-creators'
 import { assertNever } from '../../../core/shared/utils'
 import type {
@@ -610,20 +612,35 @@ function synchroniseParseSuccessToCollabFile(
   )
 }
 
-export function allowedToEditProject(serverState: ProjectServerState): boolean {
+export function allowedToEditProject(
+  loginState: LoginState,
+  serverState: ProjectServerState,
+): boolean {
   if (isFeatureEnabled('Baton Passing For Control')) {
-    return serverState.currentlyHolderOfTheBaton
+    if (isLoggedIn(loginState)) {
+      return serverState.currentlyHolderOfTheBaton
+    } else {
+      return checkIsMyProject(serverState)
+    }
   } else {
     return checkIsMyProject(serverState)
   }
 }
 
 export function useAllowedToEditProject(): boolean {
-  return useEditorState(
+  const projectServerState = useEditorState(
     Substores.projectServerState,
-    (store) => allowedToEditProject(store.projectServerState),
-    'useAllowedToEditProject',
+    (store) => store.projectServerState,
+    'useAllowedToEditProject projectServerState',
   )
+
+  const loginState = useEditorState(
+    Substores.userState,
+    (store) => store.userState.loginState,
+    'useAllowedToEditProject loginState',
+  )
+
+  return allowedToEditProject(loginState, projectServerState)
 }
 
 export function useIsMyProject(): boolean {

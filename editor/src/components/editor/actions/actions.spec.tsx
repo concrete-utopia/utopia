@@ -60,6 +60,7 @@ import {
   RevisionsState,
   exportFunction,
   importAlias,
+  importDetails,
   isParseSuccess,
   isTextFile,
   isUnparsed,
@@ -86,7 +87,7 @@ import {
 import { getFrameChange } from '../../canvas/canvas-utils'
 import { generateCodeResultCache } from '../../custom-code/code-file'
 import { cssNumber } from '../../inspector/common/css-utils'
-import { getComponentGroups } from '../../shared/project-components'
+import { getComponentGroups, insertableComponent } from '../../shared/project-components'
 import type { EditorState, PersistentModel } from '../store/editor-state'
 import {
   StoryboardFilePath,
@@ -647,6 +648,105 @@ describe('INSERT_INSERTABLE', () => {
                   theme='light'
                   style={{ width: 100, height: 100 }}
                 />
+              </div>
+            )
+          }
+          "
+        `)
+      } else {
+        throw new Error('File does not contain parse success.')
+      }
+    } else {
+      throw new Error('File is not a text file.')
+    }
+  })
+
+  it('inserts an element into the project with the given values, and duplicate name, also adding style props', () => {
+    const project = complexDefaultProjectPreParsed()
+    const editorState = editorModelFromPersistentModel(project, NO_OP)
+
+    const insertableGroups = getComponentGroups(
+      'insert',
+      { antd: { status: 'loaded' } },
+      { antd: DefaultThirdPartyControlDefinitions.antd },
+      editorState.projectContents,
+      [resolvedNpmDependency('antd', '4.0.0')],
+      StoryboardFilePath,
+    )
+    const antdGroup = forceNotNull(
+      'Group should exist.',
+      insertableGroups.find((group) => {
+        return (
+          group.source.type === 'PROJECT_DEPENDENCY_GROUP' && group.source.dependencyName === 'antd'
+        )
+      }),
+    )
+    const springInsertable = insertableComponent(
+      {
+        './test.js': importDetails(null, [importAlias('Spring')], null),
+      },
+      () => jsxElement('Spring', 'spring', jsxAttributesFromMap({}), []),
+      'Spring',
+      [],
+      null,
+    )
+
+    const targetPath = EP.elementPath([
+      ['storyboard-entity', 'scene-1-entity', 'app-entity'],
+      ['app-outer-div', 'card-instance'],
+      ['card-outer-div'],
+    ])
+
+    const action = insertInsertable(
+      childInsertionPath(targetPath),
+      springInsertable,
+      'add-size',
+      null,
+    )
+
+    const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
+    const cardFile = getProjectFileByFilePath(actualResult.projectContents, '/src/card.js')
+    if (cardFile != null && isTextFile(cardFile)) {
+      const parsed = cardFile.fileContents.parsed
+      if (isParseSuccess(parsed)) {
+        const printedCode = printCode(
+          '/src/card.js',
+          printCodeOptions(false, true, true, true),
+          parsed.imports,
+          parsed.topLevelElements,
+          parsed.jsxFactoryFunction,
+          parsed.exportsDetail,
+        )
+        expect(printedCode).toMatchInlineSnapshot(`
+          "import * as React from 'react'
+          import { Spring } from 'non-existant-dummy-library'
+          import { Spring as Spring_2 } from './test.js'
+          export var Card = (props) => {
+            return (
+              <div style={{ ...props.style }}>
+                <div
+                  data-testid='card-inner-div'
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    width: 50,
+                    height: 50,
+                    backgroundColor: 'red',
+                  }}
+                />
+                <Spring
+                  data-testid='spring'
+                  style={{
+                    position: 'absolute',
+                    left: 100,
+                    top: 200,
+                    width: 50,
+                    height: 50,
+                    backgroundColor: 'blue',
+                  }}
+                />
+                <Spring_2 style={{ width: 100, height: 100 }} />
               </div>
             )
           }

@@ -9,6 +9,7 @@ import { useBroadcastEvent, useEventListener } from '../../../../liveblocks.conf
 
 interface CollaborationStateUpdaterProps {
   projectId: string | null
+  loggedIn: boolean
   dispatch: EditorDispatch
 }
 
@@ -18,7 +19,7 @@ const controlChangedEvent: ControlChangedRoomEvent = {
 
 export const CollaborationStateUpdater = React.memo(
   (props: React.PropsWithChildren<CollaborationStateUpdaterProps>) => {
-    const { projectId, dispatch, children } = props
+    const { projectId, dispatch, loggedIn, children } = props
     const isMyProjectRef = useRefEditorState((store) => store.projectServerState.isMyProject)
     const currentlyHolderOfTheBatonRef = useRefEditorState(
       (store) => store.projectServerState.currentlyHolderOfTheBaton,
@@ -45,7 +46,7 @@ export const CollaborationStateUpdater = React.memo(
     // Handle events that appear to have come from the above broadcast call.
     useEventListener((data) => {
       if (data.event.type === 'CONTROL_CHANGED') {
-        if (isMyProjectRef.current === 'yes') {
+        if (loggedIn && isMyProjectRef.current === 'yes') {
           void CollaborationEndpoints.claimControlOverProject(projectId)
             .then((controlResult) => {
               const newHolderOfTheBaton = controlResult ?? false
@@ -67,10 +68,12 @@ export const CollaborationStateUpdater = React.memo(
       function attemptToSnatchControl(): void {
         if (projectId != null) {
           // Only attempt to do any kind of snatching of control if:
+          // - The user is logged in.
           // - The project is "mine".
           // - This instance does not already hold control of the project.
           // - There isn't already an attempt to snatch control inflight.
           if (
+            loggedIn &&
             isMyProjectRef.current === 'yes' &&
             !currentlyHolderOfTheBatonRef.current &&
             !currentlyAttemptingToSnatch
@@ -109,6 +112,7 @@ export const CollaborationStateUpdater = React.memo(
       isMyProjectRef,
       currentlyHolderOfTheBatonRef,
       currentlyAttemptingToSnatch,
+      loggedIn,
     ])
     return <>{children}</>
   },

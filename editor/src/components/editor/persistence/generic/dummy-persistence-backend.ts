@@ -14,7 +14,7 @@ function getNewProjectId(): Promise<string> {
   return Promise.resolve(`Project_${projectCounter++}`)
 }
 
-function checkProjectOwned(_projectId: string): Promise<ProjectOwnership> {
+function checkProjectOwned(_loggedIn: boolean, _projectId: string): Promise<ProjectOwnership> {
   return Promise.resolve({ isOwner: true, ownerId: 'the-owner' })
 }
 

@@ -23,6 +23,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementContextMenu } from '../../element-context-menu'
 import type { Mode } from '../../editor/editor-modes'
 import {
+  isCommentMode,
   isLiveMode,
   isSelectMode,
   isSelectModeWithArea,
@@ -528,7 +529,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         onMouseUp={onMouseUp}
       >
         {when(
-          isSelectMode(editorMode),
+          isSelectMode(editorMode) || isCommentMode(editorMode),
           <SceneLabelControl
             maybeHighlightOnHover={maybeHighlightOnHover}
             maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
@@ -543,7 +544,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
             <ZeroSizedElementControls.control showAllPossibleElements={false} />
 
             {when(
-              isSelectMode(editorMode),
+              isSelectMode(editorMode) || isCommentMode(editorMode),
               <RemixSceneLabelControl
                 maybeHighlightOnHover={maybeHighlightOnHover}
                 maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}

@@ -67,11 +67,11 @@ import type { Storage, Presence, RoomEvent, UserMeta } from '../../../liveblocks
 import LiveblocksProvider from '@liveblocks/yjs'
 import { isRoomId, projectIdToRoomId } from '../../core/shared/multiplayer'
 import { EditorModes } from './editor-modes'
-import { checkIsMyProject } from './store/collaborative-editing'
-import { useCanComment, useDataThemeAttributeOnBody } from '../../core/commenting/comment-hooks'
+import { useDataThemeAttributeOnBody } from '../../core/commenting/comment-hooks'
 import { CollaborationStateUpdater } from './store/collaboration-state'
 import { GithubRepositoryCloneFlow } from '../github/github-repository-clone-flow'
 import { getPermissions } from './store/permissions'
+import { useIsLoggedIn } from '../../core/shared/multiplayer-hooks'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -230,8 +230,8 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
         ...handleKeyDown(
           event,
           editorStoreRef.current.editor,
-          editorStoreRef.current.projectServerState,
           editorStoreRef.current.userState.loginState,
+          editorStoreRef.current.projectServerState,
           metadataRef,
           navigatorTargetsRef,
           namesByKey,
@@ -362,8 +362,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     },
     [dispatch],
   )
-
-  const canComment = useCanComment()
 
   useSelectorWithCallback(
     Substores.userStateAndProjectServerState,
@@ -550,6 +548,8 @@ export function EditorComponent(props: EditorProps) {
     'EditorComponent forkedFromProjectId',
   )
 
+  const loggedIn = useIsLoggedIn()
+
   const dispatch = useDispatch()
 
   useDataThemeAttributeOnBody()
@@ -572,8 +572,9 @@ export function EditorComponent(props: EditorProps) {
           projectId={projectId}
           forkedFromProjectId={forkedFromProjectId}
           dispatch={dispatch}
+          loggedIn={loggedIn}
         >
-          <CollaborationStateUpdater projectId={projectId} dispatch={dispatch}>
+          <CollaborationStateUpdater projectId={projectId} dispatch={dispatch} loggedIn={loggedIn}>
             <EditorComponentInner {...props} />
           </CollaborationStateUpdater>
         </ProjectServerStateUpdater>

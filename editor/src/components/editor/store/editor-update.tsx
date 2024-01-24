@@ -9,6 +9,7 @@ import type {
   EditorAction,
   EditorDispatch,
   ExecutePostActionMenuChoice,
+  LoginState,
   StartPostActionSession,
   UpdateProjectServerState,
 } from '../action-types'
@@ -64,6 +65,7 @@ export function runLocalEditorAction(
 
 export function gatedActions<T>(
   action: EditorAction,
+  loginState: LoginState,
   serverState: ProjectServerState,
   editorState: EditorState,
   defaultValue: T,
@@ -88,7 +90,7 @@ export function gatedActions<T>(
       break
   }
 
-  const canEditProject = allowedToEditProject(serverState)
+  const canEditProject = allowedToEditProject(loginState, serverState)
 
   if (alwaysRun) {
     // If it should always run.

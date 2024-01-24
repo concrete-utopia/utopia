@@ -91,6 +91,7 @@ import { maybeClearPseudoInsertMode } from '../canvas-toolbar-states'
 import { isSteganographyEnabled } from '../../../core/shared/stegano-text'
 import { updateCollaborativeProjectContents } from './collaborative-editing'
 import { updateProjectServerStateInStore } from './project-server-state'
+import { ensureSceneIdsExist } from '../../../core/model/scene-utils'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -109,6 +110,7 @@ function processAction(
 ): EditorStoreUnpatched {
   return gatedActions(
     action,
+    editorStoreUnpatched.userState.loginState,
     editorStoreUnpatched.projectServerState,
     editorStoreUnpatched.unpatchedEditor,
     editorStoreUnpatched,
@@ -166,11 +168,6 @@ function processAction(
           userState: UPDATE_FNS.SET_CURRENT_THEME(action, working.userState),
         }
       } else if (action.action === 'SET_LOGIN_STATE') {
-        void updateProjectServerStateInStore(
-          editorStoreUnpatched.unpatchedEditor.id,
-          editorStoreUnpatched.unpatchedEditor.forkedFromProjectId,
-          dispatchEvent,
-        )
         return {
           ...working,
           userState: UPDATE_FNS.SET_LOGIN_STATE(action, working.userState),
@@ -710,7 +707,7 @@ export function editorDispatchClosingOut(
   }
 
   maybeCullElementPathCache(
-    storedState.unpatchedEditor.projectContents,
+    finalStoreV1Final.unpatchedEditor.projectContents,
     anyWorkerUpdates ? 'schedule-now' : 'dont-schedule',
   )
 
@@ -819,6 +816,7 @@ function editorDispatchInner(
   if (dispatchedActions.length > 0) {
     // Run everything in a big chain.
     let result = processActions(boundDispatch, storedState, dispatchedActions, spyCollector)
+    result.unpatchedEditor = ensureSceneIdsExist(result.unpatchedEditor)
 
     const anyUndoOrRedo = dispatchedActions.some(isUndoOrRedo)
 

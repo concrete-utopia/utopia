@@ -48,7 +48,7 @@ export function useDisplayOwnershipWarning(): void {
     Substores.fullStore,
     (store) => {
       return {
-        allowedToEdit: allowedToEditProject(store.projectServerState),
+        allowedToEdit: allowedToEditProject(store.userState.loginState, store.projectServerState),
         projectID: store.editor.id,
       }
     },

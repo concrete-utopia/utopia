@@ -106,7 +106,7 @@ import {
   treeToContents,
 } from '../assets'
 import { testStaticElementPath } from '../../core/shared/element-path.test-utils'
-import { createFakeMetadataForParseSuccess } from '../../utils/utils.test-utils'
+import { createFakeMetadataForParseSuccess, wait } from '../../utils/utils.test-utils'
 import {
   mergeWithPrevUndo,
   saveDOMReport,
@@ -146,7 +146,10 @@ import { carryDispatchResultFields } from './editor-dispatch-flow'
 import type { FeatureName } from '../../utils/feature-switches'
 import { setFeatureEnabled } from '../../utils/feature-switches'
 import { unpatchedCreateRemixDerivedDataMemo } from '../editor/store/remix-derived-data'
-import { emptyProjectServerState } from '../editor/store/project-server-state'
+import {
+  emptyProjectServerState,
+  getUpdateProjectServerStateInStoreRunCount,
+} from '../editor/store/project-server-state'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -626,6 +629,9 @@ label {
     </React.Profiler>,
   )
 
+  // Capture how many times the project server state update has been triggered.
+  const beforeLoadUpdateStoreRunCount = getUpdateProjectServerStateInStoreRunCount()
+
   await act(async () => {
     await new Promise<void>((resolve, reject) => {
       void load(
@@ -655,6 +661,15 @@ label {
       )
     })
   })
+
+  // Check that the project server state update has been triggered twice, which (currently at least)
+  // is the number of times that it runs as a result of the above logic. Once without a project ID and
+  // the second time with the project ID '0', which should then mean that it has stabilised and unless other
+  // changes occur the `UPDATE_PROJECT_SERVER_STATE` action shouldn't be triggered anymore after that.
+  while (getUpdateProjectServerStateInStoreRunCount() <= beforeLoadUpdateStoreRunCount + 1) {
+    // eslint-disable-next-line no-await-in-loop
+    await wait(1)
+  }
 
   return {
     dispatch: async (
