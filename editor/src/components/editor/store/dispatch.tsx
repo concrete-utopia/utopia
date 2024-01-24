@@ -91,7 +91,6 @@ import { maybeClearPseudoInsertMode } from '../canvas-toolbar-states'
 import { isSteganographyEnabled } from '../../../core/shared/stegano-text'
 import { updateCollaborativeProjectContents } from './collaborative-editing'
 import { updateProjectServerStateInStore } from './project-server-state'
-import { maintainComments } from '../../../core/commenting/comment-hooks'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -851,13 +850,6 @@ function editorDispatchInner(
 
     if (metadataChanged) {
       const { metadata, elementPathTree } = reconstructJSXMetadata(result.unpatchedEditor)
-
-      void maintainComments(
-        result.unpatchedEditor.id,
-        result.unpatchedEditor,
-        storedState.unpatchedEditor.jsxMetadata,
-      )
-
       // Cater for the strategies wiping out the metadata on completion.
       const storedStateHasEmptyElementPathTree = isEmptyObject(
         storedState.unpatchedEditor.elementPathTree,

@@ -3,7 +3,6 @@ import type { User } from '@liveblocks/client'
 import { LiveObject, type ThreadData } from '@liveblocks/client'
 import type { Presence, ThreadMetadata, UserMeta } from '../../../liveblocks.config'
 import {
-  liveblocksClient,
   useEditThreadMetadata,
   useMutation,
   useSelf,
@@ -11,35 +10,32 @@ import {
   useThreads,
 } from '../../../liveblocks.config'
 import { Substores, useEditorState } from '../../components/editor/store/store-hook'
-import {
-  normalizeMultiplayerName,
-  possiblyUniqueColor,
-  projectIdToRoomId,
-} from '../shared/multiplayer'
+import { normalizeMultiplayerName, possiblyUniqueColor } from '../shared/multiplayer'
 import { isLoggedIn } from '../../common/user'
 import type { CommentId, SceneCommentLocation } from '../../components/editor/editor-modes'
 import { assertNever } from '../shared/utils'
-import type { CanvasPoint } from '../shared/math-utils'
+import type {
+  CanvasPoint,
+  CanvasRectangle,
+  LocalPoint,
+  MaybeInfinityCanvasRectangle,
+} from '../shared/math-utils'
 import {
   canvasPoint,
   getCanvasPointWithCanvasOffset,
   isNotNullFiniteRectangle,
   localPoint,
-  zeroCanvasPoint,
+  nullIfInfinity,
 } from '../shared/math-utils'
 import { MetadataUtils } from '../model/element-metadata-utils'
 import { getIdOfScene } from '../../components/canvas/controls/comment-mode/comment-mode-hooks'
 import type { ElementPath } from '../shared/project-file-types'
-import {
-  type ElementInstanceMetadata,
-  type ElementInstanceMetadataMap,
-} from '../shared/element-template'
+import { type ElementInstanceMetadata } from '../shared/element-template'
 import * as EP from '../shared/element-path'
 import { getCurrentTheme } from '../../components/editor/store/editor-state'
 import { useMyUserId } from '../shared/multiplayer-hooks'
 import { usePermissions } from '../../components/editor/store/permissions'
 import { isFeatureEnabled } from '../../utils/feature-switches'
-import { getThreadOriginalLocationOnCanvas } from '../../components/canvas/controls/comment-indicator'
 
 export function useCanvasCommentThreadAndLocation(comment: CommentId): {
   location: CanvasPoint | null
@@ -404,61 +400,28 @@ export function useCanComment() {
   return isFeatureEnabled('Multiplayer') && canComment
 }
 
-export async function maintainComments(
-  projectId: string | null,
-  prevMetadata: ElementInstanceMetadataMap,
-  metadata: ElementInstanceMetadataMap,
-) {
-  if (projectId == null) {
-    return
+export function getThreadOriginalLocationOnCanvas(
+  thread: ThreadData<ThreadMetadata>,
+  startingSceneGlobalFrame: MaybeInfinityCanvasRectangle | null,
+): CanvasPoint {
+  const sceneId = thread.metadata.sceneId
+  const globalFrame = nullIfInfinity(startingSceneGlobalFrame)
+  if (sceneId == null || globalFrame == null) {
+    return canvasPoint(thread.metadata)
   }
-  const room = liveblocksClient.getRoom(projectIdToRoomId(projectId))
-  if (room == null) {
-    return
-  }
-  const prevSceneElements = MetadataUtils.getScenesMetadata(prevMetadata)
-  const sceneElements = MetadataUtils.getScenesMetadata(metadata)
 
-  const threads = await room.getThreads()
-  threads.forEach(async (t): Promise<void> => {
-    const sceneId = t.metadata.sceneId
-    if (sceneId == null) {
-      return
-    }
+  return canvasPositionOfThread(
+    globalFrame,
+    localPoint({ x: thread.metadata.sceneX!, y: thread.metadata.sceneY! }),
+  )
+}
 
-    const prevScene = prevSceneElements.find(
-      (s) => getIdOfScene(s) === sceneId || EP.toUid(s.elementPath) === sceneId,
-    )
-    if (prevScene == null) {
-      return
-    }
-    const scene = sceneElements.find(
-      (s) => getIdOfScene(s) === sceneId || EP.toUid(s.elementPath) === sceneId,
-    )
-
-    const prevGlobalFrame = prevScene.globalFrame
-    if (!isNotNullFiniteRectangle(prevGlobalFrame)) {
-      return
-    }
-
-    const globalFrame = scene?.globalFrame ?? null
-    if (!isNotNullFiniteRectangle(globalFrame)) {
-      return
-    }
-
-    if (prevGlobalFrame.x === globalFrame.x && prevGlobalFrame.y === globalFrame.y) {
-      // scene exists and the location did not change
-      return
-    }
-
-    const p = getThreadOriginalLocationOnCanvas(t, globalFrame)
-
-    await room.editThreadMetadata({
-      threadId: t.id,
-      metadata: {
-        x: p.x,
-        y: p.y,
-      },
-    })
+function canvasPositionOfThread(
+  sceneGlobalFrame: CanvasRectangle,
+  locationInScene: LocalPoint,
+): CanvasPoint {
+  return canvasPoint({
+    x: sceneGlobalFrame.x + locationInScene.x,
+    y: sceneGlobalFrame.y + locationInScene.y,
   })
 }

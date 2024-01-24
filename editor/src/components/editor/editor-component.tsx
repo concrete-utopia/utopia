@@ -72,6 +72,7 @@ import { useCanComment, useDataThemeAttributeOnBody } from '../../core/commentin
 import { CollaborationStateUpdater } from './store/collaboration-state'
 import { GithubRepositoryCloneFlow } from '../github/github-repository-clone-flow'
 import { getPermissions } from './store/permissions'
+import { CommentMaintainer } from '../../core/commenting/comment-maintainer'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -485,6 +486,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
         keyDown={onWindowKeyDown}
         keyUp={onWindowKeyUp}
       />
+      <CommentMaintainer />
     </>
   )
 })

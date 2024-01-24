@@ -7,24 +7,18 @@ import type { ThreadMetadata } from '../../../../liveblocks.config'
 import { useEditThreadMetadata, useStorage } from '../../../../liveblocks.config'
 import {
   getCollaboratorById,
+  getThreadOriginalLocationOnCanvas,
   useActiveThreads,
   useCanvasCommentThreadAndLocation,
   useCanvasLocationOfThread,
   useMyThreadReadStatus,
 } from '../../../core/commenting/comment-hooks'
-import type {
-  CanvasPoint,
-  CanvasRectangle,
-  LocalPoint,
-  MaybeInfinityCanvasRectangle,
-} from '../../../core/shared/math-utils'
+import type { CanvasPoint } from '../../../core/shared/math-utils'
 import {
   canvasPoint,
   distance,
   getLocalPointInNewParentContext,
   isNotNullFiniteRectangle,
-  localPoint,
-  nullIfInfinity,
   offsetPoint,
   pointDifference,
   windowPoint,
@@ -383,32 +377,6 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
   )
 })
 CommentIndicator.displayName = 'CommentIndicator'
-
-function canvasPositionOfThread(
-  sceneGlobalFrame: CanvasRectangle,
-  locationInScene: LocalPoint,
-): CanvasPoint {
-  return canvasPoint({
-    x: sceneGlobalFrame.x + locationInScene.x,
-    y: sceneGlobalFrame.y + locationInScene.y,
-  })
-}
-
-export function getThreadOriginalLocationOnCanvas(
-  thread: ThreadData<ThreadMetadata>,
-  startingSceneGlobalFrame: MaybeInfinityCanvasRectangle | null,
-): CanvasPoint {
-  const sceneId = thread.metadata.sceneId
-  const globalFrame = nullIfInfinity(startingSceneGlobalFrame)
-  if (sceneId == null || globalFrame == null) {
-    return canvasPoint(thread.metadata)
-  }
-
-  return canvasPositionOfThread(
-    globalFrame,
-    localPoint({ x: thread.metadata.sceneX!, y: thread.metadata.sceneY! }),
-  )
-}
 
 const COMMENT_DRAG_THRESHOLD = 5 // square px
 
