@@ -873,7 +873,7 @@ function setIdPropOnJSXElement(element: JSXElement, idPropValueToUse: string): J
   )
 
   if (IS_TEST_ENVIRONMENT || isLeft(updatedProps)) {
-    return element
+    return null
   }
   return { ...element, props: updatedProps.value }
 }
