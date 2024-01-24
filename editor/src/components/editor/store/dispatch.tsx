@@ -107,6 +107,7 @@ import {
 import * as PP from '../../../core/shared/property-path'
 import { setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
 import { isLeft } from '../../../core/shared/either'
+import { transformJSXComponentAtElementPathRecursively } from '../../../core/model/element-template-utils'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -814,40 +815,6 @@ function applyProjectChangesToEditor(
   }
 }
 
-function walkJSXElementChild(
-  element: JSXElementChild,
-  transform: (_: JSXElementChild) => JSXElementChild,
-): JSXElementChild {
-  switch (element.type) {
-    case 'ATTRIBUTE_FUNCTION_CALL':
-    case 'ATTRIBUTE_NESTED_ARRAY':
-    case 'ATTRIBUTE_NESTED_OBJECT':
-    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-    case 'ATTRIBUTE_VALUE':
-    case 'JSX_TEXT_BLOCK':
-      return element
-    case 'JSX_CONDITIONAL_EXPRESSION':
-      const whenTrue = transform(element.whenTrue)
-      const whenFalse = transform(element.whenTrue)
-      return transform({ ...element, whenTrue, whenFalse })
-    case 'JSX_FRAGMENT': {
-      const children = element.children.map((c) => transform(c))
-      return transform({ ...element, children })
-    }
-    case 'JSX_MAP_EXPRESSION':
-      let elementsWithin: ElementsWithin = {}
-      for (const [key, value] of Object.entries(element.elementsWithin)) {
-        elementsWithin[key] = transform(value) as JSXElement
-      }
-      return transform({ ...element, elementsWithin })
-    case 'JSX_ELEMENT':
-      const children = element.children.map((c) => transform(c))
-      return transform({ ...element, children })
-    default:
-      assertNever(element)
-  }
-}
-
 const IdPropName = 'id'
 
 function getIdPropFromJSXElement(element: JSXElement): string | null {
@@ -896,31 +863,34 @@ function ensureSceneIdsExist(editor: EditorState): EditorState {
         return e
       }
 
-      const nextRootElement = walkJSXElementChild(e.rootElement, (child) => {
-        const isConsideredScene =
-          isSceneAgainstImports(child, imports) || isRemixSceneAgainstImports(child, imports)
+      const nextRootElement = transformJSXComponentAtElementPathRecursively(
+        e.rootElement,
+        (child) => {
+          const isConsideredScene =
+            isSceneAgainstImports(child, imports) || isRemixSceneAgainstImports(child, imports)
 
-        if (child.type !== 'JSX_ELEMENT' || !isConsideredScene) {
-          return child
-        }
+          if (child.type !== 'JSX_ELEMENT' || !isConsideredScene) {
+            return child
+          }
 
-        const idPropValue = getIdPropFromJSXElement(child)
+          const idPropValue = getIdPropFromJSXElement(child)
 
-        if (idPropValue != null && !seenIdProps.has(idPropValue)) {
-          seenIdProps.add(idPropValue)
-          return child
-        }
+          if (idPropValue != null && !seenIdProps.has(idPropValue)) {
+            seenIdProps.add(idPropValue)
+            return child
+          }
 
-        const idPropValueToUse = child.uid
-        const updatedChild = setIdPropOnJSXElement(child, idPropValueToUse)
-        if (updatedChild == null) {
-          return child
-        }
+          const idPropValueToUse = child.uid
+          const updatedChild = setIdPropOnJSXElement(child, idPropValueToUse)
+          if (updatedChild == null) {
+            return child
+          }
 
-        seenIdProps.add(idPropValueToUse)
-        anyIdPropUpdated = true
-        return updatedChild
-      })
+          seenIdProps.add(idPropValueToUse)
+          anyIdPropUpdated = true
+          return updatedChild
+        },
+      )
 
       return { ...e, rootElement: nextRootElement }
     },
