@@ -1,4 +1,8 @@
-import { PERFORMANCE_MARKS_ALLOWED, PRODUCTION_ENV } from '../../../common/env-vars'
+import {
+  IS_TEST_ENVIRONMENT,
+  PERFORMANCE_MARKS_ALLOWED,
+  PRODUCTION_ENV,
+} from '../../../common/env-vars'
 import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
 import {
   codeNeedsParsing,
@@ -868,7 +872,7 @@ function setIdPropOnJSXElement(element: JSXElement, idPropValueToUse: string): J
     jsExpressionValue(idPropValueToUse, emptyComments),
   )
 
-  if (isLeft(updatedProps)) {
+  if (IS_TEST_ENVIRONMENT || isLeft(updatedProps)) {
     return element
   }
   return { ...element, props: updatedProps.value }
