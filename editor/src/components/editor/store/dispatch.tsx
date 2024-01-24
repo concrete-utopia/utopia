@@ -107,7 +107,7 @@ import {
 import * as PP from '../../../core/shared/property-path'
 import { setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
 import { isLeft } from '../../../core/shared/either'
-import { transformJSXElementChildrenRecursively } from '../../../core/model/element-template-utils'
+import { transformJSXElementChildRecursively } from '../../../core/model/element-template-utils'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -863,7 +863,7 @@ function ensureSceneIdsExist(editor: EditorState): EditorState {
         return e
       }
 
-      const nextRootElement = transformJSXElementChildrenRecursively(e.rootElement, (child) => {
+      const nextRootElement = transformJSXElementChildRecursively(e.rootElement, (child) => {
         const isConsideredScene =
           isSceneAgainstImports(child, imports) || isRemixSceneAgainstImports(child, imports)
 
