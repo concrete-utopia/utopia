@@ -1,5 +1,5 @@
 import { IS_TEST_ENVIRONMENT, PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
-import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
+import type { TextFile } from '../../../core/shared/project-file-types'
 import {
   codeNeedsParsing,
   codeNeedsPrinting,
@@ -41,6 +41,7 @@ import type {
   EditorStoreUnpatched,
 } from './editor-state'
 import {
+  StoryboardFilePath,
   deriveState,
   persistentModelFromEditorModel,
   reconstructJSXMetadata,
@@ -57,7 +58,7 @@ import {
 import { assertNever, isBrowserEnvironment } from '../../../core/shared/utils'
 import type { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import type { ProjectContentTreeRoot } from '../../assets'
-import { transformContentsTree, treeToContents, walkContentsTree } from '../../assets'
+import { addFileToProjectContents, getContentsTreeFromPath, treeToContents } from '../../assets'
 import { isSendPreviewModel, restoreDerivedState, UPDATE_FNS } from '../actions/actions'
 import { getTransitiveReverseDependencies } from '../../../core/shared/project-contents-dependencies'
 import {
@@ -875,21 +876,22 @@ function setIdPropOnJSXElement(element: JSXElement, idPropValueToUse: string): J
 }
 
 function ensureSceneIdsExist(editor: EditorState): EditorState {
+  const storyboardFile = getContentsTreeFromPath(editor.projectContents, StoryboardFilePath)
+  if (
+    storyboardFile == null ||
+    storyboardFile.type !== 'PROJECT_CONTENT_FILE' ||
+    storyboardFile.content.type !== 'TEXT_FILE' ||
+    storyboardFile.content.fileContents.parsed.type !== 'PARSE_SUCCESS'
+  ) {
+    return editor
+  }
+
   let seenIdProps: Set<string> = new Set()
   let anyIdPropUpdated = false
+  const imports = storyboardFile.content.fileContents.parsed.imports
 
-  const nextProjectContents = transformContentsTree(editor.projectContents, (tree) => {
-    if (
-      tree.type !== 'PROJECT_CONTENT_FILE' ||
-      tree.content.type !== 'TEXT_FILE' ||
-      tree.content.fileContents.parsed.type !== 'PARSE_SUCCESS'
-    ) {
-      return tree
-    }
-
-    const imports = tree.content.fileContents.parsed.imports
-
-    const nextToplevelElements = tree.content.fileContents.parsed.topLevelElements.map((e) => {
+  const nextToplevelElements = storyboardFile.content.fileContents.parsed.topLevelElements.map(
+    (e) => {
       if (e.type !== 'UTOPIA_JSX_COMPONENT') {
         return e
       }
@@ -921,24 +923,29 @@ function ensureSceneIdsExist(editor: EditorState): EditorState {
       })
 
       return { ...e, rootElement: nextRootElement }
-    })
-
-    return {
-      ...tree,
-      content: {
-        ...tree.content,
-        fileContents: {
-          ...tree.content.fileContents,
-          parsed: { ...tree.content.fileContents.parsed, topLevelElements: nextToplevelElements },
-        },
-      },
-    }
-  })
+    },
+  )
 
   if (!anyIdPropUpdated) {
     return editor
   }
 
+  const nextStoryboardFile: TextFile = {
+    ...storyboardFile.content,
+    fileContents: {
+      ...storyboardFile.content.fileContents,
+      parsed: {
+        ...storyboardFile.content.fileContents.parsed,
+        topLevelElements: nextToplevelElements,
+      },
+    },
+  }
+
+  const nextProjectContents = addFileToProjectContents(
+    editor.projectContents,
+    StoryboardFilePath,
+    nextStoryboardFile,
+  )
   return { ...editor, projectContents: nextProjectContents }
 }
 
