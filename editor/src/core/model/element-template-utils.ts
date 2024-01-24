@@ -141,7 +141,7 @@ export function transformJSXComponentAtPath(
     : transformJSXComponentAtElementPath(components, lastElementPathPart, transform)
 }
 
-export function transformJSXComponentAtElementPathRecursively(
+export function transformJSXElementChildrenRecursively(
   element: JSXElementChild,
   transform: (_: JSXElementChild) => JSXElementChild,
 ): JSXElementChild {

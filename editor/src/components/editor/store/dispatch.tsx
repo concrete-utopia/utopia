@@ -107,7 +107,7 @@ import {
 import * as PP from '../../../core/shared/property-path'
 import { setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
 import { isLeft } from '../../../core/shared/either'
-import { transformJSXComponentAtElementPathRecursively } from '../../../core/model/element-template-utils'
+import { transformJSXElementChildrenRecursively } from '../../../core/model/element-template-utils'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -863,34 +863,31 @@ function ensureSceneIdsExist(editor: EditorState): EditorState {
         return e
       }
 
-      const nextRootElement = transformJSXComponentAtElementPathRecursively(
-        e.rootElement,
-        (child) => {
-          const isConsideredScene =
-            isSceneAgainstImports(child, imports) || isRemixSceneAgainstImports(child, imports)
+      const nextRootElement = transformJSXElementChildrenRecursively(e.rootElement, (child) => {
+        const isConsideredScene =
+          isSceneAgainstImports(child, imports) || isRemixSceneAgainstImports(child, imports)
 
-          if (child.type !== 'JSX_ELEMENT' || !isConsideredScene) {
-            return child
-          }
+        if (child.type !== 'JSX_ELEMENT' || !isConsideredScene) {
+          return child
+        }
 
-          const idPropValue = getIdPropFromJSXElement(child)
+        const idPropValue = getIdPropFromJSXElement(child)
 
-          if (idPropValue != null && !seenIdProps.has(idPropValue)) {
-            seenIdProps.add(idPropValue)
-            return child
-          }
+        if (idPropValue != null && !seenIdProps.has(idPropValue)) {
+          seenIdProps.add(idPropValue)
+          return child
+        }
 
-          const idPropValueToUse = child.uid
-          const updatedChild = setIdPropOnJSXElement(child, idPropValueToUse)
-          if (updatedChild == null) {
-            return child
-          }
+        const idPropValueToUse = child.uid
+        const updatedChild = setIdPropOnJSXElement(child, idPropValueToUse)
+        if (updatedChild == null) {
+          return child
+        }
 
-          seenIdProps.add(idPropValueToUse)
-          anyIdPropUpdated = true
-          return updatedChild
-        },
-      )
+        seenIdProps.add(idPropValueToUse)
+        anyIdPropUpdated = true
+        return updatedChild
+      })
 
       return { ...e, rootElement: nextRootElement }
     },
