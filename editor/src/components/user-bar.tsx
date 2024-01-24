@@ -10,7 +10,6 @@ import type { FollowTarget, MultiplayerColor } from '../core/shared/multiplayer'
 import {
   canFollowTarget,
   followTarget,
-  isDefaultAuth0AvatarURL,
   multiplayerColorFromIndex,
   multiplayerInitialsFromName,
   normalizeMultiplayerName,
@@ -335,9 +334,7 @@ export type MultiplayerAvatarProps = {
 }
 
 export const MultiplayerAvatar = React.memo((props: MultiplayerAvatarProps) => {
-  const picture = React.useMemo(() => {
-    return isDefaultAuth0AvatarURL(props.picture ?? null) ? null : props.picture
-  }, [props.picture])
+  const { picture } = props
 
   const tooltipText = <strong>{props.tooltip?.text}</strong>
   const tooltipSubtext =
@@ -432,9 +429,7 @@ interface AvatarPictureProps {
 }
 
 const AvatarPicture = React.memo((props: AvatarPictureProps) => {
-  const url = React.useMemo(() => {
-    return isDefaultAuth0AvatarURL(props.url ?? null) ? null : props.url
-  }, [props.url])
+  const { url } = props
 
   const { initials, size } = props
 
