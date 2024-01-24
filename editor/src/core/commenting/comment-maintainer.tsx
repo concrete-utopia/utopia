@@ -1,6 +1,6 @@
 import React from 'react'
 import { MultiplayerWrapper } from '../../utils/multiplayer-wrapper'
-import { getThreadOriginalLocationOnCanvas, useScenes } from './comment-hooks'
+import { getThreadLocationOnCanvas, useScenes } from './comment-hooks'
 import { useEditThreadMetadata, useThreads } from '../../../liveblocks.config'
 import { getIdOfScene } from '../../components/canvas/controls/comment-mode/comment-mode-hooks'
 import * as EP from '../shared/element-path'
@@ -42,7 +42,7 @@ function useMaintainComments() {
       return
     }
 
-    const p = getThreadOriginalLocationOnCanvas(t, globalFrame)
+    const p = getThreadLocationOnCanvas(t, globalFrame)
     if (p.x === t.metadata.x && p.y === t.metadata.y) {
       return
     }

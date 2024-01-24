@@ -7,7 +7,7 @@ import type { ThreadMetadata } from '../../../../liveblocks.config'
 import { useEditThreadMetadata, useStorage } from '../../../../liveblocks.config'
 import {
   getCollaboratorById,
-  getThreadOriginalLocationOnCanvas,
+  getThreadLocationOnCanvas,
   useActiveThreads,
   useCanvasCommentThreadAndLocation,
   useCanvasLocationOfThread,
@@ -412,7 +412,7 @@ function useDragging(
         scenesRef.current,
       )
 
-      const originalThreadPosition = getThreadOriginalLocationOnCanvas(
+      const originalThreadPosition = getThreadLocationOnCanvas(
         thread,
         maybeStartingSceneUnderPoint?.globalFrame ?? null,
       )

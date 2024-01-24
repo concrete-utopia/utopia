@@ -1,7 +1,12 @@
 import React from 'react'
 import type { User } from '@liveblocks/client'
 import { LiveObject, type ThreadData } from '@liveblocks/client'
-import type { Presence, ThreadMetadata, UserMeta } from '../../../liveblocks.config'
+import type {
+  Presence,
+  SceneThreadMetadata,
+  ThreadMetadata,
+  UserMeta,
+} from '../../../liveblocks.config'
 import {
   isSceneThreadMetadata,
   useEditThreadMetadata,
@@ -93,10 +98,7 @@ export function useCanvasCommentThreadAndLocation(comment: CommentId): {
         if (!isNotNullFiniteRectangle(scene.globalFrame)) {
           return canvasPoint(thread.metadata)
         }
-        return getCanvasPointWithCanvasOffset(
-          scene.globalFrame,
-          localPoint({ x: thread.metadata.sceneX, y: thread.metadata.sceneY }),
-        )
+        return getCanvasPointWithCanvasOffset(scene.globalFrame, positionInScene(thread.metadata))
 
       default:
         assertNever(comment)
@@ -228,10 +230,7 @@ export function useCanvasLocationOfThread(thread: ThreadData<ThreadMetadata>): {
     return { location: canvasPoint(thread.metadata), scene: null }
   }
   return {
-    location: getCanvasPointWithCanvasOffset(
-      scene.globalFrame,
-      localPoint({ x: thread.metadata.sceneX, y: thread.metadata.sceneY }),
-    ),
+    location: getCanvasPointWithCanvasOffset(scene.globalFrame, positionInScene(thread.metadata)),
     scene: scene.elementPath,
   }
 }
@@ -402,7 +401,7 @@ export function useCanComment() {
   return isFeatureEnabled('Multiplayer') && canComment
 }
 
-export function getThreadOriginalLocationOnCanvas(
+export function getThreadLocationOnCanvas(
   thread: ThreadData<ThreadMetadata>,
   startingSceneGlobalFrame: MaybeInfinityCanvasRectangle | null,
 ): CanvasPoint {
@@ -411,10 +410,7 @@ export function getThreadOriginalLocationOnCanvas(
     return canvasPoint(thread.metadata)
   }
 
-  return canvasPositionOfThread(
-    globalFrame,
-    localPoint({ x: thread.metadata.sceneX, y: thread.metadata.sceneY }),
-  )
+  return canvasPositionOfThread(globalFrame, positionInScene(thread.metadata))
 }
 
 function canvasPositionOfThread(
@@ -425,4 +421,8 @@ function canvasPositionOfThread(
     x: sceneGlobalFrame.x + locationInScene.x,
     y: sceneGlobalFrame.y + locationInScene.y,
   })
+}
+
+export function positionInScene(metadata: SceneThreadMetadata): LocalPoint {
+  return localPoint({ x: metadata.sceneX, y: metadata.sceneY })
 }
