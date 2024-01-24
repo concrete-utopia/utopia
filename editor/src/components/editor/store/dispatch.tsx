@@ -1,8 +1,4 @@
-import {
-  IS_TEST_ENVIRONMENT,
-  PERFORMANCE_MARKS_ALLOWED,
-  PRODUCTION_ENV,
-} from '../../../common/env-vars'
+import { IS_TEST_ENVIRONMENT, PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
 import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
 import {
   codeNeedsParsing,
@@ -58,12 +54,7 @@ import {
   runLocalEditorAction,
   runUpdateProjectServerState,
 } from './editor-update'
-import {
-  assertNever,
-  fastForEach,
-  identity,
-  isBrowserEnvironment,
-} from '../../../core/shared/utils'
+import { assertNever, isBrowserEnvironment } from '../../../core/shared/utils'
 import type { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import type { ProjectContentTreeRoot } from '../../assets'
 import { transformContentsTree, treeToContents, walkContentsTree } from '../../assets'
@@ -932,7 +923,6 @@ function ensureSceneIdsExist(editor: EditorState): EditorState {
       return { ...e, rootElement: nextRootElement }
     })
 
-    // TODO: optic
     return {
       ...tree,
       content: {
