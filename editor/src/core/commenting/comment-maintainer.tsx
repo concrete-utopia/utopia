@@ -1,12 +1,18 @@
 import React from 'react'
 import { MultiplayerWrapper } from '../../utils/multiplayer-wrapper'
-import { getThreadLocationOnCanvas, useScenes } from './comment-hooks'
+import { getThreadLocationOnCanvas, useCanComment, useScenes } from './comment-hooks'
 import { useEditThreadMetadata, useThreads } from '../../../liveblocks.config'
 import { getIdOfScene } from '../../components/canvas/controls/comment-mode/comment-mode-hooks'
 import * as EP from '../shared/element-path'
 import { isNotNullFiniteRectangle } from '../shared/math-utils'
 
 export const CommentMaintainer = React.memo(() => {
+  const canComment = useCanComment()
+
+  if (!canComment) {
+    return null
+  }
+
   return (
     <MultiplayerWrapper errorFallback={null} suspenseFallback={null}>
       <CommentMaintainerInner />

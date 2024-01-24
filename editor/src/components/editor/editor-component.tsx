@@ -67,8 +67,7 @@ import type { Storage, Presence, RoomEvent, UserMeta } from '../../../liveblocks
 import LiveblocksProvider from '@liveblocks/yjs'
 import { isRoomId, projectIdToRoomId } from '../../core/shared/multiplayer'
 import { EditorModes } from './editor-modes'
-import { checkIsMyProject } from './store/collaborative-editing'
-import { useCanComment, useDataThemeAttributeOnBody } from '../../core/commenting/comment-hooks'
+import { useDataThemeAttributeOnBody } from '../../core/commenting/comment-hooks'
 import { CollaborationStateUpdater } from './store/collaboration-state'
 import { GithubRepositoryCloneFlow } from '../github/github-repository-clone-flow'
 import { getPermissions } from './store/permissions'
@@ -363,8 +362,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     },
     [dispatch],
   )
-
-  const canComment = useCanComment()
 
   useSelectorWithCallback(
     Substores.userStateAndProjectServerState,
