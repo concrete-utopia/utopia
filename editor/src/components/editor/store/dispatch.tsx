@@ -91,7 +91,7 @@ import { maybeClearPseudoInsertMode } from '../canvas-toolbar-states'
 import { isSteganographyEnabled } from '../../../core/shared/stegano-text'
 import { updateCollaborativeProjectContents } from './collaborative-editing'
 import { updateProjectServerStateInStore } from './project-server-state'
-import { ensureSceneIdsExist } from '../../../core/model/scene-utils'
+import { ensureSceneIdsExist } from '../../../core/model/scene-id-utils'
 
 type DispatchResultFields = {
   nothingChanged: boolean

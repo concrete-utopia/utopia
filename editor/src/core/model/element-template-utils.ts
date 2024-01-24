@@ -141,40 +141,6 @@ export function transformJSXComponentAtPath(
     : transformJSXComponentAtElementPath(components, lastElementPathPart, transform)
 }
 
-export function transformJSXElementChildRecursively(
-  element: JSXElementChild,
-  transform: (_: JSXElementChild) => JSXElementChild,
-): JSXElementChild {
-  switch (element.type) {
-    case 'ATTRIBUTE_FUNCTION_CALL':
-    case 'ATTRIBUTE_NESTED_ARRAY':
-    case 'ATTRIBUTE_NESTED_OBJECT':
-    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-    case 'ATTRIBUTE_VALUE':
-    case 'JSX_TEXT_BLOCK':
-      return element
-    case 'JSX_CONDITIONAL_EXPRESSION':
-      const whenTrue = transform(element.whenTrue)
-      const whenFalse = transform(element.whenTrue)
-      return transform({ ...element, whenTrue, whenFalse })
-    case 'JSX_FRAGMENT': {
-      const children = element.children.map((c) => transform(c))
-      return transform({ ...element, children })
-    }
-    case 'JSX_MAP_EXPRESSION':
-      let elementsWithin: ElementsWithin = {}
-      for (const [key, value] of Object.entries(element.elementsWithin)) {
-        elementsWithin[key] = transform(value) as JSXElement
-      }
-      return transform({ ...element, elementsWithin })
-    case 'JSX_ELEMENT':
-      const children = element.children.map((c) => transform(c))
-      return transform({ ...element, children })
-    default:
-      assertNever(element)
-  }
-}
-
 export function transformJSXComponentAtElementPath(
   components: Array<UtopiaJSXComponent>,
   path: StaticElementPathPart,
