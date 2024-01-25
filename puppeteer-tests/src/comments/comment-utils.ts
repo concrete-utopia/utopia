@@ -10,7 +10,7 @@ const BASE_URL = process.env.BASE_URL ?? 'http://localhost:8000'
 export async function getElementWithSelector(
   page: Page,
   selector: string,
-): Promise<ElementHandle<Element> | null> {
+): Promise<ElementHandle<Element>> {
   console.info('waiting for element with selector', selector)
   const element = await page.waitForSelector(selector)
   return element!
