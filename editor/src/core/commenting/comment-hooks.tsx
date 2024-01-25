@@ -1,8 +1,15 @@
 import React from 'react'
 import type { User } from '@liveblocks/client'
 import { LiveObject, type ThreadData } from '@liveblocks/client'
-import type { ConnectionInfo, Presence, ThreadMetadata, UserMeta } from '../../../liveblocks.config'
+import type {
+  ConnectionInfo,
+  Presence,
+  SceneThreadMetadata,
+  ThreadMetadata,
+  UserMeta,
+} from '../../../liveblocks.config'
 import {
+  isSceneThreadMetadata,
   useEditThreadMetadata,
   useMutation,
   useSelf,
@@ -10,22 +17,27 @@ import {
   useThreads,
 } from '../../../liveblocks.config'
 import { Substores, useEditorState } from '../../components/editor/store/store-hook'
-import { normalizeMultiplayerName, possiblyUniqueColor } from '../shared/multiplayer'
+import { normalizeMultiplayerName } from '../shared/multiplayer'
 import { isLoggedIn } from '../../common/user'
 import type { CommentId, SceneCommentLocation } from '../../components/editor/editor-modes'
 import { assertNever } from '../shared/utils'
-import type { CanvasPoint } from '../shared/math-utils'
+import type {
+  CanvasPoint,
+  CanvasRectangle,
+  LocalPoint,
+  MaybeInfinityCanvasRectangle,
+} from '../shared/math-utils'
 import {
   canvasPoint,
   getCanvasPointWithCanvasOffset,
   isNotNullFiniteRectangle,
   localPoint,
-  zeroCanvasPoint,
+  nullIfInfinity,
 } from '../shared/math-utils'
 import { MetadataUtils } from '../model/element-metadata-utils'
 import { getIdOfScene } from '../../components/canvas/controls/comment-mode/comment-mode-hooks'
 import type { ElementPath } from '../shared/project-file-types'
-import type { ElementInstanceMetadata } from '../shared/element-template'
+import { type ElementInstanceMetadata } from '../shared/element-template'
 import * as EP from '../shared/element-path'
 import { getCurrentTheme } from '../../components/editor/store/editor-state'
 import { useMyUserId } from '../shared/multiplayer-hooks'
@@ -67,7 +79,7 @@ export function useCanvasCommentThreadAndLocation(comment: CommentId): {
             })
 
             if (scene == null || !isNotNullFiniteRectangle(scene.globalFrame)) {
-              return getCanvasPointWithCanvasOffset(zeroCanvasPoint, comment.location.offset)
+              return comment.location.position
             }
             return getCanvasPointWithCanvasOffset(scene.globalFrame, comment.location.offset)
           default:
@@ -78,18 +90,20 @@ export function useCanvasCommentThreadAndLocation(comment: CommentId): {
         if (thread == null) {
           return null
         }
-        if (thread.metadata.sceneId == null) {
-          return canvasPoint(thread.metadata)
+
+        const { metadata } = thread
+        if (!isSceneThreadMetadata(metadata)) {
+          return canvasPoint(metadata)
         }
-        const scene = scenes.find((s) => getIdOfScene(s) === thread.metadata.sceneId)
+        const scene = scenes.find((s) => getIdOfScene(s) === metadata.sceneId)
 
         if (scene == null) {
           return canvasPoint(thread.metadata)
         }
         if (!isNotNullFiniteRectangle(scene.globalFrame)) {
-          return canvasPoint(thread.metadata)
+          return canvasPoint(metadata)
         }
-        return getCanvasPointWithCanvasOffset(scene.globalFrame, localPoint(thread.metadata))
+        return getCanvasPointWithCanvasOffset(scene.globalFrame, positionInScene(metadata))
 
       default:
         assertNever(comment)
@@ -261,16 +275,17 @@ export function useCanvasLocationOfThread(thread: ThreadData<ThreadMetadata>): {
 } {
   const scenes = useScenesWithId()
 
-  if (thread.metadata.sceneId == null) {
-    return { location: canvasPoint(thread.metadata), scene: null }
+  const { metadata } = thread
+  if (!isSceneThreadMetadata(metadata)) {
+    return { location: canvasPoint(metadata), scene: null }
   }
-  const scene = scenes.find((s) => getIdOfScene(s) === thread.metadata.sceneId)
+  const scene = scenes.find((s) => getIdOfScene(s) === metadata.sceneId)
 
   if (scene == null || !isNotNullFiniteRectangle(scene.globalFrame)) {
-    return { location: canvasPoint(thread.metadata), scene: null }
+    return { location: canvasPoint(metadata), scene: null }
   }
   return {
-    location: getCanvasPointWithCanvasOffset(scene.globalFrame, localPoint(thread.metadata)),
+    location: getCanvasPointWithCanvasOffset(scene.globalFrame, positionInScene(metadata)),
     scene: scene.elementPath,
   }
 }
@@ -439,4 +454,30 @@ export function useCanComment() {
   const canComment = usePermissions().comment
 
   return isFeatureEnabled('Multiplayer') && canComment
+}
+
+export function getThreadLocationOnCanvas(
+  thread: ThreadData<ThreadMetadata>,
+  startingSceneGlobalFrame: MaybeInfinityCanvasRectangle | null,
+): CanvasPoint {
+  const globalFrame = nullIfInfinity(startingSceneGlobalFrame)
+  if (!isSceneThreadMetadata(thread.metadata) || globalFrame == null) {
+    return canvasPoint(thread.metadata)
+  }
+
+  return canvasPositionOfThread(globalFrame, positionInScene(thread.metadata))
+}
+
+function canvasPositionOfThread(
+  sceneGlobalFrame: CanvasRectangle,
+  locationInScene: LocalPoint,
+): CanvasPoint {
+  return canvasPoint({
+    x: sceneGlobalFrame.x + locationInScene.x,
+    y: sceneGlobalFrame.y + locationInScene.y,
+  })
+}
+
+export function positionInScene(metadata: SceneThreadMetadata): LocalPoint {
+  return localPoint({ x: metadata.sceneX, y: metadata.sceneY })
 }

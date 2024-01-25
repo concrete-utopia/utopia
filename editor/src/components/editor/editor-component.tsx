@@ -71,6 +71,7 @@ import { useDataThemeAttributeOnBody } from '../../core/commenting/comment-hooks
 import { CollaborationStateUpdater } from './store/collaboration-state'
 import { GithubRepositoryCloneFlow } from '../github/github-repository-clone-flow'
 import { getPermissions } from './store/permissions'
+import { CommentMaintainer } from '../../core/commenting/comment-maintainer'
 import { useIsLoggedIn } from '../../core/shared/multiplayer-hooks'
 
 const liveModeToastId = 'play-mode-toast'
@@ -483,6 +484,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
         keyDown={onWindowKeyDown}
         keyUp={onWindowKeyUp}
       />
+      <CommentMaintainer />
     </>
   )
 })

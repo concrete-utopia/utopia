@@ -329,5 +329,62 @@ describe('Comments test', () => {
         )
       },
       TIMEOUT,
+    ),
+    it(
+      'scene comment canvas coordinates are maintained when scene is moved',
+      async () => {
+        const page = await initSignedInBrowserTest(utopiaBrowser)
+        await enterCommentMode(page)
+
+        const playgroundSceneBoundingBox = roundBoundingBox(
+          await getBoundingBox(page, PlaygroundSceneSelector),
+        )
+
+        // Add a scene comment
+        await placeCommentOnCanvas(
+          page,
+          'hello comments',
+          playgroundSceneBoundingBox.x + 100,
+          playgroundSceneBoundingBox.y + 100,
+        )
+
+        // Leave comment mode by pressing ESC twice
+        await page.keyboard.press('Escape')
+        await page.keyboard.press('Escape')
+
+        const sceneToolBarBoundingBox = roundBoundingBox(
+          await getBoundingBox(page, SceneToolbarSelector),
+        )
+        const sceneToolBarCenter = roundPoint(center(sceneToolBarBoundingBox))
+
+        // move the scene, the comment indicator should move with the scene
+        await drag(
+          page,
+          sceneToolBarCenter,
+          offsetPoint(sceneToolBarCenter, { offsetX: 50, offsetY: 50 }),
+        )
+
+        const movedSceneBoundingBox = roundBoundingBox(
+          await getBoundingBox(page, SceneToolbarSelector),
+        )
+        const movedSceneBoundingBoxCenter = roundPoint(center(movedSceneBoundingBox))
+
+        await page.mouse.click(movedSceneBoundingBoxCenter.x, movedSceneBoundingBoxCenter.y)
+
+        const commentBoundingBoxBackOnCanvasBeforeDelete = roundBoundingBox(
+          await getBoundingBox(page, CommentIndicatorSelector),
+        )
+        // delete the scene
+        await page.keyboard.press('Backspace')
+
+        const commentBoundingBoxBackOnCanvasAfterDelete = roundBoundingBox(
+          await getBoundingBox(page, CommentIndicatorSelector),
+        )
+        // the comment indicator should not move on the canvas
+        expect(commentBoundingBoxBackOnCanvasAfterDelete).toEqual(
+          commentBoundingBoxBackOnCanvasBeforeDelete,
+        )
+      },
+      TIMEOUT,
     )
 })

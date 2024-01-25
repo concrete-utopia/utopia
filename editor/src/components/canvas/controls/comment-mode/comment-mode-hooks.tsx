@@ -103,7 +103,7 @@ export function useCommentModeSelectAndHover(comment: CommentId | null): MouseCa
           setHighlightedView(scene.elementPath),
           switchEditorMode(
             EditorModes.commentMode(
-              newComment(sceneCommentLocation(sceneIdToUse, offset)),
+              newComment(sceneCommentLocation(sceneIdToUse, offset, loc.canvasPositionRounded)),
               'not-dragging',
             ),
           ),

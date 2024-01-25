@@ -8,24 +8,18 @@ import type { ThreadMetadata, UserMeta } from '../../../../liveblocks.config'
 import { useEditThreadMetadata, useStorage } from '../../../../liveblocks.config'
 import {
   getCollaboratorById,
+  getThreadLocationOnCanvas,
   useActiveThreads,
   useCanvasCommentThreadAndLocation,
   useCanvasLocationOfThread,
   useMyThreadReadStatus,
 } from '../../../core/commenting/comment-hooks'
-import type {
-  CanvasPoint,
-  CanvasRectangle,
-  LocalPoint,
-  MaybeInfinityCanvasRectangle,
-} from '../../../core/shared/math-utils'
+import type { CanvasPoint } from '../../../core/shared/math-utils'
 import {
   canvasPoint,
   distance,
   getLocalPointInNewParentContext,
   isNotNullFiniteRectangle,
-  localPoint,
-  nullIfInfinity,
   offsetPoint,
   pointDifference,
   windowPoint,
@@ -369,36 +363,6 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
 })
 CommentIndicator.displayName = 'CommentIndicator'
 
-function canvasPositionOfThread(
-  sceneGlobalFrame: CanvasRectangle,
-  locationInScene: LocalPoint,
-): CanvasPoint {
-  return canvasPoint({
-    x: sceneGlobalFrame.x + locationInScene.x,
-    y: sceneGlobalFrame.y + locationInScene.y,
-  })
-}
-
-function getThreadOriginalLocationOnCanvas(
-  thread: ThreadData<ThreadMetadata>,
-  startingSceneGlobalFrame: MaybeInfinityCanvasRectangle | null,
-): CanvasPoint {
-  const sceneId = thread.metadata.sceneId
-  if (sceneId == null) {
-    return canvasPoint({ x: thread.metadata.x, y: thread.metadata.y })
-  }
-
-  const globalFrame = nullIfInfinity(startingSceneGlobalFrame)
-  if (globalFrame == null) {
-    throw new Error('Found thread attached to scene with invalid global frame')
-  }
-
-  return canvasPositionOfThread(
-    globalFrame,
-    localPoint({ x: thread.metadata.x, y: thread.metadata.y }),
-  )
-}
-
 const COMMENT_DRAG_THRESHOLD = 5 // square px
 
 function useDragging(
@@ -433,7 +397,7 @@ function useDragging(
         scenesRef.current,
       )
 
-      const originalThreadPosition = getThreadOriginalLocationOnCanvas(
+      const originalThreadPosition = getThreadLocationOnCanvas(
         thread,
         maybeStartingSceneUnderPoint?.globalFrame ?? null,
       )
@@ -519,9 +483,11 @@ function useDragging(
         editThreadMetadata({
           threadId: thread.id,
           metadata: {
-            x: localPointInScene.x,
-            y: localPointInScene.y,
+            sceneX: localPointInScene.x,
+            sceneY: localPointInScene.y,
             sceneId: sceneIdToUse,
+            x: newPositionOnCanvas.x,
+            y: newPositionOnCanvas.y,
             remixLocationRoute: remixRoute != null ? remixRoute.location.pathname : undefined,
           },
         })
