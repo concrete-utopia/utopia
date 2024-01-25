@@ -97,18 +97,17 @@ export type RoomEvent = ControlChangedRoomEvent
 // each thread. Can only contain booleans, strings, and numbers.
 export type ThreadMetadata = CanvasThreadMetadata | SceneThreadMetadata
 
-export type SceneThreadMetadata = BaseThreadMetadata & {
-  type: 'scene'
+export type SceneThreadMetadata = {
+  x: number
+  y: number
   sceneId: string
   sceneX: number
   sceneY: number
+  remixLocationRoute?: string
+  resolved: boolean
 }
 
-export type CanvasThreadMetadata = BaseThreadMetadata & {
-  type: 'canvas'
-}
-
-type BaseThreadMetadata = {
+export type CanvasThreadMetadata = {
   x: number
   y: number
   remixLocationRoute?: string
@@ -116,7 +115,7 @@ type BaseThreadMetadata = {
 }
 
 export function isSceneThreadMetadata(metadata: ThreadMetadata): metadata is SceneThreadMetadata {
-  return metadata.type === 'scene'
+  return metadata.hasOwnProperty('sceneId')
 }
 
 export const {
