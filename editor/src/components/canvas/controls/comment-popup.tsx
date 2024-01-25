@@ -46,6 +46,7 @@ import { RemixNavigationAtom } from '../remix/utopia-remix-root-component'
 import { getIdOfScene } from './comment-mode/comment-mode-hooks'
 import { motion, useAnimation } from 'framer-motion'
 import type { EditorDispatch } from '../../editor/action-types'
+import { SceneCommentIdPropName } from '../../../core/model/scene-id-utils'
 
 export const ComposerEditorClassName = 'lb-composer-editor'
 
@@ -175,7 +176,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
                 : [
                     setProp_UNSAFE(
                       scene.elementPath,
-                      create('id'),
+                      create(SceneCommentIdPropName),
                       jsExpressionValue(sceneId, emptyComments),
                     ),
                   ]
