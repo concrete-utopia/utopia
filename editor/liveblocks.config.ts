@@ -74,6 +74,7 @@ export type ConnectionInfo = {
   id: number
   startedAt: number
   lastSeen: number
+  colorIndex: number | null
 }
 
 // Optionally, UserMeta represents static/readonly metadata on each user, as
@@ -83,7 +84,6 @@ export type UserMeta = {
   id: string // Accessible through `user.id`
   name: string | null
   avatar: string | null
-  colorIndex: number | null
 }
 
 // Optionally, the type of custom events broadcast and listened to in this

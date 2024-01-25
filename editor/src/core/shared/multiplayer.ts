@@ -95,6 +95,16 @@ export function normalizeOthersList(
   )
 }
 
+export function excludeMyConnection(
+  myUserId: string,
+  myConnectionId: number,
+  others: readonly User<Presence, UserMeta>[],
+): User<Presence, UserMeta>[] {
+  return others.filter((other) => {
+    return other.id !== myUserId || other.connectionId !== myConnectionId
+  })
+}
+
 const reAuth0DefaultAvatarURLEncoded = /https%3A%2F%2Fcdn\.auth0\.com%2Favatars%2F.{2}\.png$/
 const reAuth0DefaultAvatar = /https:\/\/cdn\.auth0\.com\/avatars\/.{2}\.png$/
 
