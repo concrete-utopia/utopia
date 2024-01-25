@@ -95,6 +95,16 @@ export function normalizeOthersList(
   )
 }
 
+export function excludeMyConnection(
+  myUserId: string,
+  myConnectionId: number,
+  others: readonly User<Presence, UserMeta>[],
+): User<Presence, UserMeta>[] {
+  return others.filter((other) => {
+    return other.id !== myUserId || other.connectionId !== myConnectionId
+  })
+}
+
 export type FollowTarget = {
   playerId: string
   connectionId: number

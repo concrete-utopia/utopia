@@ -5,10 +5,17 @@ import { jsx } from '@emotion/react'
 import type { CSSProperties } from 'react'
 import { useOthers, useStatus, useStorage } from '../../liveblocks.config'
 import { getUserPicture, isLoggedIn } from '../common/user'
-import { getCollaborator, useMyUserAndPresence } from '../core/commenting/comment-hooks'
+import {
+  getCollaborator,
+  getConnectionById,
+  useConnections,
+  useGetMyConnection,
+  useMyUserAndPresence,
+} from '../core/commenting/comment-hooks'
 import type { FollowTarget, MultiplayerColor } from '../core/shared/multiplayer'
 import {
   canFollowTarget,
+  excludeMyConnection,
   followTarget,
   multiplayerColorFromIndex,
   multiplayerInitialsFromName,
@@ -126,24 +133,25 @@ const MultiplayerUserBar = React.memo(() => {
   }, [dispatch, url])
 
   const collabs = useStorage((store) => store.collaborators)
-  const connections = useStorage((store) => store.connections)
+
+  const connections = useConnections()
 
   const { user: myUser, presence: myPresence } = useMyUserAndPresence()
   const sortAvatars = useSortMultiplayerUsers()
   const isBeingFollowed = useIsBeingFollowed()
 
-  const others = useOthers((list) =>
-    list
-      .filter((entry) => entry.connectionId !== myPresence.connectionId)
-      .map((other) => {
-        return {
-          ...getCollaborator(collabs, other),
-          following: other.presence.following,
-          connectionId: other.connectionId,
-          connectedAt: connections?.[other.id]?.[other.connectionId]?.startedAt ?? 0,
-        }
-      }),
-  )
+  const others = useOthers((list) => {
+    return excludeMyConnection(myPresence.id, myPresence.connectionId, list).map((other) => {
+      return {
+        ...getCollaborator(collabs, other),
+        following: other.presence.following,
+        colorIndex:
+          getConnectionById(connections, other.id, other.connectionId)?.colorIndex ?? null,
+        connectionId: other.connectionId,
+        connectedAt: connections?.[other.id]?.[other.connectionId]?.startedAt ?? 0,
+      }
+    })
+  })
 
   const mode = useEditorState(
     Substores.restOfEditor,
@@ -277,7 +285,6 @@ const MultiplayerUserBar = React.memo(() => {
               <MultiplayerAvatar
                 name={multiplayerInitialsFromName(name)}
                 tooltip={{ text: name, colored: false }}
-                color={multiplayerColorFromIndex(other.colorIndex)}
                 picture={other.avatar}
                 isOwner={isOwner}
                 isOffline={true}
@@ -306,7 +313,9 @@ const MultiplayerUserBar = React.memo(() => {
       >
         <MultiplayerAvatar
           name={multiplayerInitialsFromName(myUser.name)}
-          color={multiplayerColorFromIndex(myUser.colorIndex)}
+          color={multiplayerColorFromIndex(
+            getConnectionById(connections, myUser.id, myPresence.connectionId)?.colorIndex ?? null,
+          )}
           picture={myUser.avatar}
           isOwner={amIOwner}
           size={AvatarSize}
@@ -321,7 +330,7 @@ MultiplayerUserBar.displayName = 'MultiplayerUserBar'
 
 export type MultiplayerAvatarProps = {
   name: string
-  color: MultiplayerColor
+  color?: MultiplayerColor
   picture?: string | null
   onClick?: () => void
   isBeingFollowed?: boolean
@@ -353,15 +362,21 @@ export const MultiplayerAvatar = React.memo((props: MultiplayerAvatarProps) => {
       disabled={props.tooltip == null}
       title={tooltipWithLineBreak}
       placement='bottom'
-      backgroundColor={props.tooltip?.colored === true ? props.color.background : undefined}
-      textColor={props.tooltip?.colored === true ? props.color.foreground : undefined}
+      backgroundColor={
+        props.tooltip?.colored === true && props.color != null ? props.color.background : undefined
+      }
+      textColor={
+        props.tooltip?.colored === true && props.color != null ? props.color.foreground : undefined
+      }
     >
       <div
         style={{
           width: props.size ?? 25.5,
           height: props.size ?? 25.5,
-          backgroundColor: props.isOffline ? colorTheme.bg4.value : props.color.background,
-          color: props.isOffline ? colorTheme.fg2.value : props.color.foreground,
+          backgroundColor:
+            props.isOffline || props.color == null ? colorTheme.bg4.value : props.color.background,
+          color:
+            props.isOffline || props.color == null ? colorTheme.fg2.value : props.color.foreground,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -375,7 +390,7 @@ export const MultiplayerAvatar = React.memo((props: MultiplayerAvatarProps) => {
               ? `1px solid ${colorTheme.bg1.value}`
               : `1px solid ${colorTheme.transparent.value}`,
           boxShadow:
-            props.isBeingFollowed === true
+            props.isBeingFollowed === true && props.color != null
               ? `0px 0px 0px 2.5px ${props.color.background}`
               : `0px 0px 0px 2.5px ${colorTheme.transparent.value}`,
           ...props.style,
@@ -433,18 +448,7 @@ const AvatarPicture = React.memo((props: AvatarPictureProps) => {
 
   const { initials, size } = props
 
-  const [pictureNotFound, setPictureNotFound] = React.useState(false)
-
-  React.useEffect(() => {
-    setPictureNotFound(false)
-  }, [url])
-
-  const onPictureError = React.useCallback(() => {
-    console.warn('cannot get picture', url)
-    setPictureNotFound(true)
-  }, [url])
-
-  if (url == null || pictureNotFound) {
+  if (url == null) {
     return <span>{initials}</span>
   }
   return (
@@ -459,7 +463,6 @@ const AvatarPicture = React.memo((props: AvatarPictureProps) => {
       }}
       src={url}
       referrerPolicy='no-referrer'
-      onError={onPictureError}
       draggable={false}
     />
   )
