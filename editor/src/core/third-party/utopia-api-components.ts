@@ -82,7 +82,7 @@ const BasicUtopiaSceneDescriptor = (
             name,
             [
               jsxAttributesEntry(
-                'data-comment-id',
+                'commentId',
                 jsExpressionValue('scene', emptyComments),
                 emptyComments,
               ),

@@ -3,8 +3,8 @@ import { View } from './view'
 
 export interface SceneProps {
   id?: string
+  commentId?: string
   style?: React.CSSProperties
-  'data-comment-id'?: string
   'data-label'?: string
   'data-uid'?: string
 }
@@ -23,5 +23,7 @@ export const Scene = React.memo((props: React.PropsWithChildren<SceneProps>) => 
     ...props,
     style: style,
   }
+  delete adjustedProps['commentId']
+
   return <View {...adjustedProps}>{props.children}</View>
 })
