@@ -17,9 +17,11 @@ import {
 } from '../../../liveblocks.config'
 import {
   getCollaborator,
+  getConnectionById,
   useAddMyselfToCollaborators,
   useCanComment,
   useMyUserAndPresence,
+  useConnections,
 } from '../../core/commenting/comment-hooks'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../core/shared/array-utils'
@@ -32,7 +34,9 @@ import {
   windowPoint,
   zeroRectIfNullOrInfinity,
 } from '../../core/shared/math-utils'
+import type { MultiplayerColor } from '../../core/shared/multiplayer'
 import {
+  excludeMyConnection,
   isPlayerOnAnotherRemixRoute,
   multiplayerColorFromIndex,
   normalizeOthersList,
@@ -173,12 +177,14 @@ const MultiplayerCursors = React.memo(() => {
   const me = useSelf()
   const collabs = useStorage((store) => store.collaborators)
   const others = useOthers((list) => {
-    const presences = normalizeOthersList(me.id, list)
+    const presences = excludeMyConnection(me.id, me.connectionId, list)
     return presences.map((p) => ({
       presenceInfo: p,
       userInfo: getCollaborator(collabs, p),
     }))
   })
+
+  const connections = useConnections()
 
   return (
     <div
@@ -206,7 +212,10 @@ const MultiplayerCursors = React.memo(() => {
           <MultiplayerCursor
             key={`cursor-${other.presenceInfo.id}`}
             name={other.userInfo.name}
-            colorIndex={other.userInfo.colorIndex}
+            colorIndex={
+              getConnectionById(connections, other.userInfo.id, other.presenceInfo.connectionId)
+                ?.colorIndex ?? null
+            }
             position={position}
             userId={other.userInfo.id}
           />
@@ -433,12 +442,19 @@ const FollowingOverlay = React.memo(() => {
     dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
   }, [dispatch])
 
-  const followedUserColor = React.useMemo(() => {
-    return multiplayerColorFromIndex(followedUser?.colorIndex ?? null)
-  }, [followedUser])
+  const connections = useConnections()
+
+  const followedUserColor: MultiplayerColor = React.useMemo(() => {
+    if (followed == null) {
+      return multiplayerColorFromIndex(null)
+    } else {
+      return multiplayerColorFromIndex(
+        getConnectionById(connections, followed.id, followed.connectionId)?.colorIndex ?? null,
+      )
+    }
+  }, [connections, followed])
 
   const collabs = useStorage((store) => store.collaborators)
-  const connections = useStorage((store) => store.connections)
 
   const { user: myUser, presence: myPresence } = useMyUserAndPresence()
   const others = useOthers((list) =>
@@ -564,15 +580,19 @@ const MultiplayerShadows = React.memo(() => {
     }))
   })
 
+  const connections = useConnections()
+
   const shadows = React.useMemo(() => {
     return others.flatMap(
       (other) =>
         other.presenceInfo.presence.activeFrames?.map((activeFrame) => ({
           activeFrame: activeFrame,
-          colorIndex: other.userInfo.colorIndex,
+          colorIndex:
+            getConnectionById(connections, other.userInfo.id, other.presenceInfo.connectionId)
+              ?.colorIndex ?? null,
         })) ?? [],
     )
-  }, [others])
+  }, [connections, others])
 
   const myActiveFrames = useEditorState(
     Substores.restOfEditor,

@@ -34,6 +34,7 @@ import type {
 import { fileWithFileName, projectWithFileChanges } from './generic/persistence-types'
 import type { PersistentModel } from '../store/editor-state'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { IS_TEST_ENVIRONMENT } from '../../../common/env-vars'
 
 let _lastThumbnailGenerated: number = 0
 const THUMBNAIL_THROTTLE = 300000
@@ -67,18 +68,31 @@ async function getNewProjectId(): Promise<string> {
   return createNewProjectID()
 }
 
-export async function checkProjectOwned(projectId: string): Promise<ProjectOwnership> {
+export async function checkProjectOwned(
+  loggedIn: boolean,
+  projectId: string,
+): Promise<ProjectOwnership> {
   const existsLocally = await projectIsStoredLocally(projectId)
   if (existsLocally) {
     return {
       ownerId: null,
       isOwner: true,
     }
-  } else {
+  } else if (loggedIn) {
     const ownerState = await checkProjectOwnership(projectId)
     return ownerState === 'unowned'
       ? { ownerId: null, isOwner: true }
       : { ownerId: ownerState.ownerId, isOwner: ownerState.isOwner }
+  } else if (IS_TEST_ENVIRONMENT) {
+    return {
+      ownerId: null,
+      isOwner: true,
+    }
+  } else {
+    return {
+      ownerId: null,
+      isOwner: false,
+    }
   }
 }
 

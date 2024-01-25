@@ -40,28 +40,3 @@ export const baseMultiplayerAvatarStyle: CSSProperties = {
   width: 25.5, // matching the size of the liveblocks component
   height: 25.5, // matching the size of the liveblocks component
 }
-
-export type CommentWrapperProps = {
-  user: UserMeta | null
-} & CommentProps
-
-export const CommentWrapper = React.memo((props: CommentWrapperProps) => {
-  const { user, ...commentProps } = props
-
-  if (user == null) {
-    return <Comment {...commentProps} />
-  }
-
-  return (
-    <div data-testid='comment-wrapper' style={{ position: 'relative' }}>
-      <MultiplayerAvatar
-        name={multiplayerInitialsFromName(normalizeMultiplayerName(user.name))}
-        color={multiplayerColorFromIndex(user.colorIndex)}
-        style={baseMultiplayerAvatarStyle}
-        picture={user.avatar}
-      />
-      <Comment {...commentProps} />
-    </div>
-  )
-})
-CommentWrapper.displayName = 'CommentWrapper'

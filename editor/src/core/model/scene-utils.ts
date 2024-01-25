@@ -14,24 +14,13 @@ import {
   jsExpressionValue,
   isJSXElement,
   isUtopiaJSXComponent,
-  defaultPropsParam,
   jsExpressionOtherJavaScript,
-  ElementInstanceMetadataMap,
   jsxAttributesFromMap,
-  ElementInstanceMetadata,
-  walkElements,
   emptyComments,
 } from '../shared/element-template'
 import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
-import {
-  eitherToMaybe,
-  applicative5Either,
-  flatMapEither,
-  isLeft,
-  applicative6Either,
-  right,
-} from '../shared/either'
+import { eitherToMaybe, flatMapEither, isLeft, applicative6Either, right } from '../shared/either'
 import { memoize } from '../shared/memoize'
 import fastDeepEqual from 'fast-deep-equal'
 import {
@@ -43,8 +32,7 @@ import { UTOPIA_UID_KEY } from './utopia-constants'
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import { getProjectFileByFilePath } from '../../components/assets'
 import { getUtopiaJSXComponentsFromSuccess } from './project-file-utils'
-import { generateConsistentUID, generateUID, getUtopiaID } from '../shared/uid-utils'
-import { emptySet } from '../shared/set-utils'
+import { generateConsistentUID, getUtopiaID } from '../shared/uid-utils'
 
 export const PathForSceneComponent = PP.create('component')
 export const PathForSceneDataUid = PP.create('data-uid')

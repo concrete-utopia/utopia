@@ -357,8 +357,8 @@ export function preventBrowserShortcuts(editor: EditorState, event: KeyboardEven
 export function handleKeyDown(
   event: KeyboardEvent,
   editor: EditorState,
-  projectServerState: ProjectServerState,
   loginState: LoginState,
+  projectServerState: ProjectServerState,
   metadataRef: { current: ElementInstanceMetadataMap },
   navigatorTargetsRef: { current: Array<NavigatorEntry> },
   namesByKey: ShortcutNamesByKey,
@@ -367,7 +367,7 @@ export function handleKeyDown(
   // Stop the browser from firing things like save dialogs.
   preventBrowserShortcuts(editor, event)
 
-  const allowedToEdit = allowedToEditProject(projectServerState)
+  const allowedToEdit = allowedToEditProject(loginState, projectServerState)
   const canComment = isFeatureEnabled('Multiplayer') && hasCommentPermission(loginState)
 
   // Ensure that any key presses are appropriately recorded.

@@ -109,7 +109,7 @@ describe('Comments test', () => {
       expect(popupAfterClose).toHaveLength(0)
 
       // Open the comment popup again
-      const comment = await getElementWithSelector(page, 'div[data-testid="comment-wrapper"]')
+      const comment = await page.waitForSelector('div[data-testid="comment-indicator-wrapper"]')
       await comment!.click({ offset: { x: 10, y: 10 } })
 
       // Check that the comment popup is open
