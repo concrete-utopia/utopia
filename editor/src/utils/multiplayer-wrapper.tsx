@@ -56,7 +56,7 @@ export const CommentWrapper = React.memo((props: CommentWrapperProps) => {
     <div data-testid='comment-wrapper' style={{ position: 'relative' }}>
       <MultiplayerAvatar
         name={multiplayerInitialsFromName(normalizeMultiplayerName(user.name))}
-        color={multiplayerColorFromIndex(user.colorIndex)}
+        color={multiplayerColorFromIndex(null)}
         style={baseMultiplayerAvatarStyle}
         picture={user.avatar}
       />
