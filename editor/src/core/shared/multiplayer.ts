@@ -105,16 +105,6 @@ export function excludeMyConnection(
   })
 }
 
-const reAuth0DefaultAvatarURLEncoded = /https%3A%2F%2Fcdn\.auth0\.com%2Favatars%2F.{2}\.png$/
-const reAuth0DefaultAvatar = /https:\/\/cdn\.auth0\.com\/avatars\/.{2}\.png$/
-
-export function isDefaultAuth0AvatarURL(s: string | null): boolean {
-  return (
-    s != null &&
-    (s.match(reAuth0DefaultAvatarURLEncoded) != null || s.match(reAuth0DefaultAvatar) != null)
-  )
-}
-
 export type FollowTarget = {
   playerId: string
   connectionId: number

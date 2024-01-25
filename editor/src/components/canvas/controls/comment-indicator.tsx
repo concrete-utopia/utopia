@@ -1,9 +1,10 @@
 import type { ThreadData } from '@liveblocks/client'
 import { Comment } from '@liveblocks/react-comments'
+import type { CommentProps } from '@liveblocks/react-comments'
 import { AnimatePresence, motion, useAnimate } from 'framer-motion'
 import type { CSSProperties } from 'react'
 import React from 'react'
-import type { ThreadMetadata } from '../../../../liveblocks.config'
+import type { ThreadMetadata, UserMeta } from '../../../../liveblocks.config'
 import { useEditThreadMetadata, useStorage } from '../../../../liveblocks.config'
 import {
   getCollaboratorById,
@@ -37,7 +38,6 @@ import {
 } from '../../../core/shared/multiplayer'
 import { useMyUserId } from '../../../core/shared/multiplayer-hooks'
 import { optionalMap } from '../../../core/shared/optional-utils'
-import type { CommentWrapperProps } from '../../../utils/multiplayer-wrapper'
 import { MultiplayerWrapper, baseMultiplayerAvatarStyle } from '../../../utils/multiplayer-wrapper'
 import { when } from '../../../utils/react-conditionals'
 import { UtopiaStyles, colorTheme } from '../../../uuiui'
@@ -567,9 +567,10 @@ function useHover() {
 
 type CommentIndicatorWrapper = {
   thread: ThreadData<ThreadMetadata>
+  user: UserMeta | null
   expanded: boolean
   forceDarkMode: boolean
-} & CommentWrapperProps
+} & CommentProps
 
 const CommentIndicatorWrapper = React.memo((props: CommentIndicatorWrapper) => {
   const { thread, expanded, user, forceDarkMode, ...commentProps } = props
@@ -654,9 +655,3 @@ const CommentIndicatorWrapper = React.memo((props: CommentIndicatorWrapper) => {
     </div>
   )
 })
-
-function getCanvasHeight(): number {
-  const canvasDiv = document.getElementById('canvas-root')
-  const canvasHeight = canvasDiv?.clientHeight ?? 0
-  return canvasHeight
-}
