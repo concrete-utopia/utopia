@@ -11,7 +11,7 @@ import * as PP from '../shared/property-path'
 import { assertNever } from '../shared/utils'
 import { isSceneAgainstImports, isRemixSceneAgainstImports } from './project-file-utils'
 
-export const SceneCommentIdPropName = 'id'
+export const SceneCommentIdPropName = 'data-comment-id'
 
 function getIdPropFromJSXElement(element: JSXElement): string | null {
   const maybeIdProp = getJSXAttribute(element.props, SceneCommentIdPropName)

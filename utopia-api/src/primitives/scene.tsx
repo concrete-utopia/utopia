@@ -4,6 +4,7 @@ import { View } from './view'
 export interface SceneProps {
   id?: string
   style?: React.CSSProperties
+  'data-comment-id'?: string
   'data-label'?: string
   'data-uid'?: string
 }
