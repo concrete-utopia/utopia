@@ -377,6 +377,8 @@ describe('Comments test', () => {
         // delete the scene
         await page.keyboard.press('Backspace')
 
+        await wait(500)
+
         const commentBoundingBoxBackOnCanvasAfterDelete = roundBoundingBox(
           await getBoundingBox(page, CommentIndicatorSelector),
         )
