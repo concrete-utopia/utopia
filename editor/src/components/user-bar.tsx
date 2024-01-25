@@ -438,18 +438,7 @@ const AvatarPicture = React.memo((props: AvatarPictureProps) => {
 
   const { initials, size } = props
 
-  const [pictureNotFound, setPictureNotFound] = React.useState(false)
-
-  React.useEffect(() => {
-    setPictureNotFound(false)
-  }, [url])
-
-  const onPictureError = React.useCallback(() => {
-    console.warn('cannot get picture', url)
-    setPictureNotFound(true)
-  }, [url])
-
-  if (url == null || pictureNotFound) {
+  if (url == null) {
     return <span>{initials}</span>
   }
   return (
@@ -464,7 +453,6 @@ const AvatarPicture = React.memo((props: AvatarPictureProps) => {
       }}
       src={url}
       referrerPolicy='no-referrer'
-      onError={onPictureError}
       draggable={false}
     />
   )
