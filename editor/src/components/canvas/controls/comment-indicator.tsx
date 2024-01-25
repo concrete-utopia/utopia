@@ -452,9 +452,9 @@ function useDragging(
           editThreadMetadata({
             threadId: thread.id,
             metadata: {
+              type: 'canvas',
               x: newPositionOnCanvas.x,
               y: newPositionOnCanvas.y,
-              sceneId: null,
               remixLocationRoute: null,
             },
           })
@@ -483,6 +483,7 @@ function useDragging(
         editThreadMetadata({
           threadId: thread.id,
           metadata: {
+            type: 'scene',
             sceneX: localPointInScene.x,
             sceneY: localPointInScene.y,
             sceneId: sceneIdToUse,
