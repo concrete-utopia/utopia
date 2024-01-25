@@ -1,6 +1,6 @@
 import type { CommentData } from '@liveblocks/client'
 import type { ComposerSubmitComment } from '@liveblocks/react-comments'
-import { Composer } from '@liveblocks/react-comments'
+import { Comment, Composer } from '@liveblocks/react-comments'
 import { useAtom } from 'jotai'
 import type { CSSProperties } from 'react'
 import React, { useRef } from 'react'
@@ -22,7 +22,7 @@ import * as EP from '../../../core/shared/element-path'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import { create } from '../../../core/shared/property-path'
 import { assertNever } from '../../../core/shared/utils'
-import { CommentWrapper, MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
+import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { when } from '../../../utils/react-conditionals'
 import { Button, FlexRow, Icn, Tooltip, UtopiaStyles, colorTheme } from '../../../uuiui'
 import {
@@ -377,11 +377,9 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
               onScroll={onScroll}
             >
               {thread.comments.map((c) => {
-                const user = getCollaboratorById(collabs, c.userId)
                 return (
-                  <CommentWrapper
+                  <Comment
                     key={c.id}
-                    user={user}
                     comment={c}
                     onCommentDelete={onCommentDelete}
                     style={{ background: colorTheme.bg1.value }}
@@ -547,9 +545,6 @@ ListShadow.displayName = 'ListShadow'
 
 const HeaderComment = React.memo(
   ({ comment, enabled }: { comment: CommentData; enabled: boolean }) => {
-    const collabs = useStorage((storage) => storage.collaborators)
-    const user = getCollaboratorById(collabs, comment.userId)
-
     if (!enabled) {
       return null
     }
@@ -568,8 +563,7 @@ const HeaderComment = React.memo(
           transform: 'scale(1.01)',
         }}
       >
-        <CommentWrapper
-          user={user}
+        <Comment
           comment={comment}
           style={{ background: colorTheme.bg1.value, color: colorTheme.fg1.value }}
         />

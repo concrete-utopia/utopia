@@ -16,7 +16,7 @@ import {
   switchEditorMode,
 } from '../../editor/actions/action-creators'
 import { EditorModes, isCommentMode, isExistingComment } from '../../editor/editor-modes'
-import { CommentWrapper, MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
+import { MultiplayerWrapper } from '../../../utils/multiplayer-wrapper'
 import { useRemixNavigationContext } from '../../canvas/remix/utopia-remix-root-component'
 import {
   useResolveThread,
@@ -45,6 +45,7 @@ import { CommentRepliesCounter } from '../../canvas/controls/comment-replies-cou
 import type { SelectOption } from '../controls/select-control'
 import { assertNever } from '../../../core/shared/utils'
 import { pluck } from '../../../core/shared/array-utils'
+import { Comment } from '@liveblocks/react-comments'
 
 export type CommentFilterMode = 'all' | 'all-including-resolved' | 'unread-only'
 
@@ -319,12 +320,7 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
           filter: thread.metadata.resolved ? 'grayscale()' : undefined,
         }}
       >
-        <CommentWrapper
-          user={user}
-          comment={comment}
-          showActions={false}
-          style={{ backgroundColor: 'transparent' }}
-        />
+        <Comment comment={comment} showActions={false} style={{ backgroundColor: 'transparent' }} />
         {when(
           remixLocationRouteLabel != null,
           <div

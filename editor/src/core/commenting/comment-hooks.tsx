@@ -1,7 +1,7 @@
 import React from 'react'
 import type { User } from '@liveblocks/client'
 import { LiveObject, type ThreadData } from '@liveblocks/client'
-import type { Presence, ThreadMetadata, UserMeta } from '../../../liveblocks.config'
+import type { ConnectionInfo, Presence, ThreadMetadata, UserMeta } from '../../../liveblocks.config'
 import {
   useEditThreadMetadata,
   useMutation,
@@ -31,6 +31,9 @@ import { getCurrentTheme } from '../../components/editor/store/editor-state'
 import { useMyUserId } from '../shared/multiplayer-hooks'
 import { usePermissions } from '../../components/editor/store/permissions'
 import { isFeatureEnabled } from '../../utils/feature-switches'
+import { modify, toFirst } from '../shared/optics/optic-utilities'
+import { filtered, fromObjectField, traverseArray } from '../shared/optics/optic-creators'
+import { foldEither } from '../shared/either'
 
 export function useCanvasCommentThreadAndLocation(comment: CommentId): {
   location: CanvasPoint | null
@@ -101,7 +104,6 @@ function placeholderUserMeta(user: User<Presence, UserMeta>): UserMeta {
     id: user.id,
     name: null,
     avatar: null,
-    colorIndex: null,
   }
 }
 
@@ -120,6 +122,66 @@ export function getCollaboratorById(collabs: Collaborators, id: string): UserMet
   return collabs[id] ?? null
 }
 
+interface Connections {
+  [key: string]: Array<ConnectionInfo>
+}
+
+export function getConnectionById(
+  connections: Connections,
+  userId: string,
+  connectionId: number,
+): ConnectionInfo | null {
+  const connectionOptic = fromObjectField<Array<ConnectionInfo>, Connections>(userId)
+    .compose(traverseArray())
+    .compose(filtered((connection) => connection.id === connectionId))
+  return foldEither(
+    () => null,
+    (result) => result,
+    toFirst(connectionOptic, connections),
+  )
+}
+
+export function setConnectionById(
+  allConnections: Connections,
+  userId: string,
+  connectionId: number,
+  updatedConnection: ConnectionInfo,
+): void {
+  const connectionsOptic = fromObjectField<Array<ConnectionInfo>, Connections>(userId)
+  modify(
+    connectionsOptic,
+    (connections) => {
+      const alreadyExisting = connections.some((connection) => connection.id === connectionId)
+      if (alreadyExisting) {
+        return connections.map((connection) => {
+          if (connection.id === connectionId) {
+            return updatedConnection
+          } else {
+            return connection
+          }
+        })
+      } else {
+        return [...connections, updatedConnection]
+      }
+    },
+    allConnections,
+  )
+}
+
+export function useConnections(): Connections {
+  return useStorage((store) => store.connections)
+}
+
+export function useGetConnection(userId: string, connectionId: number): ConnectionInfo | null {
+  const connections = useConnections()
+  return getConnectionById(connections, userId, connectionId)
+}
+
+export function useGetMyConnection(): ConnectionInfo | null {
+  const me = useSelf()
+  return useGetConnection(me.id, me.connectionId)
+}
+
 export function useMyUserAndPresence(): {
   presence: User<Presence, UserMeta>
   user: UserMeta
@@ -131,11 +193,6 @@ export function useMyUserAndPresence(): {
     presence: me,
     user: myUser ?? placeholderUserMeta(me),
   }
-}
-
-export function useMyMultiplayerColorIndex() {
-  const me = useMyUserAndPresence()
-  return me.user.colorIndex
 }
 
 export function useAddMyselfToCollaborators() {
@@ -153,17 +210,12 @@ export function useAddMyselfToCollaborators() {
       const collaborators = storage.get('collaborators')
 
       if (collaborators.get(self.id) == null) {
-        const otherColorIndices = Object.values(collaborators.toObject()).map((u) =>
-          u.get('colorIndex'),
-        )
-
         collaborators.set(
           self.id,
           new LiveObject({
             id: loginState.user.userId,
             name: normalizeMultiplayerName(loginState.user.name ?? null),
             avatar: loginState.user.picture ?? null,
-            colorIndex: possiblyUniqueColor(otherColorIndices),
           }),
         )
       }

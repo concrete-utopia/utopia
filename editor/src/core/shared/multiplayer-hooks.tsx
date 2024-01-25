@@ -1,7 +1,7 @@
 import { LiveObject } from '@liveblocks/client'
 import { useAtom } from 'jotai'
 import React from 'react'
-import type { ConnectionInfo } from '../../../liveblocks.config'
+import type { ConnectionInfo, Storage } from '../../../liveblocks.config'
 import { useMutation, useStorage } from '../../../liveblocks.config'
 import { isLoggedIn } from '../../common/user'
 import {
@@ -11,7 +11,7 @@ import {
 import { isFollowMode } from '../../components/editor/editor-modes'
 import { Substores, useEditorState } from '../../components/editor/store/store-hook'
 import * as EP from './element-path'
-import type { RemixPresence } from './multiplayer'
+import { possiblyUniqueColor, type RemixPresence } from './multiplayer'
 import { PRODUCTION_ENV } from '../../common/env-vars'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 
@@ -133,16 +133,25 @@ export function useStoreConnection() {
         return
       }
 
-      const selfConns: ConnectionInfo[] = storage.get('connections').get(self.id) ?? []
+      const connections: Storage['connections'] = storage.get('connections')
+      const selfConns: ConnectionInfo[] = connections.get(self.id) ?? []
 
       // if the current connection is not stored yet...
       if (!selfConns.some((c) => c.id === self.connectionId)) {
+        const immutableConnections = connections.toImmutable()
+        let colorIndexes: Array<number | null> = []
+        Object.entries(immutableConnections).forEach(([userId, connectionEntries]) => {
+          for (const connectionEntry of connectionEntries) {
+            colorIndexes.push(connectionEntry.colorIndex)
+          }
+        })
         // ...store it...
         const now = Date.now()
         selfConns.push({
           id: self.connectionId,
           startedAt: now,
           lastSeen: now,
+          colorIndex: possiblyUniqueColor(colorIndexes),
         })
         storage.get('connections').update({ [self.id]: selfConns })
       }

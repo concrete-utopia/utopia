@@ -95,14 +95,14 @@ export function normalizeOthersList(
   )
 }
 
-const reAuth0DefaultAvatarURLEncoded = /https%3A%2F%2Fcdn\.auth0\.com%2Favatars%2F.{2}\.png$/
-const reAuth0DefaultAvatar = /https:\/\/cdn\.auth0\.com\/avatars\/.{2}\.png$/
-
-export function isDefaultAuth0AvatarURL(s: string | null): boolean {
-  return (
-    s != null &&
-    (s.match(reAuth0DefaultAvatarURLEncoded) != null || s.match(reAuth0DefaultAvatar) != null)
-  )
+export function excludeMyConnection(
+  myUserId: string,
+  myConnectionId: number,
+  others: readonly User<Presence, UserMeta>[],
+): User<Presence, UserMeta>[] {
+  return others.filter((other) => {
+    return other.id !== myUserId || other.connectionId !== myConnectionId
+  })
 }
 
 export type FollowTarget = {
