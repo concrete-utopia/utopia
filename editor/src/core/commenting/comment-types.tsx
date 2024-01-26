@@ -106,27 +106,34 @@ type PartialNullable<T> = {
   [P in keyof T]?: T[P] | null | undefined
 }
 
+type UtopiaThreadMetadataQuery = PartialNullable<UtopiaThreadMetadata> &
+  Pick<UtopiaThreadMetadata, 'type'>
+
 export function utopiaThreadMetadataToLiveblocksPartial(
-  metadata: PartialNullable<UtopiaThreadMetadata>,
+  metadata: UtopiaThreadMetadataQuery,
 ): PartialNullable<ThreadMetadata> {
-  if (metadata.type === 'scene') {
-    return {
-      x: metadata.position?.x,
-      y: metadata.position?.y,
-      sceneId: metadata.sceneId,
-      sceneX: metadata.scenePosition?.x,
-      sceneY: metadata.scenePosition?.y,
-      resolved: metadata.resolved,
-      remixLocationRoute: metadata.remixLocationRoute,
-    }
-  }
-  return {
-    x: metadata.position?.x,
-    y: metadata.position?.y,
-    sceneId: null, // the null fields are necessary so we delete these fields on update from liveblocks
-    sceneX: null,
-    sceneY: null,
-    remixLocationRoute: null,
-    resolved: metadata.resolved,
+  switch (metadata.type) {
+    case 'scene':
+      return {
+        x: metadata.position?.x,
+        y: metadata.position?.y,
+        sceneId: metadata.sceneId,
+        sceneX: metadata.scenePosition?.x,
+        sceneY: metadata.scenePosition?.y,
+        resolved: metadata.resolved,
+        remixLocationRoute: metadata.remixLocationRoute,
+      }
+    case 'canvas':
+      return {
+        x: metadata.position?.x,
+        y: metadata.position?.y,
+        sceneId: null, // the null fields are necessary so we delete these fields on update from liveblocks
+        sceneX: null,
+        sceneY: null,
+        remixLocationRoute: null,
+        resolved: metadata.resolved,
+      }
+    default:
+      assertNever(metadata)
   }
 }
