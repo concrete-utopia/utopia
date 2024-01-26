@@ -997,12 +997,14 @@ export function updateFile(
   filePath: string,
   file: ProjectFile,
   addIfNotInFiles: boolean,
+  fromCollaboration: boolean,
 ): UpdateFile {
   return {
     action: 'UPDATE_FILE',
     filePath: filePath,
     file: file,
     addIfNotInFiles: addIfNotInFiles,
+    fromCollaboration: fromCollaboration,
   }
 }
 

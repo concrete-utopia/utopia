@@ -92,14 +92,14 @@ export class PersistenceMachine {
             }
 
             const updateFileActions = event.downloadAssetsResult.filesWithFileNames.map(
-              ({ fileName, file }) => updateFile(fileName, file, true),
+              ({ fileName, file }) => updateFile(fileName, file, true, false),
             )
             this.queuedActions.push(...updateFileActions)
             break
           }
           case 'SAVE_COMPLETE':
             const updateFileActions = event.saveResult.filesWithFileNames.map(
-              ({ fileName, file }) => updateFile(fileName, file, true),
+              ({ fileName, file }) => updateFile(fileName, file, true, false),
             )
             this.queuedActions.push(...updateFileActions)
             this.lastSavedTS = Date.now()

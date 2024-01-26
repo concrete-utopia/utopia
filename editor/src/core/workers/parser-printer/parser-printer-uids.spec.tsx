@@ -313,6 +313,7 @@ describe('parseCode', () => {
             null,
           ),
           true,
+          false,
         ),
       ],
       false,

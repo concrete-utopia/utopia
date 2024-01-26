@@ -210,7 +210,7 @@ function actionsForDroppedImage(
 
   const { saveImageActions, src } = context.isUserLoggedIn
     ? {
-        saveImageActions: [EditorActions.updateFile(image.filename, projectFile, true)],
+        saveImageActions: [EditorActions.updateFile(image.filename, projectFile, true, false)],
         src: image.filename,
       }
     : { saveImageActions: [], src: null }

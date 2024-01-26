@@ -30,6 +30,8 @@ import {
   isExportDefaultFunctionOrClass,
   isExportFunction,
   isExportDefault,
+  isImageFile,
+  isAssetFile,
 } from '../shared/project-file-types'
 import type {
   JSXElementChild,
@@ -75,6 +77,10 @@ import { memoize } from '../shared/memoize'
 import { filenameFromParts, getFilenameParts } from '../../components/images'
 import globToRegexp from 'glob-to-regexp'
 import { is } from '../shared/equality-utils'
+import {
+  AssetFileKeepDeepEquality,
+  ImageFileKeepDeepEquality,
+} from '../../components/editor/store/store-deep-equality-instances'
 
 export const sceneMetadata = _sceneMetadata // This is a hotfix for a circular dependency AND a leaking of utopia-api into the workers
 
@@ -535,12 +541,13 @@ export function updateFileIfPossible(
   updated: ProjectFile,
   existing: ProjectFile | null,
 ): ProjectFile | 'cant-update' {
-  if (existing == null || !isTextFile(existing)) {
+  if (existing == null || existing.type !== updated.type) {
     return updated
   }
 
   if (
     isTextFile(updated) &&
+    isTextFile(existing) &&
     isOlderThan(existing, updated) &&
     canUpdateRevisionsState(
       updated.fileContents.revisionsState,
@@ -548,6 +555,18 @@ export function updateFileIfPossible(
     )
   ) {
     return updated
+  }
+
+  if (isImageFile(updated) && existing != null && isImageFile(existing)) {
+    if (ImageFileKeepDeepEquality(existing, updated).areEqual) {
+      return 'cant-update'
+    }
+  }
+
+  if (isAssetFile(updated) && existing != null && isAssetFile(existing)) {
+    if (AssetFileKeepDeepEquality(existing, updated).areEqual) {
+      return 'cant-update'
+    }
   }
 
   return 'cant-update'

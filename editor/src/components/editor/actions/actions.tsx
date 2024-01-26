@@ -3160,7 +3160,7 @@ export const UPDATE_FNS = {
         action.gitBlobSha,
       )
     }
-    actionsToRunAfterSave.push(updateFile(assetFilename, projectFile, true))
+    actionsToRunAfterSave.push(updateFile(assetFilename, projectFile, true, false))
 
     // Side effects.
     let editorWithToast = editor
@@ -3731,7 +3731,7 @@ export const UPDATE_FNS = {
         updatedFile = updateFileContents(code, existing, manualSave)
       }
 
-      const updateAction = updateFile(action.filePath, updatedFile, true)
+      const updateAction = updateFile(action.filePath, updatedFile, true, false)
       return UPDATE_FNS.UPDATE_FILE(updateAction, editor, dispatch, builtInDependencies)
     } else {
       return editor
@@ -5531,7 +5531,7 @@ export const UPDATE_FNS = {
       updatedFile = updateFileContents(action.code, existing, false)
     }
 
-    const updateAction = updateFile(action.fullPath, updatedFile, true)
+    const updateAction = updateFile(action.fullPath, updatedFile, true, false)
     return UPDATE_FNS.UPDATE_FILE(updateAction, editor, dispatch, builtInDependencies)
   },
   SET_SHOW_RESOLVED_THREADS: (action: SetCommentFilterMode, editor: EditorModel): EditorModel => {
