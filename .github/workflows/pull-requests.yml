@@ -139,8 +139,8 @@ jobs:
         if: steps.cache-server-tests.outputs.cache-hit != 'true'
         run: nix-shell --arg includeEditorBuildSupport false --arg includeRunLocallySupport false --run test-server-ci
 
-  deploy-staging:
-    name: Deploy Staging Editor
+  deploy-branch:
+    name: Deploy Branch Editor
     timeout-minutes: 15
     runs-on: ubuntu-latest
     needs: [cache-pnpm-store]
@@ -148,7 +148,7 @@ jobs:
       UTOPIA_SHA: ${{ github.sha }}
       AUTH0_CLIENT_ID: KB7euFO46rVYeOaWmrEdktdhAFxEO266
       AUTH0_ENDPOINT: enter.utopia.app
-      AUTH0_REDIRECT_URI: https://utopia.pizza/authenticate
+      AUTH0_REDIRECT_URI: https://utopia.fish/authenticate
     steps:
       # Create a comment immediately so that the first comment can be used as a "Try me" link
       - name: Find Comment
@@ -265,7 +265,7 @@ jobs:
       UTOPIA_SHA: ${{ github.sha }}
       AUTH0_CLIENT_ID: KB7euFO46rVYeOaWmrEdktdhAFxEO266
       AUTH0_ENDPOINT: enter.utopia.app
-      AUTH0_REDIRECT_URI: https://utopia.pizza/authenticate
+      AUTH0_REDIRECT_URI: https://utopia.fish/authenticate
     steps:
       # Gets the branch that this PR is targeting and replaces forward slashes in the name with hyphens.
       # So that later steps can produce a bundle incorporating that into the name and upload it.
@@ -410,7 +410,7 @@ jobs:
       UTOPIA_SHA: ${{ github.sha }}
       AUTH0_CLIENT_ID: KB7euFO46rVYeOaWmrEdktdhAFxEO266
       AUTH0_ENDPOINT: enter.utopia.app
-      AUTH0_REDIRECT_URI: https://utopia.pizza/authenticate
+      AUTH0_REDIRECT_URI: https://utopia.fish/authenticate
     steps:
       # Gets the branch that this PR is targeting and replaces forward slashes in the name with hyphens.
       # So that later steps can produce a bundle incorporating that into the name and upload it.
@@ -438,7 +438,7 @@ jobs:
         id: run-comments-test
         env:
           BRANCH_NAME: ${{ steps.extract_branch.outputs.branch }}
-          BASE_URL: 'https://utopia.pizza'
+          BASE_URL: 'https://utopia.fish'
         run: |
           nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "xvfb-run --server-args='-screen 0 1920x1080x24 -ac -nolisten tcp -dpi 96 +extension RANDR' run-comments-test"
 
@@ -451,7 +451,7 @@ jobs:
       UTOPIA_SHA: ${{ github.sha }}
       AUTH0_CLIENT_ID: KB7euFO46rVYeOaWmrEdktdhAFxEO266
       AUTH0_ENDPOINT: enter.utopia.app
-      AUTH0_REDIRECT_URI: https://utopia.pizza/authenticate
+      AUTH0_REDIRECT_URI: https://utopia.fish/authenticate
     steps:
       # Gets the branch that this PR is targeting and replaces forward slashes in the name with hyphens.
       # So that later steps can produce a bundle incorporating that into the name and upload it.
@@ -479,6 +479,6 @@ jobs:
         id: run-comments-test
         env:
           BRANCH_NAME: ${{ steps.extract_branch.outputs.branch }}
-          BASE_URL: 'https://utopia.pizza'
+          BASE_URL: 'https://utopia.fish'
         run: |
           nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "xvfb-run --server-args='-screen 0 1920x1080x24 -ac -nolisten tcp -dpi 96 +extension RANDR' run-collaboration-test"

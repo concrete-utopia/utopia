@@ -1,16 +1,15 @@
 /* eslint-disable no-console */
 require('dotenv').config({ path: 'src/.env' })
-import * as puppeteer from 'puppeteer'
-import type { PageEventObject } from 'puppeteer'
+import type { ElementHandle, Page, PageEventObject } from 'puppeteer'
 import { initialiseTests, ONE_MINUTE_IN_MS, setupBrowser, timeLimitPromise } from './utils'
 
 const PROJECT_ID = process.env.PROJECT_ID ?? ''
 const BRANCH_NAME = process.env.BRANCH_NAME ? `?branch_name=${process.env.BRANCH_NAME}` : ''
 const STAGING_EDITOR_URL =
-  process.env.EDITOR_URL ?? `https://utopia.pizza/p/${PROJECT_ID}${BRANCH_NAME}`
+  process.env.EDITOR_URL ?? `https://utopia.fish/p/${PROJECT_ID}${BRANCH_NAME}`
 
 async function clickOnce(
-  page: puppeteer.Page,
+  page: Page,
   xpath: string,
   expectedConsoleMessage: string,
   errorMessage?: string,
@@ -35,7 +34,7 @@ async function clickOnce(
     page.on('console', handler)
   })
 
-  await (button as puppeteer.ElementHandle<HTMLButtonElement>)!.click()
+  await (button as ElementHandle<HTMLButtonElement>)!.click()
 
   return timeLimitPromise(
     consoleDonePromise,
@@ -74,7 +73,7 @@ async function testCodeEditor() {
   }
 }
 
-async function checkCodeEditor(page: puppeteer.Page): Promise<boolean> {
+async function checkCodeEditor(page: Page): Promise<boolean> {
   const desiredReadyState = {
     vscodeReady: true,
     loadingScreenVisible: false,
