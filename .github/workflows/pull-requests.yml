@@ -260,7 +260,7 @@ jobs:
     name: Run Performance Tests
     timeout-minutes: 15
     runs-on: self-hosted
-    needs: [deploy-staging, cache-pnpm-store]
+    needs: [deploy-branch, cache-pnpm-store]
     env:
       UTOPIA_SHA: ${{ github.sha }}
       AUTH0_CLIENT_ID: KB7euFO46rVYeOaWmrEdktdhAFxEO266
@@ -366,7 +366,7 @@ jobs:
     name: Run System Tests
     timeout-minutes: 15
     runs-on: ubuntu-latest
-    needs: [deploy-staging, cache-pnpm-store]
+    needs: [deploy-branch, cache-pnpm-store]
     env:
       UTOPIA_SHA: ${{ github.sha }}
     steps:
@@ -405,7 +405,7 @@ jobs:
     name: Run Comments Tests
     timeout-minutes: 12
     runs-on: ubuntu-latest
-    needs: [deploy-staging, cache-pnpm-store]
+    needs: [deploy-branch, cache-pnpm-store]
     env:
       UTOPIA_SHA: ${{ github.sha }}
       AUTH0_CLIENT_ID: KB7euFO46rVYeOaWmrEdktdhAFxEO266
@@ -446,7 +446,7 @@ jobs:
     name: Run Collaboration Tests
     timeout-minutes: 12
     runs-on: ubuntu-latest
-    needs: [deploy-staging, cache-pnpm-store]
+    needs: [deploy-branch, cache-pnpm-store]
     env:
       UTOPIA_SHA: ${{ github.sha }}
       AUTH0_CLIENT_ID: KB7euFO46rVYeOaWmrEdktdhAFxEO266
