@@ -8,7 +8,6 @@ import { useCreateThread, useStorage } from '../../../../liveblocks.config'
 import '../../../../resources/editor/css/liveblocks/react-comments/styles.css'
 import '../../../../resources/editor/css/liveblocks/react-comments/dark/attributes.css'
 import {
-  getCollaboratorById,
   useCanvasCommentThreadAndLocation,
   useCreateNewThreadReadStatus,
   useDeleteThreadReadStatus,
@@ -46,6 +45,11 @@ import { RemixNavigationAtom } from '../remix/utopia-remix-root-component'
 import { getIdOfScene } from './comment-mode/comment-mode-hooks'
 import { motion, useAnimation } from 'framer-motion'
 import type { EditorDispatch } from '../../editor/action-types'
+import {
+  canvasThreadMetadata,
+  sceneThreadMetadata,
+  utopiaThreadMetadataToLiveblocks,
+} from '../../../core/commenting/comment-types'
 
 export const ComposerEditorClassName = 'lb-composer-editor'
 
@@ -153,11 +157,12 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
           case 'canvas':
             const newThreadOnCanvas = createThread({
               body,
-              metadata: {
-                resolved: false,
-                x: comment.location.position.x,
-                y: comment.location.position.y,
-              },
+              metadata: utopiaThreadMetadataToLiveblocks(
+                canvasThreadMetadata({
+                  resolved: false,
+                  position: comment.location.position,
+                }),
+              ),
             })
             return [newThreadOnCanvas, []]
           case 'scene':
@@ -181,15 +186,15 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
 
             const newThreadOnScene = createThread({
               body,
-              metadata: {
-                resolved: false,
-                x: comment.location.position.x,
-                y: comment.location.position.x,
-                sceneId: sceneId,
-                sceneX: comment.location.offset.x,
-                sceneY: comment.location.offset.y,
-                remixLocationRoute: remixRoute != null ? remixRoute.location.pathname : undefined,
-              },
+              metadata: utopiaThreadMetadataToLiveblocks(
+                sceneThreadMetadata({
+                  resolved: false,
+                  position: comment.location.position,
+                  sceneId: sceneId,
+                  scenePosition: comment.location.offset,
+                  remixLocationRoute: remixRoute != null ? remixRoute.location.pathname : undefined,
+                }),
+              ),
             })
             return [newThreadOnScene, addSceneIdPropAction]
           default:

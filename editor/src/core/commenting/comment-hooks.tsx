@@ -1,15 +1,8 @@
 import React from 'react'
 import type { User } from '@liveblocks/client'
 import { LiveObject, type ThreadData } from '@liveblocks/client'
-import type {
-  ConnectionInfo,
-  Presence,
-  SceneThreadMetadata,
-  ThreadMetadata,
-  UserMeta,
-} from '../../../liveblocks.config'
+import type { ConnectionInfo, Presence, ThreadMetadata, UserMeta } from '../../../liveblocks.config'
 import {
-  isSceneThreadMetadata,
   useEditThreadMetadata,
   useMutation,
   useSelf,
@@ -46,6 +39,11 @@ import { isFeatureEnabled } from '../../utils/feature-switches'
 import { modify, toFirst } from '../shared/optics/optic-utilities'
 import { filtered, fromObjectField, traverseArray } from '../shared/optics/optic-creators'
 import { foldEither } from '../shared/either'
+import {
+  SceneThreadMetadata,
+  isCanvasThreadMetadata,
+  liveblocksThreadMetadataToUtopia,
+} from './comment-types'
 
 export function useCanvasCommentThreadAndLocation(comment: CommentId): {
   location: CanvasPoint | null
@@ -91,19 +89,19 @@ export function useCanvasCommentThreadAndLocation(comment: CommentId): {
           return null
         }
 
-        const { metadata } = thread
-        if (!isSceneThreadMetadata(metadata)) {
-          return canvasPoint(metadata)
+        const metadata = liveblocksThreadMetadataToUtopia(thread.metadata)
+        if (isCanvasThreadMetadata(metadata)) {
+          return metadata.position
         }
         const scene = scenes.find((s) => getIdOfScene(s) === metadata.sceneId)
 
         if (scene == null) {
-          return canvasPoint(thread.metadata)
+          return metadata.position
         }
         if (!isNotNullFiniteRectangle(scene.globalFrame)) {
-          return canvasPoint(metadata)
+          return metadata.position
         }
-        return getCanvasPointWithCanvasOffset(scene.globalFrame, positionInScene(metadata))
+        return getCanvasPointWithCanvasOffset(scene.globalFrame, metadata.scenePosition)
 
       default:
         assertNever(comment)
@@ -275,17 +273,17 @@ export function useCanvasLocationOfThread(thread: ThreadData<ThreadMetadata>): {
 } {
   const scenes = useScenesWithId()
 
-  const { metadata } = thread
-  if (!isSceneThreadMetadata(metadata)) {
-    return { location: canvasPoint(metadata), scene: null }
+  const metadata = liveblocksThreadMetadataToUtopia(thread.metadata)
+  if (isCanvasThreadMetadata(metadata)) {
+    return { location: metadata.position, scene: null }
   }
   const scene = scenes.find((s) => getIdOfScene(s) === metadata.sceneId)
 
   if (scene == null || !isNotNullFiniteRectangle(scene.globalFrame)) {
-    return { location: canvasPoint(metadata), scene: null }
+    return { location: metadata.position, scene: null }
   }
   return {
-    location: getCanvasPointWithCanvasOffset(scene.globalFrame, positionInScene(metadata)),
+    location: getCanvasPointWithCanvasOffset(scene.globalFrame, metadata.scenePosition),
     scene: scene.elementPath,
   }
 }
@@ -461,11 +459,12 @@ export function getThreadLocationOnCanvas(
   startingSceneGlobalFrame: MaybeInfinityCanvasRectangle | null,
 ): CanvasPoint {
   const globalFrame = nullIfInfinity(startingSceneGlobalFrame)
-  if (!isSceneThreadMetadata(thread.metadata) || globalFrame == null) {
-    return canvasPoint(thread.metadata)
+  const metadata = liveblocksThreadMetadataToUtopia(thread.metadata)
+  if (isCanvasThreadMetadata(metadata) || globalFrame == null) {
+    return metadata.position
   }
 
-  return canvasPositionOfThread(globalFrame, positionInScene(thread.metadata))
+  return canvasPositionOfThread(globalFrame, metadata.scenePosition)
 }
 
 function canvasPositionOfThread(
@@ -476,8 +475,4 @@ function canvasPositionOfThread(
     x: sceneGlobalFrame.x + locationInScene.x,
     y: sceneGlobalFrame.y + locationInScene.y,
   })
-}
-
-export function positionInScene(metadata: SceneThreadMetadata): LocalPoint {
-  return localPoint({ x: metadata.sceneX, y: metadata.sceneY })
 }
