@@ -38,7 +38,7 @@ export function utopiaThreadMetadataToLiveblocks(metadata: UtopiaThreadMetadata)
         y: metadata.position.y,
         sceneId: metadata.sceneId,
         sceneX: metadata.scenePosition.x,
-        sceneY: metadata.scenePosition.x,
+        sceneY: metadata.scenePosition.y,
         resolved: metadata.resolved,
         remixLocationRoute: metadata.remixLocationRoute,
       }
