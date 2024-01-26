@@ -22,31 +22,13 @@ export type SceneThreadMetadata = BaseThreadMetadata & {
 }
 
 export function canvasThreadMetadata(
-  position: CanvasPoint,
-  resolved: boolean = false,
+  data: Omit<CanvasThreadMetadata, 'type'>,
 ): CanvasThreadMetadata {
-  return {
-    type: 'canvas',
-    position: position,
-    resolved: resolved,
-  }
+  return { ...data, type: 'canvas' }
 }
 
-export function sceneThreadMetadata(
-  position: CanvasPoint,
-  sceneId: string,
-  scenePosition: LocalPoint,
-  remixLocationRoute?: string,
-  resolved: boolean = false,
-): SceneThreadMetadata {
-  return {
-    type: 'scene',
-    position: position,
-    sceneId: sceneId,
-    scenePosition: scenePosition,
-    remixLocationRoute: remixLocationRoute,
-    resolved: resolved,
-  }
+export function sceneThreadMetadata(data: Omit<SceneThreadMetadata, 'type'>): SceneThreadMetadata {
+  return { ...data, type: 'scene' }
 }
 
 export function isSceneThreadMetadata(
@@ -63,19 +45,17 @@ export function isCanvasThreadMetadata(
 
 export function liveblocksThreadMetadataToUtopia(metadata: ThreadMetadata): UtopiaThreadMetadata {
   if (metadata.sceneId != null && metadata.sceneX != null && metadata.sceneY != null) {
-    return {
-      type: 'scene',
+    return sceneThreadMetadata({
       position: canvasPoint(metadata),
       sceneId: metadata.sceneId,
       scenePosition: localPoint({ x: metadata.sceneX, y: metadata.sceneY }),
       resolved: metadata.resolved,
-    }
+    })
   } else {
-    return {
-      type: 'canvas',
+    return canvasThreadMetadata({
       position: canvasPoint(metadata),
       resolved: metadata.resolved,
-    }
+    })
   }
 }
 
