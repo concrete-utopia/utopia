@@ -26,9 +26,6 @@ export function utopiaThreadMetadataToLiveblocks(metadata: UtopiaThreadMetadata)
       return {
         x: metadata.position.x,
         y: metadata.position.y,
-        sceneId: undefined, // the undefined fields are necessary so we delete these fields on update from liveblocks
-        sceneX: undefined,
-        sceneY: undefined,
         resolved: metadata.resolved,
         remixLocationRoute: metadata.remixLocationRoute,
       }
