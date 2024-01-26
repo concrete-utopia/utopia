@@ -3,13 +3,9 @@ import { createRoomContext } from '@liveblocks/react'
 import { getProjectID } from './src/common/env-vars'
 import type { ActiveFrameAction } from './src/components/canvas/commands/set-active-frames-command'
 import {
-  localPoint,
-  type CanvasPoint,
   type CanvasRectangle,
   type CanvasVector,
-  type LocalPoint,
   type WindowPoint,
-  canvasPoint,
 } from './src/core/shared/math-utils'
 import type { RemixPresence } from './src/core/shared/multiplayer'
 import { projectIdToRoomId } from './src/core/shared/multiplayer'
