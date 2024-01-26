@@ -2,7 +2,15 @@ import { LiveObject, createClient } from '@liveblocks/client'
 import { createRoomContext } from '@liveblocks/react'
 import { getProjectID } from './src/common/env-vars'
 import type { ActiveFrameAction } from './src/components/canvas/commands/set-active-frames-command'
-import type { CanvasRectangle, CanvasVector, WindowPoint } from './src/core/shared/math-utils'
+import {
+  localPoint,
+  type CanvasPoint,
+  type CanvasRectangle,
+  type CanvasVector,
+  type LocalPoint,
+  type WindowPoint,
+  canvasPoint,
+} from './src/core/shared/math-utils'
 import type { RemixPresence } from './src/core/shared/multiplayer'
 import { projectIdToRoomId } from './src/core/shared/multiplayer'
 
@@ -95,27 +103,15 @@ export type RoomEvent = ControlChangedRoomEvent
 
 // Optionally, when using Comments, ThreadMetadata represents metadata on
 // each thread. Can only contain booleans, strings, and numbers.
-export type ThreadMetadata = CanvasThreadMetadata | SceneThreadMetadata
 
-export type SceneThreadMetadata = {
+export type ThreadMetadata = {
   x: number
   y: number
-  sceneId: string
-  sceneX: number
-  sceneY: number
+  sceneId?: string
+  sceneX?: number
+  sceneY?: number
   remixLocationRoute?: string
   resolved: boolean
-}
-
-export type CanvasThreadMetadata = {
-  x: number
-  y: number
-  remixLocationRoute?: string
-  resolved: boolean
-}
-
-export function isSceneThreadMetadata(metadata: ThreadMetadata): metadata is SceneThreadMetadata {
-  return metadata.hasOwnProperty('sceneId')
 }
 
 export const {

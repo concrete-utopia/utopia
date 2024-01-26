@@ -1,14 +1,11 @@
 import React from 'react'
 import { MultiplayerWrapper } from '../../utils/multiplayer-wrapper'
 import { getThreadLocationOnCanvas, useCanComment, useScenes } from './comment-hooks'
-import {
-  isSceneThreadMetadata,
-  useEditThreadMetadata,
-  useThreads,
-} from '../../../liveblocks.config'
+import { useEditThreadMetadata, useThreads } from '../../../liveblocks.config'
 import { getIdOfScene } from '../../components/canvas/controls/comment-mode/comment-mode-hooks'
 import * as EP from '../shared/element-path'
 import { isNotNullFiniteRectangle } from '../shared/math-utils'
+import { isCanvasThreadMetadata, liveblocksThreadMetadataToUtopia } from './comment-types'
 
 export const CommentMaintainer = React.memo(() => {
   const canComment = useCanComment()
@@ -38,10 +35,11 @@ function useMaintainComments() {
   const editThreadMetadata = useEditThreadMetadata()
 
   threads.forEach(async (t): Promise<void> => {
-    if (!isSceneThreadMetadata(t.metadata)) {
+    const metadata = liveblocksThreadMetadataToUtopia(t.metadata)
+    if (isCanvasThreadMetadata(metadata)) {
       return
     }
-    const { sceneId } = t.metadata
+    const { sceneId } = metadata
 
     const scene = scenes.find(
       (s) => getIdOfScene(s) === sceneId || EP.toUid(s.elementPath) === sceneId,
@@ -53,7 +51,7 @@ function useMaintainComments() {
     }
 
     const p = getThreadLocationOnCanvas(t, globalFrame)
-    if (p.x === t.metadata.x && p.y === t.metadata.y) {
+    if (p.x === metadata.position.x && p.y === metadata.position.y) {
       return
     }
 
