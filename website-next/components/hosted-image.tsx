@@ -1,8 +1,9 @@
 import * as React from 'react'
-import { STATIC_BASE_URL } from './common/env-vars'
+
+const cdnUrl = process.env.UTOPIA_CDN_URL ?? ''
 
 export function srcToCdn(src: string): string {
-  return `${STATIC_BASE_URL}${src}`
+  return `${cdnUrl}${src}`
 }
 
 type HostedImageProps = React.DetailedHTMLProps<
