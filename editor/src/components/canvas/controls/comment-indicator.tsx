@@ -25,6 +25,7 @@ import {
   distance,
   getLocalPointInNewParentContext,
   isNotNullFiniteRectangle,
+  localPoint,
   nullIfInfinity,
   offsetPoint,
   pointDifference,
@@ -64,7 +65,11 @@ import { useRefAtom } from '../../editor/hook-utils'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import * as PP from '../../../core/shared/property-path'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
-import { liveblocksThreadMetadataToUtopia } from '../../../core/commenting/comment-types'
+import {
+  canvasThreadMetadata,
+  liveblocksThreadMetadataToUtopia,
+  utopiaThreadMetadataToLiveblocksPartial,
+} from '../../../core/commenting/comment-types'
 
 export const CommentIndicators = React.memo(() => {
   const projectId = useEditorState(
@@ -458,19 +463,28 @@ function useDragging(
         if (maybeSceneUnderPoint == null) {
           editThreadMetadata({
             threadId: thread.id,
-            metadata: {
-              x: newPositionOnCanvas.x,
-              y: newPositionOnCanvas.y,
-              sceneId: null,
-              remixLocationRoute: null,
-            },
+            metadata: utopiaThreadMetadataToLiveblocksPartial({
+              type: 'canvas',
+              position: newPositionOnCanvas,
+            }),
           })
           return
         }
 
         const localPointInScene = isNotNullFiniteRectangle(maybeSceneUnderPoint.globalFrame)
           ? getLocalPointInNewParentContext(maybeSceneUnderPoint.globalFrame, newPositionOnCanvas)
-          : newPositionOnCanvas
+          : null
+
+        if (localPointInScene == null) {
+          editThreadMetadata({
+            threadId: thread.id,
+            metadata: utopiaThreadMetadataToLiveblocksPartial({
+              type: 'canvas',
+              position: newPositionOnCanvas,
+            }),
+          })
+          return
+        }
 
         const sceneId = getIdOfScene(maybeSceneUnderPoint)
         const sceneIdToUse = sceneId ?? EP.toUid(maybeSceneUnderPoint.elementPath)
@@ -489,14 +503,13 @@ function useDragging(
         }
         editThreadMetadata({
           threadId: thread.id,
-          metadata: {
-            sceneX: localPointInScene.x,
-            sceneY: localPointInScene.y,
+          metadata: utopiaThreadMetadataToLiveblocksPartial({
+            type: 'scene',
+            position: newPositionOnCanvas,
+            scenePosition: localPointInScene,
             sceneId: sceneIdToUse,
             remixLocationRoute: remixRoute != null ? remixRoute.location.pathname : undefined,
-            x: newPositionOnCanvas.x,
-            y: newPositionOnCanvas.y,
-          },
+          }),
         })
       }
 
