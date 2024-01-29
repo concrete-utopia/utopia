@@ -14,7 +14,7 @@ export const liveblocksThrottle = 100 // ms
 
 export const liveblocksClient = createClient({
   throttle: liveblocksThrottle,
-  authEndpoint: '/v1/liveblocks/authentication',
+  authEndpoint: '/v1/liveblocks/authentication', // TODO this should be forwarded to the BFF as well, but auth needs same-origin
   unstable_fallbackToHTTP: true,
 })
 
