@@ -119,7 +119,7 @@ describe('Updating a transitive dependency', () => {
       (oldFile as TextFile).versionNumber + 1,
     )
 
-    await dispatch([updateFile(indirectFilePath, updatedIndirectFile, false, false)], true)
+    await dispatch([updateFile(indirectFilePath, updatedIndirectFile, false)], true)
 
     const appRootDivAfter = renderedDOM.getByTestId('app-root-div')
     expect(appRootDivAfter.innerText).toEqual(

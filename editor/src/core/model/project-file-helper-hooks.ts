@@ -26,7 +26,7 @@ export function useReParseOpenProjectFile(): () => void {
         openFile.lastParseSuccess,
         openFile.versionNumber + 1,
       )
-      dispatch([updateFile(openFilePath, openFileCodeAhead, false, false)])
+      dispatch([updateFile(openFilePath, openFileCodeAhead, false)])
     }
   }, [refEditorState, dispatch])
 }
@@ -77,7 +77,7 @@ export function useUpdateStringRun(): (
         sourceFile.lastParseSuccess,
         sourceFile.versionNumber + 1,
       )
-      return [updateFile(originalStringData.filePath, updatedFileCodeAhead, false, false)]
+      return [updateFile(originalStringData.filePath, updatedFileCodeAhead, false)]
     },
     [refEditorState],
   )

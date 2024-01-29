@@ -50,7 +50,7 @@ export function fileResultUploadAction(
       )
     }
     case 'TEXT_RESULT': {
-      return EditorActions.updateFile(targetPath, codeFile(fileResult.content, null), true, false)
+      return EditorActions.updateFile(targetPath, codeFile(fileResult.content, null), true)
     }
 
     default:

@@ -439,7 +439,6 @@ function getExternalResourcesInfo(
                 htmlFilePath,
                 textFile(newFileContents, newFileContents, null, versionNumber + 1),
                 false,
-                false,
               ),
             ])
           } else {

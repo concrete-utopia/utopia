@@ -1049,7 +1049,7 @@ export const resolveConflict =
         )
       }
       void saveAssetPromise.then(() => {
-        dispatch([updateFile(path, projectFile, true, false), removeFileConflict(path)], 'everyone')
+        dispatch([updateFile(path, projectFile, true), removeFileConflict(path)], 'everyone')
       })
     }
 

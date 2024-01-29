@@ -23,6 +23,7 @@ import {
   deleteFileFromCollaboration,
   updateExportsDetailFromCollaborationUpdate,
   updateFile,
+  updateFileFromCollaboration,
   updateImportsFromCollaborationUpdate,
   updateTopLevelElementsFromCollaborationUpdate,
 } from '../actions/action-creators'
@@ -161,7 +162,7 @@ describe('addHookForProjectChanges', () => {
       },
       expectations: (firstSessionPromises, secondSessionPromises) => {
         expect(secondSessionPromises).toEqual([
-          updateFile('/assets/test1.jpg', newFile, true, true),
+          updateFileFromCollaboration('/assets/test1.jpg', newFile, true),
         ])
       },
     })
@@ -200,7 +201,7 @@ describe('addHookForProjectChanges', () => {
       },
       expectations: (firstSessionPromises, secondSessionPromises) => {
         expect(secondSessionPromises).toEqual([
-          updateFile('/assets/test1.ttf', newFile, true, true),
+          updateFileFromCollaboration('/assets/test1.ttf', newFile, true),
         ])
       },
     })

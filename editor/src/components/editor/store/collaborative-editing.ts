@@ -3,6 +3,7 @@ import {
   updateCodeFromCollaborationUpdate,
   updateExportsDetailFromCollaborationUpdate,
   updateFile,
+  updateFileFromCollaboration,
   updateImportsFromCollaborationUpdate,
 } from '../actions/action-creators'
 import type {
@@ -571,7 +572,7 @@ function updateImportsOfFile(
 }
 
 function updateImageActionFromFile(file: CollabImageFile, filePath: string): EditorAction {
-  return updateFile(
+  return updateFileFromCollaboration(
     filePath,
     imageFile(
       file.get('imageType') as string | undefined,
@@ -581,7 +582,6 @@ function updateImageActionFromFile(file: CollabImageFile, filePath: string): Edi
       file.get('hash') as number,
       file.get('gitBlobSha') as string | undefined,
     ),
-    true,
     true,
   )
 }
@@ -598,10 +598,9 @@ function updateImageActionFromSession(
 }
 
 function updateAssetActionFromFile(file: CollabAssetFile, filePath: string): EditorAction {
-  return updateFile(
+  return updateFileFromCollaboration(
     filePath,
     assetFile(undefined, file.get('gitBlobSha') as string | undefined),
-    true,
     true,
   )
 }
