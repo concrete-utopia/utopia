@@ -2,7 +2,12 @@ import { LiveObject } from '@liveblocks/client'
 import { useAtom } from 'jotai'
 import React from 'react'
 import type { ConnectionInfo, Storage } from '../../../liveblocks.config'
-import { useMutation, useStorage } from '../../../liveblocks.config'
+import {
+  useErrorListener,
+  useLostConnectionListener,
+  useMutation,
+  useStorage,
+} from '../../../liveblocks.config'
 import { isLoggedIn } from '../../common/user'
 import {
   ActiveRemixSceneAtom,
@@ -14,6 +19,9 @@ import * as EP from './element-path'
 import { possiblyUniqueColor, type RemixPresence } from './multiplayer'
 import { PRODUCTION_ENV } from '../../common/env-vars'
 import { isFeatureEnabled } from '../../utils/feature-switches'
+import { useDispatch } from '../../components/editor/store/dispatch-context'
+import { removeToast, showToast } from '../../components/editor/actions/action-creators'
+import { notice } from '../../components/common/notice'
 
 /**
  * How often to perform heartbeat bumps on connections.
@@ -249,4 +257,50 @@ export function useMonitorConnection() {
       window.clearInterval(cleanupInactiveInterval)
     }
   }, [updateLastSeen, cleanupInactive])
+}
+
+export function useLiveblocksConnectionListener() {
+  const dispatch = useDispatch()
+  const loggedIn = useIsLoggedIn()
+
+  useLostConnectionListener((event) => {
+    console.warn('Lost connection event to liveblocks', event)
+    switch (event) {
+      case 'lost':
+        if (loggedIn) {
+          dispatch([
+            showToast(
+              notice('Reconnecting to other users...', 'WARNING', true, 'reconnecting-liveblocks'),
+            ),
+          ])
+        }
+        break
+
+      case 'restored':
+        dispatch([
+          removeToast('lost-liveblocks-connection'),
+          removeToast('reconnecting-liveblocks'),
+        ])
+        break
+
+      case 'failed':
+        if (loggedIn) {
+          showToast(
+            notice('Lost connection to other users', 'ERROR', true, 'lost-liveblocks-connection'),
+          )
+        }
+        break
+    }
+  })
+
+  useErrorListener((error) => {
+    console.warn('Error connecting to liveblocks', error)
+    if (loggedIn) {
+      dispatch([
+        showToast(
+          notice('Error connecting to other users', 'ERROR', true, 'error-connecting-liveblocks'),
+        ),
+      ])
+    }
+  })
 }

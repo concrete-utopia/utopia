@@ -1,9 +1,10 @@
 import React from 'react'
-import type { User } from '@liveblocks/client'
+import type { LostConnectionEvent, User } from '@liveblocks/client'
 import { LiveObject, type ThreadData } from '@liveblocks/client'
 import type { ConnectionInfo, Presence, ThreadMetadata, UserMeta } from '../../../liveblocks.config'
 import {
   useEditThreadMetadata,
+  useLostConnectionListener,
   useMutation,
   useSelf,
   useStorage,
@@ -24,7 +25,6 @@ import {
   canvasPoint,
   getCanvasPointWithCanvasOffset,
   isNotNullFiniteRectangle,
-  localPoint,
   nullIfInfinity,
 } from '../shared/math-utils'
 import { MetadataUtils } from '../model/element-metadata-utils'
@@ -39,11 +39,7 @@ import { isFeatureEnabled } from '../../utils/feature-switches'
 import { modify, toFirst } from '../shared/optics/optic-utilities'
 import { filtered, fromObjectField, traverseArray } from '../shared/optics/optic-creators'
 import { foldEither } from '../shared/either'
-import {
-  SceneThreadMetadata,
-  isCanvasThreadMetadata,
-  liveblocksThreadMetadataToUtopia,
-} from './comment-types'
+import { isCanvasThreadMetadata, liveblocksThreadMetadataToUtopia } from './comment-types'
 
 export function useCanvasCommentThreadAndLocation(comment: CommentId): {
   location: CanvasPoint | null
@@ -451,7 +447,18 @@ export function useDataThemeAttributeOnBody() {
 export function useCanComment() {
   const canComment = usePermissions().comment
 
-  return isFeatureEnabled('Multiplayer') && canComment
+  const [connectionLostStatus, setConnectionLostStatus] =
+    React.useState<LostConnectionEvent | null>(null)
+
+  // this is necessary because a lot of useThreads calls pile up if we allow
+  // commenting ui components to be rendered when we are disconnected
+  useLostConnectionListener((event) => {
+    setConnectionLostStatus(event)
+  })
+
+  const isStatusOk = connectionLostStatus == null || connectionLostStatus === 'restored'
+
+  return isFeatureEnabled('Multiplayer') && canComment && isStatusOk
 }
 
 export function getThreadLocationOnCanvas(
