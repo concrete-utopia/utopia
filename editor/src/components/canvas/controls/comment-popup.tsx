@@ -3,7 +3,7 @@ import type { ComposerSubmitComment } from '@liveblocks/react-comments'
 import { Comment, Composer } from '@liveblocks/react-comments'
 import { useAtom } from 'jotai'
 import type { CSSProperties } from 'react'
-import React, { useRef } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 import { useCreateThread, useStorage } from '../../../../liveblocks.config'
 import '../../../../resources/editor/css/liveblocks/react-comments/styles.css'
 import '../../../../resources/editor/css/liveblocks/react-comments/dark/attributes.css'
@@ -423,6 +423,34 @@ type NewCommentPopupProps = {
 const NewCommentPopup = React.memo((props: NewCommentPopupProps) => {
   const dispatch = useDispatch()
 
+  const composerRef = useRef<HTMLFormElement | null>(null)
+  const [onBlurCompleted, setOnBlurCompleted] = useState(false)
+
+  const onBlur = useCallback(() => {
+    setOnBlurCompleted(true)
+  }, [])
+
+  const onBlurWait = React.useCallback(
+    (callback: () => void) => {
+      function waitUntilCompleted(): void {
+        if (onBlurCompleted) {
+          callback()
+        } else {
+          window.setTimeout(waitUntilCompleted, 1)
+        }
+      }
+      waitUntilCompleted()
+    },
+    [onBlurCompleted],
+  )
+
+  const onSubmit = React.useCallback(
+    (comment: ComposerSubmitComment, event: React.FormEvent<HTMLFormElement>) => {
+      onBlurWait(() => props.onComposerSubmit(comment, event))
+    },
+    [onBlurWait, props],
+  )
+
   const onNewCommentComposerKeyDown = React.useCallback(
     (e: React.KeyboardEvent) => switchToBasicCommentModeOnEscape(e, dispatch),
     [dispatch],
@@ -513,9 +541,11 @@ const NewCommentPopup = React.memo((props: NewCommentPopupProps) => {
       <motion.div animate={newCommentComposerAnimation}>
         <Composer
           autoFocus
-          onComposerSubmit={props.onComposerSubmit}
+          ref={composerRef}
+          onComposerSubmit={onSubmit}
           style={ComposerStyle}
           onKeyDown={onNewCommentComposerKeyDown}
+          onBlur={onBlur}
         />
       </motion.div>
     </>
