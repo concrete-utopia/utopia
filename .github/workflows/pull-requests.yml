@@ -146,7 +146,7 @@ jobs:
     needs: [cache-pnpm-store]
     env:
       UTOPIA_SHA: ${{ github.sha }}
-      AUTH0_CLIENT_ID: KB7euFO46rVYeOaWmrEdktdhAFxEO266
+      AUTH0_CLIENT_ID: A9v9iuucCnFzkb1OzGkbAvi3cSF8kQtu
       AUTH0_ENDPOINT: utopia-staging.us.auth0.com
     steps:
       # Create a comment immediately so that the first comment can be used as a "Try me" link
@@ -262,7 +262,7 @@ jobs:
     needs: [deploy-branch, cache-pnpm-store]
     env:
       UTOPIA_SHA: ${{ github.sha }}
-      AUTH0_CLIENT_ID: KB7euFO46rVYeOaWmrEdktdhAFxEO266
+      AUTH0_CLIENT_ID: A9v9iuucCnFzkb1OzGkbAvi3cSF8kQtu
       AUTH0_ENDPOINT: utopia-staging.us.auth0.com
     steps:
       # Gets the branch that this PR is targeting and replaces forward slashes in the name with hyphens.
@@ -406,7 +406,7 @@ jobs:
     needs: [deploy-branch, cache-pnpm-store]
     env:
       UTOPIA_SHA: ${{ github.sha }}
-      AUTH0_CLIENT_ID: KB7euFO46rVYeOaWmrEdktdhAFxEO266
+      AUTH0_CLIENT_ID: A9v9iuucCnFzkb1OzGkbAvi3cSF8kQtu
       AUTH0_ENDPOINT: utopia-staging.us.auth0.com
     steps:
       # Gets the branch that this PR is targeting and replaces forward slashes in the name with hyphens.
@@ -446,7 +446,7 @@ jobs:
     needs: [deploy-branch, cache-pnpm-store]
     env:
       UTOPIA_SHA: ${{ github.sha }}
-      AUTH0_CLIENT_ID: KB7euFO46rVYeOaWmrEdktdhAFxEO266
+      AUTH0_CLIENT_ID: A9v9iuucCnFzkb1OzGkbAvi3cSF8kQtu
       AUTH0_ENDPOINT: utopia-staging.us.auth0.com
     steps:
       # Gets the branch that this PR is targeting and replaces forward slashes in the name with hyphens.
