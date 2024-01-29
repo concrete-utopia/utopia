@@ -1,4 +1,3 @@
-import { setFeatureForUnitTestsUseInDescribeBlockOnly, wait } from '../../../utils/utils.test-utils'
 import { Y } from '../../../core/shared/yjs'
 import {
   RevisionsState,
@@ -22,7 +21,6 @@ import { testParseCode } from '../../../core/workers/parser-printer/parser-print
 import {
   deleteFileFromCollaboration,
   updateExportsDetailFromCollaborationUpdate,
-  updateFile,
   updateFileFromCollaboration,
   updateImportsFromCollaborationUpdate,
   updateTopLevelElementsFromCollaborationUpdate,
@@ -111,8 +109,6 @@ async function runAddHookForProjectChangesTest(test: AddHookForProjectChangesTes
 }
 
 describe('addHookForProjectChanges', () => {
-  setFeatureForUnitTestsUseInDescribeBlockOnly('Multiplayer', true)
-
   it('adding file causes it to be added to the project contents', async () => {
     const code = 'export const A = <div />'
     const newParsedCode = testParseCode(code)

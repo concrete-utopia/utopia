@@ -180,7 +180,6 @@ import type { ProjectServerState } from './project-server-state'
 import type { ReparentTargetForPaste } from '../../canvas/canvas-strategies/strategies/reparent-utils'
 import { GridMenuWidth } from '../../canvas/stored-layout'
 import type { VariablesInScope } from '../../canvas/ui-jsx-canvas'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
 import type { ActiveFrame } from '../../canvas/commands/set-active-frames-command'
 import { Y } from '../../../core/shared/yjs'
 import { removeUnusedImportsForRemovedElement } from '../import-utils'
@@ -442,12 +441,8 @@ export function emptyCollaborativeEditingSupportSession(): CollaborativeEditingS
 }
 
 export function emptyCollaborativeEditingSupport(): CollaborativeEditingSupport {
-  let session: CollaborativeEditingSupportSession | null = null
-  if (isFeatureEnabled('Multiplayer')) {
-    session = emptyCollaborativeEditingSupportSession()
-  }
   return {
-    session: session,
+    session: emptyCollaborativeEditingSupportSession(),
   }
 }
 

@@ -24,7 +24,6 @@ import {
   canvasPoint,
   getCanvasPointWithCanvasOffset,
   isNotNullFiniteRectangle,
-  localPoint,
   nullIfInfinity,
 } from '../shared/math-utils'
 import { MetadataUtils } from '../model/element-metadata-utils'
@@ -35,15 +34,10 @@ import * as EP from '../shared/element-path'
 import { getCurrentTheme } from '../../components/editor/store/editor-state'
 import { useMyUserId } from '../shared/multiplayer-hooks'
 import { usePermissions } from '../../components/editor/store/permissions'
-import { isFeatureEnabled } from '../../utils/feature-switches'
 import { modify, toFirst } from '../shared/optics/optic-utilities'
 import { filtered, fromObjectField, traverseArray } from '../shared/optics/optic-creators'
 import { foldEither } from '../shared/either'
-import {
-  SceneThreadMetadata,
-  isCanvasThreadMetadata,
-  liveblocksThreadMetadataToUtopia,
-} from './comment-types'
+import { isCanvasThreadMetadata, liveblocksThreadMetadataToUtopia } from './comment-types'
 
 export function useCanvasCommentThreadAndLocation(comment: CommentId): {
   location: CanvasPoint | null
@@ -451,7 +445,7 @@ export function useDataThemeAttributeOnBody() {
 export function useCanComment() {
   const canComment = usePermissions().comment
 
-  return isFeatureEnabled('Multiplayer') && canComment
+  return canComment
 }
 
 export function getThreadLocationOnCanvas(

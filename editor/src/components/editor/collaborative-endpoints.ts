@@ -1,7 +1,6 @@
 import { v4 as UUID } from 'uuid'
 import { IS_TEST_ENVIRONMENT, UTOPIA_BACKEND } from '../../common/env-vars'
 import { HEADERS, MODE } from '../../common/server'
-import { isFeatureEnabled } from '../../utils/feature-switches'
 import type { EditorDispatch } from './action-types'
 import { showToast } from './actions/action-creators'
 import { notice } from '../common/notice'
@@ -109,7 +108,7 @@ async function claimControlOverProject(projectID: string | null): Promise<boolea
   if (IS_TEST_ENVIRONMENT) {
     return true
   }
-  if (projectID == null || !isFeatureEnabled('Baton Passing For Control')) {
+  if (projectID == null) {
     return null
   }
 
@@ -126,7 +125,7 @@ async function snatchControlOverProject(projectID: string | null): Promise<boole
   if (IS_TEST_ENVIRONMENT) {
     return true
   }
-  if (projectID == null || !isFeatureEnabled('Baton Passing For Control')) {
+  if (projectID == null) {
     return null
   }
 
@@ -143,7 +142,7 @@ async function releaseControlOverProject(projectID: string | null): Promise<void
   if (IS_TEST_ENVIRONMENT) {
     return
   }
-  if (projectID == null || !isFeatureEnabled('Baton Passing For Control')) {
+  if (projectID == null) {
     return
   }
 
@@ -162,13 +161,11 @@ async function clearAllControlFromThisEditor(): Promise<void> {
   if (IS_TEST_ENVIRONMENT) {
     return
   }
-  if (isFeatureEnabled('Baton Passing For Control')) {
-    const request = clearAllOfCollaboratorsControl(collaborationEditor)
+  const request = clearAllOfCollaboratorsControl(collaborationEditor)
 
-    const response = await callCollaborationEndpoint(request)
-    if (response.type !== 'RELEASE_CONTROL_RESULT') {
-      throw new Error(`Unexpected response: ${JSON.stringify(response)}`)
-    }
+  const response = await callCollaborationEndpoint(request)
+  if (response.type !== 'RELEASE_CONTROL_RESULT') {
+    throw new Error(`Unexpected response: ${JSON.stringify(response)}`)
   }
 }
 
