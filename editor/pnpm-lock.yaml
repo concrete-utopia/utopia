@@ -40,6 +40,9 @@ patchedDependencies:
   '@remix-run/react@2.0.1':
     hash: 4uzd4uhfxjy6hfd2xmixhrzbqy
     path: patches/@remix-run__react@2.0.1.patch
+  slate-react@0.98.4:
+    hash: wwmfqejkng33nhl36szrqpzsjq
+    path: patches/slate-react@0.98.4.patch
 
 specifiers:
   '@babel/cli': 7.23.4
@@ -3350,7 +3353,7 @@ packages:
       react-virtuoso: 4.6.2_ef5jwxihqo6n7gxfmzogljlgcm
       slate: 0.94.1
       slate-history: 0.93.0_slate@0.94.1
-      slate-react: 0.98.4_qzwh76fhzug5wjgep5oh76uery
+      slate-react: 0.98.4_wwmfqejkng33nhl36szrqpzsjq_qzwh76fhzug5wjgep5oh76uery
       use-sync-external-store: 1.2.0_react@18.1.0
     transitivePeerDependencies:
       - '@types/react'
@@ -17613,7 +17616,7 @@ packages:
       slate: 0.94.1
     dev: false
 
-  /slate-react/0.98.4_qzwh76fhzug5wjgep5oh76uery:
+  /slate-react/0.98.4_wwmfqejkng33nhl36szrqpzsjq_qzwh76fhzug5wjgep5oh76uery:
     resolution: {integrity: sha512-8Of3v9hFuX8rIRc86LuuBhU9t8ps+9ARKL4yyhCrKQYZ93Ep/LFA3GvPGvtf3zYuVadZ8tkhRH8tbHOGNAndLw==}
     peerDependencies:
       react: '>=16.8.0'
@@ -17633,6 +17636,7 @@ packages:
       slate: 0.94.1
       tiny-invariant: 1.0.6
     dev: false
+    patched: true
 
   /slate/0.94.1:
     resolution: {integrity: sha512-GH/yizXr1ceBoZ9P9uebIaHe3dC/g6Plpf9nlUwnvoyf6V1UOYrRwkabtOCd3ZfIGxomY4P7lfgLr7FPH8/BKA==}

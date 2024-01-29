@@ -1,0 +1,26 @@
+diff --git a/dist/index.es.js b/dist/index.es.js
+index 3d18e69b2f1dd9333722da043c50c72813bfec23..1d7f43cf0854ff6cb19e208066735452cff666fd 100644
+--- a/dist/index.es.js
++++ b/dist/index.es.js
+@@ -420,12 +420,16 @@ var ReactEditor = {
+     (_EDITOR_TO_SCHEDULE_F = EDITOR_TO_SCHEDULE_FLUSH.get(editor)) === null || _EDITOR_TO_SCHEDULE_F === void 0 ? void 0 : _EDITOR_TO_SCHEDULE_F();
+   },
+   blur: editor => {
+-    var el = ReactEditor.toDOMNode(editor, editor);
+-    var root = ReactEditor.findDocumentOrShadowRoot(editor);
+-    IS_FOCUSED.set(editor, false);
++    try {
++      var el = ReactEditor.toDOMNode(editor, editor);
++      var root = ReactEditor.findDocumentOrShadowRoot(editor);
++      IS_FOCUSED.set(editor, false);
+ 
+-    if (root.activeElement === el) {
+-      el.blur();
++      if (root.activeElement === el) {
++        el.blur();
++      }
++    } catch (error) {
++      // Ignore error.
+     }
+   },
+   deselect: editor => {
