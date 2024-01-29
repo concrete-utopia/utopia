@@ -58,8 +58,7 @@ export const VSCODE_EDITOR_IFRAME_BASE_URL: string = PRODUCTION_CONFIG
   : BARE_HOST === 'localhost:8000' || BARE_HOST === 'localhost:8001'
   ? 'http://localhost:8000'
   : BASE_URL
-export const UTOPIA_BACKEND = BASE_URL + 'v1/'
-export const UTOPIA_BACKEND_WS = BASE_WS + 'v1/'
+export const UTOPIA_BACKEND = 'http://localhost:5001/v1/' // TODO don't hardcode this!
 export const ASSET_ENDPOINT = UTOPIA_BACKEND + 'asset/'
 export const THUMBNAIL_ENDPOINT = UTOPIA_BACKEND + 'thumbnail/'
 

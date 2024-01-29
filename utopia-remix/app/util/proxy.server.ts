@@ -4,14 +4,30 @@ import { proxiedResponse } from "./api.server";
 
 const BASE_URL = Env.BackendURL;
 
-export async function proxy(req: Request, path: string) {
-  const response = await fetch(urljoin(BASE_URL, path), {
+function buildProxyUrl(url: URL, path?: string | null): string {
+  const { pathname, search } = url;
+
+  if (path != null) {
+    return urljoin(BASE_URL, path);
+  }
+
+  return urljoin(BASE_URL, `${pathname}${search}`);
+}
+
+export async function proxy(
+  req: Request,
+  path?: string | null,
+  options?: { rawOutput?: boolean },
+) {
+  const url = buildProxyUrl(new URL(req.url), path);
+  const response = await fetch(url, {
     credentials: "include",
     method: req.method,
     body: req.body,
+    headers: req.headers,
   });
-  if (response instanceof Response) {
-    return proxiedResponse(response);
+  if (options?.rawOutput) {
+    return response;
   }
-  return response;
+  return proxiedResponse(response);
 }

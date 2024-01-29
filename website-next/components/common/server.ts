@@ -25,7 +25,7 @@ export const PROJECT_EDITOR = BASE_URL + 'project'
 
 // if we want to enable CORS, we need the server to be able to answer to preflight OPTION requests with the proper Allow-Access headers
 // until then, this is keeping us safe from attempting a CORS request that results in cryptic error messages
-export const MODE = 'same-origin'
+export const MODE = undefined //'same-origin' TODO restore this!!!!!!
 
 export const HEADERS = {
   Accept: 'application/json',

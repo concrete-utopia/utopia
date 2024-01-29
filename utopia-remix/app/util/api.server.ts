@@ -2,6 +2,7 @@ import { TypedResponse, json } from "@remix-run/node";
 import invariant from "tiny-invariant";
 import { Env } from "../env.server";
 import { Status } from "./statusCodes.server";
+import { Method } from "./methods.server";
 
 interface ErrorResponse {
   error: string;
@@ -14,25 +15,43 @@ export type ApiResponse<T> = TypedResponse<T | ErrorResponse | EmptyResponse>;
 const responseHeaders: HeadersInit = {
   "Access-Control-Allow-Origin": Env.CORSOrigin,
   "Access-Control-Allow-Credentials": "true",
-  "Access-Control-Allow-Headers": "content-type, origin",
+  "Access-Control-Allow-Headers": "content-type, origin, cookie",
   "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
 };
 
-export async function api<T>(
+export async function handler<T>(
+  methods: Method[],
   request: Request,
-  fn: () => Promise<T>,
-): Promise<ApiResponse<T>> {
+  fn: (request: Request) => Promise<T>,
+): Promise<ApiResponse<T> | unknown> {
+  if (!methods.some((m) => m === request.method)) {
+    throw new ApiError(
+      `${request.method} ${request.url} invalid method ${request.method}`,
+      Status.METHOD_NOT_ALLOWED,
+    );
+  }
+
   if (request.method === "OPTIONS") {
     return json({}, { headers: responseHeaders });
   }
 
   try {
-    const resp = await fn();
+    const resp = await fn(request);
+    if (resp instanceof Response) {
+      return new Response(resp.body, {
+        headers: {
+          ...resp.headers,
+          ...responseHeaders,
+        },
+      });
+    }
     return json(resp, { headers: responseHeaders });
   } catch (err) {
     const isApiError = err instanceof ApiError;
     const message = isApiError ? err.message : `${err}`;
     const status = isApiError ? err.status : 500;
+
+    console.error(`${request.method} ${request.url}: ${message}`);
     return json(
       { error: message },
       { headers: responseHeaders, status: status },
@@ -61,7 +80,7 @@ export function ensure(
   }
 }
 
-export async function proxiedResponse(response: Response) {
+export async function proxiedResponse(response: Response): Promise<unknown> {
   if (response.status !== Status.OK) {
     let text = await response.text();
     if (text.length === 0) {
