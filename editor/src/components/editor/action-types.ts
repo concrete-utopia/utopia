@@ -607,6 +607,7 @@ export interface UpdateFile {
   filePath: string
   file: ProjectFile
   addIfNotInFiles: boolean
+  fromCollaboration: boolean
 }
 
 export interface UpdateProjectContents {
