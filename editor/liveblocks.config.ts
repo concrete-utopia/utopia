@@ -1,6 +1,6 @@
 import { LiveObject, createClient } from '@liveblocks/client'
 import { createRoomContext } from '@liveblocks/react'
-import { getProjectID } from './src/common/env-vars'
+import { UTOPIA_BACKEND, getProjectID } from './src/common/env-vars'
 import type { ActiveFrameAction } from './src/components/canvas/commands/set-active-frames-command'
 import {
   type CanvasRectangle,
@@ -9,12 +9,22 @@ import {
 } from './src/core/shared/math-utils'
 import type { RemixPresence } from './src/core/shared/multiplayer'
 import { projectIdToRoomId } from './src/core/shared/multiplayer'
+import { HEADERS } from './src/common/server'
+import urljoin from 'url-join'
 
 export const liveblocksThrottle = 100 // ms
 
 export const liveblocksClient = createClient({
   throttle: liveblocksThrottle,
-  authEndpoint: '/v1/liveblocks/authentication', // TODO this should be forwarded to the BFF as well, but auth needs same-origin
+  authEndpoint: async (room) => {
+    const resp = await fetch(urljoin(UTOPIA_BACKEND, 'liveblocks', 'authentication'), {
+      credentials: 'include',
+      method: 'POST',
+      body: JSON.stringify({ room }),
+      headers: HEADERS,
+    })
+    return resp.json()
+  },
   unstable_fallbackToHTTP: true,
 })
 
