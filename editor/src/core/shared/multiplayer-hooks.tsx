@@ -259,6 +259,9 @@ export function useMonitorConnection() {
   }, [updateLastSeen, cleanupInactive])
 }
 
+const ReconnectingLiveblocksToastId = 'reconnecting-liveblocks'
+const LostLiveblocksConnectionToastId = 'lost-liveblocks-connection'
+
 export function useLiveblocksConnectionListener() {
   const dispatch = useDispatch()
   const loggedIn = useIsLoggedIn()
@@ -270,7 +273,12 @@ export function useLiveblocksConnectionListener() {
         if (loggedIn) {
           dispatch([
             showToast(
-              notice('Reconnecting to other users...', 'WARNING', true, 'reconnecting-liveblocks'),
+              notice(
+                'Reconnecting to other users...',
+                'WARNING',
+                true,
+                ReconnectingLiveblocksToastId,
+              ),
             ),
           ])
         }
@@ -278,15 +286,20 @@ export function useLiveblocksConnectionListener() {
 
       case 'restored':
         dispatch([
-          removeToast('lost-liveblocks-connection'),
-          removeToast('reconnecting-liveblocks'),
+          removeToast(LostLiveblocksConnectionToastId),
+          removeToast(ReconnectingLiveblocksToastId),
         ])
         break
 
       case 'failed':
         if (loggedIn) {
           showToast(
-            notice('Lost connection to other users', 'ERROR', true, 'lost-liveblocks-connection'),
+            notice(
+              'Lost connection to other users',
+              'ERROR',
+              true,
+              LostLiveblocksConnectionToastId,
+            ),
           )
         }
         break
