@@ -189,7 +189,7 @@ jobs:
       - name: Build Editor
         if: steps.cache-editor-tests.outputs.cache-hit != 'true'
         run: |
-          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run build-editor-staging-ci
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run build-editor-branches-ci
       - name: Send webpack stats to RelativeCI
         uses: relative-ci/agent-action@v1.1.0
         with:
