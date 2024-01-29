@@ -148,7 +148,6 @@ jobs:
       UTOPIA_SHA: ${{ github.sha }}
       AUTH0_CLIENT_ID: KB7euFO46rVYeOaWmrEdktdhAFxEO266
       AUTH0_ENDPOINT: enter.utopia.app
-      AUTH0_REDIRECT_URI: https://utopia.fish/authenticate
     steps:
       # Create a comment immediately so that the first comment can be used as a "Try me" link
       - name: Find Comment
@@ -265,7 +264,6 @@ jobs:
       UTOPIA_SHA: ${{ github.sha }}
       AUTH0_CLIENT_ID: KB7euFO46rVYeOaWmrEdktdhAFxEO266
       AUTH0_ENDPOINT: enter.utopia.app
-      AUTH0_REDIRECT_URI: https://utopia.fish/authenticate
     steps:
       # Gets the branch that this PR is targeting and replaces forward slashes in the name with hyphens.
       # So that later steps can produce a bundle incorporating that into the name and upload it.
@@ -410,7 +408,6 @@ jobs:
       UTOPIA_SHA: ${{ github.sha }}
       AUTH0_CLIENT_ID: KB7euFO46rVYeOaWmrEdktdhAFxEO266
       AUTH0_ENDPOINT: enter.utopia.app
-      AUTH0_REDIRECT_URI: https://utopia.fish/authenticate
     steps:
       # Gets the branch that this PR is targeting and replaces forward slashes in the name with hyphens.
       # So that later steps can produce a bundle incorporating that into the name and upload it.
@@ -451,7 +448,6 @@ jobs:
       UTOPIA_SHA: ${{ github.sha }}
       AUTH0_CLIENT_ID: KB7euFO46rVYeOaWmrEdktdhAFxEO266
       AUTH0_ENDPOINT: enter.utopia.app
-      AUTH0_REDIRECT_URI: https://utopia.fish/authenticate
     steps:
       # Gets the branch that this PR is targeting and replaces forward slashes in the name with hyphens.
       # So that later steps can produce a bundle incorporating that into the name and upload it.

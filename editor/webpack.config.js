@@ -182,7 +182,6 @@ const config = {
       'REACT_APP_ENVIRONMENT_CONFIG',
       'REACT_APP_AUTH0_CLIENT_ID',
       'REACT_APP_AUTH0_ENDPOINT',
-      'REACT_APP_AUTH0_REDIRECT_URI',
       'REACT_APP_COMMIT_HASH',
 
       // !! optional env vars should be added in the webpack.EnvironmentPlugin below providing a default value for them instead than here
