@@ -296,11 +296,7 @@ export function useLiveblocksConnectionListener() {
   useErrorListener((error) => {
     console.warn('Error connecting to liveblocks', error)
     if (loggedIn) {
-      dispatch([
-        showToast(
-          notice('Error connecting to other users', 'ERROR', true, 'error-connecting-liveblocks'),
-        ),
-      ])
+      dispatch([showToast(notice('Error connecting to other users', 'ERROR', false))])
     }
   })
 }
