@@ -28,7 +28,6 @@ import type {
   ImageFile,
   ExportDetail,
   ImportDetails,
-  ImportsMergeResolution,
 } from '../../core/shared/project-file-types'
 import type { CodeResultCache, PropertyControlsInfo } from '../custom-code/code-file'
 import type { ElementContextMenuInstance } from '../element-context-menu'
@@ -544,15 +543,6 @@ export interface SetProjectName {
 export interface SetProjectDescription {
   action: 'SET_PROJECT_DESCRIPTION'
   description: string
-}
-
-export interface RegenerateThumbnail {
-  action: 'REGENERATE_THUMBNAIL'
-}
-
-export interface UpdateThumbnailGenerated {
-  action: 'UPDATE_THUMBNAIL_GENERATED'
-  timestamp: number
 }
 
 export interface UpdatePreviewConnected {
@@ -1162,8 +1152,6 @@ export type EditorAction =
   | OpenCodeEditor
   | SetProjectName
   | SetProjectDescription
-  | RegenerateThumbnail
-  | UpdateThumbnailGenerated
   | UpdatePreviewConnected
   | AlignSelectedViews
   | DistributeSelectedViews
