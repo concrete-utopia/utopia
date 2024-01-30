@@ -11,10 +11,10 @@ import * as PP from '../shared/property-path'
 import { assertNever } from '../shared/utils'
 import { isSceneAgainstImports, isRemixSceneAgainstImports } from './project-file-utils'
 
-const IdPropName = 'id'
+export const SceneCommentIdPropName = 'commentId'
 
 function getIdPropFromJSXElement(element: JSXElement): string | null {
-  const maybeIdProp = getJSXAttribute(element.props, IdPropName)
+  const maybeIdProp = getJSXAttribute(element.props, SceneCommentIdPropName)
   if (
     maybeIdProp == null ||
     maybeIdProp.type !== 'ATTRIBUTE_VALUE' ||
@@ -28,7 +28,7 @@ function getIdPropFromJSXElement(element: JSXElement): string | null {
 function setIdPropOnJSXElement(element: JSXElement, idPropValueToUse: string): JSXElement | null {
   const updatedProps = setJSXValueAtPath(
     element.props,
-    PP.create(IdPropName),
+    PP.create(SceneCommentIdPropName),
     jsExpressionValue(idPropValueToUse, emptyComments),
   )
 
