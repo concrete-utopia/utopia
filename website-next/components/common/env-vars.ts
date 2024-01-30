@@ -1,13 +1,13 @@
 // you can turn on/off debug features individually here
 
-const HOSTNAME: string = typeof window === 'undefined' ? '' : window.location.hostname
-const PORT: string =
+export const HOSTNAME: string = typeof window === 'undefined' ? '' : window.location.hostname
+export const PORT: string =
   typeof window === 'undefined' || window.location.port.length === 0
     ? ''
     : `:${window.location.port}`
-const SCHEME: string = typeof window === 'undefined' ? 'http' : window.location.protocol
-const BARE_HOSTNAME = HOSTNAME.startsWith('www.') ? HOSTNAME.slice(4) : HOSTNAME
-const BARE_HOST = `${BARE_HOSTNAME}${PORT}`
+export const SCHEME: string = typeof window === 'undefined' ? 'http' : window.location.protocol
+export const BARE_HOSTNAME = HOSTNAME.startsWith('www.') ? HOSTNAME.slice(4) : HOSTNAME
+export const BARE_HOST = `${BARE_HOSTNAME}${PORT}`
 export const BASE_URL: string = `${SCHEME}//${HOSTNAME}${PORT}/`
 
 export const PRODUCTION_ENV: boolean = process.env.NODE_ENV === 'production'
@@ -75,9 +75,9 @@ export const THUMBNAIL_ENDPOINT = UTOPIA_BACKEND + 'thumbnail/'
 
 export const PREVIEW_IS_EMBEDDED = isEmbedded()
 
-const AUTH0_REDIRECT_URI: string = process.env.REACT_APP_AUTH0_REDIRECT_URI ?? ''
-const AUTH0_CLIENT_ID: string = process.env.REACT_APP_AUTH0_CLIENT_ID ?? ''
-const AUTH0_HOST: string = process.env.REACT_APP_AUTH0_ENDPOINT ?? ''
+export const AUTH0_REDIRECT_URI: string = process.env.REACT_APP_AUTH0_REDIRECT_URI ?? ''
+export const AUTH0_CLIENT_ID: string = process.env.REACT_APP_AUTH0_CLIENT_ID ?? ''
+export const AUTH0_HOST: string = process.env.REACT_APP_AUTH0_ENDPOINT ?? ''
 const USE_AUTH0 = AUTH0_REDIRECT_URI != '' && AUTH0_CLIENT_ID != '' && AUTH0_HOST != ''
 
 export const GOOGLE_WEB_FONTS_KEY =
@@ -85,7 +85,7 @@ export const GOOGLE_WEB_FONTS_KEY =
     ? process.env.GOOGLE_WEB_FONTS_KEY
     : 'AIzaSyBffJtCo2vL68hdQKH3IYjo0ELFAAGYNW4'
 
-type AuthRedirectBehaviour = 'redirect' | 'auto-close'
+export type AuthRedirectBehaviour = 'redirect' | 'auto-close'
 
 export function auth0Url(behaviour: AuthRedirectBehaviour): string {
   const searchParams = new URLSearchParams(window?.location?.search ?? '')
@@ -153,7 +153,7 @@ export function getProjectID(): string | null {
   return null
 }
 
-function isEmbedded(): boolean {
+export function isEmbedded(): boolean {
   if (typeof window !== 'undefined') {
     return getQueryParam('embedded') === 'true'
   } else {
