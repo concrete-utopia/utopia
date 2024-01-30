@@ -42,6 +42,8 @@ import {
   Icons,
   VerySubdued,
   FlexRow,
+  Button,
+  Icn,
 } from '../../../../uuiui'
 import type { CSSCursor } from '../../../../uuiui-deps'
 import { getControlStyles } from '../../../../uuiui-deps'
@@ -250,6 +252,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
     return null
   }
 
+  // the actual control
   return (
     <InspectorContextMenuWrapper
       id={`context-menu-for-${propName}`}
@@ -260,7 +263,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
       <UIGridRow
         padded={false}
         style={{ paddingLeft: 0, paddingRight: 8, paddingTop: 3, paddingBottom: 3 }}
-        variant='<--1fr--><--1fr-->'
+        variant='<--1fr--><--1fr-->|-18px-|'
       >
         {propertyLabel}
         <ControlForProp
@@ -271,6 +274,15 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
           setGlobalCursor={props.setGlobalCursor}
           focusOnMount={props.focusOnMount}
         />
+        <Button>
+          <Icn
+            type='pipette'
+            color='secondary'
+            tooltipText={'Pick data source'}
+            width={18}
+            height={18}
+          />
+        </Button>
       </UIGridRow>
     </InspectorContextMenuWrapper>
   )
