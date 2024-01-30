@@ -16,14 +16,25 @@ const STAGING_CONFIG: boolean = process.env.REACT_APP_ENVIRONMENT_CONFIG === 'st
 const BRANCHES_CONFIG: boolean = process.env.REACT_APP_ENVIRONMENT_CONFIG === 'branches'
 export const PRODUCTION_OR_STAGING_CONFIG = PRODUCTION_CONFIG || STAGING_CONFIG || BRANCHES_CONFIG
 
-const LOCAL_BACKEND_PORTS = {
-  DIRECT: 8001,
-  BFF: 8002,
+const LOCAL_BACKEND_PORTS: { [typ in BackendType]: number } = {
+  direct: 8001,
+  bff: 8002,
+}
+
+type BackendType =
+  | 'bff' // proxied calls via the Remix BFF
+  | 'direct' // direct calls to the backend
+
+export const BACKEND_TYPE: BackendType = PRODUCTION_OR_STAGING_CONFIG ? 'direct' : 'bff'
+
+export function isBackendBFF() {
+  return BACKEND_TYPE === 'bff'
 }
 
 export const UTOPIA_BACKEND =
-  (PRODUCTION_OR_STAGING_CONFIG ? BASE_URL : `${SCHEME}//${HOSTNAME}:${LOCAL_BACKEND_PORTS.BFF}`) +
-  '/v1/'
+  (PRODUCTION_OR_STAGING_CONFIG
+    ? BASE_URL
+    : `${SCHEME}//${HOSTNAME}:${LOCAL_BACKEND_PORTS[BACKEND_TYPE]}`) + '/v1/'
 
 const SECONDARY_BASE_URL: string = PRODUCTION_CONFIG
   ? `https://utopia.fm/`
