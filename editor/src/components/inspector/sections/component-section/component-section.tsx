@@ -82,13 +82,18 @@ import { unless, when } from '../../../../utils/react-conditionals'
 import { PropertyControlsSection } from './property-controls-section'
 import type { ReactEventHandlers } from 'react-use-gesture/dist/types'
 import { normalisePathToUnderlyingTarget } from '../../../custom-code/code-file'
-import { openCodeEditorFile } from '../../../editor/actions/action-creators'
-import { Substores, useEditorState } from '../../../editor/store/store-hook'
+import { openCodeEditorFile, setProp_UNSAFE } from '../../../editor/actions/action-creators'
+import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { getFilePathForImportedComponent } from '../../../../core/model/project-file-utils'
 import { safeIndex } from '../../../../core/shared/array-utils'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { usePopper } from 'react-popper'
+import {
+  jsExpressionOtherJavaScript,
+  jsExpressionOtherJavaScriptSimple,
+} from '../../../../core/shared/element-template'
+import { optionalMap } from '../../../../core/shared/optional-utils'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -265,7 +270,25 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
   const togglePopup = React.useCallback(() => setPopupIsOpen((v) => !v), [])
   const closePopup = React.useCallback(() => setPopupIsOpen(false), [])
 
-  const onMouseDown = React.useCallback(
+  const selectedViewPathRef = useRefEditorState((store) => store.editor.selectedViews.at(0) ?? null)
+  const variablesInScopeRef = useRefEditorState((store) => store.editor.variablesInScope)
+  const dispatch = useDispatch()
+
+  const onTweakProperty = React.useCallback(() => {
+    if (selectedViewPathRef.current == null) {
+      return
+    }
+
+    dispatch([
+      setProp_UNSAFE(
+        selectedViewPathRef.current,
+        PP.create('text'),
+        jsExpressionOtherJavaScriptSimple('alternateTitle', ['alternateTitle']),
+      ),
+    ])
+  }, [dispatch, selectedViewPathRef])
+
+  const onClick = React.useCallback(
     (e: React.MouseEvent) => {
       togglePopup()
       e.stopPropagation()
@@ -286,13 +309,22 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
       items={contextMenuItems}
       data={null}
     >
-      <div ref={referenceElement}>
-        <UIGridRow
-          padded={false}
-          style={{ paddingLeft: 0, paddingRight: 8, paddingTop: 3, paddingBottom: 3 }}
-          variant='<--1fr--><--1fr-->|-18px-|'
+      {popupIsOpen ? (
+        <div
+          {...attributes.popper}
+          style={{ ...styles.popper, border: '1px solid black', zIndex: 1 }}
+          ref={setPopperElement}
         >
-          {propertyLabel}
+          <Button onClick={onTweakProperty}>Tweak prop</Button>
+        </div>
+      ) : null}
+      <UIGridRow
+        padded={false}
+        style={{ paddingLeft: 0, paddingRight: 8, paddingTop: 3, paddingBottom: 3 }}
+        variant='<--1fr--><--1fr-->|-18px-|'
+      >
+        {propertyLabel}
+        <div ref={setReferenceElement}>
           <ControlForProp
             propPath={propPath}
             propName={propName}
@@ -301,17 +333,17 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
             setGlobalCursor={props.setGlobalCursor}
             focusOnMount={props.focusOnMount}
           />
-          <Button>
-            <Icn
-              type='pipette'
-              color='secondary'
-              tooltipText={'Pick data source'}
-              width={18}
-              height={18}
-            />
-          </Button>
-        </UIGridRow>
-      </div>
+        </div>
+        <Button onClick={onClick}>
+          <Icn
+            type='pipette'
+            color='secondary'
+            tooltipText={'Pick data source'}
+            width={18}
+            height={18}
+          />
+        </Button>
+      </UIGridRow>
     </InspectorContextMenuWrapper>
   )
 })
