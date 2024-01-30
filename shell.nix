@@ -16,7 +16,6 @@ let
   stdenv = pkgs.stdenv;
   pnpm = node.pkgs.pnpm;
   yarn = pkgs.yarn;
-  nginx = pkgs.nginx;
 
   nodePackages = [
     node
