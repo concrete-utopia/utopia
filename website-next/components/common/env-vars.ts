@@ -1,15 +1,26 @@
 // you can turn on/off debug features individually here
 
-export const HOST: string = typeof window === 'undefined' ? '' : window.location.host
-export const SCHEME: string = typeof window === 'undefined' ? 'http' : window.location.protocol
-export const BARE_HOST = HOST.startsWith('www.') ? HOST.slice(4) : HOST
-export const BASE_URL: string = `${SCHEME}//${HOST}/`
+const HOSTNAME: string = typeof window === 'undefined' ? '' : window.location.hostname
+const PORT: string =
+  typeof window === 'undefined' || window.location.port.length === 0
+    ? ''
+    : `:${window.location.port}`
+const SCHEME: string = typeof window === 'undefined' ? 'http' : window.location.protocol
+const BARE_HOSTNAME = HOSTNAME.startsWith('www.') ? HOSTNAME.slice(4) : HOSTNAME
+const BARE_HOST = `${BARE_HOSTNAME}${PORT}`
+export const BASE_URL: string = `${SCHEME}//${HOSTNAME}${PORT}/`
 
 export const PRODUCTION_ENV: boolean = process.env.NODE_ENV === 'production'
 export const PRODUCTION_CONFIG: boolean = process.env.REACT_APP_ENVIRONMENT_CONFIG === 'production'
 const STAGING_CONFIG: boolean = process.env.REACT_APP_ENVIRONMENT_CONFIG === 'staging'
 const BRANCHES_CONFIG: boolean = process.env.REACT_APP_ENVIRONMENT_CONFIG === 'branches'
 const PRODUCTION_OR_STAGING_CONFIG = PRODUCTION_CONFIG || STAGING_CONFIG || BRANCHES_CONFIG
+
+export const UTOPIA_BACKEND =
+  (PRODUCTION_CONFIG || STAGING_CONFIG || BRANCHES_CONFIG
+    ? BARE_HOSTNAME
+    : `${SCHEME}//${HOSTNAME}:8002`) + '/v1/'
+
 const SECONDARY_BASE_URL: string = PRODUCTION_CONFIG
   ? `https://utopia.fm/`
   : STAGING_CONFIG
@@ -34,12 +45,7 @@ export const PROBABLY_ELECTRON: boolean =
 
 export const HMR: boolean = typeof process.env.HMR === 'boolean' ? process.env.HMR : false
 
-export const SHOW_FPS = false
 export const DEEP_FREEZE_STATE = !PRODUCTION_ENV
-export const RUN_PERFORMANCE_CHECK = false
-export const REFERENCE_EQUALITY_CHECK = false
-
-export const BASE_WS: string = PRODUCTION_OR_STAGING_CONFIG ? `wss://${HOST}/` : `ws://${HOST}/`
 
 export const STATIC_BASE_URL: string =
   PRODUCTION_OR_STAGING_CONFIG && BARE_HOST !== 'localhost:8000'
@@ -58,15 +64,15 @@ export const VSCODE_EDITOR_IFRAME_BASE_URL: string = PRODUCTION_CONFIG
   : BARE_HOST === 'localhost:8000' || BARE_HOST === 'localhost:8001'
   ? 'http://localhost:8000'
   : BASE_URL
-export const UTOPIA_BACKEND = 'http://localhost:8002/v1/' // TODO don't hardcode this!
+
 export const ASSET_ENDPOINT = UTOPIA_BACKEND + 'asset/'
 export const THUMBNAIL_ENDPOINT = UTOPIA_BACKEND + 'thumbnail/'
 
 export const PREVIEW_IS_EMBEDDED = isEmbedded()
 
-export const AUTH0_REDIRECT_URI: string = process.env.REACT_APP_AUTH0_REDIRECT_URI ?? ''
-export const AUTH0_CLIENT_ID: string = process.env.REACT_APP_AUTH0_CLIENT_ID ?? ''
-export const AUTH0_HOST: string = process.env.REACT_APP_AUTH0_ENDPOINT ?? ''
+const AUTH0_REDIRECT_URI: string = process.env.REACT_APP_AUTH0_REDIRECT_URI ?? ''
+const AUTH0_CLIENT_ID: string = process.env.REACT_APP_AUTH0_CLIENT_ID ?? ''
+const AUTH0_HOST: string = process.env.REACT_APP_AUTH0_ENDPOINT ?? ''
 const USE_AUTH0 = AUTH0_REDIRECT_URI != '' && AUTH0_CLIENT_ID != '' && AUTH0_HOST != ''
 
 export const GOOGLE_WEB_FONTS_KEY =
@@ -74,7 +80,7 @@ export const GOOGLE_WEB_FONTS_KEY =
     ? process.env.GOOGLE_WEB_FONTS_KEY
     : 'AIzaSyBffJtCo2vL68hdQKH3IYjo0ELFAAGYNW4'
 
-export type AuthRedirectBehaviour = 'redirect' | 'auto-close'
+type AuthRedirectBehaviour = 'redirect' | 'auto-close'
 
 export function auth0Url(behaviour: AuthRedirectBehaviour): string {
   const searchParams = new URLSearchParams(window?.location?.search ?? '')
@@ -142,7 +148,7 @@ export function getProjectID(): string | null {
   return null
 }
 
-export function isEmbedded(): boolean {
+function isEmbedded(): boolean {
   if (typeof window !== 'undefined') {
     return getQueryParam('embedded') === 'true'
   } else {
