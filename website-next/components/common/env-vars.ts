@@ -16,18 +16,18 @@ const STAGING_CONFIG: boolean = process.env.REACT_APP_ENVIRONMENT_CONFIG === 'st
 const BRANCHES_CONFIG: boolean = process.env.REACT_APP_ENVIRONMENT_CONFIG === 'branches'
 export const PRODUCTION_OR_STAGING_CONFIG = PRODUCTION_CONFIG || STAGING_CONFIG || BRANCHES_CONFIG
 
-const LOCAL_BACKEND_PORTS: { [typ in BackendType]: number } = {
-  direct: 8001,
-  bff: 8002,
-}
-
 type BackendType =
   | 'bff' // proxied calls via the Remix BFF
   | 'direct' // direct calls to the backend
 
+const LOCAL_BACKEND_PORTS: { [type in BackendType]: number } = {
+  direct: 8001,
+  bff: 8002,
+}
+
 export const BACKEND_TYPE: BackendType = PRODUCTION_OR_STAGING_CONFIG ? 'direct' : 'bff'
 
-export function isBackendBFF() {
+export function isBackendBFF(): boolean {
   return BACKEND_TYPE === 'bff'
 }
 
