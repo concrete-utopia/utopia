@@ -449,12 +449,14 @@ const DataPickerPopup = React.memo(
               onClick={onTweakProperty(variableFromScope)}
               style={{ width: '100%' }}
             >
-              <FlexRow
+              <UIGridRow
+                padded
+                variant='<--1fr--><--1fr-->'
                 style={{ justifyContent: 'space-between', alignItems: 'flex-start', gap: 4 }}
               >
                 <span>{variableFromScope}</span>
                 <span>{variableValueToString(variableValue)}</span>
-              </FlexRow>
+              </UIGridRow>
             </Button>
           ))}
         </FlexColumn>
