@@ -30,6 +30,8 @@ import {
   isExportDefaultFunctionOrClass,
   isExportFunction,
   isExportDefault,
+  isImageFile,
+  isAssetFile,
 } from '../shared/project-file-types'
 import type {
   JSXElementChild,
@@ -529,28 +531,6 @@ export function isOlderThan(maybeNew: ProjectFile, existing: ProjectFile | null)
   return (
     isTextFile(maybeNew) && isTextFile(existing) && maybeNew.versionNumber < existing.versionNumber
   )
-}
-
-export function updateFileIfPossible(
-  updated: ProjectFile,
-  existing: ProjectFile | null,
-): ProjectFile | 'cant-update' {
-  if (existing == null || !isTextFile(existing)) {
-    return updated
-  }
-
-  if (
-    isTextFile(updated) &&
-    isOlderThan(existing, updated) &&
-    canUpdateRevisionsState(
-      updated.fileContents.revisionsState,
-      existing.fileContents.revisionsState,
-    )
-  ) {
-    return updated
-  }
-
-  return 'cant-update'
 }
 
 export function updateUiJsCode(file: TextFile, code: string, codeIsNowAhead: boolean): TextFile {

@@ -18,7 +18,7 @@ export async function getElementWithSelector(
 
 export async function initBrowserTest(utopiaBrowser: UtopiaPuppeteerBrowser) {
   const { page } = await utopiaBrowser.setup({
-    url: `${BASE_URL}/p/?fakeUser=alice&Multiplayer=true${BRANCH_NAME}`,
+    url: `${BASE_URL}/p/?fakeUser=alice${BRANCH_NAME}`,
     timeout: PUPPETEER_TIMEOUT,
   })
   await getElementWithSelector(page, '#playground-scene') // wait for the scene to render
@@ -28,7 +28,7 @@ export async function initBrowserTest(utopiaBrowser: UtopiaPuppeteerBrowser) {
 
 export async function initSignedInBrowserTest(utopiaBrowser: UtopiaPuppeteerBrowser) {
   const { page } = await utopiaBrowser.setup({
-    url: `${BASE_URL}/p/?fakeUser=alice&Multiplayer=true${BRANCH_NAME}`,
+    url: `${BASE_URL}/p/?fakeUser=alice${BRANCH_NAME}`,
     timeout: PUPPETEER_TIMEOUT,
   })
 

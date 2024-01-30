@@ -2,10 +2,14 @@ import {
   deleteFileFromCollaboration,
   updateCodeFromCollaborationUpdate,
   updateExportsDetailFromCollaborationUpdate,
+  updateFile,
+  updateFileFromCollaboration,
   updateImportsFromCollaborationUpdate,
 } from '../actions/action-creators'
 import type {
+  CollabAssetFile,
   CollabFile,
+  CollabImageFile,
   CollabTextFile,
   CollabTextFileExportsDetail,
   CollabTextFileImports,
@@ -25,11 +29,13 @@ import { isLoggedIn, type EditorAction, type EditorDispatch } from '../action-ty
 import { updateTopLevelElementsFromCollaborationUpdate } from '../actions/action-creators'
 import { assertNever } from '../../../core/shared/utils'
 import type {
+  AssetFile,
   ExportDetail,
+  ImageFile,
   ImportDetails,
   ParseSuccess,
 } from '../../../core/shared/project-file-types'
-import { isTextFile } from '../../../core/shared/project-file-types'
+import { assetFile, imageFile, isTextFile } from '../../../core/shared/project-file-types'
 import {
   ExportDetailKeepDeepEquality,
   ImportDetailsKeepDeepEquality,
@@ -50,6 +56,7 @@ import type { MapLike } from 'typescript'
 import { Y } from '../../../core/shared/yjs'
 import type { ProjectServerState } from './project-server-state'
 import { Substores, useEditorState } from './store-hook'
+import { forceNotNull } from '../../../core/shared/optional-utils'
 
 const CodeKey = 'code'
 const TopLevelElementsKey = 'topLevelElements'
@@ -148,10 +155,8 @@ export function collateCollaborativeProjectChanges(
       }
     }
   }
-  if (isFeatureEnabled('Multiplayer')) {
-    if (oldContents != newContents) {
-      zipContentsTree(oldContents, newContents, onElement)
-    }
+  if (oldContents != newContents) {
+    zipContentsTree(oldContents, newContents, onElement)
   }
 
   return changesToProcess
@@ -183,18 +188,44 @@ function applyFileChangeToMap(
       }
       break
     case 'WRITE_PROJECT_FILE':
-      if (
-        change.projectFile.type === 'TEXT_FILE' &&
-        looksLikeParseableSourceCode(change.fullPath) &&
-        change.projectFile.fileContents.parsed.type === 'PARSE_SUCCESS'
-      ) {
-        updateFromParseSuccess(projectContentsMap, change, change.projectFile.fileContents.parsed)
-      }
-      if (
-        change.projectFile.type === 'TEXT_FILE' &&
-        !looksLikeParseableSourceCode(change.fullPath)
-      ) {
-        updateNonParseable(projectContentsMap, change, change.projectFile.fileContents.code)
+      switch (change.projectFile.type) {
+        case 'TEXT_FILE':
+          {
+            if (looksLikeParseableSourceCode(change.fullPath)) {
+              if (change.projectFile.fileContents.parsed.type === 'PARSE_SUCCESS') {
+                updateFromParseSuccess(
+                  projectContentsMap,
+                  change,
+                  change.projectFile.fileContents.parsed,
+                )
+              }
+            } else {
+              updateNonParseable(projectContentsMap, change, change.projectFile.fileContents.code)
+            }
+          }
+          break
+        case 'IMAGE_FILE':
+          {
+            // Should avoid shunting the base64 blobs across the wire,
+            // especially as that's a transient state during the upload of the image.
+            if (change.projectFile.base64 == null) {
+              updateImageFile(projectContentsMap, change, change.projectFile)
+            }
+          }
+          break
+
+        case 'ASSET_FILE':
+          {
+            // Should avoid shunting the base64 blobs across the wire,
+            // especially as that's a transient state during the upload of the asset.
+            if (change.projectFile.base64 == null) {
+              updateAssetFile(projectContentsMap, change, change.projectFile)
+            }
+          }
+          break
+        case 'DIRECTORY':
+          // Do nothing.
+          break
       }
       break
     case 'ENSURE_DIRECTORY_EXISTS':
@@ -205,47 +236,77 @@ function applyFileChangeToMap(
   }
 }
 
+function clearIfNotExpectedType<T extends CollabFile>(
+  projectContentsMap: Y.Map<CollabFile>,
+  filename: string,
+  expectedType: string,
+): T {
+  let result: Y.Map<any>
+  if (projectContentsMap.has(filename)) {
+    result = projectContentsMap.get(filename)!
+    if (result.get('type') !== expectedType) {
+      result.clear()
+      result.set('type', expectedType)
+    }
+  } else {
+    result = new Y.Map()
+    result.set('type', expectedType)
+    projectContentsMap.set(filename, result)
+  }
+  return result as T
+}
+
+function updateImageFile(
+  projectContentsMap: Y.Map<CollabFile>,
+  change: WriteProjectFileChange,
+  imageFileForUpdate: ImageFile,
+): void {
+  projectContentsMap.set(change.fullPath, new Y.Map<any>(Object.entries(imageFileForUpdate)))
+}
+
+function updateAssetFile(
+  projectContentsMap: Y.Map<CollabFile>,
+  change: WriteProjectFileChange,
+  assetFileForUpdate: AssetFile,
+): void {
+  projectContentsMap.set(change.fullPath, new Y.Map<any>(Object.entries(assetFileForUpdate)))
+}
+
 function updateNonParseable(
-  projectContentsMap: Y.Map<CollabTextFile>,
+  projectContentsMap: Y.Map<CollabFile>,
   change: WriteProjectFileChange,
   code: string,
 ): void {
-  let collabFile: CollabTextFile
-  if (projectContentsMap.has(change.fullPath)) {
-    collabFile = projectContentsMap.get(change.fullPath)!
-  } else {
-    collabFile = new Y.Map()
-    projectContentsMap.set(change.fullPath, collabFile)
-  }
-  collabFile.set('type', 'TEXT_FILE')
-  collabFile.delete(TopLevelElementsKey)
-  collabFile.delete(ExportsDetailKey)
-  collabFile.delete(ImportsKey)
-  collabFile.set(CodeKey, code)
+  const collabTextFile: CollabTextFile = clearIfNotExpectedType(
+    projectContentsMap,
+    change.fullPath,
+    'TEXT_FILE',
+  )
+  collabTextFile.delete(TopLevelElementsKey)
+  collabTextFile.delete(ExportsDetailKey)
+  collabTextFile.delete(ImportsKey)
+  collabTextFile.set(CodeKey, code)
 }
 
 function updateFromParseSuccess(
-  projectContentsMap: Y.Map<CollabTextFile>,
+  projectContentsMap: Y.Map<CollabFile>,
   change: WriteProjectFileChange,
   parsedPart: ParseSuccess,
 ): void {
-  let collabFile: CollabTextFile
-  if (projectContentsMap.has(change.fullPath)) {
-    collabFile = projectContentsMap.get(change.fullPath)!
-  } else {
-    collabFile = new Y.Map()
-    projectContentsMap.set(change.fullPath, collabFile)
-  }
-  collabFile.set('type', 'TEXT_FILE')
+  const collabTextFile: CollabTextFile = clearIfNotExpectedType(
+    projectContentsMap,
+    change.fullPath,
+    'TEXT_FILE',
+  )
   const topLevelElementsArray = new Y.Array<TopLevelElement>()
-  collabFile.set(TopLevelElementsKey, topLevelElementsArray)
+  collabTextFile.set(TopLevelElementsKey, topLevelElementsArray)
   const exportsDetailArray = new Y.Array<ExportDetail>()
-  collabFile.set(ExportsDetailKey, exportsDetailArray)
+  collabTextFile.set(ExportsDetailKey, exportsDetailArray)
   const importsMap = new Y.Map<ImportDetails>()
-  collabFile.set(ImportsKey, importsMap)
-  collabFile.delete(CodeKey)
+  collabTextFile.set(ImportsKey, importsMap)
+  collabTextFile.delete(CodeKey)
 
-  synchroniseParseSuccessToCollabFile(parsedPart, collabFile)
+  synchroniseParseSuccessToCollabFile(parsedPart, collabTextFile)
 }
 
 export function updateCollaborativeProjectContents(
@@ -308,9 +369,25 @@ export function addHookForProjectChanges(
           const filePath = changeEvent.path[0] as string
           if (changeEvent instanceof Y.YMapEvent) {
             for (const key of changeEvent.keysChanged) {
-              if (key !== 'type') {
-                if (changeEvent.target.has(key)) {
-                  fileAndPropertyUpdate(filePath, key)
+              switch (changeEvent.target.get('type')) {
+                case 'TEXT_FILE': {
+                  if (key !== 'type') {
+                    if (changeEvent.target.has(key)) {
+                      fileAndPropertyUpdate(filePath, key)
+                    }
+                  }
+                  break
+                }
+                case 'IMAGE_FILE': {
+                  actionsToDispatch.push(updateImageActionFromSession(session, filePath))
+                  break
+                }
+                case 'ASSET_FILE': {
+                  actionsToDispatch.push(updateAssetActionFromSession(session, filePath))
+                  break
+                }
+                default: {
+                  throw new Error(`Unexpected file type: ${changeEvent.target.get('type')}`)
                 }
               }
             }
@@ -341,46 +418,79 @@ function updateEntireProjectContents(changeEvent: Y.YMapEvent<any>): Array<Edito
   // Map from filename to the restricted file contents.
   const targetMap = changeEvent.currentTarget as Y.Map<CollabFile>
   for (const [filename, change] of changeEvent.keys.entries()) {
-    switch (change.action) {
-      case 'delete':
-        actions.push(deleteFileFromCollaboration(filename))
-        break
-      case 'add':
-      case 'update':
-        // Mysteriously the type doesn't really carry over.
-        const entryFile = targetMap.get(filename) as CollabFile
-        // Handle `topLevelElements`.
-        const topLevelElements = entryFile.get(TopLevelElementsKey) as
-          | CollabTextFileTopLevelElements
-          | undefined
-        if (topLevelElements != null) {
-          actions.push(
-            updateTopLevelElementsFromCollaborationUpdate(filename, topLevelElements.toArray()),
-          )
-        }
-        // Handle `exportsDetail`.
-        const exportsDetail = entryFile.get(ExportsDetailKey) as
-          | CollabTextFileExportsDetail
-          | undefined
-        if (exportsDetail != null) {
-          actions.push(
-            updateExportsDetailFromCollaborationUpdate(filename, exportsDetail.toArray()),
-          )
-        }
-        // Handle `imports`.
-        const imports = entryFile.get(ImportsKey) as CollabTextFileImports | undefined
-        if (imports != null) {
-          actions.push(updateImportsFromCollaborationUpdate(filename, imports.toJSON()))
-        }
+    if (change.action === 'delete') {
+      // Handle deletion separately as `targetMap` cannot be usefully
+      // queried for these cases.
+      actions.push(deleteFileFromCollaboration(filename))
+    } else {
+      switch (targetMap.get(filename)?.get('type')) {
+        case 'TEXT_FILE': {
+          switch (change.action) {
+            case 'add':
+            case 'update':
+              // Mysteriously the type doesn't really carry over.
+              const entryFile = targetMap.get(filename) as CollabTextFile
+              // Handle `topLevelElements`.
+              const topLevelElements = entryFile.get(TopLevelElementsKey) as
+                | CollabTextFileTopLevelElements
+                | undefined
+              if (topLevelElements != null) {
+                actions.push(
+                  updateTopLevelElementsFromCollaborationUpdate(
+                    filename,
+                    topLevelElements.toArray(),
+                  ),
+                )
+              }
+              // Handle `exportsDetail`.
+              const exportsDetail = entryFile.get(ExportsDetailKey) as
+                | CollabTextFileExportsDetail
+                | undefined
+              if (exportsDetail != null) {
+                actions.push(
+                  updateExportsDetailFromCollaborationUpdate(filename, exportsDetail.toArray()),
+                )
+              }
+              // Handle `imports`.
+              const imports = entryFile.get(ImportsKey) as CollabTextFileImports | undefined
+              if (imports != null) {
+                actions.push(updateImportsFromCollaborationUpdate(filename, imports.toJSON()))
+              }
 
-        // Handle `code`.
-        const code = entryFile.get(CodeKey) as string | undefined
-        if (code != null) {
-          actions.push(updateCodeFromCollaborationUpdate(filename, code))
+              // Handle `code`.
+              const code = entryFile.get(CodeKey) as string | undefined
+              if (code != null) {
+                actions.push(updateCodeFromCollaborationUpdate(filename, code))
+              }
+              break
+            default:
+              assertNever(change.action)
+          }
+          break
         }
-        break
-      default:
-        assertNever(change.action)
+        case 'IMAGE_FILE': {
+          switch (change.action) {
+            case 'add':
+            case 'update':
+              // Mysteriously the type doesn't really carry over.
+              const entryFile = targetMap.get(filename) as CollabImageFile
+              actions.push(updateImageActionFromFile(entryFile, filename))
+          }
+          break
+        }
+        case 'ASSET_FILE': {
+          switch (change.action) {
+            case 'add':
+            case 'update':
+              // Mysteriously the type doesn't really carry over.
+              const entryFile = targetMap.get(filename) as CollabAssetFile
+              actions.push(updateAssetActionFromFile(entryFile, filename))
+          }
+          break
+        }
+        default:
+        // Ignore for now, directories potentially.
+      }
     }
   }
 
@@ -457,6 +567,51 @@ function updateImportsOfFile(
     ImportsKey,
     updateImportsFromCollaborationUpdate,
   )
+}
+
+function updateImageActionFromFile(file: CollabImageFile, filePath: string): EditorAction {
+  return updateFileFromCollaboration(
+    filePath,
+    imageFile(
+      file.get('imageType') as string | undefined,
+      undefined,
+      file.get('width') as number | undefined,
+      file.get('height') as number | undefined,
+      file.get('hash') as number,
+      file.get('gitBlobSha') as string | undefined,
+    ),
+    true,
+  )
+}
+
+function updateImageActionFromSession(
+  session: CollaborativeEditingSupportSession,
+  filePath: string,
+): EditorAction {
+  const file = forceNotNull(
+    'File should exist.',
+    session.projectContents.get(filePath),
+  ) as CollabImageFile
+  return updateImageActionFromFile(file, filePath)
+}
+
+function updateAssetActionFromFile(file: CollabAssetFile, filePath: string): EditorAction {
+  return updateFileFromCollaboration(
+    filePath,
+    assetFile(undefined, file.get('gitBlobSha') as string | undefined),
+    true,
+  )
+}
+
+function updateAssetActionFromSession(
+  session: CollaborativeEditingSupportSession,
+  filePath: string,
+): EditorAction {
+  const file = forceNotNull(
+    'File should exist.',
+    session.projectContents.get(filePath),
+  ) as CollabAssetFile
+  return updateAssetActionFromFile(file, filePath)
 }
 
 function updateCodeOfFile(
@@ -616,12 +771,8 @@ export function allowedToEditProject(
   loginState: LoginState,
   serverState: ProjectServerState,
 ): boolean {
-  if (isFeatureEnabled('Baton Passing For Control')) {
-    if (isLoggedIn(loginState)) {
-      return serverState.currentlyHolderOfTheBaton
-    } else {
-      return checkIsMyProject(serverState)
-    }
+  if (isLoggedIn(loginState)) {
+    return serverState.currentlyHolderOfTheBaton
   } else {
     return checkIsMyProject(serverState)
   }

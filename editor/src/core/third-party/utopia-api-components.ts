@@ -81,7 +81,11 @@ const BasicUtopiaSceneDescriptor = (
           jsxElementWithoutUID(
             name,
             [
-              jsxAttributesEntry('id', jsExpressionValue('scene', emptyComments), emptyComments),
+              jsxAttributesEntry(
+                'commentId',
+                jsExpressionValue('scene', emptyComments),
+                emptyComments,
+              ),
               jsxAttributesEntry('style', styleProp(), emptyComments),
             ],
             [],

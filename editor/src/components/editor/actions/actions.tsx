@@ -27,7 +27,6 @@ import {
   switchToFileType,
   uniqueProjectContentID,
   updateFileContents,
-  updateFileIfPossible,
 } from '../../../core/model/project-file-utils'
 import { getStoryboardElementPath, PathForSceneDataLabel } from '../../../core/model/scene-utils'
 import type { Either } from '../../../core/shared/either'
@@ -546,6 +545,7 @@ import { convertToAbsoluteAndReparentToUnwrapStrategy } from '../one-shot-unwrap
 import { addHookForProjectChanges } from '../store/collaborative-editing'
 import { arrayDeepEquality, objectDeepEquality } from '../../../utils/deep-equality'
 import type { ProjectServerState } from '../store/project-server-state'
+import { updateFileIfPossible } from './can-update-file'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 

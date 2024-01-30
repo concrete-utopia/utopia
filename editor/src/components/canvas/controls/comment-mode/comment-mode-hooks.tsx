@@ -36,6 +36,7 @@ import { optionalMap } from '../../../../core/shared/optional-utils'
 import { useScenes } from '../../../../core/commenting/comment-hooks'
 import { safeIndex } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
+import { SceneCommentIdPropName } from '../../../../core/model/scene-id-utils'
 
 export function useCommentModeSelectAndHover(comment: CommentId | null): MouseCallbacks {
   const dispatch = useDispatch()
@@ -140,7 +141,10 @@ export function getIdOfScene(scene: ElementInstanceMetadata): string | null {
     return null
   }
 
-  const idProperty = getJSXAttributesAtPath(sceneElement.value.props, create('id'))
+  const idProperty = getJSXAttributesAtPath(
+    sceneElement.value.props,
+    create(SceneCommentIdPropName),
+  )
   const currentValue = optionalMap(jsxSimpleAttributeToValue, idProperty?.attribute)
   if (currentValue == null || isLeft(currentValue) || typeof currentValue.value !== 'string') {
     return null

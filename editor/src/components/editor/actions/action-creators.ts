@@ -1003,6 +1003,21 @@ export function updateFile(
     filePath: filePath,
     file: file,
     addIfNotInFiles: addIfNotInFiles,
+    fromCollaboration: false,
+  }
+}
+
+export function updateFileFromCollaboration(
+  filePath: string,
+  file: ProjectFile,
+  addIfNotInFiles: boolean,
+): UpdateFile {
+  return {
+    action: 'UPDATE_FILE',
+    filePath: filePath,
+    file: file,
+    addIfNotInFiles: addIfNotInFiles,
+    fromCollaboration: true,
   }
 }
 

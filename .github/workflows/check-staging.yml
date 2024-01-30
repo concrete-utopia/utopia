@@ -1,7 +1,7 @@
-name: Screenshot Staging
+name: Check Staging
 on:
   repository_dispatch:
-    types: [trigger-staging-screenshot]
+    types: [trigger-staging-checks]
   workflow_dispatch:
 
 jobs:
@@ -69,3 +69,72 @@ jobs:
           MESSAGE: 'Screenshot of latest Staging deploy'
         with:
           args: ${{ env.MESSAGE }}
+
+  comments-test:
+    name: Run Comments Tests
+    timeout-minutes: 12
+    runs-on: ubuntu-latest
+    needs: [cache-pnpm-store]
+    env:
+      UTOPIA_SHA: ${{ github.sha }}
+      AUTH0_CLIENT_ID: A9v9iuucCnFzkb1OzGkbAvi3cSF8kQtu
+      AUTH0_ENDPOINT: utopia-staging.us.auth0.com
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Cache .pnpm-store
+        uses: actions/cache@v2
+        with:
+          path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
+      - name: Build Comments Tests
+        run: |
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "build-puppeteer-tests"
+      - name: Run Comments Test
+        id: run-comments-test
+        env:
+          BASE_URL: 'https://utopia.pizza'
+        run: |
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "xvfb-run --server-args='-screen 0 1920x1080x24 -ac -nolisten tcp -dpi 96 +extension RANDR' run-comments-test"
+
+  collaboration-test:
+    name: Run Collaboration Tests
+    timeout-minutes: 12
+    runs-on: ubuntu-latest
+    needs: [cache-pnpm-store]
+    env:
+      UTOPIA_SHA: ${{ github.sha }}
+      AUTH0_CLIENT_ID: A9v9iuucCnFzkb1OzGkbAvi3cSF8kQtu
+      AUTH0_ENDPOINT: utopia-staging.us.auth0.com
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Cache .pnpm-store
+        uses: actions/cache@v2
+        with:
+          path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
+      - name: Build Comments Tests
+        run: |
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "build-puppeteer-tests"
+      - name: Run Comments Test
+        id: run-comments-test
+        env:
+          BASE_URL: 'https://utopia.pizza'
+        run: |
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "xvfb-run --server-args='-screen 0 1920x1080x24 -ac -nolisten tcp -dpi 96 +extension RANDR' run-collaboration-test"
+
+  post-failure-to-discord:
+    name: Post Failure Message To Discord
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    if: failure()
+    needs: [take-screenshot, comments-test, collaboration-test]
+    steps:
+      - name: Discord Notification
+        uses: Ilshidur/action-discord@0.3.2
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_BUILD_WEBHOOK }}
+          DISCORD_USERNAME: 'Staging Checks Failure'
+        with:
+          args: 'Staging checks failed: https://github.com/{{ GITHUB_REPOSITORY }}/actions/runs/{{ GITHUB_RUN_ID }}'

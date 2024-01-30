@@ -197,6 +197,15 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${pnpm}/bin/pnpm run staging-print-json
     '')
+    (pkgs.writeScriptBin "build-editor-branches-ci" ''
+      #!/usr/bin/env bash
+      set -e
+      install-editor-ci
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
+      ${pnpm}/bin/pnpm install
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
+      ${pnpm}/bin/pnpm run branches-print-json
+    '')
     (pkgs.writeScriptBin "build-utopia-vscode-common" ''
       #!/usr/bin/env bash
       set -e
