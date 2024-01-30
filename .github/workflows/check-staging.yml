@@ -123,3 +123,18 @@ jobs:
           BASE_URL: 'https://utopia.pizza'
         run: |
           nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "xvfb-run --server-args='-screen 0 1920x1080x24 -ac -nolisten tcp -dpi 96 +extension RANDR' run-collaboration-test"
+
+  post-failure-to-discord:
+    name: Post Failure Message To Discord
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    if: failure()
+    needs: [take-screenshot, comments-test, collaboration-test]
+    steps:
+      - name: Discord Notification
+        uses: Ilshidur/action-discord@0.3.2
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_BUILD_WEBHOOK }}
+          DISCORD_USERNAME: 'Staging Checks Failure'
+        with:
+          args: 'Staging checks failed: https://github.com/{{ GITHUB_REPOSITORY }}/actions/runs/{{ GITHUB_RUN_ID }}'
