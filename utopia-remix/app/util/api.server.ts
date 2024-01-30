@@ -23,6 +23,26 @@ export async function handleOptions() {
   return json({}, { headers: responseHeaders });
 }
 
+export function handle(
+  request: Request,
+  handlers: {
+    [method in Method]?: (request: Request) => Promise<unknown>;
+  },
+) {
+  const invalidMethod = new ApiError(
+    "invalid method",
+    Status.METHOD_NOT_ALLOWED,
+  );
+  if (!isMethod(request.method)) {
+    throw invalidMethod;
+  }
+  const handler = handlers[request.method];
+  if (handler == null) {
+    throw invalidMethod;
+  }
+  return handleMethod(request, handler);
+}
+
 async function handleMethod<T>(
   request: Request,
   fn: (request: Request) => Promise<T>,
@@ -50,26 +70,6 @@ async function handleMethod<T>(
       { headers: responseHeaders, status: status },
     );
   }
-}
-
-export function handle(
-  request: Request,
-  handlers: {
-    [method in Method]?: (request: Request) => Promise<unknown>;
-  },
-) {
-  const invalidMethod = new ApiError(
-    "invalid method",
-    Status.METHOD_NOT_ALLOWED,
-  );
-  if (!isMethod(request.method)) {
-    throw invalidMethod;
-  }
-  const handler = handlers[request.method];
-  if (handler == null) {
-    throw invalidMethod;
-  }
-  return handleMethod(request, handler);
 }
 
 export class ApiError extends Error {
