@@ -1,13 +1,15 @@
 import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { handler } from "../util/api.server";
+import { handle, handleOptions } from "../util/api.server";
 import { proxy } from "../util/proxy.server";
 
 export async function loader(args: LoaderFunctionArgs) {
-  return handler(["OPTIONS"], args.request, proxy);
+  return handle(args.request, {
+    OPTIONS: handleOptions,
+  });
 }
 
 export async function action(args: ActionFunctionArgs) {
-  return handler(["POST"], args.request, (req) =>
-    proxy(req, null, { rawOutput: true }),
-  );
+  return handle(args.request, {
+    POST: (req) => proxy(req, { rawOutput: true }),
+  });
 }

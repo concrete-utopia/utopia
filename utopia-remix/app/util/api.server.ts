@@ -2,7 +2,7 @@ import { TypedResponse, json } from "@remix-run/node";
 import invariant from "tiny-invariant";
 import { Env } from "../env.server";
 import { Status } from "./statusCodes.server";
-import { Method } from "./methods.server";
+import { Method, isMethod } from "./methods.server";
 
 interface ErrorResponse {
   error: string;
@@ -19,22 +19,14 @@ const responseHeaders: HeadersInit = {
   "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
 };
 
-export async function handler<T>(
-  methods: Method[],
+export async function handleOptions() {
+  return json({}, { headers: responseHeaders });
+}
+
+async function handleMethod<T>(
   request: Request,
   fn: (request: Request) => Promise<T>,
 ): Promise<ApiResponse<T> | unknown> {
-  if (!methods.some((m) => m === request.method)) {
-    throw new ApiError(
-      `${request.method} ${request.url} invalid method ${request.method}`,
-      Status.METHOD_NOT_ALLOWED,
-    );
-  }
-
-  if (request.method === "OPTIONS") {
-    return json({}, { headers: responseHeaders });
-  }
-
   try {
     const resp = await fn(request);
     if (resp instanceof Response) {
@@ -52,11 +44,32 @@ export async function handler<T>(
     const status = isApiError ? err.status : 500;
 
     console.error(`${request.method} ${request.url}: ${message}`);
+
     return json(
       { error: message },
       { headers: responseHeaders, status: status },
     );
   }
+}
+
+export function handle(
+  request: Request,
+  handlers: {
+    [method in Method]?: (request: Request) => Promise<unknown>;
+  },
+) {
+  const invalidMethod = new ApiError(
+    "invalid method",
+    Status.METHOD_NOT_ALLOWED,
+  );
+  if (!isMethod(request.method)) {
+    throw invalidMethod;
+  }
+  const handler = handlers[request.method];
+  if (handler == null) {
+    throw invalidMethod;
+  }
+  return handleMethod(request, handler);
 }
 
 export class ApiError extends Error {
