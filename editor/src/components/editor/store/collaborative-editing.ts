@@ -155,10 +155,8 @@ export function collateCollaborativeProjectChanges(
       }
     }
   }
-  if (isFeatureEnabled('Multiplayer')) {
-    if (oldContents != newContents) {
-      zipContentsTree(oldContents, newContents, onElement)
-    }
+  if (oldContents != newContents) {
+    zipContentsTree(oldContents, newContents, onElement)
   }
 
   return changesToProcess
@@ -773,12 +771,8 @@ export function allowedToEditProject(
   loginState: LoginState,
   serverState: ProjectServerState,
 ): boolean {
-  if (isFeatureEnabled('Baton Passing For Control')) {
-    if (isLoggedIn(loginState)) {
-      return serverState.currentlyHolderOfTheBaton
-    } else {
-      return checkIsMyProject(serverState)
-    }
+  if (isLoggedIn(loginState)) {
+    return serverState.currentlyHolderOfTheBaton
   } else {
     return checkIsMyProject(serverState)
   }

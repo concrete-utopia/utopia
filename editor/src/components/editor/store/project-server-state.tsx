@@ -1,12 +1,10 @@
 import * as React from 'react'
 import type { ProjectListing } from '../../../common/persistence'
-import { IS_TEST_ENVIRONMENT } from '../../../common/env-vars'
 import { fetchProjectMetadata } from '../../../common/server'
 import type { EditorDispatch } from '../action-types'
 import { updateProjectServerState } from '../actions/action-creators'
 import { checkProjectOwned, projectIsStoredLocally } from '../persistence/persistence-backend'
 import type { ProjectOwnership } from '../persistence/generic/persistence-types'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { CollaborationEndpoints } from '../collaborative-endpoints'
 
 export interface ProjectMetadataFromServer {
@@ -174,22 +172,17 @@ function restartServerStateWatcher(
   forkedFromProjectId: string | null,
   dispatch: EditorDispatch,
 ): void {
-  if (isFeatureEnabled('Baton Passing For Control')) {
-    void updateProjectServerStateInStore(loggedIn, projectId, forkedFromProjectId, dispatch)
-    // Reset the multiplier if triggered from outside of `restartWatcherInterval`.
-    currentWatcherIntervalMultiplier = 1
+  void updateProjectServerStateInStore(loggedIn, projectId, forkedFromProjectId, dispatch)
+  // Reset the multiplier if triggered from outside of `restartWatcherInterval`.
+  currentWatcherIntervalMultiplier = 1
 
-    function restartWatcherInterval(): void {
-      if (serverStateWatcherInstance != null) {
-        window.clearInterval(serverStateWatcherInstance)
-      }
-      serverStateWatcherInstance = window.setInterval(() => {
-        void updateProjectServerStateInStore(
-          loggedIn,
-          projectId,
-          forkedFromProjectId,
-          dispatch,
-        ).then((result) => {
+  function restartWatcherInterval(): void {
+    if (serverStateWatcherInstance != null) {
+      window.clearInterval(serverStateWatcherInstance)
+    }
+    serverStateWatcherInstance = window.setInterval(() => {
+      void updateProjectServerStateInStore(loggedIn, projectId, forkedFromProjectId, dispatch).then(
+        (result) => {
           // If there's a failure, then double the multiplier and recreate the interval.
           if (result === 'failure') {
             if (currentWatcherIntervalMultiplier < 10) {
@@ -206,13 +199,11 @@ function restartServerStateWatcher(
               restartWatcherInterval()
             }
           }
-        })
-      }, baseWatcherIntervalTime * currentWatcherIntervalMultiplier)
-    }
-    restartWatcherInterval()
-  } else {
-    void updateProjectServerStateInStore(loggedIn, projectId, forkedFromProjectId, dispatch)
+        },
+      )
+    }, baseWatcherIntervalTime * currentWatcherIntervalMultiplier)
   }
+  restartWatcherInterval()
 }
 
 export const ProjectServerStateUpdater = React.memo(

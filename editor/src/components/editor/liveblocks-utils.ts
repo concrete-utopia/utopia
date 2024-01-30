@@ -1,7 +1,6 @@
 import { IS_TEST_ENVIRONMENT, UTOPIA_BACKEND } from '../../common/env-vars'
 import { HEADERS, MODE } from '../../common/server'
 import { cachedPromise } from '../../core/shared/promise-utils'
-import { isFeatureEnabled } from '../../utils/feature-switches'
 
 let isLiveblocksEnabledOnServer: boolean = false
 
@@ -41,5 +40,5 @@ export async function checkLiveblocksEnabledOnServer(): Promise<void> {
 }
 
 export function isLiveblocksEnabled(): boolean {
-  return isLiveblocksEnabledOnServer && isFeatureEnabled('Multiplayer')
+  return isLiveblocksEnabledOnServer
 }

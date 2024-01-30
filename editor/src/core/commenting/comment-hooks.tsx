@@ -35,7 +35,6 @@ import * as EP from '../shared/element-path'
 import { getCurrentTheme } from '../../components/editor/store/editor-state'
 import { useMyUserId } from '../shared/multiplayer-hooks'
 import { usePermissions } from '../../components/editor/store/permissions'
-import { isFeatureEnabled } from '../../utils/feature-switches'
 import { modify, toFirst } from '../shared/optics/optic-utilities'
 import { filtered, fromObjectField, traverseArray } from '../shared/optics/optic-creators'
 import { foldEither } from '../shared/either'
@@ -458,7 +457,7 @@ export function useCanComment() {
 
   const isStatusOk = connectionLostStatus == null || connectionLostStatus === 'restored'
 
-  return isFeatureEnabled('Multiplayer') && canComment && isStatusOk
+  return canComment && isStatusOk
 }
 
 export function getThreadLocationOnCanvas(
