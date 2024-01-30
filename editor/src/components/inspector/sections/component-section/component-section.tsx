@@ -93,6 +93,8 @@ import { useDispatch } from '../../../editor/store/dispatch-context'
 import { usePopper } from 'react-popper'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
 
+export const VariableFromScopeOptionTestId = (idx: number) => `variable-from-scope-${idx}`
+
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
   addPropsToPath: boolean,
@@ -347,6 +349,23 @@ function getSectionHeightFromPropControl(
   }
 }
 
+function variableValueToString(value: unknown): string {
+  switch (typeof value) {
+    case 'bigint':
+    case 'boolean':
+    case 'number':
+    case 'string':
+    case 'undefined':
+      return `${value}`
+    case 'object':
+      return '#object' // placeholders from here, will add support later
+    case 'function':
+      return '#function'
+    case 'symbol':
+      return '#symbol'
+  }
+}
+
 interface DataPickerPopupProps {
   closePopup: () => void
   style: React.CSSProperties
@@ -361,22 +380,39 @@ const DataPickerPopup = React.memo(
     )
 
     const colorTheme = useColorTheme()
-    // const variablesInScopeRef = useRefEditorState((store) => store.editor.variablesInScope)
+    const variablesInScopeRef = useRefEditorState((store) => store.editor.variablesInScope)
     const dispatch = useDispatch()
 
-    const onTweakProperty = React.useCallback(() => {
+    const onTweakProperty = React.useCallback(
+      (name: string) => () => {
+        if (selectedViewPathRef.current == null) {
+          return
+        }
+
+        dispatch([
+          setProp_UNSAFE(
+            selectedViewPathRef.current,
+            PP.create('text'),
+            jsExpressionOtherJavaScriptSimple(name, [name]),
+          ),
+        ])
+      },
+      [dispatch, selectedViewPathRef],
+    )
+
+    const variableNamesInScope = React.useMemo(() => {
       if (selectedViewPathRef.current == null) {
-        return
+        return []
       }
 
-      dispatch([
-        setProp_UNSAFE(
-          selectedViewPathRef.current,
-          PP.create('text'),
-          jsExpressionOtherJavaScriptSimple('alternateTitle', ['alternateTitle']),
-        ),
-      ])
-    }, [dispatch, selectedViewPathRef])
+      const variablesInScopeForSelectedPath =
+        variablesInScopeRef.current[EP.toString(selectedViewPathRef.current)]
+      if (variablesInScopeForSelectedPath == null) {
+        return []
+      }
+
+      return Object.entries(variablesInScopeForSelectedPath)
+    }, [selectedViewPathRef, variablesInScopeRef])
 
     return (
       <div
@@ -387,7 +423,7 @@ const DataPickerPopup = React.memo(
           left: 0,
           right: 0,
           bottom: 0,
-          zIndex: 1, // so that it's above the inspector
+          zIndex: 1, // so it's above the inspector
         }}
         onClick={closePopup}
       >
@@ -397,12 +433,30 @@ const DataPickerPopup = React.memo(
           style={{
             ...props.style,
             backgroundColor: colorTheme.bg2.value,
-            padding: '4px 12px',
+            padding: '8px 16px',
             boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
             borderRadius: UtopiaTheme.inputBorderRadius,
+            alignItems: 'flex-start',
           }}
         >
-          <Button onClick={onTweakProperty}>Tweak prop</Button>
+          <div style={{ fontSize: 14, fontWeight: 400, marginBottom: 8 }}>
+            <span>Data</span>
+          </div>
+          {variableNamesInScope.map(([variableFromScope, variableValue], idx) => (
+            <Button
+              data-testid={VariableFromScopeOptionTestId(idx)}
+              key={variableFromScope}
+              onClick={onTweakProperty(variableFromScope)}
+              style={{ width: '100%' }}
+            >
+              <FlexRow
+                style={{ justifyContent: 'space-between', alignItems: 'flex-start', gap: 4 }}
+              >
+                <span>{variableFromScope}</span>
+                <span>{variableValueToString(variableValue)}</span>
+              </FlexRow>
+            </Button>
+          ))}
         </FlexColumn>
       </div>
     )
