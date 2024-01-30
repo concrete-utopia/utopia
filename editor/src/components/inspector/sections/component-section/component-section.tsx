@@ -88,6 +88,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { getFilePathForImportedComponent } from '../../../../core/model/project-file-utils'
 import { safeIndex } from '../../../../core/shared/array-utils'
 import { useDispatch } from '../../../editor/store/dispatch-context'
+import { usePopper } from 'react-popper'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -247,6 +248,31 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
       <props.label />
     )
 
+  const [referenceElement, setReferenceElement] = React.useState<HTMLDivElement | null>(null)
+  const [popperElement, setPopperElement] = React.useState<HTMLDivElement | null>(null)
+  const { styles, attributes } = usePopper(referenceElement, popperElement, {
+    modifiers: [
+      {
+        name: 'offset',
+        options: {
+          offset: [0, 8],
+        },
+      },
+    ],
+  })
+
+  const [popupIsOpen, setPopupIsOpen] = React.useState(false)
+  const togglePopup = React.useCallback(() => setPopupIsOpen((v) => !v), [])
+  const closePopup = React.useCallback(() => setPopupIsOpen(false), [])
+
+  const onMouseDown = React.useCallback(
+    (e: React.MouseEvent) => {
+      togglePopup()
+      e.stopPropagation()
+    },
+    [togglePopup],
+  )
+
   if (controlDescription.control === 'none') {
     // do not list anything for `none` controls
     return null
@@ -260,30 +286,32 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
       items={contextMenuItems}
       data={null}
     >
-      <UIGridRow
-        padded={false}
-        style={{ paddingLeft: 0, paddingRight: 8, paddingTop: 3, paddingBottom: 3 }}
-        variant='<--1fr--><--1fr-->|-18px-|'
-      >
-        {propertyLabel}
-        <ControlForProp
-          propPath={propPath}
-          propName={propName}
-          controlDescription={controlDescription}
-          propMetadata={propMetadata}
-          setGlobalCursor={props.setGlobalCursor}
-          focusOnMount={props.focusOnMount}
-        />
-        <Button>
-          <Icn
-            type='pipette'
-            color='secondary'
-            tooltipText={'Pick data source'}
-            width={18}
-            height={18}
+      <div ref={referenceElement}>
+        <UIGridRow
+          padded={false}
+          style={{ paddingLeft: 0, paddingRight: 8, paddingTop: 3, paddingBottom: 3 }}
+          variant='<--1fr--><--1fr-->|-18px-|'
+        >
+          {propertyLabel}
+          <ControlForProp
+            propPath={propPath}
+            propName={propName}
+            controlDescription={controlDescription}
+            propMetadata={propMetadata}
+            setGlobalCursor={props.setGlobalCursor}
+            focusOnMount={props.focusOnMount}
           />
-        </Button>
-      </UIGridRow>
+          <Button>
+            <Icn
+              type='pipette'
+              color='secondary'
+              tooltipText={'Pick data source'}
+              width={18}
+              height={18}
+            />
+          </Button>
+        </UIGridRow>
+      </div>
     </InspectorContextMenuWrapper>
   )
 })

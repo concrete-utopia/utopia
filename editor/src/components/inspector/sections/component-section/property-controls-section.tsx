@@ -27,6 +27,7 @@ export const PropertyControlsSection = React.memo((props: PropertyControlsSectio
     detectedPropsWithNoValue,
     detectedPropsAndValuesWithoutControls,
     propsWithControlsButNoValue,
+    targets,
   } = props
 
   // Filter out these because we don't want to include them in the unused props.

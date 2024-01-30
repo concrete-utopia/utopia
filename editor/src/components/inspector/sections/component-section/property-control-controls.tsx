@@ -439,7 +439,7 @@ const NumberWithSliderControl = React.memo(
 
 export const StringInputPropertyControl = React.memo(
   (props: ControlForPropProps<StringInputControlDescription>) => {
-    const { propName, propMetadata, controlDescription } = props
+    const { propName, propMetadata } = props
 
     const controlId = `${propName}-string-input-property-control`
     const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
