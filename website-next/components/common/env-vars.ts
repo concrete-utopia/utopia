@@ -65,10 +65,10 @@ export const THUMBNAIL_ENDPOINT = UTOPIA_BACKEND + 'thumbnail/'
 
 export const PREVIEW_IS_EMBEDDED = isEmbedded()
 
-export const AUTH0_REDIRECT_URI: string = process.env.REACT_APP_AUTH0_REDIRECT_URI ?? ''
+export const AUTH0_REDIRECT_URI: string = BASE_URL + 'authenticate'
 export const AUTH0_CLIENT_ID: string = process.env.REACT_APP_AUTH0_CLIENT_ID ?? ''
 export const AUTH0_HOST: string = process.env.REACT_APP_AUTH0_ENDPOINT ?? ''
-const USE_AUTH0 = AUTH0_REDIRECT_URI != '' && AUTH0_CLIENT_ID != '' && AUTH0_HOST != ''
+const USE_AUTH0 = AUTH0_CLIENT_ID != '' && AUTH0_HOST != ''
 
 export const GOOGLE_WEB_FONTS_KEY =
   process.env.GOOGLE_WEB_FONTS_KEY !== ''

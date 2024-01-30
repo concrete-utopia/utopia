@@ -18,7 +18,7 @@ const verbose = process.env.VERBOSE === 'true'
 const performance = process.env.PERFORMANCE === 'true' // This is for performance testing, which combines the dev server with production config
 const hot = !performance && process.env.HOT === 'true' // For running the webpack-dev-server in hot mode
 const mode = process.env.WEBPACK_MODE ?? (performance ? Production : Development) // Default to 'development' unless we are running the performance test
-const actualMode = mode === Staging ? Production : mode
+const actualMode = mode === Staging || mode === Branches ? Production : mode
 const isDev = mode === Development || performance
 const isStaging = mode === Staging
 const isBranches = mode === Branches
@@ -182,7 +182,6 @@ const config = {
       'REACT_APP_ENVIRONMENT_CONFIG',
       'REACT_APP_AUTH0_CLIENT_ID',
       'REACT_APP_AUTH0_ENDPOINT',
-      'REACT_APP_AUTH0_REDIRECT_URI',
       'REACT_APP_COMMIT_HASH',
 
       // !! optional env vars should be added in the webpack.EnvironmentPlugin below providing a default value for them instead than here
