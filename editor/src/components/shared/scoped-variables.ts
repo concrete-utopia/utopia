@@ -141,7 +141,7 @@ function getContainerPropsValue(
       if (isJSXAttributesEntry(prop)) {
         const value = simplifyAttributeIfPossible(prop.value)
         if (isJSXAttributeValue(value)) {
-          runtimeProps[prop.key] = value.value
+          runtimeProps[prop.key] = { spiedValue: value.value as unknown }
         }
       }
     })
@@ -151,7 +151,8 @@ function getContainerPropsValue(
 }
 
 function generateVariableTypes(variables: VariableData): Variable[] {
-  return Object.entries(variables).flatMap(([name, value]) => {
+  return Object.entries(variables).flatMap(([name, valueMetadata]) => {
+    const value = valueMetadata.spiedValue
     const type = getTypeByValue(value)
     const variable = {
       name,
