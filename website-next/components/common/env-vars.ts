@@ -49,7 +49,10 @@ export const PROBABLY_ELECTRON: boolean =
 
 export const HMR: boolean = typeof process.env.HMR === 'boolean' ? process.env.HMR : false
 
+export const SHOW_FPS = false
 export const DEEP_FREEZE_STATE = !PRODUCTION_ENV
+export const RUN_PERFORMANCE_CHECK = false
+export const REFERENCE_EQUALITY_CHECK = false
 
 export const STATIC_BASE_URL: string =
   PRODUCTION_OR_STAGING_CONFIG && BARE_HOST !== 'localhost:8000'
