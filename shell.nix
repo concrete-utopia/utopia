@@ -555,7 +555,7 @@ let
         new-window -n "Scratchpad" \; \
         new-window -n "Server" \; \
         send-keys -t :2 watch-server C-m \; \
-		new-window -n "Remix" \; \
+        new-window -n "Remix" \; \
         send-keys -t :3 watch-remix C-m \; \
         new-window -n "Editor TSC" \; \
         send-keys -t :4 watch-tsc C-m \; \
@@ -599,7 +599,7 @@ let
         new-window -n "Scratchpad" \; \
         new-window -n "Server" \; \
         send-keys -t :2 watch-server C-m \; \
-		new-window -n "Remix" \; \
+        new-window -n "Remix" \; \
         send-keys -t :3 watch-remix C-m \; \
         new-window -n "Editor TSC" \; \
         send-keys -t :4 watch-tsc C-m \; \
