@@ -44,6 +44,8 @@ import {
   FlexRow,
   Button,
   Icn,
+  FlexColumn,
+  UtopiaStyles,
 } from '../../../../uuiui'
 import type { CSSCursor } from '../../../../uuiui-deps'
 import { getControlStyles } from '../../../../uuiui-deps'
@@ -89,11 +91,7 @@ import { getFilePathForImportedComponent } from '../../../../core/model/project-
 import { safeIndex } from '../../../../core/shared/array-utils'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { usePopper } from 'react-popper'
-import {
-  jsExpressionOtherJavaScript,
-  jsExpressionOtherJavaScriptSimple,
-} from '../../../../core/shared/element-template'
-import { optionalMap } from '../../../../core/shared/optional-utils'
+import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -270,24 +268,6 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
   const togglePopup = React.useCallback(() => setPopupIsOpen((v) => !v), [])
   const closePopup = React.useCallback(() => setPopupIsOpen(false), [])
 
-  const selectedViewPathRef = useRefEditorState((store) => store.editor.selectedViews.at(0) ?? null)
-  const variablesInScopeRef = useRefEditorState((store) => store.editor.variablesInScope)
-  const dispatch = useDispatch()
-
-  const onTweakProperty = React.useCallback(() => {
-    if (selectedViewPathRef.current == null) {
-      return
-    }
-
-    dispatch([
-      setProp_UNSAFE(
-        selectedViewPathRef.current,
-        PP.create('text'),
-        jsExpressionOtherJavaScriptSimple('alternateTitle', ['alternateTitle']),
-      ),
-    ])
-  }, [dispatch, selectedViewPathRef])
-
   const onClick = React.useCallback(
     (e: React.MouseEvent) => {
       togglePopup()
@@ -301,7 +281,6 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
     return null
   }
 
-  // the actual control
   return (
     <InspectorContextMenuWrapper
       id={`context-menu-for-${propName}`}
@@ -310,13 +289,12 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
       data={null}
     >
       {popupIsOpen ? (
-        <div
+        <DataPickerPopup
           {...attributes.popper}
-          style={{ ...styles.popper, border: '1px solid black', zIndex: 1 }}
+          style={styles.popper}
+          closePopup={closePopup}
           ref={setPopperElement}
-        >
-          <Button onClick={onTweakProperty}>Tweak prop</Button>
-        </div>
+        />
       ) : null}
       <UIGridRow
         padded={false}
@@ -368,6 +346,68 @@ function getSectionHeightFromPropControl(
     return accumulatedHeight
   }
 }
+
+interface DataPickerPopupProps {
+  closePopup: () => void
+  style: React.CSSProperties
+}
+
+const DataPickerPopup = React.memo(
+  React.forwardRef<HTMLDivElement, DataPickerPopupProps>((props, forwardedRef) => {
+    const { closePopup } = props
+
+    const selectedViewPathRef = useRefEditorState(
+      (store) => store.editor.selectedViews.at(0) ?? null,
+    )
+
+    const colorTheme = useColorTheme()
+    // const variablesInScopeRef = useRefEditorState((store) => store.editor.variablesInScope)
+    const dispatch = useDispatch()
+
+    const onTweakProperty = React.useCallback(() => {
+      if (selectedViewPathRef.current == null) {
+        return
+      }
+
+      dispatch([
+        setProp_UNSAFE(
+          selectedViewPathRef.current,
+          PP.create('text'),
+          jsExpressionOtherJavaScriptSimple('alternateTitle', ['alternateTitle']),
+        ),
+      ])
+    }, [dispatch, selectedViewPathRef])
+
+    return (
+      <div
+        style={{
+          background: 'transparent',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 1, // so that it's above the inspector
+        }}
+        onClick={closePopup}
+      >
+        <FlexColumn
+          ref={forwardedRef}
+          tabIndex={0}
+          style={{
+            ...props.style,
+            backgroundColor: colorTheme.bg2.value,
+            padding: '4px 12px',
+            boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
+            borderRadius: UtopiaTheme.inputBorderRadius,
+          }}
+        >
+          <Button onClick={onTweakProperty}>Tweak prop</Button>
+        </FlexColumn>
+      </div>
+    )
+  }),
+)
 
 interface RowForArrayControlProps extends AbstractRowForControlProps {
   controlDescription: ArrayControlDescription
