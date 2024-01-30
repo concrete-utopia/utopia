@@ -43,8 +43,8 @@ import { stopPropagation } from '../../inspector/common/inspector-utils'
 import { canvasPointToWindowPoint } from '../dom-lookup'
 import { RemixNavigationAtom } from '../remix/utopia-remix-root-component'
 import { getIdOfScene } from './comment-mode/comment-mode-hooks'
-import { motion, useAnimation } from 'framer-motion'
 import type { EditorDispatch } from '../../editor/action-types'
+import { SceneCommentIdPropName } from '../../../core/model/scene-id-utils'
 import {
   canvasThreadMetadata,
   sceneThreadMetadata,
@@ -200,7 +200,7 @@ const CommentThread = React.memo(({ comment }: CommentThreadProps) => {
                 : [
                     setProp_UNSAFE(
                       scene.elementPath,
-                      create('id'),
+                      create(SceneCommentIdPropName),
                       jsExpressionValue(sceneId, emptyComments),
                     ),
                   ]
