@@ -77,10 +77,6 @@ import { memoize } from '../shared/memoize'
 import { filenameFromParts, getFilenameParts } from '../../components/images'
 import globToRegexp from 'glob-to-regexp'
 import { is } from '../shared/equality-utils'
-import {
-  AssetFileKeepDeepEquality,
-  ImageFileKeepDeepEquality,
-} from '../../components/editor/store/store-deep-equality-instances'
 
 export const sceneMetadata = _sceneMetadata // This is a hotfix for a circular dependency AND a leaking of utopia-api into the workers
 
@@ -535,41 +531,6 @@ export function isOlderThan(maybeNew: ProjectFile, existing: ProjectFile | null)
   return (
     isTextFile(maybeNew) && isTextFile(existing) && maybeNew.versionNumber < existing.versionNumber
   )
-}
-
-export function updateFileIfPossible(
-  updated: ProjectFile,
-  existing: ProjectFile | null,
-): ProjectFile | 'cant-update' {
-  if (existing == null || existing.type !== updated.type) {
-    return updated
-  }
-
-  if (
-    isTextFile(updated) &&
-    isTextFile(existing) &&
-    isOlderThan(existing, updated) &&
-    canUpdateRevisionsState(
-      updated.fileContents.revisionsState,
-      existing.fileContents.revisionsState,
-    )
-  ) {
-    return updated
-  }
-
-  if (isImageFile(updated) && existing != null && isImageFile(existing)) {
-    if (ImageFileKeepDeepEquality(existing, updated).areEqual) {
-      return 'cant-update'
-    }
-  }
-
-  if (isAssetFile(updated) && existing != null && isAssetFile(existing)) {
-    if (AssetFileKeepDeepEquality(existing, updated).areEqual) {
-      return 'cant-update'
-    }
-  }
-
-  return 'cant-update'
 }
 
 export function updateUiJsCode(file: TextFile, code: string, codeIsNowAhead: boolean): TextFile {
