@@ -28,7 +28,7 @@ describe('Collaboration test', () => {
     'can collaboratively add an element',
     async () => {
       const { page: page1 } = await utopiaBrowser1.setup({
-        url: `${BASE_URL}/p/?fakeUser=alice&Multiplayer=true${BRANCH_NAME}`,
+        url: `${BASE_URL}/p/?fakeUser=alice${BRANCH_NAME}`,
         timeout: PUPPETEER_TIMEOUT,
       })
 
@@ -48,7 +48,7 @@ describe('Collaboration test', () => {
       const newProjectUrl = new url.URL(page1.url()).pathname
 
       const { page: page2 } = await utopiaBrowser2.setup({
-        url: `${BASE_URL}${newProjectUrl}?fakeUser=bob&Multiplayer=true${BRANCH_NAME}`,
+        url: `${BASE_URL}${newProjectUrl}?fakeUser=bob${BRANCH_NAME}`,
         timeout: PUPPETEER_TIMEOUT,
       })
 
