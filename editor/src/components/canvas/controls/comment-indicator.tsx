@@ -8,6 +8,7 @@ import type { ThreadMetadata, UserMeta } from '../../../../liveblocks.config'
 import { useEditThreadMetadata, useStorage } from '../../../../liveblocks.config'
 import {
   getCollaboratorById,
+  getThreadLocationOnCanvas,
   useActiveThreads,
   useCanvasCommentThreadAndLocation,
   useCanvasLocationOfThread,
@@ -64,6 +65,11 @@ import { useRefAtom } from '../../editor/hook-utils'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import * as PP from '../../../core/shared/property-path'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
+import {
+  canvasThreadMetadata,
+  liveblocksThreadMetadataToUtopia,
+  utopiaThreadMetadataToLiveblocksPartial,
+} from '../../../core/commenting/comment-types'
 
 export const CommentIndicators = React.memo(() => {
   const projectId = useEditorState(
@@ -369,36 +375,6 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
 })
 CommentIndicator.displayName = 'CommentIndicator'
 
-function canvasPositionOfThread(
-  sceneGlobalFrame: CanvasRectangle,
-  locationInScene: LocalPoint,
-): CanvasPoint {
-  return canvasPoint({
-    x: sceneGlobalFrame.x + locationInScene.x,
-    y: sceneGlobalFrame.y + locationInScene.y,
-  })
-}
-
-function getThreadOriginalLocationOnCanvas(
-  thread: ThreadData<ThreadMetadata>,
-  startingSceneGlobalFrame: MaybeInfinityCanvasRectangle | null,
-): CanvasPoint {
-  const sceneId = thread.metadata.sceneId
-  if (sceneId == null) {
-    return canvasPoint({ x: thread.metadata.x, y: thread.metadata.y })
-  }
-
-  const globalFrame = nullIfInfinity(startingSceneGlobalFrame)
-  if (globalFrame == null) {
-    throw new Error('Found thread attached to scene with invalid global frame')
-  }
-
-  return canvasPositionOfThread(
-    globalFrame,
-    localPoint({ x: thread.metadata.x, y: thread.metadata.y }),
-  )
-}
-
 const COMMENT_DRAG_THRESHOLD = 5 // square px
 
 function useDragging(
@@ -433,7 +409,7 @@ function useDragging(
         scenesRef.current,
       )
 
-      const originalThreadPosition = getThreadOriginalLocationOnCanvas(
+      const originalThreadPosition = getThreadLocationOnCanvas(
         thread,
         maybeStartingSceneUnderPoint?.globalFrame ?? null,
       )
@@ -487,19 +463,28 @@ function useDragging(
         if (maybeSceneUnderPoint == null) {
           editThreadMetadata({
             threadId: thread.id,
-            metadata: {
-              x: newPositionOnCanvas.x,
-              y: newPositionOnCanvas.y,
-              sceneId: null,
-              remixLocationRoute: null,
-            },
+            metadata: utopiaThreadMetadataToLiveblocksPartial({
+              type: 'canvas',
+              position: newPositionOnCanvas,
+            }),
           })
           return
         }
 
         const localPointInScene = isNotNullFiniteRectangle(maybeSceneUnderPoint.globalFrame)
           ? getLocalPointInNewParentContext(maybeSceneUnderPoint.globalFrame, newPositionOnCanvas)
-          : newPositionOnCanvas
+          : null
+
+        if (localPointInScene == null) {
+          editThreadMetadata({
+            threadId: thread.id,
+            metadata: utopiaThreadMetadataToLiveblocksPartial({
+              type: 'canvas',
+              position: newPositionOnCanvas,
+            }),
+          })
+          return
+        }
 
         const sceneId = getIdOfScene(maybeSceneUnderPoint)
         const sceneIdToUse = sceneId ?? EP.toUid(maybeSceneUnderPoint.elementPath)
@@ -518,12 +503,13 @@ function useDragging(
         }
         editThreadMetadata({
           threadId: thread.id,
-          metadata: {
-            x: localPointInScene.x,
-            y: localPointInScene.y,
+          metadata: utopiaThreadMetadataToLiveblocksPartial({
+            type: 'scene',
+            position: newPositionOnCanvas,
+            scenePosition: localPointInScene,
             sceneId: sceneIdToUse,
             remixLocationRoute: remixRoute != null ? remixRoute.location.pathname : undefined,
-          },
+          }),
         })
       }
 

@@ -11,17 +11,19 @@ const { RelativeCiAgentWebpackPlugin } = require('@relative-ci/agent')
 
 const Production = 'production'
 const Staging = 'staging'
+const Branches = 'branches'
 const Development = 'development'
 
 const verbose = process.env.VERBOSE === 'true'
 const performance = process.env.PERFORMANCE === 'true' // This is for performance testing, which combines the dev server with production config
 const hot = !performance && process.env.HOT === 'true' // For running the webpack-dev-server in hot mode
 const mode = process.env.WEBPACK_MODE ?? (performance ? Production : Development) // Default to 'development' unless we are running the performance test
-const actualMode = mode === Staging ? Production : mode
+const actualMode = mode === Staging || mode === Branches ? Production : mode
 const isDev = mode === Development || performance
 const isStaging = mode === Staging
-const isProd = !(isDev || isStaging)
-const isProdOrStaging = isProd || isStaging
+const isBranches = mode === Branches
+const isProd = !(isDev || isStaging || isBranches)
+const isProdOrStaging = isProd || isStaging || isBranches
 
 const runCompiler = isDev && process.env.RUN_COMPILER !== 'false' // For when you want to run the compiler in a separate tab
 
@@ -43,7 +45,13 @@ function srcPath(subdir) {
 //                    using the ExtractedTextPlugin - https://v4.webpack.js.org/plugins/extract-text-webpack-plugin/
 const hashPattern = hot ? '[contenthash]' : '[chunkhash]' // I changed [hash] to [contenthash] as per https://webpack.js.org/migrate/5/#clean-up-configuration
 
-const BaseDomain = isProd ? 'https://cdn.utopia.app' : isStaging ? 'https://cdn.utopia.pizza' : ''
+const BaseDomain = isProd
+  ? 'https://cdn.utopia.app'
+  : isStaging
+  ? 'https://cdn.utopia.pizza'
+  : isBranches
+  ? 'https://cdn.utopia.fish'
+  : ''
 const VSCodeBaseDomain = BaseDomain === '' ? '${window.location.origin}' : BaseDomain
 
 const htmlTemplateParameters = {
@@ -174,7 +182,6 @@ const config = {
       'REACT_APP_ENVIRONMENT_CONFIG',
       'REACT_APP_AUTH0_CLIENT_ID',
       'REACT_APP_AUTH0_ENDPOINT',
-      'REACT_APP_AUTH0_REDIRECT_URI',
       'REACT_APP_COMMIT_HASH',
 
       // !! optional env vars should be added in the webpack.EnvironmentPlugin below providing a default value for them instead than here

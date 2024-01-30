@@ -1,17 +1,27 @@
-import type { Page } from 'puppeteer'
+import type { ElementHandle, Page } from 'puppeteer'
 import type { UtopiaPuppeteerBrowser } from './test-utils'
 
 export const TIMEOUT = 120000
+export const PUPPETEER_TIMEOUT = 30000
 
 const BRANCH_NAME = process.env.BRANCH_NAME ? `&branch_name=${process.env.BRANCH_NAME}` : ''
 const BASE_URL = process.env.BASE_URL ?? 'http://localhost:8000'
 
+export async function getElementWithSelector(
+  page: Page,
+  selector: string,
+): Promise<ElementHandle<Element>> {
+  console.info('waiting for element with selector', selector)
+  const element = await page.waitForSelector(selector)
+  return element!
+}
+
 export async function initBrowserTest(utopiaBrowser: UtopiaPuppeteerBrowser) {
   const { page } = await utopiaBrowser.setup({
     url: `${BASE_URL}/p/?fakeUser=alice&Multiplayer=true${BRANCH_NAME}`,
-    timeout: TIMEOUT,
+    timeout: PUPPETEER_TIMEOUT,
   })
-  await page.waitForSelector('#playground-scene') // wait for the scene to render
+  await getElementWithSelector(page, '#playground-scene') // wait for the scene to render
 
   return page
 }
@@ -19,29 +29,33 @@ export async function initBrowserTest(utopiaBrowser: UtopiaPuppeteerBrowser) {
 export async function initSignedInBrowserTest(utopiaBrowser: UtopiaPuppeteerBrowser) {
   const { page } = await utopiaBrowser.setup({
     url: `${BASE_URL}/p/?fakeUser=alice&Multiplayer=true${BRANCH_NAME}`,
-    timeout: TIMEOUT,
+    timeout: PUPPETEER_TIMEOUT,
   })
 
-  const signInButton = await page.waitForSelector('div[data-testid="sign-in-button"]')
+  const signInButton = await getElementWithSelector(page, 'div[data-testid="sign-in-button"]')
   await signInButton!.click()
 
-  await page.waitForSelector('#playground-scene') // wait for the scene to render
+  await getElementWithSelector(page, '#playground-scene') // wait for the scene to render
 
   return page
 }
 
 export async function enterCommentMode(page: Page) {
-  const commentModeButton = await page.waitForSelector(
+  const commentModeButton = await getElementWithSelector(
+    page,
     'div[data-testid="canvas-toolbar-comment-mode-connected"]',
   )
   await commentModeButton!.click()
 }
 
 export async function placeCommentOnCanvas(page: Page, text: string, x: number, y: number) {
-  const canvasControlsContainer = await page.waitForSelector('#new-canvas-controls-container')
+  const canvasControlsContainer = await getElementWithSelector(
+    page,
+    '#new-canvas-controls-container',
+  )
   await canvasControlsContainer!.click({ offset: { x, y } })
 
-  const commentBox = await page.waitForSelector('[contenteditable="true"]')
+  const commentBox = await getElementWithSelector(page, '[contenteditable="true"]')
   await commentBox!.focus()
   await commentBox!.type(text)
   await page.keyboard.press('Enter')

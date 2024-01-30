@@ -1,8 +1,9 @@
-import { setupBrowser, wait } from '../utils'
-import type { BoundingBox, Browser, Page, Point } from 'puppeteer'
+import { wait } from '../utils'
+import type { BoundingBox, Page, Point } from 'puppeteer'
 import {
   TIMEOUT,
   enterCommentMode,
+  getElementWithSelector,
   initBrowserTest,
   initSignedInBrowserTest,
   placeCommentOnCanvas,
@@ -14,7 +15,7 @@ const PlaygroundSceneSelector = '#playground-scene'
 const SceneToolbarSelector = 'div[data-testid="scene-label"]'
 
 async function getBoundingBox(page: Page, selector: string): Promise<BoundingBox> {
-  const element = await page.waitForSelector(selector)
+  const element = await getElementWithSelector(page, selector)
   const boundingBox = await element!.boundingBox()
   return boundingBox!
 }
@@ -66,22 +67,30 @@ describe('Comments test', () => {
       const page = await initSignedInBrowserTest(utopiaBrowser)
 
       // Enter comment mode using the toolbar
-      const commentModeButton = await page.waitForSelector(
+      const commentModeButton = await getElementWithSelector(
+        page,
         'div[data-testid="canvas-toolbar-comment-mode-connected"]',
       )
       await commentModeButton!.click()
 
       // Click on the canvas to open the comment popup
-      const canvasControlsContainer = await page.waitForSelector('#new-canvas-controls-container')
+      const canvasControlsContainer = await getElementWithSelector(
+        page,
+        '#new-canvas-controls-container',
+      )
       await canvasControlsContainer!.click({ offset: { x: 500, y: 500 } })
 
       // Write to comment text and submit it
-      const commentBox = await page.waitForSelector('[contenteditable="true"]')
+      const commentBox = await getElementWithSelector(page, '[contenteditable="true"]')
       await commentBox!.focus()
       await commentBox!.type('hello comments')
       await page.keyboard.press('Enter')
 
       // Check if the comment text is on the screen
+      console.info(
+        'waiting for element with function',
+        'document.querySelector("body").innerText.includes("hello comments")',
+      )
       const thread = await page.waitForFunction(
         'document.querySelector("body").innerText.includes("hello comments")',
       )
@@ -91,7 +100,7 @@ describe('Comments test', () => {
       await canvasControlsContainer!.click({ offset: { x: 700, y: 700 } })
 
       // Check if the comment indicator is still visible
-      const commentIndicator = await page.waitForSelector(CommentIndicatorSelector)
+      const commentIndicator = await getElementWithSelector(page, CommentIndicatorSelector)
 
       expect(commentIndicator).not.toBeNull()
 
@@ -108,17 +117,25 @@ describe('Comments test', () => {
       expect(popupAfterReopen).toHaveLength(1)
 
       // Submit a reply
-      const commentBox2 = await page.waitForSelector('[contenteditable="true"]')
+      const commentBox2 = await getElementWithSelector(page, '[contenteditable="true"]')
       await commentBox2!.focus()
       await commentBox2!.type('this is a reply')
       await page.keyboard.press('Enter')
 
       // Check if the original comment and the reply comment are both on the screen
+      console.info(
+        'waiting for element with function',
+        'document.querySelector("body").innerText.includes("hello comments")',
+      )
       const originalComment = await page.waitForFunction(
         'document.querySelector("body").innerText.includes("hello comments")',
       )
       expect(originalComment).not.toBeNull()
 
+      console.info(
+        'waiting for element with function',
+        'document.querySelector("body").innerText.includes("this is a reply")',
+      )
       const replyComment = await page.waitForFunction(
         'document.querySelector("body").innerText.includes("this is a reply")',
       )
@@ -141,7 +158,10 @@ describe('Comments test', () => {
       await enterCommentMode(page)
 
       // Clicking to add a comment
-      const canvasControlsContainer = await page.waitForSelector('#new-canvas-controls-container')
+      const canvasControlsContainer = await getElementWithSelector(
+        page,
+        '#new-canvas-controls-container',
+      )
       await canvasControlsContainer!.click({ offset: { x: 500, y: 500 } })
 
       // Pressing escape without submitting
@@ -163,7 +183,10 @@ describe('Comments test', () => {
 
       // Resolve the comment
 
-      const resolveButton = await page.waitForSelector('div[data-testid="resolve-thread-button"]')
+      const resolveButton = await getElementWithSelector(
+        page,
+        'div[data-testid="resolve-thread-button"]',
+      )
       await resolveButton!.click()
 
       // Check that the comment indicator is gone
@@ -180,7 +203,10 @@ describe('Comments test', () => {
       await enterCommentMode(page)
       await placeCommentOnCanvas(page, 'hello comments', 500, 500)
 
-      const closeCommentButton = await page.waitForSelector('div[data-testid="close-comment"]')
+      const closeCommentButton = await getElementWithSelector(
+        page,
+        'div[data-testid="close-comment"]',
+      )
       await closeCommentButton!.click()
 
       // Check that the comment popup is closed but the indicator is still there
@@ -197,7 +223,7 @@ describe('Comments test', () => {
       async () => {
         const page = await initSignedInBrowserTest(utopiaBrowser)
 
-        const commentTabs = await page.waitForSelector('div[data-testid="comments-tab"]')
+        const commentTabs = await getElementWithSelector(page, 'div[data-testid="comments-tab"]')
         expect(commentTabs).not.toBeNull()
       },
       TIMEOUT,
@@ -326,6 +352,63 @@ describe('Comments test', () => {
         })
         expect(commentBoundingBoxBackOnCanvasBeforeMove).toEqual(
           commentBoundingBoxBackOnCanvasAfterMove,
+        )
+      },
+      TIMEOUT,
+    ),
+    it(
+      'scene comment canvas coordinates are maintained when scene is moved',
+      async () => {
+        const page = await initSignedInBrowserTest(utopiaBrowser)
+        await enterCommentMode(page)
+
+        const playgroundSceneBoundingBox = roundBoundingBox(
+          await getBoundingBox(page, PlaygroundSceneSelector),
+        )
+
+        // Add a scene comment
+        await placeCommentOnCanvas(
+          page,
+          'hello comments',
+          playgroundSceneBoundingBox.x + 100,
+          playgroundSceneBoundingBox.y + 100,
+        )
+
+        // Leave comment mode by pressing ESC twice
+        await page.keyboard.press('Escape')
+        await page.keyboard.press('Escape')
+
+        const sceneToolBarBoundingBox = roundBoundingBox(
+          await getBoundingBox(page, SceneToolbarSelector),
+        )
+        const sceneToolBarCenter = roundPoint(center(sceneToolBarBoundingBox))
+
+        // move the scene, the comment indicator should move with the scene
+        await drag(
+          page,
+          sceneToolBarCenter,
+          offsetPoint(sceneToolBarCenter, { offsetX: 50, offsetY: 50 }),
+        )
+
+        const movedSceneBoundingBox = roundBoundingBox(
+          await getBoundingBox(page, SceneToolbarSelector),
+        )
+        const movedSceneBoundingBoxCenter = roundPoint(center(movedSceneBoundingBox))
+
+        await page.mouse.click(movedSceneBoundingBoxCenter.x, movedSceneBoundingBoxCenter.y)
+
+        const commentBoundingBoxBackOnCanvasBeforeDelete = roundBoundingBox(
+          await getBoundingBox(page, CommentIndicatorSelector),
+        )
+        // delete the scene
+        await page.keyboard.press('Backspace')
+
+        const commentBoundingBoxBackOnCanvasAfterDelete = roundBoundingBox(
+          await getBoundingBox(page, CommentIndicatorSelector),
+        )
+        // the comment indicator should not move on the canvas
+        expect(commentBoundingBoxBackOnCanvasAfterDelete).toEqual(
+          commentBoundingBoxBackOnCanvasBeforeDelete,
         )
       },
       TIMEOUT,

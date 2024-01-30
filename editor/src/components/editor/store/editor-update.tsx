@@ -83,6 +83,9 @@ export function gatedActions<T>(
     case 'DELETE_FILE_FROM_COLLABORATION':
       isCollaborationUpdate = true
       break
+    case 'UPDATE_FILE':
+      isCollaborationUpdate = action.fromCollaboration
+      break
     case 'UPDATE_FROM_WORKER':
       alwaysRun = true
       break

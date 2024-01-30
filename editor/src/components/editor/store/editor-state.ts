@@ -418,7 +418,11 @@ export type CollabTextFile = Y.Map<
   | string
 >
 
-export type CollabFile = CollabTextFile //| CollabImageFileUpdate | CollabAssetFileUpdate | CollabDirectoryFileUpdate
+export type CollabImageFile = Y.Map<'IMAGE_FILE' | string | number>
+
+export type CollabAssetFile = Y.Map<'ASSET_FILE' | string>
+
+export type CollabFile = CollabTextFile | CollabImageFile | CollabAssetFile
 
 export interface CollaborativeEditingSupportSession {
   mergeDoc: Y.Doc
