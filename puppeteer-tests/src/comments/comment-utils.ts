@@ -11,9 +11,15 @@ export async function getElementWithSelector(
   page: Page,
   selector: string,
 ): Promise<ElementHandle<Element>> {
-  console.info('waiting for element with selector', selector)
-  const element = await page.waitForSelector(selector)
-  return element!
+  console.info('\x1b[93m  waiting for element with selector \x1b[0m', selector)
+  try {
+    const element = await page.waitForSelector(selector)
+    console.info('\x1b[92m element found \x1b[0m', selector)
+    return element!
+  } catch (e) {
+    console.error('\x1b[31m did not find element \x1b[0m', selector)
+    throw e
+  }
 }
 
 export async function initBrowserTest(utopiaBrowser: UtopiaPuppeteerBrowser) {
