@@ -16,7 +16,7 @@ export const setupBrowser = async (
   defaultTimeout: number,
 ): Promise<BrowserForPuppeteerTest> => {
   const browser = await puppeteer.launch({
-    args: ['--no-sandbox', '--enable-thread-instruction-count'],
+    args: ['--no-sandbox', '--enable-thread-instruction-count', `--window-size=1500,940`],
     headless: yn(process.env.HEADLESS) ?? false,
     executablePath: process.env.BROWSER,
   })
