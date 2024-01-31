@@ -234,7 +234,6 @@ const config = {
   },
 
   externals: {
-    domtoimage: 'domtoimage',
     'source-map-support': 'should-never-succeed', // I don't know what this is?
   },
 
