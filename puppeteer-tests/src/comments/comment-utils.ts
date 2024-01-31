@@ -17,7 +17,7 @@ export async function getElementWithSelector(
     console.info('\x1b[92m element found \x1b[0m', selector)
     return element!
   } catch (e) {
-    console.error('\x1b[31m did not find element \x1b[0m', selector)
+    console.error('\x1b[31m ERROR did not find element, failing test \x1b[0m', selector)
     throw e
   }
 }
