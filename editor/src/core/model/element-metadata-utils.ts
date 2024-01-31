@@ -66,8 +66,11 @@ import {
   hasElementsWithin,
   isJSExpressionOtherJavaScript,
   isJSXMapExpression,
+  getJSXAttribute,
+  isJSXAttributeValue,
 } from '../shared/element-template'
 import {
+  getJSXAttributesAtPath,
   getModifiableJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
 } from '../shared/jsx-attributes'
@@ -1540,12 +1543,25 @@ export const MetadataUtils = {
               // With images, take their alt and src properties as possible names first.
               const elementProps = allElementProps[EP.toString(element.elementPath)] ?? {}
               if (lastNamePart === 'img') {
-                const alt = elementProps['alt']
-                if (alt != null && typeof alt === 'string' && alt.length > 0) {
+                const getProp = (prop: string): string | null => {
+                  const value = elementProps[prop]
+                  if (value != null && typeof value === 'string' && value.length > 0) {
+                    return value
+                  }
+                  const attr = getJSXAttribute(jsxElement.props, prop)
+                  if (attr != null && isJSXAttributeValue(attr) && typeof attr.value === 'string') {
+                    return attr.value
+                  }
+                  return null
+                }
+
+                const alt = getProp('alt')
+                if (alt != null) {
                   return alt
                 }
-                const src = elementProps['src']
-                if (src != null && typeof src === 'string' && src.length > 0) {
+
+                const src = getProp('src')
+                if (src != null) {
                   if (src.startsWith('data:') && src.includes('base64')) {
                     return '<Base64 data>'
                   }
