@@ -237,6 +237,7 @@ module.exports = {
       },
       to: {
         path: ['typescript'],
+        pathNot: ['typescript-for-the-editor'],
         reachable: true,
       },
     },
