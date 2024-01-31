@@ -33,6 +33,7 @@ import { useGetCodeAndHighlightBounds } from './ui-jsx-canvas-execution-scope'
 import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { objectMap } from '../../../core/shared/object-utils'
 
 export type ComponentRendererComponent = React.ComponentType<
   React.PropsWithChildren<{
@@ -183,7 +184,7 @@ export function createComponentRendererComponent(params: {
       })
     }
 
-    let definedWithinWithValues: MapLike<any> = {}
+    let definedWithinWithValues: MapLike<unknown> = {}
 
     if (utopiaJsxComponent.arbitraryJSBlock != null) {
       const lookupRenderer = createLookupRender(
@@ -228,6 +229,13 @@ export function createComponentRendererComponent(params: {
         instancePath,
       )
 
+      const spiedVariablesInScope = objectMap(
+        (spiedValue) => ({
+          spiedValue: spiedValue,
+        }),
+        definedWithinWithValues,
+      )
+
       const renderedCoreElement = renderCoreElement(
         element,
         ownElementPath,
@@ -251,7 +259,7 @@ export function createComponentRendererComponent(params: {
         code,
         highlightBounds,
         rerenderUtopiaContext.editedText,
-        definedWithinWithValues,
+        spiedVariablesInScope,
       )
 
       if (typeof renderedCoreElement === 'string' || typeof renderedCoreElement === 'number') {
