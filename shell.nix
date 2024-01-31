@@ -3,7 +3,7 @@
   includeServerBuildSupport ? true,
   includeEditorBuildSupport ? true,
   includeRunLocallySupport ? true,
-  includeReleaseSupport ? false,
+  includeReleaseSupport ? true,
   includeDatabaseSupport ? true
 }:
 
@@ -11,7 +11,7 @@ let
   release = (import ./release.nix {});
   pkgs = release.pkgs;
   lib = pkgs.lib;
-  node = pkgs.nodejs-16_x;
+  node = pkgs.nodejs-18_x;
   postgres = pkgs.postgresql_13;
   stdenv = pkgs.stdenv;
   pnpm = node.pkgs.pnpm;
@@ -27,6 +27,7 @@ let
   # Slightly kludgy because the zlib Haskell package is a pain in the face.
   ghc = pkgs.haskell.packages.${compiler}.ghcWithPackages (hpkgs: with hpkgs; [
     zlib
+    magic
   ]);
 
   baseEditorScripts = [
@@ -215,18 +216,14 @@ let
     (pkgs.writeScriptBin "update-vscode-build-extension" ''
       #!/usr/bin/env bash
       set -e
-      build-utopia-vscode-extension
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
-      yarn
-      yarn run pull-utopia-extension
+      nix-shell --run update-vscode-build-extension-inner
     '')
     (pkgs.writeScriptBin "build-vscode" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
-      rm -rf ./dist ./node_modules
-      yarn
-      yarn run build
+      nix-shell --run build-vscode-inner
     '')
     (pkgs.writeScriptBin "build-vscode-with-extension" ''
       #!/usr/bin/env bash
@@ -456,8 +453,7 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
-      ${yarn}/bin/yarn
-      ${yarn}/bin/yarn run make-patch
+      nix-shell --run update-vscode-patch-inner
     '')
     (pkgs.writeScriptBin "watch-utopia-vscode-common" ''
       #!/usr/bin/env bash
@@ -477,7 +473,7 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
-      ${yarn}/bin/yarn run pull-utopia-extension
+      nix-shell --run pull-extension-inner
     '')
     (pkgs.writeScriptBin "watch-vscode-build-extension-only" ''
       #!/usr/bin/env bash
@@ -620,14 +616,20 @@ let
 
   withCustomDevScripts = withServerRunScripts ++ (lib.optionals includeRunLocallySupport customDevScripts);
 
-  # TODO Come back to these when trying to use nix to build a docker container - https://stackoverflow.com/questions/58421505/how-do-i-apply-a-nix-shell-config-in-a-docker-image
   releaseScripts = [
-    (pkgs.writeScriptBin "build-editor" ''
+    (pkgs.writeScriptBin "build-editor-production" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${pnpm}/bin/pnpm install --unsafe-perm
       ${pnpm}/bin/pnpm run production
+    '')
+    (pkgs.writeScriptBin "build-editor-staging" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
+      ${pnpm}/bin/pnpm install --unsafe-perm
+      ${pnpm}/bin/pnpm run staging
     '')
     # CRA for whatever reason will automatically fail on CI for any warnings, so we need to prefix with `CI=false`. Urgh. https://github.com/facebook/create-react-app/issues/3657
     (pkgs.writeScriptBin "build-website" ''
@@ -640,20 +642,58 @@ let
     (pkgs.writeScriptBin "build-server" ''
       #!/usr/bin/env bash
       set -e
+      cabal-update
+      rebuild-cabal
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
       ${cabal}/bin/cabal new-build utopia-web
       cp --verbose $(${pkgs.haskellPackages.cabal-plan}/bin/cabal-plan list-bin exe:utopia-web) .
     '')
-    (pkgs.writeScriptBin "build-all" ''
+    (pkgs.writeScriptBin "copy-all-to-dist-folder" ''
       #!/usr/bin/env bash
       set -e
-      build-editor
-      build-website
-      build-server
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/
+      rm -rf dist
+      mkdir dist
+      mkdir dist/server
+      mkdir dist/server/editor
+      mkdir dist/server/migrations
+      mkdir dist/server/public
+      mkdir dist/server/vscode
+      cp -r vscode-build/dist/. dist/server/vscode
+      cp -r website-next/out/. dist/server/public
+      cp -r editor/resources/editor/. dist/server/editor
+      cp -r editor/lib/. dist/server/editor
+      # cp server/utopia-web dist/server
+      cp -r server/migrations/. dist/server/migrations
+      cp run-server-production.sh dist/server
+    '')
+    (pkgs.writeScriptBin "build-all-staging" ''
+      #!/usr/bin/env bash
+      set -e
+      if [ -z $GITHUB_TOKEN ]
+      then
+        echo "A GITHUB_TOKEN is required when running the full Utopia build. Please see the readme for instructions."
+        exit 1
+      else
+        check-tool-versions
+        build-vscode-with-extension
+        install-editor
+        build-website
+        build-editor-staging
+        build-server
+        copy-all-to-dist-folder
+      fi
+    '')
+    (pkgs.writeScriptBin "build-docker" ''
+      #!/usr/bin/env bash
+      set -e
+      docker load < $(nix-build docker-build.nix)
     '')
   ];
 
-  scripts = withCustomDevScripts; # ++ (if needsRelease then releaseScripts else []);
+  withReleaseScripts = withCustomDevScripts ++ (lib.optionals includeReleaseSupport releaseScripts);
+
+  scripts = withReleaseScripts;
 
   linuxOnlyPackages = lib.optionals stdenv.isLinux [ pkgs.xvfb_run pkgs.xlibsWrapper pkgs.xorg.libxkbfile ];
   macOSOnlyPackages = lib.optionals stdenv.isDarwin (with pkgs.darwin.apple_sdk.frameworks; [
@@ -675,11 +715,12 @@ let
 
   releasePackages = [
     pkgs.heroku
+    pkgs.docker
   ];
 
   pythonAndPackages = pkgs.python3.withPackages(ps: with ps; [ pyusb tkinter pkgconfig ]);
 
-  basePackages = [ node pkgs.libsecret pythonAndPackages pkgs.pkg-config pkgs.tmux pkgs.git pkgs.wget ] ++ nodePackages ++ linuxOnlyPackages ++ macOSOnlyPackages;
+  basePackages = [ pkgs.docker node pkgs.libsecret pythonAndPackages pkgs.pkg-config pkgs.tmux pkgs.git pkgs.wget ] ++ nodePackages ++ linuxOnlyPackages ++ macOSOnlyPackages;
   withServerBasePackages = basePackages ++ (lib.optionals includeServerBuildSupport baseServerPackages);
   withServerRunPackages = withServerBasePackages ++ (lib.optionals includeRunLocallySupport serverRunPackages);
   withReleasePackages = withServerRunPackages ++ (lib.optionals includeReleaseSupport releasePackages);
