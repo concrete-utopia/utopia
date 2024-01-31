@@ -352,10 +352,8 @@ export function isElementRenderedBySameComponent(
     return false
   }
 
-  const targetElement = MetadataUtils.getJSXElementFromMetadata(
-    metadata,
-    EP.getContainingComponent(targetPath),
-  )
+  const containingComponent = EP.dropNPathParts(targetPath, 1)
+  const targetElement = MetadataUtils.getJSXElementFromMetadata(metadata, containingComponent)
 
   if (targetElement == null) {
     return false
@@ -363,7 +361,7 @@ export function isElementRenderedBySameComponent(
 
   return (
     areElementsInstancesOfTheSameComponent(targetElement, element) ||
-    isElementRenderedBySameComponent(metadata, EP.getContainingComponent(targetPath), element)
+    isElementRenderedBySameComponent(metadata, containingComponent, element)
   )
 }
 
