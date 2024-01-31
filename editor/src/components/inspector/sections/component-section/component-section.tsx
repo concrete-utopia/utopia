@@ -384,10 +384,13 @@ const DataPickerPopup = React.memo(
     const dispatch = useDispatch()
 
     const onTweakProperty = React.useCallback(
-      (name: string) => () => {
+      (name: string) => (e: React.MouseEvent) => {
         if (selectedViewPathRef.current == null) {
           return
         }
+
+        e.stopPropagation()
+        e.preventDefault()
 
         dispatch([
           setProp_UNSAFE(
@@ -432,14 +435,14 @@ const DataPickerPopup = React.memo(
           tabIndex={0}
           style={{
             ...props.style,
-            backgroundColor: colorTheme.bg2.value,
+            backgroundColor: colorTheme.neutralBackground.value,
             padding: '8px 16px',
             boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
             borderRadius: UtopiaTheme.inputBorderRadius,
             alignItems: 'flex-start',
           }}
         >
-          <div style={{ fontSize: 14, fontWeight: 400, marginBottom: 8 }}>
+          <div style={{ fontSize: 14, fontWeight: 400, marginBottom: 16 }}>
             <span>Data</span>
           </div>
           {variableNamesInScope.map(([variableFromScope, variableValue], idx) => (
@@ -450,12 +453,38 @@ const DataPickerPopup = React.memo(
               style={{ width: '100%' }}
             >
               <UIGridRow
-                padded
+                padded={false}
                 variant='<--1fr--><--1fr-->'
-                style={{ justifyContent: 'space-between', alignItems: 'flex-start', gap: 4 }}
+                style={{
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                  gap: 8,
+                  width: '100%',
+                }}
               >
-                <span>{variableFromScope}</span>
-                <span>{variableValueToString(variableValue)}</span>
+                <div>
+                  <span
+                    style={{
+                      padding: 4,
+                      borderRadius: 2,
+                      fontWeight: 400,
+                      background: '#e6fedc',
+                    }}
+                  >
+                    {variableFromScope}
+                  </span>
+                </div>
+                <div>
+                  <span
+                    style={{
+                      padding: 4,
+                      fontWeight: 400,
+                      color: colorTheme.neutralForeground.value,
+                    }}
+                  >
+                    {variableValueToString(variableValue)}
+                  </span>
+                </div>
               </UIGridRow>
             </Button>
           ))}
