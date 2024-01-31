@@ -866,7 +866,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       ),
     )
   })
-  it('does not reparente scene into other component in scene', async () => {
+  it('does not reparent scene into other component in scene', async () => {
     const editor = await renderTestEditorWithCode(
       ProjectWithNestedComponents,
       'await-first-dom-report',
