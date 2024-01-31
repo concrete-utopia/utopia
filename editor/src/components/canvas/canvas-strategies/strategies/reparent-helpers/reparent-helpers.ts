@@ -76,29 +76,45 @@ import { cleanSteganoTextData } from '../../../../../core/shared/stegano-text'
 export function isAllowedToReparent(
   projectContents: ProjectContentTreeRoot,
   startingMetadata: ElementInstanceMetadataMap,
-  target: ElementPath,
+  elementToReparent: ElementPath,
+  targetParentPath: ElementPath,
 ): boolean {
-  if (MetadataUtils.isElementGenerated(target)) {
+  if (MetadataUtils.isElementGenerated(elementToReparent)) {
     return false
-  } else {
-    const metadata = MetadataUtils.findElementByElementPath(startingMetadata, target)
-    if (metadata == null) {
-      const parentPath = EP.parentPath(target)
-      const conditional = findMaybeConditionalExpression(parentPath, startingMetadata)
-      if (conditional != null) {
-        return maybeBranchConditionalCase(parentPath, conditional, target) != null
-      }
-      return false
-    } else {
-      return foldEither(
-        (_) => true,
-        (elementFromMetadata) =>
-          !elementReferencesElsewhere(elementFromMetadata) &&
-          MetadataUtils.targetHonoursPropsPosition(projectContents, metadata),
-        metadata.element,
-      )
-    }
   }
+
+  const elementToReparentJSXElement = MetadataUtils.getJSXElementFromMetadata(
+    startingMetadata,
+    elementToReparent,
+  )
+  if (
+    elementToReparentJSXElement != null &&
+    isElementRenderedBySameComponent(
+      startingMetadata,
+      targetParentPath,
+      elementToReparentJSXElement,
+    )
+  ) {
+    return false
+  }
+
+  const metadata = MetadataUtils.findElementByElementPath(startingMetadata, elementToReparent)
+  if (metadata == null) {
+    const parentPath = EP.parentPath(elementToReparent)
+    const conditional = findMaybeConditionalExpression(parentPath, startingMetadata)
+    if (conditional != null) {
+      return maybeBranchConditionalCase(parentPath, conditional, elementToReparent) != null
+    }
+    return false
+  }
+
+  return foldEither(
+    (_) => true,
+    (elementFromMetadata) =>
+      !elementReferencesElsewhere(elementFromMetadata) &&
+      MetadataUtils.targetHonoursPropsPosition(projectContents, metadata),
+    metadata.element,
+  )
 }
 
 export function isAllowedToNavigatorReparent(
@@ -219,11 +235,17 @@ export function getReplacePropsWithRuntimeValuesCommands(
 export function ifAllowedToReparent(
   canvasState: InteractionCanvasState,
   startingMetadata: ElementInstanceMetadataMap,
-  targets: Array<ElementPath>,
+  elementsToReparent: Array<ElementPath>,
+  targetParentPath: ElementPath,
   ifAllowed: () => StrategyApplicationResult,
 ): StrategyApplicationResult {
-  const allowed = targets.every((target) => {
-    return isAllowedToReparent(canvasState.projectContents, startingMetadata, target)
+  const allowed = elementsToReparent.every((elementToReparent) => {
+    return isAllowedToReparent(
+      canvasState.projectContents,
+      startingMetadata,
+      elementToReparent,
+      targetParentPath,
+    )
   })
   if (allowed) {
     return ifAllowed()
@@ -352,7 +374,8 @@ export function isElementRenderedBySameComponent(
     return false
   }
 
-  const containingComponent = EP.dropNPathParts(targetPath, 1)
+  // const containingComponent = EP.dropNPathParts(targetPath, 1)
+  const containingComponent = EP.getContainingComponent(targetPath)
   const targetElement = MetadataUtils.getJSXElementFromMetadata(metadata, containingComponent)
 
   if (targetElement == null) {
