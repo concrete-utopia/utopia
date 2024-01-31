@@ -103,7 +103,6 @@ module.exports = {
       testRegex: 'src/.*\\.spec\\.(tsx?)$',
       moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
       moduleNameMapper: {
-        '^domtoimage$': '<rootDir>/src/utils/stubs/dom-to-image-stub.ts',
         '^platform-detect$': '<rootDir>/src/utils/stubs/platform-detect-stub.ts',
         '\\.(css)$': '<rootDir>/test/jest/__mocks__/styleMock.js',
         'utopia-api/core': '<rootDir>/node_modules/utopia-api/dist/core.js',
