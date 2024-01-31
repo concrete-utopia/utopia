@@ -31,8 +31,6 @@ export const CollaborationStateUpdater = React.memo(
         let actions: Array<EditorAction> = [
           updateProjectServerState({ currentlyHolderOfTheBaton: newHolderOfTheBaton }),
         ]
-        // Makes sense for the editing user to be in control and they probably want to be editing
-        // when they regain control.
         dispatch(actions)
       },
       [dispatch],
