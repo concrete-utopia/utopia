@@ -210,7 +210,6 @@ import type {
   OpenFloatingInsertMenu,
   OpenPopup,
   OpenTextEditor,
-  RegenerateThumbnail,
   RemoveFromNodeModulesContents,
   RemoveToast,
   RenameComponent,
@@ -292,7 +291,6 @@ import type {
   UpdatePreviewConnected,
   UpdateProjectContents,
   UpdatePropertyControlsInfo,
-  UpdateThumbnailGenerated,
   WrapInElement,
   UpdateGithubOperations,
   UpdateBranchContents,
@@ -333,7 +331,6 @@ import {
   findLatestVersion,
   updateDependenciesInEditorState,
 } from '../npm-dependency/npm-dependency'
-import { updateRemoteThumbnail } from '../persistence/persistence-backend'
 import {
   deleteAssetFile,
   saveAsset as saveAssetToServer,
@@ -471,7 +468,6 @@ import {
   updateFile,
   updateNodeModulesContents,
   updatePackageJson,
-  updateThumbnailGenerated,
 } from './action-creators'
 import { addToastToState, includeToast, removeToastFromState } from './toast-helpers'
 import { AspectRatioLockedProp } from '../../aspect-ratio'
@@ -3401,29 +3397,6 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       projectDescription: action.description,
-    }
-  },
-
-  REGENERATE_THUMBNAIL: (
-    action: RegenerateThumbnail,
-    editor: EditorModel,
-    dispatch: EditorDispatch,
-  ): EditorModel => {
-    if (editor.id != null) {
-      void updateRemoteThumbnail(editor.id, true).then(() => {
-        dispatch([updateThumbnailGenerated(new Date().getTime())], 'everyone')
-      })
-    }
-    return editor
-  },
-
-  UPDATE_THUMBNAIL_GENERATED: (
-    action: UpdateThumbnailGenerated,
-    editor: EditorModel,
-  ): EditorModel => {
-    return {
-      ...editor,
-      thumbnailLastGenerated: action.timestamp,
     }
   },
 
