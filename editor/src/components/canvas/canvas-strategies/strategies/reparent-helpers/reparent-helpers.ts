@@ -12,6 +12,7 @@ import type {
   ElementInstanceMetadataMap,
   JSXElement,
   JSXElementChild,
+  JSXElementName,
   JSXFragment,
 } from '../../../../../core/shared/element-template'
 import {
@@ -72,6 +73,7 @@ import { treatElementAsFragmentLike } from '../fragment-like-helpers'
 import { setProperty } from '../../../commands/set-property-command'
 import type { ReparentTargetForPaste } from '../reparent-utils'
 import { cleanSteganoTextData } from '../../../../../core/shared/stegano-text'
+import { assertNever } from '../../../../../core/shared/utils'
 
 export function isAllowedToReparent(
   projectContents: ProjectContentTreeRoot,
@@ -354,11 +356,34 @@ export function getInsertionPathForReparentTarget(
   return conditionalClauseInsertionPath(newParent, clause, replaceWithSingleElement())
 }
 
-function areElementsInstancesOfTheSameComponent(
-  firstElement: JSXElement,
-  secondElement: JSXElement,
-): boolean {
-  return jsxElementNameEquals(firstElement.name, secondElement.name)
+function getComponentNamesFromJSXElementChild(element: JSXElementChild): Array<JSXElementName> {
+  switch (element.type) {
+    case 'JSX_ELEMENT':
+      return [
+        element.name,
+        ...element.children.flatMap((c) => getComponentNamesFromJSXElementChild(c)),
+      ]
+    case 'JSX_FRAGMENT':
+      return element.children.flatMap((c) => getComponentNamesFromJSXElementChild(c))
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      return [
+        ...getComponentNamesFromJSXElementChild(element.whenTrue),
+        ...getComponentNamesFromJSXElementChild(element.whenFalse),
+      ]
+    case 'JSX_MAP_EXPRESSION':
+      return Object.values(element.elementsWithin).flatMap((c) =>
+        getComponentNamesFromJSXElementChild(c),
+      )
+    case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'ATTRIBUTE_NESTED_ARRAY':
+    case 'ATTRIBUTE_NESTED_OBJECT':
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+    case 'ATTRIBUTE_VALUE':
+    case 'JSX_TEXT_BLOCK':
+      return []
+    default:
+      assertNever(element)
+  }
 }
 
 export function isElementRenderedBySameComponent(
@@ -374,15 +399,20 @@ export function isElementRenderedBySameComponent(
     return false
   }
 
-  const containingComponent = EP.dropNPathParts(targetPath, 1)
+  const containingComponent = EP.getContainingComponent(targetPath)
   const targetElement = MetadataUtils.getJSXElementFromMetadata(metadata, containingComponent)
 
   if (targetElement == null) {
     return false
   }
 
+  const namesOfElementsBeingReparented = getComponentNamesFromJSXElementChild(element)
+  const anyElementReParentedIntoItself = namesOfElementsBeingReparented.some((name) =>
+    jsxElementNameEquals(targetElement.name, name),
+  )
+
   return (
-    areElementsInstancesOfTheSameComponent(targetElement, element) ||
+    anyElementReParentedIntoItself ||
     isElementRenderedBySameComponent(metadata, containingComponent, element)
   )
 }

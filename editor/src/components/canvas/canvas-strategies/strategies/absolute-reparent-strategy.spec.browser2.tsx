@@ -19,12 +19,13 @@ import {
 import type { Modifiers } from '../../../../utils/modifiers'
 import { cmdModifier, emptyModifiers } from '../../../../utils/modifiers'
 import { selectComponents } from '../../../editor/actions/meta-actions'
-import { RightMenuTab } from '../../../editor/store/editor-state'
+import { RightMenuTab, navigatorEntryToKey } from '../../../editor/store/editor-state'
 import { CSSCursor } from '../../canvas-types'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { getCursorFromEditor } from '../../controls/select-mode/cursor-component'
 import {
   mouseClickAtPoint,
+  mouseDoubleClickAtPoint,
   mouseDownAtPoint,
   mouseDragFromPointToPoint,
   mouseDragFromPointToPointNoMouseDown,
@@ -870,19 +871,36 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       ProjectWithNestedComponents,
       'await-first-dom-report',
     )
-    const scene1BB = editor.renderedDOM.getByTestId('drag-me').getBoundingClientRect()
-    const scene1Center = {
-      x: scene1BB.left + scene1BB.width / 2,
-      y: scene1BB.top + scene1BB.height / 2,
+
+    const dragMeBB = editor.renderedDOM.getByTestId('drag-me').getBoundingClientRect()
+    const dragMeCenter = {
+      x: dragMeBB.left + dragMeBB.width / 2,
+      y: dragMeBB.top + dragMeBB.height / 2,
     }
-    const scene2BB = editor.renderedDOM.getByTestId('drag-here').getBoundingClientRect()
-    const scene2Center = {
-      x: scene2BB.left + scene2BB.width / 2,
-      y: scene2BB.top + scene2BB.height / 2,
+    const dragHereBB = editor.renderedDOM.getByTestId('drag-here').getBoundingClientRect()
+    const dragHereCenter = {
+      x: dragHereBB.left + dragHereBB.width / 2,
+      y: dragHereBB.top + dragHereBB.height / 2,
     }
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+    await mouseDoubleClickAtPoint(canvasControlsLayer, dragHereCenter)
+
+    // check that `drag-here` is expanded in the navigator
+    expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+      'regular-sb/scene1',
+      'regular-sb/scene1/container1',
+      'regular-sb/scene1/container1:container-root-div',
+      'regular-sb/scene1/container1:container-root-div/74f',
+      'regular-sb/scene1/container1/hello',
+      'regular-sb/container2',
+      'regular-sb/container2:container-root-div',
+      'regular-sb/container2:container-root-div/74f',
+      'regular-sb/container2/hi',
+    ])
+
     const dragDelta = windowPoint({
-      x: scene2Center.x - scene1Center.x,
-      y: scene2Center.y - scene1Center.y,
+      x: dragHereCenter.x - dragMeCenter.x,
+      y: dragHereCenter.y - dragMeCenter.y,
     })
     await dragElement(
       editor,
@@ -2254,9 +2272,9 @@ function getElementCenterCoords(editor: EditorRenderResult, testId: string): Win
 const ProjectWithNestedComponents = `import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 
-function Container({ children, style }) {
+function Container({ children, ...props }) {
   return (
-    <div data-uid='0cd' style={style}>
+    <div data-uid='container-root-div' {...props}>
       {children}
     </div>
   )
@@ -2266,14 +2284,14 @@ export var storyboard = (
   <Storyboard data-uid='sb'>
     <Scene
       commentId='scene'
-      data-testid='drag-here'
+      data-testid='drag-me'
       data-label='Scene 2'
       style={{
         position: 'absolute',
         left: 1126,
         top: 667,
-        width: 761,
-        height: 1046,
+        width: 405,
+        height: 522,
       }}
       data-uid='scene1'
     >
@@ -2288,35 +2306,23 @@ export var storyboard = (
           top: 143,
         }}
       >
-        <h2 data-uid='082'>Hello</h2>
+        <h2 data-uid='hello'>Hello</h2>
       </Container>
     </Scene>
-    <Scene
-      commentId='b9b'
-      data-testid='drag-me'
+    <Container
+      data-testid='drag-here'
+      data-uid='container2'
       style={{
+        backgroundColor: '#0074ff',
+        width: 600,
+        height: 659,
         position: 'absolute',
-        left: 552,
-        top: 16,
-        width: 525,
-        height: 566,
+        left: 331,
+        top: -130,
       }}
-      data-uid='scene2'
     >
-      <Container
-        data-uid='container2'
-        style={{
-          backgroundColor: '#ff4500',
-          width: 456,
-          height: 491,
-          position: 'absolute',
-          left: 17,
-          top: 19,
-        }}
-      >
-        <h2 data-uid='138'>Hi</h2>
-      </Container>
-    </Scene>
+      <h2 data-uid='hi'>Hi</h2>
+    </Container>
   </Storyboard>
 )
 `
