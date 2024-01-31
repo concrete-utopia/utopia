@@ -2296,7 +2296,7 @@ export var storyboard = (
         )
       })
 
-      it('cannot paste a component instance into its own definition, transitively 2', async () => {
+      it('cannot paste a component instance into its own definition, via a Scene', async () => {
         const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
 
         await mouseDoubleClickAtPoint(editor.renderedDOM.getAllByText('ThisComponent')[0], {
