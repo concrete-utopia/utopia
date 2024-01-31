@@ -520,24 +520,11 @@ export function runUpdateProjectServerState(
   working: EditorStoreUnpatched,
   action: UpdateProjectServerState,
 ): EditorStoreUnpatched {
-  const dummyProjectServerState: ProjectServerState = {
-    isMyProject: 'yes',
-    currentlyHolderOfTheBaton: true,
-    ownerId: null,
-    projectData: null,
-    forkedFromProjectData: null,
-  }
-
-  const projectServerState =
-    working.unpatchedEditor.id === 'performance-test-project-id'
-      ? dummyProjectServerState
-      : {
-          ...working.projectServerState,
-          ...action.serverState,
-        }
-
   return {
     ...working,
-    projectServerState,
+    projectServerState: {
+      ...working.projectServerState,
+      ...action.serverState,
+    },
   }
 }

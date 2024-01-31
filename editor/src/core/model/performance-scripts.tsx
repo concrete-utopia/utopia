@@ -97,6 +97,7 @@ async function loadProject(
   dispatch: DebugDispatch,
   builtInDependencies: BuiltInDependencies,
   projectContents: ProjectContentTreeRoot,
+  projectId: string | null,
 ): Promise<boolean> {
   const persistentModel: PersistentModel = {
     appID: null,
@@ -134,14 +135,7 @@ async function loadProject(
   }
 
   // Load the project itself.
-  await load(
-    dispatch,
-    persistentModel,
-    'Test',
-    'performance-test-project-id',
-    builtInDependencies,
-    false,
-  )
+  await load(dispatch, persistentModel, 'Test', projectId!, builtInDependencies, false)
 
   // Wait for the editor to stabilise, ensuring that the canvas can render for example.
   const startWaitingTime = Date.now()
@@ -197,9 +191,19 @@ export function useTriggerScrollPerformanceTest(): () => void {
     (store) => store.builtInDependencies,
     'useTriggerScrollPerformanceTest builtInDependencies',
   )
+  const projectId = useEditorState(
+    Substores.fullStore,
+    (store) => store.editor.id,
+    'useTriggerScrollPerformanceTest id',
+  )
   const allPaths = useRefEditorState((store) => toArrayOf(storeToAllRegularPaths, store))
   const trigger = React.useCallback(async () => {
-    const editorReady = await loadProject(dispatch, builtInDependencies, LargeProjectContents)
+    const editorReady = await loadProject(
+      dispatch,
+      builtInDependencies,
+      LargeProjectContents,
+      projectId,
+    )
     if (!editorReady) {
       console.info('SCROLL_TEST_ERROR')
       return
@@ -231,7 +235,7 @@ export function useTriggerScrollPerformanceTest(): () => void {
       }
     }
     requestAnimationFrame(step)
-  }, [dispatch, allPaths, builtInDependencies])
+  }, [dispatch, builtInDependencies, projectId, allPaths])
   return trigger
 }
 
@@ -245,9 +249,19 @@ function useTriggerHighlightPerformanceTest(key: 'regular' | 'all-elements'): ()
     (store) => store.builtInDependencies,
     'useTriggerHighlightPerformanceTest builtInDependencies',
   )
+  const projectId = useEditorState(
+    Substores.fullStore,
+    (store) => store.editor.id,
+    'useTriggerScrollPerformanceTest id',
+  )
   const trigger = React.useCallback(async () => {
     const allCapsKey = key.toLocaleUpperCase()
-    const editorReady = await loadProject(dispatch, builtInDependencies, LargeProjectContents)
+    const editorReady = await loadProject(
+      dispatch,
+      builtInDependencies,
+      LargeProjectContents,
+      projectId,
+    )
     if (!editorReady) {
       console.info(`HIGHLIGHT_${allCapsKey}_TEST_ERROR`)
       return
@@ -292,7 +306,7 @@ function useTriggerHighlightPerformanceTest(key: 'regular' | 'all-elements'): ()
       }
     }
     requestAnimationFrame(step)
-  }, [allPaths, calculateHighlightedViews, key, builtInDependencies, dispatch])
+  }, [key, dispatch, builtInDependencies, projectId, allPaths, calculateHighlightedViews])
 
   return trigger
 }
@@ -312,8 +326,18 @@ export function useTriggerSelectionPerformanceTest(): () => void {
     (store) => store.builtInDependencies,
     'useTriggerSelectionPerformanceTest builtInDependencies',
   )
+  const projectId = useEditorState(
+    Substores.fullStore,
+    (store) => store.editor.id,
+    'useTriggerScrollPerformanceTest id',
+  )
   const trigger = React.useCallback(async () => {
-    const editorReady = await loadProject(dispatch, builtInDependencies, LargeProjectContents)
+    const editorReady = await loadProject(
+      dispatch,
+      builtInDependencies,
+      LargeProjectContents,
+      projectId,
+    )
     if (!editorReady) {
       console.info('SELECT_TEST_ERROR')
       return
@@ -417,7 +441,7 @@ export function useTriggerSelectionPerformanceTest(): () => void {
       }
     }
     requestAnimationFrame(step)
-  }, [dispatch, allPaths, selectedViews, builtInDependencies])
+  }, [dispatch, builtInDependencies, projectId, allPaths, selectedViews])
   return trigger
 }
 
@@ -440,8 +464,13 @@ export function useTriggerAbsoluteMovePerformanceTest(
     (store) => store.builtInDependencies,
     'useTriggerAbsoluteMovePerformanceTest builtInDependencies',
   )
+  const projectId = useEditorState(
+    Substores.fullStore,
+    (store) => store.editor.id,
+    'useTriggerScrollPerformanceTest id',
+  )
   const trigger = React.useCallback(async () => {
-    const editorReady = await loadProject(dispatch, builtInDependencies, projectContents)
+    const editorReady = await loadProject(dispatch, builtInDependencies, projectContents, projectId)
     if (!editorReady) {
       console.info('ABSOLUTE_MOVE_TEST_ERROR')
       return
@@ -610,7 +639,7 @@ export function useTriggerAbsoluteMovePerformanceTest(
       }
     }
     requestAnimationFrame(step)
-  }, [dispatch, allPaths, metadata, builtInDependencies, projectContents])
+  }, [dispatch, builtInDependencies, projectContents, projectId, allPaths, metadata])
   return trigger
 }
 
@@ -626,8 +655,13 @@ export function useTriggerSelectionChangePerformanceTest(): () => void {
     (store) => store.builtInDependencies,
     'useTriggerSelectionChangePerformanceTest builtInDependencies',
   )
+  const projectId = useEditorState(
+    Substores.fullStore,
+    (store) => store.editor.id,
+    'useTriggerScrollPerformanceTest id',
+  )
   const trigger = React.useCallback(async () => {
-    const editorReady = await loadProject(dispatch, builtInDependencies, projectContents)
+    const editorReady = await loadProject(dispatch, builtInDependencies, projectContents, projectId)
     if (!editorReady) {
       console.info('SELECTION_CHANGE_TEST_ERROR')
       return
@@ -773,6 +807,6 @@ export function useTriggerSelectionChangePerformanceTest(): () => void {
       }
     }
     requestAnimationFrame(step)
-  }, [dispatch, allPaths, metadata, builtInDependencies, projectContents])
+  }, [dispatch, builtInDependencies, projectContents, projectId, allPaths, metadata])
   return trigger
 }
