@@ -24,6 +24,11 @@ export const setupBrowser = async (
   page.on('dialog', async (dialog) => {
     await dialog.dismiss()
   })
+  page.on('console', async (e) => {
+    const args = await Promise.all(e.args().map((a) => a.jsonValue()))
+    // replay all console messages to the Node.js console
+    console.log(...args)
+  })
   page.setDefaultNavigationTimeout(120000)
   page.setDefaultTimeout(defaultTimeout)
   await page.setViewport({ width: 1500, height: 768 })
