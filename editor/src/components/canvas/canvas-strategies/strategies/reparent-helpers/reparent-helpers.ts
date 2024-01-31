@@ -374,8 +374,7 @@ export function isElementRenderedBySameComponent(
     return false
   }
 
-  // const containingComponent = EP.dropNPathParts(targetPath, 1)
-  const containingComponent = EP.getContainingComponent(targetPath)
+  const containingComponent = EP.dropNPathParts(targetPath, 1)
   const targetElement = MetadataUtils.getJSXElementFromMetadata(metadata, containingComponent)
 
   if (targetElement == null) {

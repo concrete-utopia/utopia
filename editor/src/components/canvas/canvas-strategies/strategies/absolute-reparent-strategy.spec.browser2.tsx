@@ -884,9 +884,17 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       x: scene2Center.x - scene1Center.x,
       y: scene2Center.y - scene1Center.y,
     })
-    await dragElement(editor, 'drag-me', dragDelta, cmdModifier, null, null)
+    await dragElement(
+      editor,
+      'drag-me',
+      dragDelta,
+      cmdModifier,
+      { cursor: CSSCursor.NotPermitted }, // checks that we show that it's not permitted
+      null,
+    )
 
-    expect(1).toEqual(0)
+    // the drag is prevented, nothing changes
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(ProjectWithNestedComponents)
   })
   it('referencing a value from outside the element prevents reparenting', async () => {
     function createCodeForProject(left: number, top: number) {
