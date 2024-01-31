@@ -1387,29 +1387,6 @@ function toastOnGeneratedElementsTargeted(
   return result
 }
 
-function toastOnUncopyableElementsSelected(
-  message: string,
-  editor: EditorState,
-  allowActionRegardless: boolean,
-  actionOtherwise: (e: EditorState) => EditorState,
-  dispatch: EditorDispatch,
-): EditorState {
-  const isReparentable = editor.selectedViews.every((target) => {
-    return isAllowedToReparent(editor.projectContents, editor.jsxMetadata, target)
-  })
-  let result: EditorState = editor
-  if (!isReparentable) {
-    const showToastAction = showToast(notice(message))
-    result = UPDATE_FNS.ADD_TOAST(showToastAction, result)
-  }
-
-  if (isReparentable || allowActionRegardless) {
-    result = actionOtherwise(result)
-  }
-
-  return result
-}
-
 let checkpointTimeoutId: number | undefined = undefined
 let canvasScrollAnimationTimer: number | undefined = undefined
 

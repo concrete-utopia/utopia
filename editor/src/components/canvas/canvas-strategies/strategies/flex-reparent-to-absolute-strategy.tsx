@@ -69,10 +69,12 @@ export function baseFlexReparentToAbsoluteStrategy(
       fitness: fitness,
       apply: (strategyLifecycle) => {
         const filteredSelectedElements = flattenSelection(selectedElements)
+        const newParent = reparentTarget.newParent
         return ifAllowedToReparent(
           canvasState,
           canvasState.startingMetadata,
           filteredSelectedElements,
+          newParent.intendedParentPath,
           () => {
             if (
               interactionSession == null ||
@@ -81,8 +83,6 @@ export function baseFlexReparentToAbsoluteStrategy(
             ) {
               return emptyStrategyApplicationResult
             }
-
-            const newParent = reparentTarget.newParent
 
             // we want to keep a placeholder element where the original dragged element was to avoid the new parent shifting around on the screen
             const placeholderCommands = placeholderCloneCommands(

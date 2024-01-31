@@ -122,21 +122,23 @@ export function baseAbsoluteReparentStrategy(
         : fitness,
       apply: (strategyLifecycle) => {
         const { projectContents, nodeModules } = canvasState
+        const newParent = reparentTarget.newParent
         return ifAllowedToReparent(
           canvasState,
           canvasState.startingMetadata,
           filteredSelectedElements,
+          newParent.intendedParentPath,
           () => {
             if (dragInteractionData.drag == null) {
               return emptyStrategyApplicationResult
             }
 
-            const newParent = reparentTarget.newParent
             const allowedToReparent = filteredSelectedElements.every((selectedElement) => {
               return isAllowedToReparent(
                 canvasState.projectContents,
                 canvasState.startingMetadata,
                 selectedElement,
+                newParent.intendedParentPath,
               )
             })
 
