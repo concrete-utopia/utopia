@@ -126,74 +126,6 @@ async function dragAlreadySelectedElement(
   )
 }
 
-function getChildrenHiderProjectCode(shouldHide: boolean): string {
-  return `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
-export const ChildrenHider = (props) => {
-  return (
-    <div data-uid='33d' style={{ ...props.style }}>
-      {props.shouldHide ? null : props.children}
-    </div>
-  )
-}
-export var ${BakedInStoryboardVariableName} = (
-  <Storyboard data-uid='${BakedInStoryboardUID}'>
-    <Scene
-      style={{
-        backgroundColor: 'white',
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        width: 400,
-        height: 700,
-      }}
-      data-uid='${TestSceneUID}'
-    >
-      <div
-        style={{
-          backgroundColor: 'white',
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          width: 400,
-          height: 700,
-        }}
-        data-uid='outer-div'
-      >
-        <ChildrenHider
-          style={{
-            backgroundColor: '#aaaaaa33',
-            position: 'absolute',
-            left: 41,
-            top: 37,
-            width: 338,
-            height: 144,
-            gap: 10,
-          }}
-          data-uid='children-hider'
-          shouldHide={${shouldHide}}
-        >
-        </ChildrenHider>
-        <div
-          style={{
-            backgroundColor: '#aaaaaa33',
-            height: 65,
-            width: 66,
-            position: 'absolute',
-            left: 190,
-            top: 211,
-          }}
-          data-uid='child-to-reparent'
-          data-testid='child-to-reparent'
-        >
-          drag me
-        </div>
-      </div>
-    </Scene>
-  </Storyboard>
-)`
-}
-
 function getElementByDataUID(renderResult: EditorRenderResult, dataUID: string): HTMLElement {
   const queryByDataUID = queryHelpers.queryByAttribute.bind(null, 'data-uid')
   return forceNotNull(
@@ -932,6 +864,29 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         PrettierConfig,
       ),
     )
+  })
+  it('does not reparente scene into other component in scene', async () => {
+    const editor = await renderTestEditorWithCode(
+      ProjectWithNestedComponents,
+      'await-first-dom-report',
+    )
+    const scene1BB = editor.renderedDOM.getByTestId('drag-me').getBoundingClientRect()
+    const scene1Center = {
+      x: scene1BB.left + scene1BB.width / 2,
+      y: scene1BB.top + scene1BB.height / 2,
+    }
+    const scene2BB = editor.renderedDOM.getByTestId('drag-here').getBoundingClientRect()
+    const scene2Center = {
+      x: scene2BB.left + scene2BB.width / 2,
+      y: scene2BB.top + scene2BB.height / 2,
+    }
+    const dragDelta = windowPoint({
+      x: scene2Center.x - scene1Center.x,
+      y: scene2Center.y - scene1Center.y,
+    })
+    await dragElement(editor, 'drag-me', dragDelta, cmdModifier, null, null)
+
+    expect(1).toEqual(0)
   })
   it('referencing a value from outside the element prevents reparenting', async () => {
     function createCodeForProject(left: number, top: number) {
@@ -2287,3 +2242,73 @@ function getElementCenterCoords(editor: EditorRenderResult, testId: string): Win
   const center = windowPoint({ x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 })
   return center
 }
+
+const ProjectWithNestedComponents = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+function Container({ children, style }) {
+  return (
+    <div data-uid='0cd' style={style}>
+      {children}
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      commentId='scene'
+      data-testid='drag-here'
+      data-label='Scene 2'
+      style={{
+        position: 'absolute',
+        left: 1126,
+        top: 667,
+        width: 761,
+        height: 1046,
+      }}
+      data-uid='scene1'
+    >
+      <Container
+        data-uid='container1'
+        style={{
+          backgroundColor: '#ff4500',
+          width: 700,
+          height: 759,
+          position: 'absolute',
+          left: 31,
+          top: 143,
+        }}
+      >
+        <h2 data-uid='082'>Hello</h2>
+      </Container>
+    </Scene>
+    <Scene
+      commentId='b9b'
+      data-testid='drag-me'
+      style={{
+        position: 'absolute',
+        left: 552,
+        top: 16,
+        width: 525,
+        height: 566,
+      }}
+      data-uid='scene2'
+    >
+      <Container
+        data-uid='container2'
+        style={{
+          backgroundColor: '#ff4500',
+          width: 456,
+          height: 491,
+          position: 'absolute',
+          left: 17,
+          top: 19,
+        }}
+      >
+        <h2 data-uid='138'>Hi</h2>
+      </Container>
+    </Scene>
+  </Storyboard>
+)
+`
