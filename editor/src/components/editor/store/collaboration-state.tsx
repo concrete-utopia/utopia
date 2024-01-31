@@ -33,9 +33,6 @@ export const CollaborationStateUpdater = React.memo(
         ]
         // Makes sense for the editing user to be in control and they probably want to be editing
         // when they regain control.
-        if (newHolderOfTheBaton) {
-          actions.push(switchEditorMode(EditorModes.selectMode(null, false, 'none')))
-        }
         dispatch(actions)
       },
       [dispatch],
@@ -50,7 +47,7 @@ export const CollaborationStateUpdater = React.memo(
           void CollaborationEndpoints.claimControlOverProject(projectId)
             .then((controlResult) => {
               const newHolderOfTheBaton = controlResult ?? false
-              handleControlUpdate(newHolderOfTheBaton ?? false)
+              handleControlUpdate(newHolderOfTheBaton)
             })
             .catch((error) => {
               console.error('Error when claiming control.', error)
