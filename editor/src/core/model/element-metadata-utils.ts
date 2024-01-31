@@ -1548,6 +1548,8 @@ export const MetadataUtils = {
                   if (value != null && typeof value === 'string' && value.length > 0) {
                     return value
                   }
+                  // Sometimes allElementProps doesn't contain the props yet
+                  // This is just a quick fix, the real fix is to fix allElementProps
                   const attr = getJSXAttribute(jsxElement.props, prop)
                   if (attr != null && isJSXAttributeValue(attr) && typeof attr.value === 'string') {
                     return attr.value
