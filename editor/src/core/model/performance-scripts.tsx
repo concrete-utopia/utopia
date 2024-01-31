@@ -134,7 +134,14 @@ async function loadProject(
   }
 
   // Load the project itself.
-  await load(dispatch, persistentModel, 'Test', UUID(), builtInDependencies, false)
+  await load(
+    dispatch,
+    persistentModel,
+    'Test',
+    'performance-test-project-id',
+    builtInDependencies,
+    false,
+  )
 
   // Wait for the editor to stabilise, ensuring that the canvas can render for example.
   const startWaitingTime = Date.now()
