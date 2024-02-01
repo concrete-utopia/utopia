@@ -240,6 +240,47 @@ let
       build-utopia-vscode-extension
       build-vscode
     '')
+    (pkgs.writeScriptBin "check-tool-versions" ''
+      #! /usr/bin/env nix-shell
+      #! nix-shell -p "haskellPackages.ghcWithPackages (pkgs: with pkgs; [async process])" -i runhaskell
+
+      import Control.Concurrent.Async
+      import Control.Monad
+      import Data.Foldable
+      import Data.List
+      import Data.Monoid
+      import System.Exit
+      import System.Process
+
+      expectedToolVersions :: [(String, [String], [String])]
+      expectedToolVersions =
+        [ ("pnpm", ["--version"], ["7.14.2"])
+        , ("yarn", ["--version"], ["1.22.19"])
+        , ("ghc", ["--version"], ["The Glorious Glasgow Haskell Compilation System, version 9.0.2"])
+        , ("cabal", ["--version"], ["cabal-install version 3.8.1.0", "compiled using version 3.8.1.0 of the Cabal library "])
+        ]
+
+      checkVersion :: (String, [String], [String]) -> IO All
+      checkVersion (executable, arguments, expectedOutput) = do
+        let commandToRun = unwords (executable : arguments)
+        output <- readProcess "nix-shell" ["--run", commandToRun] ""
+        let actualOutput = lines output
+        let correctVersion = actualOutput == expectedOutput
+        unless correctVersion $ do
+          putStrLn ("Error when checking the version of " <> executable)
+          putStrLn "Expected:"
+          traverse_ putStrLn expectedOutput
+          putStrLn "Received:"
+          traverse_ putStrLn actualOutput
+        pure $ All correctVersion
+
+      main :: IO ()
+      main = do 
+        results <- mapConcurrently checkVersion expectedToolVersions
+        let result = getAll $ mconcat results
+        when result $ putStrLn "All tools are the correct version."
+        if result then exitSuccess else exitFailure
+    '')
   ];
 
   withBaseEditorScripts = lib.optionals includeEditorBuildSupport baseEditorScripts;
@@ -494,47 +535,6 @@ let
 
   # For the useful scripts in our dev environments
   customDevScripts = [
-    (pkgs.writeScriptBin "check-tool-versions" ''
-      #! /usr/bin/env nix-shell
-      #! nix-shell -p "haskellPackages.ghcWithPackages (pkgs: with pkgs; [async process])" -i runhaskell
-
-      import Control.Concurrent.Async
-      import Control.Monad
-      import Data.Foldable
-      import Data.List
-      import Data.Monoid
-      import System.Exit
-      import System.Process
-
-      expectedToolVersions :: [(String, [String], [String])]
-      expectedToolVersions =
-        [ ("pnpm", ["--version"], ["7.14.2"])
-        , ("yarn", ["--version"], ["1.22.19"])
-        , ("ghc", ["--version"], ["The Glorious Glasgow Haskell Compilation System, version 9.0.2"])
-        , ("cabal", ["--version"], ["cabal-install version 3.8.1.0", "compiled using version 3.8.1.0 of the Cabal library "])
-        ]
-
-      checkVersion :: (String, [String], [String]) -> IO All
-      checkVersion (executable, arguments, expectedOutput) = do
-        let commandToRun = unwords (executable : arguments)
-        output <- readProcess "nix-shell" ["--run", commandToRun] ""
-        let actualOutput = lines output
-        let correctVersion = actualOutput == expectedOutput
-        unless correctVersion $ do
-          putStrLn ("Error when checking the version of " <> executable)
-          putStrLn "Expected:"
-          traverse_ putStrLn expectedOutput
-          putStrLn "Received:"
-          traverse_ putStrLn actualOutput
-        pure $ All correctVersion
-
-      main :: IO ()
-      main = do 
-        results <- mapConcurrently checkVersion expectedToolVersions
-        let result = getAll $ mconcat results
-        when result $ putStrLn "All tools are the correct version."
-        if result then exitSuccess else exitFailure
-    '')
     (pkgs.writeScriptBin "stop-dev" ''
       #!/usr/bin/env bash
       # Kill nodemon because it just seems to keep running.
