@@ -134,8 +134,10 @@ async function loadProject(
     colorSwatches: [],
   }
 
+  const projectIdToUse = forceNotNull('project does not have an ID', projectId)
+
   // Load the project itself.
-  await load(dispatch, persistentModel, 'Test', projectId!, builtInDependencies, false)
+  await load(dispatch, persistentModel, 'Test', projectIdToUse, builtInDependencies, false)
 
   // Wait for the editor to stabilise, ensuring that the canvas can render for example.
   const startWaitingTime = Date.now()
