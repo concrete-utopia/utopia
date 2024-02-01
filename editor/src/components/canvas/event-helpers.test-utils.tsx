@@ -12,7 +12,7 @@ import { Clipboard } from '../../utils/clipboard'
 import type { EditorRenderResult } from './ui-jsx.test-utils'
 import { wait } from '../../utils/utils.test-utils'
 import type { WindowPoint } from '../../core/shared/math-utils'
-import { offsetPoint } from '../../core/shared/math-utils'
+import { offsetPoint, pointDifference } from '../../core/shared/math-utils'
 import selectEvent from 'react-select-event'
 
 // TODO Should the mouse move and mouse up events actually be fired at the parent of the event source?
@@ -1034,10 +1034,7 @@ export async function dragElementWithDNDEvents(
     )
   })
 
-  const delta: Point = {
-    x: endPoint.x - startPoint.x,
-    y: endPoint.y - startPoint.y,
-  }
+  const delta: Point = pointDifference(startPoint, endPoint)
 
   const numberOfSteps = 5 // we can make this configurable in the options
   for (let step = 1; step < numberOfSteps + 1; step++) {
