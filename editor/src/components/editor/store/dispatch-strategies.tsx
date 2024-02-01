@@ -682,6 +682,9 @@ export function handleStrategies(
     elementPathTree:
       patchedEditorState.canvas.interactionSession?.latestElementPathTree ??
       patchedEditorState.elementPathTree,
+    allElementProps:
+      patchedEditorState.canvas.interactionSession?.latestAllElementProps ??
+      patchedEditorState.allElementProps,
   }
 
   if (MeasureDispatchTime) {
@@ -729,6 +732,7 @@ function injectNewMetadataToOldEditorState(
         jsxMetadata: newEditorState.jsxMetadata,
         domMetadata: newEditorState.domMetadata,
         spyMetadata: newEditorState.spyMetadata,
+        allElementProps: newEditorState.allElementProps,
         lockedElements: newEditorState.lockedElements, // Here because it changes off the back of metadata changes.
         canvas: {
           ...oldEditorState.canvas,
@@ -736,6 +740,7 @@ function injectNewMetadataToOldEditorState(
             ...oldEditorState.canvas.interactionSession,
             latestMetadata: newEditorState.canvas.interactionSession.latestMetadata, // the fresh metadata from SAVE_DOM_REPORT
             latestElementPathTree: newEditorState.canvas.interactionSession.latestElementPathTree,
+            latestAllElementProps: newEditorState.canvas.interactionSession.latestAllElementProps,
           },
         },
       }
@@ -746,6 +751,7 @@ function injectNewMetadataToOldEditorState(
       jsxMetadata: newEditorState.jsxMetadata, // the fresh metadata from SAVE_DOM_REPORT
       domMetadata: newEditorState.domMetadata,
       spyMetadata: newEditorState.spyMetadata,
+      allElementProps: newEditorState.allElementProps,
       elementPathTree: newEditorState.elementPathTree,
       lockedElements: newEditorState.lockedElements, // Here because it changes off the back of metadata changes.
     }
