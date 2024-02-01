@@ -1097,36 +1097,6 @@ export async function dragElementWithDNDEvents(
     }
   }
 
-  await act(async () => {
-    fireEvent(
-      dropTarget,
-      new MouseEvent('dragenter', {
-        bubbles: true,
-        cancelable: true,
-        clientX: endPoint.x,
-        clientY: endPoint.y,
-        movementX: dragDelta.x,
-        movementY: dragDelta.y,
-        buttons: 1,
-      }),
-    )
-  })
-
-  await act(async () => {
-    fireEvent(
-      dropTarget,
-      new MouseEvent('dragover', {
-        bubbles: true,
-        cancelable: true,
-        clientX: endPoint.x,
-        clientY: endPoint.y,
-        movementX: dragDelta.x,
-        movementY: dragDelta.y,
-        buttons: 1,
-      }),
-    )
-  })
-
   await wait(0)
   await midDragCallback()
 
