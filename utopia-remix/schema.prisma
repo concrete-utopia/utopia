@@ -1,0 +1,75 @@
+generator client {
+    provider = "prisma-client-js"
+    output   = "./node_modules/@utopia/prisma-client"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model GithubAuthentication {
+    user_id       String    @unique(map: "unique_github_authentication") @db.VarChar
+    access_token  String    @db.VarChar
+    refresh_token String?   @db.VarChar
+    expires_at    DateTime? @db.Timestamptz(6)
+
+    @@map("github_authentication")
+}
+
+model PersistentSession {
+    key         String   @id @db.VarChar
+    auth_id     Bytes?
+    session     Bytes
+    created_at  DateTime @db.Timestamptz(6)
+    accessed_at DateTime @db.Timestamptz(6)
+
+    @@map("persistent_session")
+}
+
+model Project {
+    id          Int      @id @default(autoincrement())
+    proj_id     String   @unique(map: "unique_project") @db.VarChar
+    owner_id    String   @db.VarChar
+    title       String   @db.VarChar
+    created_at  DateTime @db.Timestamptz(6)
+    modified_at DateTime @db.Timestamptz(6)
+    content     Bytes
+    deleted     Boolean?
+
+    @@map("project")
+}
+
+model ProjectID {
+    id      Int    @id @default(autoincrement())
+    proj_id String @unique(map: "unique_project_i_d") @db.VarChar
+
+    @@map("project_i_d")
+}
+
+model Showcase {
+    id      Int    @id @default(autoincrement())
+    proj_id String @db.VarChar
+    index   BigInt
+
+    @@map("showcase")
+}
+
+model UserConfiguration {
+    id              Int     @id @default(autoincrement())
+    user_id         String  @unique(map: "unique_user_configuration") @db.VarChar
+    shortcut_config String? @db.VarChar
+    theme           String? @db.VarChar
+
+    @@map("user_configuration")
+}
+
+model UserDetails {
+    id      Int     @id @default(autoincrement())
+    user_id String  @unique(map: "unique_user_details") @db.VarChar
+    email   String? @db.VarChar
+    name    String? @db.VarChar
+    picture String? @db.VarChar
+
+    @@map("user_details")
+}
