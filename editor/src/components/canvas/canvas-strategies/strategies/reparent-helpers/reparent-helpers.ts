@@ -12,6 +12,7 @@ import type {
   ElementInstanceMetadataMap,
   JSXElement,
   JSXElementChild,
+  JSXElementName,
   JSXFragment,
 } from '../../../../../core/shared/element-template'
 import {
@@ -72,33 +73,50 @@ import { treatElementAsFragmentLike } from '../fragment-like-helpers'
 import { setProperty } from '../../../commands/set-property-command'
 import type { ReparentTargetForPaste } from '../reparent-utils'
 import { cleanSteganoTextData } from '../../../../../core/shared/stegano-text'
+import { assertNever } from '../../../../../core/shared/utils'
 
 export function isAllowedToReparent(
   projectContents: ProjectContentTreeRoot,
   startingMetadata: ElementInstanceMetadataMap,
-  target: ElementPath,
+  elementToReparent: ElementPath,
+  targetParentPath: ElementPath,
 ): boolean {
-  if (MetadataUtils.isElementGenerated(target)) {
+  if (MetadataUtils.isElementGenerated(elementToReparent)) {
     return false
-  } else {
-    const metadata = MetadataUtils.findElementByElementPath(startingMetadata, target)
-    if (metadata == null) {
-      const parentPath = EP.parentPath(target)
-      const conditional = findMaybeConditionalExpression(parentPath, startingMetadata)
-      if (conditional != null) {
-        return maybeBranchConditionalCase(parentPath, conditional, target) != null
-      }
-      return false
-    } else {
-      return foldEither(
-        (_) => true,
-        (elementFromMetadata) =>
-          !elementReferencesElsewhere(elementFromMetadata) &&
-          MetadataUtils.targetHonoursPropsPosition(projectContents, metadata),
-        metadata.element,
-      )
-    }
   }
+
+  const elementToReparentJSXElement = MetadataUtils.getJSXElementFromMetadata(
+    startingMetadata,
+    elementToReparent,
+  )
+  if (
+    elementToReparentJSXElement != null &&
+    isElementRenderedBySameComponent(
+      startingMetadata,
+      targetParentPath,
+      elementToReparentJSXElement,
+    )
+  ) {
+    return false
+  }
+
+  const metadata = MetadataUtils.findElementByElementPath(startingMetadata, elementToReparent)
+  if (metadata == null) {
+    const parentPath = EP.parentPath(elementToReparent)
+    const conditional = findMaybeConditionalExpression(parentPath, startingMetadata)
+    if (conditional != null) {
+      return maybeBranchConditionalCase(parentPath, conditional, elementToReparent) != null
+    }
+    return false
+  }
+
+  return foldEither(
+    (_) => true,
+    (elementFromMetadata) =>
+      !elementReferencesElsewhere(elementFromMetadata) &&
+      MetadataUtils.targetHonoursPropsPosition(projectContents, metadata),
+    metadata.element,
+  )
 }
 
 export function isAllowedToNavigatorReparent(
@@ -219,11 +237,17 @@ export function getReplacePropsWithRuntimeValuesCommands(
 export function ifAllowedToReparent(
   canvasState: InteractionCanvasState,
   startingMetadata: ElementInstanceMetadataMap,
-  targets: Array<ElementPath>,
+  elementsToReparent: Array<ElementPath>,
+  targetParentPath: ElementPath,
   ifAllowed: () => StrategyApplicationResult,
 ): StrategyApplicationResult {
-  const allowed = targets.every((target) => {
-    return isAllowedToReparent(canvasState.projectContents, startingMetadata, target)
+  const allowed = elementsToReparent.every((elementToReparent) => {
+    return isAllowedToReparent(
+      canvasState.projectContents,
+      startingMetadata,
+      elementToReparent,
+      targetParentPath,
+    )
   })
   if (allowed) {
     return ifAllowed()
@@ -332,11 +356,34 @@ export function getInsertionPathForReparentTarget(
   return conditionalClauseInsertionPath(newParent, clause, replaceWithSingleElement())
 }
 
-function areElementsInstancesOfTheSameComponent(
-  firstElement: JSXElement,
-  secondElement: JSXElement,
-): boolean {
-  return jsxElementNameEquals(firstElement.name, secondElement.name)
+function getComponentNamesFromJSXElementChild(element: JSXElementChild): Array<JSXElementName> {
+  switch (element.type) {
+    case 'JSX_ELEMENT':
+      return [
+        element.name,
+        ...element.children.flatMap((c) => getComponentNamesFromJSXElementChild(c)),
+      ]
+    case 'JSX_FRAGMENT':
+      return element.children.flatMap((c) => getComponentNamesFromJSXElementChild(c))
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      return [
+        ...getComponentNamesFromJSXElementChild(element.whenTrue),
+        ...getComponentNamesFromJSXElementChild(element.whenFalse),
+      ]
+    case 'JSX_MAP_EXPRESSION':
+      return Object.values(element.elementsWithin).flatMap((c) =>
+        getComponentNamesFromJSXElementChild(c),
+      )
+    case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'ATTRIBUTE_NESTED_ARRAY':
+    case 'ATTRIBUTE_NESTED_OBJECT':
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+    case 'ATTRIBUTE_VALUE':
+    case 'JSX_TEXT_BLOCK':
+      return []
+    default:
+      assertNever(element)
+  }
 }
 
 export function isElementRenderedBySameComponent(
@@ -352,18 +399,21 @@ export function isElementRenderedBySameComponent(
     return false
   }
 
-  const targetElement = MetadataUtils.getJSXElementFromMetadata(
-    metadata,
-    EP.getContainingComponent(targetPath),
-  )
+  const containingComponent = EP.getContainingComponent(targetPath)
+  const targetElement = MetadataUtils.getJSXElementFromMetadata(metadata, containingComponent)
 
   if (targetElement == null) {
     return false
   }
 
+  const namesOfElementsBeingReparented = getComponentNamesFromJSXElementChild(element)
+  const anyElementReParentedIntoItself = namesOfElementsBeingReparented.some((name) =>
+    jsxElementNameEquals(targetElement.name, name),
+  )
+
   return (
-    areElementsInstancesOfTheSameComponent(targetElement, element) ||
-    isElementRenderedBySameComponent(metadata, EP.getContainingComponent(targetPath), element)
+    anyElementReParentedIntoItself ||
+    isElementRenderedBySameComponent(metadata, containingComponent, element)
   )
 }
 

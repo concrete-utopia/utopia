@@ -14,8 +14,6 @@ export type FeatureName =
   | 'Project Thumbnail Generation'
   | 'Debug - Print UIDs'
   | 'Steganography'
-  | 'Multiplayer'
-  | 'Baton Passing For Control'
   | 'Debug – Connections'
 
 export const AllFeatureNames: FeatureName[] = [
@@ -31,8 +29,6 @@ export const AllFeatureNames: FeatureName[] = [
   'Project Thumbnail Generation',
   'Debug - Print UIDs',
   'Steganography',
-  'Multiplayer',
-  'Baton Passing For Control',
   'Debug – Connections',
 ]
 
@@ -48,8 +44,6 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Project Thumbnail Generation': false,
   'Debug - Print UIDs': false,
   Steganography: false,
-  Multiplayer: false,
-  'Baton Passing For Control': false,
   'Debug – Connections': false,
 }
 

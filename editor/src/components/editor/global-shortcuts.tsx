@@ -145,10 +145,9 @@ import { isRight } from '../../core/shared/either'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { createPasteToReplacePostActionActions } from '../canvas/canvas-strategies/post-action-options/post-action-options'
 import { wrapInDivStrategy } from './wrap-in-callbacks'
-import { isFeatureEnabled } from '../../utils/feature-switches'
 import { type ProjectServerState } from './store/project-server-state'
 import { allowedToEditProject } from './store/collaborative-editing'
-import { hasCommentPermission, getPermissions } from './store/permissions'
+import { hasCommentPermission } from './store/permissions'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -368,7 +367,7 @@ export function handleKeyDown(
   preventBrowserShortcuts(editor, event)
 
   const allowedToEdit = allowedToEditProject(loginState, projectServerState)
-  const canComment = isFeatureEnabled('Multiplayer') && hasCommentPermission(loginState)
+  const canComment = hasCommentPermission(loginState)
 
   // Ensure that any key presses are appropriately recorded.
   const key = Keyboard.keyCharacterForCode(event.keyCode)

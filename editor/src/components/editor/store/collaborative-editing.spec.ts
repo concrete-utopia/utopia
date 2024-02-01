@@ -1,7 +1,8 @@
-import { setFeatureForUnitTestsUseInDescribeBlockOnly, wait } from '../../../utils/utils.test-utils'
 import { Y } from '../../../core/shared/yjs'
 import {
   RevisionsState,
+  assetFile,
+  imageFile,
   isParseSuccess,
   textFile,
   textFileContents,
@@ -20,6 +21,7 @@ import { testParseCode } from '../../../core/workers/parser-printer/parser-print
 import {
   deleteFileFromCollaboration,
   updateExportsDetailFromCollaborationUpdate,
+  updateFileFromCollaboration,
   updateImportsFromCollaborationUpdate,
   updateTopLevelElementsFromCollaborationUpdate,
 } from '../actions/action-creators'
@@ -75,7 +77,7 @@ async function runAddHookForProjectChangesTest(test: AddHookForProjectChangesTes
       Y.applyUpdate(secondCollaborationSession.mergeDoc, update)
     })
     // Updates to the second doc should be applied to the first doc.
-    // Currently this includes updates from everywhere, including itsef.
+    // Currently this includes updates from everywhere, including itself.
     secondCollaborationSession.mergeDoc.on('update', (update) => {
       Y.applyUpdate(firstCollaborationSession.mergeDoc, update)
     })
@@ -107,8 +109,6 @@ async function runAddHookForProjectChangesTest(test: AddHookForProjectChangesTes
 }
 
 describe('addHookForProjectChanges', () => {
-  setFeatureForUnitTestsUseInDescribeBlockOnly('Multiplayer', true)
-
   it('adding file causes it to be added to the project contents', async () => {
     const code = 'export const A = <div />'
     const newParsedCode = testParseCode(code)
@@ -143,6 +143,77 @@ describe('addHookForProjectChanges', () => {
           ),
           updateImportsFromCollaborationUpdate('/assets/test1.js', newParsedCode.imports),
         ])
+      },
+    })
+  })
+
+  it('adding image causes it to be added to the project contents', async () => {
+    const newFile = imageFile('jpg', undefined, 640, 480, 58345987345, undefined)
+    await runAddHookForProjectChangesTest({
+      initialState: {},
+      changesToApply: (firstSession, secondSession) => {
+        const updatedProjectContents = addFileToProjectContents({}, '/assets/test1.jpg', newFile)
+        const collaborationChanges = collateCollaborativeProjectChanges({}, updatedProjectContents)
+        updateCollaborativeProjectContents(firstSession, collaborationChanges, [])
+      },
+      expectations: (firstSessionPromises, secondSessionPromises) => {
+        expect(secondSessionPromises).toEqual([
+          updateFileFromCollaboration('/assets/test1.jpg', newFile, true),
+        ])
+      },
+    })
+  })
+
+  it('adding image does not get added to the project contents if it includes the binary contents', async () => {
+    const newFile = imageFile(
+      'jpg',
+      '84395834543hj5h4kjh5j43h5dfgdfgd',
+      640,
+      480,
+      58345987345,
+      undefined,
+    )
+    await runAddHookForProjectChangesTest({
+      initialState: {},
+      changesToApply: (firstSession, secondSession) => {
+        const updatedProjectContents = addFileToProjectContents({}, '/assets/test1.jpg', newFile)
+        const collaborationChanges = collateCollaborativeProjectChanges({}, updatedProjectContents)
+        updateCollaborativeProjectContents(firstSession, collaborationChanges, [])
+      },
+      expectations: (firstSessionPromises, secondSessionPromises) => {
+        expect(secondSessionPromises).toEqual([])
+      },
+    })
+  })
+
+  it('adding asset causes it to be added to the project contents', async () => {
+    const newFile = assetFile(undefined, '01189998819991197253')
+    await runAddHookForProjectChangesTest({
+      initialState: {},
+      changesToApply: (firstSession, secondSession) => {
+        const updatedProjectContents = addFileToProjectContents({}, '/assets/test1.ttf', newFile)
+        const collaborationChanges = collateCollaborativeProjectChanges({}, updatedProjectContents)
+        updateCollaborativeProjectContents(firstSession, collaborationChanges, [])
+      },
+      expectations: (firstSessionPromises, secondSessionPromises) => {
+        expect(secondSessionPromises).toEqual([
+          updateFileFromCollaboration('/assets/test1.ttf', newFile, true),
+        ])
+      },
+    })
+  })
+
+  it('adding asset does not get added to the project contents if it includes the binary contents', async () => {
+    const newFile = assetFile('aaaaaaaabbbbbbbcccccccccccc', '01189998819991197253')
+    await runAddHookForProjectChangesTest({
+      initialState: {},
+      changesToApply: (firstSession, secondSession) => {
+        const updatedProjectContents = addFileToProjectContents({}, '/assets/test1.ttf', newFile)
+        const collaborationChanges = collateCollaborativeProjectChanges({}, updatedProjectContents)
+        updateCollaborativeProjectContents(firstSession, collaborationChanges, [])
+      },
+      expectations: (firstSessionPromises, secondSessionPromises) => {
+        expect(secondSessionPromises).toEqual([])
       },
     })
   })

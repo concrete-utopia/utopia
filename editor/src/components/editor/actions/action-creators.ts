@@ -27,7 +27,6 @@ import type {
   ElementPath,
   ImageFile,
   ExportDetail,
-  ImportsMergeResolution,
 } from '../../../core/shared/project-file-types'
 import type { BuildType } from '../../../core/workers/common/worker-types'
 import type { Key, KeysPressed } from '../../../utils/keyboard'
@@ -81,7 +80,6 @@ import type {
   RemoveToast,
   Redo,
   RedrawOldCanvasControls,
-  RegenerateThumbnail,
   RenameStyleSelector,
   ResetPins,
   SaveAsset,
@@ -148,7 +146,6 @@ import type {
   UpdatePackageJson,
   UpdatePreviewConnected,
   UpdatePropertyControlsInfo,
-  UpdateThumbnailGenerated,
   CloseDesignerFile,
   SetFocusedElement,
   AddImports,
@@ -894,19 +891,6 @@ export function setProjectDescription(projectDescription: string): SetProjectDes
   }
 }
 
-export function regenerateThumbnail(): RegenerateThumbnail {
-  return {
-    action: 'REGENERATE_THUMBNAIL',
-  }
-}
-
-export function updateThumbnailGenerated(timestamp: number): UpdateThumbnailGenerated {
-  return {
-    action: 'UPDATE_THUMBNAIL_GENERATED',
-    timestamp: timestamp,
-  }
-}
-
 export function updatePreviewConnected(connected: boolean): UpdatePreviewConnected {
   return {
     action: 'UPDATE_PREVIEW_CONNECTED',
@@ -1003,6 +987,21 @@ export function updateFile(
     filePath: filePath,
     file: file,
     addIfNotInFiles: addIfNotInFiles,
+    fromCollaboration: false,
+  }
+}
+
+export function updateFileFromCollaboration(
+  filePath: string,
+  file: ProjectFile,
+  addIfNotInFiles: boolean,
+): UpdateFile {
+  return {
+    action: 'UPDATE_FILE',
+    filePath: filePath,
+    file: file,
+    addIfNotInFiles: addIfNotInFiles,
+    fromCollaboration: true,
   }
 }
 

@@ -89,5 +89,4 @@ declare module 'eslint-plugin-jsx-a11y' {
 declare module 'eslint-plugin-import/lib/rules/first'
 declare module 'eslint-plugin-import/lib/rules/no-amd'
 declare module 'eslint-plugin-import/lib/rules/no-webpack-loader-syntax'
-declare module 'domtoimage'
 declare module 'keycode'

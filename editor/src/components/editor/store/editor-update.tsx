@@ -83,6 +83,9 @@ export function gatedActions<T>(
     case 'DELETE_FILE_FROM_COLLABORATION':
       isCollaborationUpdate = true
       break
+    case 'UPDATE_FILE':
+      isCollaborationUpdate = action.fromCollaboration
+      break
     case 'UPDATE_FROM_WORKER':
       alwaysRun = true
       break
@@ -244,10 +247,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_PROJECT_NAME(action, state)
     case 'SET_PROJECT_DESCRIPTION':
       return UPDATE_FNS.SET_PROJECT_DESCRIPTION(action, state)
-    case 'REGENERATE_THUMBNAIL':
-      return UPDATE_FNS.REGENERATE_THUMBNAIL(action, state, dispatch)
-    case 'UPDATE_THUMBNAIL_GENERATED':
-      return UPDATE_FNS.UPDATE_THUMBNAIL_GENERATED(action, state)
     case 'UPDATE_PREVIEW_CONNECTED':
       return UPDATE_FNS.UPDATE_PREVIEW_CONNECTED(action, state)
     case 'SHOW_CONTEXT_MENU':
