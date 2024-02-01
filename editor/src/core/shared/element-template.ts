@@ -227,6 +227,7 @@ export interface JSXMapExpression extends WithComments, WithElementsWithin {
   transpiledJavascript: string
   definedElsewhere: Array<string>
   sourceMap: RawSourceMap | null
+  valuesInScopeFromParameters: Array<string>
   uid: string
 }
 
@@ -238,6 +239,7 @@ export function jsxMapExpression(
   sourceMap: RawSourceMap | null,
   elementsWithin: ElementsWithin,
   comments: ParsedComments,
+  valuesInScopeFromParameters: Array<string>,
   uid: string = UUID(),
 ): JSXMapExpression {
   return {
@@ -250,6 +252,7 @@ export function jsxMapExpression(
     uid: uid,
     comments: comments,
     elementsWithin: elementsWithin,
+    valuesInScopeFromParameters: valuesInScopeFromParameters,
   }
 }
 

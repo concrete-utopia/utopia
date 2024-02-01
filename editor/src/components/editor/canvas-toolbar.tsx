@@ -336,6 +336,7 @@ export const CanvasToolbar = React.memo(() => {
         defaultSize: null,
         source: insertableComponentGroupFragment(),
         key: fragmentComponentInfo.insertMenuLabel,
+        insertionCeiling: null,
       },
     }
     convertToAndClose(convertToFragmentMenuItem)

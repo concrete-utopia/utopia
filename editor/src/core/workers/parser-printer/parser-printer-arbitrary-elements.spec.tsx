@@ -338,6 +338,7 @@ export var whatever = (props) => {
             ),
           },
           emptyComments,
+          ['n'],
         ),
       ],
     )
@@ -443,6 +444,7 @@ export var whatever = (props) => {
             ),
           },
           emptyComments,
+          ['n'],
         ),
       ],
     )
@@ -555,6 +557,7 @@ export var whatever = (props) => {
             ),
           },
           emptyComments,
+          ['n'],
         ),
       ],
     )
@@ -665,6 +668,7 @@ export var whatever = (props) => {
             ),
           },
           emptyComments,
+          ['n'],
         ),
       ],
     )
@@ -868,6 +872,7 @@ export var whatever = (props) => {
             ),
           },
           emptyComments,
+          ['n'],
         ),
       ],
     )
@@ -961,6 +966,7 @@ export var whatever = (props) => {
             ),
           },
           emptyComments,
+          [],
         ),
       ],
     )

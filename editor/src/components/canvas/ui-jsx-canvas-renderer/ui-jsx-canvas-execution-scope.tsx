@@ -139,6 +139,8 @@ export function createExecutionScope(
       highlightBounds,
       editedText,
       null,
+      {},
+      [],
     )
 
     executionScope[JSX_CANVAS_LOOKUP_FUNCTION_NAME] = utopiaCanvasJSXLookup(

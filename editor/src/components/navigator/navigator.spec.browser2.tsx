@@ -5106,7 +5106,7 @@ describe('Navigator row order', () => {
         'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-false-case',
         'synthetic-sb/group/text-expr-cond-wrapper/text-expr-cond/2f3-element-2f3',
         'regular-sb/group/zero-length-map-wrapper',
-        'regular-sb/group/zero-length-map-wrapper/063',
+        'regular-sb/group/zero-length-map-wrapper/097',
       ],
     )
     expect(
@@ -5144,7 +5144,7 @@ describe('Navigator row order', () => {
       'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-false-case',
       'synthetic-sb/group/text-expr-cond-wrapper/text-expr-cond/2f3-element-2f3',
       'regular-sb/group/zero-length-map-wrapper',
-      'regular-sb/group/zero-length-map-wrapper/063',
+      'regular-sb/group/zero-length-map-wrapper/097',
     ])
   })
 
