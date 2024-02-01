@@ -14,7 +14,19 @@ export const PRODUCTION_ENV: boolean = process.env.NODE_ENV === 'production'
 export const PRODUCTION_CONFIG: boolean = process.env.REACT_APP_ENVIRONMENT_CONFIG === 'production'
 const STAGING_CONFIG: boolean = process.env.REACT_APP_ENVIRONMENT_CONFIG === 'staging'
 const BRANCHES_CONFIG: boolean = process.env.REACT_APP_ENVIRONMENT_CONFIG === 'branches'
-export const PRODUCTION_OR_STAGING_CONFIG = PRODUCTION_CONFIG || STAGING_CONFIG || BRANCHES_CONFIG
+const PRODUCTION_OR_STAGING_CONFIG = PRODUCTION_CONFIG || STAGING_CONFIG || BRANCHES_CONFIG
+
+export const IS_JEST_ENVIRONMENT = process.env.JEST_WORKER_ID != null
+
+export const IS_TEST_ENVIRONMENT: boolean =
+  IS_JEST_ENVIRONMENT ||
+  (typeof window != 'undefined' && (window as any)?.KarmaTestEnvironment != null)
+
+export const IS_BROWSER_TEST_DEBUG: boolean =
+  IS_TEST_ENVIRONMENT && process.env.REACT_APP_BROWSER_TEST_DEBUG === 'true'
+
+export const DEVELOPMENT_ENV: boolean =
+  !PRODUCTION_OR_STAGING_CONFIG && !IS_TEST_ENVIRONMENT && HOSTNAME === 'localhost'
 
 type BackendType =
   | 'bff' // proxied calls via the Remix BFF
@@ -25,16 +37,15 @@ const LOCAL_BACKEND_PORTS: { [type in BackendType]: number } = {
   bff: 8002,
 }
 
-export const BACKEND_TYPE: BackendType = PRODUCTION_OR_STAGING_CONFIG ? 'direct' : 'bff'
+export const BACKEND_TYPE: BackendType = DEVELOPMENT_ENV ? 'bff' : 'direct'
 
 export function isBackendBFF(): boolean {
   return BACKEND_TYPE === 'bff'
 }
 
-export const UTOPIA_BACKEND =
-  (PRODUCTION_OR_STAGING_CONFIG
-    ? BASE_URL
-    : `${SCHEME}//${HOSTNAME}:${LOCAL_BACKEND_PORTS[BACKEND_TYPE]}`) + '/v1/'
+export const UTOPIA_BACKEND = DEVELOPMENT_ENV
+  ? `${SCHEME}//${HOSTNAME}:${LOCAL_BACKEND_PORTS[BACKEND_TYPE]}` + '/v1/'
+  : BASE_URL
 
 const SECONDARY_BASE_URL: string = PRODUCTION_CONFIG
   ? `https://utopia.fm/`
@@ -45,15 +56,6 @@ const SECONDARY_BASE_URL: string = PRODUCTION_CONFIG
   : BARE_HOST === 'localhost:8000'
   ? 'http://localhost:8001'
   : BASE_URL
-
-export const IS_JEST_ENVIRONMENT = process.env.JEST_WORKER_ID != null
-
-export const IS_TEST_ENVIRONMENT: boolean =
-  IS_JEST_ENVIRONMENT ||
-  (typeof window != 'undefined' && (window as any)?.KarmaTestEnvironment != null)
-
-export const IS_BROWSER_TEST_DEBUG: boolean =
-  IS_TEST_ENVIRONMENT && process.env.REACT_APP_BROWSER_TEST_DEBUG === 'true'
 
 export const PROBABLY_ELECTRON: boolean =
   typeof window === 'undefined' || (window as any)?.['process']?.['type'] != null
