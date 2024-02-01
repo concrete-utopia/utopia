@@ -28,7 +28,6 @@ import type {
   ImageFile,
   ExportDetail,
   ImportDetails,
-  ImportsMergeResolution,
 } from '../../core/shared/project-file-types'
 import type { CodeResultCache, PropertyControlsInfo } from '../custom-code/code-file'
 import type { ElementContextMenuInstance } from '../element-context-menu'
@@ -546,15 +545,6 @@ export interface SetProjectDescription {
   description: string
 }
 
-export interface RegenerateThumbnail {
-  action: 'REGENERATE_THUMBNAIL'
-}
-
-export interface UpdateThumbnailGenerated {
-  action: 'UPDATE_THUMBNAIL_GENERATED'
-  timestamp: number
-}
-
 export interface UpdatePreviewConnected {
   action: 'UPDATE_PREVIEW_CONNECTED'
   connected: boolean
@@ -607,6 +597,7 @@ export interface UpdateFile {
   filePath: string
   file: ProjectFile
   addIfNotInFiles: boolean
+  fromCollaboration: boolean
 }
 
 export interface UpdateProjectContents {
@@ -1161,8 +1152,6 @@ export type EditorAction =
   | OpenCodeEditor
   | SetProjectName
   | SetProjectDescription
-  | RegenerateThumbnail
-  | UpdateThumbnailGenerated
   | UpdatePreviewConnected
   | AlignSelectedViews
   | DistributeSelectedViews

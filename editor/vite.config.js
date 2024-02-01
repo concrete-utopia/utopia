@@ -3,15 +3,11 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { injectHtml } from 'vite-plugin-html'
 import { nodeResolve } from '@rollup/plugin-node-resolve'
-import { viteExternalsPlugin } from 'vite-plugin-externals'
 
 export default defineConfig(({ mode }) => {
   const isDevEnv = mode === 'development'
   return {
     plugins: [
-      viteExternalsPlugin({
-        domtoimage: 'domtoimage',
-      }),
       isDevEnv && react(),
       injectHtml({
         data: {
@@ -52,7 +48,6 @@ export default defineConfig(({ mode }) => {
       'process.env.NODE_ENV': `"${process.env.APP_ENV}"`,
       'process.env.REACT_APP_ENVIRONMENT_CONFIG': `"${process.env.REACT_APP_ENVIRONMENT_CONFIG}"`,
       'process.env.REACT_APP_BROWSER_TEST_DEBUG': `"${process.env.REACT_APP_BROWSER_TEST_DEBUG}"`,
-      'process.env.REACT_APP_AUTH0_REDIRECT_URI': `"${process.env.REACT_APP_AUTH0_REDIRECT_URI}"`,
       'process.env.REACT_APP_AUTH0_CLIENT_ID': `"${process.env.REACT_APP_AUTH0_CLIENT_ID}"`,
       'process.env.REACT_APP_AUTH0_ENDPOINT': `"${process.env.REACT_APP_AUTH0_ENDPOINT}"`,
       'process.env.GOOGLE_WEB_FONTS_KEY': `"${process.env.GOOGLE_WEB_FONTS_KEY}"`,

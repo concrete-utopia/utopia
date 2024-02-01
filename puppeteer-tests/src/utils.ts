@@ -15,14 +15,22 @@ export const setupBrowser = async (
   url: string,
   defaultTimeout: number,
 ): Promise<BrowserForPuppeteerTest> => {
+  const headlessModeEnabled = yn(process.env.HEADLESS) ?? false
+
   const browser = await puppeteer.launch({
-    args: ['--no-sandbox', '--enable-thread-instruction-count'],
-    headless: yn(process.env.HEADLESS) ?? false,
+    args: ['--no-sandbox', '--enable-thread-instruction-count', `--window-size=1500,940`],
+    // see https://developer.chrome.com/docs/chromium/new-headless
+    headless: headlessModeEnabled ? 'new' : false,
     executablePath: process.env.BROWSER,
   })
   const page = await browser.newPage()
   page.on('dialog', async (dialog) => {
     await dialog.dismiss()
+  })
+  page.on('console', async (e) => {
+    const args = await Promise.all(e.args().map((a) => a.jsonValue()))
+    // replay all console messages to the Node.js console
+    console.log(...args)
   })
   page.setDefaultNavigationTimeout(120000)
   page.setDefaultTimeout(defaultTimeout)

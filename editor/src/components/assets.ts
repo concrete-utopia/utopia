@@ -559,6 +559,15 @@ export function getProjectFileByFilePath(
   return getContentsTreeFileFromElements(tree, getProjectContentKeyPathElements(path))
 }
 
+export function getTextFileByPath(projectContents: ProjectContentTreeRoot, path: string): TextFile {
+  const possibleResult = getProjectFileByFilePath(projectContents, path)
+  if (possibleResult != null && isTextFile(possibleResult)) {
+    return possibleResult
+  } else {
+    throw new Error(`Unable to find a text file at path ${path}.`)
+  }
+}
+
 export function packageJsonFileFromProjectContents(
   projectContents: ProjectContentTreeRoot,
 ): ProjectFile | null {

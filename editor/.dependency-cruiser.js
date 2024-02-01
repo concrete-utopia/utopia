@@ -127,7 +127,7 @@ module.exports = {
       from: {},
       to: {
         couldNotResolve: true,
-        pathNot: 'domtoimage|monaco-editor|utopia-api/core',
+        pathNot: 'monaco-editor|utopia-api/core',
       },
     },
     {
@@ -237,6 +237,7 @@ module.exports = {
       },
       to: {
         path: ['typescript'],
+        pathNot: ['typescript-for-the-editor'],
         reachable: true,
       },
     },
