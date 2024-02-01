@@ -15,9 +15,12 @@ export const setupBrowser = async (
   url: string,
   defaultTimeout: number,
 ): Promise<BrowserForPuppeteerTest> => {
+  const headlessModeEnabled = yn(process.env.HEADLESS) ?? false
+
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--enable-thread-instruction-count', `--window-size=1500,940`],
-    headless: yn(process.env.HEADLESS) ?? false,
+    // see https://developer.chrome.com/docs/chromium/new-headless
+    headless: headlessModeEnabled ? 'new' : false,
     executablePath: process.env.BROWSER,
   })
   const page = await browser.newPage()
