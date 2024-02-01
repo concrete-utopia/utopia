@@ -82,7 +82,6 @@ export function consoleDoneMessage(
   const consoleDonePromise = new Promise<boolean>((resolve, reject) => {
     handler = (message: PageEventObject['console']) => {
       const messageText = message.text()
-      console.info(messageText)
       if (
         messageText.includes(expectedConsoleMessage) ||
         (errorMessage != null && messageText.includes(errorMessage))
@@ -90,6 +89,8 @@ export function consoleDoneMessage(
         // the editor will console.info('SCROLL_TEST_FINISHED') when the scrolling test is complete.
         // we wait until we see this console log and then we resolve the Promise
         resolve(true)
+      } else {
+        console.info(`CONSOLE: ${messageText}`)
       }
     }
     page.on('console', handler)

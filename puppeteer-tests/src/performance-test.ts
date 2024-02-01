@@ -209,12 +209,12 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
     frameResultSuccess,
     EmptyResult,
   )
-  // const selectionChangeResult = await retryPageCalls(
-  //   url,
-  //   testSelectionChangePerformance,
-  //   frameResultSuccess,
-  //   EmptyResult,
-  // )
+  const selectionChangeResult = await retryPageCalls(
+    url,
+    testSelectionChangePerformance,
+    frameResultSuccess,
+    EmptyResult,
+  )
   const selectionResult = await retryPageCalls(url, testSelectionPerformance, frameObjectSuccess, {
     selection: EmptyResult,
     deselection: EmptyResult,
@@ -250,7 +250,7 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
       highlightAllElementsResult: highlightAllElementsResult,
       selectionResult: selectionResult.selection,
       deselectionResult: selectionResult.deselection,
-      // selectionChangeResult: selectionChangeResult,
+      selectionChangeResult: selectionChangeResult,
       scrollResult: scrollResult,
       // resizeResult: resizeResult,
       // absoluteMoveLargeMoveResult: absoluteMoveLargeResult.move,

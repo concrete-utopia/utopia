@@ -91,7 +91,7 @@ function measureStep(prefix: string, framesPassed: number): void {
   )
 }
 
-const CANVAS_POPULATE_WAIT_TIME_MS = 40 * 1000
+const CANVAS_POPULATE_WAIT_TIME_MS = 20 * 1000
 
 async function loadProject(
   dispatch: DebugDispatch,
@@ -205,12 +205,12 @@ export function useTriggerScrollPerformanceTest(): () => void {
       projectId,
     )
     if (!editorReady) {
-      console.info('SCROLL_TEST_ERROR editor not ready')
+      console.info('SCROLL_TEST_ERROR - editor not ready')
       return
     }
 
     if (allPaths.current.length === 0) {
-      console.info('SCROLL_TEST_ERROR allPaths.current.length === 0')
+      console.info('SCROLL_TEST_ERROR - allPaths.current.length === 0')
       return
     }
 
@@ -263,7 +263,7 @@ function useTriggerHighlightPerformanceTest(key: 'regular' | 'all-elements'): ()
       projectId,
     )
     if (!editorReady) {
-      console.info(`HIGHLIGHT_${allCapsKey}_TEST_ERROR editor not ready`)
+      console.info(`HIGHLIGHT_${allCapsKey}_TEST_ERROR - editor not ready`)
       return
     }
     if (allPaths.current.length === 0) {
@@ -339,7 +339,7 @@ export function useTriggerSelectionPerformanceTest(): () => void {
       projectId,
     )
     if (!editorReady) {
-      console.info('SELECT_TEST_ERROR editor not ready')
+      console.info('SELECT_TEST_ERROR - editor not ready')
       return
     }
     const targetPath = [...allPaths.current].sort(
@@ -375,7 +375,7 @@ export function useTriggerSelectionPerformanceTest(): () => void {
     ).entireUpdateFinished
     const targetBounds = targetElement.getBoundingClientRect()
     if (allPaths.current.length === 0) {
-      console.info('SELECT_TEST_ERROR allPaths.current.length === 0')
+      console.info('SELECT_TEST_ERROR - allPaths.current.length === 0')
       return
     }
 
@@ -472,7 +472,7 @@ export function useTriggerAbsoluteMovePerformanceTest(
   const trigger = React.useCallback(async () => {
     const editorReady = await loadProject(dispatch, builtInDependencies, projectContents, projectId)
     if (!editorReady) {
-      console.info('ABSOLUTE_MOVE_TEST_ERROR editor not ready')
+      console.info('ABSOLUTE_MOVE_TEST_ERROR - editor not ready')
       return
     }
     const initialTargetPath = [...allPaths.current].sort(
@@ -486,7 +486,7 @@ export function useTriggerAbsoluteMovePerformanceTest(
       return EP.pathsEqual(parentParentPath, EP.parentPath(EP.parentPath(path)))
     })
     if (grandChildrenPaths.length === 0) {
-      console.info('ABSOLUTE_MOVE_TEST_ERROR grandChildrenPaths.length === 0')
+      console.info('ABSOLUTE_MOVE_TEST_ERROR - grandChildrenPaths.length === 0')
       return
     }
     const targetPath = forceNotNull('Invalid array.', last(grandChildrenPaths))
@@ -504,7 +504,7 @@ export function useTriggerAbsoluteMovePerformanceTest(
     await dispatch([setFocusedElement(targetPath)], 'everyone').entireUpdateFinished
     const childTargetPath = allPaths.current.find((path) => EP.isChildOf(path, targetPath))
     if (childTargetPath == null) {
-      console.info('ABSOLUTE_MOVE_TEST_ERROR childTargetPath == null')
+      console.info('ABSOLUTE_MOVE_TEST_ERROR - childTargetPath == null')
       return
     }
     const childMetadata = MetadataUtils.findElementByElementPath(metadata.current, childTargetPath)
@@ -514,7 +514,7 @@ export function useTriggerAbsoluteMovePerformanceTest(
       isInfinityRectangle(childMetadata.globalFrame) ||
       childMetadata.specialSizeMeasurements.coordinateSystemBounds == null
     ) {
-      console.info('ABSOLUTE_MOVE_TEST_ERROR child metadata does not exist')
+      console.info('ABSOLUTE_MOVE_TEST_ERROR - child metadata does not exist')
       return
     }
     const childStyleValue = {
@@ -609,7 +609,7 @@ export function useTriggerAbsoluteMovePerformanceTest(
         const newBounds = targetElement.getBoundingClientRect()
         if (newBounds.left !== targetBounds.left + 10 + moveCount * 3) {
           console.info(
-            'ABSOLUTE_MOVE_TEST_ERROR newBounds.left !== targetBounds.left + 10 + moveCount * 3',
+            'ABSOLUTE_MOVE_TEST_ERROR - newBounds.left !== targetBounds.left + 10 + moveCount * 3',
           )
           return
         }
@@ -665,7 +665,7 @@ export function useTriggerSelectionChangePerformanceTest(): () => void {
   const trigger = React.useCallback(async () => {
     const editorReady = await loadProject(dispatch, builtInDependencies, projectContents, projectId)
     if (!editorReady) {
-      console.info('SELECTION_CHANGE_TEST_ERROR editor not ready')
+      console.info('SELECTION_CHANGE_TEST_ERROR - editor not ready')
       return
     }
     const initialTargetPath = [...allPaths.current].sort(
@@ -679,7 +679,7 @@ export function useTriggerSelectionChangePerformanceTest(): () => void {
       return EP.pathsEqual(parentParentPath, EP.parentPath(EP.parentPath(path)))
     })
     if (grandChildrenPaths.length === 0) {
-      console.info('SELECTION_CHANGE_TEST_ERROR grandChildrenPaths.length === 0')
+      console.info('SELECTION_CHANGE_TEST_ERROR - grandChildrenPaths.length === 0')
       return
     }
     const targetPath = forceNotNull('Invalid array.', last(grandChildrenPaths))
@@ -698,7 +698,7 @@ export function useTriggerSelectionChangePerformanceTest(): () => void {
 
     const childTargetPath = allPaths.current.find((path) => EP.isChildOf(path, targetPath))
     if (childTargetPath == null) {
-      console.info('SELECTION_CHANGE_TEST_ERROR child target path does not exist')
+      console.info('SELECTION_CHANGE_TEST_ERROR - child target path does not exist')
       return
     }
     const childMetadata = MetadataUtils.findElementByElementPath(metadata.current, childTargetPath)
@@ -708,7 +708,7 @@ export function useTriggerSelectionChangePerformanceTest(): () => void {
       isInfinityRectangle(childMetadata.globalFrame) ||
       childMetadata.specialSizeMeasurements.coordinateSystemBounds == null
     ) {
-      console.info('SELECTION_CHANGE_TEST_ERROR child metadata does not exist')
+      console.info('SELECTION_CHANGE_TEST_ERROR - child metadata does not exist')
       return
     }
     const childStyleValue = {
