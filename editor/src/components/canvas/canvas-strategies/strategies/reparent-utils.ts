@@ -607,7 +607,7 @@ export function applyElementCeilingToReparentTarget(
   if (elementCeiling == null) {
     return reparentTarget
   } else {
-    const result: any = flatMapEither((targetForPaste) => {
+    return flatMapEither((targetForPaste) => {
       switch (targetForPaste.type) {
         case 'sibling':
           return left('Cannot find a suitable parent')
@@ -645,8 +645,6 @@ export function applyElementCeilingToReparentTarget(
           assertNever(targetForPaste)
       }
     }, reparentTarget)
-    console.log('result', JSON.stringify(result))
-    return result
   }
 }
 
