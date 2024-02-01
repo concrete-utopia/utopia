@@ -12,7 +12,7 @@ import { Clipboard } from '../../utils/clipboard'
 import type { EditorRenderResult } from './ui-jsx.test-utils'
 import { wait } from '../../utils/utils.test-utils'
 import type { WindowPoint } from '../../core/shared/math-utils'
-import { offsetPoint } from '../../core/shared/math-utils'
+import { offsetPoint, pointDifference } from '../../core/shared/math-utils'
 import selectEvent from 'react-select-event'
 
 // TODO Should the mouse move and mouse up events actually be fired at the parent of the event source?
@@ -1012,7 +1012,6 @@ export async function dragElementWithDNDEvents(
   dropTargetID: string,
   startPoint: WindowPoint,
   dragDelta: WindowPoint,
-  hoverEvents: 'apply-hover-events' | 'do-not-apply-hover-events',
   midDragCallback: () => Promise<void> = ASYNC_NOOP,
 ): Promise<void> {
   const dragTarget = renderResult.renderedDOM.getByTestId(dragTargetID)
@@ -1035,70 +1034,81 @@ export async function dragElementWithDNDEvents(
     )
   })
 
+  const delta: Point = pointDifference(startPoint, endPoint)
+
+  const numberOfSteps = 5 // we can make this configurable in the options
+  for (let step = 1; step < numberOfSteps + 1; step++) {
+    const stepSize: Point = {
+      x: delta.x / numberOfSteps,
+      y: delta.y / numberOfSteps,
+    }
+
+    // eslint-disable-next-line no-await-in-loop
+    await act(async () => {
+      fireEvent(
+        dragTarget,
+        new MouseEvent('drag', {
+          bubbles: true,
+          cancelable: true,
+          clientX: startPoint.x + step * stepSize.x,
+          clientY: startPoint.y + step * stepSize.y,
+          movementX: stepSize.x,
+          movementY: stepSize.y,
+          buttons: 1,
+        }),
+      )
+    })
+
+    if (step === 1) {
+      // eslint-disable-next-line no-await-in-loop
+      await act(async () => {
+        fireEvent(
+          dropTarget,
+          new MouseEvent('dragenter', {
+            bubbles: true,
+            cancelable: true,
+            clientX: endPoint.x,
+            clientY: endPoint.y,
+            movementX: dragDelta.x,
+            movementY: dragDelta.y,
+            buttons: 1,
+          }),
+        )
+      })
+
+      // eslint-disable-next-line no-await-in-loop
+      await act(async () => {
+        fireEvent(
+          dropTarget,
+          new MouseEvent('dragover', {
+            bubbles: true,
+            cancelable: true,
+            clientX: endPoint.x,
+            clientY: endPoint.y,
+            movementX: dragDelta.x,
+            movementY: dragDelta.y,
+            buttons: 1,
+          }),
+        )
+      })
+    }
+  }
+
+  await wait(0)
+  await midDragCallback()
+
   await act(async () => {
     fireEvent(
-      dragTarget,
-      new MouseEvent('drag', {
+      dropTarget,
+      new MouseEvent('drop', {
         bubbles: true,
         cancelable: true,
         clientX: endPoint.x,
         clientY: endPoint.y,
-        movementX: dragDelta.x,
-        movementY: dragDelta.y,
         buttons: 1,
       }),
     )
   })
-
-  await wait(0)
-
-  if (hoverEvents === 'apply-hover-events') {
-    await act(async () => {
-      fireEvent(
-        dropTarget,
-        new MouseEvent('dragenter', {
-          bubbles: true,
-          cancelable: true,
-          clientX: endPoint.x,
-          clientY: endPoint.y,
-          movementX: dragDelta.x,
-          movementY: dragDelta.y,
-          buttons: 1,
-        }),
-      )
-    })
-
-    await act(async () => {
-      fireEvent(
-        dropTarget,
-        new MouseEvent('dragover', {
-          bubbles: true,
-          cancelable: true,
-          clientX: endPoint.x,
-          clientY: endPoint.y,
-          movementX: dragDelta.x,
-          movementY: dragDelta.y,
-          buttons: 1,
-        }),
-      )
-    })
-
-    await wait(0)
-    await midDragCallback()
-
-    await act(async () => {
-      fireEvent(
-        dropTarget,
-        new MouseEvent('drop', {
-          bubbles: true,
-          cancelable: true,
-          clientX: endPoint.x,
-          clientY: endPoint.y,
-          buttons: 1,
-        }),
-      )
-    })
-  }
 }
 
 export function expectSelectControlValue(
