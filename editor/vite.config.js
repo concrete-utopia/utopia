@@ -3,15 +3,11 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { injectHtml } from 'vite-plugin-html'
 import { nodeResolve } from '@rollup/plugin-node-resolve'
-import { viteExternalsPlugin } from 'vite-plugin-externals'
 
 export default defineConfig(({ mode }) => {
   const isDevEnv = mode === 'development'
   return {
     plugins: [
-      viteExternalsPlugin({
-        domtoimage: 'domtoimage',
-      }),
       isDevEnv && react(),
       injectHtml({
         data: {

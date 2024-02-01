@@ -1,5 +1,4 @@
 import localforage from 'localforage'
-import { actions } from 'xstate'
 import {
   deleteLocalProject,
   fetchLocalProject as loadLocalProject,
@@ -11,7 +10,6 @@ import type { AssetFile, ImageFile, ProjectFile } from '../../../core/shared/pro
 import { assetFile, imageFile, isImageFile } from '../../../core/shared/project-file-types'
 import { arrayContains } from '../../../core/shared/utils'
 import { addFileToProjectContents, getAllProjectAssetFiles } from '../../assets'
-import { getPNGBufferOfElementWithID } from '../screenshot-utils'
 import type { AssetToSave } from '../server'
 import {
   assetToSave,
@@ -19,7 +17,6 @@ import {
   downloadAssetsFromProject,
   loadProject as loadServerProject,
   saveAssets,
-  saveThumbnail,
   updateSavedProject,
 } from '../server'
 import type {
@@ -33,30 +30,7 @@ import type {
 } from './generic/persistence-types'
 import { fileWithFileName, projectWithFileChanges } from './generic/persistence-types'
 import type { PersistentModel } from '../store/editor-state'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { IS_TEST_ENVIRONMENT } from '../../../common/env-vars'
-
-let _lastThumbnailGenerated: number = 0
-const THUMBNAIL_THROTTLE = 300000
-
-async function generateThumbnail(force: boolean): Promise<Buffer | null> {
-  const now = Date.now()
-  if (now - _lastThumbnailGenerated > THUMBNAIL_THROTTLE || force) {
-    _lastThumbnailGenerated = now
-    return getPNGBufferOfElementWithID('canvas-root', { width: 1152, height: 720 })
-  } else {
-    return Promise.resolve(null)
-  }
-}
-
-export async function updateRemoteThumbnail(projectId: string, force: boolean): Promise<void> {
-  if (isFeatureEnabled('Project Thumbnail Generation')) {
-    const buffer = await generateThumbnail(force)
-    if (buffer != null) {
-      await saveThumbnail(buffer, projectId)
-    }
-  }
-}
 
 export async function projectIsStoredLocally(projectId: string): Promise<boolean> {
   const keys = await localforage.keys().catch(() => [])
@@ -148,7 +122,6 @@ async function saveProjectToServer(
     await saveAssets(projectId, assetsToUpload)
   }
 
-  void updateRemoteThumbnail(projectId, false)
   void deleteLocalProject(projectId)
 
   return projectWithChanges
