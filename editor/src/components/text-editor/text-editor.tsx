@@ -62,7 +62,6 @@ export interface TextEditorProps {
   passthroughProps: Record<string, any>
   filePath: string
   textProp: TextProp
-  utopiaTextEditor: true // this prop is just for the spy to recognize text editors
 }
 
 const entities = {

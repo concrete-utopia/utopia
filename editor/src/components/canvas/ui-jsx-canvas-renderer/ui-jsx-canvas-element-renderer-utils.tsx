@@ -338,7 +338,6 @@ export function renderCoreElement(
           component: React.Fragment,
           passthroughProps: {},
           textProp: 'itself',
-          utopiaTextEditor: true,
         }
 
         return buildSpyWrappedElement(
@@ -499,7 +498,6 @@ export function renderCoreElement(
           component: React.Fragment,
           passthroughProps: {},
           textProp: textProp,
-          utopiaTextEditor: true,
         }
 
         return buildSpyWrappedElement(
@@ -561,7 +559,6 @@ export function renderCoreElement(
           component: React.Fragment,
           passthroughProps: {},
           textProp: 'itself',
-          utopiaTextEditor: true,
         }
 
         return buildSpyWrappedElement(
@@ -892,7 +889,6 @@ function renderJSXElement(
         component: FinalElement,
         passthroughProps: finalProps,
         textProp: 'child',
-        utopiaTextEditor: true,
       }
 
       return buildSpyWrappedElement(
@@ -909,6 +905,7 @@ function renderJSXElement(
         imports,
         filePath,
         variablesInScope,
+        'text-editor',
       )
     }
     return buildSpyWrappedElement(
