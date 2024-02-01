@@ -18,11 +18,7 @@ import type { MapLike } from 'typescript'
 import { objectMap } from '../../core/shared/object-utils'
 import { StoryboardFilePath } from '../editor/store/editor-state'
 import * as EP from '../../core/shared/element-path'
-import {
-  defaultProjectContentsForNormalising,
-  getTextFileByPath,
-  SampleNodeModules,
-} from './code-file.test-utils'
+import { defaultProjectContentsForNormalising, SampleNodeModules } from './code-file.test-utils'
 import type { NodeModules } from '../../core/shared/project-file-types'
 import {
   RevisionsState,
@@ -30,7 +26,7 @@ import {
   textFileContents,
   unparsed,
 } from '../../core/shared/project-file-types'
-import { addFileToProjectContents } from '../assets'
+import { addFileToProjectContents, getTextFileByPath } from '../assets'
 import type { ExportsInfo, MultiFileBuildResult } from '../../core/workers/common/worker-types'
 import { createBuiltInDependenciesList } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 

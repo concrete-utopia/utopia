@@ -9,7 +9,6 @@ import {
 import {
   defaultProjectContentsForNormalising,
   printParsedCodeForFile,
-  getTextFileByPath,
 } from '../../custom-code/code-file.test-utils'
 import {
   emptyComments,
@@ -34,6 +33,7 @@ import { addImport, emptyImports } from '../../../core/workers/common/project-fi
 import { omit } from '../../../core/shared/object-utils'
 import * as EP from '../../../core/shared/element-path'
 import { sampleJsxComponents } from '../../../core/model/test-ui-js-file.test-utils'
+import { getTextFileByPath } from '../../assets'
 
 describe('modifyUnderlyingTarget', () => {
   const startingEditorModel = {
