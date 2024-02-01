@@ -219,6 +219,9 @@ export const testPerformanceInner = async function (url: string): Promise<Perfor
     selection: EmptyResult,
     deselection: EmptyResult,
   })
+
+  // hi
+
   // const resizeResult = await retryPageCalls(
   //   url,
   //   testResizePerformance,
