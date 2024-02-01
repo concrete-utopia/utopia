@@ -380,7 +380,6 @@ describe('Reparenting in Remix projects in the navigator', () => {
       dropElementTestId,
       windowPoint(dragElementCenter),
       dragDelta,
-      'apply-hover-events',
     )
 
     expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
@@ -493,7 +492,6 @@ describe('Reparenting in Remix projects in the navigator', () => {
       dropElementTestId,
       windowPoint(dragElementCenter),
       dragDelta,
-      'apply-hover-events',
     )
 
     expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
