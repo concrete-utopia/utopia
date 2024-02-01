@@ -43,9 +43,10 @@ export function isBackendBFF(): boolean {
   return BACKEND_TYPE === 'bff'
 }
 
-export const UTOPIA_BACKEND = PRODUCTION_OR_STAGING_CONFIG
-  ? BASE_URL
-  : `${SCHEME}//${HOSTNAME}:${LOCAL_BACKEND_PORTS[BACKEND_TYPE]}` + '/v1/'
+export const UTOPIA_BACKEND =
+  (PRODUCTION_OR_STAGING_CONFIG
+    ? BASE_URL
+    : `${SCHEME}//${HOSTNAME}:${LOCAL_BACKEND_PORTS[BACKEND_TYPE]}`) + '/v1/'
 
 const SECONDARY_BASE_URL: string = PRODUCTION_CONFIG
   ? `https://utopia.fm/`
