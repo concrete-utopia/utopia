@@ -18,8 +18,9 @@
 -}
 module Utopia.Web.Auth.Session where
 
-import Control.Lens
+import           Control.Lens
 import           Control.Monad
+import           Data.Aeson
 import qualified Data.HashMap.Strict             as HM
 import           Data.List                       (lookup)
 import           Data.Profunctor.Product
@@ -35,7 +36,6 @@ import           Web.Cookie
 import           Web.PathPieces                  (fromPathPiece, toPathPiece)
 import           Web.ServerSession.Core          hiding (setCookieName)
 import           Web.ServerSession.Core.Internal (storage, unS)
-import Data.Aeson
 
 newtype ConnectionStorage sess = ConnectionStorage { pool :: DBPool }
   deriving (Typeable)
@@ -74,12 +74,12 @@ data UserSession = UserSession { userID :: Text }
 instance ToJSON UserSession where
 
 sessionMapToJSON :: SessionMap -> IO Value
-sessionMapToJSON sessionMap = do 
+sessionMapToJSON sessionMap = do
   let actualMap = unSessionMap sessionMap
   let sessionKeys = HM.keys actualMap
   unless (sessionKeys == ["user_id"]) $ do
     fail ("Unexpected keys in session map: " <> show sessionKeys)
-  userID <- maybe (fail "Could not find user_id.") (\bytes -> pure $ TE.decodeUtf8 bytes) $ HM.lookup "user_id" actualMap 
+  userID <- maybe (fail "Could not find user_id.") (\bytes -> pure $ TE.decodeUtf8 bytes) $ HM.lookup "user_id" actualMap
   pure $ toJSON $ UserSession userID
 
 -- Now ensure that when creating/updating the session table contents, ensure that the session_json column gets populated.
@@ -128,7 +128,7 @@ lookupSession _ sessionId = do
   possibleSession <- liftIO $ fmap listToMaybe $ runSelect connection (persistentSessionTableSelectByKey $ toPathPiece sessionId) :: ReaderT Connection IO (Maybe ((Text, Maybe ByteString, ByteString, Maybe Value, UTCTime, UTCTime)))
   case possibleSession of
     -- If the session_json column is null, then populate it.
-    Just session -> liftIO $ when (isNothing $ view _4 session) $ do 
+    Just session -> liftIO $ when (isNothing $ view _4 session) $ do
                                                         let sessionBytes = view _3 session
                                                         sessionMap <- either fail pure $ S.decode sessionBytes :: IO SessionMap
                                                         sessionDataJSON <- liftIO $ sessionMapToJSON sessionMap
