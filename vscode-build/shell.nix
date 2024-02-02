@@ -4,12 +4,12 @@ let
   node = pkgs.nodejs-16_x;
   stdenv = pkgs.stdenv;
   pnpm = node.pkgs.pnpm;
-  yarn = pkgs.yarn;
+  yarn = pkgs.yarn.override { nodejs = node; };
 
   nodePackages = [
     node
     pnpm
-    (yarn.override { nodejs = node; })
+    yarn
   ];
 
   scripts = [
@@ -17,31 +17,31 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
-      yarn
-      yarn run make-patch
+      ${yarn}/bin/yarn
+      ${yarn}/bin/yarn run make-patch
     '')
     (pkgs.writeScriptBin "pull-extension-inner" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
-      yarn
-      yarn run pull-utopia-extension
+      ${yarn}/bin/yarn
+      ${yarn}/bin/yarn run pull-utopia-extension
     '')
     (pkgs.writeScriptBin "update-vscode-build-extension-inner" ''
       #!/usr/bin/env bash
       set -e
       build-utopia-vscode-extension
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
-      yarn
-      yarn run pull-utopia-extension
+      ${yarn}/bin/yarn
+      ${yarn}/bin/yarn run pull-utopia-extension
     '')
     (pkgs.writeScriptBin "build-vscode-inner" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
       rm -rf ./dist ./node_modules
-      yarn
-      yarn run build
+      ${yarn}/bin/yarn
+      ${yarn}/bin/yarn run build
     '')
   ];
 

@@ -15,12 +15,12 @@ let
   postgres = pkgs.postgresql_13;
   stdenv = pkgs.stdenv;
   pnpm = node.pkgs.pnpm;
-  yarn = pkgs.yarn;
+  yarn = pkgs.yarn.override { nodejs = node; };
 
   nodePackages = [
     node
     pnpm
-    (yarn.override { nodejs = node; })
+    yarn
   ];
 
   cabal = pkgs.haskellPackages.cabal-install;
