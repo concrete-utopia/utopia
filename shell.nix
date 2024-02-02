@@ -657,42 +657,6 @@ let
       ${cabal}/bin/cabal new-build utopia-web
       cp --verbose $(${pkgs.haskellPackages.cabal-plan}/bin/cabal-plan list-bin exe:utopia-web) .
     '')
-    (pkgs.writeScriptBin "copy-all-to-dist-folder" ''
-      #!/usr/bin/env bash
-      set -e
-      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/
-      rm -rf dist
-      mkdir dist
-      mkdir dist/server
-      mkdir dist/server/editor
-      mkdir dist/server/migrations
-      mkdir dist/server/public
-      mkdir dist/server/vscode
-      cp -r vscode-build/dist/. dist/server/vscode
-      cp -r website-next/out/. dist/server/public
-      cp -r editor/resources/editor/. dist/server/editor
-      cp -r editor/lib/. dist/server/editor
-      cp server/utopia-web dist/server
-      cp -r server/migrations/. dist/server/migrations
-      cp run-server-production.sh dist/server
-    '')
-    (pkgs.writeScriptBin "build-all-staging" ''
-      #!/usr/bin/env bash
-      set -e
-      if [ -z $GITHUB_TOKEN ]
-      then
-        echo "A GITHUB_TOKEN is required when running the full Utopia build. Please see the readme for instructions."
-        exit 1
-      else
-        check-tool-versions
-        build-vscode-with-extension
-        install-editor
-        build-website
-        build-editor-staging
-        build-server
-        copy-all-to-dist-folder
-      fi
-    '')
   ];
 
   withReleaseScripts = withCustomDevScripts ++ (lib.optionals includeReleaseSupport releaseScripts);
@@ -719,12 +683,11 @@ let
 
   releasePackages = [
     pkgs.heroku
-    pkgs.docker
   ];
 
   pythonAndPackages = pkgs.python3.withPackages(ps: with ps; [ pyusb tkinter pkgconfig ]);
 
-  basePackages = [ pkgs.docker node pkgs.libsecret pythonAndPackages pkgs.pkg-config pkgs.tmux pkgs.git pkgs.wget ] ++ nodePackages ++ linuxOnlyPackages ++ macOSOnlyPackages;
+  basePackages = [ node pkgs.libsecret pythonAndPackages pkgs.pkg-config pkgs.tmux pkgs.git pkgs.wget ] ++ nodePackages ++ linuxOnlyPackages ++ macOSOnlyPackages;
   withServerBasePackages = basePackages ++ (lib.optionals includeServerBuildSupport baseServerPackages);
   withServerRunPackages = withServerBasePackages ++ (lib.optionals includeRunLocallySupport serverRunPackages);
   withReleasePackages = withServerRunPackages ++ (lib.optionals includeReleaseSupport releasePackages);
