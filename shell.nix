@@ -254,7 +254,8 @@ let
 
       expectedToolVersions :: [(String, [String], [String])]
       expectedToolVersions =
-        [ ("pnpm", ["--version"], ["7.14.2"])
+        [ ("node", ["--version"], ["v18.12.1"])
+        , ("pnpm", ["--version"], ["7.14.2"])
         , ("yarn", ["--version"], ["1.22.19"])
         , ("ghc", ["--version"], ["The Glorious Glasgow Haskell Compilation System, version 9.0.2"])
         , ("cabal", ["--version"], ["cabal-install version 3.8.1.0", "compiled using version 3.8.1.0 of the Cabal library "])
