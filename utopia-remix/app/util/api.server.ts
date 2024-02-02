@@ -2,7 +2,7 @@ import { TypedResponse, json } from "@remix-run/node";
 import invariant from "tiny-invariant";
 import { ServerEnvironment } from "../env.server";
 import { Status } from "./statusCodes.server";
-import { Method, isMethod } from "./methods.server";
+import { Method } from "./methods.server";
 
 interface ErrorResponse {
   error: string;
@@ -33,9 +33,6 @@ export function handle(
     "invalid method",
     Status.METHOD_NOT_ALLOWED,
   );
-  if (!isMethod(request.method)) {
-    throw invalidMethod;
-  }
   const handler = handlers[request.method];
   if (handler == null) {
     throw invalidMethod;
