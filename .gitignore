@@ -6,6 +6,7 @@ node_modules
 
 ## Build generated
 build/
+dist/
 DerivedData
 editor/build
 editor/node_modules
