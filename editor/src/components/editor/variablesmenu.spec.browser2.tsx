@@ -22,6 +22,7 @@ import type { ProjectContentTreeRoot } from '../assets'
 import { contentsToTree } from '../assets'
 import { PrettierConfig } from 'utopia-vscode-common'
 import { pressKey } from '../canvas/event-helpers.test-utils'
+import { notice } from '../common/notice'
 
 function getInsertItems() {
   return screen.queryAllByTestId(/^insert-item-/gi)
@@ -186,51 +187,16 @@ describe('variables menu', () => {
       await pressKey('Enter', { targetElement: filterBox })
 
       expect(getPrintedUiJsCode(editor.getEditorState(), '/src/app.js')).toEqual(
-        Prettier.format(
-          `
-          import * as React from 'react'
-          export function App({objProp, imgProp, unusedProp}) {
-            return (
-              <div
-              style={{
-                backgroundColor: '#aaaaaa33',
-                position: 'absolute',
-                left: 57,
-                top: 168,
-                width: 247,
-                height: 402,
-              }}
-              data-uid='container'
-            >
-              {[1, 2].map((value, index) => {
-                return (
-                  <img
-                    src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
-                    alt='Utopia logo'
-                    style={{ width: 118, height: 150 }}
-                  />
-                )
-              })}
-              {[{ thing: 1 }, { thing: 2 }, { thing: 3 }].map(
-                (someValue, index) => {
-                  return (
-                    <div
-                    >
-                      <img
-                        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
-                        alt='Utopia logo'
-                        style={{ width: 118, height: 150 }}
-                      />
-                    </div>
-                  )
-                },
-              )}
-            </div>
-            )
-          }`,
-          PrettierConfig,
-        ),
+        Prettier.format(mappingFunctionAppJS, PrettierConfig),
       )
+      expect(editor.getEditorState().editor.toasts).toEqual([
+        notice(
+          'Cannot find a suitable parent',
+          'INFO',
+          false,
+          'to-insert-does-not-support-children',
+        ),
+      ])
     })
     xit('shows and inserts scoped properties when possible', async () => {
       // Test disabled because it uncovered an issue with an exception being triggered for a frame on the canvas.
@@ -500,31 +466,7 @@ function makeTestProjectContents(): ProjectContentTreeRoot {
   })
 }
 
-function makeMappingFunctionTestProjectContents(): ProjectContentTreeRoot {
-  return contentsToTree({
-    ['/package.json']: codeFile(
-      `
-{
-  "name": "Utopia Project",
-  "version": "0.1.0",
-  "utopia": {
-    "main-ui": "utopia/storyboard.js",
-    "html": "public/index.html",
-    "js": "src/index.js"
-  },
-  "dependencies": {
-    "react": "16.13.1",
-    "react-dom": "16.13.1",
-    "utopia-api": "0.4.1",
-    "non-existant-dummy-library": "8.0.27",
-    "@heroicons/react": "1.0.1",
-    "@emotion/react": "11.9.3"
-  }
-}`,
-      null,
-    ),
-    ['/src/app.js']: codeFile(
-      `
+const mappingFunctionAppJS: string = `
     import * as React from 'react'
     export function App({objProp, imgProp, unusedProp}) {
       return (
@@ -565,9 +507,32 @@ function makeMappingFunctionTestProjectContents(): ProjectContentTreeRoot {
       </div>
       )
     }
-    `,
+    `
+
+function makeMappingFunctionTestProjectContents(): ProjectContentTreeRoot {
+  return contentsToTree({
+    ['/package.json']: codeFile(
+      `
+{
+  "name": "Utopia Project",
+  "version": "0.1.0",
+  "utopia": {
+    "main-ui": "utopia/storyboard.js",
+    "html": "public/index.html",
+    "js": "src/index.js"
+  },
+  "dependencies": {
+    "react": "16.13.1",
+    "react-dom": "16.13.1",
+    "utopia-api": "0.4.1",
+    "non-existant-dummy-library": "8.0.27",
+    "@heroicons/react": "1.0.1",
+    "@emotion/react": "11.9.3"
+  }
+}`,
       null,
     ),
+    ['/src/app.js']: codeFile(mappingFunctionAppJS, null),
     ['/utopia/storyboard.js']: codeFile(
       `
     import * as React from 'react'
