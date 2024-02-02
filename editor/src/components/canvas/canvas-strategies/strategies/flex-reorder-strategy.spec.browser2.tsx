@@ -252,7 +252,7 @@ describe('Flex Reorder Strategy', () => {
               `${CanvasToolbarEditButtonID}-icon`,
             )
             expect(toolbarEditButtonImage.getAttribute('src')).toEqual(
-              'http://localhost:9876/editor/icons/light/modalities/reorder-large-white-18x18@2x.png',
+              expect.stringContaining('reorder'), // check if the toolbar shows the Reorder icon
             )
             expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
               'FLEX_REORDER',
