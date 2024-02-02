@@ -131,6 +131,7 @@ import type {
   ActiveAndDefaultConditionValues,
   JSXMapExpression,
   JSExpressionMapOrOtherJavascript,
+  JSExpressionOtherJavaScript,
 } from '../../../core/shared/element-template'
 import {
   elementInstanceMetadata,
@@ -183,6 +184,8 @@ import {
   importedOrigin,
   isJSXConditionalExpression,
   jsxConditionalExpression,
+  isJSExpressionOtherJavaScript,
+  isJSXMapExpression,
 } from '../../../core/shared/element-template'
 import type {
   CanvasRectangle,
@@ -853,53 +856,7 @@ export const RawSourceMapKeepDeepEquality: KeepDeepEqualityCall<RawSourceMap> =
     },
   )
 
-export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqualityCall<JSExpressionMapOrOtherJavascript> {
-  return combine9EqualityCalls(
-    (attribute) => attribute.type,
-    createCallWithTripleEquals(),
-    (attribute) => attribute.javascript,
-    createCallWithTripleEquals<string>(),
-    (attribute) => attribute.originalJavascript,
-    createCallWithTripleEquals<string>(),
-    (attribute) => attribute.transpiledJavascript,
-    createCallWithTripleEquals<string>(),
-    (attribute) => attribute.definedElsewhere,
-    arrayDeepEquality(createCallWithTripleEquals()),
-    (attribute) => attribute.sourceMap,
-    nullableDeepEquality(RawSourceMapKeepDeepEquality),
-    (attribute) => attribute.uid,
-    createCallWithTripleEquals(),
-    (block) => block.elementsWithin,
-    ElementsWithinKeepDeepEqualityCall(),
-    (block) => block.comments,
-    ParsedCommentsKeepDeepEqualityCall,
-    (
-      type,
-      javascript,
-      originalJavascript,
-      transpiledJavascript,
-      definedElsewhere,
-      sourceMap,
-      uniqueID,
-      elementsWithin,
-      comments,
-    ) => {
-      return {
-        type: type,
-        javascript: javascript,
-        originalJavascript: originalJavascript,
-        transpiledJavascript: transpiledJavascript,
-        definedElsewhere: definedElsewhere,
-        sourceMap: sourceMap,
-        uid: uniqueID,
-        elementsWithin: elementsWithin,
-        comments: comments,
-      }
-    },
-  )
-}
-
-export function JSXMapExpressionKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXMapExpression> {
+export function JSExpressionOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqualityCall<JSExpressionOtherJavaScript> {
   return combine8EqualityCalls(
     (attribute) => attribute.javascript,
     createCallWithTripleEquals<string>(),
@@ -928,7 +885,7 @@ export function JSXMapExpressionKeepDeepEqualityCall(): KeepDeepEqualityCall<JSX
       comments,
     ) => {
       return {
-        type: 'JSX_MAP_EXPRESSION',
+        type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
         javascript: javascript,
         originalJavascript: originalJavascript,
         transpiledJavascript: transpiledJavascript,
@@ -940,6 +897,65 @@ export function JSXMapExpressionKeepDeepEqualityCall(): KeepDeepEqualityCall<JSX
       }
     },
   )
+}
+
+export function JSXMapExpressionKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXMapExpression> {
+  return combine9EqualityCalls(
+    (attribute) => attribute.javascript,
+    createCallWithTripleEquals<string>(),
+    (attribute) => attribute.originalJavascript,
+    createCallWithTripleEquals<string>(),
+    (attribute) => attribute.transpiledJavascript,
+    createCallWithTripleEquals<string>(),
+    (attribute) => attribute.definedElsewhere,
+    arrayDeepEquality(createCallWithTripleEquals()),
+    (attribute) => attribute.sourceMap,
+    nullableDeepEquality(RawSourceMapKeepDeepEquality),
+    (attribute) => attribute.uid,
+    createCallWithTripleEquals(),
+    (block) => block.elementsWithin,
+    ElementsWithinKeepDeepEqualityCall(),
+    (block) => block.comments,
+    ParsedCommentsKeepDeepEqualityCall,
+    (block) => block.valuesInScopeFromParameters,
+    arrayDeepEquality(createCallWithTripleEquals<string>()),
+    (
+      javascript,
+      originalJavascript,
+      transpiledJavascript,
+      definedElsewhere,
+      sourceMap,
+      uniqueID,
+      elementsWithin,
+      comments,
+      valuesInScopeFromParameters,
+    ) => {
+      return {
+        type: 'JSX_MAP_EXPRESSION',
+        javascript: javascript,
+        originalJavascript: originalJavascript,
+        transpiledJavascript: transpiledJavascript,
+        definedElsewhere: definedElsewhere,
+        sourceMap: sourceMap,
+        uid: uniqueID,
+        elementsWithin: elementsWithin,
+        comments: comments,
+        valuesInScopeFromParameters: valuesInScopeFromParameters,
+      }
+    },
+  )
+}
+
+export const JSExpressionOtherJavaScriptOrJSXMapExpressionKeepDeepEqualityCall: KeepDeepEqualityCall<
+  JSExpressionOtherJavaScript | JSXMapExpression
+> = (oldValue, newValue) => {
+  if (isJSExpressionOtherJavaScript(oldValue) && isJSExpressionOtherJavaScript(newValue)) {
+    return JSExpressionOtherJavaScriptKeepDeepEqualityCall()(oldValue, newValue)
+  } else if (isJSXMapExpression(oldValue) && isJSXMapExpression(newValue)) {
+    return JSXMapExpressionKeepDeepEqualityCall()(oldValue, newValue)
+  } else {
+    return keepDeepEqualityResult(newValue, false)
+  }
 }
 
 export function JSXArrayValueKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXArrayValue> {
@@ -1056,7 +1072,7 @@ export const JSXAttributeKeepDeepEqualityCall: KeepDeepEqualityCall<JSExpression
     modifiableAttributeIsAttributeOtherJavaScript(oldAttribute) &&
     modifiableAttributeIsAttributeOtherJavaScript(newAttribute)
   ) {
-    return JSXAttributeOtherJavaScriptKeepDeepEqualityCall()(oldAttribute, newAttribute)
+    return JSExpressionOtherJavaScriptKeepDeepEqualityCall()(oldAttribute, newAttribute)
   } else if (
     modifiableAttributeIsAttributeNestedArray(oldAttribute) &&
     modifiableAttributeIsAttributeNestedArray(newAttribute)
@@ -1201,7 +1217,7 @@ export function JSXElementChildKeepDeepEquality(): KeepDeepEqualityCall<JSXEleme
       oldElement.type === 'ATTRIBUTE_OTHER_JAVASCRIPT' &&
       newElement.type === 'ATTRIBUTE_OTHER_JAVASCRIPT'
     ) {
-      return JSXAttributeOtherJavaScriptKeepDeepEqualityCall()(oldElement, newElement)
+      return JSExpressionOtherJavaScriptKeepDeepEqualityCall()(oldElement, newElement)
     } else if (
       oldElement.type === 'ATTRIBUTE_NESTED_ARRAY' &&
       newElement.type === 'ATTRIBUTE_NESTED_ARRAY'
@@ -1368,7 +1384,7 @@ export const RegularParamKeepDeepEquality: KeepDeepEqualityCall<RegularParam> =
     (param) => param.paramName,
     createCallWithTripleEquals(),
     (param) => param.defaultExpression,
-    nullableDeepEquality(JSXAttributeOtherJavaScriptKeepDeepEqualityCall()),
+    nullableDeepEquality(JSExpressionOtherJavaScriptOrJSXMapExpressionKeepDeepEqualityCall),
     regularParam,
   )
 
@@ -1379,7 +1395,7 @@ export const DestructuredParamPartKeepDeepEquality: KeepDeepEqualityCall<Destruc
     (paramPart) => paramPart.param,
     ParamKeepDeepEquality(),
     (paramPart) => paramPart.defaultExpression,
-    nullableDeepEquality(JSXAttributeOtherJavaScriptKeepDeepEqualityCall()),
+    nullableDeepEquality(JSExpressionOtherJavaScriptOrJSXMapExpressionKeepDeepEqualityCall),
     destructuredParamPart,
   )
 

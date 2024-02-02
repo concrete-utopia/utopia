@@ -1325,44 +1325,48 @@ describe('record variable values', () => {
     const editor = await renderTestEditorWithCode(ProjectWithVariables, 'await-first-dom-report')
     const { variablesInScope } = editor.getEditorState().editor
     expect(variablesInScope['sb/scene/pg:root']).toEqual<VariableData>({
-      definedInsideNumber: { spiedValue: 12 },
+      definedInsideNumber: { spiedValue: 12, insertionCeiling: null },
       definedInsideObject: {
         spiedValue: {
           prop: [33],
         },
+        insertionCeiling: null,
       },
-      definedInsideString: { spiedValue: 'hello' },
-      functionResult: { spiedValue: 35 },
+      definedInsideString: { spiedValue: 'hello', insertionCeiling: null },
+      functionResult: { spiedValue: 35, insertionCeiling: null },
     })
     expect(variablesInScope['sb/scene/pg:root/111']).toEqual<VariableData>({
-      definedInsideNumber: { spiedValue: 12 },
+      definedInsideNumber: { spiedValue: 12, insertionCeiling: null },
       definedInsideObject: {
         spiedValue: {
           prop: [33],
         },
+        insertionCeiling: null,
       },
-      definedInsideString: { spiedValue: 'hello' },
-      functionResult: { spiedValue: 35 },
+      definedInsideString: { spiedValue: 'hello', insertionCeiling: null },
+      functionResult: { spiedValue: 35, insertionCeiling: null },
     })
     expect(variablesInScope['sb/scene/pg:root/222']).toEqual<VariableData>({
-      definedInsideNumber: { spiedValue: 12 },
+      definedInsideNumber: { spiedValue: 12, insertionCeiling: null },
       definedInsideObject: {
         spiedValue: {
           prop: [33],
         },
+        insertionCeiling: null,
       },
-      definedInsideString: { spiedValue: 'hello' },
-      functionResult: { spiedValue: 35 },
+      definedInsideString: { spiedValue: 'hello', insertionCeiling: null },
+      functionResult: { spiedValue: 35, insertionCeiling: null },
     })
     expect(variablesInScope['sb/scene/pg:root/333']).toEqual<VariableData>({
-      definedInsideNumber: { spiedValue: 12 },
+      definedInsideNumber: { spiedValue: 12, insertionCeiling: null },
       definedInsideObject: {
         spiedValue: {
           prop: [33],
         },
+        insertionCeiling: null,
       },
-      definedInsideString: { spiedValue: 'hello' },
-      functionResult: { spiedValue: 35 },
+      definedInsideString: { spiedValue: 'hello', insertionCeiling: null },
+      functionResult: { spiedValue: 35, insertionCeiling: null },
     })
   })
 })

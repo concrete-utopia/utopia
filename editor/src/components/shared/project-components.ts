@@ -28,7 +28,7 @@ import type {
   PossiblyUnversionedNpmDependency,
 } from '../../core/shared/npm-dependency-types'
 import { isResolvedNpmDependency } from '../../core/shared/npm-dependency-types'
-import type { Imports, ProjectFile } from '../../core/shared/project-file-types'
+import type { ElementPath, Imports, ProjectFile } from '../../core/shared/project-file-types'
 import { isTextFile } from '../../core/shared/project-file-types'
 import { assertNever, fastForEach } from '../../core/shared/utils'
 import type { SelectOption } from '../../uuiui-deps'
@@ -62,6 +62,7 @@ export interface InsertableComponent {
   name: string
   stylePropOptions: Array<StylePropOption>
   defaultSize: Size | null
+  insertionCeiling: ElementPath | null
 }
 
 export function insertableComponent(
@@ -70,6 +71,7 @@ export function insertableComponent(
   name: string,
   stylePropOptions: Array<StylePropOption>,
   defaultSize: Size | null,
+  insertionCeiling: ElementPath | null,
 ): InsertableComponent {
   const component = {
     importsToAdd: importsToAdd,
@@ -77,6 +79,7 @@ export function insertableComponent(
     name: name,
     stylePropOptions: stylePropOptions,
     defaultSize: defaultSize,
+    insertionCeiling: insertionCeiling,
   }
   return component
 }
@@ -282,9 +285,17 @@ export function insertableVariable(
   variableType: InsertableVariableType,
   depth: number,
   originalName: string,
+  insertionCeiling: ElementPath | null,
 ): InsertableVariable {
   return {
-    ...insertableComponent(importsToAdd, element, name, stylePropOptions, defaultSize),
+    ...insertableComponent(
+      importsToAdd,
+      element,
+      name,
+      stylePropOptions,
+      defaultSize,
+      insertionCeiling,
+    ),
     variableType: variableType,
     depth: depth,
     originalName: originalName,
@@ -559,6 +570,7 @@ export function moveSceneToTheBeginningAndSetDefaultSize(
             scene.name,
             scene.stylePropOptions,
             size(SceneDefaultWidth, SceneDefaultHeight),
+            null,
           ),
         ],
       )
@@ -640,6 +652,7 @@ export function getComponentGroups(
                   insertOption.insertMenuLabel,
                   stylePropOptions,
                   null,
+                  null,
                 ),
               )
             })
@@ -653,6 +666,7 @@ export function getComponentGroups(
                 () => jsxElementWithoutUID(exportedComponent.listingName, [], []),
                 exportedComponent.listingName,
                 stylePropOptions,
+                null,
                 null,
               ),
             )
@@ -688,6 +702,7 @@ export function getComponentGroups(
               insertOption.elementToInsert,
               insertOption.insertMenuLabel,
               stylePropOptions,
+              null,
               null,
             ),
           )

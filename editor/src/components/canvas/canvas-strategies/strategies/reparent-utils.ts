@@ -4,7 +4,12 @@ import {
   getJSXElementFromProjectContents,
   withUnderlyingTarget,
 } from '../../../editor/store/editor-state'
-import type { ElementPath, Imports, NodeModules } from '../../../../core/shared/project-file-types'
+import {
+  StaticElementPath,
+  type ElementPath,
+  type Imports,
+  type NodeModules,
+} from '../../../../core/shared/project-file-types'
 import type { CanvasCommand } from '../../commands/commands'
 import { reparentElement } from '../../commands/reparent-element-command'
 import type {
@@ -35,12 +40,12 @@ import {
 } from '../../../editor/store/insertion-path'
 import { getUtopiaID } from '../../../../core/shared/uid-utils'
 import type { IndexPosition } from '../../../../utils/utils'
-import { fastForEach } from '../../../../core/shared/utils'
+import { assertNever, fastForEach } from '../../../../core/shared/utils'
 import { addElements } from '../../commands/add-elements-command'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { getRequiredGroupTrueUps } from '../../commands/queue-true-up-command'
 import type { Either } from '../../../../core/shared/either'
-import { left, right } from '../../../../core/shared/either'
+import { flatMapEither, foldEither, left, right } from '../../../../core/shared/either'
 import { maybeBranchConditionalCase } from '../../../../core/model/conditionals'
 import type { NonEmptyArray } from '../../../../core/shared/array-utils'
 import {
@@ -54,6 +59,9 @@ import { isElementRenderedBySameComponent } from './reparent-helpers/reparent-he
 import type { ParsedCopyData } from '../../../../utils/clipboard'
 import { getParseSuccessForFilePath } from '../../canvas-utils'
 import { renameDuplicateImports } from '../../../../core/shared/import-shared-utils'
+import { modify, set } from '../../../../core/shared/optics/optic-utilities'
+import { fromField, fromTypeGuard } from '../../../../core/shared/optics/optic-creators'
+import { Optic } from '../../../../core/shared/optics/optics'
 
 interface GetReparentOutcomeResult {
   commands: Array<CanvasCommand>
@@ -366,14 +374,31 @@ function rectangleSizesEqual(a: CanvasRectangle, b: CanvasRectangle): boolean {
   return a.height === b.height && a.width === b.width
 }
 
-export type ReparentTargetForPaste =
-  | {
-      type: 'sibling'
-      siblingPath: ElementPath
-      siblingBounds: CanvasRectangle
-      parentPath: InsertionPath
-    }
-  | { type: 'parent'; parentPath: InsertionPath }
+export interface SiblingReparentTargetForPaste {
+  type: 'sibling'
+  siblingPath: ElementPath
+  siblingBounds: CanvasRectangle
+  parentPath: InsertionPath
+}
+
+export interface ParentReparentTargetForPaste {
+  type: 'parent'
+  parentPath: InsertionPath
+}
+
+export type ReparentTargetForPaste = SiblingReparentTargetForPaste | ParentReparentTargetForPaste
+
+export function isSiblingReparentTargetForPaste(
+  target: ReparentTargetForPaste,
+): target is SiblingReparentTargetForPaste {
+  return target.type === 'sibling'
+}
+
+export function isParentReparentTargetForPaste(
+  target: ReparentTargetForPaste,
+): target is ParentReparentTargetForPaste {
+  return target.type === 'parent'
+}
 
 type PasteParentNotFoundError =
   | 'Cannot find a suitable parent'
@@ -509,19 +534,17 @@ function pasteNextToSameSizedElement(
   return null
 }
 
-function pasteIntoParentOrGrandparent(
-  elementsToInsert: JSXElementChild[],
+function canInsertIntoTarget(
   projectContents: ProjectContentTreeRoot,
-  selectedViews: NonEmptyArray<ElementPath>,
   metadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
-): ReparentTargetForPaste | null {
+  parentTarget: ElementPath,
+  elementsToInsert: JSXElementChild[],
+): boolean {
   const pastedElementNames = mapDropNulls(
     (element) => (element.type === 'JSX_ELEMENT' ? element.name : null),
     elementsToInsert,
   )
-
-  const parentTarget = EP.getCommonParentOfNonemptyPathArray(selectedViews, true)
 
   // paste into parent
   const targetElementSupportsInsertedElement = MetadataUtils.canInsertElementsToTargetText(
@@ -529,14 +552,27 @@ function pasteIntoParentOrGrandparent(
     metadata,
     pastedElementNames,
   )
+  const supportsChildren = MetadataUtils.targetSupportsChildren(
+    projectContents,
+    metadata,
+    parentTarget,
+    elementPathTree,
+  )
+
+  return targetElementSupportsInsertedElement && supportsChildren
+}
+
+function pasteIntoParentOrGrandparent(
+  elementsToInsert: JSXElementChild[],
+  projectContents: ProjectContentTreeRoot,
+  selectedViews: NonEmptyArray<ElementPath>,
+  metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
+): ReparentTargetForPaste | null {
+  const parentTarget = EP.getCommonParentOfNonemptyPathArray(selectedViews, true)
+
   if (
-    MetadataUtils.targetSupportsChildren(
-      projectContents,
-      metadata,
-      parentTarget,
-      elementPathTree,
-    ) &&
-    targetElementSupportsInsertedElement
+    canInsertIntoTarget(projectContents, metadata, elementPathTree, parentTarget, elementsToInsert)
   ) {
     return { type: 'parent', parentPath: childInsertionPath(parentTarget) }
   }
@@ -556,6 +592,62 @@ function pasteIntoParentOrGrandparent(
   return null
 }
 
+const intendedPathOptic = fromTypeGuard(isParentReparentTargetForPaste)
+  .compose(fromField('parentPath'))
+  .compose(fromField('intendedParentPath'))
+
+export function applyElementCeilingToReparentTarget(
+  projectContents: ProjectContentTreeRoot,
+  metadata: ElementInstanceMetadataMap,
+  elementsToInsert: JSXElementChild[],
+  elementPathTree: ElementPathTrees,
+  reparentTarget: Either<PasteParentNotFoundError, ReparentTargetForPaste>,
+  elementCeiling: ElementPath | null,
+): Either<PasteParentNotFoundError, ReparentTargetForPaste> {
+  if (elementCeiling == null) {
+    return reparentTarget
+  } else {
+    return flatMapEither((targetForPaste) => {
+      switch (targetForPaste.type) {
+        case 'sibling':
+          return left('Cannot find a suitable parent')
+        case 'parent':
+          switch (targetForPaste.parentPath.type) {
+            case 'CHILD_INSERTION':
+              const intendedParentPath = targetForPaste.parentPath.intendedParentPath
+              // If the intended parent path is above the ceiling path then
+              // change it to the ceiling path instead.
+              const ceilingStaticPath = EP.dynamicPathToStaticPath(elementCeiling)
+              if (EP.depth(intendedParentPath) < EP.depth(ceilingStaticPath)) {
+                // Make sure it's valid to insert into.
+                if (
+                  canInsertIntoTarget(
+                    projectContents,
+                    metadata,
+                    elementPathTree,
+                    ceilingStaticPath,
+                    elementsToInsert,
+                  )
+                ) {
+                  return right(set(intendedPathOptic, ceilingStaticPath, targetForPaste))
+                } else {
+                  return left('Cannot find a suitable parent')
+                }
+              } else {
+                return right(targetForPaste)
+              }
+            case 'CONDITIONAL_CLAUSE_INSERTION':
+              return left('Cannot find a suitable parent')
+            default:
+              return assertNever(targetForPaste.parentPath)
+          }
+        default:
+          assertNever(targetForPaste)
+      }
+    }, reparentTarget)
+  }
+}
+
 export function getTargetParentForOneShotInsertion(
   storyboardPath: ElementPath,
   projectContents: ProjectContentTreeRoot,
@@ -563,6 +655,7 @@ export function getTargetParentForOneShotInsertion(
   metadata: ElementInstanceMetadataMap,
   elementsToInsert: JSXElementChild[],
   elementPathTree: ElementPathTrees,
+  insertionCeiling: ElementPath | null,
 ): Either<PasteParentNotFoundError, ReparentTargetForPaste> {
   if (!isNonEmptyArray(selectedViews)) {
     return right({ type: 'parent', parentPath: childInsertionPath(storyboardPath) })
@@ -591,7 +684,14 @@ export function getTargetParentForOneShotInsertion(
     elementPathTree,
   )
   if (pasteIntoParentOrGrandparentResult != null) {
-    return right(pasteIntoParentOrGrandparentResult)
+    return applyElementCeilingToReparentTarget(
+      projectContents,
+      metadata,
+      elementsToInsert,
+      elementPathTree,
+      right(pasteIntoParentOrGrandparentResult),
+      insertionCeiling,
+    )
   }
   return left('Cannot find a suitable parent')
 }

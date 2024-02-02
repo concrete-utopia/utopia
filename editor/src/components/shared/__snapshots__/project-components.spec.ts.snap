@@ -8,6 +8,7 @@ Array [
         "defaultSize": null,
         "element": [Function],
         "importsToAdd": Object {},
+        "insertionCeiling": null,
         "name": "App",
         "stylePropOptions": Array [
           "do-not-add",
@@ -45,6 +46,7 @@ Array [
             "importedWithName": null,
           },
         },
+        "insertionCeiling": null,
         "name": "div",
         "stylePropOptions": Array [
           "do-not-add",
@@ -68,6 +70,7 @@ Array [
             "importedWithName": null,
           },
         },
+        "insertionCeiling": null,
         "name": "span",
         "stylePropOptions": Array [
           "do-not-add",
@@ -84,6 +87,7 @@ Array [
             "importedWithName": null,
           },
         },
+        "insertionCeiling": null,
         "name": "h1",
         "stylePropOptions": Array [
           "do-not-add",
@@ -100,6 +104,7 @@ Array [
             "importedWithName": null,
           },
         },
+        "insertionCeiling": null,
         "name": "h2",
         "stylePropOptions": Array [
           "do-not-add",
@@ -116,6 +121,7 @@ Array [
             "importedWithName": null,
           },
         },
+        "insertionCeiling": null,
         "name": "p",
         "stylePropOptions": Array [
           "do-not-add",
@@ -132,6 +138,7 @@ Array [
             "importedWithName": null,
           },
         },
+        "insertionCeiling": null,
         "name": "button",
         "stylePropOptions": Array [
           "do-not-add",
@@ -148,6 +155,7 @@ Array [
             "importedWithName": null,
           },
         },
+        "insertionCeiling": null,
         "name": "input",
         "stylePropOptions": Array [
           "do-not-add",
@@ -164,6 +172,7 @@ Array [
             "importedWithName": null,
           },
         },
+        "insertionCeiling": null,
         "name": "video",
         "stylePropOptions": Array [
           "do-not-add",
@@ -180,6 +189,7 @@ Array [
             "importedWithName": null,
           },
         },
+        "insertionCeiling": null,
         "name": "img",
         "stylePropOptions": Array [
           "do-not-add",
@@ -197,6 +207,7 @@ Array [
         "defaultSize": null,
         "element": [Function],
         "importsToAdd": Object {},
+        "insertionCeiling": null,
         "name": "Conditional",
         "stylePropOptions": Array [
           "do-not-add",
@@ -219,6 +230,7 @@ Array [
             "importedWithName": null,
           },
         },
+        "insertionCeiling": null,
         "name": "Fragment",
         "stylePropOptions": Array [
           "do-not-add",
@@ -235,6 +247,7 @@ Array [
         "defaultSize": null,
         "element": [Function],
         "importsToAdd": Object {},
+        "insertionCeiling": null,
         "name": "Sample text",
         "stylePropOptions": Array [
           "do-not-add",
@@ -264,6 +277,7 @@ Array [
         "defaultSize": null,
         "element": [Function],
         "importsToAdd": Object {},
+        "insertionCeiling": null,
         "name": "App",
         "stylePropOptions": Array [
           "do-not-add",
@@ -301,6 +315,7 @@ Array [
             "importedWithName": null,
           },
         },
+        "insertionCeiling": null,
         "name": "div",
         "stylePropOptions": Array [
           "do-not-add",
@@ -324,6 +339,7 @@ Array [
             "importedWithName": null,
           },
         },
+        "insertionCeiling": null,
         "name": "span",
         "stylePropOptions": Array [
           "do-not-add",
@@ -340,6 +356,7 @@ Array [
             "importedWithName": null,
           },
         },
+        "insertionCeiling": null,
         "name": "h1",
         "stylePropOptions": Array [
           "do-not-add",
@@ -356,6 +373,7 @@ Array [
             "importedWithName": null,
           },
         },
+        "insertionCeiling": null,
         "name": "h2",
         "stylePropOptions": Array [
           "do-not-add",
@@ -372,6 +390,7 @@ Array [
             "importedWithName": null,
           },
         },
+        "insertionCeiling": null,
         "name": "p",
         "stylePropOptions": Array [
           "do-not-add",
@@ -388,6 +407,7 @@ Array [
             "importedWithName": null,
           },
         },
+        "insertionCeiling": null,
         "name": "button",
         "stylePropOptions": Array [
           "do-not-add",
@@ -404,6 +424,7 @@ Array [
             "importedWithName": null,
           },
         },
+        "insertionCeiling": null,
         "name": "input",
         "stylePropOptions": Array [
           "do-not-add",
@@ -420,6 +441,7 @@ Array [
             "importedWithName": null,
           },
         },
+        "insertionCeiling": null,
         "name": "video",
         "stylePropOptions": Array [
           "do-not-add",
@@ -436,6 +458,7 @@ Array [
             "importedWithName": null,
           },
         },
+        "insertionCeiling": null,
         "name": "img",
         "stylePropOptions": Array [
           "do-not-add",
@@ -453,6 +476,7 @@ Array [
         "defaultSize": null,
         "element": [Function],
         "importsToAdd": Object {},
+        "insertionCeiling": null,
         "name": "Conditional",
         "stylePropOptions": Array [
           "do-not-add",
@@ -475,6 +499,7 @@ Array [
             "importedWithName": null,
           },
         },
+        "insertionCeiling": null,
         "name": "Fragment",
         "stylePropOptions": Array [
           "do-not-add",
@@ -491,6 +516,7 @@ Array [
         "defaultSize": null,
         "element": [Function],
         "importsToAdd": Object {},
+        "insertionCeiling": null,
         "name": "Sample text",
         "stylePropOptions": Array [
           "do-not-add",
@@ -523,6 +549,7 @@ Array [
             "importedWithName": null,
           },
         },
+        "insertionCeiling": null,
         "name": "DatePicker",
         "stylePropOptions": Array [
           "do-not-add",
@@ -549,6 +576,7 @@ Array [
             "importedWithName": null,
           },
         },
+        "insertionCeiling": null,
         "name": "Button",
         "stylePropOptions": Array [
           "do-not-add",
@@ -575,6 +603,7 @@ Array [
             "importedWithName": null,
           },
         },
+        "insertionCeiling": null,
         "name": "InputNumber",
         "stylePropOptions": Array [
           "do-not-add",
@@ -601,6 +630,7 @@ Array [
             "importedWithName": null,
           },
         },
+        "insertionCeiling": null,
         "name": "Row",
         "stylePropOptions": Array [
           "do-not-add",
@@ -627,6 +657,7 @@ Array [
             "importedWithName": null,
           },
         },
+        "insertionCeiling": null,
         "name": "Col",
         "stylePropOptions": Array [
           "do-not-add",
@@ -653,6 +684,7 @@ Array [
             "importedWithName": null,
           },
         },
+        "insertionCeiling": null,
         "name": "Space",
         "stylePropOptions": Array [
           "do-not-add",
@@ -679,6 +711,7 @@ Array [
             "importedWithName": null,
           },
         },
+        "insertionCeiling": null,
         "name": "Menu",
         "stylePropOptions": Array [
           "do-not-add",
@@ -705,6 +738,7 @@ Array [
             "importedWithName": null,
           },
         },
+        "insertionCeiling": null,
         "name": "Menu.Item",
         "stylePropOptions": Array [
           "do-not-add",
@@ -731,6 +765,7 @@ Array [
             "importedWithName": null,
           },
         },
+        "insertionCeiling": null,
         "name": "Menu.SubMenu",
         "stylePropOptions": Array [
           "do-not-add",
@@ -757,6 +792,7 @@ Array [
             "importedWithName": null,
           },
         },
+        "insertionCeiling": null,
         "name": "Menu.ItemGroup",
         "stylePropOptions": Array [
           "do-not-add",
@@ -783,6 +819,7 @@ Array [
             "importedWithName": null,
           },
         },
+        "insertionCeiling": null,
         "name": "Typography.Text",
         "stylePropOptions": Array [
           "do-not-add",
