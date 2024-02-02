@@ -1,6 +1,6 @@
 import { TypedResponse, json } from "@remix-run/node";
 import invariant from "tiny-invariant";
-import { Env } from "../env.server";
+import { ServerEnvironment } from "../env.server";
 import { Status } from "./statusCodes.server";
 import { Method, isMethod } from "./methods.server";
 
@@ -13,13 +13,13 @@ type EmptyResponse = Record<string, never>;
 export type ApiResponse<T> = TypedResponse<T | ErrorResponse | EmptyResponse>;
 
 const responseHeaders: HeadersInit = {
-  "Access-Control-Allow-Origin": Env.CORSOrigin,
+  "Access-Control-Allow-Origin": ServerEnvironment.CORSOrigin,
   "Access-Control-Allow-Credentials": "true",
   "Access-Control-Allow-Headers": "content-type, origin, cookie",
   "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
 };
 
-export async function handleOptions() {
+export async function handleOptions(): Promise<TypedResponse<EmptyResponse>> {
   return json({}, { headers: responseHeaders });
 }
 
@@ -28,7 +28,7 @@ export function handle(
   handlers: {
     [method in Method]?: (request: Request) => Promise<unknown>;
   },
-) {
+): Promise<unknown> {
   const invalidMethod = new ApiError(
     "invalid method",
     Status.METHOD_NOT_ALLOWED,
