@@ -24,6 +24,7 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
+      ${yarn}/bin/yarn
       ${yarn}/bin/yarn run pull-utopia-extension
     '')
     (pkgs.writeScriptBin "update-vscode-build-extension-inner" ''
@@ -31,16 +32,16 @@ let
       set -e
       build-utopia-vscode-extension
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
-      yarn
-      yarn run pull-utopia-extension
+      ${yarn}/bin/yarn
+      ${yarn}/bin/yarn run pull-utopia-extension
     '')
     (pkgs.writeScriptBin "build-vscode-inner" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
       rm -rf ./dist ./node_modules
-      yarn
-      yarn run build
+      ${yarn}/bin/yarn
+      ${yarn}/bin/yarn run build
     '')
   ];
 

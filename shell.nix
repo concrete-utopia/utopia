@@ -3,7 +3,7 @@
   includeServerBuildSupport ? true,
   includeEditorBuildSupport ? true,
   includeRunLocallySupport ? true,
-  includeReleaseSupport ? true,
+  includeReleaseSupport ? false,
   includeDatabaseSupport ? true
 }:
 
@@ -672,7 +672,7 @@ let
       cp -r website-next/out/. dist/server/public
       cp -r editor/resources/editor/. dist/server/editor
       cp -r editor/lib/. dist/server/editor
-      # cp server/utopia-web dist/server
+      cp server/utopia-web dist/server
       cp -r server/migrations/. dist/server/migrations
       cp run-server-production.sh dist/server
     '')
@@ -692,11 +692,6 @@ let
         build-server
         copy-all-to-dist-folder
       fi
-    '')
-    (pkgs.writeScriptBin "build-docker" ''
-      #!/usr/bin/env bash
-      set -e
-      docker load < $(nix-build docker-build.nix)
     '')
   ];
 
