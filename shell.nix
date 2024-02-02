@@ -495,6 +495,12 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/
       ${pkgs.nodePackages.nodemon}/bin/nodemon --delay 200ms -e hs,yaml --watch server/src --watch server/package.yaml --watch clientmodel/lib/src --watch clientmodel/lib/package.yaml --exec run-server-inner
     '')
+	(pkgs.writeScriptBin "watch-remix" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-remix
+	  PORT=8002 pnpm run dev
+    '')
   ];
 
   withServerRunScripts = withDatabaseRunScripts ++ (lib.optionals includeRunLocallySupport serverRunScripts);
@@ -555,20 +561,22 @@ let
         new-window -n "Scratchpad" \; \
         new-window -n "Server" \; \
         send-keys -t :2 watch-server C-m \; \
+        new-window -n "Remix" \; \
+        send-keys -t :3 watch-remix C-m \; \
         new-window -n "Editor TSC" \; \
-        send-keys -t :3 watch-tsc C-m \; \
+        send-keys -t :4 watch-tsc C-m \; \
         new-window -n "Editor Vite" \; \
-        send-keys -t :4 watch-editor-hmr C-m \; \
+        send-keys -t :5 watch-editor-hmr C-m \; \
         new-window -n "Website" \; \
-        send-keys -t :5 watch-website C-m \; \
+        send-keys -t :6 watch-website C-m \; \
         new-window -n "VSCode Common" \; \
-        send-keys -t :6 watch-utopia-vscode-common C-m \; \
+        send-keys -t :7 watch-utopia-vscode-common C-m \; \
         new-window -n "VSCode Extension" \; \
-        send-keys -t :7 watch-utopia-vscode-extension C-m \; \
+        send-keys -t :8 watch-utopia-vscode-extension C-m \; \
         new-window -n "VSCode Pull Extension" \; \
-        send-keys -t :8 watch-vscode-build-extension-only C-m \; \
+        send-keys -t :9 watch-vscode-build-extension-only C-m \; \
         new-window -n "PostgreSQL" \; \
-        send-keys -t :9 start-postgres C-m \; \
+        send-keys -t :10 start-postgres C-m \; \
         select-window -t :1 \;
     '')
     (pkgs.writeScriptBin "start-full" ''
@@ -597,20 +605,22 @@ let
         new-window -n "Scratchpad" \; \
         new-window -n "Server" \; \
         send-keys -t :2 watch-server C-m \; \
+        new-window -n "Remix" \; \
+        send-keys -t :3 watch-remix C-m \; \
         new-window -n "Editor TSC" \; \
-        send-keys -t :3 watch-tsc C-m \; \
+        send-keys -t :4 watch-tsc C-m \; \
         new-window -n "Editor Webpack" \; \
-        send-keys -t :4 watch-editor-cowboy C-m \; \
+        send-keys -t :5 watch-editor-cowboy C-m \; \
         new-window -n "Website" \; \
-        send-keys -t :5 watch-website C-m \; \
+        send-keys -t :6 watch-website C-m \; \
         new-window -n "VSCode Common" \; \
-        send-keys -t :6 watch-utopia-vscode-common C-m \; \
+        send-keys -t :7 watch-utopia-vscode-common C-m \; \
         new-window -n "VSCode Extension" \; \
-        send-keys -t :7 watch-utopia-vscode-extension C-m \; \
+        send-keys -t :8 watch-utopia-vscode-extension C-m \; \
         new-window -n "VSCode Pull Extension" \; \
-        send-keys -t :8 watch-vscode-build-extension-only C-m \; \
+        send-keys -t :9 watch-vscode-build-extension-only C-m \; \
         new-window -n "PostgreSQL" \; \
-        send-keys -t :9 start-postgres C-m \; \
+        send-keys -t :10 start-postgres C-m \; \
         select-window -t :1 \;
     '')
     (pkgs.writeScriptBin "start-full-webpack" ''
