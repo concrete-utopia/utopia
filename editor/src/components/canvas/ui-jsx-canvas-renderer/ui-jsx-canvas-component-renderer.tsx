@@ -8,7 +8,11 @@ import {
   isJSXElement,
 } from '../../../core/shared/element-template'
 import { optionalMap } from '../../../core/shared/optional-utils'
-import type { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
+import type {
+  DomWalkerInvalidatePathsCtxData,
+  UiJsxCanvasContextData,
+  VariableData,
+} from '../ui-jsx-canvas'
 import {
   DomWalkerInvalidatePathsCtxAtom,
   UiJsxCanvasCtxAtom,
@@ -207,6 +211,8 @@ export function createComponentRendererComponent(params: {
         highlightBounds,
         rerenderUtopiaContext.editedText,
         null,
+        {},
+        [],
       )
 
       scope[JSX_CANVAS_LOOKUP_FUNCTION_NAME] = utopiaCanvasJSXLookup(
@@ -229,9 +235,10 @@ export function createComponentRendererComponent(params: {
         instancePath,
       )
 
-      const spiedVariablesInScope = objectMap(
+      const spiedVariablesInScope: VariableData = objectMap(
         (spiedValue) => ({
           spiedValue: spiedValue,
+          insertionCeiling: null,
         }),
         definedWithinWithValues,
       )

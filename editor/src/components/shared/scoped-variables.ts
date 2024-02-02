@@ -141,7 +141,7 @@ function getContainerPropsValue(
       if (isJSXAttributesEntry(prop)) {
         const value = simplifyAttributeIfPossible(prop.value)
         if (isJSXAttributeValue(value)) {
-          runtimeProps[prop.key] = { spiedValue: value.value as unknown }
+          runtimeProps[prop.key] = { spiedValue: value.value as unknown, insertionCeiling: null }
         }
       }
     })
@@ -153,12 +153,14 @@ function getContainerPropsValue(
 function generateVariableTypes(variables: VariableData): Variable[] {
   return Object.entries(variables).flatMap(([name, valueMetadata]) => {
     const value = valueMetadata.spiedValue
+    const insertionCeiling = valueMetadata.insertionCeiling
     const type = getTypeByValue(value)
-    const variable = {
+    const variable: Variable = {
       name,
       value,
       type,
       depth: 0,
+      insertionCeiling: insertionCeiling,
     }
     if (type === 'object' && value != null) {
       // iterate also first-level keys of object
@@ -170,6 +172,7 @@ function generateVariableTypes(variables: VariableData): Variable[] {
           type: getTypeByValue(innerValue),
           parent: variable,
           depth: 1,
+          insertionCeiling: insertionCeiling,
         })),
       )
     } else {
@@ -194,6 +197,7 @@ export function convertVariablesToElements(
           variable.type,
           variable.depth,
           variable.name,
+          variable.insertionCeiling,
         )
       }),
     }
@@ -266,6 +270,7 @@ function arrayInsertableComponentAndJsx(variable: Variable): InsertableComponent
     name: 'item',
     type: arrayElementsType,
     depth: variable.depth + 1,
+    insertionCeiling: variable.insertionCeiling,
   }).jsx
   const arrayElementString = `${variable.name}.map((item) => (${innerElementString}))`
   const arrayElement = jsxFragmentWithoutUID([jsxTextBlock(`{${arrayElementString}}`)], true)
@@ -318,4 +323,5 @@ interface Variable {
   value?: unknown
   parent?: Variable
   depth: number
+  insertionCeiling: ElementPath | null
 }
