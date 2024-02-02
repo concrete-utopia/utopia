@@ -7,9 +7,9 @@ jobs:
     secrets: inherit
     uses: ./.github/workflows/cache-pnpm-install.yml
 
-  build-everything:
-    name: Build Everything
-    timeout-minutes: 60
+  test-editor-code:
+    name: Test Editor PR – TypeScript, ESLint, dependency-cruiser
+    timeout-minutes: 15
     runs-on: ubuntu-latest
     needs: [cache-pnpm-store]
     env:
@@ -21,11 +21,460 @@ jobs:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
       - name: Check out the repo
         uses: actions/checkout@v2
+      - name: Cache editor test result
+        id: cache-editor-tests
+        uses: actions/cache@v2
+        with:
+          # For the tests it doesn't really matter what we cache
+          path: editor/lib
+          key: ${{ runner.os }}-editor-code-tests-PR-${{ hashFiles('editor/src/**') }}-${{ hashFiles('utopia-api/src/**') }}-${{ hashFiles('editor/package.json') }}-${{ hashFiles('utopia-api/package.json') }}
+      - name: Cache pnpm store
+        uses: actions/cache@v2
+        with:
+          path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
       - name: Install nix
         uses: cachix/install-nix-action@v12
         with:
           nix_path: nixpkgs=https://github.com/NixOS/nixpkgs/archive/6120ac5cd201f6cb593d1b80e861be0342495be9.tar.gz
-      - name: Build it
+      - name: Capture pnpm store location
+        run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run 'echo "pnpm-store-path=$(pnpm store path)" >> "$GITHUB_ENV"'
+      - name: Run tsc, eslint, depdendency-cruiser and the website tests
+        if: steps.cache-editor-tests.outputs.cache-hit != 'true'
+        run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run check-editor-code-ci
+
+  test-editor-jest:
+    name: Test Editor PR – Jest tests
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    needs: [cache-pnpm-store]
+    env:
+      UTOPIA_SHA: ${{ github.sha }}
+    steps:
+      - name: Cancel existing runs on this branch
+        uses: fauguste/auto-cancellation-running-action@0.1.4
+        with:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Cache editor test result
+        id: cache-editor-tests
+        uses: actions/cache@v2
+        with:
+          # For the tests it doesn't really matter what we cache
+          path: editor/lib
+          key: ${{ runner.os }}-editor-jest-tests-PR-${{ hashFiles('editor/src/**') }}-${{ hashFiles('utopia-api/src/**') }}-${{ hashFiles('editor/package.json') }}-${{ hashFiles('utopia-api/package.json') }}
+      - name: Cache .pnpm-store
+        uses: actions/cache@v2
+        with:
+          path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
+      - name: Install nix
+        uses: cachix/install-nix-action@v12
+        with:
+          nix_path: nixpkgs=https://github.com/NixOS/nixpkgs/archive/6120ac5cd201f6cb593d1b80e861be0342495be9.tar.gz
+      - name: Run the Jest tests
+        if: steps.cache-editor-tests.outputs.cache-hit != 'true'
+        run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run check-editor-jest-ci
+
+  call-test-editor-karma-shard-1:
+    name: Test Editor Shard 1
+    needs: [cache-pnpm-store]
+    uses: ./.github/workflows/editor-sharded-tests.yml
+    secrets: inherit
+    with:
+      shard_number: 1
+      branch: PR
+      pnpm-store-path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
+
+  call-test-editor-karma-shard-2:
+    name: Test Editor Shard 2
+    needs: [cache-pnpm-store]
+    uses: ./.github/workflows/editor-sharded-tests.yml
+    secrets: inherit
+    with:
+      shard_number: 2
+      branch: PR
+      pnpm-store-path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
+
+  test-server:
+    name: Test Server
+    timeout-minutes: 25
+    runs-on: ubuntu-latest
+    env:
+      UTOPIA_SHA: ${{ github.sha }}
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Cache .cabal/packages
+        uses: actions/cache@v2
+        with:
+          path: .cabal/packages
+          key: ${{ runner.os }}-${{ matrix.ghc }}-cabal-packages-2
+      - name: Cache .cabal/store
+        uses: actions/cache@v2
+        with:
+          path: .cabal/store
+          key: ${{ runner.os }}-${{ matrix.ghc }}-cabal-store-2
+      - name: Cache dist-newstyle
+        uses: actions/cache@v2
+        with:
+          path: server/dist-newstyle
+          key: ${{ runner.os }}-${{ matrix.ghc }}-server-dist-newstyle-2
+      - name: Cache server test result
+        id: cache-server-tests
+        uses: actions/cache@v2
+        with:
+          # For the tests it doesn't really matter what we cache
+          path: server/src
+          key: ${{ runner.os }}-server-tests-master-${{ hashFiles('server/src/**') }}-${{ hashFiles('server/test/**') }}-${{ hashFiles('server/cabal.project.freeze') }}
+      - name: Install nix
+        uses: cachix/install-nix-action@v12
+        with:
+          nix_path: nixpkgs=https://github.com/NixOS/nixpkgs/archive/6120ac5cd201f6cb593d1b80e861be0342495be9.tar.gz
+      - name: Start PostgreSQL
+        if: steps.cache-server-tests.outputs.cache-hit != 'true'
+        run: nix-shell --arg includeEditorBuildSupport false --arg includeRunLocallySupport false --arg includeDatabaseSupport true --run start-postgres-background
+      - name: Run the tests
+        if: steps.cache-server-tests.outputs.cache-hit != 'true'
+        run: nix-shell --arg includeEditorBuildSupport false --arg includeRunLocallySupport false --run test-server-ci
+
+  deploy-branch:
+    name: Deploy Branch Editor
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    needs: [cache-pnpm-store]
+    env:
+      UTOPIA_SHA: ${{ github.sha }}
+      AUTH0_CLIENT_ID: A9v9iuucCnFzkb1OzGkbAvi3cSF8kQtu
+      AUTH0_ENDPOINT: utopia-staging.us.auth0.com
+    steps:
+      # Create a comment immediately so that the first comment can be used as a "Try me" link
+      - name: Find Comment
+        uses: peter-evans/find-comment@v1
+        id: fc-initial
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: Try me
+      - name: Create or update comment
+        uses: peter-evans/create-or-update-comment@v1
+        if: ${{ success() || failure() }}
+        with:
+          comment-id: ${{ steps.fc-initial.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            ## Try me
+            (building...)
+      # Gets the branch that this PR is targeting and replaces forward slashes in the name with hyphens.
+      # So that later steps can produce a bundle incorporating that into the name and upload it.
+      - name: Extract branch name
+        shell: bash
+        run: |
+          FIXED_REF="${GITHUB_HEAD_REF////-}"
+          echo "##[set-output name=branch;]$FIXED_REF"
+        id: extract_branch
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Cache .pnpm-store
+        uses: actions/cache@v2
+        with:
+          path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
+      - name: Install nix
+        uses: cachix/install-nix-action@v12
+        with:
+          nix_path: nixpkgs=https://github.com/NixOS/nixpkgs/archive/6120ac5cd201f6cb593d1b80e861be0342495be9.tar.gz
+      - name: Build Editor
+        if: steps.cache-editor-tests.outputs.cache-hit != 'true'
+        run: |
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run build-editor-branches-ci
+      - name: Send webpack stats to RelativeCI
+        uses: relative-ci/agent-action@v1.1.0
+        with:
+          webpackStatsFile: editor/lib/branches-stats.json
+          key: ${{ secrets.RELATIVE_CI_KEY }}
+          debug: false
+      - name: Delete node_modules
+        working-directory: editor/
+        run: |
+          rm -rf ./node_modules
+          cd ../utopia-api
+          rm -rf ./node_modules
+          cd ../website-next
+          rm -rf ./node_modules
+          cd ../utopia-vscode-extension
+          rm -rf ./node_modules
+          cd ../utopia-vscode-common
+          rm -rf ./node_modules
+      - name: Create Editor Bundle
+        working-directory: editor/lib/
+        run: |
+          tar -czvf ../${{ steps.extract_branch.outputs.branch }}.tar.gz *
+      # Update the "Try me" comment with the new status. We have to find it again because it
+      # might not have existed during the previous search
+      - name: Find Comment
+        uses: peter-evans/find-comment@v1
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: Try me
+      - name: Create or update comment
+        uses: peter-evans/create-or-update-comment@v1
+        if: ${{ success() || failure() }}
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            ## Try me
+            (deploying...)
+      - name: Upload Editor Bundle
+        uses: jakejarvis/s3-sync-action@v0.5.1
+        with:
+          args: --acl private --exclude '*' --include 'editor/${{ steps.extract_branch.outputs.branch }}.tar.gz'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: nix-shell --arg includeServerBuildSupport true --arg includeEditorBuildSupport true --arg includeReleaseSupport true --arg includeDatabaseSupport true --arg includeRunLocallySupport false --run build-all-staging
+          AWS_S3_BUCKET: ${{ secrets.STAGING_BUNDLE_S3_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.STAGING_BUNDLE_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.STAGING_BUNDLE_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.STAGING_BUNDLE_REGION }}
+      - name: Flush Staging Branch Editor Bundle
+        shell: bash
+        run: |
+          curl -s -o /dev/null -w "FLUSH STAGING HTTP RESPONSE CODE: %{http_code}" -X DELETE 'https://${{ secrets.STAGING_SERVER }}/internal/branch?branch_name=${{ steps.extract_branch.outputs.branch }}'
+      # Update the "Try me" comment with the actual link
+      - name: Create or update comment
+        uses: peter-evans/create-or-update-comment@v1
+        if: ${{ success() || failure() }}
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            ## [Try me](https://${{ secrets.STAGING_SERVER }}/p/?branch_name=${{ steps.extract_branch.outputs.branch }})
+
+  performance-test:
+    name: Run Performance Tests
+    timeout-minutes: 15
+    runs-on: self-hosted
+    needs: [deploy-branch, cache-pnpm-store]
+    env:
+      UTOPIA_SHA: ${{ github.sha }}
+      AUTH0_CLIENT_ID: A9v9iuucCnFzkb1OzGkbAvi3cSF8kQtu
+      AUTH0_ENDPOINT: utopia-staging.us.auth0.com
+    steps:
+      # Gets the branch that this PR is targeting and replaces forward slashes in the name with hyphens.
+      # So that later steps can produce a bundle incorporating that into the name and upload it.
+      - name: Extract branch name
+        shell: bash
+        run: |
+          FIXED_REF="${GITHUB_HEAD_REF////-}"
+          echo "##[set-output name=branch;]$FIXED_REF"
+        id: extract_branch
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Cache .pnpm-store
+        uses: actions/cache@v2
+        with:
+          path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
+      - name: Build Performance Tests
+        run: |
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "build-puppeteer-tests"
+      - name: Run Performance Test
+        id: run-performance-test
+        env:
+          BRANCH_NAME: ${{ steps.extract_branch.outputs.branch }}
+          AWS_S3_BUCKET: ${{secrets.PERFORMANCE_GRAPHS_BUCKET}}
+          AWS_ACCESS_KEY_ID: ${{ secrets.PERFORMANCE_GRAPHS_ACCESS_KEY}}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.PERFORMANCE_GRAPHS_SECRET_KEY }}
+          AWS_REGION: ${{ secrets.STAGING_BUNDLE_REGION }}
+          PERFORMANCE_GRAPHS_PLOTLY_USERNAME: ${{ secrets.PERFORMANCE_GRAPHS_PLOTLY_USERNAME}}
+          PERFORMANCE_GRAPHS_PLOTLY_API_KEY: ${{secrets.PERFORMANCE_GRAPHS_PLOTLY_API_KEY}}
+        run: |
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "xvfb-run --server-args='-screen 0 1920x1080x24 -ac -nolisten tcp -dpi 96 +extension RANDR' run-puppeteer-test"
+      - name: Find Comment
+        uses: peter-evans/find-comment@v1
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: Performance test results
+      - name: Create or update comment
+        uses: peter-evans/create-or-update-comment@v1
+        if: ${{ success() || failure() }}
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            Performance test results:
+            ${{ steps.run-performance-test.outputs.perf-result }}
+      - name: Build Discord Message
+        if: ${{ steps.run-performance-test.outputs.perf-serious-regression-found == 'true' }}
+        env:
+          TEMPLATE: >-
+            [
+              {
+                "title": $title,
+                "url": $html_url,
+                "color": 2369839,
+                "description": $description,
+                "footer": {
+                  "text": $repo_full_name
+                }
+              },
+              {
+                "title": "Frame Tests:",
+                "color": 2369839,
+                "image": {
+                  "url": $result_frames_chart
+                }
+              },
+              {
+                "title": "Interaction Tests:",
+                "color": 14540253,
+                "image": {
+                  "url": $result_interactions_chart
+                }
+              }
+            ]
+          TITLE: 'Performance Results for #${{ github.event.pull_request.number }} ${{ github.event.pull_request.title }}'
+          HTML_URL: ${{ github.event.pull_request.html_url }}
+          DESCRIPTION: 'Link to test editor: https://${{ secrets.STAGING_SERVER }}/p/?branch_name=${{ steps.extract_branch.outputs.branch }} \n \n Results: \n ${{ steps.run-performance-test.outputs.perf-discord-message }}'
+          REPO_FULL_NAME: ${{ github.event.repository.full_name }}
+          RESULT_FRAMES_CHART: ${{ steps.run-performance-test.outputs.perf-frames-chart }}
+          RESULT_INTERACTIONS_CHART: ${{ steps.run-performance-test.outputs.perf-interactions-chart }}
+        run: |
+          echo "DISCORD_EMBEDS=$(jq -nc --arg title "$TITLE" --arg html_url "$HTML_URL" --arg description "$DESCRIPTION" --arg repo_full_name "$REPO_FULL_NAME" --arg result_frames_chart "$RESULT_FRAMES_CHART" --arg result_interactions_chart "$RESULT_INTERACTIONS_CHART" "$TEMPLATE")" | sed 's/\\\\n/\\n/g' >> $GITHUB_ENV
+      - name: Send Discord Notification
+        uses: Ilshidur/action-discord@0.3.2
+        if: ${{ steps.run-performance-test.outputs.perf-serious-regression-found == 'true' }}
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_PRS_WEBHOOK }}
+          DISCORD_USERNAME: 'Puppeteer'
+          DISCORD_AVATAR: https://octodex.github.com/images/puppeteer.png
+          MESSAGE: 'Performance results for #${{ github.event.pull_request.number }}'
+        with:
+          args: ${{ env.MESSAGE }}
+
+  system-test:
+    name: Run System Tests
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    needs: [deploy-branch, cache-pnpm-store]
+    env:
+      UTOPIA_SHA: ${{ github.sha }}
+    steps:
+      # Gets the branch that this PR is targeting and replaces forward slashes in the name with hyphens.
+      # So that later steps can produce a bundle incorporating that into the name and upload it.
+      - name: Extract branch name
+        shell: bash
+        run: |
+          FIXED_REF="${GITHUB_HEAD_REF////-}"
+          echo "##[set-output name=branch;]$FIXED_REF"
+        id: extract_branch
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Cache .pnpm-store
+        uses: actions/cache@v2
+        with:
+          path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
+      - name: Install Puppeteer Libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ca-certificates fonts-liberation libappindicator3-1 libasound2 libatk-bridge2.0-0 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgbm1 libgcc1 libglib2.0-0 libgtk-3-0 libnspr4 libnss3 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 lsb-release wget xdg-utils
+      - name: Install nix
+        uses: cachix/install-nix-action@v12
+        with:
+          nix_path: nixpkgs=https://github.com/NixOS/nixpkgs/archive/6120ac5cd201f6cb593d1b80e861be0342495be9.tar.gz
+      - name: Run System Test
+        id: run-system-test
+        env:
+          BRANCH_NAME: ${{ steps.extract_branch.outputs.branch }}
+          HEADLESS: 'true'
+        run: |
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "cd puppeteer-tests; pnpm install --unsafe-perm; pnpm run system-test"
+
+  comments-test:
+    name: Run Comments Tests
+    timeout-minutes: 12
+    runs-on: ubuntu-latest
+    needs: [deploy-branch, cache-pnpm-store]
+    env:
+      UTOPIA_SHA: ${{ github.sha }}
+      AUTH0_CLIENT_ID: A9v9iuucCnFzkb1OzGkbAvi3cSF8kQtu
+      AUTH0_ENDPOINT: utopia-staging.us.auth0.com
+    steps:
+      # Gets the branch that this PR is targeting and replaces forward slashes in the name with hyphens.
+      # So that later steps can produce a bundle incorporating that into the name and upload it.
+      - name: Extract branch name
+        shell: bash
+        run: |
+          FIXED_REF="${GITHUB_HEAD_REF////-}"
+          echo "##[set-output name=branch;]$FIXED_REF"
+        id: extract_branch
+      - name: Install nix
+        uses: cachix/install-nix-action@v12
+        with:
+          nix_path: nixpkgs=https://github.com/NixOS/nixpkgs/archive/6120ac5cd201f6cb593d1b80e861be0342495be9.tar.gz
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Cache .pnpm-store
+        uses: actions/cache@v2
+        with:
+          path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
+      - name: Build Comments Tests
+        run: |
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "build-puppeteer-tests"
+      - name: Run Comments Test
+        id: run-comments-test
+        env:
+          BRANCH_NAME: ${{ steps.extract_branch.outputs.branch }}
+          BASE_URL: 'https://utopia.fish'
+        run: |
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "xvfb-run --server-args='-screen 0 1920x1080x24 -ac -nolisten tcp -dpi 96 +extension RANDR' run-comments-test"
+
+  collaboration-test:
+    name: Run Collaboration Tests
+    timeout-minutes: 12
+    runs-on: ubuntu-latest
+    needs: [deploy-branch, cache-pnpm-store]
+    env:
+      UTOPIA_SHA: ${{ github.sha }}
+      AUTH0_CLIENT_ID: A9v9iuucCnFzkb1OzGkbAvi3cSF8kQtu
+      AUTH0_ENDPOINT: utopia-staging.us.auth0.com
+    steps:
+      # Gets the branch that this PR is targeting and replaces forward slashes in the name with hyphens.
+      # So that later steps can produce a bundle incorporating that into the name and upload it.
+      - name: Extract branch name
+        shell: bash
+        run: |
+          FIXED_REF="${GITHUB_HEAD_REF////-}"
+          echo "##[set-output name=branch;]$FIXED_REF"
+        id: extract_branch
+      - name: Install nix
+        uses: cachix/install-nix-action@v12
+        with:
+          nix_path: nixpkgs=https://github.com/NixOS/nixpkgs/archive/6120ac5cd201f6cb593d1b80e861be0342495be9.tar.gz
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Cache .pnpm-store
+        uses: actions/cache@v2
+        with:
+          path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
+      - name: Build Comments Tests
+        run: |
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "build-puppeteer-tests"
+      - name: Run Comments Test
+        id: run-comments-test
+        env:
+          BRANCH_NAME: ${{ steps.extract_branch.outputs.branch }}
+          BASE_URL: 'https://utopia.fish'
+        run: |
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "xvfb-run --server-args='-screen 0 1920x1080x24 -ac -nolisten tcp -dpi 96 +extension RANDR' run-collaboration-test"
