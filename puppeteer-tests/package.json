@@ -7,8 +7,8 @@
     "screenshot-test": "ts-node --files src/screenshot-test.ts",
     "system-test": "ts-node --files src/system-test.ts",
     "preinstall": "npx only-allow pnpm",
-    "comments-test": "jest --config ./jest.config.js comments/commenting.spec.ts",
-    "collaboration-test": "jest --config ./jest.config.js comments/collaboration-test.spec.ts",
+    "comments-test": "HEADLESS=true jest --config ./jest.config.js comments/commenting.spec.ts",
+    "collaboration-test": "HEADLESS=true jest --config ./jest.config.js comments/collaboration-test.spec.ts",
     "build": "tsc"
   },
   "author": "",

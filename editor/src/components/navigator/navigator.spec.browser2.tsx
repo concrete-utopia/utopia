@@ -944,7 +944,6 @@ describe('Navigator', () => {
         dropTarget(varSafeNavigatorEntryToKey(regularNavigatorEntry(targetElementPath))),
         windowPoint(dragMeElementCenter),
         dragDelta,
-        'apply-hover-events',
       ),
     )
 
@@ -992,7 +991,6 @@ describe('Navigator', () => {
         dropTarget(varSafeNavigatorEntryToKey(regularNavigatorEntry(targetElementPath))),
         windowPoint(dragMeElementCenter),
         dragDelta,
-        'apply-hover-events',
       ),
     )
 
@@ -1237,7 +1235,7 @@ describe('Navigator', () => {
         `navigator-item-drop-before-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
         windowPoint(dragMeElementCenter),
         dragDelta,
-        'apply-hover-events',
+
         async () => {
           expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
             'before',
@@ -1311,7 +1309,7 @@ describe('Navigator', () => {
         `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
         windowPoint(dragMeElementCenter),
         dragDelta,
-        'apply-hover-events',
+
         async () => {
           expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
             'after',
@@ -1385,7 +1383,7 @@ describe('Navigator', () => {
         `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
         windowPoint(dragMeElementCenter),
         dragDelta,
-        'apply-hover-events',
+
         async () => {
           expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
             'after',
@@ -1462,7 +1460,7 @@ describe('Navigator', () => {
           `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
           windowPoint(dragMeElementCenter),
           dragDelta,
-          'apply-hover-events',
+
           async () => {
             expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
               'reparent',
@@ -1534,7 +1532,7 @@ describe('Navigator', () => {
         `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/thirddiv`,
         windowPoint(dragMeElementCenter),
         windowPoint({ x: -25, y: -25 }),
-        'apply-hover-events',
+
         async () => {
           expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
             'after',
@@ -1588,7 +1586,7 @@ describe('Navigator', () => {
           `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
           windowPoint(dragMeElementCenter),
           windowPoint({ x: -35, y: -35 }),
-          'apply-hover-events',
+
           async () => {
             expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
               'after',
@@ -1667,7 +1665,7 @@ describe('Navigator', () => {
           `navigator-item-regular_utopia_storyboard_uid/scene_aaa/parentsibling`,
           windowPoint(dragMeElementCenter),
           dragDelta,
-          'apply-hover-events',
+
           async () => {
             expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
               'reparent',
@@ -1729,7 +1727,7 @@ describe('Navigator', () => {
           `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/parentsibling`,
           windowPoint(dragMeElementCenter),
           windowPoint({ x: -92, y: -35 }),
-          'apply-hover-events',
+
           async () => {
             expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
               'after',
@@ -1794,7 +1792,7 @@ describe('Navigator', () => {
           `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/parentsibling`,
           windowPoint(dragMeElementCenter),
           windowPoint({ x: -32, y: 0 }),
-          'apply-hover-events',
+
           async () => {
             expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
               'after',
@@ -1832,73 +1830,6 @@ describe('Navigator', () => {
           ?.globalFrame,
       ).toEqual({ height: 200, width: 400, x: 0, y: 500 })
       expect(renderResult.getEditorState().editor.navigator.dropTargetHint).toEqual(null)
-    })
-
-    it('attempt to reparent non-reparentable item', async () => {
-      const renderResult = await renderTestEditorWithCode(
-        getProjectCode(),
-        'await-first-dom-report',
-      )
-
-      const notDragElement = await renderResult.renderedDOM.findByTestId(
-        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
-      )
-      const notDragElementRect = notDragElement.getBoundingClientRect()
-      const notDragElementCenter = getDomRectCenter(notDragElementRect)
-      const cousinDivElement = await renderResult.renderedDOM.findByTestId(
-        `navigator-item-regular_utopia_storyboard_uid/scene_aaa/parentsibling`,
-      )
-      const cousinDivElementRect = cousinDivElement.getBoundingClientRect()
-      const cousinDivElementCenter = getDomRectCenter(cousinDivElementRect)
-      const dragTo = {
-        x: cousinDivElementCenter.x,
-        y: cousinDivElementRect.y + 10,
-      }
-
-      const dragDelta = windowPoint({
-        x: dragTo.x - notDragElementCenter.x,
-        y: dragTo.y - notDragElementCenter.y,
-      })
-
-      const targetElement = EP.fromString('utopia-storyboard-uid/scene-aaa/sceneroot/notdrag')
-      await act(async () => {
-        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
-        await renderResult.dispatch([selectComponents([targetElement], false)], false)
-        await dispatchDone
-      })
-
-      await act(async () =>
-        dragElementWithDNDEvents(
-          renderResult,
-          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
-          `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/parentsibling`,
-          windowPoint(notDragElementCenter),
-          dragDelta,
-          'do-not-apply-hover-events',
-        ),
-      )
-
-      expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type ?? null).toEqual(
-        null,
-      )
-      expect(
-        renderResult.getEditorState().editor.navigator.dropTargetHint?.displayAtEntry ?? null,
-      ).toEqual(null)
-
-      await renderResult.getDispatchFollowUpActionsFinished()
-
-      expect(
-        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
-      ).toEqual([
-        'regular-utopia-storyboard-uid/scene-aaa',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/firstdiv',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/seconddiv',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/thirddiv',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/dragme',
-        'regular-utopia-storyboard-uid/scene-aaa/sceneroot/notdrag', // <- cannot be moved
-        'regular-utopia-storyboard-uid/scene-aaa/parentsibling',
-      ])
     })
 
     it('does not reparent to invalid target', async () => {
@@ -1943,7 +1874,6 @@ describe('Navigator', () => {
           `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
           windowPoint(dragMeElementCenter),
           dragDelta,
-          'apply-hover-events',
         ),
       )
 
@@ -1999,7 +1929,6 @@ describe('Navigator', () => {
           `navigator-item-regular_sb/parent2`,
           windowPoint(parent1DndContainerCenter),
           dragDelta,
-          'apply-hover-events',
         ),
       )
 
@@ -2055,7 +1984,6 @@ describe('Navigator', () => {
           `navigator-item-regular_sb/parent1/child1`,
           windowPoint(parent1DndContainerCenter),
           dragDelta,
-          'apply-hover-events',
         ),
       )
 
@@ -2108,7 +2036,6 @@ describe('Navigator', () => {
           `navigator-item-regular_sb/text`,
           windowPoint(parent1DndContainerCenter),
           dragDelta,
-          'apply-hover-events',
         ),
       )
 
@@ -2241,7 +2168,6 @@ describe('Navigator', () => {
           BottomDropTargetLineTestId('regular_sb/parent1/755'),
           windowPoint(childElementRectCenter),
           dragDelta,
-          'apply-hover-events',
         ),
       )
 
@@ -2635,7 +2561,7 @@ describe('Navigator', () => {
         `navigator-item-drop-before-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
         windowPoint(dragMeElementCenter),
         dragDelta,
-        'apply-hover-events',
+
         async () => {
           expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
             'before',
@@ -2713,7 +2639,7 @@ describe('Navigator', () => {
         `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
         windowPoint(dragMeElementCenter),
         dragDelta,
-        'apply-hover-events',
+
         async () => {
           expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
             'after',
@@ -2791,7 +2717,7 @@ describe('Navigator', () => {
         `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
         windowPoint(dragMeElementCenter),
         dragDelta,
-        'apply-hover-events',
+
         async () => {
           expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
             'after',
@@ -2872,7 +2798,7 @@ describe('Navigator', () => {
           `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
           windowPoint(dragMeElementCenter),
           dragDelta,
-          'apply-hover-events',
+
           async () => {
             expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
               'reparent',
@@ -2961,7 +2887,6 @@ describe('Navigator', () => {
           `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/e46`,
           windowPoint(dragMeElementCenter),
           dragDelta,
-          'apply-hover-events',
         ),
       )
 
@@ -3027,7 +2952,6 @@ describe('Navigator', () => {
           `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/e46/202~~~3`,
           windowPoint(dragMeElementCenter),
           dragDelta,
-          'apply-hover-events',
         ),
       )
 
@@ -3092,7 +3016,7 @@ describe('Navigator', () => {
         `navigator-item-drop-before-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
         windowPoint(dragMeElementCenter),
         dragDelta,
-        'apply-hover-events',
+
         async () => {
           expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
             'before',
@@ -3167,7 +3091,7 @@ describe('Navigator', () => {
         `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
         windowPoint(dragMeElementCenter),
         dragDelta,
-        'apply-hover-events',
+
         async () => {
           expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
             'after',
@@ -3242,7 +3166,7 @@ describe('Navigator', () => {
         `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
         windowPoint(dragMeElementCenter),
         dragDelta,
-        'apply-hover-events',
+
         async () => {
           expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
             'after',
@@ -3320,7 +3244,7 @@ describe('Navigator', () => {
           `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
           windowPoint(dragMeElementCenter),
           dragDelta,
-          'apply-hover-events',
+
           async () => {
             expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
               'reparent',
@@ -3406,7 +3330,6 @@ describe('Navigator', () => {
           `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/b62`,
           windowPoint(dragMeElementCenter),
           dragDelta,
-          'apply-hover-events',
         ),
       )
 
@@ -3469,7 +3392,6 @@ describe('Navigator', () => {
           `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot/b62/c68~~~1`,
           windowPoint(dragMeElementCenter),
           dragDelta,
-          'apply-hover-events',
         ),
       )
 
@@ -4785,7 +4707,6 @@ describe('Navigator', () => {
           `navigator-item-drop-before-regular_sb/fragment/fragmentchild`,
           windowPoint(dragMeElementCenter),
           dragDelta,
-          'apply-hover-events',
         ),
       )
 
@@ -4838,7 +4759,6 @@ describe('Navigator', () => {
           `navigator-item-drop-before-regular_sb/nonoffsetparent/nonoffsetchild`,
           windowPoint(dragMeElementCenter),
           dragDelta,
-          'apply-hover-events',
         ),
       )
 

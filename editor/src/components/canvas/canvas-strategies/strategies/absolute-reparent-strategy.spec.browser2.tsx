@@ -19,12 +19,13 @@ import {
 import type { Modifiers } from '../../../../utils/modifiers'
 import { cmdModifier, emptyModifiers } from '../../../../utils/modifiers'
 import { selectComponents } from '../../../editor/actions/meta-actions'
-import { RightMenuTab } from '../../../editor/store/editor-state'
+import { RightMenuTab, navigatorEntryToKey } from '../../../editor/store/editor-state'
 import { CSSCursor } from '../../canvas-types'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { getCursorFromEditor } from '../../controls/select-mode/cursor-component'
 import {
   mouseClickAtPoint,
+  mouseDoubleClickAtPoint,
   mouseDownAtPoint,
   mouseDragFromPointToPoint,
   mouseDragFromPointToPointNoMouseDown,
@@ -124,74 +125,6 @@ async function dragAlreadySelectedElement(
       midDragCallback: combinedMidDragCallback,
     },
   )
-}
-
-function getChildrenHiderProjectCode(shouldHide: boolean): string {
-  return `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
-export const ChildrenHider = (props) => {
-  return (
-    <div data-uid='33d' style={{ ...props.style }}>
-      {props.shouldHide ? null : props.children}
-    </div>
-  )
-}
-export var ${BakedInStoryboardVariableName} = (
-  <Storyboard data-uid='${BakedInStoryboardUID}'>
-    <Scene
-      style={{
-        backgroundColor: 'white',
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        width: 400,
-        height: 700,
-      }}
-      data-uid='${TestSceneUID}'
-    >
-      <div
-        style={{
-          backgroundColor: 'white',
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          width: 400,
-          height: 700,
-        }}
-        data-uid='outer-div'
-      >
-        <ChildrenHider
-          style={{
-            backgroundColor: '#aaaaaa33',
-            position: 'absolute',
-            left: 41,
-            top: 37,
-            width: 338,
-            height: 144,
-            gap: 10,
-          }}
-          data-uid='children-hider'
-          shouldHide={${shouldHide}}
-        >
-        </ChildrenHider>
-        <div
-          style={{
-            backgroundColor: '#aaaaaa33',
-            height: 65,
-            width: 66,
-            position: 'absolute',
-            left: 190,
-            top: 211,
-          }}
-          data-uid='child-to-reparent'
-          data-testid='child-to-reparent'
-        >
-          drag me
-        </div>
-      </div>
-    </Scene>
-  </Storyboard>
-)`
 }
 
 function getElementByDataUID(renderResult: EditorRenderResult, dataUID: string): HTMLElement {
@@ -932,6 +865,54 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         PrettierConfig,
       ),
     )
+  })
+  it('does not reparent scene into other component in scene', async () => {
+    const editor = await renderTestEditorWithCode(
+      ProjectWithNestedComponents,
+      'await-first-dom-report',
+    )
+
+    const dragMeBB = editor.renderedDOM.getByTestId('drag-me').getBoundingClientRect()
+    const dragMeCenter = {
+      x: dragMeBB.left + dragMeBB.width / 2,
+      y: dragMeBB.top + dragMeBB.height / 2,
+    }
+    const dragHereBB = editor.renderedDOM.getByTestId('drag-here').getBoundingClientRect()
+    const dragHereCenter = {
+      x: dragHereBB.left + dragHereBB.width / 2,
+      y: dragHereBB.top + dragHereBB.height / 2,
+    }
+    const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
+    await mouseDoubleClickAtPoint(canvasControlsLayer, dragHereCenter)
+
+    // check that `drag-here` is expanded in the navigator
+    expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+      'regular-sb/scene1',
+      'regular-sb/scene1/container1',
+      'regular-sb/scene1/container1:container-root-div',
+      'regular-sb/scene1/container1:container-root-div/74f',
+      'regular-sb/scene1/container1/hello',
+      'regular-sb/container2',
+      'regular-sb/container2:container-root-div',
+      'regular-sb/container2:container-root-div/74f',
+      'regular-sb/container2/hi',
+    ])
+
+    const dragDelta = windowPoint({
+      x: dragHereCenter.x - dragMeCenter.x,
+      y: dragHereCenter.y - dragMeCenter.y,
+    })
+    await dragElement(
+      editor,
+      'drag-me',
+      dragDelta,
+      cmdModifier,
+      { cursor: CSSCursor.NotPermitted }, // checks that we show that it's not permitted
+      null,
+    )
+
+    // the drag is prevented, nothing changes
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(ProjectWithNestedComponents)
   })
   it('referencing a value from outside the element prevents reparenting', async () => {
     function createCodeForProject(left: number, top: number) {
@@ -2287,3 +2268,61 @@ function getElementCenterCoords(editor: EditorRenderResult, testId: string): Win
   const center = windowPoint({ x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 })
   return center
 }
+
+const ProjectWithNestedComponents = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+function Container({ children, ...props }) {
+  return (
+    <div data-uid='container-root-div' {...props}>
+      {children}
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      commentId='scene'
+      data-testid='drag-me'
+      data-label='Scene 2'
+      style={{
+        position: 'absolute',
+        left: 1126,
+        top: 667,
+        width: 405,
+        height: 522,
+      }}
+      data-uid='scene1'
+    >
+      <Container
+        data-uid='container1'
+        style={{
+          backgroundColor: '#ff4500',
+          width: 700,
+          height: 759,
+          position: 'absolute',
+          left: 31,
+          top: 143,
+        }}
+      >
+        <h2 data-uid='hello'>Hello</h2>
+      </Container>
+    </Scene>
+    <Container
+      data-testid='drag-here'
+      data-uid='container2'
+      style={{
+        backgroundColor: '#0074ff',
+        width: 600,
+        height: 659,
+        position: 'absolute',
+        left: 331,
+        top: -130,
+      }}
+    >
+      <h2 data-uid='hi'>Hi</h2>
+    </Container>
+  </Storyboard>
+)
+`

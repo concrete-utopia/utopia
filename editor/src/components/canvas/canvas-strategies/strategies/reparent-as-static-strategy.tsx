@@ -154,11 +154,13 @@ function applyStaticReparent(
 ): StrategyApplicationResult {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   const filteredSelectedElements = flattenSelection(selectedElements)
+  const newParent = reparentResult.newParent
 
   return ifAllowedToReparent(
     canvasState,
     canvasState.startingMetadata,
     filteredSelectedElements,
+    newParent.intendedParentPath,
     () => {
       if (
         interactionSession.interactionData.type == 'DRAG' &&
@@ -168,7 +170,6 @@ function applyStaticReparent(
           const target = filteredSelectedElements[0]
 
           const newIndex = reparentResult.newIndex
-          const newParent = reparentResult.newParent
           const parentRect =
             MetadataUtils.getFrameInCanvasCoords(
               newParent.intendedParentPath,

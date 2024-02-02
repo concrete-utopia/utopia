@@ -2,7 +2,6 @@ import type { NodeModules, ProjectContents, TextFile } from '../../core/shared/p
 import {
   esCodeFile,
   isParseSuccess,
-  isTextFile,
   RevisionsState,
   textFile,
   textFileContents,
@@ -13,7 +12,7 @@ import {
   printCodeOptions,
 } from '../../core/workers/parser-printer/parser-printer'
 import type { ProjectContentTreeRoot } from '../assets'
-import { contentsToTree, getProjectFileByFilePath, treeToContents } from '../assets'
+import { contentsToTree, getTextFileByPath, treeToContents } from '../assets'
 import type { EditorState } from '../editor/store/editor-state'
 import { StoryboardFilePath } from '../editor/store/editor-state'
 import { createComplexDefaultProjectContents } from '../../sample-projects/sample-project-utils'
@@ -76,15 +75,6 @@ export function defaultProjectContentsForNormalising(): ProjectContentTreeRoot {
   }
 
   return contentsToTree(projectContents)
-}
-
-export function getTextFileByPath(projectContents: ProjectContentTreeRoot, path: string): TextFile {
-  const possibleResult = getProjectFileByFilePath(projectContents, path)
-  if (possibleResult != null && isTextFile(possibleResult)) {
-    return possibleResult
-  } else {
-    throw new Error(`Unable to find a text file at path ${path}.`)
-  }
 }
 
 export function printParsedCodeForFile(

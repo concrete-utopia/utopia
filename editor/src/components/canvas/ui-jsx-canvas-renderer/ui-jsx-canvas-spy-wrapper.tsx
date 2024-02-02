@@ -113,6 +113,7 @@ export function buildSpyWrappedElement(
   imports: Imports,
   filePath: string,
   variablesInScope: VariableData,
+  isTextEditor: 'text-editor' | 'real-element' = 'real-element',
 ): React.ReactElement {
   const props = {
     ...finalProps,
@@ -125,6 +126,11 @@ export function buildSpyWrappedElement(
      */
     const isEmotionComponent = Element['__emotion_base'] != null
     const isStyledComponent = Element['styledComponentId'] != null
+    // when the spied element is an active text editor, we need the props of the edited element
+    // (stored in passthroughProps), and not the props of the text editor itself
+    const realReportedProps =
+      isTextEditor === 'text-editor' ? reportedProps.passthroughProps : reportedProps
+
     const instanceMetadata: ElementInstanceMetadata = {
       element: right(jsx),
       elementPath: elementPath,
@@ -149,7 +155,7 @@ export function buildSpyWrappedElement(
       updateInvalidatedPaths((current) => current)
       metadataContext.current.spyValues.metadata[elementPathString] = instanceMetadata
       metadataContext.current.spyValues.allElementProps[elementPathString] =
-        makeCanvasElementPropsSafe(reportedProps)
+        makeCanvasElementPropsSafe(realReportedProps)
       metadataContext.current.spyValues.variablesInScope[elementPathString] = variablesInScope
     }
   }

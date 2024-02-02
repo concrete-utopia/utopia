@@ -72,6 +72,16 @@ function transformJSXElementChildRecursively(
   }
 }
 
+function generateUniqueSceneCommentId(seenIds: Set<string>, seed: string): string {
+  let idPropValueToUse = seed
+  let suffix = 0
+  while (seenIds.has(idPropValueToUse)) {
+    suffix += 1
+    idPropValueToUse = `${idPropValueToUse}${suffix}`
+  }
+  return idPropValueToUse
+}
+
 export function ensureSceneIdsExist(editor: EditorState): EditorState {
   const storyboardFile = getContentsTreeFromPath(editor.projectContents, StoryboardFilePath)
   if (
@@ -83,7 +93,7 @@ export function ensureSceneIdsExist(editor: EditorState): EditorState {
     return editor
   }
 
-  let seenIdProps: Set<string> = new Set()
+  let seenCommentIdProps: Set<string> = new Set()
   let anyIdPropUpdated = false
   const imports = storyboardFile.content.fileContents.parsed.imports
 
@@ -103,18 +113,18 @@ export function ensureSceneIdsExist(editor: EditorState): EditorState {
 
         const idPropValue = getIdPropFromJSXElement(child)
 
-        if (idPropValue != null && !seenIdProps.has(idPropValue)) {
-          seenIdProps.add(idPropValue)
+        if (idPropValue != null && !seenCommentIdProps.has(idPropValue)) {
+          seenCommentIdProps.add(idPropValue)
           return child
         }
 
-        const idPropValueToUse = child.uid
+        const idPropValueToUse = generateUniqueSceneCommentId(seenCommentIdProps, child.uid)
         const updatedChild = setIdPropOnJSXElement(child, idPropValueToUse)
         if (updatedChild == null) {
           return child
         }
 
-        seenIdProps.add(idPropValueToUse)
+        seenCommentIdProps.add(idPropValueToUse)
         anyIdPropUpdated = true
         return updatedChild
       })

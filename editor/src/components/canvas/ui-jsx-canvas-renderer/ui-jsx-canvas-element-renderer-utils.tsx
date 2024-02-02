@@ -929,6 +929,7 @@ function renderJSXElement(
         imports,
         filePath,
         variablesInScope,
+        'text-editor',
       )
     }
     return buildSpyWrappedElement(
