@@ -1,8 +1,8 @@
 import urljoin from "url-join";
-import { Env } from "../env.server";
+import { ServerEnvironment } from "../env.server";
 import { proxiedResponse } from "./api.server";
 
-const BASE_URL = Env.BackendURL;
+const BASE_URL = ServerEnvironment.BackendURL;
 
 function buildProxyUrl(url: URL, path: string | null): string {
   const { pathname, search } = url;
