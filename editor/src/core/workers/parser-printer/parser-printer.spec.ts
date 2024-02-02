@@ -3868,6 +3868,7 @@ export var App = props => {
               ),
             },
             emptyComments,
+            ['x'],
           ),
         ],
       ),
@@ -4001,6 +4002,7 @@ export var App = props => {
               ),
             },
             emptyComments,
+            ['n'],
           ),
         ],
       ),
@@ -4066,6 +4068,7 @@ export var App = props => {
               ),
             },
             emptyComments,
+            ['n'],
           ),
         ],
       ),
@@ -4711,6 +4714,7 @@ export var whatever = props => {
       }),
       { bbb: innerElement },
       emptyComments,
+      ['n'],
     )
     const view = clearJSXElementChildUniqueIDs(
       jsxElement(
@@ -4824,6 +4828,7 @@ export var whatever = props => {
       }),
       { bbb: innerElement },
       emptyComments,
+      ['n'],
     )
 
     const topLevelArbitraryBlock = arbitraryJSBlock(

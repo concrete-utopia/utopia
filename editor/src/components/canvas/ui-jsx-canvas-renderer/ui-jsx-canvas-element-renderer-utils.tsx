@@ -92,6 +92,8 @@ export function createLookupRender(
   highlightBounds: HighlightBoundsForUids | null,
   editedText: ElementPath | null,
   renderLimit: number | null,
+  variablesInScope: VariableData,
+  valuesInScopeFromParameters: Array<string>,
 ): (element: JSXElement, scope: MapLike<any>) => React.ReactChild | null {
   let index = 0
 
@@ -117,6 +119,17 @@ export function createLookupRender(
         props: attrs,
       }
     })
+
+    let innerVariablesInScope: VariableData = {
+      ...variablesInScope,
+    }
+    for (const valueInScope of valuesInScopeFromParameters) {
+      innerVariablesInScope[valueInScope] = {
+        spiedValue: scope[valueInScope],
+        insertionCeiling: innerPath,
+      }
+    }
+
     return renderCoreElement(
       augmentedInnerElement,
       innerPath,
@@ -140,7 +153,7 @@ export function createLookupRender(
       code,
       highlightBounds,
       editedText,
-      {},
+      innerVariablesInScope,
     )
   }
 }
@@ -219,6 +232,8 @@ export function renderCoreElement(
             highlightBounds,
             editedText,
             null,
+            variablesInScope,
+            [],
           )
         : NoOpLookupRender
 
@@ -292,6 +307,9 @@ export function renderCoreElement(
         )
       }
 
+      const valuesInScopeFromParameters =
+        element.type === 'JSX_MAP_EXPRESSION' ? element.valuesInScopeFromParameters : []
+
       if (elementIsTextEdited) {
         const runJSExpressionLazy = () => {
           const innerRender = createLookupRender(
@@ -314,6 +332,8 @@ export function renderCoreElement(
             highlightBounds,
             editedText,
             mapCountOverride,
+            variablesInScope,
+            valuesInScopeFromParameters,
           )
 
           const blockScope = {
@@ -376,6 +396,8 @@ export function renderCoreElement(
         highlightBounds,
         editedText,
         mapCountOverride,
+        variablesInScope,
+        valuesInScopeFromParameters,
       )
 
       const blockScope = {
@@ -864,6 +886,8 @@ function renderJSXElement(
           highlightBounds,
           editedText,
           null,
+          variablesInScope,
+          [],
         )
         const blockScope = {
           ...inScope,

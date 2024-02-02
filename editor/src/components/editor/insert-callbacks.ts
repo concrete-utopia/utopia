@@ -204,6 +204,7 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
         jsxMetadataRef.current,
         [element.element],
         elementPathTreeRef.current,
+        elementToInsert.value.insertionCeiling,
       )
 
       if (isLeft(targetParent)) {
