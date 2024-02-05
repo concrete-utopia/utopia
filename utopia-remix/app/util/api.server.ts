@@ -32,7 +32,7 @@ export function handle(
     [method in Method]?: (request: Request) => Promise<unknown>;
   },
 ): Promise<unknown> {
-  const handler = handlers[request.method];
+  const handler = handlers[request.method as Method];
   if (handler == null) {
     throw new ApiError("invalid method", Status.METHOD_NOT_ALLOWED);
   }
