@@ -23,10 +23,10 @@ type RouteModule = RouteModules[keyof RouteModules]
 type RouterType = ReturnType<typeof createMemoryRouter>
 
 interface RemixNavigationContext {
-  forward: () => void
-  back: () => void
-  home: () => void
-  navigate: (loc: string) => void
+  forward: () => Promise<void>
+  back: () => Promise<void>
+  home: () => Promise<void>
+  navigate: (loc: string) => Promise<void>
   location: Location
   entries: Array<Location>
 }
@@ -258,10 +258,10 @@ export const UtopiaRemixRootComponent = (props: UtopiaRemixRootComponentProps) =
         return {
           ...current,
           [EP.toString(basePath)]: {
-            forward: () => void innerRouter.navigate(1),
-            back: () => void innerRouter.navigate(-1),
-            home: () => void innerRouter.navigate('/'),
-            navigate: (loc: string) => void innerRouter.navigate(loc),
+            forward: () => innerRouter.navigate(1),
+            back: () => innerRouter.navigate(-1),
+            home: () => innerRouter.navigate('/'),
+            navigate: (loc: string) => innerRouter.navigate(loc),
             location: location,
             entries: updatedEntries,
           },
