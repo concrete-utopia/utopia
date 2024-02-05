@@ -8,10 +8,10 @@ import {
   RemixNavigationAtom,
 } from '../canvas/remix/utopia-remix-root-component'
 import { Substores, useEditorState } from './store/store-hook'
-import { FlexRow, Tooltip, UtopiaTheme, colorTheme, useColorTheme } from '../../uuiui'
+import { FlexRow, Tooltip, colorTheme } from '../../uuiui'
 import { stopPropagation } from '../inspector/common/inspector-utils'
 import * as EP from '../../core/shared/element-path'
-import { RemixIndexPathLabel, getRemixLocationLabel } from '../canvas/remix/remix-utils'
+import { getRemixLocationLabel } from '../canvas/remix/remix-utils'
 
 export const RemixNavigationBarPathTestId = 'remix-navigation-bar-path'
 
@@ -74,7 +74,7 @@ export const RemixNavigationBar = React.memo(() => {
               color: colorTheme.dynamicBlue.value,
             },
           }}
-          onMouseDown={back}
+          onClick={back}
         >
           〱
         </span>
@@ -88,7 +88,7 @@ export const RemixNavigationBar = React.memo(() => {
               color: colorTheme.dynamicBlue.value,
             },
           }}
-          onMouseDown={forward}
+          onClick={forward}
         >
           〱
         </span>
@@ -102,7 +102,7 @@ export const RemixNavigationBar = React.memo(() => {
               color: colorTheme.dynamicBlue.value,
             },
           }}
-          onMouseDown={home}
+          onClick={home}
         >
           ⛫
         </span>

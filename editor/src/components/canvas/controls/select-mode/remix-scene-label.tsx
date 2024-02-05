@@ -332,7 +332,7 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
                 fontSize: 10 / scale,
                 display: isSelected ? 'block' : 'none',
               }}
-              onMouseDown={back}
+              onClick={back}
             >
               〱
             </span>
@@ -346,7 +346,7 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
                 display: isSelected ? 'block' : 'none',
                 transform: 'scale(-1, 1)',
               }}
-              onMouseDown={forward}
+              onClick={forward}
             >
               〱
             </span>
@@ -361,7 +361,7 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
                 position: 'relative',
                 bottom: 0 / scale,
               }}
-              onMouseDown={home}
+              onClick={home}
             >
               ⛫
             </span>
