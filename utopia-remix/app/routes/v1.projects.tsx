@@ -1,7 +1,7 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { listProjects } from "../models/project.server";
 import { getManyUserDetails } from "../models/userDetails.server";
-import { ensure, handle, handleOptions } from "../util/api.server";
+import { ensure, handle, handleOptions, requireUser } from "../util/api.server";
 import { Status } from "../util/statusCodes.server";
 import { ListProjectsResponse } from "../types";
 
@@ -12,8 +12,12 @@ export async function loader(args: LoaderFunctionArgs) {
   });
 }
 
-export async function handleListProjects(): Promise<ListProjectsResponse> {
-  const projects = await listProjects({});
+export async function handleListProjects(
+  req: Request,
+): Promise<ListProjectsResponse> {
+  const user = await requireUser(req);
+
+  const projects = await listProjects({ ownerId: user.user_id });
 
   const userIds = new Set(projects.map((p) => p.owner_id));
   const userDetails = await getManyUserDetails(Array.from(userIds));

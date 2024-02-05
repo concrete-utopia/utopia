@@ -1,4 +1,4 @@
-import { PrismaClient } from "@utopia/prisma-client";
+import { PrismaClient } from "prisma-client";
 import { singleton } from "./singleton.server";
 
 function rejectUndefinedValues(where?: { [key: string]: unknown }) {

@@ -1,10 +1,12 @@
-import { json } from "@remix-run/node";
+import { LoaderFunctionArgs, json } from "@remix-run/node";
 import React from "react";
 import { listProjects } from "../models/project.server";
 import { useLoaderData } from "@remix-run/react";
+import { requireUser } from "../util/api.server";
 
-export async function loader() {
-  const projects = await listProjects({});
+export async function loader(args: LoaderFunctionArgs) {
+  const user = await requireUser(args.request);
+  const projects = await listProjects({ ownerId: user.user_id });
   return json({ projects });
 }
 
