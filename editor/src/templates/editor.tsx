@@ -15,7 +15,7 @@ import {
   PRODUCTION_ENV,
   requireElectron,
 } from '../common/env-vars'
-import { EditorID } from '../core/shared/utils'
+import { EditorID, wrapWithSemaphore } from '../core/shared/utils'
 import CanvasActions from '../components/canvas/canvas-actions'
 import type {
   DispatchPriority,
@@ -418,215 +418,221 @@ export class Editor {
     )
   }
 
-  boundDispatch = (
-    dispatchedActions: readonly EditorAction[],
-    priority?: DispatchPriority,
-  ): {
-    entireUpdateFinished: Promise<any>
-  } => {
-    const Measure = createPerformanceMeasure()
-    Measure.logActions(dispatchedActions)
+  boundDispatch = wrapWithSemaphore(
+    'boundDispatch',
+    (
+      dispatchedActions: readonly EditorAction[],
+      priority?: DispatchPriority,
+    ): {
+      entireUpdateFinished: Promise<any>
+    } => {
+      const Measure = createPerformanceMeasure()
+      Measure.logActions(dispatchedActions)
 
-    const MeasureSelectors = isFeatureEnabled('Debug – Measure Selectors')
-    const PerformanceMarks =
-      (isFeatureEnabled('Debug – Performance Marks (Slow)') ||
-        isFeatureEnabled('Debug – Performance Marks (Fast)')) &&
-      PERFORMANCE_MARKS_ALLOWED
+      const MeasureSelectors = isFeatureEnabled('Debug – Measure Selectors')
+      const PerformanceMarks =
+        (isFeatureEnabled('Debug – Performance Marks (Slow)') ||
+          isFeatureEnabled('Debug – Performance Marks (Fast)')) &&
+        PERFORMANCE_MARKS_ALLOWED
 
-    const runDispatch = () => {
-      const oldEditorState = this.storedState
+      const runDispatch = () => {
+        const oldEditorState = this.storedState
 
-      const dispatchResult = editorDispatchActionRunner(
-        this.boundDispatch,
-        dispatchedActions,
-        oldEditorState,
-        this.spyCollector,
-      )
-      const anyLoadActions = dispatchedActions.some((action) => action.action === 'LOAD')
-      if (anyLoadActions) {
-        void GithubOperations.startGithubPolling(this.utopiaStoreHook, this.boundDispatch)
-      }
-
-      invalidateDomWalkerIfNecessary(
-        this.domWalkerMutableState,
-        oldEditorState.patchedEditor,
-        dispatchResult.patchedEditor,
-      )
-
-      this.storedState = dispatchResult
-      let entireUpdateFinished = dispatchResult.entireUpdateFinished
-
-      const shouldRunDOMWalker =
-        !dispatchResult.nothingChanged ||
-        dispatchedActions.some((a) => a.action === 'RUN_DOM_WALKER')
-
-      if (shouldRunDOMWalker) {
-        const updateId = canvasUpdateId++
-        Measure.taskTime(`update canvas ${updateId}`, () => {
-          const currentElementsToRender = fixElementsToRerender(
-            this.storedState.patchedEditor.canvas.elementsToRerender,
-            dispatchedActions,
-          )
-          ElementsToRerenderGLOBAL.current = currentElementsToRender // Mutation!
-          ReactDOM.flushSync(() => {
-            ReactDOM.unstable_batchedUpdates(() => {
-              this.canvasStore.setState(patchedStoreFromFullStore(this.storedState, 'canvas-store'))
-            })
-          })
-        })
-
-        // run the dom-walker
-        {
-          const domWalkerDispatchResult = runDomWalkerAndSaveResults(
-            this.boundDispatch,
-            this.domWalkerMutableState,
-            this.storedState,
-            this.spyCollector,
-            ElementsToRerenderGLOBAL.current,
-          )
-
-          if (domWalkerDispatchResult != null) {
-            this.storedState = domWalkerDispatchResult
-            entireUpdateFinished = Promise.all([
-              entireUpdateFinished,
-              domWalkerDispatchResult.entireUpdateFinished,
-            ])
-          }
-        }
-
-        // true up groups if needed
-        if (this.storedState.unpatchedEditor.trueUpElementsAfterDomWalkerRuns.length > 0) {
-          // updated editor with trued up groups
-          Measure.taskTime(`Group true up ${updateId}`, () => {
-            const projectContentsBeforeGroupTrueUp =
-              this.storedState.unpatchedEditor.projectContents
-            const dispatchResultWithTruedUpGroups = editorDispatchActionRunner(
-              this.boundDispatch,
-              [{ action: 'TRUE_UP_ELEMENTS' }],
-              this.storedState,
-              this.spyCollector,
-            )
-            this.storedState = dispatchResultWithTruedUpGroups
-
-            entireUpdateFinished = Promise.all([
-              entireUpdateFinished,
-              dispatchResultWithTruedUpGroups.entireUpdateFinished,
-            ])
-
-            if (
-              projectContentsBeforeGroupTrueUp === this.storedState.unpatchedEditor.projectContents
-            ) {
-              // no group-related re-render / re-measure is needed, bail out
-              return
-            }
-
-            // re-render the canvas
-            Measure.taskTime(`Canvas re-render because of groups ${updateId}`, () => {
-              ElementsToRerenderGLOBAL.current = fixElementsToRerender(
-                this.storedState.patchedEditor.canvas.elementsToRerender,
-                dispatchedActions,
-              ) // Mutation!
-
-              ReactDOM.flushSync(() => {
-                ReactDOM.unstable_batchedUpdates(() => {
-                  this.canvasStore.setState(
-                    patchedStoreFromFullStore(this.storedState, 'canvas-store'),
-                  )
-                })
-              })
-            })
-
-            // re-run the dom-walker
-            Measure.taskTime(`Dom walker re-run because of groups ${updateId}`, () => {
-              const domWalkerDispatchResult = runDomWalkerAndSaveResults(
-                this.boundDispatch,
-                this.domWalkerMutableState,
-                this.storedState,
-                this.spyCollector,
-                ElementsToRerenderGLOBAL.current,
-              )
-
-              if (domWalkerDispatchResult != null) {
-                this.storedState = domWalkerDispatchResult
-                entireUpdateFinished = Promise.all([
-                  entireUpdateFinished,
-                  domWalkerDispatchResult.entireUpdateFinished,
-                ])
-              }
-            })
-          })
-        }
-
-        this.storedState = editorDispatchClosingOut(
+        const dispatchResult = editorDispatchActionRunner(
           this.boundDispatch,
           dispatchedActions,
           oldEditorState,
-          {
-            ...this.storedState,
-            entireUpdateFinished: entireUpdateFinished,
-            nothingChanged: dispatchResult.nothingChanged,
-          },
+          this.spyCollector,
+        )
+        const anyLoadActions = dispatchedActions.some((action) => action.action === 'LOAD')
+        if (anyLoadActions) {
+          void GithubOperations.startGithubPolling(this.utopiaStoreHook, this.boundDispatch)
+        }
+
+        invalidateDomWalkerIfNecessary(
+          this.domWalkerMutableState,
+          oldEditorState.patchedEditor,
+          dispatchResult.patchedEditor,
         )
 
-        Measure.taskTime(`Update Editor ${updateId}`, () => {
-          ReactDOM.flushSync(() => {
-            ReactDOM.unstable_batchedUpdates(() => {
-              Measure.taskTime(`Update Main Store ${updateId}`, () => {
-                this.utopiaStoreHook.setState(
-                  patchedStoreFromFullStore(this.storedState, 'editor-store'),
+        this.storedState = dispatchResult
+        let entireUpdateFinished = dispatchResult.entireUpdateFinished
+
+        const shouldRunDOMWalker =
+          !dispatchResult.nothingChanged ||
+          dispatchedActions.some((a) => a.action === 'RUN_DOM_WALKER')
+
+        if (shouldRunDOMWalker) {
+          const updateId = canvasUpdateId++
+          Measure.taskTime(`update canvas ${updateId}`, () => {
+            const currentElementsToRender = fixElementsToRerender(
+              this.storedState.patchedEditor.canvas.elementsToRerender,
+              dispatchedActions,
+            )
+            ElementsToRerenderGLOBAL.current = currentElementsToRender // Mutation!
+            ReactDOM.flushSync(() => {
+              ReactDOM.unstable_batchedUpdates(() => {
+                this.canvasStore.setState(
+                  patchedStoreFromFullStore(this.storedState, 'canvas-store'),
                 )
               })
-
-              if (
-                shouldUpdateLowPriorityUI(
-                  this.storedState.strategyState,
-                  ElementsToRerenderGLOBAL.current,
-                )
-              ) {
-                Measure.taskTime(`Update Low Prio Store ${updateId}`, () => {
-                  this.lowPriorityStore.setState(
-                    patchedStoreFromFullStore(this.storedState, 'low-priority-store'),
-                  )
-                })
-              }
-              if (MeasureSelectors) {
-                logSelectorTimings('store update phase')
-              }
-              if (PerformanceMarks) {
-                performance.mark(`react wrap up ${updateId}`)
-              }
-
-              // reset selector timings right before the end of flushSync means we'll capture the re-render related selector data with a clean slate
-              resetSelectorTimings()
             })
           })
-        })
-        if (PerformanceMarks) {
-          performance.measure(
-            `Our Components Rendering + React Doing Stuff`,
-            `react wrap up ${updateId}`,
+
+          // run the dom-walker
+          {
+            const domWalkerDispatchResult = runDomWalkerAndSaveResults(
+              this.boundDispatch,
+              this.domWalkerMutableState,
+              this.storedState,
+              this.spyCollector,
+              ElementsToRerenderGLOBAL.current,
+            )
+
+            if (domWalkerDispatchResult != null) {
+              this.storedState = domWalkerDispatchResult
+              entireUpdateFinished = Promise.all([
+                entireUpdateFinished,
+                domWalkerDispatchResult.entireUpdateFinished,
+              ])
+            }
+          }
+
+          // true up groups if needed
+          if (this.storedState.unpatchedEditor.trueUpElementsAfterDomWalkerRuns.length > 0) {
+            // updated editor with trued up groups
+            Measure.taskTime(`Group true up ${updateId}`, () => {
+              const projectContentsBeforeGroupTrueUp =
+                this.storedState.unpatchedEditor.projectContents
+              const dispatchResultWithTruedUpGroups = editorDispatchActionRunner(
+                this.boundDispatch,
+                [{ action: 'TRUE_UP_ELEMENTS' }],
+                this.storedState,
+                this.spyCollector,
+              )
+              this.storedState = dispatchResultWithTruedUpGroups
+
+              entireUpdateFinished = Promise.all([
+                entireUpdateFinished,
+                dispatchResultWithTruedUpGroups.entireUpdateFinished,
+              ])
+
+              if (
+                projectContentsBeforeGroupTrueUp ===
+                this.storedState.unpatchedEditor.projectContents
+              ) {
+                // no group-related re-render / re-measure is needed, bail out
+                return
+              }
+
+              // re-render the canvas
+              Measure.taskTime(`Canvas re-render because of groups ${updateId}`, () => {
+                ElementsToRerenderGLOBAL.current = fixElementsToRerender(
+                  this.storedState.patchedEditor.canvas.elementsToRerender,
+                  dispatchedActions,
+                ) // Mutation!
+
+                ReactDOM.flushSync(() => {
+                  ReactDOM.unstable_batchedUpdates(() => {
+                    this.canvasStore.setState(
+                      patchedStoreFromFullStore(this.storedState, 'canvas-store'),
+                    )
+                  })
+                })
+              })
+
+              // re-run the dom-walker
+              Measure.taskTime(`Dom walker re-run because of groups ${updateId}`, () => {
+                const domWalkerDispatchResult = runDomWalkerAndSaveResults(
+                  this.boundDispatch,
+                  this.domWalkerMutableState,
+                  this.storedState,
+                  this.spyCollector,
+                  ElementsToRerenderGLOBAL.current,
+                )
+
+                if (domWalkerDispatchResult != null) {
+                  this.storedState = domWalkerDispatchResult
+                  entireUpdateFinished = Promise.all([
+                    entireUpdateFinished,
+                    domWalkerDispatchResult.entireUpdateFinished,
+                  ])
+                }
+              })
+            })
+          }
+
+          this.storedState = editorDispatchClosingOut(
+            this.boundDispatch,
+            dispatchedActions,
+            oldEditorState,
+            {
+              ...this.storedState,
+              entireUpdateFinished: entireUpdateFinished,
+              nothingChanged: dispatchResult.nothingChanged,
+            },
           )
+
+          Measure.taskTime(`Update Editor ${updateId}`, () => {
+            ReactDOM.flushSync(() => {
+              ReactDOM.unstable_batchedUpdates(() => {
+                Measure.taskTime(`Update Main Store ${updateId}`, () => {
+                  this.utopiaStoreHook.setState(
+                    patchedStoreFromFullStore(this.storedState, 'editor-store'),
+                  )
+                })
+
+                if (
+                  shouldUpdateLowPriorityUI(
+                    this.storedState.strategyState,
+                    ElementsToRerenderGLOBAL.current,
+                  )
+                ) {
+                  Measure.taskTime(`Update Low Prio Store ${updateId}`, () => {
+                    this.lowPriorityStore.setState(
+                      patchedStoreFromFullStore(this.storedState, 'low-priority-store'),
+                    )
+                  })
+                }
+                if (MeasureSelectors) {
+                  logSelectorTimings('store update phase')
+                }
+                if (PerformanceMarks) {
+                  performance.mark(`react wrap up ${updateId}`)
+                }
+
+                // reset selector timings right before the end of flushSync means we'll capture the re-render related selector data with a clean slate
+                resetSelectorTimings()
+              })
+            })
+          })
+          if (PerformanceMarks) {
+            performance.measure(
+              `Our Components Rendering + React Doing Stuff`,
+              `react wrap up ${updateId}`,
+            )
+          }
+        }
+
+        return {
+          entireUpdateFinished: entireUpdateFinished,
         }
       }
-
-      return {
-        entireUpdateFinished: entireUpdateFinished,
+      resetSelectorTimings()
+      const result = Measure.taskTime(
+        `Editor Dispatch ${simpleStringifyActions(dispatchedActions)}`,
+        () => {
+          return runDispatch()
+        },
+      )
+      if (MeasureSelectors) {
+        logSelectorTimings('re-render phase')
       }
-    }
-    resetSelectorTimings()
-    const result = Measure.taskTime(
-      `Editor Dispatch ${simpleStringifyActions(dispatchedActions)}`,
-      () => {
-        return runDispatch()
-      },
-    )
-    if (MeasureSelectors) {
-      logSelectorTimings('re-render phase')
-    }
-    Measure.printMeasurements()
+      Measure.printMeasurements()
 
-    return result
-  }
+      return result
+    },
+  )
 
   private createNewProjectFromImportURL(importURL: string): void {
     getURLImportDetails(importURL)
