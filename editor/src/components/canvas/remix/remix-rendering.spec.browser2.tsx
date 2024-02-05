@@ -10,7 +10,7 @@ import {
 } from '../../../sample-projects/sample-project-utils.test-utils'
 import type { Modifiers } from '../../../utils/modifiers'
 import { emptyModifiers, cmdModifier } from '../../../utils/modifiers'
-import { selectComponentsForTest } from '../../../utils/utils.test-utils'
+import { selectComponentsForTest, wait } from '../../../utils/utils.test-utils'
 import {
   runDOMWalker,
   selectComponents,
@@ -48,6 +48,7 @@ import {
 import {
   RemixNavigationBarButtonTestId,
   RemixNavigationBarPathTestId,
+  RemixNavigationForTests,
 } from '../../editor/remix-navigation-bar'
 import { NonResizableControlTestId } from '../controls/select-mode/non-resizable-control'
 import {
@@ -1398,6 +1399,82 @@ describe('Remix navigation', () => {
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixIndexPathLabel)
     })
 
+    it('can navigate with using remix navigation atom, in live mode', async () => {
+      const renderResult = await renderRemixProject(projectWithMultipleRoutes())
+
+      const pathToRemixScene = EP.fromString('storyboard/remix')
+
+      await switchToLiveMode(renderResult)
+      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixIndexPathLabel)
+
+      await clickRemixLink(renderResult)
+
+      expect(
+        renderResult.renderedDOM.queryAllByText(AboutTextContent).filter(filterOutMenuLabels),
+      ).toHaveLength(1)
+      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
+
+      // check that switching modes doesn't change the navigation state
+      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
+      expect(
+        renderResult.renderedDOM.queryAllByText(AboutTextContent).filter(filterOutMenuLabels),
+      ).toHaveLength(1)
+
+      await navigateWithRemixNavigationContextAtom(renderResult, pathToRemixScene, 'back')
+      expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
+      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixIndexPathLabel)
+
+      await navigateWithRemixNavigationContextAtom(renderResult, pathToRemixScene, 'forward')
+      expect(
+        renderResult.renderedDOM.queryAllByText(AboutTextContent).filter(filterOutMenuLabels),
+      ).toHaveLength(1)
+      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
+
+      await navigateWithRemixNavigationContextAtom(renderResult, pathToRemixScene, 'home')
+      // await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'home')
+      expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
+      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixIndexPathLabel)
+    })
+
+    it('can navigate with using remix navigation atom, in edit mode', async () => {
+      const renderResult = await renderRemixProject(projectWithMultipleRoutes())
+
+      const pathToRemixScene = EP.fromString('storyboard/remix')
+
+      await switchToLiveMode(renderResult)
+      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixIndexPathLabel)
+
+      await clickRemixLink(renderResult)
+
+      expect(
+        renderResult.renderedDOM.queryAllByText(AboutTextContent).filter(filterOutMenuLabels),
+      ).toHaveLength(1)
+      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
+
+      await switchToEditMode(renderResult)
+
+      // check that switching modes doesn't change the navigation state
+      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
+      expect(
+        renderResult.renderedDOM.queryAllByText(AboutTextContent).filter(filterOutMenuLabels),
+      ).toHaveLength(1)
+
+      await navigateWithRemixNavigationContextAtom(renderResult, pathToRemixScene, 'back')
+      expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
+      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixIndexPathLabel)
+
+      await navigateWithRemixNavigationContextAtom(renderResult, pathToRemixScene, 'forward')
+      expect(
+        renderResult.renderedDOM.queryAllByText(AboutTextContent).filter(filterOutMenuLabels),
+      ).toHaveLength(1)
+      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
+
+      await navigateWithRemixNavigationContextAtom(renderResult, pathToRemixScene, 'home')
+      // await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'home')
+      expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
+      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixIndexPathLabel)
+    })
+
     it('navigating in one Remix scene does not affect the navigation state in the other', async () => {
       const renderResult = await renderRemixProject(projectWithMultipleRemixScenes())
 
@@ -2353,6 +2430,7 @@ async function navigateWithRemixSceneLabelButton(
     },
   )
   await renderResult.getDispatchFollowUpActionsFinished()
+  await wait(100) // the tests are flaky, this is an ugly way to try to fix it
 }
 
 const getPathInRemixSceneLabel = (
@@ -2372,6 +2450,20 @@ async function navigateWithRemixNavigationBarButton(
     },
   )
   await renderResult.getDispatchFollowUpActionsFinished()
+  await wait(100) // the tests are flaky, this is an ugly way to try to fix it
+}
+
+async function navigateWithRemixNavigationContextAtom(
+  renderResult: EditorRenderResult,
+  pathToRemixScene: ElementPath,
+  button: RemixSceneLabelButtonType,
+) {
+  expect(RemixNavigationForTests.current).not.toBeNull()
+  expect(RemixNavigationForTests.current![EP.toString(pathToRemixScene)]).not.toBeNull()
+
+  await RemixNavigationForTests.current![EP.toString(pathToRemixScene)]![button]()
+  await renderResult.getDispatchFollowUpActionsFinished()
+  await wait(100) // the tests are flaky, this is an ugly way to try to fix it
 }
 
 const getPathInRemixNavigationBar = (renderResult: EditorRenderResult) =>

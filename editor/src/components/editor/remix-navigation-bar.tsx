@@ -7,11 +7,13 @@ import {
   ActiveRemixSceneAtom,
   RemixNavigationAtom,
 } from '../canvas/remix/utopia-remix-root-component'
+import type { RemixNavigationAtomData } from '../canvas/remix/utopia-remix-root-component'
 import { Substores, useEditorState } from './store/store-hook'
 import { FlexRow, Tooltip, colorTheme } from '../../uuiui'
 import { stopPropagation } from '../inspector/common/inspector-utils'
 import * as EP from '../../core/shared/element-path'
 import { getRemixLocationLabel } from '../canvas/remix/remix-utils'
+import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
 
 export const RemixNavigationBarPathTestId = 'remix-navigation-bar-path'
 
@@ -20,8 +22,13 @@ export type RemixSceneLabelButtonType = 'back' | 'forward' | 'home'
 export const RemixNavigationBarButtonTestId = (button: RemixSceneLabelButtonType): string =>
   `remix-navigation-bar-button-${button}`
 
+export const RemixNavigationForTests: { current: RemixNavigationAtomData | null } = {
+  current: null,
+}
+
 export const RemixNavigationBar = React.memo(() => {
-  const [navigationControls] = useAtom(RemixNavigationAtom)
+  const navigationControls = useRemixNavigationAndExposeForTests()
+
   const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
 
   const isLiveMode = useEditorState(
@@ -121,3 +128,15 @@ export const RemixNavigationBar = React.memo(() => {
     </FlexRow>
   )
 })
+
+function useRemixNavigationAndExposeForTests() {
+  const [navigationControls] = useAtom(RemixNavigationAtom)
+
+  React.useEffect(() => {
+    if (IS_TEST_ENVIRONMENT) {
+      RemixNavigationForTests.current = navigationControls
+    }
+  }, [navigationControls])
+
+  return navigationControls
+}
