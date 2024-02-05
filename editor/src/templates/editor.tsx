@@ -27,11 +27,6 @@ import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorComponent } from '../components/editor/editor-component'
 import * as History from '../components/editor/history'
 import {
-  InternalPreviewTimeout,
-  previewIsAlive,
-  startPreviewConnectedMonitoring,
-} from '../components/editor/preview-report-handler'
-import {
   downloadGithubRepo,
   getLoginState,
   getUserConfiguration,
@@ -212,8 +207,6 @@ export class Editor {
   domWalkerMutableState: DomWalkerMutableStateData
 
   constructor() {
-    startPreviewConnectedMonitoring(this.boundDispatch)
-
     let emptyEditorState = createEditorState(this.boundDispatch)
     const derivedState = deriveState(
       emptyEditorState,
@@ -227,8 +220,6 @@ export class Editor {
     const history = History.init(emptyEditorState, derivedState)
 
     window.addEventListener('blur', this.resetStateOnBlur)
-
-    window.addEventListener('message', this.onMessage)
 
     const watchdogWorker = new RealWatchdogWorker()
 
@@ -395,14 +386,6 @@ export class Editor {
         })
       })
     })
-  }
-
-  onMessage = (event: MessageEvent): void => {
-    const eventData = event.data
-    if (isSendPreviewModel(eventData)) {
-      previewIsAlive(InternalPreviewTimeout)
-      this.boundDispatch([eventData], 'noone')
-    }
   }
 
   resetStateOnBlur = (): void => {
