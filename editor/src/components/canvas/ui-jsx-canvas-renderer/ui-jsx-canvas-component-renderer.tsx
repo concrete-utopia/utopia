@@ -8,7 +8,11 @@ import {
   isJSXElement,
 } from '../../../core/shared/element-template'
 import { optionalMap } from '../../../core/shared/optional-utils'
-import type { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
+import type {
+  DomWalkerInvalidatePathsCtxData,
+  UiJsxCanvasContextData,
+  VariableData,
+} from '../ui-jsx-canvas'
 import {
   DomWalkerInvalidatePathsCtxAtom,
   UiJsxCanvasCtxAtom,
@@ -33,6 +37,7 @@ import { useGetCodeAndHighlightBounds } from './ui-jsx-canvas-execution-scope'
 import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { objectMap } from '../../../core/shared/object-utils'
 
 export type ComponentRendererComponent = React.ComponentType<
   React.PropsWithChildren<{
@@ -183,7 +188,7 @@ export function createComponentRendererComponent(params: {
       })
     }
 
-    let definedWithinWithValues: MapLike<any> = {}
+    let definedWithinWithValues: MapLike<unknown> = {}
 
     if (utopiaJsxComponent.arbitraryJSBlock != null) {
       const lookupRenderer = createLookupRender(
@@ -206,6 +211,8 @@ export function createComponentRendererComponent(params: {
         highlightBounds,
         rerenderUtopiaContext.editedText,
         null,
+        {},
+        [],
       )
 
       scope[JSX_CANVAS_LOOKUP_FUNCTION_NAME] = utopiaCanvasJSXLookup(
@@ -226,6 +233,14 @@ export function createComponentRendererComponent(params: {
       const ownElementPath = optionalMap(
         (path) => EP.appendNewElementPath(path, getUtopiaID(element)),
         instancePath,
+      )
+
+      const spiedVariablesInScope: VariableData = objectMap(
+        (spiedValue) => ({
+          spiedValue: spiedValue,
+          insertionCeiling: null,
+        }),
+        definedWithinWithValues,
       )
 
       const renderedCoreElement = renderCoreElement(
@@ -251,7 +266,7 @@ export function createComponentRendererComponent(params: {
         code,
         highlightBounds,
         rerenderUtopiaContext.editedText,
-        definedWithinWithValues,
+        spiedVariablesInScope,
       )
 
       if (typeof renderedCoreElement === 'string' || typeof renderedCoreElement === 'number') {

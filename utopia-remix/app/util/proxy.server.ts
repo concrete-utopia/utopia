@@ -1,8 +1,13 @@
 import urljoin from "url-join";
-import { Env } from "../env.server";
+import { ServerEnvironment } from "../env.server";
 import { proxiedResponse } from "./api.server";
+import dns from "dns";
 
-const BASE_URL = Env.BackendURL;
+// this is a workaround for default DNS resolution order with Node > 17 (where ipv6 is first)
+// https://github.com/node-fetch/node-fetch/issues/1624#issuecomment-1235826631
+dns.setDefaultResultOrder("ipv4first");
+
+const BASE_URL = ServerEnvironment.BackendURL;
 
 function buildProxyUrl(url: URL, path: string | null): string {
   const { pathname, search } = url;

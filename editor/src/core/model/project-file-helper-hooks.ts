@@ -5,9 +5,9 @@ import { getOpenUIJSFile, getOpenUIJSFileKey } from '../../components/editor/sto
 import { useRefEditorState } from '../../components/editor/store/store-hook'
 import { RevisionsState, textFile, textFileContents } from '../shared/project-file-types'
 import type { SteganoTextData } from '../shared/stegano-text'
-import { getTextFileByPath } from '../../components/custom-code/code-file.test-utils'
 import type { EditorAction } from '../../components/editor/action-types'
 import { applyPrettier } from 'utopia-vscode-common'
+import { getTextFileByPath } from '../../components/assets'
 
 export function useReParseOpenProjectFile(): () => void {
   const dispatch = useDispatch()

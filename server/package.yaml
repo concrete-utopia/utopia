@@ -49,6 +49,7 @@ dependencies:
   - filepath
   - free
   - generic-lens
+  - generic-lens-core
   - github ==0.27
   - hashable
   - hoauth2

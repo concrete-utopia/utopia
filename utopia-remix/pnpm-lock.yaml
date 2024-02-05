@@ -2,35 +2,35 @@ lockfileVersion: 5.4
 
 specifiers:
   '@prisma/client': 5.9.0
-  '@remix-run/css-bundle': ^2.5.1
-  '@remix-run/dev': ^2.5.1
-  '@remix-run/node': ^2.5.1
-  '@remix-run/react': ^2.5.1
-  '@remix-run/serve': ^2.5.1
-  '@types/node': ^20.11.15
-  '@types/react': ^18.2.20
-  '@types/react-dom': ^18.2.7
-  '@typescript-eslint/eslint-plugin': ^6.7.4
+  '@remix-run/css-bundle': 2.5.1
+  '@remix-run/dev': 2.5.1
+  '@remix-run/node': 2.5.1
+  '@remix-run/react': 2.5.1
+  '@remix-run/serve': 2.5.1
+  '@types/node': 20.11.15
+  '@types/react': 18.2.20
+  '@types/react-dom': 18.2.7
+  '@typescript-eslint/eslint-plugin': 6.7.4
   '@typescript-eslint/parser': '>=6.0.0 <7.0.0'
-  dotenv: ^16.4.1
-  eslint: ^8.38.0
-  eslint-config-prettier: ^9.0.0
-  eslint-import-resolver-typescript: ^3.6.1
-  eslint-plugin-import: ^2.28.1
-  eslint-plugin-jsx-a11y: ^6.7.1
-  eslint-plugin-react: ^7.33.2
-  eslint-plugin-react-hooks: ^4.6.0
-  isbot: ^4
+  dotenv: 16.4.1
+  eslint: 8.38.0
+  eslint-config-prettier: 9.0.0
+  eslint-import-resolver-typescript: 3.6.1
+  eslint-plugin-import: 2.28.1
+  eslint-plugin-jsx-a11y: 6.7.1
+  eslint-plugin-react: 7.33.2
+  eslint-plugin-react-hooks: 4.6.0
+  isbot: '4'
   prettier: 3.0.3
   prisma: 5.9.0
   prisma-client: link:node_modules/@utopia/prisma-client
-  react: ^18.2.0
-  react-dom: ^18.2.0
-  tailwindcss: ^3.4.1
-  tiny-invariant: ^1.3.1
-  ts-node: ^10.9.2
-  typescript: ^5.1.6
-  url-join: ^5.0.0
+  react: 18.2.0
+  react-dom: 18.2.0
+  tailwindcss: 3.4.1
+  tiny-invariant: 1.3.1
+  ts-node: 10.9.2
+  typescript: 5.1.6
+  url-join: 5.0.0
 
 dependencies:
   '@prisma/client': 5.9.0_prisma@5.9.0
@@ -47,8 +47,8 @@ dependencies:
   url-join: 5.0.0
 
 devDependencies:
-  '@remix-run/dev': 2.5.1_2ehtukjicyjh6gg5wfavztjrmu
-  '@types/node': 20.11.16
+  '@remix-run/dev': 2.5.1_mnvgn3pnbscn2kjs5c6zondszi
+  '@types/node': 20.11.15
   '@types/react': 18.2.20
   '@types/react-dom': 18.2.7
   '@typescript-eslint/eslint-plugin': 6.7.4_shtvzkt6s7gm4npckmp2z5nvfi
@@ -63,7 +63,7 @@ devDependencies:
   prettier: 3.0.3
   prisma: 5.9.0
   tailwindcss: 3.4.1_ts-node@10.9.2
-  ts-node: 10.9.2_gonswrtmif7bgsvuzxzumxibei
+  ts-node: 10.9.2_jl7o2ctqvp5kcdsgrtcvc5qrce
   typescript: 5.1.6
 
 packages:
@@ -1084,7 +1084,7 @@ packages:
     engines: {node: '>=18.0.0'}
     dev: false
 
-  /@remix-run/dev/2.5.1_2ehtukjicyjh6gg5wfavztjrmu:
+  /@remix-run/dev/2.5.1_mnvgn3pnbscn2kjs5c6zondszi:
     resolution: {integrity: sha512-IrYhWANubH+WM62Wz55n8NWT5kBqfbyytXDFlP0VoZLrr1IpJf2GtaT4IA+CODMaNoeXeMACOD5Tw5/Y2bO5lA==}
     engines: {node: '>=18.0.0'}
     hasBin: true
@@ -1115,7 +1115,7 @@ packages:
       '@remix-run/serve': 2.5.1_typescript@5.1.6
       '@remix-run/server-runtime': 2.5.1_typescript@5.1.6
       '@types/mdx': 2.0.11
-      '@vanilla-extract/integration': 6.5.0_@types+node@20.11.16
+      '@vanilla-extract/integration': 6.5.0_@types+node@20.11.15
       arg: 5.0.2
       cacache: 17.1.4
       chalk: 4.1.2
@@ -1468,6 +1468,12 @@ packages:
     resolution: {integrity: sha512-nG96G3Wp6acyAgJqGasjODb+acrI7KltPiRxzHPXnP3NgI28bpQDRv53olbqGXbfcgF5aiiHmO3xpwEpS5Ld9g==}
     dev: true
 
+  /@types/node/20.11.15:
+    resolution: {integrity: sha512-gscmuADZfvNULx1eyirVbr3kVOVZtpQtzKMCZpeSZcN6MfbkRXAR4s9/gsQ4CzxLHw6EStDtKLNtSDL3vbq05A==}
+    dependencies:
+      undici-types: 5.26.5
+    dev: true
+
   /@types/node/20.11.16:
     resolution: {integrity: sha512-gKb0enTmRCzXSSUJDq6/sPcqrfCv2mkkG6Jt/clpn5eiCbKTY+SgZUxo+p8ZKMof5dCp9vHQUAB7wOUTod22wQ==}
     dependencies:
@@ -1702,7 +1708,7 @@ packages:
       outdent: 0.8.0
     dev: true
 
-  /@vanilla-extract/integration/6.5.0_@types+node@20.11.16:
+  /@vanilla-extract/integration/6.5.0_@types+node@20.11.15:
     resolution: {integrity: sha512-E2YcfO8vA+vs+ua+gpvy1HRqvgWbI+MTlUpxA8FvatOvybuNcWAY0CKwQ/Gpj7rswYKtC6C7+xw33emM6/ImdQ==}
     dependencies:
       '@babel/core': 7.23.9
@@ -1716,8 +1722,8 @@ packages:
       lodash: 4.17.21
       mlly: 1.5.0
       outdent: 0.8.0
-      vite: 5.0.12_@types+node@20.11.16
-      vite-node: 1.2.2_@types+node@20.11.16
+      vite: 5.0.12_@types+node@20.11.15
+      vite-node: 1.2.2_@types+node@20.11.15
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -5010,7 +5016,7 @@ packages:
     dependencies:
       lilconfig: 3.0.0
       postcss: 8.4.33
-      ts-node: 10.9.2_gonswrtmif7bgsvuzxzumxibei
+      ts-node: 10.9.2_jl7o2ctqvp5kcdsgrtcvc5qrce
       yaml: 2.3.4
     dev: true
 
@@ -5963,7 +5969,7 @@ packages:
     resolution: {integrity: sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA==}
     dev: true
 
-  /ts-node/10.9.2_gonswrtmif7bgsvuzxzumxibei:
+  /ts-node/10.9.2_jl7o2ctqvp5kcdsgrtcvc5qrce:
     resolution: {integrity: sha512-f0FFpIdcHgn8zcPSbf1dRevwt047YMnaiJM3u2w2RewrB+fob/zePZcrOyQoLMMO7aBIddLcQIEK5dYjkLnGrQ==}
     hasBin: true
     peerDependencies:
@@ -5982,7 +5988,7 @@ packages:
       '@tsconfig/node12': 1.0.11
       '@tsconfig/node14': 1.0.3
       '@tsconfig/node16': 1.0.4
-      '@types/node': 20.11.16
+      '@types/node': 20.11.15
       acorn: 8.11.3
       acorn-walk: 8.3.2
       arg: 4.1.3
@@ -6264,7 +6270,7 @@ packages:
       vfile-message: 3.1.4
     dev: true
 
-  /vite-node/1.2.2_@types+node@20.11.16:
+  /vite-node/1.2.2_@types+node@20.11.15:
     resolution: {integrity: sha512-1as4rDTgVWJO3n1uHmUYqq7nsFgINQ9u+mRcXpjeOMJUmviqNKjcZB7UfRZrlM7MjYXMKpuWp5oGkjaFLnjawg==}
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
@@ -6273,7 +6279,7 @@ packages:
       debug: 4.3.4
       pathe: 1.1.2
       picocolors: 1.0.0
-      vite: 5.0.12_@types+node@20.11.16
+      vite: 5.0.12_@types+node@20.11.15
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -6285,7 +6291,7 @@ packages:
       - terser
     dev: true
 
-  /vite/5.0.12_@types+node@20.11.16:
+  /vite/5.0.12_@types+node@20.11.15:
     resolution: {integrity: sha512-4hsnEkG3q0N4Tzf1+t6NdN9dg/L3BM+q8SWgbSPnJvrgH2kgdyzfVJwbR1ic69/4uMJJ/3dqDZZE5/WwqW8U1w==}
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
@@ -6313,7 +6319,7 @@ packages:
       terser:
         optional: true
     dependencies:
-      '@types/node': 20.11.16
+      '@types/node': 20.11.15
       esbuild: 0.19.12
       postcss: 8.4.33
       rollup: 4.9.6

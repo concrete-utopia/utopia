@@ -689,6 +689,7 @@ describe('INSERT_INSERTABLE', () => {
       'Spring',
       [],
       null,
+      null,
     )
 
     const targetPath = EP.elementPath([

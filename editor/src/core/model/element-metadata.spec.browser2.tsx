@@ -37,6 +37,7 @@ import { elementOnlyHasTextChildren } from './element-template-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from './scene-utils'
 import type { HugPropertyWidthHeight } from '../shared/element-template'
 import { contentsToTree } from '../../components/assets'
+import type { VariableData } from '../../components/canvas/ui-jsx-canvas'
 
 describe('Frame calculation for fragments', () => {
   // Components with root fragments do not appear in the DOM, so the dom walker does not find them, and they
@@ -1323,37 +1324,49 @@ describe('record variable values', () => {
   it('records variables that are defined inside the component', async () => {
     const editor = await renderTestEditorWithCode(ProjectWithVariables, 'await-first-dom-report')
     const { variablesInScope } = editor.getEditorState().editor
-    expect(variablesInScope['sb/scene/pg:root']).toEqual({
-      definedInsideNumber: 12,
+    expect(variablesInScope['sb/scene/pg:root']).toEqual<VariableData>({
+      definedInsideNumber: { spiedValue: 12, insertionCeiling: null },
       definedInsideObject: {
-        prop: [33],
+        spiedValue: {
+          prop: [33],
+        },
+        insertionCeiling: null,
       },
-      definedInsideString: 'hello',
-      functionResult: 35,
+      definedInsideString: { spiedValue: 'hello', insertionCeiling: null },
+      functionResult: { spiedValue: 35, insertionCeiling: null },
     })
-    expect(variablesInScope['sb/scene/pg:root/111']).toEqual({
-      definedInsideNumber: 12,
+    expect(variablesInScope['sb/scene/pg:root/111']).toEqual<VariableData>({
+      definedInsideNumber: { spiedValue: 12, insertionCeiling: null },
       definedInsideObject: {
-        prop: [33],
+        spiedValue: {
+          prop: [33],
+        },
+        insertionCeiling: null,
       },
-      definedInsideString: 'hello',
-      functionResult: 35,
+      definedInsideString: { spiedValue: 'hello', insertionCeiling: null },
+      functionResult: { spiedValue: 35, insertionCeiling: null },
     })
-    expect(variablesInScope['sb/scene/pg:root/222']).toEqual({
-      definedInsideNumber: 12,
+    expect(variablesInScope['sb/scene/pg:root/222']).toEqual<VariableData>({
+      definedInsideNumber: { spiedValue: 12, insertionCeiling: null },
       definedInsideObject: {
-        prop: [33],
+        spiedValue: {
+          prop: [33],
+        },
+        insertionCeiling: null,
       },
-      definedInsideString: 'hello',
-      functionResult: 35,
+      definedInsideString: { spiedValue: 'hello', insertionCeiling: null },
+      functionResult: { spiedValue: 35, insertionCeiling: null },
     })
-    expect(variablesInScope['sb/scene/pg:root/333']).toEqual({
-      definedInsideNumber: 12,
+    expect(variablesInScope['sb/scene/pg:root/333']).toEqual<VariableData>({
+      definedInsideNumber: { spiedValue: 12, insertionCeiling: null },
       definedInsideObject: {
-        prop: [33],
+        spiedValue: {
+          prop: [33],
+        },
+        insertionCeiling: null,
       },
-      definedInsideString: 'hello',
-      functionResult: 35,
+      definedInsideString: { spiedValue: 'hello', insertionCeiling: null },
+      functionResult: { spiedValue: 35, insertionCeiling: null },
     })
   })
 })

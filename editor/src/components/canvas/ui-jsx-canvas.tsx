@@ -102,8 +102,13 @@ export const ElementsToRerenderGLOBAL: { current: ElementsToRerender } = {
   current: 'rerender-all-elements',
 }
 
+export interface VariableMetadata {
+  spiedValue: unknown
+  insertionCeiling: ElementPath | null
+}
+
 export interface VariableData {
-  [name: string]: unknown
+  [name: string]: VariableMetadata
 }
 
 export interface VariablesInScope {
