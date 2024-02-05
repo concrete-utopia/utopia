@@ -113,6 +113,30 @@ export function insertionPathToString(insertionPath: InsertionPath): string {
     assertNever(insertionPath)
   }
 }
+export function getFragmentUidFromInsertionBehaviour(
+  insertionBehaviour: ConditionalClauseInsertBehavior,
+): string | null {
+  switch (insertionBehaviour.type) {
+    case 'replace-with-elements-wrapped-in-fragment':
+    case 'wrap-in-fragment-and-append-elements':
+      return insertionBehaviour.fragmentUID
+    case 'replace-with-single-element':
+      return null
+    default:
+      assertNever(insertionBehaviour)
+  }
+}
+
+export function getFragmentUidFromInsertionPath(insertionPath: InsertionPath): string | null {
+  switch (insertionPath.type) {
+    case 'CHILD_INSERTION':
+      return null
+    case 'CONDITIONAL_CLAUSE_INSERTION':
+      return getFragmentUidFromInsertionBehaviour(insertionPath.insertBehavior)
+    default:
+      assertNever(insertionPath)
+  }
+}
 
 export function commonInsertionPath(
   metadata: ElementInstanceMetadataMap,
