@@ -3,8 +3,8 @@ import { ServerEnvironment } from "../env.server";
 import { proxiedResponse } from "./api.server";
 import dns from "dns";
 
-if (ServerEnvironment.environment === "development") {
-  // this is a workaround for default DNS resolution order with Node > 17 (where ipv6 is first)
+if (ServerEnvironment.environment === "local") {
+  // this is a workaround for default DNS resolution order with Node > 17 (where ipv6 comes first)
   // https://github.com/node-fetch/node-fetch/issues/1624#issuecomment-1235826631
   dns.setDefaultResultOrder("ipv4first");
 }
