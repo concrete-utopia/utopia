@@ -43,7 +43,7 @@
     "branches": "REACT_APP_ENVIRONMENT_CONFIG=branches REACT_APP_AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID REACT_APP_AUTH0_ENDPOINT=$AUTH0_ENDPOINT REACT_APP_COMMIT_HASH=$UTOPIA_SHA WEBPACK_MODE='branches' NODE_OPTIONS=\"--max_old_space_size=6656 $NODE_OPENSSL_OPTION\" webpack",
     "branches-print-json": "pnpm run branches --  --json=lib/branches-stats.json",
     "preinstall": "npx only-allow pnpm",
-    "eslint-check": "eslint --quiet --ignore-path ./.eslintignore --config ./.eslintrc.js --ext .ts --ext .tsx src ../utopia-api/src ../utopia-vscode-extension/src ../utopia-vscode-common/src ../puppeteer-tests/src ../website-next/",
+    "eslint-check": "eslint --quiet --ignore-path ./.eslintignore --config ./.eslintrc.js --ext .ts --ext .tsx src ../utopia-api/src ../utopia-vscode-extension/src ../utopia-vscode-common/src ../puppeteer-tests/src ../website-next/ ../utopia-remix/",
     "prettier-check": "prettier --ignore-path ../.prettierignore --config ../prettier.config.js --check src/** ../utopia-api/src/**/* ../utopia-vscode-common/src/** ../utopia-vscode-extension/src/** ../puppeteer-tests/src/** ../website-next/pages/** ../website-next/components/**",
     "prettier-fix": "prettier --ignore-path ../.prettierignore --config ../prettier.config.js --write src/** ../utopia-api/src/**/* ../utopia-vscode-common/src/** ../utopia-vscode-extension/src/** ../puppeteer-tests/src/** ../website-next/pages/** ../website-next/components/**",
     "parse-print-analysis": "npx -s sh ts-node --require ignore-styles --transpile-only ./src/scripts/parse-print-analysis.ts",

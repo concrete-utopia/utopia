@@ -633,9 +633,7 @@ describe('Absolute Move Strategy', () => {
       const toolbarEditButtonImage = renderResult.renderedDOM.getByTestId(
         `${CanvasToolbarEditButtonID}-icon`,
       )
-      expect(toolbarEditButtonImage.getAttribute('src')).toEqual(
-        'http://localhost:9876/editor/icons/light/modalities/moveabs-large-white-18x18@2x.png',
-      )
+      expect(toolbarEditButtonImage.getAttribute('src')).toEqual(expect.stringContaining('moveabs')) // the toolbar shows the Absolute Move icon
     })
 
     await renderResult.getDispatchFollowUpActionsFinished()

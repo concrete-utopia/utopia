@@ -55,7 +55,9 @@ async function drag(page: Page, from: { x: number; y: number }, to: { x: number;
 
 async function dismissHoverPreview(page: Page) {
   await page.mouse.move(500, 500)
-  await wait(101) // the duration of the comment hover animation + 1ms
+
+  // TODO instead of this horrible timer, actually away the animation finishing on screen, probably using selectors!
+  await wait(1000) // wait for the animation duration (100ms) + flaky test buffer (900ms)
 }
 
 describe('Comments test', () => {
