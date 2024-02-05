@@ -20,6 +20,7 @@ import {
   offsetPoint,
 } from '../../../../core/shared/math-utils'
 import type { CanvasPoint } from '../../../../core/shared/math-utils'
+import { optionalMap } from '../../../../core/shared/optional-utils'
 import type {
   ElementPath,
   ElementPathPart,
@@ -42,6 +43,7 @@ import type {
 import { trueUpGroupElementChanged } from '../../../editor/store/editor-state'
 import {
   childInsertionPath,
+  getFragmentUidFromInsertionPath,
   replaceWithElementsWrappedInFragmentBehaviour,
 } from '../../../editor/store/insertion-path'
 import type { CanvasCommand } from '../../commands/commands'
@@ -166,7 +168,10 @@ function pasteChoiceCommon(
         )
       : front()
 
-  let fixedUIDMappingNewUIDS: Array<string> = []
+  let fixedUIDMappingNewUIDS: Array<string> =
+    optionalMap((wrapperUid) => [wrapperUid], getFragmentUidFromInsertionPath(target.parentPath)) ??
+    []
+
   let oldPathToNewPathMapping: OldPathToNewPathMapping = {}
   const elementsToInsert: Array<ElementOrPathToInsert> =
     pasteContext.elementPasteWithMetadata.elements.map((elementPaste) => {
