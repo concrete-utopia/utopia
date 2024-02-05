@@ -214,23 +214,25 @@ export function isImage(str: string): boolean {
   return imgPattern.test(lowerCaseStr) || lowerCaseStr.startsWith('data:image/')
 }
 
+type SemaphoreState = 'running' | 'not-running'
+
 export function wrapWithSemaphore<Args extends unknown[], ReturnValue>(
   label: string,
   inner: (...args: Args) => ReturnValue,
 ): (...args: Args) => ReturnValue {
   // when this is set to `true`, `inner` can be called
-  let running: boolean = false
+  let semaphoreState: SemaphoreState = 'not-running'
 
   return (...args: Args): ReturnValue => {
-    if (running) {
+    if (semaphoreState === 'running') {
       // console.trace('x')
       throw new Error(`${label} is forbidden from being called recursively`)
     }
 
-    running = false
+    semaphoreState = 'running'
 
     const result = inner(...args)
-    running = true
+    semaphoreState = 'not-running'
     return result
   }
 }
