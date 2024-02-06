@@ -1,7 +1,7 @@
 lockfileVersion: 5.4
 
 specifiers:
-  '@babel/preset-env': ^7.23.9
+  '@babel/preset-env': 7.23.9
   '@prisma/client': 5.9.0
   '@remix-run/css-bundle': 2.5.1
   '@remix-run/dev': 2.5.1
