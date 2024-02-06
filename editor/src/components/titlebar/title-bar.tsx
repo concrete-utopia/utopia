@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { createSelector } from 'reselect'
 import { auth0Url } from '../../common/env-vars'
 import { getUserPicture } from '../../common/user'
@@ -283,6 +283,11 @@ export const TitleBarUserProfile = React.memo((props: { panelData: StoredPanel }
   }, [])
   const setIsHoveredFalse = React.useCallback(() => {
     setIsHovered(false)
+  }, [])
+
+  useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log('TitleBarUserProfile ready')
   }, [])
 
   return (
