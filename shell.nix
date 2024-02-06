@@ -647,6 +647,9 @@ let
     (pkgs.writeScriptBin "build-editor-staging" ''
       #!/usr/bin/env bash
       set -e
+      install-utopia-api
+      build-utopia-vscode-common
+      install-website
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${pnpm}/bin/pnpm install --unsafe-perm
       ${pnpm}/bin/pnpm run staging
