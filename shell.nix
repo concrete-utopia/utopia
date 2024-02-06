@@ -240,6 +240,12 @@ let
       build-utopia-vscode-extension
       build-vscode
     '')
+    (pkgs.writeScriptBin "pull-extension" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
+      nix-shell --run pull-extension-inner
+    '')
     (pkgs.writeScriptBin "check-tool-versions" ''
       #! /usr/bin/env nix-shell
       #! nix-shell -p "haskellPackages.ghcWithPackages (pkgs: with pkgs; [async process])" -i runhaskell
@@ -525,12 +531,6 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-extension
       ${pnpm}/bin/pnpm install
       ${pnpm}/bin/pnpm run watch-dev
-    '')
-    (pkgs.writeScriptBin "pull-extension" ''
-      #!/usr/bin/env bash
-      set -e
-      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
-      nix-shell --run pull-extension-inner
     '')
     (pkgs.writeScriptBin "watch-vscode-build-extension-only" ''
       #!/usr/bin/env bash
