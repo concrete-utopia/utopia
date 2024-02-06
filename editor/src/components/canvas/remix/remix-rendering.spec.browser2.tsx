@@ -2379,11 +2379,13 @@ async function clickLinkWithTestId(editor: EditorRenderResult, testId: string) {
 async function clickRemixLink(editor: EditorRenderResult) {
   await clickLinkWithTestId(editor, 'remix-link')
   await editor.getDispatchFollowUpActionsFinished()
+  await wait(10)
 }
 
 async function clickPostLink(editor: EditorRenderResult) {
   await clickLinkWithTestId(editor, 'post-link')
   await editor.getDispatchFollowUpActionsFinished()
+  await wait(10)
 }
 
 async function navigateWithRemixSceneLabelButton(
@@ -2391,6 +2393,7 @@ async function navigateWithRemixSceneLabelButton(
   pathToRemixScene: ElementPath,
   button: RemixSceneLabelButtonType,
 ) {
+  await wait(10)
   await mouseClickAtPoint(
     renderResult.renderedDOM.getByTestId(RemixSceneLabelButtonTestId(pathToRemixScene, button)),
     {
@@ -2399,6 +2402,7 @@ async function navigateWithRemixSceneLabelButton(
     },
   )
   await renderResult.getDispatchFollowUpActionsFinished()
+  await wait(10)
 }
 
 const getPathInRemixSceneLabel = (
@@ -2410,6 +2414,7 @@ async function navigateWithRemixNavigationBarButton(
   renderResult: EditorRenderResult,
   button: RemixSceneLabelButtonType,
 ) {
+  await wait(10)
   await mouseClickAtPoint(
     renderResult.renderedDOM.getByTestId(RemixNavigationBarButtonTestId(button)),
     {
@@ -2418,6 +2423,7 @@ async function navigateWithRemixNavigationBarButton(
     },
   )
   await renderResult.getDispatchFollowUpActionsFinished()
+  await wait(10)
 }
 
 const getPathInRemixNavigationBar = (renderResult: EditorRenderResult) =>
