@@ -367,4 +367,5 @@ function resolveRemixNavigationFinishedPromiseForTests() {
 
 export function resetRemixNavigationFinishedPromiseForTests() {
   RemixNavigationFinishedPromiseForTests.current = defer()
+  RemixNavigationCallbackCalledPromiseForTests.current = defer()
 }
