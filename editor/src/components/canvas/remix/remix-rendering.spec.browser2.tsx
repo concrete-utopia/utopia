@@ -60,6 +60,11 @@ import {
   type MetaCanvasStrategy,
   RegisteredCanvasStrategies,
 } from '../canvas-strategies/canvas-strategies'
+import {
+  RemixNavigationFinishedPromiseForTests,
+  resetRemixNavigationFinishedPromise,
+} from './utopia-remix-root-component'
+import { defer } from '../../../utils/utils'
 
 const DefaultRouteTextContent = 'Hello Remix!'
 const RootTextContent = 'This is root!'
@@ -2377,17 +2382,11 @@ async function clickLinkWithTestId(editor: EditorRenderResult, testId: string) {
 }
 
 async function clickRemixLink(editor: EditorRenderResult) {
-  await wait(10)
   await clickLinkWithTestId(editor, 'remix-link')
-  await editor.getDispatchFollowUpActionsFinished()
-  await wait(10)
 }
 
 async function clickPostLink(editor: EditorRenderResult) {
-  await wait(10)
   await clickLinkWithTestId(editor, 'post-link')
-  await editor.getDispatchFollowUpActionsFinished()
-  await wait(10)
 }
 
 async function navigateWithRemixSceneLabelButton(
@@ -2395,7 +2394,7 @@ async function navigateWithRemixSceneLabelButton(
   pathToRemixScene: ElementPath,
   button: RemixSceneLabelButtonType,
 ) {
-  await wait(10)
+  resetRemixNavigationFinishedPromise()
   await mouseClickAtPoint(
     renderResult.renderedDOM.getByTestId(RemixSceneLabelButtonTestId(pathToRemixScene, button)),
     {
@@ -2403,8 +2402,7 @@ async function navigateWithRemixSceneLabelButton(
       y: 2,
     },
   )
-  await renderResult.getDispatchFollowUpActionsFinished()
-  await wait(10)
+  await RemixNavigationFinishedPromiseForTests.current
 }
 
 const getPathInRemixSceneLabel = (
@@ -2416,7 +2414,7 @@ async function navigateWithRemixNavigationBarButton(
   renderResult: EditorRenderResult,
   button: RemixSceneLabelButtonType,
 ) {
-  await wait(10)
+  resetRemixNavigationFinishedPromise()
   await mouseClickAtPoint(
     renderResult.renderedDOM.getByTestId(RemixNavigationBarButtonTestId(button)),
     {
@@ -2424,8 +2422,7 @@ async function navigateWithRemixNavigationBarButton(
       y: 2,
     },
   )
-  await renderResult.getDispatchFollowUpActionsFinished()
-  await wait(10)
+  await RemixNavigationFinishedPromiseForTests.current
 }
 
 const getPathInRemixNavigationBar = (renderResult: EditorRenderResult) =>

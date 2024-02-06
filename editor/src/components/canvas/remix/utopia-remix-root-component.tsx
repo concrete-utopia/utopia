@@ -19,6 +19,8 @@ import { CreateRemixDerivedDataRefsGLOBAL } from '../../editor/store/remix-deriv
 import { patchRoutesWithContext } from '../../../third-party/remix/create-remix-stub'
 import type { AppLoadContext } from '@remix-run/server-runtime'
 import { wait } from '../../../utils/utils.test-utils'
+import { defer } from '../../../utils/utils'
+import { IS_TEST_ENVIRONMENT } from '../../../common/env-vars'
 
 type RouteModule = RouteModules[keyof RouteModules]
 type RouterType = ReturnType<typeof createMemoryRouter>
@@ -38,6 +40,10 @@ export interface RemixNavigationAtomData {
 
 export const ActiveRemixSceneAtom = atom<ElementPath>(EP.emptyElementPath)
 export const RemixNavigationAtom = atom<RemixNavigationAtomData>({})
+
+export const RemixNavigationFinishedPromiseForTests: { current: ReturnType<typeof defer> } = {
+  current: defer(),
+}
 
 export function useRemixNavigationContext(
   scenePath: ElementPath | null,
@@ -259,10 +265,22 @@ export const UtopiaRemixRootComponent = (props: UtopiaRemixRootComponentProps) =
         return {
           ...current,
           [EP.toString(basePath)]: {
-            forward: () => innerRouter.navigate(1),
-            back: () => innerRouter.navigate(-1),
-            home: () => innerRouter.navigate('/'),
-            navigate: (loc: string) => innerRouter.navigate(loc),
+            forward: async () => {
+              await innerRouter.navigate(1)
+              resolveRemixNavigationFinishedPromiseForTests()
+            },
+            back: async () => {
+              await innerRouter.navigate(-1)
+              resolveRemixNavigationFinishedPromiseForTests()
+            },
+            home: async () => {
+              await innerRouter.navigate('/')
+              resolveRemixNavigationFinishedPromiseForTests()
+            },
+            navigate: async (loc: string) => {
+              await innerRouter.navigate(loc)
+              resolveRemixNavigationFinishedPromiseForTests()
+            },
             location: location,
             entries: updatedEntries,
           },
@@ -336,4 +354,14 @@ export const UtopiaRemixRootComponent = (props: UtopiaRemixRootComponentProps) =
       </OutletPathContext.Provider>
     </RemixContext.Provider>
   )
+}
+
+function resolveRemixNavigationFinishedPromiseForTests() {
+  if (IS_TEST_ENVIRONMENT) {
+    RemixNavigationFinishedPromiseForTests.current.resolve()
+  }
+}
+
+export function resetRemixNavigationFinishedPromise() {
+  RemixNavigationFinishedPromiseForTests.current = defer()
 }
