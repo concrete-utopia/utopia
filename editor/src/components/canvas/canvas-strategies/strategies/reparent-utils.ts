@@ -618,7 +618,7 @@ export function applyElementCeilingToReparentTarget(
               // If the intended parent path is above the ceiling path then
               // change it to the ceiling path instead.
               const ceilingStaticPath = EP.dynamicPathToStaticPath(elementCeiling)
-              if (EP.depth(intendedParentPath) < EP.depth(ceilingStaticPath)) {
+              if (EP.fullDepth(intendedParentPath) < EP.fullDepth(ceilingStaticPath)) {
                 // Make sure it's valid to insert into.
                 if (
                   canInsertIntoTarget(

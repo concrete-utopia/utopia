@@ -32,6 +32,97 @@ interface TranspileResult {
   sourceMap: RawSourceMap
 }
 
+function addIdentifier(identifiers: Array<string>, toAdd: BabelTypes.Identifier): void {
+  identifiers.push(toAdd.name)
+}
+
+function getIdentifiersFromFunctionParam(
+  param: BabelTypes.Identifier | BabelTypes.Pattern | BabelTypes.RestElement,
+): Array<string> {
+  function fromObjectPattern(objectPattern: BabelTypes.ObjectPattern): Array<string> {
+    let identifiers: Array<string> = []
+    for (const property of objectPattern.properties) {
+      if (BabelTypes.isIdentifier(property)) {
+        addIdentifier(identifiers, property)
+      } else if (BabelTypes.isObjectProperty(property)) {
+        if (BabelTypes.isIdentifier(property.key)) {
+          identifiers.push(...getIdentifiersFromFunctionParam(property.key))
+        }
+      }
+    }
+    return identifiers
+  }
+
+  function fromArrayPattern(arrayPattern: BabelTypes.ArrayPattern): Array<string> {
+    let identifiers: Array<string> = []
+    for (const element of arrayPattern.elements) {
+      if (element != null) {
+        if (BabelTypes.isIdentifier(element)) {
+          addIdentifier(identifiers, element)
+        } else if (BabelTypes.isPattern(element)) {
+          identifiers.push(...getIdentifiersFromFunctionParam(element))
+        }
+      }
+    }
+    return identifiers
+  }
+
+  function fromAssignmentPattern(assignmentPattern: BabelTypes.AssignmentPattern): Array<string> {
+    if (BabelTypes.isIdentifier(assignmentPattern.left)) {
+      return [assignmentPattern.left.name]
+    } else if (BabelTypes.isObjectPattern(assignmentPattern.left)) {
+      return fromObjectPattern(assignmentPattern.left)
+    } else if (BabelTypes.isArrayPattern(assignmentPattern.left)) {
+      return fromArrayPattern(assignmentPattern.left)
+    } else if (BabelTypes.isMemberExpression(assignmentPattern.left)) {
+      if (BabelTypes.isIdentifier(assignmentPattern.left.property)) {
+        return [assignmentPattern.left.property.name]
+      } else {
+        return []
+      }
+    } else {
+      return []
+    }
+  }
+
+  if (BabelTypes.isIdentifier(param)) {
+    return [param.name]
+  } else if (BabelTypes.isPattern(param)) {
+    if (BabelTypes.isAssignmentPattern(param)) {
+      return fromAssignmentPattern(param)
+    } else if (BabelTypes.isObjectPattern(param)) {
+      return fromObjectPattern(param)
+    } else if (BabelTypes.isArrayPattern(param)) {
+      return fromArrayPattern(param)
+    } else {
+      return []
+    }
+  } else if (BabelTypes.isRestElement(param)) {
+    // Not needed to be handled I don't believe.
+    return []
+  } else {
+    return []
+  }
+}
+
+function identifyFunctionParameters(
+  path: BabelTraverse.NodePath<BabelTraverse.Node>,
+): Array<string> {
+  let result: Array<string> = []
+  if (path.parentPath != null) {
+    result.push(...identifyFunctionParameters(path.parentPath))
+  }
+  if (
+    BabelTypes.isArrowFunctionExpression(path.node) ||
+    BabelTypes.isFunctionExpression(path.node)
+  ) {
+    for (const param of path.node.params) {
+      result.push(...getIdentifiersFromFunctionParam(param))
+    }
+  }
+  return result
+}
+
 /**
  * Here we transform the code originating from an arbitrary JSX block.
  * The elements passed when identified in the code will be replaced
@@ -51,22 +142,48 @@ function babelRewriteJSExpressionCode(
   ): void {
     if (insertCanvasRenderCall) {
       const functionIdentifier = BabelTypes.identifier(JSX_CANVAS_LOOKUP_FUNCTION_NAME)
-      const definedElsewhere = getDefinedElsewhereFromElement(elementWithin)
-      const passthroughProps = definedElsewhere.map((elsewhere) => {
-        return BabelTypes.objectProperty(
-          BabelTypes.identifier(elsewhere),
-          BabelTypes.identifier(elsewhere),
+
+      let objectExpressionProperties: Array<
+        [BabelTypes.Identifier, BabelTypes.ObjectProperty['value']]
+      > = []
+
+      function addOrReplaceInExpressionProperties(
+        identifier: BabelTypes.Identifier,
+        value: BabelTypes.ObjectProperty['value'],
+      ): void {
+        objectExpressionProperties = objectExpressionProperties.filter(([entryIdentifier, _]) => {
+          return entryIdentifier.name !== identifier.name
+        })
+        objectExpressionProperties.push([identifier, value])
+      }
+
+      const identifiersOfArrowExpressions = identifyFunctionParameters(path)
+      for (const identifierOfArrowExpression of identifiersOfArrowExpressions) {
+        addOrReplaceInExpressionProperties(
+          BabelTypes.identifier(identifierOfArrowExpression),
+          BabelTypes.identifier(identifierOfArrowExpression),
         )
-      })
-      const definedElsewherePassthrough = BabelTypes.objectExpression(
-        passthroughProps.concat(
-          BabelTypes.objectProperty(
-            BabelTypes.identifier('callerThis'),
-            BabelTypes.thisExpression(),
-          ),
-        ),
+      }
+
+      const definedElsewhere = getDefinedElsewhereFromElement(elementWithin)
+      for (const definedElsewhereName of definedElsewhere) {
+        addOrReplaceInExpressionProperties(
+          BabelTypes.identifier(definedElsewhereName),
+          BabelTypes.identifier(definedElsewhereName),
+        )
+      }
+      addOrReplaceInExpressionProperties(
+        BabelTypes.identifier('callerThis'),
+        BabelTypes.thisExpression(),
       )
-      const callArguments = [BabelTypes.stringLiteral(uid), definedElsewherePassthrough]
+      const callArguments = [
+        BabelTypes.stringLiteral(uid),
+        BabelTypes.objectExpression(
+          objectExpressionProperties.map(([identifier, value]) => {
+            return BabelTypes.objectProperty(identifier, value)
+          }),
+        ),
+      ]
       // Weird cast because even though they're the same type there's a weird
       // disagreement between BabelTypes.Node and BabelTraverse.Node.
       const callExpression: BabelTraverse.Node = BabelTypes.callExpression(
