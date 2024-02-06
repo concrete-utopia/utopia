@@ -1345,7 +1345,7 @@ describe('Remix navigation', () => {
 
       await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'back')
 
-      // expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
+      expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixIndexPathLabel)
 
       await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'forward')
