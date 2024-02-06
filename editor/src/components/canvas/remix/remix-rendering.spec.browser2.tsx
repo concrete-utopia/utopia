@@ -2377,12 +2377,14 @@ async function clickLinkWithTestId(editor: EditorRenderResult, testId: string) {
 }
 
 async function clickRemixLink(editor: EditorRenderResult) {
+  await wait(10)
   await clickLinkWithTestId(editor, 'remix-link')
   await editor.getDispatchFollowUpActionsFinished()
   await wait(10)
 }
 
 async function clickPostLink(editor: EditorRenderResult) {
+  await wait(10)
   await clickLinkWithTestId(editor, 'post-link')
   await editor.getDispatchFollowUpActionsFinished()
   await wait(10)
