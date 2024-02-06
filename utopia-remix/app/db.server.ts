@@ -1,6 +1,10 @@
 import { PrismaClient } from "prisma-client";
 import { singleton } from "./singleton.server";
 
+/**
+ * Throw an error if the object passed as argument contains
+ * keys for which their value is `undefined`.
+ */
 function rejectUndefinedValues(where?: { [key: string]: unknown }) {
   if (where == null) {
     return;
@@ -15,6 +19,13 @@ function rejectUndefinedValues(where?: { [key: string]: unknown }) {
   }
 }
 
+/**
+ * The singleton instance of the Prisma client, extended to suit our needs.
+ * Specifically:
+ * - apply the rejectUndefinedValues to all selecting queries, so that if by any chance we
+ * 	pass a select clause where the value is undefined an error is thrown and the statement/transaction
+ *  is aborted.
+ */
 const prisma = singleton("prisma", () => {
   const client = new PrismaClient().$extends({
     query: {
@@ -36,6 +47,22 @@ const prisma = singleton("prisma", () => {
           return query(args);
         },
         async findUniqueOrThrow({ args, query }) {
+          rejectUndefinedValues(args.where);
+          return query(args);
+        },
+        async update({ args, query }) {
+          rejectUndefinedValues(args.where);
+          return query(args);
+        },
+        async updateMany({ args, query }) {
+          rejectUndefinedValues(args.where);
+          return query(args);
+        },
+        async delete({ args, query }) {
+          rejectUndefinedValues(args.where);
+          return query(args);
+        },
+        async deleteMany({ args, query }) {
           rejectUndefinedValues(args.where);
           return query(args);
         },
