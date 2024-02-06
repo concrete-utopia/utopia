@@ -62,7 +62,7 @@ import {
 } from '../canvas-strategies/canvas-strategies'
 import {
   RemixNavigationFinishedPromiseForTests,
-  resetRemixNavigationFinishedPromise,
+  resetRemixNavigationFinishedPromiseForTests,
 } from './utopia-remix-root-component'
 import { defer } from '../../../utils/utils'
 
@@ -2394,7 +2394,8 @@ async function navigateWithRemixSceneLabelButton(
   pathToRemixScene: ElementPath,
   button: RemixSceneLabelButtonType,
 ) {
-  resetRemixNavigationFinishedPromise()
+  await wait(10)
+  resetRemixNavigationFinishedPromiseForTests()
   await mouseClickAtPoint(
     renderResult.renderedDOM.getByTestId(RemixSceneLabelButtonTestId(pathToRemixScene, button)),
     {
@@ -2403,6 +2404,7 @@ async function navigateWithRemixSceneLabelButton(
     },
   )
   await RemixNavigationFinishedPromiseForTests.current
+  await wait(10)
 }
 
 const getPathInRemixSceneLabel = (
@@ -2414,7 +2416,8 @@ async function navigateWithRemixNavigationBarButton(
   renderResult: EditorRenderResult,
   button: RemixSceneLabelButtonType,
 ) {
-  resetRemixNavigationFinishedPromise()
+  await wait(10)
+  resetRemixNavigationFinishedPromiseForTests()
   await mouseClickAtPoint(
     renderResult.renderedDOM.getByTestId(RemixNavigationBarButtonTestId(button)),
     {
@@ -2423,6 +2426,7 @@ async function navigateWithRemixNavigationBarButton(
     },
   )
   await RemixNavigationFinishedPromiseForTests.current
+  await wait(10)
 }
 
 const getPathInRemixNavigationBar = (renderResult: EditorRenderResult) =>

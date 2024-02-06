@@ -18,7 +18,6 @@ import { AlwaysFalse, usePubSubAtomReadOnly } from '../../../core/shared/atom-wi
 import { CreateRemixDerivedDataRefsGLOBAL } from '../../editor/store/remix-derived-data'
 import { patchRoutesWithContext } from '../../../third-party/remix/create-remix-stub'
 import type { AppLoadContext } from '@remix-run/server-runtime'
-import { wait } from '../../../utils/utils.test-utils'
 import { defer } from '../../../utils/utils'
 import { IS_TEST_ENVIRONMENT } from '../../../common/env-vars'
 
@@ -362,6 +361,6 @@ function resolveRemixNavigationFinishedPromiseForTests() {
   }
 }
 
-export function resetRemixNavigationFinishedPromise() {
+export function resetRemixNavigationFinishedPromiseForTests() {
   RemixNavigationFinishedPromiseForTests.current = defer()
 }
