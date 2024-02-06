@@ -499,7 +499,7 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-remix
-	  PORT=8002 pnpm run dev
+      PORT=8002 pnpm run dev
     '')
   ];
 
