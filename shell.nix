@@ -637,9 +637,17 @@ let
   withCustomDevScripts = withServerRunScripts ++ (lib.optionals includeRunLocallySupport customDevScripts);
 
   releaseScripts = [
+    (pkgs.writeScriptBin "prepare-build-editor" ''
+      #!/usr/bin/env bash
+      set -e
+      install-utopia-api
+      build-utopia-vscode-common
+      install-website
+    '')
     (pkgs.writeScriptBin "build-editor-production" ''
       #!/usr/bin/env bash
       set -e
+      prepare-build-editor
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${pnpm}/bin/pnpm install --unsafe-perm
       ${pnpm}/bin/pnpm run production
@@ -647,9 +655,7 @@ let
     (pkgs.writeScriptBin "build-editor-staging" ''
       #!/usr/bin/env bash
       set -e
-      install-utopia-api
-      build-utopia-vscode-common
-      install-website
+      prepare-build-editor
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${pnpm}/bin/pnpm install --unsafe-perm
       ${pnpm}/bin/pnpm run staging
