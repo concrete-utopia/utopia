@@ -1339,6 +1339,7 @@ describe('Remix navigation', () => {
       await clickRemixLink(renderResult)
 
       // adding this to re-run the test
+      // third time
       // expect(
       //   renderResult.renderedDOM.queryAllByText(AboutTextContent).filter(filterOutMenuLabels),
       // ).toHaveLength(1)
