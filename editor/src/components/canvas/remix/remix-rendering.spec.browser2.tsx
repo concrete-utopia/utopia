@@ -1339,7 +1339,6 @@ describe('Remix navigation', () => {
       await clickRemixLink(renderResult)
 
       // adding this to re-run the test
-      // third time
       // expect(
       //   renderResult.renderedDOM.queryAllByText(AboutTextContent).filter(filterOutMenuLabels),
       // ).toHaveLength(1)
@@ -1390,9 +1389,9 @@ describe('Remix navigation', () => {
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixIndexPathLabel)
 
       await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'forward')
-      // expect(
-      //   renderResult.renderedDOM.queryAllByText(AboutTextContent).filter(filterOutMenuLabels),
-      // ).toHaveLength(1)
+      expect(
+        renderResult.renderedDOM.queryAllByText(AboutTextContent).filter(filterOutMenuLabels),
+      ).toHaveLength(1)
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
 
       await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'home')
