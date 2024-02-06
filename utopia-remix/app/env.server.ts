@@ -4,3 +4,11 @@ export const ServerEnvironment = {
   // the CORS allowed origin for incoming requests
   CORSOrigin: process.env.CORS_ORIGIN ?? "",
 };
+
+export type BrowserEnvironment = {
+  EDITOR_URL?: string;
+};
+
+export const BrowserEnvironment: BrowserEnvironment = {
+  EDITOR_URL: process.env.REACT_APP_EDITOR_URL,
+};

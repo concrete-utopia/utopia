@@ -7,16 +7,33 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  json,
+  useLoaderData,
 } from "@remix-run/react";
+import { BrowserEnvironment } from "./env.server";
 
 import stylesheet from "~/tailwind.css";
+
+declare global {
+  interface Window {
+    ENV: BrowserEnvironment;
+  }
+}
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: stylesheet },
   ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
 ];
 
+export async function loader() {
+  return json({
+    ENV: BrowserEnvironment,
+  });
+}
+
 export default function App() {
+  const data = useLoaderData<typeof loader>();
+
   return (
     <html lang="en">
       <head>
@@ -27,6 +44,12 @@ export default function App() {
       </head>
       <body>
         <Outlet />
+        <script
+          // https://remix.run/docs/en/1.19.3/guides/envvars#browser-environment-variables
+          dangerouslySetInnerHTML={{
+            __html: `window.ENV = ${JSON.stringify(data.ENV)}`,
+          }}
+        />
         <ScrollRestoration />
         <Scripts />
         <LiveReload />

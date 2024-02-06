@@ -1,3 +1,31 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body {
+	@apply p-4;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	@apply font-bold my-4;
+}
+
+h1 {
+	@apply text-3xl;
+}
+
+button {
+	@apply bg-gray-100 py-1 px-2 rounded shadow text-sm font-medium;
+}
+
+table {
+	@apply my-4;
+}
+
+tr {
+	@apply border;
+}
+
+td, th {
+	@apply p-4 text-center;
+}
