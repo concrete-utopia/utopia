@@ -138,18 +138,30 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
 
   const currentLocationMatchesRoutes = useCurrentLocationMatchesRoutes(props.target)
 
-  const forward = React.useCallback(
-    () => navigationData[EP.toString(props.target)]?.forward(),
-    [navigationData, props.target],
-  )
-  const back = React.useCallback(
-    () => navigationData[EP.toString(props.target)]?.back(),
-    [navigationData, props.target],
-  )
-  const home = React.useCallback(
-    () => navigationData[EP.toString(props.target)]?.home(),
-    [navigationData, props.target],
-  )
+  const forward = React.useCallback(() => {
+    const controls = navigationData[EP.toString(props.target)]
+    if (controls == null) {
+      console.info(`>>> no context found for ${EP.toString(props.target)}`)
+      return
+    }
+    controls.forward()
+  }, [navigationData, props.target])
+  const back = React.useCallback(() => {
+    const controls = navigationData[EP.toString(props.target)]
+    if (controls == null) {
+      console.info(`>>> no context found for ${EP.toString(props.target)}`)
+      return
+    }
+    controls.back()
+  }, [navigationData, props.target])
+  const home = React.useCallback(() => {
+    const controls = navigationData[EP.toString(props.target)]
+    if (controls == null) {
+      console.info(`>>> no context found for ${EP.toString(props.target)}`)
+      return
+    }
+    controls.home()
+  }, [navigationData, props.target])
 
   const labelSelectable = useEditorState(
     Substores.restOfEditor,

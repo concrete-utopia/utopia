@@ -30,18 +30,30 @@ export const RemixNavigationBar = React.memo(() => {
     'RemixNavigationBar isLiveMode',
   )
 
-  const forward = React.useCallback(
-    () => navigationControls[EP.toString(activeRemixScene)]?.forward(),
-    [activeRemixScene, navigationControls],
-  )
-  const back = React.useCallback(
-    () => navigationControls[EP.toString(activeRemixScene)]?.back(),
-    [activeRemixScene, navigationControls],
-  )
-  const home = React.useCallback(
-    () => navigationControls[EP.toString(activeRemixScene)]?.home(),
-    [activeRemixScene, navigationControls],
-  )
+  const forward = React.useCallback(() => {
+    const controls = navigationControls[EP.toString(activeRemixScene)]
+    if (controls == null) {
+      console.info(`>>> no context found for ${EP.toString(activeRemixScene)}`)
+      return
+    }
+    controls.forward()
+  }, [activeRemixScene, navigationControls])
+  const back = React.useCallback(() => {
+    const controls = navigationControls[EP.toString(activeRemixScene)]
+    if (controls == null) {
+      console.info(`>>> no context found for ${EP.toString(activeRemixScene)}`)
+      return
+    }
+    controls.back()
+  }, [activeRemixScene, navigationControls])
+  const home = React.useCallback(() => {
+    const controls = navigationControls[EP.toString(activeRemixScene)]
+    if (controls == null) {
+      console.info(`>>> no context found for ${EP.toString(activeRemixScene)}`)
+      return
+    }
+    controls.home()
+  }, [activeRemixScene, navigationControls])
 
   const pathname = navigationControls[EP.toString(activeRemixScene)]?.location?.pathname
 
