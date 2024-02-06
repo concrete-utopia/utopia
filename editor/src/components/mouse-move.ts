@@ -22,7 +22,7 @@ let resetMouseStatusCallbackIdentifier: number | null = null
 
 export function resetMouseStatus(): void {
   stopResettingMouseStatus()
-  innerResetMouseStatus()
+  // innerResetMouseStatus()
 }
 
 export function stopResettingMouseStatus(): void {

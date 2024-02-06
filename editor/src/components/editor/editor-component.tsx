@@ -157,7 +157,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
           ),
         ])
       } else {
-        dispatch([EditorActions.removeToast(liveModeToastId)])
+        // dispatch([EditorActions.removeToast(liveModeToastId)])
       }
     }, 0)
   }, [mode.type, dispatch])
@@ -379,7 +379,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
       } else {
         actions.push(EditorActions.setCodeEditorVisibility(true))
       }
-      dispatch(actions)
+      // dispatch(actions)
     },
     'EditorComponentInner viewer mode',
   )
