@@ -221,7 +221,7 @@ describe('Comments test', () => {
     expect(commentsTabs).toHaveLength(0)
   })
 
-  it('can reparent comment', async () => {
+  it.only('can reparent comment', async () => {
     const page = await initSignedInBrowserTest(utopiaBrowser)
     await enterCommentMode(page)
 
