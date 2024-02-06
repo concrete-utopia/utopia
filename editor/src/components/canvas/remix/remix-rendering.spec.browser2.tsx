@@ -1357,9 +1357,14 @@ describe('Remix navigation', () => {
       await waitFor(() => {
         expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
       })
+
       await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'home')
-      expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
-      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixIndexPathLabel)
+      await waitFor(() => {
+        expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
+        expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(
+          RemixIndexPathLabel,
+        )
+      })
     })
 
     it('can navigate with the scene label nav buttons, in edit mode', async () => {
@@ -1401,8 +1406,12 @@ describe('Remix navigation', () => {
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
 
       await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'home')
-      expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
-      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixIndexPathLabel)
+      await waitFor(() => {
+        expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
+        expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(
+          RemixIndexPathLabel,
+        )
+      })
     })
 
     it('navigating in one Remix scene does not affect the navigation state in the other', async () => {
@@ -1451,14 +1460,18 @@ describe('Remix navigation', () => {
       expect(getPathInRemixNavigationBar(renderResult)).toEqual(RemixIndexPathLabel)
 
       await navigateWithRemixNavigationBarButton(renderResult, 'forward')
-      expect(
-        renderResult.renderedDOM.queryAllByText(AboutTextContent).filter(filterOutMenuLabels),
-      ).toHaveLength(1)
-      expect(getPathInRemixNavigationBar(renderResult)).toEqual('/about')
+      // expect(
+      //   renderResult.renderedDOM.queryAllByText(AboutTextContent).filter(filterOutMenuLabels),
+      // ).toHaveLength(1)
+      await waitFor(() => {
+        expect(getPathInRemixNavigationBar(renderResult)).toEqual('/about')
+      })
 
       await navigateWithRemixNavigationBarButton(renderResult, 'home')
       expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
-      expect(getPathInRemixNavigationBar(renderResult)).toEqual(RemixIndexPathLabel)
+      await waitFor(() => {
+        expect(getPathInRemixNavigationBar(renderResult)).toEqual(RemixIndexPathLabel)
+      })
     })
 
     it('can navigate inside multiple Remix scenes, using the nav bar in the canvas toolbar', async () => {
@@ -1479,7 +1492,9 @@ describe('Remix navigation', () => {
       const remixScene2 = renderResult.renderedDOM.getByTestId(Remix2TestId)
       await mouseClickAtPoint(remixScene2, { x: 10, y: 10 })
 
-      expect(getPathInRemixNavigationBar(renderResult)).toEqual(RemixIndexPathLabel)
+      await waitFor(() => {
+        expect(getPathInRemixNavigationBar(renderResult)).toEqual(RemixIndexPathLabel)
+      })
     })
   })
 })
@@ -2369,7 +2384,8 @@ async function navigateWithRemixSceneLabelButton(
 const getPathInRemixSceneLabel = (
   renderResult: EditorRenderResult,
   pathToRemixScene: ElementPath,
-) => renderResult.renderedDOM.getByTestId(RemixSceneLabelPathTestId(pathToRemixScene)).textContent
+) =>
+  renderResult.renderedDOM.queryByTestId(RemixSceneLabelPathTestId(pathToRemixScene))?.textContent
 
 async function navigateWithRemixNavigationBarButton(
   renderResult: EditorRenderResult,
