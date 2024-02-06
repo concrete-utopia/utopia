@@ -43,6 +43,9 @@ export const RemixNavigationAtom = atom<RemixNavigationAtomData>({})
 export const RemixNavigationFinishedPromiseForTests: { current: ReturnType<typeof defer> } = {
   current: defer(),
 }
+export const RemixNavigationCallbackCalledPromiseForTests: { current: ReturnType<typeof defer> } = {
+  current: defer(),
+}
 
 export function useRemixNavigationContext(
   scenePath: ElementPath | null,
@@ -324,6 +327,7 @@ export const UtopiaRemixRootComponent = (props: UtopiaRemixRootComponentProps) =
           // newState.navigation.location will hold an intended navigation, so when it is null
           // that will have completed
           updateNavigationData(router, newState.location)
+          RemixNavigationCallbackCalledPromiseForTests.current.resolve()
         }
       })
     }

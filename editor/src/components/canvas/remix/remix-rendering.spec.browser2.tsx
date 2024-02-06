@@ -61,6 +61,7 @@ import {
   RegisteredCanvasStrategies,
 } from '../canvas-strategies/canvas-strategies'
 import {
+  RemixNavigationCallbackCalledPromiseForTests,
   RemixNavigationFinishedPromiseForTests,
   resetRemixNavigationFinishedPromiseForTests,
 } from './utopia-remix-root-component'
@@ -2396,6 +2397,7 @@ async function navigateWithRemixSceneLabelButton(
 ) {
   await wait(10)
   resetRemixNavigationFinishedPromiseForTests()
+  RemixNavigationCallbackCalledPromiseForTests.current = defer()
   await mouseClickAtPoint(
     renderResult.renderedDOM.getByTestId(RemixSceneLabelButtonTestId(pathToRemixScene, button)),
     {
@@ -2403,7 +2405,10 @@ async function navigateWithRemixSceneLabelButton(
       y: 2,
     },
   )
-  await RemixNavigationFinishedPromiseForTests.current
+  await Promise.all([
+    RemixNavigationFinishedPromiseForTests.current,
+    RemixNavigationCallbackCalledPromiseForTests.current,
+  ])
   await wait(10)
 }
 
@@ -2418,6 +2423,7 @@ async function navigateWithRemixNavigationBarButton(
 ) {
   await wait(10)
   resetRemixNavigationFinishedPromiseForTests()
+  RemixNavigationCallbackCalledPromiseForTests.current = defer()
   await mouseClickAtPoint(
     renderResult.renderedDOM.getByTestId(RemixNavigationBarButtonTestId(button)),
     {
@@ -2425,7 +2431,10 @@ async function navigateWithRemixNavigationBarButton(
       y: 2,
     },
   )
-  await RemixNavigationFinishedPromiseForTests.current
+  await Promise.all([
+    RemixNavigationFinishedPromiseForTests.current,
+    RemixNavigationCallbackCalledPromiseForTests.current,
+  ])
   await wait(10)
 }
 
