@@ -4,7 +4,8 @@ import moment from "moment";
 import { Project, UserDetails } from "prisma-client";
 import React from "react";
 import { listProjects } from "../models/project.server";
-import { requireUser } from "../util/api.server";
+import { ensure, requireUser } from "../util/api.server";
+import { Status } from "../util/statusCodes.server";
 
 const PAGINATION_LIMIT = 10;
 
@@ -13,6 +14,7 @@ export async function loader(args: LoaderFunctionArgs) {
 
   const url = new URL(args.request.url);
   const offset = parseInt(url.searchParams.get("offset") ?? "0");
+  ensure(offset >= 0, "offset cannot be negative", Status.BAD_REQUEST);
 
   const projects = await listProjects({
     ownerId: user.user_id,
