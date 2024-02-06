@@ -1397,12 +1397,11 @@ describe('Remix navigation', () => {
       })
       await switchToEditMode(renderResult)
 
+      // check that switching modes doesn't change the navigation state
       await waitFor(() => {
         expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
       })
 
-      // check that switching modes doesn't change the navigation state
-      // expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
       expect(
         renderResult.renderedDOM.queryAllByText(AboutTextContent).filter(filterOutMenuLabels),
       ).toHaveLength(1)
