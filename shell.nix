@@ -48,12 +48,6 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${pnpm}/bin/pnpm install
     '')
-    (pkgs.writeScriptBin "install-remix" ''
-      #!/usr/bin/env bash
-      set -e
-      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-remix
-      ${pnpm}/bin/pnpm install
-    '')
     (pkgs.writeScriptBin "install-editor-ci" ''
       #!/usr/bin/env bash
       set -e
@@ -505,7 +499,8 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-remix
-	  PORT=8002 pnpm run dev
+      ${pnpm}/bin/pnpm install
+	    PORT=8002 pnpm run dev
     '')
   ];
 
@@ -597,7 +592,6 @@ let
         check-tool-versions
         build-vscode-with-extension
         install-editor
-        install-remix
         start-minimal
       fi
     '')
@@ -637,7 +631,6 @@ let
       check-tool-versions
       build-vscode-with-extension
       install-editor
-      install-remix
       start-minimal-webpack
     '')
   ] ++ vscodeDevScripts;
