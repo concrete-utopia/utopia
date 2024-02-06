@@ -1,12 +1,13 @@
 // you can turn on/off debug features individually here
 
 export const HOSTNAME: string = typeof window === 'undefined' ? '' : window.location.hostname
-export const PORT: string =
-  typeof window === 'undefined' || window.location.port.length === 0
-    ? ''
-    : `:${window.location.port}`
 export const SCHEME: string = typeof window === 'undefined' ? 'http' : window.location.protocol
 export const BARE_HOSTNAME = HOSTNAME.startsWith('www.') ? HOSTNAME.slice(4) : HOSTNAME
+const isLocalHost = BARE_HOSTNAME.startsWith('localhost')
+export const PORT: string =
+  typeof window === 'undefined' || window.location.port.length === 0 || !isLocalHost
+    ? ''
+    : `:${window.location.port}`
 export const BARE_HOST = `${BARE_HOSTNAME}${PORT}`
 export const BASE_URL: string = `${SCHEME}//${HOSTNAME}${PORT}/`
 
