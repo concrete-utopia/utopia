@@ -232,9 +232,16 @@ export function wrapWithSemaphore<Args extends unknown[], ReturnValue>(
     semaphoreState = 'running'
     // console.log(`${label} running`)
 
-    const result = inner(...args)
-    // console.log(`${label} not running`)
-    semaphoreState = 'not-running'
+    let result
+    try {
+      result = inner(...args)
+      semaphoreState = 'not-running'
+      // console.log(`${label} not-running`)
+    } catch (e) {
+      semaphoreState = 'not-running'
+      // console.log(`${label} not-running`)
+      throw e
+    }
     return result
   }
 }
