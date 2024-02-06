@@ -100,7 +100,7 @@ export async function proxiedResponse(response: Response): Promise<unknown> {
   return response.json();
 }
 
-const SESSION_COOKIE_NAME = "JSESSIONID";
+export const SESSION_COOKIE_NAME = "JSESSIONID";
 
 export async function requireUser(request: Request): Promise<UserDetails> {
   const cookieHeader = request.headers.get("cookie") ?? "";

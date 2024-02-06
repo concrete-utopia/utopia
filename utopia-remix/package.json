@@ -2,14 +2,14 @@
   "name": "utopia-remix",
   "private": true,
   "sideEffects": false,
-  "type": "module",
   "scripts": {
     "build": "remix build",
     "dev": "remix dev --manual",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
     "start": "remix-serve ./build/index.js",
     "typecheck": "tsc",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test": "docker compose down -v && docker compose up -d && sleep 5 && export DATABASE_URL='postgres://postgres:password@localhost:54322/postgres?sslmode=disable' && pnpm exec prisma db push && jest --runInBand --verbose && docker compose down -v"
   },
   "prettier": {},
   "dependencies": {
@@ -29,8 +29,9 @@
     "url-join": "5.0.0"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.23.9",
     "@remix-run/dev": "2.5.1",
-    "@types/cookie": "^0.6.0",
+    "@types/cookie": "0.6.0",
     "@types/jest": "29.5.12",
     "@types/node": "20.11.15",
     "@types/react": "18.2.20",

@@ -66,6 +66,10 @@ const prisma = singleton("prisma", () => {
           rejectUndefinedValues(args.where);
           return query(args);
         },
+        async upsert({ args, query }) {
+          rejectUndefinedValues(args.where);
+          return query(args);
+        },
       },
     },
   });
@@ -74,3 +78,5 @@ const prisma = singleton("prisma", () => {
 prisma.$connect();
 
 export { prisma };
+
+export type UtopiaPrismaClient = typeof prisma;
