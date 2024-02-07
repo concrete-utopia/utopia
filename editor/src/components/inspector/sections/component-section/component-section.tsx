@@ -410,6 +410,7 @@ const DataPickerPopup = React.memo(
 
       const variablesInScopeForSelectedPath =
         variablesInScopeRef.current[EP.toString(selectedViewPathRef.current)]
+
       if (variablesInScopeForSelectedPath == null) {
         return []
       }
@@ -482,7 +483,7 @@ const DataPickerPopup = React.memo(
                       color: colorTheme.neutralForeground.value,
                     }}
                   >
-                    {variableValueToString(variableValue)}
+                    {variableValueToString(variableValue.spiedValue)}
                   </span>
                 </div>
               </UIGridRow>
