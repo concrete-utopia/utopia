@@ -9,7 +9,7 @@ import { Status } from "../util/statusCodes.server";
 import { sprinkles } from "../styles/sprinkles.css";
 import { button } from "../styles/button.css";
 
-const PAGINATION_LIMIT = 10;
+const PAGINATION_LIMIT = 10; // how many projects to load per window
 
 export async function loader(args: LoaderFunctionArgs) {
   const user = await requireUser(args.request);
