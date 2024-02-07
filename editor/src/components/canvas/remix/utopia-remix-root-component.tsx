@@ -10,7 +10,7 @@ import * as EP from '../../../core/shared/element-path'
 import { PathPropHOC } from './path-props-hoc'
 import { atom, useAtom, useSetAtom } from 'jotai'
 import { getDefaultExportNameAndUidFromFile } from '../../../core/model/project-file-utils'
-import { OutletPathContext } from './remix-utils'
+import { OutletPathContext, TEST_RemixNavigationPromise } from './remix-utils'
 import { UiJsxCanvasCtxAtom } from '../ui-jsx-canvas'
 import type { UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import { forceNotNull } from '../../../core/shared/optional-utils'
@@ -274,6 +274,7 @@ export const UtopiaRemixRootComponent = (props: UtopiaRemixRootComponentProps) =
   const updateNavigationData = React.useCallback(
     (innerRouter: RouterType, location: Location) => {
       setNavigationDataForRouter(innerRouter, location, 'append-to-entries')
+      TEST_RemixNavigationPromise.current.resolve()
     },
     [setNavigationDataForRouter],
   )

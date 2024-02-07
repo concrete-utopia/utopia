@@ -45,6 +45,7 @@ import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { safeIndex } from '../../../core/shared/array-utils'
 import { createClientRoutes, groupRoutesByParentId } from '../../../third-party/remix/client-routes'
 import path from 'path'
+import { defer } from '../../../utils/utils'
 
 export const OutletPathContext = React.createContext<ElementPath | null>(null)
 
@@ -458,6 +459,18 @@ export function getRouteComponentNameForOutlet(
 }
 
 export const RemixIndexPathLabel = '(home)'
+
+export const TEST_RemixLastNavigatedFrom: { current: string | null } = {
+  current: null,
+}
+
+export type Defer = ReturnType<typeof defer>
+
+export const TEST_RemixNavigationPromise: { current: Defer } = { current: defer() }
+
+export function TEST_resetRemixNavigationPromise() {
+  TEST_RemixNavigationPromise.current = defer()
+}
 
 export function getRemixLocationLabel(location: string | undefined): string | null {
   if (location == null) {

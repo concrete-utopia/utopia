@@ -18,11 +18,13 @@ import { useAtom } from 'jotai'
 import { RemixNavigationAtom } from '../../remix/utopia-remix-root-component'
 import { matchRoutes } from 'react-router'
 import { unless } from '../../../../utils/react-conditionals'
-import { getRemixLocationLabel } from '../../remix/remix-utils'
+import { TEST_RemixLastNavigatedFrom, getRemixLocationLabel } from '../../remix/remix-utils'
 import { useUpdateRemixSceneRouteInLiveblocks } from '../../../../core/shared/multiplayer'
 import { MultiplayerWrapper } from '../../../../utils/multiplayer-wrapper'
 import { getIdOfScene } from '../comment-mode/comment-mode-hooks'
 import { optionalMap } from '../../../../core/shared/optional-utils'
+import { IS_TEST_ENVIRONMENT } from '../../../../common/env-vars'
+import { RemixNavigationForTests } from '../../../editor/remix-navigation-bar'
 
 export const RemixSceneLabelPathTestId = (path: ElementPath): string =>
   `${EP.toString(path)}-remix-scene-label-path`
@@ -118,7 +120,7 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
   const colorTheme = useColorTheme()
   const dispatch = useDispatch()
 
-  const [navigationData] = useAtom(RemixNavigationAtom)
+  const navigationData = useRemixNavigationAndExposeForTests()
 
   const currentPath = (navigationData[EP.toString(props.target)] ?? null)?.location.pathname
 
@@ -138,18 +140,21 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
 
   const currentLocationMatchesRoutes = useCurrentLocationMatchesRoutes(props.target)
 
-  const forward = React.useCallback(
-    () => navigationData[EP.toString(props.target)]?.forward(),
-    [navigationData, props.target],
-  )
-  const back = React.useCallback(
-    () => navigationData[EP.toString(props.target)]?.back(),
-    [navigationData, props.target],
-  )
-  const home = React.useCallback(
-    () => navigationData[EP.toString(props.target)]?.home(),
-    [navigationData, props.target],
-  )
+  const forward = React.useCallback(() => {
+    TEST_RemixLastNavigatedFrom.current =
+      navigationData[EP.toString(props.target)]?.location.pathname ?? null
+    navigationData[EP.toString(props.target)]?.forward()
+  }, [navigationData, props.target])
+  const back = React.useCallback(() => {
+    TEST_RemixLastNavigatedFrom.current =
+      navigationData[EP.toString(props.target)]?.location.pathname ?? null
+    navigationData[EP.toString(props.target)]?.back()
+  }, [navigationData, props.target])
+  const home = React.useCallback(() => {
+    TEST_RemixLastNavigatedFrom.current =
+      navigationData[EP.toString(props.target)]?.location.pathname ?? null
+    navigationData[EP.toString(props.target)]?.home()
+  }, [navigationData, props.target])
 
   const labelSelectable = useEditorState(
     Substores.restOfEditor,
@@ -386,3 +391,15 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
     </CanvasOffsetWrapper>
   )
 })
+
+function useRemixNavigationAndExposeForTests() {
+  const [navigationControls] = useAtom(RemixNavigationAtom)
+
+  React.useEffect(() => {
+    if (IS_TEST_ENVIRONMENT) {
+      RemixNavigationForTests.current = navigationControls
+    }
+  }, [navigationControls])
+
+  return navigationControls
+}

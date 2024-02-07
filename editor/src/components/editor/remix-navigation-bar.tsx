@@ -12,7 +12,7 @@ import { Substores, useEditorState } from './store/store-hook'
 import { FlexRow, Tooltip, colorTheme } from '../../uuiui'
 import { stopPropagation } from '../inspector/common/inspector-utils'
 import * as EP from '../../core/shared/element-path'
-import { getRemixLocationLabel } from '../canvas/remix/remix-utils'
+import { TEST_RemixLastNavigatedFrom, getRemixLocationLabel } from '../canvas/remix/remix-utils'
 import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
 
 export const RemixNavigationForTests: { current: RemixNavigationAtomData | null } = {
@@ -37,18 +37,21 @@ export const RemixNavigationBar = React.memo(() => {
     'RemixNavigationBar isLiveMode',
   )
 
-  const forward = React.useCallback(
-    () => navigationControls[EP.toString(activeRemixScene)]?.forward(),
-    [activeRemixScene, navigationControls],
-  )
-  const back = React.useCallback(
-    () => navigationControls[EP.toString(activeRemixScene)]?.back(),
-    [activeRemixScene, navigationControls],
-  )
-  const home = React.useCallback(
-    () => navigationControls[EP.toString(activeRemixScene)]?.home(),
-    [activeRemixScene, navigationControls],
-  )
+  const forward = React.useCallback(() => {
+    TEST_RemixLastNavigatedFrom.current =
+      navigationControls[EP.toString(activeRemixScene)]?.location.pathname ?? null
+    navigationControls[EP.toString(activeRemixScene)]?.forward()
+  }, [activeRemixScene, navigationControls])
+  const back = React.useCallback(() => {
+    TEST_RemixLastNavigatedFrom.current =
+      navigationControls[EP.toString(activeRemixScene)]?.location.pathname ?? null
+    navigationControls[EP.toString(activeRemixScene)]?.back()
+  }, [activeRemixScene, navigationControls])
+  const home = React.useCallback(() => {
+    TEST_RemixLastNavigatedFrom.current =
+      navigationControls[EP.toString(activeRemixScene)]?.location.pathname ?? null
+    navigationControls[EP.toString(activeRemixScene)]?.home()
+  }, [activeRemixScene, navigationControls])
 
   const pathname = navigationControls[EP.toString(activeRemixScene)]?.location?.pathname
 
