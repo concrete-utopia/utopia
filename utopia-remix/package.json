@@ -10,7 +10,8 @@
     "start": "remix-serve ./build/index.js",
     "typecheck": "tsc",
     "format": "prettier --write .",
-    "test": "./run-integration-tests.sh"
+    "test": "./run-integration-tests.sh",
+    "test-ci": "./run-integration-tests-ci.sh"
   },
   "prettier": {},
   "dependencies": {

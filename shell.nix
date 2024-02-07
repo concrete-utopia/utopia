@@ -309,6 +309,12 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-remix
       ${pnpm}/bin/pnpm run test
     '')
+    (pkgs.writeScriptBin "test-remix-bff-ci" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-remix
+      ${pnpm}/bin/pnpm run test-ci
+    '')
   ];
 
   withBaseEditorScripts = lib.optionals includeEditorBuildSupport baseEditorScripts;
