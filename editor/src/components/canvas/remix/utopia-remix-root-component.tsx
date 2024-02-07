@@ -214,7 +214,7 @@ export interface UtopiaRemixRootComponentProps {
 export const UtopiaRemixRootComponent = (props: UtopiaRemixRootComponentProps) => {
   const remixDerivedDataRef = useRefEditorState((store) => store.derived.remixData)
 
-  // run 5
+  // run 6
   const prevRoutes = React.useRef<(RouteObject | DataRouteObject)[] | null>(null)
   const routesI = useGetRoutes(props.getLoadContext)
   const routes = React.useMemo(() => {
