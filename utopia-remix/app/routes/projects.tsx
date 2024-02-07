@@ -1,8 +1,8 @@
+import React, { useState } from "react";
 import { LoaderFunctionArgs, json } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import moment from "moment";
 import { Project, UserDetails } from "prisma-client";
-import React from "react";
 import { listProjects } from "../models/project.server";
 import { ensure, requireUser } from "../util/api.server";
 import { Status } from "../util/statusCodes.server";
@@ -32,6 +32,12 @@ export async function loader(args: LoaderFunctionArgs) {
 const ProjectsPage = React.memo(() => {
   const marginSize = 30;
   const rowHeight = 30;
+
+  const [selectedCategory, setSelectedCategory] = useState("All My Projects");
+
+  const handleCategoryClick = (category: React.SetStateAction<string>) => {
+    setSelectedCategory(category);
+  };
 
   const data = useLoaderData() as unknown as {
     projects: Project[];
@@ -79,6 +85,14 @@ const ProjectsPage = React.memo(() => {
       setReachedEnd(true);
     }
   }, [projectsFetcher.data]);
+
+  const categories = [
+    { name: "All My Projects", color: "selected" },
+    { name: "Private", color: "neutral" },
+    { name: "Public", color: "neutral" },
+    { name: "Shared With Me", color: "neutral" },
+    { name: "Trash", color: "neutral" },
+  ];
 
   const newProjectButtons = [
     {
@@ -166,41 +180,18 @@ const ProjectsPage = React.memo(() => {
             Search...
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-            <button
-              className={projectCategoryButton({
-                color: "selected",
-              })}
-            >
-              <span>All My Projects</span>
-            </button>
-            <button
-              className={projectCategoryButton({
-                color: "neutral",
-              })}
-            >
-              <span>Private</span>
-            </button>
-            <button
-              className={projectCategoryButton({
-                color: "neutral",
-              })}
-            >
-              <span>Public</span>
-            </button>
-            <button
-              className={projectCategoryButton({
-                color: "neutral",
-              })}
-            >
-              <span>Shared With Me</span>
-            </button>
-            <button
-              className={projectCategoryButton({
-                color: "neutral",
-              })}
-            >
-              <span>Trash</span>
-            </button>
+            {categories.map((category, index) => (
+              <button
+                key={index}
+                className={projectCategoryButton({
+                  color:
+                    category.name === selectedCategory ? "selected" : "neutral",
+                })}
+                onClick={() => handleCategoryClick(category.name)}
+              >
+                <span>{category.name}</span>
+              </button>
+            ))}
           </div>
         </div>
         <div
@@ -252,7 +243,7 @@ const ProjectsPage = React.memo(() => {
           ))}
         </div>
         <div style={{ fontSize: 16, fontWeight: 600, padding: "5px 10px" }}>
-          All My Projects
+          {selectedCategory}
         </div>
         <div
           style={{
