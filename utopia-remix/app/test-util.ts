@@ -1,4 +1,6 @@
+import urlJoin from "url-join";
 import { UtopiaPrismaClient } from "./db.server";
+import { SESSION_COOKIE_NAME } from "./util/api.server";
 
 export async function wait(ms: number) {
   return new Promise((res) => setTimeout(res, ms));
@@ -8,8 +10,6 @@ export async function createTestUser(
   client: UtopiaPrismaClient,
   params: { id: string; name?: string },
 ) {
-  await wait(50);
-
   await client.userDetails.create({
     data: {
       user_id: params.id,
@@ -29,8 +29,6 @@ export async function createTestProject(
     modifiedAt?: Date;
   },
 ) {
-  await wait(50);
-
   const now = new Date();
   await client.projectID.create({
     data: { proj_id: params.id },
@@ -54,8 +52,6 @@ export async function createTestSession(
     userId: string;
   },
 ) {
-  await wait(50);
-
   const now = new Date();
   await client.persistentSession.create({
     data: {
@@ -74,10 +70,29 @@ interface DeletableModel {
   deleteMany: ({}) => Promise<any>;
 }
 
-export async function truncateTable(models: DeletableModel[]) {
-  await wait(50);
-
+export async function truncateTables(models: DeletableModel[]) {
   for (const model of models) {
     await model.deleteMany({});
   }
+}
+
+export function newTestRequest(params?: {
+  path?: string;
+  headers?: { [key: string]: string };
+  authCookie?: string;
+}): Request {
+  const path = (params?.path ?? "").replace(/^\/+/, "");
+  const req = new Request(`http://localhost:8002/` + path);
+
+  if (params?.headers != null) {
+    for (const key of Object.keys(params.headers)) {
+      req.headers.set(key, params.headers[key]);
+    }
+  }
+
+  if (params?.authCookie != null) {
+    req.headers.set("cookie", `${SESSION_COOKIE_NAME}=${params.authCookie}`);
+  }
+
+  return req;
 }

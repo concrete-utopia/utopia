@@ -1,12 +1,12 @@
 import moment from "moment";
 import { prisma } from "../db.server";
+import { createTestProject, truncateTables } from "../test-util";
 import { listProjects } from "./project.server";
-import { createTestProject, truncateTable, wait } from "../test-util";
 
 describe("project model", () => {
   afterEach(async () => {
     // cleanup
-    await truncateTable([prisma.projectID, prisma.project]);
+    await truncateTables([prisma.projectID, prisma.project]);
   });
 
   describe("listProjects", () => {
@@ -16,17 +16,14 @@ describe("project model", () => {
         expect(got.length).toBe(0);
       });
     });
+
     describe("when the user is passed as undefined", () => {
       it("throws an error", async () => {
-        let error: any = null;
-        try {
-          await listProjects({ ownerId: undefined as any });
-        } catch (err) {
-          error = err;
-        }
-        expect(error).not.toBeNull();
+        const fn = async () => listProjects({ ownerId: undefined as any });
+        await expect(fn).rejects.toThrow();
       });
     });
+
     describe("when the user is found", () => {
       it("returns the user projects", async () => {
         await createTestProject(prisma, { id: "foo", ownerId: "bob" });
@@ -45,6 +42,7 @@ describe("project model", () => {
         const aliceProjects = await listProjects({ ownerId: "alice" });
         expect(aliceProjects.length).toBe(1);
       });
+
       it("sorts the results by modified time", async () => {
         const now = new Date();
         await createTestProject(prisma, { id: "foo", ownerId: "bob" });
@@ -70,6 +68,7 @@ describe("project model", () => {
         const aliceProjects = await listProjects({ ownerId: "alice" });
         expect(aliceProjects.map((p) => p.proj_id)).toEqual(["baz"]);
       });
+
       it("can paginate results", async () => {
         await createTestProject(prisma, { id: "one", ownerId: "bob" });
         await createTestProject(prisma, { id: "two", ownerId: "bob" });

@@ -3,15 +3,16 @@ import {
   createTestProject,
   createTestSession,
   createTestUser,
-  truncateTable,
+  newTestRequest,
+  truncateTables,
 } from "../test-util";
-import { ApiError, SESSION_COOKIE_NAME } from "../util/api.server";
+import { ApiError } from "../util/api.server";
 import { handleListProjects } from "./listProjects";
 
 describe("handleListProjects", () => {
   afterEach(async () => {
     // cleanup
-    await truncateTable([
+    await truncateTables([
       prisma.projectID,
       prisma.project,
       prisma.userDetails,
@@ -29,37 +30,13 @@ describe("handleListProjects", () => {
     await createTestProject(prisma, { id: "qux", ownerId: "bob" });
   });
 
-  it("requires a session cookie", async () => {
-    const req = new Request("http://localhost:8002/v1/projects");
+  it("requires a user", async () => {
+    const req = newTestRequest({ authCookie: "wrong" });
 
-    let error: any = null;
-    try {
-      await handleListProjects(req);
-    } catch (err) {
-      error = err;
-    }
+    const fn = async () => handleListProjects(req);
 
-    expect(error instanceof ApiError).toBe(true);
-    const apiError = error as ApiError;
-    expect(apiError.status).toBe(401);
-    expect(apiError.message).toBe("missing session cookie");
-  });
-
-  it("requires a user for the session cookie", async () => {
-    const req = new Request("http://localhost:8002/v1/projects");
-    req.headers.set("cookie", `${SESSION_COOKIE_NAME}=wrong`);
-
-    let error: any = null;
-    try {
-      await handleListProjects(req);
-    } catch (err) {
-      error = err;
-    }
-
-    expect(error instanceof ApiError).toBe(true);
-    const apiError = error as ApiError;
-    expect(apiError.status).toBe(401);
-    expect(apiError.message).toBe("session not found");
+    await expect(fn).rejects.toThrow(ApiError);
+    await expect(fn).rejects.toThrow("session not found");
   });
 
   describe("with an authorized user", () => {
@@ -68,8 +45,8 @@ describe("handleListProjects", () => {
     });
 
     it("returns the list of projects", async () => {
-      const req = new Request("http://localhost:8002/v1/projects");
-      req.headers.set("cookie", `${SESSION_COOKIE_NAME}=bobs-key`);
+      const req = newTestRequest({ authCookie: "bobs-key" });
+
       const got = await handleListProjects(req);
       expect(got.projects.length).toBe(3);
       expect(
