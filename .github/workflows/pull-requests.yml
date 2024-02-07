@@ -500,20 +500,23 @@ jobs:
         ports:
           - 54322:5432
     steps:
-      - name: Install nix
-        uses: cachix/install-nix-action@v12
-        with:
-          nix_path: nixpkgs=https://github.com/NixOS/nixpkgs/archive/6120ac5cd201f6cb593d1b80e861be0342495be9.tar.gz
       - name: Check out the repo
         uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 18
+      - uses: pnpm/action-setup@v2
+        name: Install pnpm
+        with:
+          version: 8
+          run_install: false
       - name: Cache .pnpm-store
         uses: actions/cache@v2
         with:
           path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
-      - name: Install additional dependencies
-        run: sudo apt-get update && sudo apt-get install libssl-dev
       - name: Test
         env:
           DATABASE_URL: postgres://postgres:password@localhost:54322/utopia-test?sslmode=disable
-        run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run test-remix-bff-ci
+        run: |
+          cd utopia-remix && ./run-integration-tests-ci.sh
