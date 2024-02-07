@@ -20,6 +20,6 @@ function handleGetThumbnail(params: Params<string>) {
   return async function () {
     const id = params["projectId"];
     ensure(id != null, "project id is null", 400);
-    return fetch(`https://picsum.photos/seed/${id}/300/300`); // TODO just a placeholder 🙃
+    return fetch(`https://cdn.utopia.app/pyramid_small.png`); // TODO just a placeholder 🙃
   };
 }
