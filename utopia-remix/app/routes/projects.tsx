@@ -9,6 +9,7 @@ import { Status } from "../util/statusCodes.server";
 import { sprinkles } from "../styles/sprinkles.css";
 import { button } from "../styles/button.css";
 import { projectCategoryButton } from "../styles/projectCategoryButton.css";
+import { newProjectButton } from "../styles/newProjectButton.css";
 
 const PAGINATION_LIMIT = 10;
 
@@ -55,6 +56,10 @@ const ProjectsPage = React.memo(() => {
     },
     [],
   );
+
+  const createNewProject = () => {
+    window.open(`/project/`, "_self");
+  };
 
   React.useEffect(() => {
     setProjects(data.projects);
@@ -198,69 +203,104 @@ const ProjectsPage = React.memo(() => {
           Utopia
         </div>
       </div>
-
       <div
         style={{
           display: "flex",
           flexGrow: 1,
           flexDirection: "column",
-          background: "orange",
-          overflowY: "scroll",
+          gap: marginSize,
         }}
       >
-        <table>
-          <thead>
-            <tr>
-              <th>preview</th>
-              <th>title</th>
-              <th>modified</th>
-              <th>owner</th>
-              <th>actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {projects.map((project) => {
-              return (
-                <tr key={project.proj_id}>
-                  <td>
-                    <img
-                      style={{ width: 100, height: 100 }}
-                      className={sprinkles({ borderRadius: "rounded" })}
-                      src={`/v1/thumbnail/${project.proj_id}`}
-                    />
-                  </td>
-                  <td>{project.title}</td>
-                  <td>{moment(project.modified_at).fromNow()}</td>
-                  <td>
-                    {project.owner_id === data.user.user_id
-                      ? "You"
-                      : "Somebody else"}
-                  </td>
-                  <td>
-                    <button
-                      className={button({
-                        color: "accent",
-                        size: "medium",
-                      })}
-                      onClick={openProject(project.proj_id)}
-                    >
-                      <span>↗️</span>
-                      <span>Open</span>
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        {!reachedEnd ? (
+        <div
+          style={{
+            height: 60,
+            display: "flex",
+            flexDirection: "row",
+            gap: 15,
+          }}
+        >
           <button
-            className={button({ color: "accent", size: "medium" })}
-            onClick={loadMore(projects.length)}
+            className={newProjectButton({ color: "orange" })}
+            onClick={createNewProject}
           >
-            Load more
+            <span>+ Blank Project</span>
           </button>
-        ) : null}
+          <button
+            className={newProjectButton({
+              color: "pink",
+            })}
+          >
+            <span>+ Project On GitHub</span>
+          </button>
+          <button
+            className={newProjectButton({
+              color: "purple",
+            })}
+          >
+            <span>+ Remix Project</span>
+          </button>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            flexGrow: 1,
+            flexDirection: "column",
+            overflowY: "scroll",
+          }}
+        >
+          <table>
+            <thead>
+              <tr>
+                <th>preview</th>
+                <th>title</th>
+                <th>modified</th>
+                <th>owner</th>
+                <th>actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {projects.map((project) => {
+                return (
+                  <tr key={project.proj_id}>
+                    <td>
+                      <img
+                        style={{ width: 100, height: 100 }}
+                        className={sprinkles({ borderRadius: "rounded" })}
+                        src={`/v1/thumbnail/${project.proj_id}`}
+                      />
+                    </td>
+                    <td>{project.title}</td>
+                    <td>{moment(project.modified_at).fromNow()}</td>
+                    <td>
+                      {project.owner_id === data.user.user_id
+                        ? "You"
+                        : "Somebody else"}
+                    </td>
+                    <td>
+                      <button
+                        className={button({
+                          color: "accent",
+                          size: "medium",
+                        })}
+                        onClick={openProject(project.proj_id)}
+                      >
+                        <span>Open</span>
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          {!reachedEnd ? (
+            <button
+              className={button({ color: "accent", size: "medium" })}
+              onClick={loadMore(projects.length)}
+            >
+              Load more
+            </button>
+          ) : null}
+        </div>
       </div>
     </div>
   );
