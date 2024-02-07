@@ -511,6 +511,8 @@ jobs:
         with:
           path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
+      - name: Install additional dependencies
+        run: sudo apt-get update && sudo apt-get install libssl-dev
       - name: Test
         env:
           DATABASE_URL: postgres://postgres:password@localhost:54322/utopia-test?sslmode=disable
