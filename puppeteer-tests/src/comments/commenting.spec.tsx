@@ -351,8 +351,15 @@ describe('Comments test', () => {
   })
 
   it('scene comment canvas coordinates are maintained when scene is moved', async () => {
+    // The `wait` calls sprinkled through this test appear to give the Liveblocks
+    // backend a chance to stabilise the values that we repeatedly update relating to the
+    // position of the comment thread. Otherwise every so often the position seems to
+    // "reset" and the comment indicator snaps back to a previous position.
+    // As the test runs unnaturally fast, perhaps multiple changes are inflight behind the
+    // scenes and then they have to resolve that conflict.
     const page = await initSignedInBrowserTest(utopiaBrowser)
     await enterCommentMode(page)
+    await wait(1000)
 
     const playgroundSceneBoundingBox = roundBoundingBox(
       await getBoundingBox(page, PlaygroundSceneSelector),
@@ -365,10 +372,12 @@ describe('Comments test', () => {
       playgroundSceneBoundingBox.x + 100,
       playgroundSceneBoundingBox.y + 100,
     )
+    await wait(1000)
 
     // Leave comment mode by pressing ESC twice
     await page.keyboard.press('Escape')
     await page.keyboard.press('Escape')
+    await wait(1000)
 
     const sceneToolBarBoundingBox = roundBoundingBox(
       await getBoundingBox(page, SceneToolbarSelector),
@@ -381,17 +390,20 @@ describe('Comments test', () => {
       sceneToolBarCenter,
       offsetPoint(sceneToolBarCenter, { offsetX: 50, offsetY: 50 }),
     )
+    await wait(1000)
 
     const movedSceneBoundingBox = roundBoundingBox(await getBoundingBox(page, SceneToolbarSelector))
     const movedSceneBoundingBoxCenter = roundPoint(center(movedSceneBoundingBox))
 
     await page.mouse.click(movedSceneBoundingBoxCenter.x, movedSceneBoundingBoxCenter.y)
+    await wait(1000)
 
     const commentBoundingBoxBackOnCanvasBeforeDelete = roundBoundingBox(
       await getBoundingBox(page, CommentIndicatorSelector),
     )
     // delete the scene
     await page.keyboard.press('Backspace')
+    await wait(1000)
 
     const commentBoundingBoxBackOnCanvasAfterDelete = roundBoundingBox(
       await getBoundingBox(page, CommentIndicatorSelector),
