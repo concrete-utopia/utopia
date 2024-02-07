@@ -214,7 +214,25 @@ export interface UtopiaRemixRootComponentProps {
 export const UtopiaRemixRootComponent = (props: UtopiaRemixRootComponentProps) => {
   const remixDerivedDataRef = useRefEditorState((store) => store.derived.remixData)
 
-  const routes = useGetRoutes(props.getLoadContext)
+  const prevRoutes = React.useRef<(RouteObject | DataRouteObject)[] | null>(null)
+  const routesI = useGetRoutes(props.getLoadContext)
+  const routes = React.useMemo(() => {
+    if (prevRoutes.current == null || prevRoutes.current.length !== routesI.length) {
+      prevRoutes.current = routesI
+      return routesI
+    }
+
+    let prevIdsSet = new Set(prevRoutes.current.map((r) => r.id ?? '0'))
+    let currentIdsSet = new Set(routesI.map((r) => r.id ?? '0'))
+
+    const same = [...prevIdsSet].every((id) => currentIdsSet.has(id))
+
+    if (!same) {
+      return routesI
+    }
+
+    return prevRoutes.current
+  }, [routesI])
 
   const basePath = props[UTOPIA_PATH_KEY]
 
