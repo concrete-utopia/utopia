@@ -1,12 +1,13 @@
 // you can turn on/off debug features individually here
 
 export const HOSTNAME: string = typeof window === 'undefined' ? '' : window.location.hostname
+export const SCHEME: string = typeof window === 'undefined' ? 'http' : window.location.protocol
+export const BARE_HOSTNAME = HOSTNAME.startsWith('www.') ? HOSTNAME.slice(4) : HOSTNAME
+const isLocalHost = BARE_HOSTNAME.startsWith('localhost')
 export const PORT: string =
   typeof window === 'undefined' || window.location.port.length === 0
     ? ''
     : `:${window.location.port}`
-export const SCHEME: string = typeof window === 'undefined' ? 'http' : window.location.protocol
-export const BARE_HOSTNAME = HOSTNAME.startsWith('www.') ? HOSTNAME.slice(4) : HOSTNAME
 export const BARE_HOST = `${BARE_HOSTNAME}${PORT}`
 export const BASE_URL: string = `${SCHEME}//${HOSTNAME}${PORT}/`
 
@@ -44,9 +45,7 @@ export function isBackendBFF(): boolean {
 }
 
 export const UTOPIA_BACKEND =
-  (PRODUCTION_OR_STAGING_CONFIG
-    ? BASE_URL
-    : `${SCHEME}//${HOSTNAME}:${LOCAL_BACKEND_PORTS[BACKEND_TYPE]}/`) + 'v1/'
+  (isLocalHost ? `${SCHEME}//${HOSTNAME}:${LOCAL_BACKEND_PORTS[BACKEND_TYPE]}/` : BASE_URL) + 'v1/'
 
 const SECONDARY_BASE_URL: string = PRODUCTION_CONFIG
   ? `https://utopia.fm/`

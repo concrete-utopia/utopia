@@ -214,6 +214,13 @@ let
       ${pnpm}/bin/pnpm install
       ${pnpm}/bin/pnpm run build
     '')
+    (pkgs.writeScriptBin "build-utopia-vscode-common-production" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-common
+      ${pnpm}/bin/pnpm install
+      ${pnpm}/bin/pnpm run production
+    '')
     (pkgs.writeScriptBin "build-utopia-vscode-extension" ''
       #!/usr/bin/env bash
       set -e
@@ -221,6 +228,14 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-extension
       ${pnpm}/bin/pnpm install
       ${pnpm}/bin/pnpm run build
+    '')
+    (pkgs.writeScriptBin "build-utopia-vscode-extension-production" ''
+      #!/usr/bin/env bash
+      set -e
+      build-utopia-vscode-common-production
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-extension
+      ${pnpm}/bin/pnpm install
+      ${pnpm}/bin/pnpm run production
     '')
     (pkgs.writeScriptBin "update-vscode-build-extension" ''
       #!/usr/bin/env bash
