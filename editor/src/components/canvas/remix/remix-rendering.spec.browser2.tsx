@@ -1407,6 +1407,7 @@ describe('Remix navigation', () => {
 
       await switchToEditMode(renderResult)
 
+      // rerun 1
       // check that switching modes doesn't change the navigation state
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
       expect(
