@@ -2395,7 +2395,7 @@ async function navigateWithRemixSceneLabelButton(
   button: RemixSceneLabelButtonType,
 ) {
   resetRemixNavigationFinishedPromiseForTests()
-  const remixNavContext = RemixNavigationAtomForTests.current[EP.toString(pathToRemixScene)]!
+  const remixNavContext = await RemixNavigationAtomForTests.current
   await remixNavContext[button]()
   // await mouseClickAtPoint(
   //   renderResult.renderedDOM.getByTestId(RemixSceneLabelButtonTestId(pathToRemixScene, button)),
@@ -2404,6 +2404,7 @@ async function navigateWithRemixSceneLabelButton(
   //     y: 2,
   //   },
   // )
+  RemixNavigationAtomForTests.current = defer()
   await Promise.all([
     RemixNavigationFinishedPromiseForTests.current,
     RemixNavigationCallbackCalledPromiseForTests.current,

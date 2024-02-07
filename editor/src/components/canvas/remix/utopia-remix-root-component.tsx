@@ -47,7 +47,11 @@ export const RemixNavigationCallbackCalledPromiseForTests: { current: ReturnType
   current: defer(),
 }
 
-export const RemixNavigationAtomForTests: { current: RemixNavigationAtomData } = { current: {} }
+export const RemixNavigationAtomForTests: {
+  current: ReturnType<typeof defer<RemixNavigationContext>>
+} = {
+  current: defer<RemixNavigationContext>(),
+}
 
 export function useRemixNavigationContext(
   scenePath: ElementPath | null,
@@ -266,7 +270,27 @@ export const UtopiaRemixRootComponent = (props: UtopiaRemixRootComponentProps) =
           ? existingEntries.concat(location)
           : existingEntries
 
-        RemixNavigationAtomForTests.current = {
+        RemixNavigationAtomForTests.current.resolve({
+          forward: async () => {
+            await innerRouter.navigate(1)
+            resolveRemixNavigationFinishedPromiseForTests()
+          },
+          back: async () => {
+            await innerRouter.navigate(-1)
+            resolveRemixNavigationFinishedPromiseForTests()
+          },
+          home: async () => {
+            await innerRouter.navigate('/')
+            resolveRemixNavigationFinishedPromiseForTests()
+          },
+          navigate: async (loc: string) => {
+            await innerRouter.navigate(loc)
+            resolveRemixNavigationFinishedPromiseForTests()
+          },
+          location: location,
+          entries: updatedEntries,
+        })
+        return {
           ...current,
           [EP.toString(basePath)]: {
             forward: async () => {
@@ -289,7 +313,6 @@ export const UtopiaRemixRootComponent = (props: UtopiaRemixRootComponentProps) =
             entries: updatedEntries,
           },
         }
-        return RemixNavigationAtomForTests.current
       })
     },
     [basePath, setNavigationData],
