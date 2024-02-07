@@ -1376,10 +1376,10 @@ describe('Remix navigation', () => {
       ).toBeGreaterThan(0)
       await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'forward')
       expect(TEST_RemixLastNavigatedFrom.current).toEqual('/')
+      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
       expect(
         renderResult.renderedDOM.queryAllByText(AboutTextContent).filter(filterOutMenuLabels),
       ).toHaveLength(1)
-      expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
 
       expect(
         RemixNavigationForTests.current![EP.toString(pathToRemixScene)]!.location.pathname,
