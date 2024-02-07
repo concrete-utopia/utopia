@@ -22,9 +22,10 @@ const colorProperties = defineProperties({
 });
 
 const borderRadii = {
-  rounded: 10,
-  buttonRound: 30,
-  roundedFull: "100%",
+  small: 3,
+  medium: 10,
+  large: 30,
+  full: "100%",
 };
 
 const borderProperties = defineProperties({

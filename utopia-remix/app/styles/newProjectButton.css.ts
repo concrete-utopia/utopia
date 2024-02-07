@@ -4,7 +4,7 @@ import { sprinkles } from "./sprinkles.css";
 export const newProjectButton = recipe({
   base: [
     sprinkles({
-      borderRadius: "rounded",
+      borderRadius: "medium",
       color: "lightModeBlack",
     }),
     {

@@ -4,8 +4,7 @@ import { sprinkles } from "./sprinkles.css";
 export const projectCategoryButton = recipe({
   base: [
     sprinkles({
-      borderRadius: "buttonRound",
-      color: "lightModeBlack",
+      borderRadius: "medium",
     }),
     {
       border: "none",
@@ -13,35 +12,24 @@ export const projectCategoryButton = recipe({
       display: "flex",
       alignItems: "center",
       gap: 10,
+      padding: "0 14px",
+      height: 30,
     },
   ],
 
   variants: {
     color: {
-      neutral: { background: "transparent" },
-      selected: { background: "#0075F9", color: 'white' },
-    },
-    size: {
-      small: { padding: 8 },
-      medium: { padding: '0 14px', height: 30 },
-      large: { padding: 16 },
+      neutral: {
+        background: "transparent",
+        ":hover": {
+          background: "#0075F910" ,
+        },
+      },
+      selected: { background: "#0075F9", color: "white" },
     },
   },
 
-  compoundVariants: [
-    {
-      variants: {
-        color: "neutral",
-        size: "large",
-      },
-      style: {
-        background: "ghostwhite",
-      },
-    },
-  ],
-
   defaultVariants: {
     color: "neutral",
-    size: "medium",
   },
 });

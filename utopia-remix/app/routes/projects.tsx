@@ -144,7 +144,7 @@ const ProjectsPage = React.memo(() => {
             }}
           >
             <img
-              className={sprinkles({ borderRadius: "rounded" })}
+              className={sprinkles({ borderRadius: "medium" })}
               style={{ width: 40 }}
               src={data.user.picture ?? undefined}
               referrerPolicy="no-referrer"
@@ -169,7 +169,6 @@ const ProjectsPage = React.memo(() => {
             <button
               className={projectCategoryButton({
                 color: "selected",
-                size: "medium",
               })}
             >
               <span>All My Projects</span>
@@ -177,7 +176,6 @@ const ProjectsPage = React.memo(() => {
             <button
               className={projectCategoryButton({
                 color: "neutral",
-                size: "medium",
               })}
             >
               <span>Private</span>
@@ -185,7 +183,6 @@ const ProjectsPage = React.memo(() => {
             <button
               className={projectCategoryButton({
                 color: "neutral",
-                size: "medium",
               })}
             >
               <span>Public</span>
@@ -193,7 +190,6 @@ const ProjectsPage = React.memo(() => {
             <button
               className={projectCategoryButton({
                 color: "neutral",
-                size: "medium",
               })}
             >
               <span>Shared With Me</span>
@@ -201,7 +197,6 @@ const ProjectsPage = React.memo(() => {
             <button
               className={projectCategoryButton({
                 color: "neutral",
-                size: "medium",
               })}
             >
               <span>Trash</span>
@@ -256,12 +251,16 @@ const ProjectsPage = React.memo(() => {
             </button>
           ))}
         </div>
+        <div style={{ fontSize: 16, fontWeight: 600, padding: "5px 10px" }}>
+          All My Projects
+        </div>
         <div
           style={{
             display: "flex",
             flexGrow: 1,
             flexDirection: "column",
             overflowY: "scroll",
+            scrollbarColor: "grey transparent",
           }}
         >
           <table>
@@ -281,7 +280,7 @@ const ProjectsPage = React.memo(() => {
                     <td>
                       <img
                         style={{ width: 100, height: 100 }}
-                        className={sprinkles({ borderRadius: "rounded" })}
+                        className={sprinkles({ borderRadius: "medium" })}
                         src={`/v1/thumbnail/${project.proj_id}`}
                       />
                     </td>

@@ -19,13 +19,3 @@ export const styles = {
     }),
   ]),
 };
-
-const myStyle = style({
-  background: 'transparent',
-  ':hover': {
-   background: '#0075F910'
-  },
-  '::before': {
-    background: '#0075F9'
-  }
-});
