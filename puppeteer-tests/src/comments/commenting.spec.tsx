@@ -222,6 +222,12 @@ describe('Comments test', () => {
   })
 
   it('can reparent comment', async () => {
+    // The `wait` calls sprinkled through this test appear to give the Liveblocks
+    // backend a chance to stabilise the values that we repeatedly update relating to the
+    // position of the comment thread. Otherwise every so often the position seems to
+    // "reset" and the comment indicator snaps back to a previous position.
+    // As the test runs unnaturally fast, perhaps multiple changes are inflight behind the
+    // scenes and then they have to resolve that conflict.
     const page = await initSignedInBrowserTest(utopiaBrowser)
     await enterCommentMode(page)
     await wait(1000)
