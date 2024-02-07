@@ -10,7 +10,7 @@ import {
 } from '../../../sample-projects/sample-project-utils.test-utils'
 import type { Modifiers } from '../../../utils/modifiers'
 import { emptyModifiers, cmdModifier } from '../../../utils/modifiers'
-import { selectComponentsForTest } from '../../../utils/utils.test-utils'
+import { selectComponentsForTest, wait } from '../../../utils/utils.test-utils'
 import {
   runDOMWalker,
   selectComponents,
@@ -48,6 +48,7 @@ import {
 import {
   RemixNavigationBarButtonTestId,
   RemixNavigationBarPathTestId,
+  RemixNavigationForTests,
 } from '../../editor/remix-navigation-bar'
 import { NonResizableControlTestId } from '../controls/select-mode/non-resizable-control'
 import {
@@ -1348,6 +1349,12 @@ describe('Remix navigation', () => {
       expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixIndexPathLabel)
 
+      expect(
+        RemixNavigationForTests.current![EP.toString(pathToRemixScene)]!.location.pathname,
+      ).toEqual('/')
+      expect(
+        RemixNavigationForTests.current![EP.toString(pathToRemixScene)]!.entries.length,
+      ).toBeGreaterThan(0)
       await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'forward')
       expect(
         renderResult.renderedDOM.queryAllByText(AboutTextContent).filter(filterOutMenuLabels),
@@ -1359,6 +1366,7 @@ describe('Remix navigation', () => {
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixIndexPathLabel)
     })
 
+    // it.only('can navigate with the scene label nav buttons, in edit mode', async () => {
     it('can navigate with the scene label nav buttons, in edit mode', async () => {
       const renderResult = await renderRemixProject(projectWithMultipleRoutes())
 
@@ -1387,6 +1395,12 @@ describe('Remix navigation', () => {
       expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixIndexPathLabel)
 
+      expect(
+        RemixNavigationForTests.current![EP.toString(pathToRemixScene)]!.location.pathname,
+      ).toEqual('/')
+      expect(
+        RemixNavigationForTests.current![EP.toString(pathToRemixScene)]!.entries.length,
+      ).toBeGreaterThan(0)
       await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'forward')
       expect(
         renderResult.renderedDOM.queryAllByText(AboutTextContent).filter(filterOutMenuLabels),
@@ -1441,6 +1455,10 @@ describe('Remix navigation', () => {
       expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
       expect(getPathInRemixNavigationBar(renderResult)).toEqual(RemixIndexPathLabel)
 
+      expect(RemixNavigationForTests.current!['storyboard/remix']!.location.pathname).toEqual('/')
+      expect(RemixNavigationForTests.current!['storyboard/remix']!.entries.length).toBeGreaterThan(
+        0,
+      )
       await navigateWithRemixNavigationBarButton(renderResult, 'forward')
       expect(
         renderResult.renderedDOM.queryAllByText(AboutTextContent).filter(filterOutMenuLabels),
