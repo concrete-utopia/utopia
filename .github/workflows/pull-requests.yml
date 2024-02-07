@@ -513,5 +513,5 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
       - name: Test
         env:
-          DATABASE_URL: postgres://postgres:password@postgres:54322/utopia-test?sslmode=disable
+          DATABASE_URL: postgres://postgres:password@localhost:54322/utopia-test?sslmode=disable
         run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run test-remix-bff-ci
