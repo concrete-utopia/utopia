@@ -4,7 +4,8 @@ import { sprinkles } from "./sprinkles.css";
 export const styles = {
   root: style([
     {
-      fontFamily: "sans-serif",
+      fontFamily: "Inter, sans-serif",
+      fontSize: "1em",
     },
     sprinkles({
       background: {
