@@ -94,6 +94,8 @@ import { usePopper } from 'react-popper'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
 
 export const VariableFromScopeOptionTestId = (idx: number) => `variable-from-scope-${idx}`
+export const DataPickerPopupButtonTestId = `data-picker-popup-button-test-id`
+export const DataPickerPopupTestId = `data-picker-popup-test-id`
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -314,7 +316,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
             focusOnMount={props.focusOnMount}
           />
         </div>
-        <Button onClick={onClick}>
+        <Button onClick={onClick} data-testid={DataPickerPopupButtonTestId}>
           <Icn
             type='pipette'
             color='secondary'
@@ -442,6 +444,7 @@ const DataPickerPopup = React.memo(
             borderRadius: UtopiaTheme.inputBorderRadius,
             alignItems: 'flex-start',
           }}
+          data-testid={DataPickerPopupTestId}
         >
           <div style={{ fontSize: 14, fontWeight: 400, marginBottom: 16 }}>
             <span>Data</span>
