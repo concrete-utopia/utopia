@@ -10,7 +10,7 @@
     "start": "remix-serve ./build/index.js",
     "typecheck": "tsc",
     "format": "prettier --write .",
-    "test": "docker compose down -v && docker compose up -d && sleep 5 && export DATABASE_URL='postgres://postgres:password@localhost:54322/postgres?sslmode=disable' && pnpm exec prisma db push && jest --runInBand --verbose && docker compose down -v"
+    "test": "./run-integration-tests.sh"
   },
   "prettier": {},
   "dependencies": {
