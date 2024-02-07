@@ -508,7 +508,7 @@ jobs:
       - uses: pnpm/action-setup@v2
         name: Install pnpm
         with:
-          version: 8
+          version: 5.4
           run_install: false
       - name: Cache .pnpm-store
         uses: actions/cache@v2
