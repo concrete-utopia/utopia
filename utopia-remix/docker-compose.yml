@@ -1,5 +1,6 @@
 services:
   db-test:
+    container_name: utopia-remix-db-test
     image: postgres:13 # matching the version in shell.nix
     ports:
       - 54322:5432
