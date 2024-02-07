@@ -4,7 +4,7 @@ import { sprinkles } from "./sprinkles.css";
 export const projectCategoryButton = recipe({
   base: [
     sprinkles({
-      borderRadius: "medium",
+      borderRadius: "large",
     }),
     {
       border: "none",
