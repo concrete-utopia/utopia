@@ -80,6 +80,34 @@ const ProjectsPage = React.memo(() => {
     }
   }, [projectsFetcher.data]);
 
+  const newProjectButtons = [
+    {
+      title: "+ Blank Project",
+      onClick: createNewProject,
+      color: "orange",
+    },
+    {
+      title: "+ Project On GitHub",
+      onClick: createNewProject,
+      color: "pink",
+    },
+    {
+      title: "+ Import From GitHub",
+      onClick: createNewProject,
+      color: "purple",
+    },
+    {
+      title: "+ Remix Project",
+      onClick: createNewProject,
+      color: "blue",
+    },
+    {
+      title: "+ Shopify Store",
+      onClick: createNewProject,
+      color: "green",
+    },
+  ] as const;
+
   return (
     <div
       style={{
@@ -219,26 +247,14 @@ const ProjectsPage = React.memo(() => {
             gap: 15,
           }}
         >
-          <button
-            className={newProjectButton({ color: "orange" })}
-            onClick={createNewProject}
-          >
-            <span>+ Blank Project</span>
-          </button>
-          <button
-            className={newProjectButton({
-              color: "pink",
-            })}
-          >
-            <span>+ Project On GitHub</span>
-          </button>
-          <button
-            className={newProjectButton({
-              color: "purple",
-            })}
-          >
-            <span>+ Remix Project</span>
-          </button>
+          {newProjectButtons.map((p) => (
+            <button
+              className={newProjectButton({ color: p.color })}
+              onClick={p.onClick}
+            >
+              <span>{p.title}</span>
+            </button>
+          ))}
         </div>
         <div
           style={{

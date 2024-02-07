@@ -24,9 +24,7 @@ export const newProjectButton = recipe({
 
   variants: {
     color: {
-      orange: {
-        background: "#FF9243",
-      },
+      orange: { background: "#FF9243" },
       pink: { background: "#FF43A9" },
       purple: { background: "#9643FF" },
       blue: { background: "#3992FF" },
