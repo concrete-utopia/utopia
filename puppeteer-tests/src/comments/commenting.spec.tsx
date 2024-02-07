@@ -224,6 +224,7 @@ describe('Comments test', () => {
   it.only('can reparent comment', async () => {
     const page = await initSignedInBrowserTest(utopiaBrowser)
     await enterCommentMode(page)
+    await wait(1000)
 
     const playgroundSceneBoundingBox = roundBoundingBox(
       await getBoundingBox(page, PlaygroundSceneSelector),
@@ -235,6 +236,7 @@ describe('Comments test', () => {
       playgroundSceneBoundingBox.x - 100,
       playgroundSceneBoundingBox.y - 100,
     )
+    await wait(1000)
 
     const originalCommentIndicatorBoundingBox = roundBoundingBox(
       await getBoundingBox(page, CommentIndicatorSelector),
@@ -253,8 +255,10 @@ describe('Comments test', () => {
       center(originalCommentIndicatorBoundingBox),
       center(playgroundSceneBoundingBox),
     )
+    await wait(1000)
 
     await dismissHoverPreview(page)
+    await wait(1000)
     const commentBoundingBoxInScene = roundBoundingBox(
       await getBoundingBox(page, CommentIndicatorSelector),
     )
@@ -278,6 +282,7 @@ describe('Comments test', () => {
       offsetPoint(sceneToolBarCenter, { offsetX: 50, offsetY: 50 }),
     )
 
+    await wait(1000)
     const commentBoundingBoxInMovedScene = roundBoundingBox(
       await getBoundingBox(page, CommentIndicatorSelector),
     )
@@ -298,8 +303,10 @@ describe('Comments test', () => {
       x: movedSceneBoundingBox.x - 50,
       y: movedSceneBoundingBox.y - 50,
     })
+    await wait(1000)
 
     await dismissHoverPreview(page)
+    await wait(1000)
     const commentBoundingBoxBackOnCanvasBeforeMove = roundBoundingBox(
       await getBoundingBox(page, CommentIndicatorSelector),
     )
@@ -321,6 +328,7 @@ describe('Comments test', () => {
       movedSceneLabelCenter,
       offsetPoint(movedSceneLabelCenter, { offsetX: 150, offsetY: 150 }),
     )
+    await wait(1000)
     const commentBoundingBoxBackOnCanvasAfterMove = roundBoundingBox(
       await getBoundingBox(page, CommentIndicatorSelector),
     )
