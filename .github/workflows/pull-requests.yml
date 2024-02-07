@@ -512,4 +512,4 @@ jobs:
       - name: Test
         env:
           DATABASE_URL: postgres://postgres:password@postgres:5432/utopia-test?sslmode=disable
-        run: nix-shell --arg includeEditorBuildSupport false --arg includeRunLocallySupport false --run test-remix-bff-ci
+        run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run test-remix-bff-ci
