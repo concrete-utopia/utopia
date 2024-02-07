@@ -9,5 +9,5 @@ pnpm install
 pnpm exec prisma generate
 pnpm exec prisma db push
 
-jest --runInBand --verbose
+pnpm exec jest --runInBand --verbose
 
