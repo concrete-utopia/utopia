@@ -10,11 +10,11 @@ export const styles = {
     sprinkles({
       background: {
         lightMode: "white",
-        darkMode: "black",
+        darkMode: "darkModeBlack",
       },
       color: {
-        lightMode: "black",
-        darkMode: "aqua",
+        lightMode: "lightModeBlack",
+        darkMode: "white",
       },
     }),
   ]),

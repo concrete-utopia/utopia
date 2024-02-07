@@ -28,6 +28,7 @@ export async function loader(args: LoaderFunctionArgs) {
 }
 
 const ProjectsPage = React.memo(() => {
+  const marginSize = 30;
 
   const data = useLoaderData() as unknown as {
     projects: Project[];
@@ -75,82 +76,126 @@ const ProjectsPage = React.memo(() => {
   return (
     <div
       style={{
-        background: "pink",
-        margin: 30,
-        height: "calc(100vh - 60px)",
+        margin: marginSize,
+        height: `calc(100vh - ${marginSize * 2}px)`,
+        width: `calc(100vw - ${marginSize * 2}px)`,
+        gap: marginSize,
         overflow: "hidden",
         boxSizing: "border-box",
+        display: "flex",
+        flexDirection: "row",
       }}
     >
       <div
         style={{
           display: "flex",
-          alignItems: "center",
-          gap: 10,
+          flexDirection: "column",
+          width: 230,
+          justifyContent: "space-between",
         }}
       >
-        <img
-          className={sprinkles({ borderRadius: "rounded" })}
-          style={{ width: 40 }}
-          src={data.user.picture ?? undefined}
-          referrerPolicy="no-referrer"
-        />
-        <div>{data.user.name}</div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+          }}
+        >
+          <img
+            className={sprinkles({ borderRadius: "rounded" })}
+            style={{ width: 40 }}
+            src={data.user.picture ?? undefined}
+            referrerPolicy="no-referrer"
+          />
+          <div style={{fontSize: 12, fontWeight: 500}}>{data.user.name}</div>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 10,
+            fontFamily: "Reckless",
+            fontSize: 34,
+          }}
+        >
+          <div
+            style={{
+              height: 60,
+              width: 45,
+              backgroundSize: 45,
+              backgroundRepeat: "no-repeat",
+              backgroundImage:
+                "url(https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_light.png?raw=true)",
+            }}
+          ></div>
+          Utopia
+        </div>
       </div>
 
-      <table>
-        <thead>
-          <tr>
-            <th>preview</th>
-            <th>title</th>
-            <th>modified</th>
-            <th>owner</th>
-            <th>actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {projects.map((project) => {
-            return (
-              <tr key={project.proj_id}>
-                <td>
-                  <img
-                    style={{ width: 100, height: 100 }}
-                    className={sprinkles({ borderRadius: "rounded" })}
-                    src={`/v1/thumbnail/${project.proj_id}`}
-                  />
-                </td>
-                <td>{project.title}</td>
-                <td>{moment(project.modified_at).fromNow()}</td>
-                <td>
-                  {project.owner_id === data.user.user_id
-                    ? "You"
-                    : "Somebody else"}
-                </td>
-                <td>
-                  <button
-                    className={button({
-                      color: "accent",
-                      size: "medium",
-                    })}
-                    onClick={openProject(project.proj_id)}
-                  >
-                    <span>↗️</span>
-                    <span>Open</span>
-                  </button>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-      {!reachedEnd ? (
-        <button
-          className={button({ color: "accent", size: "medium" })}
-          onClick={loadMore(projects.length)}
-        >
-          Load more
-        </button>
-      ) : null}
+      <div
+        style={{
+          display: "flex",
+          flexGrow: 1,
+          flexDirection: "column",
+          background: "orange",
+          overflowY: "scroll",
+        }}
+      >
+        <table>
+          <thead>
+            <tr>
+              <th>preview</th>
+              <th>title</th>
+              <th>modified</th>
+              <th>owner</th>
+              <th>actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {projects.map((project) => {
+              return (
+                <tr key={project.proj_id}>
+                  <td>
+                    <img
+                      style={{ width: 100, height: 100 }}
+                      className={sprinkles({ borderRadius: "rounded" })}
+                      src={`/v1/thumbnail/${project.proj_id}`}
+                    />
+                  </td>
+                  <td>{project.title}</td>
+                  <td>{moment(project.modified_at).fromNow()}</td>
+                  <td>
+                    {project.owner_id === data.user.user_id
+                      ? "You"
+                      : "Somebody else"}
+                  </td>
+                  <td>
+                    <button
+                      className={button({
+                        color: "accent",
+                        size: "medium",
+                      })}
+                      onClick={openProject(project.proj_id)}
+                    >
+                      <span>↗️</span>
+                      <span>Open</span>
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        {!reachedEnd ? (
+          <button
+            className={button({ color: "accent", size: "medium" })}
+            onClick={loadMore(projects.length)}
+          >
+            Load more
+          </button>
+        ) : null}
+      </div>
     </div>
   );
 });

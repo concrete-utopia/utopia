@@ -4,7 +4,9 @@ const colors = {
   black: "#000",
   white: "#fff",
   blue: "#09f",
-  aqua: "#00E3E3"
+  aqua: "#00E3E3",
+  darkModeBlack: "#181C20",
+  lightModeBlack: "#2B2B2B"
 };
 
 const colorProperties = defineProperties({
@@ -40,9 +42,15 @@ const shadowProperties = defineProperties({
   },
 });
 
+const margins = {
+  big: 30,
+  medium: 20,
+  small: 10,
+}
+
 const marginProperties = defineProperties({
   properties: {
-    boxShadow: shadows,
+    margin: margins,
   },
 });
 
