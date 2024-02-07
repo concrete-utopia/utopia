@@ -483,6 +483,7 @@ jobs:
     name: Run BFF Tests
     timeout-minutes: 12
     runs-on: ubuntu-latest
+    needs: [cache-pnpm-store]
     services:
       postgres:
         image: postgres:13
