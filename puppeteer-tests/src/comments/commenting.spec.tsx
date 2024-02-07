@@ -60,6 +60,8 @@ async function dismissHoverPreview(page: Page) {
   await wait(1000) // wait for the animation duration (100ms) + flaky test buffer (900ms)
 }
 
+const PauseTimeForLiveblocksSettling = 2000
+
 describe('Comments test', () => {
   let utopiaBrowser = createUtopiaPuppeteerBrowser()
 
@@ -230,7 +232,7 @@ describe('Comments test', () => {
     // scenes and then they have to resolve that conflict.
     const page = await initSignedInBrowserTest(utopiaBrowser)
     await enterCommentMode(page)
-    await wait(1000)
+    await wait(PauseTimeForLiveblocksSettling)
 
     const playgroundSceneBoundingBox = roundBoundingBox(
       await getBoundingBox(page, PlaygroundSceneSelector),
@@ -242,7 +244,7 @@ describe('Comments test', () => {
       playgroundSceneBoundingBox.x - 100,
       playgroundSceneBoundingBox.y - 100,
     )
-    await wait(1000)
+    await wait(PauseTimeForLiveblocksSettling)
 
     const originalCommentIndicatorBoundingBox = roundBoundingBox(
       await getBoundingBox(page, CommentIndicatorSelector),
@@ -261,10 +263,10 @@ describe('Comments test', () => {
       center(originalCommentIndicatorBoundingBox),
       center(playgroundSceneBoundingBox),
     )
-    await wait(1000)
+    await wait(PauseTimeForLiveblocksSettling)
 
     await dismissHoverPreview(page)
-    await wait(1000)
+    await wait(PauseTimeForLiveblocksSettling)
     const commentBoundingBoxInScene = roundBoundingBox(
       await getBoundingBox(page, CommentIndicatorSelector),
     )
@@ -288,7 +290,7 @@ describe('Comments test', () => {
       offsetPoint(sceneToolBarCenter, { offsetX: 50, offsetY: 50 }),
     )
 
-    await wait(1000)
+    await wait(PauseTimeForLiveblocksSettling)
     const commentBoundingBoxInMovedScene = roundBoundingBox(
       await getBoundingBox(page, CommentIndicatorSelector),
     )
@@ -309,10 +311,10 @@ describe('Comments test', () => {
       x: movedSceneBoundingBox.x - 50,
       y: movedSceneBoundingBox.y - 50,
     })
-    await wait(1000)
+    await wait(PauseTimeForLiveblocksSettling)
 
     await dismissHoverPreview(page)
-    await wait(1000)
+    await wait(PauseTimeForLiveblocksSettling)
     const commentBoundingBoxBackOnCanvasBeforeMove = roundBoundingBox(
       await getBoundingBox(page, CommentIndicatorSelector),
     )
@@ -334,7 +336,7 @@ describe('Comments test', () => {
       movedSceneLabelCenter,
       offsetPoint(movedSceneLabelCenter, { offsetX: 150, offsetY: 150 }),
     )
-    await wait(1000)
+    await wait(PauseTimeForLiveblocksSettling)
     const commentBoundingBoxBackOnCanvasAfterMove = roundBoundingBox(
       await getBoundingBox(page, CommentIndicatorSelector),
     )
@@ -359,7 +361,7 @@ describe('Comments test', () => {
     // scenes and then they have to resolve that conflict.
     const page = await initSignedInBrowserTest(utopiaBrowser)
     await enterCommentMode(page)
-    await wait(1000)
+    await wait(PauseTimeForLiveblocksSettling)
 
     const playgroundSceneBoundingBox = roundBoundingBox(
       await getBoundingBox(page, PlaygroundSceneSelector),
@@ -372,12 +374,12 @@ describe('Comments test', () => {
       playgroundSceneBoundingBox.x + 100,
       playgroundSceneBoundingBox.y + 100,
     )
-    await wait(1000)
+    await wait(PauseTimeForLiveblocksSettling)
 
     // Leave comment mode by pressing ESC twice
     await page.keyboard.press('Escape')
     await page.keyboard.press('Escape')
-    await wait(1000)
+    await wait(PauseTimeForLiveblocksSettling)
 
     const sceneToolBarBoundingBox = roundBoundingBox(
       await getBoundingBox(page, SceneToolbarSelector),
@@ -390,20 +392,20 @@ describe('Comments test', () => {
       sceneToolBarCenter,
       offsetPoint(sceneToolBarCenter, { offsetX: 50, offsetY: 50 }),
     )
-    await wait(1000)
+    await wait(PauseTimeForLiveblocksSettling)
 
     const movedSceneBoundingBox = roundBoundingBox(await getBoundingBox(page, SceneToolbarSelector))
     const movedSceneBoundingBoxCenter = roundPoint(center(movedSceneBoundingBox))
 
     await page.mouse.click(movedSceneBoundingBoxCenter.x, movedSceneBoundingBoxCenter.y)
-    await wait(1000)
+    await wait(PauseTimeForLiveblocksSettling)
 
     const commentBoundingBoxBackOnCanvasBeforeDelete = roundBoundingBox(
       await getBoundingBox(page, CommentIndicatorSelector),
     )
     // delete the scene
     await page.keyboard.press('Backspace')
-    await wait(1000)
+    await wait(PauseTimeForLiveblocksSettling)
 
     const commentBoundingBoxBackOnCanvasAfterDelete = roundBoundingBox(
       await getBoundingBox(page, CommentIndicatorSelector),
