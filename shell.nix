@@ -214,6 +214,13 @@ let
       ${pnpm}/bin/pnpm install
       ${pnpm}/bin/pnpm run build
     '')
+    (pkgs.writeScriptBin "build-utopia-vscode-common-production" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-common
+      ${pnpm}/bin/pnpm install
+      ${pnpm}/bin/pnpm run production
+    '')
     (pkgs.writeScriptBin "build-utopia-vscode-extension" ''
       #!/usr/bin/env bash
       set -e
@@ -221,6 +228,14 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-extension
       ${pnpm}/bin/pnpm install
       ${pnpm}/bin/pnpm run build
+    '')
+    (pkgs.writeScriptBin "build-utopia-vscode-extension-production" ''
+      #!/usr/bin/env bash
+      set -e
+      build-utopia-vscode-common-production
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-extension
+      ${pnpm}/bin/pnpm install
+      ${pnpm}/bin/pnpm run production
     '')
     (pkgs.writeScriptBin "update-vscode-build-extension" ''
       #!/usr/bin/env bash
@@ -239,6 +254,12 @@ let
       set -e
       build-utopia-vscode-extension
       build-vscode
+    '')
+    (pkgs.writeScriptBin "pull-extension" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
+      nix-shell --run pull-extension-inner
     '')
     (pkgs.writeScriptBin "check-tool-versions" ''
       #! /usr/bin/env nix-shell
@@ -499,6 +520,7 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-remix
+      ${pnpm}/bin/pnpm install
 	  PORT=8002 pnpm run dev
     '')
   ];
@@ -525,12 +547,6 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-extension
       ${pnpm}/bin/pnpm install
       ${pnpm}/bin/pnpm run watch-dev
-    '')
-    (pkgs.writeScriptBin "pull-extension" ''
-      #!/usr/bin/env bash
-      set -e
-      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
-      nix-shell --run pull-extension-inner
     '')
     (pkgs.writeScriptBin "watch-vscode-build-extension-only" ''
       #!/usr/bin/env bash
@@ -637,9 +653,17 @@ let
   withCustomDevScripts = withServerRunScripts ++ (lib.optionals includeRunLocallySupport customDevScripts);
 
   releaseScripts = [
+    (pkgs.writeScriptBin "prepare-build-editor" ''
+      #!/usr/bin/env bash
+      set -e
+      install-utopia-api
+      build-utopia-vscode-common
+      install-website
+    '')
     (pkgs.writeScriptBin "build-editor-production" ''
       #!/usr/bin/env bash
       set -e
+      prepare-build-editor
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${pnpm}/bin/pnpm install --unsafe-perm
       ${pnpm}/bin/pnpm run production
@@ -647,6 +671,7 @@ let
     (pkgs.writeScriptBin "build-editor-staging" ''
       #!/usr/bin/env bash
       set -e
+      prepare-build-editor
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${pnpm}/bin/pnpm install --unsafe-perm
       ${pnpm}/bin/pnpm run staging

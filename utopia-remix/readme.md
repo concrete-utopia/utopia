@@ -2,6 +2,7 @@
 
 ## Local setup
 
+0. cd to `utopia-remix`, run `pnpm install`
 1. Set up the `.env` file, there's a `.env.sample` file you can use as a blueprint.
 2. Restart Utopia.
 3. Requests to the backend APIs will now be proxied via the Remix BFF.
