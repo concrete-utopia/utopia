@@ -6,6 +6,8 @@ import React from "react";
 import { listProjects } from "../models/project.server";
 import { ensure, requireUser } from "../util/api.server";
 import { Status } from "../util/statusCodes.server";
+import { sprinkles } from "../styles/sprinkles.css";
+import { button } from "../styles/button.css";
 
 const PAGINATION_LIMIT = 10;
 
@@ -79,7 +81,8 @@ const ProjectsPage = React.memo(() => {
         }}
       >
         <img
-          className="rounded-full w-[36px]"
+          className={sprinkles({ borderRadius: "roundedFull" })}
+          style={{ width: 36 }}
           src={data.user.picture ?? undefined}
           referrerPolicy="no-referrer"
         />
@@ -102,7 +105,8 @@ const ProjectsPage = React.memo(() => {
               <tr key={project.proj_id}>
                 <td>
                   <img
-                    className="rounded max-h-[50px]"
+                    style={{ width: 100, height: 100 }}
+                    className={sprinkles({ borderRadius: "rounded" })}
                     src={`/v1/thumbnail/${project.proj_id}`}
                   />
                 </td>
@@ -114,8 +118,15 @@ const ProjectsPage = React.memo(() => {
                     : "Somebody else"}
                 </td>
                 <td>
-                  <button onClick={openProject(project.proj_id)}>
-                    ↗️ Open
+                  <button
+                    className={button({
+                      color: "accent",
+                      size: "medium",
+                    })}
+                    onClick={openProject(project.proj_id)}
+                  >
+                    <span>↗️</span>
+                    <span>Open</span>
                   </button>
                 </td>
               </tr>
@@ -124,7 +135,12 @@ const ProjectsPage = React.memo(() => {
         </tbody>
       </table>
       {!reachedEnd ? (
-        <button onClick={loadMore(projects.length)}>Load more</button>
+        <button
+          className={button({ color: "accent", size: "medium" })}
+          onClick={loadMore(projects.length)}
+        >
+          Load more
+        </button>
       ) : null}
     </div>
   );

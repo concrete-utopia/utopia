@@ -11,8 +11,7 @@ import {
   useLoaderData,
 } from "@remix-run/react";
 import { BrowserEnvironment } from "./env.server";
-
-import stylesheet from "~/tailwind.css";
+import { styles } from "./styles/styles.css";
 
 declare global {
   interface Window {
@@ -21,7 +20,6 @@ declare global {
 }
 
 export const links: LinksFunction = () => [
-  { rel: "stylesheet", href: stylesheet },
   ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
 ];
 
@@ -42,7 +40,7 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body>
+      <body className={styles.root}>
         <Outlet />
         <script
           // https://remix.run/docs/en/1.19.3/guides/envvars#browser-environment-variables
