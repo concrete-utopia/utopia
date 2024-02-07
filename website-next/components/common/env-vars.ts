@@ -1,24 +1,21 @@
 // you can turn on/off debug features individually here
 
-export const HOST: string = typeof window === 'undefined' ? '' : window.location.host
+export const HOSTNAME: string = typeof window === 'undefined' ? '' : window.location.hostname
 export const SCHEME: string = typeof window === 'undefined' ? 'http' : window.location.protocol
-export const BARE_HOST = HOST.startsWith('www.') ? HOST.slice(4) : HOST
-export const BASE_URL: string = `${SCHEME}//${HOST}/`
+export const BARE_HOSTNAME = HOSTNAME.startsWith('www.') ? HOSTNAME.slice(4) : HOSTNAME
+const isLocalHost = BARE_HOSTNAME.startsWith('localhost')
+export const PORT: string =
+  typeof window === 'undefined' || window.location.port.length === 0
+    ? ''
+    : `:${window.location.port}`
+export const BARE_HOST = `${BARE_HOSTNAME}${PORT}`
+export const BASE_URL: string = `${SCHEME}//${HOSTNAME}${PORT}/`
 
 export const PRODUCTION_ENV: boolean = process.env.NODE_ENV === 'production'
 export const PRODUCTION_CONFIG: boolean = process.env.REACT_APP_ENVIRONMENT_CONFIG === 'production'
 const STAGING_CONFIG: boolean = process.env.REACT_APP_ENVIRONMENT_CONFIG === 'staging'
 const BRANCHES_CONFIG: boolean = process.env.REACT_APP_ENVIRONMENT_CONFIG === 'branches'
 const PRODUCTION_OR_STAGING_CONFIG = PRODUCTION_CONFIG || STAGING_CONFIG || BRANCHES_CONFIG
-const SECONDARY_BASE_URL: string = PRODUCTION_CONFIG
-  ? `https://utopia.fm/`
-  : STAGING_CONFIG
-  ? 'https://utopia95.com/'
-  : BRANCHES_CONFIG
-  ? 'https://momentumworks.co/'
-  : BARE_HOST === 'localhost:8000'
-  ? 'http://localhost:8001'
-  : BASE_URL
 
 export const IS_JEST_ENVIRONMENT = process.env.JEST_WORKER_ID != null
 
@@ -29,6 +26,37 @@ export const IS_TEST_ENVIRONMENT: boolean =
 export const IS_BROWSER_TEST_DEBUG: boolean =
   IS_TEST_ENVIRONMENT && process.env.REACT_APP_BROWSER_TEST_DEBUG === 'true'
 
+export const DEVELOPMENT_ENV: boolean =
+  !PRODUCTION_OR_STAGING_CONFIG && !IS_TEST_ENVIRONMENT && HOSTNAME === 'localhost'
+
+type BackendType =
+  | 'bff' // proxied calls via the Remix BFF
+  | 'direct' // direct calls to the backend
+
+const LOCAL_BACKEND_PORTS: { [type in BackendType]: number } = {
+  direct: 8001,
+  bff: 8002,
+}
+
+export const BACKEND_TYPE: BackendType = DEVELOPMENT_ENV ? 'bff' : 'direct'
+
+export function isBackendBFF(): boolean {
+  return BACKEND_TYPE === 'bff'
+}
+
+export const UTOPIA_BACKEND =
+  (isLocalHost ? `${SCHEME}//${HOSTNAME}:${LOCAL_BACKEND_PORTS[BACKEND_TYPE]}/` : BASE_URL) + 'v1/'
+
+const SECONDARY_BASE_URL: string = PRODUCTION_CONFIG
+  ? `https://utopia.fm/`
+  : STAGING_CONFIG
+  ? 'https://utopia95.com/'
+  : BRANCHES_CONFIG
+  ? 'https://momentumworks.co/'
+  : BARE_HOST === 'localhost:8000'
+  ? 'http://localhost:8001'
+  : BASE_URL
+
 export const PROBABLY_ELECTRON: boolean =
   typeof window === 'undefined' || (window as any)?.['process']?.['type'] != null
 
@@ -38,8 +66,6 @@ export const SHOW_FPS = false
 export const DEEP_FREEZE_STATE = !PRODUCTION_ENV
 export const RUN_PERFORMANCE_CHECK = false
 export const REFERENCE_EQUALITY_CHECK = false
-
-export const BASE_WS: string = PRODUCTION_OR_STAGING_CONFIG ? `wss://${HOST}/` : `ws://${HOST}/`
 
 export const STATIC_BASE_URL: string =
   PRODUCTION_OR_STAGING_CONFIG && BARE_HOST !== 'localhost:8000'
@@ -58,8 +84,7 @@ export const VSCODE_EDITOR_IFRAME_BASE_URL: string = PRODUCTION_CONFIG
   : BARE_HOST === 'localhost:8000' || BARE_HOST === 'localhost:8001'
   ? 'http://localhost:8000'
   : BASE_URL
-export const UTOPIA_BACKEND = BASE_URL + 'v1/'
-export const UTOPIA_BACKEND_WS = BASE_WS + 'v1/'
+
 export const ASSET_ENDPOINT = UTOPIA_BACKEND + 'asset/'
 export const THUMBNAIL_ENDPOINT = UTOPIA_BACKEND + 'thumbnail/'
 

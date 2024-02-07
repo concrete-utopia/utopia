@@ -11,6 +11,7 @@ let
     # Hash obtained using `nix-prefetch-url --unpack <url>`
     sha256 = "11w3wn2yjhaa5pv20gbfbirvjq6i3m7pqrq2msf0g7cv44vijwgw";
   }) { inherit config; };
+
 in
   { 
     pkgs = pkgs;

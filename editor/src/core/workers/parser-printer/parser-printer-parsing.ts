@@ -531,6 +531,83 @@ function createExpressionAndText<E extends TS.Node>(
   }
 }
 
+function addBindingNames(
+  sourceFile: TS.SourceFile,
+  name: TS.BindingName,
+  toAddTo: Array<string>,
+): void {
+  if (TS.isIdentifier(name)) {
+    toAddTo.push(name.getText(sourceFile))
+  } else if (TS.isObjectBindingPattern(name)) {
+    for (const element of name.elements) {
+      addBindingNames(sourceFile, element.name, toAddTo)
+    }
+  } else if (TS.isArrayBindingPattern(name)) {
+    for (const element of name.elements) {
+      if (TS.isBindingElement(element)) {
+        addBindingNames(sourceFile, element.name, toAddTo)
+      }
+    }
+  }
+}
+
+interface DefaultOtherJavaScript {
+  type: 'DEFAULT_OTHER_JAVASCRIPT'
+}
+
+const defaultOtherJavaScript: DefaultOtherJavaScript = {
+  type: 'DEFAULT_OTHER_JAVASCRIPT',
+}
+
+interface MapOtherJavaScript {
+  type: 'MAP_OTHER_JAVASCRIPT'
+  valuesInScopeFromParameters: JSXMapExpression['valuesInScopeFromParameters']
+}
+
+function mapOtherJavaScript(
+  valuesInScopeFromParameters: MapOtherJavaScript['valuesInScopeFromParameters'],
+): MapOtherJavaScript {
+  return {
+    type: 'MAP_OTHER_JAVASCRIPT',
+    valuesInScopeFromParameters: valuesInScopeFromParameters,
+  }
+}
+
+type OtherJavaScriptType = DefaultOtherJavaScript | MapOtherJavaScript
+
+function getOtherJavaScriptTypeFromExpression(
+  sourceFile: TS.SourceFile,
+  expr: TS.Node,
+): OtherJavaScriptType {
+  if (TS.isCallExpression(expr) && TS.isPropertyAccessExpression(expr.expression)) {
+    const propertyAccessExpression: TS.PropertyAccessExpression = expr.expression
+    if (propertyAccessExpression.name.getText(sourceFile) === 'map') {
+      const firstArgument = expr.arguments[0]
+      if (TS.isArrowFunction(firstArgument)) {
+        let valuesInScopeFromParameters: MapOtherJavaScript['valuesInScopeFromParameters'] = []
+        for (const parameter of firstArgument.parameters) {
+          addBindingNames(sourceFile, parameter.name, valuesInScopeFromParameters)
+        }
+        return mapOtherJavaScript(valuesInScopeFromParameters)
+      }
+    }
+  }
+  return defaultOtherJavaScript
+}
+
+function getOtherJavaScriptType(
+  sourceFile: TS.SourceFile,
+  expressionsAndTexts: Array<ExpressionAndText<TS.Node>>,
+): OtherJavaScriptType {
+  if (expressionsAndTexts.length === 1) {
+    const expr = expressionsAndTexts[0]?.expression
+    if (expr != null) {
+      return getOtherJavaScriptTypeFromExpression(sourceFile, expr)
+    }
+  }
+  return defaultOtherJavaScript
+}
+
 function parseOtherJavaScript<E extends TS.Node, T extends { uid: string }>(
   sourceFile: TS.SourceFile,
   sourceText: string,
@@ -549,22 +626,13 @@ function parseOtherJavaScript<E extends TS.Node, T extends { uid: string }>(
     definedElsewhere: Array<string>,
     fileNode: typeof SourceNode,
     parsedElementsWithin: ElementsWithinInPosition,
-    isList: boolean,
+    otherJavaScriptType: OtherJavaScriptType,
   ) => Either<string, T>,
 ): Either<string, WithParserMetadata<T>> {
   if (expressionsAndTexts.length === 0) {
     throw new Error('Unable to deal with a collection of zero expressions.')
   } else {
-    const isMapExpression = (() => {
-      if (expressionsAndTexts.length !== 1) {
-        return false
-      }
-      const expr = expressionsAndTexts[0]?.expression
-      if (expr == null) {
-        return false
-      }
-      return isNodeAMapExpression(expr, sourceFile)
-    })()
+    const otherJavaScriptType = getOtherJavaScriptType(sourceFile, expressionsAndTexts)
 
     let startLineShift: number = 0
     let startColumnShift: number = 0
@@ -586,19 +654,7 @@ function parseOtherJavaScript<E extends TS.Node, T extends { uid: string }>(
     }
 
     function addBindingNameToDefinedWithin(name: TS.BindingName): void {
-      if (TS.isIdentifier(name)) {
-        pushToDefinedWithinIfNotThere(name.getText(sourceFile))
-      } else if (TS.isObjectBindingPattern(name)) {
-        for (const element of name.elements) {
-          addBindingNameToDefinedWithin(element.name)
-        }
-      } else if (TS.isArrayBindingPattern(name)) {
-        for (const element of name.elements) {
-          if (TS.isBindingElement(element)) {
-            addBindingNameToDefinedWithin(element.name)
-          }
-        }
-      }
+      addBindingNames(sourceFile, name, definedWithin)
     }
 
     function pushToDefinedElsewhereIfNotThere(inScope: Array<string>, name: string): void {
@@ -1022,7 +1078,7 @@ function parseOtherJavaScript<E extends TS.Node, T extends { uid: string }>(
         buildHighlightBoundsForExpressionsAndText(sourceFile, expressionsAndTexts, created.uid),
       )
       return withParserMetadata(created, highlightBounds, propsUsed, definedElsewhere)
-    }, create(code, definedWithin, definedElsewhere, fileNode, parsedElementsWithin, isMapExpression))
+    }, create(code, definedWithin, definedElsewhere, fileNode, parsedElementsWithin, otherJavaScriptType))
   }
 }
 
@@ -1057,7 +1113,7 @@ export function parseAttributeOtherJavaScript(
     alreadyExistingUIDs,
     '',
     applySteganography,
-    (code, _, definedElsewhere, fileSourceNode, parsedElementsWithin, isList) => {
+    (code, _, definedElsewhere, fileSourceNode, parsedElementsWithin, otherJavaScriptType) => {
       const { code: codeFromFile, map } = fileSourceNode.toStringWithSourceMap({ file: filename })
       const rawMap = JSON.parse(map.toString())
 
@@ -1097,7 +1153,7 @@ export function parseAttributeOtherJavaScript(
           innerDefinedElsewhere,
           prependedWithReturn.sourceMap,
           inPositionToElementsWithin(parsedElementsWithin),
-          isList,
+          otherJavaScriptType,
           comments,
           alreadyExistingUIDs,
           existingHighlightBounds,
@@ -1286,34 +1342,36 @@ function createExpressionOtherJavaScript(
   definedElsewhere: Array<string>,
   sourceMap: RawSourceMap | null,
   elementsWithin: ElementsWithin,
-  isList: boolean,
+  otherJavaScriptType: OtherJavaScriptType,
   comments: ParsedComments,
   alreadyExistingUIDs: Set<string>,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   imports: Imports,
 ): JSExpressionMapOrOtherJavascript {
   // Ideally the value we hash is stable regardless of location, so exclude the SourceMap value from here and provide an empty UID.
-  const value = isList
-    ? jsxMapExpression(
-        originalJavascript,
-        javascript,
-        transpiledJavascript,
-        definedElsewhere,
-        null,
-        elementsWithin,
-        comments,
-        '',
-      )
-    : jsExpressionOtherJavaScript(
-        originalJavascript,
-        javascript,
-        transpiledJavascript,
-        definedElsewhere,
-        null,
-        elementsWithin,
-        comments,
-        '',
-      )
+  const value =
+    otherJavaScriptType.type === 'MAP_OTHER_JAVASCRIPT'
+      ? jsxMapExpression(
+          originalJavascript,
+          javascript,
+          transpiledJavascript,
+          definedElsewhere,
+          null,
+          elementsWithin,
+          comments,
+          otherJavaScriptType.valuesInScopeFromParameters,
+          '',
+        )
+      : jsExpressionOtherJavaScript(
+          originalJavascript,
+          javascript,
+          transpiledJavascript,
+          definedElsewhere,
+          null,
+          elementsWithin,
+          comments,
+          '',
+        )
 
   const { uid } = makeNewUIDFromOriginatingElement(
     sourceFile,
@@ -1325,7 +1383,7 @@ function createExpressionOtherJavaScript(
     comments,
     imports,
   )
-  return isList
+  return otherJavaScriptType.type === 'MAP_OTHER_JAVASCRIPT'
     ? jsxMapExpression(
         originalJavascript,
         javascript,
@@ -1334,6 +1392,7 @@ function createExpressionOtherJavaScript(
         sourceMap,
         elementsWithin,
         comments,
+        otherJavaScriptType.valuesInScopeFromParameters,
         uid,
       )
     : jsExpressionOtherJavaScript(
@@ -1694,7 +1753,7 @@ function getAttributeExpression(
 
     // Handle the expression itself.
     if (initializer.expression == null) {
-      const isList = isNodeAMapExpression(initializer, sourceFile)
+      const otherJavaScriptType = getOtherJavaScriptTypeFromExpression(sourceFile, initializer)
       const comments = getComments(sourceText, initializer)
 
       const withoutParserMetadata = createExpressionOtherJavaScript(
@@ -1706,7 +1765,7 @@ function getAttributeExpression(
         [],
         null,
         {},
-        isList,
+        otherJavaScriptType,
         comments,
         alreadyExistingUIDs,
         existingHighlightBounds,

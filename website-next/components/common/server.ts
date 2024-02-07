@@ -5,6 +5,7 @@ import {
   ASSET_ENDPOINT,
   BASE_URL,
   IS_TEST_ENVIRONMENT,
+  DEVELOPMENT_ENV,
 } from './env-vars'
 import type { ProjectListing } from './persistence'
 import type { LoginState } from './user'
@@ -25,7 +26,7 @@ export const PROJECT_EDITOR = BASE_URL + 'project'
 
 // if we want to enable CORS, we need the server to be able to answer to preflight OPTION requests with the proper Allow-Access headers
 // until then, this is keeping us safe from attempting a CORS request that results in cryptic error messages
-export const MODE = 'same-origin'
+export const MODE = !DEVELOPMENT_ENV ? 'same-origin' : undefined
 
 export const HEADERS = {
   Accept: 'application/json',

@@ -11,22 +11,23 @@ let
   release = (import ./release.nix {});
   pkgs = release.pkgs;
   lib = pkgs.lib;
-  node = pkgs.nodejs-16_x;
+  node = pkgs.nodejs-18_x;
   postgres = pkgs.postgresql_13;
   stdenv = pkgs.stdenv;
   pnpm = node.pkgs.pnpm;
-  yarn = pkgs.yarn;
+  yarn = pkgs.yarn.override { nodejs = node; };
 
   nodePackages = [
     node
     pnpm
-    (yarn.override { nodejs = node; })
+    yarn
   ];
 
   cabal = pkgs.haskellPackages.cabal-install;
   # Slightly kludgy because the zlib Haskell package is a pain in the face.
   ghc = pkgs.haskell.packages.${compiler}.ghcWithPackages (hpkgs: with hpkgs; [
     zlib
+    magic
   ]);
 
   baseEditorScripts = [
@@ -213,6 +214,13 @@ let
       ${pnpm}/bin/pnpm install
       ${pnpm}/bin/pnpm run build
     '')
+    (pkgs.writeScriptBin "build-utopia-vscode-common-production" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-common
+      ${pnpm}/bin/pnpm install
+      ${pnpm}/bin/pnpm run production
+    '')
     (pkgs.writeScriptBin "build-utopia-vscode-extension" ''
       #!/usr/bin/env bash
       set -e
@@ -221,27 +229,79 @@ let
       ${pnpm}/bin/pnpm install
       ${pnpm}/bin/pnpm run build
     '')
+    (pkgs.writeScriptBin "build-utopia-vscode-extension-production" ''
+      #!/usr/bin/env bash
+      set -e
+      build-utopia-vscode-common-production
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-extension
+      ${pnpm}/bin/pnpm install
+      ${pnpm}/bin/pnpm run production
+    '')
     (pkgs.writeScriptBin "update-vscode-build-extension" ''
       #!/usr/bin/env bash
       set -e
-      build-utopia-vscode-extension
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
-      yarn
-      yarn run pull-utopia-extension
+      nix-shell --run update-vscode-build-extension-inner
     '')
     (pkgs.writeScriptBin "build-vscode" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
-      rm -rf ./dist ./node_modules
-      yarn
-      yarn run build
+      nix-shell --run build-vscode-inner
     '')
     (pkgs.writeScriptBin "build-vscode-with-extension" ''
       #!/usr/bin/env bash
       set -e
       build-utopia-vscode-extension
       build-vscode
+    '')
+    (pkgs.writeScriptBin "pull-extension" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
+      nix-shell --run pull-extension-inner
+    '')
+    (pkgs.writeScriptBin "check-tool-versions" ''
+      #! /usr/bin/env nix-shell
+      #! nix-shell -p "haskellPackages.ghcWithPackages (pkgs: with pkgs; [async process])" -i runhaskell
+
+      import Control.Concurrent.Async
+      import Control.Monad
+      import Data.Foldable
+      import Data.List
+      import Data.Monoid
+      import System.Exit
+      import System.Process
+
+      expectedToolVersions :: [(String, [String], [String])]
+      expectedToolVersions =
+        [ ("node", ["--version"], ["v18.12.1"])
+        , ("pnpm", ["--version"], ["7.14.2"])
+        , ("yarn", ["--version"], ["1.22.19"])
+        , ("ghc", ["--version"], ["The Glorious Glasgow Haskell Compilation System, version 9.0.2"])
+        , ("cabal", ["--version"], ["cabal-install version 3.8.1.0", "compiled using version 3.8.1.0 of the Cabal library "])
+        ]
+
+      checkVersion :: (String, [String], [String]) -> IO All
+      checkVersion (executable, arguments, expectedOutput) = do
+        let commandToRun = unwords (executable : arguments)
+        output <- readProcess "nix-shell" ["--run", commandToRun] ""
+        let actualOutput = lines output
+        let correctVersion = actualOutput == expectedOutput
+        unless correctVersion $ do
+          putStrLn ("Error when checking the version of " <> executable)
+          putStrLn "Expected:"
+          traverse_ putStrLn expectedOutput
+          putStrLn "Received:"
+          traverse_ putStrLn actualOutput
+        pure $ All correctVersion
+
+      main :: IO ()
+      main = do 
+        results <- mapConcurrently checkVersion expectedToolVersions
+        let result = getAll $ mconcat results
+        when result $ putStrLn "All tools are the correct version."
+        if result then exitSuccess else exitFailure
     '')
   ];
 
@@ -456,6 +516,13 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/
       ${pkgs.nodePackages.nodemon}/bin/nodemon --delay 200ms -e hs,yaml --watch server/src --watch server/package.yaml --watch clientmodel/lib/src --watch clientmodel/lib/package.yaml --exec run-server-inner
     '')
+	(pkgs.writeScriptBin "watch-remix" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-remix
+      ${pnpm}/bin/pnpm install
+	  PORT=8002 pnpm run dev
+    '')
   ];
 
   withServerRunScripts = withDatabaseRunScripts ++ (lib.optionals includeRunLocallySupport serverRunScripts);
@@ -465,8 +532,7 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
-      ${yarn}/bin/yarn
-      ${yarn}/bin/yarn run make-patch
+      nix-shell --run update-vscode-patch-inner
     '')
     (pkgs.writeScriptBin "watch-utopia-vscode-common" ''
       #!/usr/bin/env bash
@@ -482,12 +548,6 @@ let
       ${pnpm}/bin/pnpm install
       ${pnpm}/bin/pnpm run watch-dev
     '')
-    (pkgs.writeScriptBin "pull-extension" ''
-      #!/usr/bin/env bash
-      set -e
-      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
-      ${yarn}/bin/yarn run pull-utopia-extension
-    '')
     (pkgs.writeScriptBin "watch-vscode-build-extension-only" ''
       #!/usr/bin/env bash
       set -e
@@ -498,47 +558,6 @@ let
 
   # For the useful scripts in our dev environments
   customDevScripts = [
-    (pkgs.writeScriptBin "check-tool-versions" ''
-      #! /usr/bin/env nix-shell
-      #! nix-shell -p "haskellPackages.ghcWithPackages (pkgs: with pkgs; [async process])" -i runhaskell
-
-      import Control.Concurrent.Async
-      import Control.Monad
-      import Data.Foldable
-      import Data.List
-      import Data.Monoid
-      import System.Exit
-      import System.Process
-
-      expectedToolVersions :: [(String, [String], [String])]
-      expectedToolVersions =
-        [ ("pnpm", ["--version"], ["7.14.2"])
-        , ("yarn", ["--version"], ["1.22.19"])
-        , ("ghc", ["--version"], ["The Glorious Glasgow Haskell Compilation System, version 9.0.2"])
-        , ("cabal", ["--version"], ["cabal-install version 3.8.1.0", "compiled using version 3.8.1.0 of the Cabal library "])
-        ]
-
-      checkVersion :: (String, [String], [String]) -> IO All
-      checkVersion (executable, arguments, expectedOutput) = do
-        let commandToRun = unwords (executable : arguments)
-        output <- readProcess "nix-shell" ["--run", commandToRun] ""
-        let actualOutput = lines output
-        let correctVersion = actualOutput == expectedOutput
-        unless correctVersion $ do
-          putStrLn ("Error when checking the version of " <> executable)
-          putStrLn "Expected:"
-          traverse_ putStrLn expectedOutput
-          putStrLn "Received:"
-          traverse_ putStrLn actualOutput
-        pure $ All correctVersion
-
-      main :: IO ()
-      main = do 
-        results <- mapConcurrently checkVersion expectedToolVersions
-        let result = getAll $ mconcat results
-        when result $ putStrLn "All tools are the correct version."
-        if result then exitSuccess else exitFailure
-    '')
     (pkgs.writeScriptBin "stop-dev" ''
       #!/usr/bin/env bash
       # Kill nodemon because it just seems to keep running.
@@ -558,20 +577,22 @@ let
         new-window -n "Scratchpad" \; \
         new-window -n "Server" \; \
         send-keys -t :2 watch-server C-m \; \
+        new-window -n "Remix" \; \
+        send-keys -t :3 watch-remix C-m \; \
         new-window -n "Editor TSC" \; \
-        send-keys -t :3 watch-tsc C-m \; \
+        send-keys -t :4 watch-tsc C-m \; \
         new-window -n "Editor Vite" \; \
-        send-keys -t :4 watch-editor-hmr C-m \; \
+        send-keys -t :5 watch-editor-hmr C-m \; \
         new-window -n "Website" \; \
-        send-keys -t :5 watch-website C-m \; \
+        send-keys -t :6 watch-website C-m \; \
         new-window -n "VSCode Common" \; \
-        send-keys -t :6 watch-utopia-vscode-common C-m \; \
+        send-keys -t :7 watch-utopia-vscode-common C-m \; \
         new-window -n "VSCode Extension" \; \
-        send-keys -t :7 watch-utopia-vscode-extension C-m \; \
+        send-keys -t :8 watch-utopia-vscode-extension C-m \; \
         new-window -n "VSCode Pull Extension" \; \
-        send-keys -t :8 watch-vscode-build-extension-only C-m \; \
+        send-keys -t :9 watch-vscode-build-extension-only C-m \; \
         new-window -n "PostgreSQL" \; \
-        send-keys -t :9 start-postgres C-m \; \
+        send-keys -t :10 start-postgres C-m \; \
         select-window -t :1 \;
     '')
     (pkgs.writeScriptBin "start-full" ''
@@ -600,20 +621,22 @@ let
         new-window -n "Scratchpad" \; \
         new-window -n "Server" \; \
         send-keys -t :2 watch-server C-m \; \
+        new-window -n "Remix" \; \
+        send-keys -t :3 watch-remix C-m \; \
         new-window -n "Editor TSC" \; \
-        send-keys -t :3 watch-tsc C-m \; \
+        send-keys -t :4 watch-tsc C-m \; \
         new-window -n "Editor Webpack" \; \
-        send-keys -t :4 watch-editor-cowboy C-m \; \
+        send-keys -t :5 watch-editor-cowboy C-m \; \
         new-window -n "Website" \; \
-        send-keys -t :5 watch-website C-m \; \
+        send-keys -t :6 watch-website C-m \; \
         new-window -n "VSCode Common" \; \
-        send-keys -t :6 watch-utopia-vscode-common C-m \; \
+        send-keys -t :7 watch-utopia-vscode-common C-m \; \
         new-window -n "VSCode Extension" \; \
-        send-keys -t :7 watch-utopia-vscode-extension C-m \; \
+        send-keys -t :8 watch-utopia-vscode-extension C-m \; \
         new-window -n "VSCode Pull Extension" \; \
-        send-keys -t :8 watch-vscode-build-extension-only C-m \; \
+        send-keys -t :9 watch-vscode-build-extension-only C-m \; \
         new-window -n "PostgreSQL" \; \
-        send-keys -t :9 start-postgres C-m \; \
+        send-keys -t :10 start-postgres C-m \; \
         select-window -t :1 \;
     '')
     (pkgs.writeScriptBin "start-full-webpack" ''
@@ -629,14 +652,29 @@ let
 
   withCustomDevScripts = withServerRunScripts ++ (lib.optionals includeRunLocallySupport customDevScripts);
 
-  # TODO Come back to these when trying to use nix to build a docker container - https://stackoverflow.com/questions/58421505/how-do-i-apply-a-nix-shell-config-in-a-docker-image
   releaseScripts = [
-    (pkgs.writeScriptBin "build-editor" ''
+    (pkgs.writeScriptBin "prepare-build-editor" ''
       #!/usr/bin/env bash
       set -e
+      install-utopia-api
+      build-utopia-vscode-common
+      install-website
+    '')
+    (pkgs.writeScriptBin "build-editor-production" ''
+      #!/usr/bin/env bash
+      set -e
+      prepare-build-editor
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${pnpm}/bin/pnpm install --unsafe-perm
       ${pnpm}/bin/pnpm run production
+    '')
+    (pkgs.writeScriptBin "build-editor-staging" ''
+      #!/usr/bin/env bash
+      set -e
+      prepare-build-editor
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
+      ${pnpm}/bin/pnpm install --unsafe-perm
+      ${pnpm}/bin/pnpm run staging
     '')
     # CRA for whatever reason will automatically fail on CI for any warnings, so we need to prefix with `CI=false`. Urgh. https://github.com/facebook/create-react-app/issues/3657
     (pkgs.writeScriptBin "build-website" ''
@@ -649,20 +687,17 @@ let
     (pkgs.writeScriptBin "build-server" ''
       #!/usr/bin/env bash
       set -e
+      cabal-update
+      rebuild-cabal
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/server
       ${cabal}/bin/cabal new-build utopia-web
       cp --verbose $(${pkgs.haskellPackages.cabal-plan}/bin/cabal-plan list-bin exe:utopia-web) .
     '')
-    (pkgs.writeScriptBin "build-all" ''
-      #!/usr/bin/env bash
-      set -e
-      build-editor
-      build-website
-      build-server
-    '')
   ];
 
-  scripts = withCustomDevScripts; # ++ (if needsRelease then releaseScripts else []);
+  withReleaseScripts = withCustomDevScripts ++ (lib.optionals includeReleaseSupport releaseScripts);
+
+  scripts = withReleaseScripts;
 
   linuxOnlyPackages = lib.optionals stdenv.isLinux [ pkgs.xvfb_run pkgs.xlibsWrapper pkgs.xorg.libxkbfile ];
   macOSOnlyPackages = lib.optionals stdenv.isDarwin (with pkgs.darwin.apple_sdk.frameworks; [

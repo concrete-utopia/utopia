@@ -42,7 +42,7 @@ import {
   JSXAttributeKeepDeepEqualityCall,
   JSXAttributeNestedArrayKeepDeepEqualityCall,
   JSXAttributeNestedObjectKeepDeepEqualityCall,
-  JSXAttributeOtherJavaScriptKeepDeepEqualityCall,
+  JSExpressionOtherJavaScriptKeepDeepEqualityCall,
   JSXAttributesEntryDeepEqualityCall,
   JSXAttributesKeepDeepEqualityCall,
   JSXAttributesPartDeepEqualityCall,
@@ -508,17 +508,17 @@ describe('JSXAttributeOtherJavaScriptKeepDeepEqualityCall', () => {
   }
 
   it('same reference returns the same reference', () => {
-    const result = JSXAttributeOtherJavaScriptKeepDeepEqualityCall()(oldValue, oldValue)
+    const result = JSExpressionOtherJavaScriptKeepDeepEqualityCall()(oldValue, oldValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('same value returns the same reference', () => {
-    const result = JSXAttributeOtherJavaScriptKeepDeepEqualityCall()(oldValue, newSameValue)
+    const result = JSExpressionOtherJavaScriptKeepDeepEqualityCall()(oldValue, newSameValue)
     expect(result.value).toBe(oldValue)
     expect(result.areEqual).toEqual(true)
   })
   it('different but similar value handled appropriately', () => {
-    const result = JSXAttributeOtherJavaScriptKeepDeepEqualityCall()(oldValue, newDifferentValue)
+    const result = JSExpressionOtherJavaScriptKeepDeepEqualityCall()(oldValue, newDifferentValue)
     expect(result.value.type).toBe(oldValue.type)
     expect(result.value.javascript).toBe(newDifferentValue.javascript)
     expect(result.value.transpiledJavascript).toBe(oldValue.transpiledJavascript)
