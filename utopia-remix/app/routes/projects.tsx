@@ -8,6 +8,7 @@ import { ensure, requireUser } from "../util/api.server";
 import { Status } from "../util/statusCodes.server";
 import { sprinkles } from "../styles/sprinkles.css";
 import { button } from "../styles/button.css";
+import { projectCategoryButton } from "../styles/projectCategoryButton.css";
 
 const PAGINATION_LIMIT = 10;
 
@@ -29,6 +30,7 @@ export async function loader(args: LoaderFunctionArgs) {
 
 const ProjectsPage = React.memo(() => {
   const marginSize = 30;
+  const rowHeight = 30;
 
   const data = useLoaderData() as unknown as {
     projects: Project[];
@@ -97,24 +99,88 @@ const ProjectsPage = React.memo(() => {
         <div
           style={{
             display: "flex",
-            alignItems: "center",
-            gap: 10,
+            flexDirection: "column",
+            gap: 20,
           }}
         >
-          <img
-            className={sprinkles({ borderRadius: "rounded" })}
-            style={{ width: 40 }}
-            src={data.user.picture ?? undefined}
-            referrerPolicy="no-referrer"
-          />
-          <div style={{fontSize: 12, fontWeight: 500}}>{data.user.name}</div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+            }}
+          >
+            <img
+              className={sprinkles({ borderRadius: "rounded" })}
+              style={{ width: 40 }}
+              src={data.user.picture ?? undefined}
+              referrerPolicy="no-referrer"
+            />
+            <div style={{ fontSize: 12, fontWeight: 500 }}>
+              {data.user.name}
+            </div>
+          </div>
+          <div
+            style={{
+              height: rowHeight,
+              borderBottom: "1px solid gray",
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              padding: "0 14px",
+            }}
+          >
+            Search...
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+            <button
+              className={projectCategoryButton({
+                color: "selected",
+                size: "medium",
+              })}
+            >
+              <span>All My Projects</span>
+            </button>
+            <button
+              className={projectCategoryButton({
+                color: "neutral",
+                size: "medium",
+              })}
+            >
+              <span>Private</span>
+            </button>
+            <button
+              className={projectCategoryButton({
+                color: "neutral",
+                size: "medium",
+              })}
+            >
+              <span>Public</span>
+            </button>
+            <button
+              className={projectCategoryButton({
+                color: "neutral",
+                size: "medium",
+              })}
+            >
+              <span>Shared With Me</span>
+            </button>
+            <button
+              className={projectCategoryButton({
+                color: "neutral",
+                size: "medium",
+              })}
+            >
+              <span>Trash</span>
+            </button>
+          </div>
         </div>
         <div
           style={{
             display: "flex",
             flexDirection: "row",
             alignItems: "center",
-            gap: 10,
+            gap: 14,
             fontFamily: "Reckless",
             fontSize: 34,
           }}

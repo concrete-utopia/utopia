@@ -5,7 +5,7 @@ export const styles = {
   root: style([
     {
       fontFamily: "Inter, sans-serif",
-      fontSize: "1em",
+      fontSize: "11px",
     },
     sprinkles({
       background: {
@@ -19,3 +19,13 @@ export const styles = {
     }),
   ]),
 };
+
+const myStyle = style({
+  background: 'transparent',
+  ':hover': {
+   background: '#0075F910'
+  },
+  '::before': {
+    background: '#0075F9'
+  }
+});

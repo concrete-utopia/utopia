@@ -3,7 +3,7 @@ import { defineProperties, createSprinkles } from "@vanilla-extract/sprinkles";
 const colors = {
   black: "#000",
   white: "#fff",
-  blue: "#09f",
+  primary: "#0075F9",
   aqua: "#00E3E3",
   darkModeBlack: "#181C20",
   lightModeBlack: "#2B2B2B"
@@ -23,6 +23,7 @@ const colorProperties = defineProperties({
 
 const borderRadii = {
   rounded: 10,
+  buttonRound: 30,
   roundedFull: "100%",
 };
 
