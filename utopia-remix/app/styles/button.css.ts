@@ -22,7 +22,7 @@ export const button = recipe({
     color: {
       neutral: { background: "whitesmoke" },
       brand: { background: "blueviolet" },
-      accent: { background: "slateblue" },
+      accent: { background: "lime" },
     },
     size: {
       small: { padding: 8 },

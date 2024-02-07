@@ -28,6 +28,7 @@ export async function loader(args: LoaderFunctionArgs) {
 }
 
 const ProjectsPage = React.memo(() => {
+
   const data = useLoaderData() as unknown as {
     projects: Project[];
     user: UserDetails;
@@ -72,7 +73,15 @@ const ProjectsPage = React.memo(() => {
   }, [projectsFetcher.data]);
 
   return (
-    <div>
+    <div
+      style={{
+        background: "pink",
+        margin: 30,
+        height: "calc(100vh - 60px)",
+        overflow: "hidden",
+        boxSizing: "border-box",
+      }}
+    >
       <div
         style={{
           display: "flex",
@@ -81,14 +90,14 @@ const ProjectsPage = React.memo(() => {
         }}
       >
         <img
-          className={sprinkles({ borderRadius: "roundedFull" })}
-          style={{ width: 36 }}
+          className={sprinkles({ borderRadius: "rounded" })}
+          style={{ width: 40 }}
           src={data.user.picture ?? undefined}
           referrerPolicy="no-referrer"
         />
-        <div>{data.user.email}</div>
+        <div>{data.user.name}</div>
       </div>
-      <h1>Your projects</h1>
+
       <table>
         <thead>
           <tr>

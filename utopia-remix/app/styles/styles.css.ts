@@ -14,7 +14,7 @@ export const styles = {
       },
       color: {
         lightMode: "black",
-        darkMode: "white",
+        darkMode: "aqua",
       },
     }),
   ]),

@@ -4,6 +4,7 @@ const colors = {
   black: "#000",
   white: "#fff",
   blue: "#09f",
+  aqua: "#00E3E3"
 };
 
 const colorProperties = defineProperties({
@@ -19,7 +20,7 @@ const colorProperties = defineProperties({
 });
 
 const borderRadii = {
-  rounded: 4,
+  rounded: 10,
   roundedFull: "100%",
 };
 
@@ -39,10 +40,17 @@ const shadowProperties = defineProperties({
   },
 });
 
+const marginProperties = defineProperties({
+  properties: {
+    boxShadow: shadows,
+  },
+});
+
 export const sprinkles = createSprinkles(
   colorProperties,
   borderProperties,
   shadowProperties,
+  marginProperties,
 );
 
 export type Sprinkles = Parameters<typeof sprinkles>[0];
