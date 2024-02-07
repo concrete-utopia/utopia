@@ -214,7 +214,6 @@ export interface UtopiaRemixRootComponentProps {
 export const UtopiaRemixRootComponent = (props: UtopiaRemixRootComponentProps) => {
   const remixDerivedDataRef = useRefEditorState((store) => store.derived.remixData)
 
-  // run 6
   const prevRoutes = React.useRef<(RouteObject | DataRouteObject)[] | null>(null)
   const routesI = useGetRoutes(props.getLoadContext)
   const routes = React.useMemo(() => {
@@ -229,6 +228,7 @@ export const UtopiaRemixRootComponent = (props: UtopiaRemixRootComponentProps) =
     const same = [...prevIdsSet].every((id) => currentIdsSet.has(id))
 
     if (!same) {
+      prevRoutes.current = routesI
       return routesI
     }
 
