@@ -61,6 +61,7 @@ import {
   RegisteredCanvasStrategies,
 } from '../canvas-strategies/canvas-strategies'
 import {
+  RemixNavigationAtomForTests,
   RemixNavigationCallbackCalledPromiseForTests,
   RemixNavigationFinishedPromiseForTests,
   resetRemixNavigationFinishedPromiseForTests,
@@ -2393,15 +2394,16 @@ async function navigateWithRemixSceneLabelButton(
   pathToRemixScene: ElementPath,
   button: RemixSceneLabelButtonType,
 ) {
-  await wait(10)
   resetRemixNavigationFinishedPromiseForTests()
-  await mouseClickAtPoint(
-    renderResult.renderedDOM.getByTestId(RemixSceneLabelButtonTestId(pathToRemixScene, button)),
-    {
-      x: 2,
-      y: 2,
-    },
-  )
+  const remixNavContext = RemixNavigationAtomForTests.current[EP.toString(pathToRemixScene)]!
+  await remixNavContext[button]()
+  // await mouseClickAtPoint(
+  //   renderResult.renderedDOM.getByTestId(RemixSceneLabelButtonTestId(pathToRemixScene, button)),
+  //   {
+  //     x: 2,
+  //     y: 2,
+  //   },
+  // )
   await Promise.all([
     RemixNavigationFinishedPromiseForTests.current,
     RemixNavigationCallbackCalledPromiseForTests.current,

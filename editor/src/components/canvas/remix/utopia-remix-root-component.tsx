@@ -47,6 +47,8 @@ export const RemixNavigationCallbackCalledPromiseForTests: { current: ReturnType
   current: defer(),
 }
 
+export const RemixNavigationAtomForTests: { current: RemixNavigationAtomData } = { current: {} }
+
 export function useRemixNavigationContext(
   scenePath: ElementPath | null,
 ): RemixNavigationContext | null {
@@ -264,7 +266,7 @@ export const UtopiaRemixRootComponent = (props: UtopiaRemixRootComponentProps) =
           ? existingEntries.concat(location)
           : existingEntries
 
-        return {
+        RemixNavigationAtomForTests.current = {
           ...current,
           [EP.toString(basePath)]: {
             forward: async () => {
@@ -287,6 +289,7 @@ export const UtopiaRemixRootComponent = (props: UtopiaRemixRootComponentProps) =
             entries: updatedEntries,
           },
         }
+        return RemixNavigationAtomForTests.current
       })
     },
     [basePath, setNavigationData],
