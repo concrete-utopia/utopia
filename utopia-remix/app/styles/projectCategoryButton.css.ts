@@ -22,7 +22,7 @@ export const projectCategoryButton = recipe({
       neutral: {
         background: "transparent",
         ":hover": {
-          background: "#0075F910" ,
+          background: "#0075F910",
         },
       },
       selected: { background: "#0075F9", color: "white" },
