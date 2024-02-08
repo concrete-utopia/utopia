@@ -360,23 +360,6 @@ function getSectionHeightFromPropControl(
   }
 }
 
-function variableValueToString(value: unknown): string {
-  switch (typeof value) {
-    case 'bigint':
-    case 'boolean':
-    case 'number':
-    case 'string':
-    case 'undefined':
-      return `${value}`
-    case 'object':
-      return '#object' // placeholders from here, will add support later
-    case 'function':
-      return '#function'
-    case 'symbol':
-      return '#symbol'
-  }
-}
-
 interface DataPickerPopupProps {
   closePopup: () => void
   style: React.CSSProperties
@@ -444,11 +427,11 @@ const DataPickerPopup = React.memo(
           <div style={{ fontSize: 14, fontWeight: 400, marginBottom: 16 }}>
             <span>Data</span>
           </div>
-          {variableNamesInScope.map(([variableFromScope, variableValue], idx) => (
+          {variableNamesInScope.map(({ name, value }, idx) => (
             <Button
               data-testid={VariableFromScopeOptionTestId(idx)}
-              key={variableFromScope}
-              onClick={onTweakProperty(variableFromScope)}
+              key={name}
+              onClick={onTweakProperty(name)}
               style={{ width: '100%' }}
             >
               <UIGridRow
@@ -470,7 +453,7 @@ const DataPickerPopup = React.memo(
                       background: colorTheme.brandNeonGreen.value,
                     }}
                   >
-                    {variableFromScope}
+                    {name}
                   </span>
                 </div>
                 <div>
@@ -481,7 +464,7 @@ const DataPickerPopup = React.memo(
                       color: colorTheme.neutralForeground.value,
                     }}
                   >
-                    {variableValueToString(variableValue.spiedValue)}
+                    {value}
                   </span>
                 </div>
               </UIGridRow>
@@ -1140,7 +1123,40 @@ export class ComponentSection extends React.Component<
   }
 }
 
-function useVariablesInScopeForSelectedElement() {
+interface VariableNameValue {
+  name: string
+  value: string
+}
+
+function valuesFromObject(name: string, value: object | null): Array<VariableNameValue> {
+  if (Array.isArray(value)) {
+    return [] // placeholder, will add support later
+  }
+  if (value == null) {
+    return [{ name: name, value: `null` }]
+  }
+  return Object.entries(value).flatMap(([key, field]) =>
+    valuesFromVariable(`${name}.${key}`, field),
+  )
+}
+
+function valuesFromVariable(name: string, value: unknown): Array<VariableNameValue> {
+  switch (typeof value) {
+    case 'bigint':
+    case 'boolean':
+    case 'number':
+    case 'string':
+    case 'undefined':
+      return [{ name: name, value: `${value}` }]
+    case 'object':
+      return valuesFromObject(name, value)
+    case 'function':
+    case 'symbol':
+      return []
+  }
+}
+
+function useVariablesInScopeForSelectedElement(): Array<VariableNameValue> {
   const selectedViewPath = useEditorState(
     Substores.selectedViews,
     (store) => store.editor.selectedViews.at(0) ?? null,
@@ -1163,8 +1179,12 @@ function useVariablesInScopeForSelectedElement() {
       return []
     }
 
-    return Object.entries(variablesInScopeForSelectedPath)
+    return variablesInScopeForSelectedPath
   }, [selectedViewPath, variablesInScope])
 
-  return variableNamesInScope
+  const variableNameValues = Object.entries(variableNamesInScope).flatMap(([name, variable]) =>
+    valuesFromVariable(name, variable.spiedValue),
+  )
+
+  return variableNameValues
 }
