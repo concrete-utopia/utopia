@@ -382,7 +382,6 @@ const DataPickerPopup = React.memo(
     )
 
     const colorTheme = useColorTheme()
-    const variablesInScopeRef = useRefEditorState((store) => store.editor.variablesInScope)
     const dispatch = useDispatch()
 
     const onTweakProperty = React.useCallback(
@@ -405,20 +404,7 @@ const DataPickerPopup = React.memo(
       [dispatch, selectedViewPathRef],
     )
 
-    const variableNamesInScope = React.useMemo(() => {
-      if (selectedViewPathRef.current == null) {
-        return []
-      }
-
-      const variablesInScopeForSelectedPath =
-        variablesInScopeRef.current[EP.toString(selectedViewPathRef.current)]
-
-      if (variablesInScopeForSelectedPath == null) {
-        return []
-      }
-
-      return Object.entries(variablesInScopeForSelectedPath)
-    }, [selectedViewPathRef, variablesInScopeRef])
+    const variableNamesInScope = useVariablesInScopeForSelectedElement()
 
     return (
       <div
@@ -472,7 +458,7 @@ const DataPickerPopup = React.memo(
                       padding: 4,
                       borderRadius: 2,
                       fontWeight: 400,
-                      background: '#e6fedc',
+                      background: colorTheme.brandNeonGreen.value,
                     }}
                   >
                     {variableFromScope}
@@ -1143,4 +1129,33 @@ export class ComponentSection extends React.Component<
       return <ComponentSectionInner {...this.props} />
     }
   }
+}
+
+function useVariablesInScopeForSelectedElement() {
+  const selectedViewPath = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews.at(0) ?? null,
+    'useVariablesInScopeForSelectedElement selectedViewPath',
+  )
+
+  const variablesInScope = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.variablesInScope,
+    'useVariablesInScopeForSelectedElement variablesInScope',
+  )
+  const variableNamesInScope = React.useMemo(() => {
+    if (selectedViewPath == null) {
+      return []
+    }
+
+    const variablesInScopeForSelectedPath = variablesInScope[EP.toString(selectedViewPath)]
+
+    if (variablesInScopeForSelectedPath == null) {
+      return []
+    }
+
+    return Object.entries(variablesInScopeForSelectedPath)
+  }, [selectedViewPath, variablesInScope])
+
+  return variableNamesInScope
 }
