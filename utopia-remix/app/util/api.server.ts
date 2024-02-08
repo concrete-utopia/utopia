@@ -58,11 +58,12 @@ async function handleMethod<T>(
     const isApiError = err instanceof ApiError;
     const message = isApiError ? err.message : `${err}`;
     const status = isApiError ? err.status : 500;
+    const name = isApiError ? err.name : "Error";
 
     console.error(`${request.method} ${request.url}: ${message}`);
 
     return json(
-      { error: message },
+      { error: name, status: status, message: message },
       { headers: responseHeaders, status: status },
     );
   }
