@@ -280,6 +280,11 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
     [togglePopup],
   )
 
+  const variablePickerButtonAvailable = useVariablesInScopeForSelectedElement().length > 0
+  const variablePickerButtonTooltipText = variablePickerButtonAvailable
+    ? 'Pick data source'
+    : 'No data sources available'
+
   if (controlDescription.control === 'none') {
     // do not list anything for `none` controls
     return null
@@ -316,11 +321,15 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
             focusOnMount={props.focusOnMount}
           />
         </div>
-        <Button onClick={onClick} data-testid={DataPickerPopupButtonTestId}>
+        <Button
+          onClick={onClick}
+          data-testid={DataPickerPopupButtonTestId}
+          disabled={!variablePickerButtonAvailable}
+        >
           <Icn
             type='pipette'
             color='secondary'
-            tooltipText={'Pick data source'}
+            tooltipText={variablePickerButtonTooltipText}
             width={18}
             height={18}
           />
