@@ -14,6 +14,7 @@ export const projectCategoryButton = recipe({
       gap: 10,
       padding: "0 14px",
       height: 30,
+      color: "gray", //fix me to be theme responsive
     },
   ],
 

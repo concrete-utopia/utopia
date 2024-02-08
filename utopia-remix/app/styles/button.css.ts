@@ -21,7 +21,7 @@ export const button = recipe({
   variants: {
     color: {
       neutral: { background: "whitesmoke" },
-      brand: { background: "blueviolet" },
+      brand: { background: "grey" },
       accent: { background: "lime" },
     },
     size: {
@@ -44,7 +44,7 @@ export const button = recipe({
   ],
 
   defaultVariants: {
-    color: "accent",
+    color: "brand",
     size: "medium",
   },
 });

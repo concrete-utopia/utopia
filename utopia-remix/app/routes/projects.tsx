@@ -251,7 +251,7 @@ const ProjectsPage = React.memo(() => {
             flexGrow: 1,
             flexDirection: "column",
             overflowY: "scroll",
-            scrollbarColor: "grey transparent",
+            scrollbarColor: "lightgrey transparent",
           }}
         >
           <table>
@@ -267,7 +267,10 @@ const ProjectsPage = React.memo(() => {
             <tbody>
               {projects.map((project) => {
                 return (
-                  <tr key={project.proj_id}>
+                  <tr
+                    key={project.proj_id}
+                    onClick={openProject(project.proj_id)}
+                  >
                     <td>
                       <img
                         style={{ width: 100, height: 100 }}
@@ -283,15 +286,15 @@ const ProjectsPage = React.memo(() => {
                         : "Somebody else"}
                     </td>
                     <td>
-                      <button
+                      {/* <button
                         className={button({
                           color: "accent",
                           size: "medium",
                         })}
                         onClick={openProject(project.proj_id)}
                       >
-                        <span>Open</span>
-                      </button>
+                        <span>Fork</span>
+                      </button> */}
                     </td>
                   </tr>
                 );
@@ -300,10 +303,11 @@ const ProjectsPage = React.memo(() => {
           </table>
           {!reachedEnd ? (
             <button
-              className={button({ color: "accent", size: "medium" })}
+              className={button({ size: "medium" })}
               onClick={loadMore(projects.length)}
+              style={{ width: 300 }}
             >
-              Load more
+              Load More
             </button>
           ) : null}
         </div>
