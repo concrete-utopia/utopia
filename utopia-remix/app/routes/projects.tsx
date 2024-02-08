@@ -314,10 +314,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, selected, onSelect }
         style={{
           border: selected ? '2px solid #0075F9' : '2px solid transparent',
           borderRadius: 10,
+          overflow: 'hidden',
           height: 130,
           width: '100%',
           background: 'linear-gradient(rgba(77, 255, 223, 0.4), rgba(255,250,220,.8))',
-          backgroundAttachment: 'fixed',
+          backgroundAttachment: 'local',
           backgroundRepeat: 'no-repeat',
         }}
         onMouseDown={onSelect}
