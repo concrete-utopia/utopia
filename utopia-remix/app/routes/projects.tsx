@@ -29,9 +29,21 @@ export async function loader(args: LoaderFunctionArgs) {
   return json({ projects, user })
 }
 
+type ProjectsPageState = {
+  selectedProjectId: string | null
+}
+
 const ProjectsPage = React.memo(() => {
   const marginSize = 30
   const rowHeight = 30
+
+  const [selectedProject, setSelectedProject] = useState<ProjectsPageState>({
+    selectedProjectId: null,
+  })
+
+  const handleProjectSelect = (projectId: string) => {
+    setSelectedProject({ selectedProjectId: projectId })
+  }
 
   const [selectedCategory, setSelectedCategory] = useState('All My Projects')
 
@@ -249,14 +261,15 @@ const ProjectsPage = React.memo(() => {
           }}
         >
           {projects.map((project) => (
-            <ProjectCard key={project.proj_id} project={project as Project} />
+            <ProjectCard
+              key={project.proj_id}
+              project={project as Project}
+              selected={project.proj_id === selectedProject.selectedProjectId}
+              onSelect={() => handleProjectSelect(project.proj_id)}
+            />
           ))}
           {!reachedEnd ? (
-            <button
-              className={button({ size: 'medium' })}
-              onClick={loadMore(projects.length)}
-              style={{ width: 300 }}
-            >
+            <button onClick={loadMore(projects.length)} style={{ width: 200, height: 60 }}>
               Load More
             </button>
           ) : null}
@@ -277,9 +290,11 @@ type Project = {
 
 type ProjectCardProps = {
   project: Project
+  selected: boolean
+  onSelect: () => void
 }
 
-const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
+const ProjectCard: React.FC<ProjectCardProps> = ({ project, selected, onSelect }) => {
   const openProject = React.useCallback(() => {
     window.open(`${window.ENV.EDITOR_URL}/p/${project.proj_id}`, '_blank')
   }, [project.proj_id])
@@ -288,7 +303,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
     <div
       key={project.proj_id}
       style={{
-        overflow: 'hidden',
         height: 200,
         width: 300,
         display: 'flex',
@@ -298,12 +312,16 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
     >
       <div
         style={{
-          border: '1px solid grey',
+          border: selected ? '2px solid #0075F9' : '2px solid transparent',
           borderRadius: 10,
-          flex: 1,
-          background: `linear-gradient(0deg, rgba(77, 255, 223, 0.4) 0%, rgba(255,250,220,.8) 100%)`,
+          height: 130,
+          width: '100%',
+          background: 'linear-gradient(rgba(77, 255, 223, 0.4), rgba(255,250,220,.8))',
+          backgroundAttachment: 'fixed',
+          backgroundRepeat: 'no-repeat',
         }}
-        onClick={openProject}
+        onMouseDown={onSelect}
+        onDoubleClick={openProject}
       />
       <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 5 }}>
         <div style={{ fontWeight: 600 }}>{project.title}</div>
