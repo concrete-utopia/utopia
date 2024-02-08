@@ -44,6 +44,7 @@ const ProjectsPage = React.memo(() => {
   const handleProjectSelect = (projectId: string) => {
     setSelectedProject({ selectedProjectId: projectId })
   }
+  const clearSelectedProject = () => setSelectedProject({ selectedProjectId: null })
 
   const [selectedCategory, setSelectedCategory] = useState('All My Projects')
 
@@ -158,6 +159,7 @@ const ProjectsPage = React.memo(() => {
       }}
     >
       <div
+        onMouseDown={clearSelectedProject}
         style={{
           display: 'flex',
           flexDirection: 'column',
@@ -259,6 +261,7 @@ const ProjectsPage = React.memo(() => {
         }}
       >
         <div
+          onMouseDown={clearSelectedProject}
           style={{
             height: 60,
             flex: 0,
@@ -273,7 +276,12 @@ const ProjectsPage = React.memo(() => {
             </button>
           ))}
         </div>
-        <div style={{ fontSize: 16, fontWeight: 600, padding: '5px 10px' }}>{selectedCategory}</div>
+        <div
+          onMouseDown={clearSelectedProject}
+          style={{ fontSize: 16, fontWeight: 600, padding: '5px 10px' }}
+        >
+          {selectedCategory}
+        </div>
         <div
           style={{
             display: 'flex',
