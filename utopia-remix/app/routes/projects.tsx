@@ -56,6 +56,24 @@ const ProjectsPage = React.memo(() => {
     user: UserDetails
   }
 
+  const [searchValue, setSearchValue] = useState('')
+  const [filteredProjects, setFilteredProjects] = useState<Project[]>(data.projects)
+
+  const filterProjects = () => {
+    if (searchValue === '') {
+      setFilteredProjects(data.projects)
+    } else {
+      const filteredProjects = data.projects.filter((project) =>
+        project.title.toLowerCase().includes(searchValue.toLowerCase()),
+      )
+      setFilteredProjects(filteredProjects)
+    }
+  }
+
+  React.useEffect(() => {
+    filterProjects()
+  }, [searchValue, data.projects])
+
   const [projects, setProjects] = React.useState<Project[]>([])
 
   const projectsFetcher = useFetcher()
@@ -64,13 +82,6 @@ const ProjectsPage = React.memo(() => {
   const loadMore = React.useCallback(
     (offset: number) => () => {
       projectsFetcher.load(`?offset=${offset}`)
-    },
-    [],
-  )
-
-  const openProject = React.useCallback(
-    (projectId: string) => () => {
-      window.open(`${window.ENV.EDITOR_URL}/p/${projectId}`, '_blank')
     },
     [],
   )
@@ -177,8 +188,21 @@ const ProjectsPage = React.memo(() => {
             />
             <div style={{ fontSize: 12, fontWeight: 500 }}>{data.user.name}</div>
           </div>
-          <div
+
+          <input
+            autoFocus={true}
+            onChange={(e) => setSearchValue(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                // Call a function to filter the projects based on the search value
+                filterProjects()
+              }
+            }}
             style={{
+              border: 'none',
+              background: 'transparent',
+              outline: 'none',
+              color: 'grey',
               height: rowHeight,
               borderBottom: '1px solid gray',
               display: 'flex',
@@ -186,9 +210,9 @@ const ProjectsPage = React.memo(() => {
               alignItems: 'center',
               padding: '0 14px',
             }}
-          >
-            Search...
-          </div>
+            placeholder='Search...'
+            // value={this.state.projectTitleFilter || ''}
+          />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             {categories.map((category, index) => (
               <button
@@ -260,7 +284,7 @@ const ProjectsPage = React.memo(() => {
             scrollbarColor: 'lightgrey transparent',
           }}
         >
-          {projects.map((project) => (
+          {filteredProjects.map((project) => (
             <ProjectCard
               key={project.proj_id}
               project={project as Project}
@@ -315,7 +339,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, selected, onSelect }
           border: selected ? '2px solid #0075F9' : '2px solid transparent',
           borderRadius: 10,
           overflow: 'hidden',
-          height: 130,
+          height: 180,
           width: '100%',
           background: 'linear-gradient(rgba(77, 255, 223, 0.4), rgba(255,250,220,.8))',
           backgroundAttachment: 'local',
