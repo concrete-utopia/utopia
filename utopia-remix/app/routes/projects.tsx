@@ -111,10 +111,10 @@ const ProjectsPage = React.memo(() => {
 
   const categories = [
     { name: 'All My Projects', color: 'selected' },
-    { name: 'Private', color: 'neutral' },
-    { name: 'Public', color: 'neutral' },
-    { name: 'Shared With Me', color: 'neutral' },
-    { name: 'Trash', color: 'neutral' },
+    // { name: 'Private', color: 'neutral' },
+    // { name: 'Public', color: 'neutral' },
+    // { name: 'Shared With Me', color: 'neutral' },
+    // { name: 'Trash', color: 'neutral' },
   ]
 
   const newProjectButtons = [
