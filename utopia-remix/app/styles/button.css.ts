@@ -1,28 +1,28 @@
-import { recipe } from "@vanilla-extract/recipes";
-import { sprinkles } from "./sprinkles.css";
+import { recipe } from '@vanilla-extract/recipes'
+import { sprinkles } from './sprinkles.css'
 
 export const button = recipe({
   base: [
     sprinkles({
-      borderRadius: "rounded",
-      color: "white",
-      boxShadow: "shadow",
+      borderRadius: 'rounded',
+      color: 'white',
+      boxShadow: 'shadow',
     }),
     {
-      border: "none",
-      cursor: "pointer",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
+      border: 'none',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
       gap: 4,
     },
   ],
 
   variants: {
     color: {
-      neutral: { background: "whitesmoke" },
-      brand: { background: "blueviolet" },
-      accent: { background: "slateblue" },
+      neutral: { background: 'whitesmoke' },
+      brand: { background: 'blueviolet' },
+      accent: { background: 'slateblue' },
     },
     size: {
       small: { padding: 8 },
@@ -34,17 +34,17 @@ export const button = recipe({
   compoundVariants: [
     {
       variants: {
-        color: "neutral",
-        size: "large",
+        color: 'neutral',
+        size: 'large',
       },
       style: {
-        background: "ghostwhite",
+        background: 'ghostwhite',
       },
     },
   ],
 
   defaultVariants: {
-    color: "accent",
-    size: "medium",
+    color: 'accent',
+    size: 'medium',
   },
-});
+})
