@@ -408,6 +408,8 @@ export function renderCoreElement(
           innerRender,
         ),
       }
+      // console.log('blockScope', Object.keys(blockScope))
+
       return runJSExpression(filePath, requireResult, element, blockScope)
     }
     case 'JSX_FRAGMENT': {
