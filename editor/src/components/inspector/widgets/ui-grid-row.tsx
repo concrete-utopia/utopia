@@ -66,6 +66,10 @@ const gridTemplates = {
     gridColumnGap: 4,
     gridTemplateColumns: '1fr 1fr',
   },
+  '<--1fr--><--1fr-->|-18px-|': {
+    gridColumnGap: 4,
+    gridTemplateColumns: '1fr 1fr 18px',
+  },
   '<-------------1fr------------->': {
     gridColumnGap: 4,
     gridTemplateColumns: '1fr',
