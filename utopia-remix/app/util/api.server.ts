@@ -1,8 +1,11 @@
 import { TypedResponse, json } from "@remix-run/node";
 import invariant from "tiny-invariant";
 import { ServerEnvironment } from "../env.server";
-import { Status } from "./statusCodes.server";
+import { Status, getStatusName } from "./statusCodes.server";
 import { Method } from "./methods.server";
+import { UserDetails } from "prisma-client";
+import { getUserFromSession } from "../models/session.server";
+import * as cookie from "cookie";
 
 interface ErrorResponse {
   error: string;
@@ -29,13 +32,9 @@ export function handle(
     [method in Method]?: (request: Request) => Promise<unknown>;
   },
 ): Promise<unknown> {
-  const invalidMethod = new ApiError(
-    "invalid method",
-    Status.METHOD_NOT_ALLOWED,
-  );
-  const handler = handlers[request.method];
+  const handler = handlers[request.method as Method];
   if (handler == null) {
-    throw invalidMethod;
+    throw new ApiError("invalid method", Status.METHOD_NOT_ALLOWED);
   }
   return handleMethod(request, handler);
 }
@@ -59,11 +58,12 @@ async function handleMethod<T>(
     const isApiError = err instanceof ApiError;
     const message = isApiError ? err.message : `${err}`;
     const status = isApiError ? err.status : 500;
+    const name = isApiError ? err.name : "Error";
 
     console.error(`${request.method} ${request.url}: ${message}`);
 
     return json(
-      { error: message },
+      { error: name, status: status, message: message },
       { headers: responseHeaders, status: status },
     );
   }
@@ -73,7 +73,7 @@ export class ApiError extends Error {
   status: number;
   constructor(message: string, code: number) {
     super(message);
-    this.name = "InvariantError";
+    this.name = getStatusName(code);
     this.status = code;
   }
 }
@@ -99,4 +99,16 @@ export async function proxiedResponse(response: Response): Promise<unknown> {
     throw new ApiError(text, response.status);
   }
   return response.json();
+}
+
+export const SESSION_COOKIE_NAME = "JSESSIONID";
+
+export async function requireUser(request: Request): Promise<UserDetails> {
+  const cookieHeader = request.headers.get("cookie") ?? "";
+  const cookies = cookie.parse(cookieHeader);
+  const sessionId = cookies[SESSION_COOKIE_NAME] ?? null;
+  ensure(sessionId != null, "missing session cookie", Status.UNAUTHORIZED);
+  const user = await getUserFromSession({ key: sessionId });
+  ensure(user != null, "user not found", Status.UNAUTHORIZED);
+  return user;
 }

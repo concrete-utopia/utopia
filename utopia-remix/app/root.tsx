@@ -7,13 +7,32 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  json,
+  useLoaderData,
+  useRouteError,
 } from "@remix-run/react";
+import { BrowserEnvironment } from "./env.server";
+import { styles } from "./styles/styles.css";
+
+declare global {
+  interface Window {
+    ENV: BrowserEnvironment;
+  }
+}
 
 export const links: LinksFunction = () => [
   ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
 ];
 
+export async function loader() {
+  return json({
+    ENV: BrowserEnvironment,
+  });
+}
+
 export default function App() {
+  const data = useLoaderData<typeof loader>();
+
   return (
     <html lang="en">
       <head>
@@ -22,12 +41,26 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body>
+      <body className={styles.root}>
         <Outlet />
+        <script
+          // https://remix.run/docs/en/1.19.3/guides/envvars#browser-environment-variables
+          dangerouslySetInnerHTML={{
+            __html: `window.ENV = ${JSON.stringify(data.ENV)}`,
+          }}
+        />
         <ScrollRestoration />
         <Scripts />
         <LiveReload />
       </body>
     </html>
   );
+}
+
+export function ErrorBoundary() {
+  const error = useRouteError();
+  if (error instanceof Error) {
+    return `${error.name} – ${error.message}`;
+  }
+  throw error;
 }

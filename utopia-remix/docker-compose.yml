@@ -1,0 +1,19 @@
+services:
+  db-test:
+    container_name: utopia-remix-db-test
+    image: postgres:13 # matching the version in shell.nix
+    ports:
+      - 54322:5432
+    volumes:
+      - db-test-data:/var/lib/postgresql/data-local
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+
+volumes:
+  db-test-data:

@@ -303,6 +303,18 @@ let
         when result $ putStrLn "All tools are the correct version."
         if result then exitSuccess else exitFailure
     '')
+    (pkgs.writeScriptBin "test-remix-bff" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-remix
+      ${pnpm}/bin/pnpm run test
+    '')
+    (pkgs.writeScriptBin "test-remix-bff-ci" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-remix
+      ${pnpm}/bin/pnpm run test-ci
+    '')
   ];
 
   withBaseEditorScripts = lib.optionals includeEditorBuildSupport baseEditorScripts;
@@ -516,12 +528,13 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/
       ${pkgs.nodePackages.nodemon}/bin/nodemon --delay 200ms -e hs,yaml --watch server/src --watch server/package.yaml --watch clientmodel/lib/src --watch clientmodel/lib/package.yaml --exec run-server-inner
     '')
-	(pkgs.writeScriptBin "watch-remix" ''
+    (pkgs.writeScriptBin "watch-remix" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-remix
       ${pnpm}/bin/pnpm install
-	  PORT=8002 pnpm run dev
+      ${pnpm}/bin/pnpm exec prisma generate
+      PORT=8002 ${pnpm}/bin/pnpm run dev
     '')
   ];
 
