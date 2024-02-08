@@ -9,6 +9,7 @@ import {
   ScrollRestoration,
   json,
   useLoaderData,
+  useRouteError,
 } from "@remix-run/react";
 import { BrowserEnvironment } from "./env.server";
 import { styles } from "./styles/styles.css";
@@ -54,4 +55,12 @@ export default function App() {
       </body>
     </html>
   );
+}
+
+export function ErrorBoundary() {
+  const error = useRouteError();
+  if (error instanceof Error) {
+    return `${error.name} – ${error.message}`;
+  }
+  throw error;
 }

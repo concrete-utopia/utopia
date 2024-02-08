@@ -1,7 +1,7 @@
 import { TypedResponse, json } from "@remix-run/node";
 import invariant from "tiny-invariant";
 import { ServerEnvironment } from "../env.server";
-import { Status } from "./statusCodes.server";
+import { Status, getStatusName } from "./statusCodes.server";
 import { Method } from "./methods.server";
 import { UserDetails } from "prisma-client";
 import { getUserFromSession } from "../models/session.server";
@@ -72,7 +72,7 @@ export class ApiError extends Error {
   status: number;
   constructor(message: string, code: number) {
     super(message);
-    this.name = "InvariantError";
+    this.name = getStatusName(code);
     this.status = code;
   }
 }
