@@ -13,7 +13,6 @@
     "test": "./run-integration-tests.sh",
     "test-ci": "./run-integration-tests-ci.sh"
   },
-  "prettier": {},
   "dependencies": {
     "@prisma/client": "5.9.0",
     "@remix-run/css-bundle": "2.5.1",
@@ -46,7 +45,6 @@
     "@vanilla-extract/recipes": "0.5.1",
     "@vanilla-extract/sprinkles": "1.6.1",
     "eslint": "8.38.0",
-    "eslint-config-prettier": "9.0.0",
     "eslint-import-resolver-typescript": "3.6.1",
     "eslint-plugin-import": "2.28.1",
     "eslint-plugin-jsx-a11y": "6.7.1",
