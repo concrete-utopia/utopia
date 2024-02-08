@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { LoaderFunctionArgs, json } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
-import { Project, UserDetails } from 'prisma-client'
+import { UserDetails } from 'prisma-client'
 import { listProjects } from '../models/project.server'
 import { ensure, requireUser } from '../util/api.server'
 import { Status } from '../util/statusCodes.server'
@@ -139,6 +139,7 @@ const ProjectsPage = React.memo(() => {
           display: 'flex',
           flexDirection: 'column',
           width: 230,
+          flexShrink: 0,
           justifyContent: 'space-between',
         }}
       >
@@ -239,52 +240,17 @@ const ProjectsPage = React.memo(() => {
         <div
           style={{
             display: 'flex',
+            flexWrap: 'wrap',
+            gap: marginSize,
             flexGrow: 1,
-            flexDirection: 'column',
+            flexDirection: 'row',
             overflowY: 'scroll',
             scrollbarColor: 'lightgrey transparent',
           }}
         >
-          <table>
-            <thead>
-              <tr>
-                <th>preview</th>
-                <th>title</th>
-                <th>modified</th>
-                <th>owner</th>
-                <th>actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {projects.map((project) => {
-                return (
-                  <tr key={project.proj_id} onClick={openProject(project.proj_id)}>
-                    <td>
-                      <img
-                        style={{ width: 100, height: 100 }}
-                        className={sprinkles({ borderRadius: 'medium' })}
-                        src={`/v1/thumbnail/${project.proj_id}`}
-                      />
-                    </td>
-                    <td>{project.title}</td>
-                    <td>{moment(project.modified_at).fromNow()}</td>
-                    <td>{project.owner_id === data.user.user_id ? 'You' : 'Somebody else'}</td>
-                    <td>
-                      {/* <button
-                        className={button({
-                          color: "accent",
-                          size: "medium",
-                        })}
-                        onClick={openProject(project.proj_id)}
-                      >
-                        <span>Fork</span>
-                      </button> */}
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+          {projects.map((project) => (
+            <ProjectCard key={project.proj_id} project={project as Project} />
+          ))}
           {!reachedEnd ? (
             <button
               className={button({ size: 'medium' })}
@@ -302,3 +268,47 @@ const ProjectsPage = React.memo(() => {
 ProjectsPage.displayName = 'ProjectsPage'
 
 export default ProjectsPage
+
+type Project = {
+  proj_id: string
+  title: string
+  modified_at: Date
+}
+
+type ProjectCardProps = {
+  project: Project
+}
+
+const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
+  const openProject = React.useCallback(() => {
+    window.open(`${window.ENV.EDITOR_URL}/p/${project.proj_id}`, '_blank')
+  }, [project.proj_id])
+
+  return (
+    <div
+      key={project.proj_id}
+      style={{
+        overflow: 'hidden',
+        height: 200,
+        width: 300,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 5,
+      }}
+    >
+      <div
+        style={{
+          border: '1px solid grey',
+          borderRadius: 10,
+          flex: 1,
+          background: `linear-gradient(0deg, rgba(77, 255, 223, 0.4) 0%, rgba(255,250,220,.8) 100%)`,
+        }}
+        onClick={openProject}
+      />
+      <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 5 }}>
+        <div style={{ fontWeight: 600 }}>{project.title}</div>
+        <div>{moment(project.modified_at).fromNow()}</div>
+      </div>
+    </div>
+  )
+}
