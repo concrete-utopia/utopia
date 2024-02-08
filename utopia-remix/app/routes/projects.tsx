@@ -111,26 +111,26 @@ const ProjectsPage = React.memo(() => {
       onClick: createNewProject,
       color: 'orange',
     },
-    {
-      title: '+ Project On GitHub',
-      onClick: createNewProject,
-      color: 'pink',
-    },
-    {
-      title: '+ Import From GitHub',
-      onClick: createNewProject,
-      color: 'purple',
-    },
-    {
-      title: '+ Remix Project',
-      onClick: createNewProject,
-      color: 'blue',
-    },
-    {
-      title: '+ Shopify Store',
-      onClick: createNewProject,
-      color: 'green',
-    },
+    // {
+    //   title: '+ Project On GitHub',
+    //   onClick: createNewProject,
+    //   color: 'pink',
+    // },
+    // {
+    //   title: '+ Import From GitHub',
+    //   onClick: createNewProject,
+    //   color: 'purple',
+    // },
+    // {
+    //   title: '+ Remix Project',
+    //   onClick: createNewProject,
+    //   color: 'blue',
+    // },
+    // {
+    //   title: '+ Shopify Store',
+    //   onClick: createNewProject,
+    //   color: 'green',
+    // },
   ] as const
 
   return (
