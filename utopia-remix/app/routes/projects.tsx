@@ -11,7 +11,7 @@ import { button } from '../styles/button.css'
 import { projectCategoryButton } from '../styles/projectCategoryButton.css'
 import { newProjectButton } from '../styles/newProjectButton.css'
 
-const PAGINATION_LIMIT = 10
+const PAGINATION_LIMIT = 20
 
 export async function loader(args: LoaderFunctionArgs) {
   const user = await requireUser(args.request)
@@ -261,6 +261,7 @@ const ProjectsPage = React.memo(() => {
         <div
           style={{
             height: 60,
+            flex: 0,
             display: 'flex',
             flexDirection: 'row',
             gap: 15,
@@ -277,6 +278,7 @@ const ProjectsPage = React.memo(() => {
           style={{
             display: 'flex',
             flexWrap: 'wrap',
+            alignContent: 'flex-start',
             gap: marginSize,
             flexGrow: 1,
             flexDirection: 'row',
@@ -293,7 +295,7 @@ const ProjectsPage = React.memo(() => {
             />
           ))}
           {!reachedEnd ? (
-            <button onClick={loadMore(projects.length)} style={{ width: 200, height: 60 }}>
+            <button onClick={loadMore(filteredProjects.length)} style={{ width: 200, height: 60 }}>
               Load More
             </button>
           ) : null}
