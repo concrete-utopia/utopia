@@ -1130,7 +1130,7 @@ interface VariableNameValue {
 
 function valuesFromObject(name: string, value: object | null): Array<VariableNameValue> {
   if (Array.isArray(value)) {
-    return [] // placeholder, will add support later
+    return value.flatMap((v, idx) => valuesFromVariable(`${name}[${idx}]`, v))
   }
   if (value == null) {
     return [{ name: name, value: `null` }]
