@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { LoaderFunctionArgs, json } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
@@ -145,6 +145,36 @@ const ProjectsPage = React.memo(() => {
     // },
   ] as const
 
+  const [isDarkMode, setIsDarkMode] = useState(false)
+
+  useEffect(() => {
+    const handleColorSchemeChange = (event: {
+      matches: boolean | ((prevState: boolean) => boolean)
+    }) => {
+      setIsDarkMode(event.matches)
+    }
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    setIsDarkMode(mediaQuery.matches)
+    mediaQuery.addListener(handleColorSchemeChange)
+
+    return () => {
+      mediaQuery.removeListener(handleColorSchemeChange)
+    }
+  }, [])
+
+  const backgroundImage = isDarkMode
+    ? 'url(https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_dark.png?raw=true)'
+    : 'url(https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_light.png?raw=true)'
+
+  const logoStyle = {
+    height: 60,
+    width: 45,
+    backgroundSize: '45px',
+    backgroundRepeat: 'no-repeat',
+    backgroundImage: backgroundImage,
+  }
+
   return (
     <div
       style={{
@@ -239,16 +269,7 @@ const ProjectsPage = React.memo(() => {
             fontSize: 34,
           }}
         >
-          <div
-            style={{
-              height: 60,
-              width: 45,
-              backgroundSize: 45,
-              backgroundRepeat: 'no-repeat',
-              backgroundImage:
-                'url(https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_light.png?raw=true)',
-            }}
-          ></div>
+          <div style={logoStyle} />
           Utopia
         </div>
       </div>
