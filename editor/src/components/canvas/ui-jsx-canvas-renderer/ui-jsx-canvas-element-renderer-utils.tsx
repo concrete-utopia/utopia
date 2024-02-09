@@ -57,7 +57,7 @@ import {
   clearOpposingConditionalSpyValues,
 } from './ui-jsx-canvas-spy-wrapper'
 import { getUtopiaID } from '../../../core/shared/uid-utils'
-import { isComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
+import { isComponentRendererComponent } from './component-renderer-component'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import { canvasMissingJSXElementError } from './canvas-render-errors'
 import { importedFromWhere } from '../../editor/import-utils'

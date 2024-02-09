@@ -1,3 +1,4 @@
+import type React from 'react'
 import type {
   registerModule as registerModuleAPI,
   registerComponent as registerComponentAPI,
@@ -42,11 +43,8 @@ import { getGlobalEvaluatedFileName } from '../shared/code-exec-utils'
 import { memoize } from '../shared/memoize'
 import fastDeepEqual from 'fast-deep-equal'
 import { TimedCacheMap } from '../shared/timed-cache-map'
-import {
-  ComponentRendererComponent,
-  isComponentRendererComponent,
-} from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
 import { dropFileExtension } from '../shared/file-utils'
+import { isComponentRendererComponent } from '../../components/canvas/ui-jsx-canvas-renderer/component-renderer-component'
 
 async function parseInsertOption(
   insertOption: ComponentInsertOption,

@@ -1,6 +1,5 @@
 import React from 'react'
 import type { MapLike } from 'typescript'
-import type { PropertyControls } from 'utopia-api/core'
 import type { JSXElementChild, UtopiaJSXComponent } from '../../../core/shared/element-template'
 import {
   isUtopiaJSXComponent,
@@ -28,7 +27,6 @@ import {
   renderCoreElement,
   utopiaCanvasJSXLookup,
 } from './ui-jsx-canvas-element-renderer-utils'
-import { useContextSelector } from 'use-context-selector'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { UTOPIA_INSTANCE_PATH, UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
 import { getPathsFromString, getUtopiaID } from '../../../core/shared/uid-utils'
@@ -36,35 +34,8 @@ import { useGetTopLevelElementsAndImports } from './ui-jsx-canvas-top-level-elem
 import { useGetCodeAndHighlightBounds } from './ui-jsx-canvas-execution-scope'
 import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { objectMap } from '../../../core/shared/object-utils'
-
-export type ComponentRendererComponent = React.ComponentType<
-  React.PropsWithChildren<{
-    [UTOPIA_INSTANCE_PATH]: ElementPath
-    [UTOPIA_PATH_KEY]?: string
-  }>
-> & {
-  topLevelElementName: string | null
-  propertyControls?: PropertyControls
-  utopiaType: 'UTOPIA_COMPONENT_RENDERER_COMPONENT'
-  filePath: string
-  originalName: string | null
-}
-
-export function isComponentRendererComponent(
-  component:
-    | ComponentRendererComponent
-    | React.ComponentType<React.PropsWithChildren<unknown>>
-    | null
-    | undefined,
-): component is ComponentRendererComponent {
-  return (
-    component != null &&
-    typeof component === 'function' &&
-    (component as ComponentRendererComponent).utopiaType === 'UTOPIA_COMPONENT_RENDERER_COMPONENT'
-  )
-}
+import type { ComponentRendererComponent } from './component-renderer-component'
 
 function tryToGetInstancePath(
   maybePath: ElementPath | null,
