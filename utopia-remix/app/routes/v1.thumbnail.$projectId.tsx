@@ -4,14 +4,14 @@ import { ensure, handle, handleOptions } from '../util/api.server'
 import { Params } from '@remix-run/react'
 
 export async function loader(args: LoaderFunctionArgs) {
-  return handle(args.request, {
+  return handle(args, {
     OPTIONS: handleOptions,
     GET: handleGetThumbnail(args.params),
   })
 }
 
 export async function action(args: ActionFunctionArgs) {
-  return handle(args.request, {
+  return handle(args, {
     POST: proxy,
   })
 }

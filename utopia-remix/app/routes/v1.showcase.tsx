@@ -3,7 +3,7 @@ import { handle, handleOptions } from '../util/api.server'
 import { ListProjectsResponse } from '../types'
 
 export async function loader(args: LoaderFunctionArgs) {
-  return handle(args.request, {
+  return handle(args, {
     OPTIONS: handleOptions,
     GET: handleShowcase,
   })
