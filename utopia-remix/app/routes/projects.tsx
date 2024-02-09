@@ -91,7 +91,7 @@ const ProjectsPage = React.memo(() => {
   )
 
   const createNewProject = () => {
-    window.open(`/project/`, '_self')
+    window.open(`${window.ENV.EDITOR_URL}/project/`, '_blank')
   }
 
   React.useEffect(() => {
