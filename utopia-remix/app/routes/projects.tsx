@@ -166,9 +166,7 @@ const ProjectsPage = React.memo(() => {
     }
   }, [])
 
-  const logoPic = isDarkMode
-    ? 'url(https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_dark.png?raw=true)'
-    : 'url(https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_light.png?raw=true)'
+  const logoPic = isDarkMode ? 'url(assets/pyramid_dark.png)' : 'url(assets/pyramid_light.png)'
 
   return (
     <div
