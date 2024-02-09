@@ -22,7 +22,7 @@ const unpinnedDeps = folders.flatMap((projectPath) => {
     // ...packageJson.devDependencies,
   }
   return Object.entries(allDeps)
-    .filter(([, version]) => version.match(/^[\^~]/))
+    .filter(([, version]) => version.startsWith('^') || version.startsWith('~'))
     .map(([name, version]) => ({ path, name, version }))
 })
 
