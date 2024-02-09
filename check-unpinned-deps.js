@@ -4,7 +4,15 @@ const { join } = require('path')
 /**
  * Scan dependencies in the package.json files in these folders.
  */
-const folders = ['.', './editor', './utopia-remix', './puppeteer-tests']
+const folders = [
+  '.',
+  './editor',
+  './utopia-remix',
+  './puppeteer-tests',
+  './utopia-api',
+  './utopia-vscode-common',
+  './utopia-vscode-extension',
+]
 
 const unpinnedDeps = folders.flatMap((projectPath) => {
   const path = join(projectPath, 'package.json')
