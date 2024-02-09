@@ -303,6 +303,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
           style={styles.popper}
           closePopup={closePopup}
           ref={setPopperElement}
+          propPath={propPath}
         />
       ) : null}
       <UIGridRow
@@ -380,11 +381,12 @@ function variableValueToString(value: unknown): string {
 interface DataPickerPopupProps {
   closePopup: () => void
   style: React.CSSProperties
+  propPath: PropertyPath
 }
 
 const DataPickerPopup = React.memo(
   React.forwardRef<HTMLDivElement, DataPickerPopupProps>((props, forwardedRef) => {
-    const { closePopup } = props
+    const { closePopup, propPath } = props
 
     const selectedViewPathRef = useRefEditorState(
       (store) => store.editor.selectedViews.at(0) ?? null,
@@ -405,12 +407,12 @@ const DataPickerPopup = React.memo(
         dispatch([
           setProp_UNSAFE(
             selectedViewPathRef.current,
-            PP.create('text'),
+            propPath,
             jsExpressionOtherJavaScriptSimple(name, [name]),
           ),
         ])
       },
-      [dispatch, selectedViewPathRef],
+      [dispatch, propPath, selectedViewPathRef],
     )
 
     const variableNamesInScope = useVariablesInScopeForSelectedElement()
