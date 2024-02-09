@@ -206,6 +206,35 @@ function useGetRoutes(
   ])
 }
 
+function useRoutesWithIdEquality(
+  getLoadContext?: (request: Request) => Promise<AppLoadContext> | AppLoadContext,
+) {
+  const previousRoutes = React.useRef<Array<RouteObject | DataRouteObject> | null>(null)
+
+  const nextRoutes = useGetRoutes(getLoadContext)
+
+  const routes = React.useMemo(() => {
+    if (previousRoutes.current == null || previousRoutes.current.length !== nextRoutes.length) {
+      previousRoutes.current = nextRoutes
+      return nextRoutes
+    }
+
+    let prevIdsSet = new Set(previousRoutes.current.map((r) => r.id ?? '0'))
+    let currentIdsSet = new Set(nextRoutes.map((r) => r.id ?? '0'))
+
+    const same = [...prevIdsSet].every((id) => currentIdsSet.has(id))
+
+    if (!same) {
+      previousRoutes.current = nextRoutes
+      return nextRoutes
+    }
+
+    return previousRoutes.current
+  }, [nextRoutes])
+
+  return routes
+}
+
 export interface UtopiaRemixRootComponentProps {
   [UTOPIA_PATH_KEY]: ElementPath
   getLoadContext?: (request: Request) => Promise<AppLoadContext> | AppLoadContext
@@ -214,26 +243,7 @@ export interface UtopiaRemixRootComponentProps {
 export const UtopiaRemixRootComponent = (props: UtopiaRemixRootComponentProps) => {
   const remixDerivedDataRef = useRefEditorState((store) => store.derived.remixData)
 
-  const prevRoutes = React.useRef<(RouteObject | DataRouteObject)[] | null>(null)
-  const routesI = useGetRoutes(props.getLoadContext)
-  const routes = React.useMemo(() => {
-    if (prevRoutes.current == null || prevRoutes.current.length !== routesI.length) {
-      prevRoutes.current = routesI
-      return routesI
-    }
-
-    let prevIdsSet = new Set(prevRoutes.current.map((r) => r.id ?? '0'))
-    let currentIdsSet = new Set(routesI.map((r) => r.id ?? '0'))
-
-    const same = [...prevIdsSet].every((id) => currentIdsSet.has(id))
-
-    if (!same) {
-      prevRoutes.current = routesI
-      return routesI
-    }
-
-    return prevRoutes.current
-  }, [routesI])
+  const routes = useRoutesWithIdEquality(props.getLoadContext)
 
   const basePath = props[UTOPIA_PATH_KEY]
 
