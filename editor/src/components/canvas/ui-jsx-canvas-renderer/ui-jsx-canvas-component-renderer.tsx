@@ -48,6 +48,8 @@ export type ComponentRendererComponent = React.ComponentType<
   topLevelElementName: string | null
   propertyControls?: PropertyControls
   utopiaType: 'UTOPIA_COMPONENT_RENDERER_COMPONENT'
+  filePath: string
+  originalName: string | null
 }
 
 export function isComponentRendererComponent(
@@ -287,6 +289,8 @@ export function createComponentRendererComponent(params: {
   Component.displayName = `ComponentRenderer(${params.topLevelElementName})`
   Component.topLevelElementName = params.topLevelElementName
   Component.utopiaType = 'UTOPIA_COMPONENT_RENDERER_COMPONENT' as const
+  Component.filePath = params.filePath
+  Component.originalName = params.topLevelElementName
   return Component
 }
 

@@ -21,9 +21,9 @@ export function registerModule(
 }
 
 export function registerComponent(
-  componentName: string,
-  moduleName: string,
+  component: React.FunctionComponent,
   properties: ComponentToRegister,
+  moduleName?: string,
 ): void {
   // Function is deliberately empty. If called inside the Utopia Editor, it has effect to the running environment
 }

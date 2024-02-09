@@ -42,6 +42,11 @@ import { getGlobalEvaluatedFileName } from '../shared/code-exec-utils'
 import { memoize } from '../shared/memoize'
 import fastDeepEqual from 'fast-deep-equal'
 import { TimedCacheMap } from '../shared/timed-cache-map'
+import {
+  ComponentRendererComponent,
+  isComponentRendererComponent,
+} from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
+import { dropFileExtension } from '../shared/file-utils'
 
 async function parseInsertOption(
   insertOption: ComponentInsertOption,
@@ -274,11 +279,35 @@ export function createRegisterModuleAndComponentFunction(workers: UtopiaTsWorker
   }
 
   function registerComponent(
-    componentName: string,
-    unparsedModuleName: string,
+    component: React.FunctionComponent,
     properties: ComponentToRegister,
+    moduleName?: string,
   ): void {
-    return registerModule(unparsedModuleName, { [componentName]: properties })
+    // when the recieved component is an internal component, it is wrapped into a ComponentRendererComponent
+    if (isComponentRendererComponent(component)) {
+      const name = component.originalName
+      const module = dropFileExtension(component.filePath)
+
+      if (name == null) {
+        console.warn(
+          `registerComponent failed: ComponentRendererComponent of internal component doesn't have originalName`,
+        )
+        return
+      }
+
+      registerModule(module, { [name]: properties })
+    }
+
+    // when the received component is not a ComponentRendererComponent, it is an external component, and a moduleName is required
+    if (moduleName == null) {
+      console.warn(
+        'registerComponent failed: external components require a moduleName ',
+        component.displayName,
+      )
+      return
+    }
+    const name = component.displayName ?? component.name
+    registerModule(moduleName, { [name]: properties })
   }
 
   return {
