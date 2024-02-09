@@ -1,4 +1,5 @@
-import { slugify } from './slugify'
+import slugify from 'slugify'
+import { SLUGIFY_OPTIONS } from '../routes/projects.$id.rename'
 
 describe('slugify', () => {
   const tests: { name: string; input: string; wanted: string }[] = [
@@ -46,7 +47,7 @@ describe('slugify', () => {
   for (let i = 0; i < tests.length; i++) {
     const test = tests[i]
     it(`${i + 1}/${tests.length} ${test.name}`, async () => {
-      expect(slugify(test.input)).toEqual(test.wanted)
+      expect(slugify(test.input, SLUGIFY_OPTIONS)).toEqual(test.wanted)
     })
   }
 })
