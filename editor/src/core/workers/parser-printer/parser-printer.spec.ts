@@ -3850,6 +3850,7 @@ export var App = props => {
             `[1, 2, 3].map((x) => <View data-uid='abc' />);`,
             `return [1, 2, 3].map(function (x) {
   return utopiaCanvasJSXLookup("abc", {
+    x: x,
     callerThis: this
   });
 });`,
@@ -3984,6 +3985,7 @@ export var App = props => {
 <div data-uid="abc" />);`,
             `return [1, 2, 3].map(function (n) {
   return utopiaCanvasJSXLookup("abc", {
+    n: n,
     callerThis: this
   });
 });`,
@@ -4048,6 +4050,7 @@ export var App = props => {
 <div data-uid='abc' />);`,
             `return [1, 2, 3].map(function (n) {
   return utopiaCanvasJSXLookup("abc", {
+    n: n,
     callerThis: this
   });
 });`,

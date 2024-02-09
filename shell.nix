@@ -303,6 +303,18 @@ let
         when result $ putStrLn "All tools are the correct version."
         if result then exitSuccess else exitFailure
     '')
+    (pkgs.writeScriptBin "test-remix-bff" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-remix
+      ${pnpm}/bin/pnpm run test
+    '')
+    (pkgs.writeScriptBin "test-remix-bff-ci" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-remix
+      ${pnpm}/bin/pnpm run test-ci
+    '')
   ];
 
   withBaseEditorScripts = lib.optionals includeEditorBuildSupport baseEditorScripts;
@@ -516,11 +528,13 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/
       ${pkgs.nodePackages.nodemon}/bin/nodemon --delay 200ms -e hs,yaml --watch server/src --watch server/package.yaml --watch clientmodel/lib/src --watch clientmodel/lib/package.yaml --exec run-server-inner
     '')
-	(pkgs.writeScriptBin "watch-remix" ''
+    (pkgs.writeScriptBin "watch-remix" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-remix
-	  PORT=8002 pnpm run dev
+      ${pnpm}/bin/pnpm install
+      ${pnpm}/bin/pnpm exec prisma generate
+      PORT=8002 ${pnpm}/bin/pnpm run dev
     '')
   ];
 
@@ -747,4 +761,11 @@ in pkgs.mkShell {
   NODE_OPENSSL_OPTION = "--openssl-legacy-provider";
   # Required for node-gyp, apparently
   npm_config_force_process_config = true;
+
+  # Make Prisma work.
+  PRISMA_SCHEMA_ENGINE_BINARY = if stdenv.isLinux then "${pkgs.prisma-engines}/bin/migration-engine" else null;
+  PRISMA_QUERY_ENGINE_BINARY = if stdenv.isLinux then "${pkgs.prisma-engines}/bin/query-engine" else null;
+  PRISMA_INTROSPECTION_ENGINE_BINARY = if stdenv.isLinux then "${pkgs.prisma-engines}/bin/introspection-engine" else null;
+  PRISMA_QUERY_ENGINE_LIBRARY = if stdenv.isLinux then "${pkgs.prisma-engines}/lib/libquery_engine.node" else null;
+  PRISMA_FMT_BINARY = if stdenv.isLinux then "${pkgs.prisma-engines}/bin/prisma-fmt" else null;
 }

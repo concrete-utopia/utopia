@@ -171,7 +171,7 @@ describe('variables menu', () => {
 
       await selectComponentsForTest(editor, [
         EP.fromString(
-          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/676/020~~~1`,
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/976/020~~~1`,
         ),
       ])
 
@@ -198,10 +198,7 @@ describe('variables menu', () => {
         ),
       ])
     })
-    xit('shows and inserts scoped properties when possible', async () => {
-      // Test disabled because it uncovered an issue with an exception being triggered for a frame on the canvas.
-      // But it has been seemingly impossible to capture the exception in a way that permits the test to continue.
-      // Solution appears to be to fix the flickering of an error in subsequent work.
+    it('shows and inserts scoped properties when possible', async () => {
       const editor = await renderTestEditorWithProjectContent(
         makeMappingFunctionTestProjectContents(),
         'await-first-dom-report',
@@ -209,7 +206,7 @@ describe('variables menu', () => {
 
       await selectComponentsForTest(editor, [
         EP.fromString(
-          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/1ac/586~~~1`,
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/3e2/586~~~1`,
         ),
       ])
 
@@ -247,19 +244,115 @@ describe('variables menu', () => {
                     src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
                     alt='Utopia logo'
                     style={{ width: 118, height: 150 }}
+                    data-uid='020'
                   />
                 )
               })}
               {[{ thing: 1 }, { thing: 2 }, { thing: 3 }].map(
                 (someValue, index) => {
                   return (
-                    <div
-                    >
+                    <div data-uid='586'>
                       <img
                         src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
                         alt='Utopia logo'
                         style={{ width: 118, height: 150 }}
+                        data-uid='054'
                       />
+                      <span
+                        style={{
+                          width: 100,
+                          height: 100,
+                          position: 'absolute',
+                        }}
+                        data-uid='ele'
+                      >
+                        {index}
+                      </span>
+                    </div>
+                  )
+                },
+              )}
+            </div>
+            )
+          }`,
+          PrettierConfig,
+        ),
+      )
+    })
+
+    it('shows and inserts scoped properties when possible with multiple elements selected', async () => {
+      const editor = await renderTestEditorWithProjectContent(
+        makeMappingFunctionTestProjectContents(),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/3e2/586~~~1`,
+        ),
+        EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/3e2/586~~~2`,
+        ),
+      ])
+
+      await openVariablesMenu(editor)
+
+      document.execCommand('insertText', false, 'index')
+      expect(getInsertItems().length).toEqual(1)
+      expect(getInsertItems()[0].innerText).toEqual('index')
+
+      const filterBox = await screen.findByTestId(InsertMenuFilterTestId)
+      forceNotNull('the filter box must not be null', filterBox)
+
+      await pressKey('Enter', { targetElement: filterBox })
+
+      expect(getPrintedUiJsCode(editor.getEditorState(), '/src/app.js')).toEqual(
+        Prettier.format(
+          `
+          import * as React from 'react'
+          export function App({objProp, imgProp, unusedProp}) {
+            return (
+              <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 57,
+                top: 168,
+                width: 247,
+                height: 402,
+              }}
+              data-uid='container'
+            >
+              {[1, 2].map((value, index) => {
+                return (
+                  <img
+                    src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+                    alt='Utopia logo'
+                    style={{ width: 118, height: 150 }}
+                    data-uid='020'
+                  />
+                )
+              })}
+              {[{ thing: 1 }, { thing: 2 }, { thing: 3 }].map(
+                (someValue, index) => {
+                  return (
+                    <div data-uid='586'>
+                      <img
+                        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+                        alt='Utopia logo'
+                        style={{ width: 118, height: 150 }}
+                        data-uid='054'
+                      />
+                      <span
+                        style={{
+                          width: 100,
+                          height: 100,
+                          position: 'absolute',
+                        }}
+                        data-uid='ele'
+                      >
+                        {index}
+                      </span>
                     </div>
                   )
                 },

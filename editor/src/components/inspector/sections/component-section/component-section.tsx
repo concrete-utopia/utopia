@@ -42,6 +42,10 @@ import {
   Icons,
   VerySubdued,
   FlexRow,
+  Button,
+  Icn,
+  FlexColumn,
+  UtopiaStyles,
 } from '../../../../uuiui'
 import type { CSSCursor } from '../../../../uuiui-deps'
 import { getControlStyles } from '../../../../uuiui-deps'
@@ -80,12 +84,18 @@ import { unless, when } from '../../../../utils/react-conditionals'
 import { PropertyControlsSection } from './property-controls-section'
 import type { ReactEventHandlers } from 'react-use-gesture/dist/types'
 import { normalisePathToUnderlyingTarget } from '../../../custom-code/code-file'
-import { openCodeEditorFile } from '../../../editor/actions/action-creators'
-import { Substores, useEditorState } from '../../../editor/store/store-hook'
+import { openCodeEditorFile, setProp_UNSAFE } from '../../../editor/actions/action-creators'
+import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { getFilePathForImportedComponent } from '../../../../core/model/project-file-utils'
 import { safeIndex } from '../../../../core/shared/array-utils'
 import { useDispatch } from '../../../editor/store/dispatch-context'
+import { usePopper } from 'react-popper'
+import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
+
+export const VariableFromScopeOptionTestId = (idx: number) => `variable-from-scope-${idx}`
+export const DataPickerPopupButtonTestId = `data-picker-popup-button-test-id`
+export const DataPickerPopupTestId = `data-picker-popup-test-id`
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -245,6 +255,36 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
       <props.label />
     )
 
+  const [referenceElement, setReferenceElement] = React.useState<HTMLDivElement | null>(null)
+  const [popperElement, setPopperElement] = React.useState<HTMLDivElement | null>(null)
+  const { styles, attributes } = usePopper(referenceElement, popperElement, {
+    modifiers: [
+      {
+        name: 'offset',
+        options: {
+          offset: [0, 8],
+        },
+      },
+    ],
+  })
+
+  const [popupIsOpen, setPopupIsOpen] = React.useState(false)
+  const togglePopup = React.useCallback(() => setPopupIsOpen((v) => !v), [])
+  const closePopup = React.useCallback(() => setPopupIsOpen(false), [])
+
+  const onClick = React.useCallback(
+    (e: React.MouseEvent) => {
+      togglePopup()
+      e.stopPropagation()
+    },
+    [togglePopup],
+  )
+
+  const variablePickerButtonAvailable = useVariablesInScopeForSelectedElement().length > 0
+  const variablePickerButtonTooltipText = variablePickerButtonAvailable
+    ? 'Pick data source'
+    : 'No data sources available'
+
   if (controlDescription.control === 'none') {
     // do not list anything for `none` controls
     return null
@@ -257,20 +297,43 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
       items={contextMenuItems}
       data={null}
     >
+      {popupIsOpen ? (
+        <DataPickerPopup
+          {...attributes.popper}
+          style={styles.popper}
+          closePopup={closePopup}
+          ref={setPopperElement}
+        />
+      ) : null}
       <UIGridRow
         padded={false}
         style={{ paddingLeft: 0, paddingRight: 8, paddingTop: 3, paddingBottom: 3 }}
-        variant='<--1fr--><--1fr-->'
+        variant='<--1fr--><--1fr-->|-18px-|'
       >
         {propertyLabel}
-        <ControlForProp
-          propPath={propPath}
-          propName={propName}
-          controlDescription={controlDescription}
-          propMetadata={propMetadata}
-          setGlobalCursor={props.setGlobalCursor}
-          focusOnMount={props.focusOnMount}
-        />
+        <div ref={setReferenceElement}>
+          <ControlForProp
+            propPath={propPath}
+            propName={propName}
+            controlDescription={controlDescription}
+            propMetadata={propMetadata}
+            setGlobalCursor={props.setGlobalCursor}
+            focusOnMount={props.focusOnMount}
+          />
+        </div>
+        <Button
+          onClick={onClick}
+          data-testid={DataPickerPopupButtonTestId}
+          disabled={!variablePickerButtonAvailable}
+        >
+          <Icn
+            type='pipette'
+            color='secondary'
+            tooltipText={variablePickerButtonTooltipText}
+            width={18}
+            height={18}
+          />
+        </Button>
       </UIGridRow>
     </InspectorContextMenuWrapper>
   )
@@ -296,6 +359,139 @@ function getSectionHeightFromPropControl(
     return accumulatedHeight
   }
 }
+
+function variableValueToString(value: unknown): string {
+  switch (typeof value) {
+    case 'bigint':
+    case 'boolean':
+    case 'number':
+    case 'string':
+    case 'undefined':
+      return `${value}`
+    case 'object':
+      return '#object' // placeholders from here, will add support later
+    case 'function':
+      return '#function'
+    case 'symbol':
+      return '#symbol'
+  }
+}
+
+interface DataPickerPopupProps {
+  closePopup: () => void
+  style: React.CSSProperties
+}
+
+const DataPickerPopup = React.memo(
+  React.forwardRef<HTMLDivElement, DataPickerPopupProps>((props, forwardedRef) => {
+    const { closePopup } = props
+
+    const selectedViewPathRef = useRefEditorState(
+      (store) => store.editor.selectedViews.at(0) ?? null,
+    )
+
+    const colorTheme = useColorTheme()
+    const dispatch = useDispatch()
+
+    const onTweakProperty = React.useCallback(
+      (name: string) => (e: React.MouseEvent) => {
+        if (selectedViewPathRef.current == null) {
+          return
+        }
+
+        e.stopPropagation()
+        e.preventDefault()
+
+        dispatch([
+          setProp_UNSAFE(
+            selectedViewPathRef.current,
+            PP.create('text'),
+            jsExpressionOtherJavaScriptSimple(name, [name]),
+          ),
+        ])
+      },
+      [dispatch, selectedViewPathRef],
+    )
+
+    const variableNamesInScope = useVariablesInScopeForSelectedElement()
+
+    return (
+      <div
+        style={{
+          background: 'transparent',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 1, // so it's above the inspector
+        }}
+        onClick={closePopup}
+      >
+        <FlexColumn
+          ref={forwardedRef}
+          tabIndex={0}
+          style={{
+            ...props.style,
+            backgroundColor: colorTheme.neutralBackground.value,
+            padding: '8px 16px',
+            boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
+            borderRadius: UtopiaTheme.inputBorderRadius,
+            alignItems: 'flex-start',
+          }}
+          data-testid={DataPickerPopupTestId}
+        >
+          <div style={{ fontSize: 14, fontWeight: 400, marginBottom: 16 }}>
+            <span>Data</span>
+          </div>
+          {variableNamesInScope.map(([variableFromScope, variableValue], idx) => (
+            <Button
+              data-testid={VariableFromScopeOptionTestId(idx)}
+              key={variableFromScope}
+              onClick={onTweakProperty(variableFromScope)}
+              style={{ width: '100%' }}
+            >
+              <UIGridRow
+                padded={false}
+                variant='<--1fr--><--1fr-->'
+                style={{
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                  gap: 8,
+                  width: '100%',
+                }}
+              >
+                <div>
+                  <span
+                    style={{
+                      padding: 4,
+                      borderRadius: 2,
+                      fontWeight: 400,
+                      background: colorTheme.brandNeonGreen.value,
+                    }}
+                  >
+                    {variableFromScope}
+                  </span>
+                </div>
+                <div>
+                  <span
+                    style={{
+                      padding: 4,
+                      fontWeight: 400,
+                      color: colorTheme.neutralForeground.value,
+                    }}
+                  >
+                    {variableValueToString(variableValue.spiedValue)}
+                  </span>
+                </div>
+              </UIGridRow>
+            </Button>
+          ))}
+        </FlexColumn>
+      </div>
+    )
+  }),
+)
 
 interface RowForArrayControlProps extends AbstractRowForControlProps {
   controlDescription: ArrayControlDescription
@@ -942,4 +1138,33 @@ export class ComponentSection extends React.Component<
       return <ComponentSectionInner {...this.props} />
     }
   }
+}
+
+function useVariablesInScopeForSelectedElement() {
+  const selectedViewPath = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews.at(0) ?? null,
+    'useVariablesInScopeForSelectedElement selectedViewPath',
+  )
+
+  const variablesInScope = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.variablesInScope,
+    'useVariablesInScopeForSelectedElement variablesInScope',
+  )
+  const variableNamesInScope = React.useMemo(() => {
+    if (selectedViewPath == null) {
+      return []
+    }
+
+    const variablesInScopeForSelectedPath = variablesInScope[EP.toString(selectedViewPath)]
+
+    if (variablesInScopeForSelectedPath == null) {
+      return []
+    }
+
+    return Object.entries(variablesInScopeForSelectedPath)
+  }, [selectedViewPath, variablesInScope])
+
+  return variableNamesInScope
 }

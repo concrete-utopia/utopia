@@ -304,6 +304,7 @@ export var whatever = (props) => {
           `return arr.map(function (_ref) {
   var n = _ref.n;
   return utopiaCanvasJSXLookup("aab", {
+    _ref: _ref,
     n: n,
     callerThis: this
   });
@@ -410,6 +411,7 @@ export var whatever = (props) => {
           `return arr.map(function (_ref) {
   var n = _ref.a.n;
   return utopiaCanvasJSXLookup("aab", {
+    _ref: _ref,
     n: n,
     callerThis: this
   });
@@ -512,6 +514,7 @@ export var whatever = (props) => {
       n = _ref2[0];
 
   return utopiaCanvasJSXLookup(\"aab\", {
+    _ref: _ref,
     n: n,
     callerThis: this
   });
