@@ -26,7 +26,6 @@ export async function renameProject(params: {
   userId: string
   title: string
 }): Promise<ProjectWithoutContent> {
-  console.log('RENAMING WITH', params.title)
   return prisma.project.update({
     where: { proj_id: params.id, owner_id: params.userId },
     data: { title: params.title },
