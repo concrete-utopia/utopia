@@ -10,7 +10,7 @@ import {
 } from '../../../sample-projects/sample-project-utils.test-utils'
 import type { Modifiers } from '../../../utils/modifiers'
 import { emptyModifiers, cmdModifier } from '../../../utils/modifiers'
-import { selectComponentsForTest } from '../../../utils/utils.test-utils'
+import { selectComponentsForTest, wait } from '../../../utils/utils.test-utils'
 import {
   runDOMWalker,
   selectComponents,
@@ -1387,7 +1387,15 @@ describe('Remix navigation', () => {
       expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixIndexPathLabel)
 
+      console.info(
+        'path in remix scene label before pressing forward',
+        getPathInRemixSceneLabel(renderResult, pathToRemixScene),
+      )
       await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'forward')
+      console.info(
+        'path in remix scene label after pressing forward',
+        getPathInRemixSceneLabel(renderResult, pathToRemixScene),
+      )
       expect(
         renderResult.renderedDOM.queryAllByText(AboutTextContent).filter(filterOutMenuLabels),
       ).toHaveLength(1)
@@ -2345,6 +2353,11 @@ async function navigateWithRemixSceneLabelButton(
   pathToRemixScene: ElementPath,
   button: RemixSceneLabelButtonType,
 ) {
+  console.info(
+    'the button',
+    button,
+    renderResult.renderedDOM.getByTestId(RemixSceneLabelButtonTestId(pathToRemixScene, button)),
+  )
   await mouseClickAtPoint(
     renderResult.renderedDOM.getByTestId(RemixSceneLabelButtonTestId(pathToRemixScene, button)),
     {
