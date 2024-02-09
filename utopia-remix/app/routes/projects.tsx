@@ -58,16 +58,19 @@ const ProjectsPage = React.memo(() => {
   }
 
   const [searchValue, setSearchValue] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
   const [filteredProjects, setFilteredProjects] = useState<Project[]>(data.projects)
 
   const filterProjects = () => {
     if (searchValue === '') {
       setFilteredProjects(data.projects)
+      setSearchQuery('')
     } else {
       const filteredProjects = data.projects.filter((project) =>
         project.title.toLowerCase().includes(searchValue.toLowerCase()),
       )
       setFilteredProjects(filteredProjects)
+      setSearchQuery(searchValue)
     }
   }
 
@@ -163,17 +166,9 @@ const ProjectsPage = React.memo(() => {
     }
   }, [])
 
-  const backgroundImage = isDarkMode
+  const logoPic = isDarkMode
     ? 'url(https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_dark.png?raw=true)'
     : 'url(https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_light.png?raw=true)'
-
-  const logoStyle = {
-    height: 60,
-    width: 45,
-    backgroundSize: '45px',
-    backgroundRepeat: 'no-repeat',
-    backgroundImage: backgroundImage,
-  }
 
   return (
     <div
@@ -222,11 +217,11 @@ const ProjectsPage = React.memo(() => {
           </div>
 
           <input
+            id='search-input'
             autoFocus={true}
             onChange={(e) => setSearchValue(e.target.value)}
             onKeyPress={(e) => {
               if (e.key === 'Enter') {
-                // Call a function to filter the projects based on the search value
                 filterProjects()
               }
             }}
@@ -243,7 +238,6 @@ const ProjectsPage = React.memo(() => {
               padding: '0 14px',
             }}
             placeholder='Search...'
-            // value={this.state.projectTitleFilter || ''}
           />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             {categories.map((category, index) => (
@@ -269,7 +263,15 @@ const ProjectsPage = React.memo(() => {
             fontSize: 34,
           }}
         >
-          <div style={logoStyle} />
+          <div
+            style={{
+              height: 60,
+              width: 45,
+              backgroundSize: '45px',
+              backgroundRepeat: 'no-repeat',
+              backgroundImage: logoPic,
+            }}
+          />
           Utopia
         </div>
       </div>
@@ -299,9 +301,32 @@ const ProjectsPage = React.memo(() => {
         </div>
         <div
           onMouseDown={clearSelectedProject}
-          style={{ fontSize: 16, fontWeight: 600, padding: '5px 10px' }}
+          style={{ fontSize: 16, fontWeight: 600, padding: '5px 10px', userSelect: 'none' }}
         >
-          {selectedCategory}
+          {searchQuery !== '' ? (
+            <span>
+              <span style={{ color: 'gray', paddingRight: 3 }}>
+                <span
+                  onClick={() => {
+                    setSearchValue('') // Clear the search value state
+                    setFilteredProjects(data.projects) // Reset the filtered projects
+                    setSearchQuery('') // Reset the search query
+                    const inputElement = document.getElementById('search-input') as HTMLInputElement
+                    if (inputElement) {
+                      inputElement.value = '' // Clear the input field value
+                    }
+                  }}
+                  style={{ cursor: 'pointer' }}
+                >
+                  ←{' '}
+                </span>{' '}
+                Search results for
+              </span>
+              <span> "{searchQuery}"</span>
+            </span>
+          ) : (
+            selectedCategory
+          )}
         </div>
         <div
           style={{
