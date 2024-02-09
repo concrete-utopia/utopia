@@ -1,5 +1,6 @@
 import type {
   registerModule as registerModuleAPI,
+  registerComponent as registerComponentAPI,
   ComponentToRegister,
   ComponentInsertOption,
   PropertyControls,
@@ -216,16 +217,16 @@ const partiallyParseAndPrepareComponents = (
     parseAndPrepareComponents(workers, moduleNameOrPath, unparsedComponents)
 }
 
-export function createRegisterModuleFunction(
-  workers: UtopiaTsWorkers | null,
-): typeof registerModuleAPI {
+export function createRegisterModuleAndComponentFunction(workers: UtopiaTsWorkers | null): {
+  registerModule: typeof registerModuleAPI
+  registerComponent: typeof registerComponentAPI
+} {
   let cachedParseAndPrepareComponentsMap = new TimedCacheMap<
     string,
     PartiallyAppliedParseAndPrepareComponents
   >()
 
-  // create a function with a signature that matches utopia-api/registerModule
-  return function registerModule(
+  function registerModule(
     unparsedModuleName: string,
     unparsedComponents: { [componentName: string]: ComponentToRegister },
   ): void {
@@ -270,6 +271,19 @@ export function createRegisterModuleFunction(
       },
       parsedModuleName,
     )
+  }
+
+  function registerComponent(
+    componentName: string,
+    unparsedModuleName: string,
+    properties: ComponentToRegister,
+  ): void {
+    return registerModule(unparsedModuleName, { [componentName]: properties })
+  }
+
+  return {
+    registerModule,
+    registerComponent,
   }
 }
 
