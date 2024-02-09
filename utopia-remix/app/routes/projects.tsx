@@ -3,7 +3,7 @@ import { LoaderFunctionArgs, json } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { UserDetails } from 'prisma-client'
-import { listProjects } from '../models/project.server'
+import { ProjectWithoutContent, listProjects } from '../models/project.server'
 import { button } from '../styles/button.css'
 import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
 import { newProjectButton } from '../styles/newProjectButton.css'
@@ -44,13 +44,13 @@ const ProjectsPage = React.memo(() => {
   }
 
   const data = useLoaderData() as unknown as {
-    projects: Project[]
+    projects: ProjectWithoutContent[]
     user: UserDetails
   }
 
   const [searchValue, setSearchValue] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
-  const [filteredProjects, setFilteredProjects] = useState<Project[]>(data.projects)
+  const [filteredProjects, setFilteredProjects] = useState<ProjectWithoutContent[]>(data.projects)
 
   const filterProjects = () => {
     if (searchValue === '') {
@@ -303,7 +303,7 @@ const ProjectsPage = React.memo(() => {
           {filteredProjects.map((project) => (
             <ProjectCard
               key={project.proj_id}
-              project={project as Project}
+              project={project as ProjectWithoutContent}
               selected={project.proj_id === selectedProject.selectedProjectId}
               onSelect={() => handleProjectSelect(project.proj_id)}
             />
@@ -317,14 +317,8 @@ ProjectsPage.displayName = 'ProjectsPage'
 
 export default ProjectsPage
 
-type Project = {
-  proj_id: string
-  title: string
-  modified_at: Date
-}
-
 type ProjectCardProps = {
-  project: Project
+  project: ProjectWithoutContent
   selected: boolean
   onSelect: () => void
 }
