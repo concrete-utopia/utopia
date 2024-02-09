@@ -32,6 +32,11 @@ describe('Set element prop via the data picker', () => {
     await mouseClickAtPoint(secondOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Alternate title')).not.toBeNull()
     expect(within(theInspector).queryByText('Alternate title')).not.toBeNull()
+
+    const thirdOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(2))
+    await mouseClickAtPoint(thirdOption, { x: 2, y: 2 })
+    expect(within(theScene).queryByText('The First Title')).not.toBeNull()
+    expect(within(theInspector).queryByText('The First Title')).not.toBeNull()
   })
 })
 
@@ -48,6 +53,10 @@ var Playground = ({ style }) => {
   const titleToo = 'Title too'
 
   const alternateTitle = 'Alternate title'
+
+  const titles = {
+    one: "The First Title"
+  }
 
   return (
     <div style={style} data-uid='root'>
