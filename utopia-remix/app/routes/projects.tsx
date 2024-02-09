@@ -308,12 +308,12 @@ const ProjectsPage = React.memo(() => {
               <span style={{ color: 'gray', paddingRight: 3 }}>
                 <span
                   onClick={() => {
-                    setSearchValue('') // Clear the search value state
-                    setFilteredProjects(data.projects) // Reset the filtered projects
-                    setSearchQuery('') // Reset the search query
+                    setSearchValue('')
+                    setFilteredProjects(data.projects)
+                    setSearchQuery('')
                     const inputElement = document.getElementById('search-input') as HTMLInputElement
                     if (inputElement) {
-                      inputElement.value = '' // Clear the input field value
+                      inputElement.value = ''
                     }
                   }}
                   style={{ cursor: 'pointer' }}
