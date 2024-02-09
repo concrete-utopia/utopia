@@ -9,7 +9,8 @@
     "husky": "^7.0.2"
   },
   "scripts": {
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "check-unpinned-deps": "node ./check-unpinned-deps.js"
   },
   "repository": {
     "type": "git",
