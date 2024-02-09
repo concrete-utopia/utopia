@@ -35,7 +35,6 @@ export function resolveParamsAndRunJsCode(
     definedElsewhere: Object.keys(definedElsewhereInfo),
   }
 
-  // console.log('javascriptBlock.definedElsewhere', javascriptBlock.definedElsewhere)
   // console.log(definedElsewhereInfo, updatedBlock.transpiledJavascript)
 
   // NOTE: If the external dependencies of this block of code aren't present when this is first called,

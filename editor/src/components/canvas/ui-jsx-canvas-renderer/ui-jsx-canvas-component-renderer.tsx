@@ -215,8 +215,6 @@ export function createComponentRendererComponent(params: {
         [],
       )
 
-      // console.log(utopiaJsxComponent.name, utopiaJsxComponent.arbitraryJSBlock, Object.keys(scope))
-
       scope[JSX_CANVAS_LOOKUP_FUNCTION_NAME] = utopiaCanvasJSXLookup(
         utopiaJsxComponent.arbitraryJSBlock.elementsWithin,
         scope,
