@@ -8,7 +8,7 @@ import { ensure, requireUser } from '../util/api.server'
 import { Status } from '../util/statusCodes.server'
 import { sprinkles } from '../styles/sprinkles.css'
 import { button } from '../styles/button.css'
-import { projectCategoryButton } from '../styles/projectCategoryButton.css'
+import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
 import { newProjectButton } from '../styles/newProjectButton.css'
 
 const PAGINATION_LIMIT = 20
@@ -181,6 +181,7 @@ const ProjectsPage = React.memo(() => {
         boxSizing: 'border-box',
         display: 'flex',
         flexDirection: 'row',
+        userSelect: 'none',
       }}
     >
       <div
@@ -213,7 +214,7 @@ const ProjectsPage = React.memo(() => {
               src={data.user.picture ?? undefined}
               referrerPolicy='no-referrer'
             />
-            <div style={{ fontSize: 12, fontWeight: 500 }}>{data.user.name}</div>
+            <div className={userName({})}>{data.user.name}</div>
           </div>
 
           <input
@@ -301,7 +302,7 @@ const ProjectsPage = React.memo(() => {
         </div>
         <div
           onMouseDown={clearSelectedProject}
-          style={{ fontSize: 16, fontWeight: 600, padding: '5px 10px', userSelect: 'none' }}
+          style={{ fontSize: 16, fontWeight: 600, padding: '5px 10px' }}
         >
           {searchQuery !== '' ? (
             <span>
