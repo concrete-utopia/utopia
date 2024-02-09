@@ -5,15 +5,15 @@ export const styles = {
   root: style([
     {
       fontFamily: 'Inter, sans-serif',
-      fontSize: '1em',
+      fontSize: '11px',
     },
     sprinkles({
       background: {
         lightMode: 'white',
-        darkMode: 'black',
+        darkMode: 'darkModeBlack',
       },
       color: {
-        lightMode: 'black',
+        lightMode: 'lightModeBlack',
         darkMode: 'white',
       },
     }),

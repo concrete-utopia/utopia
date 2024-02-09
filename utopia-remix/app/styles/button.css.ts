@@ -4,7 +4,7 @@ import { sprinkles } from './sprinkles.css'
 export const button = recipe({
   base: [
     sprinkles({
-      borderRadius: 'rounded',
+      borderRadius: 'medium',
       color: 'white',
       boxShadow: 'shadow',
     }),
@@ -21,8 +21,8 @@ export const button = recipe({
   variants: {
     color: {
       neutral: { background: 'whitesmoke' },
-      brand: { background: 'blueviolet' },
-      accent: { background: 'slateblue' },
+      brand: { background: 'grey' },
+      accent: { background: 'lime' },
     },
     size: {
       small: { padding: 8 },
@@ -44,7 +44,7 @@ export const button = recipe({
   ],
 
   defaultVariants: {
-    color: 'accent',
+    color: 'brand',
     size: 'medium',
   },
 })
