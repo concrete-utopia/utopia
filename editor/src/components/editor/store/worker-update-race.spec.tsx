@@ -10,7 +10,8 @@ import { renderTestEditorWithModel } from '../../canvas/ui-jsx.test-utils'
 import { updateFile } from '../actions/action-creators'
 import { StoryboardFilePath } from './editor-state'
 
-const mockDefer = defer // honestly
+// We have to prefix all of these with "mock" otherwise Jest won't allow us to use them below
+const mockDefer = defer
 let mockLock1 = defer()
 let mockLock2 = defer()
 let mockParseStartedCount = 0
@@ -58,9 +59,7 @@ describe('Updates from the worker that are skipped', () => {
 
     // Update any existing file so that the worker update is skipped
     const modifiedStoryboard = textFile(startingStoryboard.fileContents, null, null, 2)
-    await act(async () =>
-      renderResult.dispatch([updateFile(StoryboardFilePath, modifiedStoryboard, false)], false),
-    )
+    await renderResult.dispatch([updateFile(StoryboardFilePath, modifiedStoryboard, false)], false)
 
     await renderResult.getDispatchFollowUpActionsFinished()
 

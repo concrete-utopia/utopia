@@ -1109,7 +1109,10 @@ describe('UPDATE_FROM_WORKER', () => {
     )
 
     // Check that the model hasn't changed, because of the stale revised time.
-    expect(updatedEditorState).toBe(startingEditorState)
+    expect(updatedEditorState).toEqual({
+      ...startingEditorState,
+      previousParseOrPrintSkipped: true,
+    })
   })
   it('should apply all if none are stale', () => {
     // Setup and getting some starting values.
