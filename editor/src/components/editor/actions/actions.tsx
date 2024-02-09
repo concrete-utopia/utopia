@@ -887,6 +887,7 @@ export function restoreEditorState(
     pasteTargetsToIgnore: desiredEditor.pasteTargetsToIgnore,
     codeEditorErrors: currentEditor.codeEditorErrors,
     parseOrPrintInFlight: false,
+    previousParseOrPrintSkipped: desiredEditor.previousParseOrPrintSkipped,
     safeMode: currentEditor.safeMode,
     saveError: currentEditor.saveError,
     vscodeBridgeReady: currentEditor.vscodeBridgeReady,
@@ -3616,7 +3617,11 @@ export const UPDATE_FNS = {
         anyParsedUpdates = true
         const updateIsStale = fileUpdate.versionNumber < existing.versionNumber
         if (updateIsStale && action.updates.length > 1) {
-          return editor
+          return {
+            ...editor,
+            parseOrPrintInFlight: false,
+            previousParseOrPrintSkipped: true,
+          }
         }
       }
     }
@@ -3649,7 +3654,8 @@ export const UPDATE_FNS = {
           ? editor.canvas.domWalkerInvalidateCount + 1
           : editor.canvas.domWalkerInvalidateCount,
       },
-      parseOrPrintInFlight: false, // only ever clear it here
+      parseOrPrintInFlight: false,
+      previousParseOrPrintSkipped: false,
     }
   },
   UPDATE_FROM_CODE_EDITOR: (
