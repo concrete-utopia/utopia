@@ -206,6 +206,35 @@ function useGetRoutes(
   ])
 }
 
+function useRoutesWithIdEquality(
+  getLoadContext?: (request: Request) => Promise<AppLoadContext> | AppLoadContext,
+) {
+  const previousRoutes = React.useRef<Array<RouteObject | DataRouteObject> | null>(null)
+
+  const nextRoutes = useGetRoutes(getLoadContext)
+
+  const routes = React.useMemo(() => {
+    if (previousRoutes.current == null || previousRoutes.current.length !== nextRoutes.length) {
+      previousRoutes.current = nextRoutes
+      return nextRoutes
+    }
+
+    let prevIdsSet = new Set(previousRoutes.current.map((r) => r.id ?? '0'))
+    let currentIdsSet = new Set(nextRoutes.map((r) => r.id ?? '0'))
+
+    const same = [...prevIdsSet].every((id) => currentIdsSet.has(id))
+
+    if (!same) {
+      previousRoutes.current = nextRoutes
+      return nextRoutes
+    }
+
+    return previousRoutes.current
+  }, [nextRoutes])
+
+  return routes
+}
+
 export interface UtopiaRemixRootComponentProps {
   [UTOPIA_PATH_KEY]: ElementPath
   getLoadContext?: (request: Request) => Promise<AppLoadContext> | AppLoadContext
@@ -214,7 +243,7 @@ export interface UtopiaRemixRootComponentProps {
 export const UtopiaRemixRootComponent = (props: UtopiaRemixRootComponentProps) => {
   const remixDerivedDataRef = useRefEditorState((store) => store.derived.remixData)
 
-  const routes = useGetRoutes(props.getLoadContext)
+  const routes = useRoutesWithIdEquality(props.getLoadContext)
 
   const basePath = props[UTOPIA_PATH_KEY]
 
