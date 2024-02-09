@@ -53,6 +53,24 @@ describe('Controls from registerComponent', () => {
     const theScene = editor.renderedDOM.getByTestId('scene')
     expect(within(theScene).queryByText('New title')).not.toBeNull()
   })
+
+  it('registering external component', async () => {
+    const editor = await renderTestEditorWithCode(
+      registerExternalComponentProject,
+      'await-first-dom-report',
+    )
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/title')])
+
+    const dataPickerOpenerButton = editor.renderedDOM.getByTestId(
+      `sampleprop-string-input-property-control`,
+    )
+    dataPickerOpenerButton.focus()
+    document.execCommand('insertText', false, 'New props value')
+    await pressKey('Enter', { targetElement: dataPickerOpenerButton })
+
+    const theView = editor.renderedDOM.getByTestId('view')
+    expect(theView.outerHTML).toContain('sampleprop="New props value"')
+  })
 })
 
 const project = `import * as React from 'react'
@@ -179,3 +197,73 @@ registerComponent(Title, {
 })
 
 `
+
+const registerExternalComponentProject = `import * as React from 'react'
+import {
+  Storyboard,
+  Scene,
+  View,
+  registerComponent,
+} from 'utopia-api'
+
+var Playground = ({ style }) => {
+  return (
+    <div style={style} data-uid='root' data-testid='view'>
+      <View sampleprop='Hello Utopia' data-uid='title'>
+        Hello Utopia
+      </View>
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 521,
+        height: 266,
+        position: 'absolute',
+        left: 554,
+        top: 247,
+        backgroundColor: 'white',
+      }}
+      data-uid='scene'
+      data-testid='scene'
+      commentId='120'
+    >
+      <Playground
+        style={{
+          width: 454,
+          height: 177,
+          position: 'absolute',
+          left: 34,
+          top: 44,
+          backgroundColor: 'white',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+        title='Hello Utopia'
+        data-uid='pg'
+      />
+    </Scene>
+  </Storyboard>
+)
+
+registerComponent(
+  View,
+  {
+    supportsChildren: false,
+    properties: {
+      sampleprop: {
+        control: 'string-input',
+      },
+    },
+    variants: [
+      {
+        code: '<View />',
+      },
+    ],
+  },
+  'utopia-api',
+)`
