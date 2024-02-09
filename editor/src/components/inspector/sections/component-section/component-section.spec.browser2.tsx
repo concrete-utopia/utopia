@@ -41,10 +41,10 @@ describe('Controls from registerComponent', () => {
       registerInternalComponentProject,
       'await-first-dom-report',
     )
-    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg')])
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/title')])
 
     const dataPickerOpenerButton = editor.renderedDOM.getByTestId(
-      `title-string-input-property-control`,
+      `text-string-input-property-control`,
     )
     dataPickerOpenerButton.focus()
     document.execCommand('insertText', false, 'New title')
@@ -122,10 +122,10 @@ function Title({ text }) {
   return <h2 data-uid='0cd'>{text}</h2>
 }
 
-var Playground = ({ style, title }) => {
+var Playground = ({ style }) => {
   return (
     <div style={style} data-uid='root'>
-      <Title text={title} data-uid='title' />
+      <Title text='Hello Utopia' data-uid='title' />
     </div>
   )
 }
@@ -164,17 +164,18 @@ export var storyboard = (
   </Storyboard>
 )
 
-registerComponent(Playground, {
+registerComponent(Title, {
   supportsChildren: false,
   properties: {
-    title: {
+    text: {
       control: 'string-input',
     },
   },
   variants: [
     {
-      code: '<Playground />',
+      code: '<Title />',
     },
   ],
 })
+
 `
