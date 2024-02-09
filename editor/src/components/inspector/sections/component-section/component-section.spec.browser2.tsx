@@ -135,8 +135,6 @@ import {
 } from 'utopia-api'
 
 function Title({ text }) {
-  const content = 'Content'
-
   return <h2 data-uid='0cd'>{text}</h2>
 }
 
