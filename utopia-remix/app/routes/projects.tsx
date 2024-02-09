@@ -1,27 +1,18 @@
 import { LoaderFunctionArgs, json } from '@remix-run/node'
-import { useFetcher, useLoaderData } from '@remix-run/react'
+import { useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { Project, UserDetails } from 'prisma-client'
 import React from 'react'
 import { listProjects } from '../models/project.server'
-import { ensure, requireUser } from '../util/api.server'
-import { Status } from '../util/statusCodes.server'
-import { sprinkles } from '../styles/sprinkles.css'
 import { button } from '../styles/button.css'
-
-const PAGINATION_LIMIT = 10 // how many projects to load per window
+import { sprinkles } from '../styles/sprinkles.css'
+import { requireUser } from '../util/api.server'
 
 export async function loader(args: LoaderFunctionArgs) {
   const user = await requireUser(args.request)
 
-  const url = new URL(args.request.url)
-  const offset = parseInt(url.searchParams.get('offset') ?? '0')
-  ensure(offset >= 0, 'offset cannot be negative', Status.BAD_REQUEST)
-
   const projects = await listProjects({
     ownerId: user.user_id,
-    limit: PAGINATION_LIMIT,
-    offset: offset,
   })
 
   return json({ projects, user })
@@ -33,42 +24,12 @@ const ProjectsPage = React.memo(() => {
     user: UserDetails
   }
 
-  const [projects, setProjects] = React.useState<Project[]>([])
-
-  const projectsFetcher = useFetcher()
-  const [reachedEnd, setReachedEnd] = React.useState(false)
-
-  const loadMore = React.useCallback(
-    (offset: number) => () => {
-      projectsFetcher.load(`?offset=${offset}`)
-    },
-    [],
-  )
-
   const openProject = React.useCallback(
     (projectId: string) => () => {
       window.open(`${window.ENV.EDITOR_URL}/p/${projectId}`, '_blank')
     },
     [],
   )
-
-  React.useEffect(() => {
-    setProjects(data.projects)
-    if (data.projects.length < PAGINATION_LIMIT) {
-      setReachedEnd(true)
-    }
-  }, [data.projects])
-
-  React.useEffect(() => {
-    if (projectsFetcher.data == null || projectsFetcher.state === 'loading') {
-      return
-    }
-    const newProjects = (projectsFetcher.data as { projects: Project[] }).projects
-    setProjects((projects) => [...projects, ...newProjects])
-    if (newProjects.length < PAGINATION_LIMIT) {
-      setReachedEnd(true)
-    }
-  }, [projectsFetcher.data])
 
   return (
     <div>
@@ -99,7 +60,7 @@ const ProjectsPage = React.memo(() => {
           </tr>
         </thead>
         <tbody>
-          {projects.map((project) => {
+          {data.projects.map((project) => {
             return (
               <tr key={project.proj_id}>
                 <td>
@@ -129,14 +90,6 @@ const ProjectsPage = React.memo(() => {
           })}
         </tbody>
       </table>
-      {!reachedEnd ? (
-        <button
-          className={button({ color: 'accent', size: 'medium' })}
-          onClick={loadMore(projects.length)}
-        >
-          Load more
-        </button>
-      ) : null}
     </div>
   )
 })
