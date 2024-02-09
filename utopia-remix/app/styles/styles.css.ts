@@ -1,21 +1,21 @@
-import { style } from "@vanilla-extract/css";
-import { sprinkles } from "./sprinkles.css";
+import { style } from '@vanilla-extract/css'
+import { sprinkles } from './sprinkles.css'
 
 export const styles = {
   root: style([
     {
-      fontFamily: "Inter, sans-serif",
-      fontSize: "11px",
+      fontFamily: 'Inter, sans-serif',
+      fontSize: '11px',
     },
     sprinkles({
       background: {
-        lightMode: "white",
-        darkMode: "darkModeBlack",
+        lightMode: 'white',
+        darkMode: 'darkModeBlack',
       },
       color: {
-        lightMode: "lightModeBlack",
-        darkMode: "white",
+        lightMode: 'lightModeBlack',
+        darkMode: 'white',
       },
     }),
   ]),
-};
+}
