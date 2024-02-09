@@ -303,7 +303,7 @@ const ProjectsPage = React.memo(() => {
           {filteredProjects.map((project) => (
             <ProjectCard
               key={project.proj_id}
-              project={project as ProjectWithoutContent}
+              project={project}
               selected={project.proj_id === selectedProject.selectedProjectId}
               onSelect={() => handleProjectSelect(project.proj_id)}
             />
