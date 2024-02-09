@@ -47,7 +47,6 @@ describe('Controls from registerComponent', () => {
       `title-string-input-property-control`,
     )
     dataPickerOpenerButton.focus()
-    // await mouseClickAtPoint(dataPickerOpenerButton, { x: 2, y: 2 })
     document.execCommand('insertText', false, 'New title')
     await pressKey('Enter', { targetElement: dataPickerOpenerButton })
 
