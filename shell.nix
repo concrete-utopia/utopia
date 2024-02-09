@@ -761,4 +761,11 @@ in pkgs.mkShell {
   NODE_OPENSSL_OPTION = "--openssl-legacy-provider";
   # Required for node-gyp, apparently
   npm_config_force_process_config = true;
+
+  # Make Prisma work.
+  PRISMA_SCHEMA_ENGINE_BINARY = if stdenv.isLinux then "${pkgs.prisma-engines}/bin/migration-engine" else null;
+  PRISMA_QUERY_ENGINE_BINARY = if stdenv.isLinux then "${pkgs.prisma-engines}/bin/query-engine" else null;
+  PRISMA_INTROSPECTION_ENGINE_BINARY = if stdenv.isLinux then "${pkgs.prisma-engines}/bin/introspection-engine" else null;
+  PRISMA_QUERY_ENGINE_LIBRARY = if stdenv.isLinux then "${pkgs.prisma-engines}/lib/libquery_engine.node" else null;
+  PRISMA_FMT_BINARY = if stdenv.isLinux then "${pkgs.prisma-engines}/bin/prisma-fmt" else null;
 }

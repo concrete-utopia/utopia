@@ -1,3 +1,4 @@
+import type React from 'react'
 import type { PropertyControls } from '../property-controls/property-controls'
 
 export interface ComponentInsertOption {
@@ -15,6 +16,14 @@ export interface ComponentToRegister {
 export function registerModule(
   moduleName: string,
   components: { [componentName: string]: ComponentToRegister },
+): void {
+  // Function is deliberately empty. If called inside the Utopia Editor, it has effect to the running environment
+}
+
+export function registerComponent(
+  componentName: string,
+  moduleName: string,
+  properties: ComponentToRegister,
 ): void {
   // Function is deliberately empty. If called inside the Utopia Editor, it has effect to the running environment
 }
