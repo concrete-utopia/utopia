@@ -60,30 +60,6 @@ describe('project model', () => {
         const aliceProjects = await listProjects({ ownerId: 'alice' })
         expect(aliceProjects.map((p) => p.proj_id)).toEqual(['baz'])
       })
-
-      it('can paginate results', async () => {
-        await createTestProject(prisma, { id: 'one', ownerId: 'bob' })
-        await createTestProject(prisma, { id: 'two', ownerId: 'bob' })
-        await createTestProject(prisma, { id: 'three', ownerId: 'bob' })
-        await createTestProject(prisma, { id: 'four', ownerId: 'bob' })
-        await createTestProject(prisma, { id: 'five', ownerId: 'bob' })
-        await createTestProject(prisma, { id: 'six', ownerId: 'bob' })
-        await createTestProject(prisma, { id: 'seven', ownerId: 'bob' })
-
-        expect((await listProjects({ ownerId: 'bob', limit: 3 })).map((p) => p.proj_id)).toEqual([
-          'seven',
-          'six',
-          'five',
-        ])
-
-        expect(
-          (await listProjects({ ownerId: 'bob', limit: 3, offset: 3 })).map((p) => p.proj_id),
-        ).toEqual(['four', 'three', 'two'])
-
-        expect(
-          (await listProjects({ ownerId: 'bob', limit: 3, offset: 6 })).map((p) => p.proj_id),
-        ).toEqual(['one'])
-      })
     })
   })
 })
