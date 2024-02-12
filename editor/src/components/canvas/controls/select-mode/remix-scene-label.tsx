@@ -139,15 +139,15 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
   const currentLocationMatchesRoutes = useCurrentLocationMatchesRoutes(props.target)
 
   const forward = React.useCallback(
-    () => navigationData[EP.toString(props.target)]?.forward(),
+    () => void navigationData[EP.toString(props.target)]?.forward(),
     [navigationData, props.target],
   )
   const back = React.useCallback(
-    () => navigationData[EP.toString(props.target)]?.back(),
+    () => void navigationData[EP.toString(props.target)]?.back(),
     [navigationData, props.target],
   )
   const home = React.useCallback(
-    () => navigationData[EP.toString(props.target)]?.home(),
+    () => void navigationData[EP.toString(props.target)]?.home(),
     [navigationData, props.target],
   )
 

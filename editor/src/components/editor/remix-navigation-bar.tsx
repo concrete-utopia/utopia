@@ -31,15 +31,15 @@ export const RemixNavigationBar = React.memo(() => {
   )
 
   const forward = React.useCallback(
-    () => navigationControls[EP.toString(activeRemixScene)]?.forward(),
+    () => void navigationControls[EP.toString(activeRemixScene)]?.forward(),
     [activeRemixScene, navigationControls],
   )
   const back = React.useCallback(
-    () => navigationControls[EP.toString(activeRemixScene)]?.back(),
+    () => void navigationControls[EP.toString(activeRemixScene)]?.back(),
     [activeRemixScene, navigationControls],
   )
   const home = React.useCallback(
-    () => navigationControls[EP.toString(activeRemixScene)]?.home(),
+    () => void navigationControls[EP.toString(activeRemixScene)]?.home(),
     [activeRemixScene, navigationControls],
   )
 

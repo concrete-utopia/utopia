@@ -198,7 +198,7 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
       if (remixState == null) {
         return
       }
-      remixState.navigate(remixLocationRoute)
+      void remixState.navigate(remixLocationRoute)
     }
     let actions: EditorAction[] = [...openCommentThreadActions(thread.id, commentScene)]
 
