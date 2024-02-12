@@ -5,7 +5,7 @@ import type {
 } from '@remix-run/react'
 import type { MutableUtopiaCtxRefData } from '../../canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
 import type { MapLike } from 'typescript'
-import type { ComponentRendererComponent } from '../../canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
+import type { ComponentRendererComponent } from '../../canvas/ui-jsx-canvas-renderer/component-renderer-component'
 import type { DataRouteObject } from 'react-router'
 import {
   getProjectFileByFilePath,

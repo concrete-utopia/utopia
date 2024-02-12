@@ -16,13 +16,13 @@ import type { CurriedResolveFn, CurriedUtopiaRequireFn } from '../../custom-code
 import type { MapLike } from 'typescript'
 import type { UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import { attemptToResolveParsedComponents } from '../ui-jsx-canvas'
-import type { ComponentRendererComponent } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
+import type { ComponentRendererComponent } from '../ui-jsx-canvas-renderer/component-renderer-component'
 import type { MutableUtopiaCtxRefData } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
 import type { ElementPath, TextFile } from '../../../core/shared/project-file-types'
 import type { ExecutionScope } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { createExecutionScope } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import type { RemixRoutingTable } from '../../editor/store/remix-derived-data'
-import { NO_OP, identity } from '../../../core/shared/utils'
+import { NO_OP } from '../../../core/shared/utils'
 import * as EP from '../../../core/shared/element-path'
 import {
   fileExportsFunctionWithName,
@@ -35,11 +35,7 @@ import { foldEither, forEachRight, left } from '../../../core/shared/either'
 import type { CanvasBase64Blobs } from '../../editor/store/editor-state'
 import { findPathToJSXElementChild } from '../../../core/model/element-template-utils'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import type { ElementInstanceMetadata } from '../../../core/shared/element-template'
-import {
-  getJSXAttribute,
-  type ElementInstanceMetadataMap,
-} from '../../../core/shared/element-template'
+import { type ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { safeIndex } from '../../../core/shared/array-utils'

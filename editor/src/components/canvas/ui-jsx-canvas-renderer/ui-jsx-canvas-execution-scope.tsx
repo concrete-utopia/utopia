@@ -8,7 +8,7 @@ import { getProjectFileByFilePath, ProjectContentsTree } from '../../assets'
 import { importResultFromImports } from '../../editor/npm-dependency/npm-dependency'
 import type { CanvasBase64Blobs, UIFileBase64Blobs } from '../../editor/store/editor-state'
 import { TransientFilesState, TransientFileState } from '../../editor/store/editor-state'
-import type { ComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
+import type { ComponentRendererComponent } from './component-renderer-component'
 import { createComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
 import type { MutableUtopiaCtxRefData } from './ui-jsx-canvas-contexts'
 import {
