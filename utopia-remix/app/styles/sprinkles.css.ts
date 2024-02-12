@@ -3,7 +3,10 @@ import { defineProperties, createSprinkles } from '@vanilla-extract/sprinkles'
 const colors = {
   black: '#000',
   white: '#fff',
-  blue: '#09f',
+  primary: '#0075F9',
+  aqua: '#00E3E3',
+  darkModeBlack: '#181C20',
+  lightModeBlack: '#2B2B2B',
 }
 
 const colorProperties = defineProperties({
@@ -19,8 +22,10 @@ const colorProperties = defineProperties({
 })
 
 const borderRadii = {
-  rounded: 4,
-  roundedFull: '100%',
+  small: 3,
+  medium: 10,
+  large: 30,
+  full: '100%',
 }
 
 const borderProperties = defineProperties({
@@ -39,6 +44,23 @@ const shadowProperties = defineProperties({
   },
 })
 
-export const sprinkles = createSprinkles(colorProperties, borderProperties, shadowProperties)
+const margins = {
+  big: 30,
+  medium: 20,
+  small: 10,
+}
+
+const marginProperties = defineProperties({
+  properties: {
+    margin: margins,
+  },
+})
+
+export const sprinkles = createSprinkles(
+  colorProperties,
+  borderProperties,
+  shadowProperties,
+  marginProperties,
+)
 
 export type Sprinkles = Parameters<typeof sprinkles>[0]

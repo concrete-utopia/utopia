@@ -520,3 +520,15 @@ jobs:
           DATABASE_URL: postgres://postgres:password@localhost:54322/utopia-test?sslmode=disable
         run: |
           cd utopia-remix && ./run-integration-tests-ci.sh
+
+  check-unpinned-deps:
+    name: Check unpinned dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 18
+      - run: npm install
+      - name: Check for unpinned dependencies
+        run: npm run check-unpinned-deps

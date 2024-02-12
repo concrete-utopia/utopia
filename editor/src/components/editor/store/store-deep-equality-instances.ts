@@ -4464,6 +4464,10 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     oldValue.parseOrPrintInFlight,
     newValue.parseOrPrintInFlight,
   )
+  const previousParseOrPrintSkipped = BooleanKeepDeepEquality(
+    oldValue.previousParseOrPrintSkipped,
+    newValue.previousParseOrPrintSkipped,
+  )
   const safeModeResults = BooleanKeepDeepEquality(oldValue.safeMode, newValue.safeMode)
   const saveErrorResults = BooleanKeepDeepEquality(oldValue.saveError, newValue.saveError)
   const vscodeBridgeReadyResults = BooleanKeepDeepEquality(
@@ -4612,6 +4616,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     thumbnailLastGeneratedResults.areEqual &&
     pasteTargetsToIgnoreResults.areEqual &&
     parseOrPrintInFlightResults.areEqual &&
+    previousParseOrPrintSkipped.areEqual &&
     safeModeResults.areEqual &&
     saveErrorResults.areEqual &&
     vscodeBridgeReadyResults.areEqual &&
@@ -4694,6 +4699,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       thumbnailLastGeneratedResults.value,
       pasteTargetsToIgnoreResults.value,
       parseOrPrintInFlightResults.value,
+      previousParseOrPrintSkipped.value,
       safeModeResults.value,
       saveErrorResults.value,
       vscodeBridgeReadyResults.value,

@@ -145,6 +145,7 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   thumbnailLastGenerated: 0,
   pasteTargetsToIgnore: [],
   parseOrPrintInFlight: false,
+  previousParseOrPrintSkipped: false,
   safeMode: false,
   saveError: false,
   vscodeBridgeReady: false,

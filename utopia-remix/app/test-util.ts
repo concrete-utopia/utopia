@@ -23,6 +23,7 @@ export async function createTestProject(
   params: {
     id: string
     ownerId: string
+    title?: string
     content?: string
     createdAt?: Date
     modifiedAt?: Date
@@ -35,7 +36,7 @@ export async function createTestProject(
   await client.project.create({
     data: {
       proj_id: params.id,
-      title: params.id,
+      title: params.title ?? params.id,
       owner_id: params.ownerId,
       created_at: params.createdAt ?? now,
       modified_at: params.modifiedAt ?? now,
@@ -77,11 +78,16 @@ export async function truncateTables(models: DeletableModel[]) {
 
 export function newTestRequest(params?: {
   path?: string
+  method?: string
   headers?: { [key: string]: string }
   authCookie?: string
+  formData?: FormData
 }): Request {
   const path = (params?.path ?? '').replace(/^\/+/, '')
-  const req = new Request(`http://localhost:8002/` + path)
+  const req = new Request(`http://localhost:8002/` + path, {
+    method: params?.method,
+    body: params?.formData,
+  })
 
   if (params?.headers != null) {
     for (const key of Object.keys(params.headers)) {
@@ -94,4 +100,12 @@ export function newTestRequest(params?: {
   }
 
   return req
+}
+
+export function newFormData(data: { [key: string]: string }): FormData {
+  const formData = new FormData()
+  for (const key of Object.keys(data)) {
+    formData.append(key, data[key])
+  }
+  return formData
 }

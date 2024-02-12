@@ -1434,6 +1434,7 @@ export interface EditorState {
   thumbnailLastGenerated: number
   pasteTargetsToIgnore: ElementPath[]
   parseOrPrintInFlight: boolean
+  previousParseOrPrintSkipped: boolean
   safeMode: boolean
   saveError: boolean
   vscodeBridgeReady: boolean
@@ -1514,6 +1515,7 @@ export function editorState(
   thumbnailLastGenerated: number,
   pasteTargetsToIgnore: ElementPath[],
   parseOrPrintInFlight: boolean,
+  previousParseOrPrintSkipped: boolean,
   safeMode: boolean,
   saveError: boolean,
   vscodeBridgeReady: boolean,
@@ -1595,6 +1597,7 @@ export function editorState(
     thumbnailLastGenerated: thumbnailLastGenerated,
     pasteTargetsToIgnore: pasteTargetsToIgnore,
     parseOrPrintInFlight: parseOrPrintInFlight,
+    previousParseOrPrintSkipped: previousParseOrPrintSkipped,
     safeMode: safeMode,
     saveError: saveError,
     vscodeBridgeReady: vscodeBridgeReady,
@@ -2487,6 +2490,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     thumbnailLastGenerated: 0,
     pasteTargetsToIgnore: [],
     parseOrPrintInFlight: false,
+    previousParseOrPrintSkipped: false,
     safeMode: false,
     saveError: false,
     vscodeBridgeReady: false,
@@ -2848,6 +2852,7 @@ export function editorModelFromPersistentModel(
     thumbnailLastGenerated: 0,
     pasteTargetsToIgnore: [],
     parseOrPrintInFlight: false,
+    previousParseOrPrintSkipped: false,
     safeMode: false,
     saveError: false,
     navigator: {

@@ -519,7 +519,10 @@ export function editorDispatchClosingOut(
   const frozenDerivedState = result.unpatchedDerived
 
   const editorWithModelChecked =
-    !anyUndoOrRedo && transientOrNoChange && !anyWorkerUpdates
+    !anyUndoOrRedo &&
+    transientOrNoChange &&
+    !anyWorkerUpdates &&
+    !unpatchedEditorState.previousParseOrPrintSkipped
       ? { editorState: unpatchedEditorState, modelUpdateFinished: Promise.resolve(true) }
       : maybeRequestModelUpdateOnEditor(unpatchedEditorState, storedState.workers, boundDispatch)
 

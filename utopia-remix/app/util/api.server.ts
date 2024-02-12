@@ -6,6 +6,8 @@ import { Method } from './methods.server'
 import { UserDetails } from 'prisma-client'
 import { getUserFromSession } from '../models/session.server'
 import * as cookie from 'cookie'
+import { Params } from '@remix-run/react'
+import { PrismaClientKnownRequestError } from 'prisma-client/runtime/library.js'
 
 interface ErrorResponse {
   error: string
@@ -26,25 +28,31 @@ export async function handleOptions(): Promise<TypedResponse<EmptyResponse>> {
   return json({}, { headers: responseHeaders })
 }
 
+interface HandleRequest {
+  request: Request
+  params: Params<string>
+}
+
 export function handle(
-  request: Request,
+  { request, params }: HandleRequest,
   handlers: {
-    [method in Method]?: (request: Request) => Promise<unknown>
+    [method in Method]?: (request: Request, params: Params<string>) => Promise<unknown>
   },
 ): Promise<unknown> {
   const handler = handlers[request.method as Method]
   if (handler == null) {
     throw new ApiError('invalid method', Status.METHOD_NOT_ALLOWED)
   }
-  return handleMethod(request, handler)
+  return handleMethod(request, params, handler)
 }
 
 async function handleMethod<T>(
   request: Request,
-  fn: (request: Request) => Promise<T>,
+  params: Params<string>,
+  fn: (request: Request, params: Params<string>) => Promise<T>,
 ): Promise<ApiResponse<T> | unknown> {
   try {
-    const resp = await fn(request)
+    const resp = await fn(request, params)
     if (resp instanceof Response) {
       return new Response(resp.body, {
         headers: {
@@ -55,10 +63,7 @@ async function handleMethod<T>(
     }
     return json(resp, { headers: responseHeaders })
   } catch (err) {
-    const isApiError = err instanceof ApiError
-    const message = isApiError ? err.message : `${err}`
-    const status = isApiError ? err.status : 500
-    const name = isApiError ? err.name : 'Error'
+    const { message, status, name } = getErrorData(err)
 
     console.error(`${request.method} ${request.url}: ${message}`)
 
@@ -66,6 +71,28 @@ async function handleMethod<T>(
       { error: name, status: status, message: message },
       { headers: responseHeaders, status: status },
     )
+  }
+}
+
+function getErrorData(err: unknown): { message: string; status: number; name: string } {
+  if (err instanceof ApiError) {
+    return {
+      message: err.message,
+      status: err.status,
+      name: err.name,
+    }
+  } else if (err instanceof PrismaClientKnownRequestError) {
+    return {
+      message: (err.meta?.cause as string) ?? err.message,
+      status: Status.INTERNAL_ERROR,
+      name: (err.meta?.modelName as string) ?? err.name,
+    }
+  } else {
+    return {
+      message: `${err}`,
+      status: Status.INTERNAL_ERROR,
+      name: 'Error',
+    }
   }
 }
 
