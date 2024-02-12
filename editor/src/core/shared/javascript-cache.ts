@@ -35,8 +35,6 @@ export function resolveParamsAndRunJsCode(
     definedElsewhere: Object.keys(definedElsewhereInfo),
   }
 
-  // console.log(definedElsewhereInfo, updatedBlock.transpiledJavascript)
-
   // NOTE: If the external dependencies of this block of code aren't present when this is first called,
   // we'll cache the block without those keys. This _shouldn't_ be an issue since we replace the unique ID
   // on a new parse, but it means we have to be careful of this when reusing js blocks in tests

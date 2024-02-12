@@ -1128,7 +1128,7 @@ export class ComponentSection extends React.Component<
   }
 }
 
-interface VariableNameValue {
+interface VariableOption {
   variableName: string
   definedElsewhere: string | null
   value: string
@@ -1138,12 +1138,12 @@ function valuesFromObject(
   name: string,
   objectName: string,
   value: object | null,
-): Array<VariableNameValue> {
+): Array<VariableOption> {
   if (value == null) {
     return [{ variableName: name, definedElsewhere: null, value: `null` }]
   }
 
-  const patchDefinedElsewhereInfo = (variable: VariableNameValue) => ({
+  const patchDefinedElsewhereInfo = (variable: VariableOption) => ({
     variableName: variable.variableName,
     value: variable.value,
     definedElsewhere: objectName,
@@ -1164,7 +1164,7 @@ function valuesFromObject(
   )
 }
 
-function valuesFromVariable(name: string, value: unknown): Array<VariableNameValue> {
+function valuesFromVariable(name: string, value: unknown): Array<VariableOption> {
   switch (typeof value) {
     case 'bigint':
     case 'boolean':
@@ -1180,7 +1180,7 @@ function valuesFromVariable(name: string, value: unknown): Array<VariableNameVal
   }
 }
 
-function useVariablesInScopeForSelectedElement(): Array<VariableNameValue> {
+function useVariablesInScopeForSelectedElement(): Array<VariableOption> {
   const selectedViewPath = useEditorState(
     Substores.selectedViews,
     (store) => store.editor.selectedViews.at(0) ?? null,
