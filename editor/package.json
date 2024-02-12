@@ -105,7 +105,7 @@
     "@babel/plugin-transform-react-jsx": "7.14.9",
     "@babel/plugin-transform-typescript": "7.15.4",
     "@babel/standalone": "7.15.7",
-    "@babel/traverse": "7.15.4",
+    "@babel/traverse": "7.23.6",
     "@babel/types": "7.23.6",
     "@emotion/cache": "10.0.29",
     "@emotion/react": "11.1.2",

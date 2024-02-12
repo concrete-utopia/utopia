@@ -235,7 +235,7 @@ function babelRewriteJSExpressionCode(
     path: BabelTraverse.NodePath<BabelTypes.JSXElement>,
     value: unknown,
   ): void {
-    if (typeof value === 'object' && BabelTypes.isStringLiteral(value)) {
+    if (BabelTypes.isNode(value) && BabelTypes.isStringLiteral(value)) {
       const uid = value.value
       const foundElementWithin = elementsWithin.find((e) => e.uid === uid)
       if (foundElementWithin != null) {
