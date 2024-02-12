@@ -12,8 +12,6 @@ export async function action(args: ActionFunctionArgs) {
 }
 
 export async function handleRenameProject(req: Request, params: Params<string>) {
-  ensure(req.method === 'POST', 'invalid method', Status.METHOD_NOT_ALLOWED)
-
   const user = await requireUser(req)
 
   const { id } = params

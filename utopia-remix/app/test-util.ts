@@ -27,6 +27,7 @@ export async function createTestProject(
     content?: string
     createdAt?: Date
     modifiedAt?: Date
+    deleted?: boolean
   },
 ) {
   const now = new Date()
@@ -41,6 +42,7 @@ export async function createTestProject(
       created_at: params.createdAt ?? now,
       modified_at: params.modifiedAt ?? now,
       content: Buffer.from(params.content ?? 'test'),
+      deleted: params.deleted ?? null,
     },
   })
 }
