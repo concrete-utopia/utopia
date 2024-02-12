@@ -2,6 +2,7 @@ import moment from 'moment'
 import { prisma } from '../db.server'
 import { createTestProject, createTestUser, truncateTables } from '../test-util'
 import {
+  listDeletedProjects,
   listProjects,
   renameProject,
   restoreDeletedProject,
@@ -178,6 +179,38 @@ describe('project model', () => {
       await restoreDeletedProject({ id: 'deleted-project', userId: 'bob' })
       const got = await prisma.project.findFirst({ where: { proj_id: 'foo' } })
       expect(got?.deleted).toEqual(null)
+    })
+  })
+
+  describe('listDeletedProjects', () => {
+    describe('when the user is not found', () => {
+      it('returns an empty array', async () => {
+        const got = await listDeletedProjects({ ownerId: 'not-found' })
+        expect(got.length).toBe(0)
+      })
+    })
+
+    describe('when the user is passed as undefined', () => {
+      it('throws an error', async () => {
+        const fn = async () => listDeletedProjects({ ownerId: undefined as any })
+        await expect(fn).rejects.toThrow()
+      })
+    })
+
+    describe('when the user is found', () => {
+      it('returns the user deleted projects', async () => {
+        await createTestProject(prisma, { id: 'foo', ownerId: 'bob' })
+        await createTestProject(prisma, { id: 'bar', ownerId: 'bob', deleted: true })
+        await createTestProject(prisma, { id: 'baz', ownerId: 'alice' })
+        await createTestProject(prisma, { id: 'qux', ownerId: 'bob', deleted: true })
+
+        const bobProjects = await listDeletedProjects({ ownerId: 'bob' })
+        expect(bobProjects.length).toBe(2)
+        expect(bobProjects.map((p) => p.proj_id)).toEqual(['qux', 'bar'])
+
+        const aliceProjects = await listDeletedProjects({ ownerId: 'alice' })
+        expect(aliceProjects.length).toBe(0)
+      })
     })
   })
 })
