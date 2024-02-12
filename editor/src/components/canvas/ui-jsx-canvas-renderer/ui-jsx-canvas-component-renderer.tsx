@@ -5,6 +5,7 @@ import {
   isUtopiaJSXComponent,
   isSVGElement,
   isJSXElement,
+  propertiesExposedByParam,
 } from '../../../core/shared/element-template'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import type {
@@ -130,6 +131,16 @@ export function createComponentRendererComponent(params: {
       ...appliedProps,
     }
 
+    let spiedVariablesInScope: VariableData = {}
+    if (utopiaJsxComponent.param != null) {
+      for (const paramName of propertiesExposedByParam(utopiaJsxComponent.param)) {
+        spiedVariablesInScope[paramName] = {
+          spiedValue: scope[paramName],
+          insertionCeiling: instancePath,
+        }
+      }
+    }
+
     let codeError: Error | null = null
 
     // Protect against infinite recursion by taking the view that anything
@@ -160,8 +171,6 @@ export function createComponentRendererComponent(params: {
         }
       })
     }
-
-    let definedWithinWithValues: MapLike<unknown> = {}
 
     if (utopiaJsxComponent.arbitraryJSBlock != null) {
       const lookupRenderer = createLookupRender(
@@ -194,26 +203,29 @@ export function createComponentRendererComponent(params: {
         lookupRenderer,
       )
 
-      definedWithinWithValues = runBlockUpdatingScope(
+      const definedWithinWithValues = runBlockUpdatingScope(
         params.filePath,
         mutableContext.requireResult,
         utopiaJsxComponent.arbitraryJSBlock,
         scope,
       )
+
+      spiedVariablesInScope = {
+        ...spiedVariablesInScope,
+        ...objectMap(
+          (spiedValue) => ({
+            spiedValue: spiedValue,
+            insertionCeiling: null,
+          }),
+          definedWithinWithValues,
+        ),
+      }
     }
 
     function buildComponentRenderResult(element: JSXElementChild): React.ReactElement {
       const ownElementPath = optionalMap(
         (path) => EP.appendNewElementPath(path, getUtopiaID(element)),
         instancePath,
-      )
-
-      const spiedVariablesInScope: VariableData = objectMap(
-        (spiedValue) => ({
-          spiedValue: spiedValue,
-          insertionCeiling: null,
-        }),
-        definedWithinWithValues,
       )
 
       const renderedCoreElement = renderCoreElement(

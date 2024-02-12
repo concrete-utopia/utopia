@@ -140,7 +140,7 @@ describe('variables menu', () => {
         Prettier.format(
           `
         import * as React from 'react'
-        export function App({objProp, imgProp, unusedProp}) {
+          export function App({objProp: bestProp, imgProp, unusedProp, style: { background, position: rightThere }}) {
           return (
             <div
             style={{
@@ -225,7 +225,7 @@ describe('variables menu', () => {
         Prettier.format(
           `
           import * as React from 'react'
-          export function App({objProp, imgProp, unusedProp}) {
+          export function App({objProp: bestProp, imgProp, unusedProp, style: { background, position: rightThere }}) {
             return (
               <div
               style={{
@@ -279,6 +279,333 @@ describe('variables menu', () => {
         ),
       )
     })
+    it('shows and inserts destructured properties when possible', async () => {
+      const editor = await renderTestEditorWithProjectContent(
+        makeMappingFunctionTestProjectContents(),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/3e2/586~~~1`,
+        ),
+      ])
+
+      await openVariablesMenu(editor)
+
+      document.execCommand('insertText', false, 'unused')
+      expect(getInsertItems().length).toEqual(1)
+      expect(getInsertItems()[0].innerText).toEqual('unusedProp')
+
+      const filterBox = await screen.findByTestId(InsertMenuFilterTestId)
+      forceNotNull('the filter box must not be null', filterBox)
+
+      await pressKey('Enter', { targetElement: filterBox })
+
+      expect(getPrintedUiJsCode(editor.getEditorState(), '/src/app.js')).toEqual(
+        Prettier.format(
+          `
+          import * as React from 'react'
+          export function App({objProp: bestProp, imgProp, unusedProp, style: { background, position: rightThere }}) {
+            return (
+              <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 57,
+                top: 168,
+                width: 247,
+                height: 402,
+              }}
+              data-uid='container'
+            >
+              {[1, 2].map((value, index) => {
+                return (
+                  <img
+                    src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+                    alt='Utopia logo'
+                    style={{ width: 118, height: 150 }}
+                    data-uid='020'
+                  />
+                )
+              })}
+              {[{ thing: 1 }, { thing: 2 }, { thing: 3 }].map(
+                (someValue, index) => {
+                  return (
+                    <div data-uid='586'>
+                      <img
+                        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+                        alt='Utopia logo'
+                        style={{ width: 118, height: 150 }}
+                        data-uid='054'
+                      />
+                      <span
+                        style={{
+                          width: 100,
+                          height: 100,
+                          position: 'absolute',
+                        }}
+                        data-uid='ele'
+                      >
+                        {JSON.stringify(unusedProp)}
+                      </span>
+                    </div>
+                  )
+                },
+              )}
+            </div>
+            )
+          }`,
+          PrettierConfig,
+        ),
+      )
+    })
+
+    it('shows and inserts destructured and renamed properties when possible', async () => {
+      const editor = await renderTestEditorWithProjectContent(
+        makeMappingFunctionTestProjectContents(),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/3e2/586~~~1`,
+        ),
+      ])
+
+      await openVariablesMenu(editor)
+
+      document.execCommand('insertText', false, 'bestProp')
+      expect(getInsertItems().length).toEqual(2)
+      expect(getInsertItems()[0].innerText).toEqual('bestProp')
+
+      const filterBox = await screen.findByTestId(InsertMenuFilterTestId)
+      forceNotNull('the filter box must not be null', filterBox)
+
+      await pressKey('Enter', { targetElement: filterBox })
+
+      expect(getPrintedUiJsCode(editor.getEditorState(), '/src/app.js')).toEqual(
+        Prettier.format(
+          `
+          import * as React from 'react'
+          export function App({objProp: bestProp, imgProp, unusedProp, style: { background, position: rightThere }}) {
+            return (
+              <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 57,
+                top: 168,
+                width: 247,
+                height: 402,
+              }}
+              data-uid='container'
+            >
+              {[1, 2].map((value, index) => {
+                return (
+                  <img
+                    src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+                    alt='Utopia logo'
+                    style={{ width: 118, height: 150 }}
+                    data-uid='020'
+                  />
+                )
+              })}
+              {[{ thing: 1 }, { thing: 2 }, { thing: 3 }].map(
+                (someValue, index) => {
+                  return (
+                    <div data-uid='586'>
+                      <img
+                        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+                        alt='Utopia logo'
+                        style={{ width: 118, height: 150 }}
+                        data-uid='054'
+                      />
+                      <span
+                        style={{
+                          width: 100,
+                          height: 100,
+                          position: 'absolute',
+                        }}
+                        data-uid='ele'
+                      >
+                        {JSON.stringify(bestProp)}
+                      </span>
+                    </div>
+                  )
+                },
+              )}
+            </div>
+            )
+          }`,
+          PrettierConfig,
+        ),
+      )
+    })
+
+    it('shows and inserts nested destructured properties when possible', async () => {
+      const editor = await renderTestEditorWithProjectContent(
+        makeMappingFunctionTestProjectContents(),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/3e2/586~~~1`,
+        ),
+      ])
+
+      await openVariablesMenu(editor)
+
+      document.execCommand('insertText', false, 'background')
+      expect(getInsertItems().length).toEqual(1)
+      expect(getInsertItems()[0].innerText).toEqual('background')
+
+      const filterBox = await screen.findByTestId(InsertMenuFilterTestId)
+      forceNotNull('the filter box must not be null', filterBox)
+
+      await pressKey('Enter', { targetElement: filterBox })
+
+      expect(getPrintedUiJsCode(editor.getEditorState(), '/src/app.js')).toEqual(
+        Prettier.format(
+          `
+          import * as React from 'react'
+          export function App({objProp: bestProp, imgProp, unusedProp, style: { background, position: rightThere }}) {
+            return (
+              <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 57,
+                top: 168,
+                width: 247,
+                height: 402,
+              }}
+              data-uid='container'
+            >
+              {[1, 2].map((value, index) => {
+                return (
+                  <img
+                    src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+                    alt='Utopia logo'
+                    style={{ width: 118, height: 150 }}
+                    data-uid='020'
+                  />
+                )
+              })}
+              {[{ thing: 1 }, { thing: 2 }, { thing: 3 }].map(
+                (someValue, index) => {
+                  return (
+                    <div data-uid='586'>
+                      <img
+                        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+                        alt='Utopia logo'
+                        style={{ width: 118, height: 150 }}
+                        data-uid='054'
+                      />
+                      <span
+                        style={{
+                          width: 100,
+                          height: 100,
+                          position: 'absolute',
+                        }}
+                        data-uid='ele'
+                      >
+                        {background}
+                      </span>
+                    </div>
+                  )
+                },
+              )}
+            </div>
+            )
+          }`,
+          PrettierConfig,
+        ),
+      )
+    })
+
+    it('shows and inserts nested destructured and renamed properties when possible', async () => {
+      const editor = await renderTestEditorWithProjectContent(
+        makeMappingFunctionTestProjectContents(),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/3e2/586~~~1`,
+        ),
+      ])
+
+      await openVariablesMenu(editor)
+
+      document.execCommand('insertText', false, 'rightThere')
+      expect(getInsertItems().length).toEqual(1)
+      expect(getInsertItems()[0].innerText).toEqual('rightThere')
+
+      const filterBox = await screen.findByTestId(InsertMenuFilterTestId)
+      forceNotNull('the filter box must not be null', filterBox)
+
+      await pressKey('Enter', { targetElement: filterBox })
+
+      expect(getPrintedUiJsCode(editor.getEditorState(), '/src/app.js')).toEqual(
+        Prettier.format(
+          `
+          import * as React from 'react'
+          export function App({objProp: bestProp, imgProp, unusedProp, style: { background, position: rightThere }}) {
+            return (
+              <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 57,
+                top: 168,
+                width: 247,
+                height: 402,
+              }}
+              data-uid='container'
+            >
+              {[1, 2].map((value, index) => {
+                return (
+                  <img
+                    src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+                    alt='Utopia logo'
+                    style={{ width: 118, height: 150 }}
+                    data-uid='020'
+                  />
+                )
+              })}
+              {[{ thing: 1 }, { thing: 2 }, { thing: 3 }].map(
+                (someValue, index) => {
+                  return (
+                    <div data-uid='586'>
+                      <img
+                        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+                        alt='Utopia logo'
+                        style={{ width: 118, height: 150 }}
+                        data-uid='054'
+                      />
+                      <span
+                        style={{
+                          width: 100,
+                          height: 100,
+                          position: 'absolute',
+                        }}
+                        data-uid='ele'
+                      >
+                        {rightThere}
+                      </span>
+                    </div>
+                  )
+                },
+              )}
+            </div>
+            )
+          }`,
+          PrettierConfig,
+        ),
+      )
+    })
 
     it('shows and inserts scoped properties when possible with multiple elements selected', async () => {
       const editor = await renderTestEditorWithProjectContent(
@@ -310,7 +637,7 @@ describe('variables menu', () => {
         Prettier.format(
           `
           import * as React from 'react'
-          export function App({objProp, imgProp, unusedProp}) {
+          export function App({objProp: bestProp, imgProp, unusedProp, style: { background, position: rightThere }}) {
             return (
               <div
               style={{
@@ -508,7 +835,7 @@ function makeTestProjectContents(): ProjectContentTreeRoot {
     ['/src/app.js']: codeFile(
       `
     import * as React from 'react'
-    export function App({objProp, imgProp, unusedProp}) {
+    export function App({objProp: bestProp, imgProp, unusedProp, style: { background, position: rightThere }}) {
       return (
         <div
         style={{
@@ -550,7 +877,7 @@ function makeTestProjectContents(): ProjectContentTreeRoot {
           data-uid='scene-aaa'
           data-testid='scene-aaa'
         >
-        <App objProp={{key1: 'key1'}} imgProp='test.png' nonExistentProp='non' data-uid='app-entity' data-testid='app-entity' />
+        <App objProp={{key1: 'key1'}} imgProp='test.png' nonExistentProp='non' style={{background: 'white', position: 'absolute'}} data-uid='app-entity' data-testid='app-entity' />
         </Scene>
       </Storyboard>
 )`,
@@ -561,7 +888,7 @@ function makeTestProjectContents(): ProjectContentTreeRoot {
 
 const mappingFunctionAppJS: string = `
     import * as React from 'react'
-    export function App({objProp, imgProp, unusedProp}) {
+    export function App({objProp: bestProp, imgProp, unusedProp, style: { background, position: rightThere }}) {
       return (
         <div
         style={{
@@ -648,7 +975,7 @@ function makeMappingFunctionTestProjectContents(): ProjectContentTreeRoot {
           data-uid='scene-aaa'
           data-testid='scene-aaa'
         >
-        <App objProp={{key1: 'key1'}} imgProp='test.png' nonExistentProp='non' data-uid='app-entity' data-testid='app-entity' />
+        <App objProp={{key1: 'key1'}} imgProp='test.png' nonExistentProp='non' style={{background: 'white', position: 'absolute'}} data-uid='app-entity' data-testid='app-entity' />
         </Scene>
       </Storyboard>
 )`,

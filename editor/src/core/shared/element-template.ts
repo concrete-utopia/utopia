@@ -1777,6 +1777,30 @@ export function propNamesForParam(param: Param): Array<string> {
   }
 }
 
+export function propertiesExposedByParam(param: Param): Array<string> {
+  switch (param.boundParam.type) {
+    case 'REGULAR_PARAM':
+      return [param.boundParam.paramName]
+    case 'DESTRUCTURED_ARRAY':
+      return param.boundParam.parts.flatMap((part) => {
+        switch (part.type) {
+          case 'PARAM':
+            return propertiesExposedByParam(part)
+          case 'OMITTED_PARAM':
+            return []
+          default:
+            return assertNever(part)
+        }
+      })
+    case 'DESTRUCTURED_OBJECT':
+      return param.boundParam.parts.flatMap((part) => {
+        return propertiesExposedByParam(part.param)
+      })
+    default:
+      assertNever(param.boundParam)
+  }
+}
+
 export type VarLetOrConst = 'var' | 'let' | 'const'
 export type FunctionDeclarationSyntax = 'function' | VarLetOrConst
 export type BlockOrExpression = 'block' | 'parenthesized-expression' | 'expression'

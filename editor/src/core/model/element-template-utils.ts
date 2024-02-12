@@ -36,6 +36,7 @@ import {
   jsxFragment,
   isJSExpression,
   hasElementsWithin,
+  isUtopiaJSXComponent,
 } from '../shared/element-template'
 import type {
   StaticElementPathPart,
@@ -1246,4 +1247,26 @@ export function renameJsxElementChild<T extends JSXElementChild>(
     }
   }
   return element
+}
+
+export function findContainingComponent(
+  topLevelElements: Array<TopLevelElement>,
+  target: ElementPath,
+): UtopiaJSXComponent | null {
+  // Identify the UID of the containing component.
+  const containingElementPath = EP.getContainingComponent(target)
+  if (!EP.isEmptyPath(containingElementPath)) {
+    const componentUID = EP.toUid(containingElementPath)
+
+    // Find the component in the top level elements that we're looking for.
+    for (const topLevelElement of topLevelElements) {
+      if (isUtopiaJSXComponent(topLevelElement)) {
+        if (topLevelElement.rootElement.uid === componentUID) {
+          return topLevelElement
+        }
+      }
+    }
+  }
+
+  return null
 }
