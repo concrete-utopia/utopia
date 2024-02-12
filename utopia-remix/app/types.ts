@@ -1,3 +1,5 @@
+import { Project } from 'prisma-client'
+
 export interface ProjectListing {
   id: string
   ownerName: string | null
@@ -11,3 +13,5 @@ export interface ProjectListing {
 export type ListProjectsResponse = {
   projects: ProjectListing[]
 }
+
+export type ProjectWithoutContent = Omit<Project, 'content'>

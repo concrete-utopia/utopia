@@ -2,6 +2,8 @@ import moment from 'moment'
 import { prisma } from '../db.server'
 import { createTestProject, createTestUser, truncateTables } from '../test-util'
 import {
+  hardDeleteAllProjects,
+  hardDeleteProject,
   listDeletedProjects,
   listProjects,
   renameProject,
@@ -211,6 +213,63 @@ describe('project model', () => {
         const aliceProjects = await listDeletedProjects({ ownerId: 'alice' })
         expect(aliceProjects.length).toBe(0)
       })
+    })
+  })
+
+  describe('hardDeleteProject', () => {
+    beforeEach(async () => {
+      await createTestUser(prisma, { id: 'bob' })
+      await createTestUser(prisma, { id: 'alice' })
+      await createTestProject(prisma, { id: 'foo', ownerId: 'bob' })
+      await createTestProject(prisma, {
+        id: 'deleted-project',
+        ownerId: 'bob',
+        deleted: true,
+      })
+    })
+    it('requires the user', async () => {
+      const fn = async () => hardDeleteProject({ id: 'foo', userId: 'JOHN-DOE' })
+      await expect(fn).rejects.toThrow('Record to delete does not exist')
+    })
+    it('requires the project', async () => {
+      const fn = async () => hardDeleteProject({ id: 'bar', userId: 'bob' })
+      await expect(fn).rejects.toThrow('Record to delete does not exist')
+    })
+    it('requires the project ownership', async () => {
+      const fn = async () => hardDeleteProject({ id: 'foo', userId: 'alice' })
+      await expect(fn).rejects.toThrow('Record to delete does not exist')
+    })
+    it('requires the project to be soft-deleted', async () => {
+      const fn = async () => hardDeleteProject({ id: 'foo', userId: 'bob' })
+      await expect(fn).rejects.toThrow('Record to delete does not exist')
+    })
+    it('hard-deletes the project', async () => {
+      const existing = await prisma.project.count({ where: { proj_id: 'deleted-project' } })
+      expect(existing).toEqual(1)
+      await hardDeleteProject({ id: 'deleted-project', userId: 'bob' })
+      const got = await prisma.project.count({ where: { proj_id: 'deleted-project' } })
+      expect(got).toEqual(0)
+    })
+  })
+
+  describe('hardDeleteAllProjects', () => {
+    beforeEach(async () => {
+      await createTestUser(prisma, { id: 'bob' })
+      await createTestUser(prisma, { id: 'alice' })
+      await createTestProject(prisma, { id: 'one', ownerId: 'bob' })
+      await createTestProject(prisma, { id: 'two', ownerId: 'bob', deleted: true })
+      await createTestProject(prisma, { id: 'three', ownerId: 'bob', deleted: true })
+      await createTestProject(prisma, { id: 'four', ownerId: 'alice', deleted: true })
+      await createTestProject(prisma, { id: 'five', ownerId: 'bob' })
+      await createTestProject(prisma, { id: 'six', ownerId: 'bob', deleted: true })
+      await createTestProject(prisma, { id: 'seven', ownerId: 'alice' })
+    })
+    it('hard-deletes all soft-deleted project owned by the user', async () => {
+      await hardDeleteAllProjects({ userId: 'bob' })
+      const bobProjects = await prisma.project.findMany({ where: { owner_id: 'bob' } })
+      expect(bobProjects.map((p) => p.proj_id)).toEqual(['one', 'five'])
+      const aliceProjects = await prisma.project.findMany({ where: { owner_id: 'alice' } })
+      expect(aliceProjects.map((p) => p.proj_id)).toEqual(['four', 'seven'])
     })
   })
 })
