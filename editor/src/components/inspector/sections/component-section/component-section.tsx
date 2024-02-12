@@ -92,6 +92,7 @@ import { safeIndex } from '../../../../core/shared/array-utils'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { usePopper } from 'react-popper'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
+import { optionalMap } from '../../../../core/shared/optional-utils'
 
 export const VariableFromScopeOptionTestId = (idx: number) => `variable-from-scope-${idx}`
 export const DataPickerPopupButtonTestId = `data-picker-popup-button-test-id`
@@ -361,23 +362,6 @@ function getSectionHeightFromPropControl(
   }
 }
 
-function variableValueToString(value: unknown): string {
-  switch (typeof value) {
-    case 'bigint':
-    case 'boolean':
-    case 'number':
-    case 'string':
-    case 'undefined':
-      return `${value}`
-    case 'object':
-      return '#object' // placeholders from here, will add support later
-    case 'function':
-      return '#function'
-    case 'symbol':
-      return '#symbol'
-  }
-}
-
 interface DataPickerPopupProps {
   closePopup: () => void
   style: React.CSSProperties
@@ -396,7 +380,7 @@ const DataPickerPopup = React.memo(
     const dispatch = useDispatch()
 
     const onTweakProperty = React.useCallback(
-      (name: string) => (e: React.MouseEvent) => {
+      (name: string, definedElsewhere: string | null) => (e: React.MouseEvent) => {
         if (selectedViewPathRef.current == null) {
           return
         }
@@ -404,11 +388,13 @@ const DataPickerPopup = React.memo(
         e.stopPropagation()
         e.preventDefault()
 
+        const definedElseWhereArray = optionalMap((d) => [d], definedElsewhere) ?? []
+
         dispatch([
           setProp_UNSAFE(
             selectedViewPathRef.current,
             propPath,
-            jsExpressionOtherJavaScriptSimple(name, [name]),
+            jsExpressionOtherJavaScriptSimple(name, definedElseWhereArray),
           ),
         ])
       },
@@ -446,11 +432,11 @@ const DataPickerPopup = React.memo(
           <div style={{ fontSize: 14, fontWeight: 400, marginBottom: 16 }}>
             <span>Data</span>
           </div>
-          {variableNamesInScope.map(([variableFromScope, variableValue], idx) => (
+          {variableNamesInScope.map(({ variableName, definedElsewhere, value }, idx) => (
             <Button
               data-testid={VariableFromScopeOptionTestId(idx)}
-              key={variableFromScope}
-              onClick={onTweakProperty(variableFromScope)}
+              key={variableName}
+              onClick={onTweakProperty(variableName, definedElsewhere)}
               style={{ width: '100%' }}
             >
               <UIGridRow
@@ -472,7 +458,7 @@ const DataPickerPopup = React.memo(
                       background: colorTheme.brandNeonGreen.value,
                     }}
                   >
-                    {variableFromScope}
+                    {variableName}
                   </span>
                 </div>
                 <div>
@@ -483,7 +469,7 @@ const DataPickerPopup = React.memo(
                       color: colorTheme.neutralForeground.value,
                     }}
                   >
-                    {variableValueToString(variableValue.spiedValue)}
+                    {value}
                   </span>
                 </div>
               </UIGridRow>
@@ -1142,7 +1128,59 @@ export class ComponentSection extends React.Component<
   }
 }
 
-function useVariablesInScopeForSelectedElement() {
+interface VariableOption {
+  variableName: string
+  definedElsewhere: string | null
+  value: string
+}
+
+function valuesFromObject(
+  name: string,
+  objectName: string,
+  value: object | null,
+): Array<VariableOption> {
+  if (value == null) {
+    return [{ variableName: name, definedElsewhere: null, value: `null` }]
+  }
+
+  const patchDefinedElsewhereInfo = (variable: VariableOption) => ({
+    variableName: variable.variableName,
+    value: variable.value,
+    definedElsewhere: objectName,
+  })
+
+  if (Array.isArray(value)) {
+    return value.flatMap((v, idx) =>
+      valuesFromVariable(`${name}[${idx}]`, v).map((variable) =>
+        patchDefinedElsewhereInfo(variable),
+      ),
+    )
+  }
+
+  return Object.entries(value).flatMap(([key, field]) =>
+    valuesFromVariable(`${name}['${key}']`, field).map((variable) =>
+      patchDefinedElsewhereInfo(variable),
+    ),
+  )
+}
+
+function valuesFromVariable(name: string, value: unknown): Array<VariableOption> {
+  switch (typeof value) {
+    case 'bigint':
+    case 'boolean':
+    case 'number':
+    case 'string':
+    case 'undefined':
+      return [{ variableName: name, definedElsewhere: name, value: `${value}` }]
+    case 'object':
+      return valuesFromObject(name, name, value)
+    case 'function':
+    case 'symbol':
+      return []
+  }
+}
+
+function useVariablesInScopeForSelectedElement(): Array<VariableOption> {
   const selectedViewPath = useEditorState(
     Substores.selectedViews,
     (store) => store.editor.selectedViews.at(0) ?? null,
@@ -1165,8 +1203,12 @@ function useVariablesInScopeForSelectedElement() {
       return []
     }
 
-    return Object.entries(variablesInScopeForSelectedPath)
+    return variablesInScopeForSelectedPath
   }, [selectedViewPath, variablesInScope])
 
-  return variableNamesInScope
+  const variableNameValues = Object.entries(variableNamesInScope).flatMap(([name, variable]) =>
+    valuesFromVariable(name, variable.spiedValue),
+  )
+
+  return variableNameValues
 }

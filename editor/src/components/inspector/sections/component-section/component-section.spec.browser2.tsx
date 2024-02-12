@@ -23,15 +23,30 @@ describe('Set element prop via the data picker', () => {
     const theScene = editor.renderedDOM.getByTestId('scene')
     const theInspector = editor.renderedDOM.getByTestId('inspector-sections-container')
 
-    const firstOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(0))
-    await mouseClickAtPoint(firstOption, { x: 2, y: 2 })
+    let currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(0))
+    await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Title too')).not.toBeNull()
     expect(within(theInspector).queryByText('Title too')).not.toBeNull()
 
-    const secondOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(1))
-    await mouseClickAtPoint(secondOption, { x: 2, y: 2 })
+    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(1))
+    await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Alternate title')).not.toBeNull()
     expect(within(theInspector).queryByText('Alternate title')).not.toBeNull()
+
+    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(2))
+    await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
+    expect(within(theScene).queryByText('The First Title')).not.toBeNull()
+    expect(within(theInspector).queryByText('The First Title')).not.toBeNull()
+
+    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(3))
+    await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
+    expect(within(theScene).queryByText('Sweet')).not.toBeNull()
+    expect(within(theInspector).queryByText('Sweet')).not.toBeNull()
+
+    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(4))
+    await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
+    expect(within(theScene).queryByText('Chapter One')).not.toBeNull()
+    expect(within(theInspector).queryByText('Chapter One')).not.toBeNull()
   })
 })
 
@@ -86,6 +101,15 @@ var Playground = ({ style }) => {
   const titleToo = 'Title too'
 
   const alternateTitle = 'Alternate title'
+
+  const titles = {
+    one: "The First Title",
+    ['also JS']: 'Sweet',
+  }
+
+  const titleIdeas = [
+    'Chapter One',
+  ]
 
   return (
     <div style={style} data-uid='root'>
