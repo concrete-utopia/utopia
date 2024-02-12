@@ -1,0 +1,50 @@
+import { prisma } from '../db.server'
+import { handleDestroyAllProjects } from '../routes/projects.destroy'
+import {
+  createTestProject,
+  createTestSession,
+  createTestUser,
+  newTestRequest,
+  truncateTables,
+} from '../test-util'
+import { ApiError } from '../util/api.server'
+
+describe('handleDestroyAllProjects', () => {
+  afterEach(async () => {
+    await truncateTables([
+      prisma.userDetails,
+      prisma.persistentSession,
+      prisma.project,
+      prisma.projectID,
+    ])
+  })
+
+  beforeEach(async () => {
+    await createTestUser(prisma, { id: 'bob' })
+    await createTestUser(prisma, { id: 'alice' })
+    await createTestSession(prisma, { key: 'the-key', userId: 'bob' })
+    await createTestProject(prisma, { id: 'one', ownerId: 'bob' })
+    await createTestProject(prisma, { id: 'two', ownerId: 'bob', deleted: true })
+    await createTestProject(prisma, { id: 'three', ownerId: 'alice', deleted: true })
+    await createTestProject(prisma, { id: 'four', ownerId: 'bob' })
+    await createTestProject(prisma, { id: 'five', ownerId: 'bob' })
+    await createTestProject(prisma, { id: 'six', ownerId: 'bob', deleted: true })
+  })
+
+  it('requires a user', async () => {
+    const fn = async () =>
+      handleDestroyAllProjects(newTestRequest({ method: 'POST', authCookie: 'wrong-key' }), {})
+    await expect(fn).rejects.toThrow(ApiError)
+    await expect(fn).rejects.toThrow('session not found')
+  })
+  it('hard-deletes all soft-deleted projects owned by the user', async () => {
+    const fn = async () => {
+      const req = newTestRequest({ method: 'POST', authCookie: 'the-key' })
+      return handleDestroyAllProjects(req, {})
+    }
+
+    await fn()
+    const got = await prisma.project.findMany({ where: { owner_id: 'bob' } })
+    expect(got.map((p) => p.proj_id)).toEqual(['one', 'four', 'five'])
+  })
+})

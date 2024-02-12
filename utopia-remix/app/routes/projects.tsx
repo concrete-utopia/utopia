@@ -3,11 +3,12 @@ import { useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { UserDetails } from 'prisma-client'
 import React, { useEffect, useState } from 'react'
-import { ProjectWithoutContent, listProjects } from '../models/project.server'
+import { listProjects } from '../models/project.server'
 import { newProjectButton } from '../styles/newProjectButton.css'
 import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
 import { sprinkles } from '../styles/sprinkles.css'
 import { requireUser } from '../util/api.server'
+import { ProjectWithoutContent } from '../types'
 
 export async function loader(args: LoaderFunctionArgs) {
   const user = await requireUser(args.request)
