@@ -1158,7 +1158,7 @@ function valuesFromObject(
   }
 
   return Object.entries(value).flatMap(([key, field]) =>
-    valuesFromVariable(`${name}.${key}`, field).map((variable) =>
+    valuesFromVariable(`${name}['${key}']`, field).map((variable) =>
       patchDefinedElsewhereInfo(variable),
     ),
   )
