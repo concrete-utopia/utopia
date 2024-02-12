@@ -92,6 +92,7 @@ import { safeIndex } from '../../../../core/shared/array-utils'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { usePopper } from 'react-popper'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
+import { optionalMap } from '../../../../core/shared/optional-utils'
 
 export const VariableFromScopeOptionTestId = (idx: number) => `variable-from-scope-${idx}`
 export const DataPickerPopupButtonTestId = `data-picker-popup-button-test-id`
@@ -379,7 +380,7 @@ const DataPickerPopup = React.memo(
     const dispatch = useDispatch()
 
     const onTweakProperty = React.useCallback(
-      (name: string) => (e: React.MouseEvent) => {
+      (name: string, definedElsewhere: string | null) => (e: React.MouseEvent) => {
         if (selectedViewPathRef.current == null) {
           return
         }
@@ -387,11 +388,13 @@ const DataPickerPopup = React.memo(
         e.stopPropagation()
         e.preventDefault()
 
+        const definedElseWhereArray = optionalMap((d) => [d], definedElsewhere) ?? []
+
         dispatch([
           setProp_UNSAFE(
             selectedViewPathRef.current,
             propPath,
-            jsExpressionOtherJavaScriptSimple(name, [name]),
+            jsExpressionOtherJavaScriptSimple(name, definedElseWhereArray),
           ),
         ])
       },
@@ -429,11 +432,11 @@ const DataPickerPopup = React.memo(
           <div style={{ fontSize: 14, fontWeight: 400, marginBottom: 16 }}>
             <span>Data</span>
           </div>
-          {variableNamesInScope.map(({ name, value }, idx) => (
+          {variableNamesInScope.map(({ variableName, definedElsewhere, value }, idx) => (
             <Button
               data-testid={VariableFromScopeOptionTestId(idx)}
-              key={name}
-              onClick={onTweakProperty(name)}
+              key={variableName}
+              onClick={onTweakProperty(variableName, definedElsewhere)}
               style={{ width: '100%' }}
             >
               <UIGridRow
@@ -455,7 +458,7 @@ const DataPickerPopup = React.memo(
                       background: colorTheme.brandNeonGreen.value,
                     }}
                   >
-                    {name}
+                    {variableName}
                   </span>
                 </div>
                 <div>
@@ -1126,19 +1129,38 @@ export class ComponentSection extends React.Component<
 }
 
 interface VariableNameValue {
-  name: string
+  variableName: string
+  definedElsewhere: string | null
   value: string
 }
 
-function valuesFromObject(name: string, value: object | null): Array<VariableNameValue> {
-  if (Array.isArray(value)) {
-    return value.flatMap((v, idx) => valuesFromVariable(`${name}[${idx}]`, v))
-  }
+function valuesFromObject(
+  name: string,
+  objectName: string,
+  value: object | null,
+): Array<VariableNameValue> {
   if (value == null) {
-    return [{ name: name, value: `null` }]
+    return [{ variableName: name, definedElsewhere: null, value: `null` }]
   }
+
+  const patchDefinedElsewhereInfo = (variable: VariableNameValue) => ({
+    variableName: variable.variableName,
+    value: variable.value,
+    definedElsewhere: objectName,
+  })
+
+  if (Array.isArray(value)) {
+    return value.flatMap((v, idx) =>
+      valuesFromVariable(`${name}[${idx}]`, v).map((variable) =>
+        patchDefinedElsewhereInfo(variable),
+      ),
+    )
+  }
+
   return Object.entries(value).flatMap(([key, field]) =>
-    valuesFromVariable(`${name}.${key}`, field),
+    valuesFromVariable(`${name}.${key}`, field).map((variable) =>
+      patchDefinedElsewhereInfo(variable),
+    ),
   )
 }
 
@@ -1149,9 +1171,9 @@ function valuesFromVariable(name: string, value: unknown): Array<VariableNameVal
     case 'number':
     case 'string':
     case 'undefined':
-      return [{ name: name, value: `${value}` }]
+      return [{ variableName: name, definedElsewhere: name, value: `${value}` }]
     case 'object':
-      return valuesFromObject(name, value)
+      return valuesFromObject(name, name, value)
     case 'function':
     case 'symbol':
       return []
