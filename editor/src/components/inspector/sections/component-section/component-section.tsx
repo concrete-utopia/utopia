@@ -779,7 +779,7 @@ interface RowForObjectControlProps extends AbstractRowForControlProps {
 }
 
 const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
-  const [open, setOpen] = React.useState(true)
+  const [open, setOpen] = React.useState(false)
   const handleOnClick = React.useCallback(() => {
     if (!props.disableToggling) {
       setOpen(!open)
