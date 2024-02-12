@@ -6,6 +6,7 @@ import { getIdOfScene } from '../../components/canvas/controls/comment-mode/comm
 import * as EP from '../shared/element-path'
 import { isNotNullFiniteRectangle } from '../shared/math-utils'
 import { isCanvasThreadMetadata, liveblocksThreadMetadataToUtopia } from './comment-types'
+import { Substores, useEditorState } from '../../components/editor/store/store-hook'
 
 export const CommentMaintainer = React.memo(() => {
   const canComment = useCanComment()
@@ -33,6 +34,16 @@ function useMaintainComments() {
   const { threads } = useThreads()
   const scenes = useScenes()
   const editThreadMetadata = useEditThreadMetadata()
+
+  const isInteraction = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.interactionSession != null,
+    'useMaintainComments isInteraction',
+  )
+
+  if (isInteraction) {
+    return
+  }
 
   threads.forEach(async (t): Promise<void> => {
     const metadata = liveblocksThreadMetadataToUtopia(t.metadata)
