@@ -56,7 +56,7 @@ specifiers:
   '@babel/preset-typescript': 7.23.3
   '@babel/standalone': 7.15.7
   '@babel/traverse': 7.15.4
-  '@babel/types': 7.15.6
+  '@babel/types': 7.23.6
   '@emotion/cache': 10.0.29
   '@emotion/react': 11.1.2
   '@emotion/serialize': 1.0.2
@@ -348,7 +348,7 @@ dependencies:
   '@babel/plugin-transform-typescript': 7.15.4_@babel+core@7.23.6
   '@babel/standalone': 7.15.7
   '@babel/traverse': 7.15.4
-  '@babel/types': 7.15.6
+  '@babel/types': 7.23.6
   '@emotion/cache': 10.0.29
   '@emotion/react': 11.1.2_l23vr2jl6b3o5l3eanlyfmxl6q_6ctmfwzp7i62lehtd2h3at2gfy
   '@emotion/serialize': 1.0.2
@@ -2219,14 +2219,6 @@ packages:
       globals: 11.12.0
     transitivePeerDependencies:
       - supports-color
-
-  /@babel/types/7.15.6:
-    resolution: {integrity: sha512-BPU+7QhqNjmWyDO0/vitH/CuhpV8ZmK1wpKva8nuyNF5MJfuRNWMc+hc14+u9xT93kvykMdncrJT19h74uB1Ig==}
-    engines: {node: '>=6.9.0'}
-    dependencies:
-      '@babel/helper-validator-identifier': 7.22.20
-      to-fast-properties: 2.0.0
-    dev: false
 
   /@babel/types/7.23.6:
     resolution: {integrity: sha512-+uarb83brBzPKN38NX1MkB6vb6+mwvR6amUulqAE7ccQw1pEl+bCia9TbdG1lsnFP7lZySvUn37CHyXQdfTwzg==}
