@@ -395,7 +395,7 @@ const FollowingOverlay = React.memo(() => {
         const sceneState = remixNavigationState[presence.remix.scene]
         if (sceneState != null && presence.remix.locationRoute != null) {
           setActiveRemixScene(EP.fromString(presence.remix.scene))
-          sceneState.navigate(presence.remix.locationRoute)
+          void sceneState.navigate(presence.remix.locationRoute)
           actions.push(
             showToast(
               notice(
