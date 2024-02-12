@@ -61,3 +61,16 @@ export async function restoreDeletedProject(params: { id: string; userId: string
     data: { deleted: null },
   })
 }
+
+export async function listDeletedProjects(params: {
+  ownerId: string
+}): Promise<ProjectWithoutContent[]> {
+  return await prisma.project.findMany({
+    select: selectProjectWithoutContent,
+    where: {
+      owner_id: params.ownerId,
+      deleted: true,
+    },
+    orderBy: { modified_at: 'desc' },
+  })
+}
