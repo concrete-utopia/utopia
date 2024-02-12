@@ -29,6 +29,8 @@ describe('handleDestroyAllProjects', () => {
     await createTestProject(prisma, { id: 'four', ownerId: 'bob' })
     await createTestProject(prisma, { id: 'five', ownerId: 'bob' })
     await createTestProject(prisma, { id: 'six', ownerId: 'bob', deleted: true })
+    await createTestProject(prisma, { id: 'seven', ownerId: 'alice' })
+    await createTestProject(prisma, { id: 'eight', ownerId: 'alice', deleted: true })
   })
 
   it('requires a user', async () => {
@@ -44,7 +46,9 @@ describe('handleDestroyAllProjects', () => {
     }
 
     await fn()
-    const got = await prisma.project.findMany({ where: { owner_id: 'bob' } })
-    expect(got.map((p) => p.proj_id)).toEqual(['one', 'four', 'five'])
+    const bobProjects = await prisma.project.findMany({ where: { owner_id: 'bob' } })
+    expect(bobProjects.map((p) => p.proj_id)).toEqual(['one', 'four', 'five'])
+    const aliceProjects = await prisma.project.findMany({ where: { owner_id: 'alice' } })
+    expect(aliceProjects.map((p) => p.proj_id)).toEqual(['three', 'seven', 'eight'])
   })
 })
