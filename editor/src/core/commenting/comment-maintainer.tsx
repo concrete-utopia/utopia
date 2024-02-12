@@ -41,37 +41,39 @@ function useMaintainComments() {
     'useMaintainComments isInteraction',
   )
 
-  if (isInteraction) {
-    return
-  }
-
-  threads.forEach(async (t): Promise<void> => {
-    const metadata = liveblocksThreadMetadataToUtopia(t.metadata)
-    if (isCanvasThreadMetadata(metadata)) {
-      return
-    }
-    const { sceneId } = metadata
-
-    const scene = scenes.find(
-      (s) => getIdOfScene(s) === sceneId || EP.toUid(s.elementPath) === sceneId,
-    )
-
-    const globalFrame = scene?.globalFrame ?? null
-    if (!isNotNullFiniteRectangle(globalFrame)) {
+  React.useEffect(() => {
+    if (isInteraction) {
       return
     }
 
-    const p = getThreadLocationOnCanvas(t, globalFrame)
-    if (p.x === metadata.position.x && p.y === metadata.position.y) {
-      return
-    }
+    threads.forEach(async (t): Promise<void> => {
+      const metadata = liveblocksThreadMetadataToUtopia(t.metadata)
+      if (isCanvasThreadMetadata(metadata)) {
+        return
+      }
+      const { sceneId } = metadata
 
-    editThreadMetadata({
-      threadId: t.id,
-      metadata: {
-        x: p.x,
-        y: p.y,
-      },
+      const scene = scenes.find(
+        (s) => getIdOfScene(s) === sceneId || EP.toUid(s.elementPath) === sceneId,
+      )
+
+      const globalFrame = scene?.globalFrame ?? null
+      if (!isNotNullFiniteRectangle(globalFrame)) {
+        return
+      }
+
+      const p = getThreadLocationOnCanvas(t, globalFrame)
+      if (p.x === metadata.position.x && p.y === metadata.position.y) {
+        return
+      }
+
+      editThreadMetadata({
+        threadId: t.id,
+        metadata: {
+          x: p.x,
+          y: p.y,
+        },
+      })
     })
-  })
+  }, [editThreadMetadata, isInteraction, scenes, threads])
 }
