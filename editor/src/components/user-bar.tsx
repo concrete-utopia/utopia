@@ -30,7 +30,7 @@ import { showToast, switchEditorMode } from './editor/actions/action-creators'
 import { EditorModes, isFollowMode } from './editor/editor-modes'
 import { useDispatch } from './editor/store/dispatch-context'
 import { Substores, useEditorState } from './editor/store/store-hook'
-import { useIsMyProject } from './editor/store/collaborative-editing'
+import { useIsProjectOwner } from './editor/store/collaborative-editing'
 import { motion } from 'framer-motion'
 import { useIsBeingFollowed, useSortMultiplayerUsers } from '../core/shared/multiplayer-hooks'
 
@@ -84,7 +84,7 @@ const SinglePlayerUserBar = React.memo(() => {
     (store) => getUserPicture(store.userState.loginState),
     'SinglePlayerUserBar userPicture',
   )
-  const isMyProject = useIsMyProject()
+  const isProjectOwner = useIsProjectOwner()
 
   return (
     <FlexRow
@@ -110,7 +110,7 @@ const SinglePlayerUserBar = React.memo(() => {
         size={AvatarSize}
         style={{ outline: 'undefined' }}
       />
-      {isMyProject ? <OwnerBadge /> : null}
+      {isProjectOwner ? <OwnerBadge /> : null}
       <div style={{ padding: '0 8px 0 5px', fontWeight: 500 }}>Share</div>
     </FlexRow>
   )

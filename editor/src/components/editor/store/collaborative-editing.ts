@@ -57,6 +57,7 @@ import { Y } from '../../../core/shared/yjs'
 import type { ProjectServerState } from './project-server-state'
 import { Substores, useEditorState } from './store-hook'
 import { forceNotNull } from '../../../core/shared/optional-utils'
+import { hasEditPermissions, usePermissions } from './permissions'
 
 const CodeKey = 'code'
 const TopLevelElementsKey = 'topLevelElements'
@@ -771,37 +772,21 @@ export function allowedToEditProject(
   loginState: LoginState,
   serverState: ProjectServerState,
 ): boolean {
-  if (isLoggedIn(loginState)) {
-    return serverState.currentlyHolderOfTheBaton
-  } else {
-    return checkIsMyProject(serverState)
-  }
+  return hasEditPermissions(serverState, loginState)
 }
 
 export function useAllowedToEditProject(): boolean {
-  const projectServerState = useEditorState(
-    Substores.projectServerState,
-    (store) => store.projectServerState,
-    'useAllowedToEditProject projectServerState',
-  )
-
-  const loginState = useEditorState(
-    Substores.userState,
-    (store) => store.userState.loginState,
-    'useAllowedToEditProject loginState',
-  )
-
-  return allowedToEditProject(loginState, projectServerState)
+  return usePermissions().edit
 }
 
-export function useIsMyProject(): boolean {
+export function useIsProjectOwner(): boolean {
   return useEditorState(
     Substores.projectServerState,
-    (store) => checkIsMyProject(store.projectServerState),
-    'useIsMyProject',
+    (store) => checkIsProjectOwner(store.projectServerState),
+    'useIsProjectOwner',
   )
 }
 
-export function checkIsMyProject(serverState: ProjectServerState): boolean {
+export function checkIsProjectOwner(serverState: ProjectServerState): boolean {
   return serverState.isMyProject === 'yes'
 }

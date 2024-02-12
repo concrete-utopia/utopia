@@ -17,7 +17,7 @@ import { NavigatorComponent } from '../navigator'
 import { ContentsPane } from './contents-pane'
 import { GithubPane } from './github-pane'
 import type { StoredPanel } from '../../canvas/stored-layout'
-import { useIsMyProject } from '../../editor/store/collaborative-editing'
+import { useIsProjectOwner } from '../../editor/store/collaborative-editing'
 import { when } from '../../../utils/react-conditionals'
 
 export interface LeftPaneProps {
@@ -65,7 +65,7 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
     onClickTab(LeftMenuTab.Github)
   }, [onClickTab])
 
-  const isMyProject = useIsMyProject()
+  const isProjectOwner = useIsProjectOwner()
 
   return (
     <LowPriorityStoreProvider>
@@ -93,7 +93,7 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
           }}
         >
           {when(
-            isMyProject,
+            isProjectOwner,
             <FlexRow style={{ marginBottom: 10, gap: 10 }} css={undefined}>
               <MenuTab
                 label={'Navigator'}
@@ -113,8 +113,8 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
             </FlexRow>,
           )}
           {when(selectedTab === LeftMenuTab.Navigator, <NavigatorComponent />)}
-          {when(isMyProject && selectedTab === LeftMenuTab.Project, <ContentsPane />)}
-          {when(isMyProject && selectedTab === LeftMenuTab.Github, <GithubPane />)}
+          {when(isProjectOwner && selectedTab === LeftMenuTab.Project, <ContentsPane />)}
+          {when(isProjectOwner && selectedTab === LeftMenuTab.Github, <GithubPane />)}
         </div>
       </FlexColumn>
     </LowPriorityStoreProvider>

@@ -6,7 +6,6 @@ import type { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './
 import { colorTheme } from '../../../uuiui'
 import type { IcnProps } from '../../../uuiui'
 import { UtopiaTheme, Tooltip, Icn } from '../../../uuiui'
-import { useIsMyProject } from '../../editor/store/collaborative-editing'
 import { useControlsDisabledInSubtree } from '../../../uuiui/utilities/disable-subtree'
 
 export interface DEPRECATEDOptionControlOptions extends DEPRECATEDGenericControlOptions {

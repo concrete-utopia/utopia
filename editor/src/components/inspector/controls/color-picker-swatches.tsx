@@ -15,7 +15,6 @@ import { useDispatch } from '../../editor/store/dispatch-context'
 import type { ColorSwatch } from '../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { cssColorToChromaColorOrDefault } from '../common/css-utils'
-import { useIsMyProject } from '../../editor/store/collaborative-editing'
 import { useControlsDisabledInSubtree } from '../../../uuiui/utilities/disable-subtree'
 
 const { checkerboardBackground } = UtopiaStyles.backgrounds

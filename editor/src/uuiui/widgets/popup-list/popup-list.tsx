@@ -27,7 +27,6 @@ import type { ControlStyles, SelectOption } from '../../../uuiui-deps'
 import { CommonUtils, getControlStyles } from '../../../uuiui-deps'
 import { SmallerIcons } from '../../../uuiui/icons'
 import { Tooltip } from '../../tooltip'
-import { useIsMyProject } from '../../../components/editor/store/collaborative-editing'
 import { useControlsDisabledInSubtree } from '../../utilities/disable-subtree'
 
 type ContainerMode = 'default' | 'showBorderOnHover' | 'noBorder'

@@ -73,7 +73,6 @@ import { GradientStopsEditor } from './gradient-stop-editor'
 import { getIndexedUpdateCSSBackgroundLayerLinearGradientAngle } from './linear-gradient-layer'
 import { PickerImagePreview } from './picker-image-preview'
 import { setProp_UNSAFE } from '../../../../editor/actions/action-creators'
-import { useIsMyProject } from '../../../../editor/store/collaborative-editing'
 import { useControlsDisabledInSubtree } from '../../../../../uuiui/utilities/disable-subtree'
 
 const backgroundLayerOptionsByValue: {

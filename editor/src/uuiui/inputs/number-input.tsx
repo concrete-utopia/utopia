@@ -50,7 +50,6 @@ import {
   InspectorInput,
 } from './base-input'
 import { usePropControlledStateV2 } from '../../components/inspector/common/inspector-utils'
-import { useIsMyProject } from '../../components/editor/store/collaborative-editing'
 import { useControlsDisabledInSubtree } from '../utilities/disable-subtree'
 
 export type LabelDragDirection = 'horizontal' | 'vertical'

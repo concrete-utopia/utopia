@@ -3,7 +3,6 @@ import Slider from 'rc-slider'
 import React from 'react'
 import { FlexRow, UtopiaTheme } from '../../../uuiui'
 import type { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './control'
-import { useIsMyProject } from '../../editor/store/collaborative-editing'
 import { useControlsDisabledInSubtree } from '../../../uuiui/utilities/disable-subtree'
 
 export interface DEPRECATEDSliderControlOptions extends DEPRECATEDGenericControlOptions {

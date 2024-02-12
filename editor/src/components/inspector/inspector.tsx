@@ -80,7 +80,6 @@ import { SettingsPanel } from './sections/settings-panel/inspector-settingspanel
 import { strictEvery } from '../../core/shared/array-utils'
 import { SimplifiedLayoutSubsection } from './sections/layout-section/self-layout-subsection/simplified-layout-subsection'
 import { ConstraintsSection } from './constraints-section'
-import { useIsMyProject } from '../editor/store/collaborative-editing'
 import { usePermissions } from '../editor/store/permissions'
 import { DisableControlsInSubtree } from '../../uuiui/utilities/disable-subtree'
 

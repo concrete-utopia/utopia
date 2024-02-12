@@ -1,6 +1,6 @@
 import type { LoginState } from '../action-types'
 import { isLoggedIn } from '../action-types'
-import { checkIsMyProject } from './collaborative-editing'
+import { checkIsProjectOwner } from './collaborative-editing'
 import type { ProjectServerState } from './project-server-state'
 import { Substores, useEditorState } from './store-hook'
 import type { ProjectServerStateSubstate, UserStateSubstate } from './store-hook-substore-types'
@@ -20,13 +20,20 @@ export function usePermissions(): Permissions {
 
 export function getPermissions(store: ProjectServerStateSubstate & UserStateSubstate): Permissions {
   return {
-    edit: hasEditPermissions(store.projectServerState),
+    edit: hasEditPermissions(store.projectServerState, store.userState.loginState),
     comment: hasCommentPermission(store.userState.loginState),
   }
 }
 
-export function hasEditPermissions(projectServerState: ProjectServerState): boolean {
-  return checkIsMyProject(projectServerState)
+export function hasEditPermissions(
+  projectServerState: ProjectServerState,
+  loginState: LoginState,
+): boolean {
+  if (isLoggedIn(loginState)) {
+    return projectServerState.currentlyHolderOfTheBaton
+  } else {
+    return checkIsProjectOwner(projectServerState)
+  }
 }
 
 export function hasCommentPermission(loginState: LoginState): boolean {

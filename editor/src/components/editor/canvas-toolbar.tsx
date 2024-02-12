@@ -69,7 +69,7 @@ import {
 } from '../canvas/ui/floating-insert-menu'
 import { RightMenuTab, floatingInsertMenuStateSwap } from './store/editor-state'
 import { useStatus, useThreads } from '../../../liveblocks.config'
-import { useAllowedToEditProject, useIsMyProject } from './store/collaborative-editing'
+import { useAllowedToEditProject, useIsProjectOwner } from './store/collaborative-editing'
 import { useCanComment, useReadThreads } from '../../core/commenting/comment-hooks'
 import { pluck } from '../../core/shared/array-utils'
 import { MultiplayerWrapper } from '../../utils/multiplayer-wrapper'
@@ -469,7 +469,7 @@ export const CanvasToolbar = React.memo(() => {
       : CommentModeButtonTestId('disconnected')
   const allowedToEdit = useAllowedToEditProject()
 
-  const isMyProject = useIsMyProject()
+  const isProjectOwner = useIsProjectOwner()
 
   return (
     <FlexColumn
@@ -589,7 +589,7 @@ export const CanvasToolbar = React.memo(() => {
           />
         </Tooltip>
         <ElementsOutsideVisibleAreaIndicator />
-        {unless(isMyProject, <ViewOnlyBadge />)}
+        {unless(isProjectOwner, <ViewOnlyBadge />)}
       </div>
       {/* Edit Mode submenus */}
       {when(

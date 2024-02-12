@@ -8,7 +8,6 @@ import type { ControlStyles } from '../common/control-styles'
 import type { ControlStatus } from '../common/control-status'
 import { useColorTheme, UtopiaTheme } from '../../../uuiui'
 import Utils from '../../../utils/utils'
-import { useIsMyProject } from '../../editor/store/collaborative-editing'
 import { useControlsDisabledInSubtree } from '../../../uuiui/utilities/disable-subtree'
 
 export interface ColorControlProps {
