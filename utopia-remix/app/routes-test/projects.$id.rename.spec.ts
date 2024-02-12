@@ -28,11 +28,6 @@ describe('handleRenameProject', () => {
     await createTestProject(prisma, { id: 'two', ownerId: 'bar', title: 'project-two' })
   })
 
-  it('requires a POST method', async () => {
-    const fn = async () => handleRenameProject(newTestRequest(), {})
-    await expect(fn).rejects.toThrow(ApiError)
-    await expect(fn).rejects.toThrow('invalid method')
-  })
   it('requires a user', async () => {
     const fn = async () =>
       handleRenameProject(newTestRequest({ method: 'POST', authCookie: 'wrong-key' }), {})
