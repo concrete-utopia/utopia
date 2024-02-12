@@ -1,7 +1,5 @@
-import { Project } from 'prisma-client'
 import { prisma } from '../db.server'
-
-export type ProjectWithoutContent = Omit<Project, 'content'>
+import { ProjectWithoutContent } from '../types'
 
 const selectProjectWithoutContent: Record<keyof ProjectWithoutContent, true> = {
   id: true,
@@ -72,5 +70,24 @@ export async function listDeletedProjects(params: {
       deleted: true,
     },
     orderBy: { modified_at: 'desc' },
+  })
+}
+
+export async function hardDeleteProject(params: { id: string; userId: string }): Promise<void> {
+  await prisma.project.delete({
+    where: {
+      proj_id: params.id,
+      owner_id: params.userId,
+      deleted: true,
+    },
+  })
+}
+
+export async function hardDeleteAllProjects(params: { userId: string }): Promise<void> {
+  await prisma.project.deleteMany({
+    where: {
+      owner_id: params.userId,
+      deleted: true,
+    },
   })
 }
