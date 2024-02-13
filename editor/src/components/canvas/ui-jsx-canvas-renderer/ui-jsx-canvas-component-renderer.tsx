@@ -37,6 +37,7 @@ import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
 import { objectMap } from '../../../core/shared/object-utils'
 import type { ComponentRendererComponent } from './component-renderer-component'
+import { mapArrayToDictionary } from '../../../core/shared/array-utils'
 
 function tryToGetInstancePath(
   maybePath: ElementPath | null,
@@ -133,12 +134,18 @@ export function createComponentRendererComponent(params: {
 
     let spiedVariablesInScope: VariableData = {}
     if (utopiaJsxComponent.param != null) {
-      for (const paramName of propertiesExposedByParam(utopiaJsxComponent.param)) {
-        spiedVariablesInScope[paramName] = {
-          spiedValue: scope[paramName],
-          insertionCeiling: instancePath,
-        }
-      }
+      spiedVariablesInScope = mapArrayToDictionary(
+        propertiesExposedByParam(utopiaJsxComponent.param),
+        (paramName) => {
+          return paramName
+        },
+        (paramName) => {
+          return {
+            spiedValue: scope[paramName],
+            insertionCeiling: instancePath,
+          }
+        },
+      )
     }
 
     let codeError: Error | null = null
