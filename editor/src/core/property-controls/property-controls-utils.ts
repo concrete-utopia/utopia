@@ -107,19 +107,29 @@ export function getPropertyControlsForTarget(
         if (filenameForLookup == null) {
           return null
         } else {
+          const originalName =
+            importedFrom?.type === 'IMPORTED_ORIGIN' ? importedFrom.exportedName : null
+          const nameAsString = originalName ?? getJSXElementNameAsString(element.name)
+
+          const props = propertyControlsInfo[filenameForLookup]?.[nameAsString]?.properties
+
+          // if the filename works as it is, then it is either a package name or an absolute file name and
+          // we can just use it as it is
+          if (props != null) {
+            return props
+          }
+
+          // We need to create the absolute path to the file to look up the property controls
           const absolutePath = absolutePathFromRelativePath(
             underlyingFilePath,
             false,
             filenameForLookup,
           )
-          // If it's pointing at a path (as opposed to a package), strip off the filename extension.
+
           const trimmedPath = absolutePath.includes('/')
             ? absolutePath.replace(/\.(js|jsx|ts|tsx)$/, '')
             : absolutePath
 
-          const originalName =
-            importedFrom?.type === 'IMPORTED_ORIGIN' ? importedFrom.exportedName : null
-          const nameAsString = originalName ?? getJSXElementNameAsString(element.name)
           return propertyControlsInfo[trimmedPath]?.[nameAsString]?.properties
         }
       } else {

@@ -23,26 +23,57 @@ describe('Set element prop via the data picker', () => {
     const theScene = editor.renderedDOM.getByTestId('scene')
     const theInspector = editor.renderedDOM.getByTestId('inspector-sections-container')
 
+    const options = [
+      ...editor.renderedDOM.baseElement.querySelectorAll(`[data-testid^="variable-from-scope"]`),
+    ].map((node) => node.firstChild!.firstChild!.textContent)
+
+    // the items from the data picker are expected here, so that the numbers in `VariableFromScopeOptionTestId`
+    // below are put in context
+    expect(options).toEqual([
+      'style',
+      "style['width']",
+      "style['height']",
+      "style['position']",
+      "style['left']",
+      "style['top']",
+      "style['backgroundColor']",
+      "style['display']",
+      "style['alignItems']",
+      "style['justifyContent']",
+      'titleToo',
+      'alternateTitle',
+      'titles',
+      "titles['one']",
+      "titles['also JS']",
+      'titleIdeas',
+      'titleIdeas[0]',
+    ])
+
+    // choose a string-valued variable
     let currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(10))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Title too')).not.toBeNull()
     expect(within(theInspector).queryByText('Title too')).not.toBeNull()
 
+    // choose another string-valued variable
     currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(11))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Alternate title')).not.toBeNull()
     expect(within(theInspector).queryByText('Alternate title')).not.toBeNull()
 
+    // choose an object prop
     currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(13))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('The First Title')).not.toBeNull()
     expect(within(theInspector).queryByText('The First Title')).not.toBeNull()
 
+    // choose an object prop
     currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(14))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Sweet')).not.toBeNull()
     expect(within(theInspector).queryByText('Sweet')).not.toBeNull()
 
+    // choose an array element
     currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(16))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Chapter One')).not.toBeNull()
@@ -50,7 +81,7 @@ describe('Set element prop via the data picker', () => {
   })
 })
 
-describe('Controls from registerComponent', () => {
+describe('Controls from registering components', () => {
   it('registering internal component', async () => {
     const editor = await renderTestEditorWithCode(
       registerInternalComponentProject,
@@ -155,7 +186,7 @@ const registerInternalComponentProject = `import * as React from 'react'
 import {
   Storyboard,
   Scene,
-  registerComponent,
+  registerInternalComponent,
 } from 'utopia-api'
 
 function Title({ text }) {
@@ -204,7 +235,7 @@ export var storyboard = (
   </Storyboard>
 )
 
-registerComponent(Title, {
+registerInternalComponent(Title, {
   supportsChildren: false,
   properties: {
     text: {
@@ -225,7 +256,7 @@ import {
   Storyboard,
   Scene,
   View,
-  registerComponent,
+  registerExternalComponent,
 } from 'utopia-api'
 
 var Playground = ({ style }) => {
@@ -272,8 +303,9 @@ export var storyboard = (
   </Storyboard>
 )
 
-registerComponent(
+registerExternalComponent(
   View,
+  'utopia-api',
   {
     supportsChildren: false,
     properties: {
@@ -287,5 +319,4 @@ registerComponent(
       },
     ],
   },
-  'utopia-api',
 )`

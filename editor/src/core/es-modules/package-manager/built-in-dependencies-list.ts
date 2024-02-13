@@ -61,11 +61,13 @@ function builtInDependency(
 export function createBuiltInDependenciesList(
   workers: UtopiaTsWorkers | null,
 ): BuiltInDependencies {
-  const { registerModule, registerComponent } = createRegisterModuleAndComponentFunction(workers)
+  const { registerModule, registerInternalComponent, registerExternalComponent } =
+    createRegisterModuleAndComponentFunction(workers)
   const UtopiaAPISpecial: typeof UtopiaAPI & { Group: any } = {
     ...UtopiaAPI,
     registerModule: registerModule,
-    registerComponent: registerComponent,
+    registerInternalComponent: registerInternalComponent,
+    registerExternalComponent: registerExternalComponent,
     Group: UtopiaApiGroup,
   }
 
