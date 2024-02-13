@@ -23,6 +23,32 @@ describe('Set element prop via the data picker', () => {
     const theScene = editor.renderedDOM.getByTestId('scene')
     const theInspector = editor.renderedDOM.getByTestId('inspector-sections-container')
 
+    const options = [
+      ...editor.renderedDOM.baseElement.querySelectorAll(`[data-testid^="variable-from-scope"]`),
+    ].map((node) => node.firstChild!.firstChild!.textContent)
+
+    // the items from the data picker are expected here, so that the numbers in `VariableFromScopeOptionTestId`
+    // below are put in context
+    expect(options).toEqual([
+      'style',
+      "style['width']",
+      "style['height']",
+      "style['position']",
+      "style['left']",
+      "style['top']",
+      "style['backgroundColor']",
+      "style['display']",
+      "style['alignItems']",
+      "style['justifyContent']",
+      'titleToo',
+      'alternateTitle',
+      'titles',
+      "titles['one']",
+      "titles['also JS']",
+      'titleIdeas',
+      'titleIdeas[0]',
+    ])
+
     // choose a string-valued variable
     let currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(10))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
