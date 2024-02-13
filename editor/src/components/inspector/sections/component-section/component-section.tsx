@@ -498,7 +498,7 @@ const DataPickerPopup = React.memo(
                           fontWeight: 400,
                           color: colorTheme.neutralForeground.value,
                           textOverflow: 'ellipsis',
-                          maxWidth: 160,
+                          maxWidth: 130,
                           overflow: 'hidden',
                         }}
                       >
