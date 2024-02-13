@@ -23,6 +23,7 @@ export const button = recipe({
       neutral: { background: 'whitesmoke' },
       brand: { background: 'grey' },
       accent: { background: 'lime' },
+      danger: { background: 'red' },
     },
     size: {
       small: { padding: 8 },

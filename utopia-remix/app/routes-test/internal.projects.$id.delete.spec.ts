@@ -1,5 +1,5 @@
 import { prisma } from '../db.server'
-import { handleRestoreDeletedProject } from '../routes/projects.$id.restore'
+import { handleDeleteProject } from '../routes/internal.projects.$id.delete'
 import {
   createTestProject,
   createTestSession,
@@ -9,7 +9,7 @@ import {
 } from '../test-util'
 import { ApiError } from '../util/api.server'
 
-describe('handleRestoreDeletedProject', () => {
+describe('handleDeleteProject', () => {
   afterEach(async () => {
     await truncateTables([
       prisma.userDetails,
@@ -23,31 +23,26 @@ describe('handleRestoreDeletedProject', () => {
     await createTestUser(prisma, { id: 'foo' })
     await createTestUser(prisma, { id: 'bar' })
     await createTestSession(prisma, { key: 'the-key', userId: 'foo' })
-    await createTestProject(prisma, {
-      id: 'one',
-      ownerId: 'foo',
-      title: 'project-one',
-      deleted: true,
-    })
-    await createTestProject(prisma, { id: 'two', ownerId: 'foo', title: 'project-two' })
+    await createTestProject(prisma, { id: 'one', ownerId: 'foo', title: 'project-one' })
+    await createTestProject(prisma, { id: 'two', ownerId: 'bar', title: 'project-two' })
   })
 
   it('requires a user', async () => {
     const fn = async () =>
-      handleRestoreDeletedProject(newTestRequest({ method: 'POST', authCookie: 'wrong-key' }), {})
+      handleDeleteProject(newTestRequest({ method: 'POST', authCookie: 'wrong-key' }), {})
     await expect(fn).rejects.toThrow(ApiError)
     await expect(fn).rejects.toThrow('session not found')
   })
   it('requires a valid id', async () => {
     const fn = async () =>
-      handleRestoreDeletedProject(newTestRequest({ method: 'POST', authCookie: 'the-key' }), {})
+      handleDeleteProject(newTestRequest({ method: 'POST', authCookie: 'the-key' }), {})
     await expect(fn).rejects.toThrow(ApiError)
     await expect(fn).rejects.toThrow('id is null')
   })
   it('requires a valid project', async () => {
     const fn = async () => {
       const req = newTestRequest({ method: 'POST', authCookie: 'the-key' })
-      return handleRestoreDeletedProject(req, { id: 'doesnt-exist' })
+      return handleDeleteProject(req, { id: 'doesnt-exist' })
     }
 
     await expect(fn).rejects.toThrow('Record to update not found')
@@ -55,27 +50,19 @@ describe('handleRestoreDeletedProject', () => {
   it('requires ownership of the project', async () => {
     const fn = async () => {
       const req = newTestRequest({ method: 'POST', authCookie: 'the-key' })
-      return handleRestoreDeletedProject(req, { id: 'two' })
+      return handleDeleteProject(req, { id: 'two' })
     }
 
     await expect(fn).rejects.toThrow('Record to update not found')
   })
-  it('requires a deleted project', async () => {
+  it('soft-deletes the project', async () => {
     const fn = async () => {
       const req = newTestRequest({ method: 'POST', authCookie: 'the-key' })
-      return handleRestoreDeletedProject(req, { id: 'two' })
-    }
-
-    await expect(fn).rejects.toThrow('Record to update not found')
-  })
-  it('restores the project', async () => {
-    const fn = async () => {
-      const req = newTestRequest({ method: 'POST', authCookie: 'the-key' })
-      return handleRestoreDeletedProject(req, { id: 'one' })
+      return handleDeleteProject(req, { id: 'one' })
     }
 
     await fn()
     const project = await prisma.project.findFirst({ where: { proj_id: 'one' } })
-    expect(project?.deleted).toEqual(null)
+    expect(project?.deleted).toEqual(true)
   })
 })
