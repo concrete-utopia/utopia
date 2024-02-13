@@ -1198,7 +1198,7 @@ function valuesFromObject(
   displayName: string = name,
 ): Array<VariableOption> {
   if (value == null) {
-    return [{ displayName, variableName: name, definedElsewhere: null, value: `null` }]
+    return [{ displayName: displayName, variableName: name, definedElsewhere: null, value: `null` }]
   }
 
   const patchDefinedElsewhereInfo = (variable: VariableOption) => ({
@@ -1212,11 +1212,11 @@ function valuesFromObject(
   if (Array.isArray(value)) {
     return [
       patchDefinedElsewhereInfo({
-        displayName,
+        displayName: displayName,
         variableName: name,
         definedElsewhere: objectName,
         value: `[ ]`,
-        depth,
+        depth: depth,
       }),
     ].concat(
       value.flatMap((v, idx) =>
@@ -1229,11 +1229,11 @@ function valuesFromObject(
 
   return [
     patchDefinedElsewhereInfo({
-      displayName,
+      displayName: displayName,
       variableName: name,
       definedElsewhere: objectName,
       value: `{ }`,
-      depth,
+      depth: depth,
     }),
   ].concat(
     Object.entries(value).flatMap(([key, field]) =>
@@ -1256,7 +1256,15 @@ function valuesFromVariable(
     case 'number':
     case 'string':
     case 'undefined':
-      return [{ displayName, variableName: name, definedElsewhere: name, value: `${value}`, depth }]
+      return [
+        {
+          displayName: displayName,
+          variableName: name,
+          definedElsewhere: name,
+          value: `${value}`,
+          depth: depth,
+        },
+      ]
     case 'object':
       return valuesFromObject(name, name, value, depth, displayName)
     case 'function':

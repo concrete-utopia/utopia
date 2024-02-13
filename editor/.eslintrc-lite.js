@@ -26,6 +26,7 @@ module.exports = {
     'array-callback-return': 'warn',
     'block-scoped-var': 'error',
     'no-param-reassign': 'error',
+    'object-shorthand': ['warn', 'consistent'],
     'no-restricted-globals': [
       'error',
 
