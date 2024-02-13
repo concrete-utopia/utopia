@@ -1178,9 +1178,19 @@ function valuesFromObject(
   })
 
   if (Array.isArray(value)) {
-    return value.flatMap((v, idx) =>
-      valuesFromVariable(`${name}[${idx}]`, v).map((variable) =>
-        patchDefinedElsewhereInfo(variable),
+    return [
+      patchDefinedElsewhereInfo({
+        displayName,
+        variableName: name,
+        definedElsewhere: objectName,
+        value: `[ ]`,
+        depth,
+      }),
+    ].concat(
+      value.flatMap((v, idx) =>
+        valuesFromVariable(`${name}[${idx}]`, v, depth + 1, `${displayName}[${idx}]`).map(
+          (variable) => patchDefinedElsewhereInfo(variable),
+        ),
       ),
     )
   }

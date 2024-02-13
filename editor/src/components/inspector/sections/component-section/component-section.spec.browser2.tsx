@@ -43,7 +43,7 @@ describe('Set element prop via the data picker', () => {
     expect(within(theScene).queryByText('Sweet')).not.toBeNull()
     expect(within(theInspector).queryByText('Sweet')).not.toBeNull()
 
-    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(15))
+    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(16))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Chapter One')).not.toBeNull()
     expect(within(theInspector).queryByText('Chapter One')).not.toBeNull()
