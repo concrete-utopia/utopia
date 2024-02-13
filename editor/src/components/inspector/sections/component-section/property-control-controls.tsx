@@ -55,6 +55,8 @@ import {
   normalisePathToUnderlyingTarget,
 } from '../../../custom-code/code-file'
 import { useDispatch } from '../../../editor/store/dispatch-context'
+import { isImageUrl } from '../../../../core/shared/file-utils'
+import { when } from '../../../../utils/react-conditionals'
 
 export interface ControlForPropProps<T extends BaseControlDescription> {
   propPath: PropertyPath
@@ -437,6 +439,8 @@ const NumberWithSliderControl = React.memo(
   },
 )
 
+export const ImagePreviewTestId = 'image-preview'
+
 export const StringInputPropertyControl = React.memo(
   (props: ControlForPropProps<StringInputControlDescription>) => {
     const { propName, propMetadata, controlDescription } = props
@@ -444,17 +448,25 @@ export const StringInputPropertyControl = React.memo(
     const controlId = `${propName}-string-input-property-control`
     const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
 
+    const safeValue = typeof value === 'string' ? value : ''
+
     return (
-      <StringControl
-        key={controlId}
-        id={controlId}
-        testId={controlId}
-        value={value ?? ''}
-        onSubmitValue={propMetadata.onSubmitValue}
-        controlStatus={propMetadata.controlStatus}
-        controlStyles={propMetadata.controlStyles}
-        focus={props.focusOnMount}
-      />
+      <FlexColumn>
+        <StringControl
+          key={controlId}
+          id={controlId}
+          testId={controlId}
+          value={safeValue ?? ''}
+          onSubmitValue={propMetadata.onSubmitValue}
+          controlStatus={propMetadata.controlStatus}
+          controlStyles={propMetadata.controlStyles}
+          focus={props.focusOnMount}
+        />
+        {when(
+          isImageUrl(safeValue ?? ''),
+          <img data-testid={ImagePreviewTestId} src={safeValue} />,
+        )}
+      </FlexColumn>
     )
   },
 )
