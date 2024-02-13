@@ -20,10 +20,17 @@ export function registerModule(
   // Function is deliberately empty. If called inside the Utopia Editor, it has effect to the running environment
 }
 
-export function registerComponent(
+export function registerInternalComponent(
   component: React.FunctionComponent,
   properties: ComponentToRegister,
-  moduleName?: string,
+): void {
+  // Function is deliberately empty. If called inside the Utopia Editor, it has effect to the running environment
+}
+
+export function registerExternalComponent(
+  componentName: string,
+  packageName: string,
+  properties: ComponentToRegister,
 ): void {
   // Function is deliberately empty. If called inside the Utopia Editor, it has effect to the running environment
 }
