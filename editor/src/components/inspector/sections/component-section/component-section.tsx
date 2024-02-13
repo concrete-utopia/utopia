@@ -457,7 +457,7 @@ const DataPickerPopup = React.memo(
                     style={{
                       justifyContent: 'space-between',
                       alignItems: 'flex-start',
-                      gap: 24,
+                      gap: 8,
                       width: '100%',
                     }}
                   >
