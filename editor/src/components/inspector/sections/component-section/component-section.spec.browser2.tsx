@@ -23,27 +23,58 @@ describe('Set element prop via the data picker', () => {
     const theScene = editor.renderedDOM.getByTestId('scene')
     const theInspector = editor.renderedDOM.getByTestId('inspector-sections-container')
 
-    let currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(9))
+    const options = [
+      ...editor.renderedDOM.baseElement.querySelectorAll(`[data-testid^="variable-from-scope"]`),
+    ].map((node) => node.firstChild!.firstChild!.textContent)
+
+    // the items from the data picker are expected here, so that the numbers in `VariableFromScopeOptionTestId`
+    // below are put in context
+    expect(options).toEqual([
+      'style',
+      "style['width']",
+      "style['height']",
+      "style['position']",
+      "style['left']",
+      "style['top']",
+      "style['backgroundColor']",
+      "style['display']",
+      "style['alignItems']",
+      "style['justifyContent']",
+      'titleToo',
+      'alternateTitle',
+      'titles',
+      "titles['one']",
+      "titles['also JS']",
+      'titleIdeas',
+      'titleIdeas[0]',
+    ])
+
+    // choose a string-valued variable
+    let currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(10))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Title too')).not.toBeNull()
     expect(within(theInspector).queryByText('Title too')).not.toBeNull()
 
-    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(10))
+    // choose another string-valued variable
+    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(11))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Alternate title')).not.toBeNull()
     expect(within(theInspector).queryByText('Alternate title')).not.toBeNull()
 
-    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(11))
+    // choose an object prop
+    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(13))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('The First Title')).not.toBeNull()
     expect(within(theInspector).queryByText('The First Title')).not.toBeNull()
 
-    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(12))
+    // choose an object prop
+    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(14))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Sweet')).not.toBeNull()
     expect(within(theInspector).queryByText('Sweet')).not.toBeNull()
 
-    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(13))
+    // choose an array element
+    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(16))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Chapter One')).not.toBeNull()
     expect(within(theInspector).queryByText('Chapter One')).not.toBeNull()
