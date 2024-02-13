@@ -1190,7 +1190,7 @@ function valuesFromObject(
       ),
     )
 
-    return [{ variableName: name, definedElsewhere: name, value: `${value}` }, ...values]
+    return [{ variableName: name, definedElsewhere: name, value: '[array]' }, ...values]
   }
 
   const values = Object.entries(value).flatMap(([key, field]) =>
@@ -1199,7 +1199,7 @@ function valuesFromObject(
     ),
   )
 
-  return [{ variableName: name, definedElsewhere: name, value: `${value}` }, ...values]
+  return [{ variableName: name, definedElsewhere: name, value: '{object}' }, ...values]
 }
 
 function valuesFromVariable(name: string, value: unknown): Array<VariableOption> {
