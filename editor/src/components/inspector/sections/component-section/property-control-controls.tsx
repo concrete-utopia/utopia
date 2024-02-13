@@ -451,20 +451,20 @@ export const StringInputPropertyControl = React.memo(
     const safeValue = typeof value === 'string' ? value : ''
 
     return (
-      <FlexColumn>
+      <FlexColumn style={{ gap: 5 }}>
         <StringControl
           key={controlId}
           id={controlId}
           testId={controlId}
-          value={safeValue ?? ''}
+          value={safeValue}
           onSubmitValue={propMetadata.onSubmitValue}
           controlStatus={propMetadata.controlStatus}
           controlStyles={propMetadata.controlStyles}
           focus={props.focusOnMount}
         />
         {when(
-          isImageUrl(safeValue ?? ''),
-          <img data-testid={ImagePreviewTestId} src={safeValue} />,
+          isImageUrl(safeValue),
+          <img data-testid={ImagePreviewTestId} src={safeValue} style={{ width: '100%' }} />,
         )}
       </FlexColumn>
     )
