@@ -23,27 +23,27 @@ describe('Set element prop via the data picker', () => {
     const theScene = editor.renderedDOM.getByTestId('scene')
     const theInspector = editor.renderedDOM.getByTestId('inspector-sections-container')
 
-    let currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(0))
+    let currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(9))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Title too')).not.toBeNull()
     expect(within(theInspector).queryByText('Title too')).not.toBeNull()
 
-    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(1))
+    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(10))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Alternate title')).not.toBeNull()
     expect(within(theInspector).queryByText('Alternate title')).not.toBeNull()
 
-    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(2))
+    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(11))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('The First Title')).not.toBeNull()
     expect(within(theInspector).queryByText('The First Title')).not.toBeNull()
 
-    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(3))
+    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(12))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Sweet')).not.toBeNull()
     expect(within(theInspector).queryByText('Sweet')).not.toBeNull()
 
-    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(4))
+    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(13))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Chapter One')).not.toBeNull()
     expect(within(theInspector).queryByText('Chapter One')).not.toBeNull()

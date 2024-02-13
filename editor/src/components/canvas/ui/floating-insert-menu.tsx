@@ -146,7 +146,11 @@ export function useGetInsertableComponents(
     }
   }, [fullPath, scopedVariables])
 
-  return insertableComponents.concat(insertableVariables)
+  if (insertMenuMode === 'insert') {
+    return insertableComponents.concat(insertableVariables)
+  } else {
+    return insertableComponents
+  }
 }
 
 export function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {

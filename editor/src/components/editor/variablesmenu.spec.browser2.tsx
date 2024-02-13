@@ -65,7 +65,7 @@ describe('variables menu', () => {
 
       await openVariablesMenu(editor)
 
-      expect(getInsertItems().length).toEqual(4)
+      expect(getInsertItems().length).toEqual(7)
 
       document.execCommand('insertText', false, 'myObj.im')
 

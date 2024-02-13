@@ -1334,6 +1334,7 @@ describe('record variable values', () => {
       },
       definedInsideString: { spiedValue: 'hello', insertionCeiling: null },
       functionResult: { spiedValue: 35, insertionCeiling: null },
+      style: { spiedValue: {}, insertionCeiling: EP.fromString('sb/scene/pg') },
     })
     expect(variablesInScope['sb/scene/pg:root/111']).toEqual<VariableData>({
       definedInsideNumber: { spiedValue: 12, insertionCeiling: null },
@@ -1345,6 +1346,7 @@ describe('record variable values', () => {
       },
       definedInsideString: { spiedValue: 'hello', insertionCeiling: null },
       functionResult: { spiedValue: 35, insertionCeiling: null },
+      style: { spiedValue: {}, insertionCeiling: EP.fromString('sb/scene/pg') },
     })
     expect(variablesInScope['sb/scene/pg:root/222']).toEqual<VariableData>({
       definedInsideNumber: { spiedValue: 12, insertionCeiling: null },
@@ -1356,6 +1358,7 @@ describe('record variable values', () => {
       },
       definedInsideString: { spiedValue: 'hello', insertionCeiling: null },
       functionResult: { spiedValue: 35, insertionCeiling: null },
+      style: { spiedValue: {}, insertionCeiling: EP.fromString('sb/scene/pg') },
     })
     expect(variablesInScope['sb/scene/pg:root/333']).toEqual<VariableData>({
       definedInsideNumber: { spiedValue: 12, insertionCeiling: null },
@@ -1367,6 +1370,7 @@ describe('record variable values', () => {
       },
       definedInsideString: { spiedValue: 'hello', insertionCeiling: null },
       functionResult: { spiedValue: 35, insertionCeiling: null },
+      style: { spiedValue: {}, insertionCeiling: EP.fromString('sb/scene/pg') },
     })
   })
 })

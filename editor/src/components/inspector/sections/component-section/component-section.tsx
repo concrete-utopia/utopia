@@ -432,49 +432,51 @@ const DataPickerPopup = React.memo(
           <div style={{ fontSize: 14, fontWeight: 400, marginBottom: 16 }}>
             <span>Data</span>
           </div>
-          {variableNamesInScope.map(({ variableName, definedElsewhere, value }, idx) => (
-            <Button
-              data-testid={VariableFromScopeOptionTestId(idx)}
-              key={variableName}
-              onClick={onTweakProperty(variableName, definedElsewhere)}
-              style={{ width: '100%' }}
-            >
-              <UIGridRow
-                padded={false}
-                variant='<--1fr--><--1fr-->'
-                style={{
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                  gap: 8,
-                  width: '100%',
-                }}
+          {variableNamesInScope.map(({ variableName, definedElsewhere, value }, idx) => {
+            return (
+              <Button
+                data-testid={VariableFromScopeOptionTestId(idx)}
+                key={variableName}
+                onClick={onTweakProperty(variableName, definedElsewhere)}
+                style={{ width: '100%' }}
               >
-                <div>
-                  <span
-                    style={{
-                      padding: 4,
-                      borderRadius: 2,
-                      fontWeight: 400,
-                      background: colorTheme.brandNeonGreen.value,
-                    }}
-                  >
-                    {variableName}
-                  </span>
-                </div>
-                <div>
-                  <span
-                    style={{
-                      padding: 4,
-                      fontWeight: 400,
-                      color: colorTheme.neutralForeground.value,
-                    }}
-                  >
-                    {value}
-                  </span>
-                </div>
-              </UIGridRow>
-            </Button>
-          ))}
+                <UIGridRow
+                  padded={false}
+                  variant='<--1fr--><--1fr-->'
+                  style={{
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start',
+                    gap: 8,
+                    width: '100%',
+                  }}
+                >
+                  <div>
+                    <span
+                      style={{
+                        padding: 4,
+                        borderRadius: 2,
+                        fontWeight: 400,
+                        background: colorTheme.brandNeonGreen.value,
+                      }}
+                    >
+                      {variableName}
+                    </span>
+                  </div>
+                  <div>
+                    <span
+                      style={{
+                        padding: 4,
+                        fontWeight: 400,
+                        color: colorTheme.neutralForeground.value,
+                      }}
+                    >
+                      {value}
+                    </span>
+                  </div>
+                </UIGridRow>
+              </Button>
+            )
+          })}
         </FlexColumn>
       </div>
     )
