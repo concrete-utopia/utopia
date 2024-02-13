@@ -1,5 +1,5 @@
 import { prisma } from '../db.server'
-import { handleDeleteProject } from '../routes/projects.$id.delete'
+import { handleDeleteProject } from '../routes/internal.projects.$id.delete'
 import {
   createTestProject,
   createTestSession,

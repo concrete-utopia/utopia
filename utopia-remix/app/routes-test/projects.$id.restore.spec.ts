@@ -1,5 +1,5 @@
 import { prisma } from '../db.server'
-import { handleRestoreDeletedProject } from '../routes/projects.$id.restore'
+import { handleRestoreDeletedProject } from '../routes/internal.projects.$id.restore'
 import {
   createTestProject,
   createTestSession,

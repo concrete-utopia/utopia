@@ -8,7 +8,7 @@ import {
   truncateTables,
 } from '../test-util'
 import { ApiError } from '../util/api.server'
-import { handleRenameProject } from '../routes/projects.$id.rename'
+import { handleRenameProject } from '../routes/internal.projects.$id.rename'
 
 describe('handleRenameProject', () => {
   afterEach(async () => {
