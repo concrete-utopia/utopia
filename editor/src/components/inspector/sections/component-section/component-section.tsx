@@ -1197,8 +1197,8 @@ function valuesFromObject(
   name: string,
   objectName: string,
   value: object | null,
-  depth: number = 0,
-  displayName: string = name,
+  depth: number,
+  displayName: string,
 ): Array<VariableOption> {
   if (value == null) {
     return [{ displayName: displayName, variableName: name, definedElsewhere: null, value: `null` }]
@@ -1250,8 +1250,8 @@ function valuesFromObject(
 function valuesFromVariable(
   name: string,
   value: unknown,
-  depth: number = 0,
-  displayName: string = name,
+  depth: number,
+  displayName: string,
 ): Array<VariableOption> {
   switch (typeof value) {
     case 'bigint':
@@ -1303,7 +1303,7 @@ function useVariablesInScopeForSelectedElement(): Array<VariableOption> {
   }, [selectedViewPath, variablesInScope])
 
   const variableNameValues = Object.entries(variableNamesInScope).flatMap(([name, variable]) =>
-    valuesFromVariable(name, variable.spiedValue),
+    valuesFromVariable(name, variable.spiedValue, 0, name),
   )
 
   return variableNameValues
