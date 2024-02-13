@@ -5,6 +5,7 @@ import {
   isUtopiaJSXComponent,
   isSVGElement,
   isJSXElement,
+  propertiesExposedByParam,
 } from '../../../core/shared/element-template'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import type {
@@ -36,6 +37,7 @@ import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
 import { objectMap } from '../../../core/shared/object-utils'
 import type { ComponentRendererComponent } from './component-renderer-component'
+import { mapArrayToDictionary } from '../../../core/shared/array-utils'
 
 function tryToGetInstancePath(
   maybePath: ElementPath | null,
@@ -130,6 +132,22 @@ export function createComponentRendererComponent(params: {
       ...appliedProps,
     }
 
+    let spiedVariablesInScope: VariableData = {}
+    if (utopiaJsxComponent.param != null) {
+      spiedVariablesInScope = mapArrayToDictionary(
+        propertiesExposedByParam(utopiaJsxComponent.param),
+        (paramName) => {
+          return paramName
+        },
+        (paramName) => {
+          return {
+            spiedValue: scope[paramName],
+            insertionCeiling: instancePath,
+          }
+        },
+      )
+    }
+
     let codeError: Error | null = null
 
     // Protect against infinite recursion by taking the view that anything
@@ -160,8 +178,6 @@ export function createComponentRendererComponent(params: {
         }
       })
     }
-
-    let definedWithinWithValues: MapLike<unknown> = {}
 
     if (utopiaJsxComponent.arbitraryJSBlock != null) {
       const lookupRenderer = createLookupRender(
@@ -194,26 +210,29 @@ export function createComponentRendererComponent(params: {
         lookupRenderer,
       )
 
-      definedWithinWithValues = runBlockUpdatingScope(
+      const definedWithinWithValues = runBlockUpdatingScope(
         params.filePath,
         mutableContext.requireResult,
         utopiaJsxComponent.arbitraryJSBlock,
         scope,
       )
+
+      spiedVariablesInScope = {
+        ...spiedVariablesInScope,
+        ...objectMap(
+          (spiedValue) => ({
+            spiedValue: spiedValue,
+            insertionCeiling: null,
+          }),
+          definedWithinWithValues,
+        ),
+      }
     }
 
     function buildComponentRenderResult(element: JSXElementChild): React.ReactElement {
       const ownElementPath = optionalMap(
         (path) => EP.appendNewElementPath(path, getUtopiaID(element)),
         instancePath,
-      )
-
-      const spiedVariablesInScope: VariableData = objectMap(
-        (spiedValue) => ({
-          spiedValue: spiedValue,
-          insertionCeiling: null,
-        }),
-        definedWithinWithValues,
       )
 
       const renderedCoreElement = renderCoreElement(

@@ -38,39 +38,36 @@ export function applyPropsParamToPassedProps(
       output[paramName] = getParamValue(value, boundParam.defaultExpression)
     } else if (isDestructuredObject(boundParam)) {
       if (typeof value === 'object' && !Array.isArray(value) && value !== null) {
+        const valueAsRecord: Record<string, unknown> = { ...value }
         let remainingValues = { ...value } as Record<string, unknown>
-        let remainingKeys = Object.keys(remainingValues)
-        boundParam.parts.forEach((part) => {
+        for (const part of boundParam.parts) {
           const { propertyName, param } = part
-          if (propertyName != null) {
-            // e.g. `{ prop: renamedProp }` or `{ prop: { /* further destructuring */ } }`
-            // Can't spread if we have a property name
-            const innerValue = remainingValues[propertyName]
-            applyBoundParamToOutput(innerValue, param.boundParam)
-            remainingKeys = remainingKeys.filter((k) => k !== propertyName)
-            delete remainingValues[propertyName]
-          } else {
+          if (propertyName == null) {
             const { dotDotDotToken: spread, boundParam: innerBoundParam } = param
             if (isRegularParam(innerBoundParam)) {
               // e.g. `{ prop }` or `{ ...remainingProps }`
               const { paramName } = innerBoundParam
               if (spread) {
                 output[paramName] = remainingValues
-                remainingKeys = []
                 remainingValues = {}
               } else {
                 output[paramName] = getParamValue(
-                  remainingValues[paramName],
+                  valueAsRecord[paramName],
                   innerBoundParam.defaultExpression,
                 )
-                remainingKeys = remainingKeys.filter((k) => k !== paramName)
                 delete remainingValues[paramName]
               }
             }
+          } else {
+            // e.g. `{ prop: renamedProp }` or `{ prop: { /* further destructuring */ } }`
+            // Can't spread if we have a property name
+            const innerValue = valueAsRecord[propertyName]
+            applyBoundParamToOutput(innerValue, param.boundParam)
+            delete remainingValues[propertyName]
             // No other cases are legal
             // TODO Should we throw? Users will already have a lint error
           }
-        })
+        }
       }
       // TODO Throw, but what?
     } else {

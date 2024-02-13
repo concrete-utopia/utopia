@@ -5,6 +5,7 @@ import type {
   ElementInstanceMetadataMap,
   ArbitraryJSBlock,
   TopLevelElement,
+  UtopiaJSXComponent,
 } from '../../core/shared/element-template'
 import {
   isArbitraryJSBlock,
@@ -37,6 +38,7 @@ import { type ComponentElementToInsert } from '../custom-code/code-file'
 import { omitWithPredicate } from '../../core/shared/object-utils'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { isLeft } from '../../core/shared/either'
+import { findContainingComponent } from '../../core/model/element-template-utils'
 
 export function getVariablesInScope(
   elementPath: ElementPath | null,
@@ -48,15 +50,16 @@ export function getVariablesInScope(
     let varsInScope = []
 
     if (elementPath !== null) {
+      const containingComponent = findContainingComponent(success.topLevelElements, elementPath)
       const componentScopedVariables = getVariablesFromComponent(
-        success.topLevelElements,
+        containingComponent,
         elementPath,
         variablesInScopeFromEditorState,
       )
       varsInScope.push(componentScopedVariables)
 
       const componentPropsInScope = getComponentPropsInScope(
-        success.topLevelElements,
+        containingComponent,
         elementPath,
         jsxMetadata,
       )
@@ -87,12 +90,11 @@ function getTopLevelVariables(topLevelElements: TopLevelElement[], underlyingFil
 }
 
 function getVariablesFromComponent(
-  topLevelElements: TopLevelElement[],
+  jsxComponent: UtopiaJSXComponent | null,
   elementPath: ElementPath,
   variablesInScopeFromEditorState: VariablesInScope,
 ): AllVariablesInScope {
   const elementPathString = toComponentId(elementPath)
-  const jsxComponent = topLevelElements.find(isUtopiaJSXComponent)
   const jsxComponentVariables = variablesInScopeFromEditorState[elementPathString] ?? {}
   return {
     filePath: jsxComponent?.name ?? 'Component',
@@ -101,11 +103,10 @@ function getVariablesFromComponent(
 }
 
 function getComponentPropsInScope(
-  topLevelElements: TopLevelElement[],
+  jsxComponent: UtopiaJSXComponent | null,
   elementPath: ElementPath,
   jsxMetadata: ElementInstanceMetadataMap,
 ): AllVariablesInScope {
-  const jsxComponent = topLevelElements.find(isUtopiaJSXComponent)
   const jsxComponentPropNamesDeclared = jsxComponent?.propsUsed ?? []
 
   const jsxComponentPropsPassed = omitWithPredicate(
