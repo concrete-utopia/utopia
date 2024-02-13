@@ -209,6 +209,79 @@ function getLabelControlStyle(
   }
 }
 
+const isBaseIndentationLevel = (props: AbstractRowForControlProps) => props.indentationLevel === 1
+
+function useDataPickerButton(propPath: PropertyPath) {
+  const [referenceElement, setReferenceElement] = React.useState<HTMLDivElement | null>(null)
+  const [popperElement, setPopperElement] = React.useState<HTMLDivElement | null>(null)
+  const popper = usePopper(referenceElement, popperElement, {
+    modifiers: [
+      {
+        name: 'offset',
+        options: {
+          offset: [0, 8],
+        },
+      },
+    ],
+  })
+
+  const [popupIsOpen, setPopupIsOpen] = React.useState(false)
+  const togglePopup = React.useCallback(() => setPopupIsOpen((v) => !v), [])
+  const closePopup = React.useCallback(() => setPopupIsOpen(false), [])
+
+  const onClick = React.useCallback(
+    (e: React.MouseEvent) => {
+      togglePopup()
+      e.stopPropagation()
+    },
+    [togglePopup],
+  )
+
+  const variablePickerButtonAvailable = useVariablesInScopeForSelectedElement().length > 0
+  const variablePickerButtonTooltipText = variablePickerButtonAvailable
+    ? 'Pick data source'
+    : 'No data sources available'
+
+  const DataPickerComponent = React.useMemo(
+    () => (
+      <DataPickerPopup
+        {...popper.attributes.popper}
+        style={popper.styles.popper}
+        closePopup={closePopup}
+        ref={setPopperElement}
+        propPath={propPath}
+      />
+    ),
+    [closePopup, popper.attributes.popper, popper.styles.popper, propPath],
+  )
+
+  const DataPickerOpener = React.useMemo(
+    () => (
+      <Button
+        onClick={onClick}
+        data-testid={DataPickerPopupButtonTestId}
+        disabled={!variablePickerButtonAvailable}
+      >
+        <Icn
+          type='pipette'
+          color='secondary'
+          tooltipText={variablePickerButtonTooltipText}
+          width={18}
+          height={18}
+        />
+      </Button>
+    ),
+    [onClick, variablePickerButtonAvailable, variablePickerButtonTooltipText],
+  )
+
+  return {
+    popupIsOpen,
+    DataPickerOpener,
+    DataPickerComponent,
+    setReferenceElement,
+  }
+}
+
 interface RowForBaseControlProps extends AbstractRowForControlProps {
   label?: React.ComponentType<React.PropsWithChildren<any>> // TODO Before Merge this probably should not be a component
   controlDescription: BaseControlDescription
@@ -256,35 +329,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
       <props.label />
     )
 
-  const [referenceElement, setReferenceElement] = React.useState<HTMLDivElement | null>(null)
-  const [popperElement, setPopperElement] = React.useState<HTMLDivElement | null>(null)
-  const { styles, attributes } = usePopper(referenceElement, popperElement, {
-    modifiers: [
-      {
-        name: 'offset',
-        options: {
-          offset: [0, 8],
-        },
-      },
-    ],
-  })
-
-  const [popupIsOpen, setPopupIsOpen] = React.useState(false)
-  const togglePopup = React.useCallback(() => setPopupIsOpen((v) => !v), [])
-  const closePopup = React.useCallback(() => setPopupIsOpen(false), [])
-
-  const onClick = React.useCallback(
-    (e: React.MouseEvent) => {
-      togglePopup()
-      e.stopPropagation()
-    },
-    [togglePopup],
-  )
-
-  const variablePickerButtonAvailable = useVariablesInScopeForSelectedElement().length > 0
-  const variablePickerButtonTooltipText = variablePickerButtonAvailable
-    ? 'Pick data source'
-    : 'No data sources available'
+  const dataPickerButtonData = useDataPickerButton(props.propPath)
 
   if (controlDescription.control === 'none') {
     // do not list anything for `none` controls
@@ -298,22 +343,14 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
       items={contextMenuItems}
       data={null}
     >
-      {popupIsOpen ? (
-        <DataPickerPopup
-          {...attributes.popper}
-          style={styles.popper}
-          closePopup={closePopup}
-          ref={setPopperElement}
-          propPath={propPath}
-        />
-      ) : null}
+      {dataPickerButtonData.popupIsOpen ? dataPickerButtonData.DataPickerComponent : null}
       <UIGridRow
         padded={false}
         style={{ paddingLeft: 0, paddingRight: 8, paddingTop: 3, paddingBottom: 3 }}
         variant='<--1fr--><--1fr-->|-18px-|'
       >
         {propertyLabel}
-        <div ref={setReferenceElement}>
+        <div ref={dataPickerButtonData.setReferenceElement}>
           <ControlForProp
             propPath={propPath}
             propName={propName}
@@ -323,19 +360,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
             focusOnMount={props.focusOnMount}
           />
         </div>
-        <Button
-          onClick={onClick}
-          data-testid={DataPickerPopupButtonTestId}
-          disabled={!variablePickerButtonAvailable}
-        >
-          <Icn
-            type='pipette'
-            color='secondary'
-            tooltipText={variablePickerButtonTooltipText}
-            width={18}
-            height={18}
-          />
-        </Button>
+        {when(isBaseIndentationLevel(props), dataPickerButtonData.DataPickerOpener)}
       </UIGridRow>
     </InspectorContextMenuWrapper>
   )
@@ -531,31 +556,54 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
   return (
     <React.Fragment>
       <InspectorSectionHeader>
-        <SimpleFlexRow style={{ flexGrow: 1, gap: 5 }}>
-          <PropertyLabel target={[propPath]} style={{ textTransform: 'capitalize', paddingTop: 2 }}>
-            {title}
-          </PropertyLabel>
-          {propertyStatus.overwritable ? (
-            <SquareButton
-              highlight
-              onMouseDown={toggleInsertRow}
-              data-testid={`toggle-insert-${PP.toString(propPath)}`}
+        <SimpleFlexRow
+          style={{ gap: 5, justifyContent: 'space-between', flexGrow: 1, paddingRight: 3 }}
+        >
+          <SimpleFlexRow style={{ gap: 5 }}>
+            <PropertyLabel
+              target={[propPath]}
+              style={{ textTransform: 'capitalize', paddingTop: 2 }}
             >
-              {insertingRow ? (
-                <Icons.Minus
-                  color={propertyStatus.controlled ? 'dynamic' : 'secondary'}
-                  width={16}
-                  height={16}
-                />
-              ) : (
-                <Icons.Plus
-                  color={propertyStatus.controlled ? 'dynamic' : 'secondary'}
-                  width={16}
-                  height={16}
-                />
-              )}
-            </SquareButton>
-          ) : null}
+              {title}
+            </PropertyLabel>
+            {propertyStatus.overwritable ? (
+              <SquareButton
+                highlight
+                onMouseDown={toggleInsertRow}
+                data-testid={`toggle-insert-${PP.toString(propPath)}`}
+              >
+                {insertingRow ? (
+                  <Icons.Minus
+                    color={propertyStatus.controlled ? 'dynamic' : 'secondary'}
+                    width={16}
+                    height={16}
+                  />
+                ) : (
+                  <Icons.Plus
+                    color={propertyStatus.controlled ? 'dynamic' : 'secondary'}
+                    width={16}
+                    height={16}
+                  />
+                )}
+              </SquareButton>
+            ) : null}
+          </SimpleFlexRow>
+          {when(
+            isBaseIndentationLevel(props),
+            <Button
+              // onClick={onClick}
+              data-testid={DataPickerPopupButtonTestId}
+              // disabled={!variablePickerButtonAvailable}
+            >
+              <Icn
+                type='pipette'
+                color='secondary'
+                // tooltipText={variablePickerButtonTooltipText}
+                width={18}
+                height={18}
+              />
+            </Button>,
+          )}
         </SimpleFlexRow>
       </InspectorSectionHeader>
       <div
@@ -631,7 +679,7 @@ const ArrayControlItem = React.memo((props: ArrayControlItemProps) => {
           isScene={isScene}
           propPath={PP.appendPropertyPathElems(propPath, [index])}
           setGlobalCursor={props.setGlobalCursor}
-          indentationLevel={1}
+          indentationLevel={2}
           focusOnMount={props.focusOnMount && index === 0}
           disableToggling={true}
         />
@@ -687,6 +735,7 @@ const RowForTupleControl = React.memo((props: RowForTupleControlProps) => {
     <React.Fragment>
       <InspectorSectionHeader>
         <SimpleFlexRow style={{ flexGrow: 1 }}>
+          {when(isBaseIndentationLevel(props), <div>I0</div>)}
           <PropertyLabel target={[propPath]} style={{ textTransform: 'capitalize' }}>
             {title}
           </PropertyLabel>
@@ -814,6 +863,7 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
           data={null}
         >
           <SimpleFlexRow style={{ flexGrow: 1, paddingRight: 8 }}>
+            {when(isBaseIndentationLevel(props), <div>I0</div>)}
             <PropertyLabel
               target={[propPath]}
               style={{
@@ -921,6 +971,7 @@ const RowForUnionControl = React.memo((props: RowForUnionControlProps) => {
   } else {
     return (
       <React.Fragment>
+        {when(isBaseIndentationLevel(props), <div>I0</div>)}
         {label}
         <RowForControl {...props} controlDescription={controlToUse} focusOnMount={false} />
       </React.Fragment>
