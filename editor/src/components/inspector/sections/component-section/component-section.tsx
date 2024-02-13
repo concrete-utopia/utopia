@@ -165,23 +165,6 @@ export const ParseErrorControl = React.memo((props: ParseErrorProps) => {
   )
 })
 
-const WarningTooltip = React.memo(({ warning }: { warning: string }) => {
-  const colorTheme = useColorTheme()
-  return (
-    <Tooltip title={warning}>
-      <div
-        style={{
-          width: 5,
-          height: 5,
-          background: colorTheme.warningBgSolid.value,
-          borderRadius: '50%',
-          marginRight: 4,
-        }}
-      />
-    </Tooltip>
-  )
-})
-
 interface AbstractRowForControlProps {
   propPath: PropertyPath
   isScene: boolean
@@ -231,8 +214,10 @@ function useDataPickerButton(propPath: PropertyPath) {
 
   const onClick = React.useCallback(
     (e: React.MouseEvent) => {
-      togglePopup()
       e.stopPropagation()
+      e.preventDefault()
+
+      togglePopup()
     },
     [togglePopup],
   )
@@ -553,13 +538,16 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
     false,
   )
 
+  const dataPickerButtonData = useDataPickerButton(props.propPath)
+
   return (
     <React.Fragment>
+      {when(dataPickerButtonData.popupIsOpen, dataPickerButtonData.DataPickerComponent)}
       <InspectorSectionHeader>
         <SimpleFlexRow
           style={{ gap: 5, justifyContent: 'space-between', flexGrow: 1, paddingRight: 3 }}
         >
-          <SimpleFlexRow style={{ gap: 5 }}>
+          <FlexRow style={{ gap: 5 }} ref={dataPickerButtonData.setReferenceElement}>
             <PropertyLabel
               target={[propPath]}
               style={{ textTransform: 'capitalize', paddingTop: 2 }}
@@ -587,23 +575,8 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
                 )}
               </SquareButton>
             ) : null}
-          </SimpleFlexRow>
-          {when(
-            isBaseIndentationLevel(props),
-            <Button
-              // onClick={onClick}
-              data-testid={DataPickerPopupButtonTestId}
-              // disabled={!variablePickerButtonAvailable}
-            >
-              <Icn
-                type='pipette'
-                color='secondary'
-                // tooltipText={variablePickerButtonTooltipText}
-                width={18}
-                height={18}
-              />
-            </Button>,
-          )}
+          </FlexRow>
+          {when(isBaseIndentationLevel(props), dataPickerButtonData.DataPickerOpener)}
         </SimpleFlexRow>
       </InspectorSectionHeader>
       <div
@@ -843,6 +816,8 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
     addOnUnsetValues([PP.lastPart(propPath)], propMetadata.onUnsetValues),
   ])
 
+  const dataPickerButtonData = useDataPickerButton(props.propPath)
+
   return (
     <div
       css={{
@@ -856,31 +831,37 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
         },
       }}
     >
-      <div onClick={handleOnClick}>
+      <div>
         <InspectorContextMenuWrapper
           id={`context-menu-for-${PP.toString(propPath)}`}
           items={contextMenuItems}
           data={null}
         >
-          <SimpleFlexRow style={{ flexGrow: 1, paddingRight: 8 }}>
-            {when(isBaseIndentationLevel(props), <div>I0</div>)}
-            <PropertyLabel
-              target={[propPath]}
-              style={{
-                textTransform: 'capitalize',
-                paddingLeft: indentation,
-                display: 'flex',
-                alignItems: 'center',
-                height: 34,
-                fontWeight: 500,
-                gap: 4,
-                cursor: props.disableToggling ? 'default' : 'pointer',
-              }}
-            >
-              {title}
-              {unless(props.disableToggling, <ObjectIndicator open={open} />)}
-            </PropertyLabel>
-          </SimpleFlexRow>
+          {when(dataPickerButtonData.popupIsOpen, dataPickerButtonData.DataPickerComponent)}
+          <FlexRow
+            style={{ flexGrow: 1, justifyContent: 'space-between', paddingRight: 10 }}
+            ref={dataPickerButtonData.setReferenceElement}
+          >
+            <SimpleFlexRow style={{ flexGrow: 1, paddingRight: 8 }} onClick={handleOnClick}>
+              <PropertyLabel
+                target={[propPath]}
+                style={{
+                  textTransform: 'capitalize',
+                  paddingLeft: indentation,
+                  display: 'flex',
+                  alignItems: 'center',
+                  height: 34,
+                  fontWeight: 500,
+                  gap: 4,
+                  cursor: props.disableToggling ? 'default' : 'pointer',
+                }}
+              >
+                {title}
+                {unless(props.disableToggling, <ObjectIndicator open={open} />)}
+              </PropertyLabel>
+            </SimpleFlexRow>
+            {when(isBaseIndentationLevel(props), dataPickerButtonData.DataPickerOpener)}
+          </FlexRow>
         </InspectorContextMenuWrapper>
       </div>
       {when(
