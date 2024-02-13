@@ -1,7 +1,8 @@
 import type React from 'react'
 import type {
   registerModule as registerModuleAPI,
-  registerComponent as registerComponentAPI,
+  registerInternalComponent as registerInternalComponentAPI,
+  registerExternalComponent as registerExternalComponentAPI,
   ComponentToRegister,
   ComponentInsertOption,
   PropertyControls,
@@ -222,7 +223,8 @@ const partiallyParseAndPrepareComponents = (
 
 export function createRegisterModuleAndComponentFunction(workers: UtopiaTsWorkers | null): {
   registerModule: typeof registerModuleAPI
-  registerComponent: typeof registerComponentAPI
+  registerInternalComponent: typeof registerInternalComponentAPI
+  registerExternalComponent: typeof registerExternalComponentAPI
 } {
   let cachedParseAndPrepareComponentsMap = new TimedCacheMap<
     string,
@@ -276,41 +278,43 @@ export function createRegisterModuleAndComponentFunction(workers: UtopiaTsWorker
     )
   }
 
-  function registerComponent(
+  function registerInternalComponent(
     component: React.FunctionComponent,
     properties: ComponentToRegister,
-    moduleName?: string,
   ): void {
     // when the recieved component is an internal component, it is wrapped into a ComponentRendererComponent
-    if (isComponentRendererComponent(component)) {
-      const name = component.originalName
-      const module = dropFileExtension(component.filePath)
-
-      if (name == null) {
-        console.warn(
-          `registerComponent failed: ComponentRendererComponent of internal component doesn't have originalName`,
-        )
-        return
-      }
-
-      registerModule(module, { [name]: properties })
-    }
-
-    // when the received component is not a ComponentRendererComponent, it is an external component, and a moduleName is required
-    if (moduleName == null) {
+    if (!isComponentRendererComponent(component)) {
       console.warn(
-        'registerComponent failed: external components require a moduleName ',
+        'registerIntenalComponent failed: component is not internal but imported from external source ',
         component.displayName,
       )
       return
     }
-    const name = component.displayName ?? component.name
-    registerModule(moduleName, { [name]: properties })
+    const name = component.originalName
+    const module = dropFileExtension(component.filePath)
+
+    if (name == null) {
+      console.warn(
+        `registerIntenalComponent failed: ComponentRendererComponent of internal component doesn't have originalName`,
+      )
+      return
+    }
+
+    registerModule(module, { [name]: properties })
+  }
+
+  function registerExternalComponent(
+    componentName: string,
+    packageName: string,
+    properties: ComponentToRegister,
+  ): void {
+    registerModule(packageName, { [componentName]: properties })
   }
 
   return {
     registerModule,
-    registerComponent,
+    registerInternalComponent,
+    registerExternalComponent,
   }
 }
 

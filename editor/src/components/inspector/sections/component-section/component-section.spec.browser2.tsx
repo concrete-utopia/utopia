@@ -50,7 +50,7 @@ describe('Set element prop via the data picker', () => {
   })
 })
 
-describe('Controls from registerComponent', () => {
+describe('Controls from registering components', () => {
   it('registering internal component', async () => {
     const editor = await renderTestEditorWithCode(
       registerInternalComponentProject,
@@ -155,7 +155,7 @@ const registerInternalComponentProject = `import * as React from 'react'
 import {
   Storyboard,
   Scene,
-  registerComponent,
+  registerInternalComponent,
 } from 'utopia-api'
 
 function Title({ text }) {
@@ -204,7 +204,7 @@ export var storyboard = (
   </Storyboard>
 )
 
-registerComponent(Title, {
+registerInternalComponent(Title, {
   supportsChildren: false,
   properties: {
     text: {
@@ -225,7 +225,7 @@ import {
   Storyboard,
   Scene,
   View,
-  registerComponent,
+  registerExternalComponent,
 } from 'utopia-api'
 
 var Playground = ({ style }) => {
@@ -272,8 +272,9 @@ export var storyboard = (
   </Storyboard>
 )
 
-registerComponent(
+registerExternalComponent(
   View,
+  'utopia-api',
   {
     supportsChildren: false,
     properties: {
@@ -287,5 +288,4 @@ registerComponent(
       },
     ],
   },
-  'utopia-api',
 )`
