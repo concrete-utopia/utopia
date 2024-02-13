@@ -462,14 +462,43 @@ export const StringInputPropertyControl = React.memo(
           controlStyles={propMetadata.controlStyles}
           focus={props.focusOnMount}
         />
-        {when(
-          isImageUrl(safeValue),
-          <img data-testid={ImagePreviewTestId} src={safeValue} style={{ width: '100%' }} />,
-        )}
+        {when(isImageUrl(safeValue), <ImagePreview url={safeValue} />)}
       </FlexColumn>
     )
   },
 )
+
+interface ImagePreviewProps {
+  url: string
+}
+const ImagePreview = React.memo((props: ImagePreviewProps) => {
+  const [imageCanBeLoaded, setImageCanBeLoaded] = React.useState(true)
+
+  // we need to track if the url has changed so we retry loading the image even if it failed before
+  const urlRef = React.useRef<string>(props.url)
+  if (urlRef.current !== props.url) {
+    setImageCanBeLoaded(true)
+    urlRef.current = props.url
+  }
+
+  // don't render the img when it can not be loaded
+  const onImageError = React.useCallback(() => {
+    setImageCanBeLoaded(false)
+  }, [setImageCanBeLoaded])
+
+  if (!imageCanBeLoaded) {
+    return null
+  }
+
+  return (
+    <img
+      data-testid={ImagePreviewTestId}
+      src={props.url}
+      style={{ width: '100%' }}
+      onError={onImageError}
+    />
+  )
+})
 
 function keysForVectorOfType(vectorType: 'vector2' | 'vector3' | 'vector4'): Array<string> {
   switch (vectorType) {
