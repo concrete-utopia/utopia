@@ -1152,18 +1152,22 @@ function valuesFromObject(
   })
 
   if (Array.isArray(value)) {
-    return value.flatMap((v, idx) =>
+    const values = value.flatMap((v, idx) =>
       valuesFromVariable(`${name}[${idx}]`, v).map((variable) =>
         patchDefinedElsewhereInfo(variable),
       ),
     )
+
+    return [{ variableName: name, definedElsewhere: name, value: `${value}` }, ...values]
   }
 
-  return Object.entries(value).flatMap(([key, field]) =>
+  const values = Object.entries(value).flatMap(([key, field]) =>
     valuesFromVariable(`${name}['${key}']`, field).map((variable) =>
       patchDefinedElsewhereInfo(variable),
     ),
   )
+
+  return [{ variableName: name, definedElsewhere: name, value: `${value}` }, ...values]
 }
 
 function valuesFromVariable(name: string, value: unknown): Array<VariableOption> {
