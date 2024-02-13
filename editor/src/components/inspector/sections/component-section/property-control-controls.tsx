@@ -499,6 +499,7 @@ const ImagePreview = React.memo((props: ImagePreviewProps) => {
     />
   )
 })
+ImagePreview.displayName = 'ImagePreview'
 
 function keysForVectorOfType(vectorType: 'vector2' | 'vector3' | 'vector4'): Array<string> {
   switch (vectorType) {
