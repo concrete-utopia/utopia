@@ -22,7 +22,7 @@ import {
 import { PathForSceneProps } from '../../../../core/model/scene-utils'
 import { mapToArray } from '../../../../core/shared/object-utils'
 import type { PropertyPath } from '../../../../core/shared/project-file-types'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
 import * as EP from '../../../../core/shared/element-path'
 import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
@@ -93,6 +93,14 @@ import { useDispatch } from '../../../editor/store/dispatch-context'
 import { usePopper } from 'react-popper'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
+import {
+  getJSExpressionAtPath,
+  getJSXAttributesAtPath,
+} from '../../../../core/shared/jsx-attributes'
+import type { VariableData } from '../../../canvas/ui-jsx-canvas'
+import { array } from 'prop-types'
+import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
+import { DataPickerPopup } from './data-picker-popup'
 
 export const VariableFromScopeOptionTestId = (idx: number) => `variable-from-scope-${idx}`
 export const DataPickerPopupButtonTestId = `data-picker-popup-button-test-id`
@@ -194,7 +202,7 @@ function getLabelControlStyle(
 
 const isBaseIndentationLevel = (props: AbstractRowForControlProps) => props.indentationLevel === 1
 
-function useDataPickerButton(propPath: PropertyPath) {
+function useDataPickerButton(selectedElements: Array<ElementPath>, propPath: PropertyPath) {
   const [referenceElement, setReferenceElement] = React.useState<HTMLDivElement | null>(null)
   const [popperElement, setPopperElement] = React.useState<HTMLDivElement | null>(null)
   const popper = usePopper(referenceElement, popperElement, {
@@ -222,7 +230,10 @@ function useDataPickerButton(propPath: PropertyPath) {
     [togglePopup],
   )
 
-  const variablePickerButtonAvailable = useVariablesInScopeForSelectedElement().length > 0
+  const selectedElement = selectedElements.at(0) ?? EP.emptyElementPath
+
+  const variablePickerButtonAvailable =
+    useVariablesInScopeForSelectedElement(selectedElement, propPath).length > 0
   const variablePickerButtonTooltipText = variablePickerButtonAvailable
     ? 'Pick data source'
     : 'No data sources available'
@@ -278,6 +289,12 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
   const propName = `${PP.lastPart(propPath)}`
   const indentation = props.indentationLevel * 8
 
+  const selectedViews = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews,
+    'RowForBaseControl selectedViews',
+  )
+
   const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
   const contextMenuItems = Utils.stripNulls([
     addOnUnsetValues([propName], propMetadata.onUnsetValues),
@@ -314,7 +331,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
       <props.label />
     )
 
-  const dataPickerButtonData = useDataPickerButton(props.propPath)
+  const dataPickerButtonData = useDataPickerButton(selectedViews, props.propPath)
 
   if (controlDescription.control === 'none') {
     // do not list anything for `none` controls
@@ -372,150 +389,6 @@ function getSectionHeightFromPropControl(
   }
 }
 
-interface DataPickerPopupProps {
-  closePopup: () => void
-  style: React.CSSProperties
-  propPath: PropertyPath
-}
-
-const DataPickerPopup = React.memo(
-  React.forwardRef<HTMLDivElement, DataPickerPopupProps>((props, forwardedRef) => {
-    const { closePopup, propPath } = props
-
-    const selectedViewPathRef = useRefEditorState(
-      (store) => store.editor.selectedViews.at(0) ?? null,
-    )
-
-    const colorTheme = useColorTheme()
-    const dispatch = useDispatch()
-
-    const onTweakProperty = React.useCallback(
-      (name: string, definedElsewhere: string | null) => (e: React.MouseEvent) => {
-        if (selectedViewPathRef.current == null) {
-          return
-        }
-
-        e.stopPropagation()
-        e.preventDefault()
-
-        const definedElseWhereArray = optionalMap((d) => [d], definedElsewhere) ?? []
-
-        dispatch([
-          setProp_UNSAFE(
-            selectedViewPathRef.current,
-            propPath,
-            jsExpressionOtherJavaScriptSimple(name, definedElseWhereArray),
-          ),
-        ])
-      },
-      [dispatch, propPath, selectedViewPathRef],
-    )
-
-    const variableNamesInScope = useVariablesInScopeForSelectedElement()
-
-    return (
-      <div
-        style={{
-          background: 'transparent',
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: 1, // so it's above the inspector
-        }}
-        onClick={closePopup}
-      >
-        <FlexColumn
-          ref={forwardedRef}
-          tabIndex={0}
-          style={{
-            ...props.style,
-            backgroundColor: colorTheme.neutralBackground.value,
-            padding: '8px 16px',
-            boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
-            borderRadius: UtopiaTheme.inputBorderRadius,
-            alignItems: 'flex-start',
-          }}
-          data-testid={DataPickerPopupTestId}
-        >
-          <div style={{ fontSize: 14, fontWeight: 400, marginBottom: 16 }}>
-            <span>Data</span>
-          </div>
-          {variableNamesInScope.map(
-            ({ variableName, definedElsewhere, value, displayName, depth = 0 }, idx) => {
-              return (
-                <Button
-                  data-testid={VariableFromScopeOptionTestId(idx)}
-                  key={variableName}
-                  onClick={onTweakProperty(variableName, definedElsewhere)}
-                  style={{ width: '100%' }}
-                >
-                  <UIGridRow
-                    padded={false}
-                    variant='<--1fr--><--1fr-->'
-                    style={{
-                      justifyContent: 'space-between',
-                      alignItems: 'flex-start',
-                      gap: 8,
-                      width: '100%',
-                    }}
-                  >
-                    <div>
-                      <span
-                        style={{
-                          marginLeft: 4 * depth,
-                          borderRadius: 2,
-                          fontWeight: 400,
-                        }}
-                      >
-                        {depth > 0 ? (
-                          <span
-                            style={{
-                              borderLeft: `1px solid ${colorTheme.neutralBorder.value}`,
-                              borderBottom: `1px solid ${colorTheme.neutralBorder.value}`,
-                              width: 5,
-                              display: 'inline-block',
-                              height: 9,
-                              marginRight: 4,
-                              position: 'relative',
-                              top: -2,
-                              marginLeft: (depth - 1) * 8,
-                            }}
-                          ></span>
-                        ) : null}
-                        {displayName}
-                      </span>
-                    </div>
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'flex-end',
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontWeight: 400,
-                          color: colorTheme.neutralForeground.value,
-                          textOverflow: 'ellipsis',
-                          maxWidth: 130,
-                          overflow: 'hidden',
-                        }}
-                      >
-                        {value}
-                      </span>
-                    </div>
-                  </UIGridRow>
-                </Button>
-              )
-            },
-          )}
-        </FlexColumn>
-      </div>
-    )
-  }),
-)
-
 interface RowForArrayControlProps extends AbstractRowForControlProps {
   controlDescription: ArrayControlDescription
 }
@@ -563,7 +436,13 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
     false,
   )
 
-  const dataPickerButtonData = useDataPickerButton(props.propPath)
+  const selectedViews = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews,
+    'RowForArrayControl selectedViews',
+  )
+
+  const dataPickerButtonData = useDataPickerButton(selectedViews, props.propPath)
 
   return (
     <React.Fragment>
@@ -841,7 +720,12 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
     addOnUnsetValues([PP.lastPart(propPath)], propMetadata.onUnsetValues),
   ])
 
-  const dataPickerButtonData = useDataPickerButton(props.propPath)
+  const selectedViews = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews,
+    'RowForObjectControl selectedViews',
+  )
+  const dataPickerButtonData = useDataPickerButton(selectedViews, props.propPath)
 
   return (
     <div
@@ -1183,128 +1067,4 @@ export class ComponentSection extends React.Component<
       return <ComponentSectionInner {...this.props} />
     }
   }
-}
-
-interface VariableOption {
-  variableName: string
-  displayName: string
-  definedElsewhere: string | null
-  value: string
-  depth?: number
-}
-
-function valuesFromObject(
-  name: string,
-  objectName: string,
-  value: object | null,
-  depth: number,
-  displayName: string,
-): Array<VariableOption> {
-  if (value == null) {
-    return [{ displayName: displayName, variableName: name, definedElsewhere: null, value: `null` }]
-  }
-
-  const patchDefinedElsewhereInfo = (variable: VariableOption) => ({
-    variableName: variable.variableName,
-    value: variable.value,
-    definedElsewhere: objectName,
-    displayName: variable.displayName,
-    depth: variable.depth,
-  })
-
-  if (Array.isArray(value)) {
-    return [
-      patchDefinedElsewhereInfo({
-        displayName: displayName,
-        variableName: name,
-        definedElsewhere: objectName,
-        value: `[ ]`,
-        depth: depth,
-      }),
-    ].concat(
-      value.flatMap((v, idx) =>
-        valuesFromVariable(`${name}[${idx}]`, v, depth + 1, `${displayName}[${idx}]`).map(
-          (variable) => patchDefinedElsewhereInfo(variable),
-        ),
-      ),
-    )
-  }
-
-  return [
-    patchDefinedElsewhereInfo({
-      displayName: displayName,
-      variableName: name,
-      definedElsewhere: objectName,
-      value: `{ }`,
-      depth: depth,
-    }),
-  ].concat(
-    Object.entries(value).flatMap(([key, field]) =>
-      valuesFromVariable(`${name}['${key}']`, field, depth + 1, key).map((variable) =>
-        patchDefinedElsewhereInfo(variable),
-      ),
-    ),
-  )
-}
-
-function valuesFromVariable(
-  name: string,
-  value: unknown,
-  depth: number,
-  displayName: string,
-): Array<VariableOption> {
-  switch (typeof value) {
-    case 'bigint':
-    case 'boolean':
-    case 'number':
-    case 'string':
-    case 'undefined':
-      return [
-        {
-          displayName: displayName,
-          variableName: name,
-          definedElsewhere: name,
-          value: `${value}`,
-          depth: depth,
-        },
-      ]
-    case 'object':
-      return valuesFromObject(name, name, value, depth, displayName)
-    case 'function':
-    case 'symbol':
-      return []
-  }
-}
-
-function useVariablesInScopeForSelectedElement(): Array<VariableOption> {
-  const selectedViewPath = useEditorState(
-    Substores.selectedViews,
-    (store) => store.editor.selectedViews.at(0) ?? null,
-    'useVariablesInScopeForSelectedElement selectedViewPath',
-  )
-
-  const variablesInScope = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.variablesInScope,
-    'useVariablesInScopeForSelectedElement variablesInScope',
-  )
-  const variableNamesInScope = React.useMemo(() => {
-    if (selectedViewPath == null) {
-      return []
-    }
-
-    const variablesInScopeForSelectedPath = variablesInScope[EP.toString(selectedViewPath)]
-
-    if (variablesInScopeForSelectedPath == null) {
-      return []
-    }
-
-    return variablesInScopeForSelectedPath
-  }, [selectedViewPath, variablesInScope])
-
-  const variableNameValues = Object.entries(variableNamesInScope).flatMap(([name, variable]) =>
-    valuesFromVariable(name, variable.spiedValue, 0, name),
-  )
-
-  return variableNameValues
 }

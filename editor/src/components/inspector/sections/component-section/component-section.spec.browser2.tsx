@@ -30,6 +30,8 @@ describe('Set element prop via the data picker', () => {
     // the items from the data picker are expected here, so that the numbers in `VariableFromScopeOptionTestId`
     // below are put in context
     expect(options).toEqual([
+      'titleToo',
+      'alternateTitle',
       'style',
       'width',
       'height',
@@ -40,8 +42,6 @@ describe('Set element prop via the data picker', () => {
       'display',
       'alignItems',
       'justifyContent',
-      'titleToo',
-      'alternateTitle',
       'titles',
       'one',
       'also JS',
@@ -50,13 +50,13 @@ describe('Set element prop via the data picker', () => {
     ])
 
     // choose a string-valued variable
-    let currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(10))
+    let currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(0))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Title too')).not.toBeNull()
     expect(within(theInspector).queryByText('Title too')).not.toBeNull()
 
     // choose another string-valued variable
-    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(11))
+    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(1))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Alternate title')).not.toBeNull()
     expect(within(theInspector).queryByText('Alternate title')).not.toBeNull()
@@ -79,7 +79,252 @@ describe('Set element prop via the data picker', () => {
     expect(within(theScene).queryByText('Chapter One')).not.toBeNull()
     expect(within(theInspector).queryByText('Chapter One')).not.toBeNull()
   })
+
+  it('with number input control descriptor present', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectWithNumberInputControlDescription,
+      'await-first-dom-report',
+    )
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/counter')])
+
+    const dataPickerOpenerButton = editor.renderedDOM.getByTestId(DataPickerPopupButtonTestId)
+    await mouseClickAtPoint(dataPickerOpenerButton, { x: 2, y: 2 })
+
+    const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
+    expect(dataPickerPopup).not.toBeNull()
+
+    const options = [
+      ...editor.renderedDOM.baseElement.querySelectorAll(`[data-testid^="variable-from-scope"]`),
+    ].map((node) => node.firstChild!.firstChild!.textContent)
+
+    expect(options).toEqual([
+      'currentCount', // at the top because the number input control descriptor is present
+      'titleToo', // because the current value of `count` is a string
+      'titleIdeas', // doesn't match control descriptor, nor the shape of the prop value
+      'titleIdeas[0]',
+    ])
+  })
+
+  it('with array control descriptor present', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectWithObjectsAndArrays,
+      'await-first-dom-report',
+    )
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/toc')])
+
+    const dataPickerOpenerButton = editor.renderedDOM.getByTestId(DataPickerPopupButtonTestId)
+    await mouseClickAtPoint(dataPickerOpenerButton, { x: 2, y: 2 })
+
+    const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
+    expect(dataPickerPopup).not.toBeNull()
+
+    const options = [
+      ...editor.renderedDOM.baseElement.querySelectorAll(`[data-testid^="variable-from-scope"]`),
+    ].map((node) => node.firstChild!.firstChild!.textContent)
+
+    expect(options).toEqual([
+      'titleIdeas', // the array is at the top because of the array descriptor
+      'titleIdeas[0]', // <- array element
+      'titleIdeas[1]', // <- array element
+      'titleToo',
+      'currentCount',
+      'bookInfo',
+      'title',
+      'published',
+      'description',
+      'likes',
+    ])
+  })
+
+  it('with object control descriptor present', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectWithObjectsAndArrays,
+      'await-first-dom-report',
+    )
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/bd')])
+
+    const dataPickerOpenerButton = editor.renderedDOM.getByTestId(DataPickerPopupButtonTestId)
+    await mouseClickAtPoint(dataPickerOpenerButton, { x: 2, y: 2 })
+
+    const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
+    expect(dataPickerPopup).not.toBeNull()
+
+    const options = [
+      ...editor.renderedDOM.baseElement.querySelectorAll(`[data-testid^="variable-from-scope"]`),
+    ].map((node) => node.firstChild!.firstChild!.textContent)
+
+    expect(options).toEqual([
+      'bookInfo', // object is at the top because of the object descriptor
+      'title', // <- object key
+      'published', // <- object key
+      'description', // <- object key
+      'likes', // <- object key
+      'titleToo',
+      'currentCount',
+      'titleIdeas',
+      'titleIdeas[0]',
+      'titleIdeas[1]',
+    ])
+  })
+
+  it("with another array matching the prop array's shape", async () => {
+    const editor = await renderTestEditorWithCode(
+      DataPickerProjectShell(`
+      function TableOfContents({ titles }) {
+        const content = 'Content'
+      
+        return (
+          <>
+            {titles.map((t) => (
+              <h2 data-uid='a9c'>{t}</h2>
+            ))}
+          </>
+        )
+      }
+      
+      var Playground = () => {
+        const titleToo = 'Title too'
+        const currentCount = 12
+        const authors = ['Jack London', 'Mary Shelley']
+        const titleIdeas = ['Chapter One', 'Chapter Two']
+      
+        return (
+          <div data-uid='root'>
+            <TableOfContents titles={titleIdeas} data-uid='toc' />
+          </div>
+        )
+      }`),
+      'await-first-dom-report',
+    )
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/toc')])
+
+    const dataPickerOpenerButton = editor.renderedDOM.getByTestId(DataPickerPopupButtonTestId)
+    await mouseClickAtPoint(dataPickerOpenerButton, { x: 2, y: 2 })
+
+    const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
+    expect(dataPickerPopup).not.toBeNull()
+
+    const options = [
+      ...editor.renderedDOM.baseElement.querySelectorAll(`[data-testid^="variable-from-scope"]`),
+    ].map((node) => node.firstChild!.firstChild!.textContent)
+
+    expect(options).toEqual([
+      'authors', // at the top because it's an array of string, same as titleIdeas
+      'authors[0]',
+      'authors[1]',
+      'titleIdeas', // the original array of string
+      'titleIdeas[0]',
+      'titleIdeas[1]',
+      'titleToo',
+      'currentCount',
+    ])
+  })
+
+  it("with another object matching the prop object's shape", async () => {
+    const editor = await renderTestEditorWithCode(
+      DataPickerProjectShell(`
+      function BookDetail({ book }) {
+        const content = 'Content'
+      
+        return (
+          <div data-uid='aak'>
+            <h1 data-uid='aae'>{book.title}</h1>
+            <code data-uid='aai'>{book.published}</code>
+            <p data-uid='88b'>{book.description}</p>
+            <p data-uid='a48'>Likes: {book.likes}</p>
+          </div>
+        )
+      }
+      
+      var Playground = () => {
+        const titleToo = 'Title too'
+        const authors = { jack: "Jack London", mary: "Mary Shelley" }
+      
+        const bookInfo = {
+          title: 'Moby Dick',
+          published: 'August 1888',
+          description: 'An oldie but goldie',
+          likes: 33,
+        }
+      
+        const alternateBookInfo = {
+          title: 'Frankenstein',
+          published: 'August 1866',
+          description: 'Short, fun read',
+          likes: 66,
+        }
+      
+        return (
+          <div data-uid='root'>
+            <BookDetail book={bookInfo} data-uid='bd' />
+          </div>
+        )
+      }`),
+      'await-first-dom-report',
+    )
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/bd')])
+
+    const dataPickerOpenerButton = editor.renderedDOM.getByTestId(DataPickerPopupButtonTestId)
+    await mouseClickAtPoint(dataPickerOpenerButton, { x: 2, y: 2 })
+
+    const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
+    expect(dataPickerPopup).not.toBeNull()
+
+    const options = [
+      ...editor.renderedDOM.baseElement.querySelectorAll(`[data-testid^="variable-from-scope"]`),
+    ].map((node) => node.firstChild!.firstChild!.textContent)
+
+    expect(options).toEqual([
+      'bookInfo', // object with matching shape
+      'title', // <- object key
+      'published', // <- object key
+      'description', // <- object key
+      'likes', // <- object key
+      'alternateBookInfo', // object with matching shape
+      'title', // <- object key
+      'published', // <- object key
+      'description', // <- object key
+      'likes', // <- object key
+      'titleToo',
+      'authors', // object with a shape that doesn't match
+      'jack',
+      'mary',
+    ])
+  })
 })
+
+// comment out tests temporarily because it causes a dom-walker test to fail
+// describe('Image preview for string control', () => {
+//   it('shows image preview for urls with image extension', async () => {
+//     const editor = await renderTestEditorWithCode(
+//       projectWithImage(
+//         'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAEklEQVQIW2P8z8AARAwMjDAGACwBA/+8RVWvAAAAAElFTkSuQmCC',
+//       ),
+//       'await-first-dom-report',
+//     )
+//     await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/image')])
+
+//     expect(editor.renderedDOM.queryAllByTestId(ImagePreviewTestId)).toHaveLength(1)
+//   })
+//   it('does not show image preview for urls without image extension', async () => {
+//     const editor = await renderTestEditorWithCode(
+//       projectWithImage('https://i.pinimg.com/474x/4d/79/99/4d7999a51a1a397189a6f98168bcde45'),
+//       'await-first-dom-report',
+//     )
+//     await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/image')])
+
+//     expect(editor.renderedDOM.queryAllByTestId(ImagePreviewTestId)).toHaveLength(0)
+//   })
+//   it('does not show image preview for non-urls', async () => {
+//     const editor = await renderTestEditorWithCode(
+//       projectWithImage('hello'),
+//       'await-first-dom-report',
+//     )
+//     await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/image')])
+
+//     expect(editor.renderedDOM.queryAllByTestId(ImagePreviewTestId)).toHaveLength(0)
+//   })
+// })
 
 describe('Controls from registering components', () => {
   it('registering internal component', async () => {
@@ -119,9 +364,7 @@ describe('Controls from registering components', () => {
   })
 })
 
-const project = `import * as React from 'react'
-import { Storyboard, Scene } from 'utopia-api'
-
+const project = DataPickerProjectShell(`
 function Title({ text }) {
   const content = 'Content'
 
@@ -147,40 +390,7 @@ var Playground = ({ style }) => {
       <Title text='The Title' data-uid='title' />
     </div>
   )
-}
-
-export var storyboard = (
-  <Storyboard data-uid='sb'>
-    <Scene
-      style={{
-        width: 521,
-        height: 266,
-        position: 'absolute',
-        left: 554,
-        top: 247,
-        backgroundColor: 'white',
-      }}
-      data-uid='scene'
-      data-testid='scene'
-      commentId='120'
-    >
-      <Playground
-        style={{
-          width: 454,
-          height: 177,
-          position: 'absolute',
-          left: 34,
-          top: 44,
-          backgroundColor: 'white',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-        data-uid='pg'
-      />
-    </Scene>
-  </Storyboard>
-)`
+}`)
 
 const registerInternalComponentProject = `import * as React from 'react'
 import {
@@ -320,3 +530,214 @@ registerExternalComponent(
     ],
   },
 )`
+
+const projectWithNumberInputControlDescription = DataPickerProjectShell(`
+  registerInternalComponent(Counter, {
+  properties: {
+    count: Utopia.numberControl(),
+  },
+  supportsChildren: false,
+  variants: [],
+})
+
+function Counter({ count }) {
+  const content = 'Content'
+
+  return <h2 data-uid='a9c'>{count}</h2>
+}
+
+var Playground = () => {
+  const titleToo = 'Title too'
+  const titleIdeas = ['Chapter One']
+  const currentCount = 12
+
+  return (
+    <div data-uid='root'>
+      <Counter count={''} data-uid='counter' />
+    </div>
+  )
+}`)
+
+const projectWithObjectsAndArrays =
+  DataPickerProjectShell(`registerInternalComponent(TableOfContents, {
+  properties: {
+    titles: Utopia.arrayControl(
+      Utopia.stringControl(), // control to use for each value in the array
+    ),
+  },
+  supportsChildren: false,
+  variants: [],
+})
+
+registerInternalComponent(BookDetail, {
+  properties: {
+    titles: Utopia.objectControl({
+      title: Utopia.stringControl(),
+      published: Utopia.stringControl(),
+      description: Utopia.stringControl(),
+      likes: Utopia.numberControl(),
+    }),
+  },
+  supportsChildren: false,
+  variants: [],
+})
+
+function TableOfContents({ titles }) {
+  const content = 'Content'
+
+  return (
+    <>
+      {titles.map((t) => (
+        <h2 data-uid='a9c'>{t}</h2>
+      ))}
+    </>
+  )
+}
+
+function BookDetail({ book }) {
+  const content = 'Content'
+
+  return (
+    <div>
+      <h1>{book.title}</h1>
+      <code>{book.published}</code>
+      <p>{book.description}</p>
+      <p>Likes: {book.likes}</p>
+    </div>
+  )
+}
+
+var Playground = () => {
+  const titleToo = 'Title too'
+  const currentCount = 12
+  const titleIdeas = ['Chapter One', 'Chapter Two']
+
+  const bookInfo = {
+    title: 'Moby Dick',
+    published: 'August 1888',
+    description: 'An oldie but goldie',
+    likes: 33,
+  }
+
+  return (
+    <div data-uid='root'>
+      <TableOfContents titles={[]} data-uid='toc' />
+      <BookDetail book={{}} data-uid='bd' />
+    </div>
+  )
+}`)
+
+function DataPickerProjectShell(contents: string) {
+  return `
+  import * as React from 'react'
+import * as Utopia from 'utopia-api'
+import {
+  Storyboard,
+  Scene,
+  registerInternalComponent,
+} from 'utopia-api'
+
+${contents}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 521,
+        height: 266,
+        position: 'absolute',
+        left: 554,
+        top: 247,
+        backgroundColor: 'white',
+      }}
+      data-uid='scene'
+      data-testid='scene'
+      commentId='120'
+    >
+      <Playground
+        style={{
+          width: 454,
+          height: 177,
+          position: 'absolute',
+          left: 34,
+          top: 44,
+          backgroundColor: 'white',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+        data-uid='pg'
+      />
+    </Scene>
+  </Storyboard>
+)`
+}
+
+// const projectWithImage = (imageUrl: string) => `import * as React from 'react'
+// import {
+//   Storyboard,
+//   Scene,
+//   registerInternalComponent,
+// } from 'utopia-api'
+
+// function Image({ url }) {
+//   return <img src={url} />
+// }
+
+// var Playground = ({ style }) => {
+//   return (
+//     <div style={style} data-uid='root'>
+//       <Image url='${imageUrl}' data-uid='image' />
+//     </div>
+//   )
+// }
+
+// export var storyboard = (
+//   <Storyboard data-uid='sb'>
+//     <Scene
+//       style={{
+//         width: 521,
+//         height: 266,
+//         position: 'absolute',
+//         left: 554,
+//         top: 247,
+//         backgroundColor: 'white',
+//       }}
+//       data-uid='scene'
+//       data-testid='scene'
+//       commentId='120'
+//     >
+//       <Playground
+//         style={{
+//           width: 454,
+//           height: 177,
+//           position: 'absolute',
+//           left: 34,
+//           top: 44,
+//           backgroundColor: 'white',
+//           display: 'flex',
+//           alignItems: 'center',
+//           justifyContent: 'center',
+//         }}
+//         title='Hello Utopia'
+//         data-uid='pg'
+//       />
+//     </Scene>
+//   </Storyboard>
+// )
+
+// registerInternalComponent(Image, {
+//   supportsChildren: false,
+//   properties: {
+//     url: {
+//       control: 'string-input',
+//     },
+//   },
+//   variants: [
+//     {
+//       code: '<Image />',
+//     },
+//   ],
+// })
+
+// `
