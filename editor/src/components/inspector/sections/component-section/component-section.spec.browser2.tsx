@@ -107,7 +107,7 @@ describe('Set element prop via the data picker', () => {
 
   it('with array control descriptor present', async () => {
     const editor = await renderTestEditorWithCode(
-      projectWithObjectsAndArrays(),
+      projectWithObjectsAndArrays,
       'await-first-dom-report',
     )
     await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/toc')])
@@ -138,7 +138,7 @@ describe('Set element prop via the data picker', () => {
 
   it('with object control descriptor present', async () => {
     const editor = await renderTestEditorWithCode(
-      projectWithObjectsAndArrays(),
+      projectWithObjectsAndArrays,
       'await-first-dom-report',
     )
     await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/bd')])
@@ -206,9 +206,7 @@ describe('Controls from registering components', () => {
   })
 })
 
-const project = `import * as React from 'react'
-import { Storyboard, Scene } from 'utopia-api'
-
+const project = DataPickerProjectShell(`
 function Title({ text }) {
   const content = 'Content'
 
@@ -234,40 +232,7 @@ var Playground = ({ style }) => {
       <Title text='The Title' data-uid='title' />
     </div>
   )
-}
-
-export var storyboard = (
-  <Storyboard data-uid='sb'>
-    <Scene
-      style={{
-        width: 521,
-        height: 266,
-        position: 'absolute',
-        left: 554,
-        top: 247,
-        backgroundColor: 'white',
-      }}
-      data-uid='scene'
-      data-testid='scene'
-      commentId='120'
-    >
-      <Playground
-        style={{
-          width: 454,
-          height: 177,
-          position: 'absolute',
-          left: 34,
-          top: 44,
-          backgroundColor: 'white',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-        data-uid='pg'
-      />
-    </Scene>
-  </Storyboard>
-)`
+}`)
 
 const registerInternalComponentProject = `import * as React from 'react'
 import {
@@ -408,15 +373,8 @@ registerExternalComponent(
   },
 )`
 
-const projectWithNumberInputControlDescription = `import * as React from 'react'
-import * as Utopia from 'utopia-api'
-import {
-  Storyboard,
-  Scene,
-  registerInternalComponent,
-} from 'utopia-api'
-
-registerInternalComponent(Counter, {
+const projectWithNumberInputControlDescription = DataPickerProjectShell(`
+  registerInternalComponent(Counter, {
   properties: {
     count: Utopia.numberControl(),
   },
@@ -440,51 +398,10 @@ var Playground = () => {
       <Counter count={''} data-uid='counter' />
     </div>
   )
-}
+}`)
 
-export var storyboard = (
-  <Storyboard data-uid='sb'>
-    <Scene
-      style={{
-        width: 521,
-        height: 266,
-        position: 'absolute',
-        left: 554,
-        top: 247,
-        backgroundColor: 'white',
-      }}
-      data-uid='scene'
-      data-testid='scene'
-      commentId='120'
-    >
-      <Playground
-        style={{
-          width: 454,
-          height: 177,
-          position: 'absolute',
-          left: 34,
-          top: 44,
-          backgroundColor: 'white',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-        data-uid='pg'
-      />
-    </Scene>
-  </Storyboard>
-)
-`
-
-const projectWithObjectsAndArrays = () => `import * as React from 'react'
-import * as Utopia from 'utopia-api'
-import {
-  Storyboard,
-  Scene,
-  registerInternalComponent,
-} from 'utopia-api'
-
-registerInternalComponent(TableOfContents, {
+const projectWithObjectsAndArrays =
+  DataPickerProjectShell(`registerInternalComponent(TableOfContents, {
   properties: {
     titles: Utopia.arrayControl(
       Utopia.stringControl(), // control to use for each value in the array
@@ -550,7 +467,19 @@ var Playground = () => {
       <BookDetail book={{}} data-uid='bd' />
     </div>
   )
-}
+}`)
+
+function DataPickerProjectShell(contents: string) {
+  return `
+  import * as React from 'react'
+import * as Utopia from 'utopia-api'
+import {
+  Storyboard,
+  Scene,
+  registerInternalComponent,
+} from 'utopia-api'
+
+${contents}
 
 export var storyboard = (
   <Storyboard data-uid='sb'>
@@ -583,5 +512,5 @@ export var storyboard = (
       />
     </Scene>
   </Storyboard>
-)
-`
+)`
+}
