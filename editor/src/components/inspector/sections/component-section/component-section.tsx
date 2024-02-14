@@ -537,51 +537,74 @@ const DataPickerPopup = React.memo(
           <div style={{ fontSize: 14, fontWeight: 400, marginBottom: 16 }}>
             <span>Data</span>
           </div>
-          {variableNamesInScope.map(({ variableName, definedElsewhere, value }, idx) => {
-            return (
-              <Button
-                data-testid={VariableFromScopeOptionTestId(idx)}
-                key={variableName}
-                onClick={onTweakProperty(variableName, definedElsewhere)}
-                style={{ width: '100%' }}
-              >
-                <UIGridRow
-                  padded={false}
-                  variant='<--1fr--><--1fr-->'
-                  style={{
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-start',
-                    gap: 8,
-                    width: '100%',
-                  }}
+          {variableNamesInScope.map(
+            ({ variableName, definedElsewhere, value, displayName, depth = 0 }, idx) => {
+              return (
+                <Button
+                  data-testid={VariableFromScopeOptionTestId(idx)}
+                  key={variableName}
+                  onClick={onTweakProperty(variableName, definedElsewhere)}
+                  style={{ width: '100%' }}
                 >
-                  <div>
-                    <span
+                  <UIGridRow
+                    padded={false}
+                    variant='<--1fr--><--1fr-->'
+                    style={{
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      gap: 8,
+                      width: '100%',
+                    }}
+                  >
+                    <div>
+                      <span
+                        style={{
+                          marginLeft: 4 * depth,
+                          borderRadius: 2,
+                          fontWeight: 400,
+                        }}
+                      >
+                        {depth > 0 ? (
+                          <span
+                            style={{
+                              borderLeft: `1px solid ${colorTheme.neutralBorder.value}`,
+                              borderBottom: `1px solid ${colorTheme.neutralBorder.value}`,
+                              width: 5,
+                              display: 'inline-block',
+                              height: 9,
+                              marginRight: 4,
+                              position: 'relative',
+                              top: -2,
+                              marginLeft: (depth - 1) * 8,
+                            }}
+                          ></span>
+                        ) : null}
+                        {displayName}
+                      </span>
+                    </div>
+                    <div
                       style={{
-                        padding: 4,
-                        borderRadius: 2,
-                        fontWeight: 400,
-                        background: colorTheme.brandNeonGreen.value,
+                        display: 'flex',
+                        justifyContent: 'flex-end',
                       }}
                     >
-                      {variableName}
-                    </span>
-                  </div>
-                  <div>
-                    <span
-                      style={{
-                        padding: 4,
-                        fontWeight: 400,
-                        color: colorTheme.neutralForeground.value,
-                      }}
-                    >
-                      {value}
-                    </span>
-                  </div>
-                </UIGridRow>
-              </Button>
-            )
-          })}
+                      <span
+                        style={{
+                          fontWeight: 400,
+                          color: colorTheme.neutralForeground.value,
+                          textOverflow: 'ellipsis',
+                          maxWidth: 130,
+                          overflow: 'hidden',
+                        }}
+                      >
+                        {value}
+                      </span>
+                    </div>
+                  </UIGridRow>
+                </Button>
+              )
+            },
+          )}
         </FlexColumn>
       </div>
     )
@@ -1270,54 +1293,89 @@ export class ComponentSection extends React.Component<
 
 interface VariableOption {
   variableName: string
+  displayName: string
   definedElsewhere: string | null
   value: string
+  depth?: number
 }
 
 function valuesFromObject(
   name: string,
   objectName: string,
   value: object | null,
+  depth: number,
+  displayName: string,
 ): Array<VariableOption> {
   if (value == null) {
-    return [{ variableName: name, definedElsewhere: null, value: `null` }]
+    return [{ displayName: displayName, variableName: name, definedElsewhere: null, value: `null` }]
   }
 
   const patchDefinedElsewhereInfo = (variable: VariableOption) => ({
     variableName: variable.variableName,
     value: variable.value,
     definedElsewhere: objectName,
+    displayName: variable.displayName,
+    depth: variable.depth,
   })
 
   if (Array.isArray(value)) {
-    const values = value.flatMap((v, idx) =>
-      valuesFromVariable(`${name}[${idx}]`, v).map((variable) =>
-        patchDefinedElsewhereInfo(variable),
+    return [
+      patchDefinedElsewhereInfo({
+        displayName: displayName,
+        variableName: name,
+        definedElsewhere: objectName,
+        value: `[ ]`,
+        depth: depth,
+      }),
+    ].concat(
+      value.flatMap((v, idx) =>
+        valuesFromVariable(`${name}[${idx}]`, v, depth + 1, `${displayName}[${idx}]`).map(
+          (variable) => patchDefinedElsewhereInfo(variable),
+        ),
       ),
     )
-
-    return [{ variableName: name, definedElsewhere: name, value: '[array]' }, ...values]
   }
 
-  const values = Object.entries(value).flatMap(([key, field]) =>
-    valuesFromVariable(`${name}['${key}']`, field).map((variable) =>
-      patchDefinedElsewhereInfo(variable),
+  return [
+    patchDefinedElsewhereInfo({
+      displayName: displayName,
+      variableName: name,
+      definedElsewhere: objectName,
+      value: `{ }`,
+      depth: depth,
+    }),
+  ].concat(
+    Object.entries(value).flatMap(([key, field]) =>
+      valuesFromVariable(`${name}['${key}']`, field, depth + 1, key).map((variable) =>
+        patchDefinedElsewhereInfo(variable),
+      ),
     ),
   )
-
-  return [{ variableName: name, definedElsewhere: name, value: '{object}' }, ...values]
 }
 
-function valuesFromVariable(name: string, value: unknown): Array<VariableOption> {
+function valuesFromVariable(
+  name: string,
+  value: unknown,
+  depth: number,
+  displayName: string,
+): Array<VariableOption> {
   switch (typeof value) {
     case 'bigint':
     case 'boolean':
     case 'number':
     case 'string':
     case 'undefined':
-      return [{ variableName: name, definedElsewhere: name, value: `${value}` }]
+      return [
+        {
+          displayName: displayName,
+          variableName: name,
+          definedElsewhere: name,
+          value: `${value}`,
+          depth: depth,
+        },
+      ]
     case 'object':
-      return valuesFromObject(name, name, value)
+      return valuesFromObject(name, name, value, depth, displayName)
     case 'function':
     case 'symbol':
       return []
@@ -1362,7 +1420,7 @@ function useVariablesInScopeForSelectedElement(
   }
 
   const variableNameValues = Object.entries(variableNamesInScope).flatMap(([name, variable]) =>
-    valuesFromVariable(name, variable.spiedValue),
+    valuesFromVariable(name, variable.spiedValue, 0, name),
   )
 
   let priorityValues: VariableOption[] = []

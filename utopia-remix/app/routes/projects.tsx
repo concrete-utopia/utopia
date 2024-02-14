@@ -1,14 +1,16 @@
 import { LoaderFunctionArgs, json } from '@remix-run/node'
-import { useLoaderData } from '@remix-run/react'
+import { useFetcher, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { UserDetails } from 'prisma-client'
 import React, { useEffect, useState } from 'react'
-import { listProjects } from '../models/project.server'
+import { listDeletedProjects, listProjects } from '../models/project.server'
 import { newProjectButton } from '../styles/newProjectButton.css'
 import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
 import { sprinkles } from '../styles/sprinkles.css'
 import { requireUser } from '../util/api.server'
 import { ProjectWithoutContent } from '../types'
+import { assertNever } from '../util/assertNever'
+import { button } from '../styles/button.css'
 
 export async function loader(args: LoaderFunctionArgs) {
   const user = await requireUser(args.request)
@@ -17,13 +19,25 @@ export async function loader(args: LoaderFunctionArgs) {
     ownerId: user.user_id,
   })
 
-  return json({ projects, user })
+  const deletedProjects = await listDeletedProjects({
+    ownerId: user.user_id,
+  })
+
+  return json({ projects, deletedProjects, user })
 }
 
 type ProjectsPageState = {
   selectedProjectId: string | null
 }
 
+const Categories = ['allProjects', 'trash'] as const
+
+export type Category = (typeof Categories)[number]
+
+const categories: { [key in Category]: { name: string } } = {
+  allProjects: { name: 'All My Projects' },
+  trash: { name: 'Trash' },
+}
 const ProjectsPage = React.memo(() => {
   const marginSize = 30
   const rowHeight = 30
@@ -37,52 +51,65 @@ const ProjectsPage = React.memo(() => {
   }
   const clearSelectedProject = () => setSelectedProject({ selectedProjectId: null })
 
-  const [selectedCategory, setSelectedCategory] = useState('All My Projects')
+  const [selectedCategory, setSelectedCategory] = useState<Category>('allProjects')
 
   const handleCategoryClick = (category: React.SetStateAction<string>) => {
-    setSelectedCategory(category)
+    setSelectedCategory(category as Category)
   }
 
   const data = useLoaderData() as unknown as {
     projects: ProjectWithoutContent[]
     user: UserDetails
+    deletedProjects: ProjectWithoutContent[]
   }
+
+  const [projects, setProjects] = React.useState<ProjectWithoutContent[]>([])
 
   const [searchValue, setSearchValue] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
-  const [filteredProjects, setFilteredProjects] = useState<ProjectWithoutContent[]>(data.projects)
+  const [filteredProjects, setFilteredProjects] = useState<ProjectWithoutContent[]>([])
 
-  const filterProjects = () => {
+  const updateProjects = React.useCallback(() => {
+    switch (selectedCategory) {
+      case 'allProjects':
+        setProjects(data.projects)
+        break
+      case 'trash':
+        setProjects(data.deletedProjects)
+        break
+      default:
+        assertNever(selectedCategory)
+    }
+  }, [selectedCategory, data.projects, data.deletedProjects])
+
+  React.useEffect(() => {
+    updateProjects()
+  }, [updateProjects])
+
+  const filterProjects = React.useCallback(() => {
     if (searchValue === '') {
-      setFilteredProjects(data.projects)
+      setFilteredProjects(projects)
       setSearchQuery('')
     } else {
-      const filteredProjects = data.projects.filter((project) =>
+      const filteredProjects = projects.filter((project) =>
         project.title.toLowerCase().includes(searchValue.toLowerCase()),
       )
       setFilteredProjects(filteredProjects)
       setSearchQuery(searchValue)
     }
-  }
+  }, [projects])
 
   React.useEffect(() => {
     filterProjects()
-  }, [searchValue, data.projects])
+  }, [searchValue, projects])
 
   const createNewProject = () => {
     window.open(`${window.ENV.EDITOR_URL}/project/`, '_blank')
   }
 
-  const categories = [
-    { name: 'All My Projects', color: 'selected' },
-    // { name: 'Private', color: 'neutral' },
-    // { name: 'Public', color: 'neutral' },
-    // { name: 'Shared With Me', color: 'neutral' },
-    // { name: 'Trash', color: 'neutral' },
-  ]
-
   const newProjectButtons = [
     {
+      id: 'createProject',
       title: '+ Blank Project',
       onClick: createNewProject,
       color: 'orange',
@@ -200,17 +227,19 @@ const ProjectsPage = React.memo(() => {
             placeholder='Search...'
           />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-            {categories.map((category, index) => (
-              <button
-                key={index}
-                className={projectCategoryButton({
-                  color: category.name === selectedCategory ? 'selected' : 'neutral',
-                })}
-                onClick={() => handleCategoryClick(category.name)}
-              >
-                <span>{category.name}</span>
-              </button>
-            ))}
+            {Object.entries(categories).map(([category, data]) => {
+              return (
+                <button
+                  key={`category-${category}`}
+                  className={projectCategoryButton({
+                    color: category === selectedCategory ? 'selected' : 'neutral',
+                  })}
+                  onClick={() => handleCategoryClick(category)}
+                >
+                  <span>{data.name}</span>
+                </button>
+              )
+            })}
           </div>
         </div>
         <div
@@ -254,7 +283,7 @@ const ProjectsPage = React.memo(() => {
           }}
         >
           {newProjectButtons.map((p) => (
-            <button className={newProjectButton({ color: p.color })} onClick={p.onClick}>
+            <button key={p.id} className={newProjectButton({ color: p.color })} onClick={p.onClick}>
               <span>{p.title}</span>
             </button>
           ))}
@@ -269,7 +298,7 @@ const ProjectsPage = React.memo(() => {
                 <span
                   onClick={() => {
                     setSearchValue('')
-                    setFilteredProjects(data.projects)
+                    setFilteredProjects(projects)
                     setSearchQuery('')
                     const inputElement = document.getElementById('search-input') as HTMLInputElement
                     if (inputElement) {
@@ -285,7 +314,7 @@ const ProjectsPage = React.memo(() => {
               <span> "{searchQuery}"</span>
             </span>
           ) : (
-            selectedCategory
+            categories[selectedCategory].name
           )}
         </div>
         <div
@@ -330,7 +359,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, selected, onSelect }
 
   return (
     <div
-      key={project.proj_id}
       style={{
         height: 200,
         width: 300,
@@ -353,10 +381,50 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, selected, onSelect }
         onMouseDown={onSelect}
         onDoubleClick={openProject}
       />
-      <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 5 }}>
-        <div style={{ fontWeight: 600 }}>{project.title}</div>
-        <div>{moment(project.modified_at).fromNow()}</div>
-      </div>
+      <ProjectActions project={project} />
     </div>
   )
 }
+
+const ProjectActions = React.memo(({ project }: { project: ProjectWithoutContent }) => {
+  const fetcher = useFetcher()
+
+  const deleteProject = React.useCallback(() => {
+    if (project.deleted === true) {
+      const ok = window.confirm('Are you sure? The project contents will be deleted permanently.')
+      if (ok) {
+        fetcher.submit(
+          {},
+          { method: 'POST', action: `/internal/projects/${project.proj_id}/destroy` },
+        )
+      }
+    } else {
+      fetcher.submit({}, { method: 'POST', action: `/internal/projects/${project.proj_id}/delete` })
+    }
+  }, [fetcher])
+
+  const restoreProject = React.useCallback(() => {
+    fetcher.submit({}, { method: 'POST', action: `/internal/projects/${project.proj_id}/restore` })
+  }, [fetcher])
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 5, flex: 1 }}>
+        <div style={{ fontWeight: 600 }}>{project.title}</div>
+        <div>{moment(project.modified_at).fromNow()}</div>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+        {project.deleted === true ? (
+          <button className={button({ size: 'small' })} onClick={restoreProject}>
+            Restore
+          </button>
+        ) : null}
+        <button className={button({ color: 'danger', size: 'small' })} onClick={deleteProject}>
+          Delete
+        </button>
+        <fetcher.Form />
+      </div>
+    </div>
+  )
+})
+ProjectActions.displayName = 'ProjectActions'

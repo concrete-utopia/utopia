@@ -1,5 +1,5 @@
 import slugify from 'slugify'
-import { SLUGIFY_OPTIONS } from '../routes/projects.$id.rename'
+import { SLUGIFY_OPTIONS } from '../routes/internal.projects.$id.rename'
 
 describe('slugify', () => {
   const tests: { name: string; input: string; wanted: string }[] = [

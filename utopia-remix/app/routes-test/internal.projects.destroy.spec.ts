@@ -1,5 +1,5 @@
 import { prisma } from '../db.server'
-import { handleDestroyAllProjects } from '../routes/projects.destroy'
+import { handleDestroyAllProjects } from '../routes/internal.projects.destroy'
 import {
   createTestProject,
   createTestSession,
