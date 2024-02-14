@@ -14,6 +14,7 @@ import { assertNever } from '../util/assertNever'
 import { projectEditorLink } from '../util/links'
 
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
+import { button } from '../styles/button.css'
 
 export async function loader(args: LoaderFunctionArgs) {
   const user = await requireUser(args.request)
@@ -414,7 +415,7 @@ const ProjectActions = React.memo(
         <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
-              <button>…</button>
+              <button className={button()}>…</button>
             </DropdownMenu.Trigger>
             <ProjectContextMenu selectedCategory={selectedCategory} project={project} />
           </DropdownMenu.Root>
