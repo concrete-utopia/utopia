@@ -1,5 +1,5 @@
 import { recipe } from '@vanilla-extract/recipes'
-import { sprinkles } from './sprinkles.css'
+import { colors, sprinkles } from './sprinkles.css'
 
 export const contextMenuItem = recipe({
   base: [
@@ -8,9 +8,14 @@ export const contextMenuItem = recipe({
       color: 'lightModeBlack',
     }),
     {
-      padding: '4px 4px',
-      cursor: 'default',
-      border: 'none',
+      outline: 'none',
+      padding: '6px 8px',
+      cursor: 'pointer',
+      border: 'none !important',
+      ':hover': {
+        backgroundColor: colors.primary,
+        color: 'white',
+      },
     },
   ],
 })

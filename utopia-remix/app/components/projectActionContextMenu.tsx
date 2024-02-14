@@ -7,6 +7,7 @@ import { ProjectWithoutContent } from '../types'
 import { assertNever } from '../util/assertNever'
 import { projectEditorLink } from '../util/links'
 import { contextMenuItem } from '../styles/contextMenuItem.css'
+import { colors } from '../styles/sprinkles.css'
 
 type ContextMenuEntry =
   | {
@@ -121,19 +122,25 @@ export const ProjectContextMenu = React.memo(
           <DropdownMenu.Content
             style={{
               background: 'white',
-              padding: 10,
+              padding: 4,
               boxShadow: '2px 3px 4px #dddddd',
               border: '1px solid #ccc',
               borderRadius: 4,
               display: 'flex',
               flexDirection: 'column',
               gap: 4,
+              minWidth: 100,
             }}
             sideOffset={5}
           >
             {menuEntries.map((entry, index) => {
               if (entry === 'separator') {
-                return <DropdownMenu.Separator key={`separator-${index}`} />
+                return (
+                  <DropdownMenu.Separator
+                    key={`separator-${index}`}
+                    style={{ backgroundColor: colors.separator, height: 1 }}
+                  />
+                )
               }
               return (
                 <DropdownMenu.Item
