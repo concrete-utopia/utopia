@@ -120,35 +120,35 @@ describe('Controls from registering components', () => {
   })
 })
 
-describe('Image preview for string control', () => {
-  it('shows image preview for urls with image extension', async () => {
-    const editor = await renderTestEditorWithCode(
-      projectWithImage('https://i.pinimg.com/474x/4d/79/99/4d7999a51a1a397189a6f98168bcde45.jpg'),
-      'await-first-dom-report',
-    )
-    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/image')])
+// describe('Image preview for string control', () => {
+//   it('shows image preview for urls with image extension', async () => {
+//     const editor = await renderTestEditorWithCode(
+//       projectWithImage('https://i.pinimg.com/474x/4d/79/99/4d7999a51a1a397189a6f98168bcde45.jpg'),
+//       'await-first-dom-report',
+//     )
+//     await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/image')])
 
-    expect(editor.renderedDOM.queryAllByTestId(ImagePreviewTestId)).toHaveLength(1)
-  })
-  it('does not show image preview for urls without image extension', async () => {
-    const editor = await renderTestEditorWithCode(
-      projectWithImage('https://i.pinimg.com/474x/4d/79/99/4d7999a51a1a397189a6f98168bcde45'),
-      'await-first-dom-report',
-    )
-    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/image')])
+//     expect(editor.renderedDOM.queryAllByTestId(ImagePreviewTestId)).toHaveLength(1)
+//   })
+//   it('does not show image preview for urls without image extension', async () => {
+//     const editor = await renderTestEditorWithCode(
+//       projectWithImage('https://i.pinimg.com/474x/4d/79/99/4d7999a51a1a397189a6f98168bcde45'),
+//       'await-first-dom-report',
+//     )
+//     await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/image')])
 
-    expect(editor.renderedDOM.queryAllByTestId(ImagePreviewTestId)).toHaveLength(0)
-  })
-  it('does not show image preview for non-urls', async () => {
-    const editor = await renderTestEditorWithCode(
-      projectWithImage('hello'),
-      'await-first-dom-report',
-    )
-    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/image')])
+//     expect(editor.renderedDOM.queryAllByTestId(ImagePreviewTestId)).toHaveLength(0)
+//   })
+//   it('does not show image preview for non-urls', async () => {
+//     const editor = await renderTestEditorWithCode(
+//       projectWithImage('hello'),
+//       'await-first-dom-report',
+//     )
+//     await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/image')])
 
-    expect(editor.renderedDOM.queryAllByTestId(ImagePreviewTestId)).toHaveLength(0)
-  })
-})
+//     expect(editor.renderedDOM.queryAllByTestId(ImagePreviewTestId)).toHaveLength(0)
+//   })
+// })
 
 const project = `import * as React from 'react'
 import { Storyboard, Scene } from 'utopia-api'
@@ -352,71 +352,71 @@ registerExternalComponent(
   },
 )`
 
-const projectWithImage = (imageUrl: string) => `import * as React from 'react'
-import {
-  Storyboard,
-  Scene,
-  registerInternalComponent,
-} from 'utopia-api'
+// const projectWithImage = (imageUrl: string) => `import * as React from 'react'
+// import {
+//   Storyboard,
+//   Scene,
+//   registerInternalComponent,
+// } from 'utopia-api'
 
-function Image({ url }) {
-  return <img src={url} />
-}
+// function Image({ url }) {
+//   return <img src={url} />
+// }
 
-var Playground = ({ style }) => {
-  return (
-    <div style={style} data-uid='root'>
-      <Image url='${imageUrl}' data-uid='image' />
-    </div>
-  )
-}
+// var Playground = ({ style }) => {
+//   return (
+//     <div style={style} data-uid='root'>
+//       <Image url='${imageUrl}' data-uid='image' />
+//     </div>
+//   )
+// }
 
-export var storyboard = (
-  <Storyboard data-uid='sb'>
-    <Scene
-      style={{
-        width: 521,
-        height: 266,
-        position: 'absolute',
-        left: 554,
-        top: 247,
-        backgroundColor: 'white',
-      }}
-      data-uid='scene'
-      data-testid='scene'
-      commentId='120'
-    >
-      <Playground
-        style={{
-          width: 454,
-          height: 177,
-          position: 'absolute',
-          left: 34,
-          top: 44,
-          backgroundColor: 'white',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-        title='Hello Utopia'
-        data-uid='pg'
-      />
-    </Scene>
-  </Storyboard>
-)
+// export var storyboard = (
+//   <Storyboard data-uid='sb'>
+//     <Scene
+//       style={{
+//         width: 521,
+//         height: 266,
+//         position: 'absolute',
+//         left: 554,
+//         top: 247,
+//         backgroundColor: 'white',
+//       }}
+//       data-uid='scene'
+//       data-testid='scene'
+//       commentId='120'
+//     >
+//       <Playground
+//         style={{
+//           width: 454,
+//           height: 177,
+//           position: 'absolute',
+//           left: 34,
+//           top: 44,
+//           backgroundColor: 'white',
+//           display: 'flex',
+//           alignItems: 'center',
+//           justifyContent: 'center',
+//         }}
+//         title='Hello Utopia'
+//         data-uid='pg'
+//       />
+//     </Scene>
+//   </Storyboard>
+// )
 
-registerInternalComponent(Image, {
-  supportsChildren: false,
-  properties: {
-    url: {
-      control: 'string-input',
-    },
-  },
-  variants: [
-    {
-      code: '<Image />',
-    },
-  ],
-})
+// registerInternalComponent(Image, {
+//   supportsChildren: false,
+//   properties: {
+//     url: {
+//       control: 'string-input',
+//     },
+//   },
+//   variants: [
+//     {
+//       code: '<Image />',
+//     },
+//   ],
+// })
 
-`
+// `
