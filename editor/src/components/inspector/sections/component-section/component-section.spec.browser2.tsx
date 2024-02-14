@@ -1,6 +1,6 @@
 import { within } from '@testing-library/react'
 import * as EP from '../../../../core/shared/element-path'
-import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
+import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
 import { mouseClickAtPoint, pressKey } from '../../../canvas/event-helpers.test-utils'
 import { renderTestEditorWithCode } from '../../../canvas/ui-jsx.test-utils'
 import {
