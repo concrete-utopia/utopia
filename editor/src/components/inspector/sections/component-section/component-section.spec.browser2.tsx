@@ -30,6 +30,8 @@ describe('Set element prop via the data picker', () => {
     // the items from the data picker are expected here, so that the numbers in `VariableFromScopeOptionTestId`
     // below are put in context
     expect(options).toEqual([
+      'titleToo',
+      'alternateTitle',
       'style',
       'width',
       'height',
@@ -40,8 +42,6 @@ describe('Set element prop via the data picker', () => {
       'display',
       'alignItems',
       'justifyContent',
-      'titleToo',
-      'alternateTitle',
       'titles',
       'one',
       'also JS',
@@ -50,13 +50,13 @@ describe('Set element prop via the data picker', () => {
     ])
 
     // choose a string-valued variable
-    let currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(10))
+    let currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(0))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Title too')).not.toBeNull()
     expect(within(theInspector).queryByText('Title too')).not.toBeNull()
 
     // choose another string-valued variable
-    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(11))
+    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(1))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Alternate title')).not.toBeNull()
     expect(within(theInspector).queryByText('Alternate title')).not.toBeNull()
