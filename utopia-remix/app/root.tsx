@@ -14,7 +14,7 @@ import {
 import { BrowserEnvironment } from './env.server'
 import { styles } from './styles/styles.css'
 
-import './radix-fix.css'
+import './reset.css'
 
 declare global {
   interface Window {
