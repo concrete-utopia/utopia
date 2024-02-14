@@ -67,6 +67,14 @@ export var storyboard = (
 )
 `
 
+// eslint-disable-next-line jest/no-disabled-tests
+xdescribe('Deliberately breaking test', () => {
+  // eslint-disable-next-line jest/expect-expect
+  it('breaks', () => {
+    throw new Error("help me, I shouldn't be running!")
+  })
+})
+
 describe('Overflowing elements', () => {
   async function checkOverflowingDragBehaviour(
     mouseOperations: (renderResult: EditorRenderResult) => Promise<void>,
