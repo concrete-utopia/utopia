@@ -417,51 +417,25 @@ function variableMatchesControlDescription(
   return matches
 }
 
-type PropertyValue =
-  | { type: 'existing'; value: unknown }
-  | { type: 'not-found' }
-  | { type: 'not-attribute-value' }
+type PropertyValue = { type: 'existing'; value: unknown } | { type: 'not-found' }
 
 function usePropertyValue(selectedView: ElementPath, propertyPath: PropertyPath): PropertyValue {
-  const metadata = useEditorState(
+  const allElementProps = useEditorState(
     Substores.metadata,
-    (store) => store.editor.jsxMetadata,
-    'usePropertyValue metadata',
+    (store) => store.editor.allElementProps,
+    'usePropertyValue allElementProps',
   )
-  const jsxElement = MetadataUtils.getJSXElementFromMetadata(metadata, selectedView)
-  if (jsxElement == null) {
+  const propsForThisElement = allElementProps[EP.toString(selectedView)] ?? null
+  if (propsForThisElement == null) {
     return { type: 'not-found' }
   }
 
-  const prop = getJSXAttributesAtPath(jsxElement.props, propertyPath)
-  if (prop.attribute.type === 'ATTRIBUTE_NOT_FOUND') {
+  const prop = propsForThisElement[propertyPath.propertyElements[0]] ?? null
+  if (prop == null) {
     return { type: 'not-found' }
   }
-  if (prop.attribute.type !== 'ATTRIBUTE_VALUE') {
-    return { type: 'not-attribute-value' }
-  }
 
-  return { type: 'existing', value: prop.attribute.value }
-}
-
-function useVariablePriorityFn(currentPropertyValue: PropertyValue) {
-  const controlDescriptions = usePropertyControlDescriptions()
-
-  const priorityFn = React.useCallback(
-    (variable: unknown) => {
-      const valueMatchesControlDescription = controlDescriptions.some((d) =>
-        variableMatchesControlDescription(variable, d),
-      )
-      const valueMatchesCurrentPropValue =
-        currentPropertyValue.type === 'existing' &&
-        variableShapesMatch(currentPropertyValue.value, variable)
-
-      return valueMatchesControlDescription || valueMatchesCurrentPropValue
-    },
-    [controlDescriptions, currentPropertyValue],
-  )
-
-  return priorityFn
+  return { type: 'existing', value: prop }
 }
 
 interface DataPickerPopupProps {
@@ -1384,20 +1358,31 @@ function valuesFromVariable(
 
 function orderVariablesInScope(
   variableNamesInScope: VariableData,
-  priorityFn: (_: unknown) => boolean,
+  controlDescriptions: Array<ControlDescription>,
+  currentPropertyValue: PropertyValue,
 ): Array<[string, unknown]> {
-  let priorityValues: [string, unknown][] = []
+  let valuesMatchingPropertyDescription: [string, unknown][] = []
+  let valuesMatchingPropertyShape: [string, unknown][] = []
   let restOfValues: [string, unknown][] = []
 
   for (const [name, { spiedValue }] of Object.entries(variableNamesInScope)) {
-    if (priorityFn(spiedValue)) {
-      priorityValues.push([name, spiedValue])
+    const valueMatchesControlDescription = controlDescriptions.some((d) =>
+      variableMatchesControlDescription(spiedValue, d),
+    )
+    const valueMatchesCurrentPropValue =
+      currentPropertyValue.type === 'existing' &&
+      variableShapesMatch(currentPropertyValue.value, spiedValue)
+
+    if (valueMatchesControlDescription) {
+      valuesMatchingPropertyDescription.push([name, spiedValue])
+    } else if (valueMatchesCurrentPropValue) {
+      valuesMatchingPropertyShape.push([name, spiedValue])
     } else {
       restOfValues.push([name, spiedValue])
     }
   }
 
-  return [...priorityValues, ...restOfValues]
+  return [...valuesMatchingPropertyDescription, ...valuesMatchingPropertyShape, ...restOfValues]
 }
 
 function useVariablesInScopeForSelectedElement(
@@ -1416,8 +1401,8 @@ function useVariablesInScopeForSelectedElement(
     'useVariablesInScopeForSelectedElement variablesInScope',
   )
 
+  const controlDescriptions = usePropertyControlDescriptions()
   const currentPropertyValue = usePropertyValue(selectedView, propertyPath)
-  const priorityFn = useVariablePriorityFn(currentPropertyValue)
 
   const variableNamesInScope = React.useMemo((): Array<VariableOption> => {
     if (selectedViewPath == null) {
@@ -1432,13 +1417,14 @@ function useVariablesInScopeForSelectedElement(
 
     const orderedVariablesInScope = orderVariablesInScope(
       variablesInScopeForSelectedPath,
-      priorityFn,
+      controlDescriptions,
+      currentPropertyValue,
     )
 
     return orderedVariablesInScope.flatMap(([name, variable]) =>
       valuesFromVariable(name, variable, 0, name),
     )
-  }, [priorityFn, selectedViewPath, variablesInScope])
+  }, [controlDescriptions, currentPropertyValue, selectedViewPath, variablesInScope])
 
   return variableNamesInScope
 }

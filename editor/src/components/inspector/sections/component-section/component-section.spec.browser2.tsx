@@ -79,6 +79,31 @@ describe('Set element prop via the data picker', () => {
     expect(within(theScene).queryByText('Chapter One')).not.toBeNull()
     expect(within(theInspector).queryByText('Chapter One')).not.toBeNull()
   })
+
+  it('with number input control descriptor is present', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectWithNumberInputControlDescription,
+      'await-first-dom-report',
+    )
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/counter')])
+
+    const dataPickerOpenerButton = editor.renderedDOM.getByTestId(DataPickerPopupButtonTestId)
+    await mouseClickAtPoint(dataPickerOpenerButton, { x: 2, y: 2 })
+
+    const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
+    expect(dataPickerPopup).not.toBeNull()
+
+    const options = [
+      ...editor.renderedDOM.baseElement.querySelectorAll(`[data-testid^="variable-from-scope"]`),
+    ].map((node) => node.firstChild!.firstChild!.textContent)
+
+    expect(options).toEqual([
+      'currentCount', // at the top because the number input control descriptor is present
+      'titleToo', // because the current value of `count` is a string
+      'titleIdeas', // doesn't match control descriptor, nor the shape of the prop value
+      'titleIdeas[0]',
+    ])
+  })
 })
 
 describe('Controls from registering components', () => {
@@ -320,3 +345,71 @@ registerExternalComponent(
     ],
   },
 )`
+
+const projectWithNumberInputControlDescription = `import * as React from 'react'
+import * as Utopia from 'utopia-api'
+import {
+  Storyboard,
+  Scene,
+  registerInternalComponent,
+} from 'utopia-api'
+
+registerInternalComponent(Counter, {
+  properties: {
+    count: Utopia.numberControl(),
+  },
+  supportsChildren: false,
+  variants: [],
+})
+
+function Counter({ count }) {
+  const content = 'Content'
+
+  return <h2 data-uid='a9c'>{count}</h2>
+}
+
+var Playground = () => {
+  const titleToo = 'Title too'
+  const titleIdeas = ['Chapter One']
+  const currentCount = 12
+
+  return (
+    <div data-uid='root'>
+      <Counter count={''} data-uid='counter' />
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 521,
+        height: 266,
+        position: 'absolute',
+        left: 554,
+        top: 247,
+        backgroundColor: 'white',
+      }}
+      data-uid='scene'
+      data-testid='scene'
+      commentId='120'
+    >
+      <Playground
+        style={{
+          width: 454,
+          height: 177,
+          position: 'absolute',
+          left: 34,
+          top: 44,
+          backgroundColor: 'white',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+        data-uid='pg'
+      />
+    </Scene>
+  </Storyboard>
+)
+`
