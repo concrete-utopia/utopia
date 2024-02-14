@@ -461,7 +461,7 @@ export const StringInputPropertyControl = React.memo(
           controlStyles={propMetadata.controlStyles}
           focus={props.focusOnMount}
         />
-        <ImagePreview url={safeValue} />
+        {/* <ImagePreview url={safeValue} /> */}
       </FlexColumn>
     )
   },

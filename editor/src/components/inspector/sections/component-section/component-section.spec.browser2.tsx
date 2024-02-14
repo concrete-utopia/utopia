@@ -120,7 +120,7 @@ describe('Controls from registering components', () => {
   })
 })
 
-describe('Image preview for string control', () => {
+xdescribe('Image preview for string control', () => {
   it('shows image preview for urls with image extension', async () => {
     const editor = await renderTestEditorWithCode(
       projectWithImage('https://i.pinimg.com/474x/4d/79/99/4d7999a51a1a397189a6f98168bcde45.jpg'),
