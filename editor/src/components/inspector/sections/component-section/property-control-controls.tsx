@@ -55,6 +55,7 @@ import {
   normalisePathToUnderlyingTarget,
 } from '../../../custom-code/code-file'
 import { useDispatch } from '../../../editor/store/dispatch-context'
+import { isImage } from '../../../../core/shared/utils'
 
 export interface ControlForPropProps<T extends BaseControlDescription> {
   propPath: PropertyPath
@@ -437,6 +438,8 @@ const NumberWithSliderControl = React.memo(
   },
 )
 
+export const ImagePreviewTestId = 'image-preview'
+
 export const StringInputPropertyControl = React.memo(
   (props: ControlForPropProps<StringInputControlDescription>) => {
     const { propName, propMetadata, controlDescription } = props
@@ -444,20 +447,58 @@ export const StringInputPropertyControl = React.memo(
     const controlId = `${propName}-string-input-property-control`
     const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
 
+    const safeValue = value ?? ''
+
     return (
-      <StringControl
-        key={controlId}
-        id={controlId}
-        testId={controlId}
-        value={value ?? ''}
-        onSubmitValue={propMetadata.onSubmitValue}
-        controlStatus={propMetadata.controlStatus}
-        controlStyles={propMetadata.controlStyles}
-        focus={props.focusOnMount}
-      />
+      <FlexColumn style={{ gap: 5 }}>
+        <StringControl
+          key={controlId}
+          id={controlId}
+          testId={controlId}
+          value={safeValue}
+          onSubmitValue={propMetadata.onSubmitValue}
+          controlStatus={propMetadata.controlStatus}
+          controlStyles={propMetadata.controlStyles}
+          focus={props.focusOnMount}
+        />
+        <ImagePreview url={safeValue} />
+      </FlexColumn>
     )
   },
 )
+
+interface ImagePreviewProps {
+  url: string
+}
+const ImagePreview = React.memo(({ url }: ImagePreviewProps) => {
+  const [imageCanBeLoaded, setImageCanBeLoaded] = React.useState(isImage(url))
+
+  // we need to track if the url has changed so we retry loading the image even if it failed before
+  const urlRef = React.useRef<string>(url)
+  if (urlRef.current !== url) {
+    setImageCanBeLoaded(isImage(url))
+    urlRef.current = url
+  }
+
+  // don't render the img when it can not be loaded
+  const onImageError = React.useCallback(() => {
+    setImageCanBeLoaded(false)
+  }, [setImageCanBeLoaded])
+
+  if (!imageCanBeLoaded) {
+    return null
+  }
+
+  return (
+    <img
+      data-testid={ImagePreviewTestId}
+      src={url}
+      style={{ width: '100%' }}
+      onError={onImageError}
+    />
+  )
+})
+ImagePreview.displayName = 'ImagePreview'
 
 function keysForVectorOfType(vectorType: 'vector2' | 'vector3' | 'vector4'): Array<string> {
   switch (vectorType) {
