@@ -6,7 +6,6 @@ import { updateProjectServerState } from '../actions/action-creators'
 import { checkProjectOwned, projectIsStoredLocally } from '../persistence/persistence-backend'
 import type { ProjectOwnership } from '../persistence/generic/persistence-types'
 import { CollaborationEndpoints } from '../collaborative-endpoints'
-import { IS_TEST_ENVIRONMENT } from '../../../common/env-vars'
 
 export interface ProjectMetadataFromServer {
   title: string
@@ -164,7 +163,7 @@ export interface ProjectServerStateUpdaterProps {
 }
 
 let serverStateWatcherInstance: number | null = null
-const baseWatcherIntervalTime: number = (IS_TEST_ENVIRONMENT ? 100 : 10) * 1000
+const baseWatcherIntervalTime: number = 10 * 1000
 let currentWatcherIntervalMultiplier: number = 1
 
 function restartServerStateWatcher(
