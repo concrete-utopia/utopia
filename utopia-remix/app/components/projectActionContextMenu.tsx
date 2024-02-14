@@ -8,7 +8,7 @@ import { projectEditorLink } from '../util/links'
 
 const CONTEXT_MENU_ID = 'context-menu'
 
-type ContextMenuAction = 'delete' | 'destroy' | 'restore' | 'open' | 'copy-link' | 'fork' | 'rename'
+type ContextMenuAction = 'delete' | 'destroy' | 'restore' | 'open' | 'copy-link' | 'rename' // | 'fork' | 'share'
 
 type ContextMenuEntry =
   | {
