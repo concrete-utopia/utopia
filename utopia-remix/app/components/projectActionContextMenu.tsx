@@ -1,28 +1,28 @@
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
+
 import { useFetcher } from '@remix-run/react'
 import React from 'react'
-import { Item, Menu, Separator, useContextMenu } from 'react-contexify'
 import { Category } from '../routes/projects'
 import { ProjectWithoutContent } from '../types'
 import { assertNever } from '../util/assertNever'
 import { projectEditorLink } from '../util/links'
-
-const CONTEXT_MENU_ID = 'context-menu'
-
-type ContextMenuAction = 'delete' | 'destroy' | 'restore' | 'open' | 'copy-link' | 'rename' // | 'fork' | 'share'
+import { contextMenuItem } from '../styles/contextMenuItem.css'
 
 type ContextMenuEntry =
   | {
-      id: ContextMenuAction
       text: string
-      onClick: (params: {
-        id: ContextMenuAction
-        props: { project: ProjectWithoutContent }
-      }) => void
+      onClick: (project: ProjectWithoutContent) => void
     }
   | 'separator'
 
 export const ProjectContextMenu = React.memo(
-  ({ selectedCategory }: { selectedCategory: Category }) => {
+  ({
+    selectedCategory,
+    project,
+  }: {
+    selectedCategory: Category
+    project: ProjectWithoutContent
+  }) => {
     const fetcher = useFetcher()
 
     const deleteProject = React.useCallback(
@@ -64,65 +64,59 @@ export const ProjectContextMenu = React.memo(
         case 'allProjects':
           return [
             {
-              id: 'open',
               text: 'Open',
-              onClick: (params) => {
-                window.open(projectEditorLink(params.props.project.proj_id), '_blank')
+              onClick: (project) => {
+                window.open(projectEditorLink(project.proj_id), '_blank')
               },
             },
             'separator',
             {
-              id: 'copy-link',
               text: 'Copy Link',
-              onClick: (params) => {
-                navigator.clipboard.writeText(projectEditorLink(params.props.project.proj_id))
+              onClick: (project) => {
+                navigator.clipboard.writeText(projectEditorLink(project.proj_id))
                 // TODO notification toast
               },
             },
             //   {
             //     id: 'share',
             //     text: 'Share',
-            //     onClick: (params) => {},
+            //     onClick: (project) => {},
             //   },
             //   {
             //     id: 'fork',
             //     text: 'Fork',
-            //     onClick: (params) => {},
+            //     onClick: (project) => {},
             //   },
             'separator',
             {
-              id: 'rename',
               text: 'Rename',
-              onClick: (params) => {
-                const newTitle = window.prompt('New title:', params.props.project.title)
+              onClick: (project) => {
+                const newTitle = window.prompt('New title:', project.title)
                 if (newTitle != null) {
-                  renameProject(params.props.project.proj_id, newTitle)
+                  renameProject(project.proj_id, newTitle)
                 }
               },
             },
             {
-              id: 'delete',
               text: 'Delete',
-              onClick: (params) => {
-                deleteProject(params.props.project.proj_id)
+              onClick: (project) => {
+                deleteProject(project.proj_id)
               },
             },
           ]
         case 'trash':
           return [
             {
-              id: 'restore',
               text: 'Restore',
-              onClick: (params) => {
-                restoreProject(params.props.project.proj_id)
+              onClick: (project) => {
+                restoreProject(project.proj_id)
               },
             },
             'separator',
             {
-              id: 'destroy',
               text: 'Delete permanently',
-              onClick: (params) => {
-                destroyProject(params.props.project.proj_id)
+              onClick: (project) => {
+                destroyProject(project.proj_id)
               },
             },
           ]
@@ -133,28 +127,40 @@ export const ProjectContextMenu = React.memo(
 
     return (
       <>
-        <Menu id={CONTEXT_MENU_ID}>
-          {menuEntries.map((entry, index) => {
-            if (entry === 'separator') {
-              return <Separator key={`separator-${index}`} />
-            }
-            return (
-              <Item key={entry.id} id={entry.id} onClick={entry.onClick as any}>
-                {entry.text}
-              </Item>
-            )
-          })}
-        </Menu>
+        <DropdownMenu.Portal>
+          <DropdownMenu.Content
+            style={{
+              background: 'white',
+              padding: 10,
+              boxShadow: '2px 3px 4px #dddddd',
+              border: '1px solid #ccc',
+              borderRadius: 4,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 4,
+            }}
+            sideOffset={5}
+          >
+            {menuEntries.map((entry, index) => {
+              if (entry === 'separator') {
+                return <DropdownMenu.Separator key={`separator-${index}`} />
+              }
+              return (
+                <DropdownMenu.Item
+                  key={`entry-${index}`}
+                  onClick={() => entry.onClick(project)}
+                  className={contextMenuItem()}
+                >
+                  {entry.text}
+                </DropdownMenu.Item>
+              )
+            })}
+          </DropdownMenu.Content>
+        </DropdownMenu.Portal>
+
         <fetcher.Form />
       </>
     )
   },
 )
-ProjectContextMenu.displayName = 'ActionMenu'
-
-export function useProjectContextMenu() {
-  const contextMenu = useContextMenu({
-    id: CONTEXT_MENU_ID,
-  })
-  return { showProjectContextMenu: contextMenu.show }
-}
+ProjectContextMenu.displayName = 'ProjectContextMenu'

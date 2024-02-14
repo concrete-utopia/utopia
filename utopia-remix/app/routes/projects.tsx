@@ -3,9 +3,8 @@ import { useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { UserDetails } from 'prisma-client'
 import React, { useEffect, useState } from 'react'
-import { ProjectContextMenu, useProjectContextMenu } from '../components/projectActionContextMenu'
+import { ProjectContextMenu } from '../components/projectActionContextMenu'
 import { listDeletedProjects, listProjects } from '../models/project.server'
-import { button } from '../styles/button.css'
 import { newProjectButton } from '../styles/newProjectButton.css'
 import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
 import { sprinkles } from '../styles/sprinkles.css'
@@ -14,7 +13,7 @@ import { requireUser } from '../util/api.server'
 import { assertNever } from '../util/assertNever'
 import { projectEditorLink } from '../util/links'
 
-import 'react-contexify/ReactContexify.css'
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 
 export async function loader(args: LoaderFunctionArgs) {
   const user = await requireUser(args.request)
@@ -340,11 +339,11 @@ const ProjectsPage = React.memo(() => {
               project={project}
               selected={project.proj_id === selectedProject.selectedProjectId}
               onSelect={() => handleProjectSelect(project.proj_id)}
+              selectedCategory={selectedCategory}
             />
           ))}
         </div>
       </div>
-      <ProjectContextMenu selectedCategory={selectedCategory} />
     </div>
   )
 })
@@ -356,9 +355,15 @@ type ProjectCardProps = {
   project: ProjectWithoutContent
   selected: boolean
   onSelect: () => void
+  selectedCategory: Category
 }
 
-const ProjectCard: React.FC<ProjectCardProps> = ({ project, selected, onSelect }) => {
+const ProjectCard: React.FC<ProjectCardProps> = ({
+  project,
+  selected,
+  onSelect,
+  selectedCategory,
+}) => {
   const openProject = React.useCallback(() => {
     window.open(projectEditorLink(project.proj_id), '_blank')
   }, [project.proj_id])
@@ -387,33 +392,35 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, selected, onSelect }
         onMouseDown={onSelect}
         onDoubleClick={openProject}
       />
-      <ProjectActions project={project} />
+      <ProjectActions project={project} selectedCategory={selectedCategory} />
     </div>
   )
 }
 
-const ProjectActions = React.memo(({ project }: { project: ProjectWithoutContent }) => {
-  const { showProjectContextMenu } = useProjectContextMenu()
-
-  const openProjectContextMenu = React.useCallback(
-    (event: React.MouseEvent) => {
-      showProjectContextMenu({ event: event, props: { project: project } })
-    },
-    [showProjectContextMenu],
-  )
-
-  return (
-    <div style={{ display: 'flex', alignItems: 'center' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 5, flex: 1 }}>
-        <div style={{ fontWeight: 600 }}>{project.title}</div>
-        <div>{moment(project.modified_at).fromNow()}</div>
+const ProjectActions = React.memo(
+  ({
+    project,
+    selectedCategory,
+  }: {
+    project: ProjectWithoutContent
+    selectedCategory: Category
+  }) => {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 5, flex: 1 }}>
+          <div style={{ fontWeight: 600 }}>{project.title}</div>
+          <div>{moment(project.modified_at).fromNow()}</div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger asChild>
+              <button>…</button>
+            </DropdownMenu.Trigger>
+            <ProjectContextMenu selectedCategory={selectedCategory} project={project} />
+          </DropdownMenu.Root>
+        </div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-        <button className={button({ size: 'small' })} onClick={openProjectContextMenu}>
-          …
-        </button>
-      </div>
-    </div>
-  )
-})
+    )
+  },
+)
 ProjectActions.displayName = 'ProjectActions'
