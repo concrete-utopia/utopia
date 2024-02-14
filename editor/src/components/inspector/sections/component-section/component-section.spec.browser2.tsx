@@ -166,6 +166,131 @@ describe('Set element prop via the data picker', () => {
       'titleIdeas[1]',
     ])
   })
+
+  it("with another array matching the prop array's shape", async () => {
+    const editor = await renderTestEditorWithCode(
+      DataPickerProjectShell(`
+      function TableOfContents({ titles }) {
+        const content = 'Content'
+      
+        return (
+          <>
+            {titles.map((t) => (
+              <h2 data-uid='a9c'>{t}</h2>
+            ))}
+          </>
+        )
+      }
+      
+      var Playground = () => {
+        const titleToo = 'Title too'
+        const currentCount = 12
+        const authors = ['Jack London', 'Mary Shelley']
+        const titleIdeas = ['Chapter One', 'Chapter Two']
+      
+        return (
+          <div data-uid='root'>
+            <TableOfContents titles={titleIdeas} data-uid='toc' />
+          </div>
+        )
+      }`),
+      'await-first-dom-report',
+    )
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/toc')])
+
+    const dataPickerOpenerButton = editor.renderedDOM.getByTestId(DataPickerPopupButtonTestId)
+    await mouseClickAtPoint(dataPickerOpenerButton, { x: 2, y: 2 })
+
+    const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
+    expect(dataPickerPopup).not.toBeNull()
+
+    const options = [
+      ...editor.renderedDOM.baseElement.querySelectorAll(`[data-testid^="variable-from-scope"]`),
+    ].map((node) => node.firstChild!.firstChild!.textContent)
+
+    expect(options).toEqual([
+      'authors', // at the top because it's an array of string, same as titleIdeas
+      'authors[0]',
+      'authors[1]',
+      'titleIdeas', // the original array of string
+      'titleIdeas[0]',
+      'titleIdeas[1]',
+      'titleToo',
+      'currentCount',
+    ])
+  })
+
+  it("with another object matching the prop object's shape", async () => {
+    const editor = await renderTestEditorWithCode(
+      DataPickerProjectShell(`
+      function BookDetail({ book }) {
+        const content = 'Content'
+      
+        return (
+          <div data-uid='aak'>
+            <h1 data-uid='aae'>{book.title}</h1>
+            <code data-uid='aai'>{book.published}</code>
+            <p data-uid='88b'>{book.description}</p>
+            <p data-uid='a48'>Likes: {book.likes}</p>
+          </div>
+        )
+      }
+      
+      var Playground = () => {
+        const titleToo = 'Title too'
+        const authors = { jack: "Jack London", mary: "Mary Shelley" }
+      
+        const bookInfo = {
+          title: 'Moby Dick',
+          published: 'August 1888',
+          description: 'An oldie but goldie',
+          likes: 33,
+        }
+      
+        const alternateBookInfo = {
+          title: 'Frankenstein',
+          published: 'August 1866',
+          description: 'Short, fun read',
+          likes: 66,
+        }
+      
+        return (
+          <div data-uid='root'>
+            <BookDetail book={bookInfo} data-uid='bd' />
+          </div>
+        )
+      }`),
+      'await-first-dom-report',
+    )
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/bd')])
+
+    const dataPickerOpenerButton = editor.renderedDOM.getByTestId(DataPickerPopupButtonTestId)
+    await mouseClickAtPoint(dataPickerOpenerButton, { x: 2, y: 2 })
+
+    const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
+    expect(dataPickerPopup).not.toBeNull()
+
+    const options = [
+      ...editor.renderedDOM.baseElement.querySelectorAll(`[data-testid^="variable-from-scope"]`),
+    ].map((node) => node.firstChild!.firstChild!.textContent)
+
+    expect(options).toEqual([
+      'bookInfo', // object with matching shape
+      'title', // <- object key
+      'published', // <- object key
+      'description', // <- object key
+      'likes', // <- object key
+      'alternateBookInfo', // object with matching shape
+      'title', // <- object key
+      'published', // <- object key
+      'description', // <- object key
+      'likes', // <- object key
+      'titleToo',
+      'authors', // object with a shape that doesn't match
+      'jack',
+      'mary',
+    ])
+  })
 })
 
 describe('Controls from registering components', () => {
