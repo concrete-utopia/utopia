@@ -207,7 +207,7 @@ export function contentsJSONURLFromProjectURL(
   }
 }
 
-const imgPattern = /\.(jpe?g|png|gif|bmp|svg)(\?.*)?$/i
+const imgPattern = /^http[^\?]*.(jpe?g|png|gif|bmp|svg)(\?.*)?$/i
 
 export function isImage(str: string): boolean {
   const lowerCaseStr = str.toLowerCase()

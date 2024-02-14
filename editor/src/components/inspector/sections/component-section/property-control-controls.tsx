@@ -55,8 +55,7 @@ import {
   normalisePathToUnderlyingTarget,
 } from '../../../custom-code/code-file'
 import { useDispatch } from '../../../editor/store/dispatch-context'
-import { isImageUrl } from '../../../../core/shared/file-utils'
-import { when } from '../../../../utils/react-conditionals'
+import { isImage } from '../../../../core/shared/utils'
 
 export interface ControlForPropProps<T extends BaseControlDescription> {
   propPath: PropertyPath
@@ -462,7 +461,7 @@ export const StringInputPropertyControl = React.memo(
           controlStyles={propMetadata.controlStyles}
           focus={props.focusOnMount}
         />
-        {when(isImageUrl(safeValue), <ImagePreview url={safeValue} />)}
+        <ImagePreview url={safeValue} />
       </FlexColumn>
     )
   },
@@ -471,14 +470,14 @@ export const StringInputPropertyControl = React.memo(
 interface ImagePreviewProps {
   url: string
 }
-const ImagePreview = React.memo((props: ImagePreviewProps) => {
-  const [imageCanBeLoaded, setImageCanBeLoaded] = React.useState(true)
+const ImagePreview = React.memo(({ url }: ImagePreviewProps) => {
+  const [imageCanBeLoaded, setImageCanBeLoaded] = React.useState(isImage(url))
 
   // we need to track if the url has changed so we retry loading the image even if it failed before
-  const urlRef = React.useRef<string>(props.url)
-  if (urlRef.current !== props.url) {
-    setImageCanBeLoaded(true)
-    urlRef.current = props.url
+  const urlRef = React.useRef<string>(url)
+  if (urlRef.current !== url) {
+    setImageCanBeLoaded(isImage(url))
+    urlRef.current = url
   }
 
   // don't render the img when it can not be loaded
@@ -493,7 +492,7 @@ const ImagePreview = React.memo((props: ImagePreviewProps) => {
   return (
     <img
       data-testid={ImagePreviewTestId}
-      src={props.url}
+      src={url}
       style={{ width: '100%' }}
       onError={onImageError}
     />
