@@ -1,0 +1,3 @@
+body {
+  border: 1px solid transparent; /* Fix jumpy content when opening dropdowns */
+}
