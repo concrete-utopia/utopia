@@ -447,22 +447,19 @@ export const StringInputPropertyControl = React.memo(
     const controlId = `${propName}-string-input-property-control`
     const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
 
-    const safeValue = typeof value === 'string' ? value : ''
+    const safeValue = value ?? ''
 
     return (
-      <FlexColumn style={{ gap: 5 }}>
-        <StringControl
-          key={controlId}
-          id={controlId}
-          testId={controlId}
-          value={safeValue}
-          onSubmitValue={propMetadata.onSubmitValue}
-          controlStatus={propMetadata.controlStatus}
-          controlStyles={propMetadata.controlStyles}
-          focus={props.focusOnMount}
-        />
-        {/* <ImagePreview url={safeValue} /> */}
-      </FlexColumn>
+      <StringControl
+        key={controlId}
+        id={controlId}
+        testId={controlId}
+        value={safeValue}
+        onSubmitValue={propMetadata.onSubmitValue}
+        controlStatus={propMetadata.controlStatus}
+        controlStyles={propMetadata.controlStyles}
+        focus={props.focusOnMount}
+      />
     )
   },
 )
