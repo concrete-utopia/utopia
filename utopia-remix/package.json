@@ -25,6 +25,7 @@
     "moment": "2.30.1",
     "prisma-client": "link:node_modules/@utopia/prisma-client",
     "react": "18.2.0",
+    "react-contexify": "6.0.0",
     "react-dom": "18.2.0",
     "slugify": "1.6.6",
     "tiny-invariant": "1.3.1",

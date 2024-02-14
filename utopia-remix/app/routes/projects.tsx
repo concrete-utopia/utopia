@@ -1,16 +1,20 @@
 import { LoaderFunctionArgs, json } from '@remix-run/node'
-import { useFetcher, useLoaderData } from '@remix-run/react'
+import { useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { UserDetails } from 'prisma-client'
 import React, { useEffect, useState } from 'react'
+import { ProjectContextMenu, useProjectContextMenu } from '../components/projectActionContextMenu'
 import { listDeletedProjects, listProjects } from '../models/project.server'
+import { button } from '../styles/button.css'
 import { newProjectButton } from '../styles/newProjectButton.css'
 import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
 import { sprinkles } from '../styles/sprinkles.css'
-import { requireUser } from '../util/api.server'
 import { ProjectWithoutContent } from '../types'
+import { requireUser } from '../util/api.server'
 import { assertNever } from '../util/assertNever'
-import { button } from '../styles/button.css'
+import { projectEditorLink } from '../util/links'
+
+import 'react-contexify/ReactContexify.css'
 
 export async function loader(args: LoaderFunctionArgs) {
   const user = await requireUser(args.request)
@@ -38,6 +42,7 @@ const categories: { [key in Category]: { name: string } } = {
   allProjects: { name: 'All My Projects' },
   trash: { name: 'Trash' },
 }
+
 const ProjectsPage = React.memo(() => {
   const marginSize = 30
   const rowHeight = 30
@@ -104,7 +109,7 @@ const ProjectsPage = React.memo(() => {
   }, [searchValue, projects])
 
   const createNewProject = () => {
-    window.open(`${window.ENV.EDITOR_URL}/project/`, '_blank')
+    window.open(projectEditorLink(null), '_blank')
   }
 
   const newProjectButtons = [
@@ -154,7 +159,7 @@ const ProjectsPage = React.memo(() => {
     }
   }, [])
 
-  const logoPic = isDarkMode ? 'url(assets/pyramid_dark.png)' : 'url(assets/pyramid_light.png)'
+  const logoPic = isDarkMode ? 'url(/assets/pyramid_dark.png)' : 'url(/assets/pyramid_light.png)'
 
   return (
     <div
@@ -339,6 +344,7 @@ const ProjectsPage = React.memo(() => {
           ))}
         </div>
       </div>
+      <ProjectContextMenu selectedCategory={selectedCategory} />
     </div>
   )
 })
@@ -354,7 +360,7 @@ type ProjectCardProps = {
 
 const ProjectCard: React.FC<ProjectCardProps> = ({ project, selected, onSelect }) => {
   const openProject = React.useCallback(() => {
-    window.open(`${window.ENV.EDITOR_URL}/p/${project.proj_id}`, '_blank')
+    window.open(projectEditorLink(project.proj_id), '_blank')
   }, [project.proj_id])
 
   return (
@@ -387,25 +393,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, selected, onSelect }
 }
 
 const ProjectActions = React.memo(({ project }: { project: ProjectWithoutContent }) => {
-  const fetcher = useFetcher()
+  const { showProjectContextMenu } = useProjectContextMenu()
 
-  const deleteProject = React.useCallback(() => {
-    if (project.deleted === true) {
-      const ok = window.confirm('Are you sure? The project contents will be deleted permanently.')
-      if (ok) {
-        fetcher.submit(
-          {},
-          { method: 'POST', action: `/internal/projects/${project.proj_id}/destroy` },
-        )
-      }
-    } else {
-      fetcher.submit({}, { method: 'POST', action: `/internal/projects/${project.proj_id}/delete` })
-    }
-  }, [fetcher])
-
-  const restoreProject = React.useCallback(() => {
-    fetcher.submit({}, { method: 'POST', action: `/internal/projects/${project.proj_id}/restore` })
-  }, [fetcher])
+  const openProjectContextMenu = React.useCallback(
+    (event: React.MouseEvent) => {
+      showProjectContextMenu({ event: event, props: { project: project } })
+    },
+    [showProjectContextMenu],
+  )
 
   return (
     <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -414,15 +409,9 @@ const ProjectActions = React.memo(({ project }: { project: ProjectWithoutContent
         <div>{moment(project.modified_at).fromNow()}</div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-        {project.deleted === true ? (
-          <button className={button({ size: 'small' })} onClick={restoreProject}>
-            Restore
-          </button>
-        ) : null}
-        <button className={button({ color: 'danger', size: 'small' })} onClick={deleteProject}>
-          Delete
+        <button className={button({ size: 'small' })} onClick={openProjectContextMenu}>
+          …
         </button>
-        <fetcher.Form />
       </div>
     </div>
   )
