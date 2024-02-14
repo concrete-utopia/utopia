@@ -393,13 +393,35 @@ function usePropertyControlDescriptions(): Array<ControlDescription> {
   )
 }
 
-function variableShapesMatch(left: unknown, right: unknown): boolean {
-  if (Array.isArray(left) && Array.isArray(right)) {
+function arrayShapesMatch(left: Array<unknown>, right: Array<unknown>): boolean {
+  if (left.length === 0 || right.length === 0) {
     return true
   }
 
-  if (typeof left === 'object' && typeof right === 'object') {
-    return false // TODO: deep match objects
+  return variableShapesMatch(left[0], right[0])
+}
+
+function objectShapesMatch(left: object, right: object): boolean {
+  const keysFromLeft = Object.keys(left)
+  const keysFromRight = Object.keys(right)
+  const keysMatch =
+    keysFromLeft.length === keysFromRight.length &&
+    keysFromLeft.every((key) => keysFromRight.includes(key))
+
+  if (!keysMatch) {
+    return false
+  }
+
+  return keysFromLeft.every((key) => variableShapesMatch((left as any)[key], (right as any)[key]))
+}
+
+function variableShapesMatch(left: unknown, right: unknown): boolean {
+  if (Array.isArray(left) && Array.isArray(right)) {
+    return arrayShapesMatch(left, right)
+  }
+
+  if (typeof left === 'object' && typeof right === 'object' && left != null && right != null) {
+    return objectShapesMatch(left, right)
   }
 
   return typeof left === typeof right
