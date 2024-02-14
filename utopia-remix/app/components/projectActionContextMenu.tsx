@@ -1,0 +1,163 @@
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
+
+import { useFetcher } from '@remix-run/react'
+import React from 'react'
+import { Category } from '../routes/projects'
+import { ProjectWithoutContent } from '../types'
+import { assertNever } from '../util/assertNever'
+import { projectEditorLink } from '../util/links'
+import { contextMenuItem } from '../styles/contextMenuItem.css'
+import { colors } from '../styles/sprinkles.css'
+
+type ContextMenuEntry =
+  | {
+      text: string
+      onClick: (project: ProjectWithoutContent) => void
+    }
+  | 'separator'
+
+export const ProjectContextMenu = React.memo(
+  ({
+    selectedCategory,
+    project,
+  }: {
+    selectedCategory: Category
+    project: ProjectWithoutContent
+  }) => {
+    const fetcher = useFetcher()
+
+    const deleteProject = React.useCallback(
+      (projectId: string) => {
+        fetcher.submit({}, { method: 'POST', action: `/internal/projects/${projectId}/delete` })
+      },
+      [fetcher],
+    )
+
+    const destroyProject = React.useCallback(
+      (projectId: string) => {
+        const ok = window.confirm('Are you sure? The project contents will be deleted permanently.')
+        if (ok) {
+          fetcher.submit({}, { method: 'POST', action: `/internal/projects/${projectId}/destroy` })
+        }
+      },
+      [fetcher],
+    )
+
+    const restoreProject = React.useCallback(
+      (projectId: string) => {
+        fetcher.submit({}, { method: 'POST', action: `/internal/projects/${projectId}/restore` })
+      },
+      [fetcher],
+    )
+
+    const renameProject = React.useCallback(
+      (projectId: string, newTitle: string) => {
+        fetcher.submit(
+          { title: newTitle },
+          { method: 'POST', action: `/internal/projects/${projectId}/rename` },
+        )
+      },
+      [fetcher],
+    )
+
+    const menuEntries = React.useMemo((): ContextMenuEntry[] => {
+      switch (selectedCategory) {
+        case 'allProjects':
+          return [
+            {
+              text: 'Open',
+              onClick: (project) => {
+                window.open(projectEditorLink(project.proj_id), '_blank')
+              },
+            },
+            'separator',
+            {
+              text: 'Copy Link',
+              onClick: (project) => {
+                navigator.clipboard.writeText(projectEditorLink(project.proj_id))
+                // TODO notification toast
+              },
+            },
+            'separator',
+            {
+              text: 'Rename',
+              onClick: (project) => {
+                const newTitle = window.prompt('New title:', project.title)
+                if (newTitle != null) {
+                  renameProject(project.proj_id, newTitle)
+                }
+              },
+            },
+            {
+              text: 'Delete',
+              onClick: (project) => {
+                deleteProject(project.proj_id)
+              },
+            },
+          ]
+        case 'trash':
+          return [
+            {
+              text: 'Restore',
+              onClick: (project) => {
+                restoreProject(project.proj_id)
+              },
+            },
+            'separator',
+            {
+              text: 'Delete permanently',
+              onClick: (project) => {
+                destroyProject(project.proj_id)
+              },
+            },
+          ]
+        default:
+          assertNever(selectedCategory)
+      }
+    }, [selectedCategory])
+
+    return (
+      <>
+        <DropdownMenu.Portal>
+          <DropdownMenu.Content
+            style={{
+              background: 'white',
+              padding: 4,
+              boxShadow: '2px 3px 4px #dddddd',
+              border: '1px solid #ccc',
+              borderRadius: 4,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 4,
+              minWidth: 100,
+            }}
+            sideOffset={5}
+          >
+            {menuEntries.map((entry, index) => {
+              if (entry === 'separator') {
+                return (
+                  <DropdownMenu.Separator
+                    key={`separator-${index}`}
+                    style={{ backgroundColor: colors.separator, height: 1 }}
+                  />
+                )
+              }
+              return (
+                <DropdownMenu.Item
+                  key={`entry-${index}`}
+                  onClick={() => entry.onClick(project)}
+                  className={contextMenuItem()}
+                >
+                  {entry.text}
+                </DropdownMenu.Item>
+              )
+            })}
+          </DropdownMenu.Content>
+        </DropdownMenu.Portal>
+
+        <fetcher.Form />
+      </>
+    )
+  },
+)
+ProjectContextMenu.displayName = 'ProjectContextMenu'

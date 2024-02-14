@@ -1,15 +1,19 @@
 import { LoaderFunctionArgs, json } from '@remix-run/node'
-import { useFetcher, useLoaderData } from '@remix-run/react'
+import { useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { UserDetails } from 'prisma-client'
 import React, { useEffect, useState } from 'react'
+import { ProjectContextMenu } from '../components/projectActionContextMenu'
 import { listDeletedProjects, listProjects } from '../models/project.server'
 import { newProjectButton } from '../styles/newProjectButton.css'
 import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
 import { sprinkles } from '../styles/sprinkles.css'
-import { requireUser } from '../util/api.server'
 import { ProjectWithoutContent } from '../types'
+import { requireUser } from '../util/api.server'
 import { assertNever } from '../util/assertNever'
+import { projectEditorLink } from '../util/links'
+
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { button } from '../styles/button.css'
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -38,6 +42,7 @@ const categories: { [key in Category]: { name: string } } = {
   allProjects: { name: 'All My Projects' },
   trash: { name: 'Trash' },
 }
+
 const ProjectsPage = React.memo(() => {
   const marginSize = 30
   const rowHeight = 30
@@ -104,7 +109,7 @@ const ProjectsPage = React.memo(() => {
   }, [searchValue, projects])
 
   const createNewProject = () => {
-    window.open(`${window.ENV.EDITOR_URL}/project/`, '_blank')
+    window.open(projectEditorLink(null), '_blank')
   }
 
   const newProjectButtons = [
@@ -154,7 +159,7 @@ const ProjectsPage = React.memo(() => {
     }
   }, [])
 
-  const logoPic = isDarkMode ? 'url(assets/pyramid_dark.png)' : 'url(assets/pyramid_light.png)'
+  const logoPic = isDarkMode ? 'url(/assets/pyramid_dark.png)' : 'url(/assets/pyramid_light.png)'
 
   return (
     <div
@@ -335,6 +340,7 @@ const ProjectsPage = React.memo(() => {
               project={project}
               selected={project.proj_id === selectedProject.selectedProjectId}
               onSelect={() => handleProjectSelect(project.proj_id)}
+              selectedCategory={selectedCategory}
             />
           ))}
         </div>
@@ -350,11 +356,17 @@ type ProjectCardProps = {
   project: ProjectWithoutContent
   selected: boolean
   onSelect: () => void
+  selectedCategory: Category
 }
 
-const ProjectCard: React.FC<ProjectCardProps> = ({ project, selected, onSelect }) => {
+const ProjectCard: React.FC<ProjectCardProps> = ({
+  project,
+  selected,
+  onSelect,
+  selectedCategory,
+}) => {
   const openProject = React.useCallback(() => {
-    window.open(`${window.ENV.EDITOR_URL}/p/${project.proj_id}`, '_blank')
+    window.open(projectEditorLink(project.proj_id), '_blank')
   }, [project.proj_id])
 
   return (
@@ -381,50 +393,35 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, selected, onSelect }
         onMouseDown={onSelect}
         onDoubleClick={openProject}
       />
-      <ProjectActions project={project} />
+      <ProjectActions project={project} selectedCategory={selectedCategory} />
     </div>
   )
 }
 
-const ProjectActions = React.memo(({ project }: { project: ProjectWithoutContent }) => {
-  const fetcher = useFetcher()
-
-  const deleteProject = React.useCallback(() => {
-    if (project.deleted === true) {
-      const ok = window.confirm('Are you sure? The project contents will be deleted permanently.')
-      if (ok) {
-        fetcher.submit(
-          {},
-          { method: 'POST', action: `/internal/projects/${project.proj_id}/destroy` },
-        )
-      }
-    } else {
-      fetcher.submit({}, { method: 'POST', action: `/internal/projects/${project.proj_id}/delete` })
-    }
-  }, [fetcher])
-
-  const restoreProject = React.useCallback(() => {
-    fetcher.submit({}, { method: 'POST', action: `/internal/projects/${project.proj_id}/restore` })
-  }, [fetcher])
-
-  return (
-    <div style={{ display: 'flex', alignItems: 'center' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 5, flex: 1 }}>
-        <div style={{ fontWeight: 600 }}>{project.title}</div>
-        <div>{moment(project.modified_at).fromNow()}</div>
+const ProjectActions = React.memo(
+  ({
+    project,
+    selectedCategory,
+  }: {
+    project: ProjectWithoutContent
+    selectedCategory: Category
+  }) => {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 5, flex: 1 }}>
+          <div style={{ fontWeight: 600 }}>{project.title}</div>
+          <div>{moment(project.modified_at).fromNow()}</div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger asChild>
+              <button className={button()}>…</button>
+            </DropdownMenu.Trigger>
+            <ProjectContextMenu selectedCategory={selectedCategory} project={project} />
+          </DropdownMenu.Root>
+        </div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-        {project.deleted === true ? (
-          <button className={button({ size: 'small' })} onClick={restoreProject}>
-            Restore
-          </button>
-        ) : null}
-        <button className={button({ color: 'danger', size: 'small' })} onClick={deleteProject}>
-          Delete
-        </button>
-        <fetcher.Form />
-      </div>
-    </div>
-  )
-})
+    )
+  },
+)
 ProjectActions.displayName = 'ProjectActions'

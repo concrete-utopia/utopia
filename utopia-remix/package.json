@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@prisma/client": "5.9.0",
+    "@radix-ui/react-dropdown-menu": "2.0.6",
     "@remix-run/css-bundle": "2.5.1",
     "@remix-run/node": "2.5.1",
     "@remix-run/react": "2.5.1",
