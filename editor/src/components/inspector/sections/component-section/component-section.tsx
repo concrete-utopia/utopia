@@ -22,7 +22,7 @@ import {
 import { PathForSceneProps } from '../../../../core/model/scene-utils'
 import { mapToArray } from '../../../../core/shared/object-utils'
 import type { PropertyPath } from '../../../../core/shared/project-file-types'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
 import * as EP from '../../../../core/shared/element-path'
 import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
@@ -93,6 +93,12 @@ import { useDispatch } from '../../../editor/store/dispatch-context'
 import { usePopper } from 'react-popper'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
+import {
+  getJSExpressionAtPath,
+  getJSXAttributesAtPath,
+} from '../../../../core/shared/jsx-attributes'
+import type { VariableData } from '../../../canvas/ui-jsx-canvas'
+import { array } from 'prop-types'
 
 export const VariableFromScopeOptionTestId = (idx: number) => `variable-from-scope-${idx}`
 export const DataPickerPopupButtonTestId = `data-picker-popup-button-test-id`
@@ -194,7 +200,7 @@ function getLabelControlStyle(
 
 const isBaseIndentationLevel = (props: AbstractRowForControlProps) => props.indentationLevel === 1
 
-function useDataPickerButton(propPath: PropertyPath) {
+function useDataPickerButton(selectedElements: Array<ElementPath>, propPath: PropertyPath) {
   const [referenceElement, setReferenceElement] = React.useState<HTMLDivElement | null>(null)
   const [popperElement, setPopperElement] = React.useState<HTMLDivElement | null>(null)
   const popper = usePopper(referenceElement, popperElement, {
@@ -222,7 +228,10 @@ function useDataPickerButton(propPath: PropertyPath) {
     [togglePopup],
   )
 
-  const variablePickerButtonAvailable = useVariablesInScopeForSelectedElement().length > 0
+  const selectedElement = selectedElements.at(0) ?? EP.emptyElementPath
+
+  const variablePickerButtonAvailable =
+    useVariablesInScopeForSelectedElement(selectedElement, propPath).length > 0
   const variablePickerButtonTooltipText = variablePickerButtonAvailable
     ? 'Pick data source'
     : 'No data sources available'
@@ -278,6 +287,12 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
   const propName = `${PP.lastPart(propPath)}`
   const indentation = props.indentationLevel * 8
 
+  const selectedViews = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews,
+    'RowForBaseControl selectedViews',
+  )
+
   const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
   const contextMenuItems = Utils.stripNulls([
     addOnUnsetValues([propName], propMetadata.onUnsetValues),
@@ -314,7 +329,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
       <props.label />
     )
 
-  const dataPickerButtonData = useDataPickerButton(props.propPath)
+  const dataPickerButtonData = useDataPickerButton(selectedViews, props.propPath)
 
   if (controlDescription.control === 'none') {
     // do not list anything for `none` controls
@@ -372,6 +387,105 @@ function getSectionHeightFromPropControl(
   }
 }
 
+function usePropertyControlDescriptions(): Array<ControlDescription> {
+  return useGetPropertyControlsForSelectedComponents().flatMap((controls) =>
+    Object.values(controls.controls),
+  )
+}
+
+function arrayShapesMatch(left: Array<unknown>, right: Array<unknown>): boolean {
+  if (left.length === 0 || right.length === 0) {
+    return true
+  }
+
+  return variableShapesMatch(left[0], right[0])
+}
+
+function objectShapesMatch(left: object, right: object): boolean {
+  const keysFromLeft = Object.keys(left)
+  const keysFromRight = Object.keys(right)
+  const keysMatch =
+    keysFromLeft.length === keysFromRight.length &&
+    keysFromLeft.every((key) => keysFromRight.includes(key))
+
+  if (!keysMatch) {
+    return false
+  }
+
+  return keysFromLeft.every((key) => variableShapesMatch((left as any)[key], (right as any)[key]))
+}
+
+function variableShapesMatch(left: unknown, right: unknown): boolean {
+  if (Array.isArray(left) && Array.isArray(right)) {
+    return arrayShapesMatch(left, right)
+  }
+
+  if (typeof left === 'object' && typeof right === 'object' && left != null && right != null) {
+    return objectShapesMatch(left, right)
+  }
+
+  return typeof left === typeof right
+}
+
+function variableMatchesArrayControlDescription(
+  variable: Array<unknown>,
+  controlDescription: ArrayControlDescription,
+): boolean {
+  if (variable.length === 0) {
+    return true
+  }
+
+  return variableMatchesControlDescription(variable[0], controlDescription.propertyControl)
+}
+
+function variableMatchesObjectControlDescription(
+  variable: object,
+  controlDescription: ObjectControlDescription,
+): boolean {
+  return Object.entries(controlDescription.object).every(([key, control]) =>
+    variableMatchesControlDescription((variable as any)[key], control),
+  )
+}
+
+function variableMatchesControlDescription(
+  variable: unknown,
+  controlDescription: ControlDescription,
+): boolean {
+  const matches =
+    (typeof variable === 'string' && controlDescription.control === 'string-input') ||
+    (typeof variable === 'number' && controlDescription.control === 'number-input') ||
+    (Array.isArray(variable) &&
+      controlDescription.control === 'array' &&
+      variableMatchesArrayControlDescription(variable, controlDescription)) ||
+    (typeof variable === 'object' &&
+      variable != null &&
+      controlDescription.control === 'object' &&
+      variableMatchesObjectControlDescription(variable, controlDescription))
+
+  return matches
+}
+
+type PropertyValue = { type: 'existing'; value: unknown } | { type: 'not-found' }
+
+function usePropertyValue(selectedView: ElementPath, propertyPath: PropertyPath): PropertyValue {
+  const allElementProps = useEditorState(
+    Substores.metadata,
+    (store) => store.editor.allElementProps,
+    'usePropertyValue allElementProps',
+  )
+  const propsForThisElement = allElementProps[EP.toString(selectedView)] ?? null
+  if (propsForThisElement == null) {
+    return { type: 'not-found' }
+  }
+
+  const prop = propsForThisElement[propertyPath.propertyElements[0]] ?? null
+  if (prop == null) {
+    return { type: 'not-found' }
+  }
+
+  return { type: 'existing', value: prop }
+}
+
 interface DataPickerPopupProps {
   closePopup: () => void
   style: React.CSSProperties
@@ -411,7 +525,10 @@ const DataPickerPopup = React.memo(
       [dispatch, propPath, selectedViewPathRef],
     )
 
-    const variableNamesInScope = useVariablesInScopeForSelectedElement()
+    const variableNamesInScope = useVariablesInScopeForSelectedElement(
+      selectedViewPathRef.current ?? EP.emptyElementPath,
+      props.propPath,
+    )
 
     return (
       <div
@@ -563,7 +680,13 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
     false,
   )
 
-  const dataPickerButtonData = useDataPickerButton(props.propPath)
+  const selectedViews = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews,
+    'RowForArrayControl selectedViews',
+  )
+
+  const dataPickerButtonData = useDataPickerButton(selectedViews, props.propPath)
 
   return (
     <React.Fragment>
@@ -841,7 +964,12 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
     addOnUnsetValues([PP.lastPart(propPath)], propMetadata.onUnsetValues),
   ])
 
-  const dataPickerButtonData = useDataPickerButton(props.propPath)
+  const selectedViews = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews,
+    'RowForObjectControl selectedViews',
+  )
+  const dataPickerButtonData = useDataPickerButton(selectedViews, props.propPath)
 
   return (
     <div
@@ -1276,7 +1404,39 @@ function valuesFromVariable(
   }
 }
 
-function useVariablesInScopeForSelectedElement(): Array<VariableOption> {
+function orderVariablesInScope(
+  variableNamesInScope: VariableData,
+  controlDescriptions: Array<ControlDescription>,
+  currentPropertyValue: PropertyValue,
+): Array<[string, unknown]> {
+  let valuesMatchingPropertyDescription: [string, unknown][] = []
+  let valuesMatchingPropertyShape: [string, unknown][] = []
+  let restOfValues: [string, unknown][] = []
+
+  for (const [name, { spiedValue }] of Object.entries(variableNamesInScope)) {
+    const valueMatchesControlDescription = controlDescriptions.some((d) =>
+      variableMatchesControlDescription(spiedValue, d),
+    )
+    const valueMatchesCurrentPropValue =
+      currentPropertyValue.type === 'existing' &&
+      variableShapesMatch(currentPropertyValue.value, spiedValue)
+
+    if (valueMatchesControlDescription) {
+      valuesMatchingPropertyDescription.push([name, spiedValue])
+    } else if (valueMatchesCurrentPropValue) {
+      valuesMatchingPropertyShape.push([name, spiedValue])
+    } else {
+      restOfValues.push([name, spiedValue])
+    }
+  }
+
+  return [...valuesMatchingPropertyDescription, ...valuesMatchingPropertyShape, ...restOfValues]
+}
+
+function useVariablesInScopeForSelectedElement(
+  selectedView: ElementPath,
+  propertyPath: PropertyPath,
+): Array<VariableOption> {
   const selectedViewPath = useEditorState(
     Substores.selectedViews,
     (store) => store.editor.selectedViews.at(0) ?? null,
@@ -1288,7 +1448,11 @@ function useVariablesInScopeForSelectedElement(): Array<VariableOption> {
     (store) => store.editor.variablesInScope,
     'useVariablesInScopeForSelectedElement variablesInScope',
   )
-  const variableNamesInScope = React.useMemo(() => {
+
+  const controlDescriptions = usePropertyControlDescriptions()
+  const currentPropertyValue = usePropertyValue(selectedView, propertyPath)
+
+  const variableNamesInScope = React.useMemo((): Array<VariableOption> => {
     if (selectedViewPath == null) {
       return []
     }
@@ -1299,12 +1463,16 @@ function useVariablesInScopeForSelectedElement(): Array<VariableOption> {
       return []
     }
 
-    return variablesInScopeForSelectedPath
-  }, [selectedViewPath, variablesInScope])
+    const orderedVariablesInScope = orderVariablesInScope(
+      variablesInScopeForSelectedPath,
+      controlDescriptions,
+      currentPropertyValue,
+    )
 
-  const variableNameValues = Object.entries(variableNamesInScope).flatMap(([name, variable]) =>
-    valuesFromVariable(name, variable.spiedValue, 0, name),
-  )
+    return orderedVariablesInScope.flatMap(([name, variable]) =>
+      valuesFromVariable(name, variable, 0, name),
+    )
+  }, [controlDescriptions, currentPropertyValue, selectedViewPath, variablesInScope])
 
-  return variableNameValues
+  return variableNamesInScope
 }
