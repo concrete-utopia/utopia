@@ -1382,6 +1382,24 @@ function valuesFromVariable(
   }
 }
 
+function orderVariablesInScope(
+  variableNamesInScope: VariableData,
+  priorityFn: (_: unknown) => boolean,
+): Array<[string, unknown]> {
+  let priorityValues: [string, unknown][] = []
+  let restOfValues: [string, unknown][] = []
+
+  for (const [name, { spiedValue }] of Object.entries(variableNamesInScope)) {
+    if (priorityFn(spiedValue)) {
+      priorityValues.push([name, spiedValue])
+    } else {
+      restOfValues.push([name, spiedValue])
+    }
+  }
+
+  return [...priorityValues, ...restOfValues]
+}
+
 function useVariablesInScopeForSelectedElement(
   selectedView: ElementPath,
   propertyPath: PropertyPath,
@@ -1401,38 +1419,26 @@ function useVariablesInScopeForSelectedElement(
   const currentPropertyValue = usePropertyValue(selectedView, propertyPath)
   const priorityFn = useVariablePriorityFn(currentPropertyValue)
 
-  const variableNamesInScope = React.useMemo((): VariableData | null => {
+  const variableNamesInScope = React.useMemo((): Array<VariableOption> => {
     if (selectedViewPath == null) {
-      return null
+      return []
     }
 
     const variablesInScopeForSelectedPath = variablesInScope[EP.toString(selectedViewPath)]
 
     if (variablesInScopeForSelectedPath == null) {
-      return null
+      return []
     }
 
-    return variablesInScopeForSelectedPath
-  }, [selectedViewPath, variablesInScope])
+    const orderedVariablesInScope = orderVariablesInScope(
+      variablesInScopeForSelectedPath,
+      priorityFn,
+    )
 
-  if (variableNamesInScope == null) {
-    return []
-  }
+    return orderedVariablesInScope.flatMap(([name, variable]) =>
+      valuesFromVariable(name, variable, 0, name),
+    )
+  }, [priorityFn, selectedViewPath, variablesInScope])
 
-  const variableNameValues = Object.entries(variableNamesInScope).flatMap(([name, variable]) =>
-    valuesFromVariable(name, variable.spiedValue, 0, name),
-  )
-
-  let priorityValues: VariableOption[] = []
-  let restOfValues: VariableOption[] = []
-
-  for (const variable of variableNameValues) {
-    if (priorityFn(variable.value)) {
-      priorityValues.push(variable)
-    } else {
-      restOfValues.push(variable)
-    }
-  }
-
-  return [...priorityValues, ...restOfValues]
+  return variableNamesInScope
 }
