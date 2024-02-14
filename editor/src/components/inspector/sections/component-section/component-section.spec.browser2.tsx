@@ -8,6 +8,7 @@ import {
   DataPickerPopupTestId,
   VariableFromScopeOptionTestId,
 } from './component-section'
+import { ImagePreviewTestId } from './property-control-controls'
 
 describe('Set element prop via the data picker', () => {
   it('can pick from the property data picker', async () => {
@@ -320,3 +321,72 @@ registerExternalComponent(
     ],
   },
 )`
+
+const projectWithImage = (imageUrl: string) => `import * as React from 'react'
+import {
+  Storyboard,
+  Scene,
+  registerInternalComponent,
+} from 'utopia-api'
+
+function Image({ url }) {
+  return <img src={url} />
+}
+
+var Playground = ({ style }) => {
+  return (
+    <div style={style} data-uid='root'>
+      <Image url='${imageUrl}' data-uid='image' />
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 521,
+        height: 266,
+        position: 'absolute',
+        left: 554,
+        top: 247,
+        backgroundColor: 'white',
+      }}
+      data-uid='scene'
+      data-testid='scene'
+      commentId='120'
+    >
+      <Playground
+        style={{
+          width: 454,
+          height: 177,
+          position: 'absolute',
+          left: 34,
+          top: 44,
+          backgroundColor: 'white',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+        title='Hello Utopia'
+        data-uid='pg'
+      />
+    </Scene>
+  </Storyboard>
+)
+
+registerInternalComponent(Image, {
+  supportsChildren: false,
+  properties: {
+    url: {
+      control: 'string-input',
+    },
+  },
+  variants: [
+    {
+      code: '<Image />',
+    },
+  ],
+})
+
+`
