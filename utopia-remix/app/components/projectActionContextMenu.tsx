@@ -77,16 +77,6 @@ export const ProjectContextMenu = React.memo(
                 // TODO notification toast
               },
             },
-            //   {
-            //     id: 'share',
-            //     text: 'Share',
-            //     onClick: (project) => {},
-            //   },
-            //   {
-            //     id: 'fork',
-            //     text: 'Fork',
-            //     onClick: (project) => {},
-            //   },
             'separator',
             {
               text: 'Rename',
