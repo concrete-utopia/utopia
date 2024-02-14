@@ -80,7 +80,7 @@ describe('Set element prop via the data picker', () => {
     expect(within(theInspector).queryByText('Chapter One')).not.toBeNull()
   })
 
-  it('with number input control descriptor is present', async () => {
+  it('with number input control descriptor present', async () => {
     const editor = await renderTestEditorWithCode(
       projectWithNumberInputControlDescription,
       'await-first-dom-report',
@@ -102,6 +102,68 @@ describe('Set element prop via the data picker', () => {
       'titleToo', // because the current value of `count` is a string
       'titleIdeas', // doesn't match control descriptor, nor the shape of the prop value
       'titleIdeas[0]',
+    ])
+  })
+
+  it('with array control descriptor present', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectWithObjectsAndArrays(),
+      'await-first-dom-report',
+    )
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/toc')])
+
+    const dataPickerOpenerButton = editor.renderedDOM.getByTestId(DataPickerPopupButtonTestId)
+    await mouseClickAtPoint(dataPickerOpenerButton, { x: 2, y: 2 })
+
+    const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
+    expect(dataPickerPopup).not.toBeNull()
+
+    const options = [
+      ...editor.renderedDOM.baseElement.querySelectorAll(`[data-testid^="variable-from-scope"]`),
+    ].map((node) => node.firstChild!.firstChild!.textContent)
+
+    expect(options).toEqual([
+      'titleIdeas', // the array is at the top because of the array descriptor
+      'titleIdeas[0]', // <- array element
+      'titleIdeas[1]', // <- array element
+      'titleToo',
+      'currentCount',
+      'bookInfo',
+      'title',
+      'published',
+      'description',
+      'likes',
+    ])
+  })
+
+  it('with object control descriptor present', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectWithObjectsAndArrays(),
+      'await-first-dom-report',
+    )
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/bd')])
+
+    const dataPickerOpenerButton = editor.renderedDOM.getByTestId(DataPickerPopupButtonTestId)
+    await mouseClickAtPoint(dataPickerOpenerButton, { x: 2, y: 2 })
+
+    const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
+    expect(dataPickerPopup).not.toBeNull()
+
+    const options = [
+      ...editor.renderedDOM.baseElement.querySelectorAll(`[data-testid^="variable-from-scope"]`),
+    ].map((node) => node.firstChild!.firstChild!.textContent)
+
+    expect(options).toEqual([
+      'bookInfo', // object is at the top because of the object descriptor
+      'title', // <- object key
+      'published', // <- object key
+      'description', // <- object key
+      'likes', // <- object key
+      'titleToo',
+      'currentCount',
+      'titleIdeas',
+      'titleIdeas[0]',
+      'titleIdeas[1]',
     ])
   })
 })
@@ -376,6 +438,116 @@ var Playground = () => {
   return (
     <div data-uid='root'>
       <Counter count={''} data-uid='counter' />
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 521,
+        height: 266,
+        position: 'absolute',
+        left: 554,
+        top: 247,
+        backgroundColor: 'white',
+      }}
+      data-uid='scene'
+      data-testid='scene'
+      commentId='120'
+    >
+      <Playground
+        style={{
+          width: 454,
+          height: 177,
+          position: 'absolute',
+          left: 34,
+          top: 44,
+          backgroundColor: 'white',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+        data-uid='pg'
+      />
+    </Scene>
+  </Storyboard>
+)
+`
+
+const projectWithObjectsAndArrays = () => `import * as React from 'react'
+import * as Utopia from 'utopia-api'
+import {
+  Storyboard,
+  Scene,
+  registerInternalComponent,
+} from 'utopia-api'
+
+registerInternalComponent(TableOfContents, {
+  properties: {
+    titles: Utopia.arrayControl(
+      Utopia.stringControl(), // control to use for each value in the array
+    ),
+  },
+  supportsChildren: false,
+  variants: [],
+})
+
+registerInternalComponent(BookDetail, {
+  properties: {
+    titles: Utopia.objectControl({
+      title: Utopia.stringControl(),
+      published: Utopia.stringControl(),
+      description: Utopia.stringControl(),
+      likes: Utopia.numberControl(),
+    }),
+  },
+  supportsChildren: false,
+  variants: [],
+})
+
+function TableOfContents({ titles }) {
+  const content = 'Content'
+
+  return (
+    <>
+      {titles.map((t) => (
+        <h2 data-uid='a9c'>{t}</h2>
+      ))}
+    </>
+  )
+}
+
+function BookDetail({ book }) {
+  const content = 'Content'
+
+  return (
+    <div>
+      <h1>{book.title}</h1>
+      <code>{book.published}</code>
+      <p>{book.description}</p>
+      <p>Likes: {book.likes}</p>
+    </div>
+  )
+}
+
+var Playground = () => {
+  const titleToo = 'Title too'
+  const currentCount = 12
+  const titleIdeas = ['Chapter One', 'Chapter Two']
+
+  const bookInfo = {
+    title: 'Moby Dick',
+    published: 'August 1888',
+    description: 'An oldie but goldie',
+    likes: 33,
+  }
+
+  return (
+    <div data-uid='root'>
+      <TableOfContents titles={[]} data-uid='toc' />
+      <BookDetail book={{}} data-uid='bd' />
     </div>
   )
 }

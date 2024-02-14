@@ -98,6 +98,7 @@ import {
   getJSXAttributesAtPath,
 } from '../../../../core/shared/jsx-attributes'
 import type { VariableData } from '../../../canvas/ui-jsx-canvas'
+import { array } from 'prop-types'
 
 export const VariableFromScopeOptionTestId = (idx: number) => `variable-from-scope-${idx}`
 export const DataPickerPopupButtonTestId = `data-picker-popup-button-test-id`
@@ -404,6 +405,26 @@ function variableShapesMatch(left: unknown, right: unknown): boolean {
   return typeof left === typeof right
 }
 
+function variableMatchesArrayControlDescription(
+  variable: Array<unknown>,
+  controlDescription: ArrayControlDescription,
+): boolean {
+  if (variable.length === 0) {
+    return true
+  }
+
+  return variableMatchesControlDescription(variable[0], controlDescription.propertyControl)
+}
+
+function variableMatchesObjectControlDescription(
+  variable: object,
+  controlDescription: ObjectControlDescription,
+): boolean {
+  return Object.entries(controlDescription.object).every(([key, control]) =>
+    variableMatchesControlDescription((variable as any)[key], control),
+  )
+}
+
 function variableMatchesControlDescription(
   variable: unknown,
   controlDescription: ControlDescription,
@@ -411,8 +432,13 @@ function variableMatchesControlDescription(
   const matches =
     (typeof variable === 'string' && controlDescription.control === 'string-input') ||
     (typeof variable === 'number' && controlDescription.control === 'number-input') ||
-    (Array.isArray(variable) && controlDescription.control === 'array') ||
-    (typeof variable === 'object' && variable != null && controlDescription.control === 'object') // TODO: deep match objects
+    (Array.isArray(variable) &&
+      controlDescription.control === 'array' &&
+      variableMatchesArrayControlDescription(variable, controlDescription)) ||
+    (typeof variable === 'object' &&
+      variable != null &&
+      controlDescription.control === 'object' &&
+      variableMatchesObjectControlDescription(variable, controlDescription))
 
   return matches
 }
