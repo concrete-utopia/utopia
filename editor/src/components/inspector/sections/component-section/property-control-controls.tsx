@@ -464,38 +464,38 @@ export const StringInputPropertyControl = React.memo(
   },
 )
 
-interface ImagePreviewProps {
-  url: string
-}
-const ImagePreview = React.memo(({ url }: ImagePreviewProps) => {
-  const [imageCanBeLoaded, setImageCanBeLoaded] = React.useState(isImage(url))
+// interface ImagePreviewProps {
+//   url: string
+// }
+// const ImagePreview = React.memo(({ url }: ImagePreviewProps) => {
+//   const [imageCanBeLoaded, setImageCanBeLoaded] = React.useState(isImage(url))
 
-  // we need to track if the url has changed so we retry loading the image even if it failed before
-  const urlRef = React.useRef<string>(url)
-  if (urlRef.current !== url) {
-    setImageCanBeLoaded(isImage(url))
-    urlRef.current = url
-  }
+//   // we need to track if the url has changed so we retry loading the image even if it failed before
+//   const urlRef = React.useRef<string>(url)
+//   if (urlRef.current !== url) {
+//     setImageCanBeLoaded(isImage(url))
+//     urlRef.current = url
+//   }
 
-  // don't render the img when it can not be loaded
-  const onImageError = React.useCallback(() => {
-    setImageCanBeLoaded(false)
-  }, [setImageCanBeLoaded])
+//   // don't render the img when it can not be loaded
+//   const onImageError = React.useCallback(() => {
+//     setImageCanBeLoaded(false)
+//   }, [setImageCanBeLoaded])
 
-  if (!imageCanBeLoaded) {
-    return null
-  }
+//   if (!imageCanBeLoaded) {
+//     return null
+//   }
 
-  return (
-    <img
-      data-testid={ImagePreviewTestId}
-      src={url}
-      style={{ width: '100%' }}
-      onError={onImageError}
-    />
-  )
-})
-ImagePreview.displayName = 'ImagePreview'
+//   return (
+//     <img
+//       data-testid={ImagePreviewTestId}
+//       src={url}
+//       style={{ width: '100%' }}
+//       onError={onImageError}
+//     />
+//   )
+// })
+// ImagePreview.displayName = 'ImagePreview'
 
 function keysForVectorOfType(vectorType: 'vector2' | 'vector3' | 'vector4'): Array<string> {
   switch (vectorType) {
