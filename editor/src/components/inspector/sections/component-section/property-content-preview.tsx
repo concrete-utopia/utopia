@@ -57,10 +57,8 @@ const HtmlPreview = React.memo(({ html }: HtmlPreviewProps) => {
   return (
     <div
       style={{
-        // width: '100%',
         maxHeight: 100,
         overflow: 'hidden',
-        border: 1,
         padding: 5,
       }}
       dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
