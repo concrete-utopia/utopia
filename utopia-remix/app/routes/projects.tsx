@@ -52,7 +52,7 @@ const ProjectsPage = React.memo(() => {
 
   const fetcher = useFetcher()
 
-  const [projects, setProjects] = React.useState<ProjectWithoutContent[]>([])
+  const [projects, setProjects] = React.useState<ProjectWithoutContent[]>(data.projects)
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false)
 
@@ -106,20 +106,20 @@ const ProjectsPage = React.memo(() => {
 
   const handleCategoryClick = React.useCallback(
     (category: React.SetStateAction<string>) => {
-      setCategory(category as Category)
+      udpateCategory(category as Category)
     },
     [setCategory],
   )
 
-  // when the category changes:
-  // 1. reset the search query
-  // 2. reset the selected project
-  // 3. update the projects
-  React.useEffect(() => {
-    setSearchQuery('')
-    setSelectedProjectId(null)
-    updateProjects(selectedCategory)
-  }, [selectedCategory, setSelectedProjectId, updateProjects])
+  const udpateCategory = React.useCallback(
+    (category: Category) => {
+      setCategory(category)
+      setSearchQuery('')
+      setSelectedProjectId(null)
+      updateProjects(category)
+    },
+    [selectedCategory, setSelectedProjectId, updateProjects],
+  )
 
   // when the media query changes, update the theme
   React.useEffect(() => {
