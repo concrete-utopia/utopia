@@ -8,19 +8,19 @@ export const ProjectForkFlow = React.memo(() => {
   const searchParams = new URLSearchParams(window.location.search)
   const shouldFork = searchParams.get(ForkSearchParamKey) === 'true'
 
-  const projectName = useEditorState(
+  const projectId = useEditorState(
     Substores.restOfEditor,
-    (store) => store.editor.projectName,
-    'ProjectForkFlow projectName',
+    (store) => store.editor.id,
+    'ProjectForkFlow projectId',
   )
 
   const triggerForkProject = useTriggerForkProject()
 
   React.useEffect(() => {
-    if (shouldFork && projectName != null) {
+    if (shouldFork && projectId != null) {
       triggerForkProject()
     }
-  }, [shouldFork, triggerForkProject, projectName])
+  }, [shouldFork, triggerForkProject, projectId])
 
   return null
 })
