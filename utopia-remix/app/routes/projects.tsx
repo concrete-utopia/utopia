@@ -57,14 +57,6 @@ const ProjectsPage = React.memo(() => {
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false)
 
-  // const filteredProjects = React.useMemo(() => {
-  //   const sanitizedQuery = searchQuery.trim().toLowerCase()
-  //   if (sanitizedQuery.length === 0) {
-  //     return projects
-  //   }
-  //   return projects.filter((project) => project.title.toLowerCase().includes(sanitizedQuery))
-  // }, [projects, searchQuery])
-
   const selectedProjectId = useStore((store) => store.selectedProjectId)
   const setSelectedProjectId = useStore((store) => store.setSelectedProjectId)
   const selectedCategory = useStore((store) => store.selectedCategory)
@@ -183,7 +175,6 @@ const ProjectsPage = React.memo(() => {
       )
     }
 
-    // Sort the projects based on the selected criteria and order
     switch (sortCriteria) {
       case 'title':
         sortedProjects.sort((a, b) => a.title.localeCompare(b.title))
@@ -206,13 +197,26 @@ const ProjectsPage = React.memo(() => {
         break
     }
 
-    // Reverse the order if sortOrder is 'desc'
     if (sortOrder === 'desc') {
       sortedProjects.reverse()
     }
 
     return sortedProjects
   }, [projects, searchQuery, sortCriteria, sortOrder])
+
+  const sortButton = (criteria: string, label: string) => (
+    <button
+      key={criteria}
+      className={button({ size: 'small' })}
+      onClick={() => {
+        setSortCriteria(criteria)
+        setSortOrder(sortCriteria === criteria && sortOrder === 'asc' ? 'desc' : 'asc')
+      }}
+    >
+      {label} {sortCriteria === criteria && sortOrder === 'asc' && '↑'}
+      {sortCriteria === criteria && sortOrder === 'desc' && '↓'}
+    </button>
+  )
 
   return (
     <div
@@ -403,36 +407,10 @@ const ProjectsPage = React.memo(() => {
             style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 10 }}
             className={text({ size: 'small' })}
           >
-            <div>Sort</div>
-            <button
-              className={button({ size: 'small' })}
-              onClick={() => {
-                setSortCriteria('title')
-                setSortOrder(sortCriteria === 'title' && sortOrder === 'asc' ? 'desc' : 'asc')
-              }}
-            >
-              Title {sortCriteria === 'title' && sortOrder === 'asc' ? '↑' : '↓'}
-            </button>
-            <button
-              className={button({ size: 'small' })}
-              onClick={() => {
-                setSortCriteria('dateCreated')
-                setSortOrder(sortCriteria === 'dateCreated' && sortOrder === 'asc' ? 'desc' : 'asc')
-              }}
-            >
-              Date Created {sortCriteria === 'dateCreated' && sortOrder === 'asc' ? '↑' : '↓'}
-            </button>
-            <button
-              className={button({ size: 'small' })}
-              onClick={() => {
-                setSortCriteria('dateModified')
-                setSortOrder(
-                  sortCriteria === 'dateModified' && sortOrder === 'asc' ? 'desc' : 'asc',
-                )
-              }}
-            >
-              Date Modified {sortCriteria === 'dateModified' && sortOrder === 'asc' ? '↑' : '↓'}
-            </button>
+            <div>Sort:</div>
+            {sortButton('title', 'Title')}
+            {sortButton('dateCreated', 'Date Created')}
+            {sortButton('dateModified', 'Date Modified')}
           </div>
         </div>
         {when(
