@@ -30,6 +30,7 @@ export type BaseControlType =
   | 'popuplist'
   | 'radio'
   | 'string-input'
+  | 'html-input'
   | 'style-controls'
   | 'vector2'
   | 'vector3'
@@ -140,6 +141,14 @@ export interface StringInputControlDescription {
   obscured?: boolean
 }
 
+export interface HtmlInputControlDescription {
+  control: 'html-input'
+  label?: string
+  visibleByDefault?: boolean
+  placeholder?: string
+  obscured?: boolean
+}
+
 export interface StyleControlsControlDescription {
   control: 'style-controls'
   label?: string
@@ -178,6 +187,7 @@ export type BaseControlDescription =
   | RadioControlDescription
   | PopUpListControlDescription
   | StringInputControlDescription
+  | HtmlInputControlDescription
   | StyleControlsControlDescription
   | Vector2ControlDescription
   | Vector3ControlDescription
@@ -251,6 +261,7 @@ export function isBaseControlDescription(
     case 'popuplist':
     case 'radio':
     case 'string-input':
+    case 'html-input':
     case 'style-controls':
     case 'vector2':
     case 'vector3':

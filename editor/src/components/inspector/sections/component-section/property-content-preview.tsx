@@ -3,23 +3,11 @@ import sanitizeHtml from 'sanitize-html'
 import { isImage } from '../../../../core/shared/utils'
 export const ImagePreviewTestId = 'image-preview'
 
-interface ContentPreviewProps {
-  text: string
-}
-export const ContentPreview = React.memo(({ text }: ContentPreviewProps) => {
-  if (isImage(text)) {
-    return <ImagePreview url={text} />
-  }
-  // maybe later we can check more about whether this is an html or not
-  return <HtmlPreview html={text} />
-})
-ContentPreview.displayName = 'ContentPreview'
-
 interface ImagePreviewProps {
   url: string
 }
-const ImagePreview = React.memo(({ url }: ImagePreviewProps) => {
-  const [imageCanBeLoaded, setImageCanBeLoaded] = React.useState(true)
+export const ImagePreview = React.memo(({ url }: ImagePreviewProps) => {
+  const [imageCanBeLoaded, setImageCanBeLoaded] = React.useState(isImage(url))
 
   // we need to track if the url has changed so we retry loading the image even if it failed before
   const urlRef = React.useRef<string>(url)
@@ -52,7 +40,7 @@ interface HtmlPreviewProps {
   html: string
 }
 
-const HtmlPreview = React.memo(({ html }: HtmlPreviewProps) => {
+export const HtmlPreview = React.memo(({ html }: HtmlPreviewProps) => {
   const sanitizedHtml = sanitizeHtml(html)
   return (
     <div

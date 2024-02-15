@@ -302,6 +302,8 @@ export function unwrapperAndParserForBaseControl(
       return defaultUnwrapFirst(parseAny)
     case 'string-input':
       return defaultUnwrapFirst(parseString)
+    case 'html-input':
+      return defaultUnwrapFirst(parseString)
     case 'style-controls':
       return defaultUnwrapFirst(parseAny)
     case 'vector2':
@@ -330,6 +332,7 @@ export function unwrapperAndParserForPropertyControl(
     case 'popuplist':
     case 'radio':
     case 'string-input':
+    case 'html-input':
     case 'style-controls':
     case 'vector2':
     case 'vector3':
@@ -454,6 +457,8 @@ export function printerForBasePropertyControl(control: BaseControlDescription): 
       return printSimple
     case 'string-input':
       return printSimple
+    case 'html-input':
+      return printSimple
     case 'style-controls':
       return printSimple
     case 'vector2':
@@ -535,6 +540,7 @@ export function printerForPropertyControl(control: RegularControlDescription): P
     case 'popuplist':
     case 'radio':
     case 'string-input':
+    case 'html-input':
     case 'style-controls':
     case 'vector2':
     case 'vector3':

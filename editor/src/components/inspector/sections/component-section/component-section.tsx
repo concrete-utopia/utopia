@@ -78,6 +78,7 @@ import {
   ExpressionInputPropertyControl,
   StringInputPropertyControl,
   VectorPropertyControl,
+  HtmlInputPropertyControl,
 } from './property-control-controls'
 import { ExpandableIndicator } from '../../../navigator/navigator-item/expandable-indicator'
 import { unless, when } from '../../../../utils/react-conditionals'
@@ -147,6 +148,8 @@ const ControlForProp = React.memo((props: ControlForPropProps<BaseControlDescrip
         return <RadioPropertyControl {...props} controlDescription={controlDescription} />
       case 'string-input':
         return <StringInputPropertyControl {...props} controlDescription={controlDescription} />
+      case 'html-input':
+        return <HtmlInputPropertyControl {...props} controlDescription={controlDescription} />
       case 'style-controls':
         return null
       case 'vector2':

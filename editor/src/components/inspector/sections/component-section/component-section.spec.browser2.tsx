@@ -1,6 +1,6 @@
 import { within } from '@testing-library/react'
 import * as EP from '../../../../core/shared/element-path'
-import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
+import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
 import { mouseClickAtPoint, pressKey } from '../../../canvas/event-helpers.test-utils'
 import { renderTestEditorWithCode } from '../../../canvas/ui-jsx.test-utils'
 import {
@@ -53,31 +53,31 @@ describe('Set element prop via the data picker', () => {
     let currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(0))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Title too')).not.toBeNull()
-    expect(within(theInspector).queryAllByText('Title too')).toHaveLength(2)
+    expect(within(theInspector).queryByText('Title too')).not.toBeNull()
 
     // choose another string-valued variable
     currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(1))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Alternate title')).not.toBeNull()
-    expect(within(theInspector).queryAllByText('Alternate title')).toHaveLength(2)
+    expect(within(theInspector).queryByText('Alternate title')).not.toBeNull()
 
     // choose an object prop
     currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(13))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('The First Title')).not.toBeNull()
-    expect(within(theInspector).queryAllByText('The First Title')).toHaveLength(2)
+    expect(within(theInspector).queryByText('The First Title')).not.toBeNull()
 
     // choose an object prop
     currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(14))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Sweet')).not.toBeNull()
-    expect(within(theInspector).queryAllByText('Sweet')).toHaveLength(2)
+    expect(within(theInspector).queryByText('Sweet')).not.toBeNull()
 
     // choose an array element
     currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(16))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Chapter One')).not.toBeNull()
-    expect(within(theInspector).queryAllByText('Chapter One')).toHaveLength(2)
+    expect(within(theInspector).queryByText('Chapter One')).not.toBeNull()
   })
 
   it('with number input control descriptor present', async () => {
@@ -343,6 +343,17 @@ describe('Controls from registering components', () => {
 
     const theScene = editor.renderedDOM.getByTestId('scene')
     expect(within(theScene).queryByText('New title')).not.toBeNull()
+  })
+
+  it('registering internal component with html prop shows preview', async () => {
+    const editor = await renderTestEditorWithCode(
+      registerInternalComponentProjectWithHtmlProp,
+      'await-first-dom-report',
+    )
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/title')])
+
+    const theInspector = editor.renderedDOM.getByTestId('inspector-sections-container')
+    expect(within(theInspector).queryByText('Hello Utopia')).not.toBeNull()
   })
 
   it('registering external component', async () => {
@@ -673,71 +684,140 @@ export var storyboard = (
 )`
 }
 
-// const projectWithImage = (imageUrl: string) => `import * as React from 'react'
-// import {
-//   Storyboard,
-//   Scene,
-//   registerInternalComponent,
-// } from 'utopia-api'
+const projectWithHtmlProp = (imageUrl: string) => `import * as React from 'react'
+import {
+  Storyboard,
+  Scene,
+  registerInternalComponent,
+} from 'utopia-api'
 
-// function Image({ url }) {
-//   return <img src={url} />
-// }
+function Image({ url }) {
+  return <img src={url} />
+}
 
-// var Playground = ({ style }) => {
-//   return (
-//     <div style={style} data-uid='root'>
-//       <Image url='${imageUrl}' data-uid='image' />
-//     </div>
-//   )
-// }
+var Playground = ({ style }) => {
+  return (
+    <div style={style} data-uid='root'>
+      <Image url='${imageUrl}' data-uid='image' />
+    </div>
+  )
+}
 
-// export var storyboard = (
-//   <Storyboard data-uid='sb'>
-//     <Scene
-//       style={{
-//         width: 521,
-//         height: 266,
-//         position: 'absolute',
-//         left: 554,
-//         top: 247,
-//         backgroundColor: 'white',
-//       }}
-//       data-uid='scene'
-//       data-testid='scene'
-//       commentId='120'
-//     >
-//       <Playground
-//         style={{
-//           width: 454,
-//           height: 177,
-//           position: 'absolute',
-//           left: 34,
-//           top: 44,
-//           backgroundColor: 'white',
-//           display: 'flex',
-//           alignItems: 'center',
-//           justifyContent: 'center',
-//         }}
-//         title='Hello Utopia'
-//         data-uid='pg'
-//       />
-//     </Scene>
-//   </Storyboard>
-// )
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 521,
+        height: 266,
+        position: 'absolute',
+        left: 554,
+        top: 247,
+        backgroundColor: 'white',
+      }}
+      data-uid='scene'
+      data-testid='scene'
+      commentId='120'
+    >
+      <Playground
+        style={{
+          width: 454,
+          height: 177,
+          position: 'absolute',
+          left: 34,
+          top: 44,
+          backgroundColor: 'white',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+        title='Hello Utopia'
+        data-uid='pg'
+      />
+    </Scene>
+  </Storyboard>
+)
 
-// registerInternalComponent(Image, {
-//   supportsChildren: false,
-//   properties: {
-//     url: {
-//       control: 'string-input',
-//     },
-//   },
-//   variants: [
-//     {
-//       code: '<Image />',
-//     },
-//   ],
-// })
+registerInternalComponent(Image, {
+  supportsChildren: false,
+  properties: {
+    url: {
+      control: 'string-input',
+    },
+  },
+  variants: [
+    {
+      code: '<Image />',
+    },
+  ],
+})
 
-// `
+`
+
+const registerInternalComponentProjectWithHtmlProp = `import * as React from 'react'
+import {
+  Storyboard,
+  Scene,
+  registerInternalComponent,
+} from 'utopia-api'
+
+function Title({ text }) {
+  return <h2 data-uid='0cd'>{text}</h2>
+}
+
+var Playground = ({ style }) => {
+  return (
+    <div style={style} data-uid='root'>
+      <Title text='<p>Hello Utopia</p>' data-uid='title' />
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 521,
+        height: 266,
+        position: 'absolute',
+        left: 554,
+        top: 247,
+        backgroundColor: 'white',
+      }}
+      data-uid='scene'
+      data-testid='scene'
+      commentId='120'
+    >
+      <Playground
+        style={{
+          width: 454,
+          height: 177,
+          position: 'absolute',
+          left: 34,
+          top: 44,
+          backgroundColor: 'white',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+        title='Hello Utopia'
+        data-uid='pg'
+      />
+    </Scene>
+  </Storyboard>
+)
+
+registerInternalComponent(Title, {
+  supportsChildren: false,
+  properties: {
+    text: {
+      control: 'html-input',
+    },
+  },
+  variants: [
+    {
+      code: '<Title />',
+    },
+  ],
+})
+
+`
