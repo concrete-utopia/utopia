@@ -297,9 +297,28 @@ const ProjectsPage = React.memo(() => {
             </button>
           ))}
         </div>
-        <div style={{ fontSize: 16, fontWeight: 600, padding: '5px 10px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', height: 40 }}>
-            <div style={{ flex: 'auto' }}>
+
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            height: 40,
+            flexShrink: 0,
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 10,
+              fontSize: 16,
+              fontWeight: 600,
+              padding: '5px 10px',
+            }}
+          >
+            <div>
               {when(
                 searchQuery !== '',
                 <span>
@@ -328,7 +347,6 @@ const ProjectsPage = React.memo(() => {
                 <div style={{ flex: 1 }}>{categories[selectedCategory].name}</div>,
               )}
             </div>
-
             <div>
               {when(
                 selectedCategory === 'trash',
@@ -341,6 +359,9 @@ const ProjectsPage = React.memo(() => {
                 </button>,
               )}
             </div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'row' }}>
+            <div>Sort</div>
           </div>
         </div>
 
