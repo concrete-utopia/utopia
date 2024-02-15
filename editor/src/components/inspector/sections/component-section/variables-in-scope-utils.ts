@@ -17,7 +17,7 @@ function valuesFromObject(
   value: object | null,
   depth: number,
   displayName: string,
-  advanced: boolean,
+  valueMatchesPropType: boolean,
 ): Array<VariableOption> {
   if (value == null) {
     return [
@@ -27,7 +27,7 @@ function valuesFromObject(
         definedElsewhere: null,
         value: `null`,
         depth: depth,
-        advanced: advanced,
+        valueMatchesPropType: valueMatchesPropType,
       },
     ]
   }
@@ -38,7 +38,7 @@ function valuesFromObject(
     definedElsewhere: objectName,
     displayName: variable.displayName,
     depth: variable.depth,
-    advanced: advanced,
+    valueMatchesPropType: valueMatchesPropType,
   })
 
   if (Array.isArray(value)) {
@@ -49,13 +49,17 @@ function valuesFromObject(
         definedElsewhere: objectName,
         value: `[ ]`,
         depth: depth,
-        advanced: advanced,
+        valueMatchesPropType: valueMatchesPropType,
       }),
     ].concat(
       value.flatMap((v, idx) =>
-        valuesFromVariable(`${name}[${idx}]`, v, depth + 1, `${displayName}[${idx}]`, advanced).map(
-          (variable) => patchDefinedElsewhereInfo(variable),
-        ),
+        valuesFromVariable(
+          `${name}[${idx}]`,
+          v,
+          depth + 1,
+          `${displayName}[${idx}]`,
+          valueMatchesPropType,
+        ).map((variable) => patchDefinedElsewhereInfo(variable)),
       ),
     )
   }
@@ -67,12 +71,12 @@ function valuesFromObject(
       definedElsewhere: objectName,
       value: `{ }`,
       depth: depth,
-      advanced: false,
+      valueMatchesPropType: false,
     }),
   ].concat(
     Object.entries(value).flatMap(([key, field]) =>
-      valuesFromVariable(`${name}['${key}']`, field, depth + 1, key, advanced).map((variable) =>
-        patchDefinedElsewhereInfo(variable),
+      valuesFromVariable(`${name}['${key}']`, field, depth + 1, key, valueMatchesPropType).map(
+        (variable) => patchDefinedElsewhereInfo(variable),
       ),
     ),
   )
@@ -83,7 +87,7 @@ function valuesFromVariable(
   value: unknown,
   depth: number,
   displayName: string,
-  advanced: boolean,
+  valueMatchesPropType: boolean,
 ): Array<VariableOption> {
   switch (typeof value) {
     case 'bigint':
@@ -98,11 +102,11 @@ function valuesFromVariable(
           definedElsewhere: name,
           value: `${value}`,
           depth: depth,
-          advanced: advanced,
+          valueMatchesPropType: valueMatchesPropType,
         },
       ]
     case 'object':
-      return valuesFromObject(name, name, value, depth, displayName, advanced)
+      return valuesFromObject(name, name, value, depth, displayName, valueMatchesPropType)
     case 'function':
     case 'symbol':
       return []
