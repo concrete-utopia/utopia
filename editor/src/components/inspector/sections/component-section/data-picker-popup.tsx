@@ -13,10 +13,8 @@ import { useVariablesInScopeForSelectedElement } from './variables-in-scope-util
 
 export interface VariableOption {
   variableName: string
-  displayName: string
   definedElsewhere: string | null
   value: string
-  depth: number
 }
 
 export interface DataPickerPopupProps {
@@ -93,89 +91,68 @@ export const DataPickerPopup = React.memo(
           <div style={{ fontSize: 14, fontWeight: 400, marginBottom: 16 }}>
             <span>Data</span>
           </div>
-          {variableNamesInScope.map(
-            ({ variableName, definedElsewhere, value, displayName, depth = 0 }, idx) => {
-              return (
-                <Button
-                  data-testid={VariableFromScopeOptionTestId(idx)}
-                  key={variableName}
-                  onClick={onTweakProperty(variableName, definedElsewhere)}
-                  style={{ width: '100%', height: 25 }}
+          {variableNamesInScope.map(({ variableName, definedElsewhere, value }, idx) => {
+            return (
+              <Button
+                data-testid={VariableFromScopeOptionTestId(idx)}
+                key={variableName}
+                onClick={onTweakProperty(variableName, definedElsewhere)}
+                style={{ width: '100%', height: 25 }}
+              >
+                <UIGridRow
+                  padded={false}
+                  variant='<--1fr--><--1fr-->'
+                  style={{
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start',
+                    gap: 8,
+                    width: '100%',
+                    minHeight: 'auto',
+                    gridTemplateColumns: '48% 48%',
+                  }}
                 >
-                  <UIGridRow
-                    padded={false}
-                    variant='<--1fr--><--1fr-->'
-                    style={{
-                      justifyContent: 'space-between',
-                      alignItems: 'flex-start',
-                      gap: 8,
-                      width: '100%',
-                      minHeight: 'auto',
-                      gridTemplateColumns: '48% 48%',
-                    }}
-                  >
-                    <div>
-                      <span
-                        style={{
-                          marginLeft: 4 * depth,
-                          borderRadius: 2,
-                          fontWeight: 400,
-                          display: 'flex',
-                          maxWidth: '100%',
-                        }}
-                      >
-                        {depth > 0 ? (
-                          <span
-                            style={{
-                              borderLeft: `1px solid ${colorTheme.neutralBorder.value}`,
-                              borderBottom: `1px solid ${colorTheme.neutralBorder.value}`,
-                              width: 5,
-                              display: 'inline-block',
-                              height: 10,
-                              marginRight: 4,
-                              position: 'relative',
-                              top: 0,
-                              marginLeft: (depth - 1) * 8,
-                              flex: 'none',
-                              textOverflow: 'ellipsis',
-                              overflow: 'hidden',
-                            }}
-                          ></span>
-                        ) : null}
-                        <span
-                          style={{
-                            textOverflow: 'ellipsis',
-                            overflow: 'hidden',
-                          }}
-                        >
-                          {displayName}
-                        </span>
-                      </span>
-                    </div>
-                    <div
+                  <div>
+                    <span
                       style={{
+                        borderRadius: 2,
+                        fontWeight: 400,
                         display: 'flex',
-                        justifyContent: 'flex-end',
-                        width: '94%',
+                        maxWidth: '100%',
                       }}
                     >
                       <span
                         style={{
-                          fontWeight: 400,
-                          color: colorTheme.neutralForeground.value,
                           textOverflow: 'ellipsis',
-                          maxWidth: 130,
                           overflow: 'hidden',
                         }}
                       >
-                        {value}
+                        {variableName}
                       </span>
-                    </div>
-                  </UIGridRow>
-                </Button>
-              )
-            },
-          )}
+                    </span>
+                  </div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'flex-end',
+                      width: '94%',
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontWeight: 400,
+                        color: colorTheme.neutralForeground.value,
+                        textOverflow: 'ellipsis',
+                        maxWidth: 130,
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {value}
+                    </span>
+                  </div>
+                </UIGridRow>
+              </Button>
+            )
+          })}
         </FlexColumn>
       </div>
     )

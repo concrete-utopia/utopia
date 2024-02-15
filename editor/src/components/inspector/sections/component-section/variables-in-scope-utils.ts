@@ -15,17 +15,13 @@ function valuesFromObject(
   name: string,
   objectName: string,
   value: object | null,
-  depth: number,
-  displayName: string,
 ): Array<VariableOption> {
   if (value == null) {
     return [
       {
-        displayName: displayName,
         variableName: name,
         definedElsewhere: null,
         value: `null`,
-        depth: depth,
       },
     ]
   }
@@ -34,23 +30,19 @@ function valuesFromObject(
     variableName: variable.variableName,
     value: variable.value,
     definedElsewhere: objectName,
-    displayName: variable.displayName,
-    depth: variable.depth,
   })
 
   if (Array.isArray(value)) {
     return [
       patchDefinedElsewhereInfo({
-        displayName: displayName,
         variableName: name,
         definedElsewhere: objectName,
         value: `[ ]`,
-        depth: depth,
       }),
     ].concat(
       value.flatMap((v, idx) =>
-        valuesFromVariable(`${name}[${idx}]`, v, depth + 1, `${displayName}[${idx}]`).map(
-          (variable) => patchDefinedElsewhereInfo(variable),
+        valuesFromVariable(`${name}[${idx}]`, v).map((variable) =>
+          patchDefinedElsewhereInfo(variable),
         ),
       ),
     )
@@ -58,27 +50,20 @@ function valuesFromObject(
 
   return [
     patchDefinedElsewhereInfo({
-      displayName: displayName,
       variableName: name,
       definedElsewhere: objectName,
       value: `{ }`,
-      depth: depth,
     }),
   ].concat(
     Object.entries(value).flatMap(([key, field]) =>
-      valuesFromVariable(`${name}['${key}']`, field, depth + 1, key).map((variable) =>
+      valuesFromVariable(`${name}['${key}']`, field).map((variable) =>
         patchDefinedElsewhereInfo(variable),
       ),
     ),
   )
 }
 
-function valuesFromVariable(
-  name: string,
-  value: unknown,
-  depth: number,
-  displayName: string,
-): Array<VariableOption> {
+function valuesFromVariable(name: string, value: unknown): Array<VariableOption> {
   switch (typeof value) {
     case 'bigint':
     case 'boolean':
@@ -87,15 +72,13 @@ function valuesFromVariable(
     case 'undefined':
       return [
         {
-          displayName: displayName,
           variableName: name,
           definedElsewhere: name,
           value: `${value}`,
-          depth: depth,
         },
       ]
     case 'object':
-      return valuesFromObject(name, name, value, depth, displayName)
+      return valuesFromObject(name, name, value)
     case 'function':
     case 'symbol':
       return []
@@ -108,8 +91,9 @@ function usePropertyControlDescriptions(): Array<ControlDescription> {
   )
 }
 
-function orderVariablesInScope(
-  variableNamesInScope: VariableData,
+function orderVariablesInScope<T>(
+  variableNamesInScope: Array<T>,
+  nameAndValueFn: (_: T) => [string, unknown],
   controlDescriptions: Array<ControlDescription>,
   currentPropertyValue: PropertyValue,
 ): Array<[string, unknown]> {
@@ -117,7 +101,8 @@ function orderVariablesInScope(
   let valuesMatchingPropertyShape: [string, unknown][] = []
   let restOfValues: [string, unknown][] = []
 
-  for (const [name, { spiedValue }] of Object.entries(variableNamesInScope)) {
+  for (const element of variableNamesInScope) {
+    const [name, spiedValue] = nameAndValueFn(element)
     const valueMatchesControlDescription = controlDescriptions.some((d) =>
       variableMatchesControlDescription(spiedValue, d),
     )
@@ -202,13 +187,14 @@ export function useVariablesInScopeForSelectedElement(
     ].reduce((vars, fn) => fn(vars), variablesInScopeForSelectedPath)
 
     const orderedVariablesInScope = orderVariablesInScope(
-      variablesInScopeForSelectedPath,
+      Object.entries(variablesInScopeForSelectedPath),
+      ([name, { spiedValue }]) => [name, spiedValue],
       controlDescriptions,
       currentPropertyValue,
     )
 
     return orderedVariablesInScope.flatMap(([name, variable]) =>
-      valuesFromVariable(name, variable, 0, name),
+      valuesFromVariable(name, variable, name),
     )
   }, [controlDescriptions, currentPropertyValue, selectedViewPath, variablesInScope])
 
