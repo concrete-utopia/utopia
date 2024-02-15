@@ -11,6 +11,7 @@ import type {
   EulerControlDescription,
   ExpressionInputControlDescription,
   ExpressionPopUpListControlDescription,
+  HtmlInputControlDescription,
   Matrix3ControlDescription,
   Matrix4ControlDescription,
   NumberInputControlDescription,
@@ -55,7 +56,7 @@ import {
   normalisePathToUnderlyingTarget,
 } from '../../../custom-code/code-file'
 import { useDispatch } from '../../../editor/store/dispatch-context'
-import { ContentPreview } from './property-content-preview'
+import { HtmlPreview, ImagePreview } from './property-content-preview'
 
 export interface ControlForPropProps<T extends BaseControlDescription> {
   propPath: PropertyPath
@@ -466,7 +467,41 @@ export const StringInputPropertyControl = React.memo(
           controlStyles={propMetadata.controlStyles}
           focus={props.focusOnMount}
         />
-        <ContentPreview text={safeValue} />
+        <ImagePreview url={safeValue} />
+      </div>
+    )
+  },
+)
+
+export const HtmlInputPropertyControl = React.memo(
+  (props: ControlForPropProps<HtmlInputControlDescription>) => {
+    const { propName, propMetadata, controlDescription } = props
+
+    const controlId = `${propName}-string-input-property-control`
+    const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
+
+    const safeValue = value ?? ''
+
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          flexBasis: 0,
+          gap: 5,
+        }}
+      >
+        <StringControl
+          key={controlId}
+          id={controlId}
+          testId={controlId}
+          value={safeValue}
+          onSubmitValue={propMetadata.onSubmitValue}
+          controlStatus={propMetadata.controlStatus}
+          controlStyles={propMetadata.controlStyles}
+          focus={props.focusOnMount}
+        />
+        <HtmlPreview html={safeValue} />
       </div>
     )
   },

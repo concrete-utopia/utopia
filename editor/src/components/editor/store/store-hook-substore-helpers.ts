@@ -173,4 +173,5 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   filesModifiedByAnotherUser: [],
   activeFrames: [],
   commentFilterMode: 'all',
+  forking: false,
 }

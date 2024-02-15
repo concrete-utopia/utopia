@@ -4561,6 +4561,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.commentFilterMode,
   )
 
+  const forkingResults = BooleanKeepDeepEquality(oldValue.forking, newValue.forking)
+
   const areEqual =
     idResult.areEqual &&
     forkedFromProjectIdResult.areEqual &&
@@ -4639,7 +4641,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     internalClipboardResults.areEqual &&
     filesModifiedByAnotherUserResults.areEqual &&
     activeFramesResults.areEqual &&
-    commentFilterModeResults.areEqual
+    commentFilterModeResults.areEqual &&
+    forkingResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -4724,6 +4727,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       filesModifiedByAnotherUserResults.value,
       activeFramesResults.value,
       commentFilterModeResults.value,
+      forkingResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

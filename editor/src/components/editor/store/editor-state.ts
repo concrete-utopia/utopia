@@ -1458,6 +1458,7 @@ export interface EditorState {
   filesModifiedByAnotherUser: Array<string>
   activeFrames: ActiveFrame[]
   commentFilterMode: CommentFilterMode
+  forking: boolean
 }
 
 export function editorState(
@@ -1540,6 +1541,7 @@ export function editorState(
   filesModifiedByAnotherUser: Array<string>,
   activeFrames: ActiveFrame[],
   commentFilterMode: CommentFilterMode,
+  forking: boolean,
 ): EditorState {
   return {
     id: id,
@@ -1609,7 +1611,7 @@ export function editorState(
     forceParseFiles: forceParseFiles,
     allElementProps: allElementProps,
     currentAllElementProps: currentAllElementProps,
-    variablesInScope,
+    variablesInScope: variablesInScope,
     currentVariablesInScope: currentVariablesInScope,
     githubSettings: githubSettings,
     imageDragSessionState: imageDragSessionState,
@@ -1621,6 +1623,7 @@ export function editorState(
     filesModifiedByAnotherUser: filesModifiedByAnotherUser,
     activeFrames: activeFrames,
     commentFilterMode: commentFilterMode,
+    forking: forking,
   }
 }
 
@@ -2518,6 +2521,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     filesModifiedByAnotherUser: [],
     activeFrames: [],
     commentFilterMode: 'all',
+    forking: false,
   }
 }
 
@@ -2894,6 +2898,7 @@ export function editorModelFromPersistentModel(
     filesModifiedByAnotherUser: [],
     activeFrames: [],
     commentFilterMode: 'all',
+    forking: false,
   }
   return editor
 }

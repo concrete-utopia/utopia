@@ -71,6 +71,12 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
               // TODO notification toast
             },
           },
+          {
+            text: 'Fork',
+            onClick: (project) => {
+              window.open(projectEditorLink(project.proj_id) + '/?fork=true', '_blank')
+            },
+          },
           'separator',
           {
             text: 'Rename',

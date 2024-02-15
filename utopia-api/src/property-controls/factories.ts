@@ -1,4 +1,4 @@
-import {
+import type {
   ArrayControlDescription,
   BasicControlOptions,
   CheckboxControlDescription,
@@ -8,6 +8,7 @@ import {
   ExpressionInputControlDescription,
   ExpressionPopUpListControlDescription,
   FolderControlDescription,
+  HtmlInputControlDescription,
   ImportType,
   Matrix3ControlDescription,
   Matrix4ControlDescription,
@@ -168,6 +169,18 @@ export function sliderControl(
 export function stringControl(placeholder?: string): StringInputControlDescription {
   let result: StringInputControlDescription = {
     control: 'string-input',
+  }
+
+  if (placeholder !== undefined) {
+    result.placeholder = placeholder
+  }
+
+  return result
+}
+
+export function htmlControl(placeholder?: string): HtmlInputControlDescription {
+  let result: HtmlInputControlDescription = {
+    control: 'html-input',
   }
 
   if (placeholder !== undefined) {
