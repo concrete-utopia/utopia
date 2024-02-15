@@ -218,6 +218,7 @@ import type {
   UpdateImportsFromCollaborationUpdate,
   UpdateCodeFromCollaborationUpdate,
   SetCommentFilterMode,
+  SetForking,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -516,6 +517,13 @@ export function removeToast(id: string): RemoveToast {
 
 export function showToast(toastContent: Notice): AddToast {
   return addToast(toastContent)
+}
+
+export function setForking(forking: boolean): SetForking {
+  return {
+    action: 'SET_FORKING',
+    forking: forking,
+  }
 }
 
 let selectionControlTimer: any // TODO maybe this should live inside the editormodel

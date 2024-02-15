@@ -385,6 +385,11 @@ export interface AddToast {
   toast: Notice
 }
 
+export interface SetForking {
+  action: 'SET_FORKING'
+  forking: boolean
+}
+
 export interface RemoveToast {
   action: 'REMOVE_TOAST'
   id: string
@@ -1251,6 +1256,7 @@ export type EditorAction =
   | UpdateImportsFromCollaborationUpdate
   | UpdateCodeFromCollaborationUpdate
   | SetCommentFilterMode
+  | SetForking
 
 export type DispatchPriority =
   | 'everyone'

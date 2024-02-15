@@ -131,6 +131,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'TRUNCATE_HISTORY':
     case 'UPDATE_PROJECT_SERVER_STATE':
     case 'SET_COMMENT_FILTER_MODE':
+    case 'SET_FORKING':
       return true
 
     case 'TRUE_UP_ELEMENTS':
