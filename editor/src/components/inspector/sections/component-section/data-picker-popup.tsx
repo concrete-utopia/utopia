@@ -15,6 +15,7 @@ export interface VariableOption {
   variableName: string
   definedElsewhere: string | null
   value: string
+  originalValue: unknown
 }
 
 export interface DataPickerPopupProps {

@@ -4,7 +4,7 @@ import type {
   ObjectControlDescription,
 } from 'utopia-api/core'
 import type { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
-import type { VariableData, VariablesInScope } from '../../../canvas/ui-jsx-canvas'
+import type { VariableData } from '../../../canvas/ui-jsx-canvas'
 import { useEditorState, Substores } from '../../../editor/store/store-hook'
 import type { VariableOption } from './data-picker-popup'
 import * as EP from '../../../../core/shared/element-path'
@@ -22,14 +22,16 @@ function valuesFromObject(
         variableName: name,
         definedElsewhere: null,
         value: `null`,
+        originalValue: value,
       },
     ]
   }
 
-  const patchDefinedElsewhereInfo = (variable: VariableOption) => ({
+  const patchDefinedElsewhereInfo = (variable: VariableOption): VariableOption => ({
     variableName: variable.variableName,
     value: variable.value,
     definedElsewhere: objectName,
+    originalValue: variable.originalValue,
   })
 
   if (Array.isArray(value)) {
@@ -38,6 +40,7 @@ function valuesFromObject(
         variableName: name,
         definedElsewhere: objectName,
         value: `[ ]`,
+        originalValue: value,
       }),
     ].concat(
       value.flatMap((v, idx) =>
@@ -53,6 +56,7 @@ function valuesFromObject(
       variableName: name,
       definedElsewhere: objectName,
       value: `{ }`,
+      originalValue: value,
     }),
   ].concat(
     Object.entries(value).flatMap(([key, field]) =>
@@ -75,6 +79,7 @@ function valuesFromVariable(name: string, value: unknown): Array<VariableOption>
           variableName: name,
           definedElsewhere: name,
           value: `${value}`,
+          originalValue: value,
         },
       ]
     case 'object':
@@ -91,31 +96,29 @@ function usePropertyControlDescriptions(): Array<ControlDescription> {
   )
 }
 
-function orderVariablesInScope<T>(
-  variableNamesInScope: Array<T>,
-  nameAndValueFn: (_: T) => [string, unknown],
+function orderVariablesInScope(
+  variableNamesInScope: Array<VariableOption>,
   controlDescriptions: Array<ControlDescription>,
   currentPropertyValue: PropertyValue,
-): Array<[string, unknown]> {
-  let valuesMatchingPropertyDescription: [string, unknown][] = []
-  let valuesMatchingPropertyShape: [string, unknown][] = []
-  let restOfValues: [string, unknown][] = []
+): Array<VariableOption> {
+  let valuesMatchingPropertyDescription: Array<VariableOption> = []
+  let valuesMatchingPropertyShape: Array<VariableOption> = []
+  let restOfValues: Array<VariableOption> = []
 
   for (const element of variableNamesInScope) {
-    const [name, spiedValue] = nameAndValueFn(element)
     const valueMatchesControlDescription = controlDescriptions.some((d) =>
-      variableMatchesControlDescription(spiedValue, d),
+      variableMatchesControlDescription(element.originalValue, d),
     )
     const valueMatchesCurrentPropValue =
       currentPropertyValue.type === 'existing' &&
-      variableShapesMatch(currentPropertyValue.value, spiedValue)
+      variableShapesMatch(currentPropertyValue.value, element.originalValue)
 
     if (valueMatchesControlDescription) {
-      valuesMatchingPropertyDescription.push([name, spiedValue])
+      valuesMatchingPropertyDescription.push(element)
     } else if (valueMatchesCurrentPropValue) {
-      valuesMatchingPropertyShape.push([name, spiedValue])
+      valuesMatchingPropertyShape.push(element)
     } else {
-      restOfValues.push([name, spiedValue])
+      restOfValues.push(element)
     }
   }
 
@@ -186,16 +189,10 @@ export function useVariablesInScopeForSelectedElement(
       filterObjectPropFromVariablesInScope({ prop: 'props', key: 'css' }),
     ].reduce((vars, fn) => fn(vars), variablesInScopeForSelectedPath)
 
-    const orderedVariablesInScope = orderVariablesInScope(
-      Object.entries(variablesInScopeForSelectedPath),
-      ([name, { spiedValue }]) => [name, spiedValue],
-      controlDescriptions,
-      currentPropertyValue,
+    const options = Object.entries(variablesInScopeForSelectedPath).flatMap(
+      ([name, { spiedValue }]) => valuesFromVariable(name, spiedValue),
     )
-
-    return orderedVariablesInScope.flatMap(([name, variable]) =>
-      valuesFromVariable(name, variable, name),
-    )
+    return orderVariablesInScope(options, controlDescriptions, currentPropertyValue)
   }, [controlDescriptions, currentPropertyValue, selectedViewPath, variablesInScope])
 
   return variableNamesInScope
