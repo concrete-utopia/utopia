@@ -4,7 +4,7 @@ import type {
   ObjectControlDescription,
 } from 'utopia-api/core'
 import type { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
-import type { VariableData } from '../../../canvas/ui-jsx-canvas'
+import type { VariableData, VariablesInScope } from '../../../canvas/ui-jsx-canvas'
 import { useEditorState, Substores } from '../../../editor/store/store-hook'
 import type { VariableOption } from './data-picker-popup'
 import * as EP from '../../../../core/shared/element-path'
@@ -137,6 +137,11 @@ function orderVariablesInScope(
   return [...valuesMatchingPropertyDescription, ...valuesMatchingPropertyShape, ...restOfValues]
 }
 
+function filterFromVariablesInScope(
+  paths: Array<Array<string>>,
+  variablesInScope: VariableData,
+): VariableData {}
+
 export function useVariablesInScopeForSelectedElement(
   selectedView: ElementPath,
   propertyPath: PropertyPath,
@@ -161,12 +166,23 @@ export function useVariablesInScopeForSelectedElement(
       return []
     }
 
-    const variablesInScopeForSelectedPath = variablesInScope[EP.toString(selectedViewPath)]
+    let variablesInScopeForSelectedPath = variablesInScope[EP.toString(selectedViewPath)]
 
     if (variablesInScopeForSelectedPath == null) {
       return []
     }
 
+    variablesInScopeForSelectedPath = filterFromVariablesInScope(
+      [
+        ['props', 'className'],
+        ['props', 'style'],
+        ['props', 'css'],
+        ['style'],
+        ['classname'],
+        ['css'],
+      ],
+      variablesInScopeForSelectedPath,
+    )
     const orderedVariablesInScope = orderVariablesInScope(
       variablesInScopeForSelectedPath,
       controlDescriptions,
