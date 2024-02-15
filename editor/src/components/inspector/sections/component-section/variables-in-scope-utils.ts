@@ -4,7 +4,7 @@ import type {
   ObjectControlDescription,
 } from 'utopia-api/core'
 import type { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
-import type { VariableData } from '../../../canvas/ui-jsx-canvas'
+import type { VariableData, VariablesInScope } from '../../../canvas/ui-jsx-canvas'
 import { useEditorState, Substores } from '../../../editor/store/store-hook'
 import type { VariableOption } from './data-picker-popup'
 import * as EP from '../../../../core/shared/element-path'
@@ -137,6 +137,29 @@ function orderVariablesInScope(
   return [...valuesMatchingPropertyDescription, ...valuesMatchingPropertyShape, ...restOfValues]
 }
 
+const filterKeyFromObject =
+  (propName: string) =>
+  <T extends Record<string, unknown>>(variablesInScope: T): T => {
+    let next = { ...variablesInScope }
+    delete next[propName]
+    return next
+  }
+
+const filterObjectPropFromVariablesInScope =
+  ({ prop, key }: { prop: string; key: string }) =>
+  (variablesInScope: VariableData): VariableData => {
+    const target = variablesInScope[prop]
+    if (target == null || typeof target !== 'object') {
+      return variablesInScope
+    }
+    let next = { ...variablesInScope }
+    next[prop] = {
+      insertionCeiling: next[prop].insertionCeiling,
+      spiedValue: filterKeyFromObject(key)(target.spiedValue as Record<string, unknown>),
+    }
+    return next
+  }
+
 export function useVariablesInScopeForSelectedElement(
   selectedView: ElementPath,
   propertyPath: PropertyPath,
@@ -161,11 +184,22 @@ export function useVariablesInScopeForSelectedElement(
       return []
     }
 
-    const variablesInScopeForSelectedPath = variablesInScope[EP.toString(selectedViewPath)]
+    let variablesInScopeForSelectedPath = variablesInScope[EP.toString(selectedViewPath)]
 
     if (variablesInScopeForSelectedPath == null) {
       return []
     }
+
+    variablesInScopeForSelectedPath = [
+      filterKeyFromObject('className'),
+      filterKeyFromObject('data-uid'),
+      filterKeyFromObject('style'),
+      filterKeyFromObject('css'),
+      filterObjectPropFromVariablesInScope({ prop: 'props', key: 'className' }),
+      filterObjectPropFromVariablesInScope({ prop: 'props', key: 'data-uid' }),
+      filterObjectPropFromVariablesInScope({ prop: 'props', key: 'style' }),
+      filterObjectPropFromVariablesInScope({ prop: 'props', key: 'css' }),
+    ].reduce((vars, fn) => fn(vars), variablesInScopeForSelectedPath)
 
     const orderedVariablesInScope = orderVariablesInScope(
       variablesInScopeForSelectedPath,

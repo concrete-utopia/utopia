@@ -32,16 +32,6 @@ describe('Set element prop via the data picker', () => {
     expect(options).toEqual([
       'titleToo',
       'alternateTitle',
-      'style',
-      'width',
-      'height',
-      'position',
-      'left',
-      'top',
-      'backgroundColor',
-      'display',
-      'alignItems',
-      'justifyContent',
       'titles',
       'one',
       'also JS',
@@ -62,19 +52,19 @@ describe('Set element prop via the data picker', () => {
     expect(within(theInspector).queryAllByText('Alternate title')).toHaveLength(2)
 
     // choose an object prop
-    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(13))
+    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(3))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('The First Title')).not.toBeNull()
     expect(within(theInspector).queryAllByText('The First Title')).toHaveLength(2)
 
     // choose an object prop
-    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(14))
+    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(4))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Sweet')).not.toBeNull()
     expect(within(theInspector).queryAllByText('Sweet')).toHaveLength(2)
 
     // choose an array element
-    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(16))
+    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(6))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Chapter One')).not.toBeNull()
     expect(within(theInspector).queryAllByText('Chapter One')).toHaveLength(2)
@@ -289,6 +279,113 @@ describe('Set element prop via the data picker', () => {
       'authors', // object with a shape that doesn't match
       'jack',
       'mary',
+    ])
+  })
+
+  it('style props are filterd from `props`', async () => {
+    const editor = await renderTestEditorWithCode(
+      DataPickerProjectShell(`
+      function TableOfContents({ titles }) {
+        const content = 'Content'
+      
+        return (
+          <>
+            {titles.map((t) => (
+              <h2 data-uid='a9c'>{t}</h2>
+            ))}
+          </>
+        )
+      }
+      
+      var Playground = (props) => {
+        const titleToo = 'Title too'
+        const currentCount = 12
+        const authors = ['Jack London', 'Mary Shelley']
+        const titleIdeas = ['Chapter One', 'Chapter Two']
+      
+        return (
+          <div data-uid='root'>
+            <TableOfContents titles={titleIdeas} data-uid='toc' />
+          </div>
+        )
+      }`),
+      'await-first-dom-report',
+    )
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/toc')])
+
+    const dataPickerOpenerButton = editor.renderedDOM.getByTestId(DataPickerPopupButtonTestId)
+    await mouseClickAtPoint(dataPickerOpenerButton, { x: 2, y: 2 })
+
+    const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
+    expect(dataPickerPopup).not.toBeNull()
+
+    const options = [
+      ...editor.renderedDOM.baseElement.querySelectorAll(`[data-testid^="variable-from-scope"]`),
+    ].map((node) => node.firstChild!.firstChild!.textContent)
+
+    expect(options).toEqual([
+      'authors',
+      'authors[0]',
+      'authors[1]',
+      'titleIdeas',
+      'titleIdeas[0]',
+      'titleIdeas[1]',
+      'props',
+      'titleToo',
+      'currentCount',
+    ])
+  })
+
+  it('style props are filterd from destructured props', async () => {
+    const editor = await renderTestEditorWithCode(
+      DataPickerProjectShell(`
+      function TableOfContents({ titles }) {
+        const content = 'Content'
+      
+        return (
+          <>
+            {titles.map((t) => (
+              <h2 data-uid='a9c'>{t}</h2>
+            ))}
+          </>
+        )
+      }
+      
+      var Playground = ({ style, className, css }) => {
+        const titleToo = 'Title too'
+        const currentCount = 12
+        const authors = ['Jack London', 'Mary Shelley']
+        const titleIdeas = ['Chapter One', 'Chapter Two']
+      
+        return (
+          <div data-uid='root'>
+            <TableOfContents titles={titleIdeas} data-uid='toc' />
+          </div>
+        )
+      }`),
+      'await-first-dom-report',
+    )
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/toc')])
+
+    const dataPickerOpenerButton = editor.renderedDOM.getByTestId(DataPickerPopupButtonTestId)
+    await mouseClickAtPoint(dataPickerOpenerButton, { x: 2, y: 2 })
+
+    const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
+    expect(dataPickerPopup).not.toBeNull()
+
+    const options = [
+      ...editor.renderedDOM.baseElement.querySelectorAll(`[data-testid^="variable-from-scope"]`),
+    ].map((node) => node.firstChild!.firstChild!.textContent)
+
+    expect(options).toEqual([
+      'authors',
+      'authors[0]',
+      'authors[1]',
+      'titleIdeas',
+      'titleIdeas[0]',
+      'titleIdeas[1]',
+      'titleToo',
+      'currentCount',
     ])
   })
 })
@@ -666,6 +763,8 @@ export var storyboard = (
           alignItems: 'center',
           justifyContent: 'center',
         }}
+        className='playground'
+        css={{ color: 'red' }}
         data-uid='pg'
       />
     </Scene>
