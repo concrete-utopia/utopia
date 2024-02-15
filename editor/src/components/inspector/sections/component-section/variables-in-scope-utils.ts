@@ -26,6 +26,7 @@ function valuesFromObject(
         definedElsewhere: null,
         value: `null`,
         depth: depth,
+        variableType: 'primitive',
       },
     ]
   }
@@ -37,6 +38,7 @@ function valuesFromObject(
     displayName: variable.displayName,
     depth: variable.depth,
     variableChildren: variable.variableChildren,
+    variableType: variable.variableType,
   })
 
   if (Array.isArray(value)) {
@@ -47,6 +49,7 @@ function valuesFromObject(
         definedElsewhere: objectName,
         value: `[ ]`,
         depth: depth,
+        variableType: 'array',
         variableChildren: value.flatMap((v, idx) =>
           valuesFromVariable(`${name}[${idx}]`, v, depth + 1, `${displayName}[${idx}]`).map(
             (variable) => patchDefinedElsewhereInfo(variable),
@@ -63,14 +66,14 @@ function valuesFromObject(
       definedElsewhere: objectName,
       value: `{ }`,
       depth: depth,
-    }),
-  ].concat(
-    Object.entries(value).flatMap(([key, field]) =>
-      valuesFromVariable(`${name}['${key}']`, field, depth + 1, key).map((variable) =>
-        patchDefinedElsewhereInfo(variable),
+      variableType: 'object',
+      variableChildren: Object.entries(value).flatMap(([key, field]) =>
+        valuesFromVariable(`${name}['${key}']`, field, depth + 1, key).map((variable) =>
+          patchDefinedElsewhereInfo(variable),
+        ),
       ),
-    ),
-  )
+    }),
+  ]
 }
 
 function valuesFromVariable(
@@ -92,6 +95,7 @@ function valuesFromVariable(
           definedElsewhere: name,
           value: `${value}`,
           depth: depth,
+          variableType: 'primitive',
         },
       ]
     case 'object':
