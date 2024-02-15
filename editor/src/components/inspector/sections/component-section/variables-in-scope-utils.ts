@@ -192,9 +192,11 @@ export function useVariablesInScopeForSelectedElement(
 
     variablesInScopeForSelectedPath = [
       filterKeyFromObject('className'),
+      filterKeyFromObject('data-uid'),
       filterKeyFromObject('style'),
       filterKeyFromObject('css'),
       filterObjectPropFromVariablesInScope({ prop: 'props', key: 'className' }),
+      filterObjectPropFromVariablesInScope({ prop: 'props', key: 'data-uid' }),
       filterObjectPropFromVariablesInScope({ prop: 'props', key: 'style' }),
       filterObjectPropFromVariablesInScope({ prop: 'props', key: 'css' }),
     ].reduce((vars, fn) => fn(vars), variablesInScopeForSelectedPath)

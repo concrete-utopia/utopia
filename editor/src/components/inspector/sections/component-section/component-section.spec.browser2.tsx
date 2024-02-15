@@ -281,6 +281,113 @@ describe('Set element prop via the data picker', () => {
       'mary',
     ])
   })
+
+  it('style props are filterd from `props`', async () => {
+    const editor = await renderTestEditorWithCode(
+      DataPickerProjectShell(`
+      function TableOfContents({ titles }) {
+        const content = 'Content'
+      
+        return (
+          <>
+            {titles.map((t) => (
+              <h2 data-uid='a9c'>{t}</h2>
+            ))}
+          </>
+        )
+      }
+      
+      var Playground = (props) => {
+        const titleToo = 'Title too'
+        const currentCount = 12
+        const authors = ['Jack London', 'Mary Shelley']
+        const titleIdeas = ['Chapter One', 'Chapter Two']
+      
+        return (
+          <div data-uid='root'>
+            <TableOfContents titles={titleIdeas} data-uid='toc' />
+          </div>
+        )
+      }`),
+      'await-first-dom-report',
+    )
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/toc')])
+
+    const dataPickerOpenerButton = editor.renderedDOM.getByTestId(DataPickerPopupButtonTestId)
+    await mouseClickAtPoint(dataPickerOpenerButton, { x: 2, y: 2 })
+
+    const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
+    expect(dataPickerPopup).not.toBeNull()
+
+    const options = [
+      ...editor.renderedDOM.baseElement.querySelectorAll(`[data-testid^="variable-from-scope"]`),
+    ].map((node) => node.firstChild!.firstChild!.textContent)
+
+    expect(options).toEqual([
+      'authors',
+      'authors[0]',
+      'authors[1]',
+      'titleIdeas',
+      'titleIdeas[0]',
+      'titleIdeas[1]',
+      'props',
+      'titleToo',
+      'currentCount',
+    ])
+  })
+
+  it('style props are filterd from destructured props', async () => {
+    const editor = await renderTestEditorWithCode(
+      DataPickerProjectShell(`
+      function TableOfContents({ titles }) {
+        const content = 'Content'
+      
+        return (
+          <>
+            {titles.map((t) => (
+              <h2 data-uid='a9c'>{t}</h2>
+            ))}
+          </>
+        )
+      }
+      
+      var Playground = ({ style, className, css }) => {
+        const titleToo = 'Title too'
+        const currentCount = 12
+        const authors = ['Jack London', 'Mary Shelley']
+        const titleIdeas = ['Chapter One', 'Chapter Two']
+      
+        return (
+          <div data-uid='root'>
+            <TableOfContents titles={titleIdeas} data-uid='toc' />
+          </div>
+        )
+      }`),
+      'await-first-dom-report',
+    )
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/toc')])
+
+    const dataPickerOpenerButton = editor.renderedDOM.getByTestId(DataPickerPopupButtonTestId)
+    await mouseClickAtPoint(dataPickerOpenerButton, { x: 2, y: 2 })
+
+    const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
+    expect(dataPickerPopup).not.toBeNull()
+
+    const options = [
+      ...editor.renderedDOM.baseElement.querySelectorAll(`[data-testid^="variable-from-scope"]`),
+    ].map((node) => node.firstChild!.firstChild!.textContent)
+
+    expect(options).toEqual([
+      'authors',
+      'authors[0]',
+      'authors[1]',
+      'titleIdeas',
+      'titleIdeas[0]',
+      'titleIdeas[1]',
+      'titleToo',
+      'currentCount',
+    ])
+  })
 })
 
 // comment out tests temporarily because it causes a dom-walker test to fail
@@ -656,6 +763,8 @@ export var storyboard = (
           alignItems: 'center',
           justifyContent: 'center',
         }}
+        className='playground'
+        css={{ color: 'red' }}
         data-uid='pg'
       />
     </Scene>
