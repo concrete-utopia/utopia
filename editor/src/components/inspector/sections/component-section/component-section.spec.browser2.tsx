@@ -1,6 +1,6 @@
 import { within } from '@testing-library/react'
 import * as EP from '../../../../core/shared/element-path'
-import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
+import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
 import { mouseClickAtPoint, pressKey } from '../../../canvas/event-helpers.test-utils'
 import { renderTestEditorWithCode } from '../../../canvas/ui-jsx.test-utils'
 import {
@@ -53,31 +53,31 @@ describe('Set element prop via the data picker', () => {
     let currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(0))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Title too')).not.toBeNull()
-    expect(within(theInspector).queryByText('Title too')).not.toBeNull()
+    expect(within(theInspector).queryAllByText('Title too')).toHaveLength(2)
 
     // choose another string-valued variable
     currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(1))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Alternate title')).not.toBeNull()
-    expect(within(theInspector).queryByText('Alternate title')).not.toBeNull()
+    expect(within(theInspector).queryAllByText('Alternate title')).toHaveLength(2)
 
     // choose an object prop
     currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(13))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('The First Title')).not.toBeNull()
-    expect(within(theInspector).queryByText('The First Title')).not.toBeNull()
+    expect(within(theInspector).queryAllByText('The First Title')).toHaveLength(2)
 
     // choose an object prop
     currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(14))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Sweet')).not.toBeNull()
-    expect(within(theInspector).queryByText('Sweet')).not.toBeNull()
+    expect(within(theInspector).queryAllByText('Sweet')).toHaveLength(2)
 
     // choose an array element
     currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(16))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Chapter One')).not.toBeNull()
-    expect(within(theInspector).queryByText('Chapter One')).not.toBeNull()
+    expect(within(theInspector).queryAllByText('Chapter One')).toHaveLength(2)
   })
 
   it('with number input control descriptor present', async () => {

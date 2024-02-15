@@ -46,7 +46,7 @@ import { UIGridRow } from '../../widgets/ui-grid-row'
 import type { Imports, PropertyPath } from '../../../../core/shared/project-file-types'
 import { importDetailsFromImportOption } from '../../../../core/shared/project-file-types'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
-import { addImports, forceParseFile, setProp_UNSAFE } from '../../../editor/actions/action-creators'
+import { addImports, forceParseFile } from '../../../editor/actions/action-creators'
 import type { EditorAction } from '../../../editor/action-types'
 import { forceNotNull } from '../../../../core/shared/optional-utils'
 import type { DEPRECATEDSliderControlOptions } from '../../controls/slider-control'
@@ -55,7 +55,7 @@ import {
   normalisePathToUnderlyingTarget,
 } from '../../../custom-code/code-file'
 import { useDispatch } from '../../../editor/store/dispatch-context'
-import { isImage } from '../../../../core/shared/utils'
+import { ContentPreview } from './property-content-preview'
 
 export interface ControlForPropProps<T extends BaseControlDescription> {
   propPath: PropertyPath
@@ -438,8 +438,6 @@ const NumberWithSliderControl = React.memo(
   },
 )
 
-export const ImagePreviewTestId = 'image-preview'
-
 export const StringInputPropertyControl = React.memo(
   (props: ControlForPropProps<StringInputControlDescription>) => {
     const { propName, propMetadata, controlDescription } = props
@@ -450,7 +448,14 @@ export const StringInputPropertyControl = React.memo(
     const safeValue = value ?? ''
 
     return (
-      <FlexColumn style={{ gap: 5 }}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          flexBasis: 0,
+          gap: 5,
+        }}
+      >
         <StringControl
           key={controlId}
           id={controlId}
@@ -461,44 +466,11 @@ export const StringInputPropertyControl = React.memo(
           controlStyles={propMetadata.controlStyles}
           focus={props.focusOnMount}
         />
-        <ImagePreview url={safeValue} />
-      </FlexColumn>
+        <ContentPreview text={safeValue} />
+      </div>
     )
   },
 )
-
-interface ImagePreviewProps {
-  url: string
-}
-const ImagePreview = React.memo(({ url }: ImagePreviewProps) => {
-  const [imageCanBeLoaded, setImageCanBeLoaded] = React.useState(isImage(url))
-
-  // we need to track if the url has changed so we retry loading the image even if it failed before
-  const urlRef = React.useRef<string>(url)
-  if (urlRef.current !== url) {
-    setImageCanBeLoaded(isImage(url))
-    urlRef.current = url
-  }
-
-  // don't render the img when it can not be loaded
-  const onImageError = React.useCallback(() => {
-    setImageCanBeLoaded(false)
-  }, [setImageCanBeLoaded])
-
-  if (!imageCanBeLoaded) {
-    return null
-  }
-
-  return (
-    <img
-      data-testid={ImagePreviewTestId}
-      src={url}
-      style={{ width: '100%' }}
-      onError={onImageError}
-    />
-  )
-})
-ImagePreview.displayName = 'ImagePreview'
 
 function keysForVectorOfType(vectorType: 'vector2' | 'vector3' | 'vector4'): Array<string> {
   switch (vectorType) {
