@@ -17,6 +17,7 @@ function valuesFromObject(
   value: object | null,
   depth: number,
   displayName: string,
+  advanced: boolean,
 ): Array<VariableOption> {
   if (value == null) {
     return [
@@ -26,16 +27,18 @@ function valuesFromObject(
         definedElsewhere: null,
         value: `null`,
         depth: depth,
+        advanced: advanced,
       },
     ]
   }
 
-  const patchDefinedElsewhereInfo = (variable: VariableOption) => ({
+  const patchDefinedElsewhereInfo = (variable: VariableOption): VariableOption => ({
     variableName: variable.variableName,
     value: variable.value,
     definedElsewhere: objectName,
     displayName: variable.displayName,
     depth: variable.depth,
+    advanced: advanced,
   })
 
   if (Array.isArray(value)) {
@@ -46,10 +49,11 @@ function valuesFromObject(
         definedElsewhere: objectName,
         value: `[ ]`,
         depth: depth,
+        advanced: advanced,
       }),
     ].concat(
       value.flatMap((v, idx) =>
-        valuesFromVariable(`${name}[${idx}]`, v, depth + 1, `${displayName}[${idx}]`).map(
+        valuesFromVariable(`${name}[${idx}]`, v, depth + 1, `${displayName}[${idx}]`, advanced).map(
           (variable) => patchDefinedElsewhereInfo(variable),
         ),
       ),
@@ -63,10 +67,11 @@ function valuesFromObject(
       definedElsewhere: objectName,
       value: `{ }`,
       depth: depth,
+      advanced: false,
     }),
   ].concat(
     Object.entries(value).flatMap(([key, field]) =>
-      valuesFromVariable(`${name}['${key}']`, field, depth + 1, key).map((variable) =>
+      valuesFromVariable(`${name}['${key}']`, field, depth + 1, key, advanced).map((variable) =>
         patchDefinedElsewhereInfo(variable),
       ),
     ),
@@ -78,6 +83,7 @@ function valuesFromVariable(
   value: unknown,
   depth: number,
   displayName: string,
+  advanced: boolean,
 ): Array<VariableOption> {
   switch (typeof value) {
     case 'bigint':
@@ -92,10 +98,11 @@ function valuesFromVariable(
           definedElsewhere: name,
           value: `${value}`,
           depth: depth,
+          advanced: advanced,
         },
       ]
     case 'object':
-      return valuesFromObject(name, name, value, depth, displayName)
+      return valuesFromObject(name, name, value, depth, displayName, advanced)
     case 'function':
     case 'symbol':
       return []
@@ -108,11 +115,17 @@ function usePropertyControlDescriptions(): Array<ControlDescription> {
   )
 }
 
+interface VariablesInScopeByPriority {
+  valuesMatchingPropertyDescription: [string, unknown][]
+  valuesMatchingPropertyShape: [string, unknown][]
+  restOfValues: [string, unknown][]
+}
+
 function orderVariablesInScope(
   variableNamesInScope: VariableData,
   controlDescriptions: Array<ControlDescription>,
   currentPropertyValue: PropertyValue,
-): Array<[string, unknown]> {
+): VariablesInScopeByPriority {
   let valuesMatchingPropertyDescription: [string, unknown][] = []
   let valuesMatchingPropertyShape: [string, unknown][] = []
   let restOfValues: [string, unknown][] = []
@@ -134,7 +147,7 @@ function orderVariablesInScope(
     }
   }
 
-  return [...valuesMatchingPropertyDescription, ...valuesMatchingPropertyShape, ...restOfValues]
+  return { valuesMatchingPropertyDescription, valuesMatchingPropertyShape, restOfValues }
 }
 
 const filterKeyFromObject =
@@ -207,9 +220,16 @@ export function useVariablesInScopeForSelectedElement(
       currentPropertyValue,
     )
 
-    return orderedVariablesInScope.flatMap(([name, variable]) =>
-      valuesFromVariable(name, variable, 0, name),
+    const priorityValues = [
+      ...orderedVariablesInScope.valuesMatchingPropertyDescription,
+      ...orderedVariablesInScope.valuesMatchingPropertyShape,
+    ].flatMap(([name, variable]) => valuesFromVariable(name, variable, 0, name, true))
+
+    const restOfValues = orderedVariablesInScope.restOfValues.flatMap(([name, variable]) =>
+      valuesFromVariable(name, variable, 0, name, false),
     )
+
+    return [...priorityValues, ...restOfValues]
   }, [controlDescriptions, currentPropertyValue, selectedViewPath, variablesInScope])
 
   return variableNamesInScope

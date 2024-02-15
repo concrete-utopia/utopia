@@ -17,6 +17,7 @@ export interface VariableOption {
   definedElsewhere: string | null
   value: string
   depth: number
+  advanced: boolean
 }
 
 export interface DataPickerPopupProps {
@@ -94,7 +95,7 @@ export const DataPickerPopup = React.memo(
             <span>Data</span>
           </div>
           {variableNamesInScope.map(
-            ({ variableName, definedElsewhere, value, displayName, depth = 0 }, idx) => {
+            ({ variableName, definedElsewhere, value, displayName, depth, advanced }, idx) => {
               return (
                 <Button
                   data-testid={VariableFromScopeOptionTestId(idx)}
@@ -112,6 +113,7 @@ export const DataPickerPopup = React.memo(
                       width: '100%',
                       minHeight: 'auto',
                       gridTemplateColumns: '48% 48%',
+                      opacity: advanced ? 1 : 0.5,
                     }}
                   >
                     <div>
