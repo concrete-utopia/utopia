@@ -73,15 +73,28 @@ import { GithubRepositoryCloneFlow } from '../github/github-repository-clone-flo
 import { getPermissions } from './store/permissions'
 import { CommentMaintainer } from '../../core/commenting/comment-maintainer'
 import { useIsLoggedIn, useLiveblocksConnectionListener } from '../../core/shared/multiplayer-hooks'
+import { ForkSearchParamKey, ProjectForkFlow } from './project-fork-flow'
 
 const liveModeToastId = 'play-mode-toast'
 
-function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
+function pushProjectURLToBrowserHistory(
+  projectId: string,
+  projectName: string,
+  forking: boolean,
+): void {
   // Make sure we don't replace the query params
-  const queryParams = window.top?.location.search
+  const queryParams = new URLSearchParams(window.top?.location.search)
+  if (forking) {
+    // …but if it's forking, remove the fork param
+    queryParams.delete(ForkSearchParamKey)
+  }
+
+  const queryParamsStr = queryParams.size > 0 ? `?${queryParams.toString()}` : ''
+
   const projectURL = projectURLForProject(projectId, projectName)
   const title = `Utopia ${projectName}`
-  window.top?.history.pushState({}, title, `${projectURL}${queryParams}`)
+
+  window.top?.history.pushState({}, title, `${projectURL}${queryParamsStr}`)
 }
 
 export interface EditorProps {}
@@ -333,15 +346,17 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     document.title = projectName + ' - Utopia'
   }, [projectName])
 
+  const forking = useEditorState(Substores.restOfEditor, (store) => store.editor.forking, '')
+
   React.useEffect(() => {
     if (IS_BROWSER_TEST_DEBUG) {
       return
     }
     if (projectId != null) {
-      pushProjectURLToBrowserHistory(projectId, projectName)
+      pushProjectURLToBrowserHistory(projectId, projectName, forking)
       ;(window as any).utopiaProjectID = projectId
     }
-  }, [projectName, projectId])
+  }, [projectName, projectId, forking])
 
   const onClosePreview = React.useCallback(
     () => dispatch([EditorActions.setPanelVisibility('preview', false)]),
@@ -478,6 +493,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
         </SimpleFlexColumn>
         <ModalComponent />
         <GithubRepositoryCloneFlow />
+        <ProjectForkFlow />
         <LockedOverlay />
       </SimpleFlexRow>
       <EditorCommon
@@ -626,7 +642,7 @@ const LockedOverlay = React.memo(() => {
   const githubOperations = useEditorState(
     Substores.github,
     (store) => store.editor.githubOperations.filter((op) => githubOperationLocksEditor(op)),
-    'EditorComponentInner githubOperations',
+    'LockedOverlay githubOperations',
   )
 
   const editorLocked = React.useMemo(() => githubOperations.length > 0, [githubOperations])
@@ -634,7 +650,13 @@ const LockedOverlay = React.memo(() => {
   const refreshingDependencies = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.refreshingDependencies,
-    'EditorComponentInner refreshingDependencies',
+    'LockedOverlay refreshingDependencies',
+  )
+
+  const forking = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.forking,
+    'LockedOverlay forking',
   )
 
   const anim = keyframes`
@@ -647,8 +669,8 @@ const LockedOverlay = React.memo(() => {
   `
 
   const locked = React.useMemo(() => {
-    return editorLocked || refreshingDependencies
-  }, [editorLocked, refreshingDependencies])
+    return editorLocked || refreshingDependencies || forking
+  }, [editorLocked, refreshingDependencies, forking])
 
   const dialogContent = React.useMemo((): string | null => {
     if (refreshingDependencies) {
@@ -657,8 +679,11 @@ const LockedOverlay = React.memo(() => {
     if (githubOperations.length > 0) {
       return `${githubOperationPrettyName(githubOperations[0])}…`
     }
+    if (forking) {
+      return 'Forking project…'
+    }
     return null
-  }, [refreshingDependencies, githubOperations])
+  }, [refreshingDependencies, githubOperations, forking])
 
   if (!locked) {
     return null

@@ -6,6 +6,7 @@ import { notice } from '../../common/notice'
 import type { EditorAction, EditorDispatch } from '../action-types'
 import {
   setForkedFromProjectID,
+  setForking,
   setProjectID,
   setProjectName,
   showToast,
@@ -89,6 +90,7 @@ export class PersistenceMachine {
               this.queuedActions.push(setForkedFromProjectID(state.context.projectId!))
               this.queuedActions.push(setProjectName(state.context.project!.name))
               this.queuedActions.push(showToast(notice('Project successfully forked!')))
+              this.queuedActions.push(setForking(false))
             }
 
             const updateFileActions = event.downloadAssetsResult.filesWithFileNames.map(
