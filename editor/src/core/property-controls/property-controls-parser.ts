@@ -28,6 +28,7 @@ import type {
   BasicControlOptions,
   ExpressionControlOption,
   TupleControlDescription,
+  HtmlInputControlDescription,
 } from 'utopia-api/core'
 import { parseColor } from '../../components/inspector/common/css-utils'
 import type { Parser, ParseResult } from '../../utils/value-parser-utils'
@@ -251,6 +252,29 @@ export function parseStringInputControlDescription(
     },
     optionalObjectKeyParser(parseString, 'label')(value),
     objectKeyParser(parseConstant('string-input'), 'control')(value),
+    optionalObjectKeyParser(parseString, 'placeholder')(value),
+    optionalObjectKeyParser(parseBoolean, 'obscured')(value),
+    optionalObjectKeyParser(parseBoolean, 'visibleByDefault')(value),
+  )
+}
+
+export function parseHtmlInputControlDescription(
+  value: unknown,
+): ParseResult<HtmlInputControlDescription> {
+  return applicative5Either(
+    (label, control, placeholder, obscured, visibleByDefault) => {
+      let htmlInputControlDescription: HtmlInputControlDescription = {
+        control: control,
+      }
+      setOptionalProp(htmlInputControlDescription, 'label', label)
+      setOptionalProp(htmlInputControlDescription, 'placeholder', placeholder)
+      setOptionalProp(htmlInputControlDescription, 'obscured', obscured)
+      setOptionalProp(htmlInputControlDescription, 'visibleByDefault', visibleByDefault)
+
+      return htmlInputControlDescription
+    },
+    optionalObjectKeyParser(parseString, 'label')(value),
+    objectKeyParser(parseConstant('html-input'), 'control')(value),
     optionalObjectKeyParser(parseString, 'placeholder')(value),
     optionalObjectKeyParser(parseBoolean, 'obscured')(value),
     optionalObjectKeyParser(parseBoolean, 'visibleByDefault')(value),
@@ -657,6 +681,8 @@ function parseRegularControlDescription(value: unknown): ParseResult<RegularCont
         return parsePopUpListControlDescription(value)
       case 'string-input':
         return parseStringInputControlDescription(value)
+      case 'html-input':
+        return parseHtmlInputControlDescription(value)
       case 'style-controls':
         return parseStyleControlsControlDescription(value)
       case 'tuple':
