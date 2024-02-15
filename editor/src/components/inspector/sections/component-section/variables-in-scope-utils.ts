@@ -51,9 +51,13 @@ function valuesFromObject(
         depth: depth,
         variableType: 'array',
         variableChildren: value.flatMap((v, idx) =>
-          valuesFromVariable(`${name}[${idx}]`, v, depth + 1, `${displayName}[${idx}]`).map(
-            (variable) => patchDefinedElsewhereInfo(variable),
-          ),
+          valuesFromVariable(
+            `${name}[${idx}]`,
+            v,
+            depth + 1,
+            `${displayName}[${idx}]`,
+            objectName,
+          ).map((variable) => patchDefinedElsewhereInfo(variable)),
         ),
       }),
     ]
@@ -68,7 +72,7 @@ function valuesFromObject(
       depth: depth,
       variableType: 'object',
       variableChildren: Object.entries(value).flatMap(([key, field]) =>
-        valuesFromVariable(`${name}['${key}']`, field, depth + 1, key).map((variable) =>
+        valuesFromVariable(`${name}['${key}']`, field, depth + 1, key, objectName).map((variable) =>
           patchDefinedElsewhereInfo(variable),
         ),
       ),
@@ -81,6 +85,7 @@ function valuesFromVariable(
   value: unknown,
   depth: number,
   displayName: string,
+  originalObjectName: string,
 ): Array<VariableOption> {
   switch (typeof value) {
     case 'bigint':
@@ -99,7 +104,7 @@ function valuesFromVariable(
         },
       ]
     case 'object':
-      return valuesFromObject(name, name, value, depth, displayName)
+      return valuesFromObject(name, originalObjectName, value, depth, displayName)
     case 'function':
     case 'symbol':
       return []
@@ -212,7 +217,7 @@ export function useVariablesInScopeForSelectedElement(
     )
 
     return orderedVariablesInScope.flatMap(([name, variable]) =>
-      valuesFromVariable(name, variable, 0, name),
+      valuesFromVariable(name, variable, 0, name, name),
     )
   }, [controlDescriptions, currentPropertyValue, selectedViewPath, variablesInScope])
 
