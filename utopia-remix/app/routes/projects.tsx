@@ -104,13 +104,6 @@ const ProjectsPage = React.memo(() => {
     [selectedProjectId, setSelectedProjectId],
   )
 
-  const handleCategoryClick = React.useCallback(
-    (category: React.SetStateAction<string>) => {
-      udpateCategory(category as Category)
-    },
-    [setCategory],
-  )
-
   const udpateCategory = React.useCallback(
     (category: Category) => {
       setCategory(category)
@@ -119,6 +112,13 @@ const ProjectsPage = React.memo(() => {
       updateProjects(category)
     },
     [selectedCategory, setSelectedProjectId, updateProjects],
+  )
+
+  const handleCategoryClick = React.useCallback(
+    (category: React.SetStateAction<string>) => {
+      udpateCategory(category as Category)
+    },
+    [udpateCategory],
   )
 
   // when the media query changes, update the theme
