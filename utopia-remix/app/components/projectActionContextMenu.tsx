@@ -121,13 +121,13 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
         style={{
           background: 'white',
           padding: 4,
-          boxShadow: '2px 3px 4px #dddddd',
+          boxShadow: '2px 3px 4px #00000030',
           border: '1px solid #ccc',
           borderRadius: 4,
           display: 'flex',
           flexDirection: 'column',
           gap: 4,
-          minWidth: 100,
+          minWidth: 170,
         }}
         sideOffset={5}
       >
