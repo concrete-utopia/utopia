@@ -8,6 +8,7 @@ import { ProjectContextMenu } from '../components/projectActionContextMenu'
 import { listDeletedProjects, listProjects } from '../models/project.server'
 import { useStore } from '../store'
 import { button } from '../styles/button.css'
+import { text } from '../styles/text.css'
 import { newProjectButton } from '../styles/newProjectButton.css'
 import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
 import { sprinkles } from '../styles/sprinkles.css'
@@ -313,12 +314,10 @@ const ProjectsPage = React.memo(() => {
               flexDirection: 'row',
               alignItems: 'center',
               gap: 10,
-              fontSize: 16,
-              fontWeight: 600,
               padding: '5px 10px',
             }}
           >
-            <div>
+            <div style={{ fontSize: 16, fontWeight: 600 }}>
               {when(
                 searchQuery !== '',
                 <span>
@@ -349,43 +348,63 @@ const ProjectsPage = React.memo(() => {
             </div>
             <div>
               {when(
-                selectedCategory === 'trash',
-                <button
-                  className={button({ size: 'small' })}
-                  onClick={handleEmptyTrash}
-                  disabled={filteredProjects.length === 0}
-                >
+                selectedCategory === 'trash' && filteredProjects.length > 0,
+                <button className={button({ size: 'small' })} onClick={handleEmptyTrash}>
                   Empty trash
                 </button>,
               )}
             </div>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'row' }}>
+          <div
+            style={{ display: 'flex', flexDirection: 'row' }}
+            className={text({ size: 'small' })}
+          >
             <div>Sort</div>
           </div>
         </div>
-
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignContent: 'flex-start',
-            gap: marginSize,
-            flexGrow: 1,
-            flexDirection: 'row',
-            overflowY: 'scroll',
-            scrollbarColor: 'lightgrey transparent',
-          }}
-        >
-          {filteredProjects.map((project) => (
-            <ProjectCard
-              key={project.proj_id}
-              project={project}
-              selected={project.proj_id === selectedProjectId}
-              onSelect={() => handleProjectSelect(project)}
-            />
-          ))}
-        </div>
+        {when(
+          filteredProjects.length > 0,
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignContent: 'flex-start',
+              gap: marginSize,
+              flexGrow: 1,
+              flexDirection: 'row',
+              overflowY: 'scroll',
+              scrollbarColor: 'lightgrey transparent',
+            }}
+          >
+            {filteredProjects.map((project) => (
+              <ProjectCard
+                key={project.proj_id}
+                project={project}
+                selected={project.proj_id === selectedProjectId}
+                onSelect={() => handleProjectSelect(project)}
+              />
+            ))}
+          </div>,
+        )}
+        {when(
+          filteredProjects.length === 0,
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              flexGrow: 1,
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 10,
+            }}
+          >
+            <div className={text({ size: 'medium' })}> Your trash is empty! </div>
+            <div className={text({ size: 'small' })}>
+              {' '}
+              Deleted projects are kept here until you destroy them permanently.
+            </div>
+          </div>,
+        )}
       </div>
     </div>
   )
