@@ -86,6 +86,7 @@ export const DataPickerPopup = React.memo(
             boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
             borderRadius: UtopiaTheme.inputBorderRadius,
             alignItems: 'flex-start',
+            width: '96%',
           }}
           data-testid={DataPickerPopupTestId}
         >
@@ -99,7 +100,7 @@ export const DataPickerPopup = React.memo(
                   data-testid={VariableFromScopeOptionTestId(idx)}
                   key={variableName}
                   onClick={onTweakProperty(variableName, definedElsewhere)}
-                  style={{ width: '100%' }}
+                  style={{ width: '100%', height: 25 }}
                 >
                   <UIGridRow
                     padded={false}
@@ -109,6 +110,8 @@ export const DataPickerPopup = React.memo(
                       alignItems: 'flex-start',
                       gap: 8,
                       width: '100%',
+                      minHeight: 'auto',
+                      gridTemplateColumns: '48% 48%',
                     }}
                   >
                     <div>
@@ -117,6 +120,8 @@ export const DataPickerPopup = React.memo(
                           marginLeft: 4 * depth,
                           borderRadius: 2,
                           fontWeight: 400,
+                          display: 'flex',
+                          maxWidth: '100%',
                         }}
                       >
                         {depth > 0 ? (
@@ -126,21 +131,32 @@ export const DataPickerPopup = React.memo(
                               borderBottom: `1px solid ${colorTheme.neutralBorder.value}`,
                               width: 5,
                               display: 'inline-block',
-                              height: 9,
+                              height: 10,
                               marginRight: 4,
                               position: 'relative',
-                              top: -2,
+                              top: 0,
                               marginLeft: (depth - 1) * 8,
+                              flex: 'none',
+                              textOverflow: 'ellipsis',
+                              overflow: 'hidden',
                             }}
                           ></span>
                         ) : null}
-                        {displayName}
+                        <span
+                          style={{
+                            textOverflow: 'ellipsis',
+                            overflow: 'hidden',
+                          }}
+                        >
+                          {displayName}
+                        </span>
                       </span>
                     </div>
                     <div
                       style={{
                         display: 'flex',
                         justifyContent: 'flex-end',
+                        width: '94%',
                       }}
                     >
                       <span
