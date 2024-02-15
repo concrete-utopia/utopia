@@ -316,6 +316,7 @@ import type {
   UpdateImportsFromCollaborationUpdate,
   UpdateCodeFromCollaborationUpdate,
   SetCommentFilterMode,
+  SetForking,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -912,6 +913,7 @@ export function restoreEditorState(
     filesModifiedByAnotherUser: currentEditor.filesModifiedByAnotherUser,
     activeFrames: currentEditor.activeFrames,
     commentFilterMode: currentEditor.commentFilterMode,
+    forking: currentEditor.forking,
   }
 }
 
@@ -2073,6 +2075,12 @@ export const UPDATE_FNS = {
   },
   ADD_TOAST: (action: AddToast, editor: EditorModel): EditorModel => {
     return addToastToState(editor, action.toast)
+  },
+  SET_FORKING: (action: SetForking, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      forking: action.forking,
+    }
   },
   UPDATE_GITHUB_OPERATIONS: (action: UpdateGithubOperations, editor: EditorModel): EditorModel => {
     const operations = [...editor.githubOperations]

@@ -453,6 +453,8 @@ export function runSimpleLocalEditorAction(
       )
     case 'SET_COMMENT_FILTER_MODE':
       return UPDATE_FNS.SET_SHOW_RESOLVED_THREADS(action, state)
+    case 'SET_FORKING':
+      return UPDATE_FNS.SET_FORKING(action, state)
     default:
       return state
   }
