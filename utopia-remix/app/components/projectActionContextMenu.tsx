@@ -116,46 +116,42 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
   }, [selectedCategory])
 
   return (
-    <>
-      <DropdownMenu.Portal>
-        <DropdownMenu.Content
-          style={{
-            background: 'white',
-            padding: 4,
-            boxShadow: '2px 3px 4px #dddddd',
-            border: '1px solid #ccc',
-            borderRadius: 4,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 4,
-            minWidth: 100,
-          }}
-          sideOffset={5}
-        >
-          {menuEntries.map((entry, index) => {
-            if (entry === 'separator') {
-              return (
-                <DropdownMenu.Separator
-                  key={`separator-${index}`}
-                  style={{ backgroundColor: colors.separator, height: 1 }}
-                />
-              )
-            }
+    <DropdownMenu.Portal>
+      <DropdownMenu.Content
+        style={{
+          background: 'white',
+          padding: 4,
+          boxShadow: '2px 3px 4px #dddddd',
+          border: '1px solid #ccc',
+          borderRadius: 4,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 4,
+          minWidth: 100,
+        }}
+        sideOffset={5}
+      >
+        {menuEntries.map((entry, index) => {
+          if (entry === 'separator') {
             return (
-              <DropdownMenu.Item
-                key={`entry-${index}`}
-                onClick={() => entry.onClick(project)}
-                className={contextMenuItem()}
-              >
-                {entry.text}
-              </DropdownMenu.Item>
+              <DropdownMenu.Separator
+                key={`separator-${index}`}
+                style={{ backgroundColor: colors.separator, height: 1 }}
+              />
             )
-          })}
-        </DropdownMenu.Content>
-      </DropdownMenu.Portal>
-
-      <fetcher.Form />
-    </>
+          }
+          return (
+            <DropdownMenu.Item
+              key={`entry-${index}`}
+              onClick={() => entry.onClick(project)}
+              className={contextMenuItem()}
+            >
+              {entry.text}
+            </DropdownMenu.Item>
+          )
+        })}
+      </DropdownMenu.Content>
+    </DropdownMenu.Portal>
   )
 })
 ProjectContextMenu.displayName = 'ProjectContextMenu'
