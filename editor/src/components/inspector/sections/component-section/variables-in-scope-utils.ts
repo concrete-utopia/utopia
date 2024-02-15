@@ -137,10 +137,28 @@ function orderVariablesInScope(
   return [...valuesMatchingPropertyDescription, ...valuesMatchingPropertyShape, ...restOfValues]
 }
 
-function filterFromVariablesInScope(
-  paths: Array<Array<string>>,
-  variablesInScope: VariableData,
-): VariableData {}
+const filterKeyFromObject =
+  (propName: string) =>
+  <T extends Record<string, unknown>>(variablesInScope: T): T => {
+    let next = { ...variablesInScope }
+    delete next[propName]
+    return next
+  }
+
+const filterObjectPropFromVariablesInScope =
+  ({ prop, key }: { prop: string; key: string }) =>
+  (variablesInScope: VariableData): VariableData => {
+    const target = variablesInScope[prop]
+    if (target == null || typeof target !== 'object') {
+      return variablesInScope
+    }
+    let next = { ...variablesInScope }
+    next[prop] = {
+      insertionCeiling: next[prop].insertionCeiling,
+      spiedValue: filterKeyFromObject(key)(target.spiedValue as Record<string, unknown>),
+    }
+    return next
+  }
 
 export function useVariablesInScopeForSelectedElement(
   selectedView: ElementPath,
@@ -172,17 +190,15 @@ export function useVariablesInScopeForSelectedElement(
       return []
     }
 
-    variablesInScopeForSelectedPath = filterFromVariablesInScope(
-      [
-        ['props', 'className'],
-        ['props', 'style'],
-        ['props', 'css'],
-        ['style'],
-        ['classname'],
-        ['css'],
-      ],
-      variablesInScopeForSelectedPath,
-    )
+    variablesInScopeForSelectedPath = [
+      filterKeyFromObject('className'),
+      filterKeyFromObject('style'),
+      filterKeyFromObject('css'),
+      filterObjectPropFromVariablesInScope({ prop: 'props', key: 'className' }),
+      filterObjectPropFromVariablesInScope({ prop: 'props', key: 'style' }),
+      filterObjectPropFromVariablesInScope({ prop: 'props', key: 'css' }),
+    ].reduce((vars, fn) => fn(vars), variablesInScopeForSelectedPath)
+
     const orderedVariablesInScope = orderVariablesInScope(
       variablesInScopeForSelectedPath,
       controlDescriptions,
