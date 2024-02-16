@@ -237,7 +237,7 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
               <ValueRow
                 key={child.variableName}
                 variableOption={child}
-                idx={index}
+                idx={idx + 1 + index}
                 onTweakProperty={onTweakProperty}
               />
             )
