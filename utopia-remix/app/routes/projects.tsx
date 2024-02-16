@@ -418,7 +418,6 @@ const ProjectsPage = React.memo(() => {
               style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 10 }}
               className={text({ size: 'small' })}
             >
-              <div>Sort:</div>
               {sortButton('title', 'Title')}
               {sortButton('dateCreated', 'Date Created')}
               {sortButton('dateModified', 'Date Modified')}
@@ -433,7 +432,7 @@ const ProjectsPage = React.memo(() => {
                       alignItems: 'center',
                       background: '#a4a4a420',
                       padding: 6,
-                      borderRadius: 6,
+                      borderRadius: 4,
                     }}
                   >
                     {convertToTitleCase(sortCriteria)} {sortOrder === 'asc' ? '↑' : '↓'}
