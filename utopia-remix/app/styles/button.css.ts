@@ -15,6 +15,10 @@ export const button = recipe({
       alignItems: 'center',
       justifyContent: 'center',
       gap: 4,
+      ':disabled': {
+        opacity: 0.5,
+        cursor: 'not-allowed',
+      },
     },
   ],
 
@@ -26,9 +30,9 @@ export const button = recipe({
       danger: { background: 'red' },
     },
     size: {
-      small: { padding: 8 },
-      medium: { padding: 10 },
-      large: { padding: 16 },
+      small: { padding: 8, fontSize: '.9em' },
+      medium: { padding: 10, fontSize: '1em' },
+      large: { padding: 16, fontSize: '1.1em' },
     },
   },
 
