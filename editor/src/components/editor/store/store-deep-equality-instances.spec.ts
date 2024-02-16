@@ -475,6 +475,7 @@ describe('JSXAttributeValueKeepDeepEqualityCall', () => {
 describe('JSXAttributeOtherJavaScriptKeepDeepEqualityCall', () => {
   const oldValue: JSExpressionOtherJavaScript = {
     type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
+    params: [],
     originalJavascript: 'old',
     javascript: 'old',
     transpiledJavascript: 'old',
@@ -486,6 +487,7 @@ describe('JSXAttributeOtherJavaScriptKeepDeepEqualityCall', () => {
   }
   const newSameValue: JSExpressionOtherJavaScript = {
     type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
+    params: [],
     originalJavascript: 'old',
     javascript: 'old',
     transpiledJavascript: 'old',
@@ -497,6 +499,7 @@ describe('JSXAttributeOtherJavaScriptKeepDeepEqualityCall', () => {
   }
   const newDifferentValue: JSExpressionOtherJavaScript = {
     type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
+    params: [],
     originalJavascript: 'new',
     javascript: 'new',
     transpiledJavascript: 'old',

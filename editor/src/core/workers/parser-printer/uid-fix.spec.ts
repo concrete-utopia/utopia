@@ -653,6 +653,7 @@ describe('fixJSXElementChildUIDs', () => {
   it('handles the case where an element gets wrapped with an expression', () => {
     const before = jsxElement('div', 'div-uid', [], [])
     const after = jsExpressionOtherJavaScript(
+      [],
       'something',
       'something',
       'return something',

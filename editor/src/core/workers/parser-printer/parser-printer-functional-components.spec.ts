@@ -232,6 +232,7 @@ describe('Parsing a function component with props', () => {
       regularParam(
         'props',
         jsExpressionOtherJavaScript(
+          [],
           '{thing: true}',
           '{thing: true}',
           `return ({
@@ -366,6 +367,7 @@ describe('Parsing a function component with props', () => {
       regularParam(
         'prop',
         jsExpressionOtherJavaScript(
+          [],
           '5',
           '5',
           'return 5;',
@@ -465,6 +467,7 @@ describe('Parsing a function component with props', () => {
       regularParam(
         'renamedProp',
         jsExpressionOtherJavaScript(
+          [],
           '5',
           '5',
           'return 5;',
@@ -604,6 +607,7 @@ describe('Parsing a function component with props', () => {
       regularParam(
         'prop',
         jsExpressionOtherJavaScript(
+          [],
           '5',
           '5',
           'return 5;',
@@ -757,6 +761,7 @@ describe('Parsing a function component with props', () => {
       regularParam(
         'renamedProp2',
         jsExpressionOtherJavaScript(
+          [],
           '{thing: true}',
           '{thing: true}',
           `return ({
@@ -782,6 +787,7 @@ describe('Parsing a function component with props', () => {
       regularParam(
         'prop1',
         jsExpressionOtherJavaScript(
+          [],
           '5',
           '5',
           'return 5;',

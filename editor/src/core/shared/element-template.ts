@@ -174,6 +174,7 @@ export function jsxAttributeNotFound(): JSXAttributeNotFound {
 
 export interface JSExpressionOtherJavaScript extends WithComments, WithElementsWithin {
   type: 'ATTRIBUTE_OTHER_JAVASCRIPT'
+  params: Array<Param>
   originalJavascript: string
   javascript: string
   transpiledJavascript: string
@@ -183,6 +184,7 @@ export interface JSExpressionOtherJavaScript extends WithComments, WithElementsW
 }
 
 export function jsExpressionOtherJavaScript(
+  params: Array<Param>,
   originalJavascript: string,
   javascript: string,
   transpiledJavascript: string,
@@ -194,6 +196,7 @@ export function jsExpressionOtherJavaScript(
 ): JSExpressionOtherJavaScript {
   return {
     type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
+    params: params,
     originalJavascript: originalJavascript,
     javascript: javascript,
     transpiledJavascript: transpiledJavascript,
@@ -210,6 +213,7 @@ export function jsExpressionOtherJavaScriptSimple(
   definedElsewhere: Array<string>,
 ): JSExpressionOtherJavaScript {
   return jsExpressionOtherJavaScript(
+    [],
     javascript,
     javascript,
     `return ${javascript}`,
@@ -1598,6 +1602,7 @@ export function utopiaJSXComponent(
 }
 
 export function arbitraryJSBlock(
+  params: Array<Param>,
   javascript: string,
   transpiledJavascript: string,
   definedWithin: Array<string>,
@@ -1608,6 +1613,7 @@ export function arbitraryJSBlock(
 ): ArbitraryJSBlock {
   return {
     type: 'ARBITRARY_JS_BLOCK',
+    params: params,
     javascript: javascript,
     transpiledJavascript: transpiledJavascript,
     definedWithin: definedWithin,
@@ -1777,6 +1783,10 @@ export function propNamesForParam(param: Param): Array<string> {
   }
 }
 
+export function propertiesExposedByParams(params: Array<Param>): Array<string> {
+  return params.flatMap(propertiesExposedByParam)
+}
+
 export function propertiesExposedByParam(param: Param): Array<string> {
   switch (param.boundParam.type) {
     case 'REGULAR_PARAM':
@@ -1826,6 +1836,7 @@ export interface UtopiaJSXComponent {
 
 export type ArbitraryJSBlock = {
   type: 'ARBITRARY_JS_BLOCK'
+  params: Array<Param>
   javascript: string
   transpiledJavascript: string
   definedWithin: Array<string>

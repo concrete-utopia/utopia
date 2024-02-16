@@ -102,6 +102,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       'data-uid': jsExpressionValue('aab', emptyComments),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionOtherJavaScript(
+        [],
         'props.leftOfTheCake[0].hat',
         'props.leftOfTheCake[0].hat',
         'return props.leftOfTheCake[0].hat;',
@@ -244,6 +245,7 @@ export function whatever(props) {
       'data-uid': jsExpressionValue('aab', emptyComments),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionOtherJavaScript(
+        [],
         'props.leftOfTheCake[0].hat',
         'props.leftOfTheCake[0].hat',
         'return props.leftOfTheCake[0].hat;',
@@ -390,6 +392,7 @@ export default function whatever(props) {
       'data-uid': jsExpressionValue('aab', emptyComments),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionOtherJavaScript(
+        [],
         'props.leftOfTheCake[0].hat',
         'props.leftOfTheCake[0].hat',
         'return props.leftOfTheCake[0].hat;',
@@ -533,6 +536,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       'data-uid': jsExpressionValue('aab', emptyComments),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionOtherJavaScript(
+        [],
         'props.leftOfTheCake[0].hat',
         'props.leftOfTheCake[0].hat',
         'return props.leftOfTheCake[0].hat;',
@@ -615,6 +619,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       'data-uid': jsExpressionValue('aab', emptyComments),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionOtherJavaScript(
+        [],
         'props.leftOfTheCake[0].hat',
         'props.leftOfTheCake[0].hat',
         'return props.leftOfTheCake[0].hat;',
@@ -630,6 +635,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       'data-uid': jsExpressionValue('aac', emptyComments),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionOtherJavaScript(
+        [],
         'props.leftOfTheCake[0].hat',
         'props.leftOfTheCake[0].hat',
         'return props.leftOfTheCake[0].hat;',
@@ -704,6 +710,7 @@ export var whatever = (props) => <View data-uid='aaa'>
         'data-uid': jsExpressionValue('aac', emptyComments),
         style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
         left: jsExpressionOtherJavaScript(
+          [],
           'props.leftOfTheCake[0].hat',
           'props.leftOfTheCake[0].hat',
           'return props.leftOfTheCake[0].hat;',
@@ -779,6 +786,7 @@ export var whatever = (props) => <View data-uid='aaa'>
         'data-label': jsExpressionValue('First cake', emptyComments),
         style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
         left: jsExpressionOtherJavaScript(
+          [],
           'props.leftOfTheCake[0].hat',
           'props.leftOfTheCake[0].hat',
           'return props.leftOfTheCake[0].hat;',
@@ -796,6 +804,7 @@ export var whatever = (props) => <View data-uid='aaa'>
         'data-label': jsExpressionValue('Second cake', emptyComments),
         style: jsExpressionValue({ backgroundColor: 'blue' }, emptyComments),
         left: jsExpressionOtherJavaScript(
+          [],
           'props.rightOfTheCake[0].hat',
           'props.rightOfTheCake[0].hat',
           'return props.rightOfTheCake[0].hat;',
@@ -874,6 +883,7 @@ export var whatever = (props) => <View data-uid='aaa'>
         emptyComments,
       ),
       left: jsExpressionOtherJavaScript(
+        [],
         'props.leftOfTheCake[0].hat',
         'props.leftOfTheCake[0].hat',
         'return props.leftOfTheCake[0].hat;',
@@ -955,6 +965,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       'data-uid': jsExpressionValue('aab', emptyComments),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionOtherJavaScript(
+        [],
         'getSizing(spacing)',
         'getSizing(spacing)',
         'return getSizing(spacing);',
@@ -970,6 +981,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       right: jsExpressionValue(20, emptyComments),
       top: jsExpressionValue(-20, emptyComments),
       onClick: jsExpressionOtherJavaScript(
+        [],
         `function click(){console.log('click')}`,
         `function click(){console.log('click')}`,
         `return (function click() {
@@ -1012,6 +1024,7 @@ export var whatever = (props) => <View data-uid='aaa'>
 }
 return { getSizing: getSizing };`
     const arbitraryBlock1 = arbitraryJSBlock(
+      [],
       jsCode1,
       transpiledJsCode1,
       ['getSizing'],
@@ -1027,6 +1040,7 @@ return { getSizing: getSizing };`
     const transpiledJsCode2 = `var spacing = 20;
 return { spacing: spacing };`
     const arbitraryBlock2 = arbitraryJSBlock(
+      [],
       jsCode2,
       transpiledJsCode2,
       ['spacing'],
@@ -1049,6 +1063,7 @@ var spacing = 20`
 var spacing = 20;
 return { getSizing: getSizing, spacing: spacing };`
     const combinedArbitraryBlock = arbitraryJSBlock(
+      [],
       combinedJsCode,
       transpiledcombinedJsCode,
       ['getSizing', 'spacing'],
@@ -1109,6 +1124,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       'data-uid': jsExpressionValue('aab', emptyComments),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionOtherJavaScript(
+        [],
         'props.leftOfTheCake[0].hat',
         'props.leftOfTheCake[0].hat',
         'return props.leftOfTheCake[0].hat;',
@@ -1147,6 +1163,7 @@ export var whatever = (props) => <View data-uid='aaa'>
 }
 return { getSizing: getSizing };`
     const arbitraryBlock = arbitraryJSBlock(
+      [],
       jsCode,
       transpiledJsCode,
       ['getSizing'],
@@ -1212,6 +1229,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       'data-uid': jsExpressionValue('aab', emptyComments),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionOtherJavaScript(
+        [],
         'props.leftOfTheCake[0].hat',
         'props.leftOfTheCake[0].hat',
         'return props.leftOfTheCake[0].hat;',
@@ -1261,6 +1279,7 @@ export var whatever = (props) => <View data-uid='aaa'>
 }
 return { getSizing: getSizing };`
     const arbitraryBlock = arbitraryJSBlock(
+      [],
       jsCode,
       transpiledJsCode,
       ['getSizing'],
@@ -1321,6 +1340,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       'data-uid': jsExpressionValue('aab', emptyComments),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionOtherJavaScript(
+        [],
         'props.leftOfTheCake[0].hat',
         'props.leftOfTheCake[0].hat',
         'return props.leftOfTheCake[0].hat;',
@@ -1359,6 +1379,7 @@ export var whatever = (props) => <View data-uid='aaa'>
 });
 return {  };`
     const arbitraryBlock = arbitraryJSBlock(
+      [],
       jsCode,
       transpiledJsCode,
       [],
@@ -1417,6 +1438,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       'data-uid': jsExpressionValue('aab', emptyComments),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionOtherJavaScript(
+        [],
         'spacing',
         'spacing',
         'return spacing;',
@@ -1454,6 +1476,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     const transpiledJSCode = `var spacing = 20;
 return { spacing: spacing };`
     const jsVariable = arbitraryJSBlock(
+      [],
       'var spacing = 20',
       transpiledJSCode,
       ['spacing'],
@@ -1506,6 +1529,7 @@ export var whatever = (props) => {
       style: jsxAttributeNestedObjectSimple(
         jsxAttributesFromMap({
           backgroundColor: jsExpressionOtherJavaScript(
+            [],
             'bgs[0]',
             'bgs[0]',
             'return bgs[0];',
@@ -1529,6 +1553,7 @@ export var whatever = (props) => {
 var bg = bgs[0];
 return { bgs: bgs, bg: bg };`
     const arbitraryBlock = arbitraryJSBlock(
+      [],
       jsCode,
       transpiledJsCode,
       ['bgs', 'bg'],
@@ -1586,6 +1611,7 @@ export var whatever = (props) => {
           jsxArrayValue(jsExpressionValue('black', emptyComments), emptyComments),
           jsxArraySpread(
             jsExpressionOtherJavaScript(
+              [],
               'greys',
               'greys',
               'return greys;',
@@ -1609,6 +1635,7 @@ export var whatever = (props) => {
     const transpiledJsCode = `var greys = ['lightGrey', 'grey'];
 return { greys: greys };`
     const arbitraryBlock = arbitraryJSBlock(
+      [],
       jsCode,
       transpiledJsCode,
       ['greys'],
@@ -1663,6 +1690,7 @@ export var whatever = (props) => {
     const viewAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsExpressionValue('aaa', emptyComments),
       left: jsExpressionOtherJavaScript(
+        [],
         'a + b',
         'a + b',
         'return a + b;',
@@ -1683,6 +1711,7 @@ export var whatever = (props) => {
 var b = 20;
 return { a: a, b: b };`
     const arbitraryBlock = arbitraryJSBlock(
+      [],
       jsCode,
       transpiledJsCode,
       ['a', 'b'],
@@ -1738,6 +1767,7 @@ export var whatever = (props) => {
     const viewAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsExpressionValue('aaa', emptyComments),
       left: jsExpressionOtherJavaScript(
+        [],
         'a ? b : c',
         'a ? b : c',
         'return a ? b : c;',
@@ -1760,6 +1790,7 @@ var b = 10;
 var c = 20;
 return { a: a, b: b, c: c };`
     const arbitraryBlock = arbitraryJSBlock(
+      [],
       jsCode,
       transpiledJsCode,
       ['a', 'b', 'c'],
@@ -1813,6 +1844,7 @@ export var whatever = (props) => {
     const viewAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsExpressionValue('aaa', emptyComments),
       left: jsExpressionOtherJavaScript(
+        [],
         'a++',
         'a++',
         'return a++;',
@@ -1826,6 +1858,7 @@ export var whatever = (props) => {
         emptyComments,
       ),
       right: jsExpressionOtherJavaScript(
+        [],
         '++a',
         '++a',
         'return ++a;',
@@ -1844,6 +1877,7 @@ export var whatever = (props) => {
     const transpiledJsCode = `var a = 10;
 return { a: a };`
     const arbitraryBlock = arbitraryJSBlock(
+      [],
       jsCode,
       transpiledJsCode,
       ['a'],
@@ -1898,6 +1932,7 @@ export var whatever = (props) => {
     const viewAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsExpressionValue('aaa', emptyComments),
       left: jsExpressionOtherJavaScript(
+        [],
         'b.a',
         'b.a',
         'return b.a;',
@@ -1920,6 +1955,7 @@ var b = {
 };
 return { a: a, b: b };`
     const arbitraryBlock = arbitraryJSBlock(
+      [],
       jsCode,
       transpiledJsCode,
       ['a', 'b'],
@@ -2036,6 +2072,7 @@ export var whatever = (props) => {
         [
           jsxSpreadAssignment(
             jsExpressionOtherJavaScript(
+              [],
               'bg',
               'bg',
               'return bg;',
@@ -2061,6 +2098,7 @@ export var whatever = (props) => {
 };
 return { bg: bg };`
     const arbitraryBlock = arbitraryJSBlock(
+      [],
       jsCode,
       transpiledJsCode,
       ['bg'],
@@ -2122,6 +2160,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       'data-uid': jsExpressionValue('aab', emptyComments),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       text: jsExpressionOtherJavaScript(
+        [],
         '`Count ${count}`',
         '`Count ${count}`',
         'return "Count ".concat(count);',
@@ -2158,6 +2197,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     const transpiledJSCode = `var count = 10;
 return { count: count };`
     const jsVariable = arbitraryJSBlock(
+      [],
       jsCode,
       transpiledJSCode,
       ['count'],
@@ -2215,6 +2255,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       'data-uid': jsExpressionValue('aab', emptyComments),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionOtherJavaScript(
+        [],
         'use20 ? 20 : 10',
         'use20 ? 20 : 10',
         'return use20 ? 20 : 10;',
@@ -2252,6 +2293,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     const transpiledJSCode = `var use20 = true;
 return { use20: use20 };`
     const jsVariable = arbitraryJSBlock(
+      [],
       'var use20 = true',
       transpiledJSCode,
       ['use20'],
@@ -2324,6 +2366,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     const transpiledJSCode = `var mySet = new Set();
 return { mySet: mySet };`
     const jsVariable = arbitraryJSBlock(
+      [],
       'var mySet = new Set()',
       transpiledJSCode,
       ['mySet'],
@@ -2373,6 +2416,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       'data-uid': jsExpressionValue('aab', emptyComments),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionOtherJavaScript(
+        [],
         'props.left + spacing',
         'props.left + spacing',
         'return props.left + spacing;',
@@ -2410,6 +2454,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     const transpiledJSCode = `var spacing = 20;
 return { spacing: spacing };`
     const jsVariable = arbitraryJSBlock(
+      [],
       'var spacing = 20',
       transpiledJSCode,
       ['spacing'],
@@ -2499,6 +2544,7 @@ export var whatever = (props) => <View data-uid='aaa'>
 return { MyComp: MyComp };`
     const definedElseWhere = ['React', JSX_CANVAS_LOOKUP_FUNCTION_NAME]
     const MyComp = arbitraryJSBlock(
+      [],
       jsCode,
       transpiledJsCode,
       ['MyComp'],
@@ -2596,6 +2642,7 @@ export var whatever = props => (
           jsxPropertyAssignment(
             'left',
             jsExpressionOtherJavaScript(
+              [],
               'props.layout.left',
               'props.layout.left',
               'return props.layout.left;',
@@ -2610,6 +2657,7 @@ export var whatever = props => (
           jsxPropertyAssignment(
             'top',
             jsExpressionOtherJavaScript(
+              [],
               'props.layout.top',
               'props.layout.top',
               'return props.layout.top;',
@@ -2786,6 +2834,7 @@ export var whatever = (props) => <View data-uid='aaa'>
               backgroundColor: jsExpressionValue('red', emptyComments),
               color: jsxAttributeNestedArraySimple([
                 jsExpressionOtherJavaScript(
+                  [],
                   'props.color',
                   'props.color',
                   'return props.color;',
@@ -2932,7 +2981,7 @@ export var App = (props) => <View data-uid='bbb'>
       clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
     const emptyBrackets = {
-      ...jsExpressionOtherJavaScript('', '', 'return undefined', [], null, {}, emptyComments),
+      ...jsExpressionOtherJavaScript([], '', '', 'return undefined', [], null, {}, emptyComments),
       uid: expect.any(String),
     }
     const view = clearJSXElementChildUniqueIDs(
@@ -3060,6 +3109,7 @@ export var App = (props) => <View data-uid='bbb'>
       'data-uid': jsExpressionValue('aab', emptyComments),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionOtherJavaScript(
+        [],
         'getSizing(spacing)',
         'getSizing(spacing)',
         'return getSizing(spacing);',
@@ -3102,6 +3152,7 @@ export var App = (props) => <View data-uid='bbb'>
 }
 return { getSizing: getSizing };`
     const arbitraryBlock1 = arbitraryJSBlock(
+      [],
       jsCode1,
       transpiledJSCode1,
       ['getSizing'],
@@ -3117,6 +3168,7 @@ return { getSizing: getSizing };`
     const transpiledJSCode2 = `var spacing = 20;
 return { spacing: spacing };`
     const arbitraryBlock2 = arbitraryJSBlock(
+      [],
       jsCode2,
       transpiledJSCode2,
       ['spacing'],
@@ -3139,6 +3191,7 @@ var spacing = 20`
 var spacing = 20;
 return { getSizing: getSizing, spacing: spacing };`
     const combinedArbitraryBlock = arbitraryJSBlock(
+      [],
       combinedJSCode,
       transpiledcombinedJSCode,
       ['getSizing', 'spacing'],
@@ -3463,6 +3516,7 @@ export var whatever = props => {
             backgroundColor: jsExpressionValue('red', emptyComments),
             color: jsxAttributeNestedArraySimple([
               jsExpressionOtherJavaScript(
+                [],
                 'props.color',
                 'props.color',
                 'return props.color;',
@@ -3476,6 +3530,7 @@ export var whatever = props => {
             boxShadow: jsExpressionFunctionCall('createShadow', [
               jsExpressionValue(15, emptyComments),
               jsExpressionOtherJavaScript(
+                [],
                 'props.shadowValue',
                 'props.shadowValue',
                 'return props.shadowValue;',
@@ -3487,6 +3542,7 @@ export var whatever = props => {
               jsxAttributeNestedArraySimple([
                 jsExpressionValue('hello', emptyComments),
                 jsExpressionOtherJavaScript(
+                  [],
                   'props.there',
                   'props.there',
                   'return props.there;',
@@ -3626,6 +3682,7 @@ return { test: test };`
       sampleImportsForTests,
     )
     const arbitraryBlock = arbitraryJSBlock(
+      [],
       jsCode,
       transpiledJSCode,
       ['test'],
@@ -3661,6 +3718,7 @@ return { test: test };`
                   jsxAttributesFromMap({
                     'data-uid': jsExpressionValue('aab', emptyComments),
                     left: jsExpressionOtherJavaScript(
+                      [],
                       'test(100)',
                       'test(100)',
                       'return test(100);',
@@ -3731,6 +3789,7 @@ return { test: test };`
                 jsxAttributesFromMap({
                   'data-uid': jsExpressionValue('aab', emptyComments),
                   left: jsExpressionOtherJavaScript(
+                    [],
                     'test(100)',
                     'test(100)',
                     'return test(100);',
@@ -3749,6 +3808,7 @@ return { test: test };`
             ],
           ),
           arbitraryJSBlock(
+            [],
             jsCode,
             transpiledJSCode,
             ['test'],
@@ -4226,6 +4286,7 @@ export var App = props => {
           layout: jsxAttributeNestedObjectSimple(
             jsxAttributesFromMap({
               height: jsExpressionOtherJavaScript(
+                [],
                 'props.layout.height',
                 'props.layout.height',
                 'return props.layout.height;',
@@ -4235,6 +4296,7 @@ export var App = props => {
                 emptyComments,
               ),
               left: jsExpressionOtherJavaScript(
+                [],
                 'props.layout.left',
                 'props.layout.left',
                 'return props.layout.left;',
@@ -4244,6 +4306,7 @@ export var App = props => {
                 emptyComments,
               ),
               width: jsExpressionOtherJavaScript(
+                [],
                 'props.layout.width',
                 'props.layout.width',
                 'return props.layout.width;',
@@ -4253,6 +4316,7 @@ export var App = props => {
                 emptyComments,
               ),
               top: jsExpressionOtherJavaScript(
+                [],
                 'props.layout.top',
                 'props.layout.top',
                 'return props.layout.top;',
@@ -4269,6 +4333,7 @@ export var App = props => {
         [myCustomComponent, view],
       ),
       arbitraryJSBlock(
+        [],
         `const a = 20;
   const b = 40;
   const MyCustomComponent = props => <View data-uid="abc">{props.children}</View>;`,
@@ -4504,6 +4569,7 @@ while (true) {
 }
 return {  };`
     const arbitraryBlock = arbitraryJSBlock(
+      [],
       arbitraryBlockCode,
       arbitraryBlockTranspiledCode,
       [],
@@ -4579,6 +4645,7 @@ for (var n = 0; n < 5; n++) {
 }
 return { result: result };`
     const arbitraryBlock = arbitraryJSBlock(
+      [],
       arbitraryBlockCode,
       arbitraryBlockTranspiledCode,
       ['result'],
@@ -4597,6 +4664,7 @@ return { result: result };`
       },
     )
     const innerBlock = jsExpressionOtherJavaScript(
+      [],
       'result',
       'result;',
       'return result;',
@@ -4672,6 +4740,7 @@ export var whatever = props => {
               jsxPropertyAssignment(
                 'left',
                 jsExpressionOtherJavaScript(
+                  [],
                   `n * 30`,
                   `n * 30`,
                   `return n * 30;`,
@@ -4686,6 +4755,7 @@ export var whatever = props => {
               jsxPropertyAssignment(
                 'top',
                 jsExpressionOtherJavaScript(
+                  [],
                   `n * 30`,
                   `n * 30`,
                   `return n * 30;`,
@@ -4786,6 +4856,7 @@ export var whatever = props => {
               jsxPropertyAssignment(
                 'left',
                 jsExpressionOtherJavaScript(
+                  [],
                   `n * a`,
                   `n * a`,
                   `return n * a;`,
@@ -4800,6 +4871,7 @@ export var whatever = props => {
               jsxPropertyAssignment(
                 'top',
                 jsExpressionOtherJavaScript(
+                  [],
                   `n * a`,
                   `n * a`,
                   `return n * a;`,
@@ -4835,6 +4907,7 @@ export var whatever = props => {
     )
 
     const topLevelArbitraryBlock = arbitraryJSBlock(
+      [],
       `const a = 30`,
       `var a = 30;
 return { a: a };`,

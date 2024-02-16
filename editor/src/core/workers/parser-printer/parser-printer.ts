@@ -106,6 +106,7 @@ import {
   extractPrefixedCode,
   markedAsExported,
   markedAsDefault,
+  parseParams,
 } from './parser-printer-parsing'
 import { jsonToExpression } from './json-to-expression'
 import { difference } from '../../shared/set-utils'
@@ -1498,11 +1499,15 @@ export function parseCode(
                 boundParam != null && isRegularParam(boundParam) ? boundParam.paramName : null
 
               propsUsed = param == null ? [] : propNamesForParam(param.value)
-
               parsedContents = parseOutFunctionContents(
                 sourceFile,
                 sourceText,
                 filePath,
+                foldEither(
+                  () => [],
+                  (paramsSuccess) => paramsSuccess.value,
+                  parsedFunctionParams,
+                ),
                 imports,
                 topLevelNames,
                 propsObjectName,
@@ -1759,210 +1764,6 @@ export function parseCode(
 
     // Return the corrected result.
     return fixedParseSuccess
-  }
-}
-
-function parseParams(
-  params: TS.NodeArray<TS.ParameterDeclaration>,
-  file: TS.SourceFile,
-  sourceText: string,
-  filename: string,
-  imports: Imports,
-  topLevelNames: Array<string>,
-  existingHighlightBounds: Readonly<HighlightBoundsForUids>,
-  existingUIDs: Set<string>,
-  applySteganography: SteganographyMode,
-): Either<string, WithParserMetadata<Array<Param>>> {
-  let parsedParams: Array<Param> = []
-  let highlightBounds: HighlightBoundsForUids = { ...existingHighlightBounds }
-  let propsUsed: Array<string> = []
-  for (const param of params) {
-    const parseResult = parseParam(
-      param,
-      file,
-      sourceText,
-      filename,
-      imports,
-      topLevelNames,
-      highlightBounds,
-      existingUIDs,
-      applySteganography,
-    )
-    if (isRight(parseResult)) {
-      const parsedParam = parseResult.value
-      highlightBounds = {
-        ...highlightBounds,
-        ...parsedParam.highlightBounds,
-      }
-      propsUsed = [...propsUsed, ...parsedParam.propsUsed]
-      parsedParams.push(parsedParam.value)
-    } else {
-      return parseResult
-    }
-  }
-  return right(withParserMetadata(parsedParams, highlightBounds, propsUsed, []))
-}
-
-function parseParam(
-  param: TS.ParameterDeclaration | TS.BindingElement,
-  file: TS.SourceFile,
-  sourceText: string,
-  filename: string,
-  imports: Imports,
-  topLevelNames: Array<string>,
-  existingHighlightBounds: Readonly<HighlightBoundsForUids>,
-  existingUIDs: Set<string>,
-  applySteganography: SteganographyMode,
-): Either<string, WithParserMetadata<Param>> {
-  const dotDotDotToken = param.dotDotDotToken != null
-  const parsedExpression: Either<
-    string,
-    WithParserMetadata<JSExpressionMapOrOtherJavascript | undefined>
-  > = param.initializer == null
-    ? right(withParserMetadata(undefined, existingHighlightBounds, [], []))
-    : parseAttributeOtherJavaScript(
-        file,
-        sourceText,
-        filename,
-        imports,
-        topLevelNames,
-        null,
-        param.initializer,
-        existingHighlightBounds,
-        existingUIDs,
-        applySteganography,
-      )
-  return flatMapEither((paramExpression) => {
-    const parsedBindingName = parseBindingName(
-      param.name,
-      paramExpression,
-      file,
-      sourceText,
-      filename,
-      imports,
-      topLevelNames,
-      existingHighlightBounds,
-      existingUIDs,
-      applySteganography,
-    )
-    return mapEither(
-      (bindingName) =>
-        withParserMetadata(
-          functionParam(dotDotDotToken, bindingName.value),
-          bindingName.highlightBounds,
-          bindingName.propsUsed,
-          [],
-        ),
-      parsedBindingName,
-    )
-  }, parsedExpression)
-}
-
-function parseBindingName(
-  elem: TS.BindingName,
-  expression: WithParserMetadata<JSExpressionMapOrOtherJavascript | undefined>,
-  file: TS.SourceFile,
-  sourceText: string,
-  filename: string,
-  imports: Imports,
-  topLevelNames: Array<string>,
-  existingHighlightBounds: Readonly<HighlightBoundsForUids>,
-  existingUIDs: Set<string>,
-  applySteganography: SteganographyMode,
-): Either<string, WithParserMetadata<BoundParam>> {
-  let highlightBounds: HighlightBoundsForUids = {
-    ...existingHighlightBounds,
-    ...expression.highlightBounds,
-  }
-  let propsUsed: Array<string> = [...expression.propsUsed]
-
-  if (TS.isIdentifier(elem)) {
-    const parsedParamName = getPropertyNameText(elem, file)
-    return mapEither(
-      (paramName) =>
-        withParserMetadata(
-          regularParam(paramName, expression.value ?? null),
-          highlightBounds,
-          propsUsed,
-          [],
-        ),
-      parsedParamName,
-    )
-  } else if (TS.isObjectBindingPattern(elem)) {
-    let parts: Array<DestructuredParamPart> = []
-    for (const element of elem.elements) {
-      const parsedPropertyName: Either<string, string | null> =
-        element.propertyName == null ? right(null) : getPropertyNameText(element.propertyName, file)
-      if (isRight(parsedPropertyName)) {
-        const propertyName = parsedPropertyName.value
-        const parsedParam = parseParam(
-          element,
-          file,
-          sourceText,
-          filename,
-          imports,
-          topLevelNames,
-          highlightBounds,
-          existingUIDs,
-          applySteganography,
-        )
-        if (isRight(parsedParam)) {
-          const bound = parsedParam.value.value
-          highlightBounds = {
-            ...highlightBounds,
-            ...parsedParam.value.highlightBounds,
-          }
-          propsUsed = [...propsUsed, ...parsedParam.value.propsUsed]
-          if (propertyName == null) {
-            if (isRegularParam(bound.boundParam)) {
-              parts.push(destructuredParamPart(undefined, bound, null))
-            } else {
-              return left('Unable to parse bound object parameter with no parameter propertyName')
-            }
-          } else {
-            parts.push(destructuredParamPart(propertyName, bound, null))
-          }
-        } else {
-          return parsedParam
-        }
-      } else {
-        return parsedPropertyName
-      }
-    }
-    return right(withParserMetadata(destructuredObject(parts), highlightBounds, propsUsed, []))
-  } else if (TS.isArrayBindingPattern(elem)) {
-    let parts: Array<DestructuredArrayPart> = []
-    for (const element of elem.elements) {
-      if (TS.isOmittedExpression(element)) {
-        parts.push(omittedParam())
-      } else {
-        const parsedParam = parseParam(
-          element,
-          file,
-          sourceText,
-          filename,
-          imports,
-          topLevelNames,
-          highlightBounds,
-          existingUIDs,
-          applySteganography,
-        )
-        if (isRight(parsedParam)) {
-          const bound = parsedParam.value.value
-          highlightBounds = {
-            ...highlightBounds,
-            ...parsedParam.value.highlightBounds,
-          }
-          propsUsed = [...propsUsed, ...parsedParam.value.propsUsed]
-          parts.push(bound)
-        } else {
-          return parsedParam
-        }
-      }
-    }
-    return right(withParserMetadata(destructuredArray(parts), highlightBounds, propsUsed, []))
-  } else {
-    return left('Unable to parse binding element')
   }
 }
 

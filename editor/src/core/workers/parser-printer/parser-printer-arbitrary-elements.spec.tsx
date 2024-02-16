@@ -226,6 +226,7 @@ export var whatever = props => (
     )
 
     const codeBlock = jsExpressionOtherJavaScript(
+      [],
       `<MyComp data-uid='aab'/>`,
       `<MyComp data-uid='aab' />;`,
       `return utopiaCanvasJSXLookup("aab", {
@@ -322,6 +323,7 @@ export var whatever = (props) => {
               jsxAttributesFromMap({
                 'data-uid': jsExpressionValue('aab', emptyComments),
                 thing: jsExpressionOtherJavaScript(
+                  [],
                   'n',
                   'n',
                   'return n;',
@@ -349,6 +351,7 @@ export var whatever = (props) => {
 }];
 return { arr: arr };`
     const arbitraryBlock = arbitraryJSBlock(
+      [],
       jsCode,
       transpiledJsCode,
       ['arr'],
@@ -429,6 +432,7 @@ export var whatever = (props) => {
               jsxAttributesFromMap({
                 'data-uid': jsExpressionValue('aab', emptyComments),
                 thing: jsExpressionOtherJavaScript(
+                  [],
                   'n',
                   'n',
                   'return n;',
@@ -458,6 +462,7 @@ export var whatever = (props) => {
 }];
 return { arr: arr };`
     const arbitraryBlock = arbitraryJSBlock(
+      [],
       jsCode,
       transpiledJsCode,
       ['arr'],
@@ -543,6 +548,7 @@ export var whatever = (props) => {
               jsxAttributesFromMap({
                 'data-uid': jsExpressionValue('aab', emptyComments),
                 thing: jsExpressionOtherJavaScript(
+                  [],
                   'n',
                   'n',
                   'return n;',
@@ -568,6 +574,7 @@ export var whatever = (props) => {
     const transpiledJsCode = `var arr = [[1]];
 return { arr: arr };`
     const arbitraryBlock = arbitraryJSBlock(
+      [],
       jsCode,
       transpiledJsCode,
       ['arr'],
@@ -653,6 +660,7 @@ export var whatever = (props) => {
                   }),
                   [
                     jsExpressionOtherJavaScript(
+                      [],
                       `n`,
                       `n;`,
                       `return n;`,
@@ -732,6 +740,7 @@ export var whatever = (props) => {
       }),
       [
         jsExpressionOtherJavaScript(
+          [],
           mapJsCode,
           mapJsCode,
           transpiledMapJsCode,
@@ -748,6 +757,7 @@ export var whatever = (props) => {
               jsxAttributesFromMap({
                 'data-uid': jsExpressionValue('aab', emptyComments),
                 thing: jsExpressionOtherJavaScript(
+                  [],
                   'n',
                   'n',
                   'return n;',
@@ -772,6 +782,7 @@ export var whatever = (props) => {
     const transpiledJsCode = `var arr = [[[1]]];
 return { arr: arr };`
     const arbitraryBlock = arbitraryJSBlock(
+      [],
       jsCode,
       transpiledJsCode,
       ['arr'],
@@ -857,6 +868,7 @@ export var whatever = (props) => {
                   }),
                   [
                     jsExpressionOtherJavaScript(
+                      [],
                       `n`,
                       `n;`,
                       `return n;`,
@@ -952,6 +964,7 @@ export var whatever = (props) => {
               jsxAttributesFromMap({
                 'data-uid': jsExpressionValue('aab', emptyComments),
                 thing: jsExpressionOtherJavaScript(
+                  [],
                   'n',
                   'n',
                   'return n;',
@@ -977,6 +990,7 @@ export var whatever = (props) => {
     const transpiledJsCode = `var arr = [[[1]]];
 return { arr: arr };`
     const arbitraryBlock = arbitraryJSBlock(
+      [],
       jsCode,
       transpiledJsCode,
       ['arr'],
