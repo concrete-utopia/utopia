@@ -1,10 +1,12 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
+import { CaretDownIcon } from '@radix-ui/react-icons'
 import { LoaderFunctionArgs, json } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { UserDetails } from 'prisma-client'
 import React, { useState } from 'react'
 import { ProjectContextMenu } from '../components/projectActionContextMenu'
+import { SortingContextMenu } from '../components/sortProjectsContextMenu'
 import { listDeletedProjects, listProjects } from '../models/project.server'
 import { useStore } from '../store'
 import { button } from '../styles/button.css'
@@ -218,6 +220,13 @@ const ProjectsPage = React.memo(() => {
     </button>
   )
 
+  const convertToTitleCase = (str: string): string => {
+    return str
+      .replace(/([A-Z])/g, ' $1')
+      .trim()
+      .replace(/^\w/, (c) => c.toUpperCase())
+  }
+
   return (
     <div
       style={{
@@ -403,15 +412,38 @@ const ProjectsPage = React.memo(() => {
               )}
             </div>
           </div>
-          <div
-            style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 10 }}
-            className={text({ size: 'small' })}
-          >
-            <div>Sort:</div>
-            {sortButton('title', 'Title')}
-            {sortButton('dateCreated', 'Date Created')}
-            {sortButton('dateModified', 'Date Modified')}
-          </div>
+          {when(
+            filteredProjects.length > 1,
+            <div
+              style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 10 }}
+              className={text({ size: 'small' })}
+            >
+              <div>Sort:</div>
+              {sortButton('title', 'Title')}
+              {sortButton('dateCreated', 'Date Created')}
+              {sortButton('dateModified', 'Date Modified')}
+              <DropdownMenu.Root>
+                <DropdownMenu.Trigger asChild>
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      width: 130,
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      background: '#a4a4a420',
+                      padding: 6,
+                      borderRadius: 6,
+                    }}
+                  >
+                    {convertToTitleCase(sortCriteria)} {sortOrder === 'asc' ? '↑' : '↓'}
+                    <CaretDownIcon />
+                  </div>
+                </DropdownMenu.Trigger>
+                <SortingContextMenu />
+              </DropdownMenu.Root>
+            </div>,
+          )}
         </div>
         {when(
           filteredProjects.length > 0,

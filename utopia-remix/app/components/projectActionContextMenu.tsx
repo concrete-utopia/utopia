@@ -128,8 +128,10 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
           flexDirection: 'column',
           gap: 4,
           minWidth: 170,
+          position: 'relative',
+          right: 75,
         }}
-        sideOffset={5}
+        sideOffset={5} 
       >
         {menuEntries.map((entry, index) => {
           if (entry === 'separator') {
