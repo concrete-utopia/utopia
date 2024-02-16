@@ -141,7 +141,7 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
         data-testid={VariableFromScopeOptionTestId(idx)}
         key={variableName}
         style={{ width: '100%', height: 25 }}
-        onClick={stopPropagation}
+        onClick={isArray ? stopPropagation : tweakProperty}
       >
         <UIGridRow
           padded={false}
