@@ -457,15 +457,16 @@ const ProjectCard = React.memo(
           onDoubleClick={openProject}
         >
           <div style={{ position: 'absolute', right: 2, bottom: 2, display: 'flex', gap: 2 }}>
-            {collaborators.map((c) => {
+            {collaborators.map((collaborator) => {
               return (
                 <div
+                  key={`collaborator-${project.id}-${collaborator.id}`}
                   style={{
                     borderRadius: '100%',
                     width: 24,
                     height: 24,
                     backgroundColor: colors.primary,
-                    backgroundImage: `url("${c.avatar}")`,
+                    backgroundImage: `url("${collaborator.avatar}")`,
                     backgroundSize: 'cover',
                     color: colors.white,
                     display: 'flex',
@@ -476,10 +477,10 @@ const ProjectCard = React.memo(
                     border: '2px solid white',
                     filter: project.deleted === true ? 'grayscale(1)' : undefined,
                   }}
-                  title={c.name}
+                  title={collaborator.name}
                   className={sprinkles({ boxShadow: 'shadow' })}
                 >
-                  {when(c.avatar === '', multiplayerInitialsFromName(c.name))}
+                  {when(collaborator.avatar === '', multiplayerInitialsFromName(collaborator.name))}
                 </div>
               )
             })}
