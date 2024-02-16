@@ -23,3 +23,24 @@ export const contextMenuItem = recipe({
     },
   ],
 })
+
+export const contextMenuDropdown = recipe({
+  base: [
+    sprinkles({
+      borderRadius: 'small',
+      background: 'white',
+      color: 'lightModeBlack'
+    }),
+    {
+      
+      padding: 4,
+      boxShadow: '2px 3px 4px #00000030',
+      border: '1px solid #ccc',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 4,
+      minWidth: 170,
+      position: 'relative',
+    },
+  ],
+})

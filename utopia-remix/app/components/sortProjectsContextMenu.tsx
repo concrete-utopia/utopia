@@ -1,8 +1,7 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import React from 'react'
-import { useState } from 'react'
 import { useProjectsStore } from '../store'
-import { contextMenuItem } from '../styles/contextMenuItem.css'
+import { contextMenuDropdown, contextMenuItem } from '../styles/contextMenu.css'
 import { colors } from '../styles/sprinkles.css'
 import { CheckIcon } from '@radix-ui/react-icons'
 
@@ -15,18 +14,8 @@ export const SortingContextMenu = React.memo(() => {
   return (
     <DropdownMenu.Portal>
       <DropdownMenu.Content
+        className={contextMenuDropdown()}
         style={{
-          background: 'white',
-          color: 'black',
-          padding: 4,
-          boxShadow: '2px 3px 4px #00000030',
-          border: '1px solid #ccc',
-          borderRadius: 4,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 4,
-          minWidth: 170,
-          position: 'relative',
           right: 30,
         }}
         sideOffset={5}
