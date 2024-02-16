@@ -9,9 +9,13 @@ export const contextMenuItem = recipe({
     }),
     {
       outline: 'none',
-      padding: '6px 8px',
+      padding: '0px 5px',
       cursor: 'pointer',
       border: 'none !important',
+      height: 25,
+      display: 'flex',
+      alignItems: 'center',
+      userSelect: 'none',
       ':hover': {
         backgroundColor: colors.primary,
         color: 'white',

@@ -1,10 +1,12 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
+import { CaretDownIcon } from '@radix-ui/react-icons'
 import { LoaderFunctionArgs, json } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { UserDetails } from 'prisma-client'
 import React from 'react'
 import { ProjectContextMenu } from '../components/projectActionContextMenu'
+import { SortingContextMenu } from '../components/sortProjectsContextMenu'
 import { useIsDarkMode } from '../hooks/useIsDarkMode'
 import { listDeletedProjects, listProjects } from '../models/project.server'
 import { useProjectsStore } from '../store'
@@ -17,6 +19,9 @@ import { requireUser } from '../util/api.server'
 import { assertNever } from '../util/assertNever'
 import { projectEditorLink } from '../util/links'
 import { when } from '../util/react-conditionals'
+
+const SortCriteria = ['title', 'dateCreated', 'dateModified'] as const
+export type SortCriteria = (typeof SortCriteria)[number]
 
 const Categories = ['allProjects', 'trash'] as const
 
@@ -92,7 +97,7 @@ const ProjectsPage = React.memo(() => {
         }}
       >
         <TopActionBar />
-        <CategoryHeader projects={activeProjects} />
+        <ProjectsHeader projects={activeProjects} />
         <ProjectCards projects={activeProjects} />)
       </div>
     </div>
@@ -272,15 +277,82 @@ const TopActionBar = React.memo(() => {
 })
 TopActionBar.displayName = 'TopActionBar'
 
-const CategoryHeader = React.memo(({ projects }: { projects: ProjectWithoutContent[] }) => {
+const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutContent[] }) => {
   const searchQuery = useProjectsStore((store) => store.searchQuery)
   const setSearchQuery = useProjectsStore((store) => store.setSearchQuery)
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
 
+  const sortCriteria = useProjectsStore((store) => store.sortCriteria)
+  const setSortCriteria = useProjectsStore((store) => store.setSortCriteria)
+  const sortAscending = useProjectsStore((store) => store.sortAscending)
+  const setSortAscending = useProjectsStore((store) => store.setSortAscending)
+
+  // const filteredProjects = React.useMemo(() => {
+  //   const sanitizedQuery = searchQuery.trim().toLowerCase()
+  //   let sortedProjects = [...projects]
+
+  //   if (sanitizedQuery.length > 0) {
+  //     sortedProjects = sortedProjects.filter((project) =>
+  //       project.title.toLowerCase().includes(sanitizedQuery),
+  //     )
+  //   }
+
+  //   switch (sortCriteria) {
+  //     case 'title':
+  //       sortedProjects.sort((a, b) => a.title.localeCompare(b.title))
+  //       break
+  //     case 'dateCreated':
+  //       sortedProjects.sort((a, b) => {
+  //         const dateA = new Date(a.created_at)
+  //         const dateB = new Date(b.created_at)
+  //         return dateA.getTime() - dateB.getTime()
+  //       })
+  //       break
+  //     case 'dateModified':
+  //       sortedProjects.sort((a, b) => {
+  //         const dateA = new Date(a.modified_at)
+  //         const dateB = new Date(b.modified_at)
+  //         return dateA.getTime() - dateB.getTime()
+  //       })
+  //       break
+  //     default:
+  //       break
+  //   }
+
+  //   if (!sortAscending) {
+  //     sortedProjects.reverse()
+  //   }
+
+  //   return sortedProjects
+  // }, [projects, searchQuery, sortCriteria, sortAscending])
+
+  const convertToTitleCase = (str: string): string => {
+    return str
+      .replace(/([A-Z])/g, ' $1')
+      .trim()
+      .replace(/^\w/, (c) => c.toUpperCase())
+  }
+
   return (
-    <div style={{ fontSize: 16, fontWeight: 600, padding: '5px 10px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', height: 40 }}>
-        <div style={{ flex: 'auto' }}>
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        height: 40,
+        flexShrink: 0,
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 10,
+          padding: '5px 10px',
+        }}
+      >
+        <div style={{ fontSize: 16, fontWeight: 600 }}>
           {when(
             searchQuery !== '',
             <span>
@@ -307,13 +379,34 @@ const CategoryHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
             <div style={{ flex: 1 }}>{categories[selectedCategory].name}</div>,
           )}
         </div>
-
         <CategoryActions projects={projects} />
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger asChild>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                width: 130,
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                background: '#a4a4a420',
+                padding: 6,
+                borderRadius: 4,
+              }}
+            >
+              {convertToTitleCase(sortCriteria)} {sortAscending ? '↑' : '↓'}
+              <CaretDownIcon />
+            </div>
+          </DropdownMenu.Trigger>
+          <SortingContextMenu />
+        </DropdownMenu.Root>
       </div>
     </div>
   )
 })
-CategoryHeader.displayName = 'CategoryHeader'
+ProjectsHeader.displayName = 'CategoryHeader'
 
 const CategoryActions = React.memo(({ projects }: { projects: ProjectWithoutContent[] }) => {
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
