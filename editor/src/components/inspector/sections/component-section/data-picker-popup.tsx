@@ -211,7 +211,7 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
               }}
             >
               {isArray ? (
-                <Selector
+                <ArrayPaginator
                   selectedIndex={selectedIndex}
                   totalChildCount={totalChildCount}
                   setSelectedIndex={setSelectedIndex}
@@ -248,7 +248,7 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
   )
 }
 
-function Selector({
+function ArrayPaginator({
   selectedIndex,
   totalChildCount,
   setSelectedIndex,

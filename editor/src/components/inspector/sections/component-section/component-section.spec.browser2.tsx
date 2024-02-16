@@ -115,7 +115,6 @@ describe('Set element prop via the data picker', () => {
     expect(options).toEqual([
       'titleIdeas', // the array is at the top because of the array descriptor
       'titleIdeas[0]', // <- array element
-      'titleIdeas[1]', // <- array element
       'titleToo',
       'currentCount',
       'bookInfo',
@@ -153,7 +152,6 @@ describe('Set element prop via the data picker', () => {
       'currentCount',
       'titleIdeas',
       'titleIdeas[0]',
-      'titleIdeas[1]',
     ])
   })
 
@@ -201,10 +199,8 @@ describe('Set element prop via the data picker', () => {
     expect(options).toEqual([
       'authors', // at the top because it's an array of string, same as titleIdeas
       'authors[0]',
-      'authors[1]',
       'titleIdeas', // the original array of string
       'titleIdeas[0]',
-      'titleIdeas[1]',
       'titleToo',
       'currentCount',
     ])
@@ -326,10 +322,8 @@ describe('Set element prop via the data picker', () => {
     expect(options).toEqual([
       'authors',
       'authors[0]',
-      'authors[1]',
       'titleIdeas',
       'titleIdeas[0]',
-      'titleIdeas[1]',
       'props',
       'titleToo',
       'currentCount',
@@ -380,10 +374,8 @@ describe('Set element prop via the data picker', () => {
     expect(options).toEqual([
       'authors',
       'authors[0]',
-      'authors[1]',
       'titleIdeas',
       'titleIdeas[0]',
-      'titleIdeas[1]',
       'titleToo',
       'currentCount',
     ])
