@@ -70,8 +70,9 @@ const ProjectsPage = React.memo(() => {
   const setCategory = useStore((store) => store.setSelectedCategory)
 
   const updateProjects = React.useCallback(
-    (category: Category) => {
-      switch (category) {
+    (category: Category | null) => {
+      const target = category ?? selectedCategory
+      switch (target) {
         case 'allProjects':
           setProjects(data.projects)
           break
@@ -79,10 +80,10 @@ const ProjectsPage = React.memo(() => {
           setProjects(data.deletedProjects)
           break
         default:
-          assertNever(category)
+          assertNever(target)
       }
     },
-    [data.projects, data.deletedProjects],
+    [data.projects, data.deletedProjects, selectedCategory],
   )
 
   const handleEmptyTrash = React.useCallback(() => {
@@ -120,6 +121,12 @@ const ProjectsPage = React.memo(() => {
     },
     [udpateCategory],
   )
+
+  // We need a useEffect on the loader data (hence on the updateProjects callback)
+  // in order to have rerenders when that changes (e.g. a project is deleted).
+  React.useEffect(() => {
+    updateProjects(null)
+  }, [updateProjects])
 
   // when the media query changes, update the theme
   React.useEffect(() => {
