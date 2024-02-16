@@ -8,26 +8,9 @@ import { CheckIcon } from '@radix-ui/react-icons'
 
 export const SortingContextMenu = React.memo(() => {
   const sortCriteria = useProjectsStore((store) => store.sortCriteria)
+  const setSortCriteria = useProjectsStore((store) => store.setSortCriteria)
   const sortAscending = useProjectsStore((store) => store.sortAscending)
-
-  const [sortOption, setSortOption] = useState({
-    option: 'alphabetical',
-    ascending: true,
-  })
-
-  const handleSortOptionChange = (option: string) => {
-    setSortOption((prevSortOption) => ({
-      ...prevSortOption,
-      option,
-    }))
-  }
-
-  const handleAscendingChange = (checked: boolean) => {
-    setSortOption((prevSortOption) => ({
-      ...prevSortOption,
-      ascending: checked,
-    }))
-  }
+  const setSortAscending = useProjectsStore((store) => store.setSortAscending)
 
   return (
     <DropdownMenu.Portal>
@@ -54,7 +37,7 @@ export const SortingContextMenu = React.memo(() => {
         <DropdownMenu.CheckboxItem
           className={contextMenuItem()}
           checked={sortCriteria === 'title'}
-          onCheckedChange={() => handleSortOptionChange('alphabetical')}
+          onCheckedChange={() => setSortCriteria('title')}
         >
           <div style={{ width: 20 }}>
             <DropdownMenu.ItemIndicator className='DropdownMenuItemIndicator'>
@@ -67,7 +50,7 @@ export const SortingContextMenu = React.memo(() => {
         <DropdownMenu.CheckboxItem
           className={contextMenuItem()}
           checked={sortCriteria === 'dateCreated'}
-          onCheckedChange={() => handleSortOptionChange('dateCreated')}
+          onCheckedChange={() => setSortCriteria('dateCreated')}
         >
           <div style={{ width: 20 }}>
             <DropdownMenu.ItemIndicator className='DropdownMenuItemIndicator'>
@@ -79,7 +62,7 @@ export const SortingContextMenu = React.memo(() => {
         <DropdownMenu.CheckboxItem
           className={contextMenuItem()}
           checked={sortCriteria === 'dateModified'}
-          onCheckedChange={() => handleSortOptionChange('dateModified')}
+          onCheckedChange={() => setSortCriteria('dateModified')}
         >
           <div style={{ width: 20 }}>
             <DropdownMenu.ItemIndicator className='DropdownMenuItemIndicator'>
@@ -95,7 +78,7 @@ export const SortingContextMenu = React.memo(() => {
         <DropdownMenu.CheckboxItem
           className={contextMenuItem()}
           checked={sortAscending}
-          onCheckedChange={handleAscendingChange}
+          onCheckedChange={() => setSortAscending(true)}
         >
           <div style={{ width: 20 }}>
             <DropdownMenu.ItemIndicator className='DropdownMenuItemIndicator'>
@@ -107,7 +90,7 @@ export const SortingContextMenu = React.memo(() => {
         <DropdownMenu.CheckboxItem
           className={contextMenuItem()}
           checked={!sortAscending}
-          onCheckedChange={(checked) => handleAscendingChange(!checked)}
+          onCheckedChange={() => setSortAscending(false)}
         >
           <div style={{ width: 20 }}>
             <DropdownMenu.ItemIndicator className='DropdownMenuItemIndicator'>

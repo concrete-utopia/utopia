@@ -98,7 +98,7 @@ const ProjectsPage = React.memo(() => {
       >
         <TopActionBar />
         <ProjectsHeader projects={activeProjects} />
-        <ProjectCards projects={activeProjects} />)
+        <ProjectCards projects={activeProjects} />
       </div>
     </div>
   )
@@ -283,48 +283,7 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
 
   const sortCriteria = useProjectsStore((store) => store.sortCriteria)
-  const setSortCriteria = useProjectsStore((store) => store.setSortCriteria)
   const sortAscending = useProjectsStore((store) => store.sortAscending)
-  const setSortAscending = useProjectsStore((store) => store.setSortAscending)
-
-  // const filteredProjects = React.useMemo(() => {
-  //   const sanitizedQuery = searchQuery.trim().toLowerCase()
-  //   let sortedProjects = [...projects]
-
-  //   if (sanitizedQuery.length > 0) {
-  //     sortedProjects = sortedProjects.filter((project) =>
-  //       project.title.toLowerCase().includes(sanitizedQuery),
-  //     )
-  //   }
-
-  //   switch (sortCriteria) {
-  //     case 'title':
-  //       sortedProjects.sort((a, b) => a.title.localeCompare(b.title))
-  //       break
-  //     case 'dateCreated':
-  //       sortedProjects.sort((a, b) => {
-  //         const dateA = new Date(a.created_at)
-  //         const dateB = new Date(b.created_at)
-  //         return dateA.getTime() - dateB.getTime()
-  //       })
-  //       break
-  //     case 'dateModified':
-  //       sortedProjects.sort((a, b) => {
-  //         const dateA = new Date(a.modified_at)
-  //         const dateB = new Date(b.modified_at)
-  //         return dateA.getTime() - dateB.getTime()
-  //       })
-  //       break
-  //     default:
-  //       break
-  //   }
-
-  //   if (!sortAscending) {
-  //     sortedProjects.reverse()
-  //   }
-
-  //   return sortedProjects
-  // }, [projects, searchQuery, sortCriteria, sortAscending])
 
   const convertToTitleCase = (str: string): string => {
     return str
@@ -453,6 +412,9 @@ const ProjectCards = React.memo(({ projects }: { projects: ProjectWithoutContent
   const selectedProjectId = useProjectsStore((store) => store.selectedProjectId)
   const setSelectedProjectId = useProjectsStore((store) => store.setSelectedProjectId)
 
+  const sortCriteria = useProjectsStore((store) => store.sortCriteria)
+  const sortAscending = useProjectsStore((store) => store.sortAscending)
+
   const handleProjectSelect = React.useCallback(
     (project: ProjectWithoutContent) =>
       setSelectedProjectId(project.proj_id === selectedProjectId ? null : project.proj_id),
@@ -461,11 +423,31 @@ const ProjectCards = React.memo(({ projects }: { projects: ProjectWithoutContent
 
   const filteredProjects = React.useMemo(() => {
     const sanitizedQuery = searchQuery.trim().toLowerCase()
-    if (sanitizedQuery.length === 0) {
-      return projects
+    let sortedProjects = [...projects]
+
+    if (sanitizedQuery.length > 0) {
+      sortedProjects = sortedProjects.filter((project) =>
+        project.title.toLowerCase().includes(sanitizedQuery),
+      )
     }
-    return projects.filter((project) => project.title.toLowerCase().includes(sanitizedQuery))
-  }, [projects, searchQuery])
+
+    sortedProjects.sort((a, b) => {
+      if (sortCriteria === 'title') {
+        return sortAscending ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title)
+      } else if (sortCriteria === 'dateCreated') {
+        const dateA = a.created_at.toString()
+        const dateB = b.created_at.toString()
+        return sortAscending ? dateA.localeCompare(dateB) : dateB.localeCompare(dateA)
+      } else if (sortCriteria === 'dateModified') {
+        const dateA = a.modified_at.toString()
+        const dateB = b.modified_at.toString()
+        return sortAscending ? dateA.localeCompare(dateB) : dateB.localeCompare(dateA)
+      }
+      return 0
+    })
+
+    return sortedProjects
+  }, [projects, searchQuery, sortCriteria, sortAscending])
 
   return (
     <div

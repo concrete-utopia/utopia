@@ -30,23 +30,11 @@ export const button = recipe({
       danger: { background: 'red' },
     },
     size: {
-      small: { padding: 8, fontSize: '.9em' },
-      medium: { padding: 10, fontSize: '1em' },
-      large: { padding: 16, fontSize: '1.1em' },
+      small: { padding: '6px 12px', },
+      medium: { padding: 10, },
+      large: { padding: 16,  },
     },
   },
-
-  compoundVariants: [
-    {
-      variants: {
-        color: 'neutral',
-        size: 'large',
-      },
-      style: {
-        background: 'ghostwhite',
-      },
-    },
-  ],
 
   defaultVariants: {
     color: 'brand',
