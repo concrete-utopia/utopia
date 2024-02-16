@@ -100,7 +100,7 @@ export const DataPickerPopup = React.memo(
               <ValueRow
                 key={variableOption.variableName}
                 variableOption={variableOption}
-                idx={idx}
+                idx={`${idx}`}
                 onTweakProperty={onTweakProperty}
               />
             )
@@ -113,7 +113,7 @@ export const DataPickerPopup = React.memo(
 
 interface ValueRowProps {
   variableOption: VariableOption
-  idx: number
+  idx: string
   onTweakProperty: (name: string, definedElsewhere: string | null) => (e: React.MouseEvent) => void
 }
 
@@ -228,7 +228,7 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
           <ValueRow
             key={variableChildren[selectedIndex].variableName}
             variableOption={variableChildren[selectedIndex]}
-            idx={idx + 1}
+            idx={`${idx}-${selectedIndex}`}
             onTweakProperty={onTweakProperty}
           />
         ) : (
@@ -237,7 +237,7 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
               <ValueRow
                 key={child.variableName}
                 variableOption={child}
-                idx={idx + 1 + index}
+                idx={`${idx}-${index}`}
                 onTweakProperty={onTweakProperty}
               />
             )

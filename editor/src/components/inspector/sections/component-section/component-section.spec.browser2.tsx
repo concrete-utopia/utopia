@@ -38,33 +38,32 @@ describe('Set element prop via the data picker', () => {
       'titleIdeas',
       'titleIdeas[0]',
     ])
-
     // choose a string-valued variable
-    let currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(0))
+    let currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId('0'))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Title too')).not.toBeNull()
     expect(within(theInspector).queryByText('Title too')).not.toBeNull()
 
     // choose another string-valued variable
-    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(1))
+    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId('1'))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Alternate title')).not.toBeNull()
     expect(within(theInspector).queryByText('Alternate title')).not.toBeNull()
 
     // choose an object prop
-    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(3))
+    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId('2-0'))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('The First Title')).not.toBeNull()
     expect(within(theInspector).queryByText('The First Title')).not.toBeNull()
 
     // choose an object prop
-    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(4))
+    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId('2-1'))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Sweet')).not.toBeNull()
     expect(within(theInspector).queryByText('Sweet')).not.toBeNull()
 
     // choose an array element
-    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId(6))
+    currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId('3-0'))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Chapter One')).not.toBeNull()
     expect(within(theInspector).queryByText('Chapter One')).not.toBeNull()

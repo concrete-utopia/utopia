@@ -103,7 +103,7 @@ import { array } from 'prop-types'
 import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
 import { DataPickerPopup } from './data-picker-popup'
 
-export const VariableFromScopeOptionTestId = (idx: number) => `variable-from-scope-${idx}`
+export const VariableFromScopeOptionTestId = (idx: string) => `variable-from-scope-${idx}`
 export const DataPickerPopupButtonTestId = `data-picker-popup-button-test-id`
 export const DataPickerPopupTestId = `data-picker-popup-test-id`
 
