@@ -1,47 +1,30 @@
+import { UserDetails } from 'prisma-client'
 import { LiveblocksAPI } from '../clients/liveblocks.server'
 import { prisma } from '../db.server'
 import { Collaborator, CollaboratorsByProject } from '../types'
-import { ensure } from '../util/api.server'
-import { Status } from '../util/statusCodes.server'
+
+function userToCollaborator(user: UserDetails): Collaborator {
+  return {
+    id: user.user_id,
+    name: user.name ?? '',
+    avatar: user.picture ?? '',
+  }
+}
 
 export async function getCollaborators(params: {
   ids: string[]
   userId: string
 }): Promise<CollaboratorsByProject> {
-  let collaboratorsByProject: CollaboratorsByProject = {}
-  await prisma.$transaction(async (tx) => {
-    for (const id of params.ids) {
-      async function getCollaborators() {
-        const project = await tx.project.findFirst({
-          where: { proj_id: id, owner_id: params.userId },
-        })
-        ensure(project != null, 'Project not found', Status.NOT_FOUND)
-
-        const user = await tx.userDetails.findFirst({ where: { user_id: params.userId } })
-        ensure(user != null, 'User not found', Status.NOT_FOUND)
-
-        const collaboratorsData = await tx.projectCollaborator.findMany({
-          where: { project_id: id },
-          include: { User: true },
-          orderBy: { created_at: 'asc' },
-        })
-        if (collaboratorsData.length === 0) {
-          await tx.projectCollaborator.create({
-            data: { user_id: params.userId, project_id: project.proj_id },
-          })
-          return [{ id: params.userId, name: user.name ?? '', avatar: user.picture ?? '' }]
-        }
-        return collaboratorsData.map(
-          ({ User }): Collaborator => ({
-            id: User.user_id,
-            name: User.name ?? '',
-            avatar: User.picture ?? '',
-          }),
-        )
-      }
-      collaboratorsByProject[id] = await getCollaborators()
-    }
+  const projects = await prisma.project.findMany({
+    where: { proj_id: { in: params.ids }, owner_id: params.userId },
+    include: { ProjectCollaborator: { include: { User: true } } },
   })
+
+  let collaboratorsByProject: CollaboratorsByProject = {}
+  for (const project of projects) {
+    const collaboratorUserDetails = project.ProjectCollaborator.map(({ User }) => User)
+    collaboratorsByProject[project.proj_id] = collaboratorUserDetails.map(userToCollaborator)
+  }
   return collaboratorsByProject
 }
 
