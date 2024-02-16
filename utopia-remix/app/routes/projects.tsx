@@ -1,10 +1,10 @@
+import React from 'react'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
-import { CaretDownIcon } from '@radix-ui/react-icons'
+import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { LoaderFunctionArgs, json } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { UserDetails } from 'prisma-client'
-import React from 'react'
 import { ProjectContextMenu } from '../components/projectActionContextMenu'
 import { SortingContextMenu } from '../components/sortProjectsContextMenu'
 import { useIsDarkMode } from '../hooks/useIsDarkMode'
@@ -340,23 +340,19 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
         </div>
         <CategoryActions projects={projects} />
       </div>
+
       <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 10 }}>
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
             <div
+              className={button()}
               style={{
-                display: 'flex',
-                flexDirection: 'row',
-                width: 130,
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                background: '#a4a4a420',
-                padding: 6,
-                borderRadius: 4,
+                justifyContent: 'flex-end',
+                gap: 10,
               }}
             >
-              {convertToTitleCase(sortCriteria)} {sortAscending ? '↑' : '↓'}
-              <CaretDownIcon />
+              <div>{convertToTitleCase(sortCriteria)} </div>
+              <div>{sortAscending ? '↑' : '↓'}</div>
             </div>
           </DropdownMenu.Trigger>
           <SortingContextMenu />
@@ -395,11 +391,7 @@ const CategoryTrashActions = React.memo(({ projects }: { projects: ProjectWithou
 
   return (
     <>
-      <button
-        className={button({ size: 'small' })}
-        onClick={handleEmptyTrash}
-        disabled={projects.length === 0}
-      >
+      <button className={button()} onClick={handleEmptyTrash} disabled={projects.length === 0}>
         Empty trash
       </button>
     </>
@@ -530,7 +522,7 @@ const ProjectCardActions = React.memo(({ project }: { project: ProjectWithoutCon
       <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
-            <button className={button()}>…</button>
+            <DotsHorizontalIcon className={button()} />
           </DropdownMenu.Trigger>
           <ProjectContextMenu project={project} />
         </DropdownMenu.Root>

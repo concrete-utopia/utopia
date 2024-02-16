@@ -27,7 +27,7 @@ export const SortingContextMenu = React.memo(() => {
           gap: 4,
           minWidth: 170,
           position: 'relative',
-          right: 19,
+          right: 30,
         }}
         sideOffset={5}
       >
