@@ -120,7 +120,14 @@ interface ValueRowProps {
 function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
   const colorTheme = useColorTheme()
   const [selectedIndex, setSelectedIndex] = React.useState<number>(0)
+  const childrenLength = variableOption.variableChildren?.length ?? 0
+  const [childrenOpen, setChildrenOpen] = React.useState<boolean>(
+    variableOption.depth < 2 || childrenLength < 4,
+  )
   const totalChildCount = variableOption.variableChildren?.length ?? 0
+  const toggleChildrenOpen = useCallback(() => {
+    setChildrenOpen(!childrenOpen)
+  }, [childrenOpen, setChildrenOpen])
 
   const {
     variableName,
@@ -135,6 +142,7 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
   const stopPropagation = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
   }, [])
+  const hasObjectChildren = variableChildren != null && variableChildren.length > 0 && !isArray
   return (
     <>
       <Button
@@ -165,24 +173,12 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
                 maxWidth: '100%',
               }}
             >
-              {depth > 0 ? (
-                <span
-                  style={{
-                    borderLeft: `1px solid ${colorTheme.neutralBorder.value}`,
-                    borderBottom: `1px solid ${colorTheme.neutralBorder.value}`,
-                    width: 5,
-                    display: 'inline-block',
-                    height: 10,
-                    marginRight: 4,
-                    position: 'relative',
-                    top: 0,
-                    marginLeft: (depth - 1) * 8,
-                    flex: 'none',
-                    textOverflow: 'ellipsis',
-                    overflow: 'hidden',
-                  }}
-                ></span>
-              ) : null}
+              <PrefixIcon
+                depth={depth}
+                hasObjectChildren={hasObjectChildren}
+                onIconClick={toggleChildrenOpen}
+                open={childrenOpen}
+              />
               <span
                 style={{
                   textOverflow: 'ellipsis',
@@ -231,7 +227,7 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
             idx={`${idx}-${selectedIndex}`}
             onTweakProperty={onTweakProperty}
           />
-        ) : (
+        ) : childrenOpen ? (
           variableChildren.map((child, index) => {
             return (
               <ValueRow
@@ -242,10 +238,63 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
               />
             )
           })
-        )
+        ) : null
       ) : null}
     </>
   )
+}
+
+function PrefixIcon({
+  depth,
+  hasObjectChildren,
+  onIconClick,
+  open,
+}: {
+  depth: number
+  hasObjectChildren: boolean
+  onIconClick: () => void
+  open: boolean
+}) {
+  const colorTheme = useColorTheme()
+  const style = {
+    width: 5,
+    display: 'inline-block',
+    height: 10,
+    marginRight: 4,
+    position: 'relative',
+    top: 0,
+    marginLeft: (depth - 1) * 8,
+    flex: 'none',
+  } as const
+  const onClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation()
+      onIconClick()
+    },
+    [onIconClick],
+  )
+  if (hasObjectChildren) {
+    return (
+      <span
+        style={{ color: colorTheme.neutralBorder.value, fontSize: 6, ...style }}
+        onClick={onClick}
+      >
+        {open ? '▼' : '▶'}
+      </span>
+    )
+  }
+  if (depth > 0) {
+    return (
+      <span
+        style={{
+          borderLeft: `1px solid ${colorTheme.neutralBorder.value}`,
+          borderBottom: `1px solid ${colorTheme.neutralBorder.value}`,
+          ...style,
+        }}
+      ></span>
+    )
+  }
+  return null
 }
 
 function ArrayPaginator({
