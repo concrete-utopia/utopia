@@ -26,6 +26,7 @@ function valuesFromObject(
         definedElsewhere: null,
         value: `null`,
         depth: depth,
+        variableType: 'primitive',
       },
     ]
   }
@@ -36,6 +37,8 @@ function valuesFromObject(
     definedElsewhere: objectName,
     displayName: variable.displayName,
     depth: variable.depth,
+    variableChildren: variable.variableChildren,
+    variableType: variable.variableType,
   })
 
   if (Array.isArray(value)) {
@@ -46,14 +49,18 @@ function valuesFromObject(
         definedElsewhere: objectName,
         value: `[ ]`,
         depth: depth,
-      }),
-    ].concat(
-      value.flatMap((v, idx) =>
-        valuesFromVariable(`${name}[${idx}]`, v, depth + 1, `${displayName}[${idx}]`).map(
-          (variable) => patchDefinedElsewhereInfo(variable),
+        variableType: 'array',
+        variableChildren: value.flatMap((v, idx) =>
+          valuesFromVariable(
+            `${name}[${idx}]`,
+            v,
+            depth + 1,
+            `${displayName}[${idx}]`,
+            objectName,
+          ).map((variable) => patchDefinedElsewhereInfo(variable)),
         ),
-      ),
-    )
+      }),
+    ]
   }
 
   return [
@@ -63,14 +70,14 @@ function valuesFromObject(
       definedElsewhere: objectName,
       value: `{ }`,
       depth: depth,
-    }),
-  ].concat(
-    Object.entries(value).flatMap(([key, field]) =>
-      valuesFromVariable(`${name}['${key}']`, field, depth + 1, key).map((variable) =>
-        patchDefinedElsewhereInfo(variable),
+      variableType: 'object',
+      variableChildren: Object.entries(value).flatMap(([key, field]) =>
+        valuesFromVariable(`${name}['${key}']`, field, depth + 1, key, objectName).map((variable) =>
+          patchDefinedElsewhereInfo(variable),
+        ),
       ),
-    ),
-  )
+    }),
+  ]
 }
 
 function valuesFromVariable(
@@ -78,6 +85,7 @@ function valuesFromVariable(
   value: unknown,
   depth: number,
   displayName: string,
+  originalObjectName: string,
 ): Array<VariableOption> {
   switch (typeof value) {
     case 'bigint':
@@ -92,10 +100,11 @@ function valuesFromVariable(
           definedElsewhere: name,
           value: `${value}`,
           depth: depth,
+          variableType: 'primitive',
         },
       ]
     case 'object':
-      return valuesFromObject(name, name, value, depth, displayName)
+      return valuesFromObject(name, originalObjectName, value, depth, displayName)
     case 'function':
     case 'symbol':
       return []
@@ -208,7 +217,7 @@ export function useVariablesInScopeForSelectedElement(
     )
 
     return orderedVariablesInScope.flatMap(([name, variable]) =>
-      valuesFromVariable(name, variable, 0, name),
+      valuesFromVariable(name, variable, 0, name, name),
     )
   }, [controlDescriptions, currentPropertyValue, selectedViewPath, variablesInScope])
 
