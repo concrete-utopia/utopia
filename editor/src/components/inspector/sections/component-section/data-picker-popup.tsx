@@ -180,6 +180,7 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
                 open={childrenOpen}
               />
               <span
+                data-testid='variable-name'
                 style={{
                   textOverflow: 'ellipsis',
                   overflow: 'hidden',
