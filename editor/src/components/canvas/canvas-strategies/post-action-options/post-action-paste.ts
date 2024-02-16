@@ -12,7 +12,10 @@ import type { Either } from '../../../../core/shared/either'
 import { isLeft, left, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
-import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import {
+  uidFromElementChild,
+  type ElementInstanceMetadataMap,
+} from '../../../../core/shared/element-template'
 import {
   zeroCanvasPoint,
   canvasRectangle,
@@ -191,7 +194,7 @@ function pasteChoiceCommon(
 
       const pathAfterReparent = elementPathFromInsertionPath(
         target.parentPath,
-        elementWithUID.value.uid,
+        uidFromElementChild(elementWithUID.value),
       )
 
       const originalPaths = pathPartsFromJSXElementChild(elementPaste.element, []).map((part) =>
@@ -223,7 +226,7 @@ function pasteChoiceCommon(
             elementPaste.originalElementPath,
           ),
         ),
-        newUID: elementWithUID.value.uid,
+        newUID: uidFromElementChild(elementWithUID.value),
       }
     })
 

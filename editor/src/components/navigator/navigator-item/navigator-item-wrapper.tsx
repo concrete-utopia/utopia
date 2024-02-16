@@ -9,10 +9,12 @@ import * as EP from '../../../core/shared/element-path'
 import type {
   ElementInstanceMetadata,
   JSXConditionalExpression,
+  JSXElementChild,
 } from '../../../core/shared/element-template'
 import {
   getJSXElementNameLastPart,
   isNullJSXAttributeValue,
+  uidFromElementChild,
 } from '../../../core/shared/element-template'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { useDispatch } from '../../editor/store/dispatch-context'
@@ -162,29 +164,34 @@ export function getNavigatorEntryLabel(
           throw assertNever(navigatorEntry.clause)
       }
     case 'SYNTHETIC': {
-      switch (navigatorEntry.childOrAttribute.type) {
-        case 'JSX_ELEMENT':
-          return getJSXElementNameLastPart(navigatorEntry.childOrAttribute.name)
-        case 'JSX_MAP_EXPRESSION':
-        case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-          return '(code)'
-        case 'JSX_TEXT_BLOCK':
-          return navigatorEntry.childOrAttribute.text
-        case 'JSX_FRAGMENT':
-          return 'Fragment'
-        case 'JSX_CONDITIONAL_EXPRESSION':
-          return 'Conditional'
-        case 'ATTRIBUTE_VALUE':
-          return `${navigatorEntry.childOrAttribute.value}`
-        case 'ATTRIBUTE_NESTED_ARRAY':
-          return '(code)'
-        case 'ATTRIBUTE_NESTED_OBJECT':
-          return '(code)'
-        case 'ATTRIBUTE_FUNCTION_CALL':
-          return '(code)'
-        default:
-          throw assertNever(navigatorEntry.childOrAttribute)
+      function getElementChildLabel(element: JSXElementChild): string {
+        switch (element.type) {
+          case 'JSX_ELEMENT':
+            return getJSXElementNameLastPart(element.name)
+          case 'JSX_MAP_EXPRESSION':
+          case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+            return '(code)'
+          case 'JSX_TEXT_BLOCK':
+            return element.text
+          case 'JSX_FRAGMENT':
+            return 'Fragment'
+          case 'JSX_CONDITIONAL_EXPRESSION':
+            return 'Conditional'
+          case 'ATTRIBUTE_VALUE':
+            return `${element.value}`
+          case 'ATTRIBUTE_NESTED_ARRAY':
+            return '(code)'
+          case 'ATTRIBUTE_NESTED_OBJECT':
+            return '(code)'
+          case 'ATTRIBUTE_FUNCTION_CALL':
+            return '(code)'
+          case 'UTOPIA_JSX_COMPONENT':
+            return getElementChildLabel(element.rootElement)
+          default:
+            throw assertNever(element)
+        }
       }
+      return getElementChildLabel(navigatorEntry.childOrAttribute)
     }
     case 'INVALID_OVERRIDE':
       return navigatorEntry.message
@@ -247,7 +254,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     }
     const truePath = EP.appendToPath(
       EP.parentPath(entry.elementPath),
-      maybeConditional.whenTrue.uid,
+      uidFromElementChild(maybeConditional.whenTrue),
     )
     const branch = EP.pathsEqual(entry.elementPath, truePath)
       ? maybeConditional.whenTrue

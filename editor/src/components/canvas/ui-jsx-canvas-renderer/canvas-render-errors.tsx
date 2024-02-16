@@ -1,7 +1,6 @@
 import type { FancyError } from '../../../core/shared/code-exec-utils'
-import type { JSXElement } from '../../../core/shared/element-template'
+import { uidFromElementChild, type JSXElement } from '../../../core/shared/element-template'
 import type { HighlightBoundsForUids } from '../../../core/shared/project-file-types'
-import { getUtopiaIDFromJSXElement } from '../../../core/shared/uid-utils'
 import StackFrame, { ScriptLine } from '../../../third-party/react-error-overlay/utils/stack-frame'
 
 export function canvasMissingJSXElementError(
@@ -15,7 +14,7 @@ export function canvasMissingJSXElementError(
     `(${jsxElement.name.baseVariable}) Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined.`,
   )
 
-  const uid = getUtopiaIDFromJSXElement(jsxElement)
+  const uid = uidFromElementChild(jsxElement)
   const highlightBoundsForElement = highlightBounds != null ? highlightBounds[uid] : null
   const lineNumber = (highlightBoundsForElement?.startLine ?? 0) + 1
   ;(error as FancyError).stackFrames = createStackFramesFromPosition(

@@ -10,6 +10,7 @@ import {
   isJSExpression,
   isJSXConditionalExpression,
   isNullJSXAttributeValue,
+  uidFromElementChild,
 } from '../shared/element-template'
 import type { ElementPathTree, ElementPathTrees } from '../shared/element-path-tree'
 import { getUtopiaID } from '../shared/uid-utils'
@@ -115,8 +116,8 @@ export function maybeBranchConditionalCase(
   if (conditional == null) {
     return null
   }
-  const truePath = EP.appendToPath(conditionalPath, conditional.whenTrue.uid)
-  const falsePath = EP.appendToPath(conditionalPath, conditional.whenFalse.uid)
+  const truePath = EP.appendToPath(conditionalPath, uidFromElementChild(conditional.whenTrue))
+  const falsePath = EP.appendToPath(conditionalPath, uidFromElementChild(conditional.whenFalse))
   if (EP.pathsEqual(truePath, branchPath)) {
     return 'true-case'
   } else if (EP.pathsEqual(falsePath, branchPath)) {

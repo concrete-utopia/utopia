@@ -79,6 +79,7 @@ import { getDomRectCenter } from '../../../core/shared/dom-utils'
 import { FloatingPostActionMenuTestId } from '../../canvas/controls/select-mode/post-action-menu'
 import { safeIndex } from '../../../core/shared/array-utils'
 import { updateSelectedViews } from '../../canvas/commands/update-selected-views-command'
+import { uidFromElementChild } from '../../../core/shared/element-template'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -1624,9 +1625,9 @@ describe('actions', () => {
 
           const targetUid =
             test.pasteInto.clause === 'true-case'
-              ? conditional.whenTrue.uid
+              ? uidFromElementChild(conditional.whenTrue)
               : test.pasteInto.clause === 'false-case'
-              ? conditional.whenFalse.uid
+              ? uidFromElementChild(conditional.whenFalse)
               : assertNever(test.pasteInto.clause)
 
           const targetPath = EP.appendToPath(test.pasteInto.intendedParentPath, targetUid)

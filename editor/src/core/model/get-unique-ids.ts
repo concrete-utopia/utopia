@@ -1,13 +1,15 @@
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import { walkContentsTreeForParseSuccess } from '../../components/assets'
-import type {
-  ArbitraryJSBlock,
-  JSXAttributes,
-  JSXElementChild,
-  TopLevelElement,
+import type { UtopiaJSXComponent } from '../shared/element-template'
+import {
+  uidFromElementChild,
+  type ArbitraryJSBlock,
+  type JSXAttributes,
+  type JSXElementChild,
+  type TopLevelElement,
 } from '../shared/element-template'
 import { emptySet } from '../shared/set-utils'
-import { assertNever, fastForEach } from '../shared/utils'
+import { assertNever } from '../shared/utils'
 import { memoize } from '../shared/memoize'
 
 export type DuplicateUIDsResult = { [key: string]: Array<Array<string>> }
@@ -94,19 +96,23 @@ function extractUidFromJSXElementChild(
   debugPath: Array<string>,
   element: JSXElementChild,
 ): void {
-  const newDebugPath = [...debugPath, element.uid]
-  checkUID(workingResult, filePath, newDebugPath, element.uid, element)
+  const newDebugPath = [...debugPath, uidFromElementChild(element)]
+  // `UTOPIA_JSX_COMPONENT` shouldn't double dip by also checking the `rootElement`, so
+  // exclude it here.
+  if (element.type !== 'UTOPIA_JSX_COMPONENT') {
+    checkUID(workingResult, filePath, newDebugPath, element.uid, element)
+  }
   switch (element.type) {
     case 'JSX_ELEMENT':
-      fastForEach(element.children, (child) =>
-        extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, child),
-      )
+      for (const child of element.children) {
+        extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, child)
+      }
       extractUidFromAttributes(workingResult, filePath, newDebugPath, element.props)
       break
     case 'JSX_FRAGMENT':
-      fastForEach(element.children, (child) =>
-        extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, child),
-      )
+      for (const child of element.children) {
+        extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, child)
+      }
       break
     case 'JSX_CONDITIONAL_EXPRESSION':
       extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, element.condition)
@@ -138,6 +144,9 @@ function extractUidFromJSXElementChild(
         extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, parameter)
       }
       break
+    case 'UTOPIA_JSX_COMPONENT':
+      extractUIDFromComponent(workingResult, filePath, debugPath, element)
+      break
     default:
       assertNever(element)
   }
@@ -156,6 +165,18 @@ function extractUIDFromArbitraryBlock(
   }
 }
 
+export function extractUIDFromComponent(
+  workingResult: GetAllUniqueUIDsWorkingResult,
+  filePath: string,
+  debugPath: Array<string>,
+  component: UtopiaJSXComponent,
+): void {
+  extractUidFromJSXElementChild(workingResult, filePath, debugPath, component.rootElement)
+  if (component.arbitraryJSBlock != null) {
+    extractUIDFromArbitraryBlock(workingResult, filePath, debugPath, component.arbitraryJSBlock)
+  }
+}
+
 export function extractUIDFromTopLevelElement(
   workingResult: GetAllUniqueUIDsWorkingResult,
   filePath: string,
@@ -164,15 +185,7 @@ export function extractUIDFromTopLevelElement(
 ): void {
   switch (topLevelElement.type) {
     case 'UTOPIA_JSX_COMPONENT':
-      extractUidFromJSXElementChild(workingResult, filePath, debugPath, topLevelElement.rootElement)
-      if (topLevelElement.arbitraryJSBlock != null) {
-        extractUIDFromArbitraryBlock(
-          workingResult,
-          filePath,
-          debugPath,
-          topLevelElement.arbitraryJSBlock,
-        )
-      }
+      extractUIDFromComponent(workingResult, filePath, debugPath, topLevelElement)
       break
     case 'ARBITRARY_JS_BLOCK':
       extractUIDFromArbitraryBlock(workingResult, filePath, debugPath, topLevelElement)
@@ -190,10 +203,10 @@ function getAllUniqueUidsInner(projectContents: ProjectContentTreeRoot): GetAllU
   const workingResult = emptyGetAllUniqueUIDsWorkingResult()
 
   walkContentsTreeForParseSuccess(projectContents, (filePath, parseSuccess) => {
-    fastForEach(parseSuccess.topLevelElements, (tle) => {
+    for (const tle of parseSuccess.topLevelElements) {
       const debugPath = [filePath]
       extractUIDFromTopLevelElement(workingResult, filePath, debugPath, tle)
-    })
+    }
   })
 
   return getAllUniqueUIDsResultFromWorkingResult(workingResult)

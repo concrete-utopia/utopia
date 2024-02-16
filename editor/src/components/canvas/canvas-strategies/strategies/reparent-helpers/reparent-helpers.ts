@@ -23,6 +23,7 @@ import {
   jsExpressionValue,
   jsxElementNameEquals,
   isIntrinsicElement,
+  uidFromElementChild,
 } from '../../../../../core/shared/element-template'
 import type { ElementPath } from '../../../../../core/shared/project-file-types'
 import type { ProjectContentTreeRoot } from '../../../../assets'
@@ -297,24 +298,24 @@ export function replaceJSXElementCopyData(
 
       return modify<JSXElement, JSXElementChild>(
         fromField<JSXElement, 'children'>('children').compose(traverseArray()),
-        (e) => replaceJSXElementChild(EP.appendToPath(elementPath, e.uid), e),
+        (e) => replaceJSXElementChild(EP.appendToPath(elementPath, uidFromElementChild(e)), e),
         updatedElement,
       )
     } else if (element.type === 'JSX_FRAGMENT') {
       return modify<JSXFragment, JSXElementChild>(
         fromField<JSXFragment, 'children'>('children').compose(traverseArray()),
-        (e) => replaceJSXElementChild(EP.appendToPath(elementPath, e.uid), e),
+        (e) => replaceJSXElementChild(EP.appendToPath(elementPath, uidFromElementChild(e)), e),
         element,
       )
     } else if (element.type === 'JSX_CONDITIONAL_EXPRESSION') {
       return {
         ...element,
         whenTrue: replaceJSXElementChild(
-          EP.appendToPath(elementPath, element.whenTrue.uid),
+          EP.appendToPath(elementPath, uidFromElementChild(element.whenTrue)),
           element.whenTrue,
         ),
         whenFalse: replaceJSXElementChild(
-          EP.appendToPath(elementPath, element.whenFalse.uid),
+          EP.appendToPath(elementPath, uidFromElementChild(element.whenFalse)),
           element.whenFalse,
         ),
       }
@@ -381,6 +382,16 @@ function getComponentNamesFromJSXElementChild(element: JSXElementChild): Array<J
     case 'ATTRIBUTE_VALUE':
     case 'JSX_TEXT_BLOCK':
       return []
+    case 'UTOPIA_JSX_COMPONENT':
+      return [
+        ...getComponentNamesFromJSXElementChild(element.rootElement),
+        ...(element.arbitraryJSBlock == null
+          ? []
+          : Object.values(element.arbitraryJSBlock.elementsWithin)
+        ).flatMap((elementWithin) => {
+          return getComponentNamesFromJSXElementChild(elementWithin)
+        }),
+      ]
     default:
       assertNever(element)
   }

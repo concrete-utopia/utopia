@@ -10,6 +10,7 @@ import {
   isJSXElement,
   isJSXFragment,
   isJSXTextBlock,
+  uidFromElementChild,
 } from './element-template'
 import type { ElementPath } from './project-file-types'
 import { fastForEach } from './utils'
@@ -95,8 +96,13 @@ function getChildrenPaths(
     element.element.value.children.length > 0
   ) {
     childrenFromElement = element.element.value.children
-      .filter((child) => !isJSXTextBlock(child) && !isJSExpressionMapOrOtherJavaScript(child))
-      .map((child) => EP.appendToPath(rootPath, child.uid))
+      .filter(
+        (child) =>
+          !isJSXTextBlock(child) &&
+          !isJSExpressionMapOrOtherJavaScript(child) &&
+          child.type !== 'UTOPIA_JSX_COMPONENT',
+      )
+      .map((child) => EP.appendToPath(rootPath, uidFromElementChild(child)))
   }
 
   // Then, grab any other child from the paths array, which is not included in the
@@ -186,8 +192,12 @@ function getReorderedIndexInPaths(
 
   if (isJSXElement(parent.element.value) || isJSXFragment(parent.element.value)) {
     const innerIndex = parent.element.value.children.findIndex((child) => {
-      const childPath = EP.appendToPath(parent.elementPath, child.uid)
-      return EP.pathsEqual(childPath, conditionalPath)
+      if (child.type === 'UTOPIA_JSX_COMPONENT') {
+        return false
+      } else {
+        const childPath = EP.appendToPath(parent.elementPath, child.uid)
+        return EP.pathsEqual(childPath, conditionalPath)
+      }
     })
     const parentIndex = paths.findIndex((path) => EP.pathsEqual(parent.elementPath, path))
     if (parentIndex < 0) {

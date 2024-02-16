@@ -1507,94 +1507,98 @@ export const MetadataUtils = {
     } else if (sceneLabel != null) {
       return sceneLabel
     } else {
+      function getElementChildLabel(jsxElement: JSXElementChild): string {
+        switch (jsxElement.type) {
+          case 'JSX_ELEMENT':
+            const lastNamePart = getJSXElementNameLastPart(jsxElement.name)
+            // Check for certain elements and check if they have text content within them. Only show the text content if they don't have children elements
+            const numberOfChildrenElements = MetadataUtils.getNonExpressionDescendants(
+              metadata,
+              pathTree,
+              element.elementPath,
+            ).length
+            if (numberOfChildrenElements === 0) {
+              if (PossibleTextElements.includes(lastNamePart)) {
+                if (element.textContent != null && element.textContent !== '') {
+                  return element.textContent
+                }
+
+                // fall back to the old way of showing text content – this can probably be deleted now
+                const firstChild = jsxElement.children[0]
+                if (firstChild != null) {
+                  if (isJSXTextBlock(firstChild)) {
+                    return firstChild.text
+                  }
+                  if (isJSExpressionOtherJavaScript(firstChild)) {
+                    return `{${firstChild.originalJavascript}}`
+                  }
+                }
+              }
+            }
+            // With images, take their alt and src properties as possible names first.
+            const elementProps = allElementProps[EP.toString(element.elementPath)] ?? {}
+            if (lastNamePart === 'img') {
+              const getProp = (prop: string): string | null => {
+                const value = elementProps[prop]
+                if (value != null && typeof value === 'string' && value.length > 0) {
+                  return value
+                }
+                // Sometimes allElementProps doesn't contain the props yet
+                // This is just a quick fix, the real fix is to fix allElementProps
+                const attr = getJSXAttribute(jsxElement.props, prop)
+                if (attr != null && isJSXAttributeValue(attr) && typeof attr.value === 'string') {
+                  return attr.value
+                }
+                return null
+              }
+
+              const alt = getProp('alt')
+              if (alt != null) {
+                return alt
+              }
+
+              const src = getProp('src')
+              if (src != null) {
+                if (src.startsWith('data:') && src.includes('base64')) {
+                  return '<Base64 data>'
+                }
+                return src
+              }
+            }
+
+            return lastNamePart
+          case 'JSX_TEXT_BLOCK':
+            return '(text)'
+          case 'JSX_MAP_EXPRESSION':
+            return 'Map'
+          case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+            return 'Code'
+          case 'JSX_FRAGMENT':
+            return 'Fragment'
+          case 'JSX_CONDITIONAL_EXPRESSION':
+            return 'Conditional'
+          case 'ATTRIBUTE_VALUE':
+            return `${jsxElement.value}`
+          case 'ATTRIBUTE_NESTED_ARRAY':
+            return '(code)'
+          case 'ATTRIBUTE_NESTED_OBJECT':
+            return '(code)'
+          case 'ATTRIBUTE_FUNCTION_CALL':
+            return '(code)'
+          case 'UTOPIA_JSX_COMPONENT':
+            return getElementChildLabel(jsxElement.rootElement)
+          default:
+            const _exhaustiveCheck: never = jsxElement
+            throw new Error(`Unexpected element type ${jsxElement}`)
+        }
+      }
+
       const possibleName: string = foldEither(
         (tagName) => {
           const staticNameString = optionalMap(getJSXElementNameAsString, staticName)
           return staticNameString ?? tagName
         },
-        (jsxElement) => {
-          switch (jsxElement.type) {
-            case 'JSX_ELEMENT':
-              const lastNamePart = getJSXElementNameLastPart(jsxElement.name)
-              // Check for certain elements and check if they have text content within them. Only show the text content if they don't have children elements
-              const numberOfChildrenElements = MetadataUtils.getNonExpressionDescendants(
-                metadata,
-                pathTree,
-                element.elementPath,
-              ).length
-              if (numberOfChildrenElements === 0) {
-                if (PossibleTextElements.includes(lastNamePart)) {
-                  if (element.textContent != null && element.textContent !== '') {
-                    return element.textContent
-                  }
-
-                  // fall back to the old way of showing text content – this can probably be deleted now
-                  const firstChild = jsxElement.children[0]
-                  if (firstChild != null) {
-                    if (isJSXTextBlock(firstChild)) {
-                      return firstChild.text
-                    }
-                    if (isJSExpressionOtherJavaScript(firstChild)) {
-                      return `{${firstChild.originalJavascript}}`
-                    }
-                  }
-                }
-              }
-              // With images, take their alt and src properties as possible names first.
-              const elementProps = allElementProps[EP.toString(element.elementPath)] ?? {}
-              if (lastNamePart === 'img') {
-                const getProp = (prop: string): string | null => {
-                  const value = elementProps[prop]
-                  if (value != null && typeof value === 'string' && value.length > 0) {
-                    return value
-                  }
-                  // Sometimes allElementProps doesn't contain the props yet
-                  // This is just a quick fix, the real fix is to fix allElementProps
-                  const attr = getJSXAttribute(jsxElement.props, prop)
-                  if (attr != null && isJSXAttributeValue(attr) && typeof attr.value === 'string') {
-                    return attr.value
-                  }
-                  return null
-                }
-
-                const alt = getProp('alt')
-                if (alt != null) {
-                  return alt
-                }
-
-                const src = getProp('src')
-                if (src != null) {
-                  if (src.startsWith('data:') && src.includes('base64')) {
-                    return '<Base64 data>'
-                  }
-                  return src
-                }
-              }
-
-              return lastNamePart
-            case 'JSX_TEXT_BLOCK':
-              return '(text)'
-            case 'JSX_MAP_EXPRESSION':
-              return 'Map'
-            case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-              return 'Code'
-            case 'JSX_FRAGMENT':
-              return 'Fragment'
-            case 'JSX_CONDITIONAL_EXPRESSION':
-              return 'Conditional'
-            case 'ATTRIBUTE_VALUE':
-              return `${jsxElement.value}`
-            case 'ATTRIBUTE_NESTED_ARRAY':
-              return '(code)'
-            case 'ATTRIBUTE_NESTED_OBJECT':
-              return '(code)'
-            case 'ATTRIBUTE_FUNCTION_CALL':
-              return '(code)'
-            default:
-              const _exhaustiveCheck: never = jsxElement
-              throw new Error(`Unexpected element type ${jsxElement}`)
-          }
-        },
+        getElementChildLabel,
         element.element,
       )
       if (possibleName != null) {

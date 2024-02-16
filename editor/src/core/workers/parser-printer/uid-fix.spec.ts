@@ -8,7 +8,7 @@ import type {
   JSXElementChild,
   TopLevelElement,
 } from '../../shared/element-template'
-import { isUtopiaJSXComponent } from '../../shared/element-template'
+import { isUtopiaJSXComponent, jsxElementChildUIDOptic } from '../../shared/element-template'
 import { unparsedCode } from '../../shared/element-template'
 import {
   emptyComments,
@@ -143,7 +143,7 @@ describe('fixParseSuccessUIDs', () => {
           traverseArray<TopLevelElement>()
             .compose(fromTypeGuard(isUtopiaJSXComponent))
             .compose(fromField('rootElement'))
-            .compose(fromField('uid')),
+            .compose(jsxElementChildUIDOptic),
           (uid) => {
             return uid + 'suffix'
           },
@@ -582,7 +582,7 @@ describe('fixParseSuccessUIDs', () => {
       .compose(filtered(isUtopiaJSXComponent))
       .compose(fromTypeGuard(isUtopiaJSXComponent))
       .compose(fromField('rootElement'))
-      .compose(fromField('uid'))
+      .compose(jsxElementChildUIDOptic)
     const toArbitraryBlockOptic = fromTypeGuard(isParseSuccess)
       .compose(fromField('topLevelElements'))
       .compose(traverseArray())
@@ -672,7 +672,7 @@ describe('fixJSXElementChildUIDs', () => {
     }
 
     const actualResult = fixJSXElementChildUIDs(before, after, fixUIDsState)
-    expect(actualResult.uid).not.toEqual('div-uid')
+    expect(unsafeGet(jsxElementChildUIDOptic, actualResult)).not.toEqual('div-uid')
   })
   it('uids will be copied over', () => {
     // If an entry has duplicated UIDs, then it will result in a differing output as the logic attempts to ensure
@@ -694,7 +694,9 @@ describe('fixJSXElementChildUIDs', () => {
         mappings: [],
         uidUpdateMethod: 'copy-uids-fix-duplicates',
       })
-      return first.uid === afterFix.uid
+      return (
+        unsafeGet(jsxElementChildUIDOptic, first) === unsafeGet(jsxElementChildUIDOptic, afterFix)
+      )
     }
     const prop = FastCheck.property(arbitraryElementPair, checkCall)
     FastCheck.assert(prop, { verbose: true })

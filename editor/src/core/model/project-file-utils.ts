@@ -53,6 +53,7 @@ import {
   isIntrinsicHTMLElementString,
   isImportedOrigin,
   isSameFileOrigin,
+  uidFromMaybeElementChild,
 } from '../shared/element-template'
 import {
   sceneMetadata as _sceneMetadata,
@@ -882,15 +883,16 @@ export function getDefaultExportNameAndUidFromFile(
     return null
   }
 
-  const elementUid = file.fileContents.parsed.topLevelElements.find(
+  const rootElement = file.fileContents.parsed.topLevelElements.find(
     (t): t is UtopiaJSXComponent =>
       t.type === 'UTOPIA_JSX_COMPONENT' && t.name === defaultExportName,
-  )?.rootElement.uid
-  if (elementUid == null) {
+  )?.rootElement
+  const elementUID = uidFromMaybeElementChild(rootElement)
+  if (elementUID == null) {
     return null
   }
 
-  return { name: defaultExportName, uid: elementUid }
+  return { name: defaultExportName, uid: elementUID }
 }
 
 export function fileExportsFunctionWithName(

@@ -104,6 +104,7 @@ export function createExecutionScope(
       if (!(elementName in topLevelComponentRendererComponentsForFile)) {
         topLevelComponentRendererComponentsForFile[elementName] = createComponentRendererComponent({
           topLevelElementName: topLevelElement.name,
+          underlyingComponent: null,
           mutableContextRef: mutableContextRef,
           filePath: filePath,
         })
@@ -141,6 +142,7 @@ export function createExecutionScope(
       null,
       {},
       [],
+      mutableContextRef,
     )
 
     executionScope[JSX_CANVAS_LOOKUP_FUNCTION_NAME] = utopiaCanvasJSXLookup(

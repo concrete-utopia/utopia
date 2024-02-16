@@ -37,6 +37,7 @@ import {
   isJSExpression,
   hasElementsWithin,
   isUtopiaJSXComponent,
+  uidFromElementChild,
 } from '../shared/element-template'
 import type {
   StaticElementPathPart,
@@ -77,6 +78,7 @@ import { getAllUniqueUids } from './get-unique-ids'
 import type { ElementPathTrees } from '../shared/element-path-tree'
 import { MetadataUtils } from './element-metadata-utils'
 import { mapValues } from '../shared/object-utils'
+import { elementHasOnlyTextChildren } from '../../components/canvas/canvas-utils'
 
 export function generateUidWithExistingComponents(projectContents: ProjectContentTreeRoot): string {
   const mockUID = generateMockNextGeneratedUID()
@@ -166,7 +168,7 @@ function transformAtPathOptionally(
     workingPath: string[],
   ): JSXElementChild | null {
     const [firstUIDOrIndex, ...tailPath] = workingPath
-    if (element.uid === firstUIDOrIndex && tailPath.length === 0) {
+    if (uidFromElementChild(element) === firstUIDOrIndex && tailPath.length === 0) {
       return transform(element)
     }
     if (isJSXElementLike(element)) {
@@ -246,7 +248,7 @@ function transformAtPathOptionally(
         // TODO: remove this! We should not fall back to the conditional
         return transform(element) // if no branch matches, transform the conditional itself
       }
-      if (element.whenTrue.uid === firstUIDOrIndex) {
+      if (uidFromElementChild(element.whenTrue) === firstUIDOrIndex) {
         const updated = findAndTransformAtPathInner(element.whenTrue, workingPath)
         if (updated != null && isJSXElement(updated)) {
           return {
@@ -255,7 +257,7 @@ function transformAtPathOptionally(
           }
         }
       }
-      if (element.whenFalse.uid === firstUIDOrIndex) {
+      if (uidFromElementChild(element.whenFalse) === firstUIDOrIndex) {
         const updated = findAndTransformAtPathInner(element.whenFalse, workingPath)
         if (updated != null && isJSXElement(updated)) {
           return {
@@ -452,10 +454,14 @@ export function removeJSXElementChild(
     // This implies that `parentPath` is empty and as such `target` is a single UID path...
     return components.map((component) => {
       // ...As such we're targeting a root element of one of these components.
-      if (component.rootElement.uid === targetID) {
+      if (uidFromElementChild(component.rootElement) === targetID) {
         return {
           ...component,
-          rootElement: jsExpressionValue(null, emptyComments, component.rootElement.uid),
+          rootElement: jsExpressionValue(
+            null,
+            emptyComments,
+            uidFromElementChild(component.rootElement),
+          ),
         }
       } else {
         return component
@@ -559,18 +565,18 @@ export function insertJSXElementChildren(
           switch (insertBehavior.type) {
             case 'replace-with-single-element':
               insertedChildrenPaths = [
-                elementPathFromInsertionPath(targetParent, elementToInsert.uid),
+                elementPathFromInsertionPath(targetParent, uidFromElementChild(elementToInsert)),
               ]
               return elementToInsert
             case 'replace-with-elements-wrapped-in-fragment':
               insertedChildrenPaths = elementsToInsert.map((element) =>
-                elementPathFromInsertionPath(targetParent, element.uid),
+                elementPathFromInsertionPath(targetParent, uidFromElementChild(element)),
               )
               return jsxFragment(insertBehavior.fragmentUID, elementsToInsert, true)
 
             case 'wrap-in-fragment-and-append-elements':
               insertedChildrenPaths = elementsToInsert.map((element) =>
-                elementPathFromInsertionPath(targetParent, element.uid),
+                elementPathFromInsertionPath(targetParent, uidFromElementChild(element)),
               )
               return jsxFragment(
                 insertBehavior.fragmentUID,
@@ -672,6 +678,13 @@ function allElementsAndChildrenAreText(elements: Array<JSXElementChild>): boolea
           })
         case 'ATTRIBUTE_FUNCTION_CALL':
           return allElementsAndChildrenAreText(element.parameters)
+        case 'UTOPIA_JSX_COMPONENT':
+          return allElementsAndChildrenAreText([
+            element.rootElement,
+            ...(element.arbitraryJSBlock == null
+              ? []
+              : Object.values(element.arbitraryJSBlock.elementsWithin)),
+          ])
         default:
           assertNever(element)
       }
@@ -699,6 +712,14 @@ export function elementOnlyHasTextChildren(element: JSXElementChild): boolean {
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
       return false
+    case 'UTOPIA_JSX_COMPONENT':
+      return (
+        elementOnlyHasTextChildren(element.rootElement) ||
+        (element.arbitraryJSBlock == null
+          ? []
+          : Object.values(element.arbitraryJSBlock.elementsWithin)
+        ).some(elementOnlyHasTextChildren)
+      )
     default:
       assertNever(element)
   }
@@ -993,6 +1014,16 @@ export function elementUsesProperty(
       return element.parameters.some((param) => {
         return elementUsesProperty(param, propsParam, property)
       })
+    case 'UTOPIA_JSX_COMPONENT':
+      return (
+        elementUsesProperty(element.rootElement, propsParam, property) ||
+        (element.arbitraryJSBlock == null
+          ? []
+          : Object.values(element.arbitraryJSBlock.elementsWithin)
+        ).some((elementWithin) => {
+          return elementUsesProperty(elementWithin, propsParam, property)
+        })
+      )
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled element type: ${JSON.stringify(element)}`)
@@ -1138,6 +1169,17 @@ export function pathPartsFromJSXElementChild(
     case 'JSX_TEXT_BLOCK':
     case 'JSX_MAP_EXPRESSION':
       return [currentParts]
+    case 'UTOPIA_JSX_COMPONENT':
+      return [
+        currentParts,
+        ...(element.arbitraryJSBlock == null
+          ? []
+          : Object.values(element.arbitraryJSBlock.elementsWithin)
+        ).flatMap((elementWithin) => {
+          return pathPartsFromJSXElementChild(elementWithin, currentParts)
+        }),
+        ...pathPartsFromJSXElementChild(element.rootElement, currentParts),
+      ]
     default:
       assertNever(element)
   }
@@ -1158,7 +1200,7 @@ export function findPathToJSXElementChild(
   element: JSXElementChild,
 ): Array<ElementPathPart> {
   if (condition(element)) {
-    return [[element.uid]]
+    return [[uidFromElementChild(element)]]
   }
 
   switch (element.type) {
@@ -1188,7 +1230,8 @@ export function findPathToJSXElementChild(
     case 'ATTRIBUTE_VALUE':
     case 'JSX_TEXT_BLOCK':
       return []
-
+    case 'UTOPIA_JSX_COMPONENT':
+      return findPathToJSXElementChild(condition, element.rootElement)
     default:
       assertNever(element)
   }
@@ -1261,7 +1304,7 @@ export function findContainingComponent(
     // Find the component in the top level elements that we're looking for.
     for (const topLevelElement of topLevelElements) {
       if (isUtopiaJSXComponent(topLevelElement)) {
-        if (topLevelElement.rootElement.uid === componentUID) {
+        if (uidFromElementChild(topLevelElement.rootElement) === componentUID) {
           return topLevelElement
         }
       }

@@ -71,6 +71,7 @@ import {
   simplifyAttributesIfPossible,
   isJSXFragment,
   jsxAttributesEntry,
+  uidFromElementChild,
 } from '../../shared/element-template'
 import { addImport } from '../common/project-file-utils'
 import type { ErrorMessage } from '../../shared/error-messages'
@@ -97,7 +98,7 @@ import {
   exportVariables,
 } from '../../shared/project-file-types'
 import { lintAndParse, printCode, printCodeOptions } from './parser-printer'
-import { atoz, getUtopiaID, getUtopiaIDFromJSXElement } from '../../shared/uid-utils'
+import { atoz, getUtopiaID } from '../../shared/uid-utils'
 import { assertNever, fastForEach } from '../../shared/utils'
 import { addUniquely, flatMapArray } from '../../shared/array-utils'
 import { optionalMap } from '../../shared/optional-utils'
@@ -343,6 +344,11 @@ export function simplifyJSXElementChildAttributes(element: JSXElementChild): JSX
       }
     case 'JSX_TEXT_BLOCK':
       return element
+    case 'UTOPIA_JSX_COMPONENT':
+      return {
+        ...element,
+        rootElement: simplifyJSXElementChildAttributes(element.rootElement),
+      }
     default:
       assertNever(element)
   }
@@ -1035,6 +1041,15 @@ function walkElements(
         )
       })
       break
+    case 'UTOPIA_JSX_COMPONENT':
+      walkElements(
+        jsxElementChild.rootElement,
+        includeDataUIDAttribute,
+        walkWith,
+        shouldWalkElement,
+        shouldWalkAttributes,
+      )
+      break
     default:
       const _exhaustiveCheck: never = jsxElementChild
       throw new Error(`Unhandled type ${JSON.stringify(jsxElementChild)}`)
@@ -1114,7 +1129,7 @@ function walkWantedElementsOnly(element: JSXElementChild, uids: Array<string>): 
     isJSExpressionMapOrOtherJavaScript(element)
   ) {
     // Relies on this function blowing out for anything that doesn't have a valid one.
-    const uid = getUtopiaIDFromJSXElement(element)
+    const uid = uidFromElementChild(element)
     checkUID(uid, element, uids)
   }
 }

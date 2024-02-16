@@ -55,6 +55,7 @@ function tryToGetInstancePath(
 
 export function createComponentRendererComponent(params: {
   topLevelElementName: string | null
+  underlyingComponent: UtopiaJSXComponent | null
   filePath: string
   mutableContextRef: React.MutableRefObject<MutableUtopiaCtxRefData>
 }): ComponentRendererComponent {
@@ -91,9 +92,15 @@ export function createComponentRendererComponent(params: {
     const { code, highlightBounds } = useGetCodeAndHighlightBounds(params.filePath, shouldUpdate)
 
     const utopiaJsxComponent: UtopiaJSXComponent | null =
+      params.underlyingComponent ??
       topLevelElements.find((elem): elem is UtopiaJSXComponent => {
-        return isUtopiaJSXComponent(elem) && elem.name === params.topLevelElementName
-      }) ?? null
+        return (
+          isUtopiaJSXComponent(elem) &&
+          params.topLevelElementName != null &&
+          elem.name === params.topLevelElementName
+        )
+      }) ??
+      null
 
     const shouldIncludeCanvasRootInTheSpy = rerenderUtopiaContext.shouldIncludeCanvasRootInTheSpy
 
@@ -111,8 +118,12 @@ export function createComponentRendererComponent(params: {
     )
 
     if (utopiaJsxComponent == null) {
-      // If this element cannot be found, we want to purposefully cause a 'ReferenceError' to notify the user.
-      throw new ReferenceError(`${params.topLevelElementName} is not defined`)
+      if (params.topLevelElementName == null) {
+        throw new ReferenceError(`Unable to find definition of inline component.`)
+      } else {
+        // If this element cannot be found, we want to purposefully cause a 'ReferenceError' to notify the user.
+        throw new ReferenceError(`${params.topLevelElementName} is not defined`)
+      }
     }
 
     const appliedProps = optionalMap(
@@ -202,6 +213,7 @@ export function createComponentRendererComponent(params: {
         null,
         {},
         [],
+        params.mutableContextRef,
       )
 
       scope[JSX_CANVAS_LOOKUP_FUNCTION_NAME] = utopiaCanvasJSXLookup(
@@ -259,6 +271,7 @@ export function createComponentRendererComponent(params: {
         highlightBounds,
         rerenderUtopiaContext.editedText,
         spiedVariablesInScope,
+        params.mutableContextRef,
       )
 
       if (typeof renderedCoreElement === 'string' || typeof renderedCoreElement === 'number') {

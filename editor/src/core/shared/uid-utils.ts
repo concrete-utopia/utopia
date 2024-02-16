@@ -26,6 +26,9 @@ import type {
   JSXProperty,
   JSExpressionMapOrOtherJavascript,
   JSXMapExpression,
+  UtopiaJSXComponent,
+  ArbitraryJSBlock,
+  ElementsWithin,
 } from './element-template'
 import {
   emptyComments,
@@ -52,6 +55,7 @@ import {
   isJSExpressionOtherJavaScript,
   isJSXMapExpression,
   jsxMapExpression,
+  uidFromElementChild,
 } from './element-template'
 import { shallowEqual } from './equality-utils'
 import {
@@ -225,10 +229,6 @@ export function parseUID(
       return left('Unexpected data-uid value.')
     }
   }, uidValue)
-}
-
-export function getUtopiaIDFromJSXElement(element: JSXElementChild): string {
-  return element.uid
 }
 
 export type UIDMappings = Array<{ originalUID: string; newUID: string }>
@@ -483,6 +483,33 @@ export function fixUtopiaElement(
     }
   }
 
+  function fixElementsWithin(value: ElementsWithin): ElementsWithin {
+    let result: ElementsWithin = {}
+    for (const withinValue of Object.values(value)) {
+      const fixedWithinValue = fixJSXElement(withinValue)
+      result[fixedWithinValue.uid] = fixedWithinValue
+    }
+    return result
+  }
+
+  function fixArbitraryJSBlock(value: ArbitraryJSBlock): ArbitraryJSBlock {
+    const fixedUID = addAndMaybeUpdateUID(value.uid)
+    return {
+      ...value,
+      elementsWithin: fixElementsWithin(value.elementsWithin),
+      uid: fixedUID,
+    }
+  }
+
+  function fixUtopiaJSXComponent(value: UtopiaJSXComponent): UtopiaJSXComponent {
+    return {
+      ...value,
+      arbitraryJSBlock:
+        value.arbitraryJSBlock == null ? null : fixArbitraryJSBlock(value.arbitraryJSBlock),
+      rootElement: fixUtopiaElementInner(value.rootElement),
+    }
+  }
+
   function fixUtopiaElementInner(element: JSXElementChild): JSXElementChild {
     switch (element.type) {
       case 'JSX_ELEMENT':
@@ -500,6 +527,8 @@ export function fixUtopiaElement(
       case 'JSX_MAP_EXPRESSION':
       case 'ATTRIBUTE_OTHER_JAVASCRIPT':
         return fixJSExpression(element)
+      case 'UTOPIA_JSX_COMPONENT':
+        return fixUtopiaJSXComponent(element)
       default:
         assertNever(element)
     }
@@ -625,6 +654,20 @@ export function findElementWithUID(
           }
         }
         return null
+      case 'UTOPIA_JSX_COMPONENT':
+        const rootElementResult = findForJSXElementChild(element.rootElement)
+        if (rootElementResult != null) {
+          return rootElementResult
+        }
+        if (element.arbitraryJSBlock != null) {
+          for (const elementWithin of Object.values(element.arbitraryJSBlock.elementsWithin)) {
+            const elementWithinResult = findForJSXElementChild(elementWithin)
+            if (elementWithinResult != null) {
+              return elementWithinResult
+            }
+          }
+        }
+        return null
       default:
         const _exhaustiveCheck: never = element
         throw new Error(`Unhandled element type ${JSON.stringify(element)}`)
@@ -632,7 +675,7 @@ export function findElementWithUID(
   }
 
   function findForJSXElement(element: JSXElement): JSXElement | null {
-    const uid = getUtopiaIDFromJSXElement(element)
+    const uid = uidFromElementChild(element)
     if (uid === targetUID) {
       return element
     } else {
@@ -778,5 +821,5 @@ export function getUtopiaID(element: JSXElementChild | ElementInstanceMetadata):
   if (isElementInstanceMetadata(element)) {
     return EP.toUid(element.elementPath)
   }
-  return element.uid
+  return uidFromElementChild(element)
 }

@@ -40,6 +40,7 @@ import {
   jsxElement,
   jsxElementName,
   jsxFragment,
+  uidFromElementChild,
 } from '../../../../core/shared/element-template'
 import type {
   CanvasPoint,
@@ -820,7 +821,11 @@ export function elementCanBeAGroupChild(
   if (isJSXConditionalExpression(element)) {
     const activeBranch = getConditionalActiveCase(elementPath, element, jsxMetadata)
     const branch = activeBranch === 'true-case' ? element.whenTrue : element.whenFalse
-    return elementCanBeAGroupChild(branch, EP.appendToPath(elementPath, branch.uid), jsxMetadata)
+    return elementCanBeAGroupChild(
+      branch,
+      EP.appendToPath(elementPath, uidFromElementChild(branch)),
+      jsxMetadata,
+    )
   }
   return false
 }

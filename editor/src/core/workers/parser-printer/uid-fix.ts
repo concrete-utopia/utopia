@@ -20,7 +20,12 @@ import type {
   TopLevelElement,
   UtopiaJSXComponent,
 } from '../../shared/element-template'
-import { isArbitraryJSBlock, isUtopiaJSXComponent } from '../../shared/element-template'
+import {
+  isArbitraryJSBlock,
+  isUtopiaJSXComponent,
+  jsxElementChildUIDOptic,
+  uidFromMaybeElementChild,
+} from '../../shared/element-template'
 import {
   emptyComments,
   getJSXAttribute,
@@ -35,19 +40,13 @@ import type {
   HighlightBoundsForUids,
 } from '../../shared/project-file-types'
 import { isParseSuccess } from '../../shared/project-file-types'
-import type { Optic } from '../../../core/shared/optics/optics'
+import { lens, type Optic } from '../../../core/shared/optics/optics'
 import { set, unsafeGet } from '../../../core/shared/optics/optic-utilities'
 import { fromField, identityOptic } from '../../../core/shared/optics/optic-creators'
 import { assertNever } from '../../../core/shared/utils'
 import { emptySet } from '../../../core/shared/set-utils'
 import type { UIDMappings } from '../../../core/shared/uid-utils'
 import { generateConsistentUID, updateHighlightBounds } from '../../../core/shared/uid-utils'
-import {
-  emptyGetAllUniqueUIDsWorkingResult,
-  extractUIDFromTopLevelElement,
-} from '../../model/get-unique-ids'
-
-const jsxElementChildUIDOptic: Optic<JSXElementChild, string> = fromField('uid')
 
 const jsxElementUIDOptic: Optic<JSXElement, string> = fromField('uid')
 
@@ -538,6 +537,12 @@ export function fixJSXElementChildUIDs(
   fixUIDsState: FixUIDsState,
 ): JSXElementChild {
   switch (newElement.type) {
+    case 'UTOPIA_JSX_COMPONENT':
+      return fixUtopiaJSXComponentUIDs(
+        oldElement?.type === newElement.type ? oldElement : newElement,
+        newElement,
+        fixUIDsState,
+      )
     case 'JSX_ELEMENT': {
       return fixJSXElementUIDs(oldElement, newElement, fixUIDsState)
     }
@@ -547,15 +552,20 @@ export function fixJSXElementChildUIDs(
         newElement.children,
         fixUIDsState,
       )
-      return updateUID(jsxFragmentUIDOptic, oldElement?.uid ?? newElement.uid, fixUIDsState, {
-        ...newElement,
-        children: updatedChildren,
-      })
+      return updateUID(
+        jsxFragmentUIDOptic,
+        uidFromMaybeElementChild(oldElement) ?? newElement.uid,
+        fixUIDsState,
+        {
+          ...newElement,
+          children: updatedChildren,
+        },
+      )
     }
     case 'JSX_TEXT_BLOCK': {
       return updateUID(
         jsxTextBlockUIDOptic,
-        oldElement?.uid ?? newElement.uid,
+        uidFromMaybeElementChild(oldElement) ?? newElement.uid,
         fixUIDsState,
         newElement,
       )
@@ -578,7 +588,7 @@ export function fixJSXElementChildUIDs(
       )
       return updateUID(
         jsxConditionalExpressionUIDOptic,
-        oldElement?.uid ?? newElement.uid,
+        uidFromMaybeElementChild(oldElement) ?? newElement.uid,
         fixUIDsState,
         {
           ...newElement,
@@ -633,7 +643,7 @@ export function fixJSXElementUIDs(
   // Update the UID upfront.
   const elementWithUpdatedUID = updateUID(
     jsxElementUIDOptic,
-    oldElement?.uid ?? newElement.uid,
+    uidFromMaybeElementChild(oldElement) ?? newElement.uid,
     fixUIDsState,
     newElement,
   )
@@ -691,7 +701,7 @@ export function fixExpressionUIDs(
     case 'ATTRIBUTE_VALUE': {
       return updateUID(
         expressionValueUIDOptic,
-        oldExpression?.uid ?? newExpression.uid,
+        uidFromMaybeElementChild(oldExpression) ?? newExpression.uid,
         fixUIDsState,
         newExpression,
       )
@@ -705,7 +715,7 @@ export function fixExpressionUIDs(
 
       return updateUID(
         expressionNestedArrayUIDOptic,
-        oldExpression?.uid ?? newExpression.uid,
+        uidFromMaybeElementChild(oldExpression) ?? newExpression.uid,
         fixUIDsState,
         {
           ...newExpression,
@@ -722,7 +732,7 @@ export function fixExpressionUIDs(
 
       return updateUID(
         expressionNestedObjectUIDOptic,
-        oldExpression?.uid ?? newExpression.uid,
+        uidFromMaybeElementChild(oldExpression) ?? newExpression.uid,
         fixUIDsState,
         {
           ...newExpression,
@@ -740,7 +750,7 @@ export function fixExpressionUIDs(
       )
       return updateUID(
         expressionFunctionCallUIDOptic,
-        oldExpression?.uid ?? newExpression.uid,
+        uidFromMaybeElementChild(oldExpression) ?? newExpression.uid,
         fixUIDsState,
         {
           ...newExpression,
@@ -759,7 +769,7 @@ export function fixExpressionUIDs(
 
       return updateUID(
         expressionOtherJavaScriptUIDOptic,
-        oldExpression?.uid ?? newExpression.uid,
+        uidFromMaybeElementChild(oldExpression) ?? newExpression.uid,
         fixUIDsState,
         {
           ...newExpression,
@@ -778,7 +788,7 @@ export function fixExpressionUIDs(
 
       return updateUID(
         expressionJSXMapExpressionUIDOptic,
-        oldExpression?.uid ?? newExpression.uid,
+        uidFromMaybeElementChild(oldExpression) ?? newExpression.uid,
         fixUIDsState,
         {
           ...newExpression,

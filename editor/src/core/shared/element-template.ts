@@ -20,7 +20,7 @@ import type { Sides, LayoutSystem } from 'utopia-api/core'
 import { sides } from 'utopia-api/core'
 import { assertNever, fastForEach, unknownObjectProperty } from './utils'
 import { addAllUniquely, mapDropNulls } from './array-utils'
-import { objectMap } from './object-utils'
+import { mapValues, objectMap } from './object-utils'
 import type { CSSPosition, FlexDirection } from '../../components/inspector/common/css-utils'
 import type { ModifiableAttribute } from './jsx-attributes'
 import { jsxSimpleAttributeToValue } from './jsx-attributes'
@@ -31,6 +31,8 @@ import type { MapLike } from 'typescript'
 import { forceNotNull } from './optional-utils'
 import type { FlexAlignment, FlexJustifyContent } from '../../components/inspector/inspector-common'
 import { allComments } from './comment-flags'
+import type { Optic } from './optics/optics'
+import { lens } from './optics/optics'
 
 export interface ParsedComments {
   leadingComments: Array<Comment>
@@ -932,6 +934,10 @@ export function elementReferencesElsewhere(element: JSXElementChild): boolean {
         elementReferencesElsewhere(element.whenTrue) ||
         elementReferencesElsewhere(element.whenFalse)
       )
+    case 'UTOPIA_JSX_COMPONENT':
+      return elementReferencesElsewhere(element.rootElement) || element.arbitraryJSBlock == null
+        ? false
+        : Object.values(element.arbitraryJSBlock.elementsWithin).some(elementReferencesElsewhere)
     default:
       return attributeReferencesElsewhere(element)
   }
@@ -985,6 +991,8 @@ export function getElementReferencesElsewherePathsFromProps(
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return [pathSoFar] // replace the property corresponding to these values
+    case 'UTOPIA_JSX_COMPONENT':
+      return getElementReferencesElsewherePathsFromProps(element.rootElement, pathSoFar)
     default:
       assertNever(element)
   }
@@ -1041,6 +1049,18 @@ function getDefinedElsewhereFromElementChild(
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
       return working
+    case 'UTOPIA_JSX_COMPONENT':
+      const withRootElement = getDefinedElsewhereFromElementChild(working, child.rootElement)
+      if (child.arbitraryJSBlock == null) {
+        return withRootElement
+      } else {
+        return Object.values(child.arbitraryJSBlock.elementsWithin).reduce(
+          (innerWorking, elementWithin) => {
+            return getDefinedElsewhereFromElementChild(innerWorking, elementWithin)
+          },
+          withRootElement,
+        )
+      }
     default:
       assertNever(child)
   }
@@ -1325,6 +1345,47 @@ export type JSXElementChild =
   | JSXTextBlock
   | JSXFragment
   | JSXConditionalExpression
+  | UtopiaJSXComponent
+
+export function elementChildUIDUpdate(
+  elementChild: JSXElementChild,
+  newUID: string,
+): JSXElementChild {
+  if (elementChild.type === 'UTOPIA_JSX_COMPONENT') {
+    return {
+      ...elementChild,
+      rootElement: elementChildUIDUpdate(elementChild.rootElement, newUID),
+    }
+  } else {
+    return {
+      ...elementChild,
+      uid: newUID,
+    }
+  }
+}
+
+export function uidFromElementChild(elementChild: JSXElementChild): string {
+  if (elementChild.type === 'UTOPIA_JSX_COMPONENT') {
+    return uidFromElementChild(elementChild.rootElement)
+  } else {
+    return elementChild.uid
+  }
+}
+
+export const jsxElementChildUIDOptic: Optic<JSXElementChild, string> = lens(
+  uidFromElementChild,
+  elementChildUIDUpdate,
+)
+
+export function uidFromMaybeElementChild(
+  elementChild: JSXElementChild | null | undefined,
+): string | undefined {
+  if (elementChild == null) {
+    return undefined
+  } else {
+    return uidFromElementChild(elementChild)
+  }
+}
 
 export type JSXElementChildWithoutUID =
   | JSXElementWithoutUID
@@ -1393,6 +1454,7 @@ export function isJSExpression(element: JSXElementChild): element is JSExpressio
     case 'JSX_TEXT_BLOCK':
     case 'JSX_FRAGMENT':
     case 'JSX_CONDITIONAL_EXPRESSION':
+    case 'UTOPIA_JSX_COMPONENT':
       return false
     case 'ATTRIBUTE_VALUE':
     case 'JSX_MAP_EXPRESSION':
@@ -1478,6 +1540,17 @@ export function clearJSXElementChildUniqueIDs(element: JSXElementChild): JSXElem
         uid: '',
       }
     }
+    case 'UTOPIA_JSX_COMPONENT': {
+      return {
+        ...element,
+        rootElement: clearJSXElementChildUniqueIDs(element.rootElement),
+        arbitraryJSBlock:
+          element.arbitraryJSBlock == null
+            ? null
+            : clearArbitraryJSBlockUniqueIDs(element.arbitraryJSBlock),
+      }
+    }
+
     case 'ATTRIBUTE_VALUE':
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
@@ -2319,6 +2392,14 @@ export function walkElement(
       fastForEach(element.parameters, (elem) => {
         forEach(elem, parentPath, depth + 1)
       })
+      break
+    case 'UTOPIA_JSX_COMPONENT':
+      if (element.arbitraryJSBlock != null) {
+        fastForEach(Object.values(element.arbitraryJSBlock.elementsWithin), (elem) => {
+          forEach(elem, parentPath, depth + 1)
+        })
+      }
+      forEach(element.rootElement, parentPath, depth)
       break
     default:
       const _exhaustiveCheck: never = element

@@ -73,6 +73,7 @@ import {
   modifiableAttributeIsAttributeValue,
   isJSExpression,
   isJSXMapExpression,
+  uidFromElementChild,
 } from '../../../core/shared/element-template'
 import type { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import {
@@ -4401,9 +4402,9 @@ export const UPDATE_FNS = {
             }
             const comments = 'comments' in element ? element.comments : emptyComments
             if (action.text.trim() === '') {
-              return jsExpressionValue(null, comments, element.uid)
+              return jsExpressionValue(null, comments, uidFromElementChild(element))
             } else {
-              return jsExpressionValue(action.text, comments, element.uid)
+              return jsExpressionValue(action.text, comments, uidFromElementChild(element))
             }
           },
           editorStore.unpatchedEditor,
@@ -4434,7 +4435,11 @@ export const UPDATE_FNS = {
               }
               return {
                 ...element,
-                [textProp]: jsExpressionValue(action.text, emptyComments, textElement.uid),
+                [textProp]: jsExpressionValue(
+                  action.text,
+                  emptyComments,
+                  uidFromElementChild(textElement),
+                ),
               }
             }
             return element

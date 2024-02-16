@@ -3,9 +3,10 @@ import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import { getStoryboardElementPath } from '../../../../../core/model/scene-utils'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
 import * as EP from '../../../../../core/shared/element-path'
-import type {
-  ElementInstanceMetadata,
-  ElementInstanceMetadataMap,
+import {
+  uidFromElementChild,
+  type ElementInstanceMetadata,
+  type ElementInstanceMetadataMap,
 } from '../../../../../core/shared/element-template'
 import type { CanvasPoint, CanvasRectangle, Size } from '../../../../../core/shared/math-utils'
 import {
@@ -131,7 +132,9 @@ function recursivelyFindConditionalWithEmptyOrTextEditableBranch(
 
   const branch = EP.appendToPath(
     target,
-    clause === 'true-case' ? element.whenTrue.uid : element.whenFalse.uid,
+    clause === 'true-case'
+      ? uidFromElementChild(element.whenTrue)
+      : uidFromElementChild(element.whenFalse),
   )
   return recursivelyFindConditionalWithEmptyOrTextEditableBranch(
     branch,

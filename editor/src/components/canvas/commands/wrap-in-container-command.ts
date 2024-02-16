@@ -7,6 +7,7 @@ import {
   jsxConditionalExpression,
   jsxElement,
   jsxFragment,
+  uidFromElementChild,
 } from '../../../core/shared/element-template'
 import { type ElementPath, type Imports } from '../../../core/shared/project-file-types'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
@@ -120,7 +121,7 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
         ),
       )
 
-      const wrapperPath = EP.appendToPath(targetParent, wrapper.uid)
+      const wrapperPath = EP.appendToPath(targetParent, uidFromElementChild(wrapper))
 
       editorStatePatches.push({
         selectedViews: {

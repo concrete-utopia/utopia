@@ -10,8 +10,8 @@ import type { JSXElement } from '../../shared/element-template'
 import {
   getDefinedElsewhereFromElement,
   getJSXElementNameAsString,
+  uidFromElementChild,
 } from '../../shared/element-template'
-import { getUtopiaIDFromJSXElement } from '../../shared/uid-utils'
 import { fastForEach } from '../../shared/utils'
 import type { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 import infiniteLoopPrevention from './transform-prevent-infinite-loops'
@@ -279,7 +279,7 @@ function babelRewriteJSExpressionCode(
       transformForElementWithin(
         path,
         foundElementWithin.element,
-        getUtopiaIDFromJSXElement(foundElementWithin.element),
+        uidFromElementChild(foundElementWithin.element),
       )
     }
   }

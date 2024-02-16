@@ -71,6 +71,8 @@ import {
 } from '../../../core/shared/comment-flags'
 import { RemixSceneComponent } from './remix-scene-component'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { createComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
+import type { MutableUtopiaCtxRefData } from './ui-jsx-canvas-contexts'
 
 export function createLookupRender(
   elementPath: ElementPath | null,
@@ -94,6 +96,7 @@ export function createLookupRender(
   renderLimit: number | null,
   variablesInScope: VariableData,
   valuesInScopeFromParameters: Array<string>,
+  mutableContextRef: React.MutableRefObject<MutableUtopiaCtxRefData>,
 ): (element: JSXElement, scope: MapLike<any>) => React.ReactChild | null {
   let index = 0
 
@@ -154,6 +157,7 @@ export function createLookupRender(
       highlightBounds,
       editedText,
       innerVariablesInScope,
+      mutableContextRef,
     )
   }
 }
@@ -200,6 +204,7 @@ export function renderCoreElement(
   highlightBounds: HighlightBoundsForUids | null,
   editedText: ElementPath | null,
   variablesInScope: VariableData,
+  mutableContextRef: React.MutableRefObject<MutableUtopiaCtxRefData>,
 ): React.ReactChild {
   if (codeError != null) {
     throw codeError
@@ -234,6 +239,7 @@ export function renderCoreElement(
             null,
             variablesInScope,
             [],
+            mutableContextRef,
           )
         : NoOpLookupRender
 
@@ -283,6 +289,7 @@ export function renderCoreElement(
         highlightBounds,
         editedText,
         variablesInScope,
+        mutableContextRef,
       )
     }
     case 'JSX_MAP_EXPRESSION':
@@ -334,6 +341,7 @@ export function renderCoreElement(
             mapCountOverride,
             variablesInScope,
             valuesInScopeFromParameters,
+            mutableContextRef,
           )
 
           const blockScope = {
@@ -398,6 +406,7 @@ export function renderCoreElement(
         mapCountOverride,
         variablesInScope,
         valuesInScopeFromParameters,
+        mutableContextRef,
       )
 
       const blockScope = {
@@ -437,6 +446,7 @@ export function renderCoreElement(
         highlightBounds,
         editedText,
         variablesInScope,
+        mutableContextRef,
       )
     }
     case 'JSX_TEXT_BLOCK': {
@@ -563,6 +573,7 @@ export function renderCoreElement(
         highlightBounds,
         editedText,
         variablesInScope,
+        mutableContextRef,
       )
     }
     case 'ATTRIBUTE_VALUE':
@@ -601,6 +612,13 @@ export function renderCoreElement(
       }
 
       return jsxAttributeToValue(filePath, inScope, requireResult, element)
+    case 'UTOPIA_JSX_COMPONENT':
+      return createComponentRendererComponent({
+        topLevelElementName: null,
+        underlyingComponent: element,
+        filePath: filePath,
+        mutableContextRef: mutableContextRef,
+      }) as any
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled type ${JSON.stringify(element)}`)
@@ -683,6 +701,8 @@ function jsxElementChildToText(
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
       return ''
+    case 'UTOPIA_JSX_COMPONENT':
+      return jsxElementChildToText(element.rootElement, prevElement, nextElement, expressionContext)
     default:
       assertNever(element)
   }
@@ -749,9 +769,14 @@ function renderJSXElement(
   highlightBounds: HighlightBoundsForUids | null,
   editedText: ElementPath | null,
   variablesInScope: VariableData,
+  mutableContextRef: React.MutableRefObject<MutableUtopiaCtxRefData>,
 ): React.ReactElement {
   const createChildrenElement = (child: JSXElementChild): React.ReactChild => {
-    const childPath = optionalMap((path) => EP.appendToPath(path, getUtopiaID(child)), elementPath)
+    const childPath = optionalMap(
+      (path) =>
+        child.type === 'UTOPIA_JSX_COMPONENT' ? path : EP.appendToPath(path, getUtopiaID(child)),
+      elementPath,
+    )
     return renderCoreElement(
       child,
       childPath,
@@ -776,6 +801,7 @@ function renderJSXElement(
       highlightBounds,
       editedText,
       variablesInScope,
+      mutableContextRef,
     )
   }
 
@@ -888,6 +914,7 @@ function renderJSXElement(
           null,
           variablesInScope,
           [],
+          mutableContextRef,
         )
         const blockScope = {
           ...inScope,

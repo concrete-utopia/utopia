@@ -3,7 +3,12 @@ import { getContentsTreeFromPath, addFileToProjectContents } from '../../compone
 import type { EditorState } from '../../components/editor/store/editor-state'
 import { StoryboardFilePath } from '../../components/editor/store/editor-state'
 import { isLeft } from '../shared/either'
-import type { JSXElementChild, ElementsWithin, JSXElement } from '../shared/element-template'
+import type {
+  JSXElementChild,
+  ElementsWithin,
+  JSXElement,
+  ArbitraryJSBlock,
+} from '../shared/element-template'
 import { getJSXAttribute, jsExpressionValue, emptyComments } from '../shared/element-template'
 import { setJSXValueAtPath } from '../shared/jsx-attributes'
 import type { TextFile } from '../shared/project-file-types'
@@ -58,15 +63,30 @@ function transformJSXElementChildRecursively(
       const children = element.children.map((c) => transform(c))
       return transform({ ...element, children })
     }
-    case 'JSX_MAP_EXPRESSION':
+    case 'JSX_MAP_EXPRESSION': {
       let elementsWithin: ElementsWithin = {}
       for (const [key, value] of Object.entries(element.elementsWithin)) {
         elementsWithin[key] = transform(value) as JSXElement
       }
       return transform({ ...element, elementsWithin })
+    }
     case 'JSX_ELEMENT':
       const children = element.children.map((c) => transform(c))
       return transform({ ...element, children })
+    case 'UTOPIA_JSX_COMPONENT': {
+      let arbitraryJSBlock: ArbitraryJSBlock | null = null
+      if (element.arbitraryJSBlock != null) {
+        let elementsWithin: ElementsWithin = {}
+        for (const [key, value] of Object.entries(element.arbitraryJSBlock.elementsWithin)) {
+          elementsWithin[key] = transform(value) as JSXElement
+        }
+        arbitraryJSBlock = {
+          ...element.arbitraryJSBlock,
+          elementsWithin: elementsWithin,
+        }
+      }
+      return transform({ ...element, arbitraryJSBlock: arbitraryJSBlock })
+    }
     default:
       assertNever(element)
   }

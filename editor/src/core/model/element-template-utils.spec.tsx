@@ -53,6 +53,7 @@ import {
   JSXAttributes,
   jsxConditionalExpression,
   jsxFragment,
+  uidFromElementChild,
 } from '../shared/element-template'
 import {
   fromArrayIndex,
@@ -1197,7 +1198,9 @@ describe('insertJSXElementChildren', () => {
       throw new Error(`parent found at ${parentPathString} is not JsxElementLike`)
     }
     const childUid = EP.toUid(path)
-    const foundChildIndex = foundParent.children.findIndex((child) => child.uid === childUid)
+    const foundChildIndex = foundParent.children.findIndex(
+      (child) => uidFromElementChild(child) === childUid,
+    )
 
     expect(foundChildIndex).toBe(expectedIndex)
   }

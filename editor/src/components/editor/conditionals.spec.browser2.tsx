@@ -4,7 +4,11 @@ import { conditionalWhenTrueOptic, maybeConditionalExpression } from '../../core
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { isRight } from '../../core/shared/either'
 import * as EP from '../../core/shared/element-path'
-import { isJSExpressionValue, isJSXConditionalExpression } from '../../core/shared/element-template'
+import {
+  isJSExpressionValue,
+  isJSXConditionalExpression,
+  uidFromElementChild,
+} from '../../core/shared/element-template'
 import { filtered, fromField, fromTypeGuard } from '../../core/shared/optics/optic-creators'
 import { unsafeGet } from '../../core/shared/optics/optic-utilities'
 import type { Optic } from '../../core/shared/optics/optics'
@@ -716,9 +720,9 @@ describe('conditionals', () => {
 
         const targetUid =
           pasteInto.clause === 'true-case'
-            ? conditional.whenTrue.uid
+            ? uidFromElementChild(conditional.whenTrue)
             : pasteInto.clause === 'false-case'
-            ? conditional.whenFalse.uid
+            ? uidFromElementChild(conditional.whenFalse)
             : assertNever(pasteInto.clause)
 
         const targetPath = EP.appendToPath(pasteInto.intendedParentPath, targetUid)

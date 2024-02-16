@@ -33,6 +33,7 @@ import {
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import { getDomRectCenter } from '../../core/shared/dom-utils'
+import { uidFromElementChild } from '../../core/shared/element-template'
 
 function expectAllSelectedViewsToHaveMetadata(editor: EditorRenderResult) {
   const selectedViews = editor.getEditorState().editor.selectedViews
@@ -913,7 +914,7 @@ describe('canvas context menu', () => {
         .compose(jsxConditionalExpressionOptic)
         .compose(conditionalWhenFalseOptic)
       const inactiveElement = unsafeGet(inactiveElementOptic, renderResult.getEditorState())
-      const testValuePath = EP.appendToPath(conditionalPath, inactiveElement.uid)
+      const testValuePath = EP.appendToPath(conditionalPath, uidFromElementChild(inactiveElement))
 
       await renderResult.dispatch(selectComponents([testValuePath], false), true)
 

@@ -37,6 +37,7 @@ import {
   jsExpressionValue,
   jsxFragment,
   jsxTextBlock,
+  uidFromElementChild,
 } from '../../../core/shared/element-template'
 import { modify, toFirst } from '../../../core/shared/optics/optic-utilities'
 import { forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
@@ -98,7 +99,10 @@ export function unwrapConditionalClause(
                   } else if (clauseElement.children.length === 1) {
                     const childElement = clauseElement.children[0]
                     newSelection.push(
-                      EP.appendToPath(parentPath.intendedParentPath, childElement.uid),
+                      EP.appendToPath(
+                        parentPath.intendedParentPath,
+                        uidFromElementChild(childElement),
+                      ),
                     )
                     return childElement
                   } else {

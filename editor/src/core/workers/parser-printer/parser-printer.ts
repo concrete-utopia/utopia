@@ -53,6 +53,8 @@ import {
   unparsedCode,
   emptyComments,
   canBeRootElementOfComponent,
+  uidFromElementChild,
+  isArbitraryJSBlock,
 } from '../../shared/element-template'
 import { messageisFatal } from '../../shared/error-messages'
 import { memoize } from '../../shared/memoize'
@@ -106,6 +108,8 @@ import {
   extractPrefixedCode,
   markedAsExported,
   markedAsDefault,
+  parseParams,
+  parseSingleParamParams,
 } from './parser-printer-parsing'
 import { jsonToExpression } from './json-to-expression'
 import { difference } from '../../shared/set-utils'
@@ -287,10 +291,11 @@ function withUID<T>(
 }
 
 function updateJSXElementsWithin(
+  printOptions: PrintCodeOptions,
+  detailOfExports: ExportsDetail,
   expression: TS.Expression,
   elementsWithin: ElementsWithin,
   imports: Imports,
-  stripUIDs: boolean,
 ): TS.Expression {
   function streamlineInElementsWithin(
     attributes: TS.JsxAttributes,
@@ -298,7 +303,13 @@ function updateJSXElementsWithin(
   ): TS.Node {
     return withUID(undefined, attributes, originalNode, (uid) => {
       if (uid in elementsWithin) {
-        return jsxElementToExpression(elementsWithin[uid], imports, stripUIDs, false)
+        return jsxElementToExpression(
+          printOptions,
+          detailOfExports,
+          elementsWithin[uid],
+          imports,
+          false,
+        )
       } else {
         return originalNode
       }
@@ -388,9 +399,10 @@ function getFragmentElementNameFromImports(imports: Imports): JSXElementName {
 }
 
 function jsxElementToExpression(
+  printOptions: PrintCodeOptions,
+  detailOfExports: ExportsDetail,
   element: JSXElementChild,
   imports: Imports,
-  stripUIDs: boolean,
   parentIsJSX: boolean,
 ):
   | TS.JsxElement
@@ -406,7 +418,7 @@ function jsxElementToExpression(
       fastForEach(element.props, (propEntry) => {
         switch (propEntry.type) {
           case 'JSX_ATTRIBUTES_ENTRY':
-            const skip = stripUIDs && propEntry.key === 'data-uid'
+            const skip = printOptions.stripUIDs && propEntry.key === 'data-uid'
             if (!skip) {
               const prop = propEntry.value
               const identifier = TS.createIdentifier(
@@ -458,7 +470,9 @@ function jsxElementToExpression(
         const closing = TS.createJsxClosingElement(tagName)
         return TS.createJsxElement(
           opening,
-          element.children.map((child) => jsxElementToJSXExpression(child, imports, stripUIDs)),
+          element.children.map((child) =>
+            jsxElementToJSXExpression(printOptions, detailOfExports, child, imports),
+          ),
           closing,
         )
       }
@@ -471,10 +485,11 @@ function jsxElementToExpression(
 
         const targetNode = TS.isExpressionStatement(statement)
           ? updateJSXElementsWithin(
+              printOptions,
+              detailOfExports,
               statement.expression,
               element.elementsWithin,
               imports,
-              stripUIDs,
             )
           : statement
 
@@ -493,7 +508,7 @@ function jsxElementToExpression(
     }
     case 'JSX_FRAGMENT': {
       const children = element.children.map((child) => {
-        return jsxElementToJSXExpression(child, imports, stripUIDs)
+        return jsxElementToJSXExpression(printOptions, detailOfExports, child, imports)
       })
       if (element.longForm) {
         const tagName = jsxElementNameToExpression(getFragmentElementNameFromImports(imports))
@@ -517,8 +532,20 @@ function jsxElementToExpression(
     }
     case 'JSX_CONDITIONAL_EXPRESSION': {
       const condition = jsxAttributeToExpression(element.condition)
-      const whenTrue = jsxElementToExpression(element.whenTrue, imports, stripUIDs, false)
-      const whenFalse = jsxElementToExpression(element.whenFalse, imports, stripUIDs, false)
+      const whenTrue = jsxElementToExpression(
+        printOptions,
+        detailOfExports,
+        element.whenTrue,
+        imports,
+        false,
+      )
+      const whenFalse = jsxElementToExpression(
+        printOptions,
+        detailOfExports,
+        element.whenFalse,
+        imports,
+        false,
+      )
 
       const node = TS.createConditional(
         condition,
@@ -535,6 +562,13 @@ function jsxElementToExpression(
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
       return jsxAttributeToExpression(element)
+    case 'UTOPIA_JSX_COMPONENT':
+      return printUtopiaJSXComponent(
+        printOptions,
+        imports,
+        element,
+        detailOfExports,
+      ) as TS.Expression
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled element type ${JSON.stringify(element)}`)
@@ -542,11 +576,12 @@ function jsxElementToExpression(
 }
 
 function jsxElementToJSXExpression(
+  printOptions: PrintCodeOptions,
+  detailOfExports: ExportsDetail,
   element: JSXElementChild,
   imports: Imports,
-  stripUIDs: boolean,
 ): TS.JsxElement | TS.JsxSelfClosingElement | TS.JsxText | TS.JsxExpression | TS.JsxFragment {
-  const expression = jsxElementToExpression(element, imports, stripUIDs, true)
+  const expression = jsxElementToExpression(printOptions, detailOfExports, element, imports, true)
   if (
     TS.isJsxElement(expression) ||
     TS.isJsxSelfClosingElement(expression) ||
@@ -645,7 +680,13 @@ function printUtopiaJSXComponent(
   element: UtopiaJSXComponent,
   detailOfExports: ExportsDetail,
 ): TS.Node {
-  const asJSX = jsxElementToExpression(element.rootElement, imports, printOptions.stripUIDs, true)
+  const asJSX = jsxElementToExpression(
+    printOptions,
+    detailOfExports,
+    element.rootElement,
+    imports,
+    true,
+  )
   if (
     TS.isJsxElement(asJSX) ||
     TS.isJsxSelfClosingElement(asJSX) ||
@@ -1467,7 +1508,7 @@ export function parseCode(
           if (isPossibleCanvasContentsFunction(canvasContents)) {
             const { parameters, body } = canvasContents
             isFunction = true
-            const parsedFunctionParams = parseParams(
+            parsedFunctionParam = parseSingleParamParams(
               parameters,
               sourceFile,
               sourceText,
@@ -1478,20 +1519,7 @@ export function parseCode(
               alreadyExistingUIDs_MUTABLE,
               applySteganography,
             )
-            parsedFunctionParam = flatMapEither((parsedParams) => {
-              const paramsValue = parsedParams.value
-              if (paramsValue.length === 0) {
-                return right(null)
-              } else if (paramsValue.length === 1) {
-                // Note: We're explicitly ignoring the `propsUsed` value as
-                // that should be handled by the call to `propNamesForParam` below.
-                return right(
-                  withParserMetadata(paramsValue[0], parsedParams.highlightBounds, [], []),
-                )
-              } else {
-                return left('Invalid number of params')
-              }
-            }, parsedFunctionParams)
+
             forEachRight(parsedFunctionParam, (param) => {
               const boundParam = param?.value.boundParam
               const propsObjectName =
@@ -1762,210 +1790,6 @@ export function parseCode(
   }
 }
 
-function parseParams(
-  params: TS.NodeArray<TS.ParameterDeclaration>,
-  file: TS.SourceFile,
-  sourceText: string,
-  filename: string,
-  imports: Imports,
-  topLevelNames: Array<string>,
-  existingHighlightBounds: Readonly<HighlightBoundsForUids>,
-  existingUIDs: Set<string>,
-  applySteganography: SteganographyMode,
-): Either<string, WithParserMetadata<Array<Param>>> {
-  let parsedParams: Array<Param> = []
-  let highlightBounds: HighlightBoundsForUids = { ...existingHighlightBounds }
-  let propsUsed: Array<string> = []
-  for (const param of params) {
-    const parseResult = parseParam(
-      param,
-      file,
-      sourceText,
-      filename,
-      imports,
-      topLevelNames,
-      highlightBounds,
-      existingUIDs,
-      applySteganography,
-    )
-    if (isRight(parseResult)) {
-      const parsedParam = parseResult.value
-      highlightBounds = {
-        ...highlightBounds,
-        ...parsedParam.highlightBounds,
-      }
-      propsUsed = [...propsUsed, ...parsedParam.propsUsed]
-      parsedParams.push(parsedParam.value)
-    } else {
-      return parseResult
-    }
-  }
-  return right(withParserMetadata(parsedParams, highlightBounds, propsUsed, []))
-}
-
-function parseParam(
-  param: TS.ParameterDeclaration | TS.BindingElement,
-  file: TS.SourceFile,
-  sourceText: string,
-  filename: string,
-  imports: Imports,
-  topLevelNames: Array<string>,
-  existingHighlightBounds: Readonly<HighlightBoundsForUids>,
-  existingUIDs: Set<string>,
-  applySteganography: SteganographyMode,
-): Either<string, WithParserMetadata<Param>> {
-  const dotDotDotToken = param.dotDotDotToken != null
-  const parsedExpression: Either<
-    string,
-    WithParserMetadata<JSExpressionMapOrOtherJavascript | undefined>
-  > = param.initializer == null
-    ? right(withParserMetadata(undefined, existingHighlightBounds, [], []))
-    : parseAttributeOtherJavaScript(
-        file,
-        sourceText,
-        filename,
-        imports,
-        topLevelNames,
-        null,
-        param.initializer,
-        existingHighlightBounds,
-        existingUIDs,
-        applySteganography,
-      )
-  return flatMapEither((paramExpression) => {
-    const parsedBindingName = parseBindingName(
-      param.name,
-      paramExpression,
-      file,
-      sourceText,
-      filename,
-      imports,
-      topLevelNames,
-      existingHighlightBounds,
-      existingUIDs,
-      applySteganography,
-    )
-    return mapEither(
-      (bindingName) =>
-        withParserMetadata(
-          functionParam(dotDotDotToken, bindingName.value),
-          bindingName.highlightBounds,
-          bindingName.propsUsed,
-          [],
-        ),
-      parsedBindingName,
-    )
-  }, parsedExpression)
-}
-
-function parseBindingName(
-  elem: TS.BindingName,
-  expression: WithParserMetadata<JSExpressionMapOrOtherJavascript | undefined>,
-  file: TS.SourceFile,
-  sourceText: string,
-  filename: string,
-  imports: Imports,
-  topLevelNames: Array<string>,
-  existingHighlightBounds: Readonly<HighlightBoundsForUids>,
-  existingUIDs: Set<string>,
-  applySteganography: SteganographyMode,
-): Either<string, WithParserMetadata<BoundParam>> {
-  let highlightBounds: HighlightBoundsForUids = {
-    ...existingHighlightBounds,
-    ...expression.highlightBounds,
-  }
-  let propsUsed: Array<string> = [...expression.propsUsed]
-
-  if (TS.isIdentifier(elem)) {
-    const parsedParamName = getPropertyNameText(elem, file)
-    return mapEither(
-      (paramName) =>
-        withParserMetadata(
-          regularParam(paramName, expression.value ?? null),
-          highlightBounds,
-          propsUsed,
-          [],
-        ),
-      parsedParamName,
-    )
-  } else if (TS.isObjectBindingPattern(elem)) {
-    let parts: Array<DestructuredParamPart> = []
-    for (const element of elem.elements) {
-      const parsedPropertyName: Either<string, string | null> =
-        element.propertyName == null ? right(null) : getPropertyNameText(element.propertyName, file)
-      if (isRight(parsedPropertyName)) {
-        const propertyName = parsedPropertyName.value
-        const parsedParam = parseParam(
-          element,
-          file,
-          sourceText,
-          filename,
-          imports,
-          topLevelNames,
-          highlightBounds,
-          existingUIDs,
-          applySteganography,
-        )
-        if (isRight(parsedParam)) {
-          const bound = parsedParam.value.value
-          highlightBounds = {
-            ...highlightBounds,
-            ...parsedParam.value.highlightBounds,
-          }
-          propsUsed = [...propsUsed, ...parsedParam.value.propsUsed]
-          if (propertyName == null) {
-            if (isRegularParam(bound.boundParam)) {
-              parts.push(destructuredParamPart(undefined, bound, null))
-            } else {
-              return left('Unable to parse bound object parameter with no parameter propertyName')
-            }
-          } else {
-            parts.push(destructuredParamPart(propertyName, bound, null))
-          }
-        } else {
-          return parsedParam
-        }
-      } else {
-        return parsedPropertyName
-      }
-    }
-    return right(withParserMetadata(destructuredObject(parts), highlightBounds, propsUsed, []))
-  } else if (TS.isArrayBindingPattern(elem)) {
-    let parts: Array<DestructuredArrayPart> = []
-    for (const element of elem.elements) {
-      if (TS.isOmittedExpression(element)) {
-        parts.push(omittedParam())
-      } else {
-        const parsedParam = parseParam(
-          element,
-          file,
-          sourceText,
-          filename,
-          imports,
-          topLevelNames,
-          highlightBounds,
-          existingUIDs,
-          applySteganography,
-        )
-        if (isRight(parsedParam)) {
-          const bound = parsedParam.value.value
-          highlightBounds = {
-            ...highlightBounds,
-            ...parsedParam.value.highlightBounds,
-          }
-          propsUsed = [...propsUsed, ...parsedParam.value.propsUsed]
-          parts.push(bound)
-        } else {
-          return parsedParam
-        }
-      }
-    }
-    return right(withParserMetadata(destructuredArray(parts), highlightBounds, propsUsed, []))
-  } else {
-    return left('Unable to parse binding element')
-  }
-}
-
 // In practical usage currently these highlight bounds should only include entries
 // that are selectable, potentially in the future this will extend beyond that but for
 // the moment it doesn't make sense to include highlight bounds for a value deep within
@@ -1979,8 +1803,10 @@ export function trimHighlightBounds(success: ParseSuccess): ParseSuccess {
       let updatedHighlightBounds: HighlightBoundsForUids = {}
 
       function includeElement(element: JSXElementChild | ArbitraryJSBlock): void {
-        if (element.uid in highlightBounds) {
-          updatedHighlightBounds[element.uid] = highlightBounds[element.uid]
+        const elementUID =
+          element.type === 'ARBITRARY_JS_BLOCK' ? element.uid : uidFromElementChild(element)
+        if (elementUID in highlightBounds) {
+          updatedHighlightBounds[elementUID] = highlightBounds[elementUID]
         }
       }
 
@@ -2012,6 +1838,9 @@ export function trimHighlightBounds(success: ParseSuccess): ParseSuccess {
           case 'ATTRIBUTE_OTHER_JAVASCRIPT':
             includeElement(element)
             walkElementsWithin(element.elementsWithin)
+            break
+          case 'UTOPIA_JSX_COMPONENT':
+            walkJSXElementChild(element.rootElement)
             break
           default:
             assertNever(element)
