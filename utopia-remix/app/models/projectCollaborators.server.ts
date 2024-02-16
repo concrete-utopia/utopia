@@ -36,6 +36,7 @@ export async function updateCollaborators(params: { id: string }): Promise<void>
       where: { user_id: { in: collaborators.map((c) => c.id) } },
     })
     for (const user of existingUsers) {
+      // the Prisma equivalent of INSERT ... ON CONFLICT DO NOTHING
       await tx.projectCollaborator.upsert({
         where: {
           unique_project_collaborator_project_id_user_id: {
