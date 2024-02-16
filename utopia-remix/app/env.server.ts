@@ -9,9 +9,9 @@ declare global {
 export const ServerEnvironment = {
   environment: mustEnv('APP_ENV'),
   // The URL of the actual backend server in the form <scheme>://<host>:<port>
-  BackendURL: mustEnv('BACKEND_URL') ?? '',
+  BackendURL: mustEnv('BACKEND_URL'),
   // the CORS allowed origin for incoming requests
-  CORSOrigin: mustEnv('CORS_ORIGIN') ?? '',
+  CORSOrigin: mustEnv('CORS_ORIGIN'),
   // the Liveblocks secret key
   LiveblocksSecretKey: mustEnv('LIVEBLOCKS_SECRET_KEY'),
 }
