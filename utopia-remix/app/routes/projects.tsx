@@ -338,10 +338,10 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
             <div style={{ flex: 1 }}>{categories[selectedCategory].name}</div>,
           )}
         </div>
-        <CategoryActions projects={projects} />
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+        <CategoryActions projects={projects} />
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
             <div
@@ -391,9 +391,13 @@ const CategoryTrashActions = React.memo(({ projects }: { projects: ProjectWithou
 
   return (
     <>
-      <button className={button()} onClick={handleEmptyTrash} disabled={projects.length === 0}>
-        Empty trash
-      </button>
+      <div
+        className={button({color: 'subtle'})}
+        onClick={handleEmptyTrash}
+        style={{ display: projects.length === 0 ? 'none' : 'block' }}
+      >
+        Empty Trash
+      </div>
     </>
   )
 })

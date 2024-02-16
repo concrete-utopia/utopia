@@ -35,7 +35,13 @@ export const button = recipe({
           backgroundColor: '#a4a4a415',
         },
       },
-      brand: { background: 'grey' },
+      subtle: {
+        padding: '6px 10px',
+        backgroundColor: '#a4a4a420',
+        ':hover': {
+          backgroundColor: '#a4a4a435',
+        },
+      },
     },
   },
 
