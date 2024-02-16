@@ -451,37 +451,39 @@ const ProjectCard = React.memo(
             background: 'linear-gradient(rgba(77, 255, 223, 0.4), rgba(255,250,220,.8))',
             backgroundAttachment: 'local',
             backgroundRepeat: 'no-repeat',
+            position: 'relative',
           }}
           onMouseDown={onSelect}
           onDoubleClick={openProject}
-        />
-        <div style={{ position: 'absolute', right: 2, bottom: 2, display: 'flex', gap: 2 }}>
-          {collaborators.map((c) => {
-            return (
-              <div
-                style={{
-                  borderRadius: '100%',
-                  width: 24,
-                  height: 24,
-                  backgroundColor: colors.primary,
-                  backgroundImage: `url("${c.avatar}")`,
-                  backgroundSize: 'cover',
-                  color: colors.white,
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  fontSize: '.9em',
-                  fontWeight: 700,
-                  border: '2px solid white',
-                  filter: project.deleted === true ? 'grayscale(1)' : undefined,
-                }}
-                title={c.name}
-                className={sprinkles({ boxShadow: 'shadow' })}
-              >
-                {when(c.avatar === '', multiplayerInitialsFromName(c.name))}
-              </div>
-            )
-          })}
+        >
+          <div style={{ position: 'absolute', right: 2, bottom: 2, display: 'flex', gap: 2 }}>
+            {collaborators.map((c) => {
+              return (
+                <div
+                  style={{
+                    borderRadius: '100%',
+                    width: 24,
+                    height: 24,
+                    backgroundColor: colors.primary,
+                    backgroundImage: `url("${c.avatar}")`,
+                    backgroundSize: 'cover',
+                    color: colors.white,
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    fontSize: '.9em',
+                    fontWeight: 700,
+                    border: '2px solid white',
+                    filter: project.deleted === true ? 'grayscale(1)' : undefined,
+                  }}
+                  title={c.name}
+                  className={sprinkles({ boxShadow: 'shadow' })}
+                >
+                  {when(c.avatar === '', multiplayerInitialsFromName(c.name))}
+                </div>
+              )
+            })}
+          </div>
         </div>
         <ProjectCardActions project={project} />
       </div>
