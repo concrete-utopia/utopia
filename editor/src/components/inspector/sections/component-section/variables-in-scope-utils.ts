@@ -4,7 +4,7 @@ import type {
   ObjectControlDescription,
 } from 'utopia-api/core'
 import type { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
-import type { VariableData, VariablesInScope } from '../../../canvas/ui-jsx-canvas'
+import type { VariableData } from '../../../canvas/ui-jsx-canvas'
 import { useEditorState, Substores } from '../../../editor/store/store-hook'
 import type { VariableOption } from './data-picker-popup'
 import * as EP from '../../../../core/shared/element-path'
@@ -17,6 +17,7 @@ function valuesFromObject(
   value: object | null,
   depth: number,
   displayName: string,
+  valueMatchesPropType: boolean,
 ): Array<VariableOption> {
   if (value == null) {
     return [
@@ -27,6 +28,7 @@ function valuesFromObject(
         value: `null`,
         depth: depth,
         variableType: 'primitive',
+        valueMatchesPropType: valueMatchesPropType,
       },
     ]
   }
@@ -39,6 +41,7 @@ function valuesFromObject(
     depth: variable.depth,
     variableChildren: variable.variableChildren,
     variableType: variable.variableType,
+    valueMatchesPropType: variable.valueMatchesPropType,
   })
 
   if (Array.isArray(value)) {
@@ -50,6 +53,7 @@ function valuesFromObject(
         value: `[ ]`,
         depth: depth,
         variableType: 'array',
+        valueMatchesPropType: valueMatchesPropType,
         variableChildren: value.flatMap((v, idx) =>
           valuesFromVariable(
             `${name}[${idx}]`,
@@ -57,6 +61,7 @@ function valuesFromObject(
             depth + 1,
             `${displayName}[${idx}]`,
             objectName,
+            valueMatchesPropType,
           ).map((variable) => patchDefinedElsewhereInfo(variable)),
         ),
       }),
@@ -71,10 +76,16 @@ function valuesFromObject(
       value: `{ }`,
       depth: depth,
       variableType: 'object',
+      valueMatchesPropType: valueMatchesPropType,
       variableChildren: Object.entries(value).flatMap(([key, field]) =>
-        valuesFromVariable(`${name}['${key}']`, field, depth + 1, key, objectName).map((variable) =>
-          patchDefinedElsewhereInfo(variable),
-        ),
+        valuesFromVariable(
+          `${name}['${key}']`,
+          field,
+          depth + 1,
+          key,
+          objectName,
+          valueMatchesPropType,
+        ).map((variable) => patchDefinedElsewhereInfo(variable)),
       ),
     }),
   ]
@@ -86,6 +97,7 @@ function valuesFromVariable(
   depth: number,
   displayName: string,
   originalObjectName: string,
+  valueMatchesPropType: boolean,
 ): Array<VariableOption> {
   switch (typeof value) {
     case 'bigint':
@@ -101,10 +113,18 @@ function valuesFromVariable(
           value: `${value}`,
           depth: depth,
           variableType: 'primitive',
+          valueMatchesPropType: valueMatchesPropType,
         },
       ]
     case 'object':
-      return valuesFromObject(name, originalObjectName, value, depth, displayName)
+      return valuesFromObject(
+        name,
+        originalObjectName,
+        value,
+        depth,
+        displayName,
+        valueMatchesPropType,
+      )
     case 'function':
     case 'symbol':
       return []
@@ -117,11 +137,17 @@ function usePropertyControlDescriptions(): Array<ControlDescription> {
   )
 }
 
+interface VariablesInScopeByPriority {
+  valuesMatchingPropertyDescription: [string, unknown][]
+  valuesMatchingPropertyShape: [string, unknown][]
+  restOfValues: [string, unknown][]
+}
+
 function orderVariablesInScope(
   variableNamesInScope: VariableData,
   controlDescriptions: Array<ControlDescription>,
   currentPropertyValue: PropertyValue,
-): Array<[string, unknown]> {
+): VariablesInScopeByPriority {
   let valuesMatchingPropertyDescription: [string, unknown][] = []
   let valuesMatchingPropertyShape: [string, unknown][] = []
   let restOfValues: [string, unknown][] = []
@@ -143,7 +169,7 @@ function orderVariablesInScope(
     }
   }
 
-  return [...valuesMatchingPropertyDescription, ...valuesMatchingPropertyShape, ...restOfValues]
+  return { valuesMatchingPropertyDescription, valuesMatchingPropertyShape, restOfValues }
 }
 
 const filterKeyFromObject =
@@ -216,9 +242,16 @@ export function useVariablesInScopeForSelectedElement(
       currentPropertyValue,
     )
 
-    return orderedVariablesInScope.flatMap(([name, variable]) =>
-      valuesFromVariable(name, variable, 0, name, name),
+    const priorityValues = [
+      ...orderedVariablesInScope.valuesMatchingPropertyDescription,
+      ...orderedVariablesInScope.valuesMatchingPropertyShape,
+    ].flatMap(([name, variable]) => valuesFromVariable(name, variable, 0, name, name, true))
+
+    const restOfValues = orderedVariablesInScope.restOfValues.flatMap(([name, variable]) =>
+      valuesFromVariable(name, variable, 0, name, name, false),
     )
+
+    return [...priorityValues, ...restOfValues]
   }, [controlDescriptions, currentPropertyValue, selectedViewPath, variablesInScope])
 
   return variableNamesInScope
