@@ -2,14 +2,16 @@ import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 import { Category } from './routes/projects'
 
-interface Store {
+interface ProjectsStore {
   selectedProjectId: string | null
   setSelectedProjectId: (projectId: string | null) => void
   selectedCategory: Category
   setSelectedCategory: (category: Category) => void
+  searchQuery: string
+  setSearchQuery: (query: string) => void
 }
 
-export const useStore = create<Store>()(
+export const useProjectsStore = create<ProjectsStore>()(
   devtools(
     persist(
       (set) => ({
@@ -18,6 +20,8 @@ export const useStore = create<Store>()(
         selectedProjectId: null,
         setSelectedProjectId: (projectId: string | null) =>
           set(() => ({ selectedProjectId: projectId })),
+        searchQuery: '',
+        setSearchQuery: (query) => set(() => ({ searchQuery: query })),
       }),
       {
         name: 'store',

@@ -1,7 +1,7 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { useFetcher } from '@remix-run/react'
 import React from 'react'
-import { useStore } from '../store'
+import { useProjectsStore } from '../store'
 import { contextMenuItem } from '../styles/contextMenuItem.css'
 import { colors } from '../styles/sprinkles.css'
 import { ProjectWithoutContent } from '../types'
@@ -17,7 +17,7 @@ type ContextMenuEntry =
 
 export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWithoutContent }) => {
   const fetcher = useFetcher()
-  const selectedCategory = useStore((store) => store.selectedCategory)
+  const selectedCategory = useProjectsStore((store) => store.selectedCategory)
 
   const deleteProject = React.useCallback(
     (projectId: string) => {
