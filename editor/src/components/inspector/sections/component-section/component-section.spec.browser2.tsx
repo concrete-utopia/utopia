@@ -2,6 +2,7 @@ import { within } from '@testing-library/react'
 import * as EP from '../../../../core/shared/element-path'
 import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
 import { mouseClickAtPoint, pressKey } from '../../../canvas/event-helpers.test-utils'
+import type { EditorRenderResult } from '../../../canvas/ui-jsx.test-utils'
 import { renderTestEditorWithCode } from '../../../canvas/ui-jsx.test-utils'
 import {
   DataPickerPopupButtonTestId,
@@ -23,9 +24,7 @@ describe('Set element prop via the data picker', () => {
     const theScene = editor.renderedDOM.getByTestId('scene')
     const theInspector = editor.renderedDOM.getByTestId('inspector-sections-container')
 
-    const options = [
-      ...editor.renderedDOM.baseElement.querySelectorAll(`[data-testid^="variable-from-scope"]`),
-    ].map((node) => node.firstChild!.firstChild!.textContent)
+    const options = getRenderedOptions(editor)
 
     // the items from the data picker are expected here, so that the numbers in `VariableFromScopeOptionTestId`
     // below are put in context
@@ -82,9 +81,7 @@ describe('Set element prop via the data picker', () => {
     const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
     expect(dataPickerPopup).not.toBeNull()
 
-    const options = [
-      ...editor.renderedDOM.baseElement.querySelectorAll(`[data-testid^="variable-from-scope"]`),
-    ].map((node) => node.firstChild!.firstChild!.textContent)
+    const options = getRenderedOptions(editor)
 
     expect(options).toEqual([
       'currentCount', // at the top because the number input control descriptor is present
@@ -107,9 +104,7 @@ describe('Set element prop via the data picker', () => {
     const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
     expect(dataPickerPopup).not.toBeNull()
 
-    const options = [
-      ...editor.renderedDOM.baseElement.querySelectorAll(`[data-testid^="variable-from-scope"]`),
-    ].map((node) => node.firstChild!.firstChild!.textContent)
+    const options = getRenderedOptions(editor)
 
     expect(options).toEqual([
       'titleIdeas', // the array is at the top because of the array descriptor
@@ -137,9 +132,7 @@ describe('Set element prop via the data picker', () => {
     const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
     expect(dataPickerPopup).not.toBeNull()
 
-    const options = [
-      ...editor.renderedDOM.baseElement.querySelectorAll(`[data-testid^="variable-from-scope"]`),
-    ].map((node) => node.firstChild!.firstChild!.textContent)
+    const options = getRenderedOptions(editor)
 
     expect(options).toEqual([
       'bookInfo', // object is at the top because of the object descriptor
@@ -191,9 +184,7 @@ describe('Set element prop via the data picker', () => {
     const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
     expect(dataPickerPopup).not.toBeNull()
 
-    const options = [
-      ...editor.renderedDOM.baseElement.querySelectorAll(`[data-testid^="variable-from-scope"]`),
-    ].map((node) => node.firstChild!.firstChild!.textContent)
+    const options = getRenderedOptions(editor)
 
     expect(options).toEqual([
       'authors', // at the top because it's an array of string, same as titleIdeas
@@ -255,9 +246,7 @@ describe('Set element prop via the data picker', () => {
     const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
     expect(dataPickerPopup).not.toBeNull()
 
-    const options = [
-      ...editor.renderedDOM.baseElement.querySelectorAll(`[data-testid^="variable-from-scope"]`),
-    ].map((node) => node.firstChild!.firstChild!.textContent)
+    const options = getRenderedOptions(editor)
 
     expect(options).toEqual([
       'bookInfo', // object with matching shape
@@ -314,9 +303,7 @@ describe('Set element prop via the data picker', () => {
     const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
     expect(dataPickerPopup).not.toBeNull()
 
-    const options = [
-      ...editor.renderedDOM.baseElement.querySelectorAll(`[data-testid^="variable-from-scope"]`),
-    ].map((node) => node.firstChild!.firstChild!.textContent)
+    const options = getRenderedOptions(editor)
 
     expect(options).toEqual([
       'authors',
@@ -366,9 +353,7 @@ describe('Set element prop via the data picker', () => {
     const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
     expect(dataPickerPopup).not.toBeNull()
 
-    const options = [
-      ...editor.renderedDOM.baseElement.querySelectorAll(`[data-testid^="variable-from-scope"]`),
-    ].map((node) => node.firstChild!.firstChild!.textContent)
+    const options = getRenderedOptions(editor)
 
     expect(options).toEqual([
       'authors',
@@ -978,3 +963,11 @@ registerInternalComponent(Title, {
 //     },
 //   ],
 // })
+
+function getRenderedOptions(editor: EditorRenderResult) {
+  return [
+    ...editor.renderedDOM.baseElement.querySelectorAll(
+      `[data-testid^="variable-from-scope"] [data-testid="variable-name"]`,
+    ),
+  ].map((node) => node.textContent)
+}
