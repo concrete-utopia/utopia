@@ -1,6 +1,8 @@
 import { UtopiaPrismaClient } from './db.server'
 import { SESSION_COOKIE_NAME } from './util/api.server'
 
+const createRecordBackoff = 5 // ms
+
 export async function wait(ms: number) {
   return new Promise((res) => setTimeout(res, ms))
 }
@@ -16,6 +18,7 @@ export async function createTestUser(
       name: params.name ?? params.id,
     },
   })
+  await wait(createRecordBackoff)
 }
 
 export async function createTestProject(
@@ -45,6 +48,7 @@ export async function createTestProject(
       deleted: params.deleted ?? null,
     },
   })
+  await wait(createRecordBackoff)
 }
 
 export async function createTestSession(
@@ -66,6 +70,7 @@ export async function createTestSession(
       session: Buffer.from(''),
     },
   })
+  await wait(createRecordBackoff)
 }
 
 export async function createTestProjectCollaborator(
@@ -75,6 +80,7 @@ export async function createTestProjectCollaborator(
   await client.projectCollaborator.create({
     data: { project_id: params.projectId, user_id: params.userId },
   })
+  await wait(createRecordBackoff)
 }
 
 interface DeletableModel {
