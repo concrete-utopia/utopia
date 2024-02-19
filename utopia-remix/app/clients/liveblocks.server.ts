@@ -20,14 +20,14 @@ function roomIdFromProjectId(projectId: string): string {
   return `project-room-${projectId}`
 }
 
-interface RoomStorage {
+export interface RoomStorage {
   data: {
     collaborators: RoomCollaborators
   }
 }
 
 export interface RoomCollaborators {
-  data: { [key: string]: { data: Collaborator } }
+  data: { [userId: string]: { data: Collaborator } }
 }
 
 async function getRoomStorage(projectId: string): Promise<RoomStorage> {

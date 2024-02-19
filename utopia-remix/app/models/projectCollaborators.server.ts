@@ -32,6 +32,7 @@ export async function updateCollaborators(params: { id: string }): Promise<void>
   const storage = await LiveblocksAPI.getRoomStorage(params.id)
   const collaborators = Object.values(storage.data.collaborators.data).map((c) => c.data)
   await prisma.$transaction(async (tx) => {
+    // ignore non-existing users
     const existingUsers = await tx.userDetails.findMany({
       where: { user_id: { in: collaborators.map((c) => c.id) } },
     })
