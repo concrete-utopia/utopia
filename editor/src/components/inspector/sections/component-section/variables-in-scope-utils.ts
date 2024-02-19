@@ -153,12 +153,19 @@ function orderVariablesInScope(
   let restOfValues: [string, unknown][] = []
 
   for (const [name, { spiedValue }] of Object.entries(variableNamesInScope)) {
-    const valueMatchesControlDescription = controlDescriptions.some((d) =>
-      variableMatchesControlDescription(spiedValue, d),
+    const valueMatchesControlDescription = controlDescriptions.some(
+      (description) =>
+        variableMatchesControlDescription(spiedValue, description) ||
+        arrayElementMatchesControlDescription(spiedValue, description),
     )
+
     const valueMatchesCurrentPropValue =
       currentPropertyValue.type === 'existing' &&
-      variableShapesMatch(currentPropertyValue.value, spiedValue)
+      (variableShapesMatch(currentPropertyValue.value, spiedValue) ||
+        arrayShapeHasMatchingElements({
+          currentPropValue: currentPropertyValue.value,
+          spiedValueFromScope: spiedValue,
+        }))
 
     if (valueMatchesControlDescription) {
       valuesMatchingPropertyDescription.push([name, spiedValue])
@@ -327,6 +334,30 @@ function variableMatchesControlDescription(
       variableMatchesObjectControlDescription(variable, controlDescription))
 
   return matches
+}
+
+// the prop type is `string`, and we have `Array<string>`
+function arrayElementMatchesControlDescription(
+  spiedValue: unknown,
+  controlDescription: ControlDescription,
+): boolean {
+  return (
+    controlDescription.control === 'array' &&
+    variableMatchesControlDescription(spiedValue, controlDescription.propertyControl)
+  )
+}
+
+function arrayShapeHasMatchingElements({
+  spiedValueFromScope: spiedValue,
+  currentPropValue,
+}: {
+  spiedValueFromScope: unknown
+  currentPropValue: unknown
+}): boolean {
+  if (!Array.isArray(spiedValue)) {
+    return false
+  }
+  return spiedValue.every((e) => variableShapesMatch(e, currentPropValue))
 }
 
 type PropertyValue = { type: 'existing'; value: unknown } | { type: 'not-found' }
