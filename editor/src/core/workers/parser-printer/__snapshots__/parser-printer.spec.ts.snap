@@ -4,7 +4,7 @@ exports[`Babel transpile can transpile jsx fragment 1`] = `
 Object {
   "type": "RIGHT",
   "value": Object {
-    "code": "var App = function App(props) {
+    "code": "var App = props => {
   return React.createElement(React.Fragment, null, React.createElement(View, {
     style: { ...props.style,
       backgroundColor: '#FFFFFF'
@@ -17,7 +17,7 @@ Object {
 };",
     "sourceMap": Object {
       "file": "test.js",
-      "mappings": "AAcEA,IAAAA,GAAAA,GAAAA,SAAAA,GAAAA,CAAAA,KAAAA,EAAAA;AACDA,SACcC,0CACJD,oBAAAA,IAAAA;AACJA,IAAAA,KAAAA,EAAAA,EAAAA,GAAAA,KAAAA,CAAAA,KAAAA;AAAAA,MAAAA,eAAAA,EAAAA;AAAAA,KADIA;AAECA,IAAAA,MAAAA,EAAAA;AAAAA,MAAAA,YAAAA,EAAAA;AAAAA,KAFDA;AAGFE,gBAAaC;AAHXH,IADIC,CADdD;AASKI,CAVJJ",
+      "mappings": "AAcEA,IAAAA,GAAAA,GAAAA,KAAAA,IAAAA;AACDA,SACcC,0CACJD,oBAAAA,IAAAA;AACJA,IAAAA,KAAAA,EAAAA,EAAAA,GAAAA,KAAAA,CAAAA,KAAAA;AAAAA,MAAAA,eAAAA,EAAAA;AAAAA,KADIA;AAECA,IAAAA,MAAAA,EAAAA;AAAAA,MAAAA,YAAAA,EAAAA;AAAAA,KAFDA;AAGFE,gBAAaC;AAHXH,IADIC,CADdD;AASKI,CAVJJ",
       "names": Array [
         "
 ",
@@ -82,6 +82,7 @@ Object {
 function otherFn(n) {
   return n
 }",
+    "params": Array [],
     "sourceMap": Object {
       "file": "code.tsx",
       "mappings": "AAYCA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AACjBC,SAAOF,CAAPE;AACDC;;AACDL,SAASM,OAATN,CAAiBE,CAAjBF,EAAoBG;AAClBC,SAAOF,CAAPE;AACFG",
@@ -150,12 +151,12 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
     },
   ],
   "fullHighlightBounds": Object {
-    "067": Object {
-      "endCol": 1,
-      "endLine": 17,
-      "startCol": 0,
-      "startLine": 15,
-      "uid": "067",
+    "0b3": Object {
+      "endCol": 38,
+      "endLine": 23,
+      "startCol": 14,
+      "startLine": 23,
+      "uid": "0b3",
     },
     "6e3": Object {
       "endCol": 24,
@@ -163,13 +164,6 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
       "startCol": 19,
       "startLine": 20,
       "uid": "6e3",
-    },
-    "8a0": Object {
-      "endCol": 3,
-      "endLine": 26,
-      "startCol": 2,
-      "startLine": 19,
-      "uid": "8a0",
     },
     "aaa": Object {
       "endCol": 11,
@@ -185,19 +179,26 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
       "startLine": 21,
       "uid": "aab",
     },
-    "c5d": Object {
+    "b63": Object {
+      "endCol": 1,
+      "endLine": 17,
+      "startCol": 0,
+      "startLine": 15,
+      "uid": "b63",
+    },
+    "bcc": Object {
       "endCol": 1,
       "endLine": 14,
       "startCol": 0,
       "startLine": 12,
-      "uid": "c5d",
+      "uid": "bcc",
     },
-    "dda": Object {
-      "endCol": 38,
-      "endLine": 23,
-      "startCol": 14,
-      "startLine": 23,
-      "uid": "dda",
+    "f8d": Object {
+      "endCol": 3,
+      "endLine": 26,
+      "startCol": 2,
+      "startLine": 19,
+      "uid": "f8d",
     },
     "feb": Object {
       "endCol": 22,
@@ -350,6 +351,7 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
       "javascript": "function cakeFn(n) {
   return n
 }",
+      "params": Array [],
       "sourceMap": Object {
         "file": "code.tsx",
         "mappings": "AAYCA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AACjBC,SAAOF,CAAPE;AACFC",
@@ -420,6 +422,7 @@ return { cakeFn: cakeFn };",
       "javascript": "function otherFn(n) {
   return n
 }",
+      "params": Array [],
       "sourceMap": Object {
         "file": "code.tsx",
         "mappings": "AAeCA,SAASC,OAATD,CAAiBE,CAAjBF,EAAoBG;AAClBC,SAAOF,CAAPE;AACFC",
@@ -546,6 +549,7 @@ return { otherFn: otherFn };",
                   "elementsWithin": Object {},
                   "javascript": "cakeFn(otherFn('b') + 2)",
                   "originalJavascript": "cakeFn(otherFn('b') + 2)",
+                  "params": Array [],
                   "sourceMap": Object {
                     "file": "code.tsx",
                     "mappings": "OAuBeA,MAAOC,QAAQC,CAACC,GAADD,CAARD,GAAgBG,CAAhBH,CAAPD",
@@ -653,12 +657,12 @@ Object {
     },
   ],
   "fullHighlightBounds": Object {
-    "020": Object {
+    "169": Object {
       "endCol": 45,
       "endLine": 6,
       "startCol": 40,
       "startLine": 6,
-      "uid": "020",
+      "uid": "169",
     },
     "1e3": Object {
       "endCol": 37,
@@ -666,6 +670,20 @@ Object {
       "startCol": 25,
       "startLine": 6,
       "uid": "1e3",
+    },
+    "327": Object {
+      "endCol": 22,
+      "endLine": 6,
+      "startCol": 17,
+      "startLine": 6,
+      "uid": "327",
+    },
+    "343": Object {
+      "endCol": 45,
+      "endLine": 4,
+      "startCol": 40,
+      "startLine": 4,
+      "uid": "343",
     },
     "34a": Object {
       "endCol": 31,
@@ -681,26 +699,19 @@ Object {
       "startLine": 4,
       "uid": "4cf",
     },
-    "4f0": Object {
-      "endCol": 22,
-      "endLine": 6,
-      "startCol": 17,
-      "startLine": 6,
-      "uid": "4f0",
-    },
-    "56f": Object {
-      "endCol": 22,
-      "endLine": 4,
-      "startCol": 17,
-      "startLine": 4,
-      "uid": "56f",
-    },
     "67f": Object {
       "endCol": 45,
       "endLine": 4,
       "startCol": 17,
       "startLine": 4,
       "uid": "67f",
+    },
+    "6b5": Object {
+      "endCol": 22,
+      "endLine": 4,
+      "startCol": 17,
+      "startLine": 4,
+      "uid": "6b5",
     },
     "6c7": Object {
       "endCol": 45,
@@ -715,13 +726,6 @@ Object {
       "startCol": 48,
       "startLine": 5,
       "uid": "6e3",
-    },
-    "74c": Object {
-      "endCol": 45,
-      "endLine": 4,
-      "startCol": 40,
-      "startLine": 4,
-      "uid": "74c",
     },
     "aaa": Object {
       "endCol": 56,
@@ -753,12 +757,26 @@ Object {
     },
   },
   "highlightBounds": Object {
-    "020": Object {
+    "169": Object {
       "endCol": 45,
       "endLine": 6,
       "startCol": 40,
       "startLine": 6,
-      "uid": "020",
+      "uid": "169",
+    },
+    "327": Object {
+      "endCol": 22,
+      "endLine": 6,
+      "startCol": 17,
+      "startLine": 6,
+      "uid": "327",
+    },
+    "343": Object {
+      "endCol": 45,
+      "endLine": 4,
+      "startCol": 40,
+      "startLine": 4,
+      "uid": "343",
     },
     "4cf": Object {
       "endCol": 37,
@@ -767,20 +785,6 @@ Object {
       "startLine": 4,
       "uid": "4cf",
     },
-    "4f0": Object {
-      "endCol": 22,
-      "endLine": 6,
-      "startCol": 17,
-      "startLine": 6,
-      "uid": "4f0",
-    },
-    "56f": Object {
-      "endCol": 22,
-      "endLine": 4,
-      "startCol": 17,
-      "startLine": 4,
-      "uid": "56f",
-    },
     "67f": Object {
       "endCol": 45,
       "endLine": 4,
@@ -788,19 +792,19 @@ Object {
       "startLine": 4,
       "uid": "67f",
     },
+    "6b5": Object {
+      "endCol": 22,
+      "endLine": 4,
+      "startCol": 17,
+      "startLine": 4,
+      "uid": "6b5",
+    },
     "6c7": Object {
       "endCol": 45,
       "endLine": 6,
       "startCol": 17,
       "startLine": 6,
       "uid": "6c7",
-    },
-    "74c": Object {
-      "endCol": 45,
-      "endLine": 4,
-      "startCol": 40,
-      "startLine": 4,
-      "uid": "74c",
     },
     "aaa": Object {
       "endCol": 56,
@@ -907,6 +911,7 @@ Object {
           "elementsWithin": Object {},
           "javascript": "n > 0",
           "originalJavascript": "n > 0",
+          "params": Array [],
           "sourceMap": Object {
             "file": "code.tsx",
             "mappings": "OAImBA,CAACC,GAAEC,CAAJC",
@@ -949,6 +954,7 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
           "elementsWithin": Object {},
           "javascript": "b(10)",
           "originalJavascript": "b(10)",
+          "params": Array [],
           "sourceMap": Object {
             "file": "code.tsx",
             "mappings": "OAI0CA,CAACC,IAAFC",
@@ -1120,6 +1126,7 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
           "elementsWithin": Object {},
           "javascript": "n > 0",
           "originalJavascript": "n > 0",
+          "params": Array [],
           "sourceMap": Object {
             "file": "code.tsx",
             "mappings": "OAMmBA,CAACC,GAAEC,CAAJC",
@@ -1162,6 +1169,7 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
           "elementsWithin": Object {},
           "javascript": "a(10)",
           "originalJavascript": "a(10)",
+          "params": Array [],
           "sourceMap": Object {
             "file": "code.tsx",
             "mappings": "OAM0CA,CAACC,IAAFC",
@@ -1250,9 +1258,10 @@ Object {
     ],
     "elementsWithin": Object {},
     "javascript": "const a = \\"cake\\"",
+    "params": Array [],
     "sourceMap": Object {
       "file": "code.tsx",
-      "mappings": "AAWCA,IAAMC,CAACC,GAAGC,MAAVH",
+      "mappings": "AAWCA,MAAMC,CAACC,GAAGC,MAAVH",
       "names": Array [
         "const",
         "a",
@@ -1282,7 +1291,7 @@ export var App = (props) => <View data-uid='bbb'>
       ],
       "version": 3,
     },
-    "transpiledJavascript": "var a = \\"cake\\";
+    "transpiledJavascript": "const a = \\"cake\\";
 return { a: a };",
     "type": "ARBITRARY_JS_BLOCK",
     "uid": "",
@@ -1294,12 +1303,12 @@ return { a: a };",
     },
   ],
   "fullHighlightBounds": Object {
-    "24a": Object {
+    "23f": Object {
       "endCol": 9,
       "endLine": 13,
       "startCol": 3,
       "startLine": 13,
-      "uid": "24a",
+      "uid": "23f",
     },
     "854": Object {
       "endCol": 48,
@@ -1308,12 +1317,12 @@ return { a: a };",
       "startLine": 12,
       "uid": "854",
     },
-    "a5b": Object {
+    "86a": Object {
       "endCol": 16,
       "endLine": 11,
       "startCol": 0,
       "startLine": 11,
-      "uid": "a5b",
+      "uid": "86a",
     },
     "bbb": Object {
       "endCol": 7,
@@ -1324,12 +1333,12 @@ return { a: a };",
     },
   },
   "highlightBounds": Object {
-    "24a": Object {
+    "23f": Object {
       "endCol": 9,
       "endLine": 13,
       "startCol": 3,
       "startLine": 13,
-      "uid": "24a",
+      "uid": "23f",
     },
     "bbb": Object {
       "endCol": 7,
@@ -1439,9 +1448,10 @@ return { a: a };",
       ],
       "elementsWithin": Object {},
       "javascript": "const a = \\"cake\\"",
+      "params": Array [],
       "sourceMap": Object {
         "file": "code.tsx",
-        "mappings": "AAWCA,IAAMC,CAACC,GAAGC,MAAVH",
+        "mappings": "AAWCA,MAAMC,CAACC,GAAGC,MAAVH",
         "names": Array [
           "const",
           "a",
@@ -1471,7 +1481,7 @@ export var App = (props) => <View data-uid='bbb'>
         ],
         "version": 3,
       },
-      "transpiledJavascript": "var a = \\"cake\\";
+      "transpiledJavascript": "const a = \\"cake\\";
 return { a: a };",
       "type": "ARBITRARY_JS_BLOCK",
       "uid": "",
@@ -1514,6 +1524,7 @@ return { a: a };",
             "elementsWithin": Object {},
             "javascript": "({ a: a });",
             "originalJavascript": "{a: a}",
+            "params": Array [],
             "sourceMap": Object {
               "file": "code.tsx",
               "mappings": "OAAA,CAAC;AAAE,KAAH;AAAC,CAAD",

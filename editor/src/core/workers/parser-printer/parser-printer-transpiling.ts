@@ -45,8 +45,10 @@ function getIdentifiersFromFunctionParam(
       if (BabelTypes.isIdentifier(property)) {
         addIdentifier(identifiers, property)
       } else if (BabelTypes.isObjectProperty(property)) {
-        if (BabelTypes.isIdentifier(property.key)) {
-          identifiers.push(...getIdentifiersFromFunctionParam(property.key))
+        if (BabelTypes.isIdentifier(property.value)) {
+          addIdentifier(identifiers, property.value)
+        } else if (BabelTypes.isObjectPattern(property.value)) {
+          identifiers.push(...fromObjectPattern(property.value))
         }
       }
     }
@@ -495,10 +497,10 @@ export function transpileJavascriptFromCode(
       mapToUse = wrappedInAnonFunction.sourceMap
     }
 
-    let plugins: Array<any> =
-      applySteganography === 'apply-steganography'
-        ? [applySteganographyPlugin(sourceFileName, mapToUse, sourceFileText.split('\n'))]
-        : []
+    let plugins: Array<any> = []
+    if (applySteganography === 'apply-steganography') {
+      plugins.push(applySteganographyPlugin(sourceFileName, mapToUse, sourceFileText.split('\n')))
+    }
     if (Object.keys(elementsWithin).length > 0) {
       plugins.push(babelRewriteJSExpressionCode(elementsWithin, true))
     }
@@ -509,7 +511,7 @@ export function transpileJavascriptFromCode(
     plugins.push('proposal-class-properties')
     plugins.push(ReactTransformPlugin)
     const transformResult = Babel.transform(codeToUse, {
-      presets: ['es2015', 'react'],
+      presets: ['es2016', 'react'],
       plugins: plugins,
       sourceType: 'script',
       sourceMaps: true,

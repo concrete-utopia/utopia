@@ -1374,9 +1374,9 @@ export var whatever = (props) => <View data-uid='aaa'>
     const jsCode = `export default (n) => {
   return 100 + n
 }`
-    const transpiledJsCode = `(function (n) {
+    const transpiledJsCode = `n => {
   return 100 + n;
-});
+};
 return {  };`
     const arbitraryBlock = arbitraryJSBlock(
       [],
@@ -1549,8 +1549,8 @@ export var whatever = (props) => {
     const view = jsxElement('View', 'aaa', viewAttributes, [])
     const jsCode = `const bgs = ['black', 'grey']
   const bg = bgs[0]`
-    const transpiledJsCode = `var bgs = ['black', 'grey'];
-var bg = bgs[0];
+    const transpiledJsCode = `const bgs = ['black', 'grey'];
+const bg = bgs[0];
 return { bgs: bgs, bg: bg };`
     const arbitraryBlock = arbitraryJSBlock(
       [],
@@ -1632,7 +1632,7 @@ export var whatever = (props) => {
     })
     const view = jsxElement('View', 'aaa', viewAttributes, [])
     const jsCode = `const greys = ['lightGrey', 'grey']`
-    const transpiledJsCode = `var greys = ['lightGrey', 'grey'];
+    const transpiledJsCode = `const greys = ['lightGrey', 'grey'];
 return { greys: greys };`
     const arbitraryBlock = arbitraryJSBlock(
       [],
@@ -1707,8 +1707,8 @@ export var whatever = (props) => {
     const view = jsxElement('View', 'aaa', viewAttributes, [])
     const jsCode = `const a = 10
   const b = 20`
-    const transpiledJsCode = `var a = 10;
-var b = 20;
+    const transpiledJsCode = `const a = 10;
+const b = 20;
 return { a: a, b: b };`
     const arbitraryBlock = arbitraryJSBlock(
       [],
@@ -1785,9 +1785,9 @@ export var whatever = (props) => {
     const jsCode = `const a = true
   const b = 10
   const c = 20`
-    const transpiledJsCode = `var a = true;
-var b = 10;
-var c = 20;
+    const transpiledJsCode = `const a = true;
+const b = 10;
+const c = 20;
 return { a: a, b: b, c: c };`
     const arbitraryBlock = arbitraryJSBlock(
       [],
@@ -1874,7 +1874,7 @@ export var whatever = (props) => {
     })
     const view = jsxElement('View', 'aaa', viewAttributes, [])
     const jsCode = `let a = 10`
-    const transpiledJsCode = `var a = 10;
+    const transpiledJsCode = `let a = 10;
 return { a: a };`
     const arbitraryBlock = arbitraryJSBlock(
       [],
@@ -1949,8 +1949,8 @@ export var whatever = (props) => {
     const view = jsxElement('View', 'aaa', viewAttributes, [])
     const jsCode = `const a = 10
   const b = { a: a }`
-    const transpiledJsCode = `var a = 10;
-var b = {
+    const transpiledJsCode = `const a = 10;
+const b = {
   a: a
 };
 return { a: a, b: b };`
@@ -2093,7 +2093,7 @@ export var whatever = (props) => {
     })
     const view = jsxElement('View', 'aaa', viewAttributes, [])
     const jsCode = `const bg = { backgroundColor: 'grey' }`
-    const transpiledJsCode = `var bg = {
+    const transpiledJsCode = `const bg = {
   backgroundColor: 'grey'
 };
 return { bg: bg };`
@@ -2163,7 +2163,7 @@ export var whatever = (props) => <View data-uid='aaa'>
         [],
         '`Count ${count}`',
         '`Count ${count}`',
-        'return "Count ".concat(count);',
+        'return `Count ${count}`;',
         ['count'],
         expect.objectContaining({
           sources: ['code.tsx'],
@@ -2532,7 +2532,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     "hello"
   );
 };`
-    const transpiledJsCode = `var MyComp = function MyComp(props) {
+    const transpiledJsCode = `var MyComp = props => {
   return React.createElement("div", {
     style: {
       position: "absolute",
@@ -3908,12 +3908,10 @@ export var App = props => {
           jsxMapExpression(
             `[1,2,3].map(x=> <View data-uid='abc' />)`,
             `[1, 2, 3].map((x) => <View data-uid='abc' />);`,
-            `return [1, 2, 3].map(function (x) {
-  return utopiaCanvasJSXLookup("abc", {
-    x: x,
-    callerThis: this
-  });
-});`,
+            `return [1, 2, 3].map(x => utopiaCanvasJSXLookup("abc", {
+  x: x,
+  callerThis: this
+}));`,
             ['React', 'View', 'utopiaCanvasJSXLookup'],
             expect.objectContaining({
               sources: ['code.tsx'],
@@ -4043,12 +4041,10 @@ export var App = props => {
       ))`,
             `[1, 2, 3].map((n) =>
 <div data-uid="abc" />);`,
-            `return [1, 2, 3].map(function (n) {
-  return utopiaCanvasJSXLookup("abc", {
-    n: n,
-    callerThis: this
-  });
-});`,
+            `return [1, 2, 3].map(n => utopiaCanvasJSXLookup("abc", {
+  n: n,
+  callerThis: this
+}));`,
             ['React', 'utopiaCanvasJSXLookup'],
             expect.objectContaining({
               sources: ['code.tsx'],
@@ -4108,12 +4104,10 @@ export var App = props => {
     ))`,
             `[1, 2, 3].map((n) =>
 <div data-uid='abc' />);`,
-            `return [1, 2, 3].map(function (n) {
-  return utopiaCanvasJSXLookup("abc", {
-    n: n,
-    callerThis: this
-  });
-});`,
+            `return [1, 2, 3].map(n => utopiaCanvasJSXLookup("abc", {
+  n: n,
+  callerThis: this
+}));`,
             ['React', 'utopiaCanvasJSXLookup'],
             expect.objectContaining({
               sources: ['code.tsx'],
@@ -4337,15 +4331,13 @@ export var App = props => {
         `const a = 20;
   const b = 40;
   const MyCustomComponent = props => <View data-uid="abc">{props.children}</View>;`,
-        `var a = 20;
-var b = 40;
+        `const a = 20;
+const b = 40;
 
-var MyCustomComponent = function MyCustomComponent(props) {
-  return ${JSX_CANVAS_LOOKUP_FUNCTION_NAME}("abc", {
-    props: props,
-    callerThis: this
-  });
-};
+const MyCustomComponent = props => ${JSX_CANVAS_LOOKUP_FUNCTION_NAME}("abc", {
+  props: props,
+  callerThis: this
+});
 return { a: a, b: b, MyCustomComponent: MyCustomComponent };`,
         ['a', 'b', 'MyCustomComponent'],
         ['React', 'View', JSX_CANVAS_LOOKUP_FUNCTION_NAME],
@@ -4557,7 +4549,7 @@ for (var n = 0; n != -1; n++) {
     throw new RangeError('${InfiniteLoopError}');
   }
 
-  var n2 = n * 2;
+  const n2 = n * 2;
 }
 
 while (true) {
@@ -4565,7 +4557,7 @@ while (true) {
     throw new RangeError('${InfiniteLoopError}');
   }
 
-  var a = 1;
+  const a = 1;
 }
 return {  };`
     const arbitraryBlock = arbitraryJSBlock(
@@ -4629,14 +4621,14 @@ export var whatever = props => {
     result.push(<div style={{ left: n, top: n2 }} data-uid='bbb' />)
   }`
     const arbitraryBlockTranspiledCode = `var _loopIt = 0;
-var result = [];
+let result = [];
 
 for (var n = 0; n < 5; n++) {
   if (_loopIt++ > ${InfiniteLoopMaxIterations}) {
     throw new RangeError('${InfiniteLoopError}');
   }
 
-  var n2 = n * 2;
+  const n2 = n * 2;
   result.push(${JSX_CANVAS_LOOKUP_FUNCTION_NAME}("bbb", {
     n: n,
     n2: n2,
@@ -4724,7 +4716,7 @@ export var whatever = props => {
     const arbitraryBlockCode = `[1, 2, 3].map((n) => {
   return <div style={{ left: n * 30, top: n * 30 }} data-uid='bbb' />;
 });`
-    const arbitraryBlockTranspiledCode = `return [1, 2, 3].map(function (n) {
+    const arbitraryBlockTranspiledCode = `return [1, 2, 3].map(n => {
   return utopiaCanvasJSXLookup("bbb", {
     n: n,
     callerThis: this
@@ -4839,7 +4831,7 @@ export var whatever = props => {
     const arbitraryBlockCode = `[1, 2, 3].map((n) => {
   return <div style={{ left: n * a, top: n * a }} data-uid='bbb' />;
 });`
-    const arbitraryBlockTranspiledCode = `return [1, 2, 3].map(function (n) {
+    const arbitraryBlockTranspiledCode = `return [1, 2, 3].map(n => {
   return utopiaCanvasJSXLookup("bbb", {
     n: n,
     a: a,
@@ -4909,7 +4901,7 @@ export var whatever = props => {
     const topLevelArbitraryBlock = arbitraryJSBlock(
       [],
       `const a = 30`,
-      `var a = 30;
+      `const a = 30;
 return { a: a };`,
       ['a'],
       [JSX_CANVAS_LOOKUP_FUNCTION_NAME],

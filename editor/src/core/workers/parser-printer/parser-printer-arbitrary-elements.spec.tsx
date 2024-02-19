@@ -302,14 +302,12 @@ export var whatever = (props) => {
         jsxMapExpression(
           `arr.map(({ n }) => <View data-uid='aab' thing={n} /> )`,
           `arr.map(({ n }) => <View data-uid='aab' thing={n} />);`,
-          `return arr.map(function (_ref) {
-  var n = _ref.n;
-  return utopiaCanvasJSXLookup("aab", {
-    _ref: _ref,
-    n: n,
-    callerThis: this
-  });
-});`,
+          `return arr.map(({
+  n
+}) => utopiaCanvasJSXLookup("aab", {
+  n: n,
+  callerThis: this
+}));`,
           ['arr', 'React', 'View', 'utopiaCanvasJSXLookup'],
           expect.objectContaining({
             sources: ['code.tsx'],
@@ -346,7 +344,7 @@ export var whatever = (props) => {
       ],
     )
     const jsCode = `const arr = [ { n: 1 } ]`
-    const transpiledJsCode = `var arr = [{
+    const transpiledJsCode = `const arr = [{
   n: 1
 }];
 return { arr: arr };`
@@ -411,14 +409,14 @@ export var whatever = (props) => {
         jsxMapExpression(
           `arr.map(({ a: { n } }) => <View data-uid='aab' thing={n} /> )`,
           `arr.map(({ a: { n } }) => <View data-uid='aab' thing={n} />);`,
-          `return arr.map(function (_ref) {
-  var n = _ref.a.n;
-  return utopiaCanvasJSXLookup("aab", {
-    _ref: _ref,
-    n: n,
-    callerThis: this
-  });
-});`,
+          `return arr.map(({
+  a: {
+    n
+  }
+}) => utopiaCanvasJSXLookup("aab", {
+  n: n,
+  callerThis: this
+}));`,
           ['arr', 'React', 'View', 'utopiaCanvasJSXLookup'],
           expect.objectContaining({
             sources: ['code.tsx'],
@@ -455,7 +453,7 @@ export var whatever = (props) => {
       ],
     )
     const jsCode = `const arr = [ { a: { n: 1 } } ]`
-    const transpiledJsCode = `var arr = [{
+    const transpiledJsCode = `const arr = [{
   a: {
     n: 1
   }
@@ -514,16 +512,10 @@ export var whatever = (props) => {
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const originalMapJsCode = `arr.map(([ n ]) => <View data-uid='aab' thing={n} /> )`
     const mapJsCode = `arr.map(([n]) => <View data-uid='aab' thing={n} />);`
-    const transpiledMapJsCode = `return arr.map(function (_ref) {
-  var _ref2 = babelHelpers.slicedToArray(_ref, 1),
-      n = _ref2[0];
-
-  return utopiaCanvasJSXLookup(\"aab\", {
-    _ref: _ref,
-    n: n,
-    callerThis: this
-  });
-});`
+    const transpiledMapJsCode = `return arr.map(([n]) => utopiaCanvasJSXLookup(\"aab\", {
+  n: n,
+  callerThis: this
+}));`
     const view = jsxElement(
       'View',
       'aaa',
@@ -571,7 +563,7 @@ export var whatever = (props) => {
       ],
     )
     const jsCode = `const arr = [ [ 1 ] ]`
-    const transpiledJsCode = `var arr = [[1]];
+    const transpiledJsCode = `const arr = [[1]];
 return { arr: arr };`
     const arbitraryBlock = arbitraryJSBlock(
       [],
@@ -632,12 +624,10 @@ export var whatever = (props) => {
         jsxMapExpression(
           `[1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div> )`,
           `[1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div>);`,
-          `return [1].map(function (n) {
-  return utopiaCanvasJSXLookup("aab", {
-    n: n,
-    callerThis: this
-  });
-});`,
+          `return [1].map(n => utopiaCanvasJSXLookup("aab", {
+  n: n,
+  callerThis: this
+}));`,
           ['React', 'utopiaCanvasJSXLookup'],
           expect.objectContaining({
             sources: ['code.tsx'],
@@ -840,12 +830,10 @@ export var whatever = (props) => {
         jsxMapExpression(
           `[1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div> )`,
           `[1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div>);`,
-          `return [1].map(function (n) {
-  return utopiaCanvasJSXLookup("aab", {
-    n: n,
-    callerThis: this
-  });
-});`,
+          `return [1].map(n => utopiaCanvasJSXLookup("aab", {
+  n: n,
+  callerThis: this
+}));`,
           ['React', 'utopiaCanvasJSXLookup'],
           expect.objectContaining({
             sources: ['code.tsx'],
@@ -1160,40 +1148,21 @@ export var storyboard = (
             "219",
             "971",
           ],
-          "js": "function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = babelHelpers.getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = babelHelpers.getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return babelHelpers.possibleConstructorReturn(this, result); }; }
-
-        function _isNativeReflectConstruct() { if (typeof Reflect === \\"undefined\\" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === \\"function\\") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-
-        function getPicker() {
-          var Picker = function (_React$Component) {
-            \\"use strict\\";
-
-            babelHelpers.inherits(Picker, _React$Component);
-
-            var _super = _createSuper(Picker);
-
-            function Picker() {
-              babelHelpers.classCallCheck(this, Picker);
-              return _super.apply(this, arguments);
+          "js": "function getPicker() {
+          class Picker extends React.Component {
+            renderPicker(locale) {
+              return React.createElement(RenderPropsFunctionChild, null, size => {
+                return React.createElement(\\"div\\", {
+                  id: \\"nasty-div\\"
+                }, locale, \\" \\", size);
+              });
             }
 
-            babelHelpers.createClass(Picker, [{
-              key: \\"renderPicker\\",
-              value: function renderPicker(locale) {
-                return React.createElement(RenderPropsFunctionChild, null, function (size) {
-                  return React.createElement(\\"div\\", {
-                    id: \\"nasty-div\\"
-                  }, locale, \\" \\", size);
-                });
-              }
-            }, {
-              key: \\"render\\",
-              value: function render() {
-                return React.createElement(RenderPropsFunctionChild, null, this.renderPicker);
-              }
-            }]);
-            return Picker;
-          }(React.Component);
+            render() {
+              return React.createElement(RenderPropsFunctionChild, null, this.renderPicker);
+            }
+
+          }
 
           return Picker;
         }
@@ -1208,66 +1177,33 @@ export var storyboard = (
             "d1b",
             "064",
           ],
-          "js": "function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = babelHelpers.getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = babelHelpers.getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return babelHelpers.possibleConstructorReturn(this, result); }; }
-
-        function _isNativeReflectConstruct() { if (typeof Reflect === \\"undefined\\" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === \\"function\\") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-
-        var RenderPropsFunctionChild = function (_React$Component) {
-          \\"use strict\\";
-
-          babelHelpers.inherits(RenderPropsFunctionChild, _React$Component);
-
-          var _super = _createSuper(RenderPropsFunctionChild);
-
-          function RenderPropsFunctionChild() {
-            babelHelpers.classCallCheck(this, RenderPropsFunctionChild);
-            return _super.apply(this, arguments);
+          "js": "class RenderPropsFunctionChild extends React.Component {
+          render() {
+            return this.props.children('huha');
           }
 
-          babelHelpers.createClass(RenderPropsFunctionChild, [{
-            key: \\"render\\",
-            value: function render() {
-              return this.props.children('huha');
-            }
-          }]);
-          return RenderPropsFunctionChild;
-        }(React.Component);
+        }
 
         function getPicker() {
-          var Picker = function (_React$Component2) {
-            \\"use strict\\";
-
-            babelHelpers.inherits(Picker, _React$Component2);
-
-            var _super2 = _createSuper(Picker);
-
-            function Picker() {
-              babelHelpers.classCallCheck(this, Picker);
-              return _super2.apply(this, arguments);
+          class Picker extends React.Component {
+            renderPicker(locale) {
+              return React.createElement(RenderPropsFunctionChild, null, size => {
+                return React.createElement(\\"div\\", {
+                  id: \\"nasty-div\\"
+                }, locale, \\" \\", size);
+              });
             }
 
-            babelHelpers.createClass(Picker, [{
-              key: \\"renderPicker\\",
-              value: function renderPicker(locale) {
-                return React.createElement(RenderPropsFunctionChild, null, function (size) {
-                  return React.createElement(\\"div\\", {
-                    id: \\"nasty-div\\"
-                  }, locale, \\" \\", size);
-                });
-              }
-            }, {
-              key: \\"render\\",
-              value: function render() {
-                return React.createElement(RenderPropsFunctionChild, null, this.renderPicker);
-              }
-            }]);
-            return Picker;
-          }(React.Component);
+            render() {
+              return React.createElement(RenderPropsFunctionChild, null, this.renderPicker);
+            }
+
+          }
 
           return Picker;
         }
 
-        var Thing = getPicker();
+        const Thing = getPicker();
         return { RenderPropsFunctionChild: RenderPropsFunctionChild, getPicker: getPicker, Thing: Thing };",
         }
       `)
