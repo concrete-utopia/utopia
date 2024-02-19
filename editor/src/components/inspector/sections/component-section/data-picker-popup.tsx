@@ -160,7 +160,7 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
         onClick={isArray ? stopPropagation : tweakProperty}
         css={{
           '&:hover': {
-            backgroundColor: 'red',
+            backgroundColor: 'subdued',
           },
         }}
       >
