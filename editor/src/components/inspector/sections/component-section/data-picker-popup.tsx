@@ -1,7 +1,7 @@
+/** @jsxRuntime classic */
 /** @jsxFrag */
-/** @jsxImportSource @emotion/react */
 /** @jsx jsx */
-import { jsx, css } from '@emotion/react'
+import { jsx } from '@emotion/react'
 import React, { useCallback } from 'react'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
@@ -91,9 +91,10 @@ export const DataPickerPopup = React.memo(
             backgroundColor: colorTheme.neutralBackground.value,
             padding: '8px 16px',
             boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
-            borderRadius: UtopiaTheme.inputBorderRadius,
+            borderRadius: 8,
             alignItems: 'flex-start',
             width: '96%',
+            maxWidth: '260px',
           }}
           data-testid={DataPickerPopupTestId}
         >
@@ -160,7 +161,7 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
         onClick={isArray ? stopPropagation : tweakProperty}
         css={{
           '&:hover': {
-            backgroundColor: 'subdued',
+            backgroundColor: shouldDim ? 'inherit' : colorTheme.secondaryBackground.value,
           },
         }}
       >
