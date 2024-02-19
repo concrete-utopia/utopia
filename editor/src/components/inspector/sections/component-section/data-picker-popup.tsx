@@ -1,3 +1,7 @@
+/** @jsxFrag */
+/** @jsxImportSource @emotion/react */
+/** @jsx jsx */
+import { jsx, css } from '@emotion/react'
 import React, { useCallback } from 'react'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
@@ -93,7 +97,7 @@ export const DataPickerPopup = React.memo(
           }}
           data-testid={DataPickerPopupTestId}
         >
-          <div style={{ fontSize: 14, fontWeight: 400, marginBottom: 16 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 16 }}>
             <span>Data</span>
           </div>
           {variableNamesInScope.map((variableOption, idx) => {
@@ -152,8 +156,13 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
       <Button
         data-testid={VariableFromScopeOptionTestId(idx)}
         key={variableName}
-        style={{ width: '100%', height: 25 }}
+        style={{ width: '100%', height: 25, cursor: shouldDim ? 'default' : 'pointer' }}
         onClick={isArray ? stopPropagation : tweakProperty}
+        css={{
+          '&:hover': {
+            backgroundColor: 'red',
+          },
+        }}
       >
         <UIGridRow
           padded={false}
