@@ -19,6 +19,7 @@ export interface VariableOption {
   depth: number
   variableChildren?: Array<VariableOption>
   variableType: 'primitive' | 'array' | 'object'
+  valueMatchesPropType: boolean
 }
 
 export interface DataPickerPopupProps {
@@ -129,12 +130,15 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
     displayName,
     depth = 0,
     variableChildren,
+    valueMatchesPropType,
   } = variableOption
+
   const isArray = variableOption.variableType === 'array'
   const tweakProperty = onTweakProperty(variableName, definedElsewhere)
   const stopPropagation = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
   }, [])
+  const shouldDim = depth > 0 || !valueMatchesPropType
   return (
     <>
       <Button
@@ -187,6 +191,7 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
                 style={{
                   textOverflow: 'ellipsis',
                   overflow: 'hidden',
+                  opacity: shouldDim ? 0.5 : 1,
                 }}
               >
                 {displayName}
@@ -208,6 +213,7 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
                 textOverflow: 'ellipsis',
                 maxWidth: 130,
                 overflow: 'hidden',
+                opacity: shouldDim ? 0.5 : 1,
               }}
             >
               {isArray ? (
