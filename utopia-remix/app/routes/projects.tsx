@@ -3,10 +3,11 @@ import { LoaderFunctionArgs, json } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { UserDetails } from 'prisma-client'
-import React, { useState } from 'react'
+import React from 'react'
 import { ProjectContextMenu } from '../components/projectActionContextMenu'
+import { useIsDarkMode } from '../hooks/useIsDarkMode'
 import { listDeletedProjects, listProjects } from '../models/project.server'
-import { useStore } from '../store'
+import { useProjectsStore } from '../store'
 import { button } from '../styles/button.css'
 import { newProjectButton } from '../styles/newProjectButton.css'
 import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
@@ -16,6 +17,22 @@ import { requireUser } from '../util/api.server'
 import { assertNever } from '../util/assertNever'
 import { projectEditorLink } from '../util/links'
 import { when } from '../util/react-conditionals'
+
+const Categories = ['allProjects', 'trash'] as const
+
+function isCategory(category: unknown): category is Category {
+  return Categories.includes(category as Category)
+}
+
+export type Category = (typeof Categories)[number]
+
+const categories: { [key in Category]: { name: string } } = {
+  allProjects: { name: 'All My Projects' },
+  trash: { name: 'Trash' },
+}
+
+const MarginSize = 30
+const SidebarRowHeight = 30
 
 export async function loader(args: LoaderFunctionArgs) {
   const user = await requireUser(args.request)
@@ -31,113 +48,181 @@ export async function loader(args: LoaderFunctionArgs) {
   return json({ projects, deletedProjects, user })
 }
 
-const Categories = ['allProjects', 'trash'] as const
-
-export type Category = (typeof Categories)[number]
-
-const categories: { [key in Category]: { name: string } } = {
-  allProjects: { name: 'All My Projects' },
-  trash: { name: 'Trash' },
-}
-
 const ProjectsPage = React.memo(() => {
-  const marginSize = 30
-  const rowHeight = 30
-
   const data = useLoaderData() as unknown as {
     projects: ProjectWithoutContent[]
     user: UserDetails
     deletedProjects: ProjectWithoutContent[]
   }
 
-  const fetcher = useFetcher()
+  const selectedCategory = useProjectsStore((store) => store.selectedCategory)
 
-  const [projects, setProjects] = React.useState<ProjectWithoutContent[]>(data.projects)
-  const [searchQuery, setSearchQuery] = useState<string>('')
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false)
-
-  const filteredProjects = React.useMemo(() => {
-    const sanitizedQuery = searchQuery.trim().toLowerCase()
-    if (sanitizedQuery.length === 0) {
-      return projects
+  const activeProjects = React.useMemo(() => {
+    switch (selectedCategory) {
+      case 'allProjects':
+        return data.projects
+      case 'trash':
+        return data.deletedProjects
+      default:
+        assertNever(selectedCategory)
     }
-    return projects.filter((project) => project.title.toLowerCase().includes(sanitizedQuery))
-  }, [projects, searchQuery])
+  }, [data.projects, data.deletedProjects, selectedCategory])
 
-  const selectedProjectId = useStore((store) => store.selectedProjectId)
-  const setSelectedProjectId = useStore((store) => store.setSelectedProjectId)
-  const selectedCategory = useStore((store) => store.selectedCategory)
-  const setCategory = useStore((store) => store.setSelectedCategory)
+  return (
+    <div
+      style={{
+        margin: MarginSize,
+        height: `calc(100vh - ${MarginSize * 2}px)`,
+        width: `calc(100vw - ${MarginSize * 2}px)`,
+        gap: MarginSize,
+        overflow: 'hidden',
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'row',
+        userSelect: 'none',
+      }}
+    >
+      <Sidebar user={data.user} />
+      <div
+        style={{
+          display: 'flex',
+          flexGrow: 1,
+          flexDirection: 'column',
+          gap: MarginSize,
+        }}
+      >
+        <TopActionBar />
+        <CategoryHeader projects={activeProjects} />
+        <ProjectCards projects={activeProjects} />)
+      </div>
+    </div>
+  )
+})
+ProjectsPage.displayName = 'ProjectsPage'
 
-  const updateProjects = React.useCallback(
-    (category: Category) => {
-      switch (category) {
-        case 'allProjects':
-          setProjects(data.projects)
-          break
-        case 'trash':
-          setProjects(data.deletedProjects)
-          break
-        default:
-          assertNever(category)
+export default ProjectsPage
+
+const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
+  const searchQuery = useProjectsStore((store) => store.searchQuery)
+  const setSearchQuery = useProjectsStore((store) => store.setSearchQuery)
+  const selectedCategory = useProjectsStore((store) => store.selectedCategory)
+  const setSelectedCategory = useProjectsStore((store) => store.setSelectedCategory)
+  const setSelectedProjectId = useProjectsStore((store) => store.setSelectedProjectId)
+
+  const isDarkMode = useIsDarkMode()
+
+  const logoPic = React.useMemo(() => {
+    return isDarkMode ? 'url(/assets/pyramid_dark.png)' : 'url(/assets/pyramid_light.png)'
+  }, [isDarkMode])
+
+  const handleSelectCategory = React.useCallback(
+    (category: string) => () => {
+      if (isCategory(category)) {
+        setSelectedCategory(category)
+        setSearchQuery('')
+        setSelectedProjectId(null)
       }
     },
-    [data.projects, data.deletedProjects],
+    [setSelectedCategory, setSearchQuery, setSelectedProjectId],
   )
 
-  const handleEmptyTrash = React.useCallback(() => {
-    const ok = window.confirm(
-      'Are you sure? ALL projects in the trash will be deleted permanently.',
-    )
-    if (ok) {
-      fetcher.submit({}, { method: 'POST', action: `/internal/projects/destroy` })
-    }
-  }, [fetcher])
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        width: 230,
+        flexShrink: 0,
+        justifyContent: 'space-between',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 20,
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+          }}
+        >
+          <img
+            className={sprinkles({ borderRadius: 'medium' })}
+            style={{ width: 40 }}
+            src={user.picture ?? undefined}
+            referrerPolicy='no-referrer'
+          />
+          <div className={userName({})}>{user.name}</div>
+        </div>
 
-  const handleProjectSelect = React.useCallback(
-    (project: ProjectWithoutContent) => {
-      if (project.deleted) {
-        return
-      }
-      setSelectedProjectId(project.proj_id === selectedProjectId ? null : project.proj_id)
-    },
-    [selectedProjectId, setSelectedProjectId],
+        <input
+          id='search-input'
+          autoFocus={true}
+          value={searchQuery}
+          onChange={(e) => {
+            setSearchQuery(e.target.value)
+          }}
+          style={{
+            border: 'none',
+            background: 'transparent',
+            outline: 'none',
+            color: 'grey',
+            height: SidebarRowHeight,
+            borderBottom: '1px solid gray',
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            padding: '0 14px',
+          }}
+          placeholder='Search…'
+        />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+          {Object.entries(categories).map(([category, data]) => {
+            return (
+              <button
+                key={`category-${category}`}
+                className={projectCategoryButton({
+                  color: category === selectedCategory ? 'selected' : 'neutral',
+                })}
+                onClick={handleSelectCategory(category)}
+              >
+                <span>{data.name}</span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 14,
+          fontFamily: 'Reckless',
+          fontSize: 34,
+        }}
+      >
+        <div
+          style={{
+            height: 60,
+            width: 45,
+            backgroundSize: '45px',
+            backgroundRepeat: 'no-repeat',
+            backgroundImage: logoPic,
+          }}
+        />
+        Utopia
+      </div>
+    </div>
   )
+})
+Sidebar.displayName = 'Sidebar'
 
-  const udpateCategory = React.useCallback(
-    (category: Category) => {
-      setCategory(category)
-      setSearchQuery('')
-      setSelectedProjectId(null)
-      updateProjects(category)
-    },
-    [selectedCategory, setSelectedProjectId, updateProjects],
-  )
-
-  const handleCategoryClick = React.useCallback(
-    (category: React.SetStateAction<string>) => {
-      udpateCategory(category as Category)
-    },
-    [udpateCategory],
-  )
-
-  // when the media query changes, update the theme
-  React.useEffect(() => {
-    const handleColorSchemeChange = (event: {
-      matches: boolean | ((prevState: boolean) => boolean)
-    }) => {
-      setIsDarkMode(event.matches)
-    }
-
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    setIsDarkMode(mediaQuery.matches)
-    mediaQuery.addListener(handleColorSchemeChange)
-
-    return () => {
-      mediaQuery.removeListener(handleColorSchemeChange)
-    }
-  }, [])
-
+const TopActionBar = React.memo(() => {
   const newProjectButtons = [
     {
       id: 'createProject',
@@ -167,253 +252,200 @@ const ProjectsPage = React.memo(() => {
     // },
   ] as const
 
-  const logoPic = isDarkMode ? 'url(/assets/pyramid_dark.png)' : 'url(/assets/pyramid_light.png)'
-
   return (
     <div
       style={{
-        margin: marginSize,
-        height: `calc(100vh - ${marginSize * 2}px)`,
-        width: `calc(100vw - ${marginSize * 2}px)`,
-        gap: marginSize,
-        overflow: 'hidden',
-        boxSizing: 'border-box',
+        height: 60,
+        flex: 0,
         display: 'flex',
         flexDirection: 'row',
-        userSelect: 'none',
+        gap: 15,
       }}
     >
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          width: 230,
-          flexShrink: 0,
-          justifyContent: 'space-between',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 20,
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-            }}
-          >
-            <img
-              className={sprinkles({ borderRadius: 'medium' })}
-              style={{ width: 40 }}
-              src={data.user.picture ?? undefined}
-              referrerPolicy='no-referrer'
-            />
-            <div className={userName({})}>{data.user.name}</div>
-          </div>
+      {newProjectButtons.map((p) => (
+        <button key={p.id} className={newProjectButton({ color: p.color })} onClick={p.onClick}>
+          <span>{p.title}</span>
+        </button>
+      ))}
+    </div>
+  )
+})
+TopActionBar.displayName = 'TopActionBar'
 
-          <input
-            id='search-input'
-            autoFocus={true}
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value)
-            }}
-            style={{
-              border: 'none',
-              background: 'transparent',
-              outline: 'none',
-              color: 'grey',
-              height: rowHeight,
-              borderBottom: '1px solid gray',
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              padding: '0 14px',
-            }}
-            placeholder='Search…'
-          />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-            {Object.entries(categories).map(([category, data]) => {
-              return (
-                <button
-                  key={`category-${category}`}
-                  className={projectCategoryButton({
-                    color: category === selectedCategory ? 'selected' : 'neutral',
-                  })}
-                  onClick={() => handleCategoryClick(category)}
+const CategoryHeader = React.memo(({ projects }: { projects: ProjectWithoutContent[] }) => {
+  const searchQuery = useProjectsStore((store) => store.searchQuery)
+  const setSearchQuery = useProjectsStore((store) => store.setSearchQuery)
+  const selectedCategory = useProjectsStore((store) => store.selectedCategory)
+
+  return (
+    <div style={{ fontSize: 16, fontWeight: 600, padding: '5px 10px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', height: 40 }}>
+        <div style={{ flex: 'auto' }}>
+          {when(
+            searchQuery !== '',
+            <span>
+              <span style={{ color: 'gray', paddingRight: 3 }}>
+                <span
+                  onClick={() => {
+                    setSearchQuery('')
+                    const inputElement = document.getElementById('search-input') as HTMLInputElement
+                    if (inputElement) {
+                      inputElement.value = ''
+                    }
+                  }}
+                  style={{ cursor: 'pointer' }}
                 >
-                  <span>{data.name}</span>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 14,
-            fontFamily: 'Reckless',
-            fontSize: 34,
-          }}
-        >
-          <div
-            style={{
-              height: 60,
-              width: 45,
-              backgroundSize: '45px',
-              backgroundRepeat: 'no-repeat',
-              backgroundImage: logoPic,
-            }}
-          />
-          Utopia
-        </div>
-      </div>
-      <div
-        style={{
-          display: 'flex',
-          flexGrow: 1,
-          flexDirection: 'column',
-          gap: marginSize,
-        }}
-      >
-        <div
-          style={{
-            height: 60,
-            flex: 0,
-            display: 'flex',
-            flexDirection: 'row',
-            gap: 15,
-          }}
-        >
-          {newProjectButtons.map((p) => (
-            <button key={p.id} className={newProjectButton({ color: p.color })} onClick={p.onClick}>
-              <span>{p.title}</span>
-            </button>
-          ))}
-        </div>
-        <div style={{ fontSize: 16, fontWeight: 600, padding: '5px 10px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', height: 40 }}>
-            <div style={{ flex: 'auto' }}>
-              {when(
-                searchQuery !== '',
-                <span>
-                  <span style={{ color: 'gray', paddingRight: 3 }}>
-                    <span
-                      onClick={() => {
-                        setSearchQuery('')
-                        const inputElement = document.getElementById(
-                          'search-input',
-                        ) as HTMLInputElement
-                        if (inputElement) {
-                          inputElement.value = ''
-                        }
-                      }}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      ←{' '}
-                    </span>{' '}
-                    Search results for
-                  </span>
-                  <span> "{searchQuery}"</span>
-                </span>,
-              )}
-              {when(
-                searchQuery === '',
-                <div style={{ flex: 1 }}>{categories[selectedCategory].name}</div>,
-              )}
-            </div>
-
-            <div>
-              {when(
-                selectedCategory === 'trash',
-                <button
-                  className={button({ size: 'small' })}
-                  onClick={handleEmptyTrash}
-                  disabled={filteredProjects.length === 0}
-                >
-                  Empty trash
-                </button>,
-              )}
-            </div>
-          </div>
+                  ←{' '}
+                </span>{' '}
+                Search results for
+              </span>
+              <span> "{searchQuery}"</span>
+            </span>,
+          )}
+          {when(
+            searchQuery === '',
+            <div style={{ flex: 1 }}>{categories[selectedCategory].name}</div>,
+          )}
         </div>
 
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignContent: 'flex-start',
-            gap: marginSize,
-            flexGrow: 1,
-            flexDirection: 'row',
-            overflowY: 'scroll',
-            scrollbarColor: 'lightgrey transparent',
-          }}
-        >
-          {filteredProjects.map((project) => (
-            <ProjectCard
-              key={project.proj_id}
-              project={project}
-              selected={project.proj_id === selectedProjectId}
-              onSelect={() => handleProjectSelect(project)}
-            />
-          ))}
-        </div>
+        <CategoryActions projects={projects} />
       </div>
     </div>
   )
 })
-ProjectsPage.displayName = 'ProjectsPage'
+CategoryHeader.displayName = 'CategoryHeader'
 
-export default ProjectsPage
+const CategoryActions = React.memo(({ projects }: { projects: ProjectWithoutContent[] }) => {
+  const selectedCategory = useProjectsStore((store) => store.selectedCategory)
 
-type ProjectCardProps = {
-  project: ProjectWithoutContent
-  selected: boolean
-  onSelect: () => void
-}
+  switch (selectedCategory) {
+    case 'allProjects':
+      return null
+    case 'trash':
+      return <CategoryTrashActions projects={projects} />
+    default:
+      assertNever(selectedCategory)
+  }
+})
+CategoryActions.displayName = 'CategoryActions'
 
-const ProjectCard: React.FC<ProjectCardProps> = ({ project, selected, onSelect }) => {
-  const openProject = React.useCallback(() => {
-    window.open(projectEditorLink(project.proj_id), '_blank')
-  }, [project.proj_id])
+const CategoryTrashActions = React.memo(({ projects }: { projects: ProjectWithoutContent[] }) => {
+  const fetcher = useFetcher()
+
+  const handleEmptyTrash = React.useCallback(() => {
+    const ok = window.confirm(
+      'Are you sure? ALL projects in the trash will be deleted permanently.',
+    )
+    if (ok) {
+      fetcher.submit({}, { method: 'POST', action: `/internal/projects/destroy` })
+    }
+  }, [fetcher])
+
+  return (
+    <>
+      <button
+        className={button({ size: 'small' })}
+        onClick={handleEmptyTrash}
+        disabled={projects.length === 0}
+      >
+        Empty trash
+      </button>
+    </>
+  )
+})
+CategoryTrashActions.displayName = 'CategoryTrashActions'
+
+const ProjectCards = React.memo(({ projects }: { projects: ProjectWithoutContent[] }) => {
+  const searchQuery = useProjectsStore((store) => store.searchQuery)
+  const selectedProjectId = useProjectsStore((store) => store.selectedProjectId)
+  const setSelectedProjectId = useProjectsStore((store) => store.setSelectedProjectId)
+
+  const handleProjectSelect = React.useCallback(
+    (project: ProjectWithoutContent) =>
+      setSelectedProjectId(project.proj_id === selectedProjectId ? null : project.proj_id),
+    [setSelectedProjectId, selectedProjectId],
+  )
+
+  const filteredProjects = React.useMemo(() => {
+    const sanitizedQuery = searchQuery.trim().toLowerCase()
+    if (sanitizedQuery.length === 0) {
+      return projects
+    }
+    return projects.filter((project) => project.title.toLowerCase().includes(sanitizedQuery))
+  }, [projects, searchQuery])
 
   return (
     <div
       style={{
-        height: 200,
-        width: 300,
         display: 'flex',
-        flexDirection: 'column',
-        gap: 5,
+        flexWrap: 'wrap',
+        alignContent: 'flex-start',
+        gap: MarginSize,
+        flexGrow: 1,
+        flexDirection: 'row',
+        overflowY: 'scroll',
+        scrollbarColor: 'lightgrey transparent',
       }}
     >
-      <div
-        style={{
-          border: selected ? '2px solid #0075F9' : '2px solid transparent',
-          borderRadius: 10,
-          overflow: 'hidden',
-          height: 180,
-          width: '100%',
-          background: 'linear-gradient(rgba(77, 255, 223, 0.4), rgba(255,250,220,.8))',
-          backgroundAttachment: 'local',
-          backgroundRepeat: 'no-repeat',
-        }}
-        onMouseDown={onSelect}
-        onDoubleClick={openProject}
-      />
-      <ProjectActions project={project} />
+      {filteredProjects.map((project) => (
+        <ProjectCard
+          key={project.proj_id}
+          project={project}
+          selected={project.proj_id === selectedProjectId}
+          onSelect={() => handleProjectSelect(project)}
+        />
+      ))}
     </div>
   )
-}
+})
+ProjectCards.displayName = 'CategoryAllProjects'
 
-const ProjectActions = React.memo(({ project }: { project: ProjectWithoutContent }) => {
+const ProjectCard = React.memo(
+  ({
+    project,
+    selected,
+    onSelect,
+  }: {
+    project: ProjectWithoutContent
+    selected: boolean
+    onSelect: () => void
+  }) => {
+    const openProject = React.useCallback(() => {
+      window.open(projectEditorLink(project.proj_id), '_blank')
+    }, [project.proj_id])
+
+    return (
+      <div
+        style={{
+          height: 200,
+          width: 300,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 5,
+        }}
+      >
+        <div
+          style={{
+            border: selected ? '2px solid #0075F9' : '2px solid transparent',
+            borderRadius: 10,
+            overflow: 'hidden',
+            height: 180,
+            width: '100%',
+            background: 'linear-gradient(rgba(77, 255, 223, 0.4), rgba(255,250,220,.8))',
+            backgroundAttachment: 'local',
+            backgroundRepeat: 'no-repeat',
+          }}
+          onMouseDown={onSelect}
+          onDoubleClick={openProject}
+        />
+        <ProjectCardActions project={project} />
+      </div>
+    )
+  },
+)
+ProjectCard.displayName = 'ProjectCard'
+
+const ProjectCardActions = React.memo(({ project }: { project: ProjectWithoutContent }) => {
   return (
     <div style={{ display: 'flex', alignItems: 'center' }}>
       <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 5, flex: 1 }}>
@@ -431,4 +463,4 @@ const ProjectActions = React.memo(({ project }: { project: ProjectWithoutContent
     </div>
   )
 })
-ProjectActions.displayName = 'ProjectActions'
+ProjectCardActions.displayName = 'ProjectCardActions'
