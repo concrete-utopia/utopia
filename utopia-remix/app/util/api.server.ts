@@ -8,7 +8,6 @@ import { getUserFromSession } from '../models/session.server'
 import * as cookie from 'cookie'
 import { Params } from '@remix-run/react'
 import { PrismaClientKnownRequestError } from 'prisma-client/runtime/library.js'
-import { AxiosResponse } from 'axios'
 
 interface ErrorResponse {
   error: string
@@ -114,15 +113,15 @@ export function ensure(condition: unknown, message: string, status: number): ass
   }
 }
 
-export async function proxiedResponse(response: AxiosResponse): Promise<unknown> {
+export async function proxiedResponse(response: Response): Promise<unknown> {
   if (response.status !== Status.OK) {
-    let text = await response.data
+    let text = await response.text()
     if (text.length === 0) {
       text = response.statusText
     }
     throw new ApiError(text, response.status)
   }
-  return response.data
+  return response.json()
 }
 
 export const SESSION_COOKIE_NAME = 'JSESSIONID'
