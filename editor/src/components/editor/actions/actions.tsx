@@ -4109,6 +4109,7 @@ export const UPDATE_FNS = {
         return {
           ...element,
           condition: jsExpressionOtherJavaScript(
+            [],
             action.expression,
             action.expression,
             action.expression,

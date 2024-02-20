@@ -109,6 +109,7 @@ Array [
           },
           "javascript": "<div data-uid='bbb' />;",
           "originalJavascript": "<div data-uid='bbb' />",
+          "params": Array [],
           "sourceMap": Object {
             "file": "code.tsx",
             "mappings": "OAAA;AAAA;AAAA",
@@ -220,9 +221,10 @@ export var storyboard = (props) => {
     </Storyboard>
   )
 }",
+    "params": Array [],
     "sourceMap": Object {
       "file": "code.tsx",
-      "mappings": "AAWQA,IAAIC,UAAUC,GAAGC,SAAbF,UAAaE,CAACC,KAADD,EAAWE;AACjCC,SACEC,oBAACC,UAADD;AAAYE,gBAASC;AAArBH,KACEA,oBAACI,KAADJ;AACEK,IAAAA,KAAKC,EAAER;AAAES,MAAAA,IAAIC,EAAEC,CAARX;AAAWY,MAAAA,GAAGF,EAAEC,CAAhBX;AAAmBa,MAAAA,KAAKH,EAAEI,GAA1Bd;AAA+Be,MAAAA,MAAML,EAAEI;AAAvCd,KADTE;AAEEE,gBAASC;AAFXH,KAIEA,oBAACc,GAADd;AACEE,gBAASC,YADXH;AAEEK,IAAAA,KAAKC,EAAER;AAAEiB,MAAAA,MAAMP,EAAEC,CAAVX;AAAaS,MAAAA,IAAIC,EAAEC,CAAnBX;AAAsBkB,MAAAA,KAAKR,EAAEC,CAA7BX;AAAgCY,MAAAA,GAAGF,EAAEC;AAArCX;AAFTE,IAJFA,CADFA,CADFD;AAaFkB,CAdOxB",
+      "mappings": "AAWQA,IAAIC,UAAUC,GAAIE,KAADD,IAAWE;AACjCC,SACEC,oBAACC,UAADD;AAAYE,gBAASC;AAArBH,KACEA,oBAACI,KAADJ;AACEK,IAAAA,KAAKC,EAAER;AAAES,MAAAA,IAAIC,EAAEC,CAARX;AAAWY,MAAAA,GAAGF,EAAEC,CAAhBX;AAAmBa,MAAAA,KAAKH,EAAEI,GAA1Bd;AAA+Be,MAAAA,MAAML,EAAEI;AAAvCd,KADTE;AAEEE,gBAASC;AAFXH,KAIEA,oBAACc,GAADd;AACEE,gBAASC,YADXH;AAEEK,IAAAA,KAAKC,EAAER;AAAEiB,MAAAA,MAAMP,EAAEC,CAAVX;AAAaS,MAAAA,IAAIC,EAAEC,CAAnBX;AAAsBkB,MAAAA,KAAKR,EAAEC,CAA7BX;AAAgCY,MAAAA,GAAGF,EAAEC;AAArCX;AAFTE,IAJFA,CADFA,CADFD;AAaFkB,CAdOxB",
       "names": Array [
         "var",
         "storyboard",
@@ -284,7 +286,7 @@ export var storyboard = (props) => {
       ],
       "version": 3,
     },
-    "transpiledJavascript": "var storyboard = function storyboard(props) {
+    "transpiledJavascript": "var storyboard = props => {
   return React.createElement(Storyboard, {
     \\"data-uid\\": \\"utopia-storyboard-uid\\"
   }, React.createElement(Scene, {

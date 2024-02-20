@@ -1,7 +1,11 @@
 import React from 'react'
 import type { MapLike } from 'typescript'
 import type { UtopiaJSXComponent } from '../../../core/shared/element-template'
-import { ArbitraryJSBlock, isUtopiaJSXComponent } from '../../../core/shared/element-template'
+import {
+  ArbitraryJSBlock,
+  isUtopiaJSXComponent,
+  propertiesExposedByParams,
+} from '../../../core/shared/element-template'
 import { fastForEach } from '../../../core/shared/utils'
 import type { ProjectContentTreeRoot } from '../../assets'
 import { getProjectFileByFilePath, ProjectContentsTree } from '../../assets'
@@ -119,6 +123,7 @@ export function createExecutionScope(
   // First make sure everything is in scope
   if (combinedTopLevelArbitraryBlock != null && openStoryboardFileNameKILLME != null) {
     const { highlightBounds, code } = getCodeAndHighlightBoundsForFile(filePath, projectContents)
+    const propertiesFromParams = propertiesExposedByParams(combinedTopLevelArbitraryBlock.params)
     const lookupRenderer = createLookupRender(
       EP.emptyElementPath,
       executionScope,
@@ -140,7 +145,7 @@ export function createExecutionScope(
       editedText,
       null,
       {},
-      [],
+      propertiesFromParams,
     )
 
     executionScope[JSX_CANVAS_LOOKUP_FUNCTION_NAME] = utopiaCanvasJSXLookup(

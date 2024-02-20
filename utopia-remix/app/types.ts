@@ -15,3 +15,11 @@ export type ListProjectsResponse = {
 }
 
 export type ProjectWithoutContent = Omit<Project, 'content'>
+
+export interface Collaborator {
+  id: string
+  name: string
+  avatar: string
+}
+
+export type CollaboratorsByProject = { [projectId: string]: Collaborator[] }

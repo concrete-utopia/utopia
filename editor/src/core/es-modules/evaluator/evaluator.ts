@@ -31,7 +31,7 @@ function transformToCommonJS(
 ): { transpiledCode: string; sourceMap: RawSourceMap } {
   const plugins = [BabelTransformCommonJS, BabelExportNamespaceFrom, BabelClassProperties]
   const result = Babel.transform(moduleCode, {
-    presets: ['es2015', 'react'],
+    presets: ['es2016', 'react'],
     plugins: plugins,
     sourceType: 'module',
     sourceFileName: filePath,

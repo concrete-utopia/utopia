@@ -19,6 +19,7 @@ function threeAttribute(key: string, fromThree: string): JSXAttributesEntry {
   return jsxAttributesEntry(
     key,
     jsExpressionOtherJavaScript(
+      [],
       `THREE.${fromThree}`,
       `THREE.${fromThree}`,
       `return THREE.${fromThree}`,

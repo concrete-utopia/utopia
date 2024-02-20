@@ -2,6 +2,7 @@ import { within } from '@testing-library/react'
 import * as EP from '../../../../core/shared/element-path'
 import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
 import { mouseClickAtPoint, pressKey } from '../../../canvas/event-helpers.test-utils'
+import type { EditorRenderResult } from '../../../canvas/ui-jsx.test-utils'
 import { renderTestEditorWithCode } from '../../../canvas/ui-jsx.test-utils'
 import {
   DataPickerPopupButtonTestId,
@@ -23,9 +24,7 @@ describe('Set element prop via the data picker', () => {
     const theScene = editor.renderedDOM.getByTestId('scene')
     const theInspector = editor.renderedDOM.getByTestId('inspector-sections-container')
 
-    const options = [
-      ...editor.renderedDOM.baseElement.querySelectorAll(`[data-testid^="variable-from-scope"]`),
-    ].map((node) => node.firstChild!.firstChild!.textContent)
+    const options = getRenderedOptions(editor)
 
     // the items from the data picker are expected here, so that the numbers in `VariableFromScopeOptionTestId`
     // below are put in context
@@ -82,9 +81,7 @@ describe('Set element prop via the data picker', () => {
     const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
     expect(dataPickerPopup).not.toBeNull()
 
-    const options = [
-      ...editor.renderedDOM.baseElement.querySelectorAll(`[data-testid^="variable-from-scope"]`),
-    ].map((node) => node.firstChild!.firstChild!.textContent)
+    const options = getRenderedOptions(editor)
 
     expect(options).toEqual([
       'currentCount', // at the top because the number input control descriptor is present
@@ -107,9 +104,7 @@ describe('Set element prop via the data picker', () => {
     const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
     expect(dataPickerPopup).not.toBeNull()
 
-    const options = [
-      ...editor.renderedDOM.baseElement.querySelectorAll(`[data-testid^="variable-from-scope"]`),
-    ].map((node) => node.firstChild!.firstChild!.textContent)
+    const options = getRenderedOptions(editor)
 
     expect(options).toEqual([
       'titleIdeas', // the array is at the top because of the array descriptor
@@ -137,9 +132,7 @@ describe('Set element prop via the data picker', () => {
     const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
     expect(dataPickerPopup).not.toBeNull()
 
-    const options = [
-      ...editor.renderedDOM.baseElement.querySelectorAll(`[data-testid^="variable-from-scope"]`),
-    ].map((node) => node.firstChild!.firstChild!.textContent)
+    const options = getRenderedOptions(editor)
 
     expect(options).toEqual([
       'bookInfo', // object is at the top because of the object descriptor
@@ -191,9 +184,7 @@ describe('Set element prop via the data picker', () => {
     const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
     expect(dataPickerPopup).not.toBeNull()
 
-    const options = [
-      ...editor.renderedDOM.baseElement.querySelectorAll(`[data-testid^="variable-from-scope"]`),
-    ].map((node) => node.firstChild!.firstChild!.textContent)
+    const options = getRenderedOptions(editor)
 
     expect(options).toEqual([
       'authors', // at the top because it's an array of string, same as titleIdeas
@@ -255,9 +246,7 @@ describe('Set element prop via the data picker', () => {
     const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
     expect(dataPickerPopup).not.toBeNull()
 
-    const options = [
-      ...editor.renderedDOM.baseElement.querySelectorAll(`[data-testid^="variable-from-scope"]`),
-    ].map((node) => node.firstChild!.firstChild!.textContent)
+    const options = getRenderedOptions(editor)
 
     expect(options).toEqual([
       'bookInfo', // object with matching shape
@@ -314,9 +303,7 @@ describe('Set element prop via the data picker', () => {
     const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
     expect(dataPickerPopup).not.toBeNull()
 
-    const options = [
-      ...editor.renderedDOM.baseElement.querySelectorAll(`[data-testid^="variable-from-scope"]`),
-    ].map((node) => node.firstChild!.firstChild!.textContent)
+    const options = getRenderedOptions(editor)
 
     expect(options).toEqual([
       'authors',
@@ -366,9 +353,7 @@ describe('Set element prop via the data picker', () => {
     const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
     expect(dataPickerPopup).not.toBeNull()
 
-    const options = [
-      ...editor.renderedDOM.baseElement.querySelectorAll(`[data-testid^="variable-from-scope"]`),
-    ].map((node) => node.firstChild!.firstChild!.textContent)
+    const options = getRenderedOptions(editor)
 
     expect(options).toEqual([
       'authors',
@@ -378,6 +363,161 @@ describe('Set element prop via the data picker', () => {
       'titleToo',
       'currentCount',
     ])
+  })
+
+  it('object props are reordered by relevance', async () => {
+    const editor = await renderTestEditorWithCode(
+      DataPickerProjectShell(`
+      function Title({ text }) {
+        const content = 'Content'
+      
+        return <h2 data-uid='aam'>{text}</h2>
+      }
+      
+      var Playground = ({ style }) => {
+        const titles = {
+          aNumber: 2,
+          aBoolean: true,
+          actualStringTitle: 'The First Title',
+        }
+      
+        return (
+          <div style={style} data-uid='root'>
+            <Title
+              text={'hi'}
+              data-uid='bd'
+              style={{
+                width: 134,
+                height: 28,
+                position: 'absolute',
+                left: 160,
+                top: 75,
+              }}
+            />
+          </div>
+        )
+      }`),
+      'await-first-dom-report',
+    )
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/bd')])
+
+    const dataPickerOpenerButton = editor.renderedDOM.getByTestId(DataPickerPopupButtonTestId)
+    await mouseClickAtPoint(dataPickerOpenerButton, { x: 2, y: 2 })
+
+    const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
+    expect(dataPickerPopup).not.toBeNull()
+
+    const options = getRenderedOptions(editor)
+
+    expect(options).toEqual([
+      'titles', // the name of the object
+      'actualStringTitle', // the actual string prop
+      'aNumber', // the rest of the props
+      'aBoolean',
+    ])
+  })
+
+  it('array with matching elements has priority', async () => {
+    const editor = await renderTestEditorWithCode(
+      DataPickerProjectShell(`
+      function Title({ text }) {
+        const content = 'Content'
+      
+        return <h2 data-uid='aam'>{text}</h2>
+      }
+      
+      var Playground = ({ style }) => {
+        const titles = {
+          ['also JS']: 2,
+          one: false,
+        }
+      
+        const titleIdeas = ['Chapter One']
+      
+        return (
+          <div style={style} data-uid='root'>
+            <Title
+              text={'a'}
+              data-uid='bd'
+              style={{
+                width: 134,
+                height: 28,
+                position: 'absolute',
+                left: 160,
+                top: 75,
+              }}
+            />
+          </div>
+        )
+      }`),
+      'await-first-dom-report',
+    )
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/bd')])
+
+    const dataPickerOpenerButton = editor.renderedDOM.getByTestId(DataPickerPopupButtonTestId)
+    await mouseClickAtPoint(dataPickerOpenerButton, { x: 2, y: 2 })
+
+    const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
+    expect(dataPickerPopup).not.toBeNull()
+
+    const options = getRenderedOptions(editor)
+
+    expect(options).toEqual([
+      'titleIdeas', // the array is moved up
+      'titleIdeas[0]', // <- the array element
+      'titles', // an object with non-matching props
+      'also JS',
+      'one',
+    ])
+  })
+
+  it('object with matching elements has priority', async () => {
+    const editor = await renderTestEditorWithCode(
+      DataPickerProjectShell(`
+      function Title({ text }) {
+        const content = 'Content'
+      
+        return <h2 data-uid='aam'>{text}</h2>
+      }
+      
+      var Playground = ({ style }) => {
+        const nums = [1, 2, 3, 4, 5]
+        
+        const titles = {
+          ['also JS']: 2,
+          one: "Hi",
+        }
+      
+      
+        return (
+          <div style={style} data-uid='root'>
+            <Title
+              text={'a'}
+              data-uid='bd'
+              style={{
+                width: 134,
+                height: 28,
+                position: 'absolute',
+                left: 160,
+                top: 75,
+              }}
+            />
+          </div>
+        )
+      }`),
+      'await-first-dom-report',
+    )
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/bd')])
+
+    const dataPickerOpenerButton = editor.renderedDOM.getByTestId(DataPickerPopupButtonTestId)
+    await mouseClickAtPoint(dataPickerOpenerButton, { x: 2, y: 2 })
+
+    const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
+    expect(dataPickerPopup).not.toBeNull()
+
+    const options = getRenderedOptions(editor)
+
+    expect(options).toEqual(['titles', 'one', 'also JS', 'nums', 'nums[0]'])
   })
 })
 
@@ -978,3 +1118,11 @@ registerInternalComponent(Title, {
 //     },
 //   ],
 // })
+
+function getRenderedOptions(editor: EditorRenderResult) {
+  return [
+    ...editor.renderedDOM.baseElement.querySelectorAll(
+      `[data-testid^="variable-from-scope"] [data-testid="variable-name"]`,
+    ),
+  ].map((node) => node.textContent)
+}
