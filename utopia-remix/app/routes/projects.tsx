@@ -73,6 +73,38 @@ const ProjectsPage = React.memo(() => {
     }
   }, [data.projects, data.deletedProjects, selectedCategory])
 
+  const searchQuery = useProjectsStore((store) => store.searchQuery)
+  const sortCriteria = useProjectsStore((store) => store.sortCriteria)
+  const sortAscending = useProjectsStore((store) => store.sortAscending)
+
+  const filteredProjects = React.useMemo(() => {
+    const sanitizedQuery = searchQuery.trim().toLowerCase()
+    let sortedProjects = [...activeProjects]
+
+    if (sanitizedQuery.length > 0) {
+      sortedProjects = sortedProjects.filter((project) =>
+        project.title.toLowerCase().includes(sanitizedQuery),
+      )
+    }
+
+    sortedProjects.sort((a, b) => {
+      if (sortCriteria === 'title') {
+        return sortAscending ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title)
+      } else if (sortCriteria === 'dateCreated') {
+        const dateA = a.created_at.toString()
+        const dateB = b.created_at.toString()
+        return sortAscending ? dateA.localeCompare(dateB) : dateB.localeCompare(dateA)
+      } else if (sortCriteria === 'dateModified') {
+        const dateA = a.modified_at.toString()
+        const dateB = b.modified_at.toString()
+        return sortAscending ? dateA.localeCompare(dateB) : dateB.localeCompare(dateA)
+      }
+      return 0
+    })
+
+    return sortedProjects
+  }, [activeProjects, searchQuery, sortCriteria, sortAscending])
+
   return (
     <div
       style={{
@@ -98,7 +130,7 @@ const ProjectsPage = React.memo(() => {
       >
         <TopActionBar />
         <ProjectsHeader projects={activeProjects} />
-        <ProjectCards projects={activeProjects} />
+        <ProjectCards projects={filteredProjects} />
       </div>
     </div>
   )
@@ -417,46 +449,14 @@ const CategoryTrashActions = React.memo(({ projects }: { projects: ProjectWithou
 CategoryTrashActions.displayName = 'CategoryTrashActions'
 
 const ProjectCards = React.memo(({ projects }: { projects: ProjectWithoutContent[] }) => {
-  const searchQuery = useProjectsStore((store) => store.searchQuery)
   const selectedProjectId = useProjectsStore((store) => store.selectedProjectId)
   const setSelectedProjectId = useProjectsStore((store) => store.setSelectedProjectId)
-
-  const sortCriteria = useProjectsStore((store) => store.sortCriteria)
-  const sortAscending = useProjectsStore((store) => store.sortAscending)
 
   const handleProjectSelect = React.useCallback(
     (project: ProjectWithoutContent) =>
       setSelectedProjectId(project.proj_id === selectedProjectId ? null : project.proj_id),
     [setSelectedProjectId, selectedProjectId],
   )
-
-  const filteredProjects = React.useMemo(() => {
-    const sanitizedQuery = searchQuery.trim().toLowerCase()
-    let sortedProjects = [...projects]
-
-    if (sanitizedQuery.length > 0) {
-      sortedProjects = sortedProjects.filter((project) =>
-        project.title.toLowerCase().includes(sanitizedQuery),
-      )
-    }
-
-    sortedProjects.sort((a, b) => {
-      if (sortCriteria === 'title') {
-        return sortAscending ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title)
-      } else if (sortCriteria === 'dateCreated') {
-        const dateA = a.created_at.toString()
-        const dateB = b.created_at.toString()
-        return sortAscending ? dateA.localeCompare(dateB) : dateB.localeCompare(dateA)
-      } else if (sortCriteria === 'dateModified') {
-        const dateA = a.modified_at.toString()
-        const dateB = b.modified_at.toString()
-        return sortAscending ? dateA.localeCompare(dateB) : dateB.localeCompare(dateA)
-      }
-      return 0
-    })
-
-    return sortedProjects
-  }, [projects, searchQuery, sortCriteria, sortAscending])
 
   return (
     <div
@@ -471,7 +471,7 @@ const ProjectCards = React.memo(({ projects }: { projects: ProjectWithoutContent
         scrollbarColor: 'lightgrey transparent',
       }}
     >
-      {filteredProjects.map((project) => (
+      {projects.map((project) => (
         <ProjectCard
           key={project.proj_id}
           project={project}
