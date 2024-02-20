@@ -6,7 +6,7 @@ exports[`UiJsxCanvas render Label carried through for generated elements 1`] = `
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/4e3 utopia-storyboard-uid/scene-aaa/app-entity:aaa/4e3/bbb\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/b88 utopia-storyboard-uid/scene-aaa/app-entity:aaa/b88/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -41,17 +41,17 @@ exports[`UiJsxCanvas render Label carried through for generated elements 1`] = `
         <div
           data-uid=\\"bbb~~~1\\"
           data-label=\\"Plane\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/4e3/bbb~~~1\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/b88/bbb~~~1\\"
         ></div>
         <div
           data-uid=\\"bbb~~~2\\"
           data-label=\\"Plane\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/4e3/bbb~~~2\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/b88/bbb~~~2\\"
         ></div>
         <div
           data-uid=\\"bbb~~~3\\"
           data-label=\\"Plane\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/4e3/bbb~~~3\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/b88/bbb~~~3\\"
         ></div>
       </div>
     </div>
@@ -471,7 +471,7 @@ Object {
           })",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,UAAC,CAAD,EAAK;AACR;AAAA;AAAA;AAAA;AADZ,CAAE,CAAD",
+              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAc,CAAD,IAAK;AACR;AAAA;AAAA;AAAA;AADZ,CAAE,CAAD",
               "names": Array [],
               "sources": Array [
                 "code.tsx",
@@ -506,7 +506,7 @@ Object {
               ],
               "version": 3,
             },
-            "transpiledJavascript": "return [1, 2, 3].map(function (n) {
+            "transpiledJavascript": "return [1, 2, 3].map(n => {
   return utopiaCanvasJSXLookup(\\"bbb\\", {
     n: n,
     callerThis: this
@@ -556,6 +556,7 @@ Object {
                     "elementsWithin": Object {},
                     "javascript": "props.style",
                     "originalJavascript": "props.style",
+                    "params": Array [],
                     "sourceMap": Object {
                       "file": "code.tsx",
                       "mappings": "OAIiCA,KAAMC,MAAND",
@@ -710,7 +711,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/4e3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b88": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -783,7 +784,7 @@ Object {
           })",
         "sourceMap": Object {
           "file": "code.tsx",
-          "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,UAAC,CAAD,EAAK;AACR;AAAA;AAAA;AAAA;AADZ,CAAE,CAAD",
+          "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAc,CAAD,IAAK;AACR;AAAA;AAAA;AAAA;AADZ,CAAE,CAAD",
           "names": Array [],
           "sources": Array [
             "code.tsx",
@@ -818,7 +819,7 @@ Object {
           ],
           "version": 3,
         },
-        "transpiledJavascript": "return [1, 2, 3].map(function (n) {
+        "transpiledJavascript": "return [1, 2, 3].map(n => {
   return utopiaCanvasJSXLookup(\\"bbb\\", {
     n: n,
     callerThis: this
@@ -840,7 +841,7 @@ Object {
         ],
         Array [
           "aaa",
-          "4e3",
+          "b88",
         ],
       ],
       "type": "elementpath",
@@ -910,7 +911,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/4e3/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b88/bbb~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -974,7 +975,7 @@ Object {
         ],
         Array [
           "aaa",
-          "4e3",
+          "b88",
           "bbb~~~1",
         ],
       ],
@@ -1049,7 +1050,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/4e3/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b88/bbb~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -1113,7 +1114,7 @@ Object {
         ],
         Array [
           "aaa",
-          "4e3",
+          "b88",
           "bbb~~~2",
         ],
       ],
@@ -1188,7 +1189,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/4e3/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b88/bbb~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -1252,7 +1253,7 @@ Object {
         ],
         Array [
           "aaa",
-          "4e3",
+          "b88",
           "bbb~~~3",
         ],
       ],
@@ -1757,6 +1758,7 @@ Object {
                     "elementsWithin": Object {},
                     "javascript": "props.style",
                     "originalJavascript": "props.style",
+                    "params": Array [],
                     "sourceMap": Object {
                       "file": "code.tsx",
                       "mappings": "OAIiCA,KAAMC,MAAND",
@@ -1961,9 +1963,9 @@ exports[`UiJsxCanvas render Renders input tag without errors 1`] = `
       data-uid=\\"scene-aaa\\"
     >
       <input
-        data-uid=\\"846\\"
+        data-uid=\\"cb0\\"
         style=\\"top: 10px\\"
-        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:567:846\\"
+        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:567:cb0\\"
       />
     </div>
   </div>
@@ -2436,7 +2438,7 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/76c utopia-storyboard-uid/scene-aaa/app-entity:zzz/76c/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/76c/aaa/b6e\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/4fc utopia-storyboard-uid/scene-aaa/app-entity:zzz/4fc/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/4fc/aaa/563\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -2469,19 +2471,19 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
       >
         <div
           data-uid=\\"aaa~~~1\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/76c/aaa~~~1\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/4fc/aaa~~~1\\"
         >
           1
         </div>
         <div
           data-uid=\\"aaa~~~2\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/76c/aaa~~~2\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/4fc/aaa~~~2\\"
         >
           2
         </div>
         <div
           data-uid=\\"aaa~~~3\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/76c/aaa~~~3\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/4fc/aaa~~~3\\"
         >
           3
         </div>
@@ -2860,6 +2862,7 @@ Object {
                     "elementsWithin": Object {},
                     "javascript": "n;",
                     "originalJavascript": "n",
+                    "params": Array [],
                     "sourceMap": Object {
                       "file": "code.tsx",
                       "mappings": "OAAA,CAACA",
@@ -2941,7 +2944,7 @@ Object {
            })",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAcA,UAAD,CAACA,EAAM;AACT;AAAA;AAAA;AAAA;AADb,CAAE,CAAD",
+              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,CAACA,IAAM;AACT;AAAA;AAAA;AAAA;AADb,CAAE,CAAD",
               "names": Array [
                 "n",
               ],
@@ -2978,7 +2981,7 @@ Object {
               ],
               "version": 3,
             },
-            "transpiledJavascript": "return [1, 2, 3].map(function (n) {
+            "transpiledJavascript": "return [1, 2, 3].map(n => {
   return utopiaCanvasJSXLookup(\\"aaa\\", {
     n: n,
     callerThis: this
@@ -3102,7 +3105,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/76c": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/4fc": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -3132,6 +3135,7 @@ Object {
                 "elementsWithin": Object {},
                 "javascript": "n;",
                 "originalJavascript": "n",
+                "params": Array [],
                 "sourceMap": Object {
                   "file": "code.tsx",
                   "mappings": "OAAA,CAACA",
@@ -3213,7 +3217,7 @@ Object {
            })",
         "sourceMap": Object {
           "file": "code.tsx",
-          "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAcA,UAAD,CAACA,EAAM;AACT;AAAA;AAAA;AAAA;AADb,CAAE,CAAD",
+          "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,CAACA,IAAM;AACT;AAAA;AAAA;AAAA;AADb,CAAE,CAAD",
           "names": Array [
             "n",
           ],
@@ -3250,7 +3254,7 @@ Object {
           ],
           "version": 3,
         },
-        "transpiledJavascript": "return [1, 2, 3].map(function (n) {
+        "transpiledJavascript": "return [1, 2, 3].map(n => {
   return utopiaCanvasJSXLookup(\\"aaa\\", {
     n: n,
     callerThis: this
@@ -3272,7 +3276,7 @@ Object {
         ],
         Array [
           "zzz",
-          "76c",
+          "4fc",
         ],
       ],
       "type": "elementpath",
@@ -3342,7 +3346,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/76c/aaa~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/4fc/aaa~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -3362,6 +3366,7 @@ Object {
             "elementsWithin": Object {},
             "javascript": "n;",
             "originalJavascript": "n",
+            "params": Array [],
             "sourceMap": Object {
               "file": "code.tsx",
               "mappings": "OAAA,CAACA",
@@ -3444,7 +3449,7 @@ Object {
         ],
         Array [
           "zzz",
-          "76c",
+          "4fc",
           "aaa~~~1",
         ],
       ],
@@ -3519,7 +3524,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/76c/aaa~~~1/b6e": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/4fc/aaa~~~1/563": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -3537,6 +3542,7 @@ Object {
         "elementsWithin": Object {},
         "javascript": "n;",
         "originalJavascript": "n",
+        "params": Array [],
         "sourceMap": Object {
           "file": "code.tsx",
           "mappings": "OAAA,CAACA",
@@ -3590,9 +3596,9 @@ Object {
         ],
         Array [
           "zzz",
-          "76c",
+          "4fc",
           "aaa~~~1",
-          "b6e",
+          "563",
         ],
       ],
       "type": "elementpath",
@@ -3662,7 +3668,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/76c/aaa~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/4fc/aaa~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -3682,6 +3688,7 @@ Object {
             "elementsWithin": Object {},
             "javascript": "n;",
             "originalJavascript": "n",
+            "params": Array [],
             "sourceMap": Object {
               "file": "code.tsx",
               "mappings": "OAAA,CAACA",
@@ -3764,7 +3771,7 @@ Object {
         ],
         Array [
           "zzz",
-          "76c",
+          "4fc",
           "aaa~~~2",
         ],
       ],
@@ -3839,7 +3846,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/76c/aaa~~~2/b6e": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/4fc/aaa~~~2/563": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -3857,6 +3864,7 @@ Object {
         "elementsWithin": Object {},
         "javascript": "n;",
         "originalJavascript": "n",
+        "params": Array [],
         "sourceMap": Object {
           "file": "code.tsx",
           "mappings": "OAAA,CAACA",
@@ -3910,9 +3918,9 @@ Object {
         ],
         Array [
           "zzz",
-          "76c",
+          "4fc",
           "aaa~~~2",
-          "b6e",
+          "563",
         ],
       ],
       "type": "elementpath",
@@ -3982,7 +3990,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/76c/aaa~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/4fc/aaa~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -4002,6 +4010,7 @@ Object {
             "elementsWithin": Object {},
             "javascript": "n;",
             "originalJavascript": "n",
+            "params": Array [],
             "sourceMap": Object {
               "file": "code.tsx",
               "mappings": "OAAA,CAACA",
@@ -4084,7 +4093,7 @@ Object {
         ],
         Array [
           "zzz",
-          "76c",
+          "4fc",
           "aaa~~~3",
         ],
       ],
@@ -4159,7 +4168,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/76c/aaa~~~3/b6e": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/4fc/aaa~~~3/563": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -4177,6 +4186,7 @@ Object {
         "elementsWithin": Object {},
         "javascript": "n;",
         "originalJavascript": "n",
+        "params": Array [],
         "sourceMap": Object {
           "file": "code.tsx",
           "mappings": "OAAA,CAACA",
@@ -4230,9 +4240,9 @@ Object {
         ],
         Array [
           "zzz",
-          "76c",
+          "4fc",
           "aaa~~~3",
-          "b6e",
+          "563",
         ],
       ],
       "type": "elementpath",
@@ -4311,7 +4321,7 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5 utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa/60a utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa/60a/bbb utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa/60a/bbb/d0c\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/362 utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa/607 utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa/607/bbb utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa/607/bbb/471\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -4344,69 +4354,69 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
       >
         <div
           data-uid=\\"aaa~~~1\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~1\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~1\\"
         >
           <div
             data-uid=\\"bbb~~~1\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~1/60a/bbb~~~1\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~1/607/bbb~~~1\\"
           >
             4
           </div>
           <div
             data-uid=\\"bbb~~~2\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~1/60a/bbb~~~2\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~1/607/bbb~~~2\\"
           >
             5
           </div>
           <div
             data-uid=\\"bbb~~~3\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~1/60a/bbb~~~3\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~1/607/bbb~~~3\\"
           >
             6
           </div>
         </div>
         <div
           data-uid=\\"aaa~~~2\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~2\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~2\\"
         >
           <div
             data-uid=\\"bbb~~~1\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~2/60a/bbb~~~1\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~2/607/bbb~~~1\\"
           >
             8
           </div>
           <div
             data-uid=\\"bbb~~~2\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~2/60a/bbb~~~2\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~2/607/bbb~~~2\\"
           >
             10
           </div>
           <div
             data-uid=\\"bbb~~~3\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~2/60a/bbb~~~3\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~2/607/bbb~~~3\\"
           >
             12
           </div>
         </div>
         <div
           data-uid=\\"aaa~~~3\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~3\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~3\\"
         >
           <div
             data-uid=\\"bbb~~~1\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~3/60a/bbb~~~1\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~3/607/bbb~~~1\\"
           >
             12
           </div>
           <div
             data-uid=\\"bbb~~~2\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~3/60a/bbb~~~2\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~3/607/bbb~~~2\\"
           >
             15
           </div>
           <div
             data-uid=\\"bbb~~~3\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~3/60a/bbb~~~3\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~3/607/bbb~~~3\\"
           >
             18
           </div>
@@ -4800,6 +4810,7 @@ Object {
                             "elementsWithin": Object {},
                             "javascript": "n * m;",
                             "originalJavascript": "n * m",
+                            "params": Array [],
                             "sourceMap": Object {
                               "file": "code.tsx",
                               "mappings": "OAAE,IAAF,CAACA",
@@ -4886,7 +4897,7 @@ Object {
                })",
                     "sourceMap": Object {
                       "file": "code.tsx",
-                      "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAcA,UAAD,CAACA,EAAM;AACL;AAAA;AAAA;AAAA;AAAA;AADjB,CAAE,CAAD",
+                      "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,CAACA,IAAM;AACL;AAAA;AAAA;AAAA;AAAA;AADjB,CAAE,CAAD",
                       "names": Array [
                         "m",
                       ],
@@ -4928,7 +4939,7 @@ Object {
                       ],
                       "version": 3,
                     },
-                    "transpiledJavascript": "return [4, 5, 6].map(function (m) {
+                    "transpiledJavascript": "return [4, 5, 6].map(m => {
   return utopiaCanvasJSXLookup(\\"bbb\\", {
     n: n,
     m: m,
@@ -4987,7 +4998,7 @@ Object {
            })",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAcA,UAAD,CAACA,EAAM;AACT;AAAA;AAAA;AAAA;AAAA;AAAA;AADb,CAAE,CAAD",
+              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,CAACA,IAAM;AACT;AAAA;AAAA;AAAA;AAAA;AAAA;AADb,CAAE,CAAD",
               "names": Array [
                 "n",
               ],
@@ -5029,7 +5040,7 @@ Object {
               ],
               "version": 3,
             },
-            "transpiledJavascript": "return [1, 2, 3].map(function (n) {
+            "transpiledJavascript": "return [1, 2, 3].map(n => {
   return utopiaCanvasJSXLookup(\\"aaa\\", {
     n: n,
     React: React,
@@ -5155,7 +5166,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/362": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -5199,6 +5210,7 @@ Object {
                         "elementsWithin": Object {},
                         "javascript": "n * m;",
                         "originalJavascript": "n * m",
+                        "params": Array [],
                         "sourceMap": Object {
                           "file": "code.tsx",
                           "mappings": "OAAE,IAAF,CAACA",
@@ -5285,7 +5297,7 @@ Object {
                })",
                 "sourceMap": Object {
                   "file": "code.tsx",
-                  "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAcA,UAAD,CAACA,EAAM;AACL;AAAA;AAAA;AAAA;AAAA;AADjB,CAAE,CAAD",
+                  "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,CAACA,IAAM;AACL;AAAA;AAAA;AAAA;AAAA;AADjB,CAAE,CAAD",
                   "names": Array [
                     "m",
                   ],
@@ -5327,7 +5339,7 @@ Object {
                   ],
                   "version": 3,
                 },
-                "transpiledJavascript": "return [4, 5, 6].map(function (m) {
+                "transpiledJavascript": "return [4, 5, 6].map(m => {
   return utopiaCanvasJSXLookup(\\"bbb\\", {
     n: n,
     m: m,
@@ -5386,7 +5398,7 @@ Object {
            })",
         "sourceMap": Object {
           "file": "code.tsx",
-          "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAcA,UAAD,CAACA,EAAM;AACT;AAAA;AAAA;AAAA;AAAA;AAAA;AADb,CAAE,CAAD",
+          "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,CAACA,IAAM;AACT;AAAA;AAAA;AAAA;AAAA;AAAA;AADb,CAAE,CAAD",
           "names": Array [
             "n",
           ],
@@ -5428,7 +5440,7 @@ Object {
           ],
           "version": 3,
         },
-        "transpiledJavascript": "return [1, 2, 3].map(function (n) {
+        "transpiledJavascript": "return [1, 2, 3].map(n => {
   return utopiaCanvasJSXLookup(\\"aaa\\", {
     n: n,
     React: React,
@@ -5452,7 +5464,7 @@ Object {
         ],
         Array [
           "zzz",
-          "5c5",
+          "362",
         ],
       ],
       "type": "elementpath",
@@ -5522,7 +5534,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -5556,6 +5568,7 @@ Object {
                     "elementsWithin": Object {},
                     "javascript": "n * m;",
                     "originalJavascript": "n * m",
+                    "params": Array [],
                     "sourceMap": Object {
                       "file": "code.tsx",
                       "mappings": "OAAE,IAAF,CAACA",
@@ -5642,7 +5655,7 @@ Object {
                })",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAcA,UAAD,CAACA,EAAM;AACL;AAAA;AAAA;AAAA;AAAA;AADjB,CAAE,CAAD",
+              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,CAACA,IAAM;AACL;AAAA;AAAA;AAAA;AAAA;AADjB,CAAE,CAAD",
               "names": Array [
                 "m",
               ],
@@ -5684,7 +5697,7 @@ Object {
               ],
               "version": 3,
             },
-            "transpiledJavascript": "return [4, 5, 6].map(function (m) {
+            "transpiledJavascript": "return [4, 5, 6].map(m => {
   return utopiaCanvasJSXLookup(\\"bbb\\", {
     n: n,
     m: m,
@@ -5736,7 +5749,7 @@ Object {
         ],
         Array [
           "zzz",
-          "5c5",
+          "362",
           "aaa~~~1",
         ],
       ],
@@ -5811,7 +5824,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~1/60a": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~1/607": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -5843,6 +5856,7 @@ Object {
                 "elementsWithin": Object {},
                 "javascript": "n * m;",
                 "originalJavascript": "n * m",
+                "params": Array [],
                 "sourceMap": Object {
                   "file": "code.tsx",
                   "mappings": "OAAE,IAAF,CAACA",
@@ -5929,7 +5943,7 @@ Object {
                })",
         "sourceMap": Object {
           "file": "code.tsx",
-          "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAcA,UAAD,CAACA,EAAM;AACL;AAAA;AAAA;AAAA;AAAA;AADjB,CAAE,CAAD",
+          "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,CAACA,IAAM;AACL;AAAA;AAAA;AAAA;AAAA;AADjB,CAAE,CAAD",
           "names": Array [
             "m",
           ],
@@ -5971,7 +5985,7 @@ Object {
           ],
           "version": 3,
         },
-        "transpiledJavascript": "return [4, 5, 6].map(function (m) {
+        "transpiledJavascript": "return [4, 5, 6].map(m => {
   return utopiaCanvasJSXLookup(\\"bbb\\", {
     n: n,
     m: m,
@@ -5994,9 +6008,9 @@ Object {
         ],
         Array [
           "zzz",
-          "5c5",
+          "362",
           "aaa~~~1",
-          "60a",
+          "607",
         ],
       ],
       "type": "elementpath",
@@ -6066,7 +6080,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~1/60a/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~1/607/bbb~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -6087,6 +6101,7 @@ Object {
             "elementsWithin": Object {},
             "javascript": "n * m;",
             "originalJavascript": "n * m",
+            "params": Array [],
             "sourceMap": Object {
               "file": "code.tsx",
               "mappings": "OAAE,IAAF,CAACA",
@@ -6174,9 +6189,9 @@ Object {
         ],
         Array [
           "zzz",
-          "5c5",
+          "362",
           "aaa~~~1",
-          "60a",
+          "607",
           "bbb~~~1",
         ],
       ],
@@ -6251,7 +6266,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~1/60a/bbb~~~1/d0c": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~1/607/bbb~~~1/471": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -6270,6 +6285,7 @@ Object {
         "elementsWithin": Object {},
         "javascript": "n * m;",
         "originalJavascript": "n * m",
+        "params": Array [],
         "sourceMap": Object {
           "file": "code.tsx",
           "mappings": "OAAE,IAAF,CAACA",
@@ -6328,11 +6344,11 @@ Object {
         ],
         Array [
           "zzz",
-          "5c5",
+          "362",
           "aaa~~~1",
-          "60a",
+          "607",
           "bbb~~~1",
-          "d0c",
+          "471",
         ],
       ],
       "type": "elementpath",
@@ -6402,7 +6418,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~1/60a/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~1/607/bbb~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -6423,6 +6439,7 @@ Object {
             "elementsWithin": Object {},
             "javascript": "n * m;",
             "originalJavascript": "n * m",
+            "params": Array [],
             "sourceMap": Object {
               "file": "code.tsx",
               "mappings": "OAAE,IAAF,CAACA",
@@ -6510,9 +6527,9 @@ Object {
         ],
         Array [
           "zzz",
-          "5c5",
+          "362",
           "aaa~~~1",
-          "60a",
+          "607",
           "bbb~~~2",
         ],
       ],
@@ -6587,7 +6604,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~1/60a/bbb~~~2/d0c": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~1/607/bbb~~~2/471": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -6606,6 +6623,7 @@ Object {
         "elementsWithin": Object {},
         "javascript": "n * m;",
         "originalJavascript": "n * m",
+        "params": Array [],
         "sourceMap": Object {
           "file": "code.tsx",
           "mappings": "OAAE,IAAF,CAACA",
@@ -6664,11 +6682,11 @@ Object {
         ],
         Array [
           "zzz",
-          "5c5",
+          "362",
           "aaa~~~1",
-          "60a",
+          "607",
           "bbb~~~2",
-          "d0c",
+          "471",
         ],
       ],
       "type": "elementpath",
@@ -6738,7 +6756,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~1/60a/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~1/607/bbb~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -6759,6 +6777,7 @@ Object {
             "elementsWithin": Object {},
             "javascript": "n * m;",
             "originalJavascript": "n * m",
+            "params": Array [],
             "sourceMap": Object {
               "file": "code.tsx",
               "mappings": "OAAE,IAAF,CAACA",
@@ -6846,9 +6865,9 @@ Object {
         ],
         Array [
           "zzz",
-          "5c5",
+          "362",
           "aaa~~~1",
-          "60a",
+          "607",
           "bbb~~~3",
         ],
       ],
@@ -6923,7 +6942,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~1/60a/bbb~~~3/d0c": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~1/607/bbb~~~3/471": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -6942,6 +6961,7 @@ Object {
         "elementsWithin": Object {},
         "javascript": "n * m;",
         "originalJavascript": "n * m",
+        "params": Array [],
         "sourceMap": Object {
           "file": "code.tsx",
           "mappings": "OAAE,IAAF,CAACA",
@@ -7000,11 +7020,11 @@ Object {
         ],
         Array [
           "zzz",
-          "5c5",
+          "362",
           "aaa~~~1",
-          "60a",
+          "607",
           "bbb~~~3",
-          "d0c",
+          "471",
         ],
       ],
       "type": "elementpath",
@@ -7074,7 +7094,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -7108,6 +7128,7 @@ Object {
                     "elementsWithin": Object {},
                     "javascript": "n * m;",
                     "originalJavascript": "n * m",
+                    "params": Array [],
                     "sourceMap": Object {
                       "file": "code.tsx",
                       "mappings": "OAAE,IAAF,CAACA",
@@ -7194,7 +7215,7 @@ Object {
                })",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAcA,UAAD,CAACA,EAAM;AACL;AAAA;AAAA;AAAA;AAAA;AADjB,CAAE,CAAD",
+              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,CAACA,IAAM;AACL;AAAA;AAAA;AAAA;AAAA;AADjB,CAAE,CAAD",
               "names": Array [
                 "m",
               ],
@@ -7236,7 +7257,7 @@ Object {
               ],
               "version": 3,
             },
-            "transpiledJavascript": "return [4, 5, 6].map(function (m) {
+            "transpiledJavascript": "return [4, 5, 6].map(m => {
   return utopiaCanvasJSXLookup(\\"bbb\\", {
     n: n,
     m: m,
@@ -7288,7 +7309,7 @@ Object {
         ],
         Array [
           "zzz",
-          "5c5",
+          "362",
           "aaa~~~2",
         ],
       ],
@@ -7363,7 +7384,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~2/60a": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~2/607": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -7395,6 +7416,7 @@ Object {
                 "elementsWithin": Object {},
                 "javascript": "n * m;",
                 "originalJavascript": "n * m",
+                "params": Array [],
                 "sourceMap": Object {
                   "file": "code.tsx",
                   "mappings": "OAAE,IAAF,CAACA",
@@ -7481,7 +7503,7 @@ Object {
                })",
         "sourceMap": Object {
           "file": "code.tsx",
-          "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAcA,UAAD,CAACA,EAAM;AACL;AAAA;AAAA;AAAA;AAAA;AADjB,CAAE,CAAD",
+          "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,CAACA,IAAM;AACL;AAAA;AAAA;AAAA;AAAA;AADjB,CAAE,CAAD",
           "names": Array [
             "m",
           ],
@@ -7523,7 +7545,7 @@ Object {
           ],
           "version": 3,
         },
-        "transpiledJavascript": "return [4, 5, 6].map(function (m) {
+        "transpiledJavascript": "return [4, 5, 6].map(m => {
   return utopiaCanvasJSXLookup(\\"bbb\\", {
     n: n,
     m: m,
@@ -7546,9 +7568,9 @@ Object {
         ],
         Array [
           "zzz",
-          "5c5",
+          "362",
           "aaa~~~2",
-          "60a",
+          "607",
         ],
       ],
       "type": "elementpath",
@@ -7618,7 +7640,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~2/60a/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~2/607/bbb~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -7639,6 +7661,7 @@ Object {
             "elementsWithin": Object {},
             "javascript": "n * m;",
             "originalJavascript": "n * m",
+            "params": Array [],
             "sourceMap": Object {
               "file": "code.tsx",
               "mappings": "OAAE,IAAF,CAACA",
@@ -7726,9 +7749,9 @@ Object {
         ],
         Array [
           "zzz",
-          "5c5",
+          "362",
           "aaa~~~2",
-          "60a",
+          "607",
           "bbb~~~1",
         ],
       ],
@@ -7803,7 +7826,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~2/60a/bbb~~~1/d0c": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~2/607/bbb~~~1/471": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -7822,6 +7845,7 @@ Object {
         "elementsWithin": Object {},
         "javascript": "n * m;",
         "originalJavascript": "n * m",
+        "params": Array [],
         "sourceMap": Object {
           "file": "code.tsx",
           "mappings": "OAAE,IAAF,CAACA",
@@ -7880,11 +7904,11 @@ Object {
         ],
         Array [
           "zzz",
-          "5c5",
+          "362",
           "aaa~~~2",
-          "60a",
+          "607",
           "bbb~~~1",
-          "d0c",
+          "471",
         ],
       ],
       "type": "elementpath",
@@ -7954,7 +7978,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~2/60a/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~2/607/bbb~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -7975,6 +7999,7 @@ Object {
             "elementsWithin": Object {},
             "javascript": "n * m;",
             "originalJavascript": "n * m",
+            "params": Array [],
             "sourceMap": Object {
               "file": "code.tsx",
               "mappings": "OAAE,IAAF,CAACA",
@@ -8062,9 +8087,9 @@ Object {
         ],
         Array [
           "zzz",
-          "5c5",
+          "362",
           "aaa~~~2",
-          "60a",
+          "607",
           "bbb~~~2",
         ],
       ],
@@ -8139,7 +8164,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~2/60a/bbb~~~2/d0c": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~2/607/bbb~~~2/471": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -8158,6 +8183,7 @@ Object {
         "elementsWithin": Object {},
         "javascript": "n * m;",
         "originalJavascript": "n * m",
+        "params": Array [],
         "sourceMap": Object {
           "file": "code.tsx",
           "mappings": "OAAE,IAAF,CAACA",
@@ -8216,11 +8242,11 @@ Object {
         ],
         Array [
           "zzz",
-          "5c5",
+          "362",
           "aaa~~~2",
-          "60a",
+          "607",
           "bbb~~~2",
-          "d0c",
+          "471",
         ],
       ],
       "type": "elementpath",
@@ -8290,7 +8316,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~2/60a/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~2/607/bbb~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -8311,6 +8337,7 @@ Object {
             "elementsWithin": Object {},
             "javascript": "n * m;",
             "originalJavascript": "n * m",
+            "params": Array [],
             "sourceMap": Object {
               "file": "code.tsx",
               "mappings": "OAAE,IAAF,CAACA",
@@ -8398,9 +8425,9 @@ Object {
         ],
         Array [
           "zzz",
-          "5c5",
+          "362",
           "aaa~~~2",
-          "60a",
+          "607",
           "bbb~~~3",
         ],
       ],
@@ -8475,7 +8502,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~2/60a/bbb~~~3/d0c": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~2/607/bbb~~~3/471": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -8494,6 +8521,7 @@ Object {
         "elementsWithin": Object {},
         "javascript": "n * m;",
         "originalJavascript": "n * m",
+        "params": Array [],
         "sourceMap": Object {
           "file": "code.tsx",
           "mappings": "OAAE,IAAF,CAACA",
@@ -8552,11 +8580,11 @@ Object {
         ],
         Array [
           "zzz",
-          "5c5",
+          "362",
           "aaa~~~2",
-          "60a",
+          "607",
           "bbb~~~3",
-          "d0c",
+          "471",
         ],
       ],
       "type": "elementpath",
@@ -8626,7 +8654,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -8660,6 +8688,7 @@ Object {
                     "elementsWithin": Object {},
                     "javascript": "n * m;",
                     "originalJavascript": "n * m",
+                    "params": Array [],
                     "sourceMap": Object {
                       "file": "code.tsx",
                       "mappings": "OAAE,IAAF,CAACA",
@@ -8746,7 +8775,7 @@ Object {
                })",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAcA,UAAD,CAACA,EAAM;AACL;AAAA;AAAA;AAAA;AAAA;AADjB,CAAE,CAAD",
+              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,CAACA,IAAM;AACL;AAAA;AAAA;AAAA;AAAA;AADjB,CAAE,CAAD",
               "names": Array [
                 "m",
               ],
@@ -8788,7 +8817,7 @@ Object {
               ],
               "version": 3,
             },
-            "transpiledJavascript": "return [4, 5, 6].map(function (m) {
+            "transpiledJavascript": "return [4, 5, 6].map(m => {
   return utopiaCanvasJSXLookup(\\"bbb\\", {
     n: n,
     m: m,
@@ -8840,7 +8869,7 @@ Object {
         ],
         Array [
           "zzz",
-          "5c5",
+          "362",
           "aaa~~~3",
         ],
       ],
@@ -8915,7 +8944,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~3/60a": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~3/607": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -8947,6 +8976,7 @@ Object {
                 "elementsWithin": Object {},
                 "javascript": "n * m;",
                 "originalJavascript": "n * m",
+                "params": Array [],
                 "sourceMap": Object {
                   "file": "code.tsx",
                   "mappings": "OAAE,IAAF,CAACA",
@@ -9033,7 +9063,7 @@ Object {
                })",
         "sourceMap": Object {
           "file": "code.tsx",
-          "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAcA,UAAD,CAACA,EAAM;AACL;AAAA;AAAA;AAAA;AAAA;AADjB,CAAE,CAAD",
+          "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,CAACA,IAAM;AACL;AAAA;AAAA;AAAA;AAAA;AADjB,CAAE,CAAD",
           "names": Array [
             "m",
           ],
@@ -9075,7 +9105,7 @@ Object {
           ],
           "version": 3,
         },
-        "transpiledJavascript": "return [4, 5, 6].map(function (m) {
+        "transpiledJavascript": "return [4, 5, 6].map(m => {
   return utopiaCanvasJSXLookup(\\"bbb\\", {
     n: n,
     m: m,
@@ -9098,9 +9128,9 @@ Object {
         ],
         Array [
           "zzz",
-          "5c5",
+          "362",
           "aaa~~~3",
-          "60a",
+          "607",
         ],
       ],
       "type": "elementpath",
@@ -9170,7 +9200,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~3/60a/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~3/607/bbb~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -9191,6 +9221,7 @@ Object {
             "elementsWithin": Object {},
             "javascript": "n * m;",
             "originalJavascript": "n * m",
+            "params": Array [],
             "sourceMap": Object {
               "file": "code.tsx",
               "mappings": "OAAE,IAAF,CAACA",
@@ -9278,9 +9309,9 @@ Object {
         ],
         Array [
           "zzz",
-          "5c5",
+          "362",
           "aaa~~~3",
-          "60a",
+          "607",
           "bbb~~~1",
         ],
       ],
@@ -9355,7 +9386,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~3/60a/bbb~~~1/d0c": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~3/607/bbb~~~1/471": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -9374,6 +9405,7 @@ Object {
         "elementsWithin": Object {},
         "javascript": "n * m;",
         "originalJavascript": "n * m",
+        "params": Array [],
         "sourceMap": Object {
           "file": "code.tsx",
           "mappings": "OAAE,IAAF,CAACA",
@@ -9432,11 +9464,11 @@ Object {
         ],
         Array [
           "zzz",
-          "5c5",
+          "362",
           "aaa~~~3",
-          "60a",
+          "607",
           "bbb~~~1",
-          "d0c",
+          "471",
         ],
       ],
       "type": "elementpath",
@@ -9506,7 +9538,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~3/60a/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~3/607/bbb~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -9527,6 +9559,7 @@ Object {
             "elementsWithin": Object {},
             "javascript": "n * m;",
             "originalJavascript": "n * m",
+            "params": Array [],
             "sourceMap": Object {
               "file": "code.tsx",
               "mappings": "OAAE,IAAF,CAACA",
@@ -9614,9 +9647,9 @@ Object {
         ],
         Array [
           "zzz",
-          "5c5",
+          "362",
           "aaa~~~3",
-          "60a",
+          "607",
           "bbb~~~2",
         ],
       ],
@@ -9691,7 +9724,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~3/60a/bbb~~~2/d0c": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~3/607/bbb~~~2/471": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -9710,6 +9743,7 @@ Object {
         "elementsWithin": Object {},
         "javascript": "n * m;",
         "originalJavascript": "n * m",
+        "params": Array [],
         "sourceMap": Object {
           "file": "code.tsx",
           "mappings": "OAAE,IAAF,CAACA",
@@ -9768,11 +9802,11 @@ Object {
         ],
         Array [
           "zzz",
-          "5c5",
+          "362",
           "aaa~~~3",
-          "60a",
+          "607",
           "bbb~~~2",
-          "d0c",
+          "471",
         ],
       ],
       "type": "elementpath",
@@ -9842,7 +9876,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~3/60a/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~3/607/bbb~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -9863,6 +9897,7 @@ Object {
             "elementsWithin": Object {},
             "javascript": "n * m;",
             "originalJavascript": "n * m",
+            "params": Array [],
             "sourceMap": Object {
               "file": "code.tsx",
               "mappings": "OAAE,IAAF,CAACA",
@@ -9950,9 +9985,9 @@ Object {
         ],
         Array [
           "zzz",
-          "5c5",
+          "362",
           "aaa~~~3",
-          "60a",
+          "607",
           "bbb~~~3",
         ],
       ],
@@ -10027,7 +10062,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/5c5/aaa~~~3/60a/bbb~~~3/d0c": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/362/aaa~~~3/607/bbb~~~3/471": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -10046,6 +10081,7 @@ Object {
         "elementsWithin": Object {},
         "javascript": "n * m;",
         "originalJavascript": "n * m",
+        "params": Array [],
         "sourceMap": Object {
           "file": "code.tsx",
           "mappings": "OAAE,IAAF,CAACA",
@@ -10104,11 +10140,11 @@ Object {
         ],
         Array [
           "zzz",
-          "5c5",
+          "362",
           "aaa~~~3",
-          "60a",
+          "607",
           "bbb~~~3",
-          "d0c",
+          "471",
         ],
       ],
       "type": "elementpath",
@@ -11425,6 +11461,7 @@ Object {
                     "elementsWithin": Object {},
                     "javascript": "props.style",
                     "originalJavascript": "props.style",
+                    "params": Array [],
                     "sourceMap": Object {
                       "file": "code.tsx",
                       "mappings": "OAMiCA,KAAMC,MAAND",
@@ -11586,7 +11623,7 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are not the ap
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/f08 utopia-storyboard-uid/scene-aaa/app-entity:aaa/f08/bbb\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/346 utopia-storyboard-uid/scene-aaa/app-entity:aaa/346/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -11619,19 +11656,19 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are not the ap
       >
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/f08/bbb~~~1:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/346/bbb~~~1:xxx\\"
         >
           n1
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/f08/bbb~~~2:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/346/bbb~~~2:xxx\\"
         >
           n2
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/f08/bbb~~~3:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/346/bbb~~~3:xxx\\"
         >
           n3
         </div>
@@ -12042,6 +12079,7 @@ Object {
                       "elementsWithin": Object {},
                       "javascript": "'n' + n",
                       "originalJavascript": "'n' + n",
+                      "params": Array [],
                       "sourceMap": Object {
                         "file": "code.tsx",
                         "mappings": "OAQ+CA,MAAKA,CAANC",
@@ -12101,7 +12139,7 @@ Object {
            ))",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAW,UAAC,CAAD;AAAA;AAAA;AAAA;AAAA;AAAA,CAAX,CAAD",
+              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAY,CAAD;AAAA;AAAA;AAAA,EAAX,CAAD",
               "names": Array [],
               "sources": Array [
                 "code.tsx",
@@ -12138,12 +12176,10 @@ Object {
               ],
               "version": 3,
             },
-            "transpiledJavascript": "return [1, 2, 3].map(function (n) {
-  return utopiaCanvasJSXLookup(\\"bbb\\", {
-    n: n,
-    callerThis: this
-  });
-});",
+            "transpiledJavascript": "return [1, 2, 3].map(n => utopiaCanvasJSXLookup(\\"bbb\\", {
+  n: n,
+  callerThis: this
+}));",
             "type": "JSX_MAP_EXPRESSION",
             "uid": "",
             "valuesInScopeFromParameters": Array [
@@ -12263,7 +12299,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/f08": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/346": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -12325,6 +12361,7 @@ Object {
                   "elementsWithin": Object {},
                   "javascript": "'n' + n",
                   "originalJavascript": "'n' + n",
+                  "params": Array [],
                   "sourceMap": Object {
                     "file": "code.tsx",
                     "mappings": "OAQ+CA,MAAKA,CAANC",
@@ -12384,7 +12421,7 @@ Object {
            ))",
         "sourceMap": Object {
           "file": "code.tsx",
-          "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAW,UAAC,CAAD;AAAA;AAAA;AAAA;AAAA;AAAA,CAAX,CAAD",
+          "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAY,CAAD;AAAA;AAAA;AAAA,EAAX,CAAD",
           "names": Array [],
           "sources": Array [
             "code.tsx",
@@ -12421,12 +12458,10 @@ Object {
           ],
           "version": 3,
         },
-        "transpiledJavascript": "return [1, 2, 3].map(function (n) {
-  return utopiaCanvasJSXLookup(\\"bbb\\", {
-    n: n,
-    callerThis: this
-  });
-});",
+        "transpiledJavascript": "return [1, 2, 3].map(n => utopiaCanvasJSXLookup(\\"bbb\\", {
+  n: n,
+  callerThis: this
+}));",
         "type": "JSX_MAP_EXPRESSION",
         "uid": "",
         "valuesInScopeFromParameters": Array [
@@ -12443,7 +12478,7 @@ Object {
         ],
         Array [
           "aaa",
-          "f08",
+          "346",
         ],
       ],
       "type": "elementpath",
@@ -12513,7 +12548,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/f08/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/346/bbb~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -12564,6 +12599,7 @@ Object {
               "elementsWithin": Object {},
               "javascript": "'n' + n",
               "originalJavascript": "'n' + n",
+              "params": Array [],
               "sourceMap": Object {
                 "file": "code.tsx",
                 "mappings": "OAQ+CA,MAAKA,CAANC",
@@ -12625,7 +12661,7 @@ Object {
         ],
         Array [
           "aaa",
-          "f08",
+          "346",
           "bbb~~~1",
         ],
       ],
@@ -12700,7 +12736,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/f08/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/346/bbb~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -12751,6 +12787,7 @@ Object {
               "elementsWithin": Object {},
               "javascript": "'n' + n",
               "originalJavascript": "'n' + n",
+              "params": Array [],
               "sourceMap": Object {
                 "file": "code.tsx",
                 "mappings": "OAQ+CA,MAAKA,CAANC",
@@ -12812,7 +12849,7 @@ Object {
         ],
         Array [
           "aaa",
-          "f08",
+          "346",
           "bbb~~~2",
         ],
       ],
@@ -12887,7 +12924,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/f08/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/346/bbb~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -12938,6 +12975,7 @@ Object {
               "elementsWithin": Object {},
               "javascript": "'n' + n",
               "originalJavascript": "'n' + n",
+              "params": Array [],
               "sourceMap": Object {
                 "file": "code.tsx",
                 "mappings": "OAQ+CA,MAAKA,CAANC",
@@ -12999,7 +13037,7 @@ Object {
         ],
         Array [
           "aaa",
-          "f08",
+          "346",
           "bbb~~~3",
         ],
       ],
@@ -13083,7 +13121,7 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/311 utopia-storyboard-uid/scene-aaa/app-entity:aaa/311/bbb\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/2a8 utopia-storyboard-uid/scene-aaa/app-entity:aaa/2a8/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -13116,19 +13154,19 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 
       >
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/311/bbb~~~1:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/2a8/bbb~~~1:xxx\\"
         >
           n1
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/311/bbb~~~2:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/2a8/bbb~~~2:xxx\\"
         >
           n2
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/311/bbb~~~3:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/2a8/bbb~~~3:xxx\\"
         >
           n3
         </div>
@@ -13539,6 +13577,7 @@ Object {
                       "elementsWithin": Object {},
                       "javascript": "'n' + n",
                       "originalJavascript": "'n' + n",
+                      "params": Array [],
                       "sourceMap": Object {
                         "file": "code.tsx",
                         "mappings": "OAQ+CA,MAAKA,CAANC",
@@ -13598,7 +13637,7 @@ Object {
            ))",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAW,UAAC,CAAD;AAAA;AAAA;AAAA;AAAA;AAAA,CAAX,CAAD",
+              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAY,CAAD;AAAA;AAAA;AAAA,EAAX,CAAD",
               "names": Array [],
               "sources": Array [
                 "code.tsx",
@@ -13635,12 +13674,10 @@ Object {
               ],
               "version": 3,
             },
-            "transpiledJavascript": "return [1, 2, 3].map(function (n) {
-  return utopiaCanvasJSXLookup(\\"bbb\\", {
-    n: n,
-    callerThis: this
-  });
-});",
+            "transpiledJavascript": "return [1, 2, 3].map(n => utopiaCanvasJSXLookup(\\"bbb\\", {
+  n: n,
+  callerThis: this
+}));",
             "type": "JSX_MAP_EXPRESSION",
             "uid": "",
             "valuesInScopeFromParameters": Array [
@@ -13760,7 +13797,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/311": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/2a8": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -13822,6 +13859,7 @@ Object {
                   "elementsWithin": Object {},
                   "javascript": "'n' + n",
                   "originalJavascript": "'n' + n",
+                  "params": Array [],
                   "sourceMap": Object {
                     "file": "code.tsx",
                     "mappings": "OAQ+CA,MAAKA,CAANC",
@@ -13881,7 +13919,7 @@ Object {
            ))",
         "sourceMap": Object {
           "file": "code.tsx",
-          "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAW,UAAC,CAAD;AAAA;AAAA;AAAA;AAAA;AAAA,CAAX,CAAD",
+          "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAY,CAAD;AAAA;AAAA;AAAA,EAAX,CAAD",
           "names": Array [],
           "sources": Array [
             "code.tsx",
@@ -13918,12 +13956,10 @@ Object {
           ],
           "version": 3,
         },
-        "transpiledJavascript": "return [1, 2, 3].map(function (n) {
-  return utopiaCanvasJSXLookup(\\"bbb\\", {
-    n: n,
-    callerThis: this
-  });
-});",
+        "transpiledJavascript": "return [1, 2, 3].map(n => utopiaCanvasJSXLookup(\\"bbb\\", {
+  n: n,
+  callerThis: this
+}));",
         "type": "JSX_MAP_EXPRESSION",
         "uid": "",
         "valuesInScopeFromParameters": Array [
@@ -13940,7 +13976,7 @@ Object {
         ],
         Array [
           "aaa",
-          "311",
+          "2a8",
         ],
       ],
       "type": "elementpath",
@@ -14010,7 +14046,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/311/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/2a8/bbb~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -14061,6 +14097,7 @@ Object {
               "elementsWithin": Object {},
               "javascript": "'n' + n",
               "originalJavascript": "'n' + n",
+              "params": Array [],
               "sourceMap": Object {
                 "file": "code.tsx",
                 "mappings": "OAQ+CA,MAAKA,CAANC",
@@ -14122,7 +14159,7 @@ Object {
         ],
         Array [
           "aaa",
-          "311",
+          "2a8",
           "bbb~~~1",
         ],
       ],
@@ -14197,7 +14234,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/311/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/2a8/bbb~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -14248,6 +14285,7 @@ Object {
               "elementsWithin": Object {},
               "javascript": "'n' + n",
               "originalJavascript": "'n' + n",
+              "params": Array [],
               "sourceMap": Object {
                 "file": "code.tsx",
                 "mappings": "OAQ+CA,MAAKA,CAANC",
@@ -14309,7 +14347,7 @@ Object {
         ],
         Array [
           "aaa",
-          "311",
+          "2a8",
           "bbb~~~2",
         ],
       ],
@@ -14384,7 +14422,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/311/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/2a8/bbb~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -14435,6 +14473,7 @@ Object {
               "elementsWithin": Object {},
               "javascript": "'n' + n",
               "originalJavascript": "'n' + n",
+              "params": Array [],
               "sourceMap": Object {
                 "file": "code.tsx",
                 "mappings": "OAQ+CA,MAAKA,CAANC",
@@ -14496,7 +14535,7 @@ Object {
         ],
         Array [
           "aaa",
-          "311",
+          "2a8",
           "bbb~~~3",
         ],
       ],
@@ -15398,7 +15437,7 @@ exports[`UiJsxCanvas render function component works inside a map 1`] = `
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/dcf utopia-storyboard-uid/scene-aaa/app-entity:zzz/dcf/aaa\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/e82 utopia-storyboard-uid/scene-aaa/app-entity:zzz/e82/aaa\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -15431,13 +15470,13 @@ exports[`UiJsxCanvas render function component works inside a map 1`] = `
       >
         <div
           data-uid=\\"ccc\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/dcf/aaa~~~1:ccc\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/e82/aaa~~~1:ccc\\"
         >
           Thing
         </div>
         <div
           data-uid=\\"ccc\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/dcf/aaa~~~2:ccc\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/e82/aaa~~~2:ccc\\"
         >
           Thing
         </div>
@@ -15843,7 +15882,7 @@ Object {
             })",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAWA,UAAD,IAACA,EAAS;AACR;AAAA;AAAA;AAAA;AADd,CAAE,CAAD",
+              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAU,IAACA,IAAS;AACR;AAAA;AAAA;AAAA;AADd,CAAE,CAAD",
               "names": Array [
                 "data",
               ],
@@ -15881,7 +15920,7 @@ Object {
               ],
               "version": 3,
             },
-            "transpiledJavascript": "return [1, 2].map(function (data) {
+            "transpiledJavascript": "return [1, 2].map(data => {
   return utopiaCanvasJSXLookup(\\"aaa\\", {
     data: data,
     callerThis: this
@@ -16005,7 +16044,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/dcf": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e82": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -16062,7 +16101,7 @@ Object {
             })",
         "sourceMap": Object {
           "file": "code.tsx",
-          "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAWA,UAAD,IAACA,EAAS;AACR;AAAA;AAAA;AAAA;AADd,CAAE,CAAD",
+          "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAU,IAACA,IAAS;AACR;AAAA;AAAA;AAAA;AADd,CAAE,CAAD",
           "names": Array [
             "data",
           ],
@@ -16100,7 +16139,7 @@ Object {
           ],
           "version": 3,
         },
-        "transpiledJavascript": "return [1, 2].map(function (data) {
+        "transpiledJavascript": "return [1, 2].map(data => {
   return utopiaCanvasJSXLookup(\\"aaa\\", {
     data: data,
     callerThis: this
@@ -16122,7 +16161,7 @@ Object {
         ],
         Array [
           "zzz",
-          "dcf",
+          "e82",
         ],
       ],
       "type": "elementpath",
@@ -16192,7 +16231,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/dcf/aaa~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e82/aaa~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -16239,7 +16278,7 @@ Object {
         ],
         Array [
           "zzz",
-          "dcf",
+          "e82",
           "aaa~~~1",
         ],
       ],
@@ -16314,7 +16353,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/dcf/aaa~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e82/aaa~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -16361,7 +16400,7 @@ Object {
         ],
         Array [
           "zzz",
-          "dcf",
+          "e82",
           "aaa~~~2",
         ],
       ],
@@ -16935,6 +16974,7 @@ Object {
                   "elementsWithin": Object {},
                   "javascript": "props.title",
                   "originalJavascript": "props.title",
+                  "params": Array [],
                   "sourceMap": Object {
                     "file": "code.tsx",
                     "mappings": "OAWsGA,KAAMC,MAAND",
@@ -17028,6 +17068,7 @@ Object {
                     "elementsWithin": Object {},
                     "javascript": "props.style",
                     "originalJavascript": "props.style",
+                    "params": Array [],
                     "sourceMap": Object {
                       "file": "code.tsx",
                       "mappings": "OAQyBA,KAAMC,MAAND",
@@ -17281,6 +17322,7 @@ Object {
               "elementsWithin": Object {},
               "javascript": "props.title",
               "originalJavascript": "props.title",
+              "params": Array [],
               "sourceMap": Object {
                 "file": "code.tsx",
                 "mappings": "OAWsGA,KAAMC,MAAND",
@@ -17918,6 +17960,7 @@ Object {
                   "elementsWithin": Object {},
                   "javascript": "props.title",
                   "originalJavascript": "props.title",
+                  "params": Array [],
                   "sourceMap": Object {
                     "file": "code.tsx",
                     "mappings": "OAWuGA,KAAMC,MAAND",
@@ -18011,6 +18054,7 @@ Object {
                     "elementsWithin": Object {},
                     "javascript": "props.style",
                     "originalJavascript": "props.style",
+                    "params": Array [],
                     "sourceMap": Object {
                       "file": "code.tsx",
                       "mappings": "OAQyBA,KAAMC,MAAND",
@@ -18264,6 +18308,7 @@ Object {
               "elementsWithin": Object {},
               "javascript": "props.title",
               "originalJavascript": "props.title",
+              "params": Array [],
               "sourceMap": Object {
                 "file": "code.tsx",
                 "mappings": "OAWuGA,KAAMC,MAAND",
@@ -18914,6 +18959,7 @@ Object {
                         "elementsWithin": Object {},
                         "javascript": "props.title",
                         "originalJavascript": "props.title",
+                        "params": Array [],
                         "sourceMap": Object {
                           "file": "code.tsx",
                           "mappings": "OAW0GA,KAAMC,MAAND",
@@ -19046,6 +19092,7 @@ Object {
                     "elementsWithin": Object {},
                     "javascript": "props.style",
                     "originalJavascript": "props.style",
+                    "params": Array [],
                     "sourceMap": Object {
                       "file": "code.tsx",
                       "mappings": "OAQyBA,KAAMC,MAAND",
@@ -19311,6 +19358,7 @@ Object {
                     "elementsWithin": Object {},
                     "javascript": "props.title",
                     "originalJavascript": "props.title",
+                    "params": Array [],
                     "sourceMap": Object {
                       "file": "code.tsx",
                       "mappings": "OAW0GA,KAAMC,MAAND",
@@ -20000,6 +20048,7 @@ Object {
                         "elementsWithin": Object {},
                         "javascript": "props.title",
                         "originalJavascript": "props.title",
+                        "params": Array [],
                         "sourceMap": Object {
                           "file": "code.tsx",
                           "mappings": "OAW0GA,KAAMC,MAAND",
@@ -20132,6 +20181,7 @@ Object {
                     "elementsWithin": Object {},
                     "javascript": "props.style",
                     "originalJavascript": "props.style",
+                    "params": Array [],
                     "sourceMap": Object {
                       "file": "code.tsx",
                       "mappings": "OAQyBA,KAAMC,MAAND",
@@ -20397,6 +20447,7 @@ Object {
                     "elementsWithin": Object {},
                     "javascript": "props.title",
                     "originalJavascript": "props.title",
+                    "params": Array [],
                     "sourceMap": Object {
                       "file": "code.tsx",
                       "mappings": "OAW0GA,KAAMC,MAAND",
@@ -21086,7 +21137,7 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/834 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/834/604 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/999 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/999/000\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/834 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/834/35b utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/999 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/999/000\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -21142,32 +21193,32 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
           <div
             data-uid=\\"834~~~1\\"
             data-label=\\"Copy\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/834~~~1\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/834~~~1\\"
           >
             Copy
           </div>
           <div
             data-uid=\\"999~~~2\\"
             data-label=\\"⌘,⎇,C\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/999~~~2\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/999~~~2\\"
           >
             <span
               data-uid=\\"6a8\\"
-              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/999~~~2/000:6a8\\"
+              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/999~~~2/000:6a8\\"
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~1\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/999~~~2/000:6a8/84e/726~~~1\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/999~~~2/000:6a8/a21/726~~~1\\"
                 >⌘</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~2\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/999~~~2/000:6a8/84e/726~~~2\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/999~~~2/000:6a8/a21/726~~~2\\"
                 >⎇</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~3\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/999~~~2/000:6a8/84e/726~~~3\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/999~~~2/000:6a8/a21/726~~~3\\"
                 >C</span
               ></span
             >
@@ -21175,32 +21226,32 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
           <div
             data-uid=\\"834~~~3\\"
             data-label=\\"Paste\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/834~~~3\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/834~~~3\\"
           >
             Paste
           </div>
           <div
             data-uid=\\"999~~~4\\"
             data-label=\\"⌘⎇V\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/999~~~4\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/999~~~4\\"
           >
             <span
               data-uid=\\"6a8\\"
-              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/999~~~4/000:6a8\\"
+              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/999~~~4/000:6a8\\"
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~1\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/999~~~4/000:6a8/84e/726~~~1\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/999~~~4/000:6a8/a21/726~~~1\\"
                 >⌘</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~2\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/999~~~4/000:6a8/84e/726~~~2\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/999~~~4/000:6a8/a21/726~~~2\\"
                 >⎇</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~3\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/999~~~4/000:6a8/84e/726~~~3\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/999~~~4/000:6a8/a21/726~~~3\\"
                 >V</span
               ></span
             >
@@ -21208,32 +21259,32 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
           <div
             data-uid=\\"834~~~5\\"
             data-label=\\"Cut\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/834~~~5\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/834~~~5\\"
           >
             Cut
           </div>
           <div
             data-uid=\\"999~~~6\\"
             data-label=\\"⌘⎇C\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/999~~~6\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/999~~~6\\"
           >
             <span
               data-uid=\\"6a8\\"
-              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/999~~~6/000:6a8\\"
+              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/999~~~6/000:6a8\\"
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~1\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/999~~~6/000:6a8/84e/726~~~1\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/999~~~6/000:6a8/a21/726~~~1\\"
                 >⌘</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~2\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/999~~~6/000:6a8/84e/726~~~2\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/999~~~6/000:6a8/a21/726~~~2\\"
                 >⎇</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~3\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/999~~~6/000:6a8/84e/726~~~3\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/999~~~6/000:6a8/a21/726~~~3\\"
                 >C</span
               ></span
             >
@@ -21618,6 +21669,7 @@ Object {
                         "elementsWithin": Object {},
                         "javascript": "pair.label;",
                         "originalJavascript": "pair.label",
+                        "params": Array [],
                         "sourceMap": Object {
                           "file": "code.tsx",
                           "mappings": "OAACA,IAAKC,CAAN,KAACD",
@@ -21774,6 +21826,7 @@ export var storyboard = (props) => {
                           "elementsWithin": Object {},
                           "javascript": "pair.label",
                           "originalJavascript": "pair.label",
+                          "params": Array [],
                           "sourceMap": Object {
                             "file": "code.tsx",
                             "mappings": "OAmE+CA,IAAKC,MAALD",
@@ -21938,6 +21991,7 @@ export var storyboard = (props) => {
                               "elementsWithin": Object {},
                               "javascript": "pair.macKeys",
                               "originalJavascript": "pair.macKeys",
+                              "params": Array [],
                               "sourceMap": Object {
                                 "file": "code.tsx",
                                 "mappings": "OAuE4DA,IAAKC,QAALD",
@@ -22099,6 +22153,7 @@ export var storyboard = (props) => {
                           "elementsWithin": Object {},
                           "javascript": "pair.macKeys",
                           "originalJavascript": "pair.macKeys",
+                          "params": Array [],
                           "sourceMap": Object {
                             "file": "code.tsx",
                             "mappings": "OAsE+CA,IAAKC,QAALD",
@@ -22239,7 +22294,7 @@ export var storyboard = (props) => {
         ))",
                 "sourceMap": Object {
                   "file": "code.tsx",
-                  "mappings": "OAACA,iBAAkBC,CAAlBD,IAAuBE,UAAD,IAACA;AAAAA,SACd;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA,KADcA;AAAAA,CAAvBF",
+                  "mappings": "OAACA,iBAAkBC,CAAlBD,IAAsB,IAACE,IACd;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA,GADTF",
                   "names": Array [
                     "keyboardShortcuts",
                     "map",
@@ -22347,15 +22402,13 @@ export var storyboard = (props) => {
                   ],
                   "version": 3,
                 },
-                "transpiledJavascript": "return keyboardShortcuts.map(function (pair) {
-  return React.createElement(React.Fragment, null, utopiaCanvasJSXLookup(\\"834\\", {
-    pair: pair,
-    callerThis: this
-  }), utopiaCanvasJSXLookup(\\"999\\", {
-    pair: pair,
-    callerThis: this
-  }));
-});",
+                "transpiledJavascript": "return keyboardShortcuts.map(pair => React.createElement(React.Fragment, null, utopiaCanvasJSXLookup(\\"834\\", {
+  pair: pair,
+  callerThis: this
+}), utopiaCanvasJSXLookup(\\"999\\", {
+  pair: pair,
+  callerThis: this
+})));",
                 "type": "JSX_MAP_EXPRESSION",
                 "uid": "",
                 "valuesInScopeFromParameters": Array [
@@ -22429,6 +22482,7 @@ export var storyboard = (props) => {
                     "elementsWithin": Object {},
                     "javascript": "props.style",
                     "originalJavascript": "props.style",
+                    "params": Array [],
                     "sourceMap": Object {
                       "file": "code.tsx",
                       "mappings": "OAmDYA,KAAMC,MAAND",
@@ -22855,6 +22909,7 @@ export var storyboard = (props) => {
                     "elementsWithin": Object {},
                     "javascript": "pair.label;",
                     "originalJavascript": "pair.label",
+                    "params": Array [],
                     "sourceMap": Object {
                       "file": "code.tsx",
                       "mappings": "OAACA,IAAKC,CAAN,KAACD",
@@ -23011,6 +23066,7 @@ export var storyboard = (props) => {
                       "elementsWithin": Object {},
                       "javascript": "pair.label",
                       "originalJavascript": "pair.label",
+                      "params": Array [],
                       "sourceMap": Object {
                         "file": "code.tsx",
                         "mappings": "OAmE+CA,IAAKC,MAALD",
@@ -23175,6 +23231,7 @@ export var storyboard = (props) => {
                           "elementsWithin": Object {},
                           "javascript": "pair.macKeys",
                           "originalJavascript": "pair.macKeys",
+                          "params": Array [],
                           "sourceMap": Object {
                             "file": "code.tsx",
                             "mappings": "OAuE4DA,IAAKC,QAALD",
@@ -23336,6 +23393,7 @@ export var storyboard = (props) => {
                       "elementsWithin": Object {},
                       "javascript": "pair.macKeys",
                       "originalJavascript": "pair.macKeys",
+                      "params": Array [],
                       "sourceMap": Object {
                         "file": "code.tsx",
                         "mappings": "OAsE+CA,IAAKC,QAALD",
@@ -23476,7 +23534,7 @@ export var storyboard = (props) => {
         ))",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAACA,iBAAkBC,CAAlBD,IAAuBE,UAAD,IAACA;AAAAA,SACd;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA,KADcA;AAAAA,CAAvBF",
+              "mappings": "OAACA,iBAAkBC,CAAlBD,IAAsB,IAACE,IACd;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA,GADTF",
               "names": Array [
                 "keyboardShortcuts",
                 "map",
@@ -23584,15 +23642,13 @@ export var storyboard = (props) => {
               ],
               "version": 3,
             },
-            "transpiledJavascript": "return keyboardShortcuts.map(function (pair) {
-  return React.createElement(React.Fragment, null, utopiaCanvasJSXLookup(\\"834\\", {
-    pair: pair,
-    callerThis: this
-  }), utopiaCanvasJSXLookup(\\"999\\", {
-    pair: pair,
-    callerThis: this
-  }));
-});",
+            "transpiledJavascript": "return keyboardShortcuts.map(pair => React.createElement(React.Fragment, null, utopiaCanvasJSXLookup(\\"834\\", {
+  pair: pair,
+  callerThis: this
+}), utopiaCanvasJSXLookup(\\"999\\", {
+  pair: pair,
+  callerThis: this
+})));",
             "type": "JSX_MAP_EXPRESSION",
             "uid": "",
             "valuesInScopeFromParameters": Array [
@@ -23712,7 +23768,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -23744,6 +23800,7 @@ export var storyboard = (props) => {
                 "elementsWithin": Object {},
                 "javascript": "pair.label;",
                 "originalJavascript": "pair.label",
+                "params": Array [],
                 "sourceMap": Object {
                   "file": "code.tsx",
                   "mappings": "OAACA,IAAKC,CAAN,KAACD",
@@ -23900,6 +23957,7 @@ export var storyboard = (props) => {
                   "elementsWithin": Object {},
                   "javascript": "pair.label",
                   "originalJavascript": "pair.label",
+                  "params": Array [],
                   "sourceMap": Object {
                     "file": "code.tsx",
                     "mappings": "OAmE+CA,IAAKC,MAALD",
@@ -24064,6 +24122,7 @@ export var storyboard = (props) => {
                       "elementsWithin": Object {},
                       "javascript": "pair.macKeys",
                       "originalJavascript": "pair.macKeys",
+                      "params": Array [],
                       "sourceMap": Object {
                         "file": "code.tsx",
                         "mappings": "OAuE4DA,IAAKC,QAALD",
@@ -24225,6 +24284,7 @@ export var storyboard = (props) => {
                   "elementsWithin": Object {},
                   "javascript": "pair.macKeys",
                   "originalJavascript": "pair.macKeys",
+                  "params": Array [],
                   "sourceMap": Object {
                     "file": "code.tsx",
                     "mappings": "OAsE+CA,IAAKC,QAALD",
@@ -24365,7 +24425,7 @@ export var storyboard = (props) => {
         ))",
         "sourceMap": Object {
           "file": "code.tsx",
-          "mappings": "OAACA,iBAAkBC,CAAlBD,IAAuBE,UAAD,IAACA;AAAAA,SACd;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA,KADcA;AAAAA,CAAvBF",
+          "mappings": "OAACA,iBAAkBC,CAAlBD,IAAsB,IAACE,IACd;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA,GADTF",
           "names": Array [
             "keyboardShortcuts",
             "map",
@@ -24473,15 +24533,13 @@ export var storyboard = (props) => {
           ],
           "version": 3,
         },
-        "transpiledJavascript": "return keyboardShortcuts.map(function (pair) {
-  return React.createElement(React.Fragment, null, utopiaCanvasJSXLookup(\\"834\\", {
-    pair: pair,
-    callerThis: this
-  }), utopiaCanvasJSXLookup(\\"999\\", {
-    pair: pair,
-    callerThis: this
-  }));
-});",
+        "transpiledJavascript": "return keyboardShortcuts.map(pair => React.createElement(React.Fragment, null, utopiaCanvasJSXLookup(\\"834\\", {
+  pair: pair,
+  callerThis: this
+}), utopiaCanvasJSXLookup(\\"999\\", {
+  pair: pair,
+  callerThis: this
+})));",
         "type": "JSX_MAP_EXPRESSION",
         "uid": "",
         "valuesInScopeFromParameters": Array [
@@ -24499,7 +24557,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "d3e",
+          "c96",
         ],
       ],
       "type": "elementpath",
@@ -24569,7 +24627,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/834~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/834~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -24589,6 +24647,7 @@ export var storyboard = (props) => {
             "elementsWithin": Object {},
             "javascript": "pair.label;",
             "originalJavascript": "pair.label",
+            "params": Array [],
             "sourceMap": Object {
               "file": "code.tsx",
               "mappings": "OAACA,IAAKC,CAAN,KAACD",
@@ -24745,6 +24804,7 @@ export var storyboard = (props) => {
               "elementsWithin": Object {},
               "javascript": "pair.label",
               "originalJavascript": "pair.label",
+              "params": Array [],
               "sourceMap": Object {
                 "file": "code.tsx",
                 "mappings": "OAmE+CA,IAAKC,MAALD",
@@ -24874,7 +24934,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "d3e",
+          "c96",
           "834~~~1",
         ],
       ],
@@ -24949,7 +25009,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/834~~~1/604": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/834~~~1/35b": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -24967,6 +25027,7 @@ export var storyboard = (props) => {
         "elementsWithin": Object {},
         "javascript": "pair.label;",
         "originalJavascript": "pair.label",
+        "params": Array [],
         "sourceMap": Object {
           "file": "code.tsx",
           "mappings": "OAACA,IAAKC,CAAN,KAACD",
@@ -25091,9 +25152,9 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "d3e",
+          "c96",
           "834~~~1",
-          "604",
+          "35b",
         ],
       ],
       "type": "elementpath",
@@ -25163,7 +25224,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/834~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/834~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -25183,6 +25244,7 @@ export var storyboard = (props) => {
             "elementsWithin": Object {},
             "javascript": "pair.label;",
             "originalJavascript": "pair.label",
+            "params": Array [],
             "sourceMap": Object {
               "file": "code.tsx",
               "mappings": "OAACA,IAAKC,CAAN,KAACD",
@@ -25339,6 +25401,7 @@ export var storyboard = (props) => {
               "elementsWithin": Object {},
               "javascript": "pair.label",
               "originalJavascript": "pair.label",
+              "params": Array [],
               "sourceMap": Object {
                 "file": "code.tsx",
                 "mappings": "OAmE+CA,IAAKC,MAALD",
@@ -25468,7 +25531,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "d3e",
+          "c96",
           "834~~~3",
         ],
       ],
@@ -25543,7 +25606,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/834~~~3/604": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/834~~~3/35b": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -25561,6 +25624,7 @@ export var storyboard = (props) => {
         "elementsWithin": Object {},
         "javascript": "pair.label;",
         "originalJavascript": "pair.label",
+        "params": Array [],
         "sourceMap": Object {
           "file": "code.tsx",
           "mappings": "OAACA,IAAKC,CAAN,KAACD",
@@ -25685,9 +25749,9 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "d3e",
+          "c96",
           "834~~~3",
-          "604",
+          "35b",
         ],
       ],
       "type": "elementpath",
@@ -25757,7 +25821,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/834~~~5": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/834~~~5": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -25777,6 +25841,7 @@ export var storyboard = (props) => {
             "elementsWithin": Object {},
             "javascript": "pair.label;",
             "originalJavascript": "pair.label",
+            "params": Array [],
             "sourceMap": Object {
               "file": "code.tsx",
               "mappings": "OAACA,IAAKC,CAAN,KAACD",
@@ -25933,6 +25998,7 @@ export var storyboard = (props) => {
               "elementsWithin": Object {},
               "javascript": "pair.label",
               "originalJavascript": "pair.label",
+              "params": Array [],
               "sourceMap": Object {
                 "file": "code.tsx",
                 "mappings": "OAmE+CA,IAAKC,MAALD",
@@ -26062,7 +26128,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "d3e",
+          "c96",
           "834~~~5",
         ],
       ],
@@ -26137,7 +26203,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/834~~~5/604": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/834~~~5/35b": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -26155,6 +26221,7 @@ export var storyboard = (props) => {
         "elementsWithin": Object {},
         "javascript": "pair.label;",
         "originalJavascript": "pair.label",
+        "params": Array [],
         "sourceMap": Object {
           "file": "code.tsx",
           "mappings": "OAACA,IAAKC,CAAN,KAACD",
@@ -26279,9 +26346,9 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "d3e",
+          "c96",
           "834~~~5",
-          "604",
+          "35b",
         ],
       ],
       "type": "elementpath",
@@ -26351,7 +26418,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/999~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/999~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -26404,6 +26471,7 @@ export var storyboard = (props) => {
                   "elementsWithin": Object {},
                   "javascript": "pair.macKeys",
                   "originalJavascript": "pair.macKeys",
+                  "params": Array [],
                   "sourceMap": Object {
                     "file": "code.tsx",
                     "mappings": "OAuE4DA,IAAKC,QAALD",
@@ -26565,6 +26633,7 @@ export var storyboard = (props) => {
               "elementsWithin": Object {},
               "javascript": "pair.macKeys",
               "originalJavascript": "pair.macKeys",
+              "params": Array [],
               "sourceMap": Object {
                 "file": "code.tsx",
                 "mappings": "OAsE+CA,IAAKC,QAALD",
@@ -26694,7 +26763,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "d3e",
+          "c96",
           "999~~~2",
         ],
       ],
@@ -26769,7 +26838,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/999~~~2/000": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/999~~~2/000": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -26820,6 +26889,7 @@ export var storyboard = (props) => {
               "elementsWithin": Object {},
               "javascript": "pair.macKeys",
               "originalJavascript": "pair.macKeys",
+              "params": Array [],
               "sourceMap": Object {
                 "file": "code.tsx",
                 "mappings": "OAuE4DA,IAAKC,QAALD",
@@ -26949,7 +27019,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "d3e",
+          "c96",
           "999~~~2",
           "000",
         ],
@@ -27025,7 +27095,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/999~~~4": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/999~~~4": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -27078,6 +27148,7 @@ export var storyboard = (props) => {
                   "elementsWithin": Object {},
                   "javascript": "pair.macKeys",
                   "originalJavascript": "pair.macKeys",
+                  "params": Array [],
                   "sourceMap": Object {
                     "file": "code.tsx",
                     "mappings": "OAuE4DA,IAAKC,QAALD",
@@ -27239,6 +27310,7 @@ export var storyboard = (props) => {
               "elementsWithin": Object {},
               "javascript": "pair.macKeys",
               "originalJavascript": "pair.macKeys",
+              "params": Array [],
               "sourceMap": Object {
                 "file": "code.tsx",
                 "mappings": "OAsE+CA,IAAKC,QAALD",
@@ -27368,7 +27440,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "d3e",
+          "c96",
           "999~~~4",
         ],
       ],
@@ -27443,7 +27515,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/999~~~4/000": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/999~~~4/000": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -27494,6 +27566,7 @@ export var storyboard = (props) => {
               "elementsWithin": Object {},
               "javascript": "pair.macKeys",
               "originalJavascript": "pair.macKeys",
+              "params": Array [],
               "sourceMap": Object {
                 "file": "code.tsx",
                 "mappings": "OAuE4DA,IAAKC,QAALD",
@@ -27623,7 +27696,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "d3e",
+          "c96",
           "999~~~4",
           "000",
         ],
@@ -27699,7 +27772,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/999~~~6": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/999~~~6": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -27752,6 +27825,7 @@ export var storyboard = (props) => {
                   "elementsWithin": Object {},
                   "javascript": "pair.macKeys",
                   "originalJavascript": "pair.macKeys",
+                  "params": Array [],
                   "sourceMap": Object {
                     "file": "code.tsx",
                     "mappings": "OAuE4DA,IAAKC,QAALD",
@@ -27913,6 +27987,7 @@ export var storyboard = (props) => {
               "elementsWithin": Object {},
               "javascript": "pair.macKeys",
               "originalJavascript": "pair.macKeys",
+              "params": Array [],
               "sourceMap": Object {
                 "file": "code.tsx",
                 "mappings": "OAsE+CA,IAAKC,QAALD",
@@ -28042,7 +28117,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "d3e",
+          "c96",
           "999~~~6",
         ],
       ],
@@ -28117,7 +28192,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/d3e/999~~~6/000": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/c96/999~~~6/000": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -28168,6 +28243,7 @@ export var storyboard = (props) => {
               "elementsWithin": Object {},
               "javascript": "pair.macKeys",
               "originalJavascript": "pair.macKeys",
+              "params": Array [],
               "sourceMap": Object {
                 "file": "code.tsx",
                 "mappings": "OAuE4DA,IAAKC,QAALD",
@@ -28297,7 +28373,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "d3e",
+          "c96",
           "999~~~6",
           "000",
         ],
@@ -29687,15 +29763,16 @@ Object {
               "elementsWithin": Object {},
               "javascript": "() => console.log('class component')",
               "originalJavascript": "() => console.log('class component')",
+              "params": Array [],
               "sourceMap": Object {
                 "file": "code.tsx",
-                "mappings": "OAS4BA,CAACC;AAAAA,SAAKC,OAAQC,IAARD,CAAaE,iBAAbF,CAALD;AAAAA,CAADD",
+                "mappings": "OAS6BA,MAAKC,OAAQC,IAARD,CAAaE,iBAAbF,CAANG",
                 "names": Array [
-                  "(",
                   ")",
                   "console",
                   "log",
                   "class",
+                  "(",
                 ],
                 "sources": Array [
                   "code.tsx",
@@ -29731,9 +29808,7 @@ Object {
                 ],
                 "version": 3,
               },
-              "transpiledJavascript": "return (function () {
-  return console.log('class component');
-});",
+              "transpiledJavascript": "return () => console.log('class component');",
               "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
               "uid": "",
             },
@@ -30259,15 +30334,16 @@ Object {
               "elementsWithin": Object {},
               "javascript": "() => console.log('functional component')",
               "originalJavascript": "() => console.log('functional component')",
+              "params": Array [],
               "sourceMap": Object {
                 "file": "code.tsx",
-                "mappings": "OAI0BA,CAACC;AAAAA,SAAKC,OAAQC,IAARD,CAAaE,sBAAbF,CAALD;AAAAA,CAADD",
+                "mappings": "OAI2BA,MAAKC,OAAQC,IAARD,CAAaE,sBAAbF,CAANG",
                 "names": Array [
-                  "(",
                   ")",
                   "console",
                   "log",
                   "functional",
+                  "(",
                 ],
                 "sources": Array [
                   "code.tsx",
@@ -30298,9 +30374,7 @@ Object {
                 ],
                 "version": 3,
               },
-              "transpiledJavascript": "return (function () {
-  return console.log('functional component');
-});",
+              "transpiledJavascript": "return () => console.log('functional component');",
               "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
               "uid": "",
             },
@@ -30335,6 +30409,7 @@ Object {
                     "elementsWithin": Object {},
                     "javascript": "props.style",
                     "originalJavascript": "props.style",
+                    "params": Array [],
                     "sourceMap": Object {
                       "file": "code.tsx",
                       "mappings": "OAIiFA,KAAMC,MAAND",
@@ -32033,6 +32108,7 @@ Object {
                     "elementsWithin": Object {},
                     "javascript": "props.style",
                     "originalJavascript": "props.style",
+                    "params": Array [],
                     "sourceMap": Object {
                       "file": "code.tsx",
                       "mappings": "OAOyBA,KAAMC,MAAND",
@@ -32606,6 +32682,7 @@ Object {
                     "elementsWithin": Object {},
                     "javascript": "Test.specialValue * 2",
                     "originalJavascript": "Test.specialValue * 2",
+                    "params": Array [],
                     "sourceMap": Object {
                       "file": "code.tsx",
                       "mappings": "OAmB4EA,IAAKC,aAALD,GAAoBE,CAApBF",
@@ -33042,6 +33119,7 @@ Object {
                     "elementsWithin": Object {},
                     "javascript": "props.style",
                     "originalJavascript": "props.style",
+                    "params": Array [],
                     "sourceMap": Object {
                       "file": "code.tsx",
                       "mappings": "OAQyBA,KAAMC,MAAND",
@@ -33380,7 +33458,7 @@ exports[`UiJsxCanvas render renders a canvas testing a multitude of export style
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:b93 utopia-storyboard-uid/scene-aaa/app-entity:b93/2f0 utopia-storyboard-uid/scene-aaa/app-entity:b93/59c utopia-storyboard-uid/scene-aaa/app-entity:b93/54b utopia-storyboard-uid/scene-aaa/app-entity:b93/d18 utopia-storyboard-uid/scene-aaa/app-entity:b93/995 utopia-storyboard-uid/scene-aaa/app-entity:b93/0cf utopia-storyboard-uid/scene-aaa/app-entity:b93/d00 utopia-storyboard-uid/scene-aaa/app-entity:b93/7d0 utopia-storyboard-uid/scene-aaa/app-entity:b93/4cf utopia-storyboard-uid/scene-aaa/app-entity:b93/4cf/477 utopia-storyboard-uid/scene-aaa/app-entity:b93/d7f utopia-storyboard-uid/scene-aaa/app-entity:b93/315 utopia-storyboard-uid/scene-aaa/app-entity:b93/5b9 utopia-storyboard-uid/scene-aaa/app-entity:b93/1a1 utopia-storyboard-uid/scene-aaa/app-entity:b93/301 utopia-storyboard-uid/scene-aaa/app-entity:b93/8ce utopia-storyboard-uid/scene-aaa/app-entity:b93/f77 utopia-storyboard-uid/scene-aaa/app-entity:b93/218 utopia-storyboard-uid/scene-aaa/app-entity:b93/a17 utopia-storyboard-uid/scene-aaa/app-entity:b93/8aa\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:b93 utopia-storyboard-uid/scene-aaa/app-entity:b93/2f0 utopia-storyboard-uid/scene-aaa/app-entity:b93/59c utopia-storyboard-uid/scene-aaa/app-entity:b93/54b utopia-storyboard-uid/scene-aaa/app-entity:b93/d18 utopia-storyboard-uid/scene-aaa/app-entity:b93/995 utopia-storyboard-uid/scene-aaa/app-entity:b93/0cf utopia-storyboard-uid/scene-aaa/app-entity:b93/d00 utopia-storyboard-uid/scene-aaa/app-entity:b93/7d0 utopia-storyboard-uid/scene-aaa/app-entity:b93/4cf utopia-storyboard-uid/scene-aaa/app-entity:b93/4cf/0bb utopia-storyboard-uid/scene-aaa/app-entity:b93/d7f utopia-storyboard-uid/scene-aaa/app-entity:b93/315 utopia-storyboard-uid/scene-aaa/app-entity:b93/5b9 utopia-storyboard-uid/scene-aaa/app-entity:b93/1a1 utopia-storyboard-uid/scene-aaa/app-entity:b93/301 utopia-storyboard-uid/scene-aaa/app-entity:b93/8ce utopia-storyboard-uid/scene-aaa/app-entity:b93/f77 utopia-storyboard-uid/scene-aaa/app-entity:b93/218 utopia-storyboard-uid/scene-aaa/app-entity:b93/a17 utopia-storyboard-uid/scene-aaa/app-entity:b93/8aa\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -34132,6 +34210,7 @@ Object {
                 "elementsWithin": Object {},
                 "javascript": "DefaultExpression;",
                 "originalJavascript": "DefaultExpression",
+                "params": Array [],
                 "sourceMap": Object {
                   "file": "code.tsx",
                   "mappings": "OAAA,iBAACA",
@@ -35395,6 +35474,7 @@ export var App = (props) => {
             "elementsWithin": Object {},
             "javascript": "DefaultExpression;",
             "originalJavascript": "DefaultExpression",
+            "params": Array [],
             "sourceMap": Object {
               "file": "code.tsx",
               "mappings": "OAAA,iBAACA",
@@ -35569,7 +35649,7 @@ export var App = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:b93/4cf/477": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:b93/4cf/0bb": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -35587,6 +35667,7 @@ export var App = (props) => {
         "elementsWithin": Object {},
         "javascript": "DefaultExpression;",
         "originalJavascript": "DefaultExpression",
+        "params": Array [],
         "sourceMap": Object {
           "file": "code.tsx",
           "mappings": "OAAA,iBAACA",
@@ -35659,7 +35740,7 @@ export var App = (props) => {
         Array [
           "b93",
           "4cf",
-          "477",
+          "0bb",
         ],
       ],
       "type": "elementpath",
@@ -37206,7 +37287,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/b05 utopia-storyboard-uid/scene-aaa/app-entity:aaa/b05/bbb\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/626 utopia-storyboard-uid/scene-aaa/app-entity:aaa/626/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -37239,19 +37320,19 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
       >
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/b05/bbb~~~1:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/626/bbb~~~1:xxx\\"
         >
           n1
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/b05/bbb~~~2:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/626/bbb~~~2:xxx\\"
         >
           n2
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/b05/bbb~~~3:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/626/bbb~~~3:xxx\\"
         >
           n3
         </div>
@@ -37662,6 +37743,7 @@ Object {
                       "elementsWithin": Object {},
                       "javascript": "'n' + n",
                       "originalJavascript": "'n' + n",
+                      "params": Array [],
                       "sourceMap": Object {
                         "file": "code.tsx",
                         "mappings": "OAQ+CA,MAAKA,CAANC",
@@ -37721,7 +37803,7 @@ Object {
            ))",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAW,UAAC,CAAD;AAAA;AAAA;AAAA;AAAA;AAAA,CAAX,CAAD",
+              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAY,CAAD;AAAA;AAAA;AAAA,EAAX,CAAD",
               "names": Array [],
               "sources": Array [
                 "code.tsx",
@@ -37758,12 +37840,10 @@ Object {
               ],
               "version": 3,
             },
-            "transpiledJavascript": "return [1, 2, 3].map(function (n) {
-  return utopiaCanvasJSXLookup(\\"bbb\\", {
-    n: n,
-    callerThis: this
-  });
-});",
+            "transpiledJavascript": "return [1, 2, 3].map(n => utopiaCanvasJSXLookup(\\"bbb\\", {
+  n: n,
+  callerThis: this
+}));",
             "type": "JSX_MAP_EXPRESSION",
             "uid": "",
             "valuesInScopeFromParameters": Array [
@@ -37883,7 +37963,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b05": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/626": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -37945,6 +38025,7 @@ Object {
                   "elementsWithin": Object {},
                   "javascript": "'n' + n",
                   "originalJavascript": "'n' + n",
+                  "params": Array [],
                   "sourceMap": Object {
                     "file": "code.tsx",
                     "mappings": "OAQ+CA,MAAKA,CAANC",
@@ -38004,7 +38085,7 @@ Object {
            ))",
         "sourceMap": Object {
           "file": "code.tsx",
-          "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAW,UAAC,CAAD;AAAA;AAAA;AAAA;AAAA;AAAA,CAAX,CAAD",
+          "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAY,CAAD;AAAA;AAAA;AAAA,EAAX,CAAD",
           "names": Array [],
           "sources": Array [
             "code.tsx",
@@ -38041,12 +38122,10 @@ Object {
           ],
           "version": 3,
         },
-        "transpiledJavascript": "return [1, 2, 3].map(function (n) {
-  return utopiaCanvasJSXLookup(\\"bbb\\", {
-    n: n,
-    callerThis: this
-  });
-});",
+        "transpiledJavascript": "return [1, 2, 3].map(n => utopiaCanvasJSXLookup(\\"bbb\\", {
+  n: n,
+  callerThis: this
+}));",
         "type": "JSX_MAP_EXPRESSION",
         "uid": "",
         "valuesInScopeFromParameters": Array [
@@ -38063,7 +38142,7 @@ Object {
         ],
         Array [
           "aaa",
-          "b05",
+          "626",
         ],
       ],
       "type": "elementpath",
@@ -38133,7 +38212,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b05/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/626/bbb~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -38184,6 +38263,7 @@ Object {
               "elementsWithin": Object {},
               "javascript": "'n' + n",
               "originalJavascript": "'n' + n",
+              "params": Array [],
               "sourceMap": Object {
                 "file": "code.tsx",
                 "mappings": "OAQ+CA,MAAKA,CAANC",
@@ -38245,7 +38325,7 @@ Object {
         ],
         Array [
           "aaa",
-          "b05",
+          "626",
           "bbb~~~1",
         ],
       ],
@@ -38320,7 +38400,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b05/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/626/bbb~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -38371,6 +38451,7 @@ Object {
               "elementsWithin": Object {},
               "javascript": "'n' + n",
               "originalJavascript": "'n' + n",
+              "params": Array [],
               "sourceMap": Object {
                 "file": "code.tsx",
                 "mappings": "OAQ+CA,MAAKA,CAANC",
@@ -38432,7 +38513,7 @@ Object {
         ],
         Array [
           "aaa",
-          "b05",
+          "626",
           "bbb~~~2",
         ],
       ],
@@ -38507,7 +38588,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/b05/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/626/bbb~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -38558,6 +38639,7 @@ Object {
               "elementsWithin": Object {},
               "javascript": "'n' + n",
               "originalJavascript": "'n' + n",
+              "params": Array [],
               "sourceMap": Object {
                 "file": "code.tsx",
                 "mappings": "OAQ+CA,MAAKA,CAANC",
@@ -38619,7 +38701,7 @@ Object {
         ],
         Array [
           "aaa",
-          "b05",
+          "626",
           "bbb~~~3",
         ],
       ],
@@ -38703,7 +38785,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/ec0 utopia-storyboard-uid/scene-aaa/app-entity:aaa/ec0/bbb\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/f2b utopia-storyboard-uid/scene-aaa/app-entity:aaa/f2b/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -38736,19 +38818,19 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
       >
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/ec0/bbb~~~1:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/f2b/bbb~~~1:xxx\\"
         >
           n1
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/ec0/bbb~~~2:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/f2b/bbb~~~2:xxx\\"
         >
           n2
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/ec0/bbb~~~3:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/f2b/bbb~~~3:xxx\\"
         >
           n3
         </div>
@@ -39159,6 +39241,7 @@ Object {
                       "elementsWithin": Object {},
                       "javascript": "'n' + div",
                       "originalJavascript": "'n' + div",
+                      "params": Array [],
                       "sourceMap": Object {
                         "file": "code.tsx",
                         "mappings": "OAQ+CA,MAAKC,GAANC",
@@ -39219,7 +39302,7 @@ Object {
            ))",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAW;AAAA;AAAA;AAAA;AAAA;AAAA,CAAX,CAAD",
+              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAW;AAAA;AAAA;AAAA,EAAX,CAAD",
               "names": Array [],
               "sources": Array [
                 "code.tsx",
@@ -39256,12 +39339,10 @@ Object {
               ],
               "version": 3,
             },
-            "transpiledJavascript": "return [1, 2, 3].map(function (div) {
-  return utopiaCanvasJSXLookup(\\"bbb\\", {
-    div: div,
-    callerThis: this
-  });
-});",
+            "transpiledJavascript": "return [1, 2, 3].map(div => utopiaCanvasJSXLookup(\\"bbb\\", {
+  div: div,
+  callerThis: this
+}));",
             "type": "JSX_MAP_EXPRESSION",
             "uid": "",
             "valuesInScopeFromParameters": Array [
@@ -39381,7 +39462,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/ec0": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/f2b": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -39443,6 +39524,7 @@ Object {
                   "elementsWithin": Object {},
                   "javascript": "'n' + div",
                   "originalJavascript": "'n' + div",
+                  "params": Array [],
                   "sourceMap": Object {
                     "file": "code.tsx",
                     "mappings": "OAQ+CA,MAAKC,GAANC",
@@ -39503,7 +39585,7 @@ Object {
            ))",
         "sourceMap": Object {
           "file": "code.tsx",
-          "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAW;AAAA;AAAA;AAAA;AAAA;AAAA,CAAX,CAAD",
+          "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAW;AAAA;AAAA;AAAA,EAAX,CAAD",
           "names": Array [],
           "sources": Array [
             "code.tsx",
@@ -39540,12 +39622,10 @@ Object {
           ],
           "version": 3,
         },
-        "transpiledJavascript": "return [1, 2, 3].map(function (div) {
-  return utopiaCanvasJSXLookup(\\"bbb\\", {
-    div: div,
-    callerThis: this
-  });
-});",
+        "transpiledJavascript": "return [1, 2, 3].map(div => utopiaCanvasJSXLookup(\\"bbb\\", {
+  div: div,
+  callerThis: this
+}));",
         "type": "JSX_MAP_EXPRESSION",
         "uid": "",
         "valuesInScopeFromParameters": Array [
@@ -39562,7 +39642,7 @@ Object {
         ],
         Array [
           "aaa",
-          "ec0",
+          "f2b",
         ],
       ],
       "type": "elementpath",
@@ -39632,7 +39712,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/ec0/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/f2b/bbb~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -39683,6 +39763,7 @@ Object {
               "elementsWithin": Object {},
               "javascript": "'n' + div",
               "originalJavascript": "'n' + div",
+              "params": Array [],
               "sourceMap": Object {
                 "file": "code.tsx",
                 "mappings": "OAQ+CA,MAAKC,GAANC",
@@ -39745,7 +39826,7 @@ Object {
         ],
         Array [
           "aaa",
-          "ec0",
+          "f2b",
           "bbb~~~1",
         ],
       ],
@@ -39820,7 +39901,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/ec0/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/f2b/bbb~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -39871,6 +39952,7 @@ Object {
               "elementsWithin": Object {},
               "javascript": "'n' + div",
               "originalJavascript": "'n' + div",
+              "params": Array [],
               "sourceMap": Object {
                 "file": "code.tsx",
                 "mappings": "OAQ+CA,MAAKC,GAANC",
@@ -39933,7 +40015,7 @@ Object {
         ],
         Array [
           "aaa",
-          "ec0",
+          "f2b",
           "bbb~~~2",
         ],
       ],
@@ -40008,7 +40090,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/ec0/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/f2b/bbb~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -40059,6 +40141,7 @@ Object {
               "elementsWithin": Object {},
               "javascript": "'n' + div",
               "originalJavascript": "'n' + div",
+              "params": Array [],
               "sourceMap": Object {
                 "file": "code.tsx",
                 "mappings": "OAQ+CA,MAAKC,GAANC",
@@ -40121,7 +40204,7 @@ Object {
         ],
         Array [
           "aaa",
-          "ec0",
+          "f2b",
           "bbb~~~3",
         ],
       ],
@@ -40205,7 +40288,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block with 
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/1f1 utopia-storyboard-uid/scene-aaa/app-entity:aaa/1f1/bbb\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/970 utopia-storyboard-uid/scene-aaa/app-entity:aaa/970/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -40238,19 +40321,19 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block with 
       >
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/1f1/bbb~~~1:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/970/bbb~~~1:xxx\\"
         >
           n1
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/1f1/bbb~~~2:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/970/bbb~~~2:xxx\\"
         >
           n2
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/1f1/bbb~~~3:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/970/bbb~~~3:xxx\\"
         >
           n3
         </div>
@@ -40662,6 +40745,7 @@ Object {
                       "elementsWithin": Object {},
                       "javascript": "'n' + n",
                       "originalJavascript": "'n' + n",
+                      "params": Array [],
                       "sourceMap": Object {
                         "file": "code.tsx",
                         "mappings": "OAS+CA,MAAKA,CAANC",
@@ -40721,10 +40805,11 @@ Object {
            ))",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAACA,YAAaC,CAAbD,IAAkB;AAAA,mDAAG,CAAH,CAAQ,CAAR,CAAa,CAAb;AAAA,MAAD,CAAC;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA,CAAlBA",
+              "mappings": "OAACA,YAAaC,CAAbD,IAAkB;AAAG,KAAE;AAAG,OAAE;AAAG,SAAIE,CAAlB,CAAkBA;AAAP;AAAL;AAAL;AAAA;AAAA;AAAA,EAAlBF",
               "names": Array [
                 "nestedThings",
                 "map",
+                "n",
               ],
               "sources": Array [
                 "code.tsx",
@@ -40761,16 +40846,16 @@ Object {
               ],
               "version": 3,
             },
-            "transpiledJavascript": "return nestedThings.map(function (_ref) {
-  var _ref$a$b$c = babelHelpers.slicedToArray(_ref.a.b.c, 1),
-      n = _ref$a$b$c[0];
-
-  return utopiaCanvasJSXLookup(\\"bbb\\", {
-    _ref: _ref,
-    n: n,
-    callerThis: this
-  });
-});",
+            "transpiledJavascript": "return nestedThings.map(({
+  a: {
+    b: {
+      c: [n]
+    }
+  }
+}) => utopiaCanvasJSXLookup(\\"bbb\\", {
+  n: n,
+  callerThis: this
+}));",
             "type": "JSX_MAP_EXPRESSION",
             "uid": "",
             "valuesInScopeFromParameters": Array [
@@ -40890,7 +40975,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/1f1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/970": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -40953,6 +41038,7 @@ Object {
                   "elementsWithin": Object {},
                   "javascript": "'n' + n",
                   "originalJavascript": "'n' + n",
+                  "params": Array [],
                   "sourceMap": Object {
                     "file": "code.tsx",
                     "mappings": "OAS+CA,MAAKA,CAANC",
@@ -41012,10 +41098,11 @@ Object {
            ))",
         "sourceMap": Object {
           "file": "code.tsx",
-          "mappings": "OAACA,YAAaC,CAAbD,IAAkB;AAAA,mDAAG,CAAH,CAAQ,CAAR,CAAa,CAAb;AAAA,MAAD,CAAC;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA,CAAlBA",
+          "mappings": "OAACA,YAAaC,CAAbD,IAAkB;AAAG,KAAE;AAAG,OAAE;AAAG,SAAIE,CAAlB,CAAkBA;AAAP;AAAL;AAAL;AAAA;AAAA;AAAA,EAAlBF",
           "names": Array [
             "nestedThings",
             "map",
+            "n",
           ],
           "sources": Array [
             "code.tsx",
@@ -41052,16 +41139,16 @@ Object {
           ],
           "version": 3,
         },
-        "transpiledJavascript": "return nestedThings.map(function (_ref) {
-  var _ref$a$b$c = babelHelpers.slicedToArray(_ref.a.b.c, 1),
-      n = _ref$a$b$c[0];
-
-  return utopiaCanvasJSXLookup(\\"bbb\\", {
-    _ref: _ref,
-    n: n,
-    callerThis: this
-  });
-});",
+        "transpiledJavascript": "return nestedThings.map(({
+  a: {
+    b: {
+      c: [n]
+    }
+  }
+}) => utopiaCanvasJSXLookup(\\"bbb\\", {
+  n: n,
+  callerThis: this
+}));",
         "type": "JSX_MAP_EXPRESSION",
         "uid": "",
         "valuesInScopeFromParameters": Array [
@@ -41078,7 +41165,7 @@ Object {
         ],
         Array [
           "aaa",
-          "1f1",
+          "970",
         ],
       ],
       "type": "elementpath",
@@ -41148,7 +41235,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/1f1/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/970/bbb~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -41199,6 +41286,7 @@ Object {
               "elementsWithin": Object {},
               "javascript": "'n' + n",
               "originalJavascript": "'n' + n",
+              "params": Array [],
               "sourceMap": Object {
                 "file": "code.tsx",
                 "mappings": "OAS+CA,MAAKA,CAANC",
@@ -41260,7 +41348,7 @@ Object {
         ],
         Array [
           "aaa",
-          "1f1",
+          "970",
           "bbb~~~1",
         ],
       ],
@@ -41335,7 +41423,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/1f1/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/970/bbb~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -41386,6 +41474,7 @@ Object {
               "elementsWithin": Object {},
               "javascript": "'n' + n",
               "originalJavascript": "'n' + n",
+              "params": Array [],
               "sourceMap": Object {
                 "file": "code.tsx",
                 "mappings": "OAS+CA,MAAKA,CAANC",
@@ -41447,7 +41536,7 @@ Object {
         ],
         Array [
           "aaa",
-          "1f1",
+          "970",
           "bbb~~~2",
         ],
       ],
@@ -41522,7 +41611,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/1f1/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/970/bbb~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -41573,6 +41662,7 @@ Object {
               "elementsWithin": Object {},
               "javascript": "'n' + n",
               "originalJavascript": "'n' + n",
+              "params": Array [],
               "sourceMap": Object {
                 "file": "code.tsx",
                 "mappings": "OAS+CA,MAAKA,CAANC",
@@ -41634,7 +41724,7 @@ Object {
         ],
         Array [
           "aaa",
-          "1f1",
+          "970",
           "bbb~~~3",
         ],
       ],
@@ -42219,6 +42309,7 @@ Object {
               "elementsWithin": Object {},
               "javascript": "props",
               "originalJavascript": "props",
+              "params": Array [],
               "sourceMap": Object {
                 "file": "code.tsx",
                 "mappings": "OAOiBA",
@@ -43752,6 +43843,7 @@ Object {
                   },
                   "javascript": "<div data-uid={'ccc'}>test</div>",
                   "originalJavascript": "<div data-uid={'ccc'}>test</div>",
+                  "params": Array [],
                   "sourceMap": Object {
                     "file": "code.tsx",
                     "mappings": "OAesCA;AAAAA;AAAAA",
@@ -44032,6 +44124,7 @@ export var storyboard = (
               },
               "javascript": "<div data-uid={'ccc'}>test</div>",
               "originalJavascript": "<div data-uid={'ccc'}>test</div>",
+              "params": Array [],
               "sourceMap": Object {
                 "file": "code.tsx",
                 "mappings": "OAesCA;AAAAA;AAAAA",
@@ -44599,6 +44692,7 @@ Object {
               "elementsWithin": Object {},
               "javascript": "storeRef",
               "originalJavascript": "storeRef",
+              "params": Array [],
               "sourceMap": Object {
                 "file": "code.tsx",
                 "mappings": "OAaiCA",
@@ -46052,7 +46146,7 @@ exports[`UiJsxCanvas render renders fine with two circularly referencing arbitra
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene utopia-storyboard-uid/scene/app-entity utopia-storyboard-uid/scene/app-entity:aaa utopia-storyboard-uid/scene/app-entity:aaa/ada utopia-storyboard-uid/scene/app-entity:aaa/848\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene utopia-storyboard-uid/scene/app-entity utopia-storyboard-uid/scene/app-entity:aaa utopia-storyboard-uid/scene/app-entity:aaa/773 utopia-storyboard-uid/scene/app-entity:aaa/f4f\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -46402,6 +46496,7 @@ Object {
             "elementsWithin": Object {},
             "javascript": "b(5);",
             "originalJavascript": "b(5)",
+            "params": Array [],
             "sourceMap": Object {
               "file": "code.tsx",
               "mappings": "OAAE,CAAC,CAAH,CAAG,CAAFA",
@@ -46478,6 +46573,7 @@ export var storyboard = (
             "elementsWithin": Object {},
             "javascript": "a(5);",
             "originalJavascript": "a(5)",
+            "params": Array [],
             "sourceMap": Object {
               "file": "code.tsx",
               "mappings": "OAAE,CAAC,CAAH,CAAG,CAAFA",
@@ -46671,165 +46767,7 @@ export var storyboard = (
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene/app-entity:aaa/848": Object {
-    "attributeMetadatada": Object {},
-    "componentInstance": false,
-    "computedStyle": Object {},
-    "conditionValue": "not-a-conditional",
-    "element": Object {
-      "type": "RIGHT",
-      "value": Object {
-        "comments": Object {
-          "leadingComments": Array [],
-          "trailingComments": Array [],
-        },
-        "definedElsewhere": Array [
-          "a",
-        ],
-        "elementsWithin": Object {},
-        "javascript": "a(5);",
-        "originalJavascript": "a(5)",
-        "sourceMap": Object {
-          "file": "code.tsx",
-          "mappings": "OAAE,CAAC,CAAH,CAAG,CAAFA",
-          "names": Array [
-            "a",
-          ],
-          "sources": Array [
-            "code.tsx",
-          ],
-          "sourcesContent": Array [
-            "import * as React from 'react'
-import Utopia, {
-  Scene,
-  Storyboard,
-  registerModule,
-} from 'utopia-api'
-
-function a(n) {
-  if (n <= 0) {
-    return 0
-  } else {
-    return b(n - 1)
-  }
-}
-
-export var App = (props) => {
-  return (
-    <div
-      data-uid={'aaa'}
-      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
-      
-    >{b(5)} - {a(5)}</div>
-  )
-}
-
-function b(n) {
-  if (n <= 0) {
-    return 0
-  } else {
-    return a(n - 1)
-  }
-}
-
-export var storyboard = (
-  <Storyboard data-uid={'utopia-storyboard-uid'} >
-    <Scene
-      data-uid={'scene'}
-      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
-    >
-      <App data-uid='app-entity' />
-    </Scene>
-  </Storyboard>
-)",
-          ],
-          "version": 3,
-        },
-        "transpiledJavascript": "return a(5);",
-        "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
-        "uid": "",
-      },
-    },
-    "elementPath": Object {
-      "parts": Array [
-        Array [
-          "utopia-storyboard-uid",
-          "scene",
-          "app-entity",
-        ],
-        Array [
-          "aaa",
-          "848",
-        ],
-      ],
-      "type": "elementpath",
-    },
-    "globalFrame": null,
-    "importInfo": null,
-    "isEmotionOrStyledComponent": false,
-    "label": null,
-    "localFrame": null,
-    "nonRoundedGlobalFrame": null,
-    "specialSizeMeasurements": Object {
-      "alignItems": null,
-      "borderRadius": null,
-      "clientHeight": 0,
-      "clientWidth": 0,
-      "closestOffsetParentPath": Object {
-        "parts": Array [],
-        "type": "elementpath",
-      },
-      "computedHugProperty": Object {
-        "height": null,
-        "width": null,
-      },
-      "coordinateSystemBounds": null,
-      "display": "initial",
-      "flexDirection": null,
-      "float": "none",
-      "fontSize": null,
-      "fontStyle": null,
-      "fontWeight": null,
-      "gap": null,
-      "globalContentBoxForChildren": null,
-      "globalFrameWithTextContent": null,
-      "hasPositionOffset": false,
-      "hasTransform": false,
-      "htmlElementName": "div",
-      "immediateParentBounds": Object {
-        "height": 0,
-        "width": 0,
-        "x": 0,
-        "y": 0,
-      },
-      "immediateParentProvidesLayout": true,
-      "justifyContent": null,
-      "layoutSystemForChildren": null,
-      "margin": Object {},
-      "naturalHeight": null,
-      "naturalWidth": null,
-      "offset": Object {
-        "x": 0,
-        "y": 0,
-      },
-      "padding": Object {},
-      "parentFlexDirection": null,
-      "parentFlexGap": 0,
-      "parentHugsOnMainAxis": false,
-      "parentJustifyContent": null,
-      "parentLayoutSystem": "flow",
-      "parentPadding": Object {},
-      "parentTextDirection": "ltr",
-      "position": "static",
-      "providesBoundsForAbsoluteChildren": false,
-      "renderedChildrenCount": 0,
-      "textBounds": null,
-      "textDecorationLine": null,
-      "usesParentBounds": false,
-    },
-    "textContent": null,
-  },
-  "utopia-storyboard-uid/scene/app-entity:aaa/ada": Object {
+  "utopia-storyboard-uid/scene/app-entity:aaa/773": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -46847,6 +46785,7 @@ export var storyboard = (
         "elementsWithin": Object {},
         "javascript": "b(5);",
         "originalJavascript": "b(5)",
+        "params": Array [],
         "sourceMap": Object {
           "file": "code.tsx",
           "mappings": "OAAE,CAAC,CAAH,CAAG,CAAFA",
@@ -46917,7 +46856,166 @@ export var storyboard = (
         ],
         Array [
           "aaa",
-          "ada",
+          "773",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": null,
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "nonRoundedGlobalFrame": null,
+    "specialSizeMeasurements": Object {
+      "alignItems": null,
+      "borderRadius": null,
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
+      "coordinateSystemBounds": null,
+      "display": "initial",
+      "flexDirection": null,
+      "float": "none",
+      "fontSize": null,
+      "fontStyle": null,
+      "fontWeight": null,
+      "gap": null,
+      "globalContentBoxForChildren": null,
+      "globalFrameWithTextContent": null,
+      "hasPositionOffset": false,
+      "hasTransform": false,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "justifyContent": null,
+      "layoutSystemForChildren": null,
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentFlexGap": 0,
+      "parentHugsOnMainAxis": false,
+      "parentJustifyContent": null,
+      "parentLayoutSystem": "flow",
+      "parentPadding": Object {},
+      "parentTextDirection": "ltr",
+      "position": "static",
+      "providesBoundsForAbsoluteChildren": false,
+      "renderedChildrenCount": 0,
+      "textBounds": null,
+      "textDecorationLine": null,
+      "usesParentBounds": false,
+    },
+    "textContent": null,
+  },
+  "utopia-storyboard-uid/scene/app-entity:aaa/f4f": Object {
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "conditionValue": "not-a-conditional",
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
+        "definedElsewhere": Array [
+          "a",
+        ],
+        "elementsWithin": Object {},
+        "javascript": "a(5);",
+        "originalJavascript": "a(5)",
+        "params": Array [],
+        "sourceMap": Object {
+          "file": "code.tsx",
+          "mappings": "OAAE,CAAC,CAAH,CAAG,CAAFA",
+          "names": Array [
+            "a",
+          ],
+          "sources": Array [
+            "code.tsx",
+          ],
+          "sourcesContent": Array [
+            "import * as React from 'react'
+import Utopia, {
+  Scene,
+  Storyboard,
+  registerModule,
+} from 'utopia-api'
+
+function a(n) {
+  if (n <= 0) {
+    return 0
+  } else {
+    return b(n - 1)
+  }
+}
+
+export var App = (props) => {
+  return (
+    <div
+      data-uid={'aaa'}
+      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+      
+    >{b(5)} - {a(5)}</div>
+  )
+}
+
+function b(n) {
+  if (n <= 0) {
+    return 0
+  } else {
+    return a(n - 1)
+  }
+}
+
+export var storyboard = (
+  <Storyboard data-uid={'utopia-storyboard-uid'} >
+    <Scene
+      data-uid={'scene'}
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    >
+      <App data-uid='app-entity' />
+    </Scene>
+  </Storyboard>
+)",
+          ],
+          "version": 3,
+        },
+        "transpiledJavascript": "return a(5);",
+        "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
+        "uid": "",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene",
+          "app-entity",
+        ],
+        Array [
+          "aaa",
+          "f4f",
         ],
       ],
       "type": "elementpath",
@@ -48105,6 +48203,7 @@ Object {
                     "elementsWithin": Object {},
                     "javascript": "props.style",
                     "originalJavascript": "props.style",
+                    "params": Array [],
                     "sourceMap": Object {
                       "file": "code.tsx",
                       "mappings": "OAMmBA,KAAMC,MAAND",
@@ -50446,7 +50545,7 @@ exports[`UiJsxCanvas render supports passing down the scope to children of compo
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59 utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59/bbb utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59/bbb/ccc utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59/bbb/ccc/b6e\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/29d utopia-storyboard-uid/scene-aaa/app-entity:aaa/29d/bbb utopia-storyboard-uid/scene-aaa/app-entity:aaa/29d/bbb/ccc utopia-storyboard-uid/scene-aaa/app-entity:aaa/29d/bbb/ccc/563\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -50479,33 +50578,33 @@ exports[`UiJsxCanvas render supports passing down the scope to children of compo
       >
         <div
           data-uid=\\"bbb~~~1\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59/bbb~~~1\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/29d/bbb~~~1\\"
         >
           <div
             data-uid=\\"ccc\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59/bbb~~~1/ccc\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/29d/bbb~~~1/ccc\\"
           >
             1
           </div>
         </div>
         <div
           data-uid=\\"bbb~~~2\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59/bbb~~~2\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/29d/bbb~~~2\\"
         >
           <div
             data-uid=\\"ccc\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59/bbb~~~2/ccc\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/29d/bbb~~~2/ccc\\"
           >
             2
           </div>
         </div>
         <div
           data-uid=\\"bbb~~~3\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59/bbb~~~3\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/29d/bbb~~~3\\"
         >
           <div
             data-uid=\\"ccc\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59/bbb~~~3/ccc\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/29d/bbb~~~3/ccc\\"
           >
             3
           </div>
@@ -50887,6 +50986,7 @@ Object {
                         "elementsWithin": Object {},
                         "javascript": "n;",
                         "originalJavascript": "n",
+                        "params": Array [],
                         "sourceMap": Object {
                           "file": "code.tsx",
                           "mappings": "OAAA,CAACA",
@@ -51004,7 +51104,7 @@ Object {
            })",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,UAAC,CAAD,EAAK;AACP;AAAA;AAAA;AAAA;AADb,CAAE,CAAD",
+              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAc,CAAD,IAAK;AACP;AAAA;AAAA;AAAA;AADb,CAAE,CAAD",
               "names": Array [],
               "sources": Array [
                 "code.tsx",
@@ -51042,7 +51142,7 @@ Object {
               ],
               "version": 3,
             },
-            "transpiledJavascript": "return [1, 2, 3].map(function (n) {
+            "transpiledJavascript": "return [1, 2, 3].map(n => {
   return utopiaCanvasJSXLookup(\\"bbb\\", {
     n: n,
     callerThis: this
@@ -51167,7 +51267,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/29d": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -51199,6 +51299,7 @@ Object {
                     "elementsWithin": Object {},
                     "javascript": "n;",
                     "originalJavascript": "n",
+                    "params": Array [],
                     "sourceMap": Object {
                       "file": "code.tsx",
                       "mappings": "OAAA,CAACA",
@@ -51316,7 +51417,7 @@ Object {
            })",
         "sourceMap": Object {
           "file": "code.tsx",
-          "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,UAAC,CAAD,EAAK;AACP;AAAA;AAAA;AAAA;AADb,CAAE,CAAD",
+          "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAc,CAAD,IAAK;AACP;AAAA;AAAA;AAAA;AADb,CAAE,CAAD",
           "names": Array [],
           "sources": Array [
             "code.tsx",
@@ -51354,7 +51455,7 @@ Object {
           ],
           "version": 3,
         },
-        "transpiledJavascript": "return [1, 2, 3].map(function (n) {
+        "transpiledJavascript": "return [1, 2, 3].map(n => {
   return utopiaCanvasJSXLookup(\\"bbb\\", {
     n: n,
     callerThis: this
@@ -51376,7 +51477,7 @@ Object {
         ],
         Array [
           "aaa",
-          "d59",
+          "29d",
         ],
       ],
       "type": "elementpath",
@@ -51446,7 +51547,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/29d/bbb~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -51468,6 +51569,7 @@ Object {
                 "elementsWithin": Object {},
                 "javascript": "n;",
                 "originalJavascript": "n",
+                "params": Array [],
                 "sourceMap": Object {
                   "file": "code.tsx",
                   "mappings": "OAAA,CAACA",
@@ -51582,7 +51684,7 @@ Object {
         ],
         Array [
           "aaa",
-          "d59",
+          "29d",
           "bbb~~~1",
         ],
       ],
@@ -51657,7 +51759,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59/bbb~~~1/ccc": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/29d/bbb~~~1/ccc": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -51677,6 +51779,7 @@ Object {
             "elementsWithin": Object {},
             "javascript": "n;",
             "originalJavascript": "n",
+            "params": Array [],
             "sourceMap": Object {
               "file": "code.tsx",
               "mappings": "OAAA,CAACA",
@@ -51762,7 +51865,7 @@ Object {
         ],
         Array [
           "aaa",
-          "d59",
+          "29d",
           "bbb~~~1",
           "ccc",
         ],
@@ -51838,7 +51941,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59/bbb~~~1/ccc/b6e": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/29d/bbb~~~1/ccc/563": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -51856,6 +51959,7 @@ Object {
         "elementsWithin": Object {},
         "javascript": "n;",
         "originalJavascript": "n",
+        "params": Array [],
         "sourceMap": Object {
           "file": "code.tsx",
           "mappings": "OAAA,CAACA",
@@ -51912,10 +52016,10 @@ Object {
         ],
         Array [
           "aaa",
-          "d59",
+          "29d",
           "bbb~~~1",
           "ccc",
-          "b6e",
+          "563",
         ],
       ],
       "type": "elementpath",
@@ -51985,7 +52089,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/29d/bbb~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -52007,6 +52111,7 @@ Object {
                 "elementsWithin": Object {},
                 "javascript": "n;",
                 "originalJavascript": "n",
+                "params": Array [],
                 "sourceMap": Object {
                   "file": "code.tsx",
                   "mappings": "OAAA,CAACA",
@@ -52121,7 +52226,7 @@ Object {
         ],
         Array [
           "aaa",
-          "d59",
+          "29d",
           "bbb~~~2",
         ],
       ],
@@ -52196,7 +52301,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59/bbb~~~2/ccc": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/29d/bbb~~~2/ccc": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -52216,6 +52321,7 @@ Object {
             "elementsWithin": Object {},
             "javascript": "n;",
             "originalJavascript": "n",
+            "params": Array [],
             "sourceMap": Object {
               "file": "code.tsx",
               "mappings": "OAAA,CAACA",
@@ -52301,7 +52407,7 @@ Object {
         ],
         Array [
           "aaa",
-          "d59",
+          "29d",
           "bbb~~~2",
           "ccc",
         ],
@@ -52377,7 +52483,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59/bbb~~~2/ccc/b6e": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/29d/bbb~~~2/ccc/563": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -52395,6 +52501,7 @@ Object {
         "elementsWithin": Object {},
         "javascript": "n;",
         "originalJavascript": "n",
+        "params": Array [],
         "sourceMap": Object {
           "file": "code.tsx",
           "mappings": "OAAA,CAACA",
@@ -52451,10 +52558,10 @@ Object {
         ],
         Array [
           "aaa",
-          "d59",
+          "29d",
           "bbb~~~2",
           "ccc",
-          "b6e",
+          "563",
         ],
       ],
       "type": "elementpath",
@@ -52524,7 +52631,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/29d/bbb~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -52546,6 +52653,7 @@ Object {
                 "elementsWithin": Object {},
                 "javascript": "n;",
                 "originalJavascript": "n",
+                "params": Array [],
                 "sourceMap": Object {
                   "file": "code.tsx",
                   "mappings": "OAAA,CAACA",
@@ -52660,7 +52768,7 @@ Object {
         ],
         Array [
           "aaa",
-          "d59",
+          "29d",
           "bbb~~~3",
         ],
       ],
@@ -52735,7 +52843,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59/bbb~~~3/ccc": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/29d/bbb~~~3/ccc": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -52755,6 +52863,7 @@ Object {
             "elementsWithin": Object {},
             "javascript": "n;",
             "originalJavascript": "n",
+            "params": Array [],
             "sourceMap": Object {
               "file": "code.tsx",
               "mappings": "OAAA,CAACA",
@@ -52840,7 +52949,7 @@ Object {
         ],
         Array [
           "aaa",
-          "d59",
+          "29d",
           "bbb~~~3",
           "ccc",
         ],
@@ -52916,7 +53025,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59/bbb~~~3/ccc/b6e": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/29d/bbb~~~3/ccc/563": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -52934,6 +53043,7 @@ Object {
         "elementsWithin": Object {},
         "javascript": "n;",
         "originalJavascript": "n",
+        "params": Array [],
         "sourceMap": Object {
           "file": "code.tsx",
           "mappings": "OAAA,CAACA",
@@ -52990,10 +53100,10 @@ Object {
         ],
         Array [
           "aaa",
-          "d59",
+          "29d",
           "bbb~~~3",
           "ccc",
-          "b6e",
+          "563",
         ],
       ],
       "type": "elementpath",

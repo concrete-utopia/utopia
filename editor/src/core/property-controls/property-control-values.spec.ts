@@ -116,6 +116,7 @@ describe('ExpressionInputControlDescription', () => {
 
   const validValue = 'Cake'
   const wrappedValidValue = jsExpressionOtherJavaScript(
+    [],
     validValue,
     validValue,
     ``,

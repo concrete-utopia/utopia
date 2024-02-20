@@ -6,6 +6,7 @@ import {
   isSVGElement,
   isJSXElement,
   propertiesExposedByParam,
+  propertiesExposedByParams,
 } from '../../../core/shared/element-template'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import type {
@@ -180,6 +181,9 @@ export function createComponentRendererComponent(params: {
     }
 
     if (utopiaJsxComponent.arbitraryJSBlock != null) {
+      const propertiesFromParams = propertiesExposedByParams(
+        utopiaJsxComponent.arbitraryJSBlock.params,
+      )
       const lookupRenderer = createLookupRender(
         rootElementPath,
         scope,
@@ -201,7 +205,7 @@ export function createComponentRendererComponent(params: {
         rerenderUtopiaContext.editedText,
         null,
         {},
-        [],
+        propertiesFromParams,
       )
 
       scope[JSX_CANVAS_LOOKUP_FUNCTION_NAME] = utopiaCanvasJSXLookup(

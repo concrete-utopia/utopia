@@ -69,6 +69,7 @@ const mainComponentForTests = utopiaJSXComponent(
       layout: jsxAttributeNestedObjectSimple(
         jsxAttributesFromMap({
           left: jsExpressionOtherJavaScript(
+            [],
             `props.style.left`,
             `props.style.left`,
             `return props.style.left`,
@@ -78,6 +79,7 @@ const mainComponentForTests = utopiaJSXComponent(
             emptyComments,
           ),
           top: jsExpressionOtherJavaScript(
+            [],
             `props.style.top`,
             `props.style.top`,
             `return props.style.top`,
@@ -87,6 +89,7 @@ const mainComponentForTests = utopiaJSXComponent(
             emptyComments,
           ),
           width: jsExpressionOtherJavaScript(
+            [],
             `props.style.width`,
             `props.style.width`,
             `return props.style.width`,
@@ -96,6 +99,7 @@ const mainComponentForTests = utopiaJSXComponent(
             emptyComments,
           ),
           height: jsExpressionOtherJavaScript(
+            [],
             `props.style.height`,
             `props.style.height`,
             `return props.style.height`,

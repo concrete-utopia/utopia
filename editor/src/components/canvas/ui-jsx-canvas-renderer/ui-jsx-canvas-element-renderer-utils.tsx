@@ -24,6 +24,8 @@ import {
   isJSXFragment,
   isJSExpression,
   isJSXMapExpression,
+  propertiesExposedByParam,
+  propertiesExposedByParams,
 } from '../../../core/shared/element-template'
 import {
   getAccumulatedElementsWithin,
@@ -308,7 +310,9 @@ export function renderCoreElement(
       }
 
       const valuesInScopeFromParameters =
-        element.type === 'JSX_MAP_EXPRESSION' ? element.valuesInScopeFromParameters : []
+        element.type === 'JSX_MAP_EXPRESSION'
+          ? element.valuesInScopeFromParameters
+          : propertiesExposedByParams(element.params)
 
       if (elementIsTextEdited) {
         const runJSExpressionLazy = () => {

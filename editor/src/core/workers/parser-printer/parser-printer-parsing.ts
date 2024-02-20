@@ -45,6 +45,10 @@ import type {
   JSXTextBlock,
   JSXMapExpression,
   JSExpressionMapOrOtherJavascript,
+  BoundParam,
+  DestructuredArrayPart,
+  DestructuredParamPart,
+  Param,
 } from '../../shared/element-template'
 import {
   arbitraryJSBlock,
@@ -84,6 +88,13 @@ import {
   isJSXElementLike,
   isJSXAttributeValue,
   jsxMapExpression,
+  destructuredArray,
+  destructuredObject,
+  destructuredParamPart,
+  functionParam,
+  isRegularParam,
+  omittedParam,
+  regularParam,
 } from '../../shared/element-template'
 import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
 import type {
@@ -117,6 +128,210 @@ import type { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 import { emptySet } from '../../../core/shared/set-utils'
 import { getAllUniqueUidsFromAttributes } from '../../../core/model/get-unique-ids'
 import type { SteganographyMode } from './parser-printer'
+
+export function parseParams(
+  params: TS.NodeArray<TS.ParameterDeclaration>,
+  file: TS.SourceFile,
+  sourceText: string,
+  filename: string,
+  imports: Imports,
+  topLevelNames: Array<string>,
+  existingHighlightBounds: Readonly<HighlightBoundsForUids>,
+  existingUIDs: Set<string>,
+  applySteganography: SteganographyMode,
+): Either<string, WithParserMetadata<Array<Param>>> {
+  let parsedParams: Array<Param> = []
+  let highlightBounds: HighlightBoundsForUids = { ...existingHighlightBounds }
+  let propsUsed: Array<string> = []
+  for (const param of params) {
+    const parseResult = parseParam(
+      param,
+      file,
+      sourceText,
+      filename,
+      imports,
+      topLevelNames,
+      highlightBounds,
+      existingUIDs,
+      applySteganography,
+    )
+    if (isRight(parseResult)) {
+      const parsedParam = parseResult.value
+      highlightBounds = {
+        ...highlightBounds,
+        ...parsedParam.highlightBounds,
+      }
+      propsUsed = [...propsUsed, ...parsedParam.propsUsed]
+      parsedParams.push(parsedParam.value)
+    } else {
+      return parseResult
+    }
+  }
+  return right(withParserMetadata(parsedParams, highlightBounds, propsUsed, []))
+}
+
+export function parseParam(
+  param: TS.ParameterDeclaration | TS.BindingElement,
+  file: TS.SourceFile,
+  sourceText: string,
+  filename: string,
+  imports: Imports,
+  topLevelNames: Array<string>,
+  existingHighlightBounds: Readonly<HighlightBoundsForUids>,
+  existingUIDs: Set<string>,
+  applySteganography: SteganographyMode,
+): Either<string, WithParserMetadata<Param>> {
+  const dotDotDotToken = param.dotDotDotToken != null
+  const parsedExpression: Either<
+    string,
+    WithParserMetadata<JSExpressionMapOrOtherJavascript | undefined>
+  > = param.initializer == null
+    ? right(withParserMetadata(undefined, existingHighlightBounds, [], []))
+    : parseAttributeOtherJavaScript(
+        file,
+        sourceText,
+        filename,
+        imports,
+        topLevelNames,
+        null,
+        param.initializer,
+        existingHighlightBounds,
+        existingUIDs,
+        applySteganography,
+      )
+  return flatMapEither((paramExpression) => {
+    const parsedBindingName = parseBindingName(
+      param.name,
+      paramExpression,
+      file,
+      sourceText,
+      filename,
+      imports,
+      topLevelNames,
+      existingHighlightBounds,
+      existingUIDs,
+      applySteganography,
+    )
+    return mapEither(
+      (bindingName) =>
+        withParserMetadata(
+          functionParam(dotDotDotToken, bindingName.value),
+          bindingName.highlightBounds,
+          bindingName.propsUsed,
+          [],
+        ),
+      parsedBindingName,
+    )
+  }, parsedExpression)
+}
+
+function parseBindingName(
+  elem: TS.BindingName,
+  expression: WithParserMetadata<JSExpressionMapOrOtherJavascript | undefined>,
+  file: TS.SourceFile,
+  sourceText: string,
+  filename: string,
+  imports: Imports,
+  topLevelNames: Array<string>,
+  existingHighlightBounds: Readonly<HighlightBoundsForUids>,
+  existingUIDs: Set<string>,
+  applySteganography: SteganographyMode,
+): Either<string, WithParserMetadata<BoundParam>> {
+  let highlightBounds: HighlightBoundsForUids = {
+    ...existingHighlightBounds,
+    ...expression.highlightBounds,
+  }
+  let propsUsed: Array<string> = [...expression.propsUsed]
+
+  if (TS.isIdentifier(elem)) {
+    const parsedParamName = getPropertyNameText(elem, file)
+    return mapEither(
+      (paramName) =>
+        withParserMetadata(
+          regularParam(paramName, expression.value ?? null),
+          highlightBounds,
+          propsUsed,
+          [],
+        ),
+      parsedParamName,
+    )
+  } else if (TS.isObjectBindingPattern(elem)) {
+    let parts: Array<DestructuredParamPart> = []
+    for (const element of elem.elements) {
+      const parsedPropertyName: Either<string, string | null> =
+        element.propertyName == null ? right(null) : getPropertyNameText(element.propertyName, file)
+      if (isRight(parsedPropertyName)) {
+        const propertyName = parsedPropertyName.value
+        const parsedParam = parseParam(
+          element,
+          file,
+          sourceText,
+          filename,
+          imports,
+          topLevelNames,
+          highlightBounds,
+          existingUIDs,
+          applySteganography,
+        )
+        if (isRight(parsedParam)) {
+          const bound = parsedParam.value.value
+          highlightBounds = {
+            ...highlightBounds,
+            ...parsedParam.value.highlightBounds,
+          }
+          propsUsed = [...propsUsed, ...parsedParam.value.propsUsed]
+          if (propertyName == null) {
+            if (isRegularParam(bound.boundParam)) {
+              parts.push(destructuredParamPart(undefined, bound, null))
+            } else {
+              return left('Unable to parse bound object parameter with no parameter propertyName')
+            }
+          } else {
+            parts.push(destructuredParamPart(propertyName, bound, null))
+          }
+        } else {
+          return parsedParam
+        }
+      } else {
+        return parsedPropertyName
+      }
+    }
+    return right(withParserMetadata(destructuredObject(parts), highlightBounds, propsUsed, []))
+  } else if (TS.isArrayBindingPattern(elem)) {
+    let parts: Array<DestructuredArrayPart> = []
+    for (const element of elem.elements) {
+      if (TS.isOmittedExpression(element)) {
+        parts.push(omittedParam())
+      } else {
+        const parsedParam = parseParam(
+          element,
+          file,
+          sourceText,
+          filename,
+          imports,
+          topLevelNames,
+          highlightBounds,
+          existingUIDs,
+          applySteganography,
+        )
+        if (isRight(parsedParam)) {
+          const bound = parsedParam.value.value
+          highlightBounds = {
+            ...highlightBounds,
+            ...parsedParam.value.highlightBounds,
+          }
+          propsUsed = [...propsUsed, ...parsedParam.value.propsUsed]
+          parts.push(bound)
+        } else {
+          return parsedParam
+        }
+      }
+    }
+    return right(withParserMetadata(destructuredArray(parts), highlightBounds, propsUsed, []))
+  } else {
+    return left('Unable to parse binding element')
+  }
+}
 
 function inPositionToElementsWithin(elements: ElementsWithinInPosition): ElementsWithin {
   let result: ElementsWithin = {}
@@ -627,6 +842,7 @@ function parseOtherJavaScript<E extends TS.Node, T extends { uid: string }>(
     fileNode: typeof SourceNode,
     parsedElementsWithin: ElementsWithinInPosition,
     otherJavaScriptType: OtherJavaScriptType,
+    params: Array<Param>,
   ) => Either<string, T>,
 ): Either<string, WithParserMetadata<T>> {
   if (expressionsAndTexts.length === 0) {
@@ -1000,6 +1216,7 @@ function parseOtherJavaScript<E extends TS.Node, T extends { uid: string }>(
 
     let expressionsText: Array<string> = []
     let expressionsNodes: Array<typeof SourceNode> = []
+    let params: Either<string, WithParserMetadata<Array<Param>> | null> = right(null)
     for (const expressionAndText of expressionsAndTexts) {
       // Update the code offsets used when locating elements within
       const startPosition = TS.getLineAndCharacterOfPosition(sourceFile, expressionAndText.startPos)
@@ -1014,6 +1231,22 @@ function parseOtherJavaScript<E extends TS.Node, T extends { uid: string }>(
 
       const expression = expressionAndText.expression
       if (expression != null) {
+        // Handle the parameters, as this is a single expression and if it's a function.
+        if (expressionsAndTexts.length === 1) {
+          if (TS.isArrowFunction(expression) || TS.isFunctionExpression(expression)) {
+            params = parseParams(
+              expression.parameters,
+              sourceFile,
+              sourceText,
+              filename,
+              imports,
+              topLevelNames,
+              existingHighlightBounds,
+              alreadyExistingUIDs,
+              applySteganography,
+            )
+          }
+        }
         addIfDefinedElsewhere([], expression, false)
         const expressionText = expressionAndText.text
         if (expressionText.length > 0) {
@@ -1071,6 +1304,20 @@ function parseOtherJavaScript<E extends TS.Node, T extends { uid: string }>(
       return !definedWithin.includes(e)
     })
 
+    const paramsToUse = foldEither(
+      () => {
+        return []
+      },
+      (paramsSuccess) => {
+        if (paramsSuccess == null) {
+          return []
+        } else {
+          return paramsSuccess.value
+        }
+      },
+      params,
+    )
+
     return mapEither((created) => {
       // Add in the bounds for the entire value.
       highlightBounds = addToHighlightBounds(
@@ -1078,7 +1325,7 @@ function parseOtherJavaScript<E extends TS.Node, T extends { uid: string }>(
         buildHighlightBoundsForExpressionsAndText(sourceFile, expressionsAndTexts, created.uid),
       )
       return withParserMetadata(created, highlightBounds, propsUsed, definedElsewhere)
-    }, create(code, definedWithin, definedElsewhere, fileNode, parsedElementsWithin, otherJavaScriptType))
+    }, create(code, definedWithin, definedElsewhere, fileNode, parsedElementsWithin, otherJavaScriptType, paramsToUse))
   }
 }
 
@@ -1113,7 +1360,15 @@ export function parseAttributeOtherJavaScript(
     alreadyExistingUIDs,
     '',
     applySteganography,
-    (code, _, definedElsewhere, fileSourceNode, parsedElementsWithin, otherJavaScriptType) => {
+    (
+      code,
+      _,
+      definedElsewhere,
+      fileSourceNode,
+      parsedElementsWithin,
+      otherJavaScriptType,
+      params,
+    ) => {
       const { code: codeFromFile, map } = fileSourceNode.toStringWithSourceMap({ file: filename })
       const rawMap = JSON.parse(map.toString())
 
@@ -1147,6 +1402,7 @@ export function parseAttributeOtherJavaScript(
         return createExpressionOtherJavaScript(
           sourceFile,
           expression,
+          params,
           expressionAndText.text,
           code,
           prependedWithReturn.code,
@@ -1219,12 +1475,21 @@ function parseJSExpression(
     alreadyExistingUIDs,
     '',
     applySteganography,
-    (code, _definedWithin, definedElsewhere, _fileSourceNode, parsedElementsWithin, isList) => {
+    (
+      code,
+      _definedWithin,
+      definedElsewhere,
+      _fileSourceNode,
+      parsedElementsWithin,
+      isList,
+      params,
+    ) => {
       if (code === '') {
         return right(
           createExpressionOtherJavaScript(
             sourceFile,
             jsxExpression,
+            params,
             expressionFullText,
             expressionFullText,
             'return undefined',
@@ -1274,6 +1539,7 @@ function parseJSExpression(
             return createExpressionOtherJavaScript(
               sourceFile,
               jsxExpression,
+              params,
               expressionFullText,
               dataUIDFixResult.code,
               returnPrepended.code,
@@ -1336,6 +1602,7 @@ function createExpressionValue(
 function createExpressionOtherJavaScript(
   sourceFile: TS.SourceFile,
   node: TS.Node,
+  params: Array<Param>,
   originalJavascript: string,
   javascript: string,
   transpiledJavascript: string,
@@ -1363,6 +1630,7 @@ function createExpressionOtherJavaScript(
           '',
         )
       : jsExpressionOtherJavaScript(
+          params,
           originalJavascript,
           javascript,
           transpiledJavascript,
@@ -1396,6 +1664,7 @@ function createExpressionOtherJavaScript(
         uid,
       )
     : jsExpressionOtherJavaScript(
+        params,
         originalJavascript,
         javascript,
         transpiledJavascript,
@@ -1469,6 +1738,7 @@ function createExpressionFunctionCall(
 
 function createArbitraryJSBlock(
   sourceFile: TS.SourceFile,
+  params: Array<Param>,
   javascript: string,
   transpiledJavascript: string,
   definedWithin: Array<string>,
@@ -1478,6 +1748,7 @@ function createArbitraryJSBlock(
   alreadyExistingUIDs: Set<string>,
 ): ArbitraryJSBlock {
   const value = arbitraryJSBlock(
+    params,
     javascript,
     transpiledJavascript,
     definedWithin,
@@ -1488,6 +1759,7 @@ function createArbitraryJSBlock(
   )
   const uid = generateUIDAndAddToExistingUIDs(sourceFile, value, alreadyExistingUIDs)
   return arbitraryJSBlock(
+    params,
     javascript,
     transpiledJavascript,
     definedWithin,
@@ -1759,6 +2031,7 @@ function getAttributeExpression(
       const withoutParserMetadata = createExpressionOtherJavaScript(
         sourceFile,
         initializer,
+        [],
         'null',
         'null',
         'null',
@@ -2942,7 +3215,7 @@ export function parseArbitraryNodes(
     alreadyExistingUIDs,
     trailingCode,
     applySteganography,
-    (code, definedWithin, definedElsewhere, fileSourceNode, parsedElementsWithin) => {
+    (code, definedWithin, definedElsewhere, fileSourceNode, parsedElementsWithin, _, params) => {
       const definedWithinFields = definedWithin.map((within) => `${within}: ${within}`).join(', ')
       const definedWithCode = `return { ${definedWithinFields} };`
 
@@ -2969,6 +3242,7 @@ export function parseArbitraryNodes(
           const transpiled = `${transpileResult.code}\n${definedWithCode}`
           return createArbitraryJSBlock(
             sourceFile,
+            params,
             code,
             transpiled,
             definedWithin,
@@ -3028,6 +3302,7 @@ export function parseOutFunctionContents(
   sourceFile: TS.SourceFile,
   sourceText: string,
   filename: string,
+  params: Array<Param>,
   imports: Imports,
   topLevelNames: Array<string>,
   propsObjectName: string | null,
@@ -3081,6 +3356,7 @@ export function parseOutFunctionContents(
       } else {
         jsBlock = createArbitraryJSBlock(
           sourceFile,
+          [],
           returnStatementPrefixCode,
           returnStatementPrefixCode,
           [],

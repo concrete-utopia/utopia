@@ -9,6 +9,7 @@ import {
   jsExpressionValue,
   jsxElement,
   utopiaJSXComponent,
+  isJSExpressionOtherJavaScript,
 } from '../../shared/element-template'
 import type { ProjectContents } from '../../shared/project-file-types'
 import { directory } from '../../shared/project-file-types'
@@ -391,6 +392,7 @@ export var app = (props) => {
                   ),
                 }
                 const updatedFirstChild = jsExpressionOtherJavaScript(
+                  isJSExpressionOtherJavaScript(firstChild) ? firstChild.params : [],
                   firstChild.originalJavascript,
                   firstChild.javascript,
                   firstChild.transpiledJavascript,
