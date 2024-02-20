@@ -46,9 +46,15 @@ describe('handleDestroyAllProjects', () => {
     }
 
     await fn()
-    const bobProjects = await prisma.project.findMany({ where: { owner_id: 'bob' } })
+    const bobProjects = await prisma.project.findMany({
+      where: { owner_id: 'bob' },
+      orderBy: { id: 'asc' },
+    })
     expect(bobProjects.map((p) => p.proj_id)).toEqual(['one', 'four', 'five'])
-    const aliceProjects = await prisma.project.findMany({ where: { owner_id: 'alice' } })
+    const aliceProjects = await prisma.project.findMany({
+      where: { owner_id: 'alice' },
+      orderBy: { id: 'asc' },
+    })
     expect(aliceProjects.map((p) => p.proj_id)).toEqual(['three', 'seven', 'eight'])
   })
 })

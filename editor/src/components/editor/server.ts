@@ -1,4 +1,4 @@
-import { UTOPIA_BACKEND } from '../../common/env-vars'
+import { isBackendBFF, UTOPIA_BACKEND, UTOPIA_BACKEND_BASE_URL } from '../../common/env-vars'
 import {
   assetURL,
   getLoginState,
@@ -489,5 +489,15 @@ export async function downloadAssetsFromProject(
   } else {
     const allPromises = allProjectAssets.map((asset) => downloadAssetFromProject(projectId, asset))
     return Promise.all(allPromises)
+  }
+}
+
+export async function updateCollaborators(projectId: string) {
+  if (isBackendBFF()) {
+    await fetch(UTOPIA_BACKEND_BASE_URL + `internal/projects/${projectId}/collaborators`, {
+      method: 'POST',
+      credentials: 'include',
+      mode: MODE,
+    })
   }
 }

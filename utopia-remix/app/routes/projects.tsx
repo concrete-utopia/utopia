@@ -11,12 +11,14 @@ import { useProjectsStore } from '../store'
 import { button } from '../styles/button.css'
 import { newProjectButton } from '../styles/newProjectButton.css'
 import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
-import { sprinkles } from '../styles/sprinkles.css'
-import { ProjectWithoutContent } from '../types'
+import { colors, sprinkles } from '../styles/sprinkles.css'
+import { Collaborator, CollaboratorsByProject, ProjectWithoutContent } from '../types'
 import { requireUser } from '../util/api.server'
 import { assertNever } from '../util/assertNever'
 import { projectEditorLink } from '../util/links'
 import { when } from '../util/react-conditionals'
+import { multiplayerInitialsFromName } from '../util/strings'
+import { getCollaborators } from '../models/projectCollaborators.server'
 
 const Categories = ['allProjects', 'trash'] as const
 
@@ -40,12 +42,15 @@ export async function loader(args: LoaderFunctionArgs) {
   const projects = await listProjects({
     ownerId: user.user_id,
   })
-
   const deletedProjects = await listDeletedProjects({
     ownerId: user.user_id,
   })
+  const collaborators = await getCollaborators({
+    ids: [...projects, ...deletedProjects].map((p) => p.proj_id),
+    userId: user.user_id,
+  })
 
-  return json({ projects, deletedProjects, user })
+  return json({ projects, deletedProjects, user, collaborators })
 }
 
 const ProjectsPage = React.memo(() => {
@@ -53,6 +58,7 @@ const ProjectsPage = React.memo(() => {
     projects: ProjectWithoutContent[]
     user: UserDetails
     deletedProjects: ProjectWithoutContent[]
+    collaborators: CollaboratorsByProject
   }
 
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
@@ -93,7 +99,7 @@ const ProjectsPage = React.memo(() => {
       >
         <TopActionBar />
         <CategoryHeader projects={activeProjects} />
-        <ProjectCards projects={activeProjects} />)
+        <ProjectCards projects={activeProjects} collaborators={data.collaborators} />)
       </div>
     </div>
   )
@@ -355,58 +361,69 @@ const CategoryTrashActions = React.memo(({ projects }: { projects: ProjectWithou
 })
 CategoryTrashActions.displayName = 'CategoryTrashActions'
 
-const ProjectCards = React.memo(({ projects }: { projects: ProjectWithoutContent[] }) => {
-  const searchQuery = useProjectsStore((store) => store.searchQuery)
-  const selectedProjectId = useProjectsStore((store) => store.selectedProjectId)
-  const setSelectedProjectId = useProjectsStore((store) => store.setSelectedProjectId)
+const ProjectCards = React.memo(
+  ({
+    projects,
+    collaborators,
+  }: {
+    projects: ProjectWithoutContent[]
+    collaborators: CollaboratorsByProject
+  }) => {
+    const searchQuery = useProjectsStore((store) => store.searchQuery)
+    const selectedProjectId = useProjectsStore((store) => store.selectedProjectId)
+    const setSelectedProjectId = useProjectsStore((store) => store.setSelectedProjectId)
 
-  const handleProjectSelect = React.useCallback(
-    (project: ProjectWithoutContent) =>
-      setSelectedProjectId(project.proj_id === selectedProjectId ? null : project.proj_id),
-    [setSelectedProjectId, selectedProjectId],
-  )
+    const handleProjectSelect = React.useCallback(
+      (project: ProjectWithoutContent) =>
+        setSelectedProjectId(project.proj_id === selectedProjectId ? null : project.proj_id),
+      [setSelectedProjectId, selectedProjectId],
+    )
 
-  const filteredProjects = React.useMemo(() => {
-    const sanitizedQuery = searchQuery.trim().toLowerCase()
-    if (sanitizedQuery.length === 0) {
-      return projects
-    }
-    return projects.filter((project) => project.title.toLowerCase().includes(sanitizedQuery))
-  }, [projects, searchQuery])
+    const filteredProjects = React.useMemo(() => {
+      const sanitizedQuery = searchQuery.trim().toLowerCase()
+      if (sanitizedQuery.length === 0) {
+        return projects
+      }
+      return projects.filter((project) => project.title.toLowerCase().includes(sanitizedQuery))
+    }, [projects, searchQuery])
 
-  return (
-    <div
-      style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        alignContent: 'flex-start',
-        gap: MarginSize,
-        flexGrow: 1,
-        flexDirection: 'row',
-        overflowY: 'scroll',
-        scrollbarColor: 'lightgrey transparent',
-      }}
-    >
-      {filteredProjects.map((project) => (
-        <ProjectCard
-          key={project.proj_id}
-          project={project}
-          selected={project.proj_id === selectedProjectId}
-          onSelect={() => handleProjectSelect(project)}
-        />
-      ))}
-    </div>
-  )
-})
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignContent: 'flex-start',
+          gap: MarginSize,
+          flexGrow: 1,
+          flexDirection: 'row',
+          overflowY: 'scroll',
+          scrollbarColor: 'lightgrey transparent',
+        }}
+      >
+        {filteredProjects.map((project) => (
+          <ProjectCard
+            key={project.proj_id}
+            project={project}
+            collaborators={collaborators[project.proj_id] ?? []}
+            selected={project.proj_id === selectedProjectId}
+            onSelect={() => handleProjectSelect(project)}
+          />
+        ))}
+      </div>
+    )
+  },
+)
 ProjectCards.displayName = 'CategoryAllProjects'
 
 const ProjectCard = React.memo(
   ({
     project,
+    collaborators,
     selected,
     onSelect,
   }: {
     project: ProjectWithoutContent
+    collaborators: Collaborator[]
     selected: boolean
     onSelect: () => void
   }) => {
@@ -434,10 +451,41 @@ const ProjectCard = React.memo(
             background: 'linear-gradient(rgba(77, 255, 223, 0.4), rgba(255,250,220,.8))',
             backgroundAttachment: 'local',
             backgroundRepeat: 'no-repeat',
+            position: 'relative',
           }}
           onMouseDown={onSelect}
           onDoubleClick={openProject}
-        />
+        >
+          <div style={{ position: 'absolute', right: 2, bottom: 2, display: 'flex', gap: 2 }}>
+            {collaborators.map((collaborator) => {
+              return (
+                <div
+                  key={`collaborator-${project.id}-${collaborator.id}`}
+                  style={{
+                    borderRadius: '100%',
+                    width: 24,
+                    height: 24,
+                    backgroundColor: colors.primary,
+                    backgroundImage: `url("${collaborator.avatar}")`,
+                    backgroundSize: 'cover',
+                    color: colors.white,
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    fontSize: '.9em',
+                    fontWeight: 700,
+                    border: '2px solid white',
+                    filter: project.deleted === true ? 'grayscale(1)' : undefined,
+                  }}
+                  title={collaborator.name}
+                  className={sprinkles({ boxShadow: 'shadow' })}
+                >
+                  {when(collaborator.avatar === '', multiplayerInitialsFromName(collaborator.name))}
+                </div>
+              )
+            })}
+          </div>
+        </div>
         <ProjectCardActions project={project} />
       </div>
     )
