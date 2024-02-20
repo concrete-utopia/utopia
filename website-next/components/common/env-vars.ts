@@ -29,7 +29,9 @@ export const IS_BROWSER_TEST_DEBUG: boolean =
 export const DEVELOPMENT_ENV: boolean =
   !PRODUCTION_OR_STAGING_CONFIG && !IS_TEST_ENVIRONMENT && HOSTNAME === 'localhost'
 
+// The BFF can be forced with USE_BFF in conjunction with the explicit BFF_URL variable
 export const USE_BFF: boolean = process.env.USE_BFF === 'true'
+export const BFF_URL: string | null = process.env.BFF_URL ?? null
 
 type BackendType =
   | 'bff' // proxied calls via the Remix BFF
@@ -46,9 +48,17 @@ export function isBackendBFF(): boolean {
   return BACKEND_TYPE === 'bff'
 }
 
-export const UTOPIA_BACKEND_BASE_URL = isLocalHost
-  ? `${SCHEME}//${HOSTNAME}:${LOCAL_BACKEND_PORTS[BACKEND_TYPE]}/`
-  : BASE_URL
+function getBackendBaseURL(): string | null {
+  if (USE_BFF) {
+    return BFF_URL
+  }
+  if (isLocalHost) {
+    return `${SCHEME}//${HOSTNAME}:${LOCAL_BACKEND_PORTS[BACKEND_TYPE]}/`
+  }
+  return BASE_URL
+}
+
+export const UTOPIA_BACKEND_BASE_URL = getBackendBaseURL()
 
 export const UTOPIA_BACKEND = UTOPIA_BACKEND_BASE_URL + 'v1/'
 
