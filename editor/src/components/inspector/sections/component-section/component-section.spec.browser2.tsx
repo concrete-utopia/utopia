@@ -416,6 +416,109 @@ describe('Set element prop via the data picker', () => {
       'aBoolean',
     ])
   })
+
+  it('array with matching elements has priority', async () => {
+    const editor = await renderTestEditorWithCode(
+      DataPickerProjectShell(`
+      function Title({ text }) {
+        const content = 'Content'
+      
+        return <h2 data-uid='aam'>{text}</h2>
+      }
+      
+      var Playground = ({ style }) => {
+        const titles = {
+          ['also JS']: 2,
+          one: false,
+        }
+      
+        const titleIdeas = ['Chapter One']
+      
+        return (
+          <div style={style} data-uid='root'>
+            <Title
+              text={'a'}
+              data-uid='bd'
+              style={{
+                width: 134,
+                height: 28,
+                position: 'absolute',
+                left: 160,
+                top: 75,
+              }}
+            />
+          </div>
+        )
+      }`),
+      'await-first-dom-report',
+    )
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/bd')])
+
+    const dataPickerOpenerButton = editor.renderedDOM.getByTestId(DataPickerPopupButtonTestId)
+    await mouseClickAtPoint(dataPickerOpenerButton, { x: 2, y: 2 })
+
+    const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
+    expect(dataPickerPopup).not.toBeNull()
+
+    const options = getRenderedOptions(editor)
+
+    expect(options).toEqual([
+      'titleIdeas', // the array is moved up
+      'titleIdeas[0]', // <- the array element
+      'titles', // an object with non-matching props
+      'also JS',
+      'one',
+    ])
+  })
+
+  it('object with matching elements has priority', async () => {
+    const editor = await renderTestEditorWithCode(
+      DataPickerProjectShell(`
+      function Title({ text }) {
+        const content = 'Content'
+      
+        return <h2 data-uid='aam'>{text}</h2>
+      }
+      
+      var Playground = ({ style }) => {
+        const nums = [1, 2, 3, 4, 5]
+        
+        const titles = {
+          ['also JS']: 2,
+          one: "Hi",
+        }
+      
+      
+        return (
+          <div style={style} data-uid='root'>
+            <Title
+              text={'a'}
+              data-uid='bd'
+              style={{
+                width: 134,
+                height: 28,
+                position: 'absolute',
+                left: 160,
+                top: 75,
+              }}
+            />
+          </div>
+        )
+      }`),
+      'await-first-dom-report',
+    )
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/bd')])
+
+    const dataPickerOpenerButton = editor.renderedDOM.getByTestId(DataPickerPopupButtonTestId)
+    await mouseClickAtPoint(dataPickerOpenerButton, { x: 2, y: 2 })
+
+    const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
+    expect(dataPickerPopup).not.toBeNull()
+
+    const options = getRenderedOptions(editor)
+
+    expect(options).toEqual(['titles', 'one', 'also JS', 'nums', 'nums[0]'])
+  })
 })
 
 // comment out tests temporarily because it causes a dom-walker test to fail

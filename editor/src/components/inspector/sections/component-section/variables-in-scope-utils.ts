@@ -181,6 +181,7 @@ function orderVariablesForRelevance(
 ): Array<VariableMeta> {
   let valuesMatchingPropertyDescription: Array<VariableMeta> = []
   let valuesMatchingPropertyShape: Array<VariableMeta> = []
+  let valueElementMatches: Array<VariableMeta> = []
   let restOfValues: Array<VariableMeta> = []
 
   for (let variable of variableNamesInScope) {
@@ -206,8 +207,14 @@ function orderVariablesForRelevance(
       currentPropertyValue.type === 'existing' &&
       variableShapesMatch(currentPropertyValue.value, variable.value)
 
+    const arrayOrObjectChildMatches =
+      (variable.type === 'array' && variable.elements.some((e) => e.matches)) ||
+      (variable.type === 'object' && variable.props.some((e) => e.matches))
+
     if (valueMatchesControlDescription) {
       valuesMatchingPropertyDescription.push({ ...variable, matches: true })
+    } else if (arrayOrObjectChildMatches) {
+      valueElementMatches.push({ ...variable, matches: false })
     } else if (valueMatchesCurrentPropValue) {
       valuesMatchingPropertyShape.push({ ...variable, matches: true })
     } else {
@@ -215,7 +222,12 @@ function orderVariablesForRelevance(
     }
   }
 
-  return [...valuesMatchingPropertyDescription, ...valuesMatchingPropertyShape, ...restOfValues]
+  return [
+    ...valuesMatchingPropertyDescription,
+    ...valuesMatchingPropertyShape,
+    ...valueElementMatches,
+    ...restOfValues,
+  ]
 }
 
 const filterKeyFromObject =
