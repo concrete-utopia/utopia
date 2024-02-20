@@ -10,124 +10,66 @@ import type { VariableOption } from './data-picker-popup'
 import * as EP from '../../../../core/shared/element-path'
 import React from 'react'
 import { useGetPropertyControlsForSelectedComponents } from '../../common/property-controls-hooks'
+import { mapDropNulls } from '../../../../core/shared/array-utils'
+import { assertNever } from '../../../../core/shared/utils'
 
 function valuesFromObject(
-  name: string,
-  objectName: string,
-  value: object | null,
+  variable: ArrayInfo | ObjectInfo,
+  originalObjectName: string,
   depth: number,
-  displayName: string,
-  valueMatchesPropType: boolean,
 ): Array<VariableOption> {
-  if (value == null) {
-    return [
-      {
-        displayName: displayName,
-        variableName: name,
-        definedElsewhere: null,
-        value: `null`,
-        depth: depth,
-        variableType: 'primitive',
-        valueMatchesPropType: valueMatchesPropType,
-      },
-    ]
-  }
-
-  const patchDefinedElsewhereInfo = (variable: VariableOption) => ({
-    variableName: variable.variableName,
-    value: variable.value,
-    definedElsewhere: objectName,
-    displayName: variable.displayName,
-    depth: variable.depth,
-    variableChildren: variable.variableChildren,
-    variableType: variable.variableType,
-    valueMatchesPropType: variable.valueMatchesPropType,
+  const patchDefinedElsewhereInfo = (option: VariableOption): VariableOption => ({
+    ...option,
+    definedElsewhere: originalObjectName,
   })
 
-  if (Array.isArray(value)) {
+  if (variable.type === 'array') {
     return [
-      patchDefinedElsewhereInfo({
-        displayName: displayName,
-        variableName: name,
-        definedElsewhere: objectName,
-        value: `[ ]`,
+      {
+        type: 'array',
+        variableInfo: variable,
         depth: depth,
-        variableType: 'array',
-        valueMatchesPropType: valueMatchesPropType,
-        variableChildren: value.flatMap((v, idx) =>
-          valuesFromVariable(
-            `${name}[${idx}]`,
-            v,
-            depth + 1,
-            `${displayName}[${idx}]`,
-            objectName,
-            valueMatchesPropType,
-          ).map((variable) => patchDefinedElsewhereInfo(variable)),
-        ),
-      }),
+        definedElsewhere: originalObjectName,
+        children: variable.elements
+          .flatMap((e) => valuesFromVariable(e, originalObjectName, depth + 1))
+          .map(patchDefinedElsewhereInfo),
+      },
     ]
+  } else if (variable.type === 'object') {
+    return [
+      {
+        type: 'object',
+        variableInfo: variable,
+        depth: depth,
+        definedElsewhere: originalObjectName,
+        children: variable.props
+          .flatMap((e) => valuesFromVariable(e, originalObjectName, depth + 1))
+          .map(patchDefinedElsewhereInfo),
+      },
+    ]
+  } else {
+    assertNever(variable)
   }
-
-  return [
-    patchDefinedElsewhereInfo({
-      displayName: displayName,
-      variableName: name,
-      definedElsewhere: objectName,
-      value: `{ }`,
-      depth: depth,
-      variableType: 'object',
-      valueMatchesPropType: valueMatchesPropType,
-      variableChildren: Object.entries(value).flatMap(([key, field]) =>
-        valuesFromVariable(
-          `${name}['${key}']`,
-          field,
-          depth + 1,
-          key,
-          objectName,
-          valueMatchesPropType,
-        ).map((variable) => patchDefinedElsewhereInfo(variable)),
-      ),
-    }),
-  ]
 }
 
 function valuesFromVariable(
-  name: string,
-  value: unknown,
-  depth: number,
-  displayName: string,
+  variable: VariableInfo,
   originalObjectName: string,
-  valueMatchesPropType: boolean,
+  depth: number,
 ): Array<VariableOption> {
-  switch (typeof value) {
-    case 'bigint':
-    case 'boolean':
-    case 'number':
-    case 'string':
-    case 'undefined':
+  switch (variable.type) {
+    case 'primitive':
       return [
         {
-          displayName: displayName,
-          variableName: name,
-          definedElsewhere: name,
-          value: `${value}`,
+          type: 'primitive',
+          variableInfo: variable,
+          definedElsewhere: variable.variableName,
           depth: depth,
-          variableType: 'primitive',
-          valueMatchesPropType: valueMatchesPropType,
         },
       ]
+    case 'array':
     case 'object':
-      return valuesFromObject(
-        name,
-        originalObjectName,
-        value,
-        depth,
-        displayName,
-        valueMatchesPropType,
-      )
-    case 'function':
-    case 'symbol':
-      return []
+      return valuesFromObject(variable, originalObjectName, depth)
   }
 }
 
@@ -137,39 +79,155 @@ function usePropertyControlDescriptions(): Array<ControlDescription> {
   )
 }
 
-interface VariablesInScopeByPriority {
-  valuesMatchingPropertyDescription: [string, unknown][]
-  valuesMatchingPropertyShape: [string, unknown][]
-  restOfValues: [string, unknown][]
+export interface PrimitiveInfo {
+  type: 'primitive'
+  variableName: string
+  displayName: string
+  value: unknown
+  matches: boolean
 }
 
-function orderVariablesInScope(
-  variableNamesInScope: VariableData,
+export interface ObjectInfo {
+  type: 'object'
+  variableName: string
+  displayName: string
+  value: unknown
+  props: Array<VariableInfo>
+  matches: boolean
+}
+
+export interface ArrayInfo {
+  type: 'array'
+  variableName: string
+  displayName: string
+  value: unknown
+  elements: Array<VariableInfo>
+  matches: boolean
+}
+
+export type VariableInfo = PrimitiveInfo | ArrayInfo | ObjectInfo
+
+function variableInfoFromValue(
+  variableName: string,
+  displayName: string,
+  value: unknown,
+): VariableInfo | null {
+  switch (typeof value) {
+    case 'function':
+    case 'symbol':
+      return null
+    case 'bigint':
+    case 'boolean':
+    case 'number':
+    case 'string':
+    case 'undefined':
+      return {
+        type: 'primitive',
+        displayName: displayName,
+        variableName: variableName,
+        value: value,
+        matches: false,
+      }
+    case 'object':
+      if (value == null) {
+        return {
+          type: 'primitive',
+          displayName: displayName,
+          variableName: variableName,
+          value: value,
+          matches: false,
+        }
+      }
+      if (Array.isArray(value)) {
+        return {
+          type: 'array',
+          variableName: variableName,
+          displayName: displayName,
+          value: value,
+          matches: false,
+          elements: mapDropNulls(
+            (e, idx) =>
+              variableInfoFromValue(`${variableName}[${idx}]`, `${variableName}[${idx}]`, e),
+            value,
+          ),
+        }
+      }
+      return {
+        type: 'object',
+        variableName: variableName,
+        displayName: displayName,
+        value: value,
+        matches: false,
+        props: mapDropNulls(([key, propValue]) => {
+          return variableInfoFromValue(`${variableName}['${key}']`, key, propValue)
+        }, Object.entries(value)),
+      }
+  }
+}
+
+function variableInfoFromVariableData(variableNamesInScope: VariableData): Array<VariableInfo> {
+  const info = mapDropNulls(
+    ([key, { spiedValue }]) => variableInfoFromValue(key, key, spiedValue),
+    Object.entries(variableNamesInScope),
+  )
+
+  return info
+}
+
+function orderVariablesForRelevance(
+  variableNamesInScope: Array<VariableInfo>,
   controlDescriptions: Array<ControlDescription>,
   currentPropertyValue: PropertyValue,
-): VariablesInScopeByPriority {
-  let valuesMatchingPropertyDescription: [string, unknown][] = []
-  let valuesMatchingPropertyShape: [string, unknown][] = []
-  let restOfValues: [string, unknown][] = []
+): Array<VariableInfo> {
+  let valuesMatchingPropertyDescription: Array<VariableInfo> = []
+  let valuesMatchingPropertyShape: Array<VariableInfo> = []
+  let valueElementMatches: Array<VariableInfo> = []
+  let restOfValues: Array<VariableInfo> = []
 
-  for (const [name, { spiedValue }] of Object.entries(variableNamesInScope)) {
-    const valueMatchesControlDescription = controlDescriptions.some((d) =>
-      variableMatchesControlDescription(spiedValue, d),
+  for (let variable of variableNamesInScope) {
+    if (variable.type === 'array') {
+      variable.elements = orderVariablesForRelevance(
+        variable.elements,
+        controlDescriptions,
+        currentPropertyValue,
+      )
+    } else if (variable.type === 'object') {
+      variable.props = orderVariablesForRelevance(
+        variable.props,
+        controlDescriptions,
+        currentPropertyValue,
+      )
+    }
+
+    const valueMatchesControlDescription = controlDescriptions.some((description) =>
+      variableMatchesControlDescription(variable.value, description),
     )
+
     const valueMatchesCurrentPropValue =
       currentPropertyValue.type === 'existing' &&
-      variableShapesMatch(currentPropertyValue.value, spiedValue)
+      variableShapesMatch(currentPropertyValue.value, variable.value)
+
+    const arrayOrObjectChildMatches =
+      (variable.type === 'array' && variable.elements.some((e) => e.matches)) ||
+      (variable.type === 'object' && variable.props.some((e) => e.matches))
 
     if (valueMatchesControlDescription) {
-      valuesMatchingPropertyDescription.push([name, spiedValue])
+      valuesMatchingPropertyDescription.push({ ...variable, matches: true })
+    } else if (arrayOrObjectChildMatches) {
+      valueElementMatches.push({ ...variable, matches: false })
     } else if (valueMatchesCurrentPropValue) {
-      valuesMatchingPropertyShape.push([name, spiedValue])
+      valuesMatchingPropertyShape.push({ ...variable, matches: true })
     } else {
-      restOfValues.push([name, spiedValue])
+      restOfValues.push(variable)
     }
   }
 
-  return { valuesMatchingPropertyDescription, valuesMatchingPropertyShape, restOfValues }
+  return [
+    ...valuesMatchingPropertyDescription,
+    ...valuesMatchingPropertyShape,
+    ...valueElementMatches,
+    ...restOfValues,
+  ]
 }
 
 const filterKeyFromObject =
@@ -236,22 +294,17 @@ export function useVariablesInScopeForSelectedElement(
       filterObjectPropFromVariablesInScope({ prop: 'props', key: 'css' }),
     ].reduce((vars, fn) => fn(vars), variablesInScopeForSelectedPath)
 
-    const orderedVariablesInScope = orderVariablesInScope(
-      variablesInScopeForSelectedPath,
+    const variableInfo = variableInfoFromVariableData(variablesInScopeForSelectedPath)
+
+    const orderedVariablesInScope = orderVariablesForRelevance(
+      variableInfo,
       controlDescriptions,
       currentPropertyValue,
     )
 
-    const priorityValues = [
-      ...orderedVariablesInScope.valuesMatchingPropertyDescription,
-      ...orderedVariablesInScope.valuesMatchingPropertyShape,
-    ].flatMap(([name, variable]) => valuesFromVariable(name, variable, 0, name, name, true))
-
-    const restOfValues = orderedVariablesInScope.restOfValues.flatMap(([name, variable]) =>
-      valuesFromVariable(name, variable, 0, name, name, false),
+    return orderedVariablesInScope.flatMap((variable) =>
+      valuesFromVariable(variable, variable.variableName, 0),
     )
-
-    return [...priorityValues, ...restOfValues]
   }, [controlDescriptions, currentPropertyValue, selectedViewPath, variablesInScope])
 
   return variableNamesInScope
