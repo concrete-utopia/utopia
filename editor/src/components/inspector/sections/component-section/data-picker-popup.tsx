@@ -9,18 +9,33 @@ import { useRefEditorState } from '../../../editor/store/store-hook'
 import { UIGridRow } from '../../widgets/ui-grid-row'
 import { DataPickerPopupTestId, VariableFromScopeOptionTestId } from './component-section'
 import * as EP from '../../../../core/shared/element-path'
+import type { ArrayMeta, ObjectMeta, PrimitiveMeta } from './variables-in-scope-utils'
 import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
+import { assertNever } from '../../../../core/shared/utils'
 
-export interface VariableOption {
-  variableName: string
-  displayName: string
-  definedElsewhere: string | null
-  value: string
+export interface PrimitiveOption {
+  type: 'primitive'
+  variableMeta: PrimitiveMeta
   depth: number
-  variableChildren?: Array<VariableOption>
-  variableType: 'primitive' | 'array' | 'object'
-  valueMatchesPropType: boolean
 }
+
+export interface ArrayOption {
+  type: 'array'
+  variableMeta: ArrayMeta
+  depth: number
+  definedElsewhere: string
+  children: Array<VariableOption>
+}
+
+export interface ObjectOption {
+  type: 'object'
+  variableMeta: ObjectMeta
+  depth: number
+  definedElsewhere: string
+  children: Array<VariableOption>
+}
+
+export type VariableOption = PrimitiveOption | ArrayOption | ObjectOption
 
 export interface DataPickerPopupProps {
   closePopup: () => void
@@ -99,7 +114,7 @@ export const DataPickerPopup = React.memo(
           {variableNamesInScope.map((variableOption, idx) => {
             return (
               <ValueRow
-                key={variableOption.variableName}
+                key={variableOption.variableMeta.name}
                 variableOption={variableOption}
                 idx={`${idx}`}
                 onTweakProperty={onTweakProperty}
@@ -112,6 +127,19 @@ export const DataPickerPopup = React.memo(
   }),
 )
 
+function variableOptionToString(variable: VariableOption): string {
+  switch (variable.type) {
+    case 'primitive':
+      return `${variable.variableMeta.value}`
+    case 'array':
+      return `[ ]`
+    case 'object':
+      return `{ }`
+    default:
+      assertNever(variable)
+  }
+}
+
 interface ValueRowProps {
   variableOption: VariableOption
   idx: string
@@ -121,37 +149,36 @@ interface ValueRowProps {
 function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
   const colorTheme = useColorTheme()
   const [selectedIndex, setSelectedIndex] = React.useState<number>(0)
-  const childrenLength = variableOption.variableChildren?.length ?? 0
+
+  const childrenLength = variableOption.type === 'array' ? variableOption.children.length : 0
   const [childrenOpen, setChildrenOpen] = React.useState<boolean>(
     variableOption.depth < 2 || childrenLength < 4,
   )
-  const totalChildCount = variableOption.variableChildren?.length ?? 0
+
   const toggleChildrenOpen = useCallback(() => {
     setChildrenOpen(!childrenOpen)
   }, [childrenOpen, setChildrenOpen])
 
-  const {
-    variableName,
-    definedElsewhere,
-    value,
-    displayName,
-    depth = 0,
-    variableChildren,
-    valueMatchesPropType,
-  } = variableOption
+  const isArray = variableOption.variableMeta.type === 'array'
+  const definedElsewhere =
+    variableOption.type === 'primitive' ? null : variableOption.definedElsewhere
 
-  const isArray = variableOption.variableType === 'array'
-  const tweakProperty = onTweakProperty(variableName, definedElsewhere)
+  const tweakProperty = onTweakProperty(variableOption.variableMeta.name, definedElsewhere)
   const stopPropagation = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
   }, [])
-  const hasObjectChildren = variableChildren != null && variableChildren.length > 0 && !isArray
-  const shouldDim = depth > 0 || !valueMatchesPropType
+
+  const variableChildren =
+    variableOption.type === 'array' || variableOption.type === 'object'
+      ? variableOption.children
+      : null
+
+  const hasObjectChildren = variableOption.type === 'object' && variableOption.children.length > 0
   return (
     <>
       <Button
         data-testid={VariableFromScopeOptionTestId(idx)}
-        key={variableName}
+        key={variableOption.variableMeta.name}
         style={{ width: '100%', height: 25 }}
         onClick={isArray ? stopPropagation : tweakProperty}
       >
@@ -170,7 +197,7 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
           <div onClick={tweakProperty}>
             <span
               style={{
-                marginLeft: 4 * depth,
+                marginLeft: 4 * variableOption.depth,
                 borderRadius: 2,
                 fontWeight: 400,
                 display: 'flex',
@@ -178,7 +205,7 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
               }}
             >
               <PrefixIcon
-                depth={depth}
+                depth={variableOption.depth}
                 hasObjectChildren={hasObjectChildren}
                 onIconClick={toggleChildrenOpen}
                 open={childrenOpen}
@@ -188,10 +215,10 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
                 style={{
                   textOverflow: 'ellipsis',
                   overflow: 'hidden',
-                  opacity: shouldDim ? 0.5 : 1,
+                  opacity: variableOption.variableMeta.matches ? 1 : 0.5,
                 }}
               >
-                {displayName}
+                {variableOption.variableMeta.name}
               </span>
             </span>
           </div>
@@ -210,17 +237,17 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
                 textOverflow: 'ellipsis',
                 maxWidth: 130,
                 overflow: 'hidden',
-                opacity: shouldDim ? 0.5 : 1,
+                opacity: variableOption.variableMeta.matches ? 1 : 0.5,
               }}
             >
               {isArray ? (
                 <ArrayPaginator
                   selectedIndex={selectedIndex}
-                  totalChildCount={totalChildCount}
+                  totalChildCount={childrenLength}
                   setSelectedIndex={setSelectedIndex}
                 />
               ) : (
-                value
+                variableOptionToString(variableOption)
               )}
             </span>
           </div>
@@ -229,7 +256,7 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
       {variableChildren != null ? (
         isArray ? (
           <ValueRow
-            key={variableChildren[selectedIndex].variableName}
+            key={variableChildren[selectedIndex].variableMeta.name}
             variableOption={variableChildren[selectedIndex]}
             idx={`${idx}-${selectedIndex}`}
             onTweakProperty={onTweakProperty}
@@ -238,7 +265,7 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
           variableChildren.map((child, index) => {
             return (
               <ValueRow
-                key={child.variableName}
+                key={child.variableMeta.name}
                 variableOption={child}
                 idx={`${idx}-${index}`}
                 onTweakProperty={onTweakProperty}
