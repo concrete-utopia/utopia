@@ -3,5 +3,5 @@ export default {
   transform: {
     '\\.[jt]sx?$': 'babel-jest',
   },
-  transformIgnorePatterns: ['node_modules/(?!@ngrx|(?!deck.gl)|ng-dynamic)'],
+  transformIgnorePatterns: ['node_modules/(?!@ngrx|(?!deck.gl)|ng-dynamic)'], // fix for Jest running url-join tests failing due to imports
 }
