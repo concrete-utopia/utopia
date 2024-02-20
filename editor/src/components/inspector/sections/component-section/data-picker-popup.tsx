@@ -9,20 +9,20 @@ import { useRefEditorState } from '../../../editor/store/store-hook'
 import { UIGridRow } from '../../widgets/ui-grid-row'
 import { DataPickerPopupTestId, VariableFromScopeOptionTestId } from './component-section'
 import * as EP from '../../../../core/shared/element-path'
-import type { ArrayMeta, ObjectMeta, PrimitiveMeta } from './variables-in-scope-utils'
+import type { ArrayInfo, ObjectInfo, PrimitiveInfo } from './variables-in-scope-utils'
 import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
 import { assertNever } from '../../../../core/shared/utils'
 
 export interface PrimitiveOption {
   type: 'primitive'
-  variableMeta: PrimitiveMeta
+  variableMeta: PrimitiveInfo
   definedElsewhere: string
   depth: number
 }
 
 export interface ArrayOption {
   type: 'array'
-  variableMeta: ArrayMeta
+  variableMeta: ArrayInfo
   depth: number
   definedElsewhere: string
   children: Array<VariableOption>
@@ -30,7 +30,7 @@ export interface ArrayOption {
 
 export interface ObjectOption {
   type: 'object'
-  variableMeta: ObjectMeta
+  variableMeta: ObjectInfo
   depth: number
   definedElsewhere: string
   children: Array<VariableOption>

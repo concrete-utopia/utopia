@@ -14,7 +14,7 @@ import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { assertNever } from '../../../../core/shared/utils'
 
 function valuesFromObject(
-  variable: ArrayMeta | ObjectMeta,
+  variable: ArrayInfo | ObjectInfo,
   originalObjectName: string,
   depth: number,
 ): Array<VariableOption> {
@@ -53,7 +53,7 @@ function valuesFromObject(
 }
 
 function valuesFromVariable(
-  variable: VariableMeta,
+  variable: VariableInfo,
   originalObjectName: string,
   depth: number,
 ): Array<VariableOption> {
@@ -79,7 +79,7 @@ function usePropertyControlDescriptions(): Array<ControlDescription> {
   )
 }
 
-export interface PrimitiveMeta {
+export interface PrimitiveInfo {
   type: 'primitive'
   variableName: string
   displayName: string
@@ -87,31 +87,31 @@ export interface PrimitiveMeta {
   matches: boolean
 }
 
-export interface ObjectMeta {
+export interface ObjectInfo {
   type: 'object'
   variableName: string
   displayName: string
   value: unknown
-  props: Array<VariableMeta>
+  props: Array<VariableInfo>
   matches: boolean
 }
 
-export interface ArrayMeta {
+export interface ArrayInfo {
   type: 'array'
   variableName: string
   displayName: string
   value: unknown
-  elements: Array<VariableMeta>
+  elements: Array<VariableInfo>
   matches: boolean
 }
 
-export type VariableMeta = PrimitiveMeta | ArrayMeta | ObjectMeta
+export type VariableInfo = PrimitiveInfo | ArrayInfo | ObjectInfo
 
 function variableMetaFromValue(
   variableName: string,
   displayName: string,
   value: unknown,
-): VariableMeta | null {
+): VariableInfo | null {
   switch (typeof value) {
     case 'function':
     case 'symbol':
@@ -165,7 +165,7 @@ function variableMetaFromValue(
   }
 }
 
-function variableMetaFromVariableData(variableNamesInScope: VariableData): Array<VariableMeta> {
+function variableMetaFromVariableData(variableNamesInScope: VariableData): Array<VariableInfo> {
   const meta = mapDropNulls(
     ([key, { spiedValue }]) => variableMetaFromValue(key, key, spiedValue),
     Object.entries(variableNamesInScope),
@@ -175,14 +175,14 @@ function variableMetaFromVariableData(variableNamesInScope: VariableData): Array
 }
 
 function orderVariablesForRelevance(
-  variableNamesInScope: Array<VariableMeta>,
+  variableNamesInScope: Array<VariableInfo>,
   controlDescriptions: Array<ControlDescription>,
   currentPropertyValue: PropertyValue,
-): Array<VariableMeta> {
-  let valuesMatchingPropertyDescription: Array<VariableMeta> = []
-  let valuesMatchingPropertyShape: Array<VariableMeta> = []
-  let valueElementMatches: Array<VariableMeta> = []
-  let restOfValues: Array<VariableMeta> = []
+): Array<VariableInfo> {
+  let valuesMatchingPropertyDescription: Array<VariableInfo> = []
+  let valuesMatchingPropertyShape: Array<VariableInfo> = []
+  let valueElementMatches: Array<VariableInfo> = []
+  let restOfValues: Array<VariableInfo> = []
 
   for (let variable of variableNamesInScope) {
     if (variable.type === 'array') {
