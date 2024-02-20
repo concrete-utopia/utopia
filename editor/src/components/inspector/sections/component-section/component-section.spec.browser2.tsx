@@ -364,6 +364,58 @@ describe('Set element prop via the data picker', () => {
       'currentCount',
     ])
   })
+
+  it('object props are reordered by relevance', async () => {
+    const editor = await renderTestEditorWithCode(
+      DataPickerProjectShell(`
+      function Title({ text }) {
+        const content = 'Content'
+      
+        return <h2 data-uid='aam'>{text}</h2>
+      }
+      
+      var Playground = ({ style }) => {
+        const titles = {
+          aNumber: 2,
+          aBoolean: true,
+          actualStringTitle: 'The First Title',
+        }
+      
+        return (
+          <div style={style} data-uid='root'>
+            <Title
+              text={'hi'}
+              data-uid='bd'
+              style={{
+                width: 134,
+                height: 28,
+                position: 'absolute',
+                left: 160,
+                top: 75,
+              }}
+            />
+          </div>
+        )
+      }`),
+      'await-first-dom-report',
+    )
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/bd')])
+
+    const dataPickerOpenerButton = editor.renderedDOM.getByTestId(DataPickerPopupButtonTestId)
+    await mouseClickAtPoint(dataPickerOpenerButton, { x: 2, y: 2 })
+
+    const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
+    expect(dataPickerPopup).not.toBeNull()
+
+    const options = getRenderedOptions(editor)
+
+    expect(options).toEqual([
+      'titles', // the name of the object
+      'actualStringTitle', // the actual string prop
+      'aNumber', // the rest of the props
+      'aBoolean',
+    ])
+  })
 })
 
 // comment out tests temporarily because it causes a dom-walker test to fail
