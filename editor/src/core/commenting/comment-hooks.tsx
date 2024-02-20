@@ -237,14 +237,21 @@ export function useAddMyselfToCollaborators() {
     [loginState],
   )
 
+  const maybeUpdateCollaborators = React.useCallback(() => {
+    if (!isLoggedIn(loginState) || projectId == null) {
+      return
+    }
+    void updateCollaborators(projectId)
+  }, [projectId, loginState])
+
   const collabs = useStorage((store) => store.collaborators)
 
   React.useEffect(() => {
-    if (collabs != null && projectId != null) {
+    if (collabs != null) {
       addMyselfToCollaborators()
-      void updateCollaborators(projectId)
     }
-  }, [addMyselfToCollaborators, collabs, projectId])
+    maybeUpdateCollaborators()
+  }, [addMyselfToCollaborators, collabs, projectId, maybeUpdateCollaborators])
 }
 
 export function useCollaborators() {
