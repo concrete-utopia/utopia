@@ -16,6 +16,7 @@ import { assertNever } from '../../../../core/shared/utils'
 export interface PrimitiveOption {
   type: 'primitive'
   variableMeta: PrimitiveMeta
+  definedElsewhere: string
   depth: number
 }
 
@@ -36,6 +37,19 @@ export interface ObjectOption {
 }
 
 export type VariableOption = PrimitiveOption | ArrayOption | ObjectOption
+
+function valueToDisplay(option: VariableOption): string {
+  switch (option.variableMeta.type) {
+    case 'array':
+      return `[]`
+    case 'object':
+      return `{}`
+    case 'primitive':
+      return `${option.variableMeta.value}`
+    default:
+      assertNever(option.variableMeta)
+  }
+}
 
 export interface DataPickerPopupProps {
   closePopup: () => void
@@ -114,7 +128,7 @@ export const DataPickerPopup = React.memo(
           {variableNamesInScope.map((variableOption, idx) => {
             return (
               <ValueRow
-                key={variableOption.variableMeta.name}
+                key={variableOption.variableMeta.variableName}
                 variableOption={variableOption}
                 idx={`${idx}`}
                 onTweakProperty={onTweakProperty}
@@ -126,19 +140,6 @@ export const DataPickerPopup = React.memo(
     )
   }),
 )
-
-function variableOptionToString(variable: VariableOption): string {
-  switch (variable.type) {
-    case 'primitive':
-      return `${variable.variableMeta.value}`
-    case 'array':
-      return `[ ]`
-    case 'object':
-      return `{ }`
-    default:
-      assertNever(variable)
-  }
-}
 
 interface ValueRowProps {
   variableOption: VariableOption
@@ -160,10 +161,11 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
   }, [childrenOpen, setChildrenOpen])
 
   const isArray = variableOption.variableMeta.type === 'array'
-  const definedElsewhere =
-    variableOption.type === 'primitive' ? null : variableOption.definedElsewhere
 
-  const tweakProperty = onTweakProperty(variableOption.variableMeta.name, definedElsewhere)
+  const tweakProperty = onTweakProperty(
+    variableOption.variableMeta.variableName,
+    variableOption.definedElsewhere,
+  )
   const stopPropagation = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
   }, [])
@@ -178,7 +180,7 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
     <>
       <Button
         data-testid={VariableFromScopeOptionTestId(idx)}
-        key={variableOption.variableMeta.name}
+        key={variableOption.variableMeta.variableName}
         style={{ width: '100%', height: 25 }}
         onClick={isArray ? stopPropagation : tweakProperty}
       >
@@ -218,7 +220,7 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
                   opacity: variableOption.variableMeta.matches ? 1 : 0.5,
                 }}
               >
-                {variableOption.variableMeta.name}
+                {variableOption.variableMeta.displayName}
               </span>
             </span>
           </div>
@@ -247,7 +249,7 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
                   setSelectedIndex={setSelectedIndex}
                 />
               ) : (
-                variableOptionToString(variableOption)
+                valueToDisplay(variableOption)
               )}
             </span>
           </div>
@@ -256,7 +258,7 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
       {variableChildren != null ? (
         isArray ? (
           <ValueRow
-            key={variableChildren[selectedIndex].variableMeta.name}
+            key={variableChildren[selectedIndex].variableMeta.variableName}
             variableOption={variableChildren[selectedIndex]}
             idx={`${idx}-${selectedIndex}`}
             onTweakProperty={onTweakProperty}
@@ -265,7 +267,7 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
           variableChildren.map((child, index) => {
             return (
               <ValueRow
-                key={child.variableMeta.name}
+                key={child.variableMeta.variableName}
                 variableOption={child}
                 idx={`${idx}-${index}`}
                 onTweakProperty={onTweakProperty}

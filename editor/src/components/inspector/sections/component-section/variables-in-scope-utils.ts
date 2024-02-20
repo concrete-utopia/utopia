@@ -18,20 +18,10 @@ function valuesFromObject(
   originalObjectName: string,
   depth: number,
 ): Array<VariableOption> {
-  const patchDefinedElsewhereInfo = (option: VariableOption): VariableOption => {
-    switch (option.type) {
-      case 'primitive':
-        return option
-      case 'array':
-      case 'object':
-        return {
-          ...option,
-          definedElsewhere: originalObjectName,
-        }
-      default:
-        assertNever(option)
-    }
-  }
+  const patchDefinedElsewhereInfo = (option: VariableOption): VariableOption => ({
+    ...option,
+    definedElsewhere: originalObjectName,
+  })
 
   if (variable.type === 'array') {
     return [
@@ -41,7 +31,7 @@ function valuesFromObject(
         depth: depth,
         definedElsewhere: originalObjectName,
         children: variable.elements
-          .flatMap((e) => valuesFromVariable(e, e.name, originalObjectName, depth + 1))
+          .flatMap((e) => valuesFromVariable(e, originalObjectName, depth + 1))
           .map(patchDefinedElsewhereInfo),
       },
     ]
@@ -53,7 +43,7 @@ function valuesFromObject(
         depth: depth,
         definedElsewhere: originalObjectName,
         children: variable.props
-          .flatMap((e) => valuesFromVariable(e, e.name, originalObjectName, depth + 1))
+          .flatMap((e) => valuesFromVariable(e, originalObjectName, depth + 1))
           .map(patchDefinedElsewhereInfo),
       },
     ]
@@ -64,7 +54,6 @@ function valuesFromObject(
 
 function valuesFromVariable(
   variable: VariableMeta,
-  displayName: string,
   originalObjectName: string,
   depth: number,
 ): Array<VariableOption> {
@@ -74,6 +63,7 @@ function valuesFromVariable(
         {
           type: 'primitive',
           variableMeta: variable,
+          definedElsewhere: variable.variableName,
           depth: depth,
         },
       ]
@@ -91,14 +81,16 @@ function usePropertyControlDescriptions(): Array<ControlDescription> {
 
 export interface PrimitiveMeta {
   type: 'primitive'
-  name: string
+  variableName: string
+  displayName: string
   value: unknown
   matches: boolean
 }
 
 export interface ObjectMeta {
   type: 'object'
-  name: string
+  variableName: string
+  displayName: string
   value: unknown
   props: Array<VariableMeta>
   matches: boolean
@@ -106,7 +98,8 @@ export interface ObjectMeta {
 
 export interface ArrayMeta {
   type: 'array'
-  name: string
+  variableName: string
+  displayName: string
   value: unknown
   elements: Array<VariableMeta>
   matches: boolean
@@ -114,7 +107,11 @@ export interface ArrayMeta {
 
 export type VariableMeta = PrimitiveMeta | ArrayMeta | ObjectMeta
 
-function variableMetaFromValue(name: string, value: unknown): VariableMeta | null {
+function variableMetaFromValue(
+  variableName: string,
+  displayName: string,
+  value: unknown,
+): VariableMeta | null {
   switch (typeof value) {
     case 'function':
     case 'symbol':
@@ -124,27 +121,45 @@ function variableMetaFromValue(name: string, value: unknown): VariableMeta | nul
     case 'number':
     case 'string':
     case 'undefined':
-      return { type: 'primitive', name: name, value: value, matches: false }
+      return {
+        type: 'primitive',
+        displayName: displayName,
+        variableName: variableName,
+        value: value,
+        matches: false,
+      }
     case 'object':
       if (value == null) {
-        return { type: 'primitive', name: name, value: 'null', matches: false }
+        return {
+          type: 'primitive',
+          displayName: displayName,
+          variableName: variableName,
+          value: value,
+          matches: false,
+        }
       }
       if (Array.isArray(value)) {
         return {
           type: 'array',
-          name: name,
+          variableName: variableName,
+          displayName: displayName,
           value: value,
           matches: false,
-          elements: mapDropNulls((e, idx) => variableMetaFromValue(`${name}[${idx}]`, e), value),
+          elements: mapDropNulls(
+            (e, idx) =>
+              variableMetaFromValue(`${variableName}[${idx}]`, `${variableName}[${idx}]`, e),
+            value,
+          ),
         }
       }
       return {
         type: 'object',
-        name: name,
+        variableName: variableName,
+        displayName: displayName,
         value: value,
         matches: false,
         props: mapDropNulls(([key, propValue]) => {
-          return variableMetaFromValue(`${name}['${key}']`, propValue)
+          return variableMetaFromValue(`${variableName}['${key}']`, key, propValue)
         }, Object.entries(value)),
       }
   }
@@ -152,7 +167,7 @@ function variableMetaFromValue(name: string, value: unknown): VariableMeta | nul
 
 function variableMetaFromVariableData(variableNamesInScope: VariableData): Array<VariableMeta> {
   const meta = mapDropNulls(
-    ([key, { spiedValue }]) => variableMetaFromValue(key, spiedValue),
+    ([key, { spiedValue }]) => variableMetaFromValue(key, key, spiedValue),
     Object.entries(variableNamesInScope),
   )
 
@@ -276,7 +291,7 @@ export function useVariablesInScopeForSelectedElement(
     )
 
     return orderedVariablesInScope.flatMap((variable) =>
-      valuesFromVariable(variable, variable.name, variable.name, 0),
+      valuesFromVariable(variable, variable.variableName, 0),
     )
   }, [controlDescriptions, currentPropertyValue, selectedViewPath, variablesInScope])
 
