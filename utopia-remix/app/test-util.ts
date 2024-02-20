@@ -68,6 +68,15 @@ export async function createTestSession(
   })
 }
 
+export async function createTestProjectCollaborator(
+  client: UtopiaPrismaClient,
+  params: { projectId: string; userId: string },
+) {
+  await client.projectCollaborator.create({
+    data: { project_id: params.projectId, user_id: params.userId },
+  })
+}
+
 interface DeletableModel {
   deleteMany: ({}) => Promise<any>
 }

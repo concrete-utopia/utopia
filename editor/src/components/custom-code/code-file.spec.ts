@@ -251,7 +251,7 @@ describe('transpileCode', () => {
           "errors": Array [],
           "sourceMap": Object {
             "file": "app.js",
-            "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AACE,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,UAAA,GAAA,eAAA,CAAA,OAAA,CAAA,YAAA,CAAA,CAAA;;AACO,IAAI,GAAG,GAAG,SAAN,GAAM,CAAC,KAAD;AAAA,SAAW,CAAA,GAAA,aAAA,CAAA,GAAA,EAAA,KAAA,EAAA;AAAA,gBAAe,KAAf;AAAoB,IAAA,QAAA,EAAG,UAAA,CAAA;AAAvB,GAAA,CAAX;AAAA,CAAV;;AAAI,OAAA,CAAA,GAAA,GAAG,GAAH,C",
+            "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AACE,MAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,MAAA,UAAA,GAAA,eAAA,CAAA,OAAA,CAAA,YAAA,CAAA,CAAA;;AACO,IAAI,GAAG,GAAI,KAAD,IAAW,CAAA,GAAA,aAAA,CAAA,GAAA,EAAA,KAAA,EAAA;AAAA,cAAe,KAAf;AAAoB,EAAA,QAAA,EAAG,UAAA,CAAA;AAAvB,CAAA,CAArB;;AAAI,OAAA,CAAA,GAAA,GAAG,GAAH,C",
             "names": Array [],
             "sourceRoot": "",
             "sources": Array [
@@ -275,7 +275,7 @@ describe('transpileCode', () => {
         if (!desc || (\\"get\\" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
           desc = {
             enumerable: true,
-            get: function get() {
+            get: function () {
               return m[k];
             }
           };
@@ -299,9 +299,7 @@ describe('transpileCode', () => {
       var __importStar = this && this.__importStar || function (mod) {
         if (mod && mod.__esModule) return mod;
         var result = {};
-        if (mod != null) for (var k in mod) {
-          if (k !== \\"default\\" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-        }
+        if (mod != null) for (var k in mod) if (k !== \\"default\\" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
 
         __setModuleDefault(result, mod);
 
@@ -319,18 +317,16 @@ describe('transpileCode', () => {
       });
       exports.App = void 0;
 
-      var jsx_runtime_1 = require(\\"react/jsx-runtime\\");
+      const jsx_runtime_1 = require(\\"react/jsx-runtime\\");
 
-      var React = __importStar(require(\\"react\\"));
+      const React = __importStar(require(\\"react\\"));
 
-      var icon_css_1 = __importDefault(require(\\"./icon.css\\"));
+      const icon_css_1 = __importDefault(require(\\"./icon.css\\"));
 
-      var App = function App(props) {
-        return (0, jsx_runtime_1.jsx)(\\"div\\", {
-          \\"data-uid\\": 'aaa',
-          children: icon_css_1.default
-        });
-      };
+      var App = props => (0, jsx_runtime_1.jsx)(\\"div\\", {
+        \\"data-uid\\": 'aaa',
+        children: icon_css_1.default
+      });
 
       exports.App = App; //# sourceMappingURL=app.js.map",
         },

@@ -54,6 +54,7 @@ export function createSceneUidFromIndex(sceneIndex: number): string {
 export function mapScene(scene: SceneMetadata): JSXElement {
   const sceneProps = jsxAttributesFromMap({
     component: jsExpressionOtherJavaScript(
+      [],
       scene.component ?? 'null',
       scene.component ?? 'null',
       `return ${scene.component}`,

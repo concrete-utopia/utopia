@@ -7,11 +7,13 @@ declare global {
 }
 
 export const ServerEnvironment = {
-  environment: process.env.APP_ENV,
+  environment: mustEnv('APP_ENV'),
   // The URL of the actual backend server in the form <scheme>://<host>:<port>
-  BackendURL: process.env.BACKEND_URL ?? '',
+  BackendURL: mustEnv('BACKEND_URL'),
   // the CORS allowed origin for incoming requests
-  CORSOrigin: process.env.CORS_ORIGIN ?? '',
+  CORSOrigin: mustEnv('CORS_ORIGIN'),
+  // the Liveblocks secret key
+  LiveblocksSecretKey: mustEnv('LIVEBLOCKS_SECRET_KEY'),
 }
 
 export type BrowserEnvironment = {
@@ -20,4 +22,12 @@ export type BrowserEnvironment = {
 
 export const BrowserEnvironment: BrowserEnvironment = {
   EDITOR_URL: process.env.REACT_APP_EDITOR_URL,
+}
+
+function mustEnv(key: string): string {
+  const value = process.env[key]
+  if (value == null) {
+    throw new Error(`missing required environment variable ${key}`)
+  }
+  return value
 }

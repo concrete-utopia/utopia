@@ -518,6 +518,11 @@ jobs:
       - name: Test
         env:
           DATABASE_URL: postgres://postgres:password@localhost:54322/utopia-test?sslmode=disable
+          APP_ENV: "test"
+          CORS_ORIGIN: "*"
+          BACKEND_URL: ""
+          REACT_APP_EDITOR_URL: ""
+          LIVEBLOCKS_SECRET_KEY: "secret"
         run: |
           cd utopia-remix && ./run-integration-tests-ci.sh
 
