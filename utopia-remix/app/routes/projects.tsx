@@ -340,31 +340,37 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
         </div>
       </div>
 
-      <div
-        style={{
-          display: projects.length === 0 ? 'none' : 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 10,
-        }}
-      >
-        <CategoryActions projects={projects} />
-        <DropdownMenu.Root>
-          <DropdownMenu.Trigger asChild>
-            <div
-              className={button()}
-              style={{
-                justifyContent: 'flex-end',
-                gap: 10,
-              }}
-            >
-              <div>{convertToTitleCase(sortCriteria)} </div>
-              <div>{sortAscending ? '↑' : '↓'}</div>
-            </div>
-          </DropdownMenu.Trigger>
-          <SortingContextMenu />
-        </DropdownMenu.Root>
-      </div>
+      {when(
+        projects.length > 0,
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 10,
+          }}
+        >
+          <CategoryActions projects={projects} />
+          {when(
+            projects.length > 1,
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger asChild>
+                <div
+                  className={button()}
+                  style={{
+                    justifyContent: 'flex-end',
+                    gap: 10,
+                  }}
+                >
+                  <div>{convertToTitleCase(sortCriteria)} </div>
+                  <div>{sortAscending ? '↑' : '↓'}</div>
+                </div>
+              </DropdownMenu.Trigger>
+              <SortingContextMenu />
+            </DropdownMenu.Root>,
+          )}
+        </div>,
+      )}
     </div>
   )
 })
