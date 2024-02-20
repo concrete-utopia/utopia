@@ -6,7 +6,7 @@ import type {
 import type { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import type { VariableData } from '../../../canvas/ui-jsx-canvas'
 import { useEditorState, Substores } from '../../../editor/store/store-hook'
-import type { ArrayOption, ObjectOption, VariableOption } from './data-picker-popup'
+import type { VariableOption } from './data-picker-popup'
 import * as EP from '../../../../core/shared/element-path'
 import React from 'react'
 import { useGetPropertyControlsForSelectedComponents } from '../../common/property-controls-hooks'
@@ -27,7 +27,7 @@ function valuesFromObject(
     return [
       {
         type: 'array',
-        variableMeta: variable,
+        variableInfo: variable,
         depth: depth,
         definedElsewhere: originalObjectName,
         children: variable.elements
@@ -39,7 +39,7 @@ function valuesFromObject(
     return [
       {
         type: 'object',
-        variableMeta: variable,
+        variableInfo: variable,
         depth: depth,
         definedElsewhere: originalObjectName,
         children: variable.props
@@ -62,7 +62,7 @@ function valuesFromVariable(
       return [
         {
           type: 'primitive',
-          variableMeta: variable,
+          variableInfo: variable,
           definedElsewhere: variable.variableName,
           depth: depth,
         },
@@ -107,7 +107,7 @@ export interface ArrayInfo {
 
 export type VariableInfo = PrimitiveInfo | ArrayInfo | ObjectInfo
 
-function variableMetaFromValue(
+function variableInfoFromValue(
   variableName: string,
   displayName: string,
   value: unknown,
@@ -147,7 +147,7 @@ function variableMetaFromValue(
           matches: false,
           elements: mapDropNulls(
             (e, idx) =>
-              variableMetaFromValue(`${variableName}[${idx}]`, `${variableName}[${idx}]`, e),
+              variableInfoFromValue(`${variableName}[${idx}]`, `${variableName}[${idx}]`, e),
             value,
           ),
         }
@@ -159,19 +159,19 @@ function variableMetaFromValue(
         value: value,
         matches: false,
         props: mapDropNulls(([key, propValue]) => {
-          return variableMetaFromValue(`${variableName}['${key}']`, key, propValue)
+          return variableInfoFromValue(`${variableName}['${key}']`, key, propValue)
         }, Object.entries(value)),
       }
   }
 }
 
-function variableMetaFromVariableData(variableNamesInScope: VariableData): Array<VariableInfo> {
-  const meta = mapDropNulls(
-    ([key, { spiedValue }]) => variableMetaFromValue(key, key, spiedValue),
+function variableInfoFromVariableData(variableNamesInScope: VariableData): Array<VariableInfo> {
+  const info = mapDropNulls(
+    ([key, { spiedValue }]) => variableInfoFromValue(key, key, spiedValue),
     Object.entries(variableNamesInScope),
   )
 
-  return meta
+  return info
 }
 
 function orderVariablesForRelevance(
@@ -294,10 +294,10 @@ export function useVariablesInScopeForSelectedElement(
       filterObjectPropFromVariablesInScope({ prop: 'props', key: 'css' }),
     ].reduce((vars, fn) => fn(vars), variablesInScopeForSelectedPath)
 
-    const variableMeta = variableMetaFromVariableData(variablesInScopeForSelectedPath)
+    const variableInfo = variableInfoFromVariableData(variablesInScopeForSelectedPath)
 
     const orderedVariablesInScope = orderVariablesForRelevance(
-      variableMeta,
+      variableInfo,
       controlDescriptions,
       currentPropertyValue,
     )
