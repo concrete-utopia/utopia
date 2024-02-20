@@ -29,14 +29,15 @@ model PersistentSession {
 }
 
 model Project {
-    id          Int      @id @default(autoincrement())
-    proj_id     String   @unique(map: "unique_project") @db.VarChar
-    owner_id    String   @db.VarChar
-    title       String   @db.VarChar
-    created_at  DateTime @db.Timestamptz(6)
-    modified_at DateTime @db.Timestamptz(6)
-    content     Bytes
-    deleted     Boolean?
+    id            Int             @id @default(autoincrement())
+    proj_id       String          @unique(map: "unique_project") @db.VarChar
+    owner_id      String          @db.VarChar
+    title         String          @db.VarChar
+    created_at    DateTime        @db.Timestamptz(6)
+    modified_at   DateTime        @db.Timestamptz(6)
+    content       Bytes
+    deleted       Boolean?
+    ProjectAccess ProjectAccess[]
 
     @@map("project")
 }
@@ -73,4 +74,14 @@ model UserDetails {
     picture String? @db.VarChar
 
     @@map("user_details")
+}
+
+model ProjectAccess {
+    id           Int      @id @default(autoincrement())
+    project_id   String   @db.VarChar
+    access_level Int      @db.Integer
+    modified_at  DateTime @db.Timestamptz(6)
+    Project      Project  @relation(fields: [project_id], references: [proj_id])
+
+    @@map("project_access")
 }
