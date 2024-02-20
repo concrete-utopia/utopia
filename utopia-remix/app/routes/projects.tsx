@@ -20,8 +20,8 @@ import { assertNever } from '../util/assertNever'
 import { projectEditorLink } from '../util/links'
 import { when } from '../util/react-conditionals'
 
-const SortCriteria = ['title', 'dateCreated', 'dateModified'] as const
-export type SortCriteria = (typeof SortCriteria)[number]
+const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
+export type SortCriteria = (typeof SortOptions)[number]
 
 const Categories = ['allProjects', 'trash'] as const
 
