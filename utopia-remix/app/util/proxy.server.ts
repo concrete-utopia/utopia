@@ -24,18 +24,20 @@ function buildProxyUrl(url: URL, path: string | null): string {
 }
 
 export async function proxy(req: Request, options?: { rawOutput?: boolean; path?: string }) {
-  const originalURL = new URL(req.url)
-  const url = buildProxyUrl(originalURL, options?.path ?? null)
+  const url = buildProxyUrl(new URL(req.url), options?.path ?? null)
 
   console.log(`proxying call to ${url}`)
 
   const headers = new Headers()
-  for (const [key, value] of req.headers) {
-    headers.set(key, value)
-  }
+
+  setCopyHeader(req.headers, headers, 'accept-encoding')
+  setCopyHeader(req.headers, headers, 'content-type')
+  setCopyHeader(req.headers, headers, 'host')
+  setCopyHeader(req.headers, headers, 'cookie')
   if (ServerEnvironment.environment === 'prod' || ServerEnvironment.environment === 'stage') {
-    console.log(`setting proxied host to ${originalURL.host}`)
-    headers.set('host', originalURL.host)
+    const proxiedURL = new URL(url)
+    console.log(`setting proxied host to ${proxiedURL.host}`)
+    headers.set('host', proxiedURL.host)
   }
 
   const requestInitWithoutBody: RequestInit = {
@@ -67,4 +69,11 @@ function getHeadersArray(headers: Headers): string[] {
     headersString.push(`${key}=${value}`)
   }
   return headersString
+}
+
+function setCopyHeader(originalHeaders: Headers, targetHeaders: Headers, key: string) {
+  const value = originalHeaders.get(key)
+  if (value != null) {
+    targetHeaders.set('accept-encoding', value)
+  }
 }
