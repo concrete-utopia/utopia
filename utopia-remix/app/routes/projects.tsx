@@ -2,13 +2,7 @@ import {
   Root as DropdownMenuRoot,
   Trigger as DropdownMenuTrigger,
 } from '@radix-ui/react-dropdown-menu'
-import {
-  DashboardIcon,
-  DotsHorizontalIcon,
-  HamburgerMenuIcon,
-  TextAlignJustifyIcon,
-  TokensIcon,
-} from '@radix-ui/react-icons'
+import { DashboardIcon, DotsHorizontalIcon, HamburgerMenuIcon } from '@radix-ui/react-icons'
 import { LoaderFunctionArgs, json } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
@@ -319,6 +313,7 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
   const sortAscending = useProjectsStore((store) => store.sortAscending)
 
   const gridView = useProjectsStore((store) => store.gridView)
+  const setGridView = useProjectsStore((store) => store.setGridView)
 
   const convertToTitleCase = (str: string): string => {
     return str
@@ -406,12 +401,19 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
               </DropdownMenuRoot>
               <div style={{ display: 'flex', flexDirection: 'row', gap: 1 }}>
                 <HamburgerMenuIcon
+                  onClick={() => {
+                    setGridView(false)
+                  }}
                   className={button({
                     size: 'square',
                     color: !gridView ? 'subtle' : 'neutral',
                   })}
                 />
+
                 <DashboardIcon
+                  onClick={() => {
+                    setGridView(true)
+                  }}
                   className={button({
                     size: 'square',
                     color: gridView ? 'subtle' : 'neutral',
