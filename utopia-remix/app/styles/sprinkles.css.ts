@@ -10,7 +10,7 @@ export const colors = {
   separator: '#dddddd',
 }
 
-const colorProperties = defineProperties({
+export const colorProperties = defineProperties({
   conditions: {
     lightMode: {},
     darkMode: { '@media': '(prefers-color-scheme: dark)' },

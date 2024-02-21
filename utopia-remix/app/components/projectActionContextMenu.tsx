@@ -1,14 +1,9 @@
-import {
-  Content as DropdownMenuContent,
-  Portal as DropdownMenuPortal,
-  Item as DropdownMenuItem,
-  Separator as DropdownMenuSeparator,
-} from '@radix-ui/react-dropdown-menu'
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { useFetcher } from '@remix-run/react'
 import React from 'react'
 import { useProjectsStore } from '../store'
 import { contextMenuDropdown, contextMenuItem } from '../styles/contextMenu.css'
-import { colors } from '../styles/sprinkles.css'
+import { sprinkles } from '../styles/sprinkles.css'
 import { ProjectWithoutContent } from '../types'
 import { assertNever } from '../util/assertNever'
 import { projectEditorLink } from '../util/links'
@@ -121,8 +116,8 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
   }, [selectedCategory])
 
   return (
-    <DropdownMenuPortal>
-      <DropdownMenuContent
+    <DropdownMenu.Portal>
+      <DropdownMenu.Content
         className={contextMenuDropdown()}
         style={{
           right: 75,
@@ -132,24 +127,25 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
         {menuEntries.map((entry, index) => {
           if (entry === 'separator') {
             return (
-              <DropdownMenuSeparator
+              <DropdownMenu.Separator
                 key={`separator-${index}`}
-                style={{ backgroundColor: colors.separator, height: 1 }}
+                className={sprinkles({ background: 'separator' })}
+                style={{ height: 1 }}
               />
             )
           }
           return (
-            <DropdownMenuItem
+            <DropdownMenu.Item
               key={`entry-${index}`}
               onClick={() => entry.onClick(project)}
               className={contextMenuItem()}
             >
               {entry.text}
-            </DropdownMenuItem>
+            </DropdownMenu.Item>
           )
         })}
-      </DropdownMenuContent>
-    </DropdownMenuPortal>
+      </DropdownMenu.Content>
+    </DropdownMenu.Portal>
   )
 })
 ProjectContextMenu.displayName = 'ProjectContextMenu'
