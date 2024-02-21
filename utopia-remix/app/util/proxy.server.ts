@@ -41,7 +41,7 @@ export async function proxy(req: Request, options?: { rawOutput?: boolean; path?
   const requestInitWithoutBody: RequestInit = {
     credentials: 'include',
     method: req.method,
-    headers: req.headers,
+    headers: headers,
     mode: ProxyMode,
   }
   console.log(`proxied request data: ${JSON.stringify(requestInitWithoutBody)}`)
