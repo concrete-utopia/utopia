@@ -3,7 +3,8 @@ import * as puppeteer from 'puppeteer'
 import type { PageEventObject } from 'puppeteer'
 const fs = require('fs')
 const path = require('path')
-const AWS = require('aws-sdk')
+const { Upload } = require('@aws-sdk/lib-storage')
+const { S3 } = require('@aws-sdk/client-s3')
 const yn = require('yn')
 
 export interface BrowserForPuppeteerTest {
@@ -118,13 +119,7 @@ export async function uploadPNGtoAWS(testFile: string): Promise<string | null> {
     return null
   }
 
-  AWS.config.update({
-    region: process.env.AWS_REGION,
-    AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
-    AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
-  })
-
-  let s3 = new AWS.S3({ apiVersion: '2006-03-01' })
+  let s3 = new S3({ region: process.env.AWS_REGION })
   const uploadParams = {
     Bucket: process.env.AWS_S3_BUCKET,
     Key: testFile,
@@ -143,15 +138,15 @@ export async function uploadPNGtoAWS(testFile: string): Promise<string | null> {
     uploadParams.Body = filestream
     uploadParams.Key = path.basename(testFile)
 
-    s3.upload(uploadParams, function (err: any, data: any) {
-      if (err) {
-        console.log('Error', err)
-        reject(err)
-      }
-      if (data) {
-        console.log('Upload Success', data.Location)
-        resolve(data.Location)
-      }
+    new Upload({
+      client: s3,
+      params: uploadParams,
+    }).done().then(function (data: any) {
+      console.log('Upload Success', data.Location)
+      resolve(data.Location)
+    }).catch(function (err: any) {
+      console.log('Error', err)
+      reject(err)
     })
   })
 }
