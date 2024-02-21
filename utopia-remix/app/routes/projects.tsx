@@ -477,6 +477,8 @@ const ProjectCards = React.memo(
     projects: ProjectWithoutContent[]
     collaborators: CollaboratorsByProject
   }) => {
+    const gridView = useProjectsStore((store) => store.gridView)
+
     const selectedProjectId = useProjectsStore((store) => store.selectedProjectId)
     const setSelectedProjectId = useProjectsStore((store) => store.setSelectedProjectId)
 
@@ -487,28 +489,53 @@ const ProjectCards = React.memo(
     )
 
     return (
-      <div
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          alignContent: 'flex-start',
-          gap: MarginSize,
-          flexGrow: 1,
-          flexDirection: 'row',
-          overflowY: 'scroll',
-          scrollbarColor: 'lightgrey transparent',
-        }}
-      >
-        {projects.map((project) => (
-          <ProjectCard
-            key={project.proj_id}
-            project={project}
-            selected={project.proj_id === selectedProjectId}
-            onSelect={() => handleProjectSelect(project)}
-            collaborators={collaborators[project.proj_id]}
-          />
-        ))}
-      </div>
+      <>
+        {!gridView ? (
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: MarginSize,
+              flexGrow: 1,
+              overflowY: 'scroll',
+              scrollbarColor: 'lightgrey transparent',
+            }}
+          >
+            {projects.map((project) => (
+              <ProjectRow
+                key={project.proj_id}
+                project={project}
+                selected={project.proj_id === selectedProjectId}
+                onSelect={() => handleProjectSelect(project)}
+                collaborators={collaborators[project.proj_id]}
+              />
+            ))}
+          </div>
+        ) : (
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignContent: 'flex-start',
+              gap: MarginSize,
+              flexGrow: 1,
+              flexDirection: 'row',
+              overflowY: 'scroll',
+              scrollbarColor: 'lightgrey transparent',
+            }}
+          >
+            {projects.map((project) => (
+              <ProjectCard
+                key={project.proj_id}
+                project={project}
+                selected={project.proj_id === selectedProjectId}
+                onSelect={() => handleProjectSelect(project)}
+                collaborators={collaborators[project.proj_id]}
+              />
+            ))}
+          </div>
+        )}
+      </>
     )
   },
 )
@@ -585,28 +612,115 @@ const ProjectCard = React.memo(
             })}
           </div>
         </div>
-        <ProjectCardActions project={project} />
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 5, flex: 1 }}>
+            <div style={{ fontWeight: 600 }}>{project.title}</div>
+            <div>{moment(project.modified_at).fromNow()}</div>
+          </div>
+          <ProjectCardActions project={project} />
+        </div>
       </div>
     )
   },
 )
 ProjectCard.displayName = 'ProjectCard'
 
-const ProjectCardActions = React.memo(({ project }: { project: ProjectWithoutContent }) => {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 5, flex: 1 }}>
+const ProjectRow = React.memo(
+  ({
+    project,
+    collaborators,
+    selected,
+    onSelect,
+  }: {
+    project: ProjectWithoutContent
+    collaborators: Collaborator[]
+    selected: boolean
+    onSelect: () => void
+  }) => {
+    const openProject = React.useCallback(() => {
+      window.open(projectEditorLink(project.proj_id), '_blank')
+    }, [project.proj_id])
+
+    return (
+      <div
+        style={{
+          height: 40,
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 5,
+        }}
+        onMouseDown={onSelect}
+        onDoubleClick={openProject}
+      >
+        <div
+          style={{
+            border: selected ? '2px solid #0075F9' : '2px solid transparent',
+            borderRadius: 10,
+            overflow: 'hidden',
+            height: 40,
+            width: 70,
+            background: 'linear-gradient(rgba(77, 255, 223, 0.4), rgba(255,250,220,.8))',
+            backgroundAttachment: 'local',
+            backgroundRepeat: 'no-repeat',
+            position: 'relative',
+          }}
+        />
+
         <div style={{ fontWeight: 600 }}>{project.title}</div>
         <div>{moment(project.modified_at).fromNow()}</div>
+        <div style={{ display: 'flex', gap: 2 }}>
+          {collaborators.map((collaborator) => {
+            return (
+              <div
+                key={`collaborator-${project.id}-${collaborator.id}`}
+                style={{
+                  borderRadius: '100%',
+                  width: 24,
+                  height: 24,
+                  backgroundColor: colors.primary,
+                  backgroundImage: `url("${collaborator.avatar}")`,
+                  backgroundSize: 'cover',
+                  color: colors.white,
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  fontSize: '.9em',
+                  fontWeight: 700,
+                  border: '2px solid white',
+                  filter: project.deleted === true ? 'grayscale(1)' : undefined,
+                }}
+                title={collaborator.name}
+                className={sprinkles({ boxShadow: 'shadow' })}
+              >
+                {when(collaborator.avatar === '', multiplayerInitialsFromName(collaborator.name))}
+              </div>
+            )
+          })}
+        </div>
+        <ProjectCardActions project={project} />
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-        <DropdownMenuRoot>
-          <DropdownMenuTrigger asChild>
-            <DotsHorizontalIcon className={button()} />
-          </DropdownMenuTrigger>
-          <ProjectContextMenu project={project} />
-        </DropdownMenuRoot>
-      </div>
+    )
+  },
+)
+ProjectRow.displayName = 'ProjectRow'
+
+const ProjectCardActions = React.memo(({ project }: { project: ProjectWithoutContent }) => {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+      <DropdownMenuRoot>
+        <DropdownMenuTrigger asChild>
+          <DotsHorizontalIcon className={button()} />
+        </DropdownMenuTrigger>
+        <ProjectContextMenu project={project} />
+      </DropdownMenuRoot>
     </div>
   )
 })
