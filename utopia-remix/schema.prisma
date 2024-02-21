@@ -29,15 +29,15 @@ model PersistentSession {
 }
 
 model Project {
-    id            Int             @id @default(autoincrement())
-    proj_id       String          @unique(map: "unique_project") @db.VarChar
-    owner_id      String          @db.VarChar
-    title         String          @db.VarChar
-    created_at    DateTime        @db.Timestamptz(6)
-    modified_at   DateTime        @db.Timestamptz(6)
-    content       Bytes
-    deleted       Boolean?
-    ProjectAccess ProjectAccess[]
+    id             Int            @id @default(autoincrement())
+    proj_id        String         @unique(map: "unique_project") @db.VarChar
+    owner_id       String         @db.VarChar
+    title          String         @db.VarChar
+    created_at     DateTime       @db.Timestamptz(6)
+    modified_at    DateTime       @db.Timestamptz(6)
+    content        Bytes
+    deleted        Boolean?
+    project_access ProjectAccess?
 
     @@map("project")
 }

@@ -4,7 +4,7 @@ import React from 'react'
 import { useProjectsStore } from '../store'
 import { contextMenuItem } from '../styles/contextMenuItem.css'
 import { colors } from '../styles/sprinkles.css'
-import { ProjectWithoutContent } from '../types'
+import { AccessLevel, ProjectWithoutContent } from '../types'
 import { assertNever } from '../util/assertNever'
 import { projectEditorLink } from '../util/links'
 
@@ -18,6 +18,7 @@ type ContextMenuEntry =
 export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWithoutContent }) => {
   const fetcher = useFetcher()
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
+  const accessLevel = AccessLevel.PUBLIC
 
   const deleteProject = React.useCallback(
     (projectId: string) => {
@@ -48,6 +49,16 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
       fetcher.submit(
         { title: newTitle },
         { method: 'POST', action: `/internal/projects/${projectId}/rename` },
+      )
+    },
+    [fetcher],
+  )
+
+  const changeAccessLevel = React.useCallback(
+    (projectId: string, accessLevel: AccessLevel) => {
+      fetcher.submit(
+        { accessLevel: accessLevel.toString() },
+        { method: 'POST', action: `/internal/projects/${projectId}/access` },
       )
     },
     [fetcher],
@@ -91,6 +102,15 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
             text: 'Delete',
             onClick: (project) => {
               deleteProject(project.proj_id)
+            },
+          },
+          {
+            text: accessLevel === AccessLevel.PUBLIC ? 'Make Private' : 'Make Public',
+            onClick: (project) => {
+              changeAccessLevel(
+                project.proj_id,
+                accessLevel === AccessLevel.PUBLIC ? AccessLevel.PRIVATE : AccessLevel.PUBLIC,
+              )
             },
           },
         ]

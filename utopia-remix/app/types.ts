@@ -15,3 +15,9 @@ export type ListProjectsResponse = {
 }
 
 export type ProjectWithoutContent = Omit<Project, 'content'>
+
+export enum AccessLevel {
+  PRIVATE,
+  PUBLIC,
+  WITH_LINK,
+}
