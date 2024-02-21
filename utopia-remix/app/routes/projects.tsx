@@ -454,40 +454,49 @@ const CategoryTrashActions = React.memo(({ projects }: { projects: ProjectWithou
 })
 CategoryTrashActions.displayName = 'CategoryTrashActions'
 
-const ProjectCards = React.memo(({ projects }: { projects: ProjectWithoutContent[] }) => {
-  const selectedProjectId = useProjectsStore((store) => store.selectedProjectId)
-  const setSelectedProjectId = useProjectsStore((store) => store.setSelectedProjectId)
+const ProjectCards = React.memo(
+  ({
+    projects,
+    collaborators,
+  }: {
+    projects: ProjectWithoutContent[]
+    collaborators: CollaboratorsByProject
+  }) => {
+    const selectedProjectId = useProjectsStore((store) => store.selectedProjectId)
+    const setSelectedProjectId = useProjectsStore((store) => store.setSelectedProjectId)
 
-  const handleProjectSelect = React.useCallback(
-    (project: ProjectWithoutContent) =>
-      setSelectedProjectId(project.proj_id === selectedProjectId ? null : project.proj_id),
-    [setSelectedProjectId, selectedProjectId],
-  )
+    const handleProjectSelect = React.useCallback(
+      (project: ProjectWithoutContent) =>
+        setSelectedProjectId(project.proj_id === selectedProjectId ? null : project.proj_id),
+      [setSelectedProjectId, selectedProjectId],
+    )
 
-  return (
-    <div
-      style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        alignContent: 'flex-start',
-        gap: MarginSize,
-        flexGrow: 1,
-        flexDirection: 'row',
-        overflowY: 'scroll',
-        scrollbarColor: 'lightgrey transparent',
-      }}
-    >
-      {projects.map((project) => (
-        <ProjectCard
-          key={project.proj_id}
-          project={project}
-          selected={project.proj_id === selectedProjectId}
-          onSelect={() => handleProjectSelect(project)}
-        />
-      ))}
-    </div>
-  )
-})
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignContent: 'flex-start',
+          gap: MarginSize,
+          flexGrow: 1,
+          flexDirection: 'row',
+          overflowY: 'scroll',
+          scrollbarColor: 'lightgrey transparent',
+        }}
+      >
+        {projects.map((project) => (
+          <ProjectCard
+            key={project.proj_id}
+            project={project}
+            selected={project.proj_id === selectedProjectId}
+            onSelect={() => handleProjectSelect(project)}
+            collaborators={collaborators[project.proj_id]}
+          />
+        ))}
+      </div>
+    )
+  },
+)
 ProjectCards.displayName = 'ProjectCards'
 
 const ProjectCard = React.memo(
