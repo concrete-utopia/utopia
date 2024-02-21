@@ -154,7 +154,7 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
   const colorTheme = useColorTheme()
   const [selectedIndex, setSelectedIndex] = React.useState<number>(0)
 
-  const childrenLength = variableOption.type === 'array' ? variableOption.children.length : 0
+  const childrenLength = variableOption.type === 'array' ? variableOption.children.length : Infinity
   const childrenOpenByDefault =
     variableOption.depth < 2 ||
     childrenLength < 4 ||
