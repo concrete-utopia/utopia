@@ -3,6 +3,7 @@ import {
   Root as DropdownMenuRoot,
   Trigger as DropdownMenuTrigger,
 } from '@radix-ui/react-dropdown-menu'
+import { Badge } from '@radix-ui/themes'
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { LoaderFunctionArgs, json } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
@@ -603,7 +604,10 @@ const ProjectCardActions = React.memo(
     return (
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 5, flex: 1 }}>
-          <div style={{ fontWeight: 600 }}>{project.title}</div>
+          <div style={{ fontWeight: 600, display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <span>{project.title}</span>
+            <ProjectBadge accessLevel={accessLevel} />
+          </div>
           <div>{moment(project.modified_at).fromNow()}</div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -619,3 +623,45 @@ const ProjectCardActions = React.memo(
   },
 )
 ProjectCardActions.displayName = 'ProjectCardActions'
+
+const ProjectBadge = React.memo(({ accessLevel }: { accessLevel: AccessLevel }) => {
+  const [color, backgroundColor] = React.useMemo(() => {
+    switch (accessLevel) {
+      case AccessLevel.PRIVATE:
+        return ['rgb(209 78 0)', 'rgb(249 144 0 / 15%)']
+      case AccessLevel.PUBLIC:
+        return ['rgb(0 130 77)', 'rgb(0 155 0 / 9%)']
+      case AccessLevel.WITH_LINK:
+        return ['rgb(0 114 222)', 'rgb(0 132 241 / 9%)']
+      default:
+        return ['gray', 'lightgray']
+    }
+  }, [accessLevel])
+
+  const text = React.useMemo(() => {
+    switch (accessLevel) {
+      case AccessLevel.PRIVATE:
+        return 'Private'
+      case AccessLevel.PUBLIC:
+        return 'Public'
+      case AccessLevel.WITH_LINK:
+        return 'With Link'
+      default:
+        return 'Unknown'
+    }
+  }, [accessLevel])
+  return (
+    <Badge
+      style={{
+        backgroundColor: backgroundColor,
+        color: color,
+        padding: '2px 6px',
+        fontSize: 9,
+        borderRadius: 3,
+        fontWeight: 400,
+      }}
+    >
+      {text}
+    </Badge>
+  )
+})

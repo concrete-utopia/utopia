@@ -16,6 +16,7 @@ import { styles } from './styles/styles.css'
 import type { HeadersFunction } from '@remix-run/node'
 
 import './normalize.css'
+import '@radix-ui/themes/styles.css'
 
 declare global {
   interface Window {

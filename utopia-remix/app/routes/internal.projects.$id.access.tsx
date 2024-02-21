@@ -25,7 +25,7 @@ export async function handleChangeProjectAccess(req: Request, params: Params<str
   )
 
   try {
-    setProjectAccess({ projectId: id, accessLevel: accessLevelNumber })
+    await setProjectAccess({ projectId: id, accessLevel: accessLevelNumber })
   } catch (e) {
     console.error('error', e)
     return new Response('error', {

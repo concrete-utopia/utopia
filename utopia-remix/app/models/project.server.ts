@@ -9,6 +9,8 @@ const selectProjectWithoutContent: Record<keyof ProjectWithoutContent, true> = {
   created_at: true,
   modified_at: true,
   deleted: true,
+  // ProjectAccess: true,
+  // ProjectCollaborator: true,
 }
 
 export async function listProjects(params: { ownerId: string }): Promise<ProjectWithoutContent[]> {

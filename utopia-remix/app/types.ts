@@ -1,4 +1,17 @@
-import { Project } from 'prisma-client'
+import { Prisma, Project } from 'prisma-client'
+
+const fullProject = Prisma.validator<Prisma.ProjectDefaultArgs>()({
+  include: {
+    ProjectAccess: true,
+    ProjectCollaborator: {
+      include: {
+        User: true,
+      },
+    },
+  },
+})
+
+type FullProject = Prisma.ProjectGetPayload<typeof fullProject>
 
 export interface ProjectListing {
   id: string
