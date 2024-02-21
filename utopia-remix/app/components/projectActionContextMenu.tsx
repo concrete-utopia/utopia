@@ -21,9 +21,10 @@ type ContextMenuEntry =
   | 'separator'
 
 export const ProjectContextMenu = React.memo(
-  ({ project, accessLevel }: { project: ProjectWithoutContent; accessLevel: AccessLevel }) => {
+  ({ project }: { project: ProjectWithoutContent }) => {
     const fetcher = useFetcher()
     const selectedCategory = useProjectsStore((store) => store.selectedCategory)
+    let accessLevel = project.ProjectAccess?.access_level ?? AccessLevel.PRIVATE
 
     const deleteProject = React.useCallback(
       (projectId: string) => {

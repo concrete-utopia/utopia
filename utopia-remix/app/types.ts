@@ -3,11 +3,6 @@ import { Prisma, Project } from 'prisma-client'
 const fullProject = Prisma.validator<Prisma.ProjectDefaultArgs>()({
   include: {
     ProjectAccess: true,
-    ProjectCollaborator: {
-      include: {
-        User: true,
-      },
-    },
   },
 })
 
@@ -27,7 +22,7 @@ export type ListProjectsResponse = {
   projects: ProjectListing[]
 }
 
-export type ProjectWithoutContent = Omit<Project, 'content'>
+export type ProjectWithoutContent = Omit<FullProject, 'content'>
 
 export interface Collaborator {
   id: string

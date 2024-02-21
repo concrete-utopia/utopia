@@ -59,13 +59,9 @@ export async function loader(args: LoaderFunctionArgs) {
     ids: [...projects, ...deletedProjects].map((p) => p.proj_id),
     userId: user.user_id,
   })
-  const accessLevels = await getProjectsAccess({
-    ids: [...projects, ...deletedProjects].map((p) => p.proj_id),
-    userId: user.user_id,
-  })
 
   return json(
-    { projects, deletedProjects, user, collaborators, accessLevels },
+    { projects, deletedProjects, user, collaborators },
     { headers: { 'cache-control': 'no-cache' } },
   )
 }
@@ -76,7 +72,6 @@ const ProjectsPage = React.memo(() => {
     user: UserDetails
     deletedProjects: ProjectWithoutContent[]
     collaborators: CollaboratorsByProject
-    accessLevels: { [projectId: string]: AccessLevel }
   }
 
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
@@ -149,11 +144,7 @@ const ProjectsPage = React.memo(() => {
       >
         <TopActionBar />
         <ProjectsHeader projects={activeProjects} />
-        <ProjectCards
-          projects={filteredProjects}
-          collaborators={data.collaborators}
-          accessLevels={data.accessLevels}
-        />
+        <ProjectCards projects={filteredProjects} collaborators={data.collaborators} />
       </div>
     </div>
   )
@@ -475,11 +466,9 @@ const ProjectCards = React.memo(
   ({
     projects,
     collaborators,
-    accessLevels,
   }: {
     projects: ProjectWithoutContent[]
     collaborators: CollaboratorsByProject
-    accessLevels: { [projectId: string]: AccessLevel }
   }) => {
     const selectedProjectId = useProjectsStore((store) => store.selectedProjectId)
     const setSelectedProjectId = useProjectsStore((store) => store.setSelectedProjectId)
@@ -510,7 +499,6 @@ const ProjectCards = React.memo(
             selected={project.proj_id === selectedProjectId}
             onSelect={() => handleProjectSelect(project)}
             collaborators={collaborators[project.proj_id] ?? []}
-            accessLevel={accessLevels[project.proj_id]}
           />
         ))}
       </div>
@@ -523,13 +511,11 @@ const ProjectCard = React.memo(
   ({
     project,
     collaborators,
-    accessLevel,
     selected,
     onSelect,
   }: {
     project: ProjectWithoutContent
     collaborators: Collaborator[]
-    accessLevel: AccessLevel
     selected: boolean
     onSelect: () => void
   }) => {
@@ -592,36 +578,34 @@ const ProjectCard = React.memo(
             })}
           </div>
         </div>
-        <ProjectCardActions project={project} accessLevel={accessLevel} />
+        <ProjectCardActions project={project} />
       </div>
     )
   },
 )
 ProjectCard.displayName = 'ProjectCard'
 
-const ProjectCardActions = React.memo(
-  ({ project, accessLevel }: { project: ProjectWithoutContent; accessLevel: AccessLevel }) => {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 5, flex: 1 }}>
-          <div style={{ fontWeight: 600, display: 'flex', gap: '10px', alignItems: 'center' }}>
-            <span>{project.title}</span>
-            <ProjectBadge accessLevel={accessLevel} />
-          </div>
-          <div>{moment(project.modified_at).fromNow()}</div>
+const ProjectCardActions = React.memo(({ project }: { project: ProjectWithoutContent }) => {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 5, flex: 1 }}>
+        <div style={{ fontWeight: 600, display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <span>{project.title}</span>
+          <ProjectBadge accessLevel={project.ProjectAccess?.access_level || AccessLevel.PRIVATE} />
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-          <DropdownMenuRoot>
-            <DropdownMenuTrigger asChild>
-              <DotsHorizontalIcon className={button()} />
-            </DropdownMenuTrigger>
-            <ProjectContextMenu project={project} accessLevel={accessLevel} />
-          </DropdownMenuRoot>
-        </div>
+        <div>{moment(project.modified_at).fromNow()}</div>
       </div>
-    )
-  },
-)
+      <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+        <DropdownMenuRoot>
+          <DropdownMenuTrigger asChild>
+            <DotsHorizontalIcon className={button()} />
+          </DropdownMenuTrigger>
+          <ProjectContextMenu project={project} />
+        </DropdownMenuRoot>
+      </div>
+    </div>
+  )
+})
 ProjectCardActions.displayName = 'ProjectCardActions'
 
 const ProjectBadge = React.memo(({ accessLevel }: { accessLevel: AccessLevel }) => {

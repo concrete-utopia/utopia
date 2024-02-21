@@ -35,14 +35,3 @@ export async function handleChangeProjectAccess(req: Request, params: Params<str
 
   return {}
 }
-
-export async function getProjectAccessLevel(req: Request, params: Params<string>) {
-  const { id } = params
-  ensure(id != null, 'id is null', Status.BAD_REQUEST)
-  const accessLevel = await getProjectAccess({ projectId: id })
-  return new Response(JSON.stringify({ accessLevel }), {
-    headers: {
-      'content-type': 'application/json',
-    },
-  })
-}
