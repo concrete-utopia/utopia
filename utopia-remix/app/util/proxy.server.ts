@@ -3,6 +3,8 @@ import { ServerEnvironment } from '../env.server'
 import { proxiedResponse } from './api.server'
 import dns from 'dns'
 
+const ProxyMode = ServerEnvironment.environment !== 'local' ? 'same-origin' : undefined
+
 if (ServerEnvironment.environment === 'local') {
   // this is a workaround for default DNS resolution order with Node > 17 (where ipv6 comes first)
   // https://github.com/node-fetch/node-fetch/issues/1624#issuecomment-1235826631
@@ -26,11 +28,17 @@ export async function proxy(req: Request, options?: { rawOutput?: boolean; path?
 
   console.log(`proxying call to ${url}`)
 
-  const response = await fetch(url, {
+  const requestInitWithoutBody: RequestInit = {
     credentials: 'include',
     method: req.method,
-    body: req.body,
     headers: req.headers,
+    mode: ProxyMode,
+  }
+  console.log(`proxied request data: ${JSON.stringify(requestInitWithoutBody)}`)
+
+  const response = await fetch(url, {
+    ...requestInitWithoutBody,
+    body: req.body,
   })
   if (options?.rawOutput) {
     return response
