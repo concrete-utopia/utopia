@@ -231,6 +231,7 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
                 data-testid='variable-name'
                 style={{
                   textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   opacity: variableOption.variableInfo.matches ? 1 : 0.5,
                 }}
@@ -252,6 +253,7 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
                 fontWeight: 400,
                 color: colorTheme.neutralForeground.value,
                 textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
                 maxWidth: 130,
                 overflow: 'hidden',
                 opacity: variableOption.variableInfo.matches ? 1 : 0.5,
