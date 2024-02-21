@@ -32,13 +32,7 @@ export async function proxy(req: Request, options?: { rawOutput?: boolean; path?
 
   setCopyHeader(req.headers, headers, 'accept-encoding')
   setCopyHeader(req.headers, headers, 'content-type')
-  setCopyHeader(req.headers, headers, 'host')
   setCopyHeader(req.headers, headers, 'cookie')
-  if (ServerEnvironment.environment === 'prod' || ServerEnvironment.environment === 'stage') {
-    const proxiedURL = new URL(url)
-    console.log(`setting proxied host to ${proxiedURL.host}`)
-    headers.set('host', proxiedURL.host)
-  }
 
   const requestInitWithoutBody: RequestInit = {
     credentials: 'include',
