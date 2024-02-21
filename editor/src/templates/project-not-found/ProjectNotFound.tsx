@@ -35,7 +35,9 @@ export default function ProjectNotFound() {
           paddingBottom: '30px',
         }}
       >
-        <div style={{ fontSize: '160px', fontWeight: 600, fontStyle: 'italic', height: '170px' }}>
+        <div
+          style={{ fontSize: '160px', fontWeight: 600, fontStyle: 'italic', lineHeight: 'normal' }}
+        >
           404
         </div>
         <div style={{ fontSize: '42px' }}>Project not found.</div>
