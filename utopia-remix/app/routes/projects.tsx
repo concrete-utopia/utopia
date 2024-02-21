@@ -24,7 +24,7 @@ import { assertNever } from '../util/assertNever'
 import { projectEditorLink } from '../util/links'
 import { when } from '../util/react-conditionals'
 import { multiplayerInitialsFromName } from '../util/strings'
-import { useProjectMatchesQuery, useSortCompareProject } from '../util/useSortCompareProject'
+import { useProjectMatchesQuery, useSortCompareProject } from '../util/use-sort-compare-project'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
