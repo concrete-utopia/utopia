@@ -171,7 +171,7 @@ describe('variables menu', () => {
 
       await selectComponentsForTest(editor, [
         EP.fromString(
-          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/976/020~~~1`,
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/b5f/020~~~1`,
         ),
       ])
 
@@ -206,7 +206,7 @@ describe('variables menu', () => {
 
       await selectComponentsForTest(editor, [
         EP.fromString(
-          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/3e2/586~~~1`,
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/414/586~~~1`,
         ),
       ])
 
@@ -287,7 +287,7 @@ describe('variables menu', () => {
 
       await selectComponentsForTest(editor, [
         EP.fromString(
-          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/3e2/586~~~1`,
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/414/586~~~1`,
         ),
       ])
 
@@ -369,7 +369,7 @@ describe('variables menu', () => {
 
       await selectComponentsForTest(editor, [
         EP.fromString(
-          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/3e2/586~~~1`,
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/414/586~~~1`,
         ),
       ])
 
@@ -451,7 +451,7 @@ describe('variables menu', () => {
 
       await selectComponentsForTest(editor, [
         EP.fromString(
-          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/3e2/586~~~1`,
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/414/586~~~1`,
         ),
       ])
 
@@ -533,7 +533,7 @@ describe('variables menu', () => {
 
       await selectComponentsForTest(editor, [
         EP.fromString(
-          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/3e2/586~~~1`,
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/414/586~~~1`,
         ),
       ])
 
@@ -615,10 +615,10 @@ describe('variables menu', () => {
 
       await selectComponentsForTest(editor, [
         EP.fromString(
-          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/3e2/586~~~1`,
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/414/586~~~1`,
         ),
         EP.fromString(
-          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/3e2/586~~~2`,
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/414/586~~~2`,
         ),
       ])
 

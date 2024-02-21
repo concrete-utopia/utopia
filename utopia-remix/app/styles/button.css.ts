@@ -4,14 +4,15 @@ import { sprinkles } from './sprinkles.css'
 export const button = recipe({
   base: [
     sprinkles({
-      borderRadius: 'medium',
-      color: 'white',
-      boxShadow: 'shadow',
+      borderRadius: 'small',
     }),
     {
+      outline: 'none',
       border: 'none',
+      boxShadow: 'none',
       cursor: 'pointer',
       display: 'flex',
+      flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
       gap: 4,
@@ -24,32 +25,27 @@ export const button = recipe({
 
   variants: {
     color: {
-      neutral: { background: 'whitesmoke' },
-      brand: { background: 'grey' },
-      accent: { background: 'lime' },
-      danger: { background: 'red' },
-    },
-    size: {
-      small: { padding: 8, fontSize: '.9em' },
-      medium: { padding: 10, fontSize: '1em' },
-      large: { padding: 16, fontSize: '1.1em' },
+      neutral: {
+        padding: '6px 12px',
+        background: 'transparent',
+        ':hover': {
+          backgroundColor: '#a4a4a415',
+        },
+        ':active': {
+          backgroundColor: '#a4a4a415',
+        },
+      },
+      subtle: {
+        padding: '6px 10px',
+        backgroundColor: '#a4a4a420',
+        ':hover': {
+          backgroundColor: '#a4a4a435',
+        },
+      },
     },
   },
 
-  compoundVariants: [
-    {
-      variants: {
-        color: 'neutral',
-        size: 'large',
-      },
-      style: {
-        background: 'ghostwhite',
-      },
-    },
-  ],
-
   defaultVariants: {
-    color: 'brand',
-    size: 'medium',
+    color: 'neutral',
   },
 })

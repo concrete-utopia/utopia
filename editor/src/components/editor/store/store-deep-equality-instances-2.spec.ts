@@ -166,6 +166,7 @@ describe('ElementsWithinKeepDeepEqualityCall', () => {
 describe('ArbitraryJsBlockKeepDeepEquality', () => {
   const oldValue: ArbitraryJSBlock = {
     type: 'ARBITRARY_JS_BLOCK',
+    params: [],
     javascript: 'old',
     transpiledJavascript: 'old',
     definedWithin: ['old'],
@@ -176,6 +177,7 @@ describe('ArbitraryJsBlockKeepDeepEquality', () => {
   }
   const newSameValue: ArbitraryJSBlock = {
     type: 'ARBITRARY_JS_BLOCK',
+    params: [],
     javascript: 'old',
     transpiledJavascript: 'old',
     definedWithin: ['old'],
@@ -186,6 +188,7 @@ describe('ArbitraryJsBlockKeepDeepEquality', () => {
   }
   const newDifferentValue: ArbitraryJSBlock = {
     type: 'ARBITRARY_JS_BLOCK',
+    params: [],
     javascript: 'new',
     transpiledJavascript: 'old',
     definedWithin: ['old'],
@@ -811,6 +814,7 @@ describe('UtopiaJSXComponentKeepDeepEquality', () => {
     },
     arbitraryJSBlock: {
       type: 'ARBITRARY_JS_BLOCK',
+      params: [],
       javascript: 'old',
       transpiledJavascript: 'old',
       definedWithin: ['old'],
@@ -858,6 +862,7 @@ describe('UtopiaJSXComponentKeepDeepEquality', () => {
     },
     arbitraryJSBlock: {
       type: 'ARBITRARY_JS_BLOCK',
+      params: [],
       javascript: 'old',
       transpiledJavascript: 'old',
       definedWithin: ['old'],
@@ -905,6 +910,7 @@ describe('UtopiaJSXComponentKeepDeepEquality', () => {
     },
     arbitraryJSBlock: {
       type: 'ARBITRARY_JS_BLOCK',
+      params: [],
       javascript: 'old',
       transpiledJavascript: 'old',
       definedWithin: ['old'],

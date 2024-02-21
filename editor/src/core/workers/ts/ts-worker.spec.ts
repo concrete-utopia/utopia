@@ -180,6 +180,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                         type: 'SPREAD_ASSIGNMENT',
                         value: {
                           type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
+                          params: [],
                           originalJavascript: 'props.style',
                           javascript: 'props.style',
                           transpiledJavascript: 'return props.style;',
@@ -205,6 +206,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                         key: 'backgroundColor',
                         value: {
                           type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
+                          params: [],
                           originalJavascript: 'colorTheme.white.value',
                           javascript: 'colorTheme.white.value',
                           transpiledJavascript: 'return colorTheme.white.value;',

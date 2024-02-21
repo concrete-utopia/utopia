@@ -295,7 +295,7 @@ Object {
       },
       "sourceMap": Object {
         "file": "app.js",
-        "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AACA,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AASA,IAAA,OAAA,GAAA,OAAA,CAAA,OAAA,CAAA;;AAqCW,OAAA,CAAA,cAAA,GAAiB;AAC1B,EAAA,YAAY,EAAE,EADY;AAE1B,EAAA,YAAY,EAAE,EAFY;AAG1B,EAAA,MAAM,EAAE,CACN;AACE,IAAA,SAAS,EAAE,KADb;AAEE,IAAA,KAAK,EAAE;AAAE,MAAA,MAAM,EAAE,GAAV;AAAe,MAAA,IAAI,EAAE,CAArB;AAAwB,MAAA,KAAK,EAAE,GAA/B;AAAoC,MAAA,GAAG,EAAE;AAAzC,KAFT;AAGE,IAAA,KAAK,EAAE;AAAE,MAAA,MAAM,EAAE;AAAE,QAAA,GAAG,EAAE,CAAP;AAAU,QAAA,IAAI,EAAE,CAAhB;AAAmB,QAAA,MAAM,EAAE,CAA3B;AAA8B,QAAA,KAAK,EAAE;AAArC;AAAV,KAHT;AAIE,IAAA,SAAS,EAAE;AAAE,MAAA,YAAY,EAAE;AAAhB;AAJb,GADM,CAHkB;AAW1B,EAAA,eAAe,EAAE;AAXS,CAAjB;;AAeJ,IAAI,GAAG,GAAG,SAAN,GAAM,CAAC,KAAD,EAAU;AACzB,SACE,CAAA,GAAA,aAAA,CAAA,GAAA,EAAC,YAAA,CAAA,IAAD,EAAK;AACH,IAAA,KAAK,EAAE,EAAE,GAAG,KAAK,CAAC,KAAX;AAAkB,MAAA,eAAe,EAAE,OAAA,CAAA,UAAA,CAAW,KAAX,CAAiB;AAApD,KADJ;AAEH,IAAA,MAAM,EAAE;AAAE,MAAA,YAAY,EAAE;AAAhB,KAFL;AAEkC,gBAC3B;AAHP,GAAL,CADF;AAOD,CARM;;AAAI,OAAA,CAAA,GAAA,GAAG,GAAH,C",
+        "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AACA,MAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,MAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AASA,MAAA,OAAA,GAAA,OAAA,CAAA,OAAA,CAAA;;AAqCW,OAAA,CAAA,cAAA,GAAiB;AAC1B,EAAA,YAAY,EAAE,EADY;AAE1B,EAAA,YAAY,EAAE,EAFY;AAG1B,EAAA,MAAM,EAAE,CACN;AACE,IAAA,SAAS,EAAE,KADb;AAEE,IAAA,KAAK,EAAE;AAAE,MAAA,MAAM,EAAE,GAAV;AAAe,MAAA,IAAI,EAAE,CAArB;AAAwB,MAAA,KAAK,EAAE,GAA/B;AAAoC,MAAA,GAAG,EAAE;AAAzC,KAFT;AAGE,IAAA,KAAK,EAAE;AAAE,MAAA,MAAM,EAAE;AAAE,QAAA,GAAG,EAAE,CAAP;AAAU,QAAA,IAAI,EAAE,CAAhB;AAAmB,QAAA,MAAM,EAAE,CAA3B;AAA8B,QAAA,KAAK,EAAE;AAArC;AAAV,KAHT;AAIE,IAAA,SAAS,EAAE;AAAE,MAAA,YAAY,EAAE;AAAhB;AAJb,GADM,CAHkB;AAW1B,EAAA,eAAe,EAAE;AAXS,CAAjB;;AAeJ,IAAI,GAAG,GAAI,KAAD,IAAU;AACzB,SACE,CAAA,GAAA,aAAA,CAAA,GAAA,EAAC,YAAA,CAAA,IAAD,EAAK;AACH,IAAA,KAAK,EAAE,EAAE,GAAG,KAAK,CAAC,KAAX;AAAkB,MAAA,eAAe,EAAE,OAAA,CAAA,UAAA,CAAW,KAAX,CAAiB;AAApD,KADJ;AAEH,IAAA,MAAM,EAAE;AAAE,MAAA,YAAY,EAAE;AAAhB,KAFL;AAEkC,gBAC3B;AAHP,GAAL,CADF;AAOD,CARM;;AAAI,OAAA,CAAA,GAAA,GAAG,GAAH,C",
         "names": Array [],
         "sourceRoot": "",
         "sources": Array [
@@ -388,7 +388,7 @@ var __createBinding = this && this.__createBinding || (Object.create ? function 
   if (!desc || (\\"get\\" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
     desc = {
       enumerable: true,
-      get: function get() {
+      get: function () {
         return m[k];
       }
     };
@@ -412,9 +412,7 @@ var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? fun
 var __importStar = this && this.__importStar || function (mod) {
   if (mod && mod.__esModule) return mod;
   var result = {};
-  if (mod != null) for (var k in mod) {
-    if (k !== \\"default\\" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-  }
+  if (mod != null) for (var k in mod) if (k !== \\"default\\" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
 
   __setModuleDefault(result, mod);
 
@@ -426,13 +424,13 @@ Object.defineProperty(exports, \\"__esModule\\", {
 });
 exports.App = exports.canvasMetadata = void 0;
 
-var jsx_runtime_1 = require(\\"react/jsx-runtime\\");
+const jsx_runtime_1 = require(\\"react/jsx-runtime\\");
 
-var React = __importStar(require(\\"react\\"));
+const React = __importStar(require(\\"react\\"));
 
-var utopia_api_1 = require(\\"utopia-api\\");
+const utopia_api_1 = require(\\"utopia-api\\");
 
-var uuiui_1 = require(\\"uuiui\\");
+const uuiui_1 = require(\\"uuiui\\");
 
 exports.canvasMetadata = {
   specialNodes: [],
@@ -460,7 +458,7 @@ exports.canvasMetadata = {
   elementMetadata: {}
 };
 
-var App = function App(props) {
+var App = props => {
   return (0, jsx_runtime_1.jsx)(utopia_api_1.View, {
     style: { ...props.style,
       backgroundColor: uuiui_1.colorTheme.white.value
@@ -498,7 +496,7 @@ exports.App = App; //# sourceMappingURL=app.js.map",
       },
       "sourceMap": Object {
         "file": "components.js",
-        "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;kDAAA;;;AACA,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AAEA,OAAA,CAAA,OAAA,GAAe,UAAC,KAAD;AAAA,SACb,CAAA,GAAA,aAAA,CAAA,GAAA,EAAC,YAAA,CAAA,IAAD,EAAK;AAAC,IAAA,MAAM,EAAE,KAAK,CAAC,MAAf;AAAuB,IAAA,KAAK,EAAE,KAAK,CAAC,KAApC;AAA2C,IAAA,WAAW,EAAE,KAAK,CAAC,WAA9D;AAAyE,IAAA,QAAA,EAC5E,CAAA,GAAA,aAAA,CAAA,GAAA,EAAC,YAAA,CAAA,IAAD,EAAK;AACH,MAAA,KAAK,EAAE;AAAE,QAAA,QAAQ,EAAE,EAAZ;AAAgB,QAAA,SAAS,EAAE;AAA3B,OADJ;AAEH,MAAA,IAAI,EAAE,KAAK,CAAC,IAFT;AAGH,MAAA,MAAM,EAAE;AACN,QAAA,IAAI,EAAE,CADA;AAEN,QAAA,GAAG,EAAE,EAFC;AAGN,QAAA,KAAK,EAAE,MAHD;AAIN,QAAA,MAAM,EAAE;AAJF,OAHL;AASH,MAAA,UAAU,EAAE;AATT,KAAL;AADG,GAAL,CADa;AAAA,CAAf;;AAgBa,OAAA,CAAA,KAAA,GAAQ,cAAR;;AAEN,IAAM,kBAAkB,GAAG,SAArB,kBAAqB,CAAC,KAAD,EAAU;AAC1C,SACE,CAAA,GAAA,aAAA,CAAA,GAAA,EAAA,KAAA,EAAA;AACE,IAAA,KAAK,EAAE,EACL,GAAG,KAAK,CAAC,KADJ;AAEL,MAAA,eAAe,EAAE,KAAK,CAAC,IAAN,GAAa,SAAb,GAAyB,aAFrC;AAGL,MAAA,UAAU,EAAE;AAHP,KADT;AAKG,IAAA,QAAA,EAEA,CAAC,KAAK,CAAC,IAAN,GAAa,GAAd,EAAmB,MAAnB,CAA0B,KAAK,CAAC,GAAhC;AAPH,GAAA,CADF;AAWD,CAZM;;AAAM,OAAA,CAAA,kBAAA,GAAkB,kBAAlB;AAcb,OAAA,CAAA,kBAAA,CAAmB,gBAAnB,GAAsC;AACpC,EAAA,IAAI,EAAE;AACJ,IAAA,IAAI,EAAE,QADF;AAEJ,IAAA,KAAK,EAAE,OAFH;AAGJ,IAAA,YAAY,EAAE;AAHV,GAD8B;AAMpC,EAAA,GAAG,EAAE;AACH,IAAA,IAAI,EAAE,QADH;AAEH,IAAA,KAAK,EAAE,QAFJ;AAGH,IAAA,YAAY,EAAE;AAHX,GAN+B;AAWpC,EAAA,IAAI,EAAE;AACJ,IAAA,IAAI,EAAE,SADF;AAEJ,IAAA,KAAK,EAAE,SAFH;AAGJ,IAAA,YAAY,EAAE;AAHV;AAX8B,CAAtC,C",
+        "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;oDAAA;;;AACA,MAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,MAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AAEA,OAAA,CAAA,OAAA,GAAgB,KAAD,IACb,CAAA,GAAA,aAAA,CAAA,GAAA,EAAC,YAAA,CAAA,IAAD,EAAK;AAAC,EAAA,MAAM,EAAE,KAAK,CAAC,MAAf;AAAuB,EAAA,KAAK,EAAE,KAAK,CAAC,KAApC;AAA2C,EAAA,WAAW,EAAE,KAAK,CAAC,WAA9D;AAAyE,EAAA,QAAA,EAC5E,CAAA,GAAA,aAAA,CAAA,GAAA,EAAC,YAAA,CAAA,IAAD,EAAK;AACH,IAAA,KAAK,EAAE;AAAE,MAAA,QAAQ,EAAE,EAAZ;AAAgB,MAAA,SAAS,EAAE;AAA3B,KADJ;AAEH,IAAA,IAAI,EAAE,KAAK,CAAC,IAFT;AAGH,IAAA,MAAM,EAAE;AACN,MAAA,IAAI,EAAE,CADA;AAEN,MAAA,GAAG,EAAE,EAFC;AAGN,MAAA,KAAK,EAAE,MAHD;AAIN,MAAA,MAAM,EAAE;AAJF,KAHL;AASH,IAAA,UAAU,EAAE;AATT,GAAL;AADG,CAAL,CADF;;AAgBa,OAAA,CAAA,KAAA,GAAQ,cAAR;;AAEN,MAAM,kBAAkB,GAAI,KAAD,IAAU;AAC1C,SACE,CAAA,GAAA,aAAA,CAAA,GAAA,EAAA,KAAA,EAAA;AACE,IAAA,KAAK,EAAE,EACL,GAAG,KAAK,CAAC,KADJ;AAEL,MAAA,eAAe,EAAE,KAAK,CAAC,IAAN,GAAa,SAAb,GAAyB,aAFrC;AAGL,MAAA,UAAU,EAAE;AAHP,KADT;AAKG,IAAA,QAAA,EAEA,CAAC,KAAK,CAAC,IAAN,GAAa,GAAd,EAAmB,MAAnB,CAA0B,KAAK,CAAC,GAAhC;AAPH,GAAA,CADF;AAWD,CAZM;;AAAM,OAAA,CAAA,kBAAA,GAAkB,kBAAlB;AAcb,OAAA,CAAA,kBAAA,CAAmB,gBAAnB,GAAsC;AACpC,EAAA,IAAI,EAAE;AACJ,IAAA,IAAI,EAAE,QADF;AAEJ,IAAA,KAAK,EAAE,OAFH;AAGJ,IAAA,YAAY,EAAE;AAHV,GAD8B;AAMpC,EAAA,GAAG,EAAE;AACH,IAAA,IAAI,EAAE,QADH;AAEH,IAAA,KAAK,EAAE,QAFJ;AAGH,IAAA,YAAY,EAAE;AAHX,GAN+B;AAWpC,EAAA,IAAI,EAAE;AACJ,IAAA,IAAI,EAAE,SADF;AAEJ,IAAA,KAAK,EAAE,SAFH;AAGJ,IAAA,YAAY,EAAE;AAHV;AAX8B,CAAtC,C",
         "names": Array [],
         "sourceRoot": "",
         "sources": Array [
@@ -572,7 +570,7 @@ var __createBinding = this && this.__createBinding || (Object.create ? function 
   if (!desc || (\\"get\\" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
     desc = {
       enumerable: true,
-      get: function get() {
+      get: function () {
         return m[k];
       }
     };
@@ -596,9 +594,7 @@ var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? fun
 var __importStar = this && this.__importStar || function (mod) {
   if (mod && mod.__esModule) return mod;
   var result = {};
-  if (mod != null) for (var k in mod) {
-    if (k !== \\"default\\" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-  }
+  if (mod != null) for (var k in mod) if (k !== \\"default\\" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
 
   __setModuleDefault(result, mod);
 
@@ -610,38 +606,36 @@ Object.defineProperty(exports, \\"__esModule\\", {
 });
 exports.ComponentWithProps = exports.LABEL = void 0;
 
-var jsx_runtime_1 = require(\\"react/jsx-runtime\\"); // component library
+const jsx_runtime_1 = require(\\"react/jsx-runtime\\"); // component library
 
 
-var React = __importStar(require(\\"react\\"));
+const React = __importStar(require(\\"react\\"));
 
-var utopia_api_1 = require(\\"utopia-api\\");
+const utopia_api_1 = require(\\"utopia-api\\");
 
-exports.default = function (props) {
-  return (0, jsx_runtime_1.jsx)(utopia_api_1.View, {
-    layout: props.layout,
-    style: props.style,
-    onMouseDown: props.onMouseDown,
-    children: (0, jsx_runtime_1.jsx)(utopia_api_1.Text, {
-      style: {
-        fontSize: 16,
-        textAlign: 'center'
-      },
-      text: props.text,
-      layout: {
-        left: 0,
-        top: 10,
-        width: '100%',
-        height: '100%'
-      },
-      textSizing: 'fixed'
-    })
-  });
-};
+exports.default = props => (0, jsx_runtime_1.jsx)(utopia_api_1.View, {
+  layout: props.layout,
+  style: props.style,
+  onMouseDown: props.onMouseDown,
+  children: (0, jsx_runtime_1.jsx)(utopia_api_1.Text, {
+    style: {
+      fontSize: 16,
+      textAlign: 'center'
+    },
+    text: props.text,
+    layout: {
+      left: 0,
+      top: 10,
+      width: '100%',
+      height: '100%'
+    },
+    textSizing: 'fixed'
+  })
+});
 
 exports.LABEL = 'press me! 😉';
 
-var ComponentWithProps = function ComponentWithProps(props) {
+const ComponentWithProps = props => {
   return (0, jsx_runtime_1.jsx)(\\"div\\", {
     style: { ...props.style,
       backgroundColor: props.pink ? 'hotpink' : 'transparent',
@@ -872,7 +866,7 @@ ReactDOM.render(<App />, root);
       "errors": Array [],
       "sourceMap": Object {
         "file": "app.js",
-        "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AACA,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AASA,IAAA,OAAA,GAAA,OAAA,CAAA,OAAA,CAAA;;AAqCW,OAAA,CAAA,cAAA,GAAiB;AAC1B,EAAA,YAAY,EAAE,EADY;AAE1B,EAAA,YAAY,EAAE,EAFY;AAG1B,EAAA,MAAM,EAAE,CACN;AACE,IAAA,SAAS,EAAE,KADb;AAEE,IAAA,KAAK,EAAE;AAAE,MAAA,MAAM,EAAE,GAAV;AAAe,MAAA,IAAI,EAAE,CAArB;AAAwB,MAAA,KAAK,EAAE,GAA/B;AAAoC,MAAA,GAAG,EAAE;AAAzC,KAFT;AAGE,IAAA,KAAK,EAAE;AAAE,MAAA,MAAM,EAAE;AAAE,QAAA,GAAG,EAAE,CAAP;AAAU,QAAA,IAAI,EAAE,CAAhB;AAAmB,QAAA,MAAM,EAAE,CAA3B;AAA8B,QAAA,KAAK,EAAE;AAArC;AAAV,KAHT;AAIE,IAAA,SAAS,EAAE;AAAE,MAAA,YAAY,EAAE;AAAhB;AAJb,GADM,CAHkB;AAW1B,EAAA,eAAe,EAAE;AAXS,CAAjB;;AAeJ,IAAI,GAAG,GAAG,SAAN,GAAM,CAAC,KAAD,EAAU;AACzB,SACE,CAAA,GAAA,aAAA,CAAA,GAAA,EAAC,YAAA,CAAA,IAAD,EAAK;AACH,IAAA,KAAK,EAAE,EAAE,GAAG,KAAK,CAAC,KAAX;AAAkB,MAAA,eAAe,EAAE,OAAA,CAAA,UAAA,CAAW,KAAX,CAAiB;AAApD,KADJ;AAEH,IAAA,MAAM,EAAE;AAAE,MAAA,YAAY,EAAE;AAAhB,KAFL;AAEkC,gBAC3B;AAHP,GAAL,CADF;AAOD,CARM;;AAAI,OAAA,CAAA,GAAA,GAAG,GAAH,C",
+        "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AACA,MAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,MAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AASA,MAAA,OAAA,GAAA,OAAA,CAAA,OAAA,CAAA;;AAqCW,OAAA,CAAA,cAAA,GAAiB;AAC1B,EAAA,YAAY,EAAE,EADY;AAE1B,EAAA,YAAY,EAAE,EAFY;AAG1B,EAAA,MAAM,EAAE,CACN;AACE,IAAA,SAAS,EAAE,KADb;AAEE,IAAA,KAAK,EAAE;AAAE,MAAA,MAAM,EAAE,GAAV;AAAe,MAAA,IAAI,EAAE,CAArB;AAAwB,MAAA,KAAK,EAAE,GAA/B;AAAoC,MAAA,GAAG,EAAE;AAAzC,KAFT;AAGE,IAAA,KAAK,EAAE;AAAE,MAAA,MAAM,EAAE;AAAE,QAAA,GAAG,EAAE,CAAP;AAAU,QAAA,IAAI,EAAE,CAAhB;AAAmB,QAAA,MAAM,EAAE,CAA3B;AAA8B,QAAA,KAAK,EAAE;AAArC;AAAV,KAHT;AAIE,IAAA,SAAS,EAAE;AAAE,MAAA,YAAY,EAAE;AAAhB;AAJb,GADM,CAHkB;AAW1B,EAAA,eAAe,EAAE;AAXS,CAAjB;;AAeJ,IAAI,GAAG,GAAI,KAAD,IAAU;AACzB,SACE,CAAA,GAAA,aAAA,CAAA,GAAA,EAAC,YAAA,CAAA,IAAD,EAAK;AACH,IAAA,KAAK,EAAE,EAAE,GAAG,KAAK,CAAC,KAAX;AAAkB,MAAA,eAAe,EAAE,OAAA,CAAA,UAAA,CAAW,KAAX,CAAiB;AAApD,KADJ;AAEH,IAAA,MAAM,EAAE;AAAE,MAAA,YAAY,EAAE;AAAhB,KAFL;AAEkC,gBAC3B;AAHP,GAAL,CADF;AAOD,CARM;;AAAI,OAAA,CAAA,GAAA,GAAG,GAAH,C",
         "names": Array [],
         "sourceRoot": "",
         "sources": Array [
@@ -965,7 +959,7 @@ var __createBinding = this && this.__createBinding || (Object.create ? function 
   if (!desc || (\\"get\\" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
     desc = {
       enumerable: true,
-      get: function get() {
+      get: function () {
         return m[k];
       }
     };
@@ -989,9 +983,7 @@ var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? fun
 var __importStar = this && this.__importStar || function (mod) {
   if (mod && mod.__esModule) return mod;
   var result = {};
-  if (mod != null) for (var k in mod) {
-    if (k !== \\"default\\" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-  }
+  if (mod != null) for (var k in mod) if (k !== \\"default\\" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
 
   __setModuleDefault(result, mod);
 
@@ -1003,13 +995,13 @@ Object.defineProperty(exports, \\"__esModule\\", {
 });
 exports.App = exports.canvasMetadata = void 0;
 
-var jsx_runtime_1 = require(\\"react/jsx-runtime\\");
+const jsx_runtime_1 = require(\\"react/jsx-runtime\\");
 
-var React = __importStar(require(\\"react\\"));
+const React = __importStar(require(\\"react\\"));
 
-var utopia_api_1 = require(\\"utopia-api\\");
+const utopia_api_1 = require(\\"utopia-api\\");
 
-var uuiui_1 = require(\\"uuiui\\");
+const uuiui_1 = require(\\"uuiui\\");
 
 exports.canvasMetadata = {
   specialNodes: [],
@@ -1037,7 +1029,7 @@ exports.canvasMetadata = {
   elementMetadata: {}
 };
 
-var App = function App(props) {
+var App = props => {
   return (0, jsx_runtime_1.jsx)(utopia_api_1.View, {
     style: { ...props.style,
       backgroundColor: uuiui_1.colorTheme.white.value
@@ -1055,7 +1047,7 @@ exports.App = App; //# sourceMappingURL=app.js.map",
       "errors": Array [],
       "sourceMap": Object {
         "file": "preview.js",
-        "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAAA,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,QAAA,GAAA,YAAA,CAAA,OAAA,CAAA,WAAA,CAAA,CAAA;;AACA,IAAA,KAAA,GAAA,OAAA,CAAA,QAAA,CAAA;;AAEA,IAAM,IAAI,GAAG,QAAQ,CAAC,cAAT,CAAwB,MAAxB,CAAb;;AACA,IAAI,IAAI,IAAI,IAAZ,EAAkB;AAClB,EAAA,QAAQ,CAAC,MAAT,CAAgB,CAAA,GAAA,aAAA,CAAA,GAAA,EAAC,KAAA,CAAA,GAAD,EAAI,EAAJ,CAAhB,EAAyB,IAAzB;AACC,C",
+        "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAAA,MAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,MAAA,QAAA,GAAA,YAAA,CAAA,OAAA,CAAA,WAAA,CAAA,CAAA;;AACA,MAAA,KAAA,GAAA,OAAA,CAAA,QAAA,CAAA;;AAEA,MAAM,IAAI,GAAG,QAAQ,CAAC,cAAT,CAAwB,MAAxB,CAAb;;AACA,IAAI,IAAI,IAAI,IAAZ,EAAkB;AAClB,EAAA,QAAQ,CAAC,MAAT,CAAgB,CAAA,GAAA,aAAA,CAAA,GAAA,EAAC,KAAA,CAAA,GAAD,EAAI,EAAJ,CAAhB,EAAyB,IAAzB;AACC,C",
         "names": Array [],
         "sourceRoot": "",
         "sources": Array [
@@ -1082,7 +1074,7 @@ var __createBinding = this && this.__createBinding || (Object.create ? function 
   if (!desc || (\\"get\\" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
     desc = {
       enumerable: true,
-      get: function get() {
+      get: function () {
         return m[k];
       }
     };
@@ -1106,9 +1098,7 @@ var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? fun
 var __importStar = this && this.__importStar || function (mod) {
   if (mod && mod.__esModule) return mod;
   var result = {};
-  if (mod != null) for (var k in mod) {
-    if (k !== \\"default\\" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-  }
+  if (mod != null) for (var k in mod) if (k !== \\"default\\" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
 
   __setModuleDefault(result, mod);
 
@@ -1119,15 +1109,15 @@ Object.defineProperty(exports, \\"__esModule\\", {
   value: true
 });
 
-var jsx_runtime_1 = require(\\"react/jsx-runtime\\");
+const jsx_runtime_1 = require(\\"react/jsx-runtime\\");
 
-var React = __importStar(require(\\"react\\"));
+const React = __importStar(require(\\"react\\"));
 
-var ReactDOM = __importStar(require(\\"react-dom\\"));
+const ReactDOM = __importStar(require(\\"react-dom\\"));
 
-var app_1 = require(\\"../app\\");
+const app_1 = require(\\"../app\\");
 
-var root = document.getElementById(\\"root\\");
+const root = document.getElementById(\\"root\\");
 
 if (root != null) {
   ReactDOM.render((0, jsx_runtime_1.jsx)(app_1.App, {}), root);
@@ -1137,7 +1127,7 @@ if (root != null) {
       "errors": Array [],
       "sourceMap": Object {
         "file": "components.js",
-        "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;kDAAA;;;AACA,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AAEA,OAAA,CAAA,OAAA,GAAe,UAAC,KAAD;AAAA,SACb,CAAA,GAAA,aAAA,CAAA,GAAA,EAAC,YAAA,CAAA,IAAD,EAAK;AAAC,IAAA,MAAM,EAAE,KAAK,CAAC,MAAf;AAAuB,IAAA,KAAK,EAAE,KAAK,CAAC,KAApC;AAA2C,IAAA,WAAW,EAAE,KAAK,CAAC,WAA9D;AAAyE,IAAA,QAAA,EAC5E,CAAA,GAAA,aAAA,CAAA,GAAA,EAAC,YAAA,CAAA,IAAD,EAAK;AACH,MAAA,KAAK,EAAE;AAAE,QAAA,QAAQ,EAAE,EAAZ;AAAgB,QAAA,SAAS,EAAE;AAA3B,OADJ;AAEH,MAAA,IAAI,EAAE,KAAK,CAAC,IAFT;AAGH,MAAA,MAAM,EAAE;AACN,QAAA,IAAI,EAAE,CADA;AAEN,QAAA,GAAG,EAAE,EAFC;AAGN,QAAA,KAAK,EAAE,MAHD;AAIN,QAAA,MAAM,EAAE;AAJF,OAHL;AASH,MAAA,UAAU,EAAE;AATT,KAAL;AADG,GAAL,CADa;AAAA,CAAf;;AAgBa,OAAA,CAAA,KAAA,GAAQ,cAAR;;AAEN,IAAM,kBAAkB,GAAG,SAArB,kBAAqB,CAAC,KAAD,EAAU;AAC1C,SACE,CAAA,GAAA,aAAA,CAAA,GAAA,EAAA,KAAA,EAAA;AACE,IAAA,KAAK,EAAE,EACL,GAAG,KAAK,CAAC,KADJ;AAEL,MAAA,eAAe,EAAE,KAAK,CAAC,IAAN,GAAa,SAAb,GAAyB,aAFrC;AAGL,MAAA,UAAU,EAAE;AAHP,KADT;AAKG,IAAA,QAAA,EAEA,CAAC,KAAK,CAAC,IAAN,GAAa,GAAd,EAAmB,MAAnB,CAA0B,KAAK,CAAC,GAAhC;AAPH,GAAA,CADF;AAWD,CAZM;;AAAM,OAAA,CAAA,kBAAA,GAAkB,kBAAlB;AAcb,OAAA,CAAA,kBAAA,CAAmB,gBAAnB,GAAsC;AACpC,EAAA,IAAI,EAAE;AACJ,IAAA,IAAI,EAAE,QADF;AAEJ,IAAA,KAAK,EAAE,OAFH;AAGJ,IAAA,YAAY,EAAE;AAHV,GAD8B;AAMpC,EAAA,GAAG,EAAE;AACH,IAAA,IAAI,EAAE,QADH;AAEH,IAAA,KAAK,EAAE,QAFJ;AAGH,IAAA,YAAY,EAAE;AAHX,GAN+B;AAWpC,EAAA,IAAI,EAAE;AACJ,IAAA,IAAI,EAAE,SADF;AAEJ,IAAA,KAAK,EAAE,SAFH;AAGJ,IAAA,YAAY,EAAE;AAHV;AAX8B,CAAtC,C",
+        "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;oDAAA;;;AACA,MAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,MAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AAEA,OAAA,CAAA,OAAA,GAAgB,KAAD,IACb,CAAA,GAAA,aAAA,CAAA,GAAA,EAAC,YAAA,CAAA,IAAD,EAAK;AAAC,EAAA,MAAM,EAAE,KAAK,CAAC,MAAf;AAAuB,EAAA,KAAK,EAAE,KAAK,CAAC,KAApC;AAA2C,EAAA,WAAW,EAAE,KAAK,CAAC,WAA9D;AAAyE,EAAA,QAAA,EAC5E,CAAA,GAAA,aAAA,CAAA,GAAA,EAAC,YAAA,CAAA,IAAD,EAAK;AACH,IAAA,KAAK,EAAE;AAAE,MAAA,QAAQ,EAAE,EAAZ;AAAgB,MAAA,SAAS,EAAE;AAA3B,KADJ;AAEH,IAAA,IAAI,EAAE,KAAK,CAAC,IAFT;AAGH,IAAA,MAAM,EAAE;AACN,MAAA,IAAI,EAAE,CADA;AAEN,MAAA,GAAG,EAAE,EAFC;AAGN,MAAA,KAAK,EAAE,MAHD;AAIN,MAAA,MAAM,EAAE;AAJF,KAHL;AASH,IAAA,UAAU,EAAE;AATT,GAAL;AADG,CAAL,CADF;;AAgBa,OAAA,CAAA,KAAA,GAAQ,cAAR;;AAEN,MAAM,kBAAkB,GAAI,KAAD,IAAU;AAC1C,SACE,CAAA,GAAA,aAAA,CAAA,GAAA,EAAA,KAAA,EAAA;AACE,IAAA,KAAK,EAAE,EACL,GAAG,KAAK,CAAC,KADJ;AAEL,MAAA,eAAe,EAAE,KAAK,CAAC,IAAN,GAAa,SAAb,GAAyB,aAFrC;AAGL,MAAA,UAAU,EAAE;AAHP,KADT;AAKG,IAAA,QAAA,EAEA,CAAC,KAAK,CAAC,IAAN,GAAa,GAAd,EAAmB,MAAnB,CAA0B,KAAK,CAAC,GAAhC;AAPH,GAAA,CADF;AAWD,CAZM;;AAAM,OAAA,CAAA,kBAAA,GAAkB,kBAAlB;AAcb,OAAA,CAAA,kBAAA,CAAmB,gBAAnB,GAAsC;AACpC,EAAA,IAAI,EAAE;AACJ,IAAA,IAAI,EAAE,QADF;AAEJ,IAAA,KAAK,EAAE,OAFH;AAGJ,IAAA,YAAY,EAAE;AAHV,GAD8B;AAMpC,EAAA,GAAG,EAAE;AACH,IAAA,IAAI,EAAE,QADH;AAEH,IAAA,KAAK,EAAE,QAFJ;AAGH,IAAA,YAAY,EAAE;AAHX,GAN+B;AAWpC,EAAA,IAAI,EAAE;AACJ,IAAA,IAAI,EAAE,SADF;AAEJ,IAAA,KAAK,EAAE,SAFH;AAGJ,IAAA,YAAY,EAAE;AAHV;AAX8B,CAAtC,C",
         "names": Array [],
         "sourceRoot": "",
         "sources": Array [
@@ -1211,7 +1201,7 @@ var __createBinding = this && this.__createBinding || (Object.create ? function 
   if (!desc || (\\"get\\" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
     desc = {
       enumerable: true,
-      get: function get() {
+      get: function () {
         return m[k];
       }
     };
@@ -1235,9 +1225,7 @@ var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? fun
 var __importStar = this && this.__importStar || function (mod) {
   if (mod && mod.__esModule) return mod;
   var result = {};
-  if (mod != null) for (var k in mod) {
-    if (k !== \\"default\\" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-  }
+  if (mod != null) for (var k in mod) if (k !== \\"default\\" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
 
   __setModuleDefault(result, mod);
 
@@ -1249,38 +1237,36 @@ Object.defineProperty(exports, \\"__esModule\\", {
 });
 exports.ComponentWithProps = exports.LABEL = void 0;
 
-var jsx_runtime_1 = require(\\"react/jsx-runtime\\"); // component library
+const jsx_runtime_1 = require(\\"react/jsx-runtime\\"); // component library
 
 
-var React = __importStar(require(\\"react\\"));
+const React = __importStar(require(\\"react\\"));
 
-var utopia_api_1 = require(\\"utopia-api\\");
+const utopia_api_1 = require(\\"utopia-api\\");
 
-exports.default = function (props) {
-  return (0, jsx_runtime_1.jsx)(utopia_api_1.View, {
-    layout: props.layout,
-    style: props.style,
-    onMouseDown: props.onMouseDown,
-    children: (0, jsx_runtime_1.jsx)(utopia_api_1.Text, {
-      style: {
-        fontSize: 16,
-        textAlign: 'center'
-      },
-      text: props.text,
-      layout: {
-        left: 0,
-        top: 10,
-        width: '100%',
-        height: '100%'
-      },
-      textSizing: 'fixed'
-    })
-  });
-};
+exports.default = props => (0, jsx_runtime_1.jsx)(utopia_api_1.View, {
+  layout: props.layout,
+  style: props.style,
+  onMouseDown: props.onMouseDown,
+  children: (0, jsx_runtime_1.jsx)(utopia_api_1.Text, {
+    style: {
+      fontSize: 16,
+      textAlign: 'center'
+    },
+    text: props.text,
+    layout: {
+      left: 0,
+      top: 10,
+      width: '100%',
+      height: '100%'
+    },
+    textSizing: 'fixed'
+  })
+});
 
 exports.LABEL = 'press me! 😉';
 
-var ComponentWithProps = function ComponentWithProps(props) {
+const ComponentWithProps = props => {
   return (0, jsx_runtime_1.jsx)(\\"div\\", {
     style: { ...props.style,
       backgroundColor: props.pink ? 'hotpink' : 'transparent',
@@ -1341,7 +1327,7 @@ Object {
       },
       "sourceMap": Object {
         "file": "app.js",
-        "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AACA,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AASA,IAAA,OAAA,GAAA,OAAA,CAAA,OAAA,CAAA;;AAqCW,OAAA,CAAA,cAAA,GAAiB;AAC1B,EAAA,YAAY,EAAE,EADY;AAE1B,EAAA,YAAY,EAAE,EAFY;AAG1B,EAAA,MAAM,EAAE,CACN;AACE,IAAA,SAAS,EAAE,KADb;AAEE,IAAA,KAAK,EAAE;AAAE,MAAA,MAAM,EAAE,GAAV;AAAe,MAAA,IAAI,EAAE,CAArB;AAAwB,MAAA,KAAK,EAAE,GAA/B;AAAoC,MAAA,GAAG,EAAE;AAAzC,KAFT;AAGE,IAAA,KAAK,EAAE;AAAE,MAAA,MAAM,EAAE;AAAE,QAAA,GAAG,EAAE,CAAP;AAAU,QAAA,IAAI,EAAE,CAAhB;AAAmB,QAAA,MAAM,EAAE,CAA3B;AAA8B,QAAA,KAAK,EAAE;AAArC;AAAV,KAHT;AAIE,IAAA,SAAS,EAAE;AAAE,MAAA,YAAY,EAAE;AAAhB;AAJb,GADM,CAHkB;AAW1B,EAAA,eAAe,EAAE;AAXS,CAAjB;;AAcJ,IAAI,GAAG,GAAG,SAAN,GAAM,CAAC,KAAD,EAAU;AACzB,SACE,CAAA,GAAA,aAAA,CAAA,GAAA,EAAC,YAAA,CAAA,IAAD,EAAK;AACH,IAAA,KAAK,EAAE,EAAE,GAAG,KAAK,CAAC,KAAX;AAAkB,MAAA,eAAe,EAAE,OAAA,CAAA,UAAA,CAAW,KAAX,CAAiB;AAApD,KADJ;AAEH,IAAA,MAAM,EAAE;AAAE,MAAA,YAAY,EAAE;AAAhB,KAFL;AAEkC,gBAC3B;AAHP,GAAL,CADF;AAOD,CARM;;AAAI,OAAA,CAAA,GAAA,GAAG,GAAH,C",
+        "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AACA,MAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,MAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AASA,MAAA,OAAA,GAAA,OAAA,CAAA,OAAA,CAAA;;AAqCW,OAAA,CAAA,cAAA,GAAiB;AAC1B,EAAA,YAAY,EAAE,EADY;AAE1B,EAAA,YAAY,EAAE,EAFY;AAG1B,EAAA,MAAM,EAAE,CACN;AACE,IAAA,SAAS,EAAE,KADb;AAEE,IAAA,KAAK,EAAE;AAAE,MAAA,MAAM,EAAE,GAAV;AAAe,MAAA,IAAI,EAAE,CAArB;AAAwB,MAAA,KAAK,EAAE,GAA/B;AAAoC,MAAA,GAAG,EAAE;AAAzC,KAFT;AAGE,IAAA,KAAK,EAAE;AAAE,MAAA,MAAM,EAAE;AAAE,QAAA,GAAG,EAAE,CAAP;AAAU,QAAA,IAAI,EAAE,CAAhB;AAAmB,QAAA,MAAM,EAAE,CAA3B;AAA8B,QAAA,KAAK,EAAE;AAArC;AAAV,KAHT;AAIE,IAAA,SAAS,EAAE;AAAE,MAAA,YAAY,EAAE;AAAhB;AAJb,GADM,CAHkB;AAW1B,EAAA,eAAe,EAAE;AAXS,CAAjB;;AAcJ,IAAI,GAAG,GAAI,KAAD,IAAU;AACzB,SACE,CAAA,GAAA,aAAA,CAAA,GAAA,EAAC,YAAA,CAAA,IAAD,EAAK;AACH,IAAA,KAAK,EAAE,EAAE,GAAG,KAAK,CAAC,KAAX;AAAkB,MAAA,eAAe,EAAE,OAAA,CAAA,UAAA,CAAW,KAAX,CAAiB;AAApD,KADJ;AAEH,IAAA,MAAM,EAAE;AAAE,MAAA,YAAY,EAAE;AAAhB,KAFL;AAEkC,gBAC3B;AAHP,GAAL,CADF;AAOD,CARM;;AAAI,OAAA,CAAA,GAAA,GAAG,GAAH,C",
         "names": Array [],
         "sourceRoot": "",
         "sources": Array [
@@ -1433,7 +1419,7 @@ var __createBinding = this && this.__createBinding || (Object.create ? function 
   if (!desc || (\\"get\\" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
     desc = {
       enumerable: true,
-      get: function get() {
+      get: function () {
         return m[k];
       }
     };
@@ -1457,9 +1443,7 @@ var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? fun
 var __importStar = this && this.__importStar || function (mod) {
   if (mod && mod.__esModule) return mod;
   var result = {};
-  if (mod != null) for (var k in mod) {
-    if (k !== \\"default\\" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-  }
+  if (mod != null) for (var k in mod) if (k !== \\"default\\" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
 
   __setModuleDefault(result, mod);
 
@@ -1471,13 +1455,13 @@ Object.defineProperty(exports, \\"__esModule\\", {
 });
 exports.App = exports.canvasMetadata = void 0;
 
-var jsx_runtime_1 = require(\\"react/jsx-runtime\\");
+const jsx_runtime_1 = require(\\"react/jsx-runtime\\");
 
-var React = __importStar(require(\\"react\\"));
+const React = __importStar(require(\\"react\\"));
 
-var utopia_api_1 = require(\\"utopia-api\\");
+const utopia_api_1 = require(\\"utopia-api\\");
 
-var uuiui_1 = require(\\"uuiui\\");
+const uuiui_1 = require(\\"uuiui\\");
 
 exports.canvasMetadata = {
   specialNodes: [],
@@ -1505,7 +1489,7 @@ exports.canvasMetadata = {
   elementMetadata: {}
 };
 
-var App = function App(props) {
+var App = props => {
   return (0, jsx_runtime_1.jsx)(utopia_api_1.View, {
     style: { ...props.style,
       backgroundColor: uuiui_1.colorTheme.white.value
@@ -1627,7 +1611,7 @@ export var App = (props) => {
       "errors": Array [],
       "sourceMap": Object {
         "file": "app.js",
-        "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AACA,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AASA,IAAA,OAAA,GAAA,OAAA,CAAA,OAAA,CAAA;;AAqCW,OAAA,CAAA,cAAA,GAAiB;AAC1B,EAAA,YAAY,EAAE,EADY;AAE1B,EAAA,YAAY,EAAE,EAFY;AAG1B,EAAA,MAAM,EAAE,CACN;AACE,IAAA,SAAS,EAAE,KADb;AAEE,IAAA,KAAK,EAAE;AAAE,MAAA,MAAM,EAAE,GAAV;AAAe,MAAA,IAAI,EAAE,CAArB;AAAwB,MAAA,KAAK,EAAE,GAA/B;AAAoC,MAAA,GAAG,EAAE;AAAzC,KAFT;AAGE,IAAA,KAAK,EAAE;AAAE,MAAA,MAAM,EAAE;AAAE,QAAA,GAAG,EAAE,CAAP;AAAU,QAAA,IAAI,EAAE,CAAhB;AAAmB,QAAA,MAAM,EAAE,CAA3B;AAA8B,QAAA,KAAK,EAAE;AAArC;AAAV,KAHT;AAIE,IAAA,SAAS,EAAE;AAAE,MAAA,YAAY,EAAE;AAAhB;AAJb,GADM,CAHkB;AAW1B,EAAA,eAAe,EAAE;AAXS,CAAjB;;AAcJ,IAAI,GAAG,GAAG,SAAN,GAAM,CAAC,KAAD,EAAU;AACzB,SACE,CAAA,GAAA,aAAA,CAAA,GAAA,EAAC,YAAA,CAAA,IAAD,EAAK;AACH,IAAA,KAAK,EAAE,EAAE,GAAG,KAAK,CAAC,KAAX;AAAkB,MAAA,eAAe,EAAE,OAAA,CAAA,UAAA,CAAW,KAAX,CAAiB;AAApD,KADJ;AAEH,IAAA,MAAM,EAAE;AAAE,MAAA,YAAY,EAAE;AAAhB,KAFL;AAEkC,gBAC3B;AAHP,GAAL,CADF;AAOD,CARM;;AAAI,OAAA,CAAA,GAAA,GAAG,GAAH,C",
+        "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AACA,MAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,MAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AASA,MAAA,OAAA,GAAA,OAAA,CAAA,OAAA,CAAA;;AAqCW,OAAA,CAAA,cAAA,GAAiB;AAC1B,EAAA,YAAY,EAAE,EADY;AAE1B,EAAA,YAAY,EAAE,EAFY;AAG1B,EAAA,MAAM,EAAE,CACN;AACE,IAAA,SAAS,EAAE,KADb;AAEE,IAAA,KAAK,EAAE;AAAE,MAAA,MAAM,EAAE,GAAV;AAAe,MAAA,IAAI,EAAE,CAArB;AAAwB,MAAA,KAAK,EAAE,GAA/B;AAAoC,MAAA,GAAG,EAAE;AAAzC,KAFT;AAGE,IAAA,KAAK,EAAE;AAAE,MAAA,MAAM,EAAE;AAAE,QAAA,GAAG,EAAE,CAAP;AAAU,QAAA,IAAI,EAAE,CAAhB;AAAmB,QAAA,MAAM,EAAE,CAA3B;AAA8B,QAAA,KAAK,EAAE;AAArC;AAAV,KAHT;AAIE,IAAA,SAAS,EAAE;AAAE,MAAA,YAAY,EAAE;AAAhB;AAJb,GADM,CAHkB;AAW1B,EAAA,eAAe,EAAE;AAXS,CAAjB;;AAcJ,IAAI,GAAG,GAAI,KAAD,IAAU;AACzB,SACE,CAAA,GAAA,aAAA,CAAA,GAAA,EAAC,YAAA,CAAA,IAAD,EAAK;AACH,IAAA,KAAK,EAAE,EAAE,GAAG,KAAK,CAAC,KAAX;AAAkB,MAAA,eAAe,EAAE,OAAA,CAAA,UAAA,CAAW,KAAX,CAAiB;AAApD,KADJ;AAEH,IAAA,MAAM,EAAE;AAAE,MAAA,YAAY,EAAE;AAAhB,KAFL;AAEkC,gBAC3B;AAHP,GAAL,CADF;AAOD,CARM;;AAAI,OAAA,CAAA,GAAA,GAAG,GAAH,C",
         "names": Array [],
         "sourceRoot": "",
         "sources": Array [
@@ -1719,7 +1703,7 @@ var __createBinding = this && this.__createBinding || (Object.create ? function 
   if (!desc || (\\"get\\" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
     desc = {
       enumerable: true,
-      get: function get() {
+      get: function () {
         return m[k];
       }
     };
@@ -1743,9 +1727,7 @@ var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? fun
 var __importStar = this && this.__importStar || function (mod) {
   if (mod && mod.__esModule) return mod;
   var result = {};
-  if (mod != null) for (var k in mod) {
-    if (k !== \\"default\\" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-  }
+  if (mod != null) for (var k in mod) if (k !== \\"default\\" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
 
   __setModuleDefault(result, mod);
 
@@ -1757,13 +1739,13 @@ Object.defineProperty(exports, \\"__esModule\\", {
 });
 exports.App = exports.canvasMetadata = void 0;
 
-var jsx_runtime_1 = require(\\"react/jsx-runtime\\");
+const jsx_runtime_1 = require(\\"react/jsx-runtime\\");
 
-var React = __importStar(require(\\"react\\"));
+const React = __importStar(require(\\"react\\"));
 
-var utopia_api_1 = require(\\"utopia-api\\");
+const utopia_api_1 = require(\\"utopia-api\\");
 
-var uuiui_1 = require(\\"uuiui\\");
+const uuiui_1 = require(\\"uuiui\\");
 
 exports.canvasMetadata = {
   specialNodes: [],
@@ -1791,7 +1773,7 @@ exports.canvasMetadata = {
   elementMetadata: {}
 };
 
-var App = function App(props) {
+var App = props => {
   return (0, jsx_runtime_1.jsx)(utopia_api_1.View, {
     style: { ...props.style,
       backgroundColor: uuiui_1.colorTheme.white.value

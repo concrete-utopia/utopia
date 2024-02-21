@@ -468,6 +468,7 @@ describe('targetElementSupportsChildren', () => {
       path,
       [
         jsExpressionOtherJavaScript(
+          [],
           '<div />',
           '<div />;',
           'return <div />;',
@@ -548,6 +549,7 @@ describe('targetElementSupportsChildren', () => {
             [],
             [
               jsExpressionOtherJavaScript(
+                [],
                 '<div />',
                 '<div />;',
                 'return <div />;',

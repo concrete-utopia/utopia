@@ -23,6 +23,9 @@ function buildProxyUrl(url: URL, path: string | null): string {
 
 export async function proxy(req: Request, options?: { rawOutput?: boolean; path?: string }) {
   const url = buildProxyUrl(new URL(req.url), options?.path ?? null)
+
+  console.log(`proxying call to ${url}`)
+
   const response = await fetch(url, {
     credentials: 'include',
     method: req.method,
