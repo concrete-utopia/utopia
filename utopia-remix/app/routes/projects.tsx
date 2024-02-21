@@ -9,6 +9,7 @@ import { ProjectContextMenu } from '../components/projectActionContextMenu'
 import { SortingContextMenu } from '../components/sortProjectsContextMenu'
 import { useIsDarkMode } from '../hooks/useIsDarkMode'
 import { listDeletedProjects, listProjects } from '../models/project.server'
+import { getCollaborators } from '../models/projectCollaborators.server'
 import { useProjectsStore } from '../store'
 import { button } from '../styles/button.css'
 import { newProjectButton } from '../styles/newProjectButton.css'
@@ -20,7 +21,7 @@ import { assertNever } from '../util/assertNever'
 import { projectEditorLink } from '../util/links'
 import { when } from '../util/react-conditionals'
 import { multiplayerInitialsFromName } from '../util/strings'
-import { getCollaborators } from '../models/projectCollaborators.server'
+import { useProjectMatchesQuery, useSortCompareProject } from '../util/use-sort-compare-project'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
@@ -82,37 +83,19 @@ const ProjectsPage = React.memo(() => {
     }
   }, [data.projects, data.deletedProjects, selectedCategory])
 
-  const searchQuery = useProjectsStore((store) => store.searchQuery)
-  const sortCriteria = useProjectsStore((store) => store.sortCriteria)
-  const sortAscending = useProjectsStore((store) => store.sortAscending)
+  const sortCompareProject = useSortCompareProject()
+  const projectMatchesQuery = useProjectMatchesQuery()
 
-  const filteredProjects = React.useMemo(() => {
-    const sanitizedQuery = searchQuery.trim().toLowerCase()
-    let sortedProjects = [...activeProjects]
+  const filteredProjects = React.useMemo(
+    () =>
+      activeProjects
+        // filter out projects that don't match the search query
+        .filter(projectMatchesQuery)
+        // sort them out according to the selected strategy
+        .sort(sortCompareProject),
 
-    if (sanitizedQuery.length > 0) {
-      sortedProjects = sortedProjects.filter((project) =>
-        project.title.toLowerCase().includes(sanitizedQuery),
-      )
-    }
-
-    sortedProjects.sort((a, b) => {
-      if (sortCriteria === 'title') {
-        return sortAscending ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title)
-      } else if (sortCriteria === 'dateCreated') {
-        const dateA = a.created_at.toString()
-        const dateB = b.created_at.toString()
-        return sortAscending ? dateA.localeCompare(dateB) : dateB.localeCompare(dateA)
-      } else if (sortCriteria === 'dateModified') {
-        const dateA = a.modified_at.toString()
-        const dateB = b.modified_at.toString()
-        return sortAscending ? dateA.localeCompare(dateB) : dateB.localeCompare(dateA)
-      }
-      return 0
-    })
-
-    return sortedProjects
-  }, [activeProjects, searchQuery, sortCriteria, sortAscending])
+    [activeProjects, projectMatchesQuery, sortCompareProject],
+  )
 
   return (
     <div
