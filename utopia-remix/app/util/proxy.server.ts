@@ -24,9 +24,19 @@ function buildProxyUrl(url: URL, path: string | null): string {
 }
 
 export async function proxy(req: Request, options?: { rawOutput?: boolean; path?: string }) {
-  const url = buildProxyUrl(new URL(req.url), options?.path ?? null)
+  const originalURL = new URL(req.url)
+  const url = buildProxyUrl(originalURL, options?.path ?? null)
 
   console.log(`proxying call to ${url}`)
+
+  const headers = new Headers()
+  for (const [key, value] of req.headers) {
+    headers.set(key, value)
+  }
+  if (ServerEnvironment.environment === 'prod' || ServerEnvironment.environment === 'stage') {
+    console.log(`setting proxied host to ${originalURL.host}`)
+    headers.set('host', originalURL.host)
+  }
 
   const requestInitWithoutBody: RequestInit = {
     credentials: 'include',
