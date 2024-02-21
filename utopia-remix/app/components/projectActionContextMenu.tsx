@@ -1,4 +1,9 @@
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
+import {
+  Content as DropdownMenuContent,
+  Portal as DropdownMenuPortal,
+  Item as DropdownMenuItem,
+  Separator as DropdownMenuSeparator,
+} from '@radix-ui/react-dropdown-menu'
 import { useFetcher } from '@remix-run/react'
 import React from 'react'
 import { useProjectsStore } from '../store'
@@ -136,8 +141,8 @@ export const ProjectContextMenu = React.memo(
     }, [selectedCategory])
 
     return (
-      <DropdownMenu.Portal>
-        <DropdownMenu.Content
+      <DropdownMenuPortal>
+        <DropdownMenuContent
           className={contextMenuDropdown()}
           style={{
             right: 75,
@@ -147,24 +152,24 @@ export const ProjectContextMenu = React.memo(
           {menuEntries.map((entry, index) => {
             if (entry === 'separator') {
               return (
-                <DropdownMenu.Separator
+                <DropdownMenuSeparator
                   key={`separator-${index}`}
                   style={{ backgroundColor: colors.separator, height: 1 }}
                 />
               )
             }
             return (
-              <DropdownMenu.Item
+              <DropdownMenuItem
                 key={`entry-${index}`}
                 onClick={() => entry.onClick(project)}
                 className={contextMenuItem()}
               >
                 {entry.text}
-              </DropdownMenu.Item>
+              </DropdownMenuItem>
             )
           })}
-        </DropdownMenu.Content>
-      </DropdownMenu.Portal>
+        </DropdownMenuContent>
+      </DropdownMenuPortal>
     )
   },
 )

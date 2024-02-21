@@ -1,5 +1,8 @@
 import React from 'react'
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
+import {
+  Root as DropdownMenuRoot,
+  Trigger as DropdownMenuTrigger,
+} from '@radix-ui/react-dropdown-menu'
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { LoaderFunctionArgs, json } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
@@ -60,7 +63,10 @@ export async function loader(args: LoaderFunctionArgs) {
     userId: user.user_id,
   })
 
-  return json({ projects, deletedProjects, user, collaborators, accessLevels })
+  return json(
+    { projects, deletedProjects, user, collaborators, accessLevels },
+    { headers: { 'cache-control': 'no-cache' } },
+  )
 }
 
 const ProjectsPage = React.memo(() => {
@@ -147,7 +153,6 @@ const ProjectsPage = React.memo(() => {
           collaborators={data.collaborators}
           accessLevels={data.accessLevels}
         />
-        )
       </div>
     </div>
   )
@@ -402,8 +407,8 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
           <CategoryActions projects={projects} />
           {when(
             projects.length > 1,
-            <DropdownMenu.Root>
-              <DropdownMenu.Trigger asChild>
+            <DropdownMenuRoot>
+              <DropdownMenuTrigger asChild>
                 <div
                   className={button()}
                   style={{
@@ -414,9 +419,9 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
                   <div>{convertToTitleCase(sortCriteria)} </div>
                   <div>{sortAscending ? '↑' : '↓'}</div>
                 </div>
-              </DropdownMenu.Trigger>
+              </DropdownMenuTrigger>
               <SortingContextMenu />
-            </DropdownMenu.Root>,
+            </DropdownMenuRoot>,
           )}
         </div>,
       )}
@@ -602,12 +607,12 @@ const ProjectCardActions = React.memo(
           <div>{moment(project.modified_at).fromNow()}</div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger asChild>
+          <DropdownMenuRoot>
+            <DropdownMenuTrigger asChild>
               <DotsHorizontalIcon className={button()} />
-            </DropdownMenu.Trigger>
+            </DropdownMenuTrigger>
             <ProjectContextMenu project={project} accessLevel={accessLevel} />
-          </DropdownMenu.Root>
+          </DropdownMenuRoot>
         </div>
       </div>
     )

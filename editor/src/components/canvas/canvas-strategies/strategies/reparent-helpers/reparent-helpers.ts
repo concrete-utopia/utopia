@@ -380,6 +380,9 @@ function getComponentNamesFromJSXElementChild(element: JSXElementChild): Array<J
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
     case 'ATTRIBUTE_VALUE':
     case 'JSX_TEXT_BLOCK':
+    case 'JS_IDENTIFIER':
+    case 'JS_ELEMENT_ACCESS':
+    case 'JS_PROPERTY_ACCESS':
       return []
     default:
       assertNever(element)

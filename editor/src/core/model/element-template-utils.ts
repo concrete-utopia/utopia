@@ -18,6 +18,9 @@ import type {
   ElementInstanceMetadataMap,
   JSExpressionMapOrOtherJavascript,
   JSXElementChildWithoutUID,
+  JSIdentifier,
+  JSPropertyAccess,
+  JSElementAccess,
 } from '../shared/element-template'
 import {
   isJSExpressionMapOrOtherJavaScript,
@@ -653,6 +656,9 @@ function allElementsAndChildrenAreText(elements: Array<JSXElementChild>): boolea
         case 'JSX_MAP_EXPRESSION':
         case 'ATTRIBUTE_OTHER_JAVASCRIPT':
         case 'JSX_CONDITIONAL_EXPRESSION': // TODO: maybe if it is true for the current branch?
+        case 'JS_ELEMENT_ACCESS':
+        case 'JS_PROPERTY_ACCESS':
+        case 'JS_IDENTIFIER':
           return false // We can't possibly know at this point
         case 'JSX_ELEMENT':
           return jsxElementNameEquals(element.name, jsxElementName('br', []))
@@ -673,7 +679,7 @@ function allElementsAndChildrenAreText(elements: Array<JSXElementChild>): boolea
         case 'ATTRIBUTE_FUNCTION_CALL':
           return allElementsAndChildrenAreText(element.parameters)
         default:
-          assertNever(element)
+          return assertNever(element)
       }
     })
   )
@@ -698,6 +704,9 @@ export function elementOnlyHasTextChildren(element: JSXElementChild): boolean {
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'JS_ELEMENT_ACCESS':
+    case 'JS_PROPERTY_ACCESS':
+    case 'JS_IDENTIFIER':
       return false
     default:
       assertNever(element)
@@ -829,6 +838,10 @@ function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttributes): b
           return false
         case 'PART_OF_ATTRIBUTE_VALUE':
           return false
+        case 'JS_IDENTIFIER':
+        case 'JS_PROPERTY_ACCESS':
+        case 'JS_ELEMENT_ACCESS':
+          return false
         default:
           const _exhaustiveCheck: never = styleAttribute
           throw new Error(`Unhandled attribute type: ${JSON.stringify(styleAttribute)}`)
@@ -878,6 +891,10 @@ function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttributes): b
                 return false
               case 'PART_OF_ATTRIBUTE_VALUE':
                 return false
+              case 'JS_IDENTIFIER':
+              case 'JS_PROPERTY_ACCESS':
+              case 'JS_ELEMENT_ACCESS':
+                return false
               default:
                 const _exhaustiveCheck: never = styleAttribute
                 throw new Error(`Unhandled attribute type: ${JSON.stringify(styleAttribute)}`)
@@ -893,6 +910,35 @@ function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttributes): b
       const _exhaustiveCheck: never = boundParam
       throw new Error(`Unhandled param type: ${JSON.stringify(boundParam)}`)
   }
+}
+
+function propertyAccessLookupForPropsStyleProperty(
+  propsParam: Param,
+  toCheck: JSPropertyAccess,
+  propName: string,
+): boolean {
+  // This checks for `something1.something2.something3`:
+  if (
+    toCheck.onValue.type === 'JS_PROPERTY_ACCESS' &&
+    toCheck.onValue.onValue.type === 'JS_IDENTIFIER' &&
+    propsParam.boundParam.type === 'REGULAR_PARAM'
+  ) {
+    // Constrain the above check to `<props>.style.<propName>`
+    if (
+      toCheck.onValue.onValue.name === propsParam.boundParam.paramName &&
+      toCheck.onValue.property === 'style' &&
+      toCheck.property === propName
+    ) {
+      return true
+    }
+  }
+
+  // Work our way back up the calls if there's a really deep chain.
+  if (toCheck.onValue.type === 'JS_PROPERTY_ACCESS') {
+    return propertyAccessLookupForPropsStyleProperty(propsParam, toCheck.onValue, propName)
+  }
+
+  return false
 }
 
 export function propertyComesFromPropsStyle(
@@ -946,10 +992,37 @@ export function propertyComesFromPropsStyle(
       return false
     case 'PART_OF_ATTRIBUTE_VALUE':
       return false
+    case 'JS_IDENTIFIER':
+      return false
+    case 'JS_ELEMENT_ACCESS':
+      return false
+    case 'JS_PROPERTY_ACCESS':
+      return propertyAccessLookupForPropsStyleProperty(propsParam, attribute, propName)
     default:
       const _exhaustiveCheck: never = attribute
       throw new Error(`Unhandled attribute type: ${JSON.stringify(attribute)}`)
   }
+}
+
+function propertyAccessLookupForPropsProperty(
+  propsParam: Param,
+  toCheck: JSPropertyAccess,
+  propName: string,
+): boolean {
+  // This checks for `something1.something2.something3`:
+  if (toCheck.onValue.type === 'JS_IDENTIFIER' && propsParam.boundParam.type === 'REGULAR_PARAM') {
+    // Constrain the above check to `<props>.style.<propName>`
+    if (toCheck.onValue.name === propsParam.boundParam.paramName && toCheck.property === propName) {
+      return true
+    }
+  }
+
+  // Work our way back up the calls if there's a really deep chain.
+  if (toCheck.onValue.type === 'JS_PROPERTY_ACCESS') {
+    return propertyAccessLookupForPropsStyleProperty(propsParam, toCheck.onValue, propName)
+  }
+
+  return false
 }
 
 export function elementUsesProperty(
@@ -993,6 +1066,12 @@ export function elementUsesProperty(
       return element.parameters.some((param) => {
         return elementUsesProperty(param, propsParam, property)
       })
+    case 'JS_PROPERTY_ACCESS':
+      return propertyAccessLookupForPropsProperty(propsParam, element, property)
+    case 'JS_ELEMENT_ACCESS':
+      return false
+    case 'JS_IDENTIFIER':
+      return false
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled element type: ${JSON.stringify(element)}`)
@@ -1046,6 +1125,12 @@ export function attributeUsesProperty(
       return attribute.parameters.some((parameter) => {
         return attributeUsesProperty(parameter, propsParam, property)
       })
+    case 'JS_PROPERTY_ACCESS':
+      return propertyAccessLookupForPropsProperty(propsParam, attribute, property)
+    case 'JS_IDENTIFIER':
+      return false
+    case 'JS_ELEMENT_ACCESS':
+      return false
     default:
       const _exhaustiveCheck: never = attribute
       throw new Error(`Unhandled attribute type: ${JSON.stringify(attribute)}`)
@@ -1137,6 +1222,9 @@ export function pathPartsFromJSXElementChild(
     case 'ATTRIBUTE_VALUE':
     case 'JSX_TEXT_BLOCK':
     case 'JSX_MAP_EXPRESSION':
+    case 'JS_ELEMENT_ACCESS':
+    case 'JS_PROPERTY_ACCESS':
+    case 'JS_IDENTIFIER':
       return [currentParts]
     default:
       assertNever(element)
@@ -1187,6 +1275,9 @@ export function findPathToJSXElementChild(
     case 'ATTRIBUTE_FUNCTION_CALL':
     case 'ATTRIBUTE_VALUE':
     case 'JSX_TEXT_BLOCK':
+    case 'JS_PROPERTY_ACCESS':
+    case 'JS_ELEMENT_ACCESS':
+    case 'JS_IDENTIFIER':
       return []
 
     default:

@@ -324,6 +324,9 @@ export function simplifyJSXElementChildAttributes(element: JSXElementChild): JSX
     case 'ATTRIBUTE_FUNCTION_CALL':
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+    case 'JS_IDENTIFIER':
+    case 'JS_ELEMENT_ACCESS':
+    case 'JS_PROPERTY_ACCESS':
       return simplifyAttributeIfPossible(element)
     case 'JSX_FRAGMENT':
       const updatedChildren = element.children.map(simplifyJSXElementChildAttributes)
@@ -1002,6 +1005,32 @@ function walkElements(
       )
       break
     case 'ATTRIBUTE_VALUE':
+    case 'JS_IDENTIFIER':
+      break
+    case 'JS_PROPERTY_ACCESS':
+      walkElements(
+        jsxElementChild.onValue,
+        includeDataUIDAttribute,
+        walkWith,
+        shouldWalkElement,
+        shouldWalkAttributes,
+      )
+      break
+    case 'JS_ELEMENT_ACCESS':
+      walkElements(
+        jsxElementChild.onValue,
+        includeDataUIDAttribute,
+        walkWith,
+        shouldWalkElement,
+        shouldWalkAttributes,
+      )
+      walkElements(
+        jsxElementChild.element,
+        includeDataUIDAttribute,
+        walkWith,
+        shouldWalkElement,
+        shouldWalkAttributes,
+      )
       break
     case 'ATTRIBUTE_NESTED_ARRAY':
       fastForEach(jsxElementChild.content, (contentElement) => {

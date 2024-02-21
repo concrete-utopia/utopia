@@ -182,6 +182,12 @@ export function getNavigatorEntryLabel(
           return '(code)'
         case 'ATTRIBUTE_FUNCTION_CALL':
           return '(code)'
+        case 'JS_IDENTIFIER':
+          return '(code)'
+        case 'JS_ELEMENT_ACCESS':
+          return '(code)'
+        case 'JS_PROPERTY_ACCESS':
+          return '(code)'
         default:
           throw assertNever(navigatorEntry.childOrAttribute)
       }

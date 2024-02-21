@@ -179,6 +179,7 @@ export const getChildrenOfCollapsedViews = (
   }, collapsedViews)
 }
 
+// eslint-disable-next-line object-shorthand
 export const MetadataUtils = {
   isElementGenerated(target: ElementPath): boolean {
     const staticTarget = EP.dynamicPathToStaticPath(target)
@@ -1589,6 +1590,12 @@ export const MetadataUtils = {
             case 'ATTRIBUTE_NESTED_OBJECT':
               return '(code)'
             case 'ATTRIBUTE_FUNCTION_CALL':
+              return '(code)'
+            case 'JS_IDENTIFIER':
+              return '(code)'
+            case 'JS_ELEMENT_ACCESS':
+              return '(code)'
+            case 'JS_PROPERTY_ACCESS':
               return '(code)'
             default:
               const _exhaustiveCheck: never = jsxElement
