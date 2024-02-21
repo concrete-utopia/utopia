@@ -9,7 +9,7 @@ import { useRefEditorState } from '../../../editor/store/store-hook'
 import { UIGridRow } from '../../widgets/ui-grid-row'
 import { DataPickerPopupTestId, VariableFromScopeOptionTestId } from './component-section'
 import * as EP from '../../../../core/shared/element-path'
-import type { ArrayInfo, ObjectInfo, PrimitiveInfo } from './variables-in-scope-utils'
+import type { ArrayInfo, ObjectInfo, PrimitiveInfo, VariableInfo } from './variables-in-scope-utils'
 import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
 import { assertNever } from '../../../../core/shared/utils'
 
@@ -147,14 +147,20 @@ interface ValueRowProps {
   onTweakProperty: (name: string, definedElsewhere: string | null) => (e: React.MouseEvent) => void
 }
 
+const anyObjectChildMatches = (info: VariableInfo): boolean =>
+  info.type === 'object' && info.props.some((c) => c.matches || anyObjectChildMatches(c))
+
 function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
   const colorTheme = useColorTheme()
   const [selectedIndex, setSelectedIndex] = React.useState<number>(0)
 
-  const childrenLength = variableOption.type === 'array' ? variableOption.children.length : 0
-  const [childrenOpen, setChildrenOpen] = React.useState<boolean>(
-    variableOption.depth < 2 || childrenLength < 4,
-  )
+  const childrenLength = variableOption.type === 'array' ? variableOption.children.length : Infinity
+  const childrenOpenByDefault =
+    variableOption.depth < 2 ||
+    childrenLength < 4 ||
+    anyObjectChildMatches(variableOption.variableInfo)
+
+  const [childrenOpen, setChildrenOpen] = React.useState<boolean>(childrenOpenByDefault)
 
   const toggleChildrenOpen = useCallback(() => {
     setChildrenOpen(!childrenOpen)
