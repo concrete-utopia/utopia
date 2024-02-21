@@ -58,7 +58,10 @@ export async function loader(args: LoaderFunctionArgs) {
     userId: user.user_id,
   })
 
-  return json({ projects, deletedProjects, user, collaborators })
+  return json(
+    { projects, deletedProjects, user, collaborators },
+    { headers: { 'cache-control': 'no-cache' } },
+  )
 }
 
 const ProjectsPage = React.memo(() => {

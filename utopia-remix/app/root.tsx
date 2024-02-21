@@ -34,7 +34,7 @@ export async function loader() {
 }
 
 export const headers: HeadersFunction = () => ({
-  'Cache-Control': 'no-cache',
+  'cache-control': 'no-cache',
 })
 
 export default function App() {
