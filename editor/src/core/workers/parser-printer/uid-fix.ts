@@ -1,12 +1,15 @@
 import type {
   ArbitraryJSBlock,
   ElementsWithin,
+  JSElementAccess,
   JSExpression,
   JSExpressionFunctionCall,
   JSExpressionNestedArray,
   JSExpressionNestedObject,
   JSExpressionOtherJavaScript,
   JSExpressionValue,
+  JSIdentifier,
+  JSPropertyAccess,
   JSXArrayElement,
   JSXAttributes,
   JSXAttributesPart,
@@ -69,6 +72,12 @@ const expressionOtherJavaScriptUIDOptic: Optic<JSExpressionOtherJavaScript, stri
   fromField('uid')
 
 const expressionJSXMapExpressionUIDOptic: Optic<JSXMapExpression, string> = fromField('uid')
+
+const expressionJSIdentifierUIDOptic: Optic<JSIdentifier, string> = fromField('uid')
+
+const expressionJSPropertyAccessUIDOptic: Optic<JSPropertyAccess, string> = fromField('uid')
+
+const expressionJSElementAccessUIDOptic: Optic<JSElementAccess, string> = fromField('uid')
 
 const jsExpressionUIDOptic: Optic<JSExpression, string> = fromField('uid')
 
@@ -593,7 +602,10 @@ export function fixJSXElementChildUIDs(
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
     case 'JSX_MAP_EXPRESSION':
-    case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+    case 'JS_IDENTIFIER':
+    case 'JS_ELEMENT_ACCESS':
+    case 'JS_PROPERTY_ACCESS': {
       return fixExpressionUIDs(oldElement, newElement, fixUIDsState)
     }
     default:
@@ -786,6 +798,53 @@ export function fixExpressionUIDs(
         },
       )
     }
+    case 'JS_IDENTIFIER': {
+      return updateUID(
+        expressionJSIdentifierUIDOptic,
+        oldExpression?.uid ?? newExpression.uid,
+        fixUIDsState,
+        newExpression,
+      )
+    }
+    case 'JS_PROPERTY_ACCESS': {
+      const onValue = fixExpressionUIDs(
+        oldExpression?.type === newExpression.type ? oldExpression.onValue : newExpression.onValue,
+        newExpression.onValue,
+        fixUIDsState,
+      )
+      return updateUID(
+        expressionJSPropertyAccessUIDOptic,
+        oldExpression?.uid ?? newExpression.uid,
+        fixUIDsState,
+        {
+          ...newExpression,
+          onValue: onValue,
+        },
+      )
+    }
+    case 'JS_ELEMENT_ACCESS': {
+      const onValue = fixExpressionUIDs(
+        oldExpression?.type === newExpression.type ? oldExpression.onValue : newExpression.onValue,
+        newExpression.onValue,
+        fixUIDsState,
+      )
+      const element = fixExpressionUIDs(
+        oldExpression?.type === newExpression.type ? oldExpression.element : newExpression.element,
+        newExpression.element,
+        fixUIDsState,
+      )
+      return updateUID(
+        expressionJSElementAccessUIDOptic,
+        oldExpression?.uid ?? newExpression.uid,
+        fixUIDsState,
+        {
+          ...newExpression,
+          onValue: onValue,
+          element: element,
+        },
+      )
+    }
+
     default:
       assertNever(newExpression)
   }

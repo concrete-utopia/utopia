@@ -136,6 +136,9 @@ function getJSXAttributeComments(attribute: JSExpression): ParsedComments {
     case 'ATTRIBUTE_VALUE':
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_NESTED_ARRAY':
+    case 'JS_PROPERTY_ACCESS':
+    case 'JS_ELEMENT_ACCESS':
+    case 'JS_IDENTIFIER':
       return attribute.comments
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
@@ -239,6 +242,18 @@ function jsxAttributeToExpression(attribute: JSExpression): TS.Expression {
         }
       case 'ATTRIBUTE_FUNCTION_CALL':
         return buildPropertyCallingFunction(attribute.functionName, attribute.parameters)
+      case 'JS_IDENTIFIER':
+        return TS.factory.createIdentifier(attribute.name)
+      case 'JS_ELEMENT_ACCESS':
+        return TS.factory.createElementAccessExpression(
+          jsxAttributeToExpression(attribute.onValue),
+          jsxAttributeToExpression(attribute.element),
+        )
+      case 'JS_PROPERTY_ACCESS':
+        return TS.factory.createPropertyAccessExpression(
+          jsxAttributeToExpression(attribute.onValue),
+          attribute.property,
+        )
       default:
         const _exhaustiveCheck: never = attribute
         throw new Error(`Unhandled prop type ${JSON.stringify(attribute)}`)
@@ -535,6 +550,9 @@ function jsxElementToExpression(
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'JS_PROPERTY_ACCESS':
+    case 'JS_ELEMENT_ACCESS':
+    case 'JS_IDENTIFIER':
       return jsxAttributeToExpression(element)
     default:
       const _exhaustiveCheck: never = element
@@ -1802,11 +1820,21 @@ export function trimHighlightBounds(success: ParseSuccess): ParseSuccess {
             walkJSXElementChild(element.whenTrue)
             walkJSXElementChild(element.whenFalse)
             break
+          case 'JS_ELEMENT_ACCESS':
+            includeElement(element)
+            walkJSXElementChild(element.onValue)
+            walkJSXElementChild(element.element)
+            break
+          case 'JS_PROPERTY_ACCESS':
+            includeElement(element)
+            walkJSXElementChild(element.onValue)
+            break
           case 'JSX_TEXT_BLOCK':
           case 'ATTRIBUTE_VALUE':
           case 'ATTRIBUTE_NESTED_ARRAY':
           case 'ATTRIBUTE_NESTED_OBJECT':
           case 'ATTRIBUTE_FUNCTION_CALL':
+          case 'JS_IDENTIFIER':
             // Don't walk any further down these.
             break
           case 'JSX_MAP_EXPRESSION':

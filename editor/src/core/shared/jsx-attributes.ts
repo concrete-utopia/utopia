@@ -3,7 +3,17 @@ import type { MapLike } from 'typescript'
 import { UtopiaUtils } from 'utopia-api/core'
 import { findLastIndex, uniqBy } from './array-utils'
 import type { Either } from './either'
-import { isLeft, isRight, left, mapEither, reduceWithEither, right, traverseEither } from './either'
+import {
+  applicative2Either,
+  flatMapEither,
+  isLeft,
+  isRight,
+  left,
+  mapEither,
+  reduceWithEither,
+  right,
+  traverseEither,
+} from './either'
 import type {
   JSXArrayElement,
   JSExpression,
@@ -80,6 +90,25 @@ export function jsxSimpleAttributeToValue(attribute: ModifiableAttribute): Eithe
     case 'ATTRIBUTE_VALUE':
     case 'PART_OF_ATTRIBUTE_VALUE':
       return right(attribute.value)
+    case 'JS_IDENTIFIER':
+      return left('Unable to get value from identifier.')
+    case 'JS_PROPERTY_ACCESS': {
+      const simpleOnValue = jsxSimpleAttributeToValue(attribute.onValue)
+      return flatMapEither((simplifiedOnValue) => {
+        return right(simplifiedOnValue[attribute.property])
+      }, simpleOnValue)
+    }
+    case 'JS_ELEMENT_ACCESS': {
+      const simpleOnValue = jsxSimpleAttributeToValue(attribute.onValue)
+      const simpleElement = jsxSimpleAttributeToValue(attribute.element)
+      return applicative2Either(
+        (simplifiedOnValue, simplifiedElement) => {
+          return right(simplifiedOnValue[simplifiedElement])
+        },
+        simpleOnValue,
+        simpleElement,
+      )
+    }
     case 'ATTRIBUTE_NESTED_ARRAY':
       let returnArray: Array<any> = []
       for (const elem of attribute.content) {
@@ -136,6 +165,9 @@ export function jsxFunctionAttributeToValue(
     case 'PART_OF_ATTRIBUTE_VALUE':
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
+    case 'JS_ELEMENT_ACCESS':
+    case 'JS_PROPERTY_ACCESS':
+    case 'JS_IDENTIFIER':
       return left(null)
     case 'ATTRIBUTE_FUNCTION_CALL':
       const extractedSimpleValueParameters = traverseEither(
@@ -166,6 +198,9 @@ export function jsxFunctionAttributeToRawValue(
     case 'PART_OF_ATTRIBUTE_VALUE':
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
+    case 'JS_ELEMENT_ACCESS':
+    case 'JS_PROPERTY_ACCESS':
+    case 'JS_IDENTIFIER':
       return left(null)
     case 'ATTRIBUTE_FUNCTION_CALL':
       return right({
@@ -186,6 +221,17 @@ export function jsxAttributeToValue(
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
       return attribute.value
+    case 'JS_IDENTIFIER':
+      return requireResult[attribute.name] ?? inScope[attribute.name]
+    case 'JS_PROPERTY_ACCESS': {
+      const onValue = jsxAttributeToValue(filePath, inScope, requireResult, attribute.onValue)
+      return onValue[attribute.property]
+    }
+    case 'JS_ELEMENT_ACCESS': {
+      const onValue = jsxAttributeToValue(filePath, inScope, requireResult, attribute.onValue)
+      const element = jsxAttributeToValue(filePath, inScope, requireResult, attribute.element)
+      return onValue[element]
+    }
     case 'ATTRIBUTE_NESTED_ARRAY':
       let returnArray: Array<any> = []
       for (const elem of attribute.content) {
@@ -445,6 +491,15 @@ export function getJSExpressionAtPathParts(
         }
       }
     }
+    // FIXME: Do we invert these? Or should the representation be inverted?
+    case 'JS_ELEMENT_ACCESS':
+    case 'JS_PROPERTY_ACCESS':
+    case 'JS_IDENTIFIER':
+      if (path.length - pathIndex <= 1) {
+        return getJSXAttributeResult(attribute)
+      } else {
+        return getJSXAttributeResult(attribute, PP.createFromArray(path.slice(pathIndex)))
+      }
     default:
       const _exhaustiveCheck: never = attribute
       throw new Error(`Cannot resolve attribute ${JSON.stringify(attribute)}`)
@@ -503,6 +558,9 @@ export function setJSXValueInAttributeAtPathParts(
       case 'ATTRIBUTE_FUNCTION_CALL':
       case 'JSX_MAP_EXPRESSION':
       case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+      case 'JS_IDENTIFIER':
+      case 'JS_PROPERTY_ACCESS':
+      case 'JS_ELEMENT_ACCESS':
         return left(
           `Attempted to set a value at ${PP.toString(
             PP.createFromArray(path.slice(pathIndex)),
@@ -786,6 +844,9 @@ function unsetJSXValueInAttributeAtPath(
         case 'ATTRIBUTE_FUNCTION_CALL':
         case 'JSX_MAP_EXPRESSION':
         case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+        case 'JS_ELEMENT_ACCESS':
+        case 'JS_PROPERTY_ACCESS':
+        case 'JS_IDENTIFIER':
           return left('Cannot unset a value set inside a value set from elsewhere.')
         case 'ATTRIBUTE_NESTED_ARRAY':
           if (typeof attributeKey === 'number') {
@@ -899,6 +960,9 @@ function walkAttribute(
     case 'ATTRIBUTE_VALUE':
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+    case 'JS_IDENTIFIER':
+    case 'JS_PROPERTY_ACCESS':
+    case 'JS_ELEMENT_ACCESS':
       break
     case 'ATTRIBUTE_NESTED_ARRAY':
       fastForEach(attribute.content, (elem, index) => {
