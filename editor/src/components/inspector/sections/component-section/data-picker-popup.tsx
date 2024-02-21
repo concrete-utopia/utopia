@@ -1,3 +1,7 @@
+/** @jsxRuntime classic */
+/** @jsxFrag */
+/** @jsx jsx */
+import { jsx } from '@emotion/react'
 import React, { useCallback } from 'react'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
@@ -9,7 +13,7 @@ import { useRefEditorState } from '../../../editor/store/store-hook'
 import { UIGridRow } from '../../widgets/ui-grid-row'
 import { DataPickerPopupTestId, VariableFromScopeOptionTestId } from './component-section'
 import * as EP from '../../../../core/shared/element-path'
-import type { ArrayInfo, ObjectInfo, PrimitiveInfo } from './variables-in-scope-utils'
+import type { ArrayInfo, ObjectInfo, PrimitiveInfo, VariableInfo } from './variables-in-scope-utils'
 import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
 import { assertNever } from '../../../../core/shared/utils'
 
@@ -116,13 +120,14 @@ export const DataPickerPopup = React.memo(
             backgroundColor: colorTheme.neutralBackground.value,
             padding: '8px 16px',
             boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
-            borderRadius: UtopiaTheme.inputBorderRadius,
+            borderRadius: 8,
             alignItems: 'flex-start',
             width: '96%',
+            maxWidth: '260px',
           }}
           data-testid={DataPickerPopupTestId}
         >
-          <div style={{ fontSize: 14, fontWeight: 400, marginBottom: 16 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 16 }}>
             <span>Data</span>
           </div>
           {variableNamesInScope.map((variableOption, idx) => {
@@ -147,14 +152,20 @@ interface ValueRowProps {
   onTweakProperty: (name: string, definedElsewhere: string | null) => (e: React.MouseEvent) => void
 }
 
+const anyObjectChildMatches = (info: VariableInfo): boolean =>
+  info.type === 'object' && info.props.some((c) => c.matches || anyObjectChildMatches(c))
+
 function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
   const colorTheme = useColorTheme()
   const [selectedIndex, setSelectedIndex] = React.useState<number>(0)
 
-  const childrenLength = variableOption.type === 'array' ? variableOption.children.length : 0
-  const [childrenOpen, setChildrenOpen] = React.useState<boolean>(
-    variableOption.depth < 2 || childrenLength < 4,
-  )
+  const childrenLength = variableOption.type === 'array' ? variableOption.children.length : Infinity
+  const childrenOpenByDefault =
+    variableOption.depth < 2 ||
+    childrenLength < 4 ||
+    anyObjectChildMatches(variableOption.variableInfo)
+
+  const [childrenOpen, setChildrenOpen] = React.useState<boolean>(childrenOpenByDefault)
 
   const toggleChildrenOpen = useCallback(() => {
     setChildrenOpen(!childrenOpen)
@@ -180,9 +191,19 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
     <>
       <Button
         data-testid={VariableFromScopeOptionTestId(idx)}
-        key={variableOption.variableInfo.variableName}
-        style={{ width: '100%', height: 25 }}
+        style={{
+          width: '100%',
+          height: 25,
+          cursor: variableOption.variableInfo.matches ? 'pointer' : 'default',
+        }}
         onClick={isArray ? stopPropagation : tweakProperty}
+        css={{
+          '&:hover': {
+            backgroundColor: variableOption.variableInfo.matches
+              ? colorTheme.secondaryBackground.value
+              : 'inherit',
+          },
+        }}
       >
         <UIGridRow
           padded={false}
@@ -216,6 +237,7 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
                 data-testid='variable-name'
                 style={{
                   textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   opacity: variableOption.variableInfo.matches ? 1 : 0.5,
                 }}
@@ -237,6 +259,7 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
                 fontWeight: 400,
                 color: colorTheme.neutralForeground.value,
                 textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
                 maxWidth: 130,
                 overflow: 'hidden',
                 opacity: variableOption.variableInfo.matches ? 1 : 0.5,

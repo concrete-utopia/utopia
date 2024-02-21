@@ -3,6 +3,8 @@ import { ServerEnvironment } from '../env.server'
 import { proxiedResponse } from './api.server'
 import dns from 'dns'
 
+const ProxyMode = ServerEnvironment.environment !== 'local' ? 'same-origin' : undefined
+
 if (ServerEnvironment.environment === 'local') {
   // this is a workaround for default DNS resolution order with Node > 17 (where ipv6 comes first)
   // https://github.com/node-fetch/node-fetch/issues/1624#issuecomment-1235826631
@@ -26,14 +28,48 @@ export async function proxy(req: Request, options?: { rawOutput?: boolean; path?
 
   console.log(`proxying call to ${url}`)
 
-  const response = await fetch(url, {
+  const headers = new Headers()
+
+  setCopyHeader(req.headers, headers, 'accept-encoding')
+  setCopyHeader(req.headers, headers, 'connection')
+  setCopyHeader(req.headers, headers, 'content-length')
+  setCopyHeader(req.headers, headers, 'content-type')
+  setCopyHeader(req.headers, headers, 'cookie')
+
+  const requestInitWithoutBody: RequestInit = {
     credentials: 'include',
     method: req.method,
+    headers: headers,
+    mode: ProxyMode,
+  }
+
+  console.log(`proxied request data: ${JSON.stringify(requestInitWithoutBody)}`)
+  const requestHeaders = getHeadersArray(headers)
+  console.log(`request headers: ${JSON.stringify(requestHeaders)}`)
+
+  const response = await fetch(url, {
+    ...requestInitWithoutBody,
     body: req.body,
-    headers: req.headers,
   })
+  const responseHeaders = getHeadersArray(response.headers)
+  console.log(`response headers: ${JSON.stringify(responseHeaders)}`)
   if (options?.rawOutput) {
     return response
   }
   return proxiedResponse(response)
+}
+
+function getHeadersArray(headers: Headers): string[] {
+  const headersString: string[] = []
+  for (const [key, value] of headers) {
+    headersString.push(`${key}=${value}`)
+  }
+  return headersString
+}
+
+function setCopyHeader(originalHeaders: Headers, targetHeaders: Headers, key: string) {
+  const value = originalHeaders.get(key)
+  if (value != null) {
+    targetHeaders.set(key, value)
+  }
 }
