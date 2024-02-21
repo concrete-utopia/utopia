@@ -14,13 +14,14 @@ import { button } from '../styles/button.css'
 import { newProjectButton } from '../styles/newProjectButton.css'
 import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
 import { colors, sprinkles } from '../styles/sprinkles.css'
-import { Collaborator, CollaboratorsByProject, ProjectWithoutContent } from '../types'
+import { AccessLevel, Collaborator, CollaboratorsByProject, ProjectWithoutContent } from '../types'
 import { requireUser } from '../util/api.server'
 import { assertNever } from '../util/assertNever'
 import { projectEditorLink } from '../util/links'
 import { when } from '../util/react-conditionals'
 import { multiplayerInitialsFromName } from '../util/strings'
 import { getCollaborators } from '../models/projectCollaborators.server'
+import { getProjectsAccess } from '../models/projectAccess.server'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
@@ -54,8 +55,12 @@ export async function loader(args: LoaderFunctionArgs) {
     ids: [...projects, ...deletedProjects].map((p) => p.proj_id),
     userId: user.user_id,
   })
+  const accessLevels = await getProjectsAccess({
+    ids: [...projects, ...deletedProjects].map((p) => p.proj_id),
+    userId: user.user_id,
+  })
 
-  return json({ projects, deletedProjects, user, collaborators })
+  return json({ projects, deletedProjects, user, collaborators, accessLevels })
 }
 
 const ProjectsPage = React.memo(() => {
@@ -64,6 +69,7 @@ const ProjectsPage = React.memo(() => {
     user: UserDetails
     deletedProjects: ProjectWithoutContent[]
     collaborators: CollaboratorsByProject
+    accessLevels: { [projectId: string]: AccessLevel }
   }
 
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
@@ -136,7 +142,12 @@ const ProjectsPage = React.memo(() => {
       >
         <TopActionBar />
         <ProjectsHeader projects={activeProjects} />
-        <ProjectCards projects={filteredProjects} collaborators={data.collaborators} />)
+        <ProjectCards
+          projects={filteredProjects}
+          collaborators={data.collaborators}
+          accessLevels={data.accessLevels}
+        />
+        )
       </div>
     </div>
   )
@@ -454,51 +465,65 @@ const CategoryTrashActions = React.memo(({ projects }: { projects: ProjectWithou
 })
 CategoryTrashActions.displayName = 'CategoryTrashActions'
 
-const ProjectCards = React.memo(({ projects }: { projects: ProjectWithoutContent[] }) => {
-  const selectedProjectId = useProjectsStore((store) => store.selectedProjectId)
-  const setSelectedProjectId = useProjectsStore((store) => store.setSelectedProjectId)
+const ProjectCards = React.memo(
+  ({
+    projects,
+    collaborators,
+    accessLevels,
+  }: {
+    projects: ProjectWithoutContent[]
+    collaborators: CollaboratorsByProject
+    accessLevels: { [projectId: string]: AccessLevel }
+  }) => {
+    const selectedProjectId = useProjectsStore((store) => store.selectedProjectId)
+    const setSelectedProjectId = useProjectsStore((store) => store.setSelectedProjectId)
 
-  const handleProjectSelect = React.useCallback(
-    (project: ProjectWithoutContent) =>
-      setSelectedProjectId(project.proj_id === selectedProjectId ? null : project.proj_id),
-    [setSelectedProjectId, selectedProjectId],
-  )
+    const handleProjectSelect = React.useCallback(
+      (project: ProjectWithoutContent) =>
+        setSelectedProjectId(project.proj_id === selectedProjectId ? null : project.proj_id),
+      [setSelectedProjectId, selectedProjectId],
+    )
 
-  return (
-    <div
-      style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        alignContent: 'flex-start',
-        gap: MarginSize,
-        flexGrow: 1,
-        flexDirection: 'row',
-        overflowY: 'scroll',
-        scrollbarColor: 'lightgrey transparent',
-      }}
-    >
-      {projects.map((project) => (
-        <ProjectCard
-          key={project.proj_id}
-          project={project}
-          selected={project.proj_id === selectedProjectId}
-          onSelect={() => handleProjectSelect(project)}
-        />
-      ))}
-    </div>
-  )
-})
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignContent: 'flex-start',
+          gap: MarginSize,
+          flexGrow: 1,
+          flexDirection: 'row',
+          overflowY: 'scroll',
+          scrollbarColor: 'lightgrey transparent',
+        }}
+      >
+        {projects.map((project) => (
+          <ProjectCard
+            key={project.proj_id}
+            project={project}
+            selected={project.proj_id === selectedProjectId}
+            onSelect={() => handleProjectSelect(project)}
+            collaborators={collaborators[project.proj_id] ?? []}
+            accessLevel={accessLevels[project.proj_id]}
+          />
+        ))}
+      </div>
+    )
+  },
+)
 ProjectCards.displayName = 'ProjectCards'
 
 const ProjectCard = React.memo(
   ({
     project,
     collaborators,
+    accessLevel,
     selected,
     onSelect,
   }: {
     project: ProjectWithoutContent
     collaborators: Collaborator[]
+    accessLevel: AccessLevel
     selected: boolean
     onSelect: () => void
   }) => {
@@ -561,29 +586,31 @@ const ProjectCard = React.memo(
             })}
           </div>
         </div>
-        <ProjectCardActions project={project} />
+        <ProjectCardActions project={project} accessLevel={accessLevel} />
       </div>
     )
   },
 )
 ProjectCard.displayName = 'ProjectCard'
 
-const ProjectCardActions = React.memo(({ project }: { project: ProjectWithoutContent }) => {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 5, flex: 1 }}>
-        <div style={{ fontWeight: 600 }}>{project.title}</div>
-        <div>{moment(project.modified_at).fromNow()}</div>
+const ProjectCardActions = React.memo(
+  ({ project, accessLevel }: { project: ProjectWithoutContent; accessLevel: AccessLevel }) => {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 5, flex: 1 }}>
+          <div style={{ fontWeight: 600 }}>{project.title}</div>
+          <div>{moment(project.modified_at).fromNow()}</div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger asChild>
+              <DotsHorizontalIcon className={button()} />
+            </DropdownMenu.Trigger>
+            <ProjectContextMenu project={project} accessLevel={accessLevel} />
+          </DropdownMenu.Root>
+        </div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-        <DropdownMenu.Root>
-          <DropdownMenu.Trigger asChild>
-            <DotsHorizontalIcon className={button()} />
-          </DropdownMenu.Trigger>
-          <ProjectContextMenu project={project} />
-        </DropdownMenu.Root>
-      </div>
-    </div>
-  )
-})
+    )
+  },
+)
 ProjectCardActions.displayName = 'ProjectCardActions'

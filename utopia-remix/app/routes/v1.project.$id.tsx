@@ -2,7 +2,7 @@ import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node'
 import { proxy } from '../util/proxy.server'
 import { ensure, handle, handleOptions, requireUser } from '../util/api.server'
 import { Params } from '@remix-run/react'
-import { canViewProject } from '~/services/fgaService.server'
+import { canViewProject } from '../services/fgaService.server'
 import { Status } from '../util/statusCodes.server'
 
 export async function loader(args: LoaderFunctionArgs) {

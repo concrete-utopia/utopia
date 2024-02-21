@@ -31,3 +31,19 @@ export async function getProjectAccess(params: { projectId: string }): Promise<A
   })
   return projectAccess?.access_level ?? null
 }
+
+export async function getProjectsAccess(params: {
+  ids: string[]
+  userId: string
+}): Promise<Record<string, AccessLevel>> {
+  const projects = await prisma.project.findMany({
+    where: { proj_id: { in: params.ids }, owner_id: params.userId },
+    include: { ProjectAccess: true },
+  })
+
+  let projectAccess: Record<string, AccessLevel> = {}
+  for (const project of projects) {
+    projectAccess[project.proj_id] = project.ProjectAccess?.access_level ?? AccessLevel.PRIVATE
+  }
+  return projectAccess
+}
