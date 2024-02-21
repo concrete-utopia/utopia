@@ -44,14 +44,27 @@ export async function proxy(req: Request, options?: { rawOutput?: boolean; path?
     headers: headers,
     mode: ProxyMode,
   }
+
   console.log(`proxied request data: ${JSON.stringify(requestInitWithoutBody)}`)
+  const requestHeaders = getHeadersArray(headers)
+  console.log(`request headers: ${JSON.stringify(requestHeaders)}`)
 
   const response = await fetch(url, {
     ...requestInitWithoutBody,
     body: req.body,
   })
+  const responseHeaders = getHeadersArray(response.headers)
+  console.log(`response headers: ${JSON.stringify(responseHeaders)}`)
   if (options?.rawOutput) {
     return response
   }
   return proxiedResponse(response)
+}
+
+function getHeadersArray(headers: Headers): string[] {
+  const headersString: string[] = []
+  for (const [key, value] of headers) {
+    headersString.push(`${key}=${value}`)
+  }
+  return headersString
 }
