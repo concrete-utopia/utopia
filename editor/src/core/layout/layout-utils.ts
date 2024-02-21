@@ -790,6 +790,9 @@ export function roundAttributeLayoutValues(
       case 'ATTRIBUTE_FUNCTION_CALL':
       case 'JSX_MAP_EXPRESSION':
       case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+      case 'JS_PROPERTY_ACCESS':
+      case 'JS_ELEMENT_ACCESS':
+      case 'JS_IDENTIFIER':
         return workingAttributes
       default:
         const _exhaustiveCheck: never = value
