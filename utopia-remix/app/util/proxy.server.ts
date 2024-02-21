@@ -31,6 +31,8 @@ export async function proxy(req: Request, options?: { rawOutput?: boolean; path?
   const headers = new Headers()
 
   setCopyHeader(req.headers, headers, 'accept-encoding')
+  setCopyHeader(req.headers, headers, 'connection')
+  setCopyHeader(req.headers, headers, 'content-length')
   setCopyHeader(req.headers, headers, 'content-type')
   setCopyHeader(req.headers, headers, 'cookie')
 
