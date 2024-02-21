@@ -70,6 +70,6 @@ function getHeadersArray(headers: Headers): string[] {
 function setCopyHeader(originalHeaders: Headers, targetHeaders: Headers, key: string) {
   const value = originalHeaders.get(key)
   if (value != null) {
-    targetHeaders.set('accept-encoding', value)
+    targetHeaders.set(key, value)
   }
 }
