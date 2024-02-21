@@ -14,11 +14,59 @@
       crossorigin="anonymous"
     />
   </head>
-  <body>
-    <span
-      >Project not found. This project may not exist, was only saved locally, or you're not allowed
-      to view it. Ask the owner to check the URL or update the permissions, and refresh this
-      page.</span
+  <body style="margin: 0 !important">
+    <div
+      style="
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 70px;
+        font-family: Inter, sanserif;
+      "
     >
+      <div style="display: flex; align-items: center; justify-content: center; width: 320px">
+        <img
+          src="<%- UTOPIA_DOMAIN %>/editor/404_pyramid_light.png?hash=<%- UTOPIA_SHA %>"
+          height="500px"
+          alt="Utopia 404 Logo"
+        />
+      </div>
+      <div
+        style="
+          display: flex;
+          flex-direction: column;
+          gap: 40px;
+          align-items: center;
+          padding-bottom: 30px;
+        "
+      >
+        <div style="font-size: 160px; font-weight: 600; font-style: italic; height: 170px">404</div>
+        <div style="font-size: 42px">Project not found.</div>
+        <div style="font-size: 22px; width: 430px; text-align: center; line-height: 40px">
+          Either this project does not exist, or you do not have access to it.
+        </div>
+        <a href="/projects" target="_blank" rel="noopener rofererrer" style="text-decoration: none">
+          <div
+            style="
+              font-size: 18px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: white;
+              background-color: #0075f9;
+              border-radius: 90px;
+              padding: 10px 30px;
+              transition: background-color 0.3s;
+            "
+            onmouseover="this.style.backgroundColor='#5DA9FF';"
+            onmouseout="this.style.backgroundColor='#0075f9';"
+          >
+            Return Home
+          </div>
+        </a>
+      </div>
+    </div>
   </body>
 </html>
