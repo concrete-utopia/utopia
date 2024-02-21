@@ -2,7 +2,13 @@ import {
   Root as DropdownMenuRoot,
   Trigger as DropdownMenuTrigger,
 } from '@radix-ui/react-dropdown-menu'
-import { DotsHorizontalIcon } from '@radix-ui/react-icons'
+import {
+  DashboardIcon,
+  DotsHorizontalIcon,
+  HamburgerMenuIcon,
+  TextAlignJustifyIcon,
+  TokensIcon,
+} from '@radix-ui/react-icons'
 import { LoaderFunctionArgs, json } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
@@ -312,6 +318,8 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
   const sortCriteria = useProjectsStore((store) => store.sortCriteria)
   const sortAscending = useProjectsStore((store) => store.sortAscending)
 
+  const gridView = useProjectsStore((store) => store.gridView)
+
   const convertToTitleCase = (str: string): string => {
     return str
       .replace(/([A-Z])/g, ' $1')
@@ -380,21 +388,37 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
           <CategoryActions projects={projects} />
           {when(
             projects.length > 1,
-            <DropdownMenuRoot>
-              <DropdownMenuTrigger asChild>
-                <div
-                  className={button()}
-                  style={{
-                    justifyContent: 'flex-end',
-                    gap: 10,
-                  }}
-                >
-                  <div>{convertToTitleCase(sortCriteria)} </div>
-                  <div>{sortAscending ? '↑' : '↓'}</div>
-                </div>
-              </DropdownMenuTrigger>
-              <SortingContextMenu />
-            </DropdownMenuRoot>,
+            <div style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
+              <DropdownMenuRoot>
+                <DropdownMenuTrigger asChild>
+                  <div
+                    className={button()}
+                    style={{
+                      justifyContent: 'flex-end',
+                      gap: 10,
+                    }}
+                  >
+                    <div>{convertToTitleCase(sortCriteria)} </div>
+                    <div>{sortAscending ? '↑' : '↓'}</div>
+                  </div>
+                </DropdownMenuTrigger>
+                <SortingContextMenu />
+              </DropdownMenuRoot>
+              <div style={{ display: 'flex', flexDirection: 'row', gap: 1 }}>
+                <HamburgerMenuIcon
+                  className={button({
+                    size: 'square',
+                    color: !gridView ? 'subtle' : 'neutral',
+                  })}
+                />
+                <DashboardIcon
+                  className={button({
+                    size: 'square',
+                    color: gridView ? 'subtle' : 'neutral',
+                  })}
+                />
+              </div>
+            </div>,
           )}
         </div>,
       )}

@@ -26,7 +26,6 @@ export const button = recipe({
   variants: {
     color: {
       neutral: {
-        padding: '6px 12px',
         background: 'transparent',
         ':hover': {
           backgroundColor: '#a4a4a415',
@@ -36,16 +35,24 @@ export const button = recipe({
         },
       },
       subtle: {
-        padding: '6px 10px',
         backgroundColor: '#a4a4a420',
         ':hover': {
           backgroundColor: '#a4a4a435',
         },
       },
     },
+    size: {
+      default: {
+        padding: '6px 10px'
+      },
+      square: {
+        padding: 6
+      }
+    }
   },
 
   defaultVariants: {
     color: 'neutral',
+    size: 'default'
   },
 })
