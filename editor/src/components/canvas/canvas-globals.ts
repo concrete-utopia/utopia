@@ -72,6 +72,7 @@ export async function validateControlsToCheck(
     (fileName) => allControlsRegisteredByFileEver.get(fileName) ?? [],
   )
 
+  const allNewDescriptorsPerFile: { [fileName: string]: ComponentDescriptorsForFile } = {}
   // Now create the Component Descriptors for all of the registered modules
   for (const controlsInfoToCheckArray of registeredControlsInfoInEachFile) {
     for (const controlsInfoToCheck of controlsInfoToCheckArray) {
@@ -92,21 +93,26 @@ export async function validateControlsToCheck(
           },
         )
 
-        const currentDescriptorsForFile =
-          propertyControlsInfo[controlsInfoToCheck.moduleNameOrPath] ?? {}
-        const descriptorsChanged = !deepEqual(currentDescriptorsForFile, newDescriptorsForFile)
-
-        if (descriptorsChanged) {
-          shouldDispatch = true
-          // Merge with any existing entries if there are any.
-          updatedPropertyControlsInfo[controlsInfoToCheck.moduleNameOrPath] = {
-            ...(updatedPropertyControlsInfo[controlsInfoToCheck.moduleNameOrPath] ?? {}),
-            ...newDescriptorsForFile,
-          }
+        allNewDescriptorsPerFile[controlsInfoToCheck.moduleNameOrPath] = {
+          ...(allNewDescriptorsPerFile[controlsInfoToCheck.moduleNameOrPath] ?? {}),
+          ...newDescriptorsForFile,
         }
       })
     }
   }
+  Object.entries(allNewDescriptorsPerFile).forEach(([moduleNameOrPath, newDescriptorsForFile]) => {
+    const currentDescriptorsForFile = propertyControlsInfo[moduleNameOrPath] ?? {}
+    const descriptorsChanged = !deepEqual(currentDescriptorsForFile, newDescriptorsForFile)
+
+    if (descriptorsChanged) {
+      shouldDispatch = true
+      // Merge with any existing entries if there are any.
+      updatedPropertyControlsInfo[moduleNameOrPath] = {
+        ...(updatedPropertyControlsInfo[moduleNameOrPath] ?? {}),
+        ...newDescriptorsForFile,
+      }
+    }
+  })
 
   // Capture those that have been deleted.
   let moduleNamesOrPathsToDelete: Array<string> = []
@@ -118,7 +124,6 @@ export async function validateControlsToCheck(
   }
 
   previousRegisteredModules = allRegisteredModules
-
   if (shouldDispatch) {
     dispatch([updatePropertyControlsInfo(updatedPropertyControlsInfo, moduleNamesOrPathsToDelete)])
   }

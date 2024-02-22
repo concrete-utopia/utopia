@@ -1,24 +1,30 @@
+import React from 'react'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
+import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { LoaderFunctionArgs, json } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { UserDetails } from 'prisma-client'
-import React from 'react'
 import { ProjectContextMenu } from '../components/projectActionContextMenu'
+import { SortingContextMenu } from '../components/sortProjectsContextMenu'
 import { useIsDarkMode } from '../hooks/useIsDarkMode'
 import { listDeletedProjects, listProjects } from '../models/project.server'
+import { getCollaborators } from '../models/projectCollaborators.server'
 import { useProjectsStore } from '../store'
 import { button } from '../styles/button.css'
 import { newProjectButton } from '../styles/newProjectButton.css'
 import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
-import { colors, sprinkles } from '../styles/sprinkles.css'
+import { sprinkles } from '../styles/sprinkles.css'
 import { Collaborator, CollaboratorsByProject, ProjectWithoutContent } from '../types'
 import { requireUser } from '../util/api.server'
 import { assertNever } from '../util/assertNever'
 import { projectEditorLink } from '../util/links'
 import { when } from '../util/react-conditionals'
 import { multiplayerInitialsFromName } from '../util/strings'
-import { getCollaborators } from '../models/projectCollaborators.server'
+import { useProjectMatchesQuery, useSortCompareProject } from '../util/use-sort-compare-project'
+
+const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
+export type SortCriteria = (typeof SortOptions)[number]
 
 const Categories = ['allProjects', 'trash'] as const
 
@@ -50,7 +56,10 @@ export async function loader(args: LoaderFunctionArgs) {
     userId: user.user_id,
   })
 
-  return json({ projects, deletedProjects, user, collaborators })
+  return json(
+    { projects, deletedProjects, user, collaborators },
+    { headers: { 'cache-control': 'no-cache' } },
+  )
 }
 
 const ProjectsPage = React.memo(() => {
@@ -73,6 +82,20 @@ const ProjectsPage = React.memo(() => {
         assertNever(selectedCategory)
     }
   }, [data.projects, data.deletedProjects, selectedCategory])
+
+  const sortCompareProject = useSortCompareProject()
+  const projectMatchesQuery = useProjectMatchesQuery()
+
+  const filteredProjects = React.useMemo(
+    () =>
+      activeProjects
+        // filter out projects that don't match the search query
+        .filter(projectMatchesQuery)
+        // sort them out according to the selected strategy
+        .sort(sortCompareProject),
+
+    [activeProjects, projectMatchesQuery, sortCompareProject],
+  )
 
   return (
     <div
@@ -98,8 +121,8 @@ const ProjectsPage = React.memo(() => {
         }}
       >
         <TopActionBar />
-        <CategoryHeader projects={activeProjects} />
-        <ProjectCards projects={activeProjects} collaborators={data.collaborators} />)
+        <ProjectsHeader projects={activeProjects} />
+        <ProjectCards projects={filteredProjects} collaborators={data.collaborators} />
       </div>
     </div>
   )
@@ -278,15 +301,41 @@ const TopActionBar = React.memo(() => {
 })
 TopActionBar.displayName = 'TopActionBar'
 
-const CategoryHeader = React.memo(({ projects }: { projects: ProjectWithoutContent[] }) => {
+const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutContent[] }) => {
   const searchQuery = useProjectsStore((store) => store.searchQuery)
   const setSearchQuery = useProjectsStore((store) => store.setSearchQuery)
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
 
+  const sortCriteria = useProjectsStore((store) => store.sortCriteria)
+  const sortAscending = useProjectsStore((store) => store.sortAscending)
+
+  const convertToTitleCase = (str: string): string => {
+    return str
+      .replace(/([A-Z])/g, ' $1')
+      .trim()
+      .replace(/^\w/, (c) => c.toUpperCase())
+  }
+
   return (
-    <div style={{ fontSize: 16, fontWeight: 600, padding: '5px 10px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', height: 40 }}>
-        <div style={{ flex: 'auto' }}>
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        height: 40,
+        flexShrink: 0,
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 10,
+          padding: '5px 10px',
+        }}
+      >
+        <div style={{ fontSize: 16, fontWeight: 600 }}>
           {when(
             searchQuery !== '',
             <span>
@@ -313,13 +362,43 @@ const CategoryHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
             <div style={{ flex: 1 }}>{categories[selectedCategory].name}</div>,
           )}
         </div>
-
-        <CategoryActions projects={projects} />
       </div>
+
+      {when(
+        projects.length > 0,
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 10,
+          }}
+        >
+          <CategoryActions projects={projects} />
+          {when(
+            projects.length > 1,
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger asChild>
+                <div
+                  className={button()}
+                  style={{
+                    justifyContent: 'flex-end',
+                    gap: 10,
+                  }}
+                >
+                  <div>{convertToTitleCase(sortCriteria)} </div>
+                  <div>{sortAscending ? '↑' : '↓'}</div>
+                </div>
+              </DropdownMenu.Trigger>
+              <SortingContextMenu />
+            </DropdownMenu.Root>,
+          )}
+        </div>,
+      )}
     </div>
   )
 })
-CategoryHeader.displayName = 'CategoryHeader'
+ProjectsHeader.displayName = 'CategoryHeader'
 
 const CategoryActions = React.memo(({ projects }: { projects: ProjectWithoutContent[] }) => {
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
@@ -349,13 +428,13 @@ const CategoryTrashActions = React.memo(({ projects }: { projects: ProjectWithou
 
   return (
     <>
-      <button
-        className={button({ size: 'small' })}
+      <div
+        className={button({ color: 'subtle' })}
         onClick={handleEmptyTrash}
-        disabled={projects.length === 0}
+        style={{ display: projects.length === 0 ? 'none' : 'block' }}
       >
-        Empty trash
-      </button>
+        Empty Trash
+      </div>
     </>
   )
 })
@@ -369,7 +448,6 @@ const ProjectCards = React.memo(
     projects: ProjectWithoutContent[]
     collaborators: CollaboratorsByProject
   }) => {
-    const searchQuery = useProjectsStore((store) => store.searchQuery)
     const selectedProjectId = useProjectsStore((store) => store.selectedProjectId)
     const setSelectedProjectId = useProjectsStore((store) => store.setSelectedProjectId)
 
@@ -378,14 +456,6 @@ const ProjectCards = React.memo(
         setSelectedProjectId(project.proj_id === selectedProjectId ? null : project.proj_id),
       [setSelectedProjectId, selectedProjectId],
     )
-
-    const filteredProjects = React.useMemo(() => {
-      const sanitizedQuery = searchQuery.trim().toLowerCase()
-      if (sanitizedQuery.length === 0) {
-        return projects
-      }
-      return projects.filter((project) => project.title.toLowerCase().includes(sanitizedQuery))
-    }, [projects, searchQuery])
 
     return (
       <div
@@ -400,20 +470,20 @@ const ProjectCards = React.memo(
           scrollbarColor: 'lightgrey transparent',
         }}
       >
-        {filteredProjects.map((project) => (
+        {projects.map((project) => (
           <ProjectCard
             key={project.proj_id}
             project={project}
-            collaborators={collaborators[project.proj_id] ?? []}
             selected={project.proj_id === selectedProjectId}
             onSelect={() => handleProjectSelect(project)}
+            collaborators={collaborators[project.proj_id]}
           />
         ))}
       </div>
     )
   },
 )
-ProjectCards.displayName = 'CategoryAllProjects'
+ProjectCards.displayName = 'ProjectCards'
 
 const ProjectCard = React.memo(
   ({
@@ -465,10 +535,8 @@ const ProjectCard = React.memo(
                     borderRadius: '100%',
                     width: 24,
                     height: 24,
-                    backgroundColor: colors.primary,
                     backgroundImage: `url("${collaborator.avatar}")`,
                     backgroundSize: 'cover',
-                    color: colors.white,
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
@@ -478,7 +546,11 @@ const ProjectCard = React.memo(
                     filter: project.deleted === true ? 'grayscale(1)' : undefined,
                   }}
                   title={collaborator.name}
-                  className={sprinkles({ boxShadow: 'shadow' })}
+                  className={sprinkles({
+                    boxShadow: 'shadow',
+                    color: 'white',
+                    backgroundColor: 'primary',
+                  })}
                 >
                   {when(collaborator.avatar === '', multiplayerInitialsFromName(collaborator.name))}
                 </div>
@@ -503,7 +575,7 @@ const ProjectCardActions = React.memo(({ project }: { project: ProjectWithoutCon
       <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
-            <button className={button()}>…</button>
+            <DotsHorizontalIcon className={button()} />
           </DropdownMenu.Trigger>
           <ProjectContextMenu project={project} />
         </DropdownMenu.Root>

@@ -10,6 +10,7 @@ import {
   parseAny,
   parseObject,
   parseArray,
+  parseJsx,
 } from '../../utils/value-parser-utils'
 import type {
   AllowedEnumType,
@@ -306,6 +307,8 @@ export function unwrapperAndParserForBaseControl(
       return defaultUnwrapFirst(parseString)
     case 'style-controls':
       return defaultUnwrapFirst(parseAny)
+    case 'jsx':
+      return jsUnwrapFirst(parseJsx)
     case 'vector2':
     case 'vector3':
     case 'vector4':
@@ -337,6 +340,7 @@ export function unwrapperAndParserForPropertyControl(
     case 'vector2':
     case 'vector3':
     case 'vector4':
+    case 'jsx':
       return unwrapperAndParserForBaseControl(control)
 
     case 'array':
@@ -429,7 +433,7 @@ function printColor(value: unknown): JSExpression {
 }
 
 function printJS<T>(value: T): JSExpression {
-  return jsExpressionOtherJavaScript(`${value}`, `${value}`, ``, [], null, {}, emptyComments)
+  return jsExpressionOtherJavaScript([], `${value}`, `${value}`, ``, [], null, {}, emptyComments)
 }
 
 export function printerForBasePropertyControl(control: BaseControlDescription): Printer<unknown> {
@@ -466,6 +470,8 @@ export function printerForBasePropertyControl(control: BaseControlDescription): 
     case 'vector3':
       return printSimple
     case 'vector4':
+      return printSimple
+    case 'jsx':
       return printSimple
     default:
       const _exhaustiveCheck: never = control
@@ -545,6 +551,7 @@ export function printerForPropertyControl(control: RegularControlDescription): P
     case 'vector2':
     case 'vector3':
     case 'vector4':
+    case 'jsx':
       return printerForBasePropertyControl(control)
 
     case 'array':

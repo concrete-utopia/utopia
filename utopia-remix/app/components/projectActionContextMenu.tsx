@@ -2,8 +2,8 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { useFetcher } from '@remix-run/react'
 import React from 'react'
 import { useProjectsStore } from '../store'
-import { contextMenuItem } from '../styles/contextMenuItem.css'
-import { colors } from '../styles/sprinkles.css'
+import { contextMenuDropdown, contextMenuItem } from '../styles/contextMenu.css'
+import { sprinkles } from '../styles/sprinkles.css'
 import { ProjectWithoutContent } from '../types'
 import { assertNever } from '../util/assertNever'
 import { projectEditorLink } from '../util/links'
@@ -118,16 +118,9 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
   return (
     <DropdownMenu.Portal>
       <DropdownMenu.Content
+        className={contextMenuDropdown()}
         style={{
-          background: 'white',
-          padding: 4,
-          boxShadow: '2px 3px 4px #dddddd',
-          border: '1px solid #ccc',
-          borderRadius: 4,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 4,
-          minWidth: 100,
+          right: 75,
         }}
         sideOffset={5}
       >
@@ -136,7 +129,8 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
             return (
               <DropdownMenu.Separator
                 key={`separator-${index}`}
-                style={{ backgroundColor: colors.separator, height: 1 }}
+                className={sprinkles({ backgroundColor: 'separator' })}
+                style={{ height: 1 }}
               />
             )
           }

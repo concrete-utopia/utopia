@@ -8,7 +8,7 @@ export const styles = {
       fontSize: '11px',
     },
     sprinkles({
-      background: {
+      backgroundColor: {
         lightMode: 'white',
         darkMode: 'darkModeBlack',
       },

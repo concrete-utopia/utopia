@@ -24,6 +24,8 @@ import {
   isJSXFragment,
   isJSExpression,
   isJSXMapExpression,
+  propertiesExposedByParam,
+  propertiesExposedByParams,
 } from '../../../core/shared/element-template'
 import {
   getAccumulatedElementsWithin,
@@ -308,7 +310,9 @@ export function renderCoreElement(
       }
 
       const valuesInScopeFromParameters =
-        element.type === 'JSX_MAP_EXPRESSION' ? element.valuesInScopeFromParameters : []
+        element.type === 'JSX_MAP_EXPRESSION'
+          ? element.valuesInScopeFromParameters
+          : propertiesExposedByParams(element.params)
 
       if (elementIsTextEdited) {
         const runJSExpressionLazy = () => {
@@ -601,6 +605,10 @@ export function renderCoreElement(
       }
 
       return jsxAttributeToValue(filePath, inScope, requireResult, element)
+    case 'JS_PROPERTY_ACCESS':
+    case 'JS_ELEMENT_ACCESS':
+    case 'JS_IDENTIFIER':
+      return jsxAttributeToValue(filePath, inScope, requireResult, element)
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled type ${JSON.stringify(element)}`)
@@ -682,6 +690,9 @@ function jsxElementChildToText(
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'JS_IDENTIFIER':
+    case 'JS_ELEMENT_ACCESS':
+    case 'JS_PROPERTY_ACCESS':
       return ''
     default:
       assertNever(element)
@@ -1024,6 +1035,9 @@ function runJSExpression(
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'JS_PROPERTY_ACCESS':
+    case 'JS_ELEMENT_ACCESS':
+    case 'JS_IDENTIFIER':
       return jsxAttributeToValue(filePath, block, requireResult, block)
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':

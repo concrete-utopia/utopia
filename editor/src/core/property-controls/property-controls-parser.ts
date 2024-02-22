@@ -29,6 +29,7 @@ import type {
   ExpressionControlOption,
   TupleControlDescription,
   HtmlInputControlDescription,
+  JSXControlDescription,
 } from 'utopia-api/core'
 import { parseColor } from '../../components/inspector/common/css-utils'
 import type { Parser, ParseResult } from '../../utils/value-parser-utils'
@@ -649,6 +650,23 @@ export function parseFolderControlDescription(
   )
 }
 
+export function parseJSXControlDescription(value: unknown): ParseResult<JSXControlDescription> {
+  return applicative3Either(
+    (label, control, visibleByDefault) => {
+      let jsxControlDescription: JSXControlDescription = {
+        control: control,
+      }
+      setOptionalProp(jsxControlDescription, 'label', label)
+      setOptionalProp(jsxControlDescription, 'visibleByDefault', visibleByDefault)
+
+      return jsxControlDescription
+    },
+    optionalObjectKeyParser(parseString, 'label')(value),
+    objectKeyParser(parseConstant('jsx'), 'control')(value),
+    optionalObjectKeyParser(parseBoolean, 'visibleByDefault')(value),
+  )
+}
+
 function parseRegularControlDescription(value: unknown): ParseResult<RegularControlDescription> {
   if (typeof value === 'object' && !Array.isArray(value) && value != null) {
     const controlType = (value as any)['control'] as RegularControlType
@@ -695,6 +713,8 @@ function parseRegularControlDescription(value: unknown): ParseResult<RegularCont
         return parseVector4ControlDescription(value)
       case 'union':
         return parseUnionControlDescription(value)
+      case 'jsx':
+        return parseJSXControlDescription(value)
       case undefined:
         return left(objectFieldNotPresentParseError('control'))
       default:

@@ -31,6 +31,7 @@ import type { MapLike } from 'typescript'
 import { forceNotNull } from './optional-utils'
 import type { FlexAlignment, FlexJustifyContent } from '../../components/inspector/inspector-common'
 import { allComments } from './comment-flags'
+import { defaultIndexHtmlFilePath } from '../../components/editor/store/editor-state'
 
 export interface ParsedComments {
   leadingComments: Array<Comment>
@@ -174,6 +175,7 @@ export function jsxAttributeNotFound(): JSXAttributeNotFound {
 
 export interface JSExpressionOtherJavaScript extends WithComments, WithElementsWithin {
   type: 'ATTRIBUTE_OTHER_JAVASCRIPT'
+  params: Array<Param>
   originalJavascript: string
   javascript: string
   transpiledJavascript: string
@@ -183,6 +185,7 @@ export interface JSExpressionOtherJavaScript extends WithComments, WithElementsW
 }
 
 export function jsExpressionOtherJavaScript(
+  params: Array<Param>,
   originalJavascript: string,
   javascript: string,
   transpiledJavascript: string,
@@ -194,6 +197,7 @@ export function jsExpressionOtherJavaScript(
 ): JSExpressionOtherJavaScript {
   return {
     type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
+    params: params,
     originalJavascript: originalJavascript,
     javascript: javascript,
     transpiledJavascript: transpiledJavascript,
@@ -210,6 +214,7 @@ export function jsExpressionOtherJavaScriptSimple(
   definedElsewhere: Array<string>,
 ): JSExpressionOtherJavaScript {
   return jsExpressionOtherJavaScript(
+    [],
     javascript,
     javascript,
     `return ${javascript}`,
@@ -422,7 +427,69 @@ export function jsExpressionFunctionCall(
   }
 }
 
+export interface JSIdentifier extends WithComments {
+  type: 'JS_IDENTIFIER'
+  name: string
+  uid: string
+}
+
+export function jsIdentifier(name: string, uid: string, comments: ParsedComments): JSIdentifier {
+  return {
+    type: 'JS_IDENTIFIER',
+    name: name,
+    uid: uid,
+    comments: comments,
+  }
+}
+
+export interface JSPropertyAccess extends WithComments {
+  type: 'JS_PROPERTY_ACCESS'
+  onValue: JSExpression
+  property: string
+  uid: string
+}
+
+export function jsPropertyAccess(
+  onValue: JSExpression,
+  property: string,
+  uid: string,
+  comments: ParsedComments,
+): JSPropertyAccess {
+  return {
+    type: 'JS_PROPERTY_ACCESS',
+    onValue: onValue,
+    property: property,
+    uid: uid,
+    comments: comments,
+  }
+}
+
+export interface JSElementAccess extends WithComments {
+  type: 'JS_ELEMENT_ACCESS'
+  onValue: JSExpression
+  element: JSExpression
+  uid: string
+}
+
+export function jsElementAccess(
+  onValue: JSExpression,
+  element: JSExpression,
+  uid: string,
+  comments: ParsedComments,
+): JSElementAccess {
+  return {
+    type: 'JS_ELEMENT_ACCESS',
+    onValue: onValue,
+    element: element,
+    uid: uid,
+    comments: comments,
+  }
+}
+
 export type JSExpression =
+  | JSIdentifier
+  | JSPropertyAccess
+  | JSElementAccess
   | JSExpressionValue<any>
   | JSExpressionOtherJavaScript
   | JSExpressionNestedArray
@@ -470,6 +537,9 @@ export function simplifyAttributeIfPossible(attribute: JSExpression): JSExpressi
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
     case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'JS_IDENTIFIER':
+    case 'JS_ELEMENT_ACCESS': // FIXME: Probably can boil down something if it contains a `ATTRIBUTE_VALUE`.
+    case 'JS_PROPERTY_ACCESS':
       return attribute
     case 'ATTRIBUTE_NESTED_ARRAY':
       let simpleArray: Array<unknown> = []
@@ -579,6 +649,22 @@ export function clearExpressionUniqueIDs(attribute: JSExpression): JSExpression 
         attribute.comments,
         '',
       )
+    case 'JS_IDENTIFIER':
+      return jsIdentifier(attribute.name, '', attribute.comments)
+    case 'JS_PROPERTY_ACCESS':
+      return jsPropertyAccess(
+        clearExpressionUniqueIDs(attribute.onValue),
+        attribute.property,
+        '',
+        attribute.comments,
+      )
+    case 'JS_ELEMENT_ACCESS':
+      return jsElementAccess(
+        clearExpressionUniqueIDs(attribute.onValue),
+        clearExpressionUniqueIDs(attribute.element),
+        '',
+        attribute.comments,
+      )
     case 'ATTRIBUTE_FUNCTION_CALL':
       return jsExpressionFunctionCall(
         attribute.functionName,
@@ -643,6 +729,22 @@ export function clearAttributeSourceMaps(attribute: JSExpression): JSExpression 
         }),
         emptyComments,
         attribute.uid,
+      )
+    case 'JS_IDENTIFIER':
+      return jsIdentifier(attribute.name, attribute.uid, attribute.comments)
+    case 'JS_PROPERTY_ACCESS':
+      return jsPropertyAccess(
+        clearAttributeSourceMaps(attribute.onValue),
+        attribute.property,
+        attribute.uid,
+        attribute.comments,
+      )
+    case 'JS_ELEMENT_ACCESS':
+      return jsElementAccess(
+        clearAttributeSourceMaps(attribute.onValue),
+        clearAttributeSourceMaps(attribute.element),
+        attribute.uid,
+        attribute.comments,
       )
     case 'ATTRIBUTE_FUNCTION_CALL':
       return jsExpressionFunctionCall(
@@ -895,6 +997,15 @@ export function attributeReferencesElsewhere(attribute: JSExpression): boolean {
       return attribute.content.some((subAttr) => {
         return attributeReferencesElsewhere(subAttr.value)
       })
+    case 'JS_IDENTIFIER':
+      return true
+    case 'JS_ELEMENT_ACCESS':
+      return (
+        attributeReferencesElsewhere(attribute.element) ||
+        attributeReferencesElsewhere(attribute.onValue)
+      )
+    case 'JS_PROPERTY_ACCESS':
+      return attributeReferencesElsewhere(attribute.onValue)
     case 'ATTRIBUTE_FUNCTION_CALL':
       return true
     default:
@@ -984,7 +1095,15 @@ export function getElementReferencesElsewherePathsFromProps(
     case 'ATTRIBUTE_FUNCTION_CALL':
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+    case 'JS_IDENTIFIER':
       return [pathSoFar] // replace the property corresponding to these values
+    case 'JS_PROPERTY_ACCESS':
+      return [PP.append(pathSoFar, PP.create(element.property))]
+    case 'JS_ELEMENT_ACCESS':
+      const onValuePaths = getElementReferencesElsewherePathsFromProps(element.onValue, pathSoFar)
+      return onValuePaths.flatMap((onValuePath) => {
+        return getElementReferencesElsewherePathsFromProps(element.element, onValuePath)
+      })
     default:
       assertNever(element)
   }
@@ -1037,10 +1156,37 @@ function getDefinedElsewhereFromElementChild(
     case 'JSX_TEXT_BLOCK':
     case 'JSX_FRAGMENT':
     case 'ATTRIBUTE_VALUE':
-    case 'ATTRIBUTE_NESTED_ARRAY':
-    case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
       return working
+    case 'ATTRIBUTE_NESTED_ARRAY':
+      return child.content.reduce((innerWorking, contentElement) => {
+        switch (contentElement.type) {
+          case 'ARRAY_VALUE':
+            return getDefinedElsewhereFromElementChild(innerWorking, contentElement.value)
+          case 'ARRAY_SPREAD':
+            return getDefinedElsewhereFromElementChild(innerWorking, contentElement.value)
+          default:
+            return assertNever(contentElement)
+        }
+      }, working)
+    case 'ATTRIBUTE_NESTED_OBJECT':
+      return child.content.reduce((innerWorking, contentElement) => {
+        switch (contentElement.type) {
+          case 'PROPERTY_ASSIGNMENT':
+            return getDefinedElsewhereFromElementChild(innerWorking, contentElement.value)
+          case 'SPREAD_ASSIGNMENT':
+            return getDefinedElsewhereFromElementChild(innerWorking, contentElement.value)
+          default:
+            return assertNever(contentElement)
+        }
+      }, working)
+    case 'JS_IDENTIFIER':
+      return working
+    case 'JS_ELEMENT_ACCESS':
+      const withOnValue = getDefinedElsewhereFromElementChild(working, child.onValue)
+      return getDefinedElsewhereFromElementChild(withOnValue, child.element)
+    case 'JS_PROPERTY_ACCESS':
+      return getDefinedElsewhereFromElementChild(working, child.onValue)
     default:
       assertNever(child)
   }
@@ -1400,6 +1546,9 @@ export function isJSExpression(element: JSXElementChild): element is JSExpressio
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'JS_ELEMENT_ACCESS':
+    case 'JS_PROPERTY_ACCESS':
+    case 'JS_IDENTIFIER':
       return true
     default:
       assertNever(element)
@@ -1484,6 +1633,9 @@ export function clearJSXElementChildUniqueIDs(element: JSXElementChild): JSXElem
     case 'ATTRIBUTE_FUNCTION_CALL':
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+    case 'JS_IDENTIFIER':
+    case 'JS_PROPERTY_ACCESS':
+    case 'JS_ELEMENT_ACCESS':
       return clearExpressionUniqueIDs(element)
     default:
       assertNever(element)
@@ -1598,6 +1750,7 @@ export function utopiaJSXComponent(
 }
 
 export function arbitraryJSBlock(
+  params: Array<Param>,
   javascript: string,
   transpiledJavascript: string,
   definedWithin: Array<string>,
@@ -1608,6 +1761,7 @@ export function arbitraryJSBlock(
 ): ArbitraryJSBlock {
   return {
     type: 'ARBITRARY_JS_BLOCK',
+    params: params,
     javascript: javascript,
     transpiledJavascript: transpiledJavascript,
     definedWithin: definedWithin,
@@ -1777,6 +1931,10 @@ export function propNamesForParam(param: Param): Array<string> {
   }
 }
 
+export function propertiesExposedByParams(params: Array<Param>): Array<string> {
+  return params.flatMap(propertiesExposedByParam)
+}
+
 export function propertiesExposedByParam(param: Param): Array<string> {
   switch (param.boundParam.type) {
     case 'REGULAR_PARAM':
@@ -1826,6 +1984,7 @@ export interface UtopiaJSXComponent {
 
 export type ArbitraryJSBlock = {
   type: 'ARBITRARY_JS_BLOCK'
+  params: Array<Param>
   javascript: string
   transpiledJavascript: string
   definedWithin: Array<string>
@@ -2319,6 +2478,18 @@ export function walkElement(
       fastForEach(element.parameters, (elem) => {
         forEach(elem, parentPath, depth + 1)
       })
+      break
+    case 'JS_IDENTIFIER':
+      forEach(element, parentPath, depth)
+      break
+    case 'JS_PROPERTY_ACCESS':
+      forEach(element, parentPath, depth)
+      walkElement(element.onValue, parentPath, depth + 1, forEach)
+      break
+    case 'JS_ELEMENT_ACCESS':
+      forEach(element, parentPath, depth)
+      walkElement(element.onValue, parentPath, depth + 1, forEach)
+      walkElement(element.element, parentPath, depth + 1, forEach)
       break
     default:
       const _exhaustiveCheck: never = element

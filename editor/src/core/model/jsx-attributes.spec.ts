@@ -61,6 +61,7 @@ function sampleJsxAttributes(): JSXAttributes {
           jsxPropertyAssignment(
             'shadow',
             jsExpressionOtherJavaScript(
+              [],
               'props.someShadow',
               'props.someShadow',
               'return props.someShadow;',
@@ -117,6 +118,7 @@ function sampleJsxAttributes(): JSXAttributes {
         emptyComments,
       ),
       doggo: jsExpressionOtherJavaScript(
+        [],
         'props.hello',
         'props.hello',
         'return props.hello;',
@@ -136,6 +138,7 @@ function sampleJsxAttributes(): JSXAttributes {
         emptyComments,
       ),
       otherJs: jsExpressionOtherJavaScript(
+        [],
         'true ? 10 : 5',
         'true ? 10 : 5',
         'return true ? 10 : 5',
@@ -862,6 +865,7 @@ describe('unsetJSXValueAtPath', () => {
   it('fails when attempting to remove a property from an invalid attribute value', () => {
     const startingValue = jsxAttributesFromMap({
       style: jsExpressionOtherJavaScript(
+        [],
         'undefined',
         'undefined',
         'undefined',

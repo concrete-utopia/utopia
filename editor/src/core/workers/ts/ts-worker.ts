@@ -699,7 +699,7 @@ function watch(
 function runBabel(code: string, filename: string, sourceMap: RawSourceMap | null) {
   const plugins = [infiniteLoopPrevention]
   return Babel.transform(code, {
-    presets: ['es2015'],
+    presets: ['es2016'],
     plugins: plugins,
     sourceType: 'script',
     sourceMaps: true,

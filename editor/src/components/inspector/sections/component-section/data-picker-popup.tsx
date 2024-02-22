@@ -1,3 +1,7 @@
+/** @jsxRuntime classic */
+/** @jsxFrag */
+/** @jsx jsx */
+import { jsx } from '@emotion/react'
 import React, { useCallback } from 'react'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
@@ -9,17 +13,61 @@ import { useRefEditorState } from '../../../editor/store/store-hook'
 import { UIGridRow } from '../../widgets/ui-grid-row'
 import { DataPickerPopupTestId, VariableFromScopeOptionTestId } from './component-section'
 import * as EP from '../../../../core/shared/element-path'
+import type {
+  ArrayInfo,
+  JSXInfo,
+  ObjectInfo,
+  PrimitiveInfo,
+  VariableInfo,
+} from './variables-in-scope-utils'
 import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
+import { assertNever } from '../../../../core/shared/utils'
 
-export interface VariableOption {
-  variableName: string
-  displayName: string
-  definedElsewhere: string | null
-  value: string
+export interface PrimitiveOption {
+  type: 'primitive'
+  variableInfo: PrimitiveInfo
+  definedElsewhere: string
   depth: number
-  variableChildren?: Array<VariableOption>
-  variableType: 'primitive' | 'array' | 'object'
-  valueMatchesPropType: boolean
+}
+
+export interface ArrayOption {
+  type: 'array'
+  variableInfo: ArrayInfo
+  depth: number
+  definedElsewhere: string
+  children: Array<VariableOption>
+}
+
+export interface ObjectOption {
+  type: 'object'
+  variableInfo: ObjectInfo
+  depth: number
+  definedElsewhere: string
+  children: Array<VariableOption>
+}
+
+export interface JSXOption {
+  type: 'jsx'
+  variableInfo: JSXInfo
+  definedElsewhere: string
+  depth: number
+}
+
+export type VariableOption = PrimitiveOption | ArrayOption | ObjectOption | JSXOption
+
+function valueToDisplay(option: VariableOption): string {
+  switch (option.variableInfo.type) {
+    case 'array':
+      return `[]`
+    case 'object':
+      return `{}`
+    case 'primitive':
+      return `${option.variableInfo.value}`
+    case 'jsx':
+      return `JSX`
+    default:
+      assertNever(option.variableInfo)
+  }
 }
 
 export interface DataPickerPopupProps {
@@ -87,19 +135,20 @@ export const DataPickerPopup = React.memo(
             backgroundColor: colorTheme.neutralBackground.value,
             padding: '8px 16px',
             boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
-            borderRadius: UtopiaTheme.inputBorderRadius,
+            borderRadius: 8,
             alignItems: 'flex-start',
             width: '96%',
+            maxWidth: '260px',
           }}
           data-testid={DataPickerPopupTestId}
         >
-          <div style={{ fontSize: 14, fontWeight: 400, marginBottom: 16 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 16 }}>
             <span>Data</span>
           </div>
           {variableNamesInScope.map((variableOption, idx) => {
             return (
               <ValueRow
-                key={variableOption.variableName}
+                key={variableOption.variableInfo.variableName}
                 variableOption={variableOption}
                 idx={`${idx}`}
                 onTweakProperty={onTweakProperty}
@@ -118,42 +167,58 @@ interface ValueRowProps {
   onTweakProperty: (name: string, definedElsewhere: string | null) => (e: React.MouseEvent) => void
 }
 
+const anyObjectChildMatches = (info: VariableInfo): boolean =>
+  info.type === 'object' && info.props.some((c) => c.matches || anyObjectChildMatches(c))
+
 function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
   const colorTheme = useColorTheme()
   const [selectedIndex, setSelectedIndex] = React.useState<number>(0)
-  const childrenLength = variableOption.variableChildren?.length ?? 0
-  const [childrenOpen, setChildrenOpen] = React.useState<boolean>(
-    variableOption.depth < 2 || childrenLength < 4,
-  )
-  const totalChildCount = variableOption.variableChildren?.length ?? 0
+
+  const childrenLength = variableOption.type === 'array' ? variableOption.children.length : Infinity
+  const childrenOpenByDefault =
+    variableOption.depth < 2 ||
+    childrenLength < 4 ||
+    anyObjectChildMatches(variableOption.variableInfo)
+
+  const [childrenOpen, setChildrenOpen] = React.useState<boolean>(childrenOpenByDefault)
+
   const toggleChildrenOpen = useCallback(() => {
     setChildrenOpen(!childrenOpen)
   }, [childrenOpen, setChildrenOpen])
 
-  const {
-    variableName,
-    definedElsewhere,
-    value,
-    displayName,
-    depth = 0,
-    variableChildren,
-    valueMatchesPropType,
-  } = variableOption
+  const isArray = variableOption.variableInfo.type === 'array'
 
-  const isArray = variableOption.variableType === 'array'
-  const tweakProperty = onTweakProperty(variableName, definedElsewhere)
+  const tweakProperty = onTweakProperty(
+    variableOption.variableInfo.variableName,
+    variableOption.definedElsewhere,
+  )
   const stopPropagation = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
   }, [])
-  const hasObjectChildren = variableChildren != null && variableChildren.length > 0 && !isArray
-  const shouldDim = depth > 0 || !valueMatchesPropType
+
+  const variableChildren =
+    variableOption.type === 'array' || variableOption.type === 'object'
+      ? variableOption.children
+      : null
+
+  const hasObjectChildren = variableOption.type === 'object' && variableOption.children.length > 0
   return (
     <>
       <Button
         data-testid={VariableFromScopeOptionTestId(idx)}
-        key={variableName}
-        style={{ width: '100%', height: 25 }}
+        style={{
+          width: '100%',
+          height: 25,
+          cursor: variableOption.variableInfo.matches ? 'pointer' : 'default',
+        }}
         onClick={isArray ? stopPropagation : tweakProperty}
+        css={{
+          '&:hover': {
+            backgroundColor: variableOption.variableInfo.matches
+              ? colorTheme.secondaryBackground.value
+              : 'inherit',
+          },
+        }}
       >
         <UIGridRow
           padded={false}
@@ -170,7 +235,7 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
           <div onClick={tweakProperty}>
             <span
               style={{
-                marginLeft: 4 * depth,
+                marginLeft: 4 * variableOption.depth,
                 borderRadius: 2,
                 fontWeight: 400,
                 display: 'flex',
@@ -178,7 +243,7 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
               }}
             >
               <PrefixIcon
-                depth={depth}
+                depth={variableOption.depth}
                 hasObjectChildren={hasObjectChildren}
                 onIconClick={toggleChildrenOpen}
                 open={childrenOpen}
@@ -187,11 +252,12 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
                 data-testid='variable-name'
                 style={{
                   textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
                   overflow: 'hidden',
-                  opacity: shouldDim ? 0.5 : 1,
+                  opacity: variableOption.variableInfo.matches ? 1 : 0.5,
                 }}
               >
-                {displayName}
+                {variableOption.variableInfo.displayName}
               </span>
             </span>
           </div>
@@ -208,19 +274,20 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
                 fontWeight: 400,
                 color: colorTheme.neutralForeground.value,
                 textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
                 maxWidth: 130,
                 overflow: 'hidden',
-                opacity: shouldDim ? 0.5 : 1,
+                opacity: variableOption.variableInfo.matches ? 1 : 0.5,
               }}
             >
               {isArray ? (
                 <ArrayPaginator
                   selectedIndex={selectedIndex}
-                  totalChildCount={totalChildCount}
+                  totalChildCount={childrenLength}
                   setSelectedIndex={setSelectedIndex}
                 />
               ) : (
-                value
+                valueToDisplay(variableOption)
               )}
             </span>
           </div>
@@ -229,7 +296,7 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
       {variableChildren != null ? (
         isArray ? (
           <ValueRow
-            key={variableChildren[selectedIndex].variableName}
+            key={variableChildren[selectedIndex].variableInfo.variableName}
             variableOption={variableChildren[selectedIndex]}
             idx={`${idx}-${selectedIndex}`}
             onTweakProperty={onTweakProperty}
@@ -238,7 +305,7 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
           variableChildren.map((child, index) => {
             return (
               <ValueRow
-                key={child.variableName}
+                key={child.variableInfo.variableName}
                 variableOption={child}
                 idx={`${idx}-${index}`}
                 onTweakProperty={onTweakProperty}

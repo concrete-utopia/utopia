@@ -324,6 +324,9 @@ export function simplifyJSXElementChildAttributes(element: JSXElementChild): JSX
     case 'ATTRIBUTE_FUNCTION_CALL':
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+    case 'JS_IDENTIFIER':
+    case 'JS_ELEMENT_ACCESS':
+    case 'JS_PROPERTY_ACCESS':
       return simplifyAttributeIfPossible(element)
     case 'JSX_FRAGMENT':
       const updatedChildren = element.children.map(simplifyJSXElementChildAttributes)
@@ -556,6 +559,7 @@ export function jsxArbitraryBlockArbitrary(): Arbitrary<JSExpression> {
   return uidArbitrary().chain((uid) =>
     FastCheck.constant(
       jsExpressionOtherJavaScript(
+        [],
         '1 + 2',
         '1 + 2;',
         'return 1 + 2;',
@@ -593,7 +597,7 @@ export function jsxAttributeValueArbitrary(): Arbitrary<JSExpressionValue<any>> 
 export function jsxAttributeOtherJavaScriptArbitrary(): Arbitrary<JSExpressionOtherJavaScript> {
   return uidArbitrary().chain((uid) =>
     FastCheck.constant(
-      jsExpressionOtherJavaScript('1 + 2', '1 + 2', '1 + 2', [], null, {}, emptyComments, uid),
+      jsExpressionOtherJavaScript([], '1 + 2', '1 + 2', '1 + 2', [], null, {}, emptyComments, uid),
     ),
   )
 }
@@ -788,8 +792,8 @@ export function jsxElementChildArbitrary(depth: number): Arbitrary<JSXElementChi
 
 export function arbitraryJSBlockArbitrary(): Arbitrary<ArbitraryJSBlock> {
   return FastCheck.oneof(
-    FastCheck.constant(arbitraryJSBlock('1 + 2;', '1 + 2', [], [], null, {})),
-    FastCheck.constant(arbitraryJSBlock(' \n ', ' \n ', [], [], null, {})),
+    FastCheck.constant(arbitraryJSBlock([], '1 + 2;', '1 + 2', [], [], null, {})),
+    FastCheck.constant(arbitraryJSBlock([], ' \n ', ' \n ', [], [], null, {})),
   )
 }
 
@@ -1001,6 +1005,32 @@ function walkElements(
       )
       break
     case 'ATTRIBUTE_VALUE':
+    case 'JS_IDENTIFIER':
+      break
+    case 'JS_PROPERTY_ACCESS':
+      walkElements(
+        jsxElementChild.onValue,
+        includeDataUIDAttribute,
+        walkWith,
+        shouldWalkElement,
+        shouldWalkAttributes,
+      )
+      break
+    case 'JS_ELEMENT_ACCESS':
+      walkElements(
+        jsxElementChild.onValue,
+        includeDataUIDAttribute,
+        walkWith,
+        shouldWalkElement,
+        shouldWalkAttributes,
+      )
+      walkElements(
+        jsxElementChild.element,
+        includeDataUIDAttribute,
+        walkWith,
+        shouldWalkElement,
+        shouldWalkAttributes,
+      )
       break
     case 'ATTRIBUTE_NESTED_ARRAY':
       fastForEach(jsxElementChild.content, (contentElement) => {

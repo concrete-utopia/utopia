@@ -26,6 +26,7 @@ function b(n) {
     return a(n - 1)
   }
 }",
+    "params": Array [],
     "sourceMap": Object {
       "file": "code.tsx",
       "mappings": "AAQCA,SAASC,CAATD,CAAWE,CAAXF,EAAcG;AACZC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAOC,CAACC,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AAWFA;;AAEDX,SAASQ,CAATR,CAAWE,CAAXF,EAAcG;AACZC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAON,CAACQ,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AACHC",
@@ -126,6 +127,13 @@ return { a: a, b: b };",
     },
   ],
   "fullHighlightBounds": Object {
+    "066": Object {
+      "endCol": 1,
+      "endLine": 32,
+      "startCol": 0,
+      "startLine": 26,
+      "uid": "066",
+    },
     "0a3": Object {
       "endCol": 28,
       "endLine": 20,
@@ -147,26 +155,12 @@ return { a: a, b: b };",
       "startLine": 20,
       "uid": "138",
     },
-    "163": Object {
-      "endCol": 1,
-      "endLine": 14,
-      "startCol": 0,
-      "startLine": 8,
-      "uid": "163",
-    },
     "207": Object {
       "endCol": 35,
       "endLine": 38,
       "startCol": 25,
       "startLine": 38,
       "uid": "207",
-    },
-    "34d": Object {
-      "endCol": 1,
-      "endLine": 32,
-      "startCol": 0,
-      "startLine": 26,
-      "uid": "34d",
     },
     "356": Object {
       "endCol": 64,
@@ -181,6 +175,13 @@ return { a: a, b: b };",
       "startCol": 14,
       "startLine": 21,
       "uid": "377",
+    },
+    "44c": Object {
+      "endCol": 3,
+      "endLine": 23,
+      "startCol": 2,
+      "startLine": 17,
+      "uid": "44c",
     },
     "4bd": Object {
       "endCol": 64,
@@ -203,12 +204,12 @@ return { a: a, b: b };",
       "startLine": 19,
       "uid": "6e3",
     },
-    "6f7": Object {
-      "endCol": 3,
-      "endLine": 23,
-      "startCol": 2,
-      "startLine": 17,
-      "uid": "6f7",
+    "773": Object {
+      "endCol": 10,
+      "endLine": 22,
+      "startCol": 6,
+      "startLine": 22,
+      "uid": "773",
     },
     "77c": Object {
       "endCol": 20,
@@ -231,13 +232,6 @@ return { a: a, b: b };",
       "startLine": 38,
       "uid": "791",
     },
-    "848": Object {
-      "endCol": 19,
-      "endLine": 22,
-      "startCol": 15,
-      "startLine": 22,
-      "uid": "848",
-    },
     "854": Object {
       "endCol": 28,
       "endLine": 35,
@@ -251,6 +245,13 @@ return { a: a, b: b };",
       "startCol": 20,
       "startLine": 40,
       "uid": "8b3",
+    },
+    "98f": Object {
+      "endCol": 1,
+      "endLine": 14,
+      "startCol": 0,
+      "startLine": 8,
+      "uid": "98f",
     },
     "a42": Object {
       "endCol": 44,
@@ -272,13 +273,6 @@ return { a: a, b: b };",
       "startCol": 63,
       "startLine": 20,
       "uid": "ab2",
-    },
-    "ada": Object {
-      "endCol": 10,
-      "endLine": 22,
-      "startCol": 6,
-      "startLine": 22,
-      "uid": "ada",
     },
     "app": Object {
       "endCol": 28,
@@ -322,14 +316,21 @@ return { a: a, b: b };",
       "startLine": 21,
       "uid": "d4f",
     },
-  },
-  "highlightBounds": Object {
-    "848": Object {
+    "f4f": Object {
       "endCol": 19,
       "endLine": 22,
       "startCol": 15,
       "startLine": 22,
-      "uid": "848",
+      "uid": "f4f",
+    },
+  },
+  "highlightBounds": Object {
+    "773": Object {
+      "endCol": 10,
+      "endLine": 22,
+      "startCol": 6,
+      "startLine": 22,
+      "uid": "773",
     },
     "aaa": Object {
       "endCol": 26,
@@ -337,13 +338,6 @@ return { a: a, b: b };",
       "startCol": 4,
       "startLine": 18,
       "uid": "aaa",
-    },
-    "ada": Object {
-      "endCol": 10,
-      "endLine": 22,
-      "startCol": 6,
-      "startLine": 22,
-      "uid": "ada",
     },
     "app": Object {
       "endCol": 28,
@@ -365,6 +359,13 @@ return { a: a, b: b };",
       "startCol": 4,
       "startLine": 36,
       "uid": "ccc",
+    },
+    "f4f": Object {
+      "endCol": 19,
+      "endLine": 22,
+      "startCol": 15,
+      "startLine": 22,
+      "uid": "f4f",
     },
   },
   "imports": Object {
@@ -450,6 +451,7 @@ return { a: a, b: b };",
     return b(n - 1)
   }
 }",
+      "params": Array [],
       "sourceMap": Object {
         "file": "code.tsx",
         "mappings": "AAQCA,SAASC,CAATD,CAAWE,CAAXF,EAAcG;AACZC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAOC,CAACC,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AACHC",
@@ -570,6 +572,7 @@ return { a: a };",
             "elementsWithin": Object {},
             "javascript": "b(5);",
             "originalJavascript": "b(5)",
+            "params": Array [],
             "sourceMap": Object {
               "file": "code.tsx",
               "mappings": "OAAE,CAAC,CAAH,CAAG,CAAFA",
@@ -647,6 +650,7 @@ export var storyboard = (
             "elementsWithin": Object {},
             "javascript": "a(5);",
             "originalJavascript": "a(5)",
+            "params": Array [],
             "sourceMap": Object {
               "file": "code.tsx",
               "mappings": "OAAE,CAAC,CAAH,CAAG,CAAFA",
@@ -802,6 +806,7 @@ export var storyboard = (
     return a(n - 1)
   }
 }",
+      "params": Array [],
       "sourceMap": Object {
         "file": "code.tsx",
         "mappings": "AA0BCA,SAASC,CAATD,CAAWE,CAAXF,EAAcG;AACZC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAOC,CAACC,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AACHC",

@@ -186,6 +186,8 @@ import {
   jsxConditionalExpression,
   isJSExpressionOtherJavaScript,
   isJSXMapExpression,
+  arbitraryJSBlock,
+  jsExpressionOtherJavaScript,
 } from '../../../core/shared/element-template'
 import type {
   CanvasRectangle,
@@ -858,10 +860,12 @@ export const RawSourceMapKeepDeepEquality: KeepDeepEqualityCall<RawSourceMap> =
   )
 
 export function JSExpressionOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqualityCall<JSExpressionOtherJavaScript> {
-  return combine8EqualityCalls(
-    (attribute) => attribute.javascript,
-    createCallWithTripleEquals<string>(),
+  return combine9EqualityCalls(
+    (attribute) => attribute.params,
+    arrayDeepEquality(ParamKeepDeepEquality()),
     (attribute) => attribute.originalJavascript,
+    createCallWithTripleEquals<string>(),
+    (attribute) => attribute.javascript,
     createCallWithTripleEquals<string>(),
     (attribute) => attribute.transpiledJavascript,
     createCallWithTripleEquals<string>(),
@@ -869,34 +873,13 @@ export function JSExpressionOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqual
     arrayDeepEquality(createCallWithTripleEquals()),
     (attribute) => attribute.sourceMap,
     nullableDeepEquality(RawSourceMapKeepDeepEquality),
-    (attribute) => attribute.uid,
-    createCallWithTripleEquals(),
     (block) => block.elementsWithin,
     ElementsWithinKeepDeepEqualityCall(),
     (block) => block.comments,
     ParsedCommentsKeepDeepEqualityCall,
-    (
-      javascript,
-      originalJavascript,
-      transpiledJavascript,
-      definedElsewhere,
-      sourceMap,
-      uniqueID,
-      elementsWithin,
-      comments,
-    ) => {
-      return {
-        type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
-        javascript: javascript,
-        originalJavascript: originalJavascript,
-        transpiledJavascript: transpiledJavascript,
-        definedElsewhere: definedElsewhere,
-        sourceMap: sourceMap,
-        uid: uniqueID,
-        elementsWithin: elementsWithin,
-        comments: comments,
-      }
-    },
+    (attribute) => attribute.uid,
+    createCallWithTripleEquals(),
+    jsExpressionOtherJavaScript,
   )
 }
 
@@ -1164,7 +1147,9 @@ export function ElementsWithinKeepDeepEqualityCall(): KeepDeepEqualityCall<Eleme
 }
 
 export function ArbitraryJSBlockKeepDeepEquality(): KeepDeepEqualityCall<ArbitraryJSBlock> {
-  return combine7EqualityCalls(
+  return combine8EqualityCalls(
+    (block) => block.params,
+    arrayDeepEquality(ParamKeepDeepEquality()),
     (block) => block.javascript,
     createCallWithTripleEquals(),
     (block) => block.transpiledJavascript,
@@ -1175,30 +1160,11 @@ export function ArbitraryJSBlockKeepDeepEquality(): KeepDeepEqualityCall<Arbitra
     arrayDeepEquality(createCallWithTripleEquals()),
     (block) => block.sourceMap,
     nullableDeepEquality(RawSourceMapKeepDeepEquality),
-    (block) => block.uid,
-    createCallWithTripleEquals(),
     (block) => block.elementsWithin,
     ElementsWithinKeepDeepEqualityCall(),
-    (
-      javascript: string,
-      transpiledJavascript: string,
-      definedWithin: Array<string>,
-      definedElsewhere: Array<string>,
-      sourceMap: RawSourceMap | null,
-      uid: string,
-      elementsWithin: ElementsWithin,
-    ) => {
-      return {
-        type: 'ARBITRARY_JS_BLOCK',
-        javascript: javascript,
-        transpiledJavascript: transpiledJavascript,
-        definedWithin: definedWithin,
-        definedElsewhere: definedElsewhere,
-        sourceMap: sourceMap,
-        uid: uid,
-        elementsWithin: elementsWithin,
-      }
-    },
+    (block) => block.uid,
+    createCallWithTripleEquals(),
+    arbitraryJSBlock,
   )
 }
 

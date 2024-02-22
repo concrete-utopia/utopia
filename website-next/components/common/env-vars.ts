@@ -29,6 +29,8 @@ export const IS_BROWSER_TEST_DEBUG: boolean =
 export const DEVELOPMENT_ENV: boolean =
   !PRODUCTION_OR_STAGING_CONFIG && !IS_TEST_ENVIRONMENT && HOSTNAME === 'localhost'
 
+const USE_BFF: boolean = process.env.USE_BFF === 'true'
+
 type BackendType =
   | 'bff' // proxied calls via the Remix BFF
   | 'direct' // direct calls to the backend
@@ -38,7 +40,7 @@ const LOCAL_BACKEND_PORTS: { [type in BackendType]: number } = {
   bff: 8002,
 }
 
-export const BACKEND_TYPE: BackendType = DEVELOPMENT_ENV ? 'bff' : 'direct'
+export const BACKEND_TYPE: BackendType = DEVELOPMENT_ENV || USE_BFF ? 'bff' : 'direct'
 
 export function isBackendBFF(): boolean {
   return BACKEND_TYPE === 'bff'
