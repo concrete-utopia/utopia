@@ -298,10 +298,10 @@ export function parseString(value: unknown): ParseResult<string> {
 }
 
 export function parseJsx(value: unknown): ParseResult<string> {
-  if (typeof value === 'string') {
-    return right(value)
+  if (typeof value === 'string' && value.startsWith('<')) {
+    return right(value.slice(1).split(' ')[0]) // TODO: This is a hack, we should get the jsx name properly
   } else {
-    return left(descriptionParseError('Not a string.'))
+    return left(descriptionParseError('Not a jsx.'))
   }
 }
 

@@ -83,11 +83,4 @@ class RU {
   }
 }
 
-export function isValidReactNode(node: unknown) {
-  return React.isValidElement(node)
-  // typeof node === 'string' ||
-  // typeof node === 'number' ||
-  // node === null
-}
-
 export default RU

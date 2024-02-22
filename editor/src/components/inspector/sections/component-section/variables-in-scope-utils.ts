@@ -8,11 +8,10 @@ import type { VariableData } from '../../../canvas/ui-jsx-canvas'
 import { useEditorState, Substores } from '../../../editor/store/store-hook'
 import type { VariableOption } from './data-picker-popup'
 import * as EP from '../../../../core/shared/element-path'
-import React, { ReactNode } from 'react'
+import React from 'react'
 import { useGetPropertyControlsForSelectedComponents } from '../../common/property-controls-hooks'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { assertNever } from '../../../../core/shared/utils'
-import { isValidReactNode } from '../../../../utils/react-utils'
 
 function valuesFromObject(
   variable: ArrayInfo | ObjectInfo,
@@ -370,25 +369,20 @@ function objectShapesMatch(left: object, right: object): boolean {
   return keysFromLeft.every((key) => variableShapesMatch((left as any)[key], (right as any)[key]))
 }
 
-function variableShapesMatch(current: unknown, other: unknown): boolean {
-  if (React.isValidElement(current)) {
-    return isValidReactNode(other)
+function variableShapesMatch(left: unknown, right: unknown): boolean {
+  if (React.isValidElement(left) && React.isValidElement(right)) {
+    return true
   }
 
-  if (Array.isArray(current) && Array.isArray(other)) {
-    return arrayShapesMatch(current, other)
+  if (Array.isArray(left) && Array.isArray(right)) {
+    return arrayShapesMatch(left, right)
   }
 
-  if (
-    typeof current === 'object' &&
-    typeof other === 'object' &&
-    current != null &&
-    other != null
-  ) {
-    return objectShapesMatch(current, other)
+  if (typeof left === 'object' && typeof right === 'object' && left != null && right != null) {
+    return objectShapesMatch(left, right)
   }
 
-  return typeof current === typeof other
+  return typeof left === typeof right
 }
 
 function variableMatchesArrayControlDescription(
@@ -416,7 +410,7 @@ function variableMatchesControlDescription(
   controlDescription: ControlDescription,
 ): boolean {
   const matches =
-    (isValidReactNode(variable) && controlDescription.control === 'jsx') ||
+    (React.isValidElement(variable) && controlDescription.control === 'jsx') ||
     (typeof variable === 'string' && controlDescription.control === 'string-input') ||
     (typeof variable === 'number' && controlDescription.control === 'number-input') ||
     (Array.isArray(variable) &&

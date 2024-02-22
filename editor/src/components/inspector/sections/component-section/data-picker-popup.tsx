@@ -64,7 +64,7 @@ function valueToDisplay(option: VariableOption): string {
     case 'primitive':
       return `${option.variableInfo.value}`
     case 'jsx':
-      return `${option.variableInfo.value}`
+      return `JSX`
     default:
       assertNever(option.variableInfo)
   }

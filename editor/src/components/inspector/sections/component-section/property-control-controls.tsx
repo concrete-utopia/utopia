@@ -35,6 +35,7 @@ import {
   FlexColumn,
   FlexRow,
   UtopiaTheme,
+  useColorTheme,
 } from '../../../../uuiui'
 import type { CSSNumber } from '../../common/css-utils'
 import { printCSSNumber, cssNumber, defaultCSSColor } from '../../common/css-utils'
@@ -512,10 +513,13 @@ export const JSXPropertyControl = React.memo(
   (props: ControlForPropProps<JSXControlDescription>) => {
     const { propMetadata } = props
 
+    const theme = useColorTheme()
+
     const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
 
     const safeValue = value ?? ''
 
+    // TODO: temporary solution, needs a real control
     return (
       <div
         style={{
@@ -525,7 +529,15 @@ export const JSXPropertyControl = React.memo(
           gap: 5,
         }}
       >
-        {safeValue}
+        <span
+          style={{
+            background: theme.dynamicBlue30.value,
+            textAlign: 'center',
+            borderRadius: 5,
+          }}
+        >
+          {`<${safeValue} />`}
+        </span>
       </div>
     )
   },
