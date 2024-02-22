@@ -7,7 +7,7 @@ import { LoaderFunctionArgs, json } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { UserDetails } from 'prisma-client'
-import React from 'react'
+import React, { useState } from 'react'
 import { ProjectContextMenu } from '../components/projectActionContextMenu'
 import { SortingContextMenu } from '../components/sortProjectsContextMenu'
 import { useIsDarkMode } from '../hooks/useIsDarkMode'
@@ -406,7 +406,7 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
                   }}
                   className={button({
                     size: 'square',
-                    color: !gridView ? 'subtle' : 'neutral',
+                    color: !gridView ? 'selected' : 'transparent',
                   })}
                 />
 
@@ -416,7 +416,7 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
                   }}
                   className={button({
                     size: 'square',
-                    color: gridView ? 'subtle' : 'neutral',
+                    color: gridView ? 'selected' : 'transparent',
                   })}
                 />
               </div>
@@ -495,7 +495,6 @@ const ProjectCards = React.memo(
             style={{
               display: 'flex',
               flexDirection: 'column',
-              gap: MarginSize,
               flexGrow: 1,
               overflowY: 'scroll',
               scrollbarColor: 'lightgrey transparent',
@@ -582,7 +581,7 @@ const ProjectCard = React.memo(
           onMouseDown={onSelect}
           onDoubleClick={openProject}
         >
-          <div style={{ position: 'absolute', right: 2, bottom: 2, display: 'flex', gap: 2 }}>
+          <div style={{ position: 'absolute', right: 6, bottom: 6, display: 'flex', gap: 2 }}>
             {collaborators.map((collaborator) => {
               return (
                 <div
@@ -600,7 +599,6 @@ const ProjectCard = React.memo(
                     alignItems: 'center',
                     fontSize: '.9em',
                     fontWeight: 700,
-                    border: '2px solid white',
                     filter: project.deleted === true ? 'grayscale(1)' : undefined,
                   }}
                   title={collaborator.name}
@@ -648,64 +646,80 @@ const ProjectRow = React.memo(
       window.open(projectEditorLink(project.proj_id), '_blank')
     }, [project.proj_id])
 
+    const [hovered, setHovered] = useState(false)
+
+    const handleMouseOver = () => {
+      setHovered(true)
+    }
+
+    const handleMouseOut = () => {
+      setHovered(false)
+    }
+
     return (
-      <div
-        style={{
-          height: 40,
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 5,
-        }}
-        onMouseDown={onSelect}
-        onDoubleClick={openProject}
-      >
+      <div style={{ padding: '8px 0' }}>
         <div
           style={{
+            height: 40,
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 15,
             border: selected ? '2px solid #0075F9' : '2px solid transparent',
             borderRadius: 10,
-            overflow: 'hidden',
-            height: 40,
-            width: 70,
-            background: 'linear-gradient(rgba(77, 255, 223, 0.4), rgba(255,250,220,.8))',
-            backgroundAttachment: 'local',
-            backgroundRepeat: 'no-repeat',
-            position: 'relative',
+            padding: 4,
+            backgroundColor: hovered ? '#a4a4a420' : 'transparent',
+            transition: `.1s background-color ease-in-out`,
           }}
-        />
-
-        <div style={{ fontWeight: 600 }}>{project.title}</div>
-        <div>{moment(project.modified_at).fromNow()}</div>
-        <div style={{ display: 'flex', gap: 2 }}>
-          {collaborators.map((collaborator) => {
-            return (
-              <div
-                key={`collaborator-${project.id}-${collaborator.id}`}
-                style={{
-                  borderRadius: '100%',
-                  width: 24,
-                  height: 24,
-                  backgroundColor: colors.primary,
-                  backgroundImage: `url("${collaborator.avatar}")`,
-                  backgroundSize: 'cover',
-                  color: colors.white,
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  fontSize: '.9em',
-                  fontWeight: 700,
-                  border: '2px solid white',
-                  filter: project.deleted === true ? 'grayscale(1)' : undefined,
-                }}
-                title={collaborator.name}
-                className={sprinkles({ boxShadow: 'shadow' })}
-              >
-                {when(collaborator.avatar === '', multiplayerInitialsFromName(collaborator.name))}
-              </div>
-            )
-          })}
+          onMouseDown={onSelect}
+          onDoubleClick={openProject}
+          onMouseOver={handleMouseOver}
+          onMouseOut={handleMouseOut}
+        >
+          <div
+            style={{
+              borderRadius: 8,
+              overflow: 'hidden',
+              height: 40,
+              width: 70,
+              background: 'linear-gradient(rgba(77, 255, 223, 0.4), rgba(255,250,220,.8))',
+              backgroundAttachment: 'local',
+              backgroundRepeat: 'no-repeat',
+              position: 'relative',
+            }}
+          />
+          <div style={{ flexGrow: 1, fontWeight: 600 }}>{project.title}</div>
+          <div style={{ width: 200 }}>{moment(project.modified_at).fromNow()}</div>
+          <div style={{ width: 280, display: 'flex', gap: 6 }}>
+            {collaborators.map((collaborator) => {
+              return (
+                <div
+                  key={`collaborator-${project.id}-${collaborator.id}`}
+                  style={{
+                    borderRadius: '100%',
+                    width: 24,
+                    height: 24,
+                    backgroundColor: colors.primary,
+                    backgroundImage: `url("${collaborator.avatar}")`,
+                    backgroundSize: 'cover',
+                    color: colors.white,
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    fontSize: '.9em',
+                    fontWeight: 700,
+                    filter: project.deleted === true ? 'grayscale(1)' : undefined,
+                  }}
+                  title={collaborator.name}
+                  className={sprinkles({ boxShadow: 'shadow' })}
+                >
+                  {when(collaborator.avatar === '', multiplayerInitialsFromName(collaborator.name))}
+                </div>
+              )
+            })}
+          </div>
+          <ProjectCardActions project={project} />
         </div>
-        <ProjectCardActions project={project} />
       </div>
     )
   },

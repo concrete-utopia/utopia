@@ -35,11 +35,17 @@ export const button = recipe({
         },
       },
       subtle: {
-        backgroundColor: '#a4a4a420',
+        backgroundColor: '#a4a4a430',
         ':hover': {
-          backgroundColor: '#a4a4a435',
+          backgroundColor: '#a4a4a440',
         },
       },
+      selected: {
+        backgroundColor: '#a4a4a430',
+      },
+      transparent: {
+        backgroundColor: 'transparent'
+      }
     },
     size: {
       default: {

@@ -23,7 +23,7 @@ export const SortingContextMenu = React.memo(() => {
       <DropdownMenuContent
         className={contextMenuDropdown()}
         style={{
-          right: 30,
+          right: 60,
         }}
         sideOffset={5}
       >
