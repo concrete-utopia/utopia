@@ -12,12 +12,12 @@ export async function loader(args: LoaderFunctionArgs) {
 }
 
 export async function getProjectCollaborators(req: Request, params: Params<string>) {
-  const user = await requireUser(req)
+  await requireUser(req)
 
   const { id } = params
   ensure(id != null, 'id is null', Status.BAD_REQUEST)
 
-  const collaborators = await listProjectCollaborators({ id: id, userId: user.user_id })
+  const collaborators = await listProjectCollaborators({ id: id })
   return collaborators.map(({ user_id, name, picture }) => ({
     id: user_id,
     name: name,

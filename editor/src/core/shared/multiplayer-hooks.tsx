@@ -27,7 +27,7 @@ import {
   showToast,
 } from '../../components/editor/actions/action-creators'
 import { notice } from '../../components/common/notice'
-import { getCollaborators } from '../../components/editor/server'
+import { getCollaborators, updateCollaborators } from '../../components/editor/server'
 import { assertNever } from './utils'
 
 /**
@@ -368,9 +368,9 @@ export function useLoadCollaborators() {
   })
 
   React.useEffect(() => {
-    if (!isLoggedIn(loginState)) {
+    if (!isLoggedIn(loginState) || projectId == null) {
       return
     }
-    void getAndStoreCollaborators()
-  }, [getAndStoreCollaborators, loginState])
+    void updateCollaborators(projectId).then(getAndStoreCollaborators)
+  }, [dispatch, projectId, loginState, getAndStoreCollaborators])
 }

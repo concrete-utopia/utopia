@@ -39,7 +39,6 @@ import { modify, toFirst } from '../shared/optics/optic-utilities'
 import { filtered, fromObjectField, traverseArray } from '../shared/optics/optic-creators'
 import { foldEither } from '../shared/either'
 import { isCanvasThreadMetadata, liveblocksThreadMetadataToUtopia } from './comment-types'
-import { updateCollaborators } from '../../components/editor/server'
 
 export function useCanvasCommentThreadAndLocation(comment: CommentId): {
   location: CanvasPoint | null
