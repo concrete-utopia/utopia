@@ -141,7 +141,7 @@ const ControlForProp = React.memo((props: ControlForPropProps<BaseControlDescrip
 
   if (attributeExpression != null && attributeExpression.type === 'JS_IDENTIFIER') {
     // Cartouche!
-    return 'Cartouche!!'
+    return <span>'Cartouche!!'</span>
   }
 
   switch (controlDescription.control) {
