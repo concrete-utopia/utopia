@@ -362,38 +362,38 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
             <div style={{ flex: 1 }}>{categories[selectedCategory].name}</div>,
           )}
         </div>
+        {when(
+          projects.length > 0,
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 10,
+            }}
+          >
+            <CategoryActions projects={projects} />
+          </div>,
+        )}
       </div>
 
       {when(
-        projects.length > 0,
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 10,
-          }}
-        >
-          <CategoryActions projects={projects} />
-          {when(
-            projects.length > 1,
-            <DropdownMenu.Root>
-              <DropdownMenu.Trigger asChild>
-                <div
-                  className={button()}
-                  style={{
-                    justifyContent: 'flex-end',
-                    gap: 10,
-                  }}
-                >
-                  <div>{convertToTitleCase(sortCriteria)} </div>
-                  <div>{sortAscending ? '↑' : '↓'}</div>
-                </div>
-              </DropdownMenu.Trigger>
-              <SortingContextMenu />
-            </DropdownMenu.Root>,
-          )}
-        </div>,
+        projects.length > 1,
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger asChild>
+            <div
+              className={button()}
+              style={{
+                justifyContent: 'flex-end',
+                gap: 10,
+              }}
+            >
+              <div>{convertToTitleCase(sortCriteria)} </div>
+              <div>{sortAscending ? '↑' : '↓'}</div>
+            </div>
+          </DropdownMenu.Trigger>
+          <SortingContextMenu />
+        </DropdownMenu.Root>,
       )}
     </div>
   )
@@ -450,6 +450,7 @@ const ProjectCards = React.memo(
   }) => {
     const selectedProjectId = useProjectsStore((store) => store.selectedProjectId)
     const setSelectedProjectId = useProjectsStore((store) => store.setSelectedProjectId)
+    const selectedCategory = useProjectsStore((store) => store.selectedCategory)
 
     const handleProjectSelect = React.useCallback(
       (project: ProjectWithoutContent) =>
@@ -458,28 +459,52 @@ const ProjectCards = React.memo(
     )
 
     return (
-      <div
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          alignContent: 'flex-start',
-          gap: MarginSize,
-          flexGrow: 1,
-          flexDirection: 'row',
-          overflowY: 'scroll',
-          scrollbarColor: 'lightgrey transparent',
-        }}
-      >
-        {projects.map((project) => (
-          <ProjectCard
-            key={project.proj_id}
-            project={project}
-            selected={project.proj_id === selectedProjectId}
-            onSelect={() => handleProjectSelect(project)}
-            collaborators={collaborators[project.proj_id]}
-          />
-        ))}
-      </div>
+      <>
+        {when(
+          projects.length === 0 && selectedCategory === 'trash',
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignContent: 'center',
+              justifyContent: 'center',
+              flexGrow: 1,
+              gap: 20,
+              textAlign: 'center',
+            }}
+          >
+            <div style={{ fontSize: 16, fontWeight: 600 }}>Your trash is empty!</div>
+            <div>
+              Deleted projects are kept here until you destory them <i>for good.</i>
+            </div>
+          </div>,
+        )}
+        {when(
+          projects.length > 0,
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignContent: 'flex-start',
+              gap: MarginSize,
+              flexGrow: 1,
+              flexDirection: 'row',
+              overflowY: 'scroll',
+              scrollbarColor: 'lightgrey transparent',
+            }}
+          >
+            {projects.map((project) => (
+              <ProjectCard
+                key={project.proj_id}
+                project={project}
+                selected={project.proj_id === selectedProjectId}
+                onSelect={() => handleProjectSelect(project)}
+                collaborators={collaborators[project.proj_id]}
+              />
+            ))}
+          </div>,
+        )}
+      </>
     )
   },
 )
