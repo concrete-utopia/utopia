@@ -10,6 +10,7 @@ import {
   parseAny,
   parseObject,
   parseArray,
+  parseJsx,
 } from '../../utils/value-parser-utils'
 import type {
   AllowedEnumType,
@@ -306,6 +307,8 @@ export function unwrapperAndParserForBaseControl(
       return defaultUnwrapFirst(parseString)
     case 'style-controls':
       return defaultUnwrapFirst(parseAny)
+    case 'jsx':
+      return jsUnwrapFirst(parseJsx)
     case 'vector2':
     case 'vector3':
     case 'vector4':
@@ -337,6 +340,7 @@ export function unwrapperAndParserForPropertyControl(
     case 'vector2':
     case 'vector3':
     case 'vector4':
+    case 'jsx':
       return unwrapperAndParserForBaseControl(control)
 
     case 'array':
@@ -467,6 +471,8 @@ export function printerForBasePropertyControl(control: BaseControlDescription): 
       return printSimple
     case 'vector4':
       return printSimple
+    case 'jsx':
+      return printSimple
     default:
       const _exhaustiveCheck: never = control
       throw new Error(`Unhandled controls ${JSON.stringify(control)}`)
@@ -545,6 +551,7 @@ export function printerForPropertyControl(control: RegularControlDescription): P
     case 'vector2':
     case 'vector3':
     case 'vector4':
+    case 'jsx':
       return printerForBasePropertyControl(control)
 
     case 'array':

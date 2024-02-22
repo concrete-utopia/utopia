@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import * as puppeteer from 'puppeteer'
-import type { PageEventObject } from 'puppeteer'
+import type { PageEvents } from 'puppeteer'
 const fs = require('fs')
 const path = require('path')
 const AWS = require('aws-sdk')
@@ -20,7 +20,7 @@ export const setupBrowser = async (
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--enable-thread-instruction-count', `--window-size=1500,940`],
     // see https://developer.chrome.com/docs/chromium/new-headless
-    headless: headlessModeEnabled ? 'new' : false,
+    headless: headlessModeEnabled,
     executablePath: process.env.BROWSER,
   })
   const page = await browser.newPage()
@@ -79,11 +79,11 @@ export function consoleDoneMessage(
   expectedConsoleMessage: string,
   errorMessage?: string,
 ): Promise<boolean> {
-  let handler: (message: PageEventObject['console']) => void = () => {
+  let handler: (message: PageEvents['console']) => void = () => {
     console.info('Should not fire.')
   }
   const consoleDonePromise = new Promise<boolean>((resolve, reject) => {
-    handler = (message: PageEventObject['console']) => {
+    handler = (message: PageEvents['console']) => {
       const messageText = message.text()
       if (
         messageText.includes(expectedConsoleMessage) ||
@@ -158,14 +158,14 @@ export async function uploadPNGtoAWS(testFile: string): Promise<string | null> {
 
 export async function initialiseTests(page: puppeteer.Page): Promise<void> {
   console.log('Initialising the project')
-  await page.waitForXPath('//div[contains(@class, "item-label-container")]')
+  await page.waitForSelector('xpath/.//div[contains(@class, "item-label-container")]')
 
   // Select something
   const navigatorElement = await page.$('[class^="item-label-container"]')
   await navigatorElement!.click()
 
   // First selection will open the file in VS Code, triggering a bunch of downloads, so we pause briefly
-  await page.waitForTimeout(15000)
+  await wait(15000)
 
   console.log('Finished initialising')
 }
