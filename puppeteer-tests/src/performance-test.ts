@@ -157,8 +157,8 @@ async function retryPageCalls<T>(
 ): Promise<T> {
   for (let retryCount: number = 1; retryCount <= 3; retryCount++) {
     const { page, browser } = await setupBrowser(url, 120000)
-    await page.waitForXPath(`//div[contains(@id, "canvas-container")]`)
-    await page.waitForXPath('//div[contains(@class, "item-label-container")]')
+    await page.waitForSelector(`xpath/.//div[contains(@id, "canvas-container")]`)
+    await page.waitForSelector('xpath/.//div[contains(@class, "item-label-container")]')
     try {
       const iterations = await page.evaluate(() => {
         try {
@@ -269,8 +269,8 @@ async function clickOnce(
   expectedConsoleMessage: string,
   errorMessage?: string,
 ): Promise<boolean> {
-  await page.waitForXPath(xpath)
-  const [button] = await page.$x(xpath)
+  await page.waitForSelector(`xpath/.${xpath}`)
+  const [button] = await page.$$(`xpath/.${xpath}`)
   await (button as puppeteer.ElementHandle<HTMLButtonElement>)!.click()
   return consoleDoneMessage(page, expectedConsoleMessage, errorMessage)
 }
@@ -327,7 +327,7 @@ export const testHighlightRegularPerformance = async function (
   page: puppeteer.Page,
 ): Promise<FrameResult> {
   console.log(`Test Regular Highlight Performance`)
-  await page.waitForXPath("//a[contains(., 'PRH')]")
+  await page.waitForSelector("xpath/.//a[contains(., 'PRH')]")
   // we run it twice without measurements to warm up the environment
   await clickOnce(
     page,
@@ -359,7 +359,7 @@ export const testHighlightAllElementsPerformance = async function (
   page: puppeteer.Page,
 ): Promise<FrameResult> {
   console.log(`Test All Elements Highlight Performance`)
-  await page.waitForXPath("//a[contains(., 'PAH')]")
+  await page.waitForSelector("xpath/.//a[contains(., 'PAH')]")
   // we run it twice without measurements to warm up the environment
   await clickOnce(
     page,
@@ -392,7 +392,7 @@ export const testSelectionPerformance = async function (page: puppeteer.Page): P
   deselection: FrameResult
 }> {
   console.log('Test Selection Performance')
-  await page.waitForXPath("//a[contains(., 'P E')]")
+  await page.waitForSelector("xpath/.//a[contains(., 'P E')]")
   // we run it twice without measurements to warm up the environment
   await clickOnce(page, "//a[contains(., 'P E')]", 'SELECT_TEST_FINISHED', 'SELECT_TEST_ERROR')
   await clickOnce(page, "//a[contains(., 'P E')]", 'SELECT_TEST_FINISHED', 'SELECT_TEST_ERROR')
@@ -417,7 +417,7 @@ export const testSelectionChangePerformance = async function (
   page: puppeteer.Page,
 ): Promise<FrameResult> {
   console.log('Test Selection Change Performance')
-  await page.waitForXPath("//a[contains(., 'PSC')]")
+  await page.waitForSelector("xpath/.//a[contains(., 'PSC')]")
   // we run it twice without measurements to warm up the environment
   await clickOnce(
     page,
@@ -450,7 +450,7 @@ export const testAbsoluteMovePerformanceLarge = async function (page: puppeteer.
   move: FrameResult
 }> {
   console.log('Test Absolute Move Performance (Large)')
-  await page.waitForXPath("//a[contains(., 'PAML')]")
+  await page.waitForSelector("xpath/.//a[contains(., 'PAML')]")
   // we run it twice without measurements to warm up the environment
   await clickOnce(
     page,
@@ -495,7 +495,7 @@ export const testAbsoluteMovePerformanceSmall = async function (
   page: puppeteer.Page,
 ): Promise<{ interaction: FrameResult; move: FrameResult }> {
   console.log('Test Absolute Move Performance (Small)')
-  await page.waitForXPath("//a[contains(., 'PAMS')]")
+  await page.waitForSelector("xpath/.//a[contains(., 'PAMS')]")
   // we run it twice without measurements to warm up the environment
   await clickOnce(
     page,
