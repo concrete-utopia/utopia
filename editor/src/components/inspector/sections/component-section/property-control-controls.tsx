@@ -536,7 +536,7 @@ export const JSXPropertyControl = React.memo(
             borderRadius: 5,
           }}
         >
-          {`<${safeValue} />`}
+          {safeValue}
         </span>
       </div>
     )

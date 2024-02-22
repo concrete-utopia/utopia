@@ -298,11 +298,7 @@ export function parseString(value: unknown): ParseResult<string> {
 }
 
 export function parseJsx(value: unknown): ParseResult<string> {
-  if (typeof value === 'string' && value.startsWith('<')) {
-    return right(value.slice(1).split(' ')[0]) // TODO: This is a hack, we should get the jsx name properly
-  } else {
-    return left(descriptionParseError('Not a jsx.'))
-  }
+  return right('JSX')
 }
 
 export function parseEnum<E extends string | number>(possibleValues: Array<E>): Parser<E> {
