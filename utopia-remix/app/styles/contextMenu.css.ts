@@ -28,7 +28,7 @@ export const contextMenuDropdown = recipe({
   base: [
     sprinkles({
       borderRadius: 'small',
-      background: 'white',
+      backgroundColor: 'white',
       color: 'lightModeBlack',
     }),
     {

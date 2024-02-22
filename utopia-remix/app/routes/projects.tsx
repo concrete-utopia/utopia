@@ -549,7 +549,7 @@ const ProjectCard = React.memo(
                   className={sprinkles({
                     boxShadow: 'shadow',
                     color: 'white',
-                    background: 'primary',
+                    backgroundColor: 'primary',
                   })}
                 >
                   {when(collaborator.avatar === '', multiplayerInitialsFromName(collaborator.name))}

@@ -129,7 +129,7 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
             return (
               <DropdownMenu.Separator
                 key={`separator-${index}`}
-                className={sprinkles({ background: 'separator' })}
+                className={sprinkles({ backgroundColor: 'separator' })}
                 style={{ height: 1 }}
               />
             )

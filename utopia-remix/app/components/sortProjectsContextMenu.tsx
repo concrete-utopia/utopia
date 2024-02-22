@@ -59,7 +59,7 @@ export const SortingContextMenu = React.memo(() => {
           Date Modified
         </DropdownMenu.CheckboxItem>
         <DropdownMenu.Separator
-          className={sprinkles({ background: 'separator' })}
+          className={sprinkles({ backgroundColor: 'separator' })}
           style={{ height: 1 }}
         />
         <DropdownMenu.Label style={{ color: 'grey', padding: 5 }}>Order</DropdownMenu.Label>
