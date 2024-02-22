@@ -797,7 +797,6 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
                 {unless(props.disableToggling, <ObjectIndicator open={open} />)}
               </PropertyLabel>
             </SimpleFlexRow>
-            cica
             {when(isBaseIndentationLevel(props), dataPickerButtonData.DataPickerOpener)}
           </FlexRow>
         </InspectorContextMenuWrapper>
