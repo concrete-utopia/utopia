@@ -330,14 +330,18 @@ export function useLoadCollaborators() {
     (store) => store.userState.loginState,
     'useLoadCollaborators loginState',
   )
+  const [loaded, setLoaded] = React.useState(false)
 
   const dispatch = useDispatch()
 
-  if (!isLoggedIn(loginState) || projectId == null) {
-    return
-  }
-
-  void loadCollaborators(projectId).then((collaborators) => {
-    dispatch([setCollaborators(collaborators)])
-  })
+  // Load the collaborators, just once and when logged in.
+  React.useEffect(() => {
+    if (projectId == null || !isLoggedIn(loginState) || loaded) {
+      return
+    }
+    void loadCollaborators(projectId).then((collaborators) => {
+      setLoaded(true)
+      dispatch([setCollaborators(collaborators)])
+    })
+  }, [projectId, loginState, dispatch, loaded])
 }
