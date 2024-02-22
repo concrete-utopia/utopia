@@ -70,13 +70,33 @@ function valuesFromVariable(
     case 'array':
     case 'object':
       return valuesFromObject(variable, originalObjectName, depth)
+    case 'jsx':
+      return [
+        {
+          type: 'jsx',
+          variableInfo: variable,
+          definedElsewhere: variable.variableName,
+          depth: depth,
+        },
+      ]
+    default:
+      assertNever(variable)
   }
 }
 
-function usePropertyControlDescriptions(): Array<ControlDescription> {
-  return useGetPropertyControlsForSelectedComponents().flatMap((controls) =>
-    Object.values(controls.controls),
+function usePropertyControlDescriptions(selectedProperty: PropertyPath): ControlDescription | null {
+  const controls = useGetPropertyControlsForSelectedComponents()
+  if (
+    selectedProperty.propertyElements.length === 0 ||
+    typeof selectedProperty.propertyElements[0] !== 'string'
+  ) {
+    // currently we only support picking data for props on components
+    return null
+  }
+  const controlForProp = controls.flatMap(
+    (c) => c.controls[selectedProperty.propertyElements[0]] ?? [],
   )
+  return controlForProp[0] ?? null
 }
 
 export interface PrimitiveInfo {
@@ -105,7 +125,15 @@ export interface ArrayInfo {
   matches: boolean
 }
 
-export type VariableInfo = PrimitiveInfo | ArrayInfo | ObjectInfo
+export interface JSXInfo {
+  type: 'jsx'
+  variableName: string
+  displayName: string
+  value: unknown
+  matches: boolean
+}
+
+export type VariableInfo = PrimitiveInfo | ArrayInfo | ObjectInfo | JSXInfo
 
 function variableInfoFromValue(
   variableName: string,
@@ -152,6 +180,15 @@ function variableInfoFromValue(
           ),
         }
       }
+      if (React.isValidElement(value)) {
+        return {
+          type: 'jsx',
+          variableName: variableName,
+          displayName: displayName,
+          value: value,
+          matches: false,
+        }
+      }
       return {
         type: 'object',
         variableName: variableName,
@@ -176,7 +213,7 @@ function variableInfoFromVariableData(variableNamesInScope: VariableData): Array
 
 function orderVariablesForRelevance(
   variableNamesInScope: Array<VariableInfo>,
-  controlDescriptions: Array<ControlDescription>,
+  controlDescription: ControlDescription | null,
   currentPropertyValue: PropertyValue,
 ): Array<VariableInfo> {
   let valuesMatchingPropertyDescription: Array<VariableInfo> = []
@@ -188,20 +225,20 @@ function orderVariablesForRelevance(
     if (variable.type === 'array') {
       variable.elements = orderVariablesForRelevance(
         variable.elements,
-        controlDescriptions,
+        controlDescription,
         currentPropertyValue,
       )
     } else if (variable.type === 'object') {
       variable.props = orderVariablesForRelevance(
         variable.props,
-        controlDescriptions,
+        controlDescription,
         currentPropertyValue,
       )
     }
 
-    const valueMatchesControlDescription = controlDescriptions.some((description) =>
-      variableMatchesControlDescription(variable.value, description),
-    )
+    const valueMatchesControlDescription =
+      controlDescription != null &&
+      variableMatchesControlDescription(variable.value, controlDescription)
 
     const valueMatchesCurrentPropValue =
       currentPropertyValue.type === 'existing' &&
@@ -269,7 +306,7 @@ export function useVariablesInScopeForSelectedElement(
     'useVariablesInScopeForSelectedElement variablesInScope',
   )
 
-  const controlDescriptions = usePropertyControlDescriptions()
+  const controlDescriptions = usePropertyControlDescriptions(propertyPath)
   const currentPropertyValue = usePropertyValue(selectedView, propertyPath)
 
   const variableNamesInScope = React.useMemo((): Array<VariableOption> => {
@@ -333,6 +370,10 @@ function objectShapesMatch(left: object, right: object): boolean {
 }
 
 function variableShapesMatch(left: unknown, right: unknown): boolean {
+  if (React.isValidElement(left) && React.isValidElement(right)) {
+    return true
+  }
+
   if (Array.isArray(left) && Array.isArray(right)) {
     return arrayShapesMatch(left, right)
   }
@@ -369,6 +410,7 @@ function variableMatchesControlDescription(
   controlDescription: ControlDescription,
 ): boolean {
   const matches =
+    (React.isValidElement(variable) && controlDescription.control === 'jsx') ||
     (typeof variable === 'string' && controlDescription.control === 'string-input') ||
     (typeof variable === 'number' && controlDescription.control === 'number-input') ||
     (Array.isArray(variable) &&
@@ -378,7 +420,6 @@ function variableMatchesControlDescription(
       variable != null &&
       controlDescription.control === 'object' &&
       variableMatchesObjectControlDescription(variable, controlDescription))
-
   return matches
 }
 

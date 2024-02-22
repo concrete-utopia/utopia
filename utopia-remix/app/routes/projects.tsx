@@ -1,14 +1,11 @@
-import {
-  Root as DropdownMenuRoot,
-  Trigger as DropdownMenuTrigger,
-} from '@radix-ui/react-dropdown-menu'
+import React from 'react'
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { Badge } from '@radix-ui/themes'
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { LoaderFunctionArgs, json } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { UserDetails } from 'prisma-client'
-import React from 'react'
 import { ProjectContextMenu } from '../components/projectActionContextMenu'
 import { SortingContextMenu } from '../components/sortProjectsContextMenu'
 import { useIsDarkMode } from '../hooks/useIsDarkMode'
@@ -18,7 +15,7 @@ import { useProjectsStore } from '../store'
 import { button } from '../styles/button.css'
 import { newProjectButton } from '../styles/newProjectButton.css'
 import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
-import { colors, sprinkles } from '../styles/sprinkles.css'
+import { sprinkles } from '../styles/sprinkles.css'
 import { AccessLevel, Collaborator, CollaboratorsByProject, ProjectWithoutContent } from '../types'
 import { requireUser } from '../util/api.server'
 import { assertNever } from '../util/assertNever'
@@ -381,8 +378,8 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
           <CategoryActions projects={projects} />
           {when(
             projects.length > 1,
-            <DropdownMenuRoot>
-              <DropdownMenuTrigger asChild>
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger asChild>
                 <div
                   className={button()}
                   style={{
@@ -393,9 +390,9 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
                   <div>{convertToTitleCase(sortCriteria)} </div>
                   <div>{sortAscending ? '↑' : '↓'}</div>
                 </div>
-              </DropdownMenuTrigger>
+              </DropdownMenu.Trigger>
               <SortingContextMenu />
-            </DropdownMenuRoot>,
+            </DropdownMenu.Root>,
           )}
         </div>,
       )}
@@ -539,10 +536,8 @@ const ProjectCard = React.memo(
                     borderRadius: '100%',
                     width: 24,
                     height: 24,
-                    backgroundColor: colors.primary,
                     backgroundImage: `url("${collaborator.avatar}")`,
                     backgroundSize: 'cover',
-                    color: colors.white,
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
@@ -552,7 +547,11 @@ const ProjectCard = React.memo(
                     filter: project.deleted === true ? 'grayscale(1)' : undefined,
                   }}
                   title={collaborator.name}
-                  className={sprinkles({ boxShadow: 'shadow' })}
+                  className={sprinkles({
+                    boxShadow: 'shadow',
+                    color: 'white',
+                    backgroundColor: 'primary',
+                  })}
                 >
                   {when(collaborator.avatar === '', multiplayerInitialsFromName(collaborator.name))}
                 </div>
@@ -578,12 +577,12 @@ const ProjectCardActions = React.memo(({ project }: { project: ProjectWithoutCon
         <div>{moment(project.modified_at).fromNow()}</div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-        <DropdownMenuRoot>
-          <DropdownMenuTrigger asChild>
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger asChild>
             <DotsHorizontalIcon className={button()} />
-          </DropdownMenuTrigger>
+          </DropdownMenu.Trigger>
           <ProjectContextMenu project={project} />
-        </DropdownMenuRoot>
+        </DropdownMenu.Root>
       </div>
     </div>
   )

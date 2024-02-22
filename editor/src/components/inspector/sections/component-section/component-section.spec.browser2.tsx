@@ -810,7 +810,7 @@ const projectWithObjectsAndArrays =
 
 registerInternalComponent(BookDetail, {
   properties: {
-    titles: Utopia.objectControl({
+    book: Utopia.objectControl({
       title: Utopia.stringControl(),
       published: Utopia.stringControl(),
       description: Utopia.stringControl(),
