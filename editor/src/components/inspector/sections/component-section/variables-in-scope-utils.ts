@@ -12,6 +12,7 @@ import React from 'react'
 import { useGetPropertyControlsForSelectedComponents } from '../../common/property-controls-hooks'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { assertNever } from '../../../../core/shared/utils'
+import { isValidReactNode } from '../../../../utils/react-utils'
 
 function valuesFromObject(
   variable: ArrayInfo | ObjectInfo,
@@ -216,6 +217,7 @@ function orderVariablesForRelevance(
   controlDescription: ControlDescription | null,
   currentPropertyValue: PropertyValue,
 ): Array<VariableInfo> {
+  let valuesExactlyMatchingPropertyDescription: Array<VariableInfo> = []
   let valuesMatchingPropertyDescription: Array<VariableInfo> = []
   let valuesMatchingPropertyShape: Array<VariableInfo> = []
   let valueElementMatches: Array<VariableInfo> = []
@@ -236,6 +238,9 @@ function orderVariablesForRelevance(
       )
     }
 
+    const valueExactlyMatchesControlDescription =
+      controlDescription?.control === 'jsx' && React.isValidElement(variable.value)
+
     const valueMatchesControlDescription =
       controlDescription != null &&
       variableMatchesControlDescription(variable.value, controlDescription)
@@ -248,6 +253,9 @@ function orderVariablesForRelevance(
       (variable.type === 'array' && variable.elements.some((e) => e.matches)) ||
       (variable.type === 'object' && variable.props.some((e) => e.matches))
 
+    if (valueExactlyMatchesControlDescription) {
+      valuesExactlyMatchingPropertyDescription.push({ ...variable, matches: true })
+    }
     if (valueMatchesControlDescription) {
       valuesMatchingPropertyDescription.push({ ...variable, matches: true })
     } else if (arrayOrObjectChildMatches) {
@@ -260,6 +268,7 @@ function orderVariablesForRelevance(
   }
 
   return [
+    ...valuesExactlyMatchingPropertyDescription,
     ...valuesMatchingPropertyDescription,
     ...valuesMatchingPropertyShape,
     ...valueElementMatches,
@@ -369,20 +378,25 @@ function objectShapesMatch(left: object, right: object): boolean {
   return keysFromLeft.every((key) => variableShapesMatch((left as any)[key], (right as any)[key]))
 }
 
-function variableShapesMatch(left: unknown, right: unknown): boolean {
-  if (React.isValidElement(left) && React.isValidElement(right)) {
-    return true
+function variableShapesMatch(current: unknown, other: unknown): boolean {
+  if (React.isValidElement(current)) {
+    return isValidReactNode(other)
   }
 
-  if (Array.isArray(left) && Array.isArray(right)) {
-    return arrayShapesMatch(left, right)
+  if (Array.isArray(current) && Array.isArray(other)) {
+    return arrayShapesMatch(current, other)
   }
 
-  if (typeof left === 'object' && typeof right === 'object' && left != null && right != null) {
-    return objectShapesMatch(left, right)
+  if (
+    typeof current === 'object' &&
+    typeof other === 'object' &&
+    current != null &&
+    other != null
+  ) {
+    return objectShapesMatch(current, other)
   }
 
-  return typeof left === typeof right
+  return typeof current === typeof other
 }
 
 function variableMatchesArrayControlDescription(
@@ -410,7 +424,7 @@ function variableMatchesControlDescription(
   controlDescription: ControlDescription,
 ): boolean {
   const matches =
-    (React.isValidElement(variable) && controlDescription.control === 'jsx') ||
+    (isValidReactNode(variable) && controlDescription.control === 'jsx') ||
     (typeof variable === 'string' && controlDescription.control === 'string-input') ||
     (typeof variable === 'number' && controlDescription.control === 'number-input') ||
     (Array.isArray(variable) &&
