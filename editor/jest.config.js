@@ -113,7 +113,7 @@ module.exports = {
         '^react$': '<rootDir>/node_modules/react/index.js',
         '^react-dom$': '<rootDir>/node_modules/react-dom/index.js',
         '\\.(jpg|ico|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
-          'identity-obj-proxy',
+          '<rootDir>/test/jest/__mocks__/styleMock.js',
       },
       transform: {
         '\\.[jt]sx?$': 'babel-jest',

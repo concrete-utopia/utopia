@@ -51,6 +51,7 @@ type UserProjectPermission =
   | 'can_edit'
   | 'can_comment'
   | 'can_show_presence'
+  | 'can_see_live_changes'
   | 'can_request_access'
 
 async function checkUserProjectPermission(
@@ -92,4 +93,8 @@ export async function canShowPresence(projectId: string, userId: string) {
 
 export async function canRequestAccess(projectId: string, userId: string) {
   return checkUserProjectPermission(projectId, userId, 'can_request_access')
+}
+
+export async function canSeeLiveChanges(projectId: string, userId: string) {
+  return checkUserProjectPermission(projectId, userId, 'can_see_live_changes')
 }

@@ -8,6 +8,7 @@ export enum UserProjectPermission {
   CAN_COMMENT_PROJECT,
   CAN_SHOW_PRESENCE,
   CAN_REQUEST_ACCESS,
+  CAN_SEE_LIVE_CHANGES,
 }
 
 export async function hasUserProjectPermission(
@@ -30,5 +31,13 @@ export async function hasUserProjectPermission(
       return fgaService.canShowPresence(projectId, userId)
     case UserProjectPermission.CAN_REQUEST_ACCESS:
       return fgaService.canRequestAccess(projectId, userId)
+    case UserProjectPermission.CAN_SEE_LIVE_CHANGES:
+      return fgaService.canSeeLiveChanges(projectId, userId)
+    default:
+      exaustiveMatch(permission)
   }
+}
+
+function exaustiveMatch(x: never) {
+  throw new Error(`Unmatched value: ${x}`)
 }
