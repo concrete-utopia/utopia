@@ -1,14 +1,18 @@
-import React from 'react'
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
+import {
+  Root as DropdownMenuRoot,
+  Trigger as DropdownMenuTrigger,
+} from '@radix-ui/react-dropdown-menu'
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { LoaderFunctionArgs, json } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { UserDetails } from 'prisma-client'
+import React from 'react'
 import { ProjectContextMenu } from '../components/projectActionContextMenu'
 import { SortingContextMenu } from '../components/sortProjectsContextMenu'
 import { useIsDarkMode } from '../hooks/useIsDarkMode'
 import { listDeletedProjects, listProjects } from '../models/project.server'
+import { getCollaborators } from '../models/projectCollaborators.server'
 import { useProjectsStore } from '../store'
 import { button } from '../styles/button.css'
 import { newProjectButton } from '../styles/newProjectButton.css'
@@ -20,7 +24,7 @@ import { assertNever } from '../util/assertNever'
 import { projectEditorLink } from '../util/links'
 import { when } from '../util/react-conditionals'
 import { multiplayerInitialsFromName } from '../util/strings'
-import { getCollaborators } from '../models/projectCollaborators.server'
+import { useProjectMatchesQuery, useSortCompareProject } from '../util/use-sort-compare-project'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
@@ -55,7 +59,10 @@ export async function loader(args: LoaderFunctionArgs) {
     userId: user.user_id,
   })
 
-  return json({ projects, deletedProjects, user, collaborators })
+  return json(
+    { projects, deletedProjects, user, collaborators },
+    { headers: { 'cache-control': 'no-cache' } },
+  )
 }
 
 const ProjectsPage = React.memo(() => {
@@ -79,37 +86,19 @@ const ProjectsPage = React.memo(() => {
     }
   }, [data.projects, data.deletedProjects, selectedCategory])
 
-  const searchQuery = useProjectsStore((store) => store.searchQuery)
-  const sortCriteria = useProjectsStore((store) => store.sortCriteria)
-  const sortAscending = useProjectsStore((store) => store.sortAscending)
+  const sortCompareProject = useSortCompareProject()
+  const projectMatchesQuery = useProjectMatchesQuery()
 
-  const filteredProjects = React.useMemo(() => {
-    const sanitizedQuery = searchQuery.trim().toLowerCase()
-    let sortedProjects = [...activeProjects]
+  const filteredProjects = React.useMemo(
+    () =>
+      activeProjects
+        // filter out projects that don't match the search query
+        .filter(projectMatchesQuery)
+        // sort them out according to the selected strategy
+        .sort(sortCompareProject),
 
-    if (sanitizedQuery.length > 0) {
-      sortedProjects = sortedProjects.filter((project) =>
-        project.title.toLowerCase().includes(sanitizedQuery),
-      )
-    }
-
-    sortedProjects.sort((a, b) => {
-      if (sortCriteria === 'title') {
-        return sortAscending ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title)
-      } else if (sortCriteria === 'dateCreated') {
-        const dateA = a.created_at.toString()
-        const dateB = b.created_at.toString()
-        return sortAscending ? dateA.localeCompare(dateB) : dateB.localeCompare(dateA)
-      } else if (sortCriteria === 'dateModified') {
-        const dateA = a.modified_at.toString()
-        const dateB = b.modified_at.toString()
-        return sortAscending ? dateA.localeCompare(dateB) : dateB.localeCompare(dateA)
-      }
-      return 0
-    })
-
-    return sortedProjects
-  }, [activeProjects, searchQuery, sortCriteria, sortAscending])
+    [activeProjects, projectMatchesQuery, sortCompareProject],
+  )
 
   return (
     <div
@@ -136,7 +125,7 @@ const ProjectsPage = React.memo(() => {
       >
         <TopActionBar />
         <ProjectsHeader projects={activeProjects} />
-        <ProjectCards projects={filteredProjects} collaborators={data.collaborators} />)
+        <ProjectCards projects={filteredProjects} collaborators={data.collaborators} />
       </div>
     </div>
   )
@@ -391,8 +380,8 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
           <CategoryActions projects={projects} />
           {when(
             projects.length > 1,
-            <DropdownMenu.Root>
-              <DropdownMenu.Trigger asChild>
+            <DropdownMenuRoot>
+              <DropdownMenuTrigger asChild>
                 <div
                   className={button()}
                   style={{
@@ -403,9 +392,9 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
                   <div>{convertToTitleCase(sortCriteria)} </div>
                   <div>{sortAscending ? '↑' : '↓'}</div>
                 </div>
-              </DropdownMenu.Trigger>
+              </DropdownMenuTrigger>
               <SortingContextMenu />
-            </DropdownMenu.Root>,
+            </DropdownMenuRoot>,
           )}
         </div>,
       )}
@@ -585,12 +574,12 @@ const ProjectCardActions = React.memo(({ project }: { project: ProjectWithoutCon
         <div>{moment(project.modified_at).fromNow()}</div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-        <DropdownMenu.Root>
-          <DropdownMenu.Trigger asChild>
+        <DropdownMenuRoot>
+          <DropdownMenuTrigger asChild>
             <DotsHorizontalIcon className={button()} />
-          </DropdownMenu.Trigger>
+          </DropdownMenuTrigger>
           <ProjectContextMenu project={project} />
-        </DropdownMenu.Root>
+        </DropdownMenuRoot>
       </div>
     </div>
   )

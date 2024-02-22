@@ -13,6 +13,7 @@ import {
 } from '@remix-run/react'
 import { BrowserEnvironment } from './env.server'
 import { styles } from './styles/styles.css'
+import type { HeadersFunction } from '@remix-run/node'
 
 import './normalize.css'
 
@@ -31,6 +32,10 @@ export async function loader() {
     ENV: BrowserEnvironment,
   })
 }
+
+export const headers: HeadersFunction = () => ({
+  'cache-control': 'no-cache',
+})
 
 export default function App() {
   const data = useLoaderData<typeof loader>()

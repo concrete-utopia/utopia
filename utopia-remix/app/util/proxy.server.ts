@@ -26,8 +26,6 @@ function buildProxyUrl(url: URL, path: string | null): string {
 export async function proxy(req: Request, options?: { rawOutput?: boolean; path?: string }) {
   const url = buildProxyUrl(new URL(req.url), options?.path ?? null)
 
-  console.log(`proxying call to ${url}`)
-
   const headers = new Headers()
 
   setCopyHeader(req.headers, headers, 'accept-encoding')
@@ -36,35 +34,18 @@ export async function proxy(req: Request, options?: { rawOutput?: boolean; path?
   setCopyHeader(req.headers, headers, 'content-type')
   setCopyHeader(req.headers, headers, 'cookie')
 
-  const requestInitWithoutBody: RequestInit = {
+  const response = await fetch(url, {
     credentials: 'include',
     method: req.method,
     headers: headers,
     mode: ProxyMode,
-  }
 
-  console.log(`proxied request data: ${JSON.stringify(requestInitWithoutBody)}`)
-  const requestHeaders = getHeadersArray(headers)
-  console.log(`request headers: ${JSON.stringify(requestHeaders)}`)
-
-  const response = await fetch(url, {
-    ...requestInitWithoutBody,
     body: req.body,
   })
-  const responseHeaders = getHeadersArray(response.headers)
-  console.log(`response headers: ${JSON.stringify(responseHeaders)}`)
   if (options?.rawOutput) {
     return response
   }
   return proxiedResponse(response)
-}
-
-function getHeadersArray(headers: Headers): string[] {
-  const headersString: string[] = []
-  for (const [key, value] of headers) {
-    headersString.push(`${key}=${value}`)
-  }
-  return headersString
 }
 
 function setCopyHeader(originalHeaders: Headers, targetHeaders: Headers, key: string) {

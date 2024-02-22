@@ -26,6 +26,9 @@ import type {
   JSXProperty,
   JSExpressionMapOrOtherJavascript,
   JSXMapExpression,
+  JSIdentifier,
+  JSPropertyAccess,
+  JSElementAccess,
 } from './element-template'
 import {
   emptyComments,
@@ -439,6 +442,36 @@ export function fixUtopiaElement(
     }
   }
 
+  function fixJSIdentifier(element: JSIdentifier): JSIdentifier {
+    const fixedUID = addAndMaybeUpdateUID(element.uid)
+    return {
+      ...element,
+      uid: fixedUID,
+    }
+  }
+
+  function fixJSPropertyAccess(element: JSPropertyAccess): JSPropertyAccess {
+    const fixedUID = addAndMaybeUpdateUID(element.uid)
+    const fixedOnValue = fixJSExpression(element.onValue)
+    return {
+      ...element,
+      uid: fixedUID,
+      onValue: fixedOnValue,
+    }
+  }
+
+  function fixJSElementAccess(element: JSElementAccess): JSElementAccess {
+    const fixedUID = addAndMaybeUpdateUID(element.uid)
+    const fixedOnValue = fixJSExpression(element.onValue)
+    const fixedElement = fixJSExpression(element.element)
+    return {
+      ...element,
+      uid: fixedUID,
+      onValue: fixedOnValue,
+      element: fixedElement,
+    }
+  }
+
   function fixJSExpression(value: JSExpression): JSExpression {
     switch (value.type) {
       case 'ATTRIBUTE_VALUE':
@@ -452,6 +485,12 @@ export function fixUtopiaElement(
       case 'JSX_MAP_EXPRESSION':
       case 'ATTRIBUTE_OTHER_JAVASCRIPT':
         return fixJSOtherJavaScript(value)
+      case 'JS_ELEMENT_ACCESS':
+        return fixJSElementAccess(value)
+      case 'JS_PROPERTY_ACCESS':
+        return fixJSPropertyAccess(value)
+      case 'JS_IDENTIFIER':
+        return fixJSIdentifier(value)
       default:
         assertNever(value)
     }
@@ -499,6 +538,9 @@ export function fixUtopiaElement(
       case 'ATTRIBUTE_FUNCTION_CALL':
       case 'JSX_MAP_EXPRESSION':
       case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+      case 'JS_IDENTIFIER':
+      case 'JS_PROPERTY_ACCESS':
+      case 'JS_ELEMENT_ACCESS':
         return fixJSExpression(element)
       default:
         assertNever(element)
@@ -600,7 +642,26 @@ export function findElementWithUID(
         }
         return null
       case 'ATTRIBUTE_VALUE':
+      case 'JS_IDENTIFIER':
         return null
+      case 'JS_ELEMENT_ACCESS': {
+        const findResultOnValue = findForJSXElementChild(element.onValue)
+        if (findResultOnValue != null) {
+          return findResultOnValue
+        }
+        const findResultElement = findForJSXElementChild(element.element)
+        if (findResultElement != null) {
+          return findResultElement
+        }
+        return null
+      }
+      case 'JS_PROPERTY_ACCESS': {
+        const findResultOnValue = findForJSXElementChild(element.onValue)
+        if (findResultOnValue != null) {
+          return findResultOnValue
+        }
+        return null
+      }
       case 'ATTRIBUTE_NESTED_ARRAY':
         for (const contentElement of element.content) {
           const elementWithinResult = findForJSXElementChild(contentElement.value)

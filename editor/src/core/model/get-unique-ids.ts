@@ -138,6 +138,15 @@ function extractUidFromJSXElementChild(
         extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, parameter)
       }
       break
+    case 'JS_IDENTIFIER':
+      break
+    case 'JS_PROPERTY_ACCESS':
+      extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, element.onValue)
+      break
+    case 'JS_ELEMENT_ACCESS':
+      extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, element.onValue)
+      extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, element.element)
+      break
     default:
       assertNever(element)
   }
