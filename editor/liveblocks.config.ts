@@ -10,7 +10,7 @@ import {
 import type { RemixPresence } from './src/core/shared/multiplayer'
 import { HEADERS } from './src/common/server'
 import urljoin from 'url-join'
-import { loadCollaborators } from './src/components/editor/server'
+import { getCollaborators } from './src/components/editor/server'
 
 export const liveblocksThrottle = 100 // ms
 
@@ -202,7 +202,7 @@ export const {
 })
 
 async function getAllUsersFromRoom(projectId: string) {
-  const collabs = await loadCollaborators(projectId)
+  const collabs = await getCollaborators(projectId)
   if (collabs == null) {
     return []
   }

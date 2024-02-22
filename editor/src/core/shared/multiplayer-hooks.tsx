@@ -6,6 +6,7 @@ import {
   useErrorListener,
   useLostConnectionListener,
   useMutation,
+  useOthersListener,
   useStorage,
 } from '../../../liveblocks.config'
 import { isLoggedIn } from '../../common/user'
@@ -26,7 +27,8 @@ import {
   showToast,
 } from '../../components/editor/actions/action-creators'
 import { notice } from '../../components/common/notice'
-import { loadCollaborators } from '../../components/editor/server'
+import { getCollaborators } from '../../components/editor/server'
+import { assertNever } from './utils'
 
 /**
  * How often to perform heartbeat bumps on connections.
@@ -320,6 +322,8 @@ export function useLiveblocksConnectionListener() {
 }
 
 export function useLoadCollaborators() {
+  const dispatch = useDispatch()
+
   const projectId = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.id,
@@ -330,18 +334,43 @@ export function useLoadCollaborators() {
     (store) => store.userState.loginState,
     'useLoadCollaborators loginState',
   )
-  const [loaded, setLoaded] = React.useState(false)
 
-  const dispatch = useDispatch()
+  const otherCollaboratorIds = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.collaborators.map((c) => c.id),
+    'useLoadCollaborators',
+  )
 
-  // Load the collaborators, just once and when logged in.
-  React.useEffect(() => {
-    if (projectId == null || !isLoggedIn(loginState) || loaded) {
+  const getAndStoreCollaborators = React.useCallback(() => {
+    if (projectId == null) {
       return
     }
-    void loadCollaborators(projectId).then((collaborators) => {
-      setLoaded(true)
+    void getCollaborators(projectId).then((collaborators) => {
       dispatch([setCollaborators(collaborators)])
     })
-  }, [projectId, loginState, dispatch, loaded])
+  }, [projectId, dispatch])
+
+  // when new users join or update, if they are not available in the collaborators array, refresh them.
+  useOthersListener((event) => {
+    switch (event.type) {
+      case 'enter':
+      case 'update':
+        if (!otherCollaboratorIds.includes(event.user.id)) {
+          void getAndStoreCollaborators()
+        }
+        break
+      case 'leave':
+      case 'reset':
+        break
+      default:
+        assertNever(event)
+    }
+  })
+
+  React.useEffect(() => {
+    if (!isLoggedIn(loginState)) {
+      return
+    }
+    void getAndStoreCollaborators()
+  }, [getAndStoreCollaborators, loginState])
 }

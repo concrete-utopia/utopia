@@ -506,7 +506,7 @@ export async function updateCollaborators(projectId: string) {
   })
 }
 
-export async function loadCollaborators(projectId: string): Promise<Collaborator[]> {
+export async function getCollaborators(projectId: string): Promise<Collaborator[]> {
   if (!isBackendBFF()) {
     return getCollaboratorsFromLiveblocks(projectId)
   }
