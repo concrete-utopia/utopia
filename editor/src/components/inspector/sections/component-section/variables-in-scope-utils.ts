@@ -73,19 +73,19 @@ function valuesFromVariable(
   }
 }
 
-function usePropertyControlDescriptions(selectedProperty: PropertyPath): Array<ControlDescription> {
+function usePropertyControlDescriptions(selectedProperty: PropertyPath): ControlDescription | null {
   const controls = useGetPropertyControlsForSelectedComponents()
   if (
     selectedProperty.propertyElements.length === 0 ||
     typeof selectedProperty.propertyElements[0] !== 'string'
   ) {
     // currently we only support picking data for props on components
-    return []
+    return null
   }
   const controlForProp = controls.flatMap(
     (c) => c.controls[selectedProperty.propertyElements[0]] ?? [],
   )
-  return controlForProp
+  return controlForProp[0] ?? null
 }
 
 export interface PrimitiveInfo {
@@ -185,7 +185,7 @@ function variableInfoFromVariableData(variableNamesInScope: VariableData): Array
 
 function orderVariablesForRelevance(
   variableNamesInScope: Array<VariableInfo>,
-  controlDescriptions: Array<ControlDescription>,
+  controlDescription: ControlDescription | null,
   currentPropertyValue: PropertyValue,
 ): Array<VariableInfo> {
   let valuesMatchingPropertyDescription: Array<VariableInfo> = []
@@ -197,20 +197,20 @@ function orderVariablesForRelevance(
     if (variable.type === 'array') {
       variable.elements = orderVariablesForRelevance(
         variable.elements,
-        controlDescriptions,
+        controlDescription,
         currentPropertyValue,
       )
     } else if (variable.type === 'object') {
       variable.props = orderVariablesForRelevance(
         variable.props,
-        controlDescriptions,
+        controlDescription,
         currentPropertyValue,
       )
     }
 
-    const valueMatchesControlDescription = controlDescriptions.some((description) =>
-      variableMatchesControlDescription(variable.value, description),
-    )
+    const valueMatchesControlDescription =
+      controlDescription != null &&
+      variableMatchesControlDescription(variable.value, controlDescription)
 
     const valueMatchesCurrentPropValue =
       currentPropertyValue.type === 'existing' &&
