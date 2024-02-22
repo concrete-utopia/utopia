@@ -92,7 +92,11 @@ import { getFilePathForImportedComponent } from '../../../../core/model/project-
 import { safeIndex } from '../../../../core/shared/array-utils'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { usePopper } from 'react-popper'
-import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
+import {
+  emptyComments,
+  jsExpressionOtherJavaScriptSimple,
+  jsIdentifier,
+} from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import {
   getJSExpressionAtPath,
@@ -118,47 +122,65 @@ function useComponentPropsInspectorInfo(
 
 const ControlForProp = React.memo((props: ControlForPropProps<BaseControlDescription>) => {
   const { controlDescription } = props
+
   if (controlDescription == null) {
     return null
-  } else {
-    switch (controlDescription.control) {
-      case 'checkbox':
-        return <CheckboxPropertyControl {...props} controlDescription={controlDescription} />
-      case 'color':
-        return <ColorPropertyControl {...props} controlDescription={controlDescription} />
-      case 'euler':
-        return <EulerPropertyControl {...props} controlDescription={controlDescription} />
-      case 'expression-input':
-        return <ExpressionInputPropertyControl {...props} controlDescription={controlDescription} />
-      case 'expression-popuplist':
-        return (
-          <ExpressionPopUpListPropertyControl {...props} controlDescription={controlDescription} />
-        )
-      case 'none':
-        return null
-      case 'matrix3':
-        return <Matrix3PropertyControl {...props} controlDescription={controlDescription} />
-      case 'matrix4':
-        return <Matrix4PropertyControl {...props} controlDescription={controlDescription} />
-      case 'number-input':
-        return <NumberInputPropertyControl {...props} controlDescription={controlDescription} />
-      case 'popuplist':
-        return <PopUpListPropertyControl {...props} controlDescription={controlDescription} />
-      case 'radio':
-        return <RadioPropertyControl {...props} controlDescription={controlDescription} />
-      case 'string-input':
-        return <StringInputPropertyControl {...props} controlDescription={controlDescription} />
-      case 'html-input':
-        return <HtmlInputPropertyControl {...props} controlDescription={controlDescription} />
-      case 'style-controls':
-        return null
-      case 'vector2':
-      case 'vector3':
-      case 'vector4':
-        return <VectorPropertyControl {...props} controlDescription={controlDescription} />
-      default:
-        return null
-    }
+  }
+
+  // TODO make this a const
+  let attributeExpression = props.propMetadata.attributeExpression
+
+  // this is placeholder code until we have the parser ready to give us JS_IDENTIFIERs
+  if (
+    attributeExpression != null &&
+    attributeExpression.type === 'ATTRIBUTE_OTHER_JAVASCRIPT' &&
+    attributeExpression.originalJavascript === 'cica'
+  ) {
+    attributeExpression = jsIdentifier('cica', 'cica', emptyComments)
+  }
+
+  if (attributeExpression != null && attributeExpression.type === 'JS_IDENTIFIER') {
+    // Cartouche!
+    return 'Cartouche!!'
+  }
+
+  switch (controlDescription.control) {
+    case 'checkbox':
+      return <CheckboxPropertyControl {...props} controlDescription={controlDescription} />
+    case 'color':
+      return <ColorPropertyControl {...props} controlDescription={controlDescription} />
+    case 'euler':
+      return <EulerPropertyControl {...props} controlDescription={controlDescription} />
+    case 'expression-input':
+      return <ExpressionInputPropertyControl {...props} controlDescription={controlDescription} />
+    case 'expression-popuplist':
+      return (
+        <ExpressionPopUpListPropertyControl {...props} controlDescription={controlDescription} />
+      )
+    case 'none':
+      return null
+    case 'matrix3':
+      return <Matrix3PropertyControl {...props} controlDescription={controlDescription} />
+    case 'matrix4':
+      return <Matrix4PropertyControl {...props} controlDescription={controlDescription} />
+    case 'number-input':
+      return <NumberInputPropertyControl {...props} controlDescription={controlDescription} />
+    case 'popuplist':
+      return <PopUpListPropertyControl {...props} controlDescription={controlDescription} />
+    case 'radio':
+      return <RadioPropertyControl {...props} controlDescription={controlDescription} />
+    case 'string-input':
+      return <StringInputPropertyControl {...props} controlDescription={controlDescription} />
+    case 'html-input':
+      return <HtmlInputPropertyControl {...props} controlDescription={controlDescription} />
+    case 'style-controls':
+      return null
+    case 'vector2':
+    case 'vector3':
+    case 'vector4':
+      return <VectorPropertyControl {...props} controlDescription={controlDescription} />
+    default:
+      return null
   }
 })
 interface ParseErrorProps {
@@ -772,6 +794,7 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
                 {unless(props.disableToggling, <ObjectIndicator open={open} />)}
               </PropertyLabel>
             </SimpleFlexRow>
+            cica
             {when(isBaseIndentationLevel(props), dataPickerButtonData.DataPickerOpener)}
           </FlexRow>
         </InspectorContextMenuWrapper>

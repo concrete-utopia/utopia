@@ -22,7 +22,7 @@ import type {
   Vector3ControlDescription,
   Vector4ControlDescription,
 } from 'utopia-api/core'
-import type { InspectorInfo } from '../../common/property-path-hooks'
+import type { InspectorInfo, InspectorInfoWithRawValue } from '../../common/property-path-hooks'
 import { BooleanControl } from '../../controls/boolean-control'
 import type { NumberInputProps } from '../../../../uuiui'
 import {
@@ -62,7 +62,7 @@ export interface ControlForPropProps<T extends BaseControlDescription> {
   propPath: PropertyPath
   propName: string
   controlDescription: T
-  propMetadata: InspectorInfo<any>
+  propMetadata: InspectorInfoWithRawValue<any>
   setGlobalCursor: (cursor: CSSCursor | null) => void
   focusOnMount: boolean
 }
