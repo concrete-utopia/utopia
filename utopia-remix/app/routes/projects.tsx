@@ -26,7 +26,6 @@ import { projectEditorLink } from '../util/links'
 import { when } from '../util/react-conditionals'
 import { multiplayerInitialsFromName } from '../util/strings'
 import { useProjectMatchesQuery, useSortCompareProject } from '../util/use-sort-compare-project'
-import { getProjectsAccess } from '../models/projectAccess.server'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
