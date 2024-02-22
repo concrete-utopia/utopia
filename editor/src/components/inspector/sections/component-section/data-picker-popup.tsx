@@ -13,7 +13,13 @@ import { useRefEditorState } from '../../../editor/store/store-hook'
 import { UIGridRow } from '../../widgets/ui-grid-row'
 import { DataPickerPopupTestId, VariableFromScopeOptionTestId } from './component-section'
 import * as EP from '../../../../core/shared/element-path'
-import type { ArrayInfo, ObjectInfo, PrimitiveInfo, VariableInfo } from './variables-in-scope-utils'
+import type {
+  ArrayInfo,
+  JSXInfo,
+  ObjectInfo,
+  PrimitiveInfo,
+  VariableInfo,
+} from './variables-in-scope-utils'
 import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
 import { assertNever } from '../../../../core/shared/utils'
 
@@ -40,7 +46,14 @@ export interface ObjectOption {
   children: Array<VariableOption>
 }
 
-export type VariableOption = PrimitiveOption | ArrayOption | ObjectOption
+export interface JSXOption {
+  type: 'jsx'
+  variableInfo: JSXInfo
+  definedElsewhere: string
+  depth: number
+}
+
+export type VariableOption = PrimitiveOption | ArrayOption | ObjectOption | JSXOption
 
 function valueToDisplay(option: VariableOption): string {
   switch (option.variableInfo.type) {
@@ -49,6 +62,8 @@ function valueToDisplay(option: VariableOption): string {
     case 'object':
       return `{}`
     case 'primitive':
+      return `${option.variableInfo.value}`
+    case 'jsx':
       return `${option.variableInfo.value}`
     default:
       assertNever(option.variableInfo)

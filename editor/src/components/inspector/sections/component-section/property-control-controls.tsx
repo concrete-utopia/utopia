@@ -12,6 +12,7 @@ import type {
   ExpressionInputControlDescription,
   ExpressionPopUpListControlDescription,
   HtmlInputControlDescription,
+  JSXControlDescription,
   Matrix3ControlDescription,
   Matrix4ControlDescription,
   NumberInputControlDescription,
@@ -502,6 +503,29 @@ export const HtmlInputPropertyControl = React.memo(
           focus={props.focusOnMount}
         />
         <HtmlPreview html={safeValue} />
+      </div>
+    )
+  },
+)
+
+export const JSXPropertyControl = React.memo(
+  (props: ControlForPropProps<JSXControlDescription>) => {
+    const { propMetadata } = props
+
+    const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
+
+    const safeValue = value ?? ''
+
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          flexBasis: 0,
+          gap: 5,
+        }}
+      >
+        {safeValue}
       </div>
     )
   },

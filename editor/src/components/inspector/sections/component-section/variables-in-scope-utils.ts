@@ -8,10 +8,11 @@ import type { VariableData } from '../../../canvas/ui-jsx-canvas'
 import { useEditorState, Substores } from '../../../editor/store/store-hook'
 import type { VariableOption } from './data-picker-popup'
 import * as EP from '../../../../core/shared/element-path'
-import React from 'react'
+import React, { ReactNode } from 'react'
 import { useGetPropertyControlsForSelectedComponents } from '../../common/property-controls-hooks'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { assertNever } from '../../../../core/shared/utils'
+import { isValidReactNode } from '../../../../utils/react-utils'
 
 function valuesFromObject(
   variable: ArrayInfo | ObjectInfo,
@@ -70,6 +71,17 @@ function valuesFromVariable(
     case 'array':
     case 'object':
       return valuesFromObject(variable, originalObjectName, depth)
+    case 'jsx':
+      return [
+        {
+          type: 'jsx',
+          variableInfo: variable,
+          definedElsewhere: variable.variableName,
+          depth: depth,
+        },
+      ]
+    default:
+      assertNever(variable)
   }
 }
 
@@ -105,7 +117,15 @@ export interface ArrayInfo {
   matches: boolean
 }
 
-export type VariableInfo = PrimitiveInfo | ArrayInfo | ObjectInfo
+export interface JSXInfo {
+  type: 'jsx'
+  variableName: string
+  displayName: string
+  value: unknown
+  matches: boolean
+}
+
+export type VariableInfo = PrimitiveInfo | ArrayInfo | ObjectInfo | JSXInfo
 
 function variableInfoFromValue(
   variableName: string,
@@ -150,6 +170,15 @@ function variableInfoFromValue(
               variableInfoFromValue(`${variableName}[${idx}]`, `${variableName}[${idx}]`, e),
             value,
           ),
+        }
+      }
+      if (React.isValidElement(value)) {
+        return {
+          type: 'jsx',
+          variableName: variableName,
+          displayName: displayName,
+          value: value,
+          matches: false,
         }
       }
       return {
@@ -332,16 +361,25 @@ function objectShapesMatch(left: object, right: object): boolean {
   return keysFromLeft.every((key) => variableShapesMatch((left as any)[key], (right as any)[key]))
 }
 
-function variableShapesMatch(left: unknown, right: unknown): boolean {
-  if (Array.isArray(left) && Array.isArray(right)) {
-    return arrayShapesMatch(left, right)
+function variableShapesMatch(current: unknown, other: unknown): boolean {
+  if (React.isValidElement(current)) {
+    return isValidReactNode(other)
   }
 
-  if (typeof left === 'object' && typeof right === 'object' && left != null && right != null) {
-    return objectShapesMatch(left, right)
+  if (Array.isArray(current) && Array.isArray(other)) {
+    return arrayShapesMatch(current, other)
   }
 
-  return typeof left === typeof right
+  if (
+    typeof current === 'object' &&
+    typeof other === 'object' &&
+    current != null &&
+    other != null
+  ) {
+    return objectShapesMatch(current, other)
+  }
+
+  return typeof current === typeof other
 }
 
 function variableMatchesArrayControlDescription(
@@ -369,6 +407,7 @@ function variableMatchesControlDescription(
   controlDescription: ControlDescription,
 ): boolean {
   const matches =
+    (isValidReactNode(variable) && controlDescription.control === 'jsx') ||
     (typeof variable === 'string' && controlDescription.control === 'string-input') ||
     (typeof variable === 'number' && controlDescription.control === 'number-input') ||
     (Array.isArray(variable) &&
@@ -378,7 +417,6 @@ function variableMatchesControlDescription(
       variable != null &&
       controlDescription.control === 'object' &&
       variableMatchesObjectControlDescription(variable, controlDescription))
-
   return matches
 }
 
