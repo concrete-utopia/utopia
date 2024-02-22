@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 require('dotenv').config({ path: 'src/.env' })
-import type { ElementHandle, Page, PageEventObject } from 'puppeteer'
+import type { ElementHandle, Page, PageEvents } from 'puppeteer'
 import { initialiseTests, ONE_MINUTE_IN_MS, setupBrowser, timeLimitPromise } from './utils'
 
 const PROJECT_ID = process.env.PROJECT_ID ?? ''
@@ -14,14 +14,14 @@ async function clickOnce(
   expectedConsoleMessage: string,
   errorMessage?: string,
 ): Promise<boolean> {
-  await page.waitForXPath(xpath)
-  const [button] = await page.$x(xpath)
+  await page.waitForSelector(`xpath/.${xpath}`)
+  const [button] = await page.$$(`xpath/.${xpath}`)
 
-  let handler: (message: PageEventObject['console']) => void = () => {
+  let handler: (message: PageEvents['console']) => void = () => {
     console.info('Should not fire.')
   }
   const consoleDonePromise = new Promise<boolean>((resolve, reject) => {
-    handler = (message: PageEventObject['console']) => {
+    handler = (message: PageEvents['console']) => {
       const messageText = message.text()
       if (messageText.includes(expectedConsoleMessage)) {
         console.info(messageText)

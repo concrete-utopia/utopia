@@ -60,13 +60,13 @@ describe('Collaboration test', () => {
         clickCanvasContainer(page2, { x: 500, y: 500 }),
       ])
 
-      const insertTab = (await page1.$x(
-        "//div[contains(text(), 'Insert')]",
+      const insertTab = (await page1.$$(
+        "xpath/.//div[contains(text(), 'Insert')]",
       )) as ElementHandle<Element>[]
       await insertTab!.at(0)!.click()
 
-      const sampleTextOptions = (await page1.$x(
-        "//span[contains(text(), 'Sample text')]",
+      const sampleTextOptions = (await page1.$$(
+        "xpath/.//span[contains(text(), 'Sample text')]",
       )) as ElementHandle<Element>[]
       await sampleTextOptions!.at(0)!.click()
       await clickCanvasContainer(page1, { x: 500, y: 500 })
