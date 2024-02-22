@@ -35,6 +35,7 @@ export type BaseControlType =
   | 'vector2'
   | 'vector3'
   | 'vector4'
+  | 'jsx'
 
 export interface CheckboxControlDescription {
   control: 'checkbox'
@@ -174,6 +175,12 @@ export interface Vector4ControlDescription {
   visibleByDefault?: boolean
 }
 
+export interface JSXControlDescription {
+  control: 'jsx'
+  label?: string
+  visibleByDefault?: boolean
+}
+
 export type BaseControlDescription =
   | CheckboxControlDescription
   | ColorControlDescription
@@ -192,6 +199,7 @@ export type BaseControlDescription =
   | Vector2ControlDescription
   | Vector3ControlDescription
   | Vector4ControlDescription
+  | JSXControlDescription
 
 // Higher Level Controls
 
@@ -266,6 +274,7 @@ export function isBaseControlDescription(
     case 'vector2':
     case 'vector3':
     case 'vector4':
+    case 'jsx':
       return true
     case 'array':
     case 'object':

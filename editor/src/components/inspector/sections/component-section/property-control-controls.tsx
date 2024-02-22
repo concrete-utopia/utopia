@@ -12,6 +12,7 @@ import type {
   ExpressionInputControlDescription,
   ExpressionPopUpListControlDescription,
   HtmlInputControlDescription,
+  JSXControlDescription,
   Matrix3ControlDescription,
   Matrix4ControlDescription,
   NumberInputControlDescription,
@@ -34,6 +35,7 @@ import {
   FlexColumn,
   FlexRow,
   UtopiaTheme,
+  useColorTheme,
 } from '../../../../uuiui'
 import type { CSSNumber } from '../../common/css-utils'
 import { printCSSNumber, cssNumber, defaultCSSColor } from '../../common/css-utils'
@@ -502,6 +504,40 @@ export const HtmlInputPropertyControl = React.memo(
           focus={props.focusOnMount}
         />
         <HtmlPreview html={safeValue} />
+      </div>
+    )
+  },
+)
+
+export const JSXPropertyControl = React.memo(
+  (props: ControlForPropProps<JSXControlDescription>) => {
+    const { propMetadata } = props
+
+    const theme = useColorTheme()
+
+    const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
+
+    const safeValue = value ?? ''
+
+    // TODO: temporary solution, needs a real control
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          flexBasis: 0,
+          gap: 5,
+        }}
+      >
+        <span
+          style={{
+            background: theme.dynamicBlue30.value,
+            textAlign: 'center',
+            borderRadius: 5,
+          }}
+        >
+          {safeValue}
+        </span>
       </div>
     )
   },

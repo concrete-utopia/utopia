@@ -70,6 +70,17 @@ function valuesFromVariable(
     case 'array':
     case 'object':
       return valuesFromObject(variable, originalObjectName, depth)
+    case 'jsx':
+      return [
+        {
+          type: 'jsx',
+          variableInfo: variable,
+          definedElsewhere: variable.variableName,
+          depth: depth,
+        },
+      ]
+    default:
+      assertNever(variable)
   }
 }
 
@@ -114,7 +125,15 @@ export interface ArrayInfo {
   matches: boolean
 }
 
-export type VariableInfo = PrimitiveInfo | ArrayInfo | ObjectInfo
+export interface JSXInfo {
+  type: 'jsx'
+  variableName: string
+  displayName: string
+  value: unknown
+  matches: boolean
+}
+
+export type VariableInfo = PrimitiveInfo | ArrayInfo | ObjectInfo | JSXInfo
 
 function variableInfoFromValue(
   variableName: string,
@@ -159,6 +178,15 @@ function variableInfoFromValue(
               variableInfoFromValue(`${variableName}[${idx}]`, `${variableName}[${idx}]`, e),
             value,
           ),
+        }
+      }
+      if (React.isValidElement(value)) {
+        return {
+          type: 'jsx',
+          variableName: variableName,
+          displayName: displayName,
+          value: value,
+          matches: false,
         }
       }
       return {
@@ -342,6 +370,10 @@ function objectShapesMatch(left: object, right: object): boolean {
 }
 
 function variableShapesMatch(left: unknown, right: unknown): boolean {
+  if (React.isValidElement(left) && React.isValidElement(right)) {
+    return true
+  }
+
   if (Array.isArray(left) && Array.isArray(right)) {
     return arrayShapesMatch(left, right)
   }
@@ -378,6 +410,7 @@ function variableMatchesControlDescription(
   controlDescription: ControlDescription,
 ): boolean {
   const matches =
+    (React.isValidElement(variable) && controlDescription.control === 'jsx') ||
     (typeof variable === 'string' && controlDescription.control === 'string-input') ||
     (typeof variable === 'number' && controlDescription.control === 'number-input') ||
     (Array.isArray(variable) &&
@@ -387,7 +420,6 @@ function variableMatchesControlDescription(
       variable != null &&
       controlDescription.control === 'object' &&
       variableMatchesObjectControlDescription(variable, controlDescription))
-
   return matches
 }
 

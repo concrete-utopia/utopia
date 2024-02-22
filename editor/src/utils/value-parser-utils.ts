@@ -297,6 +297,10 @@ export function parseString(value: unknown): ParseResult<string> {
   }
 }
 
+export function parseJsx(value: unknown): ParseResult<string> {
+  return right('JSX')
+}
+
 export function parseEnum<E extends string | number>(possibleValues: Array<E>): Parser<E> {
   return (value: unknown) => {
     for (const possibleValue of possibleValues) {
