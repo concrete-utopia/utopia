@@ -6,7 +6,13 @@ import React, { useCallback } from 'react'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { PropertyPath } from '../../../../core/shared/project-file-types'
-import { useColorTheme, UtopiaTheme, Button, FlexColumn, UtopiaStyles } from '../../../../uuiui'
+import {
+  useColorTheme,
+  Button,
+  FlexColumn,
+  UtopiaStyles,
+  OnClickOutsideHOC,
+} from '../../../../uuiui'
 import { setProp_UNSAFE } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { useRefEditorState } from '../../../editor/store/store-hook'
@@ -15,7 +21,9 @@ import { DataPickerPopupTestId, VariableFromScopeOptionTestId } from './componen
 import * as EP from '../../../../core/shared/element-path'
 import type { ArrayInfo, ObjectInfo, PrimitiveInfo, VariableInfo } from './variables-in-scope-utils'
 import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
-import { assertNever } from '../../../../core/shared/utils'
+import { PortalTargetID, assertNever } from '../../../../core/shared/utils'
+import { useHandleCloseOnESCOrEnter } from '../../common/inspector-utils'
+import ReactDOM from 'react-dom'
 
 export interface PrimitiveOption {
   type: 'primitive'
@@ -65,6 +73,8 @@ export const DataPickerPopup = React.memo(
   React.forwardRef<HTMLDivElement, DataPickerPopupProps>((props, forwardedRef) => {
     const { closePopup, propPath } = props
 
+    useHandleCloseOnESCOrEnter(closePopup)
+
     const selectedViewPathRef = useRefEditorState(
       (store) => store.editor.selectedViews.at(0) ?? null,
     )
@@ -99,19 +109,8 @@ export const DataPickerPopup = React.memo(
       props.propPath,
     )
 
-    return (
-      <div
-        style={{
-          background: 'transparent',
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: 1, // so it's above the inspector
-        }}
-        onClick={closePopup}
-      >
+    return ReactDOM.createPortal(
+      <OnClickOutsideHOC onClickOutside={closePopup}>
         <FlexColumn
           ref={forwardedRef}
           tabIndex={0}
@@ -124,6 +123,7 @@ export const DataPickerPopup = React.memo(
             alignItems: 'flex-start',
             width: '96%',
             maxWidth: '260px',
+            zIndex: 1, // so it's above the inspector
           }}
           data-testid={DataPickerPopupTestId}
         >
@@ -141,7 +141,8 @@ export const DataPickerPopup = React.memo(
             )
           })}
         </FlexColumn>
-      </div>
+      </OnClickOutsideHOC>,
+      document.getElementById(PortalTargetID) as HTMLElement,
     )
   }),
 )
