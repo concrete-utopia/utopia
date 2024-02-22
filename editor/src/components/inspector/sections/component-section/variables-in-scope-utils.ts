@@ -255,8 +255,7 @@ function orderVariablesForRelevance(
 
     if (valueExactlyMatchesControlDescription) {
       valuesExactlyMatchingPropertyDescription.push({ ...variable, matches: true })
-    }
-    if (valueMatchesControlDescription) {
+    } else if (valueMatchesControlDescription) {
       valuesMatchingPropertyDescription.push({ ...variable, matches: true })
     } else if (arrayOrObjectChildMatches) {
       valueElementMatches.push({ ...variable, matches: false })
