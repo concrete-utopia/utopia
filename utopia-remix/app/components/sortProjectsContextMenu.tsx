@@ -1,15 +1,8 @@
-import {
-  Portal as DropdownMenuPortal,
-  Content as DropdownMenuContent,
-  Label as DropdownMenuLabel,
-  Separator as DropdownMenuSeparator,
-  CheckboxItem as DropdownMenuCheckboxItem,
-  ItemIndicator as DropdownMenuItemIndicator,
-} from '@radix-ui/react-dropdown-menu'
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import React from 'react'
 import { useProjectsStore } from '../store'
 import { contextMenuDropdown, contextMenuItem } from '../styles/contextMenu.css'
-import { colors } from '../styles/sprinkles.css'
+import { sprinkles } from '../styles/sprinkles.css'
 import { CheckIcon } from '@radix-ui/react-icons'
 
 export const SortingContextMenu = React.memo(() => {
@@ -19,80 +12,83 @@ export const SortingContextMenu = React.memo(() => {
   const setSortAscending = useProjectsStore((store) => store.setSortAscending)
 
   return (
-    <DropdownMenuPortal>
-      <DropdownMenuContent
+    <DropdownMenu.Portal>
+      <DropdownMenu.Content
         className={contextMenuDropdown()}
         style={{
           right: 30,
         }}
         sideOffset={5}
       >
-        <DropdownMenuLabel style={{ color: 'grey', padding: 5 }}>Sort by</DropdownMenuLabel>
-        <DropdownMenuCheckboxItem
+        <DropdownMenu.Label style={{ color: 'grey', padding: 5 }}>Sort by</DropdownMenu.Label>
+        <DropdownMenu.CheckboxItem
           className={contextMenuItem()}
           checked={sortCriteria === 'title'}
           onCheckedChange={() => setSortCriteria('title')}
         >
           <div style={{ width: 20 }}>
-            <DropdownMenuItemIndicator className='DropdownMenuItemIndicator'>
+            <DropdownMenu.ItemIndicator className='DropdownMenuItemIndicator'>
               <CheckIcon />
-            </DropdownMenuItemIndicator>
+            </DropdownMenu.ItemIndicator>
           </div>
           Alphabetical
-        </DropdownMenuCheckboxItem>
+        </DropdownMenu.CheckboxItem>
 
-        <DropdownMenuCheckboxItem
+        <DropdownMenu.CheckboxItem
           className={contextMenuItem()}
           checked={sortCriteria === 'dateCreated'}
           onCheckedChange={() => setSortCriteria('dateCreated')}
         >
           <div style={{ width: 20 }}>
-            <DropdownMenuItemIndicator className='DropdownMenuItemIndicator'>
+            <DropdownMenu.ItemIndicator className='DropdownMenuItemIndicator'>
               <CheckIcon />
-            </DropdownMenuItemIndicator>
+            </DropdownMenu.ItemIndicator>
           </div>
           Date Created
-        </DropdownMenuCheckboxItem>
-        <DropdownMenuCheckboxItem
+        </DropdownMenu.CheckboxItem>
+        <DropdownMenu.CheckboxItem
           className={contextMenuItem()}
           checked={sortCriteria === 'dateModified'}
           onCheckedChange={() => setSortCriteria('dateModified')}
         >
           <div style={{ width: 20 }}>
-            <DropdownMenuItemIndicator className='DropdownMenuItemIndicator'>
+            <DropdownMenu.ItemIndicator className='DropdownMenuItemIndicator'>
               <CheckIcon />
-            </DropdownMenuItemIndicator>
+            </DropdownMenu.ItemIndicator>
           </div>
           Date Modified
-        </DropdownMenuCheckboxItem>
-        <DropdownMenuSeparator style={{ backgroundColor: colors.separator, height: 1 }} />
-        <DropdownMenuLabel style={{ color: 'grey', padding: 5 }}>Order</DropdownMenuLabel>
-        <DropdownMenuCheckboxItem
+        </DropdownMenu.CheckboxItem>
+        <DropdownMenu.Separator
+          className={sprinkles({ backgroundColor: 'separator' })}
+          style={{ height: 1 }}
+        />
+        <DropdownMenu.Label style={{ color: 'grey', padding: 5 }}>Order</DropdownMenu.Label>
+        <DropdownMenu.CheckboxItem
           className={contextMenuItem()}
           checked={sortAscending}
           onCheckedChange={() => setSortAscending(true)}
         >
           <div style={{ width: 20 }}>
-            <DropdownMenuItemIndicator className='DropdownMenuItemIndicator'>
+            <DropdownMenu.ItemIndicator className='DropdownMenuItemIndicator'>
               <CheckIcon />
-            </DropdownMenuItemIndicator>
+            </DropdownMenu.ItemIndicator>
           </div>
           Ascending
-        </DropdownMenuCheckboxItem>
-        <DropdownMenuCheckboxItem
+        </DropdownMenu.CheckboxItem>
+        <DropdownMenu.CheckboxItem
           className={contextMenuItem()}
           checked={!sortAscending}
           onCheckedChange={() => setSortAscending(false)}
         >
           <div style={{ width: 20 }}>
-            <DropdownMenuItemIndicator className='DropdownMenuItemIndicator'>
+            <DropdownMenu.ItemIndicator className='DropdownMenuItemIndicator'>
               <CheckIcon />
-            </DropdownMenuItemIndicator>
+            </DropdownMenu.ItemIndicator>
           </div>
           Descending
-        </DropdownMenuCheckboxItem>
-      </DropdownMenuContent>
-    </DropdownMenuPortal>
+        </DropdownMenu.CheckboxItem>
+      </DropdownMenu.Content>
+    </DropdownMenu.Portal>
   )
 })
 SortingContextMenu.displayName = 'ProjectContextMenu'
