@@ -85,10 +85,19 @@ function valuesFromVariable(
   }
 }
 
-function usePropertyControlDescriptions(): Array<ControlDescription> {
-  return useGetPropertyControlsForSelectedComponents().flatMap((controls) =>
-    Object.values(controls.controls),
+function usePropertyControlDescriptions(selectedProperty: PropertyPath): Array<ControlDescription> {
+  const controls = useGetPropertyControlsForSelectedComponents()
+  if (
+    selectedProperty.propertyElements.length === 0 ||
+    typeof selectedProperty.propertyElements[0] !== 'string'
+  ) {
+    // currently we only support picking data for props on components
+    return []
+  }
+  const controlForProp = controls.flatMap(
+    (c) => c.controls[selectedProperty.propertyElements[0]] ?? [],
   )
+  return controlForProp
 }
 
 export interface PrimitiveInfo {
@@ -298,7 +307,7 @@ export function useVariablesInScopeForSelectedElement(
     'useVariablesInScopeForSelectedElement variablesInScope',
   )
 
-  const controlDescriptions = usePropertyControlDescriptions()
+  const controlDescriptions = usePropertyControlDescriptions(propertyPath)
   const currentPropertyValue = usePropertyValue(selectedView, propertyPath)
 
   const variableNamesInScope = React.useMemo((): Array<VariableOption> => {
