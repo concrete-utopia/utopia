@@ -10,6 +10,7 @@ import type {
   FolderControlDescription,
   HtmlInputControlDescription,
   ImportType,
+  JSXControlDescription,
   Matrix3ControlDescription,
   Matrix4ControlDescription,
   NoneControlDescription,
@@ -211,6 +212,12 @@ export function vector3Control(): Vector3ControlDescription {
 export function vector4Control(): Vector4ControlDescription {
   return {
     control: 'vector4',
+  }
+}
+
+export function jsxControl(): JSXControlDescription {
+  return {
+    control: 'jsx',
   }
 }
 

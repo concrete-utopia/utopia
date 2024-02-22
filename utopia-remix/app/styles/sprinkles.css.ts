@@ -18,7 +18,7 @@ const colorProperties = defineProperties({
   defaultCondition: 'lightMode',
   properties: {
     color: colors,
-    background: colors,
+    backgroundColor: colors,
   },
 })
 

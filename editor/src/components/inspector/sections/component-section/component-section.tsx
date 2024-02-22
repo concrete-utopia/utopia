@@ -79,6 +79,7 @@ import {
   StringInputPropertyControl,
   VectorPropertyControl,
   HtmlInputPropertyControl,
+  JSXPropertyControl,
 } from './property-control-controls'
 import { ExpandableIndicator } from '../../../navigator/navigator-item/expandable-indicator'
 import { unless, when } from '../../../../utils/react-conditionals'
@@ -179,6 +180,8 @@ const ControlForProp = React.memo((props: ControlForPropProps<BaseControlDescrip
     case 'vector3':
     case 'vector4':
       return <VectorPropertyControl {...props} controlDescription={controlDescription} />
+    case 'jsx':
+      return <JSXPropertyControl {...props} controlDescription={controlDescription} />
     default:
       return null
   }
