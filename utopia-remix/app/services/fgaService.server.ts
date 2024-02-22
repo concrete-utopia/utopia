@@ -18,7 +18,6 @@ const fgaClient = new OpenFgaClient({
 })
 
 export async function updateAccessLevel(projectId: string, accessLevel: number) {
-  console.log('projectId', projectId)
   switch (accessLevel) {
     case AccessLevel.PUBLIC:
       await fgaClient.write({
@@ -45,11 +44,52 @@ export async function updateAccessLevel(projectId: string, accessLevel: number) 
   }
 }
 
-export async function canViewProject(projectId: string, userId: string) {
+type UserProjectPermission =
+  | 'can_view'
+  | 'can_fork'
+  | 'can_play'
+  | 'can_edit'
+  | 'can_comment'
+  | 'can_show_presence'
+  | 'can_request_access'
+
+async function checkUserProjectPermission(
+  projectId: string,
+  userId: string,
+  permission: UserProjectPermission,
+) {
   const { allowed } = await fgaClient.check({
     user: `user:${userId}`,
-    relation: 'can_view',
+    relation: permission,
     object: `project:${projectId}`,
   })
-  return allowed
+  return !!allowed
+}
+
+export async function canViewProject(projectId: string, userId: string) {
+  return checkUserProjectPermission(projectId, userId, 'can_view')
+}
+
+export async function canForkProject(projectId: string, userId: string) {
+  return checkUserProjectPermission(projectId, userId, 'can_fork')
+}
+
+export async function canPlayProject(projectId: string, userId: string) {
+  return checkUserProjectPermission(projectId, userId, 'can_play')
+}
+
+export async function canEditProject(projectId: string, userId: string) {
+  return checkUserProjectPermission(projectId, userId, 'can_edit')
+}
+
+export async function canCommentOnProject(projectId: string, userId: string) {
+  return checkUserProjectPermission(projectId, userId, 'can_comment')
+}
+
+export async function canShowPresence(projectId: string, userId: string) {
+  return checkUserProjectPermission(projectId, userId, 'can_show_presence')
+}
+
+export async function canRequestAccess(projectId: string, userId: string) {
+  return checkUserProjectPermission(projectId, userId, 'can_request_access')
 }
