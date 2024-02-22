@@ -519,6 +519,67 @@ describe('Set element prop via the data picker', () => {
 
     expect(options).toEqual(['titles', 'one', 'also JS', 'nums', 'nums[0]'])
   })
+
+  it('for jsx props react elements have highest priority, strings/numbers are next, and the rest is lower', async () => {
+    const editor = await renderTestEditorWithCode(
+      DataPickerProjectShell(`
+      function Title({ text }) {
+        const content = 'Content'
+      
+        return <h2 data-uid='aam'>{text}</h2>
+      }
+
+      registerInternalComponent(Title, {
+        supportsChildren: false,
+        properties: {
+          text: {
+            control: 'jsx',
+          },
+        },
+        variants: [
+          {
+            code: '<Title />',
+          },
+        ],
+      })      
+      
+      var Playground = ({ style }) => {
+        const nums = [1, 2, 3, 4, 5]
+        
+        const titleString = 'This is the title'
+        const titleNumber = 99999
+        const titleJsx = <span>This is the title</span>
+      
+        return (
+          <div style={style} data-uid='root'>
+            <Title
+              text={<span>a</span>}
+              data-uid='bd'
+              style={{
+                width: 134,
+                height: 28,
+                position: 'absolute',
+                left: 160,
+                top: 75,
+              }}
+            />
+          </div>
+        )
+      }`),
+      'await-first-dom-report',
+    )
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/bd')])
+
+    const dataPickerOpenerButton = editor.renderedDOM.getByTestId(DataPickerPopupButtonTestId)
+    await mouseClickAtPoint(dataPickerOpenerButton, { x: 2, y: 2 })
+
+    const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
+    expect(dataPickerPopup).not.toBeNull()
+
+    const options = getRenderedOptions(editor)
+
+    expect(options).toEqual(['titleJsx', 'titleString', 'titleNumber', 'nums', 'nums[0]'])
+  })
 })
 
 // comment out tests temporarily because it causes a dom-walker test to fail
