@@ -498,6 +498,7 @@ const ProjectCards = React.memo(
               flexGrow: 1,
               overflowY: 'scroll',
               scrollbarColor: 'lightgrey transparent',
+              gap: 10,
             }}
           >
             {projects.map((project) => (
@@ -646,16 +647,6 @@ const ProjectRow = React.memo(
       window.open(projectEditorLink(project.proj_id), '_blank')
     }, [project.proj_id])
 
-    const [hovered, setHovered] = useState(false)
-
-    const handleMouseOver = () => {
-      setHovered(true)
-    }
-
-    const handleMouseOut = () => {
-      setHovered(false)
-    }
-
     return (
       <div style={{ padding: '8px 0' }}>
         <div
@@ -664,59 +655,85 @@ const ProjectRow = React.memo(
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
-            gap: 15,
+            justifyContent: 'space-between',
             border: selected ? '2px solid #0075F9' : '2px solid transparent',
             borderRadius: 10,
-            padding: 4,
-            backgroundColor: hovered ? '#a4a4a420' : 'transparent',
+            padding: '4px 30px 4px 4px',
             transition: `.1s background-color ease-in-out`,
           }}
           onMouseDown={onSelect}
           onDoubleClick={openProject}
-          onMouseOver={handleMouseOver}
-          onMouseOut={handleMouseOut}
         >
           <div
             style={{
-              borderRadius: 8,
-              overflow: 'hidden',
-              height: 40,
-              width: 70,
-              background: 'linear-gradient(rgba(77, 255, 223, 0.4), rgba(255,250,220,.8))',
-              backgroundAttachment: 'local',
-              backgroundRepeat: 'no-repeat',
-              position: 'relative',
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 15,
+              flex: 1,
             }}
-          />
-          <div style={{ flexGrow: 1, fontWeight: 600 }}>{project.title}</div>
-          <div style={{ width: 200 }}>{moment(project.modified_at).fromNow()}</div>
-          <div style={{ width: 280, display: 'flex', gap: 6 }}>
-            {collaborators.map((collaborator) => {
-              return (
-                <div
-                  key={`collaborator-${project.id}-${collaborator.id}`}
-                  style={{
-                    borderRadius: '100%',
-                    width: 24,
-                    height: 24,
-                    backgroundColor: colors.primary,
-                    backgroundImage: `url("${collaborator.avatar}")`,
-                    backgroundSize: 'cover',
-                    color: colors.white,
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    fontSize: '.9em',
-                    fontWeight: 700,
-                    filter: project.deleted === true ? 'grayscale(1)' : undefined,
-                  }}
-                  title={collaborator.name}
-                  className={sprinkles({ boxShadow: 'shadow' })}
-                >
-                  {when(collaborator.avatar === '', multiplayerInitialsFromName(collaborator.name))}
-                </div>
-              )
-            })}
+          >
+            <div
+              style={{
+                borderRadius: 8,
+                overflow: 'hidden',
+                height: 40,
+                width: 70,
+                background: 'linear-gradient(rgba(77, 255, 223, 0.4), rgba(255,250,220,.8))',
+                backgroundAttachment: 'local',
+                backgroundRepeat: 'no-repeat',
+                position: 'relative',
+              }}
+            />
+            <div
+              style={{
+                flexGrow: 1,
+                minWidth: 180,
+                maxWidth: 380,
+                fontWeight: 600,
+              }}
+            >
+              {project.title}
+            </div>
+            <div style={{ width: 220 }}>{moment(project.modified_at).fromNow()}</div>
+            <div
+              style={{
+                maxWidth: 480,
+                minWidth: 100,
+                display: 'flex',
+                gap: 6,
+              }}
+            >
+              {collaborators.map((collaborator) => {
+                return (
+                  <div
+                    key={`collaborator-${project.id}-${collaborator.id}`}
+                    style={{
+                      borderRadius: '100%',
+                      width: 24,
+                      height: 24,
+                      backgroundColor: colors.primary,
+                      backgroundImage: `url("${collaborator.avatar}")`,
+                      backgroundSize: 'cover',
+                      color: colors.white,
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      fontSize: '.9em',
+                      fontWeight: 700,
+                      filter: project.deleted === true ? 'grayscale(1)' : undefined,
+                    }}
+                    title={collaborator.name}
+                    className={sprinkles({ boxShadow: 'shadow' })}
+                  >
+                    {when(
+                      collaborator.avatar === '',
+                      multiplayerInitialsFromName(collaborator.name),
+                    )}
+                  </div>
+                )
+              })}
+            </div>
           </div>
           <ProjectCardActions project={project} />
         </div>
