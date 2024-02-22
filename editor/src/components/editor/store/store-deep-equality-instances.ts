@@ -322,6 +322,7 @@ import type {
   TrueUpTarget,
   InvalidOverrideNavigatorEntry,
   TrueUpHuggingElement,
+  Collaborator,
 } from './editor-state'
 import {
   trueUpGroupElementChanged,
@@ -4268,6 +4269,16 @@ export const FrameOrPathKeepDeepEquality: KeepDeepEqualityCall<ActiveFrame> = co
   (target, action, source) => ({ target, action, source }),
 )
 
+export const CollaboratorEquality: KeepDeepEqualityCall<Collaborator> = combine3EqualityCalls(
+  (data) => data.id,
+  StringKeepDeepEquality,
+  (data) => data.name,
+  StringKeepDeepEquality,
+  (data) => data.avatar,
+  StringKeepDeepEquality,
+  (id, name, avatar) => ({ id, name, avatar }),
+)
+
 export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   oldValue,
   newValue,
@@ -4563,6 +4574,11 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
 
   const forkingResults = BooleanKeepDeepEquality(oldValue.forking, newValue.forking)
 
+  const collaboratorsResults = arrayDeepEquality(CollaboratorEquality)(
+    oldValue.collaborators,
+    newValue.collaborators,
+  )
+
   const areEqual =
     idResult.areEqual &&
     forkedFromProjectIdResult.areEqual &&
@@ -4642,7 +4658,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     filesModifiedByAnotherUserResults.areEqual &&
     activeFramesResults.areEqual &&
     commentFilterModeResults.areEqual &&
-    forkingResults.areEqual
+    forkingResults.areEqual &&
+    collaboratorsResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -4728,6 +4745,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       activeFramesResults.value,
       commentFilterModeResults.value,
       forkingResults.value,
+      collaboratorsResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

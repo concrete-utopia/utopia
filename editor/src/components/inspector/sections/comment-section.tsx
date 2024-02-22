@@ -6,7 +6,7 @@ import '../../../../resources/editor/css/liveblocks/react-comments/dark/attribut
 import React from 'react'
 import { Button, FlexColumn, FlexRow, Icn, PopupList, Tooltip, useColorTheme } from '../../../uuiui'
 import { stopPropagation } from '../common/inspector-utils'
-import { useStorage, type ThreadMetadata, useThreads } from '../../../../liveblocks.config'
+import { type ThreadMetadata, useThreads } from '../../../../liveblocks.config'
 import type { ThreadData } from '@liveblocks/client'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { canvasRectangle, rectangleContainsRectangle } from '../../../core/shared/math-utils'
@@ -21,7 +21,6 @@ import { useRemixNavigationContext } from '../../canvas/remix/utopia-remix-root-
 import {
   useResolveThread,
   useCanvasLocationOfThread,
-  getCollaboratorById,
   useMyThreadReadStatus,
   useReadThreads,
 } from '../../../core/commenting/comment-hooks'
@@ -262,8 +261,6 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
 
   const readByMe = useMyThreadReadStatus(thread)
 
-  const collabs = useStorage((storage) => storage.collaborators)
-
   const isSelected = useIsSelectedAndScrollToThread(ref, thread.id)
 
   const comment = getFirstComment(thread)
@@ -273,8 +270,6 @@ const ThreadPreview = React.memo(({ thread }: ThreadPreviewProps) => {
   }
 
   const remixLocationRouteLabel = getRemixLocationLabel(remixLocationRoute)
-
-  const user = getCollaboratorById(collabs, comment.userId)
 
   return (
     <div

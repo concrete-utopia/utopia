@@ -11,7 +11,6 @@ import {
   useThreads,
 } from '../../../liveblocks.config'
 import { Substores, useEditorState } from '../../components/editor/store/store-hook'
-import { normalizeMultiplayerName } from '../shared/multiplayer'
 import { isLoggedIn } from '../../common/user'
 import type { CommentId, SceneCommentLocation } from '../../components/editor/editor-modes'
 import { assertNever } from '../shared/utils'
@@ -32,6 +31,7 @@ import { getIdOfScene } from '../../components/canvas/controls/comment-mode/comm
 import type { ElementPath } from '../shared/project-file-types'
 import { type ElementInstanceMetadata } from '../shared/element-template'
 import * as EP from '../shared/element-path'
+import type { Collaborator } from '../../components/editor/store/editor-state'
 import { getCurrentTheme } from '../../components/editor/store/editor-state'
 import { useMyUserId } from '../shared/multiplayer-hooks'
 import { usePermissions } from '../../components/editor/store/permissions'
@@ -115,19 +115,15 @@ function placeholderUserMeta(user: User<Presence, UserMeta>): UserMeta {
   }
 }
 
-interface Collaborators {
-  [key: string]: UserMeta
-}
-
 export function getCollaborator(
-  collabs: Collaborators,
+  collabs: Collaborator[],
   source: User<Presence, UserMeta>,
 ): UserMeta {
   return getCollaboratorById(collabs, source.id) ?? placeholderUserMeta(source)
 }
 
-export function getCollaboratorById(collabs: Collaborators, id: string): UserMeta | null {
-  return collabs[id] ?? null
+export function getCollaboratorById(collabs: Collaborator[], id: string): UserMeta | null {
+  return collabs.find((c) => c.id === id) ?? null
 }
 
 interface Connections {
@@ -195,7 +191,7 @@ export function useMyUserAndPresence(): {
   user: UserMeta
 } {
   const me = useSelf()
-  const collabs = useStorage((store) => store.collaborators)
+  const collabs = useCollaborators()
   const myUser: UserMeta | null = getCollaborator(collabs, me)
   return {
     presence: me,
@@ -203,59 +199,12 @@ export function useMyUserAndPresence(): {
   }
 }
 
-export function useAddMyselfToCollaborators() {
-  const loginState = useEditorState(
-    Substores.userState,
-    (store) => store.userState.loginState,
-    'useAddMyselfToCollaborators loginState',
-  )
-
-  const projectId = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.id,
-    'useAddMyselfToCollaborators projectId',
-  )
-
-  const addMyselfToCollaborators = useMutation(
-    ({ storage, self }) => {
-      if (!isLoggedIn(loginState)) {
-        return
-      }
-      const collaborators = storage.get('collaborators')
-
-      if (collaborators.get(self.id) == null) {
-        collaborators.set(
-          self.id,
-          new LiveObject({
-            id: loginState.user.userId,
-            name: normalizeMultiplayerName(loginState.user.name ?? null),
-            avatar: loginState.user.picture ?? null,
-          }),
-        )
-      }
-    },
-    [loginState],
-  )
-
-  const maybeUpdateCollaborators = React.useCallback(() => {
-    if (!isLoggedIn(loginState) || projectId == null) {
-      return
-    }
-    void updateCollaborators(projectId)
-  }, [projectId, loginState])
-
-  const collabs = useStorage((store) => store.collaborators)
-
-  React.useEffect(() => {
-    if (collabs != null) {
-      addMyselfToCollaborators()
-    }
-    maybeUpdateCollaborators()
-  }, [addMyselfToCollaborators, collabs, projectId, maybeUpdateCollaborators])
-}
-
 export function useCollaborators() {
-  return useStorage((store) => store.collaborators)
+  return useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.collaborators,
+    'useCollaborators collaborators',
+  )
 }
 
 export function useScenesWithId(): Array<ElementInstanceMetadata> {

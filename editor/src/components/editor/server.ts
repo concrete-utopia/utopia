@@ -8,7 +8,7 @@ import {
   thumbnailURL,
   userConfigURL,
 } from '../../common/server'
-import type { PersistentModel, UserConfiguration } from './store/editor-state'
+import type { Collaborator, PersistentModel, UserConfiguration } from './store/editor-state'
 import { emptyUserConfiguration } from './store/editor-state'
 import type { LoginState } from '../../uuiui-deps'
 import urljoin from 'url-join'
@@ -493,11 +493,32 @@ export async function downloadAssetsFromProject(
 }
 
 export async function updateCollaborators(projectId: string) {
-  if (isBackendBFF()) {
-    await fetch(UTOPIA_BACKEND_BASE_URL + `internal/projects/${projectId}/collaborators`, {
-      method: 'POST',
+  if (!isBackendBFF()) {
+    return
+  }
+  await fetch(UTOPIA_BACKEND_BASE_URL + `internal/projects/${projectId}/collaborators`, {
+    method: 'POST',
+    credentials: 'include',
+    mode: MODE,
+  })
+}
+
+export async function loadCollaborators(projectId: string): Promise<Collaborator[]> {
+  if (!isBackendBFF()) {
+    return []
+  }
+  const response = await fetch(
+    UTOPIA_BACKEND_BASE_URL + `internal/projects/${projectId}/collaborators`,
+    {
+      method: 'GET',
       credentials: 'include',
       mode: MODE,
-    })
+    },
+  )
+  if (response.ok) {
+    const result: Collaborator[] = await response.json()
+    return result
+  } else {
+    throw new Error(`Load collaborators failed (${response.status}): ${response.statusText}`)
   }
 }

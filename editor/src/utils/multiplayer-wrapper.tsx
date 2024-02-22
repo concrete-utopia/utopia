@@ -1,15 +1,7 @@
 import { ClientSideSuspense } from '@liveblocks/react'
-import type { CommentProps } from '@liveblocks/react-comments'
-import { Comment } from '@liveblocks/react-comments'
 import type { CSSProperties } from 'react'
 import React from 'react'
-import { useStatus, type UserMeta } from '../../liveblocks.config'
-import { MultiplayerAvatar } from '../components/user-bar'
-import {
-  multiplayerColorFromIndex,
-  multiplayerInitialsFromName,
-  normalizeMultiplayerName,
-} from '../core/shared/multiplayer'
+import { useStatus } from '../../liveblocks.config'
 import { ErrorBoundary } from './react-error-boundary'
 
 type Fallback = NonNullable<React.ReactNode> | null

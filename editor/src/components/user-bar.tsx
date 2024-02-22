@@ -3,13 +3,13 @@
 import React from 'react'
 import { jsx } from '@emotion/react'
 import type { CSSProperties } from 'react'
-import { useOthers, useStatus, useStorage } from '../../liveblocks.config'
+import { useOthers, useStatus } from '../../liveblocks.config'
 import { getUserPicture, isLoggedIn } from '../common/user'
 import {
   getCollaborator,
   getConnectionById,
+  useCollaborators,
   useConnections,
-  useGetMyConnection,
   useMyUserAndPresence,
 } from '../core/commenting/comment-hooks'
 import type { FollowTarget, MultiplayerColor } from '../core/shared/multiplayer'
@@ -132,7 +132,7 @@ const MultiplayerUserBar = React.memo(() => {
     }
   }, [dispatch, url])
 
-  const collabs = useStorage((store) => store.collaborators)
+  const collabs = useCollaborators()
 
   const connections = useConnections()
 
@@ -176,7 +176,7 @@ const MultiplayerUserBar = React.memo(() => {
     return sortedOthers.slice(MAX_VISIBLE_OTHER_PLAYERS)
   }, [sortedOthers])
 
-  const offlineOthers = Object.values(collabs).filter((collab) => {
+  const offlineOthers = collabs.filter((collab) => {
     return collab.id !== myUser.id && !sortedOthers.some((other) => other.id === collab.id)
   })
 

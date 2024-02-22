@@ -5,28 +5,22 @@ import { AnimatePresence, motion, useAnimate } from 'framer-motion'
 import type { CSSProperties } from 'react'
 import React from 'react'
 import type { ThreadMetadata, UserMeta } from '../../../../liveblocks.config'
-import { useEditThreadMetadata, useStorage } from '../../../../liveblocks.config'
+import { useEditThreadMetadata } from '../../../../liveblocks.config'
 import {
   getCollaboratorById,
   getThreadLocationOnCanvas,
   useActiveThreads,
   useCanvasCommentThreadAndLocation,
   useCanvasLocationOfThread,
+  useCollaborators,
   useMyThreadReadStatus,
 } from '../../../core/commenting/comment-hooks'
-import type {
-  CanvasPoint,
-  CanvasRectangle,
-  LocalPoint,
-  MaybeInfinityCanvasRectangle,
-} from '../../../core/shared/math-utils'
+import type { CanvasPoint } from '../../../core/shared/math-utils'
 import {
   canvasPoint,
   distance,
   getLocalPointInNewParentContext,
   isNotNullFiniteRectangle,
-  localPoint,
-  nullIfInfinity,
   offsetPoint,
   pointDifference,
   windowPoint,
@@ -65,11 +59,7 @@ import { useRefAtom } from '../../editor/hook-utils'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import * as PP from '../../../core/shared/property-path'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
-import {
-  canvasThreadMetadata,
-  liveblocksThreadMetadataToUtopia,
-  utopiaThreadMetadataToLiveblocksPartial,
-} from '../../../core/commenting/comment-types'
+import { utopiaThreadMetadataToLiveblocksPartial } from '../../../core/commenting/comment-types'
 
 export const CommentIndicators = React.memo(() => {
   const projectId = useEditorState(
@@ -118,12 +108,12 @@ function useCommentBeingComposed(): TemporaryCommentIndicatorProps | null {
     commentBeingComposed ?? { type: 'existing', threadId: 'dummy-thread-id' }, // this is as a placeholder for nulls
   )
 
-  const collabs = useStorage((storage) => storage.collaborators)
+  const collabs = useCollaborators()
 
   const myUserId = useMyUserId()
 
   const collaboratorInfo = React.useMemo(() => {
-    const collaborator = optionalMap((id) => collabs[id], myUserId)
+    const collaborator = optionalMap((id) => getCollaboratorById(collabs, id), myUserId)
     if (collaborator == null) {
       return {
         initials: 'AN',
@@ -257,7 +247,7 @@ interface CommentIndicatorProps {
 const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
   const dispatch = useDispatch()
 
-  const collabs = useStorage((storage) => storage.collaborators)
+  const collabs = useCollaborators()
 
   const firstComment = React.useMemo(() => {
     return thread.comments[0]

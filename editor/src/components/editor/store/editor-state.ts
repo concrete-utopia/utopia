@@ -1459,7 +1459,10 @@ export interface EditorState {
   activeFrames: ActiveFrame[]
   commentFilterMode: CommentFilterMode
   forking: boolean
+  collaborators: Collaborator[]
 }
+
+export type Collaborator = { id: string; name: string; avatar: string }
 
 export function editorState(
   id: string | null,
@@ -1542,6 +1545,7 @@ export function editorState(
   activeFrames: ActiveFrame[],
   commentFilterMode: CommentFilterMode,
   forking: boolean,
+  collaborators: Collaborator[],
 ): EditorState {
   return {
     id: id,
@@ -1624,6 +1628,7 @@ export function editorState(
     activeFrames: activeFrames,
     commentFilterMode: commentFilterMode,
     forking: forking,
+    collaborators: collaborators,
   }
 }
 
@@ -2522,6 +2527,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     activeFrames: [],
     commentFilterMode: 'all',
     forking: false,
+    collaborators: [],
   }
 }
 
@@ -2899,6 +2905,7 @@ export function editorModelFromPersistentModel(
     activeFrames: [],
     commentFilterMode: 'all',
     forking: false,
+    collaborators: [],
   }
   return editor
 }

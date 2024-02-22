@@ -61,6 +61,7 @@ import type {
   ThemeSetting,
   ColorSwatch,
   PostActionMenuData,
+  Collaborator,
 } from './store/editor-state'
 import type { Notice } from '../common/notice'
 import type { LoginState } from '../../common/user'
@@ -1082,6 +1083,11 @@ export interface SetCommentFilterMode {
   commentFilterMode: CommentFilterMode
 }
 
+export interface SetCollaborators {
+  action: 'SET_COLLABORATORS'
+  collaborators: Collaborator[]
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
@@ -1257,6 +1263,7 @@ export type EditorAction =
   | UpdateCodeFromCollaborationUpdate
   | SetCommentFilterMode
   | SetForking
+  | SetCollaborators
 
 export type DispatchPriority =
   | 'everyone'

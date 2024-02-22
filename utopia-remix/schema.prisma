@@ -38,6 +38,7 @@ model Project {
     content             Bytes
     deleted             Boolean?
     ProjectCollaborator ProjectCollaborator[]
+    ProjectAccess       ProjectAccess[]
 
     @@map("project")
 }
@@ -90,4 +91,11 @@ model ProjectCollaborator {
 
     @@unique([project_id, user_id], name: "unique_project_collaborator_project_id_user_id")
     @@map("project_collaborators")
+}
+
+model ProjectAccess {
+    id Int @id @default(autoincrement())
+
+    Project    Project @relation(fields: [project_id], references: [proj_id])
+    project_id String  @db.VarChar
 }

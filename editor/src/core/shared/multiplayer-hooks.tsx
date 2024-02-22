@@ -20,8 +20,13 @@ import { possiblyUniqueColor, type RemixPresence } from './multiplayer'
 import { PRODUCTION_ENV } from '../../common/env-vars'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { useDispatch } from '../../components/editor/store/dispatch-context'
-import { removeToast, showToast } from '../../components/editor/actions/action-creators'
+import {
+  removeToast,
+  setCollaborators,
+  showToast,
+} from '../../components/editor/actions/action-creators'
 import { notice } from '../../components/common/notice'
+import { loadCollaborators } from '../../components/editor/server'
 
 /**
  * How often to perform heartbeat bumps on connections.
@@ -311,5 +316,28 @@ export function useLiveblocksConnectionListener() {
     if (loggedIn) {
       dispatch([showToast(notice('Error connecting to other users', 'ERROR', false))])
     }
+  })
+}
+
+export function useLoadCollaborators() {
+  const projectId = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.id,
+    'useLoadCollaborators projectId',
+  )
+  const loginState = useEditorState(
+    Substores.userState,
+    (store) => store.userState.loginState,
+    'useLoadCollaborators loginState',
+  )
+
+  const dispatch = useDispatch()
+
+  if (!isLoggedIn(loginState) || projectId == null) {
+    return
+  }
+
+  void loadCollaborators(projectId).then((collaborators) => {
+    dispatch([setCollaborators(collaborators)])
   })
 }

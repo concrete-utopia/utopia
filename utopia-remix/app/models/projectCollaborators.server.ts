@@ -28,13 +28,12 @@ export async function getCollaborators(params: {
   return collaboratorsByProject
 }
 
-export async function updateCollaborators(params: { id: string }): Promise<void> {
-  const storage = await LiveblocksAPI.getRoomStorage(params.id)
-  const collaborators = Object.values(storage.data.collaborators.data).map((c) => c.data)
+export async function updateCollaborators(params: { id: string; userId: string }): Promise<void> {
+  const collaboratorIds = [params.userId]
   await prisma.$transaction(async (tx) => {
     // ignore non-existing users
     const existingUsers = await tx.userDetails.findMany({
-      where: { user_id: { in: collaborators.map((c) => c.id) } },
+      where: { user_id: { in: collaboratorIds } },
     })
     for (const user of existingUsers) {
       // the Prisma equivalent of INSERT ... ON CONFLICT DO NOTHING
@@ -52,5 +51,31 @@ export async function updateCollaborators(params: { id: string }): Promise<void>
         },
       })
     }
+  })
+}
+
+export async function listProjectCollaborators(params: {
+  id: string
+  userId: string
+}): Promise<UserDetails[]> {
+  return await prisma.$transaction(async (tx) => {
+    await tx.projectCollaborator.upsert({
+      where: {
+        unique_project_collaborator_project_id_user_id: {
+          user_id: params.userId,
+          project_id: params.id,
+        },
+      },
+      update: {},
+      create: {
+        project_id: params.id,
+        user_id: params.userId,
+      },
+    })
+    const collaborators = await tx.projectCollaborator.findMany({
+      where: { project_id: params.id },
+      include: { User: true },
+    })
+    return collaborators.map((c) => c.User)
   })
 }

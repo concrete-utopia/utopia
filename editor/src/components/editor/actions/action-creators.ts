@@ -219,6 +219,7 @@ import type {
   UpdateCodeFromCollaborationUpdate,
   SetCommentFilterMode,
   SetForking,
+  SetCollaborators,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -239,6 +240,7 @@ import type {
   ThemeSetting,
   ColorSwatch,
   PostActionMenuData,
+  Collaborator,
 } from '../store/editor-state'
 import type { InsertionPath } from '../store/insertion-path'
 import type { TextProp } from '../../text-editor/text-editor'
@@ -1725,5 +1727,12 @@ export function setCommentFilterMode(commentFilterMode: CommentFilterMode): SetC
   return {
     action: 'SET_COMMENT_FILTER_MODE',
     commentFilterMode: commentFilterMode,
+  }
+}
+
+export function setCollaborators(collaborators: Collaborator[]): SetCollaborators {
+  return {
+    action: 'SET_COLLABORATORS',
+    collaborators: collaborators,
   }
 }
