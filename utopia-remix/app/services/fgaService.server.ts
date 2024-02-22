@@ -44,15 +44,18 @@ export async function updateAccessLevel(projectId: string, accessLevel: number) 
   }
 }
 
-type UserProjectPermission =
-  | 'can_view'
-  | 'can_fork'
-  | 'can_play'
-  | 'can_edit'
-  | 'can_comment'
-  | 'can_show_presence'
-  | 'can_see_live_changes'
-  | 'can_request_access'
+const userProjectPermission = [
+  'can_view',
+  'can_fork',
+  'can_play',
+  'can_edit',
+  'can_comment',
+  'can_show_presence',
+  'can_see_live_changes',
+  'can_request_access',
+] as const
+
+type UserProjectPermission = (typeof userProjectPermission)[number]
 
 async function checkUserProjectPermission(
   projectId: string,
@@ -65,6 +68,21 @@ async function checkUserProjectPermission(
     object: `project:${projectId}`,
   })
   return !!allowed
+}
+
+export async function getAllPermissions(projectId: string, userId: string) {
+  const { relations } = await fgaClient.listRelations({
+    user: `user:${userId}`,
+    object: `project:${projectId}`,
+    relations: userProjectPermission.map((permission) => permission),
+  })
+  return userProjectPermission.reduce(
+    (acc, permission, index) => {
+      acc[permission] = relations.includes(permission)
+      return acc
+    },
+    {} as Record<UserProjectPermission, boolean>,
+  )
 }
 
 export async function canViewProject(projectId: string, userId: string) {

@@ -41,3 +41,7 @@ export async function hasUserProjectPermission(
 function exaustiveMatch(x: never) {
   throw new Error(`Unmatched value: ${x}`)
 }
+
+export async function getAllPermissions(projectId: string, userId: string) {
+  return fgaService.getAllPermissions(projectId, userId)
+}

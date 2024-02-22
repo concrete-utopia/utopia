@@ -133,7 +133,7 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
       default:
         assertNever(selectedCategory)
     }
-  }, [selectedCategory])
+  }, [selectedCategory, accessLevel])
 
   return (
     <DropdownMenu.Portal>
