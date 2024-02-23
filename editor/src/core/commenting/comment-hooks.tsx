@@ -39,6 +39,8 @@ import { modify, toFirst } from '../shared/optics/optic-utilities'
 import { filtered, fromObjectField, traverseArray } from '../shared/optics/optic-creators'
 import { foldEither } from '../shared/either'
 import { isCanvasThreadMetadata, liveblocksThreadMetadataToUtopia } from './comment-types'
+import { normalizeMultiplayerName } from '../shared/multiplayer'
+import { isBackendBFF } from '../../common/env-vars'
 
 export function useCanvasCommentThreadAndLocation(comment: CommentId): {
   location: CanvasPoint | null
@@ -347,6 +349,53 @@ export function useMyThreadReadStatus(thread: ThreadData<ThreadMetadata> | null)
 }
 
 export type ThreadReadStatus = 'read' | 'unread'
+
+/**
+ * TODO: remove this once the BFF is on.
+ * @deprecated This relies on the LB storage for collaborators, which is being sunset.
+ */
+export function useAddMyselfToCollaborators_DEPRECATED() {
+  const loginState = useEditorState(
+    Substores.userState,
+    (store) => store.userState.loginState,
+    'useAddMyselfToCollaborators loginState',
+  )
+
+  const projectId = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.id,
+    'useAddMyselfToCollaborators projectId',
+  )
+
+  const addMyselfToCollaborators = useMutation(
+    ({ storage, self }) => {
+      if (!isLoggedIn(loginState) || isBackendBFF()) {
+        return
+      }
+      const collaborators = storage.get('collaborators')
+
+      if (collaborators.get(self.id) == null) {
+        collaborators.set(
+          self.id,
+          new LiveObject({
+            id: loginState.user.userId,
+            name: normalizeMultiplayerName(loginState.user.name ?? null),
+            avatar: loginState.user.picture ?? null,
+          }),
+        )
+      }
+    },
+    [loginState],
+  )
+
+  const collabs = useStorage((store) => store.collaborators)
+
+  React.useEffect(() => {
+    if (collabs != null) {
+      addMyselfToCollaborators()
+    }
+  }, [addMyselfToCollaborators, collabs, projectId])
+}
 
 export function useSetThreadReadStatus() {
   return useMutation(({ storage, self }, threadId: string, status: ThreadReadStatus) => {
