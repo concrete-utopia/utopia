@@ -458,6 +458,12 @@ const ProjectCards = React.memo(
       [setSelectedProjectId, selectedProjectId],
     )
 
+    const isDarkMode = useIsDarkMode()
+
+    const logoPic = React.useMemo(() => {
+      return isDarkMode ? 'url(/assets/pyramid_dark.png)' : 'url(/assets/pyramid_light.png)'
+    }, [isDarkMode])
+
     return (
       <>
         {when(
@@ -466,13 +472,21 @@ const ProjectCards = React.memo(
             style={{
               display: 'flex',
               flexDirection: 'column',
-              alignContent: 'center',
+              alignItems: 'center',
               justifyContent: 'center',
               flexGrow: 1,
               gap: 20,
-              textAlign: 'center',
             }}
           >
+            <div
+              style={{
+                height: 140,
+                width: 100,
+                backgroundSize: '100px',
+                backgroundRepeat: 'no-repeat',
+                backgroundImage: 'url(/assets/trash-can.png)',
+              }}
+            />
             <div style={{ fontSize: 16, fontWeight: 600 }}>Your trash is empty!</div>
             <div>
               Deleted projects are kept here until you destory them <i>for good.</i>
