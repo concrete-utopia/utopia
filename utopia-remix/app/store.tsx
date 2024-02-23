@@ -14,6 +14,8 @@ interface ProjectsStore {
   setSortCriteria: (sortCriteria: SortCriteria) => void
   sortAscending: boolean
   setSortAscending: (sortAscending: boolean) => void
+  gridView: boolean
+  setGridView: (gridView: boolean) => void
 }
 
 export const useProjectsStore = create<ProjectsStore>()(
@@ -31,6 +33,8 @@ export const useProjectsStore = create<ProjectsStore>()(
         setSortCriteria: (sortCriteria) => set(() => ({ sortCriteria: sortCriteria })),
         sortAscending: false,
         setSortAscending: (sortAscending) => set(() => ({ sortAscending: sortAscending })),
+        gridView: true,
+        setGridView: (gridView) => set(() => ({gridView: gridView})),
       }),
       {
         name: 'store',
