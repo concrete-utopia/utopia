@@ -240,7 +240,6 @@ import type {
   ThemeSetting,
   ColorSwatch,
   PostActionMenuData,
-  Collaborator,
 } from '../store/editor-state'
 import type { InsertionPath } from '../store/insertion-path'
 import type { TextProp } from '../../text-editor/text-editor'
@@ -248,6 +247,7 @@ import type { PostActionChoice } from '../../canvas/canvas-strategies/post-actio
 import type { ProjectServerState } from '../store/project-server-state'
 import type { SetHuggingParentToFixed } from '../../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
 import type { CommentFilterMode } from '../../inspector/sections/comment-section'
+import type { Collaborator } from '../../../core/shared/multiplayer'
 
 export function clearSelection(): EditorAction {
   return {

@@ -17,6 +17,7 @@ import {
 import { isFollowMode } from '../../components/editor/editor-modes'
 import { Substores, useEditorState } from '../../components/editor/store/store-hook'
 import * as EP from './element-path'
+import type { Collaborator } from './multiplayer'
 import { possiblyUniqueColor, type RemixPresence } from './multiplayer'
 import { PRODUCTION_ENV } from '../../common/env-vars'
 import { isFeatureEnabled } from '../../utils/feature-switches'
@@ -341,14 +342,24 @@ export function useLoadCollaborators() {
     'useLoadCollaborators',
   )
 
+  // TODO remove this once the BFF is on
+  const liveblocksStorageCollaborators_DEPRECATED = useStorage((storage) => storage.collaborators)
+  const liveblocksStorageCollaboratorsList = React.useMemo((): Collaborator[] => {
+    return Object.values(liveblocksStorageCollaborators_DEPRECATED).map((c) => ({
+      id: c.id,
+      name: c.name ?? '',
+      avatar: c.avatar ?? '',
+    }))
+  }, [liveblocksStorageCollaborators_DEPRECATED])
+
   const getAndStoreCollaborators = React.useCallback(() => {
     if (projectId == null) {
       return
     }
-    void getCollaborators(projectId).then((collaborators) => {
+    void getCollaborators(projectId, liveblocksStorageCollaboratorsList).then((collaborators) => {
       dispatch([setCollaborators(collaborators)])
     })
-  }, [projectId, dispatch])
+  }, [projectId, dispatch, liveblocksStorageCollaboratorsList])
 
   // when new users join or update, if they are not available in the collaborators array, refresh them.
   useOthersListener((event) => {

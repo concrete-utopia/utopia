@@ -324,7 +324,6 @@ import type {
   TrueUpTarget,
   InvalidOverrideNavigatorEntry,
   TrueUpHuggingElement,
-  Collaborator,
 } from './editor-state'
 import {
   trueUpGroupElementChanged,
@@ -557,6 +556,7 @@ import type {
   ActiveFrameTargetRect,
 } from '../../canvas/commands/set-active-frames-command'
 import type { CommentFilterMode } from '../../inspector/sections/comment-section'
+import type { Collaborator } from '../../../core/shared/multiplayer'
 
 export const ProjectMetadataFromServerKeepDeepEquality: KeepDeepEqualityCall<ProjectMetadataFromServer> =
   combine3EqualityCalls(

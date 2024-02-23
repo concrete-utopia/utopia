@@ -185,6 +185,7 @@ import { Y } from '../../../core/shared/yjs'
 import { removeUnusedImportsForRemovedElement } from '../import-utils'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
 import type { CommentFilterMode } from '../../inspector/sections/comment-section'
+import type { Collaborator } from '../../../core/shared/multiplayer'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1461,8 +1462,6 @@ export interface EditorState {
   forking: boolean
   collaborators: Collaborator[]
 }
-
-export type Collaborator = { id: string; name: string; avatar: string }
 
 export function editorState(
   id: string | null,

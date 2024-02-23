@@ -61,7 +61,6 @@ import type {
   ThemeSetting,
   ColorSwatch,
   PostActionMenuData,
-  Collaborator,
 } from './store/editor-state'
 import type { Notice } from '../common/notice'
 import type { LoginState } from '../../common/user'
@@ -79,6 +78,7 @@ import type { ProjectServerState } from './store/project-server-state'
 import type { SetHuggingParentToFixed } from '../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
 import type { MapLike } from 'typescript'
 import type { CommentFilterMode } from '../inspector/sections/comment-section'
+import type { Collaborator } from '../../core/shared/multiplayer'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 

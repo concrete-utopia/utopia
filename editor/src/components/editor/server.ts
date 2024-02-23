@@ -8,7 +8,7 @@ import {
   thumbnailURL,
   userConfigURL,
 } from '../../common/server'
-import type { Collaborator, PersistentModel, UserConfiguration } from './store/editor-state'
+import type { PersistentModel, UserConfiguration } from './store/editor-state'
 import { emptyUserConfiguration } from './store/editor-state'
 import type { LoginState } from '../../uuiui-deps'
 import urljoin from 'url-join'
@@ -29,6 +29,7 @@ import {
 import { updateUserDetailsWhenAuthenticated } from '../../core/shared/github/helpers'
 import { GithubAuth } from '../../utils/github-auth'
 import { liveblocksClient } from '../../../liveblocks.config'
+import type { Collaborator } from '../../core/shared/multiplayer'
 import { projectIdToRoomId } from '../../core/shared/multiplayer'
 import type { LiveObject, LsonObject } from '@liveblocks/client'
 
@@ -506,9 +507,12 @@ export async function updateCollaborators(projectId: string) {
   })
 }
 
-export async function getCollaborators(projectId: string): Promise<Collaborator[]> {
+export async function getCollaborators(
+  projectId: string,
+  liveblocksCollaborators: Collaborator[],
+): Promise<Collaborator[]> {
   if (!isBackendBFF()) {
-    return getCollaboratorsFromLiveblocks(projectId)
+    return liveblocksCollaborators
   }
 
   const response = await fetch(

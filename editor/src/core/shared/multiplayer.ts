@@ -16,6 +16,8 @@ import { possiblyUniqueInArray, safeIndex, stripNulls, uniqBy } from './array-ut
 import { useMyUserId } from './multiplayer-hooks'
 import type { ElementPath } from './project-file-types'
 
+export type Collaborator = { id: string; name: string; avatar: string }
+
 export type MultiplayerColor = {
   background: string
   foreground: string
