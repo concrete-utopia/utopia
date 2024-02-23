@@ -109,9 +109,9 @@ describe('inferControlTypeBasedOnValue', () => {
     expect(result.control).toEqual('none')
   })
 
-  it('Treats a React element as expression-input', () => {
+  it('Treats a React element as jsx', () => {
     const result = inferControlTypeBasedOnValue(<div />)
-    expect(result.control).toEqual('expression-input')
+    expect(result.control).toEqual('jsx')
   })
 
   it('treats a function as expression-input', () => {
