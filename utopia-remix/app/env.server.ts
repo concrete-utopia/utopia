@@ -14,8 +14,6 @@ export const ServerEnvironment = {
   BackendURL: mustEnv('BACKEND_URL'),
   // the CORS allowed origin for incoming requests
   CORSOrigin: mustEnv('CORS_ORIGIN'),
-  // the Liveblocks secret key
-  LiveblocksSecretKey: mustEnv('LIVEBLOCKS_SECRET_KEY'),
 }
 
 export type BrowserEnvironment = {
