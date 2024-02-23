@@ -1,6 +1,9 @@
+import {
+  Root as DropdownMenuRoot,
+  Trigger as DropdownMenuTrigger,
+} from '@radix-ui/react-dropdown-menu'
+import { DashboardIcon, DotsHorizontalIcon, HamburgerMenuIcon } from '@radix-ui/react-icons'
 import React from 'react'
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
-import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { LoaderFunctionArgs, json } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
@@ -309,6 +312,9 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
   const sortCriteria = useProjectsStore((store) => store.sortCriteria)
   const sortAscending = useProjectsStore((store) => store.sortAscending)
 
+  const gridView = useProjectsStore((store) => store.gridView)
+  const setGridView = useProjectsStore((store) => store.setGridView)
+
   const convertToTitleCase = (str: string): string => {
     return str
       .replace(/([A-Z])/g, ' $1')
@@ -377,23 +383,50 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
         )}
       </div>
 
-      {when(
-        projects.length > 1,
-        <DropdownMenu.Root>
-          <DropdownMenu.Trigger asChild>
-            <div
-              className={button()}
-              style={{
-                justifyContent: 'flex-end',
-                gap: 10,
-              }}
-            >
-              <div>{convertToTitleCase(sortCriteria)} </div>
-              <div>{sortAscending ? '↑' : '↓'}</div>
-            </div>
-          </DropdownMenu.Trigger>
-          <SortingContextMenu />
-        </DropdownMenu.Root>,
+
+          
+          {when(
+            projects.length > 1,
+            <div style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
+              <DropdownMenuRoot>
+                <DropdownMenuTrigger asChild>
+                  <div
+                    className={button()}
+                    style={{
+                      justifyContent: 'flex-end',
+                      gap: 10,
+                    }}
+                  >
+                    <div>{convertToTitleCase(sortCriteria)} </div>
+                    <div>{sortAscending ? '↑' : '↓'}</div>
+                  </div>
+                </DropdownMenuTrigger>
+                <SortingContextMenu />
+              </DropdownMenuRoot>
+              <div style={{ display: 'flex', flexDirection: 'row', gap: 1 }}>
+                <HamburgerMenuIcon
+                  onClick={() => {
+                    setGridView(false)
+                  }}
+                  className={button({
+                    size: 'square',
+                    color: !gridView ? 'selected' : 'transparent',
+                  })}
+                />
+
+                <DashboardIcon
+                  onClick={() => {
+                    setGridView(true)
+                  }}
+                  className={button({
+                    size: 'square',
+                    color: gridView ? 'selected' : 'transparent',
+                  })}
+                />
+              </div>
+            </div>,
+          )}
+        </div>,
       )}
     </div>
   )
@@ -448,6 +481,8 @@ const ProjectCards = React.memo(
     projects: ProjectWithoutContent[]
     collaborators: CollaboratorsByProject
   }) => {
+    const gridView = useProjectsStore((store) => store.gridView)
+
     const selectedProjectId = useProjectsStore((store) => store.selectedProjectId)
     const setSelectedProjectId = useProjectsStore((store) => store.setSelectedProjectId)
     const selectedCategory = useProjectsStore((store) => store.selectedCategory)
@@ -466,8 +501,12 @@ const ProjectCards = React.memo(
 
     return (
       <>
+
         {when(
           projects.length === 0 && selectedCategory === 'trash',
+
+        {!gridView ? (
+
           <div
             style={{
               display: 'flex',
@@ -495,6 +534,23 @@ const ProjectCards = React.memo(
         )}
         {when(
           projects.length > 0,
+              flexGrow: 1,
+              overflowY: 'scroll',
+              scrollbarColor: 'lightgrey transparent',
+              gap: 10,
+            }}
+          >
+            {projects.map((project) => (
+              <ProjectRow
+                key={project.proj_id}
+                project={project}
+                selected={project.proj_id === selectedProjectId}
+                onSelect={() => handleProjectSelect(project)}
+                collaborators={collaborators[project.proj_id]}
+              />
+            ))}
+          </div>
+        ) : (
           <div
             style={{
               display: 'flex',
@@ -565,7 +621,7 @@ const ProjectCard = React.memo(
           onMouseDown={onSelect}
           onDoubleClick={openProject}
         >
-          <div style={{ position: 'absolute', right: 2, bottom: 2, display: 'flex', gap: 2 }}>
+          <div style={{ position: 'absolute', right: 6, bottom: 6, display: 'flex', gap: 2 }}>
             {collaborators.map((collaborator) => {
               return (
                 <div
@@ -581,7 +637,6 @@ const ProjectCard = React.memo(
                     alignItems: 'center',
                     fontSize: '.9em',
                     fontWeight: 700,
-                    border: '2px solid white',
                     filter: project.deleted === true ? 'grayscale(1)' : undefined,
                   }}
                   title={collaborator.name}
@@ -597,28 +652,147 @@ const ProjectCard = React.memo(
             })}
           </div>
         </div>
-        <ProjectCardActions project={project} />
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 5, flex: 1 }}>
+            <div style={{ fontWeight: 600 }}>{project.title}</div>
+            <div>{moment(project.modified_at).fromNow()}</div>
+          </div>
+          <ProjectCardActions project={project} />
+        </div>
       </div>
     )
   },
 )
 ProjectCard.displayName = 'ProjectCard'
 
+const ProjectRow = React.memo(
+  ({
+    project,
+    collaborators,
+    selected,
+    onSelect,
+  }: {
+    project: ProjectWithoutContent
+    collaborators: Collaborator[]
+    selected: boolean
+    onSelect: () => void
+  }) => {
+    const openProject = React.useCallback(() => {
+      window.open(projectEditorLink(project.proj_id), '_blank')
+    }, [project.proj_id])
+
+    return (
+      <div style={{ padding: '8px 0' }}>
+        <div
+          style={{
+            height: 40,
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            border: selected ? '2px solid #0075F9' : '2px solid transparent',
+            borderRadius: 10,
+            padding: '4px 30px 4px 4px',
+            transition: `.1s background-color ease-in-out`,
+          }}
+          onMouseDown={onSelect}
+          onDoubleClick={openProject}
+        >
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 15,
+              flex: 1,
+            }}
+          >
+            <div
+              style={{
+                borderRadius: 8,
+                overflow: 'hidden',
+                height: 40,
+                width: 70,
+                background: 'linear-gradient(rgba(77, 255, 223, 0.4), rgba(255,250,220,.8))',
+                backgroundAttachment: 'local',
+                backgroundRepeat: 'no-repeat',
+                position: 'relative',
+              }}
+            />
+            <div
+              style={{
+                flexGrow: 1,
+                minWidth: 180,
+                maxWidth: 380,
+                fontWeight: 600,
+              }}
+            >
+              {project.title}
+            </div>
+            <div style={{ width: 220 }}>{moment(project.modified_at).fromNow()}</div>
+            <div
+              style={{
+                maxWidth: 480,
+                minWidth: 100,
+                display: 'flex',
+                gap: 6,
+              }}
+            >
+              {collaborators.map((collaborator) => {
+                return (
+                  <div
+                    key={`collaborator-${project.id}-${collaborator.id}`}
+                    style={{
+                      borderRadius: '100%',
+                      width: 24,
+                      height: 24,
+                      backgroundColor: colors.primary,
+                      backgroundImage: `url("${collaborator.avatar}")`,
+                      backgroundSize: 'cover',
+                      color: colors.white,
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      fontSize: '.9em',
+                      fontWeight: 700,
+                      filter: project.deleted === true ? 'grayscale(1)' : undefined,
+                    }}
+                    title={collaborator.name}
+                    className={sprinkles({ boxShadow: 'shadow' })}
+                  >
+                    {when(
+                      collaborator.avatar === '',
+                      multiplayerInitialsFromName(collaborator.name),
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+          <ProjectCardActions project={project} />
+        </div>
+      </div>
+    )
+  },
+)
+ProjectRow.displayName = 'ProjectRow'
+
 const ProjectCardActions = React.memo(({ project }: { project: ProjectWithoutContent }) => {
   return (
-    <div style={{ display: 'flex', alignItems: 'center' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 5, flex: 1 }}>
-        <div style={{ fontWeight: 600 }}>{project.title}</div>
-        <div>{moment(project.modified_at).fromNow()}</div>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-        <DropdownMenu.Root>
-          <DropdownMenu.Trigger asChild>
-            <DotsHorizontalIcon className={button()} />
-          </DropdownMenu.Trigger>
-          <ProjectContextMenu project={project} />
-        </DropdownMenu.Root>
-      </div>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+      <DropdownMenuRoot>
+        <DropdownMenuTrigger asChild>
+          <DotsHorizontalIcon className={button()} />
+        </DropdownMenuTrigger>
+        <ProjectContextMenu project={project} />
+      </DropdownMenuRoot>
     </div>
   )
 })
