@@ -1,5 +1,4 @@
 import { UserDetails } from 'prisma-client'
-import { LiveblocksAPI } from '../clients/liveblocks.server'
 import { prisma } from '../db.server'
 import { Collaborator, CollaboratorsByProject } from '../types'
 
@@ -28,7 +27,10 @@ export async function getCollaborators(params: {
   return collaboratorsByProject
 }
 
-export async function updateCollaborators(params: { id: string; userId: string }): Promise<void> {
+export async function addToProjectCollaborators(params: {
+  id: string
+  userId: string
+}): Promise<void> {
   // the Prisma equivalent of INSERT ... ON CONFLICT DO NOTHING
   await prisma.projectCollaborator.upsert({
     where: {

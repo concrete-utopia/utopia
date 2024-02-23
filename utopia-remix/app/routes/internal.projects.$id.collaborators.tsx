@@ -4,7 +4,7 @@ import { Status } from '../util/statusCodes.server'
 import { Params } from '@remix-run/react'
 import {
   listProjectCollaborators,
-  updateCollaborators,
+  addToProjectCollaborators,
 } from '../models/projectCollaborators.server'
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -26,16 +26,16 @@ export async function getProjectCollaborators(req: Request, params: Params<strin
 }
 
 export async function action(args: ActionFunctionArgs) {
-  return handle(args, { POST: updateProjectCollaborators })
+  return handle(args, { POST: addToCollaborators })
 }
 
-export async function updateProjectCollaborators(req: Request, params: Params<string>) {
+export async function addToCollaborators(req: Request, params: Params<string>) {
   const user = await requireUser(req)
 
   const { id } = params
   ensure(id != null, 'id is null', Status.BAD_REQUEST)
 
-  await updateCollaborators({ id: id, userId: user.user_id })
+  await addToProjectCollaborators({ id: id, userId: user.user_id })
 
   return {}
 }
