@@ -28,10 +28,11 @@ import {
 } from './actions/action-creators'
 import { updateUserDetailsWhenAuthenticated } from '../../core/shared/github/helpers'
 import { GithubAuth } from '../../utils/github-auth'
+import type { User } from '../../../liveblocks.config'
 import { liveblocksClient } from '../../../liveblocks.config'
 import type { Collaborator } from '../../core/shared/multiplayer'
 import { projectIdToRoomId } from '../../core/shared/multiplayer'
-import type { LiveObject, LsonObject } from '@liveblocks/client'
+import type { LiveObject } from '@liveblocks/client'
 
 export { fetchProjectList, fetchShowcaseProjects, getLoginState } from '../../common/server'
 
@@ -507,12 +508,9 @@ export async function updateCollaborators(projectId: string) {
   })
 }
 
-export async function getCollaborators(
-  projectId: string,
-  liveblocksCollaborators: Collaborator[],
-): Promise<Collaborator[]> {
+export async function getCollaborators(projectId: string): Promise<Collaborator[]> {
   if (!isBackendBFF()) {
-    return liveblocksCollaborators
+    return getCollaboratorsFromLiveblocks(projectId)
   }
 
   const response = await fetch(
@@ -531,22 +529,19 @@ export async function getCollaborators(
   }
 }
 
-async function getCollaboratorsFromLiveblocks(projectId: string) {
+// TODO remove this once the BFF is on
+async function getCollaboratorsFromLiveblocks(projectId: string): Promise<Collaborator[]> {
   const room = liveblocksClient.getRoom(projectIdToRoomId(projectId))
   if (room == null) {
     return []
   }
 
   const storage = await room.getStorage()
-  const collaboratorsLiveObject = storage.root.get('collaborators') as
-    | LiveObject<LsonObject>
-    | undefined
-  if (collaboratorsLiveObject == null) {
+  const collabs = storage.root.get('collaborators') as LiveObject<{ [userId: string]: User }>
+  if (collabs == null) {
     return []
   }
-
-  const collaboratorsObject = collaboratorsLiveObject.toObject() as {
-    [key: string]: LiveObject<Collaborator>
-  }
-  return Object.values(collaboratorsObject).map((v) => v.toObject() as Collaborator)
+  return Object.values(collabs.toObject())
+    .map((u) => u.toObject())
+    .map((u) => ({ id: u.id, name: u.name ?? '', avatar: u.avatar ?? '' }))
 }

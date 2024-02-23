@@ -169,7 +169,7 @@ export const {
       return []
     }
 
-    const users = await getAllUsersFromRoom(projectId)
+    const users = await getCollaborators(projectId)
     return users.filter((u) => userIds.includes(u.id))
   },
   async resolveMentionSuggestions({ text }) {
@@ -185,7 +185,7 @@ export const {
       return []
     }
 
-    const users = await getAllUsersFromRoom(projectId)
+    const users = await getCollaborators(projectId)
 
     if (text == null) {
       return users.map((u) => u.id)
@@ -202,11 +202,3 @@ export const {
       .map((u) => u.id)
   },
 })
-
-async function getAllUsersFromRoom(projectId: string) {
-  const collabs = await getCollaborators(projectId)
-  if (collabs == null) {
-    return []
-  }
-  return collabs
-}

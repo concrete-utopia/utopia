@@ -342,24 +342,14 @@ export function useLoadCollaborators() {
     'useLoadCollaborators',
   )
 
-  // TODO remove this once the BFF is on
-  const liveblocksStorageCollaborators_DEPRECATED = useStorage((storage) => storage.collaborators)
-  const liveblocksStorageCollaboratorsList = React.useMemo((): Collaborator[] => {
-    return Object.values(liveblocksStorageCollaborators_DEPRECATED).map((c) => ({
-      id: c.id,
-      name: c.name ?? '',
-      avatar: c.avatar ?? '',
-    }))
-  }, [liveblocksStorageCollaborators_DEPRECATED])
-
   const getAndStoreCollaborators = React.useCallback(() => {
     if (projectId == null) {
       return
     }
-    void getCollaborators(projectId, liveblocksStorageCollaboratorsList).then((collaborators) => {
+    void getCollaborators(projectId).then((collaborators) => {
       dispatch([setCollaborators(collaborators)])
     })
-  }, [projectId, dispatch, liveblocksStorageCollaboratorsList])
+  }, [projectId, dispatch])
 
   // when new users join or update, if they are not available in the collaborators array, refresh them.
   useOthersListener((event) => {
