@@ -308,7 +308,7 @@ export function unwrapperAndParserForBaseControl(
     case 'style-controls':
       return defaultUnwrapFirst(parseAny)
     case 'jsx':
-      return jsUnwrapFirst(parseJsx)
+      return parseJsx
     case 'vector2':
     case 'vector3':
     case 'vector4':

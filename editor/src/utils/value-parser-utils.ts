@@ -1,3 +1,4 @@
+import React from 'react'
 import type { MapLike } from 'typescript'
 import type { Either } from '../core/shared/either'
 import {
@@ -10,6 +11,8 @@ import {
   right,
   traverseEither,
 } from '../core/shared/either'
+import * as EP from '../core/shared/element-path'
+import type { ElementPath } from '../core/shared/project-file-types'
 
 export interface ArrayIndexNotPresentParseError {
   type: 'ARRAY_INDEX_NOT_PRESENT_PARSE_ERROR'
@@ -297,8 +300,45 @@ export function parseString(value: unknown): ParseResult<string> {
   }
 }
 
-export function parseJsx(value: unknown): ParseResult<string> {
-  return right('JSX')
+export function parseJsx(
+  _: unknown,
+  value: unknown,
+): ParseResult<{ path: ElementPath | null; name: string }> {
+  const path = (() => {
+    if (React.isValidElement(value)) {
+      const key = value.key
+      if (key != null && typeof key === 'string') {
+        try {
+          return EP.fromString(key)
+        } catch (e) {
+          return null
+        }
+      }
+    }
+    return null
+  })()
+
+  const name = (() => {
+    if (React.isValidElement(value)) {
+      const { type } = value
+
+      if (typeof type === 'string') {
+        return type
+      }
+    }
+    if (typeof value === 'string') {
+      return value
+    }
+    if (typeof value === 'number') {
+      return value.toString()
+    }
+    if (value == null) {
+      return 'null'
+    }
+    return 'JSX'
+  })()
+
+  return right({ path, name })
 }
 
 export function parseEnum<E extends string | number>(possibleValues: Array<E>): Parser<E> {
