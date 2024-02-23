@@ -115,8 +115,9 @@ export const MultiplayerPresence = React.memo(() => {
     'MultiplayerPresence mode',
   )
 
-  useLoadCollaborators()
   useAddMyselfToCollaborators_DEPRECATED()
+  useLoadCollaborators()
+
   useStoreConnection()
   useMonitorConnection()
 
