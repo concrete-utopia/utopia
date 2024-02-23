@@ -541,7 +541,5 @@ async function getCollaboratorsFromLiveblocks(projectId: string): Promise<Collab
   if (collabs == null) {
     return []
   }
-  return Object.values(collabs.toObject())
-    .map((u) => u.toObject())
-    .map((u) => ({ id: u.id, name: u.name ?? '', avatar: u.avatar ?? '' }))
+  return Object.values(collabs.toObject()).map((u) => u.toObject())
 }

@@ -6,6 +6,7 @@ import {
   listProjectCollaborators,
   addToProjectCollaborators,
 } from '../models/projectCollaborators.server'
+import { userToCollaborator } from '../types'
 
 export async function loader(args: LoaderFunctionArgs) {
   return handle(args, { GET: getProjectCollaborators })
@@ -18,11 +19,7 @@ export async function getProjectCollaborators(req: Request, params: Params<strin
   ensure(id != null, 'id is null', Status.BAD_REQUEST)
 
   const collaborators = await listProjectCollaborators({ id: id })
-  return collaborators.map(({ user_id, name, picture }) => ({
-    id: user_id,
-    name: name,
-    avatar: picture,
-  }))
+  return collaborators.map(userToCollaborator)
 }
 
 export async function action(args: ActionFunctionArgs) {

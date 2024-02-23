@@ -17,7 +17,6 @@ import {
 import { isFollowMode } from '../../components/editor/editor-modes'
 import { Substores, useEditorState } from '../../components/editor/store/store-hook'
 import * as EP from './element-path'
-import type { Collaborator } from './multiplayer'
 import { possiblyUniqueColor, type RemixPresence } from './multiplayer'
 import { PRODUCTION_ENV } from '../../common/env-vars'
 import { isFeatureEnabled } from '../../utils/feature-switches'

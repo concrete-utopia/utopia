@@ -4239,9 +4239,9 @@ export const CollaboratorEquality: KeepDeepEqualityCall<Collaborator> = combine3
   (data) => data.id,
   StringKeepDeepEquality,
   (data) => data.name,
-  StringKeepDeepEquality,
+  NullableStringKeepDeepEquality,
   (data) => data.avatar,
-  StringKeepDeepEquality,
+  NullableStringKeepDeepEquality,
   (id, name, avatar) => ({ id, name, avatar }),
 )
 

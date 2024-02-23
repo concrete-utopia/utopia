@@ -1,14 +1,6 @@
 import { UserDetails } from 'prisma-client'
 import { prisma } from '../db.server'
-import { Collaborator, CollaboratorsByProject } from '../types'
-
-function userToCollaborator(user: UserDetails): Collaborator {
-  return {
-    id: user.user_id,
-    name: user.name ?? '',
-    avatar: user.picture ?? '',
-  }
-}
+import { CollaboratorsByProject, userToCollaborator } from '../types'
 
 export async function getCollaborators(params: {
   ids: string[]
