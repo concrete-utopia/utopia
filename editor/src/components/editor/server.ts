@@ -31,8 +31,9 @@ import { GithubAuth } from '../../utils/github-auth'
 import type { User } from '../../../liveblocks.config'
 import { liveblocksClient } from '../../../liveblocks.config'
 import type { Collaborator } from '../../core/shared/multiplayer'
-import { projectIdToRoomId } from '../../core/shared/multiplayer'
 import type { LiveObject } from '@liveblocks/client'
+import { projectIdToRoomId } from '../../utils/room-id'
+// import type { LiveObject } from '@liveblocks/client'
 
 export { fetchProjectList, fetchShowcaseProjects, getLoginState } from '../../common/server'
 
@@ -541,7 +542,6 @@ async function getCollaboratorsFromLiveblocks(projectId: string): Promise<Collab
   if (room == null) {
     return []
   }
-
   const storage = await room.getStorage()
   const collabs = storage.root.get('collaborators') as LiveObject<{ [userId: string]: User }>
   if (collabs == null) {

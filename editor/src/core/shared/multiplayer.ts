@@ -136,16 +136,6 @@ export function canFollowTarget(
   )
 }
 
-const roomIdPrefix = `project-room-`
-
-export function projectIdToRoomId(projectId: string): string {
-  return `${roomIdPrefix}${projectId}`
-}
-
-export function isRoomId(s: string): boolean {
-  return s.startsWith(roomIdPrefix)
-}
-
 export type RemixPresence = {
   scene: string
   locationRoute: string | null
