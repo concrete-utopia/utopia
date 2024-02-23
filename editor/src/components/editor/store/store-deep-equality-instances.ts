@@ -557,6 +557,7 @@ import type {
 } from '../../canvas/commands/set-active-frames-command'
 import type { CommentFilterMode } from '../../inspector/sections/comment-section'
 import type { Collaborator } from '../../../core/shared/multiplayer'
+import type { MultiplayerSubstate } from './store-hook-substore-types'
 
 export const ProjectMetadataFromServerKeepDeepEquality: KeepDeepEqualityCall<ProjectMetadataFromServer> =
   combine3EqualityCalls(
@@ -582,6 +583,24 @@ export const ProjectServerStateKeepDeepEquality: KeepDeepEqualityCall<ProjectSer
     (entry) => entry.currentlyHolderOfTheBaton,
     createCallWithTripleEquals<boolean>(),
     projectServerState,
+  )
+
+export const CollaboratorKeepDeepEquality: KeepDeepEqualityCall<Collaborator> =
+  combine3EqualityCalls(
+    (data) => data.id,
+    StringKeepDeepEquality,
+    (data) => data.name,
+    NullableStringKeepDeepEquality,
+    (data) => data.avatar,
+    NullableStringKeepDeepEquality,
+    (id, name, avatar) => ({ id, name, avatar }),
+  )
+
+export const MutiplayerSubstateKeepDeepEquality: KeepDeepEqualityCall<MultiplayerSubstate> =
+  combine1EqualityCall(
+    (entry) => entry.editor.collaborators,
+    arrayDeepEquality(CollaboratorKeepDeepEquality),
+    (collaborators) => ({ editor: { collaborators: collaborators } }),
   )
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
@@ -4235,16 +4254,6 @@ export const FrameOrPathKeepDeepEquality: KeepDeepEqualityCall<ActiveFrame> = co
   (target, action, source) => ({ target, action, source }),
 )
 
-export const CollaboratorEquality: KeepDeepEqualityCall<Collaborator> = combine3EqualityCalls(
-  (data) => data.id,
-  StringKeepDeepEquality,
-  (data) => data.name,
-  NullableStringKeepDeepEquality,
-  (data) => data.avatar,
-  NullableStringKeepDeepEquality,
-  (id, name, avatar) => ({ id, name, avatar }),
-)
-
 export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   oldValue,
   newValue,
@@ -4540,7 +4549,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
 
   const forkingResults = BooleanKeepDeepEquality(oldValue.forking, newValue.forking)
 
-  const collaboratorsResults = arrayDeepEquality(CollaboratorEquality)(
+  const collaboratorsResults = arrayDeepEquality(CollaboratorKeepDeepEquality)(
     oldValue.collaborators,
     newValue.collaborators,
   )

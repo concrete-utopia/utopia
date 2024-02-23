@@ -5,10 +5,11 @@ import { subscribeWithSelector } from 'zustand/middleware'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { objectMap } from '../../../core/shared/object-utils'
 import {
+  MutiplayerSubstateKeepDeepEquality,
   NavigatorStateKeepDeepEquality,
   ProjectServerStateKeepDeepEquality,
 } from './store-deep-equality-instances'
-import type { DerivedState, EditorStorePatched, UserState } from './editor-state'
+import type { DerivedState, EditorStorePatched } from './editor-state'
 import {
   logAfterStoreUpdate,
   logBeforeStoreUpdate,
@@ -24,6 +25,7 @@ import type {
   GithubSubstate,
   HighlightedHoveredViewsSubstate,
   MetadataSubstate,
+  MultiplayerSubstate,
   NavigatorSubstate,
   PostActionInteractionSessionSubstate,
   ProjectContentAndMetadataSubstate,
@@ -309,6 +311,9 @@ export const Substores = {
   },
   variablesInScope: (a: VariablesInScopeSubstate, b: VariablesInScopeSubstate) => {
     return keysEquality(variablesInScopeSubstateKeys, a.editor, b.editor)
+  },
+  multiplayer: (a: MultiplayerSubstate, b: MultiplayerSubstate) => {
+    return MutiplayerSubstateKeepDeepEquality(a, b).areEqual
   },
 } as const
 

@@ -336,7 +336,7 @@ export function useLoadCollaborators() {
   )
 
   const otherCollaboratorIds = useEditorState(
-    Substores.restOfEditor,
+    Substores.multiplayer,
     (store) => store.editor.collaborators.map((c) => c.id),
     'useLoadCollaborators',
   )

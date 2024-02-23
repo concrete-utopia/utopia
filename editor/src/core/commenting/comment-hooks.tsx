@@ -249,7 +249,7 @@ export function useAddMyselfToCollaborators_DEPRECATED() {
 
 export function useCollaborators() {
   return useEditorState(
-    Substores.restOfEditor,
+    Substores.multiplayer,
     (store) => store.editor.collaborators,
     'useCollaborators collaborators',
   )
