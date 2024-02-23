@@ -501,11 +501,17 @@ export async function updateCollaborators(projectId: string) {
   if (!isBackendBFF()) {
     return
   }
-  await fetch(UTOPIA_BACKEND_BASE_URL + `internal/projects/${projectId}/collaborators`, {
-    method: 'POST',
-    credentials: 'include',
-    mode: MODE,
-  })
+  const response = await fetch(
+    UTOPIA_BACKEND_BASE_URL + `internal/projects/${projectId}/collaborators`,
+    {
+      method: 'POST',
+      credentials: 'include',
+      mode: MODE,
+    },
+  )
+  if (!response.ok) {
+    throw new Error(`Update collaborators failed (${response.status}): ${response.statusText}`)
+  }
 }
 
 export async function getCollaborators(projectId: string): Promise<Collaborator[]> {
