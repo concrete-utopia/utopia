@@ -521,28 +521,27 @@ const ProjectCards = React.memo(
             </div>
           </div>
         )}
-        {!gridView ? (
-          projects.length > 0 && (
-            <div
-              style={{
-                flexGrow: 1,
-                overflowY: 'scroll',
-                scrollbarColor: 'lightgrey transparent',
-                gap: 10,
-              }}
-            >
-              {projects.map((project) => (
-                <ProjectRow
-                  key={project.proj_id}
-                  project={project}
-                  selected={project.proj_id === selectedProjectId}
-                  onSelect={() => handleProjectSelect(project)}
-                  collaborators={collaborators[project.proj_id]}
-                />
-              ))}
-            </div>
-          )
-        ) : (
+        {projects.length > 0 && !gridView && (
+          <div
+            style={{
+              flexGrow: 1,
+              overflowY: 'scroll',
+              scrollbarColor: 'lightgrey transparent',
+              gap: 10,
+            }}
+          >
+            {projects.map((project) => (
+              <ProjectRow
+                key={project.proj_id}
+                project={project}
+                selected={project.proj_id === selectedProjectId}
+                onSelect={() => handleProjectSelect(project)}
+                collaborators={collaborators[project.proj_id]}
+              />
+            ))}
+          </div>
+        )}
+        {projects.length > 0 && gridView && (
           <div
             style={{
               display: 'flex',
