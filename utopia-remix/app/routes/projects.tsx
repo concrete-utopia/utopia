@@ -382,10 +382,7 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
           </div>,
         )}
       </div>
-
-
-          
-          {when(
+        {when(
             projects.length > 1,
             <div style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
               <DropdownMenuRoot>
@@ -413,7 +410,6 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
                     color: !gridView ? 'selected' : 'transparent',
                   })}
                 />
-
                 <DashboardIcon
                   onClick={() => {
                     setGridView(true)
@@ -426,8 +422,6 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
               </div>
             </div>,
           )}
-        </div>,
-      )}
     </div>
   )
 })
@@ -501,12 +495,7 @@ const ProjectCards = React.memo(
 
     return (
       <>
-
-        {when(
-          projects.length === 0 && selectedCategory === 'trash',
-
-        {!gridView ? (
-
+        {projects.length === 0 && selectedCategory === 'trash' && (
           <div
             style={{
               display: 'flex',
@@ -528,28 +517,31 @@ const ProjectCards = React.memo(
             />
             <div style={{ fontSize: 16, fontWeight: 600 }}>Your trash is empty!</div>
             <div>
-              Deleted projects are kept here until you destory them <i>for good.</i>
+              Deleted projects are kept here until you destroy them <i>for good.</i>
             </div>
-          </div>,
-        )}
-        {when(
-          projects.length > 0,
-              flexGrow: 1,
-              overflowY: 'scroll',
-              scrollbarColor: 'lightgrey transparent',
-              gap: 10,
-            }}
-          >
-            {projects.map((project) => (
-              <ProjectRow
-                key={project.proj_id}
-                project={project}
-                selected={project.proj_id === selectedProjectId}
-                onSelect={() => handleProjectSelect(project)}
-                collaborators={collaborators[project.proj_id]}
-              />
-            ))}
           </div>
+        )}
+        {!gridView ? (
+          projects.length > 0 && (
+            <div
+              style={{
+                flexGrow: 1,
+                overflowY: 'scroll',
+                scrollbarColor: 'lightgrey transparent',
+                gap: 10,
+              }}
+            >
+              {projects.map((project) => (
+                <ProjectRow
+                  key={project.proj_id}
+                  project={project}
+                  selected={project.proj_id === selectedProjectId}
+                  onSelect={() => handleProjectSelect(project)}
+                  collaborators={collaborators[project.proj_id]}
+                />
+              ))}
+            </div>
+          )
         ) : (
           <div
             style={{
@@ -572,12 +564,13 @@ const ProjectCards = React.memo(
                 collaborators={collaborators[project.proj_id]}
               />
             ))}
-          </div>,
+          </div>
         )}
       </>
     )
   },
 )
+
 ProjectCards.displayName = 'ProjectCards'
 
 const ProjectCard = React.memo(
@@ -753,10 +746,10 @@ const ProjectRow = React.memo(
                       borderRadius: '100%',
                       width: 24,
                       height: 24,
-                      backgroundColor: colors.primary,
+                      backgroundColor: '#0075F9',
                       backgroundImage: `url("${collaborator.avatar}")`,
                       backgroundSize: 'cover',
-                      color: colors.white,
+                      color: 'white',
                       display: 'flex',
                       justifyContent: 'center',
                       alignItems: 'center',
