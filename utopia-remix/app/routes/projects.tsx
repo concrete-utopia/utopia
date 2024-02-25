@@ -714,10 +714,8 @@ const ProjectRow = React.memo(
                       borderRadius: '100%',
                       width: 24,
                       height: 24,
-                      backgroundColor: colors.primary,
                       backgroundImage: `url("${collaborator.avatar}")`,
                       backgroundSize: 'cover',
-                      color: colors.white,
                       display: 'flex',
                       justifyContent: 'center',
                       alignItems: 'center',
@@ -726,7 +724,11 @@ const ProjectRow = React.memo(
                       filter: project.deleted === true ? 'grayscale(1)' : undefined,
                     }}
                     title={collaborator.name}
-                    className={sprinkles({ boxShadow: 'shadow' })}
+                    className={sprinkles({
+                      boxShadow: 'shadow',
+                      color: 'white',
+                      backgroundColor: 'primary',
+                    })}
                   >
                     {when(
                       collaborator.avatar === '',
