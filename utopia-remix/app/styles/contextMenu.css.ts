@@ -16,6 +16,7 @@ export const contextMenuItem = recipe({
       display: 'flex',
       alignItems: 'center',
       userSelect: 'none',
+      transition: `.1s all ease-in-out`,
       ':hover': {
         backgroundColor: colors.primary,
         color: 'white',
