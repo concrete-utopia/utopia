@@ -1,7 +1,7 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import React from 'react'
-import { css, jsx } from '@emotion/react'
+import { jsx } from '@emotion/react'
 import type { OptionsType } from 'react-select'
 import { animated } from 'react-spring'
 import type {
@@ -13,12 +13,7 @@ import type {
   TupleControlDescription,
   UnionControlDescription,
 } from 'utopia-api/core'
-import {
-  FolderControlDescription,
-  HigherLevelControlDescription,
-  isBaseControlDescription,
-  PropertyControls,
-} from 'utopia-api/core'
+import { isBaseControlDescription } from 'utopia-api/core'
 import { PathForSceneProps } from '../../../../core/model/scene-utils'
 import { mapToArray } from '../../../../core/shared/object-utils'
 import type { PropertyPath } from '../../../../core/shared/project-file-types'
@@ -28,7 +23,7 @@ import * as EP from '../../../../core/shared/element-path'
 import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
 import Utils from '../../../../utils/utils'
 import type { ParseError } from '../../../../utils/value-parser-utils'
-import { getParseErrorDetails, ParseResult } from '../../../../utils/value-parser-utils'
+import { getParseErrorDetails } from '../../../../utils/value-parser-utils'
 import {
   Tooltip,
   //TODO: switch last component to functional component and make use of 'useColorTheme':
@@ -40,12 +35,9 @@ import {
   SquareButton,
   PopupList,
   Icons,
-  VerySubdued,
   FlexRow,
   Button,
   Icn,
-  FlexColumn,
-  UtopiaStyles,
 } from '../../../../uuiui'
 import type { CSSCursor } from '../../../../uuiui-deps'
 import { getControlStyles } from '../../../../uuiui-deps'
@@ -57,7 +49,6 @@ import {
   useInspectorInfoForPropertyControl,
 } from '../../common/property-controls-hooks'
 import type { ControlStyles } from '../../common/control-styles'
-import { ControlStatus } from '../../common/control-status'
 import type { InspectorInfo } from '../../common/property-path-hooks'
 import { useArraySuperControl } from '../../controls/array-supercontrol'
 import type { SelectOption } from '../../controls/select-control'
@@ -86,21 +77,12 @@ import { unless, when } from '../../../../utils/react-conditionals'
 import { PropertyControlsSection } from './property-controls-section'
 import type { ReactEventHandlers } from 'react-use-gesture/dist/types'
 import { normalisePathToUnderlyingTarget } from '../../../custom-code/code-file'
-import { openCodeEditorFile, setProp_UNSAFE } from '../../../editor/actions/action-creators'
-import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import { openCodeEditorFile } from '../../../editor/actions/action-creators'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { getFilePathForImportedComponent } from '../../../../core/model/project-file-utils'
 import { safeIndex } from '../../../../core/shared/array-utils'
 import { useDispatch } from '../../../editor/store/dispatch-context'
-import { usePopper } from 'react-popper'
-import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
-import { optionalMap } from '../../../../core/shared/optional-utils'
-import {
-  getJSExpressionAtPath,
-  getJSXAttributesAtPath,
-} from '../../../../core/shared/jsx-attributes'
-import type { VariableData } from '../../../canvas/ui-jsx-canvas'
-import { array } from 'prop-types'
 import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
 import { DataPickerPopup } from './data-picker-popup'
 
@@ -209,24 +191,11 @@ function getLabelControlStyle(
 const isBaseIndentationLevel = (props: AbstractRowForControlProps) => props.indentationLevel === 1
 
 function useDataPickerButton(selectedElements: Array<ElementPath>, propPath: PropertyPath) {
-  const [referenceElement, setReferenceElement] = React.useState<HTMLDivElement | null>(null)
-  const [popperElement, setPopperElement] = React.useState<HTMLDivElement | null>(null)
-  const popper = usePopper(referenceElement, popperElement, {
-    modifiers: [
-      {
-        name: 'offset',
-        options: {
-          offset: [0, 8],
-        },
-      },
-    ],
-  })
-
   const [popupIsOpen, setPopupIsOpen] = React.useState(false)
   const togglePopup = React.useCallback(() => setPopupIsOpen((v) => !v), [])
   const closePopup = React.useCallback(() => setPopupIsOpen(false), [])
 
-  const onClick = React.useCallback(
+  const onMouseDown = React.useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation()
       e.preventDefault()
@@ -245,22 +214,14 @@ function useDataPickerButton(selectedElements: Array<ElementPath>, propPath: Pro
     : 'No data sources available'
 
   const DataPickerComponent = React.useMemo(
-    () => (
-      <DataPickerPopup
-        {...popper.attributes.popper}
-        style={popper.styles.popper}
-        closePopup={closePopup}
-        ref={setPopperElement}
-        propPath={propPath}
-      />
-    ),
-    [closePopup, popper.attributes.popper, popper.styles.popper, propPath],
+    () => <DataPickerPopup closePopup={closePopup} propPath={propPath} />,
+    [closePopup, propPath],
   )
 
   const DataPickerOpener = React.useMemo(
     () => (
       <Button
-        onClick={onClick}
+        onMouseDown={onMouseDown}
         data-testid={DataPickerPopupButtonTestId}
         disabled={!variablePickerButtonAvailable}
       >
@@ -273,14 +234,13 @@ function useDataPickerButton(selectedElements: Array<ElementPath>, propPath: Pro
         />
       </Button>
     ),
-    [onClick, variablePickerButtonAvailable, variablePickerButtonTooltipText],
+    [onMouseDown, variablePickerButtonAvailable, variablePickerButtonTooltipText],
   )
 
   return {
     popupIsOpen,
     DataPickerOpener,
     DataPickerComponent,
-    setReferenceElement,
   }
 }
 
@@ -358,16 +318,14 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
         variant='<--1fr--><--1fr-->|-18px-|'
       >
         {propertyLabel}
-        <div ref={dataPickerButtonData.setReferenceElement}>
-          <ControlForProp
-            propPath={propPath}
-            propName={propName}
-            controlDescription={controlDescription}
-            propMetadata={propMetadata}
-            setGlobalCursor={props.setGlobalCursor}
-            focusOnMount={props.focusOnMount}
-          />
-        </div>
+        <ControlForProp
+          propPath={propPath}
+          propName={propName}
+          controlDescription={controlDescription}
+          propMetadata={propMetadata}
+          setGlobalCursor={props.setGlobalCursor}
+          focusOnMount={props.focusOnMount}
+        />
         {when(isBaseIndentationLevel(props), dataPickerButtonData.DataPickerOpener)}
       </UIGridRow>
     </InspectorContextMenuWrapper>
@@ -457,7 +415,7 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
         <SimpleFlexRow
           style={{ gap: 5, justifyContent: 'space-between', flexGrow: 1, paddingRight: 3 }}
         >
-          <FlexRow style={{ gap: 5 }} ref={dataPickerButtonData.setReferenceElement}>
+          <FlexRow style={{ gap: 5 }}>
             <PropertyLabel
               target={[propPath]}
               style={{ textTransform: 'capitalize', paddingTop: 2 }}
@@ -601,11 +559,7 @@ interface RowForTupleControlProps extends AbstractRowForControlProps {
 const RowForTupleControl = React.memo((props: RowForTupleControlProps) => {
   const { propPath, controlDescription, isScene } = props
   const title = labelForControl(propPath, controlDescription)
-  const { value, onSubmitValue, propertyStatus } = useComponentPropsInspectorInfo(
-    propPath,
-    isScene,
-    controlDescription,
-  )
+  const { value } = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
 
   const rowHeight = UtopiaTheme.layout.rowHeight.normal
   const transformedValue = Array.isArray(value) ? value : [value]
@@ -753,10 +707,7 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
           data={null}
         >
           {when(dataPickerButtonData.popupIsOpen, dataPickerButtonData.DataPickerComponent)}
-          <FlexRow
-            style={{ flexGrow: 1, justifyContent: 'space-between', paddingRight: 10 }}
-            ref={dataPickerButtonData.setReferenceElement}
-          >
+          <FlexRow style={{ flexGrow: 1, justifyContent: 'space-between', paddingRight: 10 }}>
             <SimpleFlexRow style={{ flexGrow: 1, paddingRight: 8 }} onClick={handleOnClick}>
               <PropertyLabel
                 target={[propPath]}
@@ -901,7 +852,6 @@ export const RowForControl = React.memo((props: RowForControlProps) => {
       case 'union':
         return <RowForUnionControl {...props} controlDescription={controlDescription} />
       default:
-        const _exhaustiveCheck: never = controlDescription
         throw new Error(`Unhandled control ${JSON.stringify(controlDescription)}`)
     }
   }
@@ -1031,7 +981,7 @@ export class ComponentSection extends React.Component<
     this.state = { errorOccurred: false }
   }
 
-  static getDerivedStateFromError(error: Error): ComponentSectionState {
+  static getDerivedStateFromError(): ComponentSectionState {
     return {
       errorOccurred: true,
     }

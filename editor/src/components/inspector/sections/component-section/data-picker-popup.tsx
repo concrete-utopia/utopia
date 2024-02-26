@@ -6,7 +6,7 @@ import React, { useCallback } from 'react'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { PropertyPath } from '../../../../core/shared/project-file-types'
-import { useColorTheme, UtopiaTheme, Button, FlexColumn, UtopiaStyles } from '../../../../uuiui'
+import { useColorTheme, Button, FlexColumn, UtopiaStyles } from '../../../../uuiui'
 import { setProp_UNSAFE } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { useRefEditorState } from '../../../editor/store/store-hook'
@@ -22,6 +22,8 @@ import type {
 } from './variables-in-scope-utils'
 import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
 import { assertNever } from '../../../../core/shared/utils'
+import { useHandleCloseOnESCOrEnter } from '../../common/inspector-utils'
+import { InspectorModal } from '../../widgets/inspector-modal'
 
 export interface PrimitiveOption {
   type: 'primitive'
@@ -72,7 +74,6 @@ function valueToDisplay(option: VariableOption): string {
 
 export interface DataPickerPopupProps {
   closePopup: () => void
-  style: React.CSSProperties
   propPath: PropertyPath
 }
 
@@ -114,31 +115,22 @@ export const DataPickerPopup = React.memo(
       props.propPath,
     )
 
+    useHandleCloseOnESCOrEnter(closePopup)
+
     return (
-      <div
-        style={{
-          background: 'transparent',
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: 1, // so it's above the inspector
-        }}
-        onClick={closePopup}
-      >
+      <InspectorModal closePopup={closePopup} offsetX={0} offsetY={34}>
         <FlexColumn
-          ref={forwardedRef}
           tabIndex={0}
           style={{
-            ...props.style,
+            position: 'relative',
             backgroundColor: colorTheme.neutralBackground.value,
             padding: '8px 16px',
             boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
             borderRadius: 8,
             alignItems: 'flex-start',
-            width: '96%',
             maxWidth: '260px',
+            width: 260,
+            ...UtopiaStyles.popup,
           }}
           data-testid={DataPickerPopupTestId}
         >
@@ -156,7 +148,7 @@ export const DataPickerPopup = React.memo(
             )
           })}
         </FlexColumn>
-      </div>
+      </InspectorModal>
     )
   }),
 )
