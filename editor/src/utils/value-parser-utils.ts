@@ -330,7 +330,7 @@ export function parseJsx(_: unknown, value: unknown): ParseResult<JSXParsedValue
     if (type.hasOwnProperty('theOriginalType')) {
       const originalType = (type as any).theOriginalType
       // if it is an internal component, it has an originalName property
-      if (originalType.hasOwnProperty('originalName')) {
+      if (originalType.hasOwnProperty('originalName') === true) {
         const originalName = (originalType as ComponentRendererComponent).originalName
         return right({
           type: 'internal-component',
@@ -339,13 +339,13 @@ export function parseJsx(_: unknown, value: unknown): ParseResult<JSXParsedValue
       }
 
       // if it is an external component, try returning displayName or name
-      if (originalType.hasOwnProperty('displayName')) {
+      if (originalType.hasOwnProperty('displayName') === true) {
         return right({
           type: 'external-component',
           name: (originalType as ComponentRendererComponent).displayName ?? 'JSX',
         })
       }
-      if (originalType.hasOwnProperty('name')) {
+      if (originalType.hasOwnProperty('name') === true) {
         right({
           type: 'external-component',
           name: (originalType as ComponentRendererComponent).name ?? 'JSX',

@@ -52,7 +52,7 @@ import { importDetailsFromImportOption } from '../../../../core/shared/project-f
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { addImports, forceParseFile } from '../../../editor/actions/action-creators'
 import type { EditorAction } from '../../../editor/action-types'
-import { forceNotNull, optionalMap } from '../../../../core/shared/optional-utils'
+import { forceNotNull } from '../../../../core/shared/optional-utils'
 import type { DEPRECATEDSliderControlOptions } from '../../controls/slider-control'
 import {
   normalisePathSuccessOrThrowError,
@@ -60,8 +60,6 @@ import {
 } from '../../../custom-code/code-file'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { HtmlPreview, ImagePreview } from './property-content-preview'
-import { regularNavigatorEntry } from '../../../editor/store/editor-state'
-import { LayoutIcon } from '../../../navigator/navigator-item/layout-icon'
 import type { JSXParsedType, JSXParsedValue } from '../../../../utils/value-parser-utils'
 import { assertNever } from '../../../../core/shared/utils'
 
