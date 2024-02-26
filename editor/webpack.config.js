@@ -102,7 +102,7 @@ const config = {
       templateParameters: htmlTemplateParameters,
     }),
     new HtmlWebpackPlugin({
-      chunks: [notFound],
+      chunks: ['notFound'],
       inject: 'head', // Add the script tags to the end of the <head>
       scriptLoading: 'defer',
       template: './src/templates/project-not-found/index.html',
