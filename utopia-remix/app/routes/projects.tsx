@@ -2,7 +2,13 @@ import {
   Root as DropdownMenuRoot,
   Trigger as DropdownMenuTrigger,
 } from '@radix-ui/react-dropdown-menu'
-import { DashboardIcon, DotsHorizontalIcon, HamburgerMenuIcon } from '@radix-ui/react-icons'
+import { Slot, Slottable } from '@radix-ui/react-slot'
+import {
+  DashboardIcon,
+  DotsHorizontalIcon,
+  HamburgerMenuIcon,
+  MagnifyingGlassIcon,
+} from '@radix-ui/react-icons'
 import React from 'react'
 import { LoaderFunctionArgs, json } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
@@ -191,27 +197,36 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
           <div className={userName({})}>{user.name}</div>
         </div>
 
-        <input
-          id='search-input'
-          autoFocus={true}
-          value={searchQuery}
-          onChange={(e) => {
-            setSearchQuery(e.target.value)
-          }}
+        <div
           style={{
-            border: 'none',
-            background: 'transparent',
-            outline: 'none',
-            color: 'grey',
-            height: SidebarRowHeight,
-            borderBottom: '1px solid gray',
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
-            padding: '0 14px',
+            borderBottom: '1px solid gray',
           }}
-          placeholder='Search…'
-        />
+        >
+          <MagnifyingGlassIcon />
+          <input
+            id='search-input'
+            autoFocus={true}
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value)
+            }}
+            style={{
+              border: 'none',
+              background: 'transparent',
+              outline: 'none',
+              color: 'grey',
+              height: SidebarRowHeight,
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              padding: '0 14px',
+            }}
+            placeholder='Search…'
+          />
+        </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
           {Object.entries(categories).map(([category, data]) => {
             return (
