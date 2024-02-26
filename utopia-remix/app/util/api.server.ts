@@ -22,6 +22,7 @@ const responseHeaders: HeadersInit = {
   'Access-Control-Allow-Credentials': 'true',
   'Access-Control-Allow-Headers': 'content-type, origin, cookie',
   'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+  'Cache-control': 'no-cache',
 }
 
 export async function handleOptions(): Promise<TypedResponse<EmptyResponse>> {
