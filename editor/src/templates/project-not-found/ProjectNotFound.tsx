@@ -6,7 +6,7 @@ import { Button } from '../../uuiui/button'
 import { UTOPIA_BACKEND_BASE_URL } from '../../common/env-vars'
 
 const baseDomain = String(process.env.UTOPIA_DOMAIN)
-const PyramidLight404 = `${baseDomain}/editor/f404_pyramid_light.png?hash=${process.env.UTOPIA_SHA}`
+const PyramidLight404 = `${baseDomain}/editor/404_pyramid_light.png?hash=${process.env.UTOPIA_SHA}`
 
 export default function ProjectNotFound() {
   return (
