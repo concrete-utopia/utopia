@@ -32,7 +32,7 @@ import {
   useKeepReferenceEqualityIfPossible,
 } from '../../../utils/react-performance'
 import type { UtopiaJSXComponent } from '../../../core/shared/element-template'
-import { isJSXElement } from '../../../core/shared/element-template'
+import { emptyComments, isJSXElement, jsIdentifier } from '../../../core/shared/element-template'
 import { addUniquely, mapDropNulls } from '../../../core/shared/array-utils'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -128,9 +128,20 @@ export function useInspectorInfoForPropertyControl(
     onSingleUnsetValue(propertyPath, false)
   }, [onSingleUnsetValue, propertyPath])
 
+  let attributeExpression = maybeEitherToMaybe(rawValues[0]) // TODO handle multiselection
+
+  // this is placeholder code until we have the parser ready to give us JS_IDENTIFIERs
+  if (
+    attributeExpression != null &&
+    attributeExpression.type === 'ATTRIBUTE_OTHER_JAVASCRIPT' &&
+    attributeExpression.originalJavascript === 'testConst'
+  ) {
+    attributeExpression = jsIdentifier('testConst', 'testConst', emptyComments)
+  }
+
   return {
     value: parsedValue,
-    attributeExpression: maybeEitherToMaybe(rawValues[0]), // TODO handle multiselection
+    attributeExpression: attributeExpression,
     controlStatus,
     propertyStatus: propertyStatusToReturn,
     controlStyles,

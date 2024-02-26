@@ -129,20 +129,9 @@ const ControlForProp = React.memo((props: ControlForPropProps<BaseControlDescrip
     return null
   }
 
-  // TODO make this a const
-  let attributeExpression = props.propMetadata.attributeExpression
-
-  // this is placeholder code until we have the parser ready to give us JS_IDENTIFIERs
-  if (
-    attributeExpression != null &&
-    attributeExpression.type === 'ATTRIBUTE_OTHER_JAVASCRIPT' &&
-    attributeExpression.originalJavascript === 'cica'
-  ) {
-    attributeExpression = jsIdentifier('cica', 'cica', emptyComments)
-  }
+  const attributeExpression = props.propMetadata.attributeExpression
 
   if (attributeExpression != null && attributeExpression.type === 'JS_IDENTIFIER') {
-    // Cartouche!
     return (
       <IdentifierExpressionCartoucheControl
         name={attributeExpression.name}
