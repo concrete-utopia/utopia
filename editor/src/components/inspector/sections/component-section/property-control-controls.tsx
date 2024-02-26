@@ -801,9 +801,19 @@ export const IdentifierExpressionCartoucheControl = React.memo(
         <div
           style={{
             flex: 1,
+            /* Standard CSS ellipsis */
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+
+            /* Beginning of string */
+            direction: 'rtl',
+            textAlign: 'left',
           }}
         >
           {props.contents}
+          &lrm;
+          {/* the &lrm; non-printing character is added to fix the punctuation marks disappearing because of direction: rtl */}
         </div>
         {/* TODO needs a better X icon! */}
         <div>⨉</div>

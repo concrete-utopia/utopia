@@ -398,7 +398,12 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
         variant='<--1fr--><--1fr-->|-18px-|'
       >
         {propertyLabel}
-        <div ref={dataPickerButtonData.setReferenceElement}>
+        <div
+          style={{
+            minWidth: 0, // this ensures that the div can never expand the allocated grid space
+          }}
+          ref={dataPickerButtonData.setReferenceElement}
+        >
           <ControlForProp
             propPath={propPath}
             propName={propName}
