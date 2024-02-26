@@ -1,5 +1,8 @@
-export function multiplayerInitialsFromName(name: string): string {
-  const baseName = name.trim().toUpperCase()
+export const UnknownPlayerName = 'Unknown'
+
+export function multiplayerInitialsFromName(name: string | null): string {
+  const nameOrUnknown = name ?? UnknownPlayerName
+  const baseName = nameOrUnknown.trim().toUpperCase()
 
   const words = baseName.split(/\s+/)
   if (words.length >= 2) {
