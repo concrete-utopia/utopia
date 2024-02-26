@@ -8,6 +8,8 @@ import {
   DotsHorizontalIcon,
   HamburgerMenuIcon,
   MagnifyingGlassIcon,
+  TrashIcon,
+  CubeIcon,
 } from '@radix-ui/react-icons'
 import React from 'react'
 import { LoaderFunctionArgs, json } from '@remix-run/node'
@@ -43,9 +45,9 @@ function isCategory(category: unknown): category is Category {
 
 export type Category = (typeof Categories)[number]
 
-const categories: { [key in Category]: { name: string } } = {
-  allProjects: { name: 'All My Projects' },
-  trash: { name: 'Trash' },
+const categories: { [key in Category]: { name: string; icon: React.ReactNode } } = {
+  allProjects: { name: 'All My Projects', icon: <CubeIcon /> },
+  trash: { name: 'Trash', icon: <TrashIcon /> },
 }
 
 const MarginSize = 30
@@ -203,6 +205,8 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
             flexDirection: 'row',
             alignItems: 'center',
             borderBottom: '1px solid gray',
+            padding: '0px 14px',
+            gap: 10,
           }}
         >
           <MagnifyingGlassIcon />
@@ -219,10 +223,6 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
               outline: 'none',
               color: 'grey',
               height: SidebarRowHeight,
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              padding: '0 14px',
             }}
             placeholder='Search…'
           />
@@ -237,6 +237,7 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
                 })}
                 onClick={handleSelectCategory(category)}
               >
+                {data.icon}
                 <span>{data.name}</span>
               </button>
             )
