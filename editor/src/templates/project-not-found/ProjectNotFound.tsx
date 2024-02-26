@@ -2,6 +2,7 @@
 /** @jsx jsx */
 import React from 'react'
 import { jsx } from '@emotion/react'
+import { Button } from '../../uuiui/button'
 import { UTOPIA_BACKEND_BASE_URL } from '../../common/env-vars'
 
 const PyramidLight404 = `${process.env.UTOPIA_DOMAIN}/editor/404_pyramid_light.png?hash=${process.env.UTOPIA_SHA}`
@@ -48,7 +49,7 @@ export default function ProjectNotFound() {
           rel='noopener noreferrer'
           style={{ textDecoration: 'none' }}
         >
-          <div
+          <Button
             css={{
               fontSize: '18px',
               display: 'flex',
@@ -65,7 +66,7 @@ export default function ProjectNotFound() {
             }}
           >
             Return Home
-          </div>
+          </Button>
         </a>
       </div>
     </div>
