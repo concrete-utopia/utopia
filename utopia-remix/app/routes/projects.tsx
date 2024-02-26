@@ -547,50 +547,20 @@ const NoProjectsMessage = React.memo(() => {
 
   const categoryContent = {
     searchResults: {
-      graphic: 'url(/assets/utopium.png)',
-      title: 'No projects found!',
-      subtitle: `But ${searchQuery} could be an interesting app...`,
+      subtitle: 'No projects found.',
     },
     allProjects: {
-      graphic: 'url(/assets/utopium.png)',
-      title: 'You have no projects!',
       subtitle: 'Projects you create or open will show up here.',
     },
     trash: {
-      graphic: 'url(/assets/trash-can.png)',
-      title: 'Your trash is empty!',
       subtitle: 'Deleted projects are kept here until you destroy them for good.',
     },
   }
 
-  const { graphic, title, subtitle } =
+  const { subtitle } =
     searchQuery !== '' ? categoryContent.searchResults : categoryContent[selectedCategory] || {}
 
-  return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexGrow: 1,
-        gap: 20,
-      }}
-    >
-      <div
-        style={{
-          height: 140,
-          width: 100,
-          backgroundSize: '100px',
-          backgroundRepeat: 'no-repeat',
-          backgroundPositionY: 'bottom',
-          backgroundImage: graphic,
-        }}
-      />
-      <div style={{ fontSize: 16, fontWeight: 600 }}>{title}</div>
-      <div>{subtitle}</div>
-    </div>
-  )
+  return <div style={{ padding: '0px 10px' }}>{subtitle}</div>
 })
 NoProjectsMessage.displayName = 'NoProjectsMessage'
 
