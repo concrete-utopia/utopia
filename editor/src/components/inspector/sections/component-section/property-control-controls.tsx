@@ -60,6 +60,11 @@ import {
 } from '../../../custom-code/code-file'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { HtmlPreview, ImagePreview } from './property-content-preview'
+import {
+  JSElementAccess,
+  JSIdentifier,
+  JSPropertyAccess,
+} from '../../../../core/shared/element-template'
 
 export interface ControlForPropProps<T extends BaseControlDescription> {
   propPath: PropertyPath
@@ -766,8 +771,8 @@ export const Matrix4PropertyControl = React.memo(
 )
 
 interface IdentifierExpressionCartoucheControlProps {
-  name: string
-  propPath: PropertyPath
+  contents: string
+  matchType: 'full' | 'partial'
   onOpenDataPicker: () => void
 }
 export const IdentifierExpressionCartoucheControl = React.memo(
@@ -777,8 +782,9 @@ export const IdentifierExpressionCartoucheControl = React.memo(
         style={{
           cursor: 'pointer',
           gap: 6,
-          color: colorTheme.bg1.value,
-          backgroundColor: colorTheme.primary.value,
+          color: props.matchType === 'full' ? colorTheme.bg1.value : colorTheme.primary.value,
+          backgroundColor:
+            props.matchType === 'full' ? colorTheme.primary.value : colorTheme.primary10.value,
           padding: '2px 6px',
           borderRadius: 4,
         }}
@@ -797,7 +803,7 @@ export const IdentifierExpressionCartoucheControl = React.memo(
             flex: 1,
           }}
         >
-          {props.name}
+          {props.contents}
         </div>
         {/* TODO needs a better X icon! */}
         <div>⨉</div>

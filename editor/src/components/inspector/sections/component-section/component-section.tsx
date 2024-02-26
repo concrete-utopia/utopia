@@ -101,6 +101,7 @@ import {
 } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import {
+  ModifiableAttribute,
   getJSExpressionAtPath,
   getJSXAttributesAtPath,
 } from '../../../../core/shared/jsx-attributes'
@@ -131,14 +132,33 @@ const ControlForProp = React.memo((props: ControlForPropProps<BaseControlDescrip
 
   const attributeExpression = props.propMetadata.attributeExpression
 
-  if (attributeExpression != null && attributeExpression.type === 'JS_IDENTIFIER') {
-    return (
-      <IdentifierExpressionCartoucheControl
-        name={attributeExpression.name}
-        propPath={props.propPath}
-        onOpenDataPicker={props.onOpenDataPicker}
-      />
-    )
+  if (attributeExpression != null) {
+    if (
+      attributeExpression.type === 'JS_IDENTIFIER' ||
+      attributeExpression.type === 'JS_PROPERTY_ACCESS' ||
+      attributeExpression.type === 'JS_ELEMENT_ACCESS'
+    ) {
+      return (
+        <IdentifierExpressionCartoucheControl
+          contents={attributeExpression.originalJavascript}
+          matchType='full'
+          onOpenDataPicker={props.onOpenDataPicker}
+        />
+      )
+    }
+
+    if (
+      attributeExpression.type === 'ATTRIBUTE_OTHER_JAVASCRIPT' ||
+      attributeExpression.type === 'JSX_MAP_EXPRESSION'
+    ) {
+      return (
+        <IdentifierExpressionCartoucheControl
+          contents={attributeExpression.originalJavascript}
+          matchType='partial'
+          onOpenDataPicker={props.onOpenDataPicker}
+        />
+      )
+    }
   }
 
   switch (controlDescription.control) {
