@@ -368,60 +368,58 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
             <div style={{ flex: 1 }}>{categories[selectedCategory].name}</div>,
           )}
         </div>
+        {when(
+          projects.length > 0,
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 10,
+            }}
+          >
+            <CategoryActions projects={projects} />
+          </div>,
+        )}
       </div>
-
       {when(
-        projects.length > 0,
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 10,
-          }}
-        >
-          <CategoryActions projects={projects} />
-          {when(
-            projects.length > 1,
-            <div style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
-              <DropdownMenuRoot>
-                <DropdownMenuTrigger asChild>
-                  <div
-                    className={button()}
-                    style={{
-                      justifyContent: 'flex-end',
-                      gap: 10,
-                    }}
-                  >
-                    <div>{convertToTitleCase(sortCriteria)} </div>
-                    <div>{sortAscending ? '↑' : '↓'}</div>
-                  </div>
-                </DropdownMenuTrigger>
-                <SortingContextMenu />
-              </DropdownMenuRoot>
-              <div style={{ display: 'flex', flexDirection: 'row', gap: 1 }}>
-                <HamburgerMenuIcon
-                  onClick={() => {
-                    setGridView(false)
-                  }}
-                  className={button({
-                    size: 'square',
-                    color: !gridView ? 'selected' : 'transparent',
-                  })}
-                />
-
-                <DashboardIcon
-                  onClick={() => {
-                    setGridView(true)
-                  }}
-                  className={button({
-                    size: 'square',
-                    color: gridView ? 'selected' : 'transparent',
-                  })}
-                />
+        projects.length > 1,
+        <div style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
+          <DropdownMenuRoot>
+            <DropdownMenuTrigger asChild>
+              <div
+                className={button()}
+                style={{
+                  justifyContent: 'flex-end',
+                  gap: 10,
+                }}
+              >
+                <div>{convertToTitleCase(sortCriteria)} </div>
+                <div>{sortAscending ? '↑' : '↓'}</div>
               </div>
-            </div>,
-          )}
+            </DropdownMenuTrigger>
+            <SortingContextMenu />
+          </DropdownMenuRoot>
+          <div style={{ display: 'flex', flexDirection: 'row', gap: 1 }}>
+            <HamburgerMenuIcon
+              onClick={() => {
+                setGridView(false)
+              }}
+              className={button({
+                size: 'square',
+                color: !gridView ? 'selected' : 'transparent',
+              })}
+            />
+            <DashboardIcon
+              onClick={() => {
+                setGridView(true)
+              }}
+              className={button({
+                size: 'square',
+                color: gridView ? 'selected' : 'transparent',
+              })}
+            />
+          </div>
         </div>,
       )}
     </div>
@@ -481,6 +479,7 @@ const ProjectCards = React.memo(
 
     const selectedProjectId = useProjectsStore((store) => store.selectedProjectId)
     const setSelectedProjectId = useProjectsStore((store) => store.setSelectedProjectId)
+    const selectedCategory = useProjectsStore((store) => store.selectedCategory)
 
     const handleProjectSelect = React.useCallback(
       (project: ProjectWithoutContent) =>
@@ -490,11 +489,37 @@ const ProjectCards = React.memo(
 
     return (
       <>
-        {!gridView ? (
+        {when(
+          projects.length === 0 && selectedCategory === 'trash',
           <div
             style={{
               display: 'flex',
               flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexGrow: 1,
+              gap: 20,
+            }}
+          >
+            <div
+              style={{
+                height: 140,
+                width: 100,
+                backgroundSize: '100px',
+                backgroundRepeat: 'no-repeat',
+                backgroundImage: 'url(/assets/trash-can.png)',
+              }}
+            />
+            <div style={{ fontSize: 16, fontWeight: 600 }}>Your trash is empty!</div>
+            <div>
+              Deleted projects are kept here until you destroy them <i>for good.</i>
+            </div>
+          </div>,
+        )}
+        {when(
+          projects.length > 0 && !gridView,
+          <div
+            style={{
               flexGrow: 1,
               overflowY: 'scroll',
               scrollbarColor: 'lightgrey transparent',
@@ -510,8 +535,10 @@ const ProjectCards = React.memo(
                 collaborators={collaborators[project.proj_id]}
               />
             ))}
-          </div>
-        ) : (
+          </div>,
+        )}
+        {when(
+          projects.length > 0 && gridView,
           <div
             style={{
               display: 'flex',
@@ -533,12 +560,13 @@ const ProjectCards = React.memo(
                 collaborators={collaborators[project.proj_id]}
               />
             ))}
-          </div>
+          </div>,
         )}
       </>
     )
   },
 )
+
 ProjectCards.displayName = 'ProjectCards'
 
 const ProjectCard = React.memo(
@@ -714,8 +742,10 @@ const ProjectRow = React.memo(
                       borderRadius: '100%',
                       width: 24,
                       height: 24,
+                      backgroundColor: '#0075F9',
                       backgroundImage: `url("${collaborator.avatar}")`,
                       backgroundSize: 'cover',
+                      color: 'white',
                       display: 'flex',
                       justifyContent: 'center',
                       alignItems: 'center',
