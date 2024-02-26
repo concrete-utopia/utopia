@@ -33,7 +33,7 @@ specifiers:
   eslint-plugin-jsx-a11y: 6.7.1
   eslint-plugin-react: 7.33.2
   eslint-plugin-react-hooks: 4.6.0
-  identity-obj-proxy: ^3.0.0
+  identity-obj-proxy: 3.0.0
   isbot: '4'
   jest: 29.7.0
   moment: 2.30.1
