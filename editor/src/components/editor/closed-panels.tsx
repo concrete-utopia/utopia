@@ -4,13 +4,11 @@
 import { jsx } from '@emotion/react'
 import React, { useState } from 'react'
 import type { TooltipProps } from '../../uuiui'
-import { UtopiaStyles, UtopiaTheme, colorTheme } from '../../uuiui'
+import { UtopiaStyles, colorTheme } from '../../uuiui'
 import { FlexColumn, Icn, SquareButton, Tooltip as TooltipWithoutSpanFixme } from '../../uuiui'
 import { useDispatch } from './store/dispatch-context'
 import { Substores, useEditorState } from './store/store-hook'
 import { togglePanel } from './actions/action-creators'
-import { stopPropagation } from '../inspector/common/inspector-utils'
-import { setFocus } from '../common/actions'
 import { useAtom } from 'jotai'
 import { GridPanelsStateAtom } from '../canvas/grid-panels-state'
 import type { StoredLayout, StoredPanel } from '../canvas/stored-layout'
@@ -77,14 +75,6 @@ export const ClosedPanels = React.memo((props: { side: 'left' | 'right' }) => {
     [dispatch],
   )
 
-  const focusCanvasOnMouseDown = React.useCallback(
-    (event: React.MouseEvent<Element>) => {
-      stopPropagation(event)
-      dispatch([setFocus('canvas')], 'everyone')
-    },
-    [dispatch],
-  )
-
   const [isVisible, setIsVisible] = useState(false)
   const setIsVisibleTrue = React.useCallback(() => {
     setIsVisible(true)
@@ -97,7 +87,7 @@ export const ClosedPanels = React.memo((props: { side: 'left' | 'right' }) => {
   return (
     <FlexColumn
       style={{
-        pointerEvents: 'initial',
+        pointerEvents: 'auto',
         alignItems: props.side === 'left' ? 'flex-start' : 'flex-end',
         justifyContent: 'space-between',
         height: '100%',
@@ -106,14 +96,11 @@ export const ClosedPanels = React.memo((props: { side: 'left' | 'right' }) => {
     >
       <FlexColumn
         // Mouse events should never go through this component.
-        onClick={stopPropagation}
-        onMouseDown={focusCanvasOnMouseDown}
-        onMouseUp={stopPropagation}
         style={{
           gap: 10,
           height: 300,
           width: 32,
-          pointerEvents: 'initial',
+          pointerEvents: 'auto',
         }}
         onMouseEnter={setIsVisibleTrue}
         onMouseLeave={setIsVisibleFalse}
