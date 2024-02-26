@@ -546,7 +546,7 @@ const NoProjectsMessage = React.memo(() => {
 
   const categoryContent = {
     allProjects: {
-      graphic: 'url(/assets/trash-can.png)',
+      graphic: 'url(/assets/utopium.png)',
       title: 'You have no projects!',
       subtitle: 'Projects you create or open will show up here.',
     },
@@ -576,6 +576,7 @@ const NoProjectsMessage = React.memo(() => {
           width: 100,
           backgroundSize: '100px',
           backgroundRepeat: 'no-repeat',
+          backgroundPositionY: 'bottom',
           backgroundImage: graphic,
         }}
       />
