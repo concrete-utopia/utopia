@@ -136,6 +136,7 @@ import {
   getGithubRepoToLoad,
   LoadActionsDispatched,
 } from '../components/github/github-repository-clone-flow'
+import ProjectNotFound from './project-not-found/ProjectNotFound'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -810,12 +811,18 @@ const ProjectLoadError = ({ error }: { error: string }) => {
   )
 }
 
-const renderProjectNotFound = () => renderProjectLoadError('Project could not be found.')
-
 async function renderProjectLoadError(error: string): Promise<void> {
   const rootElement = document.getElementById(EditorID)
   if (rootElement != null) {
     const root = createRoot(rootElement)
     root.render(<ProjectLoadError error={error} />)
+  }
+}
+
+async function renderProjectNotFound(): Promise<void> {
+  const rootElement = document.getElementById(EditorID)
+  if (rootElement != null) {
+    const root = createRoot(rootElement)
+    root.render(<ProjectNotFound />)
   }
 }
