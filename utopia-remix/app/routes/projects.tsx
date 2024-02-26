@@ -323,105 +323,110 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
   }
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        height: 40,
-        flexShrink: 0,
-      }}
-    >
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
       <div
         style={{
           display: 'flex',
-          flexDirection: 'row',
           alignItems: 'center',
-          gap: 10,
-          padding: '5px 10px',
+          justifyContent: 'space-between',
+          height: 40,
+          flexShrink: 0,
         }}
       >
-        <div style={{ fontSize: 16, fontWeight: 600 }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 10,
+            padding: '5px 10px',
+          }}
+        >
+          <div style={{ fontSize: 16, fontWeight: 600 }}>
+            {when(
+              searchQuery !== '',
+              <span>
+                <span style={{ color: 'gray', paddingRight: 3 }}>
+                  <span
+                    onClick={() => {
+                      setSearchQuery('')
+                      const inputElement = document.getElementById(
+                        'search-input',
+                      ) as HTMLInputElement
+                      if (inputElement) {
+                        inputElement.value = ''
+                      }
+                    }}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    ←{' '}
+                  </span>{' '}
+                  Search results for
+                </span>
+                <span> "{searchQuery}"</span>
+              </span>,
+            )}
+            {when(
+              searchQuery === '',
+              <div style={{ flex: 1 }}>{categories[selectedCategory].name}</div>,
+            )}
+          </div>
           {when(
-            searchQuery !== '',
-            <span>
-              <span style={{ color: 'gray', paddingRight: 3 }}>
-                <span
-                  onClick={() => {
-                    setSearchQuery('')
-                    const inputElement = document.getElementById('search-input') as HTMLInputElement
-                    if (inputElement) {
-                      inputElement.value = ''
-                    }
-                  }}
-                  style={{ cursor: 'pointer' }}
-                >
-                  ←{' '}
-                </span>{' '}
-                Search results for
-              </span>
-              <span> "{searchQuery}"</span>
-            </span>,
-          )}
-          {when(
-            searchQuery === '',
-            <div style={{ flex: 1 }}>{categories[selectedCategory].name}</div>,
+            projects.length > 0,
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 10,
+              }}
+            >
+              <CategoryActions projects={projects} />
+            </div>,
           )}
         </div>
         {when(
-          projects.length > 0,
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 10,
-            }}
-          >
-            <CategoryActions projects={projects} />
+          projects.length > 1,
+          <div style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
+            <DropdownMenuRoot>
+              <DropdownMenuTrigger asChild>
+                <div
+                  className={button()}
+                  style={{
+                    justifyContent: 'flex-end',
+                    gap: 10,
+                  }}
+                >
+                  <div>{convertToTitleCase(sortCriteria)} </div>
+                  <div>{sortAscending ? '↑' : '↓'}</div>
+                </div>
+              </DropdownMenuTrigger>
+              <SortingContextMenu />
+            </DropdownMenuRoot>
+            <div style={{ display: 'flex', flexDirection: 'row', gap: 1 }}>
+              <HamburgerMenuIcon
+                onClick={() => {
+                  setGridView(false)
+                }}
+                className={button({
+                  size: 'square',
+                  color: !gridView ? 'selected' : 'transparent',
+                })}
+              />
+              <DashboardIcon
+                onClick={() => {
+                  setGridView(true)
+                }}
+                className={button({
+                  size: 'square',
+                  color: gridView ? 'selected' : 'transparent',
+                })}
+              />
+            </div>
           </div>,
         )}
       </div>
-      {when(
-        projects.length > 1,
-        <div style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
-          <DropdownMenuRoot>
-            <DropdownMenuTrigger asChild>
-              <div
-                className={button()}
-                style={{
-                  justifyContent: 'flex-end',
-                  gap: 10,
-                }}
-              >
-                <div>{convertToTitleCase(sortCriteria)} </div>
-                <div>{sortAscending ? '↑' : '↓'}</div>
-              </div>
-            </DropdownMenuTrigger>
-            <SortingContextMenu />
-          </DropdownMenuRoot>
-          <div style={{ display: 'flex', flexDirection: 'row', gap: 1 }}>
-            <HamburgerMenuIcon
-              onClick={() => {
-                setGridView(false)
-              }}
-              className={button({
-                size: 'square',
-                color: !gridView ? 'selected' : 'transparent',
-              })}
-            />
-            <DashboardIcon
-              onClick={() => {
-                setGridView(true)
-              }}
-              className={button({
-                size: 'square',
-                color: gridView ? 'selected' : 'transparent',
-              })}
-            />
-          </div>
-        </div>,
-      )}
+      {when(projects.length === 0, <NoProjectsMessage />)}
     </div>
   )
 })
@@ -488,7 +493,6 @@ const ProjectCards = React.memo(
 
     return (
       <>
-        {when(projects.length === 0, <NoProjectsMessage />)}
         {when(
           projects.length > 0 && !gridView,
           <div
