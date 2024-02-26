@@ -40,10 +40,24 @@ export function userToCollaborator(user: UserDetails): Collaborator {
   }
 }
 
-export const AccessLevels = {
+export const AccessLevel = {
   PRIVATE: 0,
   PUBLIC: 1,
   WITH_LINK: 2,
 } as const
 
-export type AccessLevel = (typeof AccessLevels)[keyof typeof AccessLevels]
+export type AccessLevel = (typeof AccessLevel)[keyof typeof AccessLevel]
+
+export const UserProjectPermission = {
+  CAN_VIEW_PROJECT: 0,
+  CAN_FORK_PROJECT: 1,
+  CAN_PLAY_PROJECT: 2,
+  CAN_EDIT_PROJECT: 3,
+  CAN_COMMENT_PROJECT: 4,
+  CAN_SHOW_PRESENCE: 5,
+  CAN_REQUEST_ACCESS: 6,
+  CAN_SEE_LIVE_CHANGES: 7,
+} as const
+
+export type UserProjectPermission =
+  (typeof UserProjectPermission)[keyof typeof UserProjectPermission]

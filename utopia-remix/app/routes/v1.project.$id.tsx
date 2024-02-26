@@ -3,10 +3,8 @@ import { proxy } from '../util/proxy.server'
 import { ensure, handle, handleOptions, requireUser } from '../util/api.server'
 import { Params } from '@remix-run/react'
 import { Status } from '../util/statusCodes.server'
-import {
-  UserProjectPermission,
-  hasUserProjectPermission,
-} from '~/services/permissionsService.server'
+import { hasUserProjectPermission } from '../services/permissionsService.server'
+import { UserProjectPermission } from '../types'
 
 export async function loader(args: LoaderFunctionArgs) {
   return handle(args, {

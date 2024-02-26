@@ -4,7 +4,7 @@ import { ensure, handle, requireUser } from '../util/api.server'
 import { Status } from '../util/statusCodes.server'
 import { getProjectAccess, setProjectAccess } from '../models/projectAccess.server'
 import { asNumber } from '../util/common'
-import { AccessLevel, AccessLevels } from '../types'
+import { AccessLevel } from '../types'
 
 export async function action(args: ActionFunctionArgs) {
   return handle(args, { POST: handleChangeProjectAccess })
@@ -19,7 +19,7 @@ export async function handleChangeProjectAccess(req: Request, params: Params<str
   const accessLevelNumber = asNumber(accessLevel) as AccessLevel
   ensure(!isNaN(accessLevelNumber), 'accessLevel is not a number', Status.BAD_REQUEST)
   ensure(
-    Object.values(AccessLevels).includes(accessLevelNumber),
+    Object.values(AccessLevel).includes(accessLevelNumber),
     'accessLevel is not a valid AccessLevel',
     Status.BAD_REQUEST,
   )
