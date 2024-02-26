@@ -1,4 +1,4 @@
-import { Prisma, Project } from 'prisma-client'
+import { Prisma, UserDetails } from 'prisma-client'
 
 const fullProject = Prisma.validator<Prisma.ProjectDefaultArgs>()({
   include: {
@@ -26,8 +26,8 @@ export type ProjectWithoutContent = Omit<FullProject, 'content'>
 
 export interface Collaborator {
   id: string
-  name: string
-  avatar: string
+  name: string | null
+  avatar: string | null
 }
 
 export type CollaboratorsByProject = { [projectId: string]: Collaborator[] }
@@ -36,4 +36,12 @@ export enum AccessLevel {
   PRIVATE,
   PUBLIC,
   WITH_LINK,
+}
+
+export function userToCollaborator(user: UserDetails): Collaborator {
+  return {
+    id: user.user_id,
+    name: user.name,
+    avatar: user.picture,
+  }
 }

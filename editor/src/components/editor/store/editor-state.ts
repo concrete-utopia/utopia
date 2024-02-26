@@ -185,6 +185,7 @@ import { Y } from '../../../core/shared/yjs'
 import { removeUnusedImportsForRemovedElement } from '../import-utils'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
 import type { CommentFilterMode } from '../../inspector/sections/comment-section'
+import type { Collaborator } from '../../../core/shared/multiplayer'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1486,6 +1487,7 @@ export interface EditorState {
   activeFrames: ActiveFrame[]
   commentFilterMode: CommentFilterMode
   forking: boolean
+  collaborators: Collaborator[]
 }
 
 export function editorState(
@@ -1569,6 +1571,7 @@ export function editorState(
   activeFrames: ActiveFrame[],
   commentFilterMode: CommentFilterMode,
   forking: boolean,
+  collaborators: Collaborator[],
 ): EditorState {
   return {
     id: id,
@@ -1651,6 +1654,7 @@ export function editorState(
     activeFrames: activeFrames,
     commentFilterMode: commentFilterMode,
     forking: forking,
+    collaborators: collaborators,
   }
 }
 
@@ -2549,6 +2553,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     activeFrames: [],
     commentFilterMode: 'all',
     forking: false,
+    collaborators: [],
   }
 }
 
@@ -2926,6 +2931,7 @@ export function editorModelFromPersistentModel(
     activeFrames: [],
     commentFilterMode: 'all',
     forking: false,
+    collaborators: [],
   }
   return editor
 }

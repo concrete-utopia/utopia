@@ -6,6 +6,7 @@ import {
   useErrorListener,
   useLostConnectionListener,
   useMutation,
+  useOthersListener,
   useStorage,
 } from '../../../liveblocks.config'
 import { isLoggedIn } from '../../common/user'
@@ -20,8 +21,14 @@ import { possiblyUniqueColor, type RemixPresence } from './multiplayer'
 import { PRODUCTION_ENV } from '../../common/env-vars'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { useDispatch } from '../../components/editor/store/dispatch-context'
-import { removeToast, showToast } from '../../components/editor/actions/action-creators'
+import {
+  removeToast,
+  setCollaborators,
+  showToast,
+} from '../../components/editor/actions/action-creators'
 import { notice } from '../../components/common/notice'
+import { getCollaborators, updateCollaborators } from '../../components/editor/server'
+import { assertNever } from './utils'
 
 /**
  * How often to perform heartbeat bumps on connections.
@@ -312,4 +319,58 @@ export function useLiveblocksConnectionListener() {
       dispatch([showToast(notice('Error connecting to other users', 'ERROR', false))])
     }
   })
+}
+
+export function useLoadCollaborators() {
+  const dispatch = useDispatch()
+
+  const projectId = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.id,
+    'useLoadCollaborators projectId',
+  )
+  const loginState = useEditorState(
+    Substores.userState,
+    (store) => store.userState.loginState,
+    'useLoadCollaborators loginState',
+  )
+
+  const otherCollaboratorIds = useEditorState(
+    Substores.multiplayer,
+    (store) => store.editor.collaborators.map((c) => c.id),
+    'useLoadCollaborators',
+  )
+
+  const getAndStoreCollaborators = React.useCallback(() => {
+    if (projectId == null) {
+      return
+    }
+    void getCollaborators(projectId).then((collaborators) => {
+      dispatch([setCollaborators(collaborators)])
+    })
+  }, [projectId, dispatch])
+
+  // when new users join or update, if they are not available in the collaborators array, refresh them.
+  useOthersListener((event) => {
+    switch (event.type) {
+      case 'enter':
+      case 'update':
+        if (!otherCollaboratorIds.includes(event.user.id)) {
+          void getAndStoreCollaborators()
+        }
+        break
+      case 'leave':
+      case 'reset':
+        break
+      default:
+        assertNever(event)
+    }
+  })
+
+  React.useEffect(() => {
+    if (!isLoggedIn(loginState) || projectId == null) {
+      return
+    }
+    void updateCollaborators(projectId).then(getAndStoreCollaborators)
+  }, [dispatch, projectId, loginState, getAndStoreCollaborators])
 }

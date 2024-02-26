@@ -219,6 +219,7 @@ import type {
   UpdateCodeFromCollaborationUpdate,
   SetCommentFilterMode,
   SetForking,
+  SetCollaborators,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -246,6 +247,7 @@ import type { PostActionChoice } from '../../canvas/canvas-strategies/post-actio
 import type { ProjectServerState } from '../store/project-server-state'
 import type { SetHuggingParentToFixed } from '../../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
 import type { CommentFilterMode } from '../../inspector/sections/comment-section'
+import type { Collaborator } from '../../../core/shared/multiplayer'
 
 export function clearSelection(): EditorAction {
   return {
@@ -1725,5 +1727,12 @@ export function setCommentFilterMode(commentFilterMode: CommentFilterMode): SetC
   return {
     action: 'SET_COMMENT_FILTER_MODE',
     commentFilterMode: commentFilterMode,
+  }
+}
+
+export function setCollaborators(collaborators: Collaborator[]): SetCollaborators {
+  return {
+    action: 'SET_COLLABORATORS',
+    collaborators: collaborators,
   }
 }
