@@ -176,6 +176,8 @@ const config = {
       'process.env.HOT_MODE': hot,
       'process.env.HMR': false,
       'process.env.REMIX_DEV_ORIGIN': isDev ? "'http://localhost:8000'" : 'undefined',
+      'process.env.UTOPIA_DOMAIN': BaseDomain,
+      'process.env.UTOPIA_SHA': process.env.UTOPIA_SHA ?? 'nocommit',
     }),
 
     // setting up the various process.env.VARIABLE replacements

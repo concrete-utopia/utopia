@@ -53,6 +53,8 @@ export default defineConfig(({ mode }) => {
       'process.env.GOOGLE_WEB_FONTS_KEY': `"${process.env.GOOGLE_WEB_FONTS_KEY}"`,
       'process.env.REACT_APP_COMMIT_HASH': `"${process.env.REACT_APP_COMMIT_HASH}"`,
       'process.env.HMR': mode === 'development' ? 'true' : 'false',
+      'process.env.UTOPIA_DOMAIN': isDevEnv ? '"http://localhost:8000"' : '""',
+      'process.env.UTOPIA_SHA': `"${process.env.REACT_APP_COMMIT_HASH}"`,
     },
     optimizeDeps: {
       // This is a workaround for an apparent issue in the vite react plugin, which leads to

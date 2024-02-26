@@ -1,6 +1,10 @@
+/** @jsxRuntime classic */
+/** @jsx jsx */
 import React from 'react'
-import PyramidLight404 from './404_pyramid_light.png'
+import { jsx } from '@emotion/react'
 import { UTOPIA_BACKEND_BASE_URL } from '../../common/env-vars'
+
+const PyramidLight404 = `${process.env.UTOPIA_DOMAIN}/editor/404_pyramid_light.png?hash=${process.env.UTOPIA_SHA}`
 
 export default function ProjectNotFound() {
   return (
@@ -34,11 +38,7 @@ export default function ProjectNotFound() {
           paddingBottom: '30px',
         }}
       >
-        <div
-          style={{ fontSize: '160px', fontWeight: 600, fontStyle: 'italic', lineHeight: 'normal' }}
-        >
-          404
-        </div>
+        <div style={{ fontSize: '160px', fontWeight: 600, fontStyle: 'italic' }}>404</div>
         <div style={{ fontSize: '42px' }}>Project not found.</div>
         <div style={{ fontSize: '22px', width: '430px', textAlign: 'center', lineHeight: '40px' }}>
           Either this project does not exist, or you do not have access to it.
@@ -49,7 +49,7 @@ export default function ProjectNotFound() {
           style={{ textDecoration: 'none' }}
         >
           <div
-            style={{
+            css={{
               fontSize: '18px',
               display: 'flex',
               alignItems: 'center',
@@ -59,9 +59,10 @@ export default function ProjectNotFound() {
               borderRadius: '90px',
               padding: '10px 30px',
               transition: 'background-color 0.3s',
+              '&:hover': {
+                backgroundColor: '#5DA9FF',
+              },
             }}
-            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#5DA9FF')}
-            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#0075f9')}
           >
             Return Home
           </div>
