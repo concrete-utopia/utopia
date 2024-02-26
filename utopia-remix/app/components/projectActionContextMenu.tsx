@@ -4,9 +4,10 @@ import React from 'react'
 import { useProjectsStore } from '../store'
 import { contextMenuDropdown, contextMenuItem } from '../styles/contextMenu.css'
 import { sprinkles } from '../styles/sprinkles.css'
-import { AccessLevel, ProjectWithoutContent } from '../types'
+import { ProjectWithoutContent } from '../types'
 import { assertNever } from '../util/assertNever'
 import { projectEditorLink } from '../util/links'
+import { AccessLevel, AccessLevels } from '../types'
 
 type ContextMenuEntry =
   | {
@@ -18,7 +19,7 @@ type ContextMenuEntry =
 export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWithoutContent }) => {
   const fetcher = useFetcher()
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
-  let accessLevel = project.ProjectAccess?.access_level ?? AccessLevel.PRIVATE
+  let accessLevel = project.ProjectAccess?.access_level ?? AccessLevels.PRIVATE
 
   const deleteProject = React.useCallback(
     (projectId: string) => {
@@ -105,11 +106,11 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
             },
           },
           {
-            text: accessLevel === AccessLevel.PUBLIC ? 'Make Private' : 'Make Public',
+            text: accessLevel === AccessLevels.PUBLIC ? 'Make Private' : 'Make Public',
             onClick: (project) => {
               changeAccessLevel(
                 project.proj_id,
-                accessLevel === AccessLevel.PUBLIC ? AccessLevel.PRIVATE : AccessLevel.PUBLIC,
+                accessLevel === AccessLevels.PUBLIC ? AccessLevels.PRIVATE : AccessLevels.PUBLIC,
               )
             },
           },

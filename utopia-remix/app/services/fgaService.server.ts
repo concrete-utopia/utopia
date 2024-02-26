@@ -1,5 +1,5 @@
 import { CredentialsMethod, OpenFgaClient } from '@openfga/sdk'
-import { AccessLevel } from '~/types'
+import { AccessLevel, AccessLevels } from '../types'
 
 const fgaClient = new OpenFgaClient({
   apiScheme: 'https',
@@ -17,9 +17,9 @@ const fgaClient = new OpenFgaClient({
   },
 })
 
-export async function updateAccessLevel(projectId: string, accessLevel: number) {
+export async function updateAccessLevel(projectId: string, accessLevel: AccessLevel) {
   switch (accessLevel) {
-    case AccessLevel.PUBLIC:
+    case AccessLevels.PUBLIC:
       await fgaClient.write({
         writes: [
           {
@@ -30,7 +30,7 @@ export async function updateAccessLevel(projectId: string, accessLevel: number) 
         ],
       })
       break
-    case AccessLevel.PRIVATE:
+    case AccessLevels.PRIVATE:
       await fgaClient.write({
         deletes: [
           {

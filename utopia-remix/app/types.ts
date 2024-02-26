@@ -32,12 +32,6 @@ export interface Collaborator {
 
 export type CollaboratorsByProject = { [projectId: string]: Collaborator[] }
 
-export enum AccessLevel {
-  PRIVATE,
-  PUBLIC,
-  WITH_LINK,
-}
-
 export function userToCollaborator(user: UserDetails): Collaborator {
   return {
     id: user.user_id,
@@ -45,3 +39,11 @@ export function userToCollaborator(user: UserDetails): Collaborator {
     avatar: user.picture,
   }
 }
+
+export const AccessLevels = {
+  PRIVATE: 0,
+  PUBLIC: 1,
+  WITH_LINK: 2,
+} as const
+
+export type AccessLevel = (typeof AccessLevels)[keyof typeof AccessLevels]

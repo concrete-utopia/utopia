@@ -19,7 +19,13 @@ import { button } from '../styles/button.css'
 import { newProjectButton } from '../styles/newProjectButton.css'
 import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
 import { sprinkles } from '../styles/sprinkles.css'
-import { AccessLevel, Collaborator, CollaboratorsByProject, ProjectWithoutContent } from '../types'
+import {
+  AccessLevel,
+  AccessLevels,
+  Collaborator,
+  CollaboratorsByProject,
+  ProjectWithoutContent,
+} from '../types'
 import { requireUser } from '../util/api.server'
 import { assertNever } from '../util/assertNever'
 import { projectEditorLink } from '../util/links'
@@ -654,7 +660,9 @@ const ProjectCard = React.memo(
             <div style={{ fontWeight: 600, display: 'flex', gap: '10px', alignItems: 'center' }}>
               <span>{project.title}</span>
               <ProjectBadge
-                accessLevel={project.ProjectAccess?.access_level || AccessLevel.PRIVATE}
+                accessLevel={
+                  (project.ProjectAccess?.access_level as AccessLevel) || AccessLevels.PRIVATE
+                }
               />
             </div>
             <div>{moment(project.modified_at).fromNow()}</div>
@@ -734,7 +742,9 @@ const ProjectRow = React.memo(
             >
               <span>{project.title}</span>
               <ProjectBadge
-                accessLevel={project.ProjectAccess?.access_level || AccessLevel.PRIVATE}
+                accessLevel={
+                  (project.ProjectAccess?.access_level as AccessLevel) || AccessLevels.PRIVATE
+                }
               />
             </div>
             <div style={{ width: 220 }}>{moment(project.modified_at).fromNow()}</div>
@@ -806,11 +816,11 @@ ProjectCardActions.displayName = 'ProjectCardActions'
 const ProjectBadge = React.memo(({ accessLevel }: { accessLevel: AccessLevel }) => {
   const [color, backgroundColor] = React.useMemo(() => {
     switch (accessLevel) {
-      case AccessLevel.PRIVATE:
+      case AccessLevels.PRIVATE:
         return ['rgb(209 78 0)', 'rgb(249 144 0 / 15%)']
-      case AccessLevel.PUBLIC:
+      case AccessLevels.PUBLIC:
         return ['rgb(0 130 77)', 'rgb(0 155 0 / 9%)']
-      case AccessLevel.WITH_LINK:
+      case AccessLevels.WITH_LINK:
         return ['rgb(0 114 222)', 'rgb(0 132 241 / 9%)']
       default:
         return ['gray', 'lightgray']
@@ -819,11 +829,11 @@ const ProjectBadge = React.memo(({ accessLevel }: { accessLevel: AccessLevel }) 
 
   const text = React.useMemo(() => {
     switch (accessLevel) {
-      case AccessLevel.PRIVATE:
+      case AccessLevels.PRIVATE:
         return 'Private'
-      case AccessLevel.PUBLIC:
+      case AccessLevels.PUBLIC:
         return 'Public'
-      case AccessLevel.WITH_LINK:
+      case AccessLevels.WITH_LINK:
         return 'With Link'
       default:
         return 'Unknown'

@@ -1,4 +1,4 @@
-import { AccessLevel } from '../types'
+import { AccessLevel, AccessLevels } from '../types'
 import { prisma } from '../db.server'
 import * as fgaService from '../services/fgaService.server'
 
@@ -29,7 +29,7 @@ export async function getProjectAccess(params: { projectId: string }): Promise<A
       project_id: params.projectId,
     },
   })
-  return projectAccess?.access_level ?? null
+  return (projectAccess?.access_level as AccessLevel) ?? null
 }
 
 export async function getProjectsAccess(params: {
@@ -43,7 +43,8 @@ export async function getProjectsAccess(params: {
 
   let projectAccess: Record<string, AccessLevel> = {}
   for (const project of projects) {
-    projectAccess[project.proj_id] = project.ProjectAccess?.access_level ?? AccessLevel.PRIVATE
+    projectAccess[project.proj_id] =
+      (project.ProjectAccess?.access_level as AccessLevel) ?? AccessLevels.PRIVATE
   }
   return projectAccess
 }
