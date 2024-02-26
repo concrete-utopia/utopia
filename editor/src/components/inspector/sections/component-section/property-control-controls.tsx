@@ -68,6 +68,7 @@ export interface ControlForPropProps<T extends BaseControlDescription> {
   propMetadata: InspectorInfoWithRawValue<any>
   setGlobalCursor: (cursor: CSSCursor | null) => void
   focusOnMount: boolean
+  onOpenDataPicker: () => void
 }
 
 export const CheckboxPropertyControl = React.memo(
@@ -767,6 +768,7 @@ export const Matrix4PropertyControl = React.memo(
 interface IdentifierExpressionCartoucheControlProps {
   name: string
   propPath: PropertyPath
+  onOpenDataPicker: () => void
 }
 export const IdentifierExpressionCartoucheControl = React.memo(
   (props: IdentifierExpressionCartoucheControlProps) => {
@@ -779,6 +781,7 @@ export const IdentifierExpressionCartoucheControl = React.memo(
           padding: '2px 6px',
           borderRadius: 4,
         }}
+        onClick={props.onOpenDataPicker}
       >
         <div
           style={{

@@ -147,6 +147,7 @@ const ControlForProp = React.memo((props: ControlForPropProps<BaseControlDescrip
       <IdentifierExpressionCartoucheControl
         name={attributeExpression.name}
         propPath={props.propPath}
+        onOpenDataPicker={props.onOpenDataPicker}
       />
     )
   }
@@ -252,6 +253,7 @@ function useDataPickerButton(selectedElements: Array<ElementPath>, propPath: Pro
 
   const [popupIsOpen, setPopupIsOpen] = React.useState(false)
   const togglePopup = React.useCallback(() => setPopupIsOpen((v) => !v), [])
+  const openPopup = React.useCallback(() => setPopupIsOpen(true), [])
   const closePopup = React.useCallback(() => setPopupIsOpen(false), [])
 
   const onClick = React.useCallback(
@@ -309,6 +311,7 @@ function useDataPickerButton(selectedElements: Array<ElementPath>, propPath: Pro
     DataPickerOpener,
     DataPickerComponent,
     setReferenceElement,
+    openPopup,
   }
 }
 
@@ -394,6 +397,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
             propMetadata={propMetadata}
             setGlobalCursor={props.setGlobalCursor}
             focusOnMount={props.focusOnMount}
+            onOpenDataPicker={dataPickerButtonData.openPopup}
           />
         </div>
         {when(isBaseIndentationLevel(props), dataPickerButtonData.DataPickerOpener)}
