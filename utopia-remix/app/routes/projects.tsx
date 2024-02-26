@@ -479,7 +479,6 @@ const ProjectCards = React.memo(
 
     const selectedProjectId = useProjectsStore((store) => store.selectedProjectId)
     const setSelectedProjectId = useProjectsStore((store) => store.setSelectedProjectId)
-    const selectedCategory = useProjectsStore((store) => store.selectedCategory)
 
     const handleProjectSelect = React.useCallback(
       (project: ProjectWithoutContent) =>
@@ -489,33 +488,7 @@ const ProjectCards = React.memo(
 
     return (
       <>
-        {when(
-          projects.length === 0 && selectedCategory === 'trash',
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexGrow: 1,
-              gap: 20,
-            }}
-          >
-            <div
-              style={{
-                height: 140,
-                width: 100,
-                backgroundSize: '100px',
-                backgroundRepeat: 'no-repeat',
-                backgroundImage: 'url(/assets/trash-can.png)',
-              }}
-            />
-            <div style={{ fontSize: 16, fontWeight: 600 }}>Your trash is empty!</div>
-            <div>
-              Deleted projects are kept here until you destroy them <i>for good.</i>
-            </div>
-          </div>,
-        )}
+        {when(projects.length === 0, <NoProjectsMessage />)}
         {when(
           projects.length > 0 && !gridView,
           <div
@@ -566,8 +539,52 @@ const ProjectCards = React.memo(
     )
   },
 )
-
 ProjectCards.displayName = 'ProjectCards'
+
+const NoProjectsMessage = React.memo(() => {
+  const selectedCategory = useProjectsStore((store) => store.selectedCategory)
+
+  const categoryContent = {
+    allProjects: {
+      graphic: 'url(/assets/trash-can.png)',
+      title: 'You have no projects!',
+      subtitle: 'Projects you create or open will show up here.',
+    },
+    trash: {
+      graphic: 'url(/assets/trash-can.png)',
+      title: 'Your trash is empty!',
+      subtitle: 'Deleted projects are kept here until you destroy them for good.',
+    },
+  }
+
+  const { graphic, title, subtitle } = categoryContent[selectedCategory] || {}
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexGrow: 1,
+        gap: 20,
+      }}
+    >
+      <div
+        style={{
+          height: 140,
+          width: 100,
+          backgroundSize: '100px',
+          backgroundRepeat: 'no-repeat',
+          backgroundImage: graphic,
+        }}
+      />
+      <div style={{ fontSize: 16, fontWeight: 600 }}>{title}</div>
+      <div>{subtitle}</div>
+    </div>
+  )
+})
+NoProjectsMessage.displayName = 'NoProjectsMessage'
 
 const ProjectCard = React.memo(
   ({
