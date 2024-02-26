@@ -18,6 +18,7 @@ export default function ProjectNotFound() {
         justifyContent: 'center',
         gap: '70px',
         fontFamily: 'Inter, sans-serif',
+        lineHeight: 'initial',
       }}
     >
       <div
@@ -51,6 +52,8 @@ export default function ProjectNotFound() {
         >
           <Button
             css={{
+              boxSizing: 'border-box',
+              height: 'auto',
               fontSize: '18px',
               display: 'flex',
               alignItems: 'center',
