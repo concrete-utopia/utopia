@@ -80,6 +80,7 @@ import {
   VectorPropertyControl,
   HtmlInputPropertyControl,
   JSXPropertyControl,
+  IdentifierExpressionCartoucheControl,
 } from './property-control-controls'
 import { ExpandableIndicator } from '../../../navigator/navigator-item/expandable-indicator'
 import { unless, when } from '../../../../utils/react-conditionals'
@@ -142,7 +143,12 @@ const ControlForProp = React.memo((props: ControlForPropProps<BaseControlDescrip
 
   if (attributeExpression != null && attributeExpression.type === 'JS_IDENTIFIER') {
     // Cartouche!
-    return <span>'Cartouche!!'</span>
+    return (
+      <IdentifierExpressionCartoucheControl
+        name={attributeExpression.name}
+        propPath={props.propPath}
+      />
+    )
   }
 
   switch (controlDescription.control) {

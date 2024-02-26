@@ -36,6 +36,7 @@ import {
   FlexRow,
   UtopiaTheme,
   useColorTheme,
+  colorTheme,
 } from '../../../../uuiui'
 import type { CSSNumber } from '../../common/css-utils'
 import { printCSSNumber, cssNumber, defaultCSSColor } from '../../common/css-utils'
@@ -759,6 +760,44 @@ export const Matrix4PropertyControl = React.memo(
           />
         </FlexRow>
       </FlexColumn>
+    )
+  },
+)
+
+interface IdentifierExpressionCartoucheControlProps {
+  name: string
+  propPath: PropertyPath
+}
+export const IdentifierExpressionCartoucheControl = React.memo(
+  (props: IdentifierExpressionCartoucheControlProps) => {
+    return (
+      <FlexRow
+        style={{
+          gap: 6,
+          color: colorTheme.bg1.value,
+          backgroundColor: colorTheme.primary.value,
+          padding: '2px 6px',
+          borderRadius: 4,
+        }}
+      >
+        <div
+          style={{
+            width: 15,
+            height: 15,
+            borderRadius: 2,
+            backgroundColor: colorTheme.secondaryBlue.value,
+          }}
+        />
+        <div
+          style={{
+            flex: 1,
+          }}
+        >
+          {props.name}
+        </div>
+        {/* TODO needs a better X icon! */}
+        <div>⨉</div>
+      </FlexRow>
     )
   },
 )
