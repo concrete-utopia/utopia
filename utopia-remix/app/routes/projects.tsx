@@ -148,6 +148,7 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
   const setSelectedCategory = useProjectsStore((store) => store.setSelectedCategory)
   const setSelectedProjectId = useProjectsStore((store) => store.setSelectedProjectId)
+  const [isSearchFocused, setIsSearchFocused] = React.useState(false)
 
   const isDarkMode = useIsDarkMode()
 
@@ -198,13 +199,16 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
           />
           <div className={userName({})}>{user.name}</div>
         </div>
-
         <div
+          id='wrapper'
           style={{
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
-            borderBottom: '1px solid gray',
+            border: `1px solid ${isSearchFocused ? '#0075F9' : 'transparent'}`,
+            borderBottomColor: isSearchFocused ? '#0075F9' : 'gray',
+            borderRadius: isSearchFocused ? 3 : undefined,
+            overflow: 'visible',
             padding: '0px 14px',
             gap: 10,
           }}
@@ -217,6 +221,8 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
             onChange={(e) => {
               setSearchQuery(e.target.value)
             }}
+            onFocus={() => setIsSearchFocused(true)}
+            onBlur={() => setIsSearchFocused(false)}
             style={{
               border: 'none',
               background: 'transparent',
