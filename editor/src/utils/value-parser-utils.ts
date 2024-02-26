@@ -13,6 +13,7 @@ import {
 } from '../core/shared/either'
 import * as EP from '../core/shared/element-path'
 import type { ElementPath } from '../core/shared/project-file-types'
+import type { ComponentRendererComponent } from '../components/canvas/ui-jsx-canvas-renderer/component-renderer-component'
 
 export interface ArrayIndexNotPresentParseError {
   type: 'ARRAY_INDEX_NOT_PRESENT_PARSE_ERROR'
@@ -322,16 +323,34 @@ export function parseJsx(
     if (React.isValidElement(value)) {
       const { type } = value
 
+      // if this is an html element, we want to return the tag name
       if (typeof type === 'string') {
         return type
       }
+      // if it is a spied internal component, the original type is stored in theOriginalType
+      if (type.hasOwnProperty('theOriginalType')) {
+        const originalType = (type as any).theOriginalType
+        if (originalType.hasOwnProperty('originalName')) {
+          return (originalType as ComponentRendererComponent).originalName
+        }
+      }
+      // if it is an external component, try returning displayName or name
+      if (type.hasOwnProperty('displayName')) {
+        return (type as any).displayName
+      }
+      if (type.hasOwnProperty('name')) {
+        return (type as any).displayName
+      }
     }
+
     if (typeof value === 'string') {
       return value
     }
+
     if (typeof value === 'number') {
       return value.toString()
     }
+
     if (value == null) {
       return 'null'
     }
