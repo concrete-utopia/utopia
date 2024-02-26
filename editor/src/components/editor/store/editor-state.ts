@@ -262,6 +262,33 @@ export function emptyUserConfiguration(): UserConfiguration {
   }
 }
 
+type Permissions =
+  | 'can_view'
+  | 'can_fork'
+  | 'can_play'
+  | 'can_edit'
+  | 'can_comment'
+  | 'can_show_presence'
+  | 'can_see_live_changes'
+  | 'can_request_access'
+
+export type UserPermissions = {
+  [key in Permissions]: boolean
+}
+
+export function emptyUserPermissions(): UserPermissions {
+  return {
+    can_view: false,
+    can_fork: false,
+    can_play: false,
+    can_edit: false,
+    can_comment: false,
+    can_show_presence: false,
+    can_see_live_changes: false,
+    can_request_access: false,
+  }
+}
+
 export interface GithubState {
   authenticated: boolean
   gitRepoToLoad: GithubRepoWithBranch | null
