@@ -775,6 +775,7 @@ export const IdentifierExpressionCartoucheControl = React.memo(
     return (
       <FlexRow
         style={{
+          cursor: 'pointer',
           gap: 6,
           color: colorTheme.bg1.value,
           backgroundColor: colorTheme.primary.value,
