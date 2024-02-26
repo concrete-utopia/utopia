@@ -317,6 +317,7 @@ import type {
   UpdateCodeFromCollaborationUpdate,
   SetCommentFilterMode,
   SetForking,
+  SetCollaborators,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -434,10 +435,7 @@ import { addButtonPressed, removeButtonPressed } from '../../../utils/mouse'
 import { stripLeadingSlash } from '../../../utils/path-utils'
 import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
 import { getEscapeHatchCommands } from '../../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
-import {
-  canCopyElement,
-  isAllowedToReparent,
-} from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
+import { canCopyElement } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
 import {
   getReparentOutcome,
   pathToReparent,
@@ -914,6 +912,7 @@ export function restoreEditorState(
     activeFrames: currentEditor.activeFrames,
     commentFilterMode: currentEditor.commentFilterMode,
     forking: currentEditor.forking,
+    collaborators: currentEditor.collaborators,
   }
 }
 
@@ -2080,6 +2079,12 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       forking: action.forking,
+    }
+  },
+  SET_COLLABORATORS: (action: SetCollaborators, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      collaborators: action.collaborators,
     }
   },
   UPDATE_GITHUB_OPERATIONS: (action: UpdateGithubOperations, editor: EditorModel): EditorModel => {

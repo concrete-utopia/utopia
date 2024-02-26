@@ -124,6 +124,13 @@ const emptyVariablesInScopeSubstate = {
 } as const
 export type VariablesInScopeSubstate = typeof emptyVariablesInScopeSubstate
 
+// MultiplayerSubstate
+export const multiplayerSubstateKeys = ['collaborators'] as const
+const emptyMultiplayerSubstate = {
+  editor: pick(multiplayerSubstateKeys, EmptyEditorStateForKeysOnly),
+} as const
+export type MultiplayerSubstate = typeof emptyMultiplayerSubstate
+
 export interface DerivedSubstate {
   derived: DerivedState
 }
@@ -151,6 +158,7 @@ const editorSubstatesKeysCollected = uniq([
   ...focusedElementPathSubstateKeys,
   ...highlightedHoveredViewsSubstateKeys,
   ...canvasKey,
+  ...multiplayerSubstateKeys,
 ])
 const emptyRestOfEditorState = {
   editor: omit(editorSubstatesKeysCollected, EmptyEditorStateForKeysOnly),

@@ -12,16 +12,17 @@ import {
   useOthersListener,
   useRoom,
   useSelf,
-  useStorage,
   useUpdateMyPresence,
 } from '../../../liveblocks.config'
 import {
   getCollaborator,
   getConnectionById,
-  useAddMyselfToCollaborators,
   useCanComment,
   useMyUserAndPresence,
   useConnections,
+  useCollaborators,
+  getCollaboratorById,
+  useAddMyselfToCollaborators_DEPRECATED,
 } from '../../core/commenting/comment-hooks'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../core/shared/array-utils'
@@ -65,6 +66,7 @@ import {
   useMyUserId,
   useRemixPresence,
   useMonitorConnection,
+  useLoadCollaborators,
 } from '../../core/shared/multiplayer-hooks'
 import { CanvasOffsetWrapper } from './controls/canvas-offset-wrapper'
 import { when } from '../../utils/react-conditionals'
@@ -113,7 +115,9 @@ export const MultiplayerPresence = React.memo(() => {
     'MultiplayerPresence mode',
   )
 
-  useAddMyselfToCollaborators()
+  useAddMyselfToCollaborators_DEPRECATED()
+  useLoadCollaborators()
+
   useStoreConnection()
   useMonitorConnection()
 
@@ -124,8 +128,8 @@ export const MultiplayerPresence = React.memo(() => {
       return
     }
     updateMyPresence({
-      canvasScale,
-      canvasOffset,
+      canvasScale: canvasScale,
+      canvasOffset: canvasOffset,
       following: isFollowMode(mode) ? mode.playerId : null,
       remix: remixPresence,
     })
@@ -175,7 +179,7 @@ MultiplayerPresence.displayName = 'MultiplayerPresence'
 
 const MultiplayerCursors = React.memo(() => {
   const me = useSelf()
-  const collabs = useStorage((store) => store.collaborators)
+  const collabs = useCollaborators()
   const others = useOthers((list) => {
     const presences = excludeMyConnection(me.id, me.connectionId, list)
     return presences.map((p) => ({
@@ -369,13 +373,15 @@ const FollowingOverlay = React.memo(() => {
     dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
   }, [dispatch])
 
+  const collabs = useCollaborators()
+
   const followed = React.useMemo(() => {
     return room.getOthers().find(isFollowTarget) ?? null
   }, [room, isFollowTarget])
 
-  const followedUser = useStorage((store) =>
-    followed != null ? store.collaborators[followed.id] : null,
-  )
+  const followedUser = React.useMemo(() => {
+    return followed != null ? getCollaboratorById(collabs, followed.id) : null
+  }, [followed, collabs])
 
   const remixPresence = useRemixPresence()
 
@@ -453,8 +459,6 @@ const FollowingOverlay = React.memo(() => {
       )
     }
   }, [connections, followed])
-
-  const collabs = useStorage((store) => store.collaborators)
 
   const { user: myUser, presence: myPresence } = useMyUserAndPresence()
   const others = useOthers((list) =>
@@ -568,7 +572,7 @@ const MultiplayerShadows = React.memo(() => {
   const myUserId = useMyUserId()
   const updateMyPresence = useUpdateMyPresence()
 
-  const collabs = useStorage((store) => store.collaborators)
+  const collabs = useCollaborators()
   const others = useOthers((list) => {
     if (myUserId == null) {
       return []
@@ -576,7 +580,7 @@ const MultiplayerShadows = React.memo(() => {
     const presences = normalizeOthersList(myUserId, list)
     return presences.map((p) => ({
       presenceInfo: p,
-      userInfo: collabs[p.id],
+      userInfo: getCollaboratorById(collabs, p.id),
     }))
   })
 
@@ -588,8 +592,10 @@ const MultiplayerShadows = React.memo(() => {
         other.presenceInfo.presence.activeFrames?.map((activeFrame) => ({
           activeFrame: activeFrame,
           colorIndex:
-            getConnectionById(connections, other.userInfo.id, other.presenceInfo.connectionId)
-              ?.colorIndex ?? null,
+            other.userInfo != null
+              ? getConnectionById(connections, other.userInfo.id, other.presenceInfo.connectionId)
+                  ?.colorIndex ?? null
+              : null,
         })) ?? [],
     )
   }, [connections, others])

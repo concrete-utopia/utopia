@@ -1,15 +1,6 @@
 import { UserDetails } from 'prisma-client'
-import { LiveblocksAPI } from '../clients/liveblocks.server'
 import { prisma } from '../db.server'
-import { Collaborator, CollaboratorsByProject } from '../types'
-
-function userToCollaborator(user: UserDetails): Collaborator {
-  return {
-    id: user.user_id,
-    name: user.name ?? '',
-    avatar: user.picture ?? '',
-  }
-}
+import { CollaboratorsByProject, userToCollaborator } from '../types'
 
 export async function getCollaborators(params: {
   ids: string[]
@@ -28,29 +19,30 @@ export async function getCollaborators(params: {
   return collaboratorsByProject
 }
 
-export async function updateCollaborators(params: { id: string }): Promise<void> {
-  const storage = await LiveblocksAPI.getRoomStorage(params.id)
-  const collaborators = Object.values(storage.data.collaborators.data).map((c) => c.data)
-  await prisma.$transaction(async (tx) => {
-    // ignore non-existing users
-    const existingUsers = await tx.userDetails.findMany({
-      where: { user_id: { in: collaborators.map((c) => c.id) } },
-    })
-    for (const user of existingUsers) {
-      // the Prisma equivalent of INSERT ... ON CONFLICT DO NOTHING
-      await tx.projectCollaborator.upsert({
-        where: {
-          unique_project_collaborator_project_id_user_id: {
-            user_id: user.user_id,
-            project_id: params.id,
-          },
-        },
-        update: {},
-        create: {
-          project_id: params.id,
-          user_id: user.user_id,
-        },
-      })
-    }
+export async function addToProjectCollaborators(params: {
+  id: string
+  userId: string
+}): Promise<void> {
+  // the Prisma equivalent of INSERT ... ON CONFLICT DO NOTHING
+  await prisma.projectCollaborator.upsert({
+    where: {
+      unique_project_collaborator_project_id_user_id: {
+        user_id: params.userId,
+        project_id: params.id,
+      },
+    },
+    update: {},
+    create: {
+      project_id: params.id,
+      user_id: params.userId,
+    },
   })
+}
+
+export async function listProjectCollaborators(params: { id: string }): Promise<UserDetails[]> {
+  const collaborators = await prisma.projectCollaborator.findMany({
+    where: { project_id: params.id },
+    include: { User: true },
+  })
+  return collaborators.map((c) => c.User)
 }

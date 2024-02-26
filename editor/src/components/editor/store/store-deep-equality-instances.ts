@@ -556,6 +556,8 @@ import type {
   ActiveFrameTargetRect,
 } from '../../canvas/commands/set-active-frames-command'
 import type { CommentFilterMode } from '../../inspector/sections/comment-section'
+import type { Collaborator } from '../../../core/shared/multiplayer'
+import type { MultiplayerSubstate } from './store-hook-substore-types'
 
 export const ProjectMetadataFromServerKeepDeepEquality: KeepDeepEqualityCall<ProjectMetadataFromServer> =
   combine3EqualityCalls(
@@ -581,6 +583,24 @@ export const ProjectServerStateKeepDeepEquality: KeepDeepEqualityCall<ProjectSer
     (entry) => entry.currentlyHolderOfTheBaton,
     createCallWithTripleEquals<boolean>(),
     projectServerState,
+  )
+
+export const CollaboratorKeepDeepEquality: KeepDeepEqualityCall<Collaborator> =
+  combine3EqualityCalls(
+    (data) => data.id,
+    StringKeepDeepEquality,
+    (data) => data.name,
+    NullableStringKeepDeepEquality,
+    (data) => data.avatar,
+    NullableStringKeepDeepEquality,
+    (id, name, avatar) => ({ id, name, avatar }),
+  )
+
+export const MutiplayerSubstateKeepDeepEquality: KeepDeepEqualityCall<MultiplayerSubstate> =
+  combine1EqualityCall(
+    (entry) => entry.editor.collaborators,
+    arrayDeepEquality(CollaboratorKeepDeepEquality),
+    (collaborators) => ({ editor: { collaborators: collaborators } }),
   )
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
@@ -4529,6 +4549,11 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
 
   const forkingResults = BooleanKeepDeepEquality(oldValue.forking, newValue.forking)
 
+  const collaboratorsResults = arrayDeepEquality(CollaboratorKeepDeepEquality)(
+    oldValue.collaborators,
+    newValue.collaborators,
+  )
+
   const areEqual =
     idResult.areEqual &&
     forkedFromProjectIdResult.areEqual &&
@@ -4608,7 +4633,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     filesModifiedByAnotherUserResults.areEqual &&
     activeFramesResults.areEqual &&
     commentFilterModeResults.areEqual &&
-    forkingResults.areEqual
+    forkingResults.areEqual &&
+    collaboratorsResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -4694,6 +4720,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       activeFramesResults.value,
       commentFilterModeResults.value,
       forkingResults.value,
+      collaboratorsResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

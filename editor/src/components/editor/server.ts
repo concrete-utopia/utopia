@@ -28,6 +28,11 @@ import {
 } from './actions/action-creators'
 import { updateUserDetailsWhenAuthenticated } from '../../core/shared/github/helpers'
 import { GithubAuth } from '../../utils/github-auth'
+import type { User } from '../../../liveblocks.config'
+import { liveblocksClient } from '../../../liveblocks.config'
+import type { Collaborator } from '../../core/shared/multiplayer'
+import type { LiveObject } from '@liveblocks/client'
+import { projectIdToRoomId } from '../../utils/room-id'
 
 export { fetchProjectList, fetchShowcaseProjects, getLoginState } from '../../common/server'
 
@@ -493,11 +498,53 @@ export async function downloadAssetsFromProject(
 }
 
 export async function updateCollaborators(projectId: string) {
-  if (isBackendBFF()) {
-    await fetch(UTOPIA_BACKEND_BASE_URL + `internal/projects/${projectId}/collaborators`, {
+  if (!isBackendBFF()) {
+    return
+  }
+  const response = await fetch(
+    UTOPIA_BACKEND_BASE_URL + `internal/projects/${projectId}/collaborators`,
+    {
       method: 'POST',
       credentials: 'include',
       mode: MODE,
-    })
+    },
+  )
+  if (!response.ok) {
+    throw new Error(`Update collaborators failed (${response.status}): ${response.statusText}`)
   }
+}
+
+export async function getCollaborators(projectId: string): Promise<Collaborator[]> {
+  if (!isBackendBFF()) {
+    return getCollaboratorsFromLiveblocks(projectId)
+  }
+
+  const response = await fetch(
+    UTOPIA_BACKEND_BASE_URL + `internal/projects/${projectId}/collaborators`,
+    {
+      method: 'GET',
+      credentials: 'include',
+      mode: MODE,
+    },
+  )
+  if (response.ok) {
+    const result: Collaborator[] = await response.json()
+    return result
+  } else {
+    throw new Error(`Load collaborators failed (${response.status}): ${response.statusText}`)
+  }
+}
+
+// TODO remove this once the BFF is on
+async function getCollaboratorsFromLiveblocks(projectId: string): Promise<Collaborator[]> {
+  const room = liveblocksClient.getRoom(projectIdToRoomId(projectId))
+  if (room == null) {
+    return []
+  }
+  const storage = await room.getStorage()
+  const collabs = storage.root.get('collaborators') as LiveObject<{ [userId: string]: User }>
+  if (collabs == null) {
+    return []
+  }
+  return Object.values(collabs.toObject()).map((u) => u.toObject())
 }
