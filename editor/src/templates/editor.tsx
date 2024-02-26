@@ -35,7 +35,6 @@ import {
   downloadGithubRepo,
   getLoginState,
   getUserConfiguration,
-  getUserPermissions,
   isRequestFailure,
   startPollingLoginState,
 } from '../components/editor/server'
@@ -338,13 +337,9 @@ export class Editor {
     )
 
     void getLoginState('cache').then((loginState: LoginState) => {
-      const projectId = getProjectID()
       startPollingLoginState(this.boundDispatch, loginState)
       this.storedState.userState.loginState = loginState
-      void Promise.all([
-        getUserConfiguration(loginState),
-        getUserPermissions(loginState, projectId),
-      ]).then(([shortcutConfiguration, permissions]) => {
+      void getUserConfiguration(loginState).then((shortcutConfiguration) => {
         const userState = {
           ...this.storedState.userState,
           ...shortcutConfiguration,
@@ -363,6 +358,7 @@ export class Editor {
               authenticated: authenticatedWithGithub,
             }),
           ])
+          const projectId = getProjectID()
           if (isLoggedIn(loginState)) {
             this.storedState.persistence.login()
           }

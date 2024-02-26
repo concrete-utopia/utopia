@@ -70,21 +70,6 @@ async function checkUserProjectPermission(
   return !!allowed
 }
 
-export async function getAllPermissions(projectId: string, userId: string) {
-  const { relations } = await fgaClient.listRelations({
-    user: `user:${userId}`,
-    object: `project:${projectId}`,
-    relations: userProjectPermission.map((permission) => permission),
-  })
-  return userProjectPermission.reduce(
-    (acc, permission, index) => {
-      acc[permission] = relations.includes(permission)
-      return acc
-    },
-    {} as Record<UserProjectPermission, boolean>,
-  )
-}
-
 export async function canViewProject(projectId: string, userId: string) {
   return checkUserProjectPermission(projectId, userId, 'can_view')
 }

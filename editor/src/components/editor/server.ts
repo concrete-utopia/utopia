@@ -7,10 +7,9 @@ import {
   projectURL,
   thumbnailURL,
   userConfigURL,
-  userPermissionsURL,
 } from '../../common/server'
-import type { PersistentModel, UserConfiguration, UserPermissions } from './store/editor-state'
-import { emptyUserConfiguration, emptyUserPermissions } from './store/editor-state'
+import type { PersistentModel, UserConfiguration } from './store/editor-state'
+import { emptyUserConfiguration } from './store/editor-state'
 import type { LoginState } from '../../uuiui-deps'
 import urljoin from 'url-join'
 import JSZip from 'jszip'
@@ -313,40 +312,6 @@ export async function saveThumbnail(thumbnail: Buffer, projectId: string): Promi
     // FIXME Client should show an error if server requests fail
     console.error(`Save thumbnail request failed (${response.status}): ${response.statusText}`)
     return
-  }
-}
-
-export async function getUserPermissions(
-  loginState: LoginState,
-  projectId: string | null,
-): Promise<UserPermissions> {
-  switch (loginState.type) {
-    case 'LOGGED_IN':
-      if (projectId == null) {
-        return emptyUserPermissions()
-      }
-      const url = userPermissionsURL(loginState.user.userId, projectId)
-      const response = await fetch(url, {
-        method: 'GET',
-        credentials: 'include',
-        headers: HEADERS,
-        mode: MODE,
-      })
-      if (response.ok) {
-        return response.json()
-      } else {
-        // FIXME Client should show an error if server requests fail
-        throw new Error(`server responded with ${response.status} ${response.statusText}`)
-      }
-    case 'LOGIN_NOT_YET_KNOWN':
-    case 'NOT_LOGGED_IN':
-    case 'LOGIN_LOST':
-    case 'OFFLINE_STATE':
-    case 'COOKIES_OR_LOCALFORAGE_UNAVAILABLE':
-      return emptyUserPermissions()
-    default:
-      const _exhaustiveCheck: never = loginState
-      throw new Error(`Unknown login state.`)
   }
 }
 
