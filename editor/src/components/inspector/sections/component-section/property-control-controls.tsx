@@ -36,6 +36,7 @@ import {
   FlexRow,
   UtopiaTheme,
   useColorTheme,
+  Icn,
 } from '../../../../uuiui'
 import type { CSSNumber } from '../../common/css-utils'
 import { printCSSNumber, cssNumber, defaultCSSColor } from '../../common/css-utils'
@@ -61,6 +62,8 @@ import { useDispatch } from '../../../editor/store/dispatch-context'
 import { HtmlPreview, ImagePreview } from './property-content-preview'
 import { regularNavigatorEntry } from '../../../editor/store/editor-state'
 import { LayoutIcon } from '../../../navigator/navigator-item/layout-icon'
+import type { JSXParsedType, JSXParsedValue } from '../../../../utils/value-parser-utils'
+import { assertNever } from '../../../../core/shared/utils'
 
 export interface ControlForPropProps<T extends BaseControlDescription> {
   propPath: PropertyPath
@@ -519,9 +522,7 @@ export const JSXPropertyControl = React.memo(
 
     const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
 
-    const safeValue = value ?? { path: null, name: '' }
-
-    const navigatorEntry = safeValue.path != null ? regularNavigatorEntry(safeValue.path) : null
+    const safeValue: JSXParsedValue = value ?? { type: 'unknown', name: 'JSX' }
 
     // TODO: this is copy paste from conditional section
     return (
@@ -539,14 +540,31 @@ export const JSXPropertyControl = React.memo(
           whiteSpace: 'nowrap',
         }}
       >
-        {navigatorEntry != null ? (
-          <LayoutIcon navigatorEntry={navigatorEntry} color='main' warningText={null} />
-        ) : null}
+        <JSXPropIcon jsxType={safeValue.type} />
         <span>{safeValue.name}</span>
       </div>
     )
   },
 )
+
+// TODO: this is just a dummy component we need more and better icons
+const JSXPropIcon = React.memo((props: { jsxType: JSXParsedType }) => {
+  switch (props.jsxType) {
+    case 'external-component':
+      return <Icn category={'component'} type={'npm'} width={18} height={18} />
+    case 'internal-component':
+      return <Icn category={'component'} type={'default'} width={18} height={18} />
+    case 'html':
+      return <Icn category={'element'} type={'div'} width={18} height={18} />
+    case 'unknown':
+    case 'string':
+    case 'number':
+    case 'null':
+      return null
+    default:
+      assertNever(props.jsxType)
+  }
+})
 
 function keysForVectorOfType(vectorType: 'vector2' | 'vector3' | 'vector4'): Array<string> {
   switch (vectorType) {

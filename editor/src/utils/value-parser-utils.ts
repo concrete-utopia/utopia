@@ -301,63 +301,97 @@ export function parseString(value: unknown): ParseResult<string> {
   }
 }
 
-export function parseJsx(
-  _: unknown,
-  value: unknown,
-): ParseResult<{ path: ElementPath | null; name: string }> {
-  const path = (() => {
-    if (React.isValidElement(value)) {
-      const key = value.key
-      if (key != null && typeof key === 'string') {
-        try {
-          return EP.fromString(key)
-        } catch (e) {
-          return null
-        }
-      }
+export type JSXParsedType =
+  | 'null'
+  | 'string'
+  | 'number'
+  | 'html'
+  | 'internal-component'
+  | 'external-component'
+  | 'unknown'
+
+export interface JSXParsedValue {
+  type: JSXParsedType
+  name: string
+}
+
+export function parseJsx(_: unknown, value: unknown): ParseResult<JSXParsedValue> {
+  if (React.isValidElement(value)) {
+    const { type } = value
+
+    // if this is an html element, we want to return the tag name
+    if (typeof type === 'string') {
+      return right({
+        type: 'html',
+        name: type,
+      })
     }
-    return null
-  })()
-
-  const name = (() => {
-    if (React.isValidElement(value)) {
-      const { type } = value
-
-      // if this is an html element, we want to return the tag name
-      if (typeof type === 'string') {
-        return type
+    // if it is a spied component, the original type is stored in theOriginalType
+    if (type.hasOwnProperty('theOriginalType')) {
+      const originalType = (type as any).theOriginalType
+      // if it is an internal component, it has an originalName property
+      if (originalType.hasOwnProperty('originalName')) {
+        const originalName = (originalType as ComponentRendererComponent).originalName
+        return right({
+          type: 'internal-component',
+          name: originalName ?? 'JSX',
+        })
       }
-      // if it is a spied internal component, the original type is stored in theOriginalType
-      if (type.hasOwnProperty('theOriginalType')) {
-        const originalType = (type as any).theOriginalType
-        if (originalType.hasOwnProperty('originalName')) {
-          return (originalType as ComponentRendererComponent).originalName
-        }
-      }
+
       // if it is an external component, try returning displayName or name
-      if (type.hasOwnProperty('displayName')) {
-        return (type as any).displayName
+      if (originalType.hasOwnProperty('displayName')) {
+        return right({
+          type: 'external-component',
+          name: (originalType as ComponentRendererComponent).displayName ?? 'JSX',
+        })
       }
-      if (type.hasOwnProperty('name')) {
-        return (type as any).displayName
+      if (originalType.hasOwnProperty('name')) {
+        right({
+          type: 'external-component',
+          name: (originalType as ComponentRendererComponent).name ?? 'JSX',
+        })
       }
     }
 
-    if (typeof value === 'string') {
-      return value
+    // if it is an external component, try returning displayName or name
+    if (type.hasOwnProperty('displayName')) {
+      return right({
+        type: 'external-component',
+        name: (type as any).displayName ?? 'JSX',
+      })
     }
-
-    if (typeof value === 'number') {
-      return value.toString()
+    if (type.hasOwnProperty('name')) {
+      right({
+        type: 'external-component',
+        name: (type as any).name ?? 'JSX',
+      })
     }
+  }
 
-    if (value == null) {
-      return 'null'
-    }
-    return 'JSX'
-  })()
+  if (typeof value === 'string') {
+    right({
+      type: 'string',
+      name: value,
+    })
+  }
 
-  return right({ path, name })
+  if (typeof value === 'number') {
+    right({
+      type: 'number',
+      name: value.toString(),
+    })
+  }
+
+  if (value == null) {
+    return right({
+      type: 'null',
+      name: 'null',
+    })
+  }
+  return right({
+    type: 'unknown',
+    name: 'JSX',
+  })
 }
 
 export function parseEnum<E extends string | number>(possibleValues: Array<E>): Parser<E> {
