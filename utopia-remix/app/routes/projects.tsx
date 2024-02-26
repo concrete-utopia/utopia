@@ -382,46 +382,46 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
           </div>,
         )}
       </div>
-        {when(
-            projects.length > 1,
-            <div style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
-              <DropdownMenuRoot>
-                <DropdownMenuTrigger asChild>
-                  <div
-                    className={button()}
-                    style={{
-                      justifyContent: 'flex-end',
-                      gap: 10,
-                    }}
-                  >
-                    <div>{convertToTitleCase(sortCriteria)} </div>
-                    <div>{sortAscending ? '↑' : '↓'}</div>
-                  </div>
-                </DropdownMenuTrigger>
-                <SortingContextMenu />
-              </DropdownMenuRoot>
-              <div style={{ display: 'flex', flexDirection: 'row', gap: 1 }}>
-                <HamburgerMenuIcon
-                  onClick={() => {
-                    setGridView(false)
-                  }}
-                  className={button({
-                    size: 'square',
-                    color: !gridView ? 'selected' : 'transparent',
-                  })}
-                />
-                <DashboardIcon
-                  onClick={() => {
-                    setGridView(true)
-                  }}
-                  className={button({
-                    size: 'square',
-                    color: gridView ? 'selected' : 'transparent',
-                  })}
-                />
+      {when(
+        projects.length > 1,
+        <div style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
+          <DropdownMenuRoot>
+            <DropdownMenuTrigger asChild>
+              <div
+                className={button()}
+                style={{
+                  justifyContent: 'flex-end',
+                  gap: 10,
+                }}
+              >
+                <div>{convertToTitleCase(sortCriteria)} </div>
+                <div>{sortAscending ? '↑' : '↓'}</div>
               </div>
-            </div>,
-          )}
+            </DropdownMenuTrigger>
+            <SortingContextMenu />
+          </DropdownMenuRoot>
+          <div style={{ display: 'flex', flexDirection: 'row', gap: 1 }}>
+            <HamburgerMenuIcon
+              onClick={() => {
+                setGridView(false)
+              }}
+              className={button({
+                size: 'square',
+                color: !gridView ? 'selected' : 'transparent',
+              })}
+            />
+            <DashboardIcon
+              onClick={() => {
+                setGridView(true)
+              }}
+              className={button({
+                size: 'square',
+                color: gridView ? 'selected' : 'transparent',
+              })}
+            />
+          </div>
+        </div>,
+      )}
     </div>
   )
 })
@@ -487,15 +487,10 @@ const ProjectCards = React.memo(
       [setSelectedProjectId, selectedProjectId],
     )
 
-    const isDarkMode = useIsDarkMode()
-
-    const logoPic = React.useMemo(() => {
-      return isDarkMode ? 'url(/assets/pyramid_dark.png)' : 'url(/assets/pyramid_light.png)'
-    }, [isDarkMode])
-
     return (
       <>
-        {projects.length === 0 && selectedCategory === 'trash' && (
+        {when(
+          projects.length === 0 && selectedCategory === 'trash',
           <div
             style={{
               display: 'flex',
@@ -519,9 +514,10 @@ const ProjectCards = React.memo(
             <div>
               Deleted projects are kept here until you destroy them <i>for good.</i>
             </div>
-          </div>
+          </div>,
         )}
-        {projects.length > 0 && !gridView && (
+        {when(
+          projects.length > 0 && !gridView,
           <div
             style={{
               flexGrow: 1,
@@ -539,9 +535,10 @@ const ProjectCards = React.memo(
                 collaborators={collaborators[project.proj_id]}
               />
             ))}
-          </div>
+          </div>,
         )}
-        {projects.length > 0 && gridView && (
+        {when(
+          projects.length > 0 && gridView,
           <div
             style={{
               display: 'flex',
@@ -563,7 +560,7 @@ const ProjectCards = React.memo(
                 collaborators={collaborators[project.proj_id]}
               />
             ))}
-          </div>
+          </div>,
         )}
       </>
     )
