@@ -13,12 +13,12 @@
       href="<%- UTOPIA_DOMAIN %>/editor/css/utopions.css?hash=<%- UTOPIA_SHA %>"
       crossorigin="anonymous"
     />
+
+    <% if (VITE) { %>
+    <script defer type="module" src="/project-not-found/not-found-entry-point.tsx"></script>
+    <% } %>
   </head>
   <body>
-    <span
-      >Project not found. This project may not exist, was only saved locally, or you're not allowed
-      to view it. Ask the owner to check the URL or update the permissions, and refresh this
-      page.</span
-    >
+    <div id="utopia-editor-root" />
   </body>
 </html>

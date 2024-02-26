@@ -1,7 +1,6 @@
 import React from 'react'
 import PyramidLight404 from './404_pyramid_light.png'
 import { UTOPIA_BACKEND_BASE_URL } from '../../common/env-vars'
-// import hmmmPyramidLight from './hmmm_pyramid_light.png'
 
 export default function ProjectNotFound() {
   return (
