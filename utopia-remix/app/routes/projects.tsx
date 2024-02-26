@@ -543,8 +543,14 @@ ProjectCards.displayName = 'ProjectCards'
 
 const NoProjectsMessage = React.memo(() => {
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
+  const searchQuery = useProjectsStore((store) => store.searchQuery)
 
   const categoryContent = {
+    searchResults: {
+      graphic: 'url(/assets/utopium.png)',
+      title: 'No projects found!',
+      subtitle: `But ${searchQuery} could be an interesting app...`,
+    },
     allProjects: {
       graphic: 'url(/assets/utopium.png)',
       title: 'You have no projects!',
@@ -557,7 +563,8 @@ const NoProjectsMessage = React.memo(() => {
     },
   }
 
-  const { graphic, title, subtitle } = categoryContent[selectedCategory] || {}
+  const { graphic, title, subtitle } =
+    searchQuery !== '' ? categoryContent.searchResults : categoryContent[selectedCategory] || {}
 
   return (
     <div
