@@ -112,8 +112,6 @@ module.exports = {
         'react-dnd-html5-backend': '<rootDir>/test/jest/__mocks__/react-dnd-html5-backend.js',
         '^react$': '<rootDir>/node_modules/react/index.js',
         '^react-dom$': '<rootDir>/node_modules/react-dom/index.js',
-        '\\.(jpg|ico|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
-          '<rootDir>/test/jest/__mocks__/styleMock.js',
       },
       transform: {
         '\\.[jt]sx?$': 'babel-jest',

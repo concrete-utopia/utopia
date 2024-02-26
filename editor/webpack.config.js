@@ -302,9 +302,9 @@ const config = {
         ],
       },
 
-      // Files
+      // Fonts
       {
-        test: /\.(png|jpe?g|gif|ttf)$/,
+        test: /\.ttf$/,
         use: ['file-loader'],
       },
     ],
