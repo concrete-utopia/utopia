@@ -36,6 +36,7 @@ import {
   FlexRow,
   UtopiaTheme,
   useColorTheme,
+  Icn,
 } from '../../../../uuiui'
 import type { CSSNumber } from '../../common/css-utils'
 import { printCSSNumber, cssNumber, defaultCSSColor } from '../../common/css-utils'
@@ -59,6 +60,8 @@ import {
 } from '../../../custom-code/code-file'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { HtmlPreview, ImagePreview } from './property-content-preview'
+import type { JSXParsedType, JSXParsedValue } from '../../../../utils/value-parser-utils'
+import { assertNever } from '../../../../core/shared/utils'
 
 export interface ControlForPropProps<T extends BaseControlDescription> {
   propPath: PropertyPath
@@ -513,35 +516,53 @@ export const JSXPropertyControl = React.memo(
   (props: ControlForPropProps<JSXControlDescription>) => {
     const { propMetadata } = props
 
-    const theme = useColorTheme()
+    const colorTheme = useColorTheme()
 
     const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
 
-    const safeValue = value ?? ''
+    const safeValue: JSXParsedValue = value ?? { type: 'unknown', name: 'JSX' }
 
-    // TODO: temporary solution, needs a real control
+    // TODO: this is copy paste from conditional section
     return (
       <div
         style={{
+          borderRadius: 2,
+          padding: '4px 0px 4px 6px',
+          background: colorTheme.bg2.value,
+          fontWeight: 600,
           display: 'flex',
-          flexDirection: 'column',
-          flexBasis: 0,
-          gap: 5,
+          justifyContent: 'flex-start',
+          alignItems: 'center',
+          gap: 6,
+          overflowX: 'scroll',
+          whiteSpace: 'nowrap',
         }}
       >
-        <span
-          style={{
-            background: theme.dynamicBlue30.value,
-            textAlign: 'center',
-            borderRadius: 5,
-          }}
-        >
-          {safeValue}
-        </span>
+        <JSXPropIcon jsxType={safeValue.type} />
+        <span>{safeValue.name}</span>
       </div>
     )
   },
 )
+
+// TODO: this is just a dummy component we need more and better icons
+const JSXPropIcon = React.memo((props: { jsxType: JSXParsedType }) => {
+  switch (props.jsxType) {
+    case 'external-component':
+      return <Icn category={'component'} type={'npm'} width={18} height={18} />
+    case 'internal-component':
+      return <Icn category={'component'} type={'default'} width={18} height={18} />
+    case 'html':
+      return <Icn category={'element'} type={'div'} width={18} height={18} />
+    case 'unknown':
+    case 'string':
+    case 'number':
+    case 'null':
+      return null
+    default:
+      assertNever(props.jsxType)
+  }
+})
 
 function keysForVectorOfType(vectorType: 'vector2' | 'vector3' | 'vector4'): Array<string> {
   switch (vectorType) {
