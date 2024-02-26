@@ -93,7 +93,7 @@ import {
 } from '../editor/store/editor-state'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import { elementPath } from '../../core/shared/element-path'
-import { CanvasContextMenuPortalTargetID, NO_OP } from '../../core/shared/utils'
+import { CanvasContextMenuPortalTargetID, NO_OP, PortalTargetID } from '../../core/shared/utils'
 import { emptyUiJsxCanvasContextData } from './ui-jsx-canvas'
 import { testParseCode } from '../../core/workers/parser-printer/parser-printer.test-utils'
 import type { SteganographyMode } from '../../core/workers/parser-printer/parser-printer'
@@ -608,6 +608,7 @@ export async function renderTestEditorWithModel(
       }}
     >
       <div id={CanvasContextMenuPortalTargetID}></div>
+      <div id={PortalTargetID}></div>
       {failOnCanvasError ? <FailJestOnCanvasError /> : null}
       <style>{`
 div,

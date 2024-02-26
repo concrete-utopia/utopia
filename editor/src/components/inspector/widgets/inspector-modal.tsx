@@ -33,7 +33,7 @@ export const InspectorModal: React.FunctionComponent<
   useHandleCloseOnESCOrEnter(closePopup)
   const outerElementRef = React.useRef<HTMLDivElement>(null)
   const wrapperRef = React.useRef<HTMLDivElement>(null)
-  const editor = document.getElementById(EditorID) as HTMLElement
+  const editor = document.getElementById('editor-main-vertical-and-modals') as HTMLElement
   const [editorWidth, setEditorWidth] = React.useState(editor.clientWidth)
   const [editorHeight, setEditorHeight] = React.useState(editor.clientHeight)
   const [wrapperWidth, setWrapperWidth] = React.useState(0)

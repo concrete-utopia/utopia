@@ -405,6 +405,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     <>
       <ColorThemeComponent />
       <SimpleFlexRow
+        id='editor-main-vertical-and-modals'
         className='editor-main-vertical-and-modals'
         style={{
           height: '100vh',
