@@ -2,7 +2,6 @@ import {
   Root as DropdownMenuRoot,
   Trigger as DropdownMenuTrigger,
 } from '@radix-ui/react-dropdown-menu'
-import { Slot, Slottable } from '@radix-ui/react-slot'
 import {
   DashboardIcon,
   DotsHorizontalIcon,
@@ -200,7 +199,6 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
           <div className={userName({})}>{user.name}</div>
         </div>
         <div
-          id='wrapper'
           style={{
             display: 'flex',
             flexDirection: 'row',
