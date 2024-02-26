@@ -317,6 +317,7 @@ import type {
   UpdateCodeFromCollaborationUpdate,
   SetCommentFilterMode,
   SetForking,
+  InsertAttributeOtherJavascript,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -2224,6 +2225,33 @@ export const UPDATE_FNS = {
       ...withNewElement,
       leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
       selectedViews: newSelectedViews,
+    }
+  },
+  INSERT_ATTRIBUTE_OTHER_JAVASCRIPT: (
+    action: InsertAttributeOtherJavascript,
+    editor: EditorModel,
+  ): EditorModel => {
+    const withNewElement = modifyUnderlyingTargetElement(action.parent, editor, (element) => {
+      switch (element.type) {
+        case 'JSX_CONDITIONAL_EXPRESSION':
+          return element // TODO
+        case 'JSX_ELEMENT':
+          return {
+            ...element,
+            children: [action.expression],
+          }
+        case 'JSX_FRAGMENT':
+          return {
+            ...element,
+            children: [action.expression],
+          }
+        default:
+          assertNever(element)
+      }
+    })
+    return {
+      ...withNewElement,
+      leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
     }
   },
   WRAP_IN_ELEMENT: (

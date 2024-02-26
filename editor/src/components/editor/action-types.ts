@@ -7,6 +7,7 @@ import type {
   JSXConditionalExpression,
   JSXFragment,
   TopLevelElement,
+  JSExpressionOtherJavaScript,
 } from '../../core/shared/element-template'
 import type { KeysPressed, Key } from '../../utils/keyboard'
 import type { IndexPosition } from '../../utils/utils'
@@ -144,6 +145,12 @@ export interface InsertJSXElement {
   jsxElement: JSXElement
   parent: ElementPath | null
   importsToAdd: Imports
+}
+
+export interface InsertAttributeOtherJavascript {
+  action: 'INSERT_ATTRIBUTE_OTHER_JAVASCRIPT'
+  expression: JSExpressionOtherJavaScript
+  parent: ElementPath
 }
 
 export type DeleteSelected = {
@@ -1085,6 +1092,7 @@ export interface SetCommentFilterMode {
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
+  | InsertAttributeOtherJavascript
   | DeleteSelected
   | DeleteView
   | UpdateEditorMode
