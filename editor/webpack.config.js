@@ -71,6 +71,7 @@ const config = {
     preview: hot
       ? ['react-hot-loader/patch', './src/templates/preview/preview.tsx']
       : './src/templates/preview/preview.tsx',
+    notFound: './src/templates/project-not-found/not-found-entry-point.tsx',
   },
 
   output: {
@@ -101,7 +102,7 @@ const config = {
       templateParameters: htmlTemplateParameters,
     }),
     new HtmlWebpackPlugin({
-      chunks: [],
+      chunks: ['notFound'],
       inject: 'head', // Add the script tags to the end of the <head>
       scriptLoading: 'defer',
       template: './src/templates/project-not-found/index.html',
@@ -175,6 +176,8 @@ const config = {
       'process.env.HOT_MODE': hot,
       'process.env.HMR': false,
       'process.env.REMIX_DEV_ORIGIN': isDev ? "'http://localhost:8000'" : 'undefined',
+      'process.env.UTOPIA_DOMAIN': `"${BaseDomain}"`,
+      'process.env.UTOPIA_SHA': `"${process.env.UTOPIA_SHA ?? 'nocommit'}"`,
     }),
 
     // setting up the various process.env.VARIABLE replacements
@@ -302,9 +305,9 @@ const config = {
         ],
       },
 
-      // Fonts
+      // Files
       {
-        test: /\.ttf$/,
+        test: /\.(png|jpe?g|gif|ttf)$/,
         use: ['file-loader'],
       },
     ],
