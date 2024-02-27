@@ -2,7 +2,7 @@ import { ActionFunctionArgs } from '@remix-run/node'
 import { Params } from '@remix-run/react'
 import { restoreDeletedProject } from '../models/project.server'
 import { ensure, handle, requireUser } from '../util/api.server'
-import { Status } from '../util/statusCodes.server'
+import { Status } from '../util/statusCodes'
 
 export async function action(args: ActionFunctionArgs) {
   return handle(args, { POST: handleRestoreDeletedProject })
