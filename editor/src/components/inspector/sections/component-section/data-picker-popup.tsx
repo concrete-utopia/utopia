@@ -111,7 +111,7 @@ export const DataPickerPopup = React.memo(
         if (isTargetingChildrenProp) {
           dispatch([
             {
-              action: 'INSERT_ATTRIBUTE_OTHER_JAVASCRIPT',
+              action: 'INSERT_ATTRIBUTE_OTHER_JAVASCRIPT_INTO_ELEMENT',
               expression: expression,
               parent: selectedViewPathRef.current,
             },

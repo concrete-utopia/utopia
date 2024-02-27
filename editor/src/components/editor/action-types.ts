@@ -147,8 +147,8 @@ export interface InsertJSXElement {
   importsToAdd: Imports
 }
 
-export interface InsertAttributeOtherJavascript {
-  action: 'INSERT_ATTRIBUTE_OTHER_JAVASCRIPT'
+export interface InsertAttributeOtherJavascriptIntoElement {
+  action: 'INSERT_ATTRIBUTE_OTHER_JAVASCRIPT_INTO_ELEMENT'
   expression: JSExpressionOtherJavaScript
   parent: ElementPath
 }
@@ -1092,7 +1092,7 @@ export interface SetCommentFilterMode {
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
-  | InsertAttributeOtherJavascript
+  | InsertAttributeOtherJavascriptIntoElement
   | DeleteSelected
   | DeleteView
   | UpdateEditorMode

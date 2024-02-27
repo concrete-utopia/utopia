@@ -317,7 +317,7 @@ import type {
   UpdateCodeFromCollaborationUpdate,
   SetCommentFilterMode,
   SetForking,
-  InsertAttributeOtherJavascript,
+  InsertAttributeOtherJavascriptIntoElement,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -2227,20 +2227,17 @@ export const UPDATE_FNS = {
       selectedViews: newSelectedViews,
     }
   },
-  INSERT_ATTRIBUTE_OTHER_JAVASCRIPT: (
-    action: InsertAttributeOtherJavascript,
+  INSERT_ATTRIBUTE_OTHER_JAVASCRIPT_INTO_ELEMENT: (
+    action: InsertAttributeOtherJavascriptIntoElement,
     editor: EditorModel,
   ): EditorModel => {
     const withNewElement = modifyUnderlyingTargetElement(action.parent, editor, (element) => {
       switch (element.type) {
         case 'JSX_CONDITIONAL_EXPRESSION':
-          return element // TODO
-        case 'JSX_ELEMENT':
-          return {
-            ...element,
-            children: [action.expression],
-          }
         case 'JSX_FRAGMENT':
+          // only JSX elements are handled in this action
+          return element
+        case 'JSX_ELEMENT':
           return {
             ...element,
             children: [action.expression],
