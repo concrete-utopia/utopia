@@ -1,13 +1,14 @@
-import { TypedResponse, json } from '@remix-run/node'
+import { TypedResponse, json, redirect } from '@remix-run/node'
+import { Params } from '@remix-run/react'
+import * as cookie from 'cookie'
+import { UserDetails } from 'prisma-client'
+import { PrismaClientKnownRequestError } from 'prisma-client/runtime/library.js'
 import invariant from 'tiny-invariant'
 import { ServerEnvironment } from '../env.server'
-import { Status, getStatusName } from './statusCodes.server'
-import { Method } from './methods.server'
-import { UserDetails } from 'prisma-client'
 import { getUserFromSession } from '../models/session.server'
-import * as cookie from 'cookie'
-import { Params } from '@remix-run/react'
-import { PrismaClientKnownRequestError } from 'prisma-client/runtime/library.js'
+import { ApiError } from './errors'
+import { Method } from './methods.server'
+import { Status } from './statusCodes'
 
 interface ErrorResponse {
   error: string
@@ -97,19 +98,20 @@ function getErrorData(err: unknown): { message: string; status: number; name: st
   }
 }
 
-export class ApiError extends Error {
-  status: number
-  constructor(message: string, code: number) {
-    super(message)
-    this.name = getStatusName(code)
-    this.status = code
-  }
-}
-
-export function ensure(condition: unknown, message: string, status: number): asserts condition {
+export function ensure(
+  condition: unknown,
+  message: string,
+  status: number,
+  options?: {
+    redirect?: string
+  },
+): asserts condition {
   try {
     invariant(condition)
-  } catch (err) {
+  } catch (error) {
+    if (options?.redirect != null) {
+      throw redirect(options.redirect)
+    }
     throw new ApiError(message, status)
   }
 }
@@ -127,12 +129,17 @@ export async function proxiedResponse(response: Response): Promise<unknown> {
 
 export const SESSION_COOKIE_NAME = 'JSESSIONID'
 
-export async function requireUser(request: Request): Promise<UserDetails> {
+export async function requireUser(
+  request: Request,
+  options?: { redirect?: string },
+): Promise<UserDetails> {
   const cookieHeader = request.headers.get('cookie') ?? ''
   const cookies = cookie.parse(cookieHeader)
   const sessionId = cookies[SESSION_COOKIE_NAME] ?? null
-  ensure(sessionId != null, 'missing session cookie', Status.UNAUTHORIZED)
+  ensure(sessionId != null, 'missing session cookie', Status.UNAUTHORIZED, {
+    redirect: options?.redirect,
+  })
   const user = await getUserFromSession({ key: sessionId })
-  ensure(user != null, 'user not found', Status.UNAUTHORIZED)
+  ensure(user != null, 'user not found', Status.UNAUTHORIZED, { redirect: options?.redirect })
   return user
 }
