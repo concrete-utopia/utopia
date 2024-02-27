@@ -580,6 +580,62 @@ describe('Set element prop via the data picker', () => {
 
     expect(options).toEqual(['titleJsx', 'titleString', 'titleNumber', 'nums', 'nums[0]'])
   })
+
+  it('picking data for the children prop', async () => {
+    const editor = await renderTestEditorWithCode(
+      DataPickerProjectShell(`registerInternalComponent(Link, {
+      properties: {
+        children: Utopia.arrayControl({ control: 'jsx' }),
+      },
+      supportsChildren: true,
+      variants: [],
+    })
+    
+    function Link({ href, children }) {
+      return (
+        <a href={href} data-uid='a-root'>
+          {children}
+        </a>
+      )
+    }
+    
+    var Playground = ({ style }) => {
+      const alternateBookInfo = {
+        title: 'Frankenstein',
+        published: 'August 1866',
+        description: 'Short, fun read',
+        likes: 66,
+      }
+    
+      return (
+        <div style={style} data-uid='root'>
+          <Link href='/new' data-uid='link'>
+            <code>TODO</code>
+          </Link>
+        </div>
+      )
+    }`),
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/link')])
+
+    const dataPickerOpenerButton = editor.renderedDOM.getAllByTestId(DataPickerPopupButtonTestId)[0]
+    await mouseClickAtPoint(dataPickerOpenerButton, { x: 2, y: 2 })
+
+    const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
+    expect(dataPickerPopup).not.toBeNull()
+
+    const options = getRenderedOptions(editor)
+
+    expect(options).toEqual(['alternateBookInfo', 'title', 'published', 'description', 'likes'])
+
+    const theScene = editor.renderedDOM.getByTestId('scene')
+    let currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId('0-0'))
+    await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
+    await wait(10000)
+    expect(within(theScene).queryByText('Frankenstein')).not.toBeNull()
+  })
 })
 
 // comment out tests temporarily because it causes a dom-walker test to fail
