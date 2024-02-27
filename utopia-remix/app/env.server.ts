@@ -15,9 +15,9 @@ export const ServerEnvironment = {
   // the CORS allowed origin for incoming requests
   CORSOrigin: mustEnv('CORS_ORIGIN'),
   // Auth0 credentials
-  AUTH0_ENDPOINT: mustEnv('AUTH0_ENDPOINT'),
-  AUTH0_CLIENT_ID: mustEnv('AUTH0_CLIENT_ID'),
-  AUTH0_REDIRECT_URI: mustEnv('AUTH0_REDIRECT_URI'),
+  AUTH0_ENDPOINT: optionalEnv('AUTH0_ENDPOINT', '<AUTH0_ENDPOINT>'),
+  AUTH0_CLIENT_ID: optionalEnv('AUTH0_CLIENT_ID', '<AUTH0_CLIENT_ID>'),
+  AUTH0_REDIRECT_URI: optionalEnv('AUTH0_REDIRECT_URI', '<AUTH0_REDIRECT_URI>'),
 }
 
 export type BrowserEnvironment = {
@@ -34,4 +34,9 @@ function mustEnv(key: string): string {
     throw new Error(`missing required environment variable ${key}`)
   }
   return value
+}
+
+function optionalEnv(key: string, defaultValue: string): string {
+  const value = process.env[key]
+  return value ?? defaultValue
 }
