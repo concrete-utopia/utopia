@@ -361,6 +361,7 @@ import {
   trueUpHuggingElement,
   trueUpGroupElementChanged,
   getPackageJsonFromProjectContents,
+  modifyUnderlyingTargetJSXElement,
 } from '../store/editor-state'
 import {
   areGeneratedElementsTargeted,
@@ -2236,19 +2237,10 @@ export const UPDATE_FNS = {
     action: InsertAttributeOtherJavascriptIntoElement,
     editor: EditorModel,
   ): EditorModel => {
-    const withNewElement = modifyUnderlyingTargetElement(action.parent, editor, (element) => {
-      switch (element.type) {
-        case 'JSX_CONDITIONAL_EXPRESSION':
-        case 'JSX_FRAGMENT':
-          // only JSX elements are handled in this action
-          return element
-        case 'JSX_ELEMENT':
-          return {
-            ...element,
-            children: [action.expression],
-          }
-        default:
-          assertNever(element)
+    const withNewElement = modifyUnderlyingTargetJSXElement(action.parent, editor, (element) => {
+      return {
+        ...element,
+        children: [action.expression],
       }
     })
     return {

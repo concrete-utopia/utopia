@@ -3469,6 +3469,28 @@ export function modifyUnderlyingTargetElement(
   )
 }
 
+export function modifyUnderlyingTargetJSXElement(
+  target: ElementPath,
+  editor: EditorState,
+  modifyElement: (
+    element: JSXElement,
+    underlying: ElementPath,
+    underlyingFilePath: string,
+  ) => JSXElement,
+): EditorState {
+  return modifyUnderlyingTarget(
+    target,
+    editor,
+    (element, underlying, underlyingFilePath) => {
+      if (isJSXElement(element)) {
+        return modifyElement(element, underlying, underlyingFilePath)
+      }
+      return element
+    },
+    defaultModifyParseSuccess,
+  )
+}
+
 export function modifyUnderlyingElementForOpenFile(
   target: ElementPath,
   editor: EditorState,
