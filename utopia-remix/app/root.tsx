@@ -87,10 +87,23 @@ export function ErrorBoundary() {
         <meta charSet='utf-8' />
         <meta name='viewport' content='width=device-width, initial-scale=1' />
       </head>
-      <body style={{ fontFamily: 'Inter, sans-serif' }}>
+      <body
+        style={{
+          fontFamily: 'Inter, sans-serif',
+          height: '100vh',
+          width: '100vw',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          textAlign: 'center',
+          padding: 0,
+          margin: 0,
+        }}
+      >
         <div>
           <h1>
-            {error.status} – {error.statusText}
+            {error.status} – {error.statusText}
           </h1>
           <div>{error.data}</div>
         </div>
