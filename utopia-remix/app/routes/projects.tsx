@@ -580,20 +580,18 @@ const NoProjectsMessage = React.memo(() => {
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
   const searchQuery = useProjectsStore((store) => store.searchQuery)
 
-  const categoryContent = {
-    searchResults: {
-      subtitle: 'No projects found.',
-    },
-    allProjects: {
-      subtitle: 'Projects you create or open will show up here.',
-    },
-    trash: {
-      subtitle: 'Deleted projects are kept here until you destroy them for good.',
-    },
+  function getCategorySubtitle(cat: Category) {
+    switch (cat) {
+      case 'allProjects':
+        return 'Projects you create or open will show up here.'
+      case 'trash':
+        return 'Deleted projects are kept here until you destroy them for good.'
+      default:
+        assertNever(cat)
+    }
   }
 
-  const { subtitle } =
-    searchQuery !== '' ? categoryContent.searchResults : categoryContent[selectedCategory] || {}
+  const subtitle = searchQuery !== '' ? 'No projects found.' : getCategorySubtitle(selectedCategory)
 
   return <div style={{ padding: '0px 10px' }}>{subtitle}</div>
 })
