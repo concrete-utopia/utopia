@@ -527,7 +527,6 @@ export const JSXPropertyControl = React.memo(
       <div
         style={{
           borderRadius: 2,
-          padding: '4px 0px 4px 6px',
           background: colorTheme.bg2.value,
           fontWeight: 600,
           display: 'flex',
@@ -536,10 +535,11 @@ export const JSXPropertyControl = React.memo(
           gap: 6,
           overflowX: 'scroll',
           whiteSpace: 'nowrap',
+          padding: '2px 6px',
         }}
       >
         <JSXPropIcon jsxType={safeValue.type} />
-        <span>{safeValue.name}</span>
+        <span style={{ overflow: 'hidden' }}>{safeValue.name}</span>
       </div>
     )
   },
