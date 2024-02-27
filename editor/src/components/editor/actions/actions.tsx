@@ -317,6 +317,7 @@ import type {
   UpdateCodeFromCollaborationUpdate,
   SetCommentFilterMode,
   SetForking,
+  InsertAttributeOtherJavascriptIntoElement,
   SetCollaborators,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
@@ -360,6 +361,7 @@ import {
   trueUpHuggingElement,
   trueUpGroupElementChanged,
   getPackageJsonFromProjectContents,
+  modifyUnderlyingTargetJSXElement,
 } from '../store/editor-state'
 import {
   areGeneratedElementsTargeted,
@@ -2229,6 +2231,21 @@ export const UPDATE_FNS = {
       ...withNewElement,
       leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
       selectedViews: newSelectedViews,
+    }
+  },
+  INSERT_ATTRIBUTE_OTHER_JAVASCRIPT_INTO_ELEMENT: (
+    action: InsertAttributeOtherJavascriptIntoElement,
+    editor: EditorModel,
+  ): EditorModel => {
+    const withNewElement = modifyUnderlyingTargetJSXElement(action.parent, editor, (element) => {
+      return {
+        ...element,
+        children: [action.expression],
+      }
+    })
+    return {
+      ...withNewElement,
+      leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
     }
   },
   WRAP_IN_ELEMENT: (

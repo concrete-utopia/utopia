@@ -1,6 +1,6 @@
 import { within } from '@testing-library/react'
 import * as EP from '../../../../core/shared/element-path'
-import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
+import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
 import { mouseClickAtPoint, pressKey } from '../../../canvas/event-helpers.test-utils'
 import type { EditorRenderResult } from '../../../canvas/ui-jsx.test-utils'
 import { renderTestEditorWithCode } from '../../../canvas/ui-jsx.test-utils'
@@ -9,6 +9,9 @@ import {
   DataPickerPopupTestId,
   VariableFromScopeOptionTestId,
 } from './component-section'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import type { Right } from '../../../../core/shared/either'
+import type { JSExpressionOtherJavaScript } from '../../../../core/shared/element-template'
 
 describe('Set element prop via the data picker', () => {
   it('can pick from the property data picker', async () => {
@@ -579,6 +582,75 @@ describe('Set element prop via the data picker', () => {
     const options = getRenderedOptions(editor)
 
     expect(options).toEqual(['titleJsx', 'titleString', 'titleNumber', 'nums', 'nums[0]'])
+  })
+
+  it('picking data for the children prop', async () => {
+    const editor = await renderTestEditorWithCode(
+      DataPickerProjectShell(`registerInternalComponent(Link, {
+      properties: {
+        children: Utopia.arrayControl({ control: 'jsx' }),
+      },
+      supportsChildren: true,
+      variants: [],
+    })
+    
+    function Link({ href, children }) {
+      return (
+        <a href={href} data-uid='a-root'>
+          {children}
+        </a>
+      )
+    }
+    
+    var Playground = ({ style }) => {
+      const alternateBookInfo = {
+        title: 'Frankenstein',
+        published: 'August 1866',
+        description: 'Short, fun read',
+        likes: 66,
+      }
+    
+      return (
+        <div style={style} data-uid='root'>
+          <Link href='/new' data-uid='link'>
+            <code>TODO</code>
+          </Link>
+        </div>
+      )
+    }`),
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/link')])
+
+    const dataPickerOpenerButton = editor.renderedDOM.getAllByTestId(DataPickerPopupButtonTestId)[0]
+    await mouseClickAtPoint(dataPickerOpenerButton, { x: 2, y: 2 })
+
+    const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
+    expect(dataPickerPopup).not.toBeNull()
+
+    const options = getRenderedOptions(editor)
+
+    expect(options).toEqual(['alternateBookInfo', 'title', 'published', 'description', 'likes'])
+
+    const theScene = editor.renderedDOM.getByTestId('scene')
+    let currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId('0-0'))
+    await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
+    expect(within(theScene).queryByText('Frankenstein')).not.toBeNull()
+
+    const childrenOfLink = MetadataUtils.getChildrenOrdered(
+      editor.getEditorState().editor.jsxMetadata,
+      editor.getEditorState().editor.elementPathTree,
+      EP.fromString('sb/scene/pg:root/link'),
+    )
+
+    expect(childrenOfLink).toHaveLength(1)
+    expect((childrenOfLink[0].element as Right<JSExpressionOtherJavaScript>).value.type).toEqual(
+      'ATTRIBUTE_OTHER_JAVASCRIPT',
+    )
+    expect(
+      (childrenOfLink[0].element as Right<JSExpressionOtherJavaScript>).value.javascript,
+    ).toEqual("alternateBookInfo['title'];")
   })
 })
 

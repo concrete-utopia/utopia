@@ -1,7 +1,7 @@
 import { PersistentSession, UserDetails } from 'prisma-client'
 import { prisma } from '../db.server'
 import { ensure } from '../util/api.server'
-import { Status } from '../util/statusCodes.server'
+import { Status } from '../util/statusCodes'
 
 export async function getSession(params: { key: string }): Promise<PersistentSession | null> {
   return await prisma.persistentSession.findFirst({

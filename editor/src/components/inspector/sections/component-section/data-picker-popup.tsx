@@ -6,7 +6,7 @@ import React, { useCallback } from 'react'
 import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import type { PropertyPath } from '../../../../core/shared/project-file-types'
-import { useColorTheme, UtopiaTheme, Button, FlexColumn, UtopiaStyles } from '../../../../uuiui'
+import { useColorTheme, Button, FlexColumn, UtopiaStyles } from '../../../../uuiui'
 import { setProp_UNSAFE } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { useRefEditorState } from '../../../editor/store/store-hook'
@@ -70,6 +70,14 @@ function valueToDisplay(option: VariableOption): string {
   }
 }
 
+function isChildrenProp(path: PropertyPath): boolean {
+  return (
+    path.propertyElements.length > 0 &&
+    typeof path.propertyElements[0] === 'string' &&
+    path.propertyElements[0] === 'children'
+  )
+}
+
 export interface DataPickerPopupProps {
   closePopup: () => void
   style: React.CSSProperties
@@ -86,6 +94,7 @@ export const DataPickerPopup = React.memo(
 
     const colorTheme = useColorTheme()
     const dispatch = useDispatch()
+    const isTargetingChildrenProp = isChildrenProp(propPath)
 
     const onTweakProperty = React.useCallback(
       (name: string, definedElsewhere: string | null) => (e: React.MouseEvent) => {
@@ -97,16 +106,22 @@ export const DataPickerPopup = React.memo(
         e.preventDefault()
 
         const definedElseWhereArray = optionalMap((d) => [d], definedElsewhere) ?? []
+        const expression = jsExpressionOtherJavaScriptSimple(name, definedElseWhereArray)
 
-        dispatch([
-          setProp_UNSAFE(
-            selectedViewPathRef.current,
-            propPath,
-            jsExpressionOtherJavaScriptSimple(name, definedElseWhereArray),
-          ),
-        ])
+        if (isTargetingChildrenProp) {
+          dispatch([
+            {
+              action: 'INSERT_ATTRIBUTE_OTHER_JAVASCRIPT_INTO_ELEMENT',
+              expression: expression,
+              parent: selectedViewPathRef.current,
+            },
+          ])
+          return
+        }
+
+        dispatch([setProp_UNSAFE(selectedViewPathRef.current, propPath, expression)])
       },
-      [dispatch, propPath, selectedViewPathRef],
+      [dispatch, isTargetingChildrenProp, propPath, selectedViewPathRef],
     )
 
     const variableNamesInScope = useVariablesInScopeForSelectedElement(
