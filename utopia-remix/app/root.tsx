@@ -99,14 +99,13 @@ export function ErrorBoundary() {
           textAlign: 'center',
           padding: 0,
           margin: 0,
+          gap: 10,
         }}
       >
-        <div>
-          <h1>
-            {error.status} – {error.statusText}
-          </h1>
-          <div>{error.data}</div>
-        </div>
+        <h1>
+          {error.status} – {error.statusText}
+        </h1>
+        <div>{error.data}</div>
       </body>
     </html>
   )
