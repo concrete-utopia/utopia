@@ -5,6 +5,7 @@ import { Params } from '@remix-run/react'
 import { Status } from '../util/statusCodes.server'
 import { hasUserProjectPermission } from '../services/permissionsService.server'
 import { UserProjectPermission } from '../types'
+import { Project } from 'prisma-client'
 
 export async function loader(args: LoaderFunctionArgs) {
   return handle(args, {
@@ -23,14 +24,16 @@ async function getProject(req: Request, params: Params<string>) {
   } catch (e) {
     userId = 'ANON'
   }
-  const allowed = await hasUserProjectPermission(
-    projectId,
-    userId,
-    UserProjectPermission.CAN_VIEW_PROJECT,
-  )
+  const projectData = (await proxy(req, params)) as { ownerId: string }
+  const creatorId = projectData.ownerId
+  const isCreator = creatorId === userId
+
+  const allowed =
+    isCreator ||
+    (await hasUserProjectPermission(projectId, userId, UserProjectPermission.CAN_VIEW_PROJECT))
   ensure(allowed, 'Access denied', Status.NOT_FOUND)
 
-  return proxy(req, params)
+  return projectData
 }
 
 export async function action(args: ActionFunctionArgs) {
