@@ -14,14 +14,18 @@ export const ServerEnvironment = {
   BackendURL: mustEnv('BACKEND_URL'),
   // the CORS allowed origin for incoming requests
   CORSOrigin: mustEnv('CORS_ORIGIN'),
+  // Auth0 credentials
+  AUTH0_ENDPOINT: mustEnv('AUTH0_ENDPOINT'),
+  AUTH0_CLIENT_ID: mustEnv('AUTH0_CLIENT_ID'),
+  AUTH0_REDIRECT_URI: mustEnv('AUTH0_REDIRECT_URI'),
 }
 
 export type BrowserEnvironment = {
-  EDITOR_URL?: string
+  EDITOR_URL: string
 }
 
 export const BrowserEnvironment: BrowserEnvironment = {
-  EDITOR_URL: process.env.REACT_APP_EDITOR_URL,
+  EDITOR_URL: mustEnv('REACT_APP_EDITOR_URL'),
 }
 
 function mustEnv(key: string): string {
