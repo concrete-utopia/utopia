@@ -393,7 +393,7 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
             )}
           </div>
           {when(
-            projects.length > 0,
+            projects.length > 0 && searchQuery === '',
             <div
               style={{
                 display: 'flex',
