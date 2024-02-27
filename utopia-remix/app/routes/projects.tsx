@@ -343,6 +343,13 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
       .replace(/^\w/, (c) => c.toUpperCase())
   }
 
+  const clearSearchInput = React.useCallback(() => {
+    const inputElement = document.getElementById('search-input') as HTMLInputElement
+    if (inputElement) {
+      inputElement.value = ''
+    }
+  }, [])
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
       <div
@@ -371,12 +378,7 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
                   <span
                     onClick={() => {
                       setSearchQuery('')
-                      const inputElement = document.getElementById(
-                        'search-input',
-                      ) as HTMLInputElement
-                      if (inputElement) {
-                        inputElement.value = ''
-                      }
+                      clearSearchInput()
                     }}
                     style={{ cursor: 'pointer' }}
                   >
