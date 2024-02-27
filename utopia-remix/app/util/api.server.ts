@@ -98,20 +98,10 @@ function getErrorData(err: unknown): { message: string; status: number; name: st
   }
 }
 
-export function ensure(
-  condition: unknown,
-  message: string,
-  status: number,
-  options?: {
-    redirect?: string
-  },
-): asserts condition {
+export function ensure(condition: unknown, message: string, status: number): asserts condition {
   try {
     invariant(condition)
   } catch (error) {
-    if (options?.redirect != null) {
-      throw redirect(options.redirect)
-    }
     throw new ApiError(message, status)
   }
 }
@@ -136,10 +126,17 @@ export async function requireUser(
   const cookieHeader = request.headers.get('cookie') ?? ''
   const cookies = cookie.parse(cookieHeader)
   const sessionId = cookies[SESSION_COOKIE_NAME] ?? null
-  ensure(sessionId != null, 'missing session cookie', Status.UNAUTHORIZED, {
-    redirect: options?.redirect,
-  })
-  const user = await getUserFromSession({ key: sessionId })
-  ensure(user != null, 'user not found', Status.UNAUTHORIZED, { redirect: options?.redirect })
-  return user
+  try {
+    ensure(sessionId != null, 'missing session cookie', Status.UNAUTHORIZED)
+    const user = await getUserFromSession({ key: sessionId })
+    ensure(user != null, 'user not found', Status.UNAUTHORIZED)
+    return user
+  } catch (error) {
+    if (error instanceof ApiError && error.status === Status.UNAUTHORIZED) {
+      if (options?.redirect != null) {
+        throw redirect(options.redirect)
+      }
+    }
+    throw error
+  }
 }
