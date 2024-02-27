@@ -36,6 +36,10 @@ import {
   isJSXElementLike,
   isJSXConditionalExpression,
   isNullJSXAttributeValue,
+  isJSIdentifier,
+  isJSPropertyAccess,
+  isJSElementAccess,
+  isJSExpression,
 } from '../../core/shared/element-template'
 import {
   guaranteeUniqueUids,
@@ -1840,6 +1844,16 @@ function getValidElementPathsFromElement(
       )
     }
 
+    return paths
+  } else if (
+    isJSExpression(element) &&
+    (isJSIdentifier(element) || isJSPropertyAccess(element) || isJSElementAccess(element))
+  ) {
+    const uid = getUtopiaID(element)
+    const path = parentIsInstance
+      ? EP.appendNewElementPath(parentPath, uid)
+      : EP.appendToPath(parentPath, uid)
+    let paths = [path]
     return paths
   } else if (isJSExpressionMapOrOtherJavaScript(element)) {
     // FIXME: From investigation of https://github.com/concrete-utopia/utopia/issues/1137

@@ -23,7 +23,11 @@ import {
 } from '../canvas/ui-jsx.test-utils'
 import { TextEditorSpanId } from './text-editor'
 import { FOR_TESTS_setNextGeneratedUid } from '../../core/model/element-template-utils.test-utils'
-import { selectComponents, switchEditorMode } from '../editor/actions/action-creators'
+import {
+  selectComponents,
+  setFocusedElement,
+  switchEditorMode,
+} from '../editor/actions/action-creators'
 import { EditorModes } from '../editor/editor-modes'
 
 describe('Use the text editor', () => {
@@ -32,7 +36,7 @@ describe('Use the text editor', () => {
 
     await enterTextEditMode(editor)
     typeText(' Utopia')
-    await expectSingleUndo2Saves(editor, async () => closeTextEditor())
+    await expectSingleUndoNSaves(editor, 1, async () => closeTextEditor())
     await editor.getDispatchFollowUpActionsFinished()
 
     expect(editor.getEditorState().editor.mode.type).toEqual('select')
@@ -65,7 +69,7 @@ describe('Use the text editor', () => {
 
     await enterTextEditMode(editor)
     typeText('Utopia')
-    await expectSingleUndo2Saves(editor, async () => closeTextEditor())
+    await expectSingleUndoNSaves(editor, 1, async () => closeTextEditor())
     await editor.getDispatchFollowUpActionsFinished()
 
     expect(editor.getEditorState().editor.mode.type).toEqual('select')
@@ -130,7 +134,7 @@ describe('Use the text editor', () => {
 
     await enterTextEditMode(editor)
     typeText('this is a <test> with bells & whistles')
-    await expectSingleUndo2Saves(editor, async () => closeTextEditor())
+    await expectSingleUndoNSaves(editor, 1, async () => closeTextEditor())
     await editor.getDispatchFollowUpActionsFinished()
 
     expect(editor.getEditorState().editor.mode.type).toEqual('select')

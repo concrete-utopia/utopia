@@ -8,6 +8,7 @@ import type {
 } from '../shared/element-template'
 import {
   isJSExpression,
+  isJSPropertyAccess,
   isJSXConditionalExpression,
   isNullJSXAttributeValue,
 } from '../shared/element-template'
@@ -16,7 +17,7 @@ import { getUtopiaID } from '../shared/uid-utils'
 import type { Optic } from '../shared/optics/optics'
 import { fromField, fromTypeGuard } from '../shared/optics/optic-creators'
 import { findUtopiaCommentFlag, isUtopiaCommentFlagConditional } from '../shared/comment-flags'
-import { isLeft, isRight } from '../shared/either'
+import { foldEither, isLeft, isRight } from '../shared/either'
 import { MetadataUtils } from './element-metadata-utils'
 import { forceNotNull } from '../shared/optional-utils'
 
