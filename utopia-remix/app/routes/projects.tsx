@@ -209,6 +209,7 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
             overflow: 'visible',
             padding: '0px 14px',
             gap: 10,
+            borderBottom: '1px solid gray',
           }}
         >
           <MagnifyingGlassIcon />
@@ -227,6 +228,10 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
               outline: 'none',
               color: 'grey',
               height: SidebarRowHeight,
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              padding: '0 14px',
             }}
             placeholder='Search…'
           />
