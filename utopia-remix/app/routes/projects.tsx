@@ -131,8 +131,8 @@ const ProjectsPage = React.memo(() => {
         }}
       >
         <TopActionBar />
-        <ProjectsHeader projects={activeProjects} />
-        <ProjectCards projects={filteredProjects} collaborators={data.collaborators} />
+        <ProjectsHeader projects={filteredProjects} />
+        <Projects projects={filteredProjects} collaborators={data.collaborators} />
       </div>
     </div>
   )
@@ -242,7 +242,8 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
               <button
                 key={`category-${category}`}
                 className={projectCategoryButton({
-                  color: category === selectedCategory ? 'selected' : 'neutral',
+                  color:
+                    category === selectedCategory && searchQuery === '' ? 'selected' : 'neutral',
                 })}
                 onClick={handleSelectCategory(category)}
               >
@@ -347,6 +348,13 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
       .replace(/^\w/, (c) => c.toUpperCase())
   }
 
+  const clearSearchInput = React.useCallback(() => {
+    const inputElement = document.getElementById('search-input') as HTMLInputElement
+    if (inputElement) {
+      inputElement.value = ''
+    }
+  }, [])
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
       <div
@@ -375,12 +383,7 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
                   <span
                     onClick={() => {
                       setSearchQuery('')
-                      const inputElement = document.getElementById(
-                        'search-input',
-                      ) as HTMLInputElement
-                      if (inputElement) {
-                        inputElement.value = ''
-                      }
+                      clearSearchInput()
                     }}
                     style={{ cursor: 'pointer' }}
                   >
@@ -397,7 +400,7 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
             )}
           </div>
           {when(
-            projects.length > 0,
+            projects.length > 0 && searchQuery === '',
             <div
               style={{
                 display: 'flex',
@@ -410,9 +413,9 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
             </div>,
           )}
         </div>
-        {when(
-          projects.length > 1,
-          <div style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
+        <div style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
+          {when(
+            projects.length > 1,
             <DropdownMenuRoot>
               <DropdownMenuTrigger asChild>
                 <div
@@ -427,7 +430,10 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
                 </div>
               </DropdownMenuTrigger>
               <SortingContextMenu />
-            </DropdownMenuRoot>
+            </DropdownMenuRoot>,
+          )}
+          {when(
+            projects.length > 0,
             <div style={{ display: 'flex', flexDirection: 'row', gap: 1 }}>
               <HamburgerMenuIcon
                 onClick={() => {
@@ -447,9 +453,9 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
                   color: gridView ? 'selected' : 'transparent',
                 })}
               />
-            </div>
-          </div>,
-        )}
+            </div>,
+          )}
+        </div>
       </div>
       {when(projects.length === 0, <NoProjectsMessage />)}
     </div>
@@ -497,7 +503,7 @@ const CategoryTrashActions = React.memo(({ projects }: { projects: ProjectWithou
 })
 CategoryTrashActions.displayName = 'CategoryTrashActions'
 
-const ProjectCards = React.memo(
+const Projects = React.memo(
   ({
     projects,
     collaborators,
@@ -568,7 +574,7 @@ const ProjectCards = React.memo(
     )
   },
 )
-ProjectCards.displayName = 'ProjectCards'
+Projects.displayName = 'Projects'
 
 const NoProjectsMessage = React.memo(() => {
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
