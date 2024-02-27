@@ -131,7 +131,7 @@ const ProjectsPage = React.memo(() => {
         }}
       >
         <TopActionBar />
-        <ProjectsHeader projects={activeProjects} />
+        <ProjectsHeader projects={filteredProjects} />
         <ProjectCards projects={filteredProjects} collaborators={data.collaborators} />
       </div>
     </div>
