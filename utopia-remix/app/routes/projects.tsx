@@ -237,7 +237,8 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
               <button
                 key={`category-${category}`}
                 className={projectCategoryButton({
-                  color: category === selectedCategory ? 'selected' : 'neutral',
+                  color:
+                    category === selectedCategory && searchQuery === '' ? 'selected' : 'neutral',
                 })}
                 onClick={handleSelectCategory(category)}
               >
