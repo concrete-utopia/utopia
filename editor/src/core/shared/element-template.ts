@@ -31,7 +31,6 @@ import type { MapLike } from 'typescript'
 import { forceNotNull } from './optional-utils'
 import type { FlexAlignment, FlexJustifyContent } from '../../components/inspector/inspector-common'
 import { allComments } from './comment-flags'
-import { defaultIndexHtmlFilePath } from '../../components/editor/store/editor-state'
 
 export interface ParsedComments {
   leadingComments: Array<Comment>

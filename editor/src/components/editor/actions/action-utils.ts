@@ -144,6 +144,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'DELETE_VIEW':
     case 'UNSET_PROPERTY':
     case 'INSERT_JSX_ELEMENT':
+    case 'INSERT_ATTRIBUTE_OTHER_JAVASCRIPT_INTO_ELEMENT':
     case 'MOVE_SELECTED_TO_BACK':
     case 'MOVE_SELECTED_TO_FRONT':
     case 'MOVE_SELECTED_BACKWARD':
