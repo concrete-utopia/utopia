@@ -132,7 +132,7 @@ const ProjectsPage = React.memo(() => {
       >
         <TopActionBar />
         <ProjectsHeader projects={filteredProjects} />
-        <ProjectCards projects={filteredProjects} collaborators={data.collaborators} />
+        <Projects projects={filteredProjects} collaborators={data.collaborators} />
       </div>
     </div>
   )
@@ -493,7 +493,7 @@ const CategoryTrashActions = React.memo(({ projects }: { projects: ProjectWithou
 })
 CategoryTrashActions.displayName = 'CategoryTrashActions'
 
-const ProjectCards = React.memo(
+const Projects = React.memo(
   ({
     projects,
     collaborators,
@@ -564,7 +564,7 @@ const ProjectCards = React.memo(
     )
   },
 )
-ProjectCards.displayName = 'ProjectCards'
+Projects.displayName = 'Projectss'
 
 const NoProjectsMessage = React.memo(() => {
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
