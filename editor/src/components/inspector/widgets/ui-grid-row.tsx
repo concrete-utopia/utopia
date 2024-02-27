@@ -68,7 +68,10 @@ const gridTemplates = {
   },
   '<--1fr--><--1fr-->|-18px-|': {
     gridColumnGap: 4,
-    gridTemplateColumns: '1fr 1fr 18px',
+    // multiple columns with 1fr don't actually resize evenly as expected,
+    // so we need to use minmax(0, 1fr) to get the expected behavior
+    // https://discourse.webflow.com/t/2-column-grid-set-to-1fr-1fr-not-resizing-evenly/93863
+    gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr) 18px',
   },
   '<-------------1fr------------->': {
     gridColumnGap: 4,
