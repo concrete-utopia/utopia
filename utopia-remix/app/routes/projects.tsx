@@ -348,12 +348,12 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
       .replace(/^\w/, (c) => c.toUpperCase())
   }
 
-  const clearSearchInput = React.useCallback(() => {
+  function clearSearchInput() {
     const inputElement = document.getElementById('search-input') as HTMLInputElement
     if (inputElement) {
       inputElement.value = ''
     }
-  }, [])
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
