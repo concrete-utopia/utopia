@@ -32,6 +32,7 @@ import { projectEditorLink } from '../util/links'
 import { when } from '../util/react-conditionals'
 import { UnknownPlayerName, multiplayerInitialsFromName } from '../util/strings'
 import { useProjectMatchesQuery, useSortCompareProject } from '../util/use-sort-compare-project'
+import { auth0LoginURL } from '../util/auth0.server'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
@@ -53,7 +54,7 @@ const MarginSize = 30
 const SidebarRowHeight = 30
 
 export async function loader(args: LoaderFunctionArgs) {
-  const user = await requireUser(args.request)
+  const user = await requireUser(args.request, { redirect: auth0LoginURL() })
 
   const projects = await listProjects({
     ownerId: user.user_id,

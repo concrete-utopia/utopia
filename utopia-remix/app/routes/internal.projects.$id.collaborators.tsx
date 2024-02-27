@@ -1,6 +1,6 @@
 import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node'
 import { ensure, handle, requireUser } from '../util/api.server'
-import { Status } from '../util/statusCodes.server'
+import { Status } from '../util/statusCodes'
 import { Params } from '@remix-run/react'
 import {
   listProjectCollaborators,
