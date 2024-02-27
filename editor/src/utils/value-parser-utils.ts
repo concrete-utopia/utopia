@@ -318,7 +318,6 @@ export interface JSXParsedValue {
 export function parseJsx(_: unknown, value: unknown): ParseResult<JSXParsedValue> {
   if (React.isValidElement(value)) {
     const { type } = value
-
     // if this is an html element, we want to return the tag name
     if (typeof type === 'string') {
       return right({
@@ -346,7 +345,7 @@ export function parseJsx(_: unknown, value: unknown): ParseResult<JSXParsedValue
         })
       }
       if (originalType.hasOwnProperty('name') === true) {
-        right({
+        return right({
           type: 'external-component',
           name: (originalType as ComponentRendererComponent).name ?? 'JSX',
         })
@@ -361,7 +360,7 @@ export function parseJsx(_: unknown, value: unknown): ParseResult<JSXParsedValue
       })
     }
     if (type.hasOwnProperty('name')) {
-      right({
+      return right({
         type: 'external-component',
         name: (type as any).name ?? 'JSX',
       })
@@ -369,14 +368,14 @@ export function parseJsx(_: unknown, value: unknown): ParseResult<JSXParsedValue
   }
 
   if (typeof value === 'string') {
-    right({
+    return right({
       type: 'string',
       name: value,
     })
   }
 
   if (typeof value === 'number') {
-    right({
+    return right({
       type: 'number',
       name: value.toString(),
     })
@@ -388,6 +387,7 @@ export function parseJsx(_: unknown, value: unknown): ParseResult<JSXParsedValue
       name: 'null',
     })
   }
+
   return right({
     type: 'unknown',
     name: 'JSX',
