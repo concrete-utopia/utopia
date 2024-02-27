@@ -406,9 +406,9 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
             </div>,
           )}
         </div>
-        {when(
-          projects.length > 1,
-          <div style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
+        <div style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
+          {when(
+            projects.length > 1,
             <DropdownMenuRoot>
               <DropdownMenuTrigger asChild>
                 <div
@@ -423,7 +423,10 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
                 </div>
               </DropdownMenuTrigger>
               <SortingContextMenu />
-            </DropdownMenuRoot>
+            </DropdownMenuRoot>,
+          )}
+          {when(
+            projects.length > 0,
             <div style={{ display: 'flex', flexDirection: 'row', gap: 1 }}>
               <HamburgerMenuIcon
                 onClick={() => {
@@ -443,9 +446,9 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
                   color: gridView ? 'selected' : 'transparent',
                 })}
               />
-            </div>
-          </div>,
-        )}
+            </div>,
+          )}
+        </div>
       </div>
       {when(projects.length === 0, <NoProjectsMessage />)}
     </div>
