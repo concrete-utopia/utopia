@@ -1,4 +1,4 @@
-import { Project } from 'prisma-client'
+import { Project, UserDetails } from 'prisma-client'
 
 export interface ProjectListing {
   id: string
@@ -18,8 +18,16 @@ export type ProjectWithoutContent = Omit<Project, 'content'>
 
 export interface Collaborator {
   id: string
-  name: string
-  avatar: string
+  name: string | null
+  avatar: string | null
 }
 
 export type CollaboratorsByProject = { [projectId: string]: Collaborator[] }
+
+export function userToCollaborator(user: UserDetails): Collaborator {
+  return {
+    id: user.user_id,
+    name: user.name,
+    avatar: user.picture,
+  }
+}

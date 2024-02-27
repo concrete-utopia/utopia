@@ -12,7 +12,6 @@ export DATABASE_URL='postgres://postgres:password@localhost:54322/postgres?sslmo
 export CORS_ORIGIN='*'
 export BACKEND_URL=''
 export REACT_APP_EDITOR_URL=''
-export LIVEBLOCKS_SECRET_KEY='secret'
 
 pnpm exec prisma db push
 jest --runInBand --verbose

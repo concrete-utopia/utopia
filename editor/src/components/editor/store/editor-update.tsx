@@ -457,6 +457,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_SHOW_RESOLVED_THREADS(action, state)
     case 'SET_FORKING':
       return UPDATE_FNS.SET_FORKING(action, state)
+    case 'SET_COLLABORATORS':
+      return UPDATE_FNS.SET_COLLABORATORS(action, state)
     default:
       return state
   }

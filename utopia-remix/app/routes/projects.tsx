@@ -23,7 +23,7 @@ import { requireUser } from '../util/api.server'
 import { assertNever } from '../util/assertNever'
 import { projectEditorLink } from '../util/links'
 import { when } from '../util/react-conditionals'
-import { multiplayerInitialsFromName } from '../util/strings'
+import { UnknownPlayerName, multiplayerInitialsFromName } from '../util/strings'
 import { useProjectMatchesQuery, useSortCompareProject } from '../util/use-sort-compare-project'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
@@ -628,7 +628,7 @@ const ProjectCard = React.memo(
                     fontWeight: 700,
                     filter: project.deleted === true ? 'grayscale(1)' : undefined,
                   }}
-                  title={collaborator.name}
+                  title={collaborator.name ?? UnknownPlayerName}
                   className={sprinkles({
                     boxShadow: 'shadow',
                     color: 'white',
@@ -753,7 +753,7 @@ const ProjectRow = React.memo(
                       fontWeight: 700,
                       filter: project.deleted === true ? 'grayscale(1)' : undefined,
                     }}
-                    title={collaborator.name}
+                    title={collaborator.name ?? UnknownPlayerName}
                     className={sprinkles({
                       boxShadow: 'shadow',
                       color: 'white',
