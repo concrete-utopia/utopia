@@ -1,6 +1,6 @@
-import React from 'react'
 import type { LostConnectionEvent, User } from '@liveblocks/client'
 import { LiveObject, type ThreadData } from '@liveblocks/client'
+import React from 'react'
 import type { ConnectionInfo, Presence, ThreadMetadata, UserMeta } from '../../../liveblocks.config'
 import {
   useEditThreadMetadata,
@@ -10,10 +10,15 @@ import {
   useStorage,
   useThreads,
 } from '../../../liveblocks.config'
-import { Substores, useEditorState } from '../../components/editor/store/store-hook'
-import { isLoggedIn } from '../../common/user'
+import { getIdOfScene } from '../../components/canvas/controls/comment-mode/comment-mode-hooks'
 import type { CommentId, SceneCommentLocation } from '../../components/editor/editor-modes'
-import { assertNever } from '../shared/utils'
+import { getCurrentTheme } from '../../components/editor/store/editor-state'
+import { usePermissions } from '../../components/editor/store/permissions'
+import { Substores, useEditorState } from '../../components/editor/store/store-hook'
+import { MetadataUtils } from '../model/element-metadata-utils'
+import { foldEither } from '../shared/either'
+import * as EP from '../shared/element-path'
+import { type ElementInstanceMetadata } from '../shared/element-template'
 import type {
   CanvasPoint,
   CanvasRectangle,
@@ -26,21 +31,13 @@ import {
   isNotNullFiniteRectangle,
   nullIfInfinity,
 } from '../shared/math-utils'
-import { MetadataUtils } from '../model/element-metadata-utils'
-import { getIdOfScene } from '../../components/canvas/controls/comment-mode/comment-mode-hooks'
-import type { ElementPath } from '../shared/project-file-types'
-import { type ElementInstanceMetadata } from '../shared/element-template'
-import * as EP from '../shared/element-path'
-import { getCurrentTheme } from '../../components/editor/store/editor-state'
-import { useMyUserId } from '../shared/multiplayer-hooks'
-import { usePermissions } from '../../components/editor/store/permissions'
-import { modify, toFirst } from '../shared/optics/optic-utilities'
-import { filtered, fromObjectField, traverseArray } from '../shared/optics/optic-creators'
-import { foldEither } from '../shared/either'
-import { isCanvasThreadMetadata, liveblocksThreadMetadataToUtopia } from './comment-types'
 import type { Collaborator } from '../shared/multiplayer'
-import { normalizeMultiplayerName } from '../shared/multiplayer'
-import { isBackendBFF } from '../../common/env-vars'
+import { useMyUserId } from '../shared/multiplayer-hooks'
+import { filtered, fromObjectField, traverseArray } from '../shared/optics/optic-creators'
+import { modify, toFirst } from '../shared/optics/optic-utilities'
+import type { ElementPath } from '../shared/project-file-types'
+import { assertNever } from '../shared/utils'
+import { isCanvasThreadMetadata, liveblocksThreadMetadataToUtopia } from './comment-types'
 
 export function useCanvasCommentThreadAndLocation(comment: CommentId): {
   location: CanvasPoint | null
@@ -198,53 +195,6 @@ export function useMyUserAndPresence(): {
     presence: me,
     user: myUser ?? placeholderUserMeta(me),
   }
-}
-
-/**
- * TODO: remove this once the BFF is on.
- * @deprecated This relies on the LB storage for collaborators, which is being sunset.
- */
-export function useAddMyselfToCollaborators_DEPRECATED() {
-  const loginState = useEditorState(
-    Substores.userState,
-    (store) => store.userState.loginState,
-    'useAddMyselfToCollaborators loginState',
-  )
-
-  const projectId = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.id,
-    'useAddMyselfToCollaborators projectId',
-  )
-
-  const addMyselfToCollaborators = useMutation(
-    ({ storage, self }) => {
-      if (!isLoggedIn(loginState) || isBackendBFF()) {
-        return
-      }
-      const collaborators = storage.get('collaborators')
-
-      if (collaborators.get(self.id) == null) {
-        collaborators.set(
-          self.id,
-          new LiveObject({
-            id: loginState.user.userId,
-            name: normalizeMultiplayerName(loginState.user.name ?? null),
-            avatar: loginState.user.picture ?? null,
-          }),
-        )
-      }
-    },
-    [loginState],
-  )
-
-  const collabs = useStorage((store) => store.collaborators)
-
-  React.useEffect(() => {
-    if (collabs != null) {
-      addMyselfToCollaborators()
-    }
-  }, [addMyselfToCollaborators, collabs, projectId])
 }
 
 export function useCollaborators() {

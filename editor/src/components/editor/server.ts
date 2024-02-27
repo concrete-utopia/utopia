@@ -28,11 +28,7 @@ import {
 } from './actions/action-creators'
 import { updateUserDetailsWhenAuthenticated } from '../../core/shared/github/helpers'
 import { GithubAuth } from '../../utils/github-auth'
-import type { User } from '../../../liveblocks.config'
-import { liveblocksClient } from '../../../liveblocks.config'
 import type { Collaborator } from '../../core/shared/multiplayer'
-import type { LiveObject } from '@liveblocks/client'
-import { projectIdToRoomId } from '../../utils/room-id'
 
 export { fetchProjectList, fetchShowcaseProjects, getLoginState } from '../../common/server'
 
@@ -516,7 +512,7 @@ export async function updateCollaborators(projectId: string) {
 
 export async function getCollaborators(projectId: string): Promise<Collaborator[]> {
   if (!isBackendBFF()) {
-    return getCollaboratorsFromLiveblocks(projectId)
+    return []
   }
 
   const response = await fetch(
@@ -533,18 +529,4 @@ export async function getCollaborators(projectId: string): Promise<Collaborator[
   } else {
     throw new Error(`Load collaborators failed (${response.status}): ${response.statusText}`)
   }
-}
-
-// TODO remove this once the BFF is on
-async function getCollaboratorsFromLiveblocks(projectId: string): Promise<Collaborator[]> {
-  const room = liveblocksClient.getRoom(projectIdToRoomId(projectId))
-  if (room == null) {
-    return []
-  }
-  const storage = await room.getStorage()
-  const collabs = storage.root.get('collaborators') as LiveObject<{ [userId: string]: User }>
-  if (collabs == null) {
-    return []
-  }
-  return Object.values(collabs.toObject()).map((u) => u.toObject())
 }
