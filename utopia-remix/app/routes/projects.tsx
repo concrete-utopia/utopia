@@ -2,7 +2,14 @@ import {
   Root as DropdownMenuRoot,
   Trigger as DropdownMenuTrigger,
 } from '@radix-ui/react-dropdown-menu'
-import { DashboardIcon, DotsHorizontalIcon, HamburgerMenuIcon } from '@radix-ui/react-icons'
+import {
+  DashboardIcon,
+  DotsHorizontalIcon,
+  HamburgerMenuIcon,
+  MagnifyingGlassIcon,
+  TrashIcon,
+  CubeIcon,
+} from '@radix-ui/react-icons'
 import React from 'react'
 import { LoaderFunctionArgs, json } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
@@ -37,9 +44,9 @@ function isCategory(category: unknown): category is Category {
 
 export type Category = (typeof Categories)[number]
 
-const categories: { [key in Category]: { name: string } } = {
-  allProjects: { name: 'All My Projects' },
-  trash: { name: 'Trash' },
+const categories: { [key in Category]: { name: string; icon: React.ReactNode } } = {
+  allProjects: { name: 'All My Projects', icon: <CubeIcon /> },
+  trash: { name: 'Trash', icon: <TrashIcon /> },
 }
 
 const MarginSize = 30
@@ -140,6 +147,7 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
   const setSelectedCategory = useProjectsStore((store) => store.setSelectedCategory)
   const setSelectedProjectId = useProjectsStore((store) => store.setSelectedProjectId)
+  const [isSearchFocused, setIsSearchFocused] = React.useState(false)
 
   const isDarkMode = useIsDarkMode()
 
@@ -190,28 +198,39 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
           />
           <div className={userName({})}>{user.name}</div>
         </div>
-
-        <input
-          id='search-input'
-          autoFocus={true}
-          value={searchQuery}
-          onChange={(e) => {
-            setSearchQuery(e.target.value)
-          }}
+        <div
           style={{
-            border: 'none',
-            background: 'transparent',
-            outline: 'none',
-            color: 'grey',
-            height: SidebarRowHeight,
-            borderBottom: '1px solid gray',
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
-            padding: '0 14px',
+            border: `1px solid ${isSearchFocused ? '#0075F9' : 'transparent'}`,
+            borderBottomColor: isSearchFocused ? '#0075F9' : 'gray',
+            borderRadius: isSearchFocused ? 3 : undefined,
+            overflow: 'visible',
+            padding: '0px 14px',
+            gap: 10,
           }}
-          placeholder='Search…'
-        />
+        >
+          <MagnifyingGlassIcon />
+          <input
+            id='search-input'
+            autoFocus={true}
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value)
+            }}
+            onFocus={() => setIsSearchFocused(true)}
+            onBlur={() => setIsSearchFocused(false)}
+            style={{
+              border: 'none',
+              background: 'transparent',
+              outline: 'none',
+              color: 'grey',
+              height: SidebarRowHeight,
+            }}
+            placeholder='Search…'
+          />
+        </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
           {Object.entries(categories).map(([category, data]) => {
             return (
@@ -222,6 +241,7 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
                 })}
                 onClick={handleSelectCategory(category)}
               >
+                {data.icon}
                 <span>{data.name}</span>
               </button>
             )
