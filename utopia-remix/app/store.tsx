@@ -1,43 +1,99 @@
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
-import { Category } from './routes/projects'
-import { SortCriteria } from './routes/projects'
+import { Category, SortCriteria } from './routes/projects'
+import { Operation, operationsEqual } from './types'
 
-interface ProjectsStore {
+interface ProjectsStoreStatePersisted {
   selectedProjectId: string | null
-  setSelectedProjectId: (projectId: string | null) => void
   selectedCategory: Category
-  setSelectedCategory: (category: Category) => void
   searchQuery: string
-  setSearchQuery: (query: string) => void
   sortCriteria: SortCriteria
-  setSortCriteria: (sortCriteria: SortCriteria) => void
   sortAscending: boolean
-  setSortAscending: (sortAscending: boolean) => void
   gridView: boolean
-  setGridView: (gridView: boolean) => void
 }
+
+const initialProjectsStoreStatePersisted: ProjectsStoreStatePersisted = {
+  selectedCategory: 'allProjects',
+  selectedProjectId: null,
+  searchQuery: '',
+  sortCriteria: 'dateModified',
+  sortAscending: false,
+  gridView: true,
+}
+
+interface ProjectsStoreStateNonPersisted {
+  operations: Operation[]
+}
+
+const initialProjectsStoreStateNonPersisted: ProjectsStoreStateNonPersisted = {
+  operations: [],
+}
+
+type ProjectsStoreState = ProjectsStoreStatePersisted & ProjectsStoreStateNonPersisted
+
+interface ProjectsStoreActions {
+  setSelectedProjectId: (projectId: string | null) => void
+  setSelectedCategory: (category: Category) => void
+  setSearchQuery: (query: string) => void
+  setSortCriteria: (sortCriteria: SortCriteria) => void
+  setSortAscending: (sortAscending: boolean) => void
+  setGridView: (gridView: boolean) => void
+  addOperation: (operation: Operation) => void
+  removeOperation: (operation: Operation) => void
+}
+
+type ProjectsStore = ProjectsStoreState & ProjectsStoreActions
 
 export const useProjectsStore = create<ProjectsStore>()(
   devtools(
     persist(
       (set) => ({
-        selectedCategory: 'allProjects',
-        setSelectedCategory: (category: Category) => set(() => ({ selectedCategory: category })),
-        selectedProjectId: null,
-        setSelectedProjectId: (projectId: string | null) =>
-          set(() => ({ selectedProjectId: projectId })),
-        searchQuery: '',
-        setSearchQuery: (query) => set(() => ({ searchQuery: query })),
-        sortCriteria: 'dateModified',
-        setSortCriteria: (sortCriteria) => set(() => ({ sortCriteria: sortCriteria })),
-        sortAscending: false,
-        setSortAscending: (sortAscending) => set(() => ({ sortAscending: sortAscending })),
-        gridView: true,
-        setGridView: (gridView) => set(() => ({gridView: gridView})),
+        ...initialProjectsStoreStatePersisted,
+        ...initialProjectsStoreStateNonPersisted,
+
+        setSelectedCategory: (category: Category) => {
+          return set(() => ({ selectedCategory: category }))
+        },
+        setSelectedProjectId: (projectId: string | null) => {
+          return set(() => ({ selectedProjectId: projectId }))
+        },
+        setSearchQuery: (query) => {
+          return set(() => ({ searchQuery: query }))
+        },
+        setSortCriteria: (sortCriteria) => {
+          return set(() => ({ sortCriteria: sortCriteria }))
+        },
+        setSortAscending: (sortAscending) => {
+          return set(() => ({ sortAscending: sortAscending }))
+        },
+        setGridView: (gridView) => {
+          return set(() => ({ gridView: gridView }))
+        },
+        addOperation: (operation) => {
+          return set(({ operations }) => ({
+            operations: operations
+              .filter((other) => !operationsEqual(other, operation))
+              .concat(operation),
+          }))
+        },
+        removeOperation: (operation) => {
+          return set(({ operations }) => ({
+            operations: operations.filter((other) => !operationsEqual(other, operation)),
+          }))
+        },
       }),
       {
         name: 'store',
+        partialize: (fullStore) => {
+          const nonPersistedKeys = Object.keys(
+            initialProjectsStoreStateNonPersisted,
+          ) as (keyof ProjectsStoreStateNonPersisted)[]
+
+          let persistedStore: Partial<ProjectsStore> = { ...fullStore }
+          nonPersistedKeys.forEach((key) => delete persistedStore[key])
+
+          return persistedStore
+        },
       },
     ),
   ),
