@@ -1,7 +1,7 @@
 import fastDeepEquals from 'fast-deep-equal'
 import React from 'react'
 import type { CSSCursor } from '../../../../uuiui-deps'
-import { SliderControl } from '../../../../uuiui-deps'
+import { SliderControl, getControlStyles } from '../../../../uuiui-deps'
 import type {
   AllowedEnumType,
   BaseControlDescription,
@@ -517,7 +517,8 @@ export const JSXPropertyControl = React.memo(
     const { propMetadata } = props
 
     const colorTheme = useColorTheme()
-
+    const controlStatus = propMetadata.controlStatus
+    const controlStyles = getControlStyles(controlStatus)
     const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
 
     const safeValue: JSXParsedValue = value ?? { type: 'unknown', name: 'JSX' }
@@ -536,6 +537,7 @@ export const JSXPropertyControl = React.memo(
           overflowX: 'scroll',
           whiteSpace: 'nowrap',
           padding: '2px 6px',
+          color: controlStyles.mainColor,
         }}
       >
         <JSXPropIcon jsxType={safeValue.type} />
