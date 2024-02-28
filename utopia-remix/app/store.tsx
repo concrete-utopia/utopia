@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 import { Category, SortCriteria } from './routes/projects'
-import { Operation, operationsEqual } from './types'
+import { Operation, areBaseOperationsEquivalent } from './types'
 
 // State portion that will be persisted
 interface ProjectsStoreStatePersisted {
@@ -74,7 +74,7 @@ export const useProjectsStore = create<ProjectsStore>()(
         addOperation: (operation, key) => {
           return set(({ operations }) => ({
             operations: operations
-              .filter((other) => !operationsEqual(other, operation))
+              .filter((other) => !areBaseOperationsEquivalent(other, operation))
               .concat(operationWithKey(operation, key)),
           }))
         },
