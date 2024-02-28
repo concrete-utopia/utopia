@@ -80,7 +80,7 @@ describe('parseCode', () => {
           ),
         )
         const result = getAllUniqueUids(projectContents)
-        expect(result.uniqueIDs).toHaveLength(494)
+        expect(result.uniqueIDs).toHaveLength(483)
         expect(result.duplicateIDs).toEqual({})
       },
       (_) => {

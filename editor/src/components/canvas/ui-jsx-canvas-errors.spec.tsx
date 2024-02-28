@@ -273,9 +273,37 @@ export var App = (props) => {
     expect(canvasErrors).toMatchInlineSnapshot(`
       Array [
         Object {
-          "message": "Cannot read properties of undefined (reading 'a')",
-          "name": "TypeError",
-          "stackFrames": Array [],
+          "message": "a is not defined",
+          "name": "ReferenceError",
+          "stackFrames": Array [
+            Object {
+              "columnNumber": 3,
+              "fileName": "code.tsx",
+              "lineNumber": 1,
+              "originalCode": Array [
+                ScriptLine {
+                  "content": "",
+                  "highlight": true,
+                  "lineNumber": 1,
+                },
+                ScriptLine {
+                  "content": "import * as React from \\"react\\"",
+                  "highlight": false,
+                  "lineNumber": 2,
+                },
+                ScriptLine {
+                  "content": "import { View, Storyboard, Scene } from 'utopia-api'",
+                  "highlight": false,
+                  "lineNumber": 3,
+                },
+                ScriptLine {
+                  "content": "const MyComp = (props) => <div data-uid={'bbb'}>Utopia</div>",
+                  "highlight": false,
+                  "lineNumber": 4,
+                },
+              ],
+            },
+          ],
         },
       ]
     `)
@@ -404,9 +432,52 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     expect(canvasErrors).toMatchInlineSnapshot(`
       Array [
         Object {
-          "message": "Cannot read properties of undefined (reading 'a')",
-          "name": "TypeError",
-          "stackFrames": Array [],
+          "message": "a is not defined",
+          "name": "ReferenceError",
+          "stackFrames": Array [
+            Object {
+              "columnNumber": 47,
+              "fileName": "code.tsx",
+              "lineNumber": 8,
+              "originalCode": Array [
+                ScriptLine {
+                  "content": "",
+                  "highlight": false,
+                  "lineNumber": 5,
+                },
+                ScriptLine {
+                  "content": "export var App = (props) => {",
+                  "highlight": false,
+                  "lineNumber": 6,
+                },
+                ScriptLine {
+                  "content": "  return (",
+                  "highlight": false,
+                  "lineNumber": 7,
+                },
+                ScriptLine {
+                  "content": "    <MyComp data-uid={'aaa'} someAttribute={a.a /* 19,45 */}>",
+                  "highlight": true,
+                  "lineNumber": 8,
+                },
+                ScriptLine {
+                  "content": "      hello!",
+                  "highlight": false,
+                  "lineNumber": 9,
+                },
+                ScriptLine {
+                  "content": "    </MyComp>",
+                  "highlight": false,
+                  "lineNumber": 10,
+                },
+                ScriptLine {
+                  "content": "  )",
+                  "highlight": false,
+                  "lineNumber": 11,
+                },
+              ],
+            },
+          ],
         },
       ]
     `)

@@ -1,7 +1,9 @@
-/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "FastCheck.assert", "matchInlineSnapshotBrowser"] }] */
 import { canvasPoint, point } from '../../../core/shared/math-utils'
 import * as EP from '../../../core/shared/element-path'
-import { simplifiedMetadataMap } from '../../../utils/utils.test-utils'
+import {
+  setFeatureForBrowserTestsUseInDescribeBlockOnly,
+  simplifiedMetadataMap,
+} from '../../../utils/utils.test-utils'
 import { setFocusedElement } from '../../editor/actions/action-creators'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
 import CanvasActions from '../canvas-actions'
@@ -579,7 +581,7 @@ describe('Spy Wrapper Template Path Tests', () => {
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance:other-button-root": Object {
           "name": "div",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance:other-button-root/ba0": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance:other-button-root/43c": Object {
           "name": "not-jsx-element",
         },
         "storyboard/scene-2": Object {
@@ -682,7 +684,7 @@ describe('Spy Wrapper Template Path Tests', () => {
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance:other-button-root": Object {
           "name": "div",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance:other-button-root/ba0": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance:other-button-root/43c": Object {
           "name": "not-jsx-element",
         },
         "storyboard/scene-2": Object {
@@ -1862,7 +1864,7 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/expr/hi-element~~~2:hi-element-root": Object {
           "name": "div",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/expr/hi-element~~~2:hi-element-root/338": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/expr/hi-element~~~2:hi-element-root/478": Object {
           "name": "not-jsx-element",
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/expr/hi-element~~~3": Object {
@@ -1974,7 +1976,7 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/expr/hi-element~~~2:hi-element-root": Object {
           "name": "div",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/expr/hi-element~~~2:hi-element-root/338": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/expr/hi-element~~~2:hi-element-root/478": Object {
           "name": "not-jsx-element",
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/expr/hi-element~~~3": Object {

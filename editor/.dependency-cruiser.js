@@ -198,6 +198,21 @@ module.exports = {
       },
     },
     {
+      name: 'not-from-editor-to-parser-printer-worker',
+      comment: 'Stop the mainline editor code from reaching into the parser-printer worker.',
+      severity: 'error',
+      from: {
+        path: '^src',
+        pathNot: [
+          '^src/core/workers/',
+          '\\.(spec|test|spec.browser|spec.browser2|test-utils)\\.(js|mjs|cjs|ts|tsx|ls|coffee|litcoffee|coffee\\.md)$|(src/scripts/.*$)',
+        ],
+      },
+      to: {
+        path: '^src/core/workers/parser-printer',
+      },
+    },
+    {
       name: 'not-from-editor-to-ts-worker',
       comment: 'Stop the mainline editor code from reaching into the ts-worker.',
       severity: 'error',

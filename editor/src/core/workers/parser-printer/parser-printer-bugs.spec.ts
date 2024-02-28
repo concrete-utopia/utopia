@@ -47,39 +47,43 @@ export var App = props => {
         UNPARSED_CODE
         UTOPIA_JSX_COMPONENT - App
           JSX_ELEMENT - div - aaa
-            JSX_MAP_EXPRESSION - 574
+            JSX_MAP_EXPRESSION - b13
               JSX_ELEMENT - div - bbb
-                JS_IDENTIFIER - 799
+                ATTRIBUTE_OTHER_JAVASCRIPT - 563
                 JSX_TEXT_BLOCK - d01
-                JS_IDENTIFIER - 4c2"
+                ATTRIBUTE_OTHER_JAVASCRIPT - df5"
       `)
 
       const aaaElement = findJSXElementAtStaticPath(
         getUtopiaJSXComponentsFromSuccess(parsedCode),
         EP.dynamicPathToStaticPath(EP.elementPath([['App'], ['aaa']])),
       )
-      const aaaJSXMapExpression = aaaElement?.children[0]
-      if (aaaJSXMapExpression?.type === 'JSX_MAP_EXPRESSION') {
-        expect(aaaJSXMapExpression.definedElsewhere).toMatchInlineSnapshot(`
+      const aaaJSXArbBlock = aaaElement?.children[0]
+      if (aaaJSXArbBlock?.type === 'JSX_MAP_EXPRESSION') {
+        expect(aaaJSXArbBlock.definedElsewhere).toMatchInlineSnapshot(`
           Array [
-            "React",
             "cake",
+            "React",
             "utopiaCanvasJSXLookup",
           ]
         `)
       } else {
-        throw new Error('Was not a JSX_MAP_EXPRESSION as expected.')
+        throw new Error('Was not a ATTRIBUTE_OTHER_JAVASCRIPT as expected.')
       }
 
       const bbbElement = findJSXElementAtStaticPath(
         getUtopiaJSXComponentsFromSuccess(parsedCode),
         EP.dynamicPathToStaticPath(EP.elementPath([['App'], ['aaa', 'bbb']])),
       )
-      const bbbJSXSecondIdentifier = bbbElement?.children[2]
-      if (bbbJSXSecondIdentifier?.type === 'JS_IDENTIFIER') {
-        expect(bbbJSXSecondIdentifier.name).toEqual('cake')
+      const bbbJSXArbBlock = bbbElement?.children[2]
+      if (bbbJSXArbBlock?.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
+        expect(bbbJSXArbBlock.definedElsewhere).toMatchInlineSnapshot(`
+          Array [
+            "cake",
+          ]
+        `)
       } else {
-        throw new Error('Was not a JS_IDENTIFIER as expected.')
+        throw new Error('Was not a ATTRIBUTE_OTHER_JAVASCRIPT as expected.')
       }
     } else {
       throw new Error(JSON.stringify(parsedCode))
@@ -180,7 +184,7 @@ export var App = props => {
       UNPARSED_CODE
       UTOPIA_JSX_COMPONENT - Test
         JSX_ELEMENT - div - mapper-parent
-          JSX_MAP_EXPRESSION - 445
+          JSX_MAP_EXPRESSION - 95a
             JSX_ELEMENT - Card - card"
     `)
     expect(elementsStructure((testParseCode(spreadCode) as any).topLevelElements))
@@ -192,7 +196,7 @@ export var App = props => {
       UNPARSED_CODE
       UTOPIA_JSX_COMPONENT - Test
         JSX_ELEMENT - div - mapper-parent
-          JSX_MAP_EXPRESSION - 109
+          JSX_MAP_EXPRESSION - 493
             JSX_ELEMENT - Card - card"
     `)
   })

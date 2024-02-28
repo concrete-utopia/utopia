@@ -628,7 +628,7 @@ export const TestComponent = ({style}) => {
     const result = componentHonoursPropsSize(component)
     expect(result).toEqual(true)
   })
-  it('returns true for a component that spreads props.style into the props', () => {
+  it('returns true for a component that spreads style into the props', () => {
     const component = getComponentFromCode(
       'TestComponent',
       `
