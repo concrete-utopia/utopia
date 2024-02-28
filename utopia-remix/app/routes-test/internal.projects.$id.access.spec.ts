@@ -1,3 +1,4 @@
+jest.mock('@openfga/sdk')
 import { prisma } from '../db.server'
 import { handleChangeProjectAccess } from '../routes/internal.projects.$id.access'
 import {
@@ -12,6 +13,9 @@ import * as permissionsService from '../services/permissionsService.server'
 import { AccessLevel } from '../types'
 
 describe('handleChangeAccess', () => {
+  afterAll(async () => {
+    jest.restoreAllMocks()
+  })
   afterEach(async () => {
     await truncateTables([
       prisma.userDetails,
@@ -20,7 +24,7 @@ describe('handleChangeAccess', () => {
       prisma.projectID,
       prisma.projectAccess,
     ])
-    jest.restoreAllMocks()
+    jest.spyOn(permissionsService, 'setProjectAccess').mockRestore()
   })
 
   beforeEach(async () => {
