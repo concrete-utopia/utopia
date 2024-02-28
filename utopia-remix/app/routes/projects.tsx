@@ -25,7 +25,7 @@ import { button } from '../styles/button.css'
 import { newProjectButton } from '../styles/newProjectButton.css'
 import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
 import { sprinkles } from '../styles/sprinkles.css'
-import { Collaborator, CollaboratorsByProject, ProjectWithoutContent } from '../types'
+import { Collaborator, CollaboratorsByProject, Operation, ProjectWithoutContent } from '../types'
 import { requireUser } from '../util/api.server'
 import { assertNever } from '../util/assertNever'
 import { projectEditorLink } from '../util/links'
@@ -33,6 +33,7 @@ import { when } from '../util/react-conditionals'
 import { UnknownPlayerName, multiplayerInitialsFromName } from '../util/strings'
 import { useProjectMatchesQuery, useSortCompareProject } from '../util/use-sort-compare-project'
 import { auth0LoginURL } from '../util/auth0.server'
+import { motion } from 'framer-motion'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
@@ -134,6 +135,7 @@ const ProjectsPage = React.memo(() => {
         <TopActionBar />
         <ProjectsHeader projects={filteredProjects} />
         <Projects projects={filteredProjects} collaborators={data.collaborators} />
+        <ActiveOperations />
       </div>
     </div>
   )
@@ -205,12 +207,11 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
             flexDirection: 'row',
             alignItems: 'center',
             border: `1px solid ${isSearchFocused ? '#0075F9' : 'transparent'}`,
-            borderBottomColor: isSearchFocused ? '#0075F9' : 'gray',
+            borderBottom: `1px solid ${isSearchFocused ? '#0075F9' : 'gray'}`,
             borderRadius: isSearchFocused ? 3 : undefined,
             overflow: 'visible',
             padding: '0px 14px',
             gap: 10,
-            borderBottom: '1px solid gray',
           }}
         >
           <MagnifyingGlassIcon />
@@ -819,3 +820,75 @@ const ProjectCardActions = React.memo(({ project }: { project: ProjectWithoutCon
   )
 })
 ProjectCardActions.displayName = 'ProjectCardActions'
+
+const ActiveOperations = React.memo(() => {
+  const operations = useProjectsStore((store) => store.operations)
+  if (operations == null) {
+    return null
+  }
+
+  function getOperationVerb(op: Operation) {
+    switch (op.type) {
+      case 'delete':
+        return 'Deleting'
+      case 'destroy':
+        return 'Destroying'
+      case 'rename':
+        return 'Renaming'
+      case 'restore':
+        return 'Restoring'
+      default:
+        assertNever(op.type)
+    }
+  }
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        bottom: 0,
+        right: 0,
+        margin: 10,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 10,
+      }}
+    >
+      {operations.map((op) => {
+        return (
+          <div
+            key={`${op.projectId}-${op.type}`}
+            style={{
+              padding: 10,
+              display: 'flex',
+              gap: 10,
+              alignItems: 'center',
+              animation: 'spin 2s linear infinite',
+            }}
+            className={sprinkles({
+              boxShadow: 'shadow',
+              borderRadius: 'small',
+              backgroundColor: 'primary',
+              color: 'white',
+            })}
+          >
+            <motion.div
+              style={{
+                width: 8,
+                height: 8,
+              }}
+              className={sprinkles({ backgroundColor: 'white' })}
+              initial={{ rotate: 0 }}
+              animate={{ rotate: 100 }}
+              transition={{ ease: 'linear', repeatType: 'loop', repeat: Infinity }}
+            />
+            <div>
+              {getOperationVerb(op)} project {op.projectName}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+})
+ActiveOperations.displayName = 'ActiveOperations'
