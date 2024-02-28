@@ -48,6 +48,7 @@ describe('getComponentGroups', () => {
         BeakerIcon: {
           properties: {},
           supportsChildren: false,
+          preferredChildComponents: [],
           variants: [],
         },
       },
@@ -72,6 +73,7 @@ describe('getDependencyStatus', () => {
         BeakerIcon: {
           properties: {},
           supportsChildren: false,
+          preferredChildComponents: [],
           variants: [],
         },
       },

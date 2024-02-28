@@ -76,7 +76,7 @@ function getParseFileResult(
   return createParseFileResult(filename, parseResult, versionNumber)
 }
 
-function getPrintAndReparseCodeResult(
+export function getPrintAndReparseCodeResult(
   filename: string,
   parseSuccess: ParseSuccess,
   stripUIDs: boolean,

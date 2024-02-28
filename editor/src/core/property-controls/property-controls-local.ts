@@ -6,6 +6,7 @@ import type {
   ComponentToRegister,
   ComponentInsertOption,
   PropertyControls,
+  PreferredChildComponent,
 } from 'utopia-api/core'
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import { packageJsonFileFromProjectContents } from '../../components/assets'
@@ -32,6 +33,7 @@ import type { Either } from '../shared/either'
 import {
   applicative2Either,
   applicative3Either,
+  applicative4Either,
   bimapEither,
   foldEither,
   mapEither,
@@ -108,6 +110,7 @@ async function componentDescriptorForComponentToRegister(
     return {
       componentName: componentName,
       supportsChildren: componentToRegister.supportsChildren,
+      preferredChildComponents: componentToRegister.preferredChildComponents ?? [],
       properties: componentToRegister.properties,
       variants: variants,
     }
@@ -170,18 +173,29 @@ function parseComponentInsertOption(value: unknown): ParseResult<ComponentInsert
   )
 }
 
-function parseComponentToRegister(value: unknown): ParseResult<ComponentToRegister> {
+export function parsePreferredChild(value: unknown): ParseResult<PreferredChildComponent> {
   return applicative3Either(
-    (properties, supportsChildren, variants) => {
+    (name, additionalImports, variants) => ({ name, additionalImports, variants }),
+    objectKeyParser(parseString, 'name')(value),
+    optionalObjectKeyParser(parseString, 'additionalImports')(value),
+    optionalObjectKeyParser(parseArray(parseComponentInsertOption), 'variants')(value),
+  )
+}
+
+function parseComponentToRegister(value: unknown): ParseResult<ComponentToRegister> {
+  return applicative4Either(
+    (properties, supportsChildren, variants, preferredChildComponents) => {
       return {
         properties: properties,
         supportsChildren: supportsChildren,
         variants: variants,
+        preferredChildComponents: preferredChildComponents,
       }
     },
     objectKeyParser(fullyParsePropertyControls, 'properties')(value),
     objectKeyParser(parseBoolean, 'supportsChildren')(value),
     objectKeyParser(parseArray(parseComponentInsertOption), 'variants')(value),
+    optionalObjectKeyParser(parseArray(parsePreferredChild), 'preferredChildComponents')(value),
   )
 }
 

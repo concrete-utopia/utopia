@@ -8,6 +8,7 @@ import type {
 } from '../shared/element-template'
 import {
   isJSExpression,
+  isJSPropertyAccess,
   isJSXConditionalExpression,
   isNullJSXAttributeValue,
 } from '../shared/element-template'
