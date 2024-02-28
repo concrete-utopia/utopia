@@ -734,6 +734,7 @@ export const NavigatorItem: React.FunctionComponent<
   )
 
   const isComponentScene = useIsProbablyScene(navigatorEntry) && childComponentCount === 1
+  const isRenderProp = navigatorEntry.type === 'RENDER_PROP'
 
   const containerStyle: React.CSSProperties = React.useMemo(() => {
     return {
@@ -812,6 +813,25 @@ export const NavigatorItem: React.FunctionComponent<
             }}
           >
             Empty
+          </div>
+        ) : isRenderProp ? (
+          <div
+            key={`label-${props.label}-slot`}
+            style={{
+              width: 140,
+              height: 19,
+              borderRadius: 20,
+              textAlign: 'center',
+              textTransform: 'lowercase',
+              backgroundColor: colorTheme.dynamicBlue10.value,
+              color: colorTheme.navigatorResizeHintBorder.value,
+              border: colorTheme.navigatorResizeHintBorder.value,
+              marginLeft: 28,
+              padding: '0px 10px 0px 10px',
+              overflow: 'hidden',
+            }}
+          >
+            {props.label}
           </div>
         ) : (
           <FlexRow style={{ justifyContent: 'space-between', ...containerStyle }}>
@@ -926,7 +946,8 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
       }}
     >
       {unless(
-        props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
+        props.navigatorEntry.type === 'CONDITIONAL_CLAUSE' ||
+          props.navigatorEntry.type === 'RENDER_PROP',
         <LayoutIcon
           key={`layout-type-${props.label}`}
           navigatorEntry={props.navigatorEntry}

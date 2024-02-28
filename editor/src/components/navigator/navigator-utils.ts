@@ -6,8 +6,10 @@ import type {
   JSXConditionalExpression,
 } from '../../core/shared/element-template'
 import {
+  getJSXAttribute,
   hasElementsWithin,
   isJSXConditionalExpression,
+  isJSXElement,
   isJSXMapExpression,
 } from '../../core/shared/element-template'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
@@ -18,6 +20,7 @@ import {
   invalidOverrideNavigatorEntry,
   isConditionalClauseNavigatorEntry,
   regularNavigatorEntry,
+  renderPropNavigatorEntry,
   syntheticNavigatorEntry,
 } from '../editor/store/editor-state'
 import type { ElementPathTree, ElementPathTrees } from '../../core/shared/element-path-tree'
@@ -26,6 +29,10 @@ import { fastForEach } from '../../core/shared/utils'
 import type { ConditionalCase } from '../../core/model/conditionals'
 import { getConditionalClausePath } from '../../core/model/conditionals'
 import { findUtopiaCommentFlag, isUtopiaCommentFlagMapCount } from '../../core/shared/comment-flags'
+import { getPropertyControlsForTarget } from '../../core/property-controls/property-controls-utils'
+import type { PropertyControlsInfo } from '../custom-code/code-file'
+import type { ProjectContentTreeRoot } from '../assets'
+import type { PropertyControls } from 'utopia-api/core'
 
 export function baseNavigatorDepth(path: ElementPath): number {
   // The storyboard means that this starts at -1,
@@ -71,6 +78,9 @@ export function getNavigatorTargets(
   elementPathTree: ElementPathTrees,
   collapsedViews: Array<ElementPath>,
   hiddenInNavigator: Array<ElementPath>,
+  propertyControlsInfo: PropertyControlsInfo,
+  openFilePath: string | null,
+  projectContents: ProjectContentTreeRoot,
 ): GetNavigatorTargetsResults {
   // Note: This value will not necessarily be representative of the structured ordering in
   // the code that produced these elements, between siblings, as a result of it
@@ -87,6 +97,7 @@ export function getNavigatorTargets(
       const isHiddenInNavigator = EP.containsPath(path, hiddenInNavigator)
       const isConditional = MetadataUtils.isElementPathConditionalFromMetadata(metadata, path)
       const isMap = MetadataUtils.isJSXMapExpression(path, metadata)
+      // const isComponent = MetadataUtils.isComponentInstance(path, metadata)
       navigatorTargets.push(regularNavigatorEntry(path))
       if (
         !collapsedAncestor &&
@@ -94,6 +105,43 @@ export function getNavigatorTargets(
         !MetadataUtils.isElementTypeHiddenInNavigator(path, metadata, elementPathTree)
       ) {
         visibleNavigatorTargets.push(regularNavigatorEntry(path))
+      }
+
+      function walkPropertyControls(propControls: PropertyControls): void {
+        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+        if (
+          elementMetadata == null ||
+          isLeft(elementMetadata.element) ||
+          !isJSXElement(elementMetadata.element.value)
+        ) {
+          return
+        }
+
+        const jsxElement = elementMetadata.element.value
+        Object.entries(propControls).forEach(([prop, control]) => {
+          if (control.control !== 'jsx') {
+            return
+          }
+          const propValue = getJSXAttribute(jsxElement.props, prop)
+
+          const navigatorEntry = renderPropNavigatorEntry(
+            EP.appendToPath(path, propValue?.uid ?? 'fake-uid'),
+            prop,
+            propValue,
+          )
+          navigatorTargets.push(navigatorEntry)
+          visibleNavigatorTargets.push(navigatorEntry)
+        })
+      }
+
+      const propertyControls = getPropertyControlsForTarget(
+        path,
+        propertyControlsInfo,
+        openFilePath,
+        projectContents,
+      )
+      if (propertyControls != null) {
+        walkPropertyControls(propertyControls)
       }
 
       const isCollapsed = EP.containsPath(path, collapsedViews)
