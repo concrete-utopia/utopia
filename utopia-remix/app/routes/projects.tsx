@@ -825,7 +825,9 @@ const ProjectCardActions = React.memo(({ project }: { project: ProjectWithoutCon
 ProjectCardActions.displayName = 'ProjectCardActions'
 
 const ActiveOperations = React.memo(() => {
-  const operations = useProjectsStore((store) => store.operations)
+  const operations = useProjectsStore((store) =>
+    store.operations.sort((a, b) => b.startedAt - a.startedAt),
+  )
 
   return (
     <div
@@ -839,11 +841,9 @@ const ActiveOperations = React.memo(() => {
         gap: 10,
       }}
     >
-      {operations
-        .sort((a, b) => -(a.startedAt - b.startedAt))
-        .map((operation) => {
-          return <ActiveOperation operation={operation} key={operation.key} />
-        })}
+      {operations.map((operation) => {
+        return <ActiveOperation operation={operation} key={operation.key} />
+      })}
     </div>
   )
 })
