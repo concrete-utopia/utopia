@@ -689,13 +689,6 @@ describe('Controls from registering components', () => {
       }
       
       var Playground = ({ style }) => {
-        const alternateBookInfo = {
-          title: 'Frankenstein',
-          published: 'August 1866',
-          description: 'Short, fun read',
-          likes: 66,
-        }
-      
         return (
           <div style={style} data-uid='dbc'>
             <Link href='/new' data-uid='78c'>
@@ -707,6 +700,7 @@ describe('Controls from registering components', () => {
         'await-first-dom-report',
       )
 
+      // elementToInsert is omitted from the object below because it's a function
       expect(
         editor.getEditorState().editor.propertyControlsInfo['/utopia/storyboard'],
       ).toMatchObject({
@@ -746,6 +740,92 @@ describe('Controls from registering components', () => {
                 },
               },
               insertMenuLabel: 'Link',
+            },
+          ],
+        },
+      })
+    })
+
+    it('preferred child components with render prop', async () => {
+      const editor = await renderTestEditorWithCode(
+        DataPickerProjectShell(`registerInternalComponent(Card, {
+          properties: {
+            header: Utopia.arrayControl({
+              control: 'jsx',
+              preferredChildComponents: [
+                {
+                  name: 'span',
+                  variants: [{ code: '<span>Title</span>' }],
+                },
+              ],
+            }),
+          },
+          supportsChildren: true,
+          variants: [],
+        })
+      
+      function Card({ header, children }) {
+        return (
+          <div data-uid='root'>
+            <h2>{header}</h2>
+            {children}
+          </div>
+        )
+      }
+      
+      var Playground = ({ style }) => {
+        return (
+          <div style={style} data-uid='dbc'>
+            <Card header={<span>Title</span>} data-uid='78c'>
+              <p>Card contents</p>
+            </Card>
+          </div>
+        )
+      }`),
+        'await-first-dom-report',
+      )
+
+      // elementToInsert is omitted from the object below because it's a function
+      expect(
+        editor.getEditorState().editor.propertyControlsInfo['/utopia/storyboard'],
+      ).toMatchObject({
+        Card: {
+          preferredChildComponents: [],
+          properties: {
+            header: {
+              control: 'array',
+              propertyControl: {
+                control: 'jsx',
+                preferredChildComponents: [
+                  {
+                    additionalImports: undefined,
+                    name: 'span',
+                    variants: [
+                      {
+                        code: '<span>Title</span>',
+                      },
+                    ],
+                  },
+                ],
+              },
+            },
+          },
+          supportsChildren: true,
+          variants: [
+            {
+              importsToAdd: {
+                '/utopia/storyboard': {
+                  importedAs: null,
+                  importedFromWithin: [
+                    {
+                      alias: 'Card',
+                      name: 'Card',
+                    },
+                  ],
+                  importedWithName: null,
+                },
+              },
+              insertMenuLabel: 'Card',
             },
           ],
         },

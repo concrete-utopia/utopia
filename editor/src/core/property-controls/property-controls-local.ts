@@ -173,7 +173,7 @@ function parseComponentInsertOption(value: unknown): ParseResult<ComponentInsert
   )
 }
 
-function parsePreferredChild(value: unknown): ParseResult<PreferredChildComponent> {
+export function parsePreferredChild(value: unknown): ParseResult<PreferredChildComponent> {
   return applicative3Either(
     (name, additionalImports, variants) => ({ name, additionalImports, variants }),
     objectKeyParser(parseString, 'name')(value),
