@@ -435,7 +435,7 @@ export default function () {
           id=\\"canvas-container\\"
           data-testid=\\"canvas-container\\"
           style=\\"position: absolute\\"
-          data-utopia-valid-paths=\\"storyboard-entity storyboard-entity/scene-1-entity storyboard-entity/scene-1-entity/app-entity storyboard-entity/scene-1-entity/app-entity:app-outer-div storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance storyboard-entity/scene-1-entity/app-entity:app-outer-div/40f storyboard-entity/scene-1-entity/app-entity:app-outer-div/d7f\\"
+          data-utopia-valid-paths=\\"storyboard-entity storyboard-entity/scene-1-entity storyboard-entity/scene-1-entity/app-entity storyboard-entity/scene-1-entity/app-entity:app-outer-div storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance storyboard-entity/scene-1-entity/app-entity:app-outer-div/3bf storyboard-entity/scene-1-entity/app-entity:app-outer-div/d7f\\"
           data-utopia-root-element-path=\\"storyboard-entity\\"
         >
           <div

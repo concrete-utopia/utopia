@@ -4,7 +4,7 @@ import { mapDropNulls } from './array-utils'
 import { deepFindUtopiaCommentFlag, isUtopiaCommentFlagUid } from './comment-flags'
 import { getDOMAttribute } from './dom-utils'
 import type { Either } from './either'
-import { flatMapEither, foldEither, isLeft, left, right } from './either'
+import { flatMapEither, foldEither, isLeft, isRight, left, right } from './either'
 import * as EP from './element-path'
 import type {
   ElementInstanceMetadata,
@@ -209,14 +209,23 @@ export function generateUID(existingIDs: Array<string> | Set<string>): string {
   }
 }
 
-export function parseUID(
-  attributes: JSXAttributes,
-  comments: ParsedComments,
-): Either<string, string> {
+export function parseUIDFromComments(comments: ParsedComments): Either<string, string> {
   const commentFlag = deepFindUtopiaCommentFlag(comments ?? null, 'uid')
   if (commentFlag != null && isUtopiaCommentFlagUid(commentFlag)) {
     const { value } = commentFlag
     return right(value)
+  } else {
+    return left('Unable to find or parse uid comment.')
+  }
+}
+
+export function parseUID(
+  attributes: JSXAttributes,
+  comments: ParsedComments,
+): Either<string, string> {
+  const fromComments = parseUIDFromComments(comments)
+  if (isRight(fromComments)) {
+    return fromComments
   }
 
   const uidAttribute = getModifiableJSXAttributeAtPath(attributes, UtopiaIDPropertyPath)

@@ -45,6 +45,7 @@ import type {
   JSXConditionalExpression,
   ConditionValue,
   JSXElementLike,
+  JSPropertyAccess,
 } from '../shared/element-template'
 import {
   getJSXElementNameLastPart,
@@ -68,6 +69,9 @@ import {
   isJSXMapExpression,
   getJSXAttribute,
   isJSXAttributeValue,
+  isJSIdentifier,
+  isJSPropertyAccess,
+  isJSElementAccess,
 } from '../shared/element-template'
 import {
   getJSXAttributesAtPath,
@@ -163,6 +167,8 @@ import {
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { treatElementAsGroupLikeFromMetadata } from '../../components/canvas/canvas-strategies/strategies/group-helpers'
 import type { RemixRoutingTable } from '../../components/editor/store/remix-derived-data'
+import { exists } from '../shared/optics/optic-utilities'
+import { eitherRight, fromField, fromTypeGuard, notNull } from '../shared/optics/optic-creators'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1096,6 +1102,21 @@ export const MetadataUtils = {
       intrinsicHTMLElementNamesThatSupportChildren.includes(element.name.baseVariable)
     )
   },
+  isTextEditablePropertyAccessElementAccessOrIdentifier(element: JSXElementChild): boolean {
+    // Somewhat special case these to work our way down as these 3 types tend to go together.
+    if (isJSIdentifier(element)) {
+      return true
+    } else if (isJSPropertyAccess(element)) {
+      return MetadataUtils.isTextEditablePropertyAccessElementAccessOrIdentifier(element.onValue)
+    } else if (isJSElementAccess(element)) {
+      return (
+        MetadataUtils.isTextEditablePropertyAccessElementAccessOrIdentifier(element.onValue) &&
+        MetadataUtils.isTextEditablePropertyAccessElementAccessOrIdentifier(element.element)
+      )
+    } else {
+      return false
+    }
+  },
   targetTextEditable(
     metadata: ElementInstanceMetadataMap,
     pathTree: ElementPathTrees,
@@ -1112,6 +1133,12 @@ export const MetadataUtils = {
     }
     if (isLeft(element.element)) {
       return false
+    }
+
+    if (
+      MetadataUtils.isTextEditablePropertyAccessElementAccessOrIdentifier(element.element.value)
+    ) {
+      return true
     }
 
     if (treatElementAsGroupLikeFromMetadata(element)) {
@@ -1139,6 +1166,7 @@ export const MetadataUtils = {
         ),
       )
       .some((e) => e !== 'br')
+
     return (
       !MetadataUtils.isElementGenerated(target) &&
       (children.length === 0 || !hasNonEditableChildren)
@@ -1167,7 +1195,10 @@ export const MetadataUtils = {
         return (
           elementValue.children.length >= 1 &&
           elementValue.children.some(
-            (c) => isJSXTextBlock(c) || isJSExpressionMapOrOtherJavaScript(c),
+            (c) =>
+              isJSXTextBlock(c) ||
+              isJSExpressionMapOrOtherJavaScript(c) ||
+              MetadataUtils.isTextEditablePropertyAccessElementAccessOrIdentifier(c),
           )
         )
       }
@@ -1176,21 +1207,6 @@ export const MetadataUtils = {
       }
     }
     return false
-  },
-  getTextContentOfElement(element: ElementInstanceMetadata): string | null {
-    if (isRight(element.element) && isJSXElement(element.element.value)) {
-      if (element.element.value.children.length === 1) {
-        const childElement = element.element.value.children[0]
-        if (isJSXTextBlock(childElement)) {
-          return childElement.text
-        } else if (isJSExpressionMapOrOtherJavaScript(childElement)) {
-          return `{${childElement.originalJavascript}}`
-        }
-      } else if (element.element.value.children.length === 0) {
-        return ''
-      }
-    }
-    return null
   },
   // TODO update this to work with the natural width / height
   getImageMultiplier(
@@ -1318,6 +1334,9 @@ export const MetadataUtils = {
         (r) => {
           if (isJSXElement(r)) {
             return VoidElementsToFilter.includes(r.name.baseVariable)
+          }
+          if (isJSIdentifier(r) || isJSPropertyAccess(r) || isJSElementAccess(r)) {
+            return true
           }
           if (
             isJSExpressionOtherJavaScript(r) &&
@@ -2045,6 +2064,33 @@ export const MetadataUtils = {
       element?.element != null &&
       isRight(element.element) &&
       isJSXConditionalExpression(element.element.value)
+    )
+  },
+  isIdentifierFromMetadata(element: ElementInstanceMetadata | null): boolean {
+    return exists(
+      notNull<ElementInstanceMetadata>()
+        .compose(fromField('element'))
+        .compose(eitherRight())
+        .compose(fromTypeGuard(isJSIdentifier)),
+      element,
+    )
+  },
+  isPropertyAccessFromMetadata(element: ElementInstanceMetadata | null): boolean {
+    return exists(
+      notNull<ElementInstanceMetadata>()
+        .compose(fromField('element'))
+        .compose(eitherRight())
+        .compose(fromTypeGuard(isJSPropertyAccess)),
+      element,
+    )
+  },
+  isElementAccessFromMetadata(element: ElementInstanceMetadata | null): boolean {
+    return exists(
+      notNull<ElementInstanceMetadata>()
+        .compose(fromField('element'))
+        .compose(eitherRight())
+        .compose(fromTypeGuard(isJSElementAccess)),
+      element,
     )
   },
   isConditional(target: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
