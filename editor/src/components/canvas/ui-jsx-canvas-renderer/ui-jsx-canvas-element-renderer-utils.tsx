@@ -650,7 +650,7 @@ function jsxElementChildToText(
   expressionContext: 'jsx' | 'javascript',
   outermost: 'outermost' | 'inner',
 ): string {
-  function outermostWrapInParens(value: string): string {
+  function outermostWrapInBraces(value: string): string {
     if (outermost === 'outermost') {
       return `{${value}}`
     } else {
@@ -715,9 +715,9 @@ function jsxElementChildToText(
     case 'ATTRIBUTE_FUNCTION_CALL':
       return ''
     case 'JS_IDENTIFIER':
-      return outermostWrapInParens(element.name)
+      return outermostWrapInBraces(element.name)
     case 'JS_ELEMENT_ACCESS':
-      return outermostWrapInParens(
+      return outermostWrapInBraces(
         `${jsxElementChildToText(
           element.onValue,
           null,
@@ -727,7 +727,7 @@ function jsxElementChildToText(
         )}[${jsxElementChildToText(element.element, null, null, 'javascript', 'inner')}]`,
       )
     case 'JS_PROPERTY_ACCESS':
-      return outermostWrapInParens(
+      return outermostWrapInBraces(
         `${jsxElementChildToText(element.onValue, null, null, 'javascript', 'inner')}.${
           element.property
         }`,
