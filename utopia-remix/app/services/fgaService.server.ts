@@ -1,7 +1,7 @@
 import { CredentialsMethod, OpenFgaClient } from '@openfga/sdk'
 import { AccessLevel } from '../types'
 
-const fgaClient = new OpenFgaClient({
+export const fgaClient = new OpenFgaClient({
   apiScheme: 'https',
   apiHost: 'api.us1.fga.dev',
   storeId: process.env.FGA_STORE_ID!,

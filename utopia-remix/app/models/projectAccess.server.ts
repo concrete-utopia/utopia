@@ -1,6 +1,6 @@
 import { AccessLevel } from '../types'
 import { prisma } from '../db.server'
-import * as fgaService from '../services/fgaService.server'
+import * as permissionsService from '../services/permissionsService.server'
 
 export async function setProjectAccess(params: {
   projectId: string
@@ -20,31 +20,5 @@ export async function setProjectAccess(params: {
       modified_at: new Date(),
     },
   })
-  await fgaService.updateAccessLevel(params.projectId, params.accessLevel)
-}
-
-export async function getProjectAccess(params: { projectId: string }): Promise<AccessLevel | null> {
-  const projectAccess = await prisma.projectAccess.findUnique({
-    where: {
-      project_id: params.projectId,
-    },
-  })
-  return (projectAccess?.access_level as AccessLevel) ?? null
-}
-
-export async function getProjectsAccess(params: {
-  ids: string[]
-  userId: string
-}): Promise<Record<string, AccessLevel>> {
-  const projects = await prisma.project.findMany({
-    where: { proj_id: { in: params.ids }, owner_id: params.userId },
-    include: { ProjectAccess: true },
-  })
-
-  let projectAccess: Record<string, AccessLevel> = {}
-  for (const project of projects) {
-    projectAccess[project.proj_id] =
-      (project.ProjectAccess?.access_level as AccessLevel) ?? AccessLevel.PRIVATE
-  }
-  return projectAccess
+  await permissionsService.setProjectAccess(params.projectId, params.accessLevel)
 }

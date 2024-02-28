@@ -5,7 +5,6 @@ import { Params } from '@remix-run/react'
 import { Status } from '../util/statusCodes'
 import { hasUserProjectPermission } from '../services/permissionsService.server'
 import { UserProjectPermission } from '../types'
-import { Project } from 'prisma-client'
 
 export async function loader(args: LoaderFunctionArgs) {
   return handle(args, {
@@ -14,7 +13,7 @@ export async function loader(args: LoaderFunctionArgs) {
   })
 }
 
-async function getProject(req: Request, params: Params<string>) {
+export async function getProject(req: Request, params: Params<string>) {
   const { id: projectId } = params
   ensure(projectId != null, 'project is null', Status.BAD_REQUEST)
   let userId

@@ -1,4 +1,5 @@
-import { UserProjectPermission } from '../types'
+import { assertNever } from '../util/assertNever'
+import { AccessLevel, UserProjectPermission } from '../types'
 import * as fgaService from './fgaService.server'
 
 export async function hasUserProjectPermission(
@@ -24,10 +25,10 @@ export async function hasUserProjectPermission(
     case UserProjectPermission.CAN_SEE_LIVE_CHANGES:
       return fgaService.canSeeLiveChanges(projectId, userId)
     default:
-      exaustiveMatch(permission)
+      assertNever(permission)
   }
 }
 
-function exaustiveMatch(x: never) {
-  throw new Error(`Unmatched value: ${x}`)
+export async function setProjectAccess(projectId: string, accessLevel: AccessLevel) {
+  await fgaService.updateAccessLevel(projectId, accessLevel)
 }
