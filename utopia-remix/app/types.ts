@@ -32,22 +32,59 @@ export function userToCollaborator(user: UserDetails): Collaborator {
   }
 }
 
-export interface Operation {
+interface BaseOperation {
   projectId: string
   projectName: string
-  type: OperationType
 }
+
+function baseOperation(project: ProjectWithoutContent): BaseOperation {
+  return {
+    projectId: project.proj_id,
+    projectName: project.title,
+  }
+}
+
+type OperationRename = BaseOperation & {
+  type: 'rename'
+  newTitle: string
+}
+
+export function operationRename(project: ProjectWithoutContent, newTitle: string): OperationRename {
+  return {
+    type: 'rename',
+    ...baseOperation(project),
+    newTitle: newTitle,
+  }
+}
+
+type OperationDelete = BaseOperation & {
+  type: 'delete'
+}
+
+export function operationDelete(project: ProjectWithoutContent): OperationDelete {
+  return { type: 'delete', ...baseOperation(project) }
+}
+
+type OperationDestroy = BaseOperation & {
+  type: 'destroy'
+}
+
+export function operationDestroy(project: ProjectWithoutContent): OperationDestroy {
+  return { type: 'destroy', ...baseOperation(project) }
+}
+
+type OperationRestore = BaseOperation & {
+  type: 'restore'
+}
+
+export function operationRestore(project: ProjectWithoutContent): OperationRestore {
+  return { type: 'restore', ...baseOperation(project) }
+}
+
+export type Operation = OperationRename | OperationDelete | OperationDestroy | OperationRestore
 
 export type OperationType = 'rename' | 'delete' | 'destroy' | 'restore'
 
 export function operationsEqual(a: Operation, b: Operation): boolean {
   return a.projectId === b.projectId && a.type === b.type
-}
-
-export function operation(project: ProjectWithoutContent, type: OperationType): Operation {
-  return {
-    projectId: project.proj_id,
-    projectName: project.title,
-    type: type,
-  }
 }

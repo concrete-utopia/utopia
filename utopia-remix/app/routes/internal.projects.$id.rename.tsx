@@ -4,6 +4,7 @@ import { ensure, handle, requireUser } from '../util/api.server'
 import slugify from 'slugify'
 import { Status } from '../util/statusCodes'
 import { Params } from '@remix-run/react'
+import { wait } from '../test-util'
 
 export const SLUGIFY_OPTIONS = { lower: true, remove: /[^a-z0-9A-Z ]/ }
 
@@ -13,6 +14,8 @@ export async function action(args: ActionFunctionArgs) {
 
 export async function handleRenameProject(req: Request, params: Params<string>) {
   const user = await requireUser(req)
+
+  await wait(3000)
 
   const { id } = params
   ensure(id != null, 'id is null', Status.BAD_REQUEST)
@@ -25,6 +28,8 @@ export async function handleRenameProject(req: Request, params: Params<string>) 
 
   const slug = slugify(title, SLUGIFY_OPTIONS)
   ensure(slug.length > 0, 'title is too short', Status.BAD_REQUEST)
+
+  ensure(slug !== 'boom', 'Boom!', 418)
 
   await renameProject({ id: id, userId: user.user_id, title: slug })
 

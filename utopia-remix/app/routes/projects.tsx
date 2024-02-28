@@ -22,7 +22,7 @@ import { useCleanupOperations } from '../hooks/useFetcherWithOperation'
 import { useIsDarkMode } from '../hooks/useIsDarkMode'
 import { listDeletedProjects, listProjects } from '../models/project.server'
 import { getCollaborators } from '../models/projectCollaborators.server'
-import { useProjectsStore } from '../store'
+import { OperationWithKey, useProjectsStore } from '../store'
 import { button } from '../styles/button.css'
 import { newProjectButton } from '../styles/newProjectButton.css'
 import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
@@ -32,7 +32,7 @@ import { requireUser } from '../util/api.server'
 import { assertNever } from '../util/assertNever'
 import { auth0LoginURL } from '../util/auth0.server'
 import { projectEditorLink } from '../util/links'
-import { when } from '../util/react-conditionals'
+import { unless, when } from '../util/react-conditionals'
 import { UnknownPlayerName, multiplayerInitialsFromName } from '../util/strings'
 import { useProjectMatchesQuery, useSortCompareProject } from '../util/use-sort-compare-project'
 
@@ -618,6 +618,15 @@ const ProjectCard = React.memo(
       window.open(projectEditorLink(project.proj_id), '_blank')
     }, [project.proj_id])
 
+    const activeOperations = useProjectsStore((store) =>
+      store.operations.filter((op) => op.projectId === project.proj_id && !op.errored),
+    )
+
+    const projectTitle = React.useMemo(() => {
+      const renaming = activeOperations.find((op) => op.type === 'rename')
+      return renaming?.type === 'rename' ? renaming.newTitle : project.title
+    }, [project, activeOperations])
+
     return (
       <div
         style={{
@@ -626,6 +635,8 @@ const ProjectCard = React.memo(
           display: 'flex',
           flexDirection: 'column',
           gap: 5,
+          filter: activeOperations.length > 0 ? 'grayscale(1)' : undefined,
+          position: 'relative',
         }}
       >
         <div
@@ -683,11 +694,29 @@ const ProjectCard = React.memo(
           }}
         >
           <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 5, flex: 1 }}>
-            <div style={{ fontWeight: 600 }}>{project.title}</div>
+            <div style={{ fontWeight: 600 }}>{projectTitle}</div>
             <div>{moment(project.modified_at).fromNow()}</div>
           </div>
           <ProjectCardActions project={project} />
         </div>
+        {when(
+          activeOperations.length > 0,
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              pointerEvents: 'none',
+            }}
+          >
+            <Spinner className={sprinkles({ backgroundColor: 'primary' })} />
+          </div>,
+        )}
       </div>
     )
   },
@@ -849,7 +878,7 @@ const ActiveOperations = React.memo(() => {
 })
 ActiveOperations.displayName = 'ActiveOperations'
 
-const ActiveOperation = React.memo(({ operation }: { operation: Operation }) => {
+const ActiveOperation = React.memo(({ operation }: { operation: OperationWithKey }) => {
   function getOperationVerb(op: Operation) {
     switch (op.type) {
       case 'delete':
@@ -861,7 +890,7 @@ const ActiveOperation = React.memo(({ operation }: { operation: Operation }) => 
       case 'restore':
         return 'Restoring'
       default:
-        assertNever(op.type)
+        assertNever(op)
     }
   }
 
@@ -877,20 +906,12 @@ const ActiveOperation = React.memo(({ operation }: { operation: Operation }) => 
       className={sprinkles({
         boxShadow: 'shadow',
         borderRadius: 'small',
-        backgroundColor: 'primary',
+        backgroundColor: operation.errored ? 'error' : 'primary',
         color: 'white',
       })}
     >
-      <motion.div
-        style={{
-          width: 8,
-          height: 8,
-        }}
-        className={sprinkles({ backgroundColor: 'white' })}
-        initial={{ rotate: 0 }}
-        animate={{ rotate: 100 }}
-        transition={{ ease: 'linear', repeatType: 'loop', repeat: Infinity }}
-      />
+      {when(!operation.errored, <Spinner className={sprinkles({ backgroundColor: 'white' })} />)}
+      {when(operation.errored, <div style={{ fontWeight: 'bold' }}>FAILED</div>)}
       <div>
         {getOperationVerb(operation)} project {operation.projectName}
       </div>
@@ -898,3 +919,18 @@ const ActiveOperation = React.memo(({ operation }: { operation: Operation }) => 
   )
 })
 ActiveOperation.displayName = 'ActiveOperation'
+
+const Spinner = ({ className }: { className?: string }) => {
+  return (
+    <motion.div
+      style={{
+        width: 8,
+        height: 8,
+      }}
+      className={className}
+      initial={{ rotate: 0 }}
+      animate={{ rotate: 100 }}
+      transition={{ ease: 'linear', repeatType: 'loop', repeat: Infinity }}
+    />
+  )
+}
