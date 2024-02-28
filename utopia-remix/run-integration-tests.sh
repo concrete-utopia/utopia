@@ -2,10 +2,10 @@
 
 set -e
 
-docker compose down -v
-docker compose up -d
+podman compose down -v
+podman compose up -d
 
-until docker exec utopia-remix-db-test pg_isready ; do sleep 1 ; done
+until podman exec utopia-remix-db-test pg_isready ; do sleep 1 ; done
 
 export APP_ENV='test'
 export DATABASE_URL='postgres://postgres:password@localhost:54322/postgres?sslmode=disable'
@@ -16,4 +16,4 @@ export REACT_APP_EDITOR_URL=''
 pnpm exec prisma db push
 jest --runInBand --verbose
 
-docker compose down -v
+podman compose down -v

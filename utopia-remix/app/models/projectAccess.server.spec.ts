@@ -8,10 +8,6 @@ describe('projectAccess model', () => {
   afterAll(async () => {
     jest.restoreAllMocks()
   })
-  afterEach(async () => {
-    await clearDb(prisma)
-    jest.spyOn(permissionsService, 'setProjectAccess').mockRestore()
-  })
 
   describe('setProjectAccess', () => {
     beforeEach(async () => {
@@ -22,6 +18,10 @@ describe('projectAccess model', () => {
       await createTestProjectAccess(prisma, { projectId: 'one', accessLevel: 0 })
       await createTestProjectAccess(prisma, { projectId: 'two', accessLevel: 1 })
       jest.spyOn(permissionsService, 'setProjectAccess').mockResolvedValue()
+    })
+    afterEach(async () => {
+      await clearDb(prisma)
+      jest.spyOn(permissionsService, 'setProjectAccess').mockRestore()
     })
     it('sets the access level for a project', async () => {
       await setProjectAccess({ projectId: 'one', accessLevel: 1 })
