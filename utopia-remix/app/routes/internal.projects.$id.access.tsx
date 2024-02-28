@@ -1,7 +1,7 @@
 import { ActionFunctionArgs } from '@remix-run/node'
 import { Params } from '@remix-run/react'
 import { ensure, handle, requireUser } from '../util/api.server'
-import { Status } from '../util/statusCodes.server'
+import { Status } from '../util/statusCodes'
 import { getProjectAccess, setProjectAccess } from '../models/projectAccess.server'
 import { asNumber } from '../util/common'
 import { AccessLevel } from '../types'
