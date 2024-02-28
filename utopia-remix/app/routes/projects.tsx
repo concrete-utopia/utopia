@@ -827,6 +827,29 @@ ProjectCardActions.displayName = 'ProjectCardActions'
 const ActiveOperations = React.memo(() => {
   const operations = useProjectsStore((store) => store.operations)
 
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        bottom: 0,
+        right: 0,
+        margin: 10,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 10,
+      }}
+    >
+      {operations
+        .sort((a, b) => -(a.startedAt - b.startedAt))
+        .map((operation) => {
+          return <ActiveOperation operation={operation} key={operation.key} />
+        })}
+    </div>
+  )
+})
+ActiveOperations.displayName = 'ActiveOperations'
+
+const ActiveOperation = React.memo(({ operation }: { operation: Operation }) => {
   function getOperationVerb(op: Operation) {
     switch (op.type) {
       case 'delete':
@@ -845,52 +868,33 @@ const ActiveOperations = React.memo(() => {
   return (
     <div
       style={{
-        position: 'fixed',
-        bottom: 0,
-        right: 0,
-        margin: 10,
+        padding: 10,
         display: 'flex',
-        flexDirection: 'column',
         gap: 10,
+        alignItems: 'center',
+        animation: 'spin 2s linear infinite',
       }}
+      className={sprinkles({
+        boxShadow: 'shadow',
+        borderRadius: 'small',
+        backgroundColor: 'primary',
+        color: 'white',
+      })}
     >
-      {operations
-        .sort((a, b) => -(a.startedAt - b.startedAt))
-        .map((op) => {
-          return (
-            <div
-              key={`${op.projectId}-${op.type}`}
-              style={{
-                padding: 10,
-                display: 'flex',
-                gap: 10,
-                alignItems: 'center',
-                animation: 'spin 2s linear infinite',
-              }}
-              className={sprinkles({
-                boxShadow: 'shadow',
-                borderRadius: 'small',
-                backgroundColor: 'primary',
-                color: 'white',
-              })}
-            >
-              <motion.div
-                style={{
-                  width: 8,
-                  height: 8,
-                }}
-                className={sprinkles({ backgroundColor: 'white' })}
-                initial={{ rotate: 0 }}
-                animate={{ rotate: 100 }}
-                transition={{ ease: 'linear', repeatType: 'loop', repeat: Infinity }}
-              />
-              <div>
-                {getOperationVerb(op)} project {op.projectName}
-              </div>
-            </div>
-          )
-        })}
+      <motion.div
+        style={{
+          width: 8,
+          height: 8,
+        }}
+        className={sprinkles({ backgroundColor: 'white' })}
+        initial={{ rotate: 0 }}
+        animate={{ rotate: 100 }}
+        transition={{ ease: 'linear', repeatType: 'loop', repeat: Infinity }}
+      />
+      <div>
+        {getOperationVerb(operation)} project {operation.projectName}
+      </div>
     </div>
   )
 })
-ActiveOperations.displayName = 'ActiveOperations'
+ActiveOperation.displayName = 'ActiveOperation'
