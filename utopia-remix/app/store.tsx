@@ -3,29 +3,31 @@ import { devtools, persist } from 'zustand/middleware'
 import { Category, SortCriteria } from './routes/projects'
 import { Operation, operationsEqual } from './types'
 
+// State portion that will be persisted
 interface ProjectsStoreStatePersisted {
-  selectedProjectId: string | null
-  selectedCategory: Category
-  searchQuery: string
   sortCriteria: SortCriteria
   sortAscending: boolean
   gridView: boolean
 }
 
 const initialProjectsStoreStatePersisted: ProjectsStoreStatePersisted = {
-  selectedCategory: 'allProjects',
-  selectedProjectId: null,
-  searchQuery: '',
   sortCriteria: 'dateModified',
   sortAscending: false,
   gridView: true,
 }
 
+// State portion that will not be persisted
 interface ProjectsStoreStateNonPersisted {
-  operations: Operation[]
+  selectedProjectId: string | null
+  selectedCategory: Category
+  searchQuery: string
+  operations: OperationWithKey[]
 }
 
 const initialProjectsStoreStateNonPersisted: ProjectsStoreStateNonPersisted = {
+  selectedProjectId: null,
+  selectedCategory: 'allProjects',
+  searchQuery: '',
   operations: [],
 }
 
@@ -38,8 +40,8 @@ interface ProjectsStoreActions {
   setSortCriteria: (sortCriteria: SortCriteria) => void
   setSortAscending: (sortAscending: boolean) => void
   setGridView: (gridView: boolean) => void
-  addOperation: (operation: Operation) => void
-  removeOperation: (operation: Operation) => void
+  addOperation: (operation: Operation, key: string) => void
+  removeOperation: (key: string) => void
 }
 
 type ProjectsStore = ProjectsStoreState & ProjectsStoreActions
@@ -69,16 +71,16 @@ export const useProjectsStore = create<ProjectsStore>()(
         setGridView: (gridView) => {
           return set(() => ({ gridView: gridView }))
         },
-        addOperation: (operation) => {
+        addOperation: (operation, key) => {
           return set(({ operations }) => ({
             operations: operations
               .filter((other) => !operationsEqual(other, operation))
-              .concat(operation),
+              .concat(operationWithKey(operation, key)),
           }))
         },
-        removeOperation: (operation) => {
+        removeOperation: (key) => {
           return set(({ operations }) => ({
-            operations: operations.filter((other) => !operationsEqual(other, operation)),
+            operations: operations.filter((other) => other.key !== key),
           }))
         },
       }),
@@ -98,3 +100,16 @@ export const useProjectsStore = create<ProjectsStore>()(
     ),
   ),
 )
+
+type OperationWithKey = Operation & {
+  key: string
+  startedAt: number
+}
+
+function operationWithKey(operation: Operation, key: string): OperationWithKey {
+  return {
+    ...operation,
+    key: key,
+    startedAt: Date.now(),
+  }
+}
