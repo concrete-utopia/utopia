@@ -40,7 +40,7 @@ describe('getProject', () => {
     })
 
     it('should check access level for a project', async () => {
-      projectProxyMock.mockResolvedValue({ id: projectId, ownerId: userId })
+      projectProxyMock.mockResolvedValue({ id: projectId, ownerId: 'user2' })
       hasUserProjectPermission.mockResolvedValue(true)
       const req = newTestRequest({ method: 'GET', authCookie: 'the-key' })
       const projectResult = await getProject(req, { id: projectId })
@@ -57,7 +57,7 @@ describe('getProject', () => {
       hasUserProjectPermission.mockResolvedValue(false)
       const req = newTestRequest({ method: 'GET', authCookie: 'the-key' })
       const fn = async () => {
-        getProject(req, { id: projectId })
+        return getProject(req, { id: projectId })
       }
       expect(fn).rejects.toThrow(ApiError)
     })
