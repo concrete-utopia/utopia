@@ -38,6 +38,7 @@ import {
   useColorTheme,
   colorTheme,
   Icn,
+  Tooltip,
 } from '../../../../uuiui'
 import type { CSSNumber } from '../../common/css-utils'
 import { printCSSNumber, cssNumber, defaultCSSColor } from '../../common/css-utils'
@@ -821,23 +822,25 @@ export const IdentifierExpressionCartoucheControl = React.memo(
             backgroundColor: colorTheme.secondaryBlue.value,
           }}
         />
-        <div
-          style={{
-            flex: 1,
-            /* Standard CSS ellipsis */
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
+        <Tooltip title={props.contents}>
+          <div
+            style={{
+              flex: 1,
+              /* Standard CSS ellipsis */
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
 
-            /* Beginning of string */
-            direction: 'rtl',
-            textAlign: 'left',
-          }}
-        >
-          {props.contents}
-          &lrm;
-          {/* the &lrm; non-printing character is added to fix the punctuation marks disappearing because of direction: rtl */}
-        </div>
+              /* Beginning of string */
+              direction: 'rtl',
+              textAlign: 'left',
+            }}
+          >
+            {props.contents}
+            &lrm;
+            {/* the &lrm; non-printing character is added to fix the punctuation marks disappearing because of direction: rtl */}
+          </div>
+        </Tooltip>
         {/* TODO needs a better X icon! */}
         <div>⨉</div>
       </FlexRow>

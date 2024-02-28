@@ -109,6 +109,7 @@ import type { VariableData } from '../../../canvas/ui-jsx-canvas'
 import { array } from 'prop-types'
 import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
 import { DataPickerPopup } from './data-picker-popup'
+import { jsxElementChildToText } from '../../../canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-element-renderer-utils'
 
 export const VariableFromScopeOptionTestId = (idx: string) => `variable-from-scope-${idx}`
 export const DataPickerPopupButtonTestId = `data-picker-popup-button-test-id`
@@ -140,7 +141,7 @@ const ControlForProp = React.memo((props: ControlForPropProps<BaseControlDescrip
     ) {
       return (
         <IdentifierExpressionCartoucheControl
-          contents={attributeExpression.originalJavascript}
+          contents={jsxElementChildToText(attributeExpression, null, null, 'jsx', 'inner')}
           matchType='full'
           onOpenDataPicker={props.onOpenDataPicker}
         />

@@ -643,7 +643,8 @@ function trimJoinUnescapeTextFromJSXElements(elements: Array<JSXElementChild>): 
   return unescapeHTML(combinedText)
 }
 
-function jsxElementChildToText(
+// TODO move to dedicated file
+export function jsxElementChildToText(
   element: JSXElementChild,
   prevElement: JSXElementChild | null,
   nextElement: JSXElementChild | null,
