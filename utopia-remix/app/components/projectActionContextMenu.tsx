@@ -3,7 +3,7 @@ import React from 'react'
 import { useProjectsStore } from '../store'
 import { contextMenuDropdown, contextMenuItem } from '../styles/contextMenu.css'
 import { sprinkles } from '../styles/sprinkles.css'
-import { ProjectWithoutContent } from '../types'
+import { ProjectWithoutContent, operation } from '../types'
 import { assertNever } from '../util/assertNever'
 import { projectEditorLink } from '../util/links'
 import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
@@ -16,10 +16,10 @@ type ContextMenuEntry =
   | 'separator'
 
 export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWithoutContent }) => {
-  const deleteFetcher = useFetcherWithOperation(project, 'delete')
-  const destroyFetcher = useFetcherWithOperation(project, 'destroy')
-  const restoreFetcher = useFetcherWithOperation(project, 'restore')
-  const renameFetcher = useFetcherWithOperation(project, 'rename')
+  const deleteFetcher = useFetcherWithOperation(operation(project, 'delete'))
+  const destroyFetcher = useFetcherWithOperation(operation(project, 'destroy'))
+  const restoreFetcher = useFetcherWithOperation(operation(project, 'restore'))
+  const renameFetcher = useFetcherWithOperation(operation(project, 'rename'))
 
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
 
