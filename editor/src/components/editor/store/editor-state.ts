@@ -2276,6 +2276,12 @@ export function isSyntheticNavigatorEntry(entry: NavigatorEntry): entry is Synth
 export const syntheticNavigatorEntryOptic: Optic<NavigatorEntry, SyntheticNavigatorEntry> =
   fromTypeGuard(isSyntheticNavigatorEntry)
 
+export function isRenderPropNavigatorEntry(
+  entry: NavigatorEntry,
+): entry is RenderPropNavigatorEntry {
+  return entry.type === 'RENDER_PROP'
+}
+
 export interface DerivedState {
   navigatorTargets: Array<NavigatorEntry>
   visibleNavigatorTargets: Array<NavigatorEntry>

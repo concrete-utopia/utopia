@@ -39,6 +39,7 @@ import {
   isConditionalClauseNavigatorEntry,
   isInvalidOverrideNavigatorEntry,
   isRegularNavigatorEntry,
+  isRenderPropNavigatorEntry,
   isSyntheticNavigatorEntry,
   navigatorEntryToKey,
   varSafeNavigatorEntryToKey,
@@ -140,7 +141,8 @@ function selectItem(
   const elementPath = navigatorEntry.elementPath
   const selectionActions =
     isConditionalClauseNavigatorEntry(navigatorEntry) ||
-    isInvalidOverrideNavigatorEntry(navigatorEntry)
+    isInvalidOverrideNavigatorEntry(navigatorEntry) ||
+    isRenderPropNavigatorEntry(navigatorEntry)
       ? []
       : getSelectionActions(getSelectedViewsInRange, index, elementPath, selected, event)
 
@@ -734,7 +736,7 @@ export const NavigatorItem: React.FunctionComponent<
   )
 
   const isComponentScene = useIsProbablyScene(navigatorEntry) && childComponentCount === 1
-  const isRenderProp = navigatorEntry.type === 'RENDER_PROP'
+  const isRenderProp = isRenderPropNavigatorEntry(navigatorEntry)
 
   const containerStyle: React.CSSProperties = React.useMemo(() => {
     return {
