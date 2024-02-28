@@ -1372,50 +1372,59 @@ export function parseAttributeOtherJavaScript(
       const { code: codeFromFile, map } = fileSourceNode.toStringWithSourceMap({ file: filename })
       const rawMap = JSON.parse(map.toString())
 
-      const transpileEither = wrapAndTranspileJavascript(
-        sourceFile.fileName,
-        sourceFile.text,
+      const dataUIDFixed = insertDataUIDsIntoCode(
         codeFromFile,
-        rawMap,
         parsedElementsWithin,
-        applySteganography,
+        true,
+        false,
+        sourceFile.fileName,
       )
-
-      return mapEither((transpileResult) => {
-        const prependedWithReturn = prependToSourceString(
+      return flatMapEither((dataUIDFixResult) => {
+        const transpileEither = wrapAndTranspileJavascript(
           sourceFile.fileName,
           sourceFile.text,
-          transpileResult.code,
-          transpileResult.sourceMap,
-          RETURN_TO_PREPEND,
-          '',
+          dataUIDFixResult.code,
+          dataUIDFixResult.sourceMap,
+          parsedElementsWithin,
+          applySteganography,
         )
-        // Sneak the function in here if something needs to use it to display
-        // the element on the canvas.
-        let innerDefinedElsewhere = definedElsewhere
-        if (Object.keys(parsedElementsWithin).length > 0) {
-          innerDefinedElsewhere = [...innerDefinedElsewhere, JSX_CANVAS_LOOKUP_FUNCTION_NAME]
-        }
 
-        const comments = getCommentsOnExpression(sourceText, expression)
+        return mapEither((transpileResult) => {
+          const prependedWithReturn = prependToSourceString(
+            sourceFile.fileName,
+            sourceFile.text,
+            transpileResult.code,
+            transpileResult.sourceMap,
+            RETURN_TO_PREPEND,
+            '',
+          )
+          // Sneak the function in here if something needs to use it to display
+          // the element on the canvas.
+          let innerDefinedElsewhere = definedElsewhere
+          if (Object.keys(parsedElementsWithin).length > 0) {
+            innerDefinedElsewhere = [...innerDefinedElsewhere, JSX_CANVAS_LOOKUP_FUNCTION_NAME]
+          }
 
-        return createExpressionOtherJavaScript(
-          sourceFile,
-          expression,
-          params,
-          expressionAndText.text,
-          code,
-          prependedWithReturn.code,
-          innerDefinedElsewhere,
-          prependedWithReturn.sourceMap,
-          inPositionToElementsWithin(parsedElementsWithin),
-          otherJavaScriptType,
-          comments,
-          alreadyExistingUIDs,
-          existingHighlightBounds,
-          imports,
-        )
-      }, transpileEither)
+          const comments = getCommentsOnExpression(sourceText, expression)
+
+          return createExpressionOtherJavaScript(
+            sourceFile,
+            expression,
+            params,
+            dataUIDFixResult.code,
+            code,
+            prependedWithReturn.code,
+            innerDefinedElsewhere,
+            prependedWithReturn.sourceMap,
+            inPositionToElementsWithin(parsedElementsWithin),
+            otherJavaScriptType,
+            comments,
+            alreadyExistingUIDs,
+            existingHighlightBounds,
+            imports,
+          )
+        }, transpileEither)
+      }, dataUIDFixed)
     },
   )
 }

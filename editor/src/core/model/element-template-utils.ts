@@ -189,6 +189,56 @@ function transformAtPathOptionally(
             children: updatedChildren,
           }
         }
+
+        if (isJSXElement(element)) {
+          let propsUpdated: boolean = false
+          const updatedProps = element.props.map((prop) => {
+            if (prop.type === 'JSX_ATTRIBUTES_ENTRY') {
+              let jsPropUpdated: boolean = false
+              const propValue = prop.value
+              if (propValue.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
+                const updatedElementsWithin = Object.values(propValue.elementsWithin).reduce(
+                  (acc, child): ElementsWithin => {
+                    const updated = findAndTransformAtPathInner(child, tailPath)
+                    if (updated != null && isJSXElement(updated)) {
+                      propsUpdated = true
+                      jsPropUpdated = true
+                      return {
+                        ...acc,
+                        [child.uid]: updated,
+                      }
+                    }
+                    return acc
+                  },
+                  propValue.elementsWithin,
+                )
+
+                if (jsPropUpdated) {
+                  return {
+                    ...prop,
+                    value: {
+                      ...propValue,
+                      elementsWithin: updatedElementsWithin,
+                    },
+                  }
+                } else {
+                  return prop
+                }
+              } else {
+                return prop
+              }
+            } else {
+              return prop
+            }
+          })
+
+          if (propsUpdated) {
+            return {
+              ...element,
+              props: updatedProps,
+            }
+          }
+        }
       }
     } else if (isJSExpressionMapOrOtherJavaScript(element)) {
       if (element.uid === firstUIDOrIndex) {
@@ -335,6 +385,22 @@ export function findJSXElementChildAtPath(
             const childResult = findAtPathInner(child, tailPath)
             if (childResult != null) {
               return childResult
+            }
+          }
+
+          if (isJSXElement(element)) {
+            for (const prop of element.props) {
+              if (prop.type === 'JSX_ATTRIBUTES_ENTRY') {
+                const propValue = prop.value
+                if (propValue.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
+                  for (const elementWithin of Object.values(propValue.elementsWithin)) {
+                    const withinResult = findAtPathInner(elementWithin, tailPath)
+                    if (withinResult != null) {
+                      return withinResult
+                    }
+                  }
+                }
+              }
             }
           }
         }

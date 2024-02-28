@@ -123,11 +123,13 @@ import { modify } from '../../../core/shared/optics/optic-utilities'
 function buildPropertyCallingFunction(
   functionName: string,
   parameters: JSExpression[],
+  imports: Imports,
+  stripUIDs: boolean,
 ): TS.Expression {
   return TS.createCall(
     TS.createPropertyAccess(TS.createIdentifier('UtopiaUtils'), TS.createIdentifier(functionName)),
     undefined,
-    parameters.map(jsxAttributeToExpression),
+    parameters.map((param) => jsxAttributeToExpression(param, imports, stripUIDs)),
   )
 }
 
@@ -185,7 +187,11 @@ function rawCodeToExpressionStatement(rawCode: string): {
   }
 }
 
-function jsxAttributeToExpression(attribute: JSExpression): TS.Expression {
+function jsxAttributeToExpression(
+  attribute: JSExpression,
+  imports: Imports,
+  stripUIDs: boolean,
+): TS.Expression {
   function createExpression(): TS.Expression {
     switch (attribute.type) {
       case 'ATTRIBUTE_VALUE':
@@ -205,9 +211,14 @@ function jsxAttributeToExpression(attribute: JSExpression): TS.Expression {
                     ? TS.createStringLiteral(prop.key)
                     : TS.createNumericLiteral(prop.key)
                 addCommentsToNode(key, prop.keyComments)
-                return TS.createPropertyAssignment(key, jsxAttributeToExpression(prop.value))
+                return TS.createPropertyAssignment(
+                  key,
+                  jsxAttributeToExpression(prop.value, imports, stripUIDs),
+                )
               case 'SPREAD_ASSIGNMENT':
-                return TS.createSpreadAssignment(jsxAttributeToExpression(prop.value))
+                return TS.createSpreadAssignment(
+                  jsxAttributeToExpression(prop.value, imports, stripUIDs),
+                )
               default:
                 const _exhaustiveCheck: never = prop
                 throw new Error(`Unhandled prop type ${prop}`)
@@ -219,9 +230,9 @@ function jsxAttributeToExpression(attribute: JSExpression): TS.Expression {
         const arrayExpressions: Array<TS.Expression> = attribute.content.map((elem) => {
           switch (elem.type) {
             case 'ARRAY_SPREAD':
-              return TS.createSpread(jsxAttributeToExpression(elem.value))
+              return TS.createSpread(jsxAttributeToExpression(elem.value, imports, stripUIDs))
             case 'ARRAY_VALUE':
-              return jsxAttributeToExpression(elem.value)
+              return jsxAttributeToExpression(elem.value, imports, stripUIDs)
             default:
               const _exhaustiveCheck: never = elem
               throw new Error(`Unhandled array element type ${elem}`)
@@ -231,27 +242,37 @@ function jsxAttributeToExpression(attribute: JSExpression): TS.Expression {
       case 'JSX_MAP_EXPRESSION':
       case 'ATTRIBUTE_OTHER_JAVASCRIPT':
         const maybeExpressionStatement = rawCodeToExpressionStatement(
-          attribute.javascript,
+          attribute.originalJavascript,
         ).statement
         if (TS.isExpressionStatement(maybeExpressionStatement)) {
-          const expression = maybeExpressionStatement.expression
+          const expression = updateJSXElementsWithin(
+            maybeExpressionStatement.expression,
+            attribute.elementsWithin,
+            imports,
+            stripUIDs,
+          )
           addCommentsToNode(expression, attribute.comments)
           return expression
         } else {
           return TS.factory.createNull()
         }
       case 'ATTRIBUTE_FUNCTION_CALL':
-        return buildPropertyCallingFunction(attribute.functionName, attribute.parameters)
+        return buildPropertyCallingFunction(
+          attribute.functionName,
+          attribute.parameters,
+          imports,
+          stripUIDs,
+        )
       case 'JS_IDENTIFIER':
         return TS.factory.createIdentifier(attribute.name)
       case 'JS_ELEMENT_ACCESS':
         return TS.factory.createElementAccessExpression(
-          jsxAttributeToExpression(attribute.onValue),
-          jsxAttributeToExpression(attribute.element),
+          jsxAttributeToExpression(attribute.onValue, imports, stripUIDs),
+          jsxAttributeToExpression(attribute.element, imports, stripUIDs),
         )
       case 'JS_PROPERTY_ACCESS':
         return TS.factory.createPropertyAccessExpression(
-          jsxAttributeToExpression(attribute.onValue),
+          jsxAttributeToExpression(attribute.onValue, imports, stripUIDs),
           attribute.property,
         )
       default:
@@ -442,7 +463,7 @@ function jsxElementToExpression(
                   )
                 }
               } else {
-                const attributeExpression = jsxAttributeToExpression(prop)
+                const attributeExpression = jsxAttributeToExpression(prop, imports, stripUIDs)
                 const initializer: TS.StringLiteral | TS.JsxExpression = TS.isStringLiteral(
                   attributeExpression,
                 )
@@ -455,7 +476,11 @@ function jsxElementToExpression(
             }
             break
           case 'JSX_ATTRIBUTES_SPREAD':
-            const attributeExpression = jsxAttributeToExpression(propEntry.spreadValue)
+            const attributeExpression = jsxAttributeToExpression(
+              propEntry.spreadValue,
+              imports,
+              stripUIDs,
+            )
             const attributeToAdd = TS.createJsxSpreadAttribute(attributeExpression)
             addCommentsToNode(attributeToAdd, propEntry.comments)
             attribsArray.push(attributeToAdd)
@@ -504,7 +529,7 @@ function jsxElementToExpression(
         // By creating a `JsxText` element containing the raw code surrounded by braces, we can print the code directly
         return TS.factory.createJsxText(`{${rawCode}}`)
       } else {
-        return jsxAttributeToExpression(element)
+        return jsxAttributeToExpression(element, imports, stripUIDs)
       }
     }
     case 'JSX_FRAGMENT': {
@@ -532,7 +557,7 @@ function jsxElementToExpression(
       return TS.createJsxText(element.text)
     }
     case 'JSX_CONDITIONAL_EXPRESSION': {
-      const condition = jsxAttributeToExpression(element.condition)
+      const condition = jsxAttributeToExpression(element.condition, imports, stripUIDs)
       const whenTrue = jsxElementToExpression(element.whenTrue, imports, stripUIDs, false)
       const whenFalse = jsxElementToExpression(element.whenFalse, imports, stripUIDs, false)
 
@@ -553,7 +578,7 @@ function jsxElementToExpression(
     case 'JS_PROPERTY_ACCESS':
     case 'JS_ELEMENT_ACCESS':
     case 'JS_IDENTIFIER':
-      return jsxAttributeToExpression(element)
+      return jsxAttributeToExpression(element, imports, stripUIDs)
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled element type ${JSON.stringify(element)}`)
@@ -683,7 +708,9 @@ function printUtopiaJSXComponent(
         ? TS.NodeFlags.None
         : nodeFlagsForVarLetOrConst(element.declarationSyntax)
     if (element.isFunction) {
-      const functionParams = maybeToArray(element.param).map(printParam)
+      const functionParams = maybeToArray(element.param).map((param) =>
+        printParam(param, imports, printOptions.stripUIDs),
+      )
 
       function bodyForFunction(): TS.Block {
         let statements: Array<TS.Statement> = []
@@ -765,13 +792,13 @@ function printUtopiaJSXComponent(
   }
 }
 
-function printParam(param: Param): TS.ParameterDeclaration {
+function printParam(param: Param, imports: Imports, stripUIDs: boolean): TS.ParameterDeclaration {
   const dotDotDotToken = optionallyCreateDotDotDotToken(param.dotDotDotToken)
   return TS.createParameter(
     undefined,
     undefined,
     dotDotDotToken,
-    printBoundParam(param.boundParam),
+    printBoundParam(param.boundParam, imports, stripUIDs),
     undefined,
     undefined,
     undefined,
@@ -780,32 +807,43 @@ function printParam(param: Param): TS.ParameterDeclaration {
 
 function printBindingExpression(
   defaultExpression: JSExpressionMapOrOtherJavascript | null,
+  imports: Imports,
+  stripUIDs: boolean,
 ): TS.Expression | undefined {
   if (defaultExpression == null) {
     return undefined
   } else {
-    return jsxAttributeToExpression(defaultExpression)
+    return jsxAttributeToExpression(defaultExpression, imports, stripUIDs)
   }
 }
 
-function printBindingElement(propertyName: string | undefined, param: Param): TS.BindingElement {
+function printBindingElement(
+  propertyName: string | undefined,
+  param: Param,
+  imports: Imports,
+  stripUIDs: boolean,
+): TS.BindingElement {
   const dotDotDotToken = optionallyCreateDotDotDotToken(param.dotDotDotToken)
   return TS.createBindingElement(
     dotDotDotToken,
     optionalMap(TS.createIdentifier, propertyName) ?? undefined,
-    printBoundParam(param.boundParam),
+    printBoundParam(param.boundParam, imports, stripUIDs),
     param.boundParam.type === 'REGULAR_PARAM'
-      ? printBindingExpression(param.boundParam.defaultExpression)
+      ? printBindingExpression(param.boundParam.defaultExpression, imports, stripUIDs)
       : undefined,
   )
 }
 
-function printBoundParam(boundParam: BoundParam): TS.BindingName {
+function printBoundParam(
+  boundParam: BoundParam,
+  imports: Imports,
+  stripUIDs: boolean,
+): TS.BindingName {
   if (isRegularParam(boundParam)) {
     return TS.createIdentifier(boundParam.paramName)
   } else if (isDestructuredObject(boundParam)) {
     const printedParts = boundParam.parts.map((part) =>
-      printBindingElement(part.propertyName, part.param),
+      printBindingElement(part.propertyName, part.param, imports, stripUIDs),
     )
     return TS.createObjectBindingPattern(printedParts)
   } else {
@@ -813,7 +851,7 @@ function printBoundParam(boundParam: BoundParam): TS.BindingName {
       if (isOmittedParam(part)) {
         return TS.createOmittedExpression()
       } else {
-        return printBindingElement(undefined, part)
+        return printBindingElement(undefined, part, imports, stripUIDs)
       }
     })
     return TS.createArrayBindingPattern(printedParts)
@@ -1812,6 +1850,13 @@ export function trimHighlightBounds(success: ParseSuccess): ParseSuccess {
             // to include things like render props which include an element.
             for (const child of element.children) {
               walkJSXElementChild(child)
+            }
+            if (element.type === 'JSX_ELEMENT') {
+              for (const prop of element.props) {
+                if (prop.type === 'JSX_ATTRIBUTES_ENTRY') {
+                  walkJSXElementChild(prop.value)
+                }
+              }
             }
             break
           case 'JSX_CONDITIONAL_EXPRESSION':
