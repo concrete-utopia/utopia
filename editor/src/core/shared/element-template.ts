@@ -432,21 +432,14 @@ export function jsExpressionFunctionCall(
 export interface JSIdentifier extends WithComments {
   type: 'JS_IDENTIFIER'
   name: string
-  originalJavascript: string
   uid: string
 }
 
-export function jsIdentifier(
-  name: string,
-  originalJavascript: string,
-  uid: string,
-  comments: ParsedComments,
-): JSIdentifier {
+export function jsIdentifier(name: string, uid: string, comments: ParsedComments): JSIdentifier {
   return {
     type: 'JS_IDENTIFIER',
     name: name,
     uid: uid,
-    originalJavascript: originalJavascript,
     comments: comments,
   }
 }
@@ -466,14 +459,12 @@ export interface JSPropertyAccess extends WithComments {
   type: 'JS_PROPERTY_ACCESS'
   onValue: JSExpression
   property: string
-  originalJavascript: string
   uid: string
 }
 
 export function jsPropertyAccess(
   onValue: JSExpression,
   property: string,
-  originalJavascript: string,
   uid: string,
   comments: ParsedComments,
 ): JSPropertyAccess {
@@ -481,7 +472,6 @@ export function jsPropertyAccess(
     type: 'JS_PROPERTY_ACCESS',
     onValue: onValue,
     property: property,
-    originalJavascript: originalJavascript,
     uid: uid,
     comments: comments,
   }
@@ -502,14 +492,12 @@ export interface JSElementAccess extends WithComments {
   type: 'JS_ELEMENT_ACCESS'
   onValue: JSExpression
   element: JSExpression
-  originalJavascript: string
   uid: string
 }
 
 export function jsElementAccess(
   onValue: JSExpression,
   element: JSExpression,
-  originalJavascript: string,
   uid: string,
   comments: ParsedComments,
 ): JSElementAccess {
@@ -517,7 +505,6 @@ export function jsElementAccess(
     type: 'JS_ELEMENT_ACCESS',
     onValue: onValue,
     element: element,
-    originalJavascript: originalJavascript,
     uid: uid,
     comments: comments,
   }
@@ -691,12 +678,11 @@ export function clearExpressionUniqueIDs(attribute: JSExpression): JSExpression 
         '',
       )
     case 'JS_IDENTIFIER':
-      return jsIdentifier(attribute.name, attribute.originalJavascript, '', attribute.comments)
+      return jsIdentifier(attribute.name, '', attribute.comments)
     case 'JS_PROPERTY_ACCESS':
       return jsPropertyAccess(
         clearExpressionUniqueIDs(attribute.onValue),
         attribute.property,
-        attribute.originalJavascript,
         '',
         attribute.comments,
       )
@@ -704,7 +690,6 @@ export function clearExpressionUniqueIDs(attribute: JSExpression): JSExpression 
       return jsElementAccess(
         clearExpressionUniqueIDs(attribute.onValue),
         clearExpressionUniqueIDs(attribute.element),
-        attribute.originalJavascript,
         '',
         attribute.comments,
       )
@@ -774,17 +759,11 @@ export function clearAttributeSourceMaps(attribute: JSExpression): JSExpression 
         attribute.uid,
       )
     case 'JS_IDENTIFIER':
-      return jsIdentifier(
-        attribute.name,
-        attribute.originalJavascript,
-        attribute.uid,
-        attribute.comments,
-      )
+      return jsIdentifier(attribute.name, attribute.uid, attribute.comments)
     case 'JS_PROPERTY_ACCESS':
       return jsPropertyAccess(
         clearAttributeSourceMaps(attribute.onValue),
         attribute.property,
-        attribute.originalJavascript,
         attribute.uid,
         attribute.comments,
       )
@@ -792,7 +771,6 @@ export function clearAttributeSourceMaps(attribute: JSExpression): JSExpression 
       return jsElementAccess(
         clearAttributeSourceMaps(attribute.onValue),
         clearAttributeSourceMaps(attribute.element),
-        attribute.originalJavascript,
         attribute.uid,
         attribute.comments,
       )

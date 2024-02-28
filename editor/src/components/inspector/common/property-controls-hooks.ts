@@ -136,7 +136,7 @@ export function useInspectorInfoForPropertyControl(
     attributeExpression.type === 'ATTRIBUTE_OTHER_JAVASCRIPT' &&
     attributeExpression.originalJavascript === 'testConst'
   ) {
-    attributeExpression = jsIdentifier('testConst', 'testConst', 'testConst', emptyComments)
+    attributeExpression = jsIdentifier('testConst', 'testConst', emptyComments)
   }
 
   return {
