@@ -24,7 +24,6 @@ import type {
 import {
   isConditionalClauseNavigatorEntry,
   isRegularNavigatorEntry,
-  isSyntheticNavigatorEntry,
   navigatorEntriesEqual,
   navigatorEntryToKey,
 } from '../../editor/store/editor-state'
@@ -33,13 +32,13 @@ import type {
   DerivedSubstate,
   MetadataSubstate,
   ProjectContentAndMetadataSubstate,
-  ProjectContentSubstate,
 } from '../../editor/store/store-hook-substore-types'
 import type {
   ConditionalClauseNavigatorItemContainerProps,
   ErrorNavigatorItemContainerProps,
   NavigatorItemDragAndDropWrapperProps,
   NavigatorItemDragAndDropWrapperPropsBase,
+  RenderPropNavigatorItemContainerProps,
   SyntheticNavigatorItemContainerProps,
 } from './navigator-item-dnd-container'
 import {
@@ -47,6 +46,7 @@ import {
   ErrorNavigatorItemContainer,
   NavigatorItemContainer,
   NavigatorItemDragType,
+  RenderPropNavigatorItemContainer,
   SyntheticNavigatorItemContainer,
 } from './navigator-item-dnd-container'
 import { navigatorDepth } from '../navigator-utils'
@@ -192,6 +192,42 @@ export function getNavigatorEntryLabel(
           throw assertNever(navigatorEntry.childOrAttribute)
       }
     }
+    case 'RENDER_PROP':
+      const value = (() => {
+        if (navigatorEntry.childOrAttribute == null) {
+          return 'empty'
+        }
+        switch (navigatorEntry.childOrAttribute.type) {
+          case 'JSX_ELEMENT':
+            return getJSXElementNameLastPart(navigatorEntry.childOrAttribute.name)
+          case 'JSX_MAP_EXPRESSION':
+          case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+            return navigatorEntry.childOrAttribute.originalJavascript
+          case 'JSX_TEXT_BLOCK':
+            return navigatorEntry.childOrAttribute.text
+          case 'JSX_FRAGMENT':
+            return 'Fragment'
+          case 'JSX_CONDITIONAL_EXPRESSION':
+            return 'Conditional'
+          case 'ATTRIBUTE_VALUE':
+            return `${navigatorEntry.childOrAttribute.value}`
+          case 'ATTRIBUTE_NESTED_ARRAY':
+            return '(code)'
+          case 'ATTRIBUTE_NESTED_OBJECT':
+            return '(code)'
+          case 'ATTRIBUTE_FUNCTION_CALL':
+            return '(code)'
+          case 'JS_IDENTIFIER':
+            return '(code)'
+          case 'JS_ELEMENT_ACCESS':
+            return '(code)'
+          case 'JS_PROPERTY_ACCESS':
+            return '(code)'
+          default:
+            throw assertNever(navigatorEntry.childOrAttribute)
+        }
+      })()
+      return `${navigatorEntry.propName}: ${value}`
     case 'INVALID_OVERRIDE':
       return navigatorEntry.message
     default:
@@ -378,6 +414,17 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     }
 
     return <ErrorNavigatorItemContainer {...entryProps} />
+  }
+
+  if (props.navigatorEntry.type === 'RENDER_PROP') {
+    const entryProps: RenderPropNavigatorItemContainerProps = {
+      ...navigatorItemProps,
+      propName: props.navigatorEntry.propName,
+      childOrAttribute: props.navigatorEntry.childOrAttribute,
+      elementPath: props.navigatorEntry.elementPath,
+      isOutletOrDescendantOfOutlet: false,
+    }
+    return <RenderPropNavigatorItemContainer {...entryProps} />
   }
 
   assertNever(props.navigatorEntry)

@@ -23,6 +23,7 @@ function createBasicComponent(
   return {
     properties: { ...StyleObjectProps, ...propertyControls },
     supportsChildren: false, // TODO
+    preferredChildComponents: [],
     variants: [
       {
         insertMenuLabel: [baseVariable, ...propertyPathParts].join('.'),

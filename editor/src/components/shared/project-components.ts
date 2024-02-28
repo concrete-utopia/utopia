@@ -352,6 +352,7 @@ function makeHTMLDescriptor(
   return {
     properties: propertyControls,
     supportsChildren: supportsChildren,
+    preferredChildComponents: [],
     variants: [
       {
         insertMenuLabel: tag,
@@ -441,6 +442,7 @@ const conditionalElementsDescriptors: ComponentDescriptorsForFile = {
   conditional: {
     properties: {},
     supportsChildren: true,
+    preferredChildComponents: [],
     variants: [
       {
         insertMenuLabel: 'Conditional',
@@ -462,6 +464,7 @@ const groupElementsDescriptors: ComponentDescriptorsForFile = {
   group: {
     properties: {},
     supportsChildren: true,
+    preferredChildComponents: [],
     variants: [
       {
         insertMenuLabel: 'Group',
@@ -489,6 +492,7 @@ const fragmentElementsDescriptors: ComponentDescriptorsForFile = {
     properties: {},
     supportsChildren: true,
     variants: [fragmentComponentInfo],
+    preferredChildComponents: [],
   },
 }
 
@@ -496,6 +500,7 @@ const samplesDescriptors: ComponentDescriptorsForFile = {
   sampleText: {
     properties: {},
     supportsChildren: false,
+    preferredChildComponents: [],
     variants: [
       {
         insertMenuLabel: 'Sample text',
