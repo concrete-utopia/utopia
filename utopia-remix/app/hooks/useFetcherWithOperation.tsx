@@ -38,17 +38,45 @@ export function useCleanupOperations() {
   const removeOperation = useProjectsStore((store) => store.removeOperation)
   const updateOperation = useProjectsStore((store) => store.updateOperation)
 
+  const [loading, setLoading] = React.useState<{ [key: string]: boolean }>({})
+
+  // TODO explain this in a comment
+  React.useEffect(() => {
+    let newLoading = { ...loading }
+
+    const disappeared = Object.keys(loading).filter((key) => !fetchers.some((f) => f.key === key))
+    for (let key of disappeared) {
+      removeOperation(key)
+      delete newLoading[key]
+    }
+
+    if (disappeared.length > 0) {
+      setLoading(newLoading)
+    }
+  }, [loading, removeOperation, fetchers])
+
   React.useEffect(() => {
     for (const fetcher of fetchers) {
       const isOperationFetcher = fetcher.key.startsWith(operationFetcherKeyPrefix)
-      const hasDataWhileNotSubmitting = fetcher.data != null && fetcher.state !== 'submitting'
-      if (isOperationFetcher && hasDataWhileNotSubmitting) {
-        if (isLikeApiError(fetcher.data)) {
-          updateOperation(fetcher.key, true)
-        } else {
-          removeOperation(fetcher.key)
+      const hasData = fetcher.data != null
+      if (hasData && isOperationFetcher) {
+        if (fetcher.state === 'loading') {
+          // it will disappear next if successful
+          setLoading((loading) => {
+            if (loading[fetcher.key] === true) {
+              return loading
+            }
+            return { ...loading, [fetcher.key]: true }
+          })
+        } else if (fetcher.state === 'idle') {
+          // it's good for collection
+          if (isLikeApiError(fetcher.data)) {
+            updateOperation(fetcher.key, true)
+          } else {
+            removeOperation(fetcher.key)
+          }
         }
       }
     }
-  }, [fetchers])
+  }, [fetchers, removeOperation, updateOperation])
 }
