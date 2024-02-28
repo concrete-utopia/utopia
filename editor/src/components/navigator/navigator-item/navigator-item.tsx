@@ -821,8 +821,6 @@ export const NavigatorItem: React.FunctionComponent<
               width: 140,
               height: 19,
               borderRadius: 20,
-              textAlign: 'center',
-              textTransform: 'lowercase',
               backgroundColor: colorTheme.dynamicBlue10.value,
               color: colorTheme.navigatorResizeHintBorder.value,
               border: colorTheme.navigatorResizeHintBorder.value,

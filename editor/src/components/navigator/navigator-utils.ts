@@ -33,6 +33,7 @@ import { getPropertyControlsForTarget } from '../../core/property-controls/prope
 import type { PropertyControlsInfo } from '../custom-code/code-file'
 import type { ProjectContentTreeRoot } from '../assets'
 import type { PropertyControls } from 'utopia-api/core'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 export function baseNavigatorDepth(path: ElementPath): number {
   // The storyboard means that this starts at -1,
@@ -140,7 +141,7 @@ export function getNavigatorTargets(
         openFilePath,
         projectContents,
       )
-      if (propertyControls != null) {
+      if (isFeatureEnabled('Render Props in Navigator') && propertyControls != null) {
         walkPropertyControls(propertyControls)
       }
 
