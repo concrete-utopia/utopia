@@ -6,7 +6,7 @@ import {
   newTestRequest,
   truncateTables,
 } from '../test-util'
-import { ApiError } from '../util/api.server'
+import { ApiError } from '../util/errors'
 import { handleListProjects } from './listProjects'
 
 describe('handleListProjects', () => {

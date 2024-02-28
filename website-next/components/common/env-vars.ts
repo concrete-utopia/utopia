@@ -36,7 +36,7 @@ type BackendType =
   | 'direct' // direct calls to the backend
 
 const LOCAL_BACKEND_PORTS: { [type in BackendType]: number } = {
-  direct: 8001,
+  direct: 8000,
   bff: 8002,
 }
 

@@ -1,6 +1,7 @@
 import { prisma } from '../db.server'
 import { createTestSession, createTestUser, newTestRequest, truncateTables } from '../test-util'
-import { ApiError, requireUser } from './api.server'
+import { requireUser } from './api.server'
+import { ApiError } from './errors'
 
 describe('requireUser', () => {
   beforeEach(async () => {

@@ -1,20 +1,38 @@
-import { ActionFunctionArgs } from '@remix-run/node'
+import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node'
 import { ensure, handle, requireUser } from '../util/api.server'
-import { Status } from '../util/statusCodes.server'
+import { Status } from '../util/statusCodes'
 import { Params } from '@remix-run/react'
-import { updateCollaborators } from '../models/projectCollaborators.server'
+import {
+  listProjectCollaborators,
+  addToProjectCollaborators,
+} from '../models/projectCollaborators.server'
+import { userToCollaborator } from '../types'
 
-export async function action(args: ActionFunctionArgs) {
-  return handle(args, { POST: updateProjectCollaborators })
+export async function loader(args: LoaderFunctionArgs) {
+  return handle(args, { GET: getProjectCollaborators })
 }
 
-export async function updateProjectCollaborators(req: Request, params: Params<string>) {
+export async function getProjectCollaborators(req: Request, params: Params<string>) {
   await requireUser(req)
 
   const { id } = params
   ensure(id != null, 'id is null', Status.BAD_REQUEST)
 
-  await updateCollaborators({ id: id })
+  const collaborators = await listProjectCollaborators({ id: id })
+  return collaborators.map(userToCollaborator)
+}
+
+export async function action(args: ActionFunctionArgs) {
+  return handle(args, { POST: addToCollaborators })
+}
+
+export async function addToCollaborators(req: Request, params: Params<string>) {
+  const user = await requireUser(req)
+
+  const { id } = params
+  ensure(id != null, 'id is null', Status.BAD_REQUEST)
+
+  await addToProjectCollaborators({ id: id, userId: user.user_id })
 
   return {}
 }

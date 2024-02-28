@@ -14,16 +14,18 @@ export const ServerEnvironment = {
   BackendURL: mustEnv('BACKEND_URL'),
   // the CORS allowed origin for incoming requests
   CORSOrigin: mustEnv('CORS_ORIGIN'),
-  // the Liveblocks secret key
-  LiveblocksSecretKey: mustEnv('LIVEBLOCKS_SECRET_KEY'),
+  // Auth0 credentials
+  AUTH0_ENDPOINT: optionalEnv('AUTH0_ENDPOINT', '<AUTH0_ENDPOINT>'),
+  AUTH0_CLIENT_ID: optionalEnv('AUTH0_CLIENT_ID', '<AUTH0_CLIENT_ID>'),
+  AUTH0_REDIRECT_URI: optionalEnv('AUTH0_REDIRECT_URI', '<AUTH0_REDIRECT_URI>'),
 }
 
 export type BrowserEnvironment = {
-  EDITOR_URL?: string
+  EDITOR_URL: string
 }
 
 export const BrowserEnvironment: BrowserEnvironment = {
-  EDITOR_URL: process.env.REACT_APP_EDITOR_URL,
+  EDITOR_URL: mustEnv('REACT_APP_EDITOR_URL'),
 }
 
 function mustEnv(key: string): string {
@@ -32,4 +34,9 @@ function mustEnv(key: string): string {
     throw new Error(`missing required environment variable ${key}`)
   }
   return value
+}
+
+function optionalEnv(key: string, defaultValue: string): string {
+  const value = process.env[key]
+  return value ?? defaultValue
 }

@@ -1,3 +1,4 @@
+import React from 'react'
 import type { MapLike } from 'typescript'
 import type { Either } from '../core/shared/either'
 import {
@@ -10,6 +11,9 @@ import {
   right,
   traverseEither,
 } from '../core/shared/either'
+import * as EP from '../core/shared/element-path'
+import type { ElementPath } from '../core/shared/project-file-types'
+import type { ComponentRendererComponent } from '../components/canvas/ui-jsx-canvas-renderer/component-renderer-component'
 
 export interface ArrayIndexNotPresentParseError {
   type: 'ARRAY_INDEX_NOT_PRESENT_PARSE_ERROR'
@@ -297,8 +301,97 @@ export function parseString(value: unknown): ParseResult<string> {
   }
 }
 
-export function parseJsx(value: unknown): ParseResult<string> {
-  return right('JSX')
+export type JSXParsedType =
+  | 'null'
+  | 'string'
+  | 'number'
+  | 'html'
+  | 'internal-component'
+  | 'external-component'
+  | 'unknown'
+
+export interface JSXParsedValue {
+  type: JSXParsedType
+  name: string
+}
+
+export function parseJsx(_: unknown, value: unknown): ParseResult<JSXParsedValue> {
+  if (React.isValidElement(value)) {
+    const { type } = value
+    // if this is an html element, we want to return the tag name
+    if (typeof type === 'string') {
+      return right({
+        type: 'html',
+        name: type,
+      })
+    }
+    // if it is a spied component, the original type is stored in theOriginalType
+    if (type.hasOwnProperty('theOriginalType')) {
+      const originalType = (type as any).theOriginalType
+      // if it is an internal component, it has an originalName property
+      if (originalType.hasOwnProperty('originalName') === true) {
+        const originalName = (originalType as ComponentRendererComponent).originalName
+        return right({
+          type: 'internal-component',
+          name: originalName ?? 'JSX',
+        })
+      }
+
+      // if it is an external component, try returning displayName or name
+      if (originalType.hasOwnProperty('displayName') === true) {
+        return right({
+          type: 'external-component',
+          name: (originalType as ComponentRendererComponent).displayName ?? 'JSX',
+        })
+      }
+      if (originalType.hasOwnProperty('name') === true) {
+        return right({
+          type: 'external-component',
+          name: (originalType as ComponentRendererComponent).name ?? 'JSX',
+        })
+      }
+    }
+
+    // if it is an external component, try returning displayName or name
+    if (type.hasOwnProperty('displayName')) {
+      return right({
+        type: 'external-component',
+        name: (type as any).displayName ?? 'JSX',
+      })
+    }
+    if (type.hasOwnProperty('name')) {
+      return right({
+        type: 'external-component',
+        name: (type as any).name ?? 'JSX',
+      })
+    }
+  }
+
+  if (typeof value === 'string') {
+    return right({
+      type: 'string',
+      name: value,
+    })
+  }
+
+  if (typeof value === 'number') {
+    return right({
+      type: 'number',
+      name: value.toString(),
+    })
+  }
+
+  if (value == null) {
+    return right({
+      type: 'null',
+      name: 'null',
+    })
+  }
+
+  return right({
+    type: 'unknown',
+    name: 'JSX',
+  })
 }
 
 export function parseEnum<E extends string | number>(possibleValues: Array<E>): Parser<E> {

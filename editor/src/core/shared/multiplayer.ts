@@ -16,6 +16,12 @@ import { possiblyUniqueInArray, safeIndex, stripNulls, uniqBy } from './array-ut
 import { useMyUserId } from './multiplayer-hooks'
 import type { ElementPath } from './project-file-types'
 
+export type Collaborator = {
+  id: string
+  name: string | null
+  avatar: string | null
+}
+
 export type MultiplayerColor = {
   background: string
   foreground: string
@@ -128,16 +134,6 @@ export function canFollowTarget(
   return !others.some(
     (o) => o.id === to.playerId && o.connectionId === to.connectionId && o.following != null,
   )
-}
-
-const roomIdPrefix = `project-room-`
-
-export function projectIdToRoomId(projectId: string): string {
-  return `${roomIdPrefix}${projectId}`
-}
-
-export function isRoomId(s: string): boolean {
-  return s.startsWith(roomIdPrefix)
 }
 
 export type RemixPresence = {

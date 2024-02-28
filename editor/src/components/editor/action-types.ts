@@ -7,6 +7,7 @@ import type {
   JSXConditionalExpression,
   JSXFragment,
   TopLevelElement,
+  JSExpressionOtherJavaScript,
 } from '../../core/shared/element-template'
 import type { KeysPressed, Key } from '../../utils/keyboard'
 import type { IndexPosition } from '../../utils/utils'
@@ -78,6 +79,7 @@ import type { ProjectServerState } from './store/project-server-state'
 import type { SetHuggingParentToFixed } from '../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
 import type { MapLike } from 'typescript'
 import type { CommentFilterMode } from '../inspector/sections/comment-section'
+import type { Collaborator } from '../../core/shared/multiplayer'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -144,6 +146,12 @@ export interface InsertJSXElement {
   jsxElement: JSXElement
   parent: ElementPath | null
   importsToAdd: Imports
+}
+
+export interface InsertAttributeOtherJavascriptIntoElement {
+  action: 'INSERT_ATTRIBUTE_OTHER_JAVASCRIPT_INTO_ELEMENT'
+  expression: JSExpressionOtherJavaScript
+  parent: ElementPath
 }
 
 export type DeleteSelected = {
@@ -1082,9 +1090,15 @@ export interface SetCommentFilterMode {
   commentFilterMode: CommentFilterMode
 }
 
+export interface SetCollaborators {
+  action: 'SET_COLLABORATORS'
+  collaborators: Collaborator[]
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
+  | InsertAttributeOtherJavascriptIntoElement
   | DeleteSelected
   | DeleteView
   | UpdateEditorMode
@@ -1257,6 +1271,7 @@ export type EditorAction =
   | UpdateCodeFromCollaborationUpdate
   | SetCommentFilterMode
   | SetForking
+  | SetCollaborators
 
 export type DispatchPriority =
   | 'everyone'

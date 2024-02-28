@@ -8,9 +8,9 @@ import {
   type WindowPoint,
 } from './src/core/shared/math-utils'
 import type { RemixPresence } from './src/core/shared/multiplayer'
-import { projectIdToRoomId } from './src/core/shared/multiplayer'
 import { HEADERS } from './src/common/server'
 import urljoin from 'url-join'
+import { getCollaborators } from './src/components/editor/server'
 
 export const liveblocksThrottle = 100 // ms
 
@@ -66,7 +66,7 @@ type SceneIdToRouteMapping = LiveObject<{ [sceneId: string]: string }>
 export type Storage = {
   // author: LiveObject<{ firstName: string, lastName: string }>,
   // ...
-  collaborators: LiveObject<{ [userId: string]: User }> // this is an object (and not a list) so we can quickly check if a user is a collaborator, but later we can extend the information by storing something more than a boolean (e.g. a permission level)
+  collaborators: LiveObject<{ [userId: string]: User }> // TODO remove collaborators when the BFF is on
   userReadStatusesByThread: LiveObject<{ [threadId: string]: UserReadStatuses }>
   remixSceneRoutes: LiveObject<{ [userId: string]: SceneIdToRouteMapping }>
   connections: LiveObject<{ [userId: string]: ConnectionInfo[] }>
@@ -79,7 +79,7 @@ export type UserReadStatuses = LiveObject<UserReadStatusesMeta>
 
 export function initialStorage(): Storage {
   return {
-    collaborators: new LiveObject(),
+    collaborators: new LiveObject(), // TODO remove this when the BFF is on
     userReadStatusesByThread: new LiveObject(),
     remixSceneRoutes: new LiveObject(),
     connections: new LiveObject(),
@@ -164,18 +164,15 @@ export const {
     // Used only for Comments. Return a list of user information retrieved
     // from `userIds`. This info is used in comments, mentions etc.
 
-    // This should be provided by the Utopia backend, but as a quick hack I store the user data in the room storage.
-    // This means we need the room id to get the users, which is not provided to this function, but fortunately we can
-    // recreate that from the project id.
     const projectId = getProjectID()
     if (projectId == null) {
       return []
     }
 
-    const users = await getAllUsersFromRoom(projectIdToRoomId(projectId))
+    const users = await getCollaborators(projectId)
     return users.filter((u) => userIds.includes(u.id))
   },
-  async resolveMentionSuggestions({ text, roomId }) {
+  async resolveMentionSuggestions({ text }) {
     // Used only for Comments. Return a list of userIds where the name matches `text`.
     // These userIds are used to create a mention list when typing in the
     // composer.
@@ -183,7 +180,12 @@ export const {
     // For example when you type "@jo", `text` will be `"jo"`, and
     // you should to return an array with John and Joanna's userIds.
 
-    const users = await getAllUsersFromRoom(roomId)
+    const projectId = getProjectID()
+    if (projectId == null) {
+      return []
+    }
+
+    const users = await getCollaborators(projectId)
 
     if (text == null) {
       return users.map((u) => u.id)
@@ -200,18 +202,3 @@ export const {
       .map((u) => u.id)
   },
 })
-
-async function getAllUsersFromRoom(roomId: string) {
-  const room = liveblocksClient.getRoom(roomId)
-  if (room == null) {
-    return []
-  }
-
-  const storage = await room.getStorage()
-
-  const collabs = storage.root.get('collaborators') as LiveObject<{ [userId: string]: User }>
-  if (collabs == null) {
-    return []
-  }
-  return Object.values(collabs.toObject()).map((u) => u.toObject())
-}

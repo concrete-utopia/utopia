@@ -1,6 +1,6 @@
 import { within } from '@testing-library/react'
 import * as EP from '../../../../core/shared/element-path'
-import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
+import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
 import { mouseClickAtPoint, pressKey } from '../../../canvas/event-helpers.test-utils'
 import type { EditorRenderResult } from '../../../canvas/ui-jsx.test-utils'
 import { renderTestEditorWithCode } from '../../../canvas/ui-jsx.test-utils'
@@ -9,6 +9,14 @@ import {
   DataPickerPopupTestId,
   VariableFromScopeOptionTestId,
 } from './component-section'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { isRight, type Right } from '../../../../core/shared/either'
+import {
+  isJSElementAccess,
+  isJSExpressionValue,
+  isJSIdentifier,
+  type JSExpressionOtherJavaScript,
+} from '../../../../core/shared/element-template'
 
 describe('Set element prop via the data picker', () => {
   it('can pick from the property data picker', async () => {
@@ -519,6 +527,150 @@ describe('Set element prop via the data picker', () => {
 
     expect(options).toEqual(['titles', 'one', 'also JS', 'nums', 'nums[0]'])
   })
+
+  it('for jsx props react elements have highest priority, strings/numbers are next, and the rest is lower', async () => {
+    const editor = await renderTestEditorWithCode(
+      DataPickerProjectShell(`
+      function Title({ text }) {
+        const content = 'Content'
+      
+        return <h2 data-uid='aam'>{text}</h2>
+      }
+
+      registerInternalComponent(Title, {
+        supportsChildren: false,
+        properties: {
+          text: {
+            control: 'jsx',
+          },
+        },
+        variants: [
+          {
+            code: '<Title />',
+          },
+        ],
+      })      
+      
+      var Playground = ({ style }) => {
+        const nums = [1, 2, 3, 4, 5]
+        
+        const titleString = 'This is the title'
+        const titleNumber = 99999
+        const titleJsx = <span>This is the title</span>
+      
+        return (
+          <div style={style} data-uid='root'>
+            <Title
+              text={<span>a</span>}
+              data-uid='bd'
+              style={{
+                width: 134,
+                height: 28,
+                position: 'absolute',
+                left: 160,
+                top: 75,
+              }}
+            />
+          </div>
+        )
+      }`),
+      'await-first-dom-report',
+    )
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/bd')])
+
+    const dataPickerOpenerButton = editor.renderedDOM.getByTestId(DataPickerPopupButtonTestId)
+    await mouseClickAtPoint(dataPickerOpenerButton, { x: 2, y: 2 })
+
+    const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
+    expect(dataPickerPopup).not.toBeNull()
+
+    const options = getRenderedOptions(editor)
+
+    expect(options).toEqual(['titleJsx', 'titleString', 'titleNumber', 'nums', 'nums[0]'])
+  })
+
+  it('picking data for the children prop', async () => {
+    const editor = await renderTestEditorWithCode(
+      DataPickerProjectShell(`registerInternalComponent(Link, {
+      properties: {
+        children: Utopia.arrayControl({ control: 'jsx' }),
+      },
+      supportsChildren: true,
+      variants: [],
+    })
+    
+    function Link({ href, children }) {
+      return (
+        <a href={href} data-uid='a-root'>
+          {children}
+        </a>
+      )
+    }
+    
+    var Playground = ({ style }) => {
+      const alternateBookInfo = {
+        title: 'Frankenstein',
+        published: 'August 1866',
+        description: 'Short, fun read',
+        likes: 66,
+      }
+    
+      return (
+        <div style={style} data-uid='root'>
+          <Link href='/new' data-uid='link'>
+            <code>TODO</code>
+          </Link>
+        </div>
+      )
+    }`),
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/link')])
+
+    const dataPickerOpenerButton = editor.renderedDOM.getAllByTestId(DataPickerPopupButtonTestId)[0]
+    await mouseClickAtPoint(dataPickerOpenerButton, { x: 2, y: 2 })
+
+    const dataPickerPopup = editor.renderedDOM.queryByTestId(DataPickerPopupTestId)
+    expect(dataPickerPopup).not.toBeNull()
+
+    const options = getRenderedOptions(editor)
+
+    expect(options).toEqual(['alternateBookInfo', 'title', 'published', 'description', 'likes'])
+
+    const theScene = editor.renderedDOM.getByTestId('scene')
+    let currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId('0-0'))
+    await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
+    expect(within(theScene).queryByText('Frankenstein')).not.toBeNull()
+
+    const childrenOfLink = MetadataUtils.getChildrenOrdered(
+      editor.getEditorState().editor.jsxMetadata,
+      editor.getEditorState().editor.elementPathTree,
+      EP.fromString('sb/scene/pg:root/link'),
+    )
+
+    expect(childrenOfLink).toHaveLength(1)
+    const possibleElement = childrenOfLink[0].element
+    if (isRight(possibleElement)) {
+      const element = possibleElement.value
+      if (isJSElementAccess(element)) {
+        if (isJSIdentifier(element.onValue)) {
+          expect(element.onValue.name).toEqual('alternateBookInfo')
+          if (isJSExpressionValue(element.element)) {
+            expect(element.element.value).toEqual('title')
+          } else {
+            throw new Error(`Expected JSExpressionValue for element but got: ${element.element}`)
+          }
+        } else {
+          throw new Error(`Expected JSIdentifier for onValue but got: ${element.onValue}`)
+        }
+      } else {
+        throw new Error(`Expected JSElementAccess but got: ${element}`)
+      }
+    } else {
+      throw new Error(`Unexpected value: ${possibleElement.value}`)
+    }
+  })
 })
 
 // comment out tests temporarily because it causes a dom-walker test to fail
@@ -600,6 +752,176 @@ describe('Controls from registering components', () => {
 
     const theView = editor.renderedDOM.getByTestId('view')
     expect(theView.outerHTML).toContain('sampleprop="New props value"')
+  })
+
+  describe('preferred child components', () => {
+    it('preferred child components with internal component', async () => {
+      const editor = await renderTestEditorWithCode(
+        DataPickerProjectShell(`registerInternalComponent(Link, {
+          properties: {
+            children: Utopia.arrayControl({ control: 'jsx' }),
+          },
+          preferredChildComponents: [
+            {
+              name: 'span',
+              variants: [{ code: '<span>Link</span>' }],
+            },
+          ],
+          supportsChildren: true,
+          variants: [],
+        })
+      
+      function Link({ href, children }) {
+        return (
+          <a href={href} data-uid='root'>
+            {children}
+          </a>
+        )
+      }
+      
+      var Playground = ({ style }) => {
+        return (
+          <div style={style} data-uid='dbc'>
+            <Link href='/new' data-uid='78c'>
+              nowhere
+            </Link>
+          </div>
+        )
+      }`),
+        'await-first-dom-report',
+      )
+
+      // elementToInsert is omitted from the object below because it's a function
+      expect(
+        editor.getEditorState().editor.propertyControlsInfo['/utopia/storyboard'],
+      ).toMatchObject({
+        Link: {
+          preferredChildComponents: [
+            {
+              additionalImports: undefined,
+              name: 'span',
+              variants: [
+                {
+                  code: '<span>Link</span>',
+                },
+              ],
+            },
+          ],
+          properties: {
+            children: {
+              control: 'array',
+              propertyControl: {
+                control: 'jsx',
+              },
+            },
+          },
+          supportsChildren: true,
+          variants: [
+            {
+              importsToAdd: {
+                '/utopia/storyboard': {
+                  importedAs: null,
+                  importedFromWithin: [
+                    {
+                      alias: 'Link',
+                      name: 'Link',
+                    },
+                  ],
+                  importedWithName: null,
+                },
+              },
+              insertMenuLabel: 'Link',
+            },
+          ],
+        },
+      })
+    })
+
+    it('preferred child components with render prop', async () => {
+      const editor = await renderTestEditorWithCode(
+        DataPickerProjectShell(`registerInternalComponent(Card, {
+          properties: {
+            header: Utopia.arrayControl({
+              control: 'jsx',
+              preferredChildComponents: [
+                {
+                  name: 'span',
+                  variants: [{ code: '<span>Title</span>' }],
+                },
+              ],
+            }),
+          },
+          supportsChildren: true,
+          variants: [],
+        })
+      
+      function Card({ header, children }) {
+        return (
+          <div data-uid='root'>
+            <h2>{header}</h2>
+            {children}
+          </div>
+        )
+      }
+      
+      var Playground = ({ style }) => {
+        return (
+          <div style={style} data-uid='dbc'>
+            <Card header={<span>Title</span>} data-uid='78c'>
+              <p>Card contents</p>
+            </Card>
+          </div>
+        )
+      }`),
+        'await-first-dom-report',
+      )
+
+      // elementToInsert is omitted from the object below because it's a function
+      expect(
+        editor.getEditorState().editor.propertyControlsInfo['/utopia/storyboard'],
+      ).toMatchObject({
+        Card: {
+          preferredChildComponents: [],
+          properties: {
+            header: {
+              control: 'array',
+              propertyControl: {
+                control: 'jsx',
+                preferredChildComponents: [
+                  {
+                    additionalImports: undefined,
+                    name: 'span',
+                    variants: [
+                      {
+                        code: '<span>Title</span>',
+                      },
+                    ],
+                  },
+                ],
+              },
+            },
+          },
+          supportsChildren: true,
+          variants: [
+            {
+              importsToAdd: {
+                '/utopia/storyboard': {
+                  importedAs: null,
+                  importedFromWithin: [
+                    {
+                      alias: 'Card',
+                      name: 'Card',
+                    },
+                  ],
+                  importedWithName: null,
+                },
+              },
+              insertMenuLabel: 'Card',
+            },
+          ],
+        },
+      })
+    })
   })
 })
 

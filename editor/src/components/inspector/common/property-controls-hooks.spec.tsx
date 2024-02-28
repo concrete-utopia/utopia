@@ -182,6 +182,7 @@ function callPropertyControlsHook(
         App: {
           properties: propertyControlsForApp,
           supportsChildren: false,
+          preferredChildComponents: [],
           variants: [
             {
               insertMenuLabel: 'App',
@@ -193,6 +194,7 @@ function callPropertyControlsHook(
         OtherComponent: {
           properties: propertyControlsForOtherComponent,
           supportsChildren: false,
+          preferredChildComponents: [],
           variants: [
             {
               insertMenuLabel: 'OtherComponent',

@@ -38,13 +38,19 @@ let
       ${pnpm}/bin/pnpm install
       ${pnpm}/bin/pnpm run build
     '')
+    (pkgs.writeScriptBin "build-vscode-common" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)
+      ${pnpm}/bin/pnpm install
+      update-vscode-build-extension
+    '')
     (pkgs.writeScriptBin "install-editor" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)
       ${pnpm}/bin/pnpm install
       install-utopia-api
-      update-vscode-build-extension
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${pnpm}/bin/pnpm install
     '')
@@ -579,11 +585,16 @@ let
       stop-postgres
       tmux kill-session -t utopia-dev
     '')
+    (pkgs.writeScriptBin "start" ''
+      #!/usr/bin/env bash
+      start-minimal
+    '')
     (pkgs.writeScriptBin "start-minimal" ''
       #!/usr/bin/env bash
       stop-dev
       set -e
       check-tool-versions
+      install-editor
       tmux new-session -s utopia-dev \; \
         set -g default-terminal "xterm-256color" \; \
         set-option -g mouse on \; \
@@ -619,7 +630,7 @@ let
       else
         check-tool-versions
         build-vscode-with-extension
-        install-editor
+        build-vscode-common
         start-minimal
       fi
     '')
@@ -628,6 +639,7 @@ let
       stop-dev
       set -e
       check-tool-versions
+      install-editor
       tmux new-session -s utopia-dev \; \
         set -g default-terminal "xterm-256color" \; \
         set-option -g mouse on \; \
@@ -658,7 +670,7 @@ let
       set -e
       check-tool-versions
       build-vscode-with-extension
-      install-editor
+      build-vscode-common
       start-minimal-webpack
     '')
   ] ++ vscodeDevScripts;

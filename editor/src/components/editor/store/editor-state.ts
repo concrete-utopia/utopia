@@ -125,6 +125,7 @@ import {
   DerivedStateKeepDeepEquality,
   ElementInstanceMetadataMapKeepDeepEquality,
   InvalidOverrideNavigatorEntryKeepDeepEquality,
+  RenderPropNavigatorEntryKeepDeepEquality,
   SyntheticNavigatorEntryKeepDeepEquality,
 } from './store-deep-equality-instances'
 
@@ -185,6 +186,7 @@ import { Y } from '../../../core/shared/yjs'
 import { removeUnusedImportsForRemovedElement } from '../import-utils'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
 import type { CommentFilterMode } from '../../inspector/sections/comment-section'
+import type { Collaborator } from '../../../core/shared/multiplayer'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1459,6 +1461,7 @@ export interface EditorState {
   activeFrames: ActiveFrame[]
   commentFilterMode: CommentFilterMode
   forking: boolean
+  collaborators: Collaborator[]
 }
 
 export function editorState(
@@ -1542,6 +1545,7 @@ export function editorState(
   activeFrames: ActiveFrame[],
   commentFilterMode: CommentFilterMode,
   forking: boolean,
+  collaborators: Collaborator[],
 ): EditorState {
   return {
     id: id,
@@ -1624,6 +1628,7 @@ export function editorState(
     activeFrames: activeFrames,
     commentFilterMode: commentFilterMode,
     forking: forking,
+    collaborators: collaborators,
   }
 }
 
@@ -2119,6 +2124,33 @@ export function syntheticNavigatorEntriesEqual(
   return SyntheticNavigatorEntryKeepDeepEquality(first, second).areEqual
 }
 
+export interface RenderPropNavigatorEntry {
+  type: 'RENDER_PROP'
+  elementPath: ElementPath
+  propName: string
+  childOrAttribute: JSXElementChild | null
+}
+
+export function renderPropNavigatorEntry(
+  elementPath: ElementPath,
+  propName: string,
+  childOrAttribute: JSXElementChild | null,
+): RenderPropNavigatorEntry {
+  return {
+    type: 'RENDER_PROP',
+    elementPath: elementPath,
+    propName: propName,
+    childOrAttribute: childOrAttribute,
+  }
+}
+
+export function renderPropNavigatorEntriesEqual(
+  first: RenderPropNavigatorEntry,
+  second: RenderPropNavigatorEntry,
+): boolean {
+  return RenderPropNavigatorEntryKeepDeepEquality(first, second).areEqual
+}
+
 export interface InvalidOverrideNavigatorEntry {
   type: 'INVALID_OVERRIDE'
   elementPath: ElementPath
@@ -2154,6 +2186,7 @@ export type NavigatorEntry =
   | ConditionalClauseNavigatorEntry
   | SyntheticNavigatorEntry
   | InvalidOverrideNavigatorEntry
+  | RenderPropNavigatorEntry
 
 export function navigatorEntriesEqual(
   first: NavigatorEntry | null,
@@ -2169,6 +2202,8 @@ export function navigatorEntriesEqual(
     return conditionalClauseNavigatorEntriesEqual(first, second)
   } else if (first.type === 'SYNTHETIC' && second.type === 'SYNTHETIC') {
     return syntheticNavigatorEntriesEqual(first, second)
+  } else if (first.type === 'RENDER_PROP' && second.type === 'RENDER_PROP') {
+    return renderPropNavigatorEntriesEqual(first, second)
   } else {
     return false
   }
@@ -2180,11 +2215,15 @@ export function navigatorEntryToKey(entry: NavigatorEntry): string {
       return `regular-${EP.toComponentId(entry.elementPath)}`
     case 'CONDITIONAL_CLAUSE':
       return `conditional-clause-${EP.toComponentId(entry.elementPath)}-${entry.clause}`
-    case 'SYNTHETIC':
+    case 'SYNTHETIC': {
       const childOrAttributeDetails = isJSExpression(entry.childOrAttribute)
         ? `attribute`
         : `element-${getUtopiaID(entry.childOrAttribute)}`
       return `synthetic-${EP.toComponentId(entry.elementPath)}-${childOrAttributeDetails}`
+    }
+    case 'RENDER_PROP': {
+      return `render-prop-${EP.toComponentId(entry.elementPath)}-${entry.propName}}`
+    }
     case 'INVALID_OVERRIDE':
       return `error-${EP.toComponentId(entry.elementPath)}`
     default:
@@ -2203,6 +2242,8 @@ export function varSafeNavigatorEntryToKey(entry: NavigatorEntry): string {
         ? `attribute`
         : `element_${getUtopiaID(entry.childOrAttribute)}`
       return `synthetic_${EP.toVarSafeComponentId(entry.elementPath)}_${childOrAttributeDetails}`
+    case 'RENDER_PROP':
+      return `renderprop_${EP.toVarSafeComponentId(entry.elementPath)}_${entry.propName}`
     case 'INVALID_OVERRIDE':
       return `error_${EP.toVarSafeComponentId(entry.elementPath)}`
     default:
@@ -2234,6 +2275,12 @@ export function isSyntheticNavigatorEntry(entry: NavigatorEntry): entry is Synth
 
 export const syntheticNavigatorEntryOptic: Optic<NavigatorEntry, SyntheticNavigatorEntry> =
   fromTypeGuard(isSyntheticNavigatorEntry)
+
+export function isRenderPropNavigatorEntry(
+  entry: NavigatorEntry,
+): entry is RenderPropNavigatorEntry {
+  return entry.type === 'RENDER_PROP'
+}
 
 export interface DerivedState {
   navigatorTargets: Array<NavigatorEntry>
@@ -2522,6 +2569,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     activeFrames: [],
     commentFilterMode: 'all',
     forking: false,
+    collaborators: [],
   }
 }
 
@@ -2611,12 +2659,17 @@ function deriveCacheableStateInner(
   allElementProps: AllElementProps,
   collapsedViews: ElementPath[],
   hiddenInNavigator: ElementPath[],
+  propertyControlsInfo: PropertyControlsInfo,
+  openFilePath: string | null,
 ): CacheableDerivedState {
   const { navigatorTargets, visibleNavigatorTargets } = getNavigatorTargets(
     jsxMetadata,
     elementPathTree,
     collapsedViews,
     hiddenInNavigator,
+    propertyControlsInfo,
+    openFilePath,
+    projectContents,
   )
 
   const warnings = getElementWarnings(
@@ -2666,6 +2719,8 @@ export function deriveState(
     editor.allElementProps,
     editor.navigator.collapsedViews,
     editor.navigator.hiddenInNavigator,
+    editor.propertyControlsInfo,
+    getOpenUIJSFileKey(editor),
   )
 
   const remixDerivedData = createRemixDerivedDataMemo(
@@ -2899,6 +2954,7 @@ export function editorModelFromPersistentModel(
     activeFrames: [],
     commentFilterMode: 'all',
     forking: false,
+    collaborators: [],
   }
   return editor
 }
@@ -3460,6 +3516,28 @@ export function modifyUnderlyingTargetElement(
       return element
     },
     modifyParseSuccess,
+  )
+}
+
+export function modifyUnderlyingTargetJSXElement(
+  target: ElementPath,
+  editor: EditorState,
+  modifyElement: (
+    element: JSXElement,
+    underlying: ElementPath,
+    underlyingFilePath: string,
+  ) => JSXElement,
+): EditorState {
+  return modifyUnderlyingTarget(
+    target,
+    editor,
+    (element, underlying, underlyingFilePath) => {
+      if (isJSXElement(element)) {
+        return modifyElement(element, underlying, underlyingFilePath)
+      }
+      return element
+    },
+    defaultModifyParseSuccess,
   )
 }
 

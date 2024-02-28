@@ -15,6 +15,7 @@ export type FeatureName =
   | 'Debug - Print UIDs'
   | 'Steganography'
   | 'Debug – Connections'
+  | 'Render Props in Navigator'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -30,6 +31,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Debug - Print UIDs',
   'Steganography',
   'Debug – Connections',
+  'Render Props in Navigator',
 ]
 
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
@@ -45,6 +47,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Debug - Print UIDs': false,
   Steganography: false,
   'Debug – Connections': false,
+  'Render Props in Navigator': false,
 }
 
 let FeatureSwitchLoaded: { [feature in FeatureName]?: boolean } = {}

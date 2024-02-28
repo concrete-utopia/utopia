@@ -174,4 +174,5 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   activeFrames: [],
   commentFilterMode: 'all',
   forking: false,
+  collaborators: [],
 }

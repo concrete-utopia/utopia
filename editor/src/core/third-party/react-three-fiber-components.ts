@@ -41,6 +41,7 @@ function createBasicComponent(
   return {
     properties: propertyControls,
     supportsChildren: false,
+    preferredChildComponents: [],
     variants: [
       {
         insertMenuLabel: name,

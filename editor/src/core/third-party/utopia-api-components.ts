@@ -28,6 +28,7 @@ const BasicUtopiaComponentDescriptor = (
       },
     },
     supportsChildren: supportsChildren,
+    preferredChildComponents: [],
     variants: [
       {
         insertMenuLabel: name,
@@ -62,6 +63,7 @@ const BasicUtopiaSceneDescriptor = (
       },
     },
     supportsChildren: supportsChildren,
+    preferredChildComponents: [],
     variants: [
       {
         insertMenuLabel: name,

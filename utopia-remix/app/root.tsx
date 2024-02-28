@@ -1,5 +1,5 @@
 import { cssBundleHref } from '@remix-run/css-bundle'
-import type { LinksFunction } from '@remix-run/node'
+import type { HeadersFunction, LinksFunction } from '@remix-run/node'
 import {
   Links,
   LiveReload,
@@ -13,7 +13,8 @@ import {
 } from '@remix-run/react'
 import { BrowserEnvironment } from './env.server'
 import { styles } from './styles/styles.css'
-import type { HeadersFunction } from '@remix-run/node'
+import { ErrorWithStatus, isErrorWithStatus } from './util/errors'
+import { Status, getStatusName } from './util/statusCodes'
 
 import './normalize.css'
 
@@ -65,9 +66,47 @@ export default function App() {
 }
 
 export function ErrorBoundary() {
-  const error = useRouteError()
-  if (error instanceof Error) {
-    return `${error.name} – ${error.message}`
-  }
-  throw error
+  const routeError = useRouteError()
+  const error: ErrorWithStatus = isErrorWithStatus(routeError)
+    ? routeError
+    : routeError instanceof Error
+    ? {
+        status: Status.INTERNAL_ERROR,
+        statusText: getStatusName(Status.INTERNAL_ERROR),
+        data: routeError.message,
+      }
+    : {
+        status: Status.INTERNAL_ERROR,
+        statusText: getStatusName(Status.INTERNAL_ERROR),
+        data: JSON.stringify(routeError),
+      }
+
+  return (
+    <html lang='en'>
+      <head>
+        <meta charSet='utf-8' />
+        <meta name='viewport' content='width=device-width, initial-scale=1' />
+      </head>
+      <body
+        style={{
+          fontFamily: 'Inter, sans-serif',
+          height: '100vh',
+          width: '100vw',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          textAlign: 'center',
+          padding: 0,
+          margin: 0,
+          gap: 10,
+        }}
+      >
+        <h1>
+          {error.status} – {error.statusText}
+        </h1>
+        <div>{error.data}</div>
+      </body>
+    </html>
+  )
 }

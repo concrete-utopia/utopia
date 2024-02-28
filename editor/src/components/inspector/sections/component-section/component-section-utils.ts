@@ -20,6 +20,13 @@ function inferControlTypeBasedOnValueInner(
     }
   }
 
+  if (React.isValidElement(propValue)) {
+    return {
+      control: 'jsx',
+      label: propName,
+    }
+  }
+
   switch (typeof propValue) {
     case 'number':
       return {

@@ -78,7 +78,7 @@ import {
   exportType,
   singleFileBuildResult,
 } from '../../../core/workers/common/worker-types'
-import type { PropertyControls, Sides } from 'utopia-api/core'
+import type { PreferredChildComponent, PropertyControls, Sides } from 'utopia-api/core'
 import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
@@ -324,12 +324,14 @@ import type {
   TrueUpTarget,
   InvalidOverrideNavigatorEntry,
   TrueUpHuggingElement,
+  RenderPropNavigatorEntry,
 } from './editor-state'
 import {
   trueUpGroupElementChanged,
   trueUpChildrenOfGroupChanged,
   invalidOverrideNavigatorEntry,
   trueUpHuggingElement,
+  renderPropNavigatorEntry,
 } from './editor-state'
 import {
   editorStateNodeModules,
@@ -556,6 +558,8 @@ import type {
   ActiveFrameTargetRect,
 } from '../../canvas/commands/set-active-frames-command'
 import type { CommentFilterMode } from '../../inspector/sections/comment-section'
+import type { Collaborator } from '../../../core/shared/multiplayer'
+import type { MultiplayerSubstate } from './store-hook-substore-types'
 
 export const ProjectMetadataFromServerKeepDeepEquality: KeepDeepEqualityCall<ProjectMetadataFromServer> =
   combine3EqualityCalls(
@@ -581,6 +585,24 @@ export const ProjectServerStateKeepDeepEquality: KeepDeepEqualityCall<ProjectSer
     (entry) => entry.currentlyHolderOfTheBaton,
     createCallWithTripleEquals<boolean>(),
     projectServerState,
+  )
+
+export const CollaboratorKeepDeepEquality: KeepDeepEqualityCall<Collaborator> =
+  combine3EqualityCalls(
+    (data) => data.id,
+    StringKeepDeepEquality,
+    (data) => data.name,
+    NullableStringKeepDeepEquality,
+    (data) => data.avatar,
+    NullableStringKeepDeepEquality,
+    (id, name, avatar) => ({ id, name, avatar }),
+  )
+
+export const MutiplayerSubstateKeepDeepEquality: KeepDeepEqualityCall<MultiplayerSubstate> =
+  combine1EqualityCall(
+    (entry) => entry.editor.collaborators,
+    arrayDeepEquality(CollaboratorKeepDeepEquality),
+    (collaborators) => ({ editor: { collaborators: collaborators } }),
   )
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
@@ -615,6 +637,17 @@ export const SyntheticNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<Synth
     syntheticNavigatorEntry,
   )
 
+export const RenderPropNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<RenderPropNavigatorEntry> =
+  combine3EqualityCalls(
+    (entry) => entry.elementPath,
+    ElementPathKeepDeepEquality,
+    (entry) => entry.propName,
+    StringKeepDeepEquality,
+    (entry) => entry.childOrAttribute,
+    nullableDeepEquality(JSXElementChildKeepDeepEquality()),
+    renderPropNavigatorEntry,
+  )
+
 export const InvalidOverrideNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<InvalidOverrideNavigatorEntry> =
   combine2EqualityCalls(
     (entry) => entry.elementPath,
@@ -642,6 +675,11 @@ export const NavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<NavigatorEntry
     case 'SYNTHETIC':
       if (oldValue.type === newValue.type) {
         return SyntheticNavigatorEntryKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'RENDER_PROP':
+      if (oldValue.type === newValue.type) {
+        return RenderPropNavigatorEntryKeepDeepEquality(oldValue, newValue)
       }
       break
     case 'INVALID_OVERRIDE':
@@ -3047,14 +3085,27 @@ export function PropertyControlsKeepDeepEquality(
   return getIntrospectiveKeepDeepResult<PropertyControls>(oldValue, newValue) // Do these lazily for now.
 }
 
-export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<ComponentDescriptor> =
+const PreferredChildComponentKeepDeepEquality: KeepDeepEqualityCall<PreferredChildComponent> =
   combine3EqualityCalls(
+    (d) => d.name,
+    StringKeepDeepEquality,
+    (d) => d.additionalImports,
+    createCallWithTripleEquals(),
+    (d) => d.variants,
+    undefinableDeepEquality(arrayDeepEquality(createCallWithTripleEquals())),
+    (name, additionalImports, variants) => ({ name, additionalImports, variants }),
+  )
+
+export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<ComponentDescriptor> =
+  combine4EqualityCalls(
     (descriptor) => descriptor.properties,
     PropertyControlsKeepDeepEquality,
     (descriptor) => descriptor.supportsChildren,
     BooleanKeepDeepEquality,
     (descriptor) => descriptor.variants,
     arrayDeepEquality(ComponentInfoKeepDeepEquality),
+    (descriptor) => descriptor.preferredChildComponents,
+    arrayDeepEquality(PreferredChildComponentKeepDeepEquality),
     componentDescriptor,
   )
 
@@ -4529,6 +4580,11 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
 
   const forkingResults = BooleanKeepDeepEquality(oldValue.forking, newValue.forking)
 
+  const collaboratorsResults = arrayDeepEquality(CollaboratorKeepDeepEquality)(
+    oldValue.collaborators,
+    newValue.collaborators,
+  )
+
   const areEqual =
     idResult.areEqual &&
     forkedFromProjectIdResult.areEqual &&
@@ -4608,7 +4664,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     filesModifiedByAnotherUserResults.areEqual &&
     activeFramesResults.areEqual &&
     commentFilterModeResults.areEqual &&
-    forkingResults.areEqual
+    forkingResults.areEqual &&
+    collaboratorsResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -4694,6 +4751,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       activeFramesResults.value,
       commentFilterModeResults.value,
       forkingResults.value,
+      collaboratorsResults.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

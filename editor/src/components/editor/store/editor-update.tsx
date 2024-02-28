@@ -165,6 +165,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.RENAME_COMPONENT(action, state)
     case 'INSERT_JSX_ELEMENT':
       return UPDATE_FNS.INSERT_JSX_ELEMENT(action, state)
+    case 'INSERT_ATTRIBUTE_OTHER_JAVASCRIPT_INTO_ELEMENT':
+      return UPDATE_FNS.INSERT_ATTRIBUTE_OTHER_JAVASCRIPT_INTO_ELEMENT(action, state)
     case 'SET_PANEL_VISIBILITY':
       return UPDATE_FNS.SET_PANEL_VISIBILITY(action, state)
     case 'TOGGLE_FOCUSED_OMNIBOX_TAB':
@@ -455,6 +457,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_SHOW_RESOLVED_THREADS(action, state)
     case 'SET_FORKING':
       return UPDATE_FNS.SET_FORKING(action, state)
+    case 'SET_COLLABORATORS':
+      return UPDATE_FNS.SET_COLLABORATORS(action, state)
     default:
       return state
   }

@@ -7,9 +7,16 @@ export interface ComponentInsertOption {
   label?: string
 }
 
+export interface PreferredChildComponent {
+  name: string
+  additionalImports?: string
+  variants?: Array<ComponentInsertOption>
+}
+
 export interface ComponentToRegister {
   properties: PropertyControls
   supportsChildren: boolean
+  preferredChildComponents?: Array<PreferredChildComponent>
   variants: Array<ComponentInsertOption>
 }
 

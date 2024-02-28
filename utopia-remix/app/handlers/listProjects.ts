@@ -2,7 +2,7 @@ import { listProjects } from '../models/project.server'
 import { getManyUserDetails } from '../models/userDetails.server'
 import { ListProjectsResponse } from '../types'
 import { requireUser, ensure } from '../util/api.server'
-import { Status } from '../util/statusCodes.server'
+import { Status } from '../util/statusCodes'
 
 export async function handleListProjects(req: Request): Promise<ListProjectsResponse> {
   const user = await requireUser(req)

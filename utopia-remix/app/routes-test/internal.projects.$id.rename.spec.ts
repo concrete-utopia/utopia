@@ -7,7 +7,7 @@ import {
   newTestRequest,
   truncateTables,
 } from '../test-util'
-import { ApiError } from '../util/api.server'
+import { ApiError } from '../util/errors'
 import { handleRenameProject } from '../routes/internal.projects.$id.rename'
 
 describe('handleRenameProject', () => {

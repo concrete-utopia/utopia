@@ -97,6 +97,9 @@ const branchNavigatorEntriesSelector = createCachedSelector(
       elementPathTree,
       [],
       [],
+      {},
+      null,
+      {},
     ).navigatorTargets
 
     function getNavigatorEntry(clause: JSXElementChild): NavigatorEntry | null {

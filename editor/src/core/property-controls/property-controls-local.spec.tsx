@@ -72,6 +72,7 @@ describe('registered property controls', () => {
     expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
       Object {
         "Card": Object {
+          "preferredChildComponents": Array [],
           "properties": Object {
             "background": Object {
               "control": "color",
