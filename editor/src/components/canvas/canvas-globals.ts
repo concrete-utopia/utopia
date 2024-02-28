@@ -89,6 +89,7 @@ export async function validateControlsToCheck(
               properties: descriptorWithName.properties,
               supportsChildren: descriptorWithName.supportsChildren,
               variants: descriptorWithName.variants,
+              preferredChildComponents: descriptorWithName.preferredChildComponents ?? [],
             }
           },
         )

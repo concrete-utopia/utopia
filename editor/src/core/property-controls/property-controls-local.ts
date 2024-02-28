@@ -110,6 +110,7 @@ async function componentDescriptorForComponentToRegister(
     return {
       componentName: componentName,
       supportsChildren: componentToRegister.supportsChildren,
+      preferredChildComponents: componentToRegister.preferredChildComponents ?? [],
       properties: componentToRegister.properties,
       variants: variants,
     }

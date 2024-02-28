@@ -28,6 +28,7 @@ const cardComponentDescriptor: ComponentDescriptor = {
     },
   },
   supportsChildren: false,
+  preferredChildComponents: [],
   variants: [
     {
       insertMenuLabel: 'Card Default',
@@ -79,6 +80,7 @@ const modifiedCardComponentDescriptor: ComponentDescriptor = {
     },
   },
   supportsChildren: false,
+  preferredChildComponents: [],
   variants: [
     {
       insertMenuLabel: 'Card Default',
@@ -126,6 +128,7 @@ const selectorComponentDescriptor: ComponentDescriptor = {
     },
   },
   supportsChildren: false,
+  preferredChildComponents: [],
   variants: [
     {
       insertMenuLabel: 'True False Selector',
