@@ -213,6 +213,7 @@ describe('validateControlsToCheck', () => {
           "propertyControlsInfo": Object {
             "/src/card": Object {
               "Card": Object {
+                "preferredChildComponents": Array [],
                 "properties": Object {
                   "title": Object {
                     "control": "string-input",
@@ -352,6 +353,7 @@ describe('validateControlsToCheck', () => {
             "propertyControlsInfo": Object {
               "/src/card": Object {
                 "Card": Object {
+                  "preferredChildComponents": Array [],
                   "properties": Object {
                     "title": Object {
                       "control": "string-input",
@@ -403,6 +405,7 @@ describe('validateControlsToCheck', () => {
           "propertyControlsInfo": Object {
             "/src/selector": Object {
               "Selector": Object {
+                "preferredChildComponents": Array [],
                 "properties": Object {
                   "value": Object {
                     "control": "popuplist",
@@ -467,6 +470,7 @@ describe('validateControlsToCheck', () => {
           "propertyControlsInfo": Object {
             "/src/card": Object {
               "Card": Object {
+                "preferredChildComponents": Array [],
                 "properties": Object {
                   "border": Object {
                     "control": "string-input",
@@ -522,6 +526,7 @@ describe('validateControlsToCheck', () => {
           "propertyControlsInfo": Object {
             "/src/card": Object {
               "Card": Object {
+                "preferredChildComponents": Array [],
                 "properties": Object {
                   "title": Object {
                     "control": "string-input",
@@ -549,6 +554,7 @@ describe('validateControlsToCheck', () => {
                 ],
               },
               "Other Card": Object {
+                "preferredChildComponents": Array [],
                 "properties": Object {
                   "title": Object {
                     "control": "string-input",
