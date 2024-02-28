@@ -1,0 +1,57 @@
+import { prisma } from '../db.server'
+import {
+  createTestProject,
+  createTestProjectAccess,
+  createTestUser,
+  truncateTables,
+} from '../test-util'
+import { setProjectAccess } from './projectAccess.server'
+import * as permissionsService from '../services/permissionsService.server'
+
+describe('projectAccess model', () => {
+  afterEach(async () => {
+    await truncateTables([
+      prisma.projectCollaborator,
+      prisma.projectID,
+      prisma.project,
+      prisma.userDetails,
+      prisma.projectAccess,
+    ])
+    jest.restoreAllMocks()
+  })
+
+  describe('setProjectAccess', () => {
+    beforeEach(async () => {
+      await createTestUser(prisma, { id: 'bob' })
+      await createTestUser(prisma, { id: 'alice' })
+      await createTestProject(prisma, { id: 'one', ownerId: 'bob' })
+      await createTestProject(prisma, { id: 'two', ownerId: 'bob' })
+      await createTestProjectAccess(prisma, { projectId: 'one', accessLevel: 0 })
+      await createTestProjectAccess(prisma, { projectId: 'two', accessLevel: 1 })
+      jest.spyOn(permissionsService, 'setProjectAccess').mockResolvedValue()
+    })
+    it('sets the access level for a project', async () => {
+      await setProjectAccess({ projectId: 'one', accessLevel: 1 })
+      const projectAccess = await prisma.projectAccess.findFirst({
+        where: { project_id: 'one' },
+      })
+      expect(projectAccess?.access_level).toEqual(1)
+      expect(permissionsService.setProjectAccess).toHaveBeenCalledWith('one', 1)
+    })
+    it('updates the modified_at field', async () => {
+      await setProjectAccess({ projectId: 'one', accessLevel: 1 })
+      const projectAccess = await prisma.projectAccess.findFirst({
+        where: { project_id: 'one' },
+      })
+      expect(projectAccess?.modified_at).not.toBeNull()
+    })
+    it('sets the access level on the project model itself', async () => {
+      await setProjectAccess({ projectId: 'one', accessLevel: 1 })
+      const project = await prisma.project.findFirst({
+        where: { proj_id: 'one' },
+        include: { ProjectAccess: true },
+      })
+      expect(project?.ProjectAccess?.access_level).toEqual(1)
+    })
+  })
+})
