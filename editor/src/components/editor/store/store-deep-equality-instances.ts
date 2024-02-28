@@ -132,6 +132,9 @@ import type {
   JSXMapExpression,
   JSExpressionMapOrOtherJavascript,
   JSExpressionOtherJavaScript,
+  JSIdentifier,
+  JSPropertyAccess,
+  JSElementAccess,
 } from '../../../core/shared/element-template'
 import {
   elementInstanceMetadata,
@@ -188,6 +191,16 @@ import {
   isJSXMapExpression,
   arbitraryJSBlock,
   jsExpressionOtherJavaScript,
+  isJSExpressionValue,
+  isJSExpressionNestedArray,
+  isJSExpressionNestedObject,
+  isJSExpressionFunctionCall,
+  jsIdentifier,
+  jsPropertyAccess,
+  jsElementAccess,
+  isJSIdentifier,
+  isJSPropertyAccess,
+  isJSElementAccess,
 } from '../../../core/shared/element-template'
 import type {
   CanvasRectangle,
@@ -982,7 +995,7 @@ export const JSExpressionOtherJavaScriptOrJSXMapExpressionKeepDeepEqualityCall: 
 export function JSXArrayValueKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXArrayValue> {
   return combine2EqualityCalls(
     (value) => value.value,
-    JSXAttributeKeepDeepEqualityCall,
+    JSExpressionKeepDeepEqualityCall,
     (value) => value.comments,
     ParsedCommentsKeepDeepEqualityCall,
     jsxArrayValue,
@@ -992,7 +1005,7 @@ export function JSXArrayValueKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXArr
 export function JSXArraySpreadKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXArraySpread> {
   return combine2EqualityCalls(
     (value) => value.value,
-    JSXAttributeKeepDeepEqualityCall,
+    JSExpressionKeepDeepEqualityCall,
     (value) => value.comments,
     ParsedCommentsKeepDeepEqualityCall,
     jsxArraySpread,
@@ -1026,7 +1039,7 @@ export function JSXAttributeNestedArrayKeepDeepEqualityCall(): KeepDeepEqualityC
 export function JSXSpreadAssignmentKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXSpreadAssignment> {
   return combine2EqualityCalls(
     (value) => value.value,
-    JSXAttributeKeepDeepEqualityCall,
+    JSExpressionKeepDeepEqualityCall,
     (value) => value.comments,
     ParsedCommentsKeepDeepEqualityCall,
     jsxSpreadAssignment,
@@ -1038,7 +1051,7 @@ export function JSXPropertyAssignmentKeepDeepEqualityCall(): KeepDeepEqualityCal
     (value) => value.key,
     createCallWithTripleEquals(),
     (value) => value.value,
-    JSXAttributeKeepDeepEqualityCall,
+    JSExpressionKeepDeepEqualityCall,
     (value) => value.comments,
     ParsedCommentsKeepDeepEqualityCall,
     (value) => value.keyComments,
@@ -1076,14 +1089,14 @@ export function JSXAttributeFunctionCallKeepDeepEqualityCall(): KeepDeepEquality
     (value) => value.functionName,
     createCallWithTripleEquals(),
     (value) => value.parameters,
-    arrayDeepEquality(JSXAttributeKeepDeepEqualityCall),
+    arrayDeepEquality(JSExpressionKeepDeepEqualityCall),
     (value) => value.uid,
     createCallWithTripleEquals<string>(),
     jsExpressionFunctionCall,
   )
 }
 
-export const JSXAttributeKeepDeepEqualityCall: KeepDeepEqualityCall<JSExpression> = (
+export const JSExpressionKeepDeepEqualityCall: KeepDeepEqualityCall<JSExpression> = (
   oldAttribute,
   newAttribute,
 ) => {
@@ -1109,6 +1122,12 @@ export const JSXAttributeKeepDeepEqualityCall: KeepDeepEqualityCall<JSExpression
     modifiableAttributeIsAttributeFunctionCall(newAttribute)
   ) {
     return JSXAttributeFunctionCallKeepDeepEqualityCall()(oldAttribute, newAttribute)
+  } else if (isJSIdentifier(oldAttribute) && isJSIdentifier(newAttribute)) {
+    return JSIdentifierKeepDeepEquality()(oldAttribute, newAttribute)
+  } else if (isJSPropertyAccess(oldAttribute) && isJSPropertyAccess(newAttribute)) {
+    return JSPropertyAccessKeepDeepEquality()(oldAttribute, newAttribute)
+  } else if (isJSElementAccess(oldAttribute) && isJSElementAccess(newAttribute)) {
+    return JSElementAccessKeepDeepEquality()(oldAttribute, newAttribute)
   } else {
     return keepDeepEqualityResult(newAttribute, false)
   }
@@ -1119,7 +1138,7 @@ export function JSXAttributesEntryDeepEqualityCall(): KeepDeepEqualityCall<JSXAt
     (entry) => entry.key,
     createCallWithTripleEquals(),
     (entry) => entry.value,
-    JSXAttributeKeepDeepEqualityCall,
+    JSExpressionKeepDeepEqualityCall,
     (entry) => entry.comments,
     ParsedCommentsKeepDeepEqualityCall,
     jsxAttributesEntry,
@@ -1129,7 +1148,7 @@ export function JSXAttributesEntryDeepEqualityCall(): KeepDeepEqualityCall<JSXAt
 export function JSXAttributesSpreadDeepEqualityCall(): KeepDeepEqualityCall<JSXAttributesSpread> {
   return combine2EqualityCalls(
     (entry) => entry.spreadValue,
-    JSXAttributeKeepDeepEqualityCall,
+    JSExpressionKeepDeepEqualityCall,
     (entry) => entry.comments,
     ParsedCommentsKeepDeepEqualityCall,
     jsxAttributesSpread,
@@ -1205,6 +1224,46 @@ export function ArbitraryJSBlockKeepDeepEquality(): KeepDeepEqualityCall<Arbitra
   )
 }
 
+export function JSIdentifierKeepDeepEquality(): KeepDeepEqualityCall<JSIdentifier> {
+  return combine3EqualityCalls(
+    (identifier) => identifier.name,
+    createCallWithTripleEquals<string>(),
+    (identifier) => identifier.uid,
+    createCallWithTripleEquals<string>(),
+    (identifier) => identifier.comments,
+    ParsedCommentsKeepDeepEqualityCall,
+    jsIdentifier,
+  )
+}
+
+export function JSPropertyAccessKeepDeepEquality(): KeepDeepEqualityCall<JSPropertyAccess> {
+  return combine4EqualityCalls(
+    (access) => access.onValue,
+    JSExpressionKeepDeepEqualityCall,
+    (access) => access.property,
+    createCallWithTripleEquals<string>(),
+    (access) => access.uid,
+    createCallWithTripleEquals<string>(),
+    (access) => access.comments,
+    ParsedCommentsKeepDeepEqualityCall,
+    jsPropertyAccess,
+  )
+}
+
+export function JSElementAccessKeepDeepEquality(): KeepDeepEqualityCall<JSElementAccess> {
+  return combine4EqualityCalls(
+    (access) => access.onValue,
+    JSExpressionKeepDeepEqualityCall,
+    (access) => access.element,
+    JSExpressionKeepDeepEqualityCall,
+    (access) => access.uid,
+    createCallWithTripleEquals<string>(),
+    (access) => access.comments,
+    ParsedCommentsKeepDeepEqualityCall,
+    jsElementAccess,
+  )
+}
+
 export function JSXElementChildKeepDeepEquality(): KeepDeepEqualityCall<JSXElementChild> {
   return (oldElement, newElement) => {
     if (isJSXElement(oldElement) && isJSXElement(newElement)) {
@@ -1215,28 +1274,25 @@ export function JSXElementChildKeepDeepEquality(): KeepDeepEqualityCall<JSXEleme
       return JSXFragmentKeepDeepEquality(oldElement, newElement)
     } else if (isJSXConditionalExpression(oldElement) && isJSXConditionalExpression(newElement)) {
       return JSXConditionalExpressionKeepDeepEquality(oldElement, newElement)
-    } else if (oldElement.type === 'ATTRIBUTE_VALUE' && newElement.type === 'ATTRIBUTE_VALUE') {
+    } else if (isJSExpressionValue(oldElement) && isJSExpressionValue(newElement)) {
       return JSXAttributeValueKeepDeepEqualityCall(oldElement, newElement)
     } else if (
-      oldElement.type === 'ATTRIBUTE_OTHER_JAVASCRIPT' &&
-      newElement.type === 'ATTRIBUTE_OTHER_JAVASCRIPT'
+      isJSExpressionOtherJavaScript(oldElement) &&
+      isJSExpressionOtherJavaScript(newElement)
     ) {
       return JSExpressionOtherJavaScriptKeepDeepEqualityCall()(oldElement, newElement)
-    } else if (
-      oldElement.type === 'ATTRIBUTE_NESTED_ARRAY' &&
-      newElement.type === 'ATTRIBUTE_NESTED_ARRAY'
-    ) {
+    } else if (isJSExpressionNestedArray(oldElement) && isJSExpressionNestedArray(newElement)) {
       return JSXAttributeNestedArrayKeepDeepEqualityCall()(oldElement, newElement)
-    } else if (
-      oldElement.type === 'ATTRIBUTE_NESTED_OBJECT' &&
-      newElement.type === 'ATTRIBUTE_NESTED_OBJECT'
-    ) {
+    } else if (isJSExpressionNestedObject(oldElement) && isJSExpressionNestedObject(newElement)) {
       return JSXAttributeNestedObjectKeepDeepEqualityCall()(oldElement, newElement)
-    } else if (
-      oldElement.type === 'ATTRIBUTE_FUNCTION_CALL' &&
-      newElement.type === 'ATTRIBUTE_FUNCTION_CALL'
-    ) {
+    } else if (isJSExpressionFunctionCall(oldElement) && isJSExpressionFunctionCall(newElement)) {
       return JSXAttributeFunctionCallKeepDeepEqualityCall()(oldElement, newElement)
+    } else if (isJSIdentifier(oldElement) && isJSIdentifier(newElement)) {
+      return JSIdentifierKeepDeepEquality()(oldElement, newElement)
+    } else if (isJSPropertyAccess(oldElement) && isJSPropertyAccess(newElement)) {
+      return JSPropertyAccessKeepDeepEquality()(oldElement, newElement)
+    } else if (isJSElementAccess(oldElement) && isJSElementAccess(newElement)) {
+      return JSElementAccessKeepDeepEquality()(oldElement, newElement)
     } else {
       return keepDeepEqualityResult(newElement, false)
     }
@@ -1355,7 +1411,7 @@ export const JSXConditionalExpressionKeepDeepEquality: KeepDeepEqualityCall<JSXC
     (conditional) => conditional.uid,
     StringKeepDeepEquality,
     (conditional) => conditional.condition,
-    JSXAttributeKeepDeepEqualityCall,
+    JSExpressionKeepDeepEqualityCall,
     (conditional) => conditional.originalConditionString,
     StringKeepDeepEquality,
     (conditional) => conditional.whenTrue,
@@ -1970,7 +2026,7 @@ export const EditorStateCanvasTransientPropertyKeepDeepEquality: KeepDeepEqualit
     (property) => property.elementPath,
     ElementPathKeepDeepEquality,
     (property) => property.attributesToUpdate,
-    objectDeepEquality(JSXAttributeKeepDeepEqualityCall),
+    objectDeepEquality(JSExpressionKeepDeepEqualityCall),
     editorStateCanvasTransientProperty,
   )
 
@@ -4031,7 +4087,7 @@ export const ValueAtPathDeepEquality: KeepDeepEqualityCall<ValueAtPath> = combin
   (c) => c.path,
   PropertyPathKeepDeepEquality(),
   (c) => c.value,
-  JSXAttributeKeepDeepEqualityCall,
+  JSExpressionKeepDeepEqualityCall,
   valueAtPath,
 )
 
