@@ -826,9 +826,6 @@ ProjectCardActions.displayName = 'ProjectCardActions'
 
 const ActiveOperations = React.memo(() => {
   const operations = useProjectsStore((store) => store.operations)
-  if (operations == null) {
-    return null
-  }
 
   function getOperationVerb(op: Operation) {
     switch (op.type) {
