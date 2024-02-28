@@ -1,5 +1,4 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
-import { useFetcher } from '@remix-run/react'
 import React from 'react'
 import { useProjectsStore } from '../store'
 import { contextMenuDropdown, contextMenuItem } from '../styles/contextMenu.css'
@@ -7,6 +6,7 @@ import { sprinkles } from '../styles/sprinkles.css'
 import { ProjectWithoutContent } from '../types'
 import { assertNever } from '../util/assertNever'
 import { projectEditorLink } from '../util/links'
+import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
 
 type ContextMenuEntry =
   | {
@@ -16,41 +16,51 @@ type ContextMenuEntry =
   | 'separator'
 
 export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWithoutContent }) => {
-  const fetcher = useFetcher()
+  const deleteFetcher = useFetcherWithOperation(project, 'delete')
+  const destroyFetcher = useFetcherWithOperation(project, 'destroy')
+  const restoreFetcher = useFetcherWithOperation(project, 'restore')
+  const renameFetcher = useFetcherWithOperation(project, 'rename')
+
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
 
   const deleteProject = React.useCallback(
     (projectId: string) => {
-      fetcher.submit({}, { method: 'POST', action: `/internal/projects/${projectId}/delete` })
+      deleteFetcher.submit({}, { method: 'POST', action: `/internal/projects/${projectId}/delete` })
     },
-    [fetcher],
+    [deleteFetcher],
   )
 
   const destroyProject = React.useCallback(
     (projectId: string) => {
       const ok = window.confirm('Are you sure? The project contents will be deleted permanently.')
       if (ok) {
-        fetcher.submit({}, { method: 'POST', action: `/internal/projects/${projectId}/destroy` })
+        destroyFetcher.submit(
+          {},
+          { method: 'POST', action: `/internal/projects/${projectId}/destroy` },
+        )
       }
     },
-    [fetcher],
+    [destroyFetcher],
   )
 
   const restoreProject = React.useCallback(
     (projectId: string) => {
-      fetcher.submit({}, { method: 'POST', action: `/internal/projects/${projectId}/restore` })
+      restoreFetcher.submit(
+        {},
+        { method: 'POST', action: `/internal/projects/${projectId}/restore` },
+      )
     },
-    [fetcher],
+    [restoreFetcher],
   )
 
   const renameProject = React.useCallback(
     (projectId: string, newTitle: string) => {
-      fetcher.submit(
+      renameFetcher.submit(
         { title: newTitle },
         { method: 'POST', action: `/internal/projects/${projectId}/rename` },
       )
     },
-    [fetcher],
+    [renameFetcher],
   )
 
   const menuEntries = React.useMemo((): ContextMenuEntry[] => {
