@@ -101,6 +101,17 @@ export async function truncateTables(models: DeletableModel[]) {
   }
 }
 
+export async function clearDb(prisma: UtopiaPrismaClient) {
+  await truncateTables([
+    prisma.userDetails,
+    prisma.persistentSession,
+    prisma.project,
+    prisma.projectID,
+    prisma.projectAccess,
+    prisma.projectCollaborator,
+  ])
+}
+
 export function newTestRequest(params?: {
   path?: string
   method?: string

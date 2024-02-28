@@ -1,7 +1,7 @@
 jest.mock('@openfga/sdk')
 import { prisma } from '../db.server'
 
-import { createTestSession, createTestUser, newTestRequest, truncateTables } from '../test-util'
+import { clearDb, createTestSession, createTestUser, newTestRequest } from '../test-util'
 import { getProject } from '../routes/v1.project.$id'
 import * as serverProxy from '../util/proxy.server'
 import * as permissionsService from '../services/permissionsService.server'
@@ -9,6 +9,9 @@ import { UserProjectPermission } from '../types'
 import { ApiError } from '../util/errors'
 
 describe('getProject', () => {
+  beforeAll(async () => {
+    await clearDb(prisma)
+  })
   afterAll(async () => {
     jest.restoreAllMocks()
   })
@@ -19,13 +22,7 @@ describe('getProject', () => {
     let projectProxyMock: jest.SpyInstance
     let hasUserProjectPermission: jest.SpyInstance
     afterEach(async () => {
-      await truncateTables([
-        prisma.userDetails,
-        prisma.persistentSession,
-        prisma.project,
-        prisma.projectID,
-        prisma.projectAccess,
-      ])
+      await clearDb(prisma)
 
       projectProxyMock.mockClear()
       hasUserProjectPermission.mockClear()
@@ -44,7 +41,7 @@ describe('getProject', () => {
       hasUserProjectPermission.mockResolvedValue(true)
       const req = newTestRequest({ method: 'GET', authCookie: 'the-key' })
       const projectResult = await getProject(req, { id: projectId })
-      expect(projectResult).toEqual({ id: projectId, ownerId: userId })
+      expect(projectResult).toEqual({ id: projectId, ownerId: 'user2' })
       expect(hasUserProjectPermission).toHaveBeenCalledWith(
         projectId,
         userId,

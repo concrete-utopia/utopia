@@ -1,23 +1,16 @@
+jest.mock('@openfga/sdk')
 import { prisma } from '../db.server'
-import {
-  createTestProject,
-  createTestProjectAccess,
-  createTestUser,
-  truncateTables,
-} from '../test-util'
+import { clearDb, createTestProject, createTestProjectAccess, createTestUser } from '../test-util'
 import { setProjectAccess } from './projectAccess.server'
 import * as permissionsService from '../services/permissionsService.server'
 
 describe('projectAccess model', () => {
-  afterEach(async () => {
-    await truncateTables([
-      prisma.projectCollaborator,
-      prisma.projectID,
-      prisma.project,
-      prisma.userDetails,
-      prisma.projectAccess,
-    ])
+  afterAll(async () => {
     jest.restoreAllMocks()
+  })
+  afterEach(async () => {
+    await clearDb(prisma)
+    jest.spyOn(permissionsService, 'setProjectAccess').mockRestore()
   })
 
   describe('setProjectAccess', () => {
