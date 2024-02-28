@@ -1853,8 +1853,7 @@ function getValidElementPathsFromElement(
     const path = parentIsInstance
       ? EP.appendNewElementPath(parentPath, uid)
       : EP.appendToPath(parentPath, uid)
-    let paths = [path]
-    return paths
+    return [path]
   } else if (isJSExpressionMapOrOtherJavaScript(element)) {
     // FIXME: From investigation of https://github.com/concrete-utopia/utopia/issues/1137
     // The paths this will generate will only be correct if the elements from `elementsWithin`
