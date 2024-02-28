@@ -734,6 +734,176 @@ describe('Controls from registering components', () => {
     const theView = editor.renderedDOM.getByTestId('view')
     expect(theView.outerHTML).toContain('sampleprop="New props value"')
   })
+
+  describe('preferred child components', () => {
+    it('preferred child components with internal component', async () => {
+      const editor = await renderTestEditorWithCode(
+        DataPickerProjectShell(`registerInternalComponent(Link, {
+          properties: {
+            children: Utopia.arrayControl({ control: 'jsx' }),
+          },
+          preferredChildComponents: [
+            {
+              name: 'span',
+              variants: [{ code: '<span>Link</span>' }],
+            },
+          ],
+          supportsChildren: true,
+          variants: [],
+        })
+      
+      function Link({ href, children }) {
+        return (
+          <a href={href} data-uid='root'>
+            {children}
+          </a>
+        )
+      }
+      
+      var Playground = ({ style }) => {
+        return (
+          <div style={style} data-uid='dbc'>
+            <Link href='/new' data-uid='78c'>
+              nowhere
+            </Link>
+          </div>
+        )
+      }`),
+        'await-first-dom-report',
+      )
+
+      // elementToInsert is omitted from the object below because it's a function
+      expect(
+        editor.getEditorState().editor.propertyControlsInfo['/utopia/storyboard'],
+      ).toMatchObject({
+        Link: {
+          preferredChildComponents: [
+            {
+              additionalImports: undefined,
+              name: 'span',
+              variants: [
+                {
+                  code: '<span>Link</span>',
+                },
+              ],
+            },
+          ],
+          properties: {
+            children: {
+              control: 'array',
+              propertyControl: {
+                control: 'jsx',
+              },
+            },
+          },
+          supportsChildren: true,
+          variants: [
+            {
+              importsToAdd: {
+                '/utopia/storyboard': {
+                  importedAs: null,
+                  importedFromWithin: [
+                    {
+                      alias: 'Link',
+                      name: 'Link',
+                    },
+                  ],
+                  importedWithName: null,
+                },
+              },
+              insertMenuLabel: 'Link',
+            },
+          ],
+        },
+      })
+    })
+
+    it('preferred child components with render prop', async () => {
+      const editor = await renderTestEditorWithCode(
+        DataPickerProjectShell(`registerInternalComponent(Card, {
+          properties: {
+            header: Utopia.arrayControl({
+              control: 'jsx',
+              preferredChildComponents: [
+                {
+                  name: 'span',
+                  variants: [{ code: '<span>Title</span>' }],
+                },
+              ],
+            }),
+          },
+          supportsChildren: true,
+          variants: [],
+        })
+      
+      function Card({ header, children }) {
+        return (
+          <div data-uid='root'>
+            <h2>{header}</h2>
+            {children}
+          </div>
+        )
+      }
+      
+      var Playground = ({ style }) => {
+        return (
+          <div style={style} data-uid='dbc'>
+            <Card header={<span>Title</span>} data-uid='78c'>
+              <p>Card contents</p>
+            </Card>
+          </div>
+        )
+      }`),
+        'await-first-dom-report',
+      )
+
+      // elementToInsert is omitted from the object below because it's a function
+      expect(
+        editor.getEditorState().editor.propertyControlsInfo['/utopia/storyboard'],
+      ).toMatchObject({
+        Card: {
+          preferredChildComponents: [],
+          properties: {
+            header: {
+              control: 'array',
+              propertyControl: {
+                control: 'jsx',
+                preferredChildComponents: [
+                  {
+                    additionalImports: undefined,
+                    name: 'span',
+                    variants: [
+                      {
+                        code: '<span>Title</span>',
+                      },
+                    ],
+                  },
+                ],
+              },
+            },
+          },
+          supportsChildren: true,
+          variants: [
+            {
+              importsToAdd: {
+                '/utopia/storyboard': {
+                  importedAs: null,
+                  importedFromWithin: [
+                    {
+                      alias: 'Card',
+                      name: 'Card',
+                    },
+                  ],
+                  importedWithName: null,
+                },
+              },
+              insertMenuLabel: 'Card',
+            },
+          ],
+        },
+      })
+    })
+  })
 })
 
 const project = DataPickerProjectShell(`

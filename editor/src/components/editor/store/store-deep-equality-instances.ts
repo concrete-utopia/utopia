@@ -78,7 +78,7 @@ import {
   exportType,
   singleFileBuildResult,
 } from '../../../core/workers/common/worker-types'
-import type { PropertyControls, Sides } from 'utopia-api/core'
+import type { PreferredChildComponent, PropertyControls, Sides } from 'utopia-api/core'
 import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
@@ -3085,14 +3085,27 @@ export function PropertyControlsKeepDeepEquality(
   return getIntrospectiveKeepDeepResult<PropertyControls>(oldValue, newValue) // Do these lazily for now.
 }
 
-export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<ComponentDescriptor> =
+const PreferredChildComponentKeepDeepEquality: KeepDeepEqualityCall<PreferredChildComponent> =
   combine3EqualityCalls(
+    (d) => d.name,
+    StringKeepDeepEquality,
+    (d) => d.additionalImports,
+    createCallWithTripleEquals(),
+    (d) => d.variants,
+    undefinableDeepEquality(arrayDeepEquality(createCallWithTripleEquals())),
+    (name, additionalImports, variants) => ({ name, additionalImports, variants }),
+  )
+
+export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<ComponentDescriptor> =
+  combine4EqualityCalls(
     (descriptor) => descriptor.properties,
     PropertyControlsKeepDeepEquality,
     (descriptor) => descriptor.supportsChildren,
     BooleanKeepDeepEquality,
     (descriptor) => descriptor.variants,
     arrayDeepEquality(ComponentInfoKeepDeepEquality),
+    (descriptor) => descriptor.preferredChildComponents,
+    arrayDeepEquality(PreferredChildComponentKeepDeepEquality),
     componentDescriptor,
   )
 

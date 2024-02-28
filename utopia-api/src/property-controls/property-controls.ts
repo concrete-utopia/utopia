@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 import { fastForEach } from '../utils'
+import type { PreferredChildComponent } from '../core'
 
 // these fields are shared among all RegularControlDescription. the helper function getControlSharedFields makes sure the types line up
 interface ControlBaseFields {
@@ -179,6 +180,7 @@ export interface JSXControlDescription {
   control: 'jsx'
   label?: string
   visibleByDefault?: boolean
+  preferredChildComponents?: Array<PreferredChildComponent>
 }
 
 export type BaseControlDescription =

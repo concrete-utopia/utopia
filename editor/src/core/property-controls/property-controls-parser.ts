@@ -77,6 +77,7 @@ import {
   objectMapDropNulls,
 } from '../shared/object-utils'
 import { parseEnumValue } from './property-control-values'
+import { parsePreferredChild } from './property-controls-local'
 
 export function parseNumberInputControlDescription(
   value: unknown,
@@ -651,19 +652,21 @@ export function parseFolderControlDescription(
 }
 
 export function parseJSXControlDescription(value: unknown): ParseResult<JSXControlDescription> {
-  return applicative3Either(
-    (label, control, visibleByDefault) => {
+  return applicative4Either(
+    (label, control, visibleByDefault, preferredChildComponents) => {
       let jsxControlDescription: JSXControlDescription = {
         control: control,
       }
       setOptionalProp(jsxControlDescription, 'label', label)
       setOptionalProp(jsxControlDescription, 'visibleByDefault', visibleByDefault)
+      setOptionalProp(jsxControlDescription, 'preferredChildComponents', preferredChildComponents)
 
       return jsxControlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
     objectKeyParser(parseConstant('jsx'), 'control')(value),
     optionalObjectKeyParser(parseBoolean, 'visibleByDefault')(value),
+    optionalObjectKeyParser(parseArray(parsePreferredChild), 'preferredChildComponents')(value),
   )
 }
 
