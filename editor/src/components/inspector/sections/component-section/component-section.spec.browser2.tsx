@@ -662,6 +662,96 @@ describe('Controls from registering components', () => {
     const theView = editor.renderedDOM.getByTestId('view')
     expect(theView.outerHTML).toContain('sampleprop="New props value"')
   })
+
+  describe('preferred child components', () => {
+    it('preferred child components with internal component', async () => {
+      const editor = await renderTestEditorWithCode(
+        DataPickerProjectShell(`registerInternalComponent(Link, {
+          properties: {
+            children: Utopia.arrayControl({ control: 'jsx' }),
+          },
+          preferredChildComponents: [
+            {
+              name: 'span',
+              variants: [{ code: '<span>Link</span>' }],
+            },
+          ],
+          supportsChildren: true,
+          variants: [],
+        })
+      
+      function Link({ href, children }) {
+        return (
+          <a href={href} data-uid='root'>
+            {children}
+          </a>
+        )
+      }
+      
+      var Playground = ({ style }) => {
+        const alternateBookInfo = {
+          title: 'Frankenstein',
+          published: 'August 1866',
+          description: 'Short, fun read',
+          likes: 66,
+        }
+      
+        return (
+          <div style={style} data-uid='dbc'>
+            <Link href='/new' data-uid='78c'>
+              nowhere
+            </Link>
+          </div>
+        )
+      }`),
+        'await-first-dom-report',
+      )
+
+      expect(
+        editor.getEditorState().editor.propertyControlsInfo['/utopia/storyboard'],
+      ).toMatchObject({
+        Link: {
+          preferredChildComponents: [
+            {
+              additionalImports: undefined,
+              name: 'span',
+              variants: [
+                {
+                  code: '<span>Link</span>',
+                },
+              ],
+            },
+          ],
+          properties: {
+            children: {
+              control: 'array',
+              propertyControl: {
+                control: 'jsx',
+              },
+            },
+          },
+          supportsChildren: true,
+          variants: [
+            {
+              importsToAdd: {
+                '/utopia/storyboard': {
+                  importedAs: null,
+                  importedFromWithin: [
+                    {
+                      alias: 'Link',
+                      name: 'Link',
+                    },
+                  ],
+                  importedWithName: null,
+                },
+              },
+              insertMenuLabel: 'Link',
+            },
+          ],
+        },
+      })
+    })
+  })
 })
 
 const project = DataPickerProjectShell(`
