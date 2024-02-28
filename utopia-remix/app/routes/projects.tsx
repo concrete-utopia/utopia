@@ -3,20 +3,22 @@ import {
   Trigger as DropdownMenuTrigger,
 } from '@radix-ui/react-dropdown-menu'
 import {
+  CubeIcon,
   DashboardIcon,
   DotsHorizontalIcon,
   HamburgerMenuIcon,
   MagnifyingGlassIcon,
   TrashIcon,
-  CubeIcon,
 } from '@radix-ui/react-icons'
-import React from 'react'
 import { LoaderFunctionArgs, json } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
+import { motion } from 'framer-motion'
 import moment from 'moment'
 import { UserDetails } from 'prisma-client'
+import React from 'react'
 import { ProjectContextMenu } from '../components/projectActionContextMenu'
 import { SortingContextMenu } from '../components/sortProjectsContextMenu'
+import { useCleanupOperations } from '../hooks/useFetcherWithOperation'
 import { useIsDarkMode } from '../hooks/useIsDarkMode'
 import { listDeletedProjects, listProjects } from '../models/project.server'
 import { getCollaborators } from '../models/projectCollaborators.server'
@@ -28,12 +30,11 @@ import { sprinkles } from '../styles/sprinkles.css'
 import { Collaborator, CollaboratorsByProject, Operation, ProjectWithoutContent } from '../types'
 import { requireUser } from '../util/api.server'
 import { assertNever } from '../util/assertNever'
+import { auth0LoginURL } from '../util/auth0.server'
 import { projectEditorLink } from '../util/links'
 import { when } from '../util/react-conditionals'
 import { UnknownPlayerName, multiplayerInitialsFromName } from '../util/strings'
 import { useProjectMatchesQuery, useSortCompareProject } from '../util/use-sort-compare-project'
-import { auth0LoginURL } from '../util/auth0.server'
-import { motion } from 'framer-motion'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
@@ -75,6 +76,8 @@ export async function loader(args: LoaderFunctionArgs) {
 }
 
 const ProjectsPage = React.memo(() => {
+  useCleanupOperations()
+
   const data = useLoaderData() as unknown as {
     projects: ProjectWithoutContent[]
     user: UserDetails
@@ -854,40 +857,42 @@ const ActiveOperations = React.memo(() => {
         gap: 10,
       }}
     >
-      {operations.map((op) => {
-        return (
-          <div
-            key={`${op.projectId}-${op.type}`}
-            style={{
-              padding: 10,
-              display: 'flex',
-              gap: 10,
-              alignItems: 'center',
-              animation: 'spin 2s linear infinite',
-            }}
-            className={sprinkles({
-              boxShadow: 'shadow',
-              borderRadius: 'small',
-              backgroundColor: 'primary',
-              color: 'white',
-            })}
-          >
-            <motion.div
+      {operations
+        .sort((a, b) => -(a.startedAt - b.startedAt))
+        .map((op) => {
+          return (
+            <div
+              key={`${op.projectId}-${op.type}`}
               style={{
-                width: 8,
-                height: 8,
+                padding: 10,
+                display: 'flex',
+                gap: 10,
+                alignItems: 'center',
+                animation: 'spin 2s linear infinite',
               }}
-              className={sprinkles({ backgroundColor: 'white' })}
-              initial={{ rotate: 0 }}
-              animate={{ rotate: 100 }}
-              transition={{ ease: 'linear', repeatType: 'loop', repeat: Infinity }}
-            />
-            <div>
-              {getOperationVerb(op)} project {op.projectName}
+              className={sprinkles({
+                boxShadow: 'shadow',
+                borderRadius: 'small',
+                backgroundColor: 'primary',
+                color: 'white',
+              })}
+            >
+              <motion.div
+                style={{
+                  width: 8,
+                  height: 8,
+                }}
+                className={sprinkles({ backgroundColor: 'white' })}
+                initial={{ rotate: 0 }}
+                animate={{ rotate: 100 }}
+                transition={{ ease: 'linear', repeatType: 'loop', repeat: Infinity }}
+              />
+              <div>
+                {getOperationVerb(op)} project {op.projectName}
+              </div>
             </div>
-          </div>
-        )
-      })}
+          )
+        })}
     </div>
   )
 })

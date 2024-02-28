@@ -1,42 +1,44 @@
-import { useFetcher } from '@remix-run/react'
+import { useFetcher, useFetchers } from '@remix-run/react'
 import React from 'react'
-import { Operation, OperationType, ProjectWithoutContent } from '../types'
 import { useProjectsStore } from '../store'
+import { Operation } from '../types'
+
+const operationFetcherKeyPrefix = 'operation-'
 
 /**
  * This is a specialized that returns a fetcher that also updates a given project operation.
  */
-export function useFetcherWithOperation(project: ProjectWithoutContent, type: OperationType) {
-  const fetcher = useFetcher()
-  const [operation, setOperation] = React.useState<Operation | null>(null)
+export function useFetcherWithOperation(operation: Operation) {
+  const key = `operation-${operation.projectId}-${operation.type}`
+
+  const fetcher = useFetcher({ key: key })
   const addOperation = useProjectsStore((store) => store.addOperation)
-  const removeOperation = useProjectsStore((store) => store.removeOperation)
 
   const submit = React.useCallback(
     (data: any, options: { method: 'GET' | 'PUT' | 'POST' | 'DELETE'; action: string }) => {
-      setOperation(() => {
-        const operation: Operation = {
-          projectId: project.proj_id,
-          type: type,
-          projectName: project.title,
-        }
-        addOperation(operation)
-        fetcher.submit(data, options)
-        return operation
-      })
+      addOperation(operation, key)
+      fetcher.submit(data, options)
     },
     [fetcher, addOperation],
   )
-
-  React.useEffect(() => {
-    if (fetcher.data != null && fetcher.state !== 'submitting' && operation != null) {
-      setOperation(null)
-      removeOperation(operation)
-    }
-  }, [fetcher, operation, removeOperation])
 
   return {
     ...fetcher,
     submit: submit,
   }
+}
+
+export function useCleanupOperations() {
+  const fetchers = useFetchers()
+  const removeOperation = useProjectsStore((store) => store.removeOperation)
+
+  React.useEffect(() => {
+    for (const fetcher of fetchers) {
+      const isOperationFetcher = fetcher.key.startsWith(operationFetcherKeyPrefix)
+      const isNotSubmitting = fetcher.data != null && fetcher.state !== 'submitting'
+      if (isOperationFetcher && isNotSubmitting) {
+        removeOperation(fetcher.key)
+      }
+    }
+  }, [fetchers])
 }
