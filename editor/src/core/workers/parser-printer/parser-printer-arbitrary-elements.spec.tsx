@@ -17,7 +17,6 @@ import {
   jsxElementName,
   emptyComments,
   jsxMapExpression,
-  jsIdentifier,
 } from '../../shared/element-template'
 import { setJSXValueAtPath } from '../../shared/jsx-attributes'
 import { forEachRight } from '../../shared/either'
@@ -321,7 +320,20 @@ export var whatever = (props) => {
               'aab',
               jsxAttributesFromMap({
                 'data-uid': jsExpressionValue('aab', emptyComments),
-                thing: jsIdentifier('n', '', emptyComments),
+                thing: jsExpressionOtherJavaScript(
+                  [],
+                  'n',
+                  'n',
+                  'return n;',
+                  ['n'],
+                  expect.objectContaining({
+                    sources: ['code.tsx'],
+                    version: 3,
+                    file: 'code.tsx',
+                  }),
+                  {},
+                  emptyComments,
+                ),
               }),
               [],
             ),
@@ -417,7 +429,20 @@ export var whatever = (props) => {
               'aab',
               jsxAttributesFromMap({
                 'data-uid': jsExpressionValue('aab', emptyComments),
-                thing: jsIdentifier('n', '', emptyComments),
+                thing: jsExpressionOtherJavaScript(
+                  [],
+                  'n',
+                  'n',
+                  'return n;',
+                  ['n'],
+                  expect.objectContaining({
+                    sources: ['code.tsx'],
+                    version: 3,
+                    file: 'code.tsx',
+                  }),
+                  {},
+                  emptyComments,
+                ),
               }),
               [],
             ),
@@ -514,7 +539,20 @@ export var whatever = (props) => {
               'aab',
               jsxAttributesFromMap({
                 'data-uid': jsExpressionValue('aab', emptyComments),
-                thing: jsIdentifier('n', '', emptyComments),
+                thing: jsExpressionOtherJavaScript(
+                  [],
+                  'n',
+                  'n',
+                  'return n;',
+                  ['n'],
+                  expect.objectContaining({
+                    sources: ['code.tsx'],
+                    version: 3,
+                    file: 'code.tsx',
+                  }),
+                  {},
+                  emptyComments,
+                ),
               }),
               [],
             ),
@@ -610,7 +648,22 @@ export var whatever = (props) => {
                   jsxAttributesFromMap({
                     'data-uid': jsExpressionValue('aac', emptyComments),
                   }),
-                  [jsIdentifier(`n`, ``, emptyComments)],
+                  [
+                    jsExpressionOtherJavaScript(
+                      [],
+                      `n`,
+                      `n;`,
+                      `return n;`,
+                      ['n'],
+                      expect.objectContaining({
+                        sources: ['code.tsx'],
+                        version: 3,
+                        file: 'code.tsx',
+                      }),
+                      {},
+                      emptyComments,
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -801,7 +854,22 @@ export var whatever = (props) => {
                   jsxAttributesFromMap({
                     'data-uid': jsExpressionValue('aac', emptyComments),
                   }),
-                  [jsIdentifier(`n`, '', emptyComments)],
+                  [
+                    jsExpressionOtherJavaScript(
+                      [],
+                      `n`,
+                      `n;`,
+                      `return n;`,
+                      ['n'],
+                      expect.objectContaining({
+                        sources: ['code.tsx'],
+                        version: 3,
+                        file: 'code.tsx',
+                      }),
+                      {},
+                      emptyComments,
+                    ),
+                  ],
                 ),
               ],
             ),
