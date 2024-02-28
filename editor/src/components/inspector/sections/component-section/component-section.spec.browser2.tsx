@@ -10,8 +10,13 @@ import {
   VariableFromScopeOptionTestId,
 } from './component-section'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import type { Right } from '../../../../core/shared/either'
-import type { JSExpressionOtherJavaScript } from '../../../../core/shared/element-template'
+import { isRight, type Right } from '../../../../core/shared/either'
+import {
+  isJSElementAccess,
+  isJSExpressionValue,
+  isJSIdentifier,
+  type JSExpressionOtherJavaScript,
+} from '../../../../core/shared/element-template'
 
 describe('Set element prop via the data picker', () => {
   it('can pick from the property data picker', async () => {
@@ -645,12 +650,26 @@ describe('Set element prop via the data picker', () => {
     )
 
     expect(childrenOfLink).toHaveLength(1)
-    expect((childrenOfLink[0].element as Right<JSExpressionOtherJavaScript>).value.type).toEqual(
-      'ATTRIBUTE_OTHER_JAVASCRIPT',
-    )
-    expect(
-      (childrenOfLink[0].element as Right<JSExpressionOtherJavaScript>).value.javascript,
-    ).toEqual("alternateBookInfo['title'];")
+    const possibleElement = childrenOfLink[0].element
+    if (isRight(possibleElement)) {
+      const element = possibleElement.value
+      if (isJSElementAccess(element)) {
+        if (isJSIdentifier(element.onValue)) {
+          expect(element.onValue.name).toEqual('alternateBookInfo')
+          if (isJSExpressionValue(element.element)) {
+            expect(element.element.value).toEqual('title')
+          } else {
+            throw new Error(`Expected JSExpressionValue for element but got: ${element.element}`)
+          }
+        } else {
+          throw new Error(`Expected JSIdentifier for onValue but got: ${element.onValue}`)
+        }
+      } else {
+        throw new Error(`Expected JSElementAccess but got: ${element}`)
+      }
+    } else {
+      throw new Error(`Unexpected value: ${possibleElement.value}`)
+    }
   })
 })
 
