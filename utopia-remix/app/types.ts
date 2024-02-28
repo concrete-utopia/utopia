@@ -31,3 +31,15 @@ export function userToCollaborator(user: UserDetails): Collaborator {
     avatar: user.picture,
   }
 }
+
+export type Operation = {
+  projectId: string
+  projectName: string
+  type: OperationType
+}
+
+export type OperationType = 'rename' | 'delete' | 'destroy' | 'restore'
+
+export function operationsEqual(a: Operation, b: Operation): boolean {
+  return a.projectId === b.projectId && a.type === b.type
+}
