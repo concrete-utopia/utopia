@@ -23,8 +23,10 @@ describe('handleChangeAccess', () => {
 
   beforeEach(async () => {
     await createTestUser(prisma, { id: 'foo' })
+    await createTestUser(prisma, { id: 'bar' })
     await createTestSession(prisma, { key: 'the-key', userId: 'foo' })
     await createTestProject(prisma, { id: 'one', ownerId: 'foo', title: 'project-one' })
+    await createTestProject(prisma, { id: 'two', ownerId: 'bar', title: 'project-two' })
     jest.spyOn(permissionsService, 'setProjectAccess').mockResolvedValue()
   })
 
@@ -64,5 +66,22 @@ describe('handleChangeAccess', () => {
 
     await expect(fn).rejects.toThrow(ApiError)
     await expect(fn).rejects.toThrow('accessLevel is not a valid AccessLevel')
+  })
+
+  it('shouldnt let non-owner change access level', async () => {
+    const formData = new FormData()
+    formData.append('accessLevel', '0')
+    const fn = async () =>
+      handleChangeProjectAccess(
+        newTestRequest({
+          method: 'POST',
+          authCookie: 'the-key',
+          formData: formData,
+        }),
+        { id: 'two' },
+      )
+
+    await expect(fn).rejects.toThrow(ApiError)
+    await expect(fn).rejects.toThrow('Project two not found for user foo')
   })
 })

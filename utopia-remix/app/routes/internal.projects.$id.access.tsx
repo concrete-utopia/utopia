@@ -17,7 +17,7 @@ export async function handleChangeProjectAccess(req: Request, params: Params<str
   ensure(id != null, 'id is null', Status.BAD_REQUEST)
 
   const project = await getProject({ id: id, owner_id: user.user_id })
-  ensure(project != null, 'project not found', Status.NOT_FOUND)
+  ensure(project != null, `Project ${id} not found for user ${user.user_id}`, Status.NOT_FOUND)
 
   const formData = await req.formData()
   const accessLevel = formData.get('accessLevel')
