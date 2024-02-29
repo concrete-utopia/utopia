@@ -23,6 +23,7 @@ import type {
   ElementInstanceMetadataMap,
 } from '../../../core/shared/element-template'
 import {
+  getJSXElementNameAsString,
   hasElementsWithin,
   jsExpressionOtherJavaScriptSimple,
 } from '../../../core/shared/element-template'
@@ -30,7 +31,7 @@ import type { ElementPath } from '../../../core/shared/project-file-types'
 import { unless, when } from '../../../utils/react-conditionals'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import type { IcnColor, IcnProps } from '../../../uuiui'
-import { FlexRow, useColorTheme, UtopiaTheme } from '../../../uuiui'
+import { FlexRow, OnClickOutsideHOC, useColorTheme, UtopiaTheme } from '../../../uuiui'
 import type { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 import { isEntryAConditionalSlot } from '../../canvas/canvas-utils'
 import type { EditorAction, EditorDispatch } from '../../editor/action-types'
@@ -65,6 +66,8 @@ import * as PP from '../../../core/shared/property-path'
 import { useShowRenderPropPicker } from '../../context-menu-wrapper'
 import { Menu } from 'react-contexify'
 import ReactDOM from 'react-dom'
+import { PreferredChildComponent } from 'utopia-api'
+import { useDispatch } from '../../editor/store/dispatch-context'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -156,17 +159,7 @@ function selectItem(
     ? getConditionalOverrideActions(elementPath, conditionalOverrideUpdate)
     : getConditionalOverrideActions(EP.parentPath(elementPath), conditionalOverrideUpdate)
 
-  const renderPropInsertActions =
-    isRenderPropNavigatorEntry(navigatorEntry) && navigatorEntry.childOrAttribute == null
-      ? [
-          EditorActions.setProp_UNSAFE(
-            EP.parentPath(elementPath),
-            PP.create(navigatorEntry.propName),
-            jsExpressionOtherJavaScriptSimple('<div />', []),
-          ),
-        ]
-      : []
-  dispatch([...conditionalOverrideActions, ...selectionActions, ...renderPropInsertActions])
+  dispatch([...conditionalOverrideActions, ...selectionActions])
 }
 
 const highlightItem = (
@@ -754,10 +747,6 @@ export const NavigatorItem: React.FunctionComponent<
   const isComponentScene = useIsProbablyScene(navigatorEntry) && childComponentCount === 1
   const isRenderProp = isRenderPropNavigatorEntry(navigatorEntry)
 
-  // click opens popup with appropriate props
-  // appropriate props come from navigatorEntry
-  // popup writes into prop
-
   const containerStyle: React.CSSProperties = React.useMemo(() => {
     return {
       opacity: isElementVisible && (!isHiddenConditionalBranch || isSlot) ? undefined : 0.4,
@@ -795,7 +784,16 @@ export const NavigatorItem: React.FunctionComponent<
   const renderPropPickerId = varSafeNavigatorEntryToKey(navigatorEntry)
   const { showRenderPropPicker: showContextMenu, hideRenderPropPicker: hideContextMenu } =
     useShowRenderPropPicker(renderPropPickerId)
-  const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)
+
+  const renderPropPickerData = React.useMemo(() => {
+    const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)
+    const entry = props.navigatorEntry
+    if (portalTarget == null || entry.type !== 'RENDER_PROP') {
+      return null
+    }
+
+    return { portalTarget, entry }
+  }, [props.navigatorEntry])
 
   return (
     <div
@@ -811,16 +809,16 @@ export const NavigatorItem: React.FunctionComponent<
         outlineOffset: props.parentOutline === 'solid' ? '-1px' : 0,
       }}
     >
-      {portalTarget == null
+      {renderPropPickerData == null
         ? null
         : ReactDOM.createPortal(
             <RenderPropPicker
               target={props.navigatorEntry.elementPath}
               key={renderPropPickerId}
               id={renderPropPickerId}
-              prop=''
+              prop={renderPropPickerData.entry.propName}
             />,
-            portalTarget,
+            renderPropPickerData.portalTarget,
           )}
       <FlexRow
         data-testid={NavigatorItemTestId(varSafeNavigatorEntryToKey(navigatorEntry))}
@@ -1029,10 +1027,91 @@ interface RenderPropPickerProps {
   id: string
 }
 
-const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id }) => {
+const usePreferredChildrenForTargetProp = (target: ElementPath, prop: string) => {
+  const selectedJSXElement = useEditorState(
+    Substores.metadata,
+    (store) => MetadataUtils.getJSXElementFromMetadata(store.editor.jsxMetadata, target),
+    'usePreferredChildrenForSelectedElement selectedJSXElement',
+  )
+
+  const preferredChildrenForTargetProp = useEditorState(
+    Substores.restOfEditor,
+    (store) => {
+      if (selectedJSXElement == null) {
+        return null
+      }
+
+      const targetName = getJSXElementNameAsString(selectedJSXElement.name)
+      // TODO: we don't deal with components registered with the same name in multiple files
+      for (const file of Object.values(store.editor.propertyControlsInfo)) {
+        for (const [name, value] of Object.entries(file)) {
+          if (name === targetName) {
+            for (const [registeredPropName, registeredPropValue] of Object.entries(
+              value.properties,
+            )) {
+              if (
+                registeredPropName === prop &&
+                registeredPropValue.control === 'jsx' &&
+                registeredPropValue.preferredChildComponents != null
+              ) {
+                return registeredPropValue.preferredChildComponents
+              }
+            }
+          }
+        }
+      }
+
+      return null
+    },
+    'usePreferredChildrenForSelectedElement propertyControlsInfo',
+  )
+
+  if (selectedJSXElement == null || preferredChildrenForTargetProp == null) {
+    return null
+  }
+
+  return preferredChildrenForTargetProp
+}
+
+const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, target, prop }) => {
+  const preferredChildrenForTargetProp = usePreferredChildrenForTargetProp(
+    EP.parentPath(target),
+    prop,
+  )
+
+  const dispatch = useDispatch()
+
+  const onItemClick = React.useCallback(
+    (rawJSCodeForRenderProp: string) => (e: React.MouseEvent) => {
+      e.stopPropagation()
+      e.preventDefault()
+
+      dispatch([
+        EditorActions.setProp_UNSAFE(
+          EP.parentPath(target),
+          PP.create(prop),
+          jsExpressionOtherJavaScriptSimple(rawJSCodeForRenderProp, []),
+        ),
+      ])
+    },
+    [dispatch, prop, target],
+  )
+
+  if (preferredChildrenForTargetProp == null) {
+    return null
+  }
+
+  const rawJSToInsert: Array<string> = (preferredChildrenForTargetProp ?? []).flatMap((data) =>
+    data.variants == null ? `<${data.name} />` : data.variants.map((v) => v.code),
+  )
+
   return (
-    <Menu key={key} id={id} animation={false}>
-      <span>Hello</span>
+    <Menu key={key} id={id} animation={false} style={{ padding: 8 }}>
+      {rawJSToInsert.map((option, idx) => (
+        <div key={idx} onClick={onItemClick(option)}>
+          {option}
+        </div>
+      ))}
     </Menu>
   )
 })
