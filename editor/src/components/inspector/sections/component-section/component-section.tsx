@@ -152,13 +152,16 @@ const ControlForProp = React.memo((props: ControlForPropProps<BaseControlDescrip
       attributeExpression.type === 'ATTRIBUTE_OTHER_JAVASCRIPT' ||
       attributeExpression.type === 'JSX_MAP_EXPRESSION'
     ) {
-      return (
-        <IdentifierExpressionCartoucheControl
-          contents={attributeExpression.originalJavascript}
-          matchType='partial'
-          onOpenDataPicker={props.onOpenDataPicker}
-        />
-      )
+      // If the parsed code is JSExpression but the value is JSX, we should show the inline jsx control instead
+      if (controlDescription.control !== 'jsx') {
+        return (
+          <IdentifierExpressionCartoucheControl
+            contents={attributeExpression.originalJavascript}
+            matchType='partial'
+            onOpenDataPicker={props.onOpenDataPicker}
+          />
+        )
+      }
     }
   }
 
