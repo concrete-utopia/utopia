@@ -1361,6 +1361,7 @@ function toastOnGeneratedElementsSelected(
 ): EditorState {
   return toastOnGeneratedElementsTargeted(
     message,
+    editor.jsxMetadata,
     editor.selectedViews,
     editor,
     allowActionRegardless,
@@ -1371,13 +1372,14 @@ function toastOnGeneratedElementsSelected(
 
 function toastOnGeneratedElementsTargeted(
   message: string,
+  metadata: ElementInstanceMetadataMap,
   targets: ElementPath[],
   editor: EditorState,
   allowActionRegardless: boolean,
   actionOtherwise: (e: EditorState) => EditorState,
   dispatch: EditorDispatch,
 ): EditorState {
-  const generatedElementsTargeted = areGeneratedElementsTargeted(targets)
+  const generatedElementsTargeted = areGeneratedElementsTargeted(metadata, targets)
   let result: EditorState = editor
   if (generatedElementsTargeted) {
     const showToastAction = showToast(notice(message))
@@ -1782,7 +1784,7 @@ export const UPDATE_FNS = {
 
         const staticSelectedElements = editor.selectedViews
           .filter((selectedView) => {
-            return !MetadataUtils.isElementGenerated(selectedView)
+            return !MetadataUtils.isElementGenerated(editorForAction.jsxMetadata, selectedView)
           })
           .map((path, _, allSelectedPaths) => {
             const siblings = MetadataUtils.getSiblingsOrdered(
@@ -1897,6 +1899,7 @@ export const UPDATE_FNS = {
   DELETE_VIEW: (action: DeleteView, editor: EditorModel, dispatch: EditorDispatch): EditorModel => {
     return toastOnGeneratedElementsTargeted(
       'Generated elements can only be deleted in code.',
+      editor.jsxMetadata,
       [action.target],
       editor,
       false,
@@ -1930,6 +1933,7 @@ export const UPDATE_FNS = {
   ): EditorModel => {
     return toastOnGeneratedElementsTargeted(
       'Generated elements can only be duplicated in code.',
+      editor.jsxMetadata,
       action.paths,
       editor,
       false,

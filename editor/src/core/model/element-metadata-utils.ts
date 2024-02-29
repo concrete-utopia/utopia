@@ -181,9 +181,29 @@ export const getChildrenOfCollapsedViews = (
 
 // eslint-disable-next-line object-shorthand
 export const MetadataUtils = {
-  isElementGenerated(target: ElementPath): boolean {
+  isElementGenerated(metadata: ElementInstanceMetadataMap, target: ElementPath): boolean {
     const staticTarget = EP.dynamicPathToStaticPath(target)
-    return !EP.pathsEqual(target, staticTarget)
+    const fallback = () => {
+      return !EP.pathsEqual(target, staticTarget)
+    }
+    const targetUid = EP.toUid(staticTarget)
+    const parentPath = EP.parentPath(staticTarget)
+    const parentElement = MetadataUtils.getJSXElementFromMetadata(metadata, parentPath)
+    if (parentElement == null) {
+      return fallback()
+    }
+
+    for (const prop of parentElement.props) {
+      if (
+        prop.type === 'JSX_ATTRIBUTES_ENTRY' &&
+        prop.value.type === 'ATTRIBUTE_OTHER_JAVASCRIPT' &&
+        Object.keys(prop.value.elementsWithin).includes(targetUid)
+      ) {
+        return false
+      }
+    }
+
+    return fallback()
   },
   findElementByElementPath(
     elementMap: ElementInstanceMetadataMap,
@@ -1140,7 +1160,7 @@ export const MetadataUtils = {
       )
       .some((e) => e !== 'br')
     return (
-      !MetadataUtils.isElementGenerated(target) &&
+      !MetadataUtils.isElementGenerated(metadata, target) &&
       (children.length === 0 || !hasNonEditableChildren)
     )
   },

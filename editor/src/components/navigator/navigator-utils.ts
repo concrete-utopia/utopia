@@ -230,7 +230,7 @@ export function getNavigatorTargets(
 
         const isDynamic = (elementPath: ElementPath) => {
           return (
-            MetadataUtils.isElementGenerated(elementPath) ||
+            MetadataUtils.isElementGenerated(metadata, elementPath) ||
             MetadataUtils.isGeneratedTextFromMetadata(elementPath, elementPathTree, metadata)
           )
         }
