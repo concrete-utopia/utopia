@@ -1,4 +1,5 @@
 import { Project, UserDetails } from 'prisma-client'
+import { assertNever } from './util/assertNever'
 
 export interface ProjectListing {
   id: string
@@ -87,4 +88,19 @@ export type OperationType = 'rename' | 'delete' | 'destroy' | 'restore'
 
 export function operationsEqual(a: Operation, b: Operation): boolean {
   return a.projectId === b.projectId && a.type === b.type
+}
+
+export function getOperationVerb(op: Operation) {
+  switch (op.type) {
+    case 'delete':
+      return 'Deleting'
+    case 'destroy':
+      return 'Destroying'
+    case 'rename':
+      return 'Renaming'
+    case 'restore':
+      return 'Restoring'
+    default:
+      assertNever(op)
+  }
 }

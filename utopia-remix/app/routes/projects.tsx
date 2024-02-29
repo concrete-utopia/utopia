@@ -27,14 +27,25 @@ import { button } from '../styles/button.css'
 import { newProjectButton } from '../styles/newProjectButton.css'
 import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
 import { sprinkles } from '../styles/sprinkles.css'
-import { Collaborator, CollaboratorsByProject, Operation, ProjectWithoutContent } from '../types'
+import {
+  Collaborator,
+  CollaboratorsByProject,
+  Operation,
+  ProjectWithoutContent,
+  getOperationVerb,
+} from '../types'
 import { requireUser } from '../util/api.server'
 import { assertNever } from '../util/assertNever'
 import { auth0LoginURL } from '../util/auth0.server'
 import { projectEditorLink } from '../util/links'
 import { unless, when } from '../util/react-conditionals'
 import { UnknownPlayerName, multiplayerInitialsFromName } from '../util/strings'
-import { useProjectMatchesQuery, useSortCompareProject } from '../util/use-sort-compare-project'
+import {
+  useProjectIsOnActiveOperation,
+  useProjectMatchesQuery,
+  useSortCompareProject,
+} from '../util/use-sort-compare-project'
+import { Spinner } from '../components/spinner'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
@@ -100,16 +111,19 @@ const ProjectsPage = React.memo(() => {
 
   const sortCompareProject = useSortCompareProject()
   const projectMatchesQuery = useProjectMatchesQuery()
+  const projectIsOnActiveOperation = useProjectIsOnActiveOperation()
 
   const filteredProjects = React.useMemo(
     () =>
       activeProjects
+        // filter out projects that are part of active operations
+        .filter(projectIsOnActiveOperation)
         // filter out projects that don't match the search query
         .filter(projectMatchesQuery)
         // sort them out according to the selected strategy
         .sort(sortCompareProject),
 
-    [activeProjects, projectMatchesQuery, sortCompareProject],
+    [activeProjects, projectMatchesQuery, sortCompareProject, projectIsOnActiveOperation],
   )
 
   return (
@@ -636,7 +650,6 @@ const ProjectCard = React.memo(
           flexDirection: 'column',
           gap: 5,
           filter: activeOperations.length > 0 ? 'grayscale(1)' : undefined,
-          position: 'relative',
         }}
       >
         <div
@@ -684,6 +697,24 @@ const ProjectCard = React.memo(
               )
             })}
           </div>
+          {when(
+            activeOperations.length > 0,
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                pointerEvents: 'none',
+              }}
+            >
+              <Spinner className={sprinkles({ backgroundColor: 'primary' })} />
+            </div>,
+          )}
         </div>
         <div
           style={{
@@ -699,24 +730,6 @@ const ProjectCard = React.memo(
           </div>
           <ProjectCardActions project={project} />
         </div>
-        {when(
-          activeOperations.length > 0,
-          <div
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              pointerEvents: 'none',
-            }}
-          >
-            <Spinner className={sprinkles({ backgroundColor: 'primary' })} />
-          </div>,
-        )}
       </div>
     )
   },
@@ -871,28 +884,22 @@ const ActiveOperations = React.memo(() => {
       {operations
         .sort((a, b) => -(a.startedAt - b.startedAt))
         .map((operation) => {
-          return <ActiveOperation operation={operation} key={operation.key} />
+          return <ActiveOperationToast operation={operation} key={operation.key} />
         })}
     </div>
   )
 })
 ActiveOperations.displayName = 'ActiveOperations'
 
-const ActiveOperation = React.memo(({ operation }: { operation: OperationWithKey }) => {
-  function getOperationVerb(op: Operation) {
-    switch (op.type) {
-      case 'delete':
-        return 'Deleting'
-      case 'destroy':
-        return 'Destroying'
-      case 'rename':
-        return 'Renaming'
-      case 'restore':
-        return 'Restoring'
-      default:
-        assertNever(op)
+const ActiveOperationToast = React.memo(({ operation }: { operation: OperationWithKey }) => {
+  const removeOperation = useProjectsStore((store) => store.removeOperation)
+
+  const dismiss = React.useCallback(() => {
+    if (!operation.errored) {
+      return
     }
-  }
+    removeOperation(operation.key)
+  }, [removeOperation, operation])
 
   return (
     <div
@@ -901,7 +908,7 @@ const ActiveOperation = React.memo(({ operation }: { operation: OperationWithKey
         display: 'flex',
         gap: 10,
         alignItems: 'center',
-        animation: 'spin 2s linear infinite',
+        userSelect: 'none',
       }}
       className={sprinkles({
         boxShadow: 'shadow',
@@ -911,26 +918,31 @@ const ActiveOperation = React.memo(({ operation }: { operation: OperationWithKey
       })}
     >
       {when(!operation.errored, <Spinner className={sprinkles({ backgroundColor: 'white' })} />)}
-      {when(operation.errored, <div style={{ fontWeight: 'bold' }}>FAILED</div>)}
+      {when(
+        operation.errored,
+        <>
+          <button
+            className={`${button({ color: 'selected' })} ${sprinkles({
+              color: 'white',
+            })}`}
+            onClick={dismiss}
+          >
+            Dismiss
+          </button>
+          <div
+            style={{
+              fontWeight: 'bold',
+              textTransform: 'uppercase',
+            }}
+          >
+            Failed
+          </div>
+        </>,
+      )}
       <div>
         {getOperationVerb(operation)} project {operation.projectName}
       </div>
     </div>
   )
 })
-ActiveOperation.displayName = 'ActiveOperation'
-
-const Spinner = ({ className }: { className?: string }) => {
-  return (
-    <motion.div
-      style={{
-        width: 8,
-        height: 8,
-      }}
-      className={className}
-      initial={{ rotate: 0 }}
-      animate={{ rotate: 100 }}
-      transition={{ ease: 'linear', repeatType: 'loop', repeat: Infinity }}
-    />
-  )
-}
+ActiveOperationToast.displayName = 'ActiveOperation'

@@ -38,45 +38,61 @@ export function useCleanupOperations() {
   const removeOperation = useProjectsStore((store) => store.removeOperation)
   const updateOperation = useProjectsStore((store) => store.updateOperation)
 
-  const [loading, setLoading] = React.useState<{ [key: string]: boolean }>({})
+  const [loading, setLoading] = React.useState<{ [key: string]: { data: unknown } }>({})
+  const [processed, setProcessed] = React.useState<{ [key: string]: boolean }>({})
+
+  const process = React.useCallback(
+    (ops: { key: string; value: { data: unknown } }[]) => {
+      setProcessed((processed) => {
+        for (const op of ops) {
+          if (isLikeApiError(op.value.data)) {
+            updateOperation(op.key, true)
+          } else {
+            removeOperation(op.key)
+          }
+          processed[op.key] = true
+        }
+        return { ...processed, key: true }
+      })
+    },
+    [updateOperation, removeOperation],
+  )
 
   // TODO explain this in a comment
   React.useEffect(() => {
-    let newLoading = { ...loading }
+    const operationsToCleanup = Object.entries(loading)
+      .map(([key, value]) => ({ key: key, value: value }))
+      .filter((entry) => !fetchers.some((f) => f.key === entry.key))
 
-    const disappeared = Object.keys(loading).filter((key) => !fetchers.some((f) => f.key === key))
-    for (let key of disappeared) {
-      removeOperation(key)
-      delete newLoading[key]
+    if (operationsToCleanup.length > 0) {
+      process(operationsToCleanup)
+      setLoading((loading) => {
+        for (let { key } of operationsToCleanup) {
+          delete loading[key]
+        }
+        return loading
+      })
     }
-
-    if (disappeared.length > 0) {
-      setLoading(newLoading)
-    }
-  }, [loading, removeOperation, fetchers])
+  }, [loading, fetchers, process])
 
   React.useEffect(() => {
     for (const fetcher of fetchers) {
-      const isOperationFetcher = fetcher.key.startsWith(operationFetcherKeyPrefix)
-      const hasData = fetcher.data != null
-      if (hasData && isOperationFetcher) {
-        if (fetcher.state === 'loading') {
-          // it will disappear next if successful
-          setLoading((loading) => {
-            if (loading[fetcher.key] === true) {
-              return loading
-            }
-            return { ...loading, [fetcher.key]: true }
-          })
-        } else if (fetcher.state === 'idle') {
-          // it's good for collection
-          if (isLikeApiError(fetcher.data)) {
-            updateOperation(fetcher.key, true)
-          } else {
-            removeOperation(fetcher.key)
+      if (
+        // it's an operation fetcher…
+        fetcher.key.startsWith(operationFetcherKeyPrefix) &&
+        // …and it has data…
+        fetcher.data != null &&
+        // …and it is loading results
+        fetcher.state === 'loading'
+      ) {
+        // …then schedule it for collection
+        setLoading((loading) => {
+          return {
+            ...loading,
+            [fetcher.key]: { data: fetcher.data },
           }
-        }
+        })
       }
     }
-  }, [fetchers, removeOperation, updateOperation])
+  }, [fetchers, processed, process])
 }
