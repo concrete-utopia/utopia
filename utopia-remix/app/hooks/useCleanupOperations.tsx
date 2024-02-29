@@ -54,7 +54,7 @@ type OperationFetcherData = { [key: string]: { data: unknown } }
 function useLoadingFetchers() {
   const fetchers = useFetchers()
 
-  // keep a ledger of loading fetchers
+  // accumulated fetchers that were seen in the loading state
   const [loadingFetchers, setLoadingFetchers] = React.useState<OperationFetcherData>({})
   // list of fetchers that need to be cleaned up
   const [operationsToCleanup, setOperationsToCleanup] = React.useState<OperationFetcherData>({})
