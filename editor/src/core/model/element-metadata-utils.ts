@@ -201,8 +201,9 @@ export const MetadataUtils = {
         // TODO MISSING FEATURE: this code should check whether the target element is a descendant
         // of an element in `elementsWithin`
         const elementInElementsWithin = Object.keys(prop.value.elementsWithin).includes(targetUid)
-
-        return !elementInElementsWithin
+        if (elementInElementsWithin) {
+          return false
+        }
       }
     }
 
