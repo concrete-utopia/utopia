@@ -10,6 +10,7 @@
 let
   release = (import ./release.nix {});
   pkgs = release.pkgs;
+  recentPkgs = release.recentPkgs;
   lib = pkgs.lib;
   node = pkgs.nodejs-18_x;
   postgres = pkgs.postgresql_13;
@@ -775,9 +776,8 @@ in pkgs.mkShell {
   npm_config_force_process_config = true;
 
   # Make Prisma work.
-  PRISMA_SCHEMA_ENGINE_BINARY = if stdenv.isLinux then "${pkgs.prisma-engines}/bin/migration-engine" else null;
-  PRISMA_QUERY_ENGINE_BINARY = if stdenv.isLinux then "${pkgs.prisma-engines}/bin/query-engine" else null;
-  PRISMA_INTROSPECTION_ENGINE_BINARY = if stdenv.isLinux then "${pkgs.prisma-engines}/bin/introspection-engine" else null;
-  PRISMA_QUERY_ENGINE_LIBRARY = if stdenv.isLinux then "${pkgs.prisma-engines}/lib/libquery_engine.node" else null;
-  PRISMA_FMT_BINARY = if stdenv.isLinux then "${pkgs.prisma-engines}/bin/prisma-fmt" else null;
+  PRISMA_SCHEMA_ENGINE_BINARY = if stdenv.isLinux then "${recentPkgs.prisma-engines}/bin/schema-engine" else null;
+  PRISMA_QUERY_ENGINE_BINARY = if stdenv.isLinux then "${recentPkgs.prisma-engines}/bin/query-engine" else null;
+  PRISMA_FMT_BINARY = if stdenv.isLinux then "${recentPkgs.prisma-engines}/bin/prisma-fmt" else null;
+  PRISMA_QUERY_ENGINE_LIBRARY = if stdenv.isLinux then "${recentPkgs.prisma-engines}/lib/libquery_engine.node" else null;
 }
