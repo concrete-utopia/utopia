@@ -11,7 +11,7 @@ export async function action(args: ActionFunctionArgs) {
 }
 
 export async function handleChangeProjectAccess(req: Request, params: Params<string>) {
-  // const user = await requireUser(req)
+  const user = await requireUser(req)
   const { id } = params
   const formData = await req.formData()
   ensure(id != null, 'id is null', Status.BAD_REQUEST)
@@ -23,15 +23,7 @@ export async function handleChangeProjectAccess(req: Request, params: Params<str
     'accessLevel is not a valid AccessLevel',
     Status.BAD_REQUEST,
   )
-
-  try {
-    await setProjectAccess({ projectId: id, accessLevel: accessLevelNumber })
-  } catch (e) {
-    console.error('error', e)
-    return new Response('error', {
-      status: Status.INTERNAL_ERROR,
-    })
-  }
+  await setProjectAccess({ projectId: id, accessLevel: accessLevelNumber })
 
   return {}
 }

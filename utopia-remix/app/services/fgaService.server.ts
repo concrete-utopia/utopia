@@ -68,7 +68,7 @@ async function checkUserProjectPermission(
     relation: permission,
     object: `project:${projectId}`,
   })
-  return !!allowed
+  return allowed ?? false
 }
 
 export async function canViewProject(projectId: string, userId: string) {
