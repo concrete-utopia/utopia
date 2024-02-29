@@ -88,16 +88,16 @@ export function areBaseOperationsEquivalent(a: Operation, b: Operation): boolean
   return a.projectId === b.projectId && a.type === b.type
 }
 
-export function getOperationVerb(op: Operation) {
+export function getOperationDescription(op: Operation, project: ProjectWithoutContent) {
   switch (op.type) {
     case 'delete':
-      return 'Deleting'
+      return `Deleting project ${project.title}`
     case 'destroy':
-      return 'Destroying'
+      return `Destroying project ${project.title}`
     case 'rename':
-      return 'Renaming'
+      return `Renaming project ${project.title} to ${op.newTitle}`
     case 'restore':
-      return 'Restoring'
+      return `Restoring project ${project.title}`
     default:
       assertNever(op)
   }
