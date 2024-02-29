@@ -183,31 +183,7 @@ export const getChildrenOfCollapsedViews = (
 export const MetadataUtils = {
   isElementGenerated(metadata: ElementInstanceMetadataMap, target: ElementPath): boolean {
     const staticTarget = EP.dynamicPathToStaticPath(target)
-    const fallback = () => {
-      return !EP.pathsEqual(target, staticTarget)
-    }
-    const targetUid = EP.toUid(staticTarget)
-    const parentPath = EP.parentPath(staticTarget)
-    const parentElement = MetadataUtils.getJSXElementFromMetadata(metadata, parentPath)
-    if (parentElement == null) {
-      return fallback()
-    }
-
-    for (const prop of parentElement.props) {
-      if (
-        prop.type === 'JSX_ATTRIBUTES_ENTRY' &&
-        prop.value.type === 'ATTRIBUTE_OTHER_JAVASCRIPT'
-      ) {
-        // TODO MISSING FEATURE: this code should check whether the target element is a descendant
-        // of an element in `elementsWithin`
-        const elementInElementsWithin = Object.keys(prop.value.elementsWithin).includes(targetUid)
-        if (elementInElementsWithin) {
-          return false
-        }
-      }
-    }
-
-    return fallback()
+    return !EP.pathsEqual(target, staticTarget)
   },
   findElementByElementPath(
     elementMap: ElementInstanceMetadataMap,
