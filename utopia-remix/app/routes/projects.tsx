@@ -3,21 +3,23 @@ import {
   Trigger as DropdownMenuTrigger,
 } from '@radix-ui/react-dropdown-menu'
 import {
+  CubeIcon,
   DashboardIcon,
   DotsHorizontalIcon,
   HamburgerMenuIcon,
   MagnifyingGlassIcon,
   TrashIcon,
-  CubeIcon,
 } from '@radix-ui/react-icons'
 import React from 'react'
 import { Badge } from '@radix-ui/themes'
 import { LoaderFunctionArgs, json } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
+import { motion } from 'framer-motion'
 import moment from 'moment'
 import { UserDetails } from 'prisma-client'
 import { ProjectContextMenu } from '../components/projectActionContextMenu'
 import { SortingContextMenu } from '../components/sortProjectsContextMenu'
+import { useCleanupOperations } from '../hooks/useFetcherWithOperation'
 import { useIsDarkMode } from '../hooks/useIsDarkMode'
 import { listDeletedProjects, listProjects } from '../models/project.server'
 import { getCollaborators } from '../models/projectCollaborators.server'
@@ -26,14 +28,20 @@ import { button } from '../styles/button.css'
 import { newProjectButton } from '../styles/newProjectButton.css'
 import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
 import { sprinkles } from '../styles/sprinkles.css'
-import { AccessLevel, Collaborator, CollaboratorsByProject, ProjectWithoutContent } from '../types'
+import {
+  AccessLevel,
+  Operation,
+  Collaborator,
+  CollaboratorsByProject,
+  ProjectWithoutContent,
+} from '../types'
 import { requireUser } from '../util/api.server'
 import { assertNever } from '../util/assertNever'
+import { auth0LoginURL } from '../util/auth0.server'
 import { projectEditorLink } from '../util/links'
 import { when } from '../util/react-conditionals'
 import { UnknownPlayerName, multiplayerInitialsFromName } from '../util/strings'
 import { useProjectMatchesQuery, useSortCompareProject } from '../util/use-sort-compare-project'
-import { auth0LoginURL } from '../util/auth0.server'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
@@ -75,6 +83,8 @@ export async function loader(args: LoaderFunctionArgs) {
 }
 
 const ProjectsPage = React.memo(() => {
+  useCleanupOperations()
+
   const data = useLoaderData() as unknown as {
     projects: ProjectWithoutContent[]
     user: UserDetails
@@ -135,6 +145,7 @@ const ProjectsPage = React.memo(() => {
         <TopActionBar />
         <ProjectsHeader projects={filteredProjects} />
         <Projects projects={filteredProjects} collaborators={data.collaborators} />
+        <ActiveOperations />
       </div>
     </div>
   )
@@ -206,12 +217,11 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
             flexDirection: 'row',
             alignItems: 'center',
             border: `1px solid ${isSearchFocused ? '#0075F9' : 'transparent'}`,
-            borderBottomColor: isSearchFocused ? '#0075F9' : 'gray',
+            borderBottom: `1px solid ${isSearchFocused ? '#0075F9' : 'gray'}`,
             borderRadius: isSearchFocused ? 3 : undefined,
             overflow: 'visible',
             padding: '0px 14px',
             gap: 10,
-            borderBottom: '1px solid gray',
           }}
         >
           <MagnifyingGlassIcon />
@@ -877,3 +887,79 @@ const ProjectBadge = React.memo(({ accessLevel }: { accessLevel: AccessLevel }) 
     </Badge>
   )
 })
+ProjectBadge.displayName = 'ProjectBadge'
+
+const ActiveOperations = React.memo(() => {
+  const operations = useProjectsStore((store) =>
+    store.operations.sort((a, b) => b.startedAt - a.startedAt),
+  )
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        bottom: 0,
+        right: 0,
+        margin: 10,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 10,
+      }}
+    >
+      {operations.map((operation) => {
+        return <ActiveOperation operation={operation} key={operation.key} />
+      })}
+    </div>
+  )
+})
+ActiveOperations.displayName = 'ActiveOperations'
+
+const ActiveOperation = React.memo(({ operation }: { operation: Operation }) => {
+  function getOperationVerb(op: Operation) {
+    switch (op.type) {
+      case 'delete':
+        return 'Deleting'
+      case 'destroy':
+        return 'Destroying'
+      case 'rename':
+        return 'Renaming'
+      case 'restore':
+        return 'Restoring'
+      default:
+        assertNever(op.type)
+    }
+  }
+
+  return (
+    <div
+      style={{
+        padding: 10,
+        display: 'flex',
+        gap: 10,
+        alignItems: 'center',
+        animation: 'spin 2s linear infinite',
+      }}
+      className={sprinkles({
+        boxShadow: 'shadow',
+        borderRadius: 'small',
+        backgroundColor: 'primary',
+        color: 'white',
+      })}
+    >
+      <motion.div
+        style={{
+          width: 8,
+          height: 8,
+        }}
+        className={sprinkles({ backgroundColor: 'white' })}
+        initial={{ rotate: 0 }}
+        animate={{ rotate: 100 }}
+        transition={{ ease: 'linear', repeatType: 'loop', repeat: Infinity }}
+      />
+      <div>
+        {getOperationVerb(operation)} project {operation.projectName}
+      </div>
+    </div>
+  )
+})
+ActiveOperation.displayName = 'ActiveOperation'

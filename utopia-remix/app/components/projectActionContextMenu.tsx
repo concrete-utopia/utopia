@@ -1,13 +1,13 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
-import { useFetcher } from '@remix-run/react'
 import React from 'react'
 import { useProjectsStore } from '../store'
 import { contextMenuDropdown, contextMenuItem } from '../styles/contextMenu.css'
 import { sprinkles } from '../styles/sprinkles.css'
-import { ProjectWithoutContent } from '../types'
+import { ProjectWithoutContent, operation } from '../types'
 import { assertNever } from '../util/assertNever'
 import { projectEditorLink } from '../util/links'
 import { AccessLevel } from '../types'
+import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
 
 type ContextMenuEntry =
   | {
@@ -17,42 +17,52 @@ type ContextMenuEntry =
   | 'separator'
 
 export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWithoutContent }) => {
-  const fetcher = useFetcher()
+  const deleteFetcher = useFetcherWithOperation(operation(project, 'delete'))
+  const destroyFetcher = useFetcherWithOperation(operation(project, 'destroy'))
+  const restoreFetcher = useFetcherWithOperation(operation(project, 'restore'))
+  const renameFetcher = useFetcherWithOperation(operation(project, 'rename'))
+
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
   let accessLevel = project.ProjectAccess?.access_level ?? AccessLevel.PRIVATE
 
   const deleteProject = React.useCallback(
     (projectId: string) => {
-      fetcher.submit({}, { method: 'POST', action: `/internal/projects/${projectId}/delete` })
+      deleteFetcher.submit({}, { method: 'POST', action: `/internal/projects/${projectId}/delete` })
     },
-    [fetcher],
+    [deleteFetcher],
   )
 
   const destroyProject = React.useCallback(
     (projectId: string) => {
       const ok = window.confirm('Are you sure? The project contents will be deleted permanently.')
       if (ok) {
-        fetcher.submit({}, { method: 'POST', action: `/internal/projects/${projectId}/destroy` })
+        destroyFetcher.submit(
+          {},
+          { method: 'POST', action: `/internal/projects/${projectId}/destroy` },
+        )
       }
     },
-    [fetcher],
+    [destroyFetcher],
   )
 
   const restoreProject = React.useCallback(
     (projectId: string) => {
-      fetcher.submit({}, { method: 'POST', action: `/internal/projects/${projectId}/restore` })
+      restoreFetcher.submit(
+        {},
+        { method: 'POST', action: `/internal/projects/${projectId}/restore` },
+      )
     },
-    [fetcher],
+    [restoreFetcher],
   )
 
   const renameProject = React.useCallback(
     (projectId: string, newTitle: string) => {
-      fetcher.submit(
+      renameFetcher.submit(
         { title: newTitle },
         { method: 'POST', action: `/internal/projects/${projectId}/rename` },
       )
     },
-    [fetcher],
+    [renameFetcher],
   )
 
   const changeAccessLevel = React.useCallback(
