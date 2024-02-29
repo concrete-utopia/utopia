@@ -31,13 +31,13 @@ import {
   CollaboratorsByProject,
   Operation,
   ProjectWithoutContent,
-  getOperationVerb,
+  getOperationDescription,
 } from '../types'
 import { requireUser } from '../util/api.server'
 import { assertNever } from '../util/assertNever'
 import { auth0LoginURL } from '../util/auth0.server'
 import { projectEditorLink } from '../util/links'
-import { when } from '../util/react-conditionals'
+import { unless, when } from '../util/react-conditionals'
 import { UnknownPlayerName, multiplayerInitialsFromName } from '../util/strings'
 import {
   useProjectIsOnActiveOperation,
@@ -928,7 +928,7 @@ const ActiveOperationToast = React.memo(
           color: 'white',
         })}
       >
-        {when(!operation.errored, <Spinner className={sprinkles({ backgroundColor: 'white' })} />)}
+        {unless(operation.errored, <Spinner className={sprinkles({ backgroundColor: 'white' })} />)}
         {when(
           operation.errored,
           <>
@@ -950,9 +950,7 @@ const ActiveOperationToast = React.memo(
             </div>
           </>,
         )}
-        <div>
-          {getOperationVerb(operation)} project {project.title}
-        </div>
+        <div>{getOperationDescription(operation, project)}</div>
       </div>
     )
   },
