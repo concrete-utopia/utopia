@@ -58,10 +58,13 @@ import { ExpandableIndicator } from './expandable-indicator'
 import { ItemLabel } from './item-label'
 import { LayoutIcon } from './layout-icon'
 import { NavigatorItemActionSheet } from './navigator-item-components'
-import { assertNever } from '../../../core/shared/utils'
+import { CanvasContextMenuPortalTargetID, assertNever } from '../../../core/shared/utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { MapCounter } from './map-counter'
 import * as PP from '../../../core/shared/property-path'
+import { useShowRenderPropPicker } from '../../context-menu-wrapper'
+import { Menu } from 'react-contexify'
+import ReactDOM from 'react-dom'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -751,6 +754,10 @@ export const NavigatorItem: React.FunctionComponent<
   const isComponentScene = useIsProbablyScene(navigatorEntry) && childComponentCount === 1
   const isRenderProp = isRenderPropNavigatorEntry(navigatorEntry)
 
+  // click opens popup with appropriate props
+  // appropriate props come from navigatorEntry
+  // popup writes into prop
+
   const containerStyle: React.CSSProperties = React.useMemo(() => {
     return {
       opacity: isElementVisible && (!isHiddenConditionalBranch || isSlot) ? undefined : 0.4,
@@ -785,8 +792,14 @@ export const NavigatorItem: React.FunctionComponent<
     ? 'component'
     : resultingStyle.iconColor
 
+  const renderPropPickerId = varSafeNavigatorEntryToKey(navigatorEntry)
+  const { showRenderPropPicker: showContextMenu, hideRenderPropPicker: hideContextMenu } =
+    useShowRenderPropPicker(renderPropPickerId)
+  const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)
+
   return (
     <div
+      onClick={isRenderProp ? showContextMenu : hideContextMenu}
       style={{
         outline: `1px solid ${
           props.parentOutline === 'solid' && isOutletOrDescendantOfOutlet
@@ -798,6 +811,17 @@ export const NavigatorItem: React.FunctionComponent<
         outlineOffset: props.parentOutline === 'solid' ? '-1px' : 0,
       }}
     >
+      {portalTarget == null
+        ? null
+        : ReactDOM.createPortal(
+            <RenderPropPicker
+              target={props.navigatorEntry.elementPath}
+              key={renderPropPickerId}
+              id={renderPropPickerId}
+              prop=''
+            />,
+            portalTarget,
+          )}
       <FlexRow
         data-testid={NavigatorItemTestId(varSafeNavigatorEntryToKey(navigatorEntry))}
         style={rowStyle}
@@ -997,3 +1021,18 @@ function elementContainsExpressions(
 ): boolean {
   return MetadataUtils.isGeneratedTextFromMetadata(path, pathTrees, metadata)
 }
+
+interface RenderPropPickerProps {
+  target: ElementPath
+  prop: string
+  key: string
+  id: string
+}
+
+const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id }) => {
+  return (
+    <Menu key={key} id={id} animation={false}>
+      <span>Hello</span>
+    </Menu>
+  )
+})

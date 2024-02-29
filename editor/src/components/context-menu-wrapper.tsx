@@ -286,3 +286,15 @@ export const MenuProvider: React.FunctionComponent<React.PropsWithChildren<MenuP
     </div>
   )
 }
+
+export const useShowRenderPropPicker = (id: string) => {
+  const { show, hideAll } = useContextMenu({ id })
+  const onClick = React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      show(event)
+    },
+    [show],
+  )
+
+  return { showRenderPropPicker: onClick, hideRenderPropPicker: hideAll }
+}
