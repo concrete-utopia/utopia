@@ -841,8 +841,6 @@ export const IdentifierExpressionCartoucheControl = React.memo(
             {/* the &lrm; non-printing character is added to fix the punctuation marks disappearing because of direction: rtl */}
           </div>
         </Tooltip>
-        {/* TODO needs a better X icon! */}
-        <div>⨉</div>
       </FlexRow>
     )
   },
