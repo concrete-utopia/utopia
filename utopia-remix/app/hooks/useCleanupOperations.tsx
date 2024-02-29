@@ -5,25 +5,22 @@ import { isLikeApiError } from '../util/errors'
 import { operationFetcherKeyPrefix } from './useFetcherWithOperation'
 
 export function useCleanupOperations() {
-  const fetchers = useFetchers()
-  const [loading, setLoading] = useLoadingFetchers()
+  const { operationsToCleanup, resetOperationsToCleanup } = useLoadingFetchers()
   const consumeOperations = useConsumeOperations()
 
   React.useEffect(() => {
-    const operationsToCleanup = Object.entries(loading)
-      .map(([key, value]) => ({ key: key, value: value }))
-      .filter((entry) => !fetchers.some((f) => f.key === entry.key))
+    const operationsToCleanupList = Object.entries(operationsToCleanup).map(([key, value]) => {
+      return {
+        key: key,
+        value: value,
+      }
+    })
 
-    if (operationsToCleanup.length > 0) {
-      setLoading((loading) => {
-        consumeOperations(operationsToCleanup)
-        for (let { key } of operationsToCleanup) {
-          delete loading[key]
-        }
-        return loading
-      })
+    if (operationsToCleanupList.length > 0) {
+      consumeOperations(operationsToCleanupList)
+      resetOperationsToCleanup(operationsToCleanupList.map((e) => e.key))
     }
-  }, [loading, fetchers, consumeOperations])
+  }, [operationsToCleanup, consumeOperations, resetOperationsToCleanup])
 }
 
 function useConsumeOperations() {
@@ -44,32 +41,74 @@ function useConsumeOperations() {
   )
 }
 
+type OperationFetcherData = { [key: string]: { data: unknown } }
+
 function useLoadingFetchers() {
   const fetchers = useFetchers()
 
-  const loadingState = React.useState<{ [key: string]: { data: unknown } }>({})
-  const [, setLoading] = loadingState
+  // keep a ledger of loading fetchers
+  const [loadingFetchers, setLoadingFetchers] = React.useState<OperationFetcherData>({})
+  // list of fetchers that need to be cleaned up
+  const [operationsToCleanup, setOperationsToCleanup] = React.useState<OperationFetcherData>({})
 
-  React.useEffect(() => {
-    for (const fetcher of fetchers) {
-      if (
-        // it's an operation fetcher…
-        fetcher.key.startsWith(operationFetcherKeyPrefix) &&
-        // …and it has data…
-        fetcher.data != null &&
-        // …and it is loading results
-        fetcher.state === 'loading'
-      ) {
-        // …then schedule it for collection
-        setLoading((loading) => {
-          return {
-            ...loading,
-            [fetcher.key]: { data: fetcher.data },
+  // list of keys to be cleaned up
+  const keysToCleanup = React.useMemo(() => {
+    return Object.keys(loadingFetchers).filter((key) => {
+      return !fetchers.some((f) => f.key === key)
+    })
+  }, [fetchers, loadingFetchers])
+
+  // reset operations
+  const resetOperationsToCleanup = React.useCallback(
+    (targets: string[]) => {
+      setLoadingFetchers((loading) => {
+        setOperationsToCleanup({})
+        return Object.entries(loading).reduce((acc, [key, value]) => {
+          if (!targets.includes(key)) {
+            acc[key] = value
           }
-        })
-      }
-    }
+          return acc
+        }, {} as OperationFetcherData)
+      })
+    },
+    [loadingFetchers],
+  )
+
+  // fetchers currently in the loading state
+  const currentLoadingFetchers = React.useMemo(() => {
+    return fetchers
+      .filter((fetcher) => {
+        return (
+          // it's an operation fetcher…
+          fetcher.key.startsWith(operationFetcherKeyPrefix) &&
+          // …and it has data…
+          fetcher.data != null &&
+          // …and it is loading results
+          fetcher.state === 'loading'
+        )
+      })
+      .reduce((acc, current) => {
+        acc[current.key] = { data: current.data }
+        return acc
+      }, {} as OperationFetcherData)
   }, [fetchers])
 
-  return loadingState
+  // react to fetchers changing
+  React.useEffect(() => {
+    if (Object.keys(currentLoadingFetchers).length > 0) {
+      setLoadingFetchers({ ...loadingFetchers, ...currentLoadingFetchers })
+    }
+
+    if (keysToCleanup.length > 0) {
+      setOperationsToCleanup(() => {
+        const result: OperationFetcherData = {}
+        for (const key of keysToCleanup) {
+          result[key] = loadingFetchers[key]
+        }
+        return result
+      })
+    }
+  }, [keysToCleanup, currentLoadingFetchers])
+
+  return { operationsToCleanup, resetOperationsToCleanup }
 }
