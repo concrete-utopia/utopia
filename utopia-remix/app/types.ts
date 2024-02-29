@@ -67,7 +67,7 @@ export interface Operation {
   type: OperationType
 }
 
-export type OperationType = 'rename' | 'delete' | 'destroy' | 'restore'
+export type OperationType = 'rename' | 'delete' | 'destroy' | 'restore' | 'changeAccess'
 
 export function areBaseOperationsEquivalent(a: Operation, b: Operation): boolean {
   return a.projectId === b.projectId && a.type === b.type

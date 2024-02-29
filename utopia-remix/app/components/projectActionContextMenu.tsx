@@ -21,6 +21,7 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
   const destroyFetcher = useFetcherWithOperation(operation(project, 'destroy'))
   const restoreFetcher = useFetcherWithOperation(operation(project, 'restore'))
   const renameFetcher = useFetcherWithOperation(operation(project, 'rename'))
+  const changeAccessFetcher = useFetcherWithOperation(operation(project, 'changeAccess'))
 
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
   let accessLevel = project.ProjectAccess?.access_level ?? AccessLevel.PRIVATE
@@ -67,12 +68,12 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
 
   const changeAccessLevel = React.useCallback(
     (projectId: string, accessLevel: AccessLevel) => {
-      fetcher.submit(
+      changeAccessFetcher.submit(
         { accessLevel: accessLevel.toString() },
         { method: 'POST', action: `/internal/projects/${projectId}/access` },
       )
     },
-    [fetcher],
+    [changeAccessFetcher],
   )
 
   const menuEntries = React.useMemo((): ContextMenuEntry[] => {

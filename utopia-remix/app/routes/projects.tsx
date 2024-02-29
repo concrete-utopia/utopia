@@ -925,6 +925,8 @@ const ActiveOperation = React.memo(({ operation }: { operation: Operation }) => 
         return 'Renaming'
       case 'restore':
         return 'Restoring'
+      case 'changeAccess':
+        return 'Changing access for'
       default:
         assertNever(op.type)
     }
