@@ -196,10 +196,13 @@ export const MetadataUtils = {
     for (const prop of parentElement.props) {
       if (
         prop.type === 'JSX_ATTRIBUTES_ENTRY' &&
-        prop.value.type === 'ATTRIBUTE_OTHER_JAVASCRIPT' &&
-        Object.keys(prop.value.elementsWithin).includes(targetUid)
+        prop.value.type === 'ATTRIBUTE_OTHER_JAVASCRIPT'
       ) {
-        return false
+        // TODO MISSING FEATURE: this code should check whether the target element is a descendant
+        // of an element in `elementsWithin`
+        const elementInElementsWithin = Object.keys(prop.value.elementsWithin).includes(targetUid)
+
+        return !elementInElementsWithin
       }
     }
 
