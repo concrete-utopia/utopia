@@ -2129,18 +2129,21 @@ export interface RenderPropNavigatorEntry {
   elementPath: ElementPath
   propName: string
   childOrAttribute: JSXElementChild | null
+  isRendered: boolean
 }
 
 export function renderPropNavigatorEntry(
   elementPath: ElementPath,
   propName: string,
   childOrAttribute: JSXElementChild | null,
+  isRendered: boolean,
 ): RenderPropNavigatorEntry {
   return {
     type: 'RENDER_PROP',
     elementPath: elementPath,
     propName: propName,
     childOrAttribute: childOrAttribute,
+    isRendered: isRendered,
   }
 }
 

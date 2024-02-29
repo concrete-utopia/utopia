@@ -132,8 +132,17 @@ export function getNavigatorTargets(
             const propValue = getJSXAttribute(jsxElement.props, prop)
 
             if (propValue?.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
+              addedProps.add(prop)
               const elementWithin = Object.values(propValue.elementsWithin)[0]
               if (elementWithin == null) {
+                const entry = renderPropNavigatorEntry(
+                  EP.appendToPath(path, propValue.uid),
+                  prop,
+                  propValue,
+                  false,
+                )
+                navigatorTargets.push(entry)
+                visibleNavigatorTargets.push(entry)
                 return
               }
               const childPath = EP.appendToPath(path, EP.createIndexedUid(elementWithin.uid, ++idx))
@@ -141,17 +150,12 @@ export function getNavigatorTargets(
                 EP.appendToPath(path, propValue.uid),
                 prop,
                 propValue,
+                true,
               )
               navigatorTargets.push(navigatorEntry)
               visibleNavigatorTargets.push(navigatorEntry)
-              addedProps.add(prop)
 
-              const subTreeChildren = subTree?.children
-              if (subTreeChildren == null) {
-                return
-              }
-
-              const subTreeChild = subTreeChildren.find((child) =>
+              const subTreeChild = subTree?.children.find((child) =>
                 EP.pathsEqual(child.path, childPath),
               )
               if (subTreeChild != null) {
@@ -172,10 +176,13 @@ export function getNavigatorTargets(
           if (control.control !== 'jsx') {
             return
           }
+          const propValue = getJSXAttribute(jsxElement.props, prop)
+
           const navigatorEntry = renderPropNavigatorEntry(
-            EP.appendToPath(path, 'fake-uid'),
+            EP.appendToPath(path, propValue?.uid ?? 'fake-uid'),
             prop,
-            null,
+            propValue,
+            false,
           )
           navigatorTargets.push(navigatorEntry)
           visibleNavigatorTargets.push(navigatorEntry)

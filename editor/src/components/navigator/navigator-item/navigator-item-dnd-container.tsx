@@ -135,6 +135,7 @@ export interface RenderPropNavigatorItemContainerProps
   elementPath: ElementPath
   propName: string
   childOrAttribute: JSXElementChild | null
+  isRendered: boolean
 }
 
 export interface ConditionalClauseNavigatorItemContainerProps
@@ -1046,8 +1047,14 @@ export const SyntheticNavigatorItemContainer = React.memo(
 export const RenderPropNavigatorItemContainer = React.memo(
   (props: RenderPropNavigatorItemContainerProps) => {
     const navigatorEntry = React.useMemo(
-      () => renderPropNavigatorEntry(props.elementPath, props.propName, props.childOrAttribute),
-      [props.childOrAttribute, props.propName, props.elementPath],
+      () =>
+        renderPropNavigatorEntry(
+          props.elementPath,
+          props.propName,
+          props.childOrAttribute,
+          props.isRendered,
+        ),
+      [props.childOrAttribute, props.propName, props.elementPath, props.isRendered],
     )
 
     const safeComponentId = varSafeNavigatorEntryToKey(navigatorEntry)
