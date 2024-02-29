@@ -128,7 +128,7 @@ export function useInspectorInfoForPropertyControl(
     onSingleUnsetValue(propertyPath, false)
   }, [onSingleUnsetValue, propertyPath])
 
-  let attributeExpression = maybeEitherToMaybe(rawValues[0]) // TODO handle multiselection
+  const attributeExpression = maybeEitherToMaybe(rawValues[0]) // TODO handle multiselection
 
   return {
     value: parsedValue,
