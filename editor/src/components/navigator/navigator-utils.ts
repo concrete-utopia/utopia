@@ -146,12 +146,7 @@ export function getNavigatorTargets(
                 return
               }
               const childPath = EP.appendToPath(path, EP.createIndexedUid(elementWithin.uid, ++idx))
-              const navigatorEntry = renderPropNavigatorEntry(
-                EP.appendToPath(path, propValue.uid),
-                prop,
-                propValue,
-                true,
-              )
+              const navigatorEntry = renderPropNavigatorEntry(childPath, prop, propValue, true)
               navigatorTargets.push(navigatorEntry)
               visibleNavigatorTargets.push(navigatorEntry)
 

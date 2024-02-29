@@ -150,8 +150,7 @@ function selectItem(
   const elementPath = navigatorEntry.elementPath
   const selectionActions =
     isConditionalClauseNavigatorEntry(navigatorEntry) ||
-    isInvalidOverrideNavigatorEntry(navigatorEntry) ||
-    isRenderPropNavigatorEntry(navigatorEntry)
+    isInvalidOverrideNavigatorEntry(navigatorEntry)
       ? []
       : getSelectionActions(getSelectedViewsInRange, index, elementPath, selected, event)
 
@@ -751,6 +750,7 @@ export const NavigatorItem: React.FunctionComponent<
 
   const isComponentScene = useIsProbablyScene(navigatorEntry) && childComponentCount === 1
   const isRenderProp = isRenderPropNavigatorEntry(navigatorEntry)
+  const isEmptyRenderProp = isRenderProp && navigatorEntry.childOrAttribute == null
 
   const containerStyle: React.CSSProperties = React.useMemo(() => {
     return {
@@ -802,7 +802,7 @@ export const NavigatorItem: React.FunctionComponent<
 
   return (
     <div
-      onClick={isRenderProp ? showContextMenu : hideContextMenu}
+      onClick={isEmptyRenderProp ? showContextMenu : hideContextMenu}
       style={{
         outline: `1px solid ${
           props.parentOutline === 'solid' && isOutletOrDescendantOfOutlet
