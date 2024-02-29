@@ -1100,37 +1100,57 @@ export const JSExpressionKeepDeepEqualityCall: KeepDeepEqualityCall<JSExpression
   oldAttribute,
   newAttribute,
 ) => {
-  if (isJSXAttributeValue(oldAttribute) && isJSXAttributeValue(newAttribute)) {
-    return JSXAttributeValueKeepDeepEqualityCall(oldAttribute, newAttribute)
-  } else if (
-    modifiableAttributeIsAttributeOtherJavaScript(oldAttribute) &&
-    modifiableAttributeIsAttributeOtherJavaScript(newAttribute)
-  ) {
-    return JSExpressionOtherJavaScriptKeepDeepEqualityCall()(oldAttribute, newAttribute)
-  } else if (
-    modifiableAttributeIsAttributeNestedArray(oldAttribute) &&
-    modifiableAttributeIsAttributeNestedArray(newAttribute)
-  ) {
-    return JSXAttributeNestedArrayKeepDeepEqualityCall()(oldAttribute, newAttribute)
-  } else if (
-    modifiableAttributeIsAttributeNestedObject(oldAttribute) &&
-    modifiableAttributeIsAttributeNestedObject(newAttribute)
-  ) {
-    return JSXAttributeNestedObjectKeepDeepEqualityCall()(oldAttribute, newAttribute)
-  } else if (
-    modifiableAttributeIsAttributeFunctionCall(oldAttribute) &&
-    modifiableAttributeIsAttributeFunctionCall(newAttribute)
-  ) {
-    return JSXAttributeFunctionCallKeepDeepEqualityCall()(oldAttribute, newAttribute)
-  } else if (isJSIdentifier(oldAttribute) && isJSIdentifier(newAttribute)) {
-    return JSIdentifierKeepDeepEquality()(oldAttribute, newAttribute)
-  } else if (isJSPropertyAccess(oldAttribute) && isJSPropertyAccess(newAttribute)) {
-    return JSPropertyAccessKeepDeepEquality()(oldAttribute, newAttribute)
-  } else if (isJSElementAccess(oldAttribute) && isJSElementAccess(newAttribute)) {
-    return JSElementAccessKeepDeepEquality()(oldAttribute, newAttribute)
-  } else {
-    return keepDeepEqualityResult(newAttribute, false)
+  switch (oldAttribute.type) {
+    case 'JSX_MAP_EXPRESSION':
+      if (isJSXMapExpression(newAttribute)) {
+        return JSXMapExpressionKeepDeepEqualityCall()(oldAttribute, newAttribute)
+      }
+      break
+    case 'ATTRIBUTE_VALUE':
+      if (isJSExpressionValue(newAttribute)) {
+        return JSXAttributeValueKeepDeepEqualityCall(oldAttribute, newAttribute)
+      }
+      break
+    case 'JS_IDENTIFIER':
+      if (isJSIdentifier(newAttribute)) {
+        return JSIdentifierKeepDeepEquality()(oldAttribute, newAttribute)
+      }
+      break
+    case 'JS_ELEMENT_ACCESS':
+      if (isJSElementAccess(newAttribute)) {
+        return JSElementAccessKeepDeepEquality()(oldAttribute, newAttribute)
+      }
+      break
+    case 'JS_PROPERTY_ACCESS':
+      if (isJSPropertyAccess(newAttribute)) {
+        return JSPropertyAccessKeepDeepEquality()(oldAttribute, newAttribute)
+      }
+      break
+    case 'ATTRIBUTE_NESTED_ARRAY':
+      if (isJSExpressionNestedArray(newAttribute)) {
+        return JSXAttributeNestedArrayKeepDeepEqualityCall()(oldAttribute, newAttribute)
+      }
+      break
+    case 'ATTRIBUTE_NESTED_OBJECT':
+      if (isJSExpressionNestedObject(newAttribute)) {
+        return JSXAttributeNestedObjectKeepDeepEqualityCall()(oldAttribute, newAttribute)
+      }
+      break
+    case 'ATTRIBUTE_FUNCTION_CALL':
+      if (isJSExpressionFunctionCall(newAttribute)) {
+        return JSXAttributeFunctionCallKeepDeepEqualityCall()(oldAttribute, newAttribute)
+      }
+      break
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+      if (isJSExpressionOtherJavaScript(newAttribute)) {
+        return JSExpressionOtherJavaScriptKeepDeepEqualityCall()(oldAttribute, newAttribute)
+      }
+      break
+    default:
+      assertNever(oldAttribute)
   }
+
+  return keepDeepEqualityResult(newAttribute, false)
 }
 
 export function JSXAttributesEntryDeepEqualityCall(): KeepDeepEqualityCall<JSXAttributesEntry> {
@@ -1266,36 +1286,77 @@ export function JSElementAccessKeepDeepEquality(): KeepDeepEqualityCall<JSElemen
 
 export function JSXElementChildKeepDeepEquality(): KeepDeepEqualityCall<JSXElementChild> {
   return (oldElement, newElement) => {
-    if (isJSXElement(oldElement) && isJSXElement(newElement)) {
-      return JSXElementKeepDeepEquality(oldElement, newElement)
-    } else if (isJSXTextBlock(oldElement) && isJSXTextBlock(newElement)) {
-      return JSXTextBlockKeepDeepEquality(oldElement, newElement)
-    } else if (isJSXFragment(oldElement) && isJSXFragment(newElement)) {
-      return JSXFragmentKeepDeepEquality(oldElement, newElement)
-    } else if (isJSXConditionalExpression(oldElement) && isJSXConditionalExpression(newElement)) {
-      return JSXConditionalExpressionKeepDeepEquality(oldElement, newElement)
-    } else if (isJSExpressionValue(oldElement) && isJSExpressionValue(newElement)) {
-      return JSXAttributeValueKeepDeepEqualityCall(oldElement, newElement)
-    } else if (
-      isJSExpressionOtherJavaScript(oldElement) &&
-      isJSExpressionOtherJavaScript(newElement)
-    ) {
-      return JSExpressionOtherJavaScriptKeepDeepEqualityCall()(oldElement, newElement)
-    } else if (isJSExpressionNestedArray(oldElement) && isJSExpressionNestedArray(newElement)) {
-      return JSXAttributeNestedArrayKeepDeepEqualityCall()(oldElement, newElement)
-    } else if (isJSExpressionNestedObject(oldElement) && isJSExpressionNestedObject(newElement)) {
-      return JSXAttributeNestedObjectKeepDeepEqualityCall()(oldElement, newElement)
-    } else if (isJSExpressionFunctionCall(oldElement) && isJSExpressionFunctionCall(newElement)) {
-      return JSXAttributeFunctionCallKeepDeepEqualityCall()(oldElement, newElement)
-    } else if (isJSIdentifier(oldElement) && isJSIdentifier(newElement)) {
-      return JSIdentifierKeepDeepEquality()(oldElement, newElement)
-    } else if (isJSPropertyAccess(oldElement) && isJSPropertyAccess(newElement)) {
-      return JSPropertyAccessKeepDeepEquality()(oldElement, newElement)
-    } else if (isJSElementAccess(oldElement) && isJSElementAccess(newElement)) {
-      return JSElementAccessKeepDeepEquality()(oldElement, newElement)
-    } else {
-      return keepDeepEqualityResult(newElement, false)
+    switch (oldElement.type) {
+      case 'JSX_ELEMENT':
+        if (isJSXElement(newElement)) {
+          return JSXElementKeepDeepEquality(oldElement, newElement)
+        }
+        break
+      case 'JSX_FRAGMENT':
+        if (isJSXFragment(newElement)) {
+          return JSXFragmentKeepDeepEquality(oldElement, newElement)
+        }
+        break
+      case 'JSX_TEXT_BLOCK':
+        if (isJSXTextBlock(newElement)) {
+          return JSXTextBlockKeepDeepEquality(oldElement, newElement)
+        }
+        break
+      case 'JSX_CONDITIONAL_EXPRESSION':
+        if (isJSXConditionalExpression(newElement)) {
+          return JSXConditionalExpressionKeepDeepEquality(oldElement, newElement)
+        }
+        break
+      case 'JSX_MAP_EXPRESSION':
+        if (isJSXMapExpression(newElement)) {
+          return JSXMapExpressionKeepDeepEqualityCall()(oldElement, newElement)
+        }
+        break
+      case 'ATTRIBUTE_VALUE':
+        if (isJSExpressionValue(newElement)) {
+          return JSXAttributeValueKeepDeepEqualityCall(oldElement, newElement)
+        }
+        break
+      case 'JS_IDENTIFIER':
+        if (isJSIdentifier(newElement)) {
+          return JSIdentifierKeepDeepEquality()(oldElement, newElement)
+        }
+        break
+      case 'JS_ELEMENT_ACCESS':
+        if (isJSElementAccess(newElement)) {
+          return JSElementAccessKeepDeepEquality()(oldElement, newElement)
+        }
+        break
+      case 'JS_PROPERTY_ACCESS':
+        if (isJSPropertyAccess(newElement)) {
+          return JSPropertyAccessKeepDeepEquality()(oldElement, newElement)
+        }
+        break
+      case 'ATTRIBUTE_NESTED_ARRAY':
+        if (isJSExpressionNestedArray(newElement)) {
+          return JSXAttributeNestedArrayKeepDeepEqualityCall()(oldElement, newElement)
+        }
+        break
+      case 'ATTRIBUTE_NESTED_OBJECT':
+        if (isJSExpressionNestedObject(newElement)) {
+          return JSXAttributeNestedObjectKeepDeepEqualityCall()(oldElement, newElement)
+        }
+        break
+      case 'ATTRIBUTE_FUNCTION_CALL':
+        if (isJSExpressionFunctionCall(newElement)) {
+          return JSXAttributeFunctionCallKeepDeepEqualityCall()(oldElement, newElement)
+        }
+        break
+      case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+        if (isJSExpressionOtherJavaScript(newElement)) {
+          return JSExpressionOtherJavaScriptKeepDeepEqualityCall()(oldElement, newElement)
+        }
+        break
+      default:
+        assertNever(oldElement)
     }
+
+    return keepDeepEqualityResult(newElement, false)
   }
 }
 
