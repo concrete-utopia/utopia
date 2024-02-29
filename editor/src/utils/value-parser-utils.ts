@@ -325,6 +325,16 @@ export function parseJsx(_: unknown, value: unknown): ParseResult<JSXParsedValue
         name: type,
       })
     }
+
+    if (value.hasOwnProperty('props')) {
+      const props = (value as any).props
+      if (props.hasOwnProperty('elementToRender') === true) {
+        return right({
+          type: 'internal-component',
+          name: (props as any).elementToRender,
+        })
+      }
+    }
     // if it is a spied component, the original type is stored in theOriginalType
     if (type.hasOwnProperty('theOriginalType')) {
       const originalType = (type as any).theOriginalType
