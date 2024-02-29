@@ -16,13 +16,7 @@ interface LoadingFetcher {
  * received back.
  */
 export function useCleanupOperations() {
-  const fetchers = useFetchers()
-
-  // a list of fetchers that were seen as loading
-  const [loadingFetchers, setLoadingFetchers] = React.useState<LoadingFetcher[]>([])
-  // a list of fetchers that transitioned from loading to idle
-  const [idleFetchers, setIdleFetchers] = React.useState<LoadingFetcher[]>([])
-
+  const [idleFetchers, setIdleFetchers] = useIdleFetchers()
   const processIdleFetchers = useProcessIdleFetchers()
 
   // when the idle fetchers change, process them
@@ -32,6 +26,20 @@ export function useCleanupOperations() {
       processIdleFetchers(idleFetchers)
     }
   }, [idleFetchers, processIdleFetchers])
+}
+
+/**
+ * React to fetchers state changes and return the list of idle fetchers.
+ */
+function useIdleFetchers() {
+  const fetchers = useFetchers()
+
+  // a list of fetchers that were seen as loading
+  const [loadingFetchers, setLoadingFetchers] = React.useState<LoadingFetcher[]>([])
+
+  // a list of fetchers that transitioned from loading to idle
+  const idleFetchersState = React.useState<LoadingFetcher[]>([])
+  const [, setIdleFetchers] = idleFetchersState
 
   // react to fetcher state changes and look for loading/idle ones
   React.useEffect(() => {
@@ -42,7 +50,7 @@ export function useCleanupOperations() {
 
     const someFetchersWentIdle = newIdleFetchers.length > 0
     if (someFetchersWentIdle) {
-      setIdleFetchers(newIdleFetchers)
+      setIdleFetchers(newIdleFetchers) // important! store the idle fetchers so they can be processed separately
     }
 
     const loadingFetchersHaveChanged =
@@ -57,21 +65,14 @@ export function useCleanupOperations() {
       ])
     }
   }, [fetchers, loadingFetchers])
+
+  return idleFetchersState
 }
 
-type FetcherWithKey = Fetcher & { key: string }
-
-function isLoadingOperationFetcher(fetcher: FetcherWithKey): boolean {
-  return (
-    // it's an operation fetcher…
-    fetcher.key.startsWith(operationFetcherKeyPrefix) &&
-    // …and it has data…
-    fetcher.data != null &&
-    // …and it is loading results
-    fetcher.state === 'loading'
-  )
-}
-
+/**
+ * Process idle fetchers by either removing them when successful or marking them
+ * as errored otherwise.
+ */
 function useProcessIdleFetchers() {
   const removeOperation = useProjectsStore((store) => store.removeOperation)
   const updateOperation = useProjectsStore((store) => store.updateOperation)
@@ -88,5 +89,18 @@ function useProcessIdleFetchers() {
       }
     },
     [updateOperation, removeOperation],
+  )
+}
+
+type FetcherWithKey = Fetcher & { key: string }
+
+function isLoadingOperationFetcher(fetcher: FetcherWithKey): boolean {
+  return (
+    // it's an operation fetcher…
+    fetcher.key.startsWith(operationFetcherKeyPrefix) &&
+    // …and it has data…
+    fetcher.data != null &&
+    // …and it is loading results
+    fetcher.state === 'loading'
   )
 }
