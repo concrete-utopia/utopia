@@ -36,10 +36,6 @@ import {
   isJSXElementLike,
   isJSXConditionalExpression,
   isNullJSXAttributeValue,
-  isJSIdentifier,
-  isJSPropertyAccess,
-  isJSElementAccess,
-  isJSExpression,
 } from '../../core/shared/element-template'
 import {
   guaranteeUniqueUids,
@@ -1845,15 +1841,6 @@ function getValidElementPathsFromElement(
     }
 
     return paths
-  } else if (
-    isJSExpression(element) &&
-    (isJSIdentifier(element) || isJSPropertyAccess(element) || isJSElementAccess(element))
-  ) {
-    const uid = getUtopiaID(element)
-    const path = parentIsInstance
-      ? EP.appendNewElementPath(parentPath, uid)
-      : EP.appendToPath(parentPath, uid)
-    return [path]
   } else if (isJSExpressionMapOrOtherJavaScript(element)) {
     // FIXME: From investigation of https://github.com/concrete-utopia/utopia/issues/1137
     // The paths this will generate will only be correct if the elements from `elementsWithin`

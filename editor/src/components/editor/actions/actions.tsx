@@ -50,8 +50,6 @@ import type {
   JSXElement,
   JSXElementChildren,
   JSXElementChild,
-  JSXConditionalExpression,
-  JSXFragment,
 } from '../../../core/shared/element-template'
 import {
   deleteJSXAttribute,
@@ -75,12 +73,6 @@ import {
   modifiableAttributeIsAttributeValue,
   isJSExpression,
   isJSXMapExpression,
-  isJSExpressionOtherJavaScript,
-  jsExpressionOtherJavaScriptSimple,
-  getDefinedElsewhereFromElement,
-  getDefinedElsewhereFromElementChild,
-  isJSXFragment,
-  jsxConditionalExpressionConditionOptic,
 } from '../../../core/shared/element-template'
 import type { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import {
@@ -153,11 +145,7 @@ import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import type { IndexPosition } from '../../../utils/utils'
 import Utils from '../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../assets'
-import {
-  isProjectContentFile,
-  packageJsonFileFromProjectContents,
-  zipContentsTree,
-} from '../../assets'
+import { packageJsonFileFromProjectContents } from '../../assets'
 import {
   addFileToProjectContents,
   contentsToTree,
@@ -479,10 +467,8 @@ import {
   setScrollAnimation,
   showToast,
   updateFile,
-  updateFromWorker,
   updateNodeModulesContents,
   updatePackageJson,
-  workerCodeAndParsedUpdate,
 } from './action-creators'
 import { addToastToState, includeToast, removeToastFromState } from './toast-helpers'
 import { AspectRatioLockedProp } from '../../aspect-ratio'
@@ -494,7 +480,7 @@ import { styleStringInArray } from '../../../utils/common-constants'
 import { collapseTextElements } from '../../../components/text-editor/text-handling'
 import { LayoutPropertyList, StyleProperties } from '../../inspector/common/css-utils'
 import { isUtopiaCommentFlag, makeUtopiaFlagComment } from '../../../core/shared/comment-flags'
-import { modify, toArrayOf } from '../../../core/shared/optics/optic-utilities'
+import { toArrayOf } from '../../../core/shared/optics/optic-utilities'
 import { fromField, traverseArray } from '../../../core/shared/optics/optic-creators'
 import type { InsertionPath } from '../store/insertion-path'
 import {
@@ -547,10 +533,7 @@ import {
 import { addElements } from '../../canvas/commands/add-elements-command'
 import { deleteElement } from '../../canvas/commands/delete-element-command'
 import { queueTrueUpElement } from '../../canvas/commands/queue-true-up-command'
-import {
-  getFilesToUpdate,
-  processWorkerUpdates,
-} from '../../../core/shared/parser-projectcontents-utils'
+import { processWorkerUpdates } from '../../../core/shared/parser-projectcontents-utils'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import { resultForFirstApplicableStrategy } from '../../inspector/inspector-strategies/inspector-strategy'
@@ -560,8 +543,6 @@ import { addHookForProjectChanges } from '../store/collaborative-editing'
 import { arrayDeepEquality, objectDeepEquality } from '../../../utils/deep-equality'
 import type { ProjectServerState } from '../store/project-server-state'
 import { updateFileIfPossible } from './can-update-file'
-import { getPrintAndReparseCodeResult } from '../../../core/workers/parser-printer/parser-printer-worker'
-import { isSteganographyEnabled } from '../../../core/shared/stegano-text'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -4415,22 +4396,18 @@ export const UPDATE_FNS = {
       if (textProp === 'child') {
         return modifyOpenJsxElementOrConditionalAtPath(
           action.target,
-          (element): JSXElement | JSXFragment | JSXConditionalExpression => {
-            if (isJSXElement(element) || isJSXFragment(element)) {
-              if (action.text.trim() === '') {
-                return {
-                  ...element,
-                  children: [],
-                }
-              } else {
-                const result = {
-                  ...element,
-                  children: [jsxTextBlock(action.text)],
-                }
-                return result
+          (element) => {
+            if (action.text.trim() === '') {
+              return {
+                ...element,
+                children: [],
               }
             } else {
-              throw new Error('Not an element with children.')
+              const result = {
+                ...element,
+                children: [jsxTextBlock(action.text)],
+              }
+              return result
             }
           },
           editorStore.unpatchedEditor,
@@ -4438,22 +4415,14 @@ export const UPDATE_FNS = {
       } else if (textProp === 'itself') {
         return modifyOpenJsxChildAtPath(
           action.target,
-          (element): JSXElementChild => {
-            const comments = 'comments' in element ? element.comments : emptyComments
+          (element) => {
             if (isJSExpression(element) && isActionTextExpression) {
-              const code = action.text.slice(1, -1)
-              return jsExpressionOtherJavaScript(
-                [],
-                code,
-                code,
-                code,
-                getDefinedElsewhereFromElementChild([], element),
-                null,
-                {},
-                comments,
-                element.uid,
-              )
+              return {
+                ...element,
+                javascript: action.text.slice(1, -1),
+              }
             }
+            const comments = 'comments' in element ? element.comments : emptyComments
             if (action.text.trim() === '') {
               return jsExpressionValue(null, comments, element.uid)
             } else {
@@ -4465,7 +4434,7 @@ export const UPDATE_FNS = {
       } else if (textProp === 'fullConditional') {
         return modifyOpenJsxChildAtPath(
           action.target,
-          (): JSXElementChild => {
+          () => {
             // the whole expression will be reparsed again so we can just save it as a text block
             return jsxTextBlock(action.text)
           },
@@ -4474,32 +4443,22 @@ export const UPDATE_FNS = {
       } else if (textProp === 'whenFalse' || textProp === 'whenTrue') {
         return modifyOpenJsxElementOrConditionalAtPath(
           action.target,
-          (element): JSXElement | JSXFragment | JSXConditionalExpression => {
+          (element) => {
             if (isJSXConditionalExpression(element)) {
-              return modify(
-                jsxConditionalExpressionConditionOptic(textProp),
-                (textElement): JSXElementChild => {
-                  if (isJSExpression(textElement) && isActionTextExpression) {
-                    const comments =
-                      'comments' in textElement ? textElement.comments : emptyComments
-                    const code = action.text.slice(1, -1)
-                    return jsExpressionOtherJavaScript(
-                      [],
-                      code,
-                      code,
-                      code,
-                      getDefinedElsewhereFromElementChild([], textElement),
-                      null,
-                      {},
-                      comments,
-                      textElement.uid,
-                    )
-                  } else {
-                    return jsExpressionValue(action.text, emptyComments, textElement.uid)
-                  }
-                },
-                element,
-              )
+              const textElement = element[textProp]
+              if (isJSExpression(textElement) && isActionTextExpression) {
+                return {
+                  ...element,
+                  [textProp]: {
+                    ...textElement,
+                    javascript: action.text.slice(1, -1),
+                  },
+                }
+              }
+              return {
+                ...element,
+                [textProp]: jsExpressionValue(action.text, emptyComments, textElement.uid),
+              }
             }
             return element
           },
@@ -4516,14 +4475,13 @@ export const UPDATE_FNS = {
 
     const withCollapsedElements = collapseTextElements(action.target, withGroupTrueUpQueued)
 
-    let withFileChanges: EditorStoreUnpatched
     if (withGroupTrueUpQueued === withCollapsedElements) {
-      withFileChanges = {
+      return {
         ...editorStore,
         unpatchedEditor: withGroupTrueUpQueued,
       }
     } else {
-      withFileChanges = {
+      return {
         ...editorStore,
         unpatchedEditor: withCollapsedElements,
         history: History.add(
@@ -4533,68 +4491,6 @@ export const UPDATE_FNS = {
           [],
         ),
       }
-    }
-
-    // Find the text files that changed as a result of the update.
-    let changedTextFilenames: Array<string> = []
-    zipContentsTree(
-      editorStore.unpatchedEditor.projectContents,
-      withFileChanges.unpatchedEditor.projectContents,
-      (fullPath, oldContents, newContents) => {
-        if (
-          isProjectContentFile(oldContents) &&
-          isProjectContentFile(newContents) &&
-          isTextFile(oldContents.content) &&
-          isTextFile(newContents.content)
-        ) {
-          const oldTextFile = oldContents.content
-          const newTextFile = newContents.content
-          if (oldTextFile !== newTextFile) {
-            changedTextFilenames.push(fullPath)
-          }
-        }
-
-        return true
-      },
-    )
-
-    // Accumulate the details of the data we need to update those files.
-    const filesToUpdateResult = getFilesToUpdate(
-      withFileChanges.unpatchedEditor.projectContents,
-      changedTextFilenames,
-    )
-
-    // For those files that changed, do a print-parse against each file.
-    const workerUpdates = filesToUpdateResult.filesToUpdate.flatMap((fileToUpdate) => {
-      if (fileToUpdate.type === 'printandreparsefile') {
-        const printParsedContent = getPrintAndReparseCodeResult(
-          fileToUpdate.filename,
-          fileToUpdate.parseSuccess,
-          fileToUpdate.stripUIDs,
-          fileToUpdate.versionNumber,
-          filesToUpdateResult.existingUIDs,
-          isSteganographyEnabled(),
-        )
-        const updateAction = workerCodeAndParsedUpdate(
-          printParsedContent.filename,
-          printParsedContent.printResult,
-          printParsedContent.parseResult,
-          printParsedContent.versionNumber,
-        )
-        return [updateAction]
-      } else {
-        return []
-      }
-    })
-
-    const updatedEditorState = UPDATE_FNS.UPDATE_FROM_WORKER(
-      updateFromWorker(workerUpdates),
-      withFileChanges.unpatchedEditor,
-      withFileChanges.userState,
-    )
-    return {
-      ...withFileChanges,
-      unpatchedEditor: updatedEditorState,
     }
   },
   TRUNCATE_HISTORY: (editorStore: EditorStoreUnpatched): EditorStoreUnpatched => {

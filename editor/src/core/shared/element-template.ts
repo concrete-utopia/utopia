@@ -31,9 +31,6 @@ import type { MapLike } from 'typescript'
 import { forceNotNull } from './optional-utils'
 import type { FlexAlignment, FlexJustifyContent } from '../../components/inspector/inspector-common'
 import { allComments } from './comment-flags'
-import { defaultIndexHtmlFilePath } from '../../components/editor/store/editor-state'
-import type { Optic } from './optics/optics'
-import { fromField } from './optics/optic-creators'
 
 export interface ParsedComments {
   leadingComments: Array<Comment>
@@ -444,17 +441,6 @@ export function jsIdentifier(name: string, uid: string, comments: ParsedComments
   }
 }
 
-export function isJSIdentifier(expression: JSXElementChild): expression is JSIdentifier {
-  return expression.type === 'JS_IDENTIFIER'
-}
-
-export function isJSIdentifierForName(
-  expression: JSExpression,
-  name: string,
-): expression is JSIdentifier {
-  return isJSIdentifier(expression) && expression.name === name
-}
-
 export interface JSPropertyAccess extends WithComments {
   type: 'JS_PROPERTY_ACCESS'
   onValue: JSExpression
@@ -477,17 +463,6 @@ export function jsPropertyAccess(
   }
 }
 
-export function isJSPropertyAccess(expression: JSXElementChild): expression is JSPropertyAccess {
-  return expression.type === 'JS_PROPERTY_ACCESS'
-}
-
-export function isJSPropertyAccessForProperty(
-  expression: JSExpression,
-  property: string,
-): expression is JSPropertyAccess {
-  return isJSPropertyAccess(expression) && expression.property === property
-}
-
 export interface JSElementAccess extends WithComments {
   type: 'JS_ELEMENT_ACCESS'
   onValue: JSExpression
@@ -508,10 +483,6 @@ export function jsElementAccess(
     uid: uid,
     comments: comments,
   }
-}
-
-export function isJSElementAccess(expression: JSXElementChild): expression is JSElementAccess {
-  return expression.type === 'JS_ELEMENT_ACCESS'
 }
 
 export type JSExpression =
@@ -566,7 +537,7 @@ export function simplifyAttributeIfPossible(attribute: JSExpression): JSExpressi
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
     case 'ATTRIBUTE_FUNCTION_CALL':
     case 'JS_IDENTIFIER':
-    case 'JS_ELEMENT_ACCESS':
+    case 'JS_ELEMENT_ACCESS': // FIXME: Probably can boil down something if it contains a `ATTRIBUTE_VALUE`.
     case 'JS_PROPERTY_ACCESS':
       return attribute
     case 'ATTRIBUTE_NESTED_ARRAY':
@@ -1138,36 +1109,18 @@ export function getElementReferencesElsewherePathsFromProps(
 }
 
 export function getDefinedElsewhereFromAttribute(attribute: JSExpression): Array<string> {
-  switch (attribute.type) {
-    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      return attribute.definedElsewhere
-    case 'ATTRIBUTE_NESTED_OBJECT':
-      return attribute.content.reduce<Array<string>>((working, elem) => {
-        return addAllUniquely(working, getDefinedElsewhereFromAttribute(elem.value))
-      }, [])
-    case 'ATTRIBUTE_NESTED_ARRAY':
-      return attribute.content.reduce<Array<string>>((working, elem) => {
-        return addAllUniquely(working, getDefinedElsewhereFromAttribute(elem.value))
-      }, [])
-    case 'JS_PROPERTY_ACCESS':
-      return getDefinedElsewhereFromAttribute(attribute.onValue)
-    case 'JS_ELEMENT_ACCESS':
-      return addAllUniquely(
-        getDefinedElsewhereFromAttribute(attribute.onValue),
-        getDefinedElsewhereFromAttribute(attribute.element),
-      )
-    case 'JS_IDENTIFIER':
-      return [attribute.name]
-    case 'ATTRIBUTE_VALUE':
-      return []
-    case 'JSX_MAP_EXPRESSION':
-      return attribute.definedElsewhere
-    case 'ATTRIBUTE_FUNCTION_CALL':
-      return attribute.parameters.reduce<Array<string>>((working, elem) => {
-        return addAllUniquely(working, getDefinedElsewhereFromAttribute(elem))
-      }, [])
-    default:
-      assertNever(attribute)
+  if (modifiableAttributeIsAttributeOtherJavaScript(attribute)) {
+    return attribute.definedElsewhere
+  } else if (modifiableAttributeIsAttributeNestedObject(attribute)) {
+    return attribute.content.reduce<Array<string>>((working, elem) => {
+      return addAllUniquely(working, getDefinedElsewhereFromAttribute(elem.value))
+    }, [])
+  } else if (modifiableAttributeIsAttributeNestedArray(attribute)) {
+    return attribute.content.reduce<Array<string>>((working, elem) => {
+      return addAllUniquely(working, getDefinedElsewhereFromAttribute(elem.value))
+    }, [])
+  } else {
+    return []
   }
 }
 
@@ -1185,7 +1138,7 @@ export function getDefinedElsewhereFromAttributes(attributes: JSXAttributes): Ar
   }, [])
 }
 
-export function getDefinedElsewhereFromElementChild(
+function getDefinedElsewhereFromElementChild(
   working: Array<string>,
   child: JSXElementChild,
 ): Array<string> {
@@ -1227,7 +1180,7 @@ export function getDefinedElsewhereFromElementChild(
         }
       }, working)
     case 'JS_IDENTIFIER':
-      return [...working, child.name]
+      return working
     case 'JS_ELEMENT_ACCESS':
       const withOnValue = getDefinedElsewhereFromElementChild(working, child.onValue)
       return getDefinedElsewhereFromElementChild(withOnValue, child.element)
@@ -1509,12 +1462,6 @@ export function jsxConditionalExpression(
     whenFalse: whenFalse,
     comments: comments,
   }
-}
-
-export function jsxConditionalExpressionConditionOptic(
-  condition: 'whenTrue' | 'whenFalse',
-): Optic<JSXConditionalExpression, JSXElementChild> {
-  return fromField(condition)
 }
 
 export type JSXElementChild =
