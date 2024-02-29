@@ -193,41 +193,7 @@ export function getNavigatorEntryLabel(
       }
     }
     case 'RENDER_PROP':
-      const value = (() => {
-        if (navigatorEntry.childOrAttribute == null) {
-          return 'empty'
-        }
-        switch (navigatorEntry.childOrAttribute.type) {
-          case 'JSX_ELEMENT':
-            return getJSXElementNameLastPart(navigatorEntry.childOrAttribute.name)
-          case 'JSX_MAP_EXPRESSION':
-          case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-            return navigatorEntry.childOrAttribute.originalJavascript
-          case 'JSX_TEXT_BLOCK':
-            return navigatorEntry.childOrAttribute.text
-          case 'JSX_FRAGMENT':
-            return 'Fragment'
-          case 'JSX_CONDITIONAL_EXPRESSION':
-            return 'Conditional'
-          case 'ATTRIBUTE_VALUE':
-            return `${navigatorEntry.childOrAttribute.value}`
-          case 'ATTRIBUTE_NESTED_ARRAY':
-            return '(code)'
-          case 'ATTRIBUTE_NESTED_OBJECT':
-            return '(code)'
-          case 'ATTRIBUTE_FUNCTION_CALL':
-            return '(code)'
-          case 'JS_IDENTIFIER':
-            return '(code)'
-          case 'JS_ELEMENT_ACCESS':
-            return '(code)'
-          case 'JS_PROPERTY_ACCESS':
-            return '(code)'
-          default:
-            throw assertNever(navigatorEntry.childOrAttribute)
-        }
-      })()
-      return `${navigatorEntry.propName}: ${value}`
+      return `${navigatorEntry.propName}: ${navigatorEntry.childOrAttribute == null ? 'empty' : ''}`
     case 'INVALID_OVERRIDE':
       return navigatorEntry.message
     default:

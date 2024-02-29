@@ -8,6 +8,7 @@ import type {
 import {
   getJSXAttribute,
   hasElementsWithin,
+  isJSXAttributesEntry,
   isJSXConditionalExpression,
   isJSXElement,
   isJSXMapExpression,
@@ -107,6 +108,7 @@ export function getNavigatorTargets(
       ) {
         visibleNavigatorTargets.push(regularNavigatorEntry(path))
       }
+      const processedAsRenderProp = new Set<string>()
 
       function walkPropertyControls(propControls: PropertyControls): void {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
@@ -119,16 +121,61 @@ export function getNavigatorTargets(
         }
 
         const jsxElement = elementMetadata.element.value
+        let idx = 0
+        const addedProps = new Set<string>()
+        Object.values(jsxElement.props).forEach((attr) => {
+          if (!isJSXAttributesEntry(attr)) {
+            return
+          }
+          const prop = attr.key.toString()
+          if (prop in propControls && propControls[prop].control === 'jsx') {
+            const propValue = getJSXAttribute(jsxElement.props, prop)
+
+            if (propValue?.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
+              const elementWithin = Object.values(propValue.elementsWithin)[0]
+              if (elementWithin == null) {
+                return
+              }
+              const childPath = EP.appendToPath(path, EP.createIndexedUid(elementWithin.uid, ++idx))
+              const navigatorEntry = renderPropNavigatorEntry(
+                EP.appendToPath(path, propValue.uid),
+                prop,
+                propValue,
+              )
+              navigatorTargets.push(navigatorEntry)
+              visibleNavigatorTargets.push(navigatorEntry)
+              addedProps.add(prop)
+
+              const subTreeChildren = subTree?.children
+              if (subTreeChildren == null) {
+                return
+              }
+
+              const subTreeChild = subTreeChildren.find((child) =>
+                EP.pathsEqual(child.path, childPath),
+              )
+              if (subTreeChild != null) {
+                processedAsRenderProp.add(EP.toString(subTreeChild.path))
+                walkAndAddKeys(subTreeChild, collapsedAncestor)
+              } else {
+                const entry = syntheticNavigatorEntry(childPath, elementWithin)
+                navigatorTargets.push(entry)
+                visibleNavigatorTargets.push(entry)
+              }
+            }
+          }
+        })
         Object.entries(propControls).forEach(([prop, control]) => {
+          if (addedProps.has(prop)) {
+            return
+          }
           if (control.control !== 'jsx') {
             return
           }
-          const propValue = getJSXAttribute(jsxElement.props, prop)
-
           const navigatorEntry = renderPropNavigatorEntry(
-            EP.appendToPath(path, propValue?.uid ?? 'fake-uid'),
+            EP.appendToPath(path, 'fake-uid'),
             prop,
-            propValue,
+            null,
           )
           navigatorTargets.push(navigatorEntry)
           visibleNavigatorTargets.push(navigatorEntry)
@@ -257,7 +304,9 @@ export function getNavigatorTargets(
         }
       } else {
         fastForEach(Object.values(subTree.children), (child) => {
-          walkAndAddKeys(child, newCollapsedAncestor)
+          if (!processedAsRenderProp.has(child.pathString)) {
+            walkAndAddKeys(child, newCollapsedAncestor)
+          }
         })
       }
     }
