@@ -8,8 +8,10 @@ declare global {
 
 export type AppEnv = 'local' | 'stage' | 'prod' | 'test'
 
+const serverEnvironemnt: AppEnv = mustEnv('APP_ENV') as AppEnv
+
 export const ServerEnvironment = {
-  environment: mustEnv('APP_ENV') as AppEnv,
+  environment: serverEnvironemnt,
   // The URL of the actual backend server in the form <scheme>://<host>:<port>
   BackendURL: mustEnv('BACKEND_URL'),
   // the CORS allowed origin for incoming requests
@@ -35,7 +37,7 @@ export const BrowserEnvironment: BrowserEnvironment = {
 function mustEnv(key: string, envFallback: Partial<Record<AppEnv, string>> = {}): string {
   const value = process.env[key]
   if (value == null) {
-    const fallback = envFallback[ServerEnvironment.environment]
+    const fallback = envFallback[serverEnvironemnt]
     if (fallback != null) {
       return fallback
     }
