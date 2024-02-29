@@ -130,15 +130,6 @@ export function useInspectorInfoForPropertyControl(
 
   let attributeExpression = maybeEitherToMaybe(rawValues[0]) // TODO handle multiselection
 
-  // this is placeholder code until we have the parser ready to give us JS_IDENTIFIERs
-  if (
-    attributeExpression != null &&
-    attributeExpression.type === 'ATTRIBUTE_OTHER_JAVASCRIPT' &&
-    attributeExpression.originalJavascript === 'testConst'
-  ) {
-    attributeExpression = jsIdentifier('testConst', 'testConst', emptyComments)
-  }
-
   return {
     value: parsedValue,
     attributeExpression: attributeExpression,
