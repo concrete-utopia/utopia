@@ -17,6 +17,7 @@ import { UserDetails } from 'prisma-client'
 import React from 'react'
 import { ProjectContextMenu } from '../components/projectActionContextMenu'
 import { SortingContextMenu } from '../components/sortProjectsContextMenu'
+import { Spinner } from '../components/spinner'
 import { useIsDarkMode } from '../hooks/useIsDarkMode'
 import { listDeletedProjects, listProjects } from '../models/project.server'
 import { getCollaborators } from '../models/projectCollaborators.server'
@@ -42,7 +43,6 @@ import {
   useProjectMatchesQuery,
   useSortCompareProject,
 } from '../util/use-sort-compare-project'
-import { Spinner } from '../components/spinner'
 import { useCleanupOperations } from '../hooks/useCleanupOperations'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
@@ -865,7 +865,9 @@ const ProjectCardActions = React.memo(({ project }: { project: ProjectWithoutCon
 ProjectCardActions.displayName = 'ProjectCardActions'
 
 const ActiveOperations = React.memo(() => {
-  const operations = useProjectsStore((store) => store.operations)
+  const operations = useProjectsStore((store) =>
+    store.operations.sort((a, b) => b.startedAt - a.startedAt),
+  )
 
   return (
     <div
@@ -879,11 +881,9 @@ const ActiveOperations = React.memo(() => {
         gap: 10,
       }}
     >
-      {operations
-        .sort((a, b) => -(a.startedAt - b.startedAt))
-        .map((operation) => {
-          return <ActiveOperationToast operation={operation} key={operation.key} />
-        })}
+      {operations.map((operation) => {
+        return <ActiveOperationToast operation={operation} key={operation.key} />
+      })}
     </div>
   )
 })

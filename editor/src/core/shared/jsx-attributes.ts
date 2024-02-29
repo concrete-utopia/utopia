@@ -222,7 +222,7 @@ export function jsxAttributeToValue(
     case 'ATTRIBUTE_VALUE':
       return attribute.value
     case 'JS_IDENTIFIER':
-      return requireResult[attribute.name] ?? inScope[attribute.name]
+      return inScope[attribute.name] ?? requireResult[attribute.name]
     case 'JS_PROPERTY_ACCESS': {
       const onValue = jsxAttributeToValue(filePath, inScope, requireResult, attribute.onValue)
       return onValue[attribute.property]

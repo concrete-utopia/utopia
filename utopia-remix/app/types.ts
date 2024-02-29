@@ -104,3 +104,7 @@ export function getOperationVerb(op: Operation) {
       assertNever(op)
   }
 }
+
+export function areBaseOperationsEquivalent(a: Operation, b: Operation): boolean {
+  return a.projectId === b.projectId && a.type === b.type
+}

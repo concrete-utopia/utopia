@@ -29,6 +29,7 @@ import {
   CanvasSizeAtom,
   navigatorEntriesEqual,
   regularNavigatorEntry,
+  renderPropNavigatorEntry,
   syntheticNavigatorEntry,
   varSafeNavigatorEntryToKey,
 } from '../../editor/store/editor-state'
@@ -126,6 +127,14 @@ export interface SyntheticNavigatorItemContainerProps
   isOutletOrDescendantOfOutlet: boolean
   elementPath: ElementPath
   childOrAttribute: JSXElementChild
+}
+
+export interface RenderPropNavigatorItemContainerProps
+  extends NavigatorItemDragAndDropWrapperPropsBase {
+  isOutletOrDescendantOfOutlet: boolean
+  elementPath: ElementPath
+  propName: string
+  childOrAttribute: JSXElementChild | null
 }
 
 export interface ConditionalClauseNavigatorItemContainerProps
@@ -1025,6 +1034,48 @@ export const SyntheticNavigatorItemContainer = React.memo(
             collapsed={props.collapsed}
             selected={props.selected}
             parentOutline={parentOutline}
+            visibleNavigatorTargets={props.visibleNavigatorTargets}
+            isOutletOrDescendantOfOutlet={props.isOutletOrDescendantOfOutlet}
+          />
+        </div>
+      </div>
+    )
+  },
+)
+
+export const RenderPropNavigatorItemContainer = React.memo(
+  (props: RenderPropNavigatorItemContainerProps) => {
+    const navigatorEntry = React.useMemo(
+      () => renderPropNavigatorEntry(props.elementPath, props.propName, props.childOrAttribute),
+      [props.childOrAttribute, props.propName, props.elementPath],
+    )
+
+    const safeComponentId = varSafeNavigatorEntryToKey(navigatorEntry)
+    return (
+      <div
+        data-testid={DragItemTestId(safeComponentId)}
+        style={{
+          ...props.windowStyle,
+        }}
+      >
+        <div
+          key='navigatorItem'
+          id={`navigator-item-${safeComponentId}`}
+          data-testid={`navigator-item-${safeComponentId}`}
+        >
+          <NavigatorItem
+            navigatorEntry={navigatorEntry}
+            index={props.index}
+            getSelectedViewsInRange={props.getSelectedViewsInRange}
+            noOfChildren={props.noOfChildren}
+            label={props.label}
+            dispatch={props.editorDispatch}
+            isHighlighted={props.highlighted}
+            isElementVisible={props.isElementVisible}
+            renamingTarget={props.renamingTarget}
+            collapsed={props.collapsed}
+            selected={props.selected}
+            parentOutline={'none'}
             visibleNavigatorTargets={props.visibleNavigatorTargets}
             isOutletOrDescendantOfOutlet={props.isOutletOrDescendantOfOutlet}
           />
