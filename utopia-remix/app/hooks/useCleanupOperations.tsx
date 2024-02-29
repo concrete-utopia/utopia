@@ -98,25 +98,26 @@ function useLoadingFetchers() {
       .reduce((acc, current) => {
         acc[current.key] = { data: current.data }
         return acc
-      }, {} as OperationFetcherData)
+      }, loadingFetchers)
   }, [fetchers])
 
-  // react to fetchers changing
+  // react to fetchers changing by adding the new loading fetchers to the existing ones
   React.useEffect(() => {
     if (Object.keys(currentLoadingFetchers).length > 0) {
-      setLoadingFetchers({ ...loadingFetchers, ...currentLoadingFetchers })
+      setLoadingFetchers((loadingFetchers) => ({ ...loadingFetchers, ...currentLoadingFetchers }))
     }
+  }, [currentLoadingFetchers])
 
+  // when the keys to cleanup change, update the operations to cleanup
+  React.useEffect(() => {
     if (keysToCleanup.length > 0) {
-      setOperationsToCleanup(() => {
-        const result: OperationFetcherData = {}
-        for (const key of keysToCleanup) {
-          result[key] = loadingFetchers[key]
-        }
-        return result
-      })
+      const newOperationsToCleanup: OperationFetcherData = {}
+      for (const key of keysToCleanup) {
+        newOperationsToCleanup[key] = loadingFetchers[key]
+      }
+      setOperationsToCleanup(newOperationsToCleanup)
     }
-  }, [keysToCleanup, currentLoadingFetchers])
+  }, [keysToCleanup, loadingFetchers])
 
   return { operationsToCleanup, resetOperationsToCleanup }
 }
