@@ -1,8 +1,13 @@
-import { useFetchers } from '@remix-run/react'
+import { Fetcher, useFetchers } from '@remix-run/react'
 import { useProjectsStore } from '../store'
 import React from 'react'
 import { isLikeApiError } from '../util/errors'
 import { operationFetcherKeyPrefix } from './useFetcherWithOperation'
+
+interface LoadingFetcher {
+  key: string
+  data: unknown
+}
 
 /**
  * This hook will react to fetchers changes, so that the ones tied to ongoing Operations,
@@ -12,106 +17,72 @@ import { operationFetcherKeyPrefix } from './useFetcherWithOperation'
  */
 export function useCleanupOperations() {
   const fetchers = useFetchers()
-  const consumeOperations = useConsumeOperations()
 
-  // accumulated fetchers that were seen in the loading state
-  const [loadingFetchers, setLoadingFetchers] = React.useState<OperationFetcherData>({})
-  // list of fetchers that need to be cleaned up
-  const [operationsToCleanup, setOperationsToCleanup] = React.useState<
-    { key: string; value: { data: unknown } }[]
-  >([])
+  // a list of fetchers that were seen as loading
+  const [loadingFetchers, setLoadingFetchers] = React.useState<LoadingFetcher[]>([])
+  // a list of fetchers that transitioned from loading to idle
+  const [idleFetchers, setIdleFetchers] = React.useState<LoadingFetcher[]>([])
 
-  // list of fetchers that were loading but are not available anymore (because gone to idle)
-  const disappearedFetchers = React.useMemo(() => {
-    return Object.entries(loadingFetchers)
-      .filter(([key]) => {
-        return !fetchers.some((f) => f.key === key)
-      })
-      .map(([key, value]) => ({ key, value }))
-  }, [fetchers, loadingFetchers])
-
-  // reset operations
-  const resetOperationsToCleanup = React.useCallback(
-    (targets: { key: string; value: { data: unknown } }[]) => {
-      setLoadingFetchers((loading) => {
-        setOperationsToCleanup([])
-        return Object.entries(loading).reduce((acc, [key, value]) => {
-          if (!targets.some((target) => target.key === key)) {
-            acc[key] = value
-          }
-          return acc
-        }, {} as OperationFetcherData)
-      })
-    },
-    [loadingFetchers],
-  )
-
-  // the fetchers currently in the loading state
-  const currentLoadingFetchers = React.useMemo(() => {
-    return fetchers
-      .filter((fetcher) => {
-        return (
-          // it's an operation fetcher…
-          fetcher.key.startsWith(operationFetcherKeyPrefix) &&
-          // …and it has data…
-          fetcher.data != null &&
-          // …and it is loading results
-          fetcher.state === 'loading'
-        )
-      })
-      .reduce((acc, current) => {
-        acc[current.key] = { data: current.data }
-        return acc
-      }, loadingFetchers)
-  }, [fetchers])
-
-  // react to fetchers changing by adding the new loading fetchers to the existing ones
-  React.useEffect(() => {
-    if (Object.keys(currentLoadingFetchers).length > 0) {
-      setLoadingFetchers((loadingFetchers) => ({ ...loadingFetchers, ...currentLoadingFetchers }))
-    }
-  }, [currentLoadingFetchers])
-
-  // when the keys to cleanup change, update the operations to cleanup
-  React.useEffect(() => {
-    if (disappearedFetchers.length > 0) {
-      const newOperationsToCleanup: { key: string; value: { data: unknown } }[] = []
-      for (const { key, value } of disappearedFetchers) {
-        newOperationsToCleanup.push({ key, value })
-      }
-      setOperationsToCleanup(newOperationsToCleanup)
-    }
-  }, [disappearedFetchers, loadingFetchers])
-
-  // when the operations to cleanup change, consume the related operations and then reset
-  // them.
-  React.useEffect(() => {
-    if (operationsToCleanup.length > 0) {
-      consumeOperations(operationsToCleanup)
-      resetOperationsToCleanup(operationsToCleanup)
-    }
-  }, [operationsToCleanup, consumeOperations, resetOperationsToCleanup])
-}
-
-/**
- * Consume the given operations, deleting them if successful and marking them as errored otherwise.
- */
-function useConsumeOperations() {
   const removeOperation = useProjectsStore((store) => store.removeOperation)
   const updateOperation = useProjectsStore((store) => store.updateOperation)
 
-  return React.useCallback(
-    (operations: { key: string; value: { data: unknown } }[]) => {
-      for (const { key, value } of operations) {
-        if (isLikeApiError(value.data)) {
-          updateOperation(key, { errored: true })
+  const cleanupOperations = React.useCallback(
+    (targets: LoadingFetcher[]) => {
+      // clean them up
+      for (const fetcher of targets) {
+        if (isLikeApiError(fetcher.data)) {
+          updateOperation(fetcher.key, { errored: true })
         } else {
-          removeOperation(key)
+          removeOperation(fetcher.key)
         }
       }
     },
     [updateOperation, removeOperation],
   )
+
+  // when the idle fetchers change, clean them up
+  React.useEffect(() => {
+    if (idleFetchers.length > 0) {
+      setIdleFetchers([])
+      cleanupOperations(idleFetchers)
+    }
+  }, [idleFetchers, cleanupOperations])
+
+  // react to fetcher state changes and look for loading/idle ones
+  React.useEffect(() => {
+    const currentLoadingFetchers = fetchers.filter(isLoadingOperationFetcher)
+    const newIdleFetchers = loadingFetchers.filter(
+      (fetcher) => !currentLoadingFetchers.some((current) => current.key === fetcher.key),
+    )
+
+    const someFetchersWentIdle = newIdleFetchers.length > 0
+    if (someFetchersWentIdle) {
+      setIdleFetchers(newIdleFetchers)
+    }
+
+    const loadingFetchersHaveChanged =
+      loadingFetchers.length !== currentLoadingFetchers.length ||
+      loadingFetchers.some(
+        (fetcher) => !currentLoadingFetchers.some((current) => current.key === fetcher.key),
+      )
+    if (someFetchersWentIdle || loadingFetchersHaveChanged) {
+      setLoadingFetchers([
+        ...currentLoadingFetchers,
+        ...loadingFetchers.filter((f) => !newIdleFetchers.some((idle) => f.key === idle.key)),
+      ])
+    }
+  }, [fetchers, loadingFetchers])
 }
 
-type OperationFetcherData = { [key: string]: { data: unknown } }
+type FetcherWithKey = Fetcher & { key: string }
+
+function isLoadingOperationFetcher(fetcher: FetcherWithKey): boolean {
+  return (
+    // it's an operation fetcher…
+    fetcher.key.startsWith(operationFetcherKeyPrefix) &&
+    // …and it has data…
+    fetcher.data != null &&
+    // …and it is loading results
+    fetcher.state === 'loading'
+  )
+}
