@@ -487,8 +487,22 @@ export function removeJSXElementChild(
       updatedChildren = updatedChildren.map((child) => {
         return removeRelevantChild(child, false)
       })
+
+      const updatedProps = parentElement.props.map((prop) => {
+        if (
+          prop.type !== 'JSX_ATTRIBUTES_ENTRY' ||
+          prop.value.type !== 'ATTRIBUTE_OTHER_JAVASCRIPT'
+        ) {
+          return prop
+        }
+        const nextElementsWithin = { ...prop.value.elementsWithin }
+        delete nextElementsWithin[targetID]
+        return { ...prop, value: { ...prop.value, elementsWithin: nextElementsWithin } }
+      })
+
       return {
         ...parentElement,
+        props: updatedProps,
         children: updatedChildren,
       }
     } else if (isJSXFragment(parentElement)) {
