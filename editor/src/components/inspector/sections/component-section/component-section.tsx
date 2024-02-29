@@ -156,7 +156,7 @@ const ControlForProp = React.memo((props: ControlForPropProps<BaseControlDescrip
       if (controlDescription.control !== 'jsx') {
         return (
           <IdentifierExpressionCartoucheControl
-            contents={attributeExpression.originalJavascript}
+            contents={'Expression'}
             matchType='partial'
             onOpenDataPicker={props.onOpenDataPicker}
           />
