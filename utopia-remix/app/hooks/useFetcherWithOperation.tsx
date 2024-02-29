@@ -35,6 +35,7 @@ export function useFetcherWithOperation(projectId: string, type: OperationType) 
 
 export function useCleanupOperations() {
   const fetchers = useFetchers()
+
   const removeOperation = useProjectsStore((store) => store.removeOperation)
   const updateOperation = useProjectsStore((store) => store.updateOperation)
 
