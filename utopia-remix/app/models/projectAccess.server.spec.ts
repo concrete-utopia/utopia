@@ -10,6 +10,9 @@ describe('projectAccess model', () => {
   })
 
   describe('setProjectAccess', () => {
+    beforeAll(async () => {
+      await clearDb(prisma)
+    })
     beforeEach(async () => {
       await createTestUser(prisma, { id: 'bob' })
       await createTestUser(prisma, { id: 'alice' })
