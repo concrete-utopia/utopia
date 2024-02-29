@@ -23,30 +23,15 @@ export function useCleanupOperations() {
   // a list of fetchers that transitioned from loading to idle
   const [idleFetchers, setIdleFetchers] = React.useState<LoadingFetcher[]>([])
 
-  const removeOperation = useProjectsStore((store) => store.removeOperation)
-  const updateOperation = useProjectsStore((store) => store.updateOperation)
+  const processIdleFetchers = useProcessIdleFetchers()
 
-  const cleanupOperations = React.useCallback(
-    (targets: LoadingFetcher[]) => {
-      // clean them up
-      for (const fetcher of targets) {
-        if (isLikeApiError(fetcher.data)) {
-          updateOperation(fetcher.key, { errored: true })
-        } else {
-          removeOperation(fetcher.key)
-        }
-      }
-    },
-    [updateOperation, removeOperation],
-  )
-
-  // when the idle fetchers change, clean them up
+  // when the idle fetchers change, process them
   React.useEffect(() => {
     if (idleFetchers.length > 0) {
       setIdleFetchers([])
-      cleanupOperations(idleFetchers)
+      processIdleFetchers(idleFetchers)
     }
-  }, [idleFetchers, cleanupOperations])
+  }, [idleFetchers, processIdleFetchers])
 
   // react to fetcher state changes and look for loading/idle ones
   React.useEffect(() => {
@@ -84,5 +69,24 @@ function isLoadingOperationFetcher(fetcher: FetcherWithKey): boolean {
     fetcher.data != null &&
     // …and it is loading results
     fetcher.state === 'loading'
+  )
+}
+
+function useProcessIdleFetchers() {
+  const removeOperation = useProjectsStore((store) => store.removeOperation)
+  const updateOperation = useProjectsStore((store) => store.updateOperation)
+
+  return React.useCallback(
+    (targets: LoadingFetcher[]) => {
+      // clean them up
+      for (const fetcher of targets) {
+        if (isLikeApiError(fetcher.data)) {
+          updateOperation(fetcher.key, { errored: true })
+        } else {
+          removeOperation(fetcher.key)
+        }
+      }
+    },
+    [updateOperation, removeOperation],
   )
 }
