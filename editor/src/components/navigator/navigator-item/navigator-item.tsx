@@ -1108,7 +1108,16 @@ const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, target, p
   return (
     <Menu key={key} id={id} animation={false} style={{ padding: 8 }}>
       {rawJSToInsert.map((option, idx) => (
-        <div key={idx} onClick={onItemClick(option)}>
+        <div
+          key={idx}
+          onClick={onItemClick(option)}
+          style={{
+            maxWidth: 260,
+            overflow: 'hidden',
+            whiteSpace: 'nowrap',
+            textOverflow: 'ellipsis',
+          }}
+        >
           {option}
         </div>
       ))}
