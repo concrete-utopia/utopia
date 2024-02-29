@@ -18,6 +18,10 @@ export const ServerEnvironment = {
   AUTH0_ENDPOINT: optionalEnv('AUTH0_ENDPOINT', '<AUTH0_ENDPOINT>'),
   AUTH0_CLIENT_ID: optionalEnv('AUTH0_CLIENT_ID', '<AUTH0_CLIENT_ID>'),
   AUTH0_REDIRECT_URI: optionalEnv('AUTH0_REDIRECT_URI', '<AUTH0_REDIRECT_URI>'),
+  // FGA Credentials
+  FGA_STORE_ID: mustEnv('FGA_STORE_ID'),
+  FGA_CLIENT_ID: mustEnv('FGA_CLIENT_ID'),
+  FGA_SECRET: mustEnv('FGA_SECRET'),
 }
 
 export type BrowserEnvironment = {
