@@ -86,10 +86,6 @@ export type Operation = OperationRename | OperationDelete | OperationDestroy | O
 
 export type OperationType = 'rename' | 'delete' | 'destroy' | 'restore'
 
-export function operationsEqual(a: Operation, b: Operation): boolean {
-  return a.projectId === b.projectId && a.type === b.type
-}
-
 export function getOperationVerb(op: Operation) {
   switch (op.type) {
     case 'delete':
