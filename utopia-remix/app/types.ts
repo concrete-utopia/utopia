@@ -31,3 +31,23 @@ export function userToCollaborator(user: UserDetails): Collaborator {
     avatar: user.picture,
   }
 }
+
+export interface Operation {
+  projectId: string
+  projectName: string
+  type: OperationType
+}
+
+export type OperationType = 'rename' | 'delete' | 'destroy' | 'restore'
+
+export function areBaseOperationsEquivalent(a: Operation, b: Operation): boolean {
+  return a.projectId === b.projectId && a.type === b.type
+}
+
+export function operation(project: ProjectWithoutContent, type: OperationType): Operation {
+  return {
+    projectId: project.proj_id,
+    projectName: project.title,
+    type: type,
+  }
+}

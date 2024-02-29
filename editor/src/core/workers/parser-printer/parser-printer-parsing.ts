@@ -2132,6 +2132,9 @@ function parseElementAccessExpression(
   partOfExpression: PartOfExpression,
   applySteganography: SteganographyMode,
 ): Either<string, WithParserMetadata<JSElementAccess>> {
+  if (expression.questionDotToken != null) {
+    return left('encountered a not-yet-supported questionDotToken')
+  }
   const parsedOnValue = parseAttributeExpression(
     sourceFile,
     sourceText,
@@ -2193,6 +2196,9 @@ function parsePropertyAccessExpression(
   partOfExpression: PartOfExpression,
   applySteganography: SteganographyMode,
 ): Either<string, WithParserMetadata<JSPropertyAccess>> {
+  if (expression.questionDotToken != null) {
+    return left('encountered a not-yet-supported questionDotToken')
+  }
   const propertyName = expression.name.text
   const parsedOnValue = parseAttributeExpression(
     sourceFile,
