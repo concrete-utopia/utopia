@@ -12,13 +12,11 @@ import {
 } from '@radix-ui/react-icons'
 import { LoaderFunctionArgs, json } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
-import { motion } from 'framer-motion'
 import moment from 'moment'
 import { UserDetails } from 'prisma-client'
 import React from 'react'
 import { ProjectContextMenu } from '../components/projectActionContextMenu'
 import { SortingContextMenu } from '../components/sortProjectsContextMenu'
-import { useCleanupOperations } from '../hooks/useFetcherWithOperation'
 import { useIsDarkMode } from '../hooks/useIsDarkMode'
 import { listDeletedProjects, listProjects } from '../models/project.server'
 import { getCollaborators } from '../models/projectCollaborators.server'
@@ -30,7 +28,6 @@ import { sprinkles } from '../styles/sprinkles.css'
 import {
   Collaborator,
   CollaboratorsByProject,
-  Operation,
   ProjectWithoutContent,
   getOperationVerb,
 } from '../types'
@@ -38,7 +35,7 @@ import { requireUser } from '../util/api.server'
 import { assertNever } from '../util/assertNever'
 import { auth0LoginURL } from '../util/auth0.server'
 import { projectEditorLink } from '../util/links'
-import { unless, when } from '../util/react-conditionals'
+import { when } from '../util/react-conditionals'
 import { UnknownPlayerName, multiplayerInitialsFromName } from '../util/strings'
 import {
   useProjectIsOnActiveOperation,
@@ -46,6 +43,7 @@ import {
   useSortCompareProject,
 } from '../util/use-sort-compare-project'
 import { Spinner } from '../components/spinner'
+import { useCleanupOperations } from '../hooks/useCleanupOperations'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
