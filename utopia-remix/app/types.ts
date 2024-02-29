@@ -35,13 +35,11 @@ export function userToCollaborator(user: UserDetails): Collaborator {
 
 interface BaseOperation {
   projectId: string
-  projectName: string
 }
 
 function baseOperation(project: ProjectWithoutContent): BaseOperation {
   return {
     projectId: project.proj_id,
-    projectName: project.title,
   }
 }
 

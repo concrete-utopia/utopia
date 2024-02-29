@@ -29,6 +29,7 @@ import { sprinkles } from '../styles/sprinkles.css'
 import {
   Collaborator,
   CollaboratorsByProject,
+  Operation,
   ProjectWithoutContent,
   getOperationVerb,
 } from '../types'
@@ -150,7 +151,7 @@ const ProjectsPage = React.memo(() => {
         <TopActionBar />
         <ProjectsHeader projects={filteredProjects} />
         <Projects projects={filteredProjects} collaborators={data.collaborators} />
-        <ActiveOperations />
+        <ActiveOperations projects={activeProjects} />
       </div>
     </div>
   )
@@ -864,9 +865,16 @@ const ProjectCardActions = React.memo(({ project }: { project: ProjectWithoutCon
 })
 ProjectCardActions.displayName = 'ProjectCardActions'
 
-const ActiveOperations = React.memo(() => {
+const ActiveOperations = React.memo(({ projects }: { projects: ProjectWithoutContent[] }) => {
   const operations = useProjectsStore((store) =>
     store.operations.sort((a, b) => b.startedAt - a.startedAt),
+  )
+
+  const getOperationProject = React.useCallback(
+    (operation: Operation) => {
+      return projects.find((project) => project.proj_id === operation.projectId)
+    },
+    [projects],
   )
 
   return (
@@ -882,65 +890,71 @@ const ActiveOperations = React.memo(() => {
       }}
     >
       {operations.map((operation) => {
-        return <ActiveOperationToast operation={operation} key={operation.key} />
+        const project = getOperationProject(operation)
+        if (project == null) {
+          return null
+        }
+        return <ActiveOperationToast operation={operation} key={operation.key} project={project} />
       })}
     </div>
   )
 })
 ActiveOperations.displayName = 'ActiveOperations'
 
-const ActiveOperationToast = React.memo(({ operation }: { operation: OperationWithKey }) => {
-  const removeOperation = useProjectsStore((store) => store.removeOperation)
+const ActiveOperationToast = React.memo(
+  ({ operation, project }: { operation: OperationWithKey; project: ProjectWithoutContent }) => {
+    const removeOperation = useProjectsStore((store) => store.removeOperation)
 
-  const dismiss = React.useCallback(() => {
-    if (!operation.errored) {
-      return
-    }
-    removeOperation(operation.key)
-  }, [removeOperation, operation])
+    const dismiss = React.useCallback(() => {
+      if (!operation.errored) {
+        return
+      }
+      removeOperation(operation.key)
+    }, [removeOperation, operation])
 
-  return (
-    <div
-      style={{
-        padding: 10,
-        display: 'flex',
-        gap: 10,
-        alignItems: 'center',
-        userSelect: 'none',
-      }}
-      className={sprinkles({
-        boxShadow: 'shadow',
-        borderRadius: 'small',
-        backgroundColor: operation.errored ? 'error' : 'primary',
-        color: 'white',
-      })}
-    >
-      {when(!operation.errored, <Spinner className={sprinkles({ backgroundColor: 'white' })} />)}
-      {when(
-        operation.errored,
-        <>
-          <button
-            className={`${button({ color: 'selected' })} ${sprinkles({
-              color: 'white',
-            })}`}
-            onClick={dismiss}
-          >
-            Dismiss
-          </button>
-          <div
-            style={{
-              fontWeight: 'bold',
-              textTransform: 'uppercase',
-            }}
-          >
-            Failed
-          </div>
-        </>,
-      )}
-      <div>
-        {getOperationVerb(operation)} project {operation.projectName}
+    return (
+      <div
+        style={{
+          padding: 10,
+          display: 'flex',
+          gap: 10,
+          alignItems: 'center',
+          userSelect: 'none',
+        }}
+        className={sprinkles({
+          boxShadow: 'shadow',
+          borderRadius: 'small',
+          backgroundColor: operation.errored ? 'error' : 'primary',
+          color: 'white',
+        })}
+      >
+        {when(!operation.errored, <Spinner className={sprinkles({ backgroundColor: 'white' })} />)}
+        {when(
+          operation.errored,
+          <>
+            <button
+              className={`${button({ color: 'selected' })} ${sprinkles({
+                color: 'white',
+              })}`}
+              onClick={dismiss}
+            >
+              Dismiss
+            </button>
+            <div
+              style={{
+                fontWeight: 'bold',
+                textTransform: 'uppercase',
+              }}
+            >
+              Failed
+            </div>
+          </>,
+        )}
+        <div>
+          {getOperationVerb(operation)} project {project.title}
+        </div>
       </div>
-    </div>
-  )
-})
+    )
+  },
+)
 ActiveOperationToast.displayName = 'ActiveOperation'
