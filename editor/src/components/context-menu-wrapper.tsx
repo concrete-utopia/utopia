@@ -137,7 +137,7 @@ export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> 
     const { id } = this.props
     const items = this.splitItemsForSubmenu(this.props.items)
     return (
-      <Menu key={id} id={id} animation={false}>
+      <Menu key={id} id={id} animation={false} style={{ maxWidth: 22 }}>
         {items.map((item: Submenu<T> | SimpleItem<T>, index: number) => {
           if (item.type === 'submenu') {
             return (

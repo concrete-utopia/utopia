@@ -64,9 +64,9 @@ import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { MapCounter } from './map-counter'
 import * as PP from '../../../core/shared/property-path'
 import { useShowRenderPropPicker } from '../../context-menu-wrapper'
-import { Menu } from 'react-contexify'
+import type { ItemParams } from 'react-contexify'
+import { Item, Menu } from 'react-contexify'
 import ReactDOM from 'react-dom'
-import { PreferredChildComponent } from 'utopia-api'
 import { useDispatch } from '../../editor/store/dispatch-context'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
@@ -1034,7 +1034,15 @@ interface RenderPropPickerProps {
   id: string
 }
 
-const usePreferredChildrenForTargetProp = (target: ElementPath, prop: string) => {
+interface PreferredChildComponentData {
+  variantLabel: string
+  variantCode: string
+}
+
+const usePreferredChildrenForTargetProp = (
+  target: ElementPath,
+  prop: string,
+): Array<PreferredChildComponentData> | null => {
   const selectedJSXElement = useEditorState(
     Substores.metadata,
     (store) => MetadataUtils.getJSXElementFromMetadata(store.editor.jsxMetadata, target),
@@ -1077,7 +1085,17 @@ const usePreferredChildrenForTargetProp = (target: ElementPath, prop: string) =>
     return null
   }
 
-  return preferredChildrenForTargetProp
+  const preferredChildComponentData: Array<PreferredChildComponentData> =
+    preferredChildrenForTargetProp.flatMap((child) =>
+      child.variants == null
+        ? [{ variantLabel: child.name, variantCode: `<${child.name} />` }]
+        : child.variants.map((variant) => ({
+            variantLabel: child.name,
+            variantCode: variant.code,
+          })),
+    )
+
+  return preferredChildComponentData
 }
 
 const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, target, prop }) => {
@@ -1089,18 +1107,19 @@ const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, target, p
   const dispatch = useDispatch()
 
   const onItemClick = React.useCallback(
-    (rawJSCodeForRenderProp: string) => (e: React.MouseEvent) => {
-      e.stopPropagation()
-      e.preventDefault()
+    (rawJSCodeForRenderProp: string) =>
+      ({ event }: ItemParams) => {
+        event.stopPropagation()
+        event.preventDefault()
 
-      dispatch([
-        EditorActions.setProp_UNSAFE(
-          EP.parentPath(target),
-          PP.create(prop),
-          jsExpressionOtherJavaScriptSimple(rawJSCodeForRenderProp, []),
-        ),
-      ])
-    },
+        dispatch([
+          EditorActions.setProp_UNSAFE(
+            EP.parentPath(target),
+            PP.create(prop),
+            jsExpressionOtherJavaScriptSimple(rawJSCodeForRenderProp, []),
+          ),
+        ])
+      },
     [dispatch, prop, target],
   )
 
@@ -1108,25 +1127,21 @@ const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, target, p
     return null
   }
 
-  const rawJSToInsert: Array<string> = (preferredChildrenForTargetProp ?? []).flatMap((data) =>
-    data.variants == null ? `<${data.name} />` : data.variants.map((v) => v.code),
-  )
-
   return (
     <Menu key={key} id={id} animation={false} style={{ padding: 8 }}>
-      {rawJSToInsert.map((option, idx) => (
-        <div
+      {preferredChildrenForTargetProp.map((option, idx) => (
+        <Item
           key={idx}
-          onClick={onItemClick(option)}
-          style={{
-            maxWidth: 260,
-            overflow: 'hidden',
-            whiteSpace: 'nowrap',
-            textOverflow: 'ellipsis',
-          }}
+          onClick={onItemClick(option.variantCode)}
+          style={{ height: 24, display: 'flex', alignItems: 'center' }}
         >
-          {option}
-        </div>
+          <span style={{ flexGrow: 1, flexShrink: 0 }} className='react-contexify-span'>
+            {option.variantCode}
+          </span>
+          <span style={{ flexGrow: 0, flexShrink: 0, opacity: 0.6 }} className='shortcut'>
+            {option.variantLabel}
+          </span>
+        </Item>
       ))}
     </Menu>
   )
