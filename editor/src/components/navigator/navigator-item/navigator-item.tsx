@@ -862,12 +862,12 @@ export const NavigatorItem: React.FunctionComponent<
             style={{
               width: 140,
               height: 19,
-              borderRadius: 20,
-              backgroundColor: colorTheme.dynamicBlue10.value,
-              color: colorTheme.navigatorResizeHintBorder.value,
+              fontWeight: 600,
+              textTransform: 'uppercase',
+              color: 'gray',
               border: colorTheme.navigatorResizeHintBorder.value,
-              marginLeft: 28,
-              padding: '0px 10px 0px 10px',
+              marginLeft: 23,
+              paddingTop: 6,
               overflow: 'hidden',
             }}
           >
