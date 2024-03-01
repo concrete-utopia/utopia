@@ -1,4 +1,5 @@
 import { Prisma, UserDetails } from 'prisma-client'
+import { assertNever } from './util/assertNever'
 
 const fullProject = Prisma.validator<Prisma.ProjectDefaultArgs>()({
   include: {
@@ -61,11 +62,71 @@ export const UserProjectPermission = {
 
 export type UserProjectPermission =
   (typeof UserProjectPermission)[keyof typeof UserProjectPermission]
-export interface Operation {
+interface BaseOperation {
   projectId: string
-  projectName: string
-  type: OperationType
 }
+
+function baseOperation(project: ProjectWithoutContent): BaseOperation {
+  return {
+    projectId: project.proj_id,
+  }
+}
+
+type OperationRename = BaseOperation & {
+  type: 'rename'
+  newTitle: string
+}
+
+export function operationRename(project: ProjectWithoutContent, newTitle: string): OperationRename {
+  return {
+    type: 'rename',
+    ...baseOperation(project),
+    newTitle: newTitle,
+  }
+}
+
+type OperationDelete = BaseOperation & {
+  type: 'delete'
+}
+
+export function operationDelete(project: ProjectWithoutContent): OperationDelete {
+  return { type: 'delete', ...baseOperation(project) }
+}
+
+type OperationDestroy = BaseOperation & {
+  type: 'destroy'
+}
+
+export function operationDestroy(project: ProjectWithoutContent): OperationDestroy {
+  return { type: 'destroy', ...baseOperation(project) }
+}
+
+type OperationRestore = BaseOperation & {
+  type: 'restore'
+}
+
+export function operationRestore(project: ProjectWithoutContent): OperationRestore {
+  return { type: 'restore', ...baseOperation(project) }
+}
+
+type OperationChangeAccess = BaseOperation & {
+  type: 'changeAccess'
+  newAccessLevel: AccessLevel
+}
+
+export function operationChangeAccess(
+  project: ProjectWithoutContent,
+  newAccessLevel: AccessLevel,
+): OperationChangeAccess {
+  return { type: 'changeAccess', ...baseOperation(project), newAccessLevel }
+}
+
+export type Operation =
+  | OperationRename
+  | OperationDelete
+  | OperationDestroy
+  | OperationRestore
+  | OperationChangeAccess
 
 export type OperationType = 'rename' | 'delete' | 'destroy' | 'restore' | 'changeAccess'
 
@@ -73,10 +134,19 @@ export function areBaseOperationsEquivalent(a: Operation, b: Operation): boolean
   return a.projectId === b.projectId && a.type === b.type
 }
 
-export function operation(project: ProjectWithoutContent, type: OperationType): Operation {
-  return {
-    projectId: project.proj_id,
-    projectName: project.title,
-    type: type,
+export function getOperationDescription(op: Operation, project: ProjectWithoutContent) {
+  switch (op.type) {
+    case 'delete':
+      return `Deleting project ${project.title}`
+    case 'destroy':
+      return `Destroying project ${project.title}`
+    case 'rename':
+      return `Renaming project ${project.title} to ${op.newTitle}`
+    case 'restore':
+      return `Restoring project ${project.title}`
+    case 'changeAccess':
+      return `Changing access level of project ${project.title} to ${op.newAccessLevel}`
+    default:
+      assertNever(op)
   }
 }

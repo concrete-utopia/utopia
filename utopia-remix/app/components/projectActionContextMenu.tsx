@@ -3,11 +3,20 @@ import React from 'react'
 import { useProjectsStore } from '../store'
 import { contextMenuDropdown, contextMenuItem } from '../styles/contextMenu.css'
 import { sprinkles } from '../styles/sprinkles.css'
-import { ProjectWithoutContent, operation } from '../types'
+import {
+  ProjectWithoutContent,
+  operationChangeAccess,
+  operationDelete,
+  operationDestroy,
+  operationRename,
+  operationRestore,
+} from '../types'
 import { assertNever } from '../util/assertNever'
 import { projectEditorLink } from '../util/links'
 import { AccessLevel } from '../types'
 import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
+import slugify from 'slugify'
+import { SLUGIFY_OPTIONS } from '../routes/internal.projects.$id.rename'
 
 type ContextMenuEntry =
   | {
@@ -17,18 +26,22 @@ type ContextMenuEntry =
   | 'separator'
 
 export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWithoutContent }) => {
-  const deleteFetcher = useFetcherWithOperation(operation(project, 'delete'))
-  const destroyFetcher = useFetcherWithOperation(operation(project, 'destroy'))
-  const restoreFetcher = useFetcherWithOperation(operation(project, 'restore'))
-  const renameFetcher = useFetcherWithOperation(operation(project, 'rename'))
-  const changeAccessFetcher = useFetcherWithOperation(operation(project, 'changeAccess'))
+  const deleteFetcher = useFetcherWithOperation(project.proj_id, 'delete')
+  const destroyFetcher = useFetcherWithOperation(project.proj_id, 'destroy')
+  const restoreFetcher = useFetcherWithOperation(project.proj_id, 'restore')
+  const renameFetcher = useFetcherWithOperation(project.proj_id, 'rename')
+  const changeAccessFetcher = useFetcherWithOperation(project.proj_id, 'changeAccess')
 
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
   let accessLevel = project.ProjectAccess?.access_level ?? AccessLevel.PRIVATE
 
   const deleteProject = React.useCallback(
     (projectId: string) => {
-      deleteFetcher.submit({}, { method: 'POST', action: `/internal/projects/${projectId}/delete` })
+      deleteFetcher.submit(
+        operationDelete(project),
+        {},
+        { method: 'POST', action: `/internal/projects/${projectId}/delete` },
+      )
     },
     [deleteFetcher],
   )
@@ -38,6 +51,7 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
       const ok = window.confirm('Are you sure? The project contents will be deleted permanently.')
       if (ok) {
         destroyFetcher.submit(
+          operationDestroy(project),
           {},
           { method: 'POST', action: `/internal/projects/${projectId}/destroy` },
         )
@@ -49,6 +63,7 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
   const restoreProject = React.useCallback(
     (projectId: string) => {
       restoreFetcher.submit(
+        operationRestore(project),
         {},
         { method: 'POST', action: `/internal/projects/${projectId}/restore` },
       )
@@ -59,6 +74,7 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
   const renameProject = React.useCallback(
     (projectId: string, newTitle: string) => {
       renameFetcher.submit(
+        operationRename(project, slugify(newTitle, SLUGIFY_OPTIONS)),
         { title: newTitle },
         { method: 'POST', action: `/internal/projects/${projectId}/rename` },
       )
@@ -69,6 +85,7 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
   const changeAccessLevel = React.useCallback(
     (projectId: string, accessLevel: AccessLevel) => {
       changeAccessFetcher.submit(
+        operationChangeAccess(project, accessLevel),
         { accessLevel: accessLevel.toString() },
         { method: 'POST', action: `/internal/projects/${projectId}/access` },
       )
