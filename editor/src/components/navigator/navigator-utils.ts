@@ -180,14 +180,12 @@ export function getNavigatorTargets(
             return
           }
 
-          const navigatorEntry = renderPropNavigatorEntry(
-            EP.appendToPath(path, 'fake-uid'),
-            prop,
-            null,
-            false,
-          )
+          const fakePath = EP.appendToPath(path, 'fake-uid')
+
+          const navigatorEntry = renderPropNavigatorEntry(fakePath, prop, null, false)
           navigatorTargets.push(navigatorEntry)
           visibleNavigatorTargets.push(navigatorEntry)
+          addedProps.add(EP.toString(fakePath))
 
           const propValue = getJSXAttribute(jsxElement.props, prop)
 
