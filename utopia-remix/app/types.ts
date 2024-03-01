@@ -145,7 +145,7 @@ export function getOperationDescription(op: Operation, project: ProjectWithoutCo
     case 'restore':
       return `Restoring project ${project.title}`
     case 'changeAccess':
-      return `Changing access level of project ${project.title} to ${op.newAccessLevel}`
+      return `Changing access level of project ${project.title}`
     default:
       assertNever(op)
   }
