@@ -42,6 +42,7 @@ interface ProjectsStoreActions {
   setGridView: (gridView: boolean) => void
   addOperation: (operation: Operation, key: string) => void
   removeOperation: (key: string) => void
+  updateOperation: (key: string, data: { errored: boolean }) => void
 }
 
 type ProjectsStore = ProjectsStoreState & ProjectsStoreActions
@@ -83,6 +84,19 @@ export const useProjectsStore = create<ProjectsStore>()(
             operations: operations.filter((other) => other.key !== key),
           }))
         },
+        updateOperation: (key, data) => {
+          return set(({ operations }) => ({
+            operations: operations.map((other) => {
+              if (other.key === key) {
+                return {
+                  ...other,
+                  errored: data.errored,
+                }
+              }
+              return other
+            }),
+          }))
+        },
       }),
       {
         name: 'store',
@@ -101,9 +115,10 @@ export const useProjectsStore = create<ProjectsStore>()(
   ),
 )
 
-type OperationWithKey = Operation & {
+export type OperationWithKey = Operation & {
   key: string
   startedAt: number
+  errored: boolean
 }
 
 function operationWithKey(operation: Operation, key: string): OperationWithKey {
@@ -111,5 +126,6 @@ function operationWithKey(operation: Operation, key: string): OperationWithKey {
     ...operation,
     key: key,
     startedAt: Date.now(),
+    errored: false,
   }
 }

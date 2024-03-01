@@ -2131,9 +2131,20 @@ function parseElementAccessExpression(
   comments: ParsedComments,
   partOfExpression: PartOfExpression,
   applySteganography: SteganographyMode,
-): Either<string, WithParserMetadata<JSElementAccess>> {
+): Either<string, WithParserMetadata<JSElementAccess | JSExpressionMapOrOtherJavascript>> {
   if (expression.questionDotToken != null) {
-    return left('encountered a not-yet-supported questionDotToken')
+    return parseAttributeOtherJavaScript(
+      sourceFile,
+      sourceText,
+      filename,
+      imports,
+      topLevelNames,
+      propsObjectName,
+      expression,
+      existingHighlightBounds,
+      alreadyExistingUIDs,
+      applySteganography,
+    )
   }
   const parsedOnValue = parseAttributeExpression(
     sourceFile,
@@ -2195,9 +2206,20 @@ function parsePropertyAccessExpression(
   comments: ParsedComments,
   partOfExpression: PartOfExpression,
   applySteganography: SteganographyMode,
-): Either<string, WithParserMetadata<JSPropertyAccess>> {
+): Either<string, WithParserMetadata<JSPropertyAccess | JSExpressionMapOrOtherJavascript>> {
   if (expression.questionDotToken != null) {
-    return left('encountered a not-yet-supported questionDotToken')
+    return parseAttributeOtherJavaScript(
+      sourceFile,
+      sourceText,
+      filename,
+      imports,
+      topLevelNames,
+      propsObjectName,
+      expression,
+      existingHighlightBounds,
+      alreadyExistingUIDs,
+      applySteganography,
+    )
   }
   const propertyName = expression.name.text
   const parsedOnValue = parseAttributeExpression(
