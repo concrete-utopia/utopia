@@ -5,7 +5,7 @@ import { Status } from '../util/statusCodes'
 import { setProjectAccess } from '../models/projectAccess.server'
 import { asNumber } from '../util/common'
 import { AccessLevel } from '../types'
-import { getProject } from '~/models/project.server'
+import { getProject } from '../models/project.server'
 
 export async function action(args: ActionFunctionArgs) {
   return handle(args, { POST: handleChangeProjectAccess })
