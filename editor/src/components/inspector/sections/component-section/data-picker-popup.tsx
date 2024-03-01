@@ -22,6 +22,8 @@ import type {
 } from './variables-in-scope-utils'
 import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
 import { assertNever } from '../../../../core/shared/utils'
+import { useHandleCloseOnESCOrEnter } from '../../common/inspector-utils'
+import { InspectorModal } from '../../widgets/inspector-modal'
 
 export interface PrimitiveOption {
   type: 'primitive'
@@ -80,7 +82,6 @@ function isChildrenProp(path: PropertyPath): boolean {
 
 export interface DataPickerPopupProps {
   closePopup: () => void
-  style: React.CSSProperties
   propPath: PropertyPath
 }
 
@@ -129,31 +130,22 @@ export const DataPickerPopup = React.memo(
       props.propPath,
     )
 
+    useHandleCloseOnESCOrEnter(closePopup)
+
     return (
-      <div
-        style={{
-          background: 'transparent',
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: 1, // so it's above the inspector
-        }}
-        onClick={closePopup}
-      >
+      <InspectorModal closePopup={closePopup} offsetX={0} offsetY={34}>
         <FlexColumn
-          ref={forwardedRef}
           tabIndex={0}
           style={{
-            ...props.style,
+            position: 'relative',
             backgroundColor: colorTheme.neutralBackground.value,
             padding: '8px 16px',
             boxShadow: UtopiaStyles.shadowStyles.mid.boxShadow,
             borderRadius: 8,
             alignItems: 'flex-start',
-            width: '96%',
             maxWidth: '260px',
+            width: 260,
+            ...UtopiaStyles.popup,
           }}
           data-testid={DataPickerPopupTestId}
         >
@@ -171,7 +163,7 @@ export const DataPickerPopup = React.memo(
             )
           })}
         </FlexColumn>
-      </div>
+      </InspectorModal>
     )
   }),
 )
