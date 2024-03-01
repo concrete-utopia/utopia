@@ -20,5 +20,16 @@ export interface ErrorWithStatus {
 
 export function isErrorWithStatus(u: unknown): u is ErrorWithStatus {
   const maybe = u as ErrorWithStatus
-  return maybe.status != null && maybe.statusText != null && maybe.data != null
+  return (
+    typeof u === 'object' &&
+    u != null &&
+    maybe.status != null &&
+    maybe.statusText != null &&
+    maybe.data != null
+  )
+}
+
+export function isLikeApiError(u: unknown): u is ApiError {
+  const maybe = u as ApiError
+  return typeof u === 'object' && u != null && maybe.status != null && maybe.message != null
 }

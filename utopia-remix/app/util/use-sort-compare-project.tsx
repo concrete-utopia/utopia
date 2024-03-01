@@ -43,3 +43,26 @@ export function useProjectMatchesQuery() {
     [sanitizedQuery],
   )
 }
+
+export function useProjectIsOnActiveOperation() {
+  const activeOperations = useProjectsStore((store) => store.operations.filter((op) => !op.errored))
+  const selectedCategory = useProjectsStore((store) => store.selectedCategory)
+
+  return React.useCallback(
+    (project: ProjectWithoutContent): boolean => {
+      return !activeOperations.some((op) => {
+        switch (selectedCategory) {
+          case 'allProjects':
+            return op.type === 'delete' && op.projectId === project.proj_id
+          case 'trash':
+            return (
+              (op.type === 'restore' || op.type === 'destroy') && op.projectId === project.proj_id
+            )
+          default:
+            assertNever(selectedCategory)
+        }
+      })
+    },
+    [activeOperations, selectedCategory],
+  )
+}

@@ -8,6 +8,7 @@ export const colors = {
   darkModeBlack: '#181C20',
   lightModeBlack: '#2B2B2B',
   separator: '#dddddd',
+  error: '#993344',
 }
 
 const colorProperties = defineProperties({
