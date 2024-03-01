@@ -180,7 +180,7 @@ export function getNavigatorTargets(
             return
           }
 
-          const fakePath = EP.appendToPath(path, 'fake-uid')
+          const fakePath = EP.appendToPath(path, `prop-label-${prop}`)
 
           const navigatorEntry = renderPropNavigatorEntry(fakePath, prop, null, false)
           navigatorTargets.push(navigatorEntry)
@@ -190,7 +190,7 @@ export function getNavigatorTargets(
           const propValue = getJSXAttribute(jsxElement.props, prop)
 
           const slotEntry = syntheticNavigatorEntry(
-            EP.appendToPath(path, propValue?.uid ?? 'prop-slot'),
+            EP.appendToPath(path, propValue?.uid ?? `prop-slot-${prop}`),
             propValue ?? jsExpressionOtherJavaScriptSimple('null', []),
             propValue == null ? prop : null,
           )
