@@ -107,17 +107,20 @@ export var whatever = (props) => <View data-uid='aaa'>
       left: jsPropertyAccess(
         jsElementAccess(
           jsPropertyAccess(
-            jsIdentifier('props', '', emptyComments),
+            jsIdentifier('props', '', expect.objectContaining({}), emptyComments),
             'leftOfTheCake',
             '',
+            expect.objectContaining({}),
             emptyComments,
           ),
           jsExpressionValue(0, emptyComments, ''),
           '',
+          expect.objectContaining({}),
           emptyComments,
         ),
         'hat',
         '',
+        expect.objectContaining({}),
         emptyComments,
       ),
       right: jsExpressionValue(20, emptyComments),
@@ -256,17 +259,20 @@ export function whatever(props) {
       left: jsPropertyAccess(
         jsElementAccess(
           jsPropertyAccess(
-            jsIdentifier('props', '', emptyComments),
+            jsIdentifier('props', '', expect.objectContaining({}), emptyComments),
             'leftOfTheCake',
             '',
+            expect.objectContaining({}),
             emptyComments,
           ),
           jsExpressionValue(0, emptyComments, ''),
           '',
+          expect.objectContaining({}),
           emptyComments,
         ),
         'hat',
         '',
+        expect.objectContaining({}),
         emptyComments,
       ),
       right: jsExpressionValue(20, emptyComments),
@@ -409,17 +415,20 @@ export default function whatever(props) {
       left: jsPropertyAccess(
         jsElementAccess(
           jsPropertyAccess(
-            jsIdentifier('props', '', emptyComments),
+            jsIdentifier('props', '', expect.objectContaining({}), emptyComments),
             'leftOfTheCake',
             '',
+            expect.objectContaining({}),
             emptyComments,
           ),
           jsExpressionValue(0, emptyComments, ''),
           '',
+          expect.objectContaining({}),
           emptyComments,
         ),
         'hat',
         '',
+        expect.objectContaining({}),
         emptyComments,
       ),
       right: jsExpressionValue(20, emptyComments),
@@ -559,17 +568,20 @@ export var whatever = (props) => <View data-uid='aaa'>
       left: jsPropertyAccess(
         jsElementAccess(
           jsPropertyAccess(
-            jsIdentifier('props', '', emptyComments),
+            jsIdentifier('props', '', expect.objectContaining({}), emptyComments),
             'leftOfTheCake',
             '',
+            expect.objectContaining({}),
             emptyComments,
           ),
           jsExpressionValue(0, emptyComments, ''),
           '',
+          expect.objectContaining({}),
           emptyComments,
         ),
         'hat',
         '',
+        expect.objectContaining({}),
         emptyComments,
       ),
       right: jsExpressionValue(20, emptyComments),
@@ -648,17 +660,20 @@ export var whatever = (props) => <View data-uid='aaa'>
       left: jsPropertyAccess(
         jsElementAccess(
           jsPropertyAccess(
-            jsIdentifier('props', '', emptyComments),
+            jsIdentifier('props', '', expect.objectContaining({}), emptyComments),
             'leftOfTheCake',
             '',
+            expect.objectContaining({}),
             emptyComments,
           ),
           jsExpressionValue(0, emptyComments, ''),
           '',
+          expect.objectContaining({}),
           emptyComments,
         ),
         'hat',
         '',
+        expect.objectContaining({}),
         emptyComments,
       ),
       right: jsExpressionValue(20, emptyComments),
@@ -670,17 +685,20 @@ export var whatever = (props) => <View data-uid='aaa'>
       left: jsPropertyAccess(
         jsElementAccess(
           jsPropertyAccess(
-            jsIdentifier('props', '', emptyComments),
+            jsIdentifier('props', '', expect.objectContaining({}), emptyComments),
             'leftOfTheCake',
             '',
+            expect.objectContaining({}),
             emptyComments,
           ),
           jsExpressionValue(0, emptyComments, ''),
           '',
+          expect.objectContaining({}),
           emptyComments,
         ),
         'hat',
         '',
+        expect.objectContaining({}),
         emptyComments,
       ),
       right: jsExpressionValue(20, emptyComments),
@@ -751,17 +769,20 @@ export var whatever = (props) => <View data-uid='aaa'>
         left: jsPropertyAccess(
           jsElementAccess(
             jsPropertyAccess(
-              jsIdentifier('props', '', emptyComments),
+              jsIdentifier('props', '', expect.objectContaining({}), emptyComments),
               'leftOfTheCake',
               '',
+              expect.objectContaining({}),
               emptyComments,
             ),
             jsExpressionValue(0, emptyComments, ''),
             '',
+            expect.objectContaining({}),
             emptyComments,
           ),
           'hat',
           '',
+          expect.objectContaining({}),
           emptyComments,
         ),
         right: jsExpressionValue(20, emptyComments),
@@ -833,17 +854,20 @@ export var whatever = (props) => <View data-uid='aaa'>
         left: jsPropertyAccess(
           jsElementAccess(
             jsPropertyAccess(
-              jsIdentifier('props', '', emptyComments),
+              jsIdentifier('props', '', expect.objectContaining({}), emptyComments),
               'leftOfTheCake',
               '',
+              expect.objectContaining({}),
               emptyComments,
             ),
             jsExpressionValue(0, emptyComments, ''),
             '',
+            expect.objectContaining({}),
             emptyComments,
           ),
           'hat',
           '',
+          expect.objectContaining({}),
           emptyComments,
         ),
         right: jsExpressionValue(20, emptyComments),
@@ -857,17 +881,20 @@ export var whatever = (props) => <View data-uid='aaa'>
         left: jsPropertyAccess(
           jsElementAccess(
             jsPropertyAccess(
-              jsIdentifier('props', '', emptyComments),
+              jsIdentifier('props', '', expect.objectContaining({}), emptyComments),
               'rightOfTheCake',
               '',
+              expect.objectContaining({}),
               emptyComments,
             ),
             jsExpressionValue(0, emptyComments, ''),
             '',
+            expect.objectContaining({}),
             emptyComments,
           ),
           'hat',
           '',
+          expect.objectContaining({}),
           emptyComments,
         ),
         right: jsExpressionValue(10, emptyComments),
@@ -942,17 +969,20 @@ export var whatever = (props) => <View data-uid='aaa'>
       left: jsPropertyAccess(
         jsElementAccess(
           jsPropertyAccess(
-            jsIdentifier('props', '', emptyComments),
+            jsIdentifier('props', '', expect.objectContaining({}), emptyComments),
             'leftOfTheCake',
             '',
+            expect.objectContaining({}),
             emptyComments,
           ),
           jsExpressionValue(0, emptyComments, ''),
           '',
+          expect.objectContaining({}),
           emptyComments,
         ),
         'hat',
         '',
+        expect.objectContaining({}),
         emptyComments,
       ),
       right: jsExpressionValue(20, emptyComments),
@@ -1189,17 +1219,20 @@ export var whatever = (props) => <View data-uid='aaa'>
       left: jsPropertyAccess(
         jsElementAccess(
           jsPropertyAccess(
-            jsIdentifier('props', '', emptyComments),
+            jsIdentifier('props', '', expect.objectContaining({}), emptyComments),
             'leftOfTheCake',
             '',
+            expect.objectContaining({}),
             emptyComments,
           ),
           jsExpressionValue(0, emptyComments, ''),
           '',
+          expect.objectContaining({}),
           emptyComments,
         ),
         'hat',
         '',
+        expect.objectContaining({}),
         emptyComments,
       ),
       right: jsExpressionValue(20, emptyComments),
@@ -1300,17 +1333,20 @@ export var whatever = (props) => <View data-uid='aaa'>
       left: jsPropertyAccess(
         jsElementAccess(
           jsPropertyAccess(
-            jsIdentifier('props', '', emptyComments),
+            jsIdentifier('props', '', expect.objectContaining({}), emptyComments),
             'leftOfTheCake',
             '',
+            expect.objectContaining({}),
             emptyComments,
           ),
           jsExpressionValue(0, emptyComments, ''),
           '',
+          expect.objectContaining({}),
           emptyComments,
         ),
         'hat',
         '',
+        expect.objectContaining({}),
         emptyComments,
       ),
       right: jsExpressionValue(20, emptyComments),
@@ -1417,17 +1453,20 @@ export var whatever = (props) => <View data-uid='aaa'>
       left: jsPropertyAccess(
         jsElementAccess(
           jsPropertyAccess(
-            jsIdentifier('props', '', emptyComments),
+            jsIdentifier('props', '', expect.objectContaining({}), emptyComments),
             'leftOfTheCake',
             '',
+            expect.objectContaining({}),
             emptyComments,
           ),
           jsExpressionValue(0, emptyComments, ''),
           '',
+          expect.objectContaining({}),
           emptyComments,
         ),
         'hat',
         '',
+        expect.objectContaining({}),
         emptyComments,
       ),
       right: jsExpressionValue(20, emptyComments),
@@ -1518,7 +1557,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsExpressionValue('aab', emptyComments),
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
-      left: jsIdentifier('spacing', '', emptyComments),
+      left: jsIdentifier('spacing', '', expect.objectContaining({}), emptyComments),
       right: jsExpressionValue(20, emptyComments),
       top: jsExpressionValue(-20, emptyComments),
     })
@@ -1597,9 +1636,10 @@ export var whatever = (props) => {
       style: jsxAttributeNestedObjectSimple(
         jsxAttributesFromMap({
           backgroundColor: jsElementAccess(
-            jsIdentifier('bgs', '', emptyComments),
+            jsIdentifier('bgs', '', expect.objectContaining({}), emptyComments),
             jsExpressionValue(0, emptyComments, ''),
             '',
+            expect.objectContaining({}),
             emptyComments,
           ),
         }),
@@ -1669,7 +1709,10 @@ export var whatever = (props) => {
       colors: jsExpressionNestedArray(
         [
           jsxArrayValue(jsExpressionValue('black', emptyComments), emptyComments),
-          jsxArraySpread(jsIdentifier('greys', '', emptyComments), emptyComments),
+          jsxArraySpread(
+            jsIdentifier('greys', '', expect.objectContaining({}), emptyComments),
+            emptyComments,
+          ),
         ],
         emptyComments,
       ),
@@ -1975,7 +2018,13 @@ export var whatever = (props) => {
     )
     const viewAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsExpressionValue('aaa', emptyComments),
-      left: jsPropertyAccess(jsIdentifier('b', '', emptyComments), 'a', '', emptyComments),
+      left: jsPropertyAccess(
+        jsIdentifier('b', '', expect.objectContaining({}), emptyComments),
+        'a',
+        '',
+        expect.objectContaining({}),
+        emptyComments,
+      ),
     })
     const view = jsxElement('View', 'aaa', viewAttributes, [])
     const jsCode = `const a = 10
@@ -2100,7 +2149,12 @@ export var whatever = (props) => {
     const viewAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsExpressionValue('aaa', emptyComments),
       style: jsExpressionNestedObject(
-        [jsxSpreadAssignment(jsIdentifier('bg', '', emptyComments), emptyComments)],
+        [
+          jsxSpreadAssignment(
+            jsIdentifier('bg', '', expect.objectContaining({}), emptyComments),
+            emptyComments,
+          ),
+        ],
         emptyComments,
       ),
     })
@@ -2656,13 +2710,15 @@ export var whatever = props => (
             'left',
             jsPropertyAccess(
               jsPropertyAccess(
-                jsIdentifier('props', '', emptyComments),
+                jsIdentifier('props', '', expect.objectContaining({}), emptyComments),
                 'layout',
                 '',
+                expect.objectContaining({}),
                 emptyComments,
               ),
               'left',
               '',
+              expect.objectContaining({}),
               emptyComments,
             ),
             emptyComments,
@@ -2672,13 +2728,15 @@ export var whatever = props => (
             'top',
             jsPropertyAccess(
               jsPropertyAccess(
-                jsIdentifier('props', '', emptyComments),
+                jsIdentifier('props', '', expect.objectContaining({}), emptyComments),
                 'layout',
                 '',
+                expect.objectContaining({}),
                 emptyComments,
               ),
               'top',
               '',
+              expect.objectContaining({}),
               emptyComments,
             ),
             emptyComments,
@@ -2849,9 +2907,10 @@ export var whatever = (props) => <View data-uid='aaa'>
               backgroundColor: jsExpressionValue('red', emptyComments),
               color: jsxAttributeNestedArraySimple([
                 jsPropertyAccess(
-                  jsIdentifier('props', '', emptyComments),
+                  jsIdentifier('props', '', expect.objectContaining({}), emptyComments),
                   'color',
                   '',
+                  expect.objectContaining({}),
                   emptyComments,
                 ),
                 jsExpressionValue(-200, emptyComments),
@@ -3527,9 +3586,10 @@ export var whatever = props => {
             backgroundColor: jsExpressionValue('red', emptyComments),
             color: jsxAttributeNestedArraySimple([
               jsPropertyAccess(
-                jsIdentifier('props', '', emptyComments),
+                jsIdentifier('props', '', expect.objectContaining({}), emptyComments),
                 'color',
                 '',
+                expect.objectContaining({}),
                 emptyComments,
               ),
               jsExpressionValue(-200, emptyComments),
@@ -3537,17 +3597,19 @@ export var whatever = props => {
             boxShadow: jsExpressionFunctionCall('createShadow', [
               jsExpressionValue(15, emptyComments),
               jsPropertyAccess(
-                jsIdentifier('props', '', emptyComments),
+                jsIdentifier('props', '', expect.objectContaining({}), emptyComments),
                 'shadowValue',
                 '',
+                expect.objectContaining({}),
                 emptyComments,
               ),
               jsxAttributeNestedArraySimple([
                 jsExpressionValue('hello', emptyComments),
                 jsPropertyAccess(
-                  jsIdentifier('props', '', emptyComments),
+                  jsIdentifier('props', '', expect.objectContaining({}), emptyComments),
                   'there',
                   '',
+                  expect.objectContaining({}),
                   emptyComments,
                 ),
               ]),
@@ -4280,46 +4342,54 @@ export var App = props => {
             jsxAttributesFromMap({
               height: jsPropertyAccess(
                 jsPropertyAccess(
-                  jsIdentifier('props', '', emptyComments),
+                  jsIdentifier('props', '', expect.objectContaining({}), emptyComments),
                   'layout',
                   '',
+                  expect.objectContaining({}),
                   emptyComments,
                 ),
                 'height',
                 '',
+                expect.objectContaining({}),
                 emptyComments,
               ),
               left: jsPropertyAccess(
                 jsPropertyAccess(
-                  jsIdentifier('props', '', emptyComments),
+                  jsIdentifier('props', '', expect.objectContaining({}), emptyComments),
                   'layout',
                   '',
+                  expect.objectContaining({}),
                   emptyComments,
                 ),
                 'left',
                 '',
+                expect.objectContaining({}),
                 emptyComments,
               ),
               width: jsPropertyAccess(
                 jsPropertyAccess(
-                  jsIdentifier('props', '', emptyComments),
+                  jsIdentifier('props', '', expect.objectContaining({}), emptyComments),
                   'layout',
                   '',
+                  expect.objectContaining({}),
                   emptyComments,
                 ),
                 'width',
                 '',
+                expect.objectContaining({}),
                 emptyComments,
               ),
               top: jsPropertyAccess(
                 jsPropertyAccess(
-                  jsIdentifier('props', '', emptyComments),
+                  jsIdentifier('props', '', expect.objectContaining({}), emptyComments),
                   'layout',
                   '',
+                  expect.objectContaining({}),
                   emptyComments,
                 ),
                 'top',
                 '',
+                expect.objectContaining({}),
                 emptyComments,
               ),
             }),
@@ -4658,7 +4728,7 @@ return { result: result };`
         }),
       },
     )
-    const innerBlock = jsIdentifier('result', '', emptyComments)
+    const innerBlock = jsIdentifier('result', '', expect.objectContaining({}), emptyComments)
     const view = jsxElement(
       'div',
       'aaa',

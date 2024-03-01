@@ -1245,11 +1245,13 @@ export function ArbitraryJSBlockKeepDeepEquality(): KeepDeepEqualityCall<Arbitra
 }
 
 export function JSIdentifierKeepDeepEquality(): KeepDeepEqualityCall<JSIdentifier> {
-  return combine3EqualityCalls(
+  return combine4EqualityCalls(
     (identifier) => identifier.name,
     createCallWithTripleEquals<string>(),
     (identifier) => identifier.uid,
     createCallWithTripleEquals<string>(),
+    (identifier) => identifier.sourceMap,
+    nullableDeepEquality(RawSourceMapKeepDeepEquality),
     (identifier) => identifier.comments,
     ParsedCommentsKeepDeepEqualityCall,
     jsIdentifier,
@@ -1257,13 +1259,15 @@ export function JSIdentifierKeepDeepEquality(): KeepDeepEqualityCall<JSIdentifie
 }
 
 export function JSPropertyAccessKeepDeepEquality(): KeepDeepEqualityCall<JSPropertyAccess> {
-  return combine4EqualityCalls(
+  return combine5EqualityCalls(
     (access) => access.onValue,
     JSExpressionKeepDeepEqualityCall,
     (access) => access.property,
     createCallWithTripleEquals<string>(),
     (access) => access.uid,
     createCallWithTripleEquals<string>(),
+    (access) => access.sourceMap,
+    nullableDeepEquality(RawSourceMapKeepDeepEquality),
     (access) => access.comments,
     ParsedCommentsKeepDeepEqualityCall,
     jsPropertyAccess,
@@ -1271,13 +1275,15 @@ export function JSPropertyAccessKeepDeepEquality(): KeepDeepEqualityCall<JSPrope
 }
 
 export function JSElementAccessKeepDeepEquality(): KeepDeepEqualityCall<JSElementAccess> {
-  return combine4EqualityCalls(
+  return combine5EqualityCalls(
     (access) => access.onValue,
     JSExpressionKeepDeepEqualityCall,
     (access) => access.element,
     JSExpressionKeepDeepEqualityCall,
     (access) => access.uid,
     createCallWithTripleEquals<string>(),
+    (access) => access.sourceMap,
+    nullableDeepEquality(RawSourceMapKeepDeepEquality),
     (access) => access.comments,
     ParsedCommentsKeepDeepEqualityCall,
     jsElementAccess,

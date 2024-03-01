@@ -273,9 +273,52 @@ export var App = (props) => {
     expect(canvasErrors).toMatchInlineSnapshot(`
       Array [
         Object {
-          "message": "Cannot read properties of undefined (reading 'a')",
-          "name": "TypeError",
-          "stackFrames": Array [],
+          "message": "a is not defined",
+          "name": "ReferenceError",
+          "stackFrames": Array [
+            Object {
+              "columnNumber": 8,
+              "fileName": "code.tsx",
+              "lineNumber": 9,
+              "originalCode": Array [
+                ScriptLine {
+                  "content": "export var App = (props) => {",
+                  "highlight": false,
+                  "lineNumber": 6,
+                },
+                ScriptLine {
+                  "content": "  return (",
+                  "highlight": false,
+                  "lineNumber": 7,
+                },
+                ScriptLine {
+                  "content": "    <MyComp data-uid={'aaa'}>",
+                  "highlight": false,
+                  "lineNumber": 8,
+                },
+                ScriptLine {
+                  "content": "      {a.a /* 20,8 */}",
+                  "highlight": true,
+                  "lineNumber": 9,
+                },
+                ScriptLine {
+                  "content": "    </MyComp>",
+                  "highlight": false,
+                  "lineNumber": 10,
+                },
+                ScriptLine {
+                  "content": "  )",
+                  "highlight": false,
+                  "lineNumber": 11,
+                },
+                ScriptLine {
+                  "content": "}",
+                  "highlight": false,
+                  "lineNumber": 12,
+                },
+              ],
+            },
+          ],
         },
       ]
     `)
@@ -404,9 +447,52 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     expect(canvasErrors).toMatchInlineSnapshot(`
       Array [
         Object {
-          "message": "Cannot read properties of undefined (reading 'a')",
-          "name": "TypeError",
-          "stackFrames": Array [],
+          "message": "a is not defined",
+          "name": "ReferenceError",
+          "stackFrames": Array [
+            Object {
+              "columnNumber": 8,
+              "fileName": "code.tsx",
+              "lineNumber": 9,
+              "originalCode": Array [
+                ScriptLine {
+                  "content": "export var App = (props) => {",
+                  "highlight": false,
+                  "lineNumber": 6,
+                },
+                ScriptLine {
+                  "content": "  return (",
+                  "highlight": false,
+                  "lineNumber": 7,
+                },
+                ScriptLine {
+                  "content": "    <MyComp data-uid={'aaa'}>",
+                  "highlight": false,
+                  "lineNumber": 8,
+                },
+                ScriptLine {
+                  "content": "      {a.a /* 20,8 */}",
+                  "highlight": true,
+                  "lineNumber": 9,
+                },
+                ScriptLine {
+                  "content": "    </MyComp>",
+                  "highlight": false,
+                  "lineNumber": 10,
+                },
+                ScriptLine {
+                  "content": "  )",
+                  "highlight": false,
+                  "lineNumber": 11,
+                },
+                ScriptLine {
+                  "content": "}",
+                  "highlight": false,
+                  "lineNumber": 12,
+                },
+              ],
+            },
+          ],
         },
       ]
     `)
