@@ -621,8 +621,8 @@ const ProjectCard = React.memo(
     return (
       <div
         style={{
-          height: 200,
-          width: 300,
+          height: 2200,
+          // width: 170,
           display: 'flex',
           flexDirection: 'column',
           gap: 5,
@@ -633,8 +633,9 @@ const ProjectCard = React.memo(
             border: selected ? '2px solid #0075F9' : '2px solid transparent',
             borderRadius: 10,
             overflow: 'hidden',
-            height: 180,
-            width: '100%',
+            height: 170,
+            width: 280,
+            // width: '100%',
             background: 'linear-gradient(rgba(77, 255, 223, 0.4), rgba(255,250,220,.8))',
             backgroundAttachment: 'local',
             backgroundRepeat: 'no-repeat',
