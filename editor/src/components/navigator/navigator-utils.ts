@@ -182,6 +182,16 @@ export function getNavigatorTargets(
           navigatorTargets.push(navigatorEntry)
           visibleNavigatorTargets.push(navigatorEntry)
         })
+        if (addedProps.size > 0) {
+          const entry = renderPropNavigatorEntry(
+            EP.appendToPath(path, 'children'),
+            'children',
+            null,
+            true,
+          )
+          navigatorTargets.push(entry)
+          visibleNavigatorTargets.push(entry)
+        }
       }
 
       const propertyControls = getPropertyControlsForTarget(

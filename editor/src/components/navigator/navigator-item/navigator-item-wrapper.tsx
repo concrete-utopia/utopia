@@ -194,8 +194,11 @@ export function getNavigatorEntryLabel(
     }
     case 'RENDER_PROP':
       const name = (() => {
+        if (navigatorEntry.isRendered) {
+          return ''
+        }
         if (navigatorEntry.childOrAttribute == null) {
-          return 'empty'
+          return ': empty'
         }
         switch (navigatorEntry.childOrAttribute.type) {
           case 'JSX_ELEMENT':
@@ -227,9 +230,7 @@ export function getNavigatorEntryLabel(
             throw assertNever(navigatorEntry.childOrAttribute)
         }
       })()
-      return `${navigatorEntry.propName}: ${
-        navigatorEntry.childOrAttribute == null ? 'empty' : navigatorEntry.isRendered ? '' : name
-      }`
+      return `${navigatorEntry.propName}${name}`
     case 'INVALID_OVERRIDE':
       return navigatorEntry.message
     default:
