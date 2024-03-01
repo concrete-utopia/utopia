@@ -6,12 +6,16 @@ import type {
   JSXConditionalExpression,
 } from '../../core/shared/element-template'
 import {
+  emptyComments,
   getJSXAttribute,
   hasElementsWithin,
   isJSXAttributesEntry,
   isJSXConditionalExpression,
   isJSXElement,
   isJSXMapExpression,
+  jsExpressionOtherJavaScriptSimple,
+  jsExpressionValue,
+  jsxAttributesEntry,
 } from '../../core/shared/element-template'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { foldEither, isLeft, isRight } from '../../core/shared/either'
@@ -35,6 +39,7 @@ import type { PropertyControlsInfo } from '../custom-code/code-file'
 import type { ProjectContentTreeRoot } from '../assets'
 import type { PropertyControls } from 'utopia-api/core'
 import { isFeatureEnabled } from '../../utils/feature-switches'
+import { jsxAttributeOtherJavaScriptArbitrary } from '../../core/workers/parser-printer/parser-printer.test-utils'
 
 export function baseNavigatorDepth(path: ElementPath): number {
   // The storyboard means that this starts at -1,
@@ -135,14 +140,17 @@ export function getNavigatorTargets(
               addedProps.add(prop)
               const elementWithin = Object.values(propValue.elementsWithin)[0]
               if (elementWithin == null) {
-                const entry = renderPropNavigatorEntry(
-                  EP.appendToPath(path, propValue.uid),
-                  prop,
-                  propValue,
-                  false,
-                )
-                navigatorTargets.push(entry)
-                visibleNavigatorTargets.push(entry)
+                const entries = [
+                  renderPropNavigatorEntry(
+                    EP.appendToPath(path, propValue.uid),
+                    prop,
+                    propValue,
+                    false,
+                  ),
+                  syntheticNavigatorEntry(EP.appendToPath(path, propValue.uid), propValue, null),
+                ]
+                navigatorTargets.push(...entries)
+                visibleNavigatorTargets.push(...entries)
                 return
               }
               const childPath = EP.appendToPath(path, EP.createIndexedUid(elementWithin.uid, ++idx))
@@ -157,7 +165,7 @@ export function getNavigatorTargets(
                 processedAsRenderProp.add(EP.toString(subTreeChild.path))
                 walkAndAddKeys(subTreeChild, collapsedAncestor)
               } else {
-                const entry = syntheticNavigatorEntry(childPath, elementWithin)
+                const entry = syntheticNavigatorEntry(childPath, elementWithin, null)
                 navigatorTargets.push(entry)
                 visibleNavigatorTargets.push(entry)
               }
@@ -171,16 +179,25 @@ export function getNavigatorTargets(
           if (control.control !== 'jsx') {
             return
           }
-          const propValue = getJSXAttribute(jsxElement.props, prop)
 
           const navigatorEntry = renderPropNavigatorEntry(
-            EP.appendToPath(path, propValue?.uid ?? 'fake-uid'),
+            EP.appendToPath(path, 'fake-uid'),
             prop,
-            propValue,
+            null,
             false,
           )
           navigatorTargets.push(navigatorEntry)
           visibleNavigatorTargets.push(navigatorEntry)
+
+          const propValue = getJSXAttribute(jsxElement.props, prop)
+
+          const slotEntry = syntheticNavigatorEntry(
+            EP.appendToPath(path, propValue?.uid ?? 'prop-slot'),
+            propValue ?? jsExpressionOtherJavaScriptSimple('null', []),
+            propValue == null ? prop : null,
+          )
+          navigatorTargets.push(slotEntry)
+          visibleNavigatorTargets.push(slotEntry)
         })
         if (addedProps.size > 0) {
           const entry = renderPropNavigatorEntry(
@@ -268,7 +285,7 @@ export function getNavigatorTargets(
           elementMetadata == null &&
           (clausePathTrees.length === 0 || !clausePathTrees.some((t) => isDynamic(t.path)))
         ) {
-          const clauseValueEntry = syntheticNavigatorEntry(clausePath, clauseValue)
+          const clauseValueEntry = syntheticNavigatorEntry(clausePath, clauseValue, null)
           addNavigatorTargetUnlessCollapsed(clauseValueEntry)
         }
       }

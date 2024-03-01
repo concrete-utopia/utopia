@@ -629,11 +629,13 @@ export const ConditionalClauseNavigatorEntryKeepDeepEquality: KeepDeepEqualityCa
   )
 
 export const SyntheticNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<SyntheticNavigatorEntry> =
-  combine2EqualityCalls(
+  combine3EqualityCalls(
     (entry) => entry.elementPath,
     ElementPathKeepDeepEquality,
     (entry) => entry.childOrAttribute,
     JSXElementChildKeepDeepEquality(),
+    (entry) => entry.renderProp,
+    nullableDeepEquality(StringKeepDeepEquality),
     syntheticNavigatorEntry,
   )
 

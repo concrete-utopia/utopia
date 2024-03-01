@@ -750,7 +750,8 @@ export const NavigatorItem: React.FunctionComponent<
 
   const isComponentScene = useIsProbablyScene(navigatorEntry) && childComponentCount === 1
   const isRenderProp = isRenderPropNavigatorEntry(navigatorEntry)
-  const isEmptyRenderProp = isRenderProp && navigatorEntry.childOrAttribute == null
+  const isRenderPropSlot =
+    isSyntheticNavigatorEntry(navigatorEntry) && navigatorEntry.renderProp != null
 
   const containerStyle: React.CSSProperties = React.useMemo(() => {
     return {
@@ -787,13 +788,14 @@ export const NavigatorItem: React.FunctionComponent<
     : resultingStyle.iconColor
 
   const renderPropPickerId = varSafeNavigatorEntryToKey(navigatorEntry)
+
   const { showRenderPropPicker: showContextMenu, hideRenderPropPicker: hideContextMenu } =
     useShowRenderPropPicker(renderPropPickerId)
 
   const renderPropPickerData = React.useMemo(() => {
     const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)
     const entry = props.navigatorEntry
-    if (portalTarget == null || entry.type !== 'RENDER_PROP') {
+    if (portalTarget == null || entry.type !== 'SYNTHETIC' || entry.renderProp == null) {
       return null
     }
 
@@ -802,7 +804,7 @@ export const NavigatorItem: React.FunctionComponent<
 
   return (
     <div
-      onClick={isEmptyRenderProp ? showContextMenu : hideContextMenu}
+      onClick={isRenderPropSlot ? showContextMenu : hideContextMenu}
       style={{
         outline: `1px solid ${
           props.parentOutline === 'solid' && isOutletOrDescendantOfOutlet
@@ -821,7 +823,7 @@ export const NavigatorItem: React.FunctionComponent<
               target={props.navigatorEntry.elementPath}
               key={renderPropPickerId}
               id={renderPropPickerId}
-              prop={renderPropPickerData.entry.propName}
+              prop={renderPropPickerData.entry.renderProp ?? ''}
             />,
             renderPropPickerData.portalTarget,
           )}
@@ -832,7 +834,7 @@ export const NavigatorItem: React.FunctionComponent<
         onMouseMove={highlight}
         onDoubleClick={focusComponent}
       >
-        {isSlot ? (
+        {isSlot || isRenderPropSlot ? (
           <div
             key={`label-${props.label}-slot`}
             style={{
