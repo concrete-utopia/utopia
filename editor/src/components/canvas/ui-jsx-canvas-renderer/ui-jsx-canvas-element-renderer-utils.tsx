@@ -13,6 +13,9 @@ import type {
   ElementsWithin,
   JSExpression,
   JSXElementLike,
+  JSIdentifier,
+  JSPropertyAccess,
+  JSElementAccess,
 } from '../../../core/shared/element-template'
 import {
   isJSXElement,
@@ -573,8 +576,22 @@ export function renderCoreElement(
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
-      const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
+    case 'JS_PROPERTY_ACCESS':
+    case 'JS_ELEMENT_ACCESS':
+    case 'JS_IDENTIFIER':
+      if (elementPath != null) {
+        addFakeSpyEntry(
+          validPaths,
+          metadataContext,
+          elementPath,
+          element,
+          filePath,
+          imports,
+          'not-a-conditional',
+        )
+      }
 
+      const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
       if (elementIsTextEdited) {
         const textContent = trimJoinUnescapeTextFromJSXElements([element])
         const textEditorProps: TextEditorProps = {
@@ -605,10 +622,6 @@ export function renderCoreElement(
       }
 
       return jsxAttributeToValue(filePath, inScope, requireResult, element)
-    case 'JS_PROPERTY_ACCESS':
-    case 'JS_ELEMENT_ACCESS':
-    case 'JS_IDENTIFIER':
-      return jsxAttributeToValue(filePath, inScope, requireResult, element)
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled type ${JSON.stringify(element)}`)
@@ -623,6 +636,7 @@ function trimJoinUnescapeTextFromJSXElements(elements: Array<JSXElementChild>): 
       elements[i - 1] ?? null,
       elements[i + 1] ?? null,
       'jsx',
+      'outermost',
     )
   }
 
@@ -634,7 +648,15 @@ function jsxElementChildToText(
   prevElement: JSXElementChild | null,
   nextElement: JSXElementChild | null,
   expressionContext: 'jsx' | 'javascript',
+  outermost: 'outermost' | 'inner',
 ): string {
+  function outermostWrapInBraces(value: string): string {
+    if (outermost === 'outermost') {
+      return `{${value}}`
+    } else {
+      return value
+    }
+  }
   switch (element.type) {
     case 'JSX_TEXT_BLOCK':
       return trimWhitespaces(element.text, prevElement ?? null, nextElement ?? null)
@@ -658,7 +680,8 @@ function jsxElementChildToText(
         null,
         null,
         'javascript',
-      )} : ${jsxElementChildToText(element.whenFalse, null, null, 'javascript')} }`
+        'inner',
+      )} : ${jsxElementChildToText(element.whenFalse, null, null, 'javascript', 'inner')} }`
     case 'ATTRIBUTE_VALUE':
       if (typeof element.value === 'string') {
         switch (expressionContext) {
@@ -690,10 +713,25 @@ function jsxElementChildToText(
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
-    case 'JS_IDENTIFIER':
-    case 'JS_ELEMENT_ACCESS':
-    case 'JS_PROPERTY_ACCESS':
       return ''
+    case 'JS_IDENTIFIER':
+      return outermostWrapInBraces(element.name)
+    case 'JS_ELEMENT_ACCESS':
+      return outermostWrapInBraces(
+        `${jsxElementChildToText(
+          element.onValue,
+          null,
+          null,
+          'javascript',
+          'inner',
+        )}[${jsxElementChildToText(element.element, null, null, 'javascript', 'inner')}]`,
+      )
+    case 'JS_PROPERTY_ACCESS':
+      return outermostWrapInBraces(
+        `${jsxElementChildToText(element.onValue, null, null, 'javascript', 'inner')}.${
+          element.property
+        }`,
+      )
     default:
       assertNever(element)
   }
@@ -900,7 +938,7 @@ function renderJSXElement(
           variablesInScope,
           [],
         )
-        const blockScope = {
+        const blockScope: Record<any, any> = {
           ...inScope,
           [JSX_CANVAS_LOOKUP_FUNCTION_NAME]: utopiaCanvasJSXLookup({}, inScope, innerRender),
         }
@@ -910,7 +948,8 @@ function renderJSXElement(
             ? childrenWithNewTextBlock[0]
             : jsExpressionValue(null, emptyComments) // placeholder
 
-        return runJSExpression(filePath, requireResult, expressionToEvaluate, blockScope)
+        const result = runJSExpression(filePath, requireResult, expressionToEvaluate, blockScope)
+        return result
       }
 
       const originalTextContent = isFeatureEnabled('Steganography') ? runJSExpressionLazy() : null
@@ -1038,7 +1077,7 @@ function runJSExpression(
     case 'JS_PROPERTY_ACCESS':
     case 'JS_ELEMENT_ACCESS':
     case 'JS_IDENTIFIER':
-      return jsxAttributeToValue(filePath, block, requireResult, block)
+      return jsxAttributeToValue(filePath, currentScope, requireResult, block)
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return resolveParamsAndRunJsCode(filePath, block, requireResult, currentScope)

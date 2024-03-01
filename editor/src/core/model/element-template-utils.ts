@@ -40,6 +40,9 @@ import {
   isJSExpression,
   hasElementsWithin,
   isUtopiaJSXComponent,
+  isJSPropertyAccessForProperty,
+  isJSIdentifier,
+  isJSIdentifierForName,
 } from '../shared/element-template'
 import type {
   StaticElementPathPart,
@@ -831,6 +834,12 @@ function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttributes): b
               if (modifiableAttributeIsAttributeOtherJavaScript(spreadPart)) {
                 return checkJSReferencesVariable(spreadPart, propsVariableName, stylePropPath)
               }
+              if (
+                isJSPropertyAccessForProperty(spreadPart, 'style') &&
+                isJSIdentifierForName(spreadPart.onValue, 'props')
+              ) {
+                return true
+              }
             }
             return false
           })
@@ -839,6 +848,7 @@ function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttributes): b
         case 'PART_OF_ATTRIBUTE_VALUE':
           return false
         case 'JS_IDENTIFIER':
+          return true
         case 'JS_PROPERTY_ACCESS':
         case 'JS_ELEMENT_ACCESS':
           return false
@@ -884,6 +894,9 @@ function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttributes): b
                         propertyToLookFor,
                       )
                     }
+                    if (spreadPart.type === 'JS_IDENTIFIER' && spreadPart.name === 'style') {
+                      return true
+                    }
                   }
                   return false
                 })
@@ -892,7 +905,12 @@ function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttributes): b
               case 'PART_OF_ATTRIBUTE_VALUE':
                 return false
               case 'JS_IDENTIFIER':
+                return true
               case 'JS_PROPERTY_ACCESS':
+                return (
+                  isJSPropertyAccessForProperty(styleAttribute, propertyToLookFor) &&
+                  isJSIdentifierForName(styleAttribute.onValue, 'style')
+                )
               case 'JS_ELEMENT_ACCESS':
                 return false
               default:
@@ -917,22 +935,53 @@ function propertyAccessLookupForPropsStyleProperty(
   toCheck: JSPropertyAccess,
   propName: string,
 ): boolean {
-  // This checks for `something1.something2.something3`:
-  if (
-    toCheck.onValue.type === 'JS_PROPERTY_ACCESS' &&
-    toCheck.onValue.onValue.type === 'JS_IDENTIFIER' &&
-    propsParam.boundParam.type === 'REGULAR_PARAM'
-  ) {
-    // Constrain the above check to `<props>.style.<propName>`
-    if (
-      toCheck.onValue.onValue.name === propsParam.boundParam.paramName &&
-      toCheck.onValue.property === 'style' &&
-      toCheck.property === propName
-    ) {
-      return true
+  switch (propsParam.boundParam.type) {
+    case 'REGULAR_PARAM': {
+      // This checks for `<props>.style.<propName>`:
+      if (
+        isJSPropertyAccessForProperty(toCheck, propName) &&
+        isJSPropertyAccessForProperty(toCheck.onValue, 'style') &&
+        isJSIdentifierForName(toCheck.onValue.onValue, propsParam.boundParam.paramName)
+      ) {
+        return true
+      }
+
+      // This checks for `<props>.style`:
+      if (
+        isJSPropertyAccessForProperty(toCheck, 'style') &&
+        isJSIdentifierForName(toCheck.onValue, propsParam.boundParam.paramName)
+      ) {
+        return true
+      }
+      break
+    }
+    case 'DESTRUCTURED_OBJECT': {
+      return propsParam.boundParam.parts.some((part) => {
+        switch (part.param.boundParam.type) {
+          case 'REGULAR_PARAM': {
+            // This checks for `style.<propName>`:
+            if (
+              isJSPropertyAccessForProperty(toCheck, propName) &&
+              isJSIdentifierForName(toCheck.onValue, 'style')
+            ) {
+              return true
+            }
+
+            // This checks for `style`:
+            if (isJSIdentifierForName(toCheck.onValue, 'style')) {
+              return true
+            }
+            return false
+          }
+          case 'DESTRUCTURED_OBJECT':
+          case 'DESTRUCTURED_ARRAY':
+            return false
+          default:
+            return assertNever(part.param.boundParam)
+        }
+      })
     }
   }
-
   // Work our way back up the calls if there's a really deep chain.
   if (toCheck.onValue.type === 'JS_PROPERTY_ACCESS') {
     return propertyAccessLookupForPropsStyleProperty(propsParam, toCheck.onValue, propName)
@@ -953,7 +1002,7 @@ export function propertyComesFromPropsStyle(
     case 'ATTRIBUTE_VALUE':
       return false
     case 'JSX_MAP_EXPRESSION':
-    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
       const boundParam = propsParam.boundParam
       switch (boundParam.type) {
         case 'REGULAR_PARAM':
@@ -984,6 +1033,7 @@ export function propertyComesFromPropsStyle(
         default:
           return false
       }
+    }
     case 'ATTRIBUTE_NESTED_ARRAY':
       return false
     case 'ATTRIBUTE_NESTED_OBJECT':
@@ -993,7 +1043,26 @@ export function propertyComesFromPropsStyle(
     case 'PART_OF_ATTRIBUTE_VALUE':
       return false
     case 'JS_IDENTIFIER':
-      return false
+      const boundParam = propsParam.boundParam
+      switch (boundParam.type) {
+        case 'REGULAR_PARAM':
+          return false
+        case 'DESTRUCTURED_OBJECT':
+          return boundParam.parts.some((part) => {
+            const partBoundParam = part.param.boundParam
+            if (partBoundParam.type === 'REGULAR_PARAM') {
+              // This handles the aliasing that may be applied to the destructured field.
+              const propertyToCheck = part.propertyName ?? partBoundParam.paramName
+              return propertyToCheck === 'style' && attribute.name === 'style'
+            } else {
+              return false
+            }
+          })
+        case 'DESTRUCTURED_ARRAY':
+          return false
+        default:
+          return assertNever(boundParam)
+      }
     case 'JS_ELEMENT_ACCESS':
       return false
     case 'JS_PROPERTY_ACCESS':
@@ -1023,6 +1092,41 @@ function propertyAccessLookupForPropsProperty(
   }
 
   return false
+}
+
+function identifierUsesProperty(
+  element: JSIdentifier,
+  propsParam: Param,
+  property: string,
+): boolean {
+  switch (propsParam.boundParam.type) {
+    case 'REGULAR_PARAM':
+      return element.name === propsParam.boundParam.paramName
+    case 'DESTRUCTURED_ARRAY':
+      return propsParam.boundParam.parts.some((part) => {
+        switch (part.type) {
+          case 'PARAM':
+            return identifierUsesProperty(element, part, property)
+          case 'OMITTED_PARAM':
+            return false
+          default:
+            return assertNever(part)
+        }
+      })
+    case 'DESTRUCTURED_OBJECT':
+      return propsParam.boundParam.parts.some((part) => {
+        const partBoundParam = part.param.boundParam
+        if (partBoundParam.type === 'REGULAR_PARAM') {
+          // This handles the aliasing that may be applied to the destructured field.
+          const propertyToCheck = part.propertyName ?? partBoundParam.paramName
+          return propertyToCheck === property
+        } else {
+          return false
+        }
+      })
+    default:
+      return assertNever(propsParam.boundParam)
+  }
 }
 
 export function elementUsesProperty(
@@ -1069,9 +1173,12 @@ export function elementUsesProperty(
     case 'JS_PROPERTY_ACCESS':
       return propertyAccessLookupForPropsProperty(propsParam, element, property)
     case 'JS_ELEMENT_ACCESS':
-      return false
+      return (
+        elementUsesProperty(element.onValue, propsParam, property) ||
+        elementUsesProperty(element.element, propsParam, property)
+      )
     case 'JS_IDENTIFIER':
-      return false
+      return identifierUsesProperty(element, propsParam, property)
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled element type: ${JSON.stringify(element)}`)
@@ -1128,9 +1235,12 @@ export function attributeUsesProperty(
     case 'JS_PROPERTY_ACCESS':
       return propertyAccessLookupForPropsProperty(propsParam, attribute, property)
     case 'JS_IDENTIFIER':
-      return false
+      return identifierUsesProperty(attribute, propsParam, property)
     case 'JS_ELEMENT_ACCESS':
-      return false
+      return (
+        elementUsesProperty(attribute.onValue, propsParam, property) ||
+        elementUsesProperty(attribute.element, propsParam, property)
+      )
     default:
       const _exhaustiveCheck: never = attribute
       throw new Error(`Unhandled attribute type: ${JSON.stringify(attribute)}`)
