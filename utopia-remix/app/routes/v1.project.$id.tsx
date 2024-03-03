@@ -1,6 +1,6 @@
 import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node'
 import { proxy } from '../util/proxy.server'
-import { ensure, handle, handleOptions, requireUser } from '../util/api.server'
+import { ensure, getUser, handle, handleOptions, requireUser } from '../util/api.server'
 import { Params } from '@remix-run/react'
 import { Status } from '../util/statusCodes'
 import { hasUserProjectPermission } from '../services/permissionsService.server'
@@ -16,13 +16,8 @@ export async function loader(args: LoaderFunctionArgs) {
 export async function getProject(req: Request, params: Params<string>) {
   const { id: projectId } = params
   ensure(projectId != null, 'project is null', Status.BAD_REQUEST)
-  let userId
-  try {
-    const user = await requireUser(req)
-    userId = user.user_id
-  } catch (e) {
-    userId = 'ANON'
-  }
+  let user = await getUser(req)
+  let userId = user?.user_id ?? 'ANON'
   const projectData = (await proxy(req, params)) as { ownerId: string }
   const creatorId = projectData.ownerId
   const isCreator = creatorId === userId
@@ -30,7 +25,7 @@ export async function getProject(req: Request, params: Params<string>) {
   const allowed =
     isCreator ||
     (await hasUserProjectPermission(projectId, userId, UserProjectPermission.CAN_VIEW_PROJECT))
-  ensure(allowed, 'Access denied', Status.NOT_FOUND)
+  ensure(allowed, 'Project not found', Status.NOT_FOUND)
 
   return projectData
 }

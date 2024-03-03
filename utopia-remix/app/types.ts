@@ -49,6 +49,25 @@ export const AccessLevel = {
 
 export type AccessLevel = (typeof AccessLevel)[keyof typeof AccessLevel]
 
+export function asAccessLevel<T extends AccessLevel | null>(
+  accessLevel: number | undefined | null,
+  defaultAccessLevel: T,
+): AccessLevel | T {
+  if (accessLevel == null) {
+    return defaultAccessLevel
+  }
+  switch (accessLevel) {
+    case AccessLevel.PRIVATE:
+      return AccessLevel.PRIVATE
+    case AccessLevel.PUBLIC:
+      return AccessLevel.PUBLIC
+    case AccessLevel.WITH_LINK:
+      return AccessLevel.WITH_LINK
+    default:
+      return defaultAccessLevel
+  }
+}
+
 export const UserProjectPermission = {
   CAN_VIEW_PROJECT: 0,
   CAN_FORK_PROJECT: 1,

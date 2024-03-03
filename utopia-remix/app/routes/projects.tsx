@@ -34,6 +34,7 @@ import {
   Operation,
   ProjectWithoutContent,
   getOperationDescription,
+  asAccessLevel,
 } from '../types'
 import { requireUser } from '../util/api.server'
 import { assertNever } from '../util/assertNever'
@@ -729,9 +730,10 @@ const ProjectCard = React.memo(
             <div style={{ fontWeight: 600, display: 'flex', gap: '10px', alignItems: 'center' }}>
               <span>{projectTitle}</span>
               <ProjectBadge
-                accessLevel={
-                  (project.ProjectAccess?.access_level as AccessLevel) || AccessLevel.PRIVATE
-                }
+                accessLevel={asAccessLevel(
+                  project.ProjectAccess?.access_level,
+                  AccessLevel.PRIVATE,
+                )}
               />
             </div>
             <div>{moment(project.modified_at).fromNow()}</div>
@@ -811,9 +813,10 @@ const ProjectRow = React.memo(
             >
               <span>{project.title}</span>
               <ProjectBadge
-                accessLevel={
-                  (project.ProjectAccess?.access_level as AccessLevel) || AccessLevel.PRIVATE
-                }
+                accessLevel={asAccessLevel(
+                  project.ProjectAccess?.access_level,
+                  AccessLevel.PRIVATE,
+                )}
               />
             </div>
             <div style={{ width: 220 }}>{moment(project.modified_at).fromNow()}</div>

@@ -1,6 +1,7 @@
 export function asNumber(value?: unknown): number {
-  if (!['string', 'number'].includes(typeof value) || value === '') {
+  try {
+    return parseInt(value as string)
+  } catch (error) {
     return NaN
   }
-  return Number(value)
 }

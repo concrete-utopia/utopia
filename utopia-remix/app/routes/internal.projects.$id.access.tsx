@@ -4,7 +4,7 @@ import { ensure, handle, requireUser } from '../util/api.server'
 import { Status } from '../util/statusCodes'
 import { setProjectAccess } from '../models/projectAccess.server'
 import { asNumber } from '../util/common'
-import { AccessLevel } from '../types'
+import { AccessLevel, asAccessLevel } from '../types'
 import { getProject } from '../models/project.server'
 
 export async function action(args: ActionFunctionArgs) {
@@ -20,15 +20,16 @@ export async function handleChangeProjectAccess(req: Request, params: Params<str
   ensure(project != null, `Project ${id} not found for user ${user.user_id}`, Status.NOT_FOUND)
 
   const formData = await req.formData()
-  const accessLevel = formData.get('accessLevel')
-  const accessLevelNumber = asNumber(accessLevel) as AccessLevel
+  const accessLevelStr = formData.get('accessLevel')
+  const accessLevelNumber = asNumber(accessLevelStr)
   ensure(!isNaN(accessLevelNumber), 'accessLevel is not a number', Status.BAD_REQUEST)
+  const accessLevel = asAccessLevel(accessLevelNumber, null)
   ensure(
-    Object.values(AccessLevel).includes(accessLevelNumber),
+    accessLevel != null && Object.values(AccessLevel).includes(accessLevel),
     'accessLevel is not a valid AccessLevel',
     Status.BAD_REQUEST,
   )
-  await setProjectAccess({ projectId: id, accessLevel: accessLevelNumber })
+  await setProjectAccess({ projectId: id, accessLevel: accessLevel })
 
   return {}
 }

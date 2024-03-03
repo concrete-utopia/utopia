@@ -140,3 +140,13 @@ export async function requireUser(
     throw error
   }
 }
+
+export async function getUser(request: Request): Promise<UserDetails | null> {
+  const cookieHeader = request.headers.get('cookie') ?? ''
+  const cookies = cookie.parse(cookieHeader)
+  const sessionId = cookies[SESSION_COOKIE_NAME] ?? null
+  if (sessionId == null) {
+    return null
+  }
+  return getUserFromSession({ key: sessionId })
+}
