@@ -730,10 +730,9 @@ const ProjectCard = React.memo(
             <div style={{ fontWeight: 600, display: 'flex', gap: '10px', alignItems: 'center' }}>
               <span>{projectTitle}</span>
               <ProjectBadge
-                accessLevel={asAccessLevel(
-                  project.ProjectAccess?.access_level,
-                  AccessLevel.PRIVATE,
-                )}
+                accessLevel={
+                  asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
+                }
               />
             </div>
             <div>{moment(project.modified_at).fromNow()}</div>
@@ -813,10 +812,9 @@ const ProjectRow = React.memo(
             >
               <span>{project.title}</span>
               <ProjectBadge
-                accessLevel={asAccessLevel(
-                  project.ProjectAccess?.access_level,
-                  AccessLevel.PRIVATE,
-                )}
+                accessLevel={
+                  asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
+                }
               />
             </div>
             <div style={{ width: 220 }}>{moment(project.modified_at).fromNow()}</div>

@@ -49,12 +49,9 @@ export const AccessLevel = {
 
 export type AccessLevel = (typeof AccessLevel)[keyof typeof AccessLevel]
 
-export function asAccessLevel<T extends AccessLevel | null>(
-  accessLevel: number | undefined | null,
-  defaultAccessLevel: T,
-): AccessLevel | T {
+export function asAccessLevel(accessLevel: number | undefined | null): AccessLevel | null {
   if (accessLevel == null) {
-    return defaultAccessLevel
+    return null
   }
   switch (accessLevel) {
     case AccessLevel.PRIVATE:
@@ -64,7 +61,7 @@ export function asAccessLevel<T extends AccessLevel | null>(
     case AccessLevel.WITH_LINK:
       return AccessLevel.WITH_LINK
     default:
-      return defaultAccessLevel
+      return null
   }
 }
 

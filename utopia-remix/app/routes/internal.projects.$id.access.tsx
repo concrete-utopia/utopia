@@ -23,7 +23,7 @@ export async function handleChangeProjectAccess(req: Request, params: Params<str
   const accessLevelStr = formData.get('accessLevel')
   const accessLevelNumber = asNumber(accessLevelStr)
   ensure(!isNaN(accessLevelNumber), 'accessLevel is not a number', Status.BAD_REQUEST)
-  const accessLevel = asAccessLevel(accessLevelNumber, null)
+  const accessLevel = asAccessLevel(accessLevelNumber)
   ensure(
     accessLevel != null && Object.values(AccessLevel).includes(accessLevel),
     'accessLevel is not a valid AccessLevel',
