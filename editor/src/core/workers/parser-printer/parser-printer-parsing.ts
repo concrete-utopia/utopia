@@ -2330,7 +2330,7 @@ function getAttributeExpression(
         sourceFile,
         sourceText,
         filename,
-        [initializer],
+        [initializer.expression],
         imports,
         topLevelNames,
         propsObjectName,
