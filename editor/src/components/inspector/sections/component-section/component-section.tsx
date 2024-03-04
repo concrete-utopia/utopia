@@ -80,6 +80,7 @@ import {
   VectorPropertyControl,
   HtmlInputPropertyControl,
   JSXPropertyControl,
+  IdentifierExpressionCartoucheControl,
 } from './property-control-controls'
 import { ExpandableIndicator } from '../../../navigator/navigator-item/expandable-indicator'
 import { unless, when } from '../../../../utils/react-conditionals'
@@ -93,9 +94,14 @@ import { getFilePathForImportedComponent } from '../../../../core/model/project-
 import { safeIndex } from '../../../../core/shared/array-utils'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { usePopper } from 'react-popper'
-import { jsExpressionOtherJavaScriptSimple } from '../../../../core/shared/element-template'
+import {
+  emptyComments,
+  jsExpressionOtherJavaScriptSimple,
+  jsIdentifier,
+} from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import {
+  ModifiableAttribute,
   getJSExpressionAtPath,
   getJSXAttributesAtPath,
 } from '../../../../core/shared/jsx-attributes'
@@ -103,6 +109,7 @@ import type { VariableData } from '../../../canvas/ui-jsx-canvas'
 import { array } from 'prop-types'
 import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
 import { DataPickerPopup } from './data-picker-popup'
+import { jsxElementChildToText } from '../../../canvas/ui-jsx-canvas-renderer/jsx-element-child-to-text'
 
 export const VariableFromScopeOptionTestId = (idx: string) => `variable-from-scope-${idx}`
 export const DataPickerPopupButtonTestId = `data-picker-popup-button-test-id`
@@ -119,49 +126,84 @@ function useComponentPropsInspectorInfo(
 
 const ControlForProp = React.memo((props: ControlForPropProps<BaseControlDescription>) => {
   const { controlDescription } = props
+
   if (controlDescription == null) {
     return null
-  } else {
-    switch (controlDescription.control) {
-      case 'checkbox':
-        return <CheckboxPropertyControl {...props} controlDescription={controlDescription} />
-      case 'color':
-        return <ColorPropertyControl {...props} controlDescription={controlDescription} />
-      case 'euler':
-        return <EulerPropertyControl {...props} controlDescription={controlDescription} />
-      case 'expression-input':
-        return <ExpressionInputPropertyControl {...props} controlDescription={controlDescription} />
-      case 'expression-popuplist':
-        return (
-          <ExpressionPopUpListPropertyControl {...props} controlDescription={controlDescription} />
-        )
-      case 'none':
-        return null
-      case 'matrix3':
-        return <Matrix3PropertyControl {...props} controlDescription={controlDescription} />
-      case 'matrix4':
-        return <Matrix4PropertyControl {...props} controlDescription={controlDescription} />
-      case 'number-input':
-        return <NumberInputPropertyControl {...props} controlDescription={controlDescription} />
-      case 'popuplist':
-        return <PopUpListPropertyControl {...props} controlDescription={controlDescription} />
-      case 'radio':
-        return <RadioPropertyControl {...props} controlDescription={controlDescription} />
-      case 'string-input':
-        return <StringInputPropertyControl {...props} controlDescription={controlDescription} />
-      case 'html-input':
-        return <HtmlInputPropertyControl {...props} controlDescription={controlDescription} />
-      case 'style-controls':
-        return null
-      case 'vector2':
-      case 'vector3':
-      case 'vector4':
-        return <VectorPropertyControl {...props} controlDescription={controlDescription} />
-      case 'jsx':
-        return <JSXPropertyControl {...props} controlDescription={controlDescription} />
-      default:
-        return null
+  }
+
+  const attributeExpression = props.propMetadata.attributeExpression
+
+  if (attributeExpression != null && PP.depth(props.propPath) === 1) {
+    if (
+      attributeExpression.type === 'JS_IDENTIFIER' ||
+      attributeExpression.type === 'JS_PROPERTY_ACCESS' ||
+      attributeExpression.type === 'JS_ELEMENT_ACCESS'
+    ) {
+      return (
+        <IdentifierExpressionCartoucheControl
+          contents={jsxElementChildToText(attributeExpression, null, null, 'jsx', 'inner')}
+          matchType='full'
+          onOpenDataPicker={props.onOpenDataPicker}
+        />
+      )
     }
+
+    if (
+      attributeExpression.type === 'ATTRIBUTE_OTHER_JAVASCRIPT' ||
+      attributeExpression.type === 'JSX_MAP_EXPRESSION'
+    ) {
+      // If the parsed code is JSExpression but the value is JSX, we should show the inline jsx control instead
+      if (controlDescription.control !== 'jsx') {
+        return (
+          <IdentifierExpressionCartoucheControl
+            contents={'Expression'}
+            matchType='partial'
+            onOpenDataPicker={props.onOpenDataPicker}
+          />
+        )
+      }
+    }
+  }
+
+  switch (controlDescription.control) {
+    case 'checkbox':
+      return <CheckboxPropertyControl {...props} controlDescription={controlDescription} />
+    case 'color':
+      return <ColorPropertyControl {...props} controlDescription={controlDescription} />
+    case 'euler':
+      return <EulerPropertyControl {...props} controlDescription={controlDescription} />
+    case 'expression-input':
+      return <ExpressionInputPropertyControl {...props} controlDescription={controlDescription} />
+    case 'expression-popuplist':
+      return (
+        <ExpressionPopUpListPropertyControl {...props} controlDescription={controlDescription} />
+      )
+    case 'none':
+      return null
+    case 'matrix3':
+      return <Matrix3PropertyControl {...props} controlDescription={controlDescription} />
+    case 'matrix4':
+      return <Matrix4PropertyControl {...props} controlDescription={controlDescription} />
+    case 'number-input':
+      return <NumberInputPropertyControl {...props} controlDescription={controlDescription} />
+    case 'popuplist':
+      return <PopUpListPropertyControl {...props} controlDescription={controlDescription} />
+    case 'radio':
+      return <RadioPropertyControl {...props} controlDescription={controlDescription} />
+    case 'string-input':
+      return <StringInputPropertyControl {...props} controlDescription={controlDescription} />
+    case 'html-input':
+      return <HtmlInputPropertyControl {...props} controlDescription={controlDescription} />
+    case 'style-controls':
+      return null
+    case 'vector2':
+    case 'vector3':
+    case 'vector4':
+      return <VectorPropertyControl {...props} controlDescription={controlDescription} />
+    case 'jsx':
+      return <JSXPropertyControl {...props} controlDescription={controlDescription} />
+    default:
+      return null
   }
 })
 interface ParseErrorProps {
@@ -224,6 +266,7 @@ function useDataPickerButton(selectedElements: Array<ElementPath>, propPath: Pro
 
   const [popupIsOpen, setPopupIsOpen] = React.useState(false)
   const togglePopup = React.useCallback(() => setPopupIsOpen((v) => !v), [])
+  const openPopup = React.useCallback(() => setPopupIsOpen(true), [])
   const closePopup = React.useCallback(() => setPopupIsOpen(false), [])
 
   const onClick = React.useCallback(
@@ -281,6 +324,7 @@ function useDataPickerButton(selectedElements: Array<ElementPath>, propPath: Pro
     DataPickerOpener,
     DataPickerComponent,
     setReferenceElement,
+    openPopup,
   }
 }
 
@@ -358,7 +402,12 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
         variant='<--1fr--><--1fr-->|-18px-|'
       >
         {propertyLabel}
-        <div ref={dataPickerButtonData.setReferenceElement}>
+        <div
+          style={{
+            minWidth: 0, // this ensures that the div can never expand the allocated grid space
+          }}
+          ref={dataPickerButtonData.setReferenceElement}
+        >
           <ControlForProp
             propPath={propPath}
             propName={propName}
@@ -366,6 +415,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
             propMetadata={propMetadata}
             setGlobalCursor={props.setGlobalCursor}
             focusOnMount={props.focusOnMount}
+            onOpenDataPicker={dataPickerButtonData.openPopup}
           />
         </div>
         {when(isBaseIndentationLevel(props), dataPickerButtonData.DataPickerOpener)}

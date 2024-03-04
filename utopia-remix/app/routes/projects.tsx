@@ -12,30 +12,40 @@ import {
 } from '@radix-ui/react-icons'
 import { LoaderFunctionArgs, json } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
-import { motion } from 'framer-motion'
 import moment from 'moment'
 import { UserDetails } from 'prisma-client'
 import React, { useState } from 'react'
 import { ProjectContextMenu } from '../components/projectActionContextMenu'
 import { SortingContextMenu } from '../components/sortProjectsContextMenu'
-import { useCleanupOperations } from '../hooks/useFetcherWithOperation'
+import { Spinner } from '../components/spinner'
 import { useIsDarkMode } from '../hooks/useIsDarkMode'
 import { listDeletedProjects, listProjects } from '../models/project.server'
 import { getCollaborators } from '../models/projectCollaborators.server'
-import { useProjectsStore } from '../store'
+import { OperationWithKey, useProjectsStore } from '../store'
 import { button } from '../styles/button.css'
 import { newProjectButton } from '../styles/newProjectButton.css'
 import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
 import { projectCards, projectRows } from '../styles/projects.css'
 import { sprinkles } from '../styles/sprinkles.css'
-import { Collaborator, CollaboratorsByProject, Operation, ProjectWithoutContent } from '../types'
+import {
+  Collaborator,
+  CollaboratorsByProject,
+  Operation,
+  ProjectWithoutContent,
+  getOperationDescription,
+} from '../types'
 import { requireUser } from '../util/api.server'
 import { assertNever } from '../util/assertNever'
 import { auth0LoginURL } from '../util/auth0.server'
 import { projectEditorLink } from '../util/links'
-import { when } from '../util/react-conditionals'
+import { unless, when } from '../util/react-conditionals'
 import { UnknownPlayerName, multiplayerInitialsFromName } from '../util/strings'
-import { useProjectMatchesQuery, useSortCompareProject } from '../util/use-sort-compare-project'
+import {
+  useProjectIsOnActiveOperation,
+  useProjectMatchesQuery,
+  useSortCompareProject,
+} from '../util/use-sort-compare-project'
+import { useCleanupOperations } from '../hooks/useCleanupOperations'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
@@ -101,16 +111,19 @@ const ProjectsPage = React.memo(() => {
 
   const sortCompareProject = useSortCompareProject()
   const projectMatchesQuery = useProjectMatchesQuery()
+  const projectIsOnActiveOperation = useProjectIsOnActiveOperation()
 
   const filteredProjects = React.useMemo(
     () =>
       activeProjects
+        // filter out projects that are part of active operations
+        .filter(projectIsOnActiveOperation)
         // filter out projects that don't match the search query
         .filter(projectMatchesQuery)
         // sort them out according to the selected strategy
         .sort(sortCompareProject),
 
-    [activeProjects, projectMatchesQuery, sortCompareProject],
+    [activeProjects, projectMatchesQuery, sortCompareProject, projectIsOnActiveOperation],
   )
 
   return (
@@ -139,7 +152,7 @@ const ProjectsPage = React.memo(() => {
         <TopActionBar />
         <ProjectsHeader projects={filteredProjects} />
         <Projects projects={filteredProjects} collaborators={data.collaborators} />
-        <ActiveOperations />
+        <ActiveOperations projects={activeProjects} />
       </div>
     </div>
   )
@@ -604,6 +617,15 @@ const ProjectCard = React.memo(
       window.open(projectEditorLink(project.proj_id), '_blank')
     }, [project.proj_id])
 
+    const activeOperations = useProjectsStore((store) =>
+      store.operations.filter((op) => op.projectId === project.proj_id && !op.errored),
+    )
+
+    const projectTitle = React.useMemo(() => {
+      const renaming = activeOperations.find((op) => op.type === 'rename')
+      return renaming?.type === 'rename' ? renaming.newTitle : project.title
+    }, [project, activeOperations])
+
     return (
       <div
         style={{
@@ -611,6 +633,7 @@ const ProjectCard = React.memo(
           display: 'flex',
           flexDirection: 'column',
           gap: 10,
+          filter: activeOperations.length > 0 ? 'grayscale(1)' : undefined,
         }}
       >
         <div
@@ -658,6 +681,24 @@ const ProjectCard = React.memo(
               )
             })}
           </div>
+          {when(
+            activeOperations.length > 0,
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                pointerEvents: 'none',
+              }}
+            >
+              <Spinner className={sprinkles({ backgroundColor: 'primary' })} />
+            </div>,
+          )}
         </div>
         <div
           style={{
@@ -814,9 +855,16 @@ const ProjectCardActions = React.memo(({ project }: { project: ProjectWithoutCon
 })
 ProjectCardActions.displayName = 'ProjectCardActions'
 
-const ActiveOperations = React.memo(() => {
+const ActiveOperations = React.memo(({ projects }: { projects: ProjectWithoutContent[] }) => {
   const operations = useProjectsStore((store) =>
     store.operations.sort((a, b) => b.startedAt - a.startedAt),
+  )
+
+  const getOperationProject = React.useCallback(
+    (operation: Operation) => {
+      return projects.find((project) => project.proj_id === operation.projectId)
+    },
+    [projects],
   )
 
   return (
@@ -832,59 +880,69 @@ const ActiveOperations = React.memo(() => {
       }}
     >
       {operations.map((operation) => {
-        return <ActiveOperation operation={operation} key={operation.key} />
+        const project = getOperationProject(operation)
+        if (project == null) {
+          return null
+        }
+        return <ActiveOperationToast operation={operation} key={operation.key} project={project} />
       })}
     </div>
   )
 })
 ActiveOperations.displayName = 'ActiveOperations'
 
-const ActiveOperation = React.memo(({ operation }: { operation: Operation }) => {
-  function getOperationVerb(op: Operation) {
-    switch (op.type) {
-      case 'delete':
-        return 'Deleting'
-      case 'destroy':
-        return 'Destroying'
-      case 'rename':
-        return 'Renaming'
-      case 'restore':
-        return 'Restoring'
-      default:
-        assertNever(op.type)
-    }
-  }
+const ActiveOperationToast = React.memo(
+  ({ operation, project }: { operation: OperationWithKey; project: ProjectWithoutContent }) => {
+    const removeOperation = useProjectsStore((store) => store.removeOperation)
 
-  return (
-    <div
-      style={{
-        padding: 10,
-        display: 'flex',
-        gap: 10,
-        alignItems: 'center',
-        animation: 'spin 2s linear infinite',
-      }}
-      className={sprinkles({
-        boxShadow: 'shadow',
-        borderRadius: 'small',
-        backgroundColor: 'primary',
-        color: 'white',
-      })}
-    >
-      <motion.div
+    const dismiss = React.useCallback(() => {
+      if (!operation.errored) {
+        return
+      }
+      removeOperation(operation.key)
+    }, [removeOperation, operation])
+
+    return (
+      <div
         style={{
-          width: 8,
-          height: 8,
+          padding: 10,
+          display: 'flex',
+          gap: 10,
+          alignItems: 'center',
+          userSelect: 'none',
         }}
-        className={sprinkles({ backgroundColor: 'white' })}
-        initial={{ rotate: 0 }}
-        animate={{ rotate: 100 }}
-        transition={{ ease: 'linear', repeatType: 'loop', repeat: Infinity }}
-      />
-      <div>
-        {getOperationVerb(operation)} project {operation.projectName}
+        className={sprinkles({
+          boxShadow: 'shadow',
+          borderRadius: 'small',
+          backgroundColor: operation.errored ? 'error' : 'primary',
+          color: 'white',
+        })}
+      >
+        {unless(operation.errored, <Spinner className={sprinkles({ backgroundColor: 'white' })} />)}
+        {when(
+          operation.errored,
+          <>
+            <button
+              className={`${button({ color: 'selected' })} ${sprinkles({
+                color: 'white',
+              })}`}
+              onClick={dismiss}
+            >
+              Dismiss
+            </button>
+            <div
+              style={{
+                fontWeight: 'bold',
+                textTransform: 'uppercase',
+              }}
+            >
+              Failed
+            </div>
+          </>,
+        )}
+        <div>{getOperationDescription(operation, project)}</div>
       </div>
-    </div>
-  )
-})
-ActiveOperation.displayName = 'ActiveOperation'
+    )
+  },
+)
+ActiveOperationToast.displayName = 'ActiveOperation'
