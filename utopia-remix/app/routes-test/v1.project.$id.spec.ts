@@ -2,7 +2,7 @@ jest.mock('@openfga/sdk')
 import { prisma } from '../db.server'
 
 import { clearDb, createTestSession, createTestUser, newTestRequest } from '../test-util'
-import { getProject } from '../routes/v1.project.$id'
+import { loader } from '../routes/v1.project.$id'
 import * as serverProxy from '../util/proxy.server'
 import * as permissionsService from '../services/permissionsService.server'
 import { UserProjectPermission } from '../types'
@@ -40,7 +40,7 @@ describe('getProject', () => {
       projectProxyMock.mockResolvedValue({ id: projectId, ownerId: 'user2' })
       hasUserProjectPermission.mockResolvedValue(true)
       const req = newTestRequest({ method: 'GET', authCookie: 'the-key' })
-      const projectResult = await getProject(req, { id: projectId })
+      const projectResult = await loader({ request: req, params: { id: projectId }, context: {} })
       expect(projectResult).toEqual({ id: projectId, ownerId: 'user2' })
       expect(hasUserProjectPermission).toHaveBeenCalledWith(
         projectId,
@@ -54,7 +54,7 @@ describe('getProject', () => {
       hasUserProjectPermission.mockResolvedValue(false)
       const req = newTestRequest({ method: 'GET', authCookie: 'the-key' })
       const fn = async () => {
-        return getProject(req, { id: projectId })
+        return loader({ request: req, params: { id: projectId }, context: {} })
       }
       expect(fn).rejects.toThrow(ApiError)
     })
@@ -64,7 +64,7 @@ describe('getProject', () => {
       // mock the permission check to return false
       hasUserProjectPermission.mockResolvedValue(false)
       const req = newTestRequest({ method: 'GET', authCookie: 'the-key' })
-      const projectResult = await getProject(req, { id: projectId })
+      const projectResult = await loader({ request: req, params: { id: projectId }, context: {} })
       expect(projectResult).toEqual({ id: projectId, ownerId: userId })
     })
   })

@@ -24,6 +24,8 @@ export async function hasUserProjectPermission(
       return fgaService.canRequestAccess(projectId, userId)
     case UserProjectPermission.CAN_SEE_LIVE_CHANGES:
       return fgaService.canSeeLiveChanges(projectId, userId)
+    case UserProjectPermission.CAN_MANAGE_PROJECT:
+      return fgaService.canManageProject(projectId, userId)
     default:
       assertNever(permission)
   }

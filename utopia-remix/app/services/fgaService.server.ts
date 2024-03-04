@@ -54,6 +54,7 @@ const userProjectPermission = [
   'can_show_presence',
   'can_see_live_changes',
   'can_request_access',
+  'can_manage',
 ] as const
 
 type UserProjectPermission = (typeof userProjectPermission)[number]
@@ -101,4 +102,8 @@ export async function canRequestAccess(projectId: string, userId: string): Promi
 
 export async function canSeeLiveChanges(projectId: string, userId: string): Promise<boolean> {
   return checkUserProjectPermission(projectId, userId, 'can_see_live_changes')
+}
+
+export async function canManageProject(projectId: string, userId: string): Promise<boolean> {
+  return checkUserProjectPermission(projectId, userId, 'can_manage')
 }

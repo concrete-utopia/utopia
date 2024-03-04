@@ -37,6 +37,17 @@ export async function getProject(params: {
   })
 }
 
+export async function getProjectById(params: {
+  id: string
+}): Promise<ProjectWithoutContent | null> {
+  return prisma.project.findFirst({
+    select: selectProjectWithoutContent,
+    where: {
+      proj_id: params.id,
+    },
+  })
+}
+
 export async function renameProject(params: {
   id: string
   userId: string

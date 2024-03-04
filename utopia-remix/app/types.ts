@@ -74,6 +74,7 @@ export const UserProjectPermission = {
   CAN_SHOW_PRESENCE: 5,
   CAN_REQUEST_ACCESS: 6,
   CAN_SEE_LIVE_CHANGES: 7,
+  CAN_MANAGE_PROJECT: 8,
 } as const
 
 export type UserProjectPermission =

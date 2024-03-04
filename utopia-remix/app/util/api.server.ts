@@ -9,6 +9,9 @@ import { getUserFromSession } from '../models/session.server'
 import { ApiError } from './errors'
 import { Method } from './methods.server'
 import { Status } from './statusCodes'
+import { ProjectWithoutContent } from '../types'
+import { ALL } from 'dns'
+import { ALLOW } from '~/handlers/validators'
 
 interface ErrorResponse {
   error: string
@@ -35,25 +38,47 @@ interface HandleRequest {
   params: Params<string>
 }
 
+export type ProjectAccessValidator = (request: Request, params: Params<string>) => Promise<boolean>
+
+export type AccessValidator = ProjectAccessValidator
+
+type Handler = (request: Request, params: Params<string>) => Promise<unknown>
+type ValidatedHandler = {
+  handler: Handler
+  validator: AccessValidator
+}
+
+function toValidatedHandler(descriptor: Handler | ValidatedHandler): ValidatedHandler {
+  if (typeof descriptor === 'function') {
+    return { handler: descriptor, validator: ALLOW }
+  }
+  return descriptor
+}
+
 export function handle(
   { request, params }: HandleRequest,
   handlers: {
-    [method in Method]?: (request: Request, params: Params<string>) => Promise<unknown>
+    [method in Method]?: Handler | ValidatedHandler
   },
 ): Promise<unknown> {
-  const handler = handlers[request.method as Method]
-  if (handler == null) {
+  const handlerDescriptor = handlers[request.method as Method]
+  if (handlerDescriptor == null) {
     throw new ApiError('invalid method', Status.METHOD_NOT_ALLOWED)
   }
-  return handleMethod(request, params, handler)
+  const { handler, validator } = toValidatedHandler(handlerDescriptor)
+  return handleMethod(request, params, handler, validator)
 }
 
 async function handleMethod<T>(
   request: Request,
   params: Params<string>,
   fn: (request: Request, params: Params<string>) => Promise<T>,
+  validator?: AccessValidator,
 ): Promise<ApiResponse<T> | unknown> {
   try {
+    if (validator != null) {
+      await validator(request, params)
+    }
     const resp = await fn(request, params)
     if (resp instanceof Response) {
       const mergedHeaders = new Headers(defaultResponseHeaders)
