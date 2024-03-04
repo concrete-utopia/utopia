@@ -128,6 +128,7 @@ export function getNavigatorTargets(
         const jsxElement = elementMetadata.element.value
         let idx = 0
         const addedProps = new Set<string>()
+        let hasChildrenProp = false
         Object.values(jsxElement.props).forEach((attr) => {
           if (!isJSXAttributesEntry(attr)) {
             return
@@ -138,6 +139,9 @@ export function getNavigatorTargets(
 
             if (propValue?.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
               addedProps.add(prop)
+              if (prop === 'children') {
+                hasChildrenProp = true
+              }
               const elementWithin = Object.values(propValue.elementsWithin)[0]
               if (elementWithin == null) {
                 const entries = [
@@ -181,6 +185,9 @@ export function getNavigatorTargets(
           navigatorTargets.push(navigatorEntry)
           visibleNavigatorTargets.push(navigatorEntry)
           addedProps.add(EP.toString(fakePath))
+          if (prop === 'children') {
+            hasChildrenProp = true
+          }
 
           const propValue = getJSXAttribute(jsxElement.props, prop)
 
@@ -192,7 +199,7 @@ export function getNavigatorTargets(
           navigatorTargets.push(slotEntry)
           visibleNavigatorTargets.push(slotEntry)
         })
-        if (addedProps.size > 0) {
+        if (addedProps.size > 0 && !hasChildrenProp) {
           const entry = renderPropNavigatorEntry(
             EP.appendToPath(path, 'children'),
             'children',
