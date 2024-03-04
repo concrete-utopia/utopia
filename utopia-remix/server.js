@@ -8,6 +8,9 @@ import * as path from 'node:path'
 import * as url from 'node:url'
 import sourceMapSupport from 'source-map-support'
 
+// -----------------------------------------------------------------------------
+// Lines 14-77 from https://github.com/remix-run/remix/tree/main/templates/express
+// -----------------------------------------------------------------------------
 const BUILD_PATH = path.resolve('build/index.js')
 const VERSION_PATH = path.resolve('build/version.txt')
 
@@ -72,6 +75,7 @@ const remixHandler =
   process.env.NODE_ENV === 'development'
     ? await createDevRequestHandler(initialBuild)
     : createRequestHandler({ build: initialBuild })
+// -----------------------------------------------------------------------------
 
 function proxy(originalRequest, originalResponse) {
   const proxyRequest = http.request(
