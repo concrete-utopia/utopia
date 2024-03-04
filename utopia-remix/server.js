@@ -8,6 +8,21 @@ import * as path from 'node:path'
 import * as url from 'node:url'
 import sourceMapSupport from 'source-map-support'
 
+// figlet -f isometric3 'utopia'
+const asciiBanner = `
+      ___                       ___           ___                     ___
+     /__/\\          ___        /  /\\         /  /\\      ___          /  /\\
+     \\  \\:\\        /  /\\      /  /::\\       /  /::\\    /  /\\        /  /::\\
+      \\  \\:\\      /  /:/     /  /:/\\:\\     /  /:/\\:\\  /  /:/       /  /:/\\:\\
+  ___  \\  \\:\\    /  /:/     /  /:/  \\:\\   /  /:/~/:/ /__/::\\      /  /:/~/::\\
+ /__/\\  \\__\\:\\  /  /::\\    /__/:/ \\__\\:\\ /__/:/ /:/  \\__\\/\\:\\__  /__/:/ /:/\\:\\
+ \\  \\:\\ /  /:/ /__/:/\\:\\   \\  \\:\\ /  /:/ \\  \\:\\/:/      \\  \\:\\/\\ \\  \\:\\/:/__\\/
+  \\  \\:\\  /:/  \\__\\/  \\:\\   \\  \\:\\  /:/   \\  \\::/        \\__\\::/  \\  \\::/
+   \\  \\:\\/:/        \\  \\:\\   \\  \\:\\/:/     \\  \\:\\        /__/:/    \\  \\:\\
+    \\  \\::/          \\__\\/    \\  \\::/       \\  \\:\\       \\__\\/      \\  \\:\\
+     \\__\\/                     \\__\\/         \\__\\/                   \\__\\/
+`
+
 // -----------------------------------------------------------------------------
 // Lines 14-77 from https://github.com/remix-run/remix/tree/main/templates/express
 // -----------------------------------------------------------------------------
@@ -127,6 +142,7 @@ app.all('*', remixHandler)
 
 const port = process.env.PORT ?? 8002
 app.listen(port, () => {
+  console.log(asciiBanner)
   console.log(`Express listening on http://localhost:${port}`)
   if (process.env.NODE_ENV === 'development') {
     broadcastDevReady(initialBuild)
