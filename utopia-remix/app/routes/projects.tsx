@@ -15,7 +15,7 @@ import { useFetcher, useLoaderData } from '@remix-run/react'
 import { motion } from 'framer-motion'
 import moment from 'moment'
 import { UserDetails } from 'prisma-client'
-import React from 'react'
+import React, { useState } from 'react'
 import { ProjectContextMenu } from '../components/projectActionContextMenu'
 import { SortingContextMenu } from '../components/sortProjectsContextMenu'
 import { useCleanupOperations } from '../hooks/useFetcherWithOperation'
@@ -361,6 +361,8 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
     }
   }
 
+  const [sortMenuOpen, setSortMenuOpen] = useState(false)
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
       <div
@@ -422,13 +424,14 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
         <div style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
           {when(
             projects.length > 1,
-            <DropdownMenuRoot>
+            <DropdownMenuRoot onOpenChange={() => setSortMenuOpen(!sortMenuOpen)}>
               <DropdownMenuTrigger asChild>
                 <div
                   className={button()}
                   style={{
                     justifyContent: 'flex-end',
                     gap: 10,
+                    background: sortMenuOpen ? '#a4a4a415' : 'inherit',
                   }}
                 >
                   <div>{convertToTitleCase(sortCriteria)} </div>
@@ -793,11 +796,16 @@ const ProjectRow = React.memo(
 ProjectRow.displayName = 'ProjectRow'
 
 const ProjectCardActions = React.memo(({ project }: { project: ProjectWithoutContent }) => {
+  const [sortMenuOpen, setSortMenuOpen] = useState(false)
+
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-      <DropdownMenuRoot>
+      <DropdownMenuRoot onOpenChange={() => setSortMenuOpen(!sortMenuOpen)}>
         <DropdownMenuTrigger asChild>
-          <DotsHorizontalIcon className={button()} />
+          <DotsHorizontalIcon
+            className={button()}
+            style={{ background: sortMenuOpen ? '#a4a4a415' : 'inherit' }}
+          />
         </DropdownMenuTrigger>
         <ProjectContextMenu project={project} />
       </DropdownMenuRoot>
