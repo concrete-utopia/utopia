@@ -1796,12 +1796,14 @@ function createJSElementAccess(
   comments: ParsedComments,
   alreadyExistingUIDs: Set<string>,
 ): WithParserMetadata<JSElementAccess> {
+  const originalJavascript = node.getText(sourceFile)
   const value = jsElementAccess(
     clearExpressionUniqueIDsAndSourceMaps(onValue),
     clearExpressionUniqueIDsAndSourceMaps(element),
     '',
     null,
     comments,
+    originalJavascript,
   )
   const uid = getUIDFromCommentsOrValue(comments, sourceFile, value, alreadyExistingUIDs)
   const valueWithUID = jsElementAccess(
@@ -1810,6 +1812,7 @@ function createJSElementAccess(
     uid,
     createNodeSourceMap(sourceFile, node),
     comments,
+    originalJavascript,
   )
   return withParserMetadata(
     valueWithUID,
@@ -1827,12 +1830,14 @@ function createJSPropertyAccess(
   comments: ParsedComments,
   alreadyExistingUIDs: Set<string>,
 ): WithParserMetadata<JSPropertyAccess> {
+  const originalJavascript = node.getText(sourceFile)
   const value = jsPropertyAccess(
     clearExpressionUniqueIDsAndSourceMaps(onValue),
     property,
     '',
     null,
     comments,
+    originalJavascript,
   )
   const uid = getUIDFromCommentsOrValue(comments, sourceFile, value, alreadyExistingUIDs)
   const valueWithUID = jsPropertyAccess(
@@ -1841,6 +1846,7 @@ function createJSPropertyAccess(
     uid,
     createNodeSourceMap(sourceFile, node),
     comments,
+    originalJavascript,
   )
   return withParserMetadata(
     valueWithUID,

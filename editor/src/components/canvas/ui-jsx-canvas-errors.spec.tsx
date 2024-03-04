@@ -166,6 +166,297 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       ]
     `)
   })
+  it('throws an error for a property access where the onValue resolves to undefined', () => {
+    const canvasErrors = testCanvasErrorInline(
+      null,
+      `import * as React from "react"
+import { View, Storyboard, Scene } from 'utopia-api'
+function something() {
+  return undefined
+}
+export var App = (props) => {
+  return <div data-uid={'aaa'} style={{left: something().value}}/>
+}
+export var ${BakedInStoryboardVariableName} = (props) => {
+  return (
+    <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+      <Scene
+        style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
+        data-uid={'${TestSceneUID}'}
+      >
+        <App
+          data-uid='${TestAppUID}'
+          style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+        />
+      </Scene>
+    </Storyboard>
+  )
+}
+`,
+      {},
+    )
+    expect(canvasErrors).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "message": "Cannot read properties of undefined (reading 'value')",
+          "name": "TypeError",
+          "stackFrames": Array [
+            Object {
+              "columnNumber": 46,
+              "fileName": "code.tsx",
+              "lineNumber": 7,
+              "originalCode": Array [
+                ScriptLine {
+                  "content": "  return undefined",
+                  "highlight": false,
+                  "lineNumber": 4,
+                },
+                ScriptLine {
+                  "content": "}",
+                  "highlight": false,
+                  "lineNumber": 5,
+                },
+                ScriptLine {
+                  "content": "export var App = (props) => {",
+                  "highlight": false,
+                  "lineNumber": 6,
+                },
+                ScriptLine {
+                  "content": "  return <div data-uid={'aaa'} style={{left: something().value}}/>",
+                  "highlight": true,
+                  "lineNumber": 7,
+                },
+                ScriptLine {
+                  "content": "}",
+                  "highlight": false,
+                  "lineNumber": 8,
+                },
+                ScriptLine {
+                  "content": "export var storyboard = (props) => {",
+                  "highlight": false,
+                  "lineNumber": 9,
+                },
+                ScriptLine {
+                  "content": "  return (",
+                  "highlight": false,
+                  "lineNumber": 10,
+                },
+              ],
+            },
+          ],
+        },
+      ]
+    `)
+  })
+  it('throws an error for an element access where the onValue resolves to undefined', () => {
+    const canvasErrors = testCanvasErrorInline(
+      null,
+      `import * as React from "react"
+import { View, Storyboard, Scene } from 'utopia-api'
+function something() {
+  return undefined
+}
+export var App = (props) => {
+  return <div data-uid={'aaa'} style={{left: something()[0]}}/>
+}
+export var ${BakedInStoryboardVariableName} = (props) => {
+  return (
+    <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+      <Scene
+        style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
+        data-uid={'${TestSceneUID}'}
+      >
+        <App
+          data-uid='${TestAppUID}'
+          style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+        />
+      </Scene>
+    </Storyboard>
+  )
+}
+`,
+      {},
+    )
+    expect(canvasErrors).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "message": "Cannot read properties of undefined (reading '0')",
+          "name": "TypeError",
+          "stackFrames": Array [
+            Object {
+              "columnNumber": 46,
+              "fileName": "code.tsx",
+              "lineNumber": 7,
+              "originalCode": Array [
+                ScriptLine {
+                  "content": "  return undefined",
+                  "highlight": false,
+                  "lineNumber": 4,
+                },
+                ScriptLine {
+                  "content": "}",
+                  "highlight": false,
+                  "lineNumber": 5,
+                },
+                ScriptLine {
+                  "content": "export var App = (props) => {",
+                  "highlight": false,
+                  "lineNumber": 6,
+                },
+                ScriptLine {
+                  "content": "  return <div data-uid={'aaa'} style={{left: something()[0]}}/>",
+                  "highlight": true,
+                  "lineNumber": 7,
+                },
+                ScriptLine {
+                  "content": "}",
+                  "highlight": false,
+                  "lineNumber": 8,
+                },
+                ScriptLine {
+                  "content": "export var storyboard = (props) => {",
+                  "highlight": false,
+                  "lineNumber": 9,
+                },
+                ScriptLine {
+                  "content": "  return (",
+                  "highlight": false,
+                  "lineNumber": 10,
+                },
+              ],
+            },
+          ],
+        },
+      ]
+    `)
+  })
+  it('throws an error for an element access where the element expression throws an error', () => {
+    const canvasErrors = testCanvasErrorInline(
+      null,
+      `import * as React from "react"
+import { View, Storyboard, Scene } from 'utopia-api'
+function something() {
+  return [1]
+}
+function throwError() {
+  throw new Error('This is an error.')
+}
+export var App = (props) => {
+  return <div data-uid={'aaa'} style={{left: something()[throwError()]}}/>
+}
+export var ${BakedInStoryboardVariableName} = (props) => {
+  return (
+    <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+      <Scene
+        style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
+        data-uid={'${TestSceneUID}'}
+      >
+        <App
+          data-uid='${TestAppUID}'
+          style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+        />
+      </Scene>
+    </Storyboard>
+  )
+}
+`,
+      {},
+    )
+    expect(canvasErrors).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "message": "This is an error.",
+          "name": "Error",
+          "stackFrames": Array [
+            Object {
+              "columnNumber": 9,
+              "fileName": "code.tsx",
+              "lineNumber": 7,
+              "originalCode": Array [
+                ScriptLine {
+                  "content": "  return [1]",
+                  "highlight": false,
+                  "lineNumber": 4,
+                },
+                ScriptLine {
+                  "content": "}",
+                  "highlight": false,
+                  "lineNumber": 5,
+                },
+                ScriptLine {
+                  "content": "function throwError() {",
+                  "highlight": false,
+                  "lineNumber": 6,
+                },
+                ScriptLine {
+                  "content": "  throw new Error('This is an error.')",
+                  "highlight": true,
+                  "lineNumber": 7,
+                },
+                ScriptLine {
+                  "content": "}",
+                  "highlight": false,
+                  "lineNumber": 8,
+                },
+                ScriptLine {
+                  "content": "export var App = (props) => {",
+                  "highlight": false,
+                  "lineNumber": 9,
+                },
+                ScriptLine {
+                  "content": "  return <div data-uid={'aaa'} style={{left: something()[throwError()]}}/>",
+                  "highlight": false,
+                  "lineNumber": 10,
+                },
+              ],
+            },
+            Object {
+              "columnNumber": 46,
+              "fileName": "code.tsx",
+              "lineNumber": 10,
+              "originalCode": Array [
+                ScriptLine {
+                  "content": "  throw new Error('This is an error.')",
+                  "highlight": false,
+                  "lineNumber": 7,
+                },
+                ScriptLine {
+                  "content": "}",
+                  "highlight": false,
+                  "lineNumber": 8,
+                },
+                ScriptLine {
+                  "content": "export var App = (props) => {",
+                  "highlight": false,
+                  "lineNumber": 9,
+                },
+                ScriptLine {
+                  "content": "  return <div data-uid={'aaa'} style={{left: something()[throwError()]}}/>",
+                  "highlight": true,
+                  "lineNumber": 10,
+                },
+                ScriptLine {
+                  "content": "}",
+                  "highlight": false,
+                  "lineNumber": 11,
+                },
+                ScriptLine {
+                  "content": "export var storyboard = (props) => {",
+                  "highlight": false,
+                  "lineNumber": 12,
+                },
+                ScriptLine {
+                  "content": "  return (",
+                  "highlight": false,
+                  "lineNumber": 13,
+                },
+              ],
+            },
+          ],
+        },
+      ]
+    `)
+  })
   it('an arbitrary jsx child has correct source map', () => {
     const canvasErrors = testCanvasErrorInline(
       null,
@@ -451,10 +742,15 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           "name": "ReferenceError",
           "stackFrames": Array [
             Object {
-              "columnNumber": 8,
+              "columnNumber": 45,
               "fileName": "code.tsx",
-              "lineNumber": 9,
+              "lineNumber": 8,
               "originalCode": Array [
+                ScriptLine {
+                  "content": "",
+                  "highlight": false,
+                  "lineNumber": 5,
+                },
                 ScriptLine {
                   "content": "export var App = (props) => {",
                   "highlight": false,
@@ -466,13 +762,13 @@ export var ${BakedInStoryboardVariableName} = (props) => {
                   "lineNumber": 7,
                 },
                 ScriptLine {
-                  "content": "    <MyComp data-uid={'aaa'}>",
-                  "highlight": false,
+                  "content": "    <MyComp data-uid={'aaa'} someAttribute={a.a /* 19,45 */}>",
+                  "highlight": true,
                   "lineNumber": 8,
                 },
                 ScriptLine {
-                  "content": "      {a.a /* 20,8 */}",
-                  "highlight": true,
+                  "content": "      hello!",
+                  "highlight": false,
                   "lineNumber": 9,
                 },
                 ScriptLine {
@@ -484,11 +780,6 @@ export var ${BakedInStoryboardVariableName} = (props) => {
                   "content": "  )",
                   "highlight": false,
                   "lineNumber": 11,
-                },
-                ScriptLine {
-                  "content": "}",
-                  "highlight": false,
-                  "lineNumber": 12,
                 },
               ],
             },

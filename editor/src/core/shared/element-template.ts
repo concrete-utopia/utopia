@@ -468,6 +468,7 @@ export interface JSPropertyAccess extends WithComments {
   property: string
   uid: string
   sourceMap: RawSourceMap | null
+  originalJavascript: string
 }
 
 export function jsPropertyAccess(
@@ -476,6 +477,7 @@ export function jsPropertyAccess(
   uid: string,
   sourceMap: RawSourceMap | null,
   comments: ParsedComments,
+  originalJavascript: string,
 ): JSPropertyAccess {
   return {
     type: 'JS_PROPERTY_ACCESS',
@@ -483,6 +485,7 @@ export function jsPropertyAccess(
     property: property,
     uid: uid,
     sourceMap: sourceMap,
+    originalJavascript: originalJavascript,
     comments: comments,
   }
 }
@@ -504,6 +507,7 @@ export interface JSElementAccess extends WithComments {
   element: JSExpression
   uid: string
   sourceMap: RawSourceMap | null
+  originalJavascript: string
 }
 
 export function jsElementAccess(
@@ -512,6 +516,7 @@ export function jsElementAccess(
   uid: string,
   sourceMap: RawSourceMap | null,
   comments: ParsedComments,
+  originalJavascript: string,
 ): JSElementAccess {
   return {
     type: 'JS_ELEMENT_ACCESS',
@@ -519,6 +524,7 @@ export function jsElementAccess(
     element: element,
     uid: uid,
     sourceMap: sourceMap,
+    originalJavascript: originalJavascript,
     comments: comments,
   }
 }
@@ -699,6 +705,7 @@ export function clearExpressionUniqueIDs(attribute: JSExpression): JSExpression 
         '',
         attribute.sourceMap,
         attribute.comments,
+        attribute.originalJavascript,
       )
     case 'JS_ELEMENT_ACCESS':
       return jsElementAccess(
@@ -707,6 +714,7 @@ export function clearExpressionUniqueIDs(attribute: JSExpression): JSExpression 
         '',
         attribute.sourceMap,
         attribute.comments,
+        attribute.originalJavascript,
       )
     case 'ATTRIBUTE_FUNCTION_CALL':
       return jsExpressionFunctionCall(
@@ -782,6 +790,7 @@ export function clearExpressionSourceMaps(attribute: JSExpression): JSExpression
         attribute.uid,
         null,
         attribute.comments,
+        attribute.originalJavascript,
       )
     case 'JS_ELEMENT_ACCESS':
       return jsElementAccess(
@@ -790,6 +799,7 @@ export function clearExpressionSourceMaps(attribute: JSExpression): JSExpression
         attribute.uid,
         null,
         attribute.comments,
+        attribute.originalJavascript,
       )
     case 'ATTRIBUTE_FUNCTION_CALL':
       return jsExpressionFunctionCall(

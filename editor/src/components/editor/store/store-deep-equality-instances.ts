@@ -1259,7 +1259,7 @@ export function JSIdentifierKeepDeepEquality(): KeepDeepEqualityCall<JSIdentifie
 }
 
 export function JSPropertyAccessKeepDeepEquality(): KeepDeepEqualityCall<JSPropertyAccess> {
-  return combine5EqualityCalls(
+  return combine6EqualityCalls(
     (access) => access.onValue,
     JSExpressionKeepDeepEqualityCall,
     (access) => access.property,
@@ -1270,12 +1270,14 @@ export function JSPropertyAccessKeepDeepEquality(): KeepDeepEqualityCall<JSPrope
     nullableDeepEquality(RawSourceMapKeepDeepEquality),
     (access) => access.comments,
     ParsedCommentsKeepDeepEqualityCall,
+    (access) => access.originalJavascript,
+    createCallWithTripleEquals<string>(),
     jsPropertyAccess,
   )
 }
 
 export function JSElementAccessKeepDeepEquality(): KeepDeepEqualityCall<JSElementAccess> {
-  return combine5EqualityCalls(
+  return combine6EqualityCalls(
     (access) => access.onValue,
     JSExpressionKeepDeepEqualityCall,
     (access) => access.element,
@@ -1286,6 +1288,8 @@ export function JSElementAccessKeepDeepEquality(): KeepDeepEqualityCall<JSElemen
     nullableDeepEquality(RawSourceMapKeepDeepEquality),
     (access) => access.comments,
     ParsedCommentsKeepDeepEqualityCall,
+    (access) => access.originalJavascript,
+    createCallWithTripleEquals<string>(),
     jsElementAccess,
   )
 }
