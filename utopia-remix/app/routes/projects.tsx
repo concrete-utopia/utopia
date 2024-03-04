@@ -664,9 +664,9 @@ const ProjectCard = React.memo(
             alignItems: 'center',
           }}
         >
-          <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 5, flex: 1 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 10, flex: 1 }}>
             <div style={{ fontWeight: 600 }}>{project.title}</div>
-            <div>{moment(project.modified_at).fromNow()}</div>
+            <div style={{ opacity: 0.5 }}>{moment(project.modified_at).fromNow()}</div>
           </div>
           <ProjectCardActions project={project} />
         </div>
@@ -740,7 +740,7 @@ const ProjectRow = React.memo(
             >
               {project.title}
             </div>
-            <div style={{ width: 220 }}>{moment(project.modified_at).fromNow()}</div>
+            <div style={{ width: 220, opacity: 0.5 }}>{moment(project.modified_at).fromNow()}</div>
             <div
               style={{
                 maxWidth: 480,
