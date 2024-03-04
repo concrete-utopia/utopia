@@ -1221,7 +1221,11 @@ export function attributeUsesProperty(
     case 'ATTRIBUTE_VALUE':
       return false
     case 'JSX_ELEMENT':
-      return false // TODO: implement
+      const fromChildren = attribute.children.some((child) => {
+        return elementUsesProperty(child, propsParam, property)
+      })
+      const fromAttributes = attributesUseProperty(attribute.props, propsParam, property)
+      return fromChildren || fromAttributes
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return codeUsesProperty(attribute.javascript, propsParam, property)
