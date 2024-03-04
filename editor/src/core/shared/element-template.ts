@@ -1017,7 +1017,10 @@ const AllowedExternalReferences = ['React', 'utopiaCanvasJSXLookup']
 export function attributeReferencesElsewhere(attribute: JSExpression): boolean {
   switch (attribute.type) {
     case 'JSX_ELEMENT':
-      return false // TODO: implement this
+      return (
+        attribute.props.some(jsxAttributesPartReferencesElsewhere) ||
+        attribute.children.some(elementReferencesElsewhere)
+      )
     case 'ATTRIBUTE_VALUE':
       return false
     case 'JSX_MAP_EXPRESSION':
