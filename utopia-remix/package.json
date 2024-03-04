@@ -7,7 +7,7 @@
     "build": "remix build",
     "dev": "remix dev -c \"node server.js\"",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
-    "start": "NODE_ENV=production node ./server.js",
+    "start": "node ./server.js",
     "typecheck": "tsc",
     "format": "prettier --write .",
     "test": "./run-integration-tests.sh",
