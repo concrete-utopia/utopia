@@ -9,8 +9,6 @@ import { getUserFromSession } from '../models/session.server'
 import { ApiError } from './errors'
 import { Method } from './methods.server'
 import { Status } from './statusCodes'
-import { ProjectWithoutContent } from '../types'
-import { ALL } from 'dns'
 import { ALLOW } from '~/handlers/validators'
 
 interface ErrorResponse {
