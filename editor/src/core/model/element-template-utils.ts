@@ -497,14 +497,29 @@ export function removeJSXElementChild(
         }
         const nextElementsWithin = { ...prop.value.elementsWithin }
         delete nextElementsWithin[targetID]
-        return { ...prop, value: { ...prop.value, elementsWithin: nextElementsWithin } }
+        return {
+          ...prop,
+          value: {
+            ...prop.value,
+
+            // TODO: when the code is printed, `originalJavascript` is printed
+            // back into the code in `rawCodeToExpressionStatement`,
+            // `elementsWithin` is not the source of truth there
+
+            // the real solution here would be to change `originalJavascript`
+            originalJavascript: undefined,
+            elementsWithin: nextElementsWithin,
+          },
+        }
       })
 
-      return {
+      const result = {
         ...parentElement,
         props: updatedProps,
         children: updatedChildren,
       }
+
+      return result
     } else if (isJSXFragment(parentElement)) {
       let updatedChildren = parentElement.children.filter((child) => {
         return getUtopiaID(child) != targetID
