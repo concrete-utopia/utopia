@@ -49,6 +49,9 @@ import type {
   DestructuredArrayPart,
   DestructuredParamPart,
   Param,
+  JSPropertyAccess,
+  JSElementAccess,
+  JSIdentifier,
 } from '../../shared/element-template'
 import {
   arbitraryJSBlock,
@@ -95,6 +98,9 @@ import {
   isRegularParam,
   omittedParam,
   regularParam,
+  jsElementAccess,
+  jsPropertyAccess,
+  jsIdentifier,
 } from '../../shared/element-template'
 import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
 import type {
@@ -109,6 +115,7 @@ import {
   generateUID,
   getUtopiaIDFromJSXElement,
   parseUID,
+  parseUIDFromComments,
 } from '../../shared/uid-utils'
 import { fastForEach, RETURN_TO_PREPEND } from '../../shared/utils'
 import {
@@ -432,6 +439,7 @@ function parseArrayLiteralExpression(
         alreadyExistingUIDs,
         [],
         applySteganography,
+        'part-of-expression',
       )
       if (isLeft(subExpression)) {
         return subExpression
@@ -454,6 +462,7 @@ function parseArrayLiteralExpression(
         alreadyExistingUIDs,
         [],
         applySteganography,
+        'part-of-expression',
       )
       if (isLeft(subExpression)) {
         return subExpression
@@ -540,6 +549,7 @@ function parseObjectLiteralExpression(
         alreadyExistingUIDs,
         colonTokenComments.trailingComments,
         applySteganography,
+        'part-of-expression',
       )
 
       if (isLeft(subExpression)) {
@@ -574,6 +584,7 @@ function parseObjectLiteralExpression(
         alreadyExistingUIDs,
         [],
         applySteganography,
+        'part-of-expression',
       )
       if (isLeft(subExpression)) {
         return subExpression
@@ -1745,6 +1756,84 @@ function createExpressionFunctionCall(
   )
 }
 
+function getUIDFromCommentsOrValue(
+  comments: ParsedComments,
+  sourceFile: TS.SourceFile,
+  value: JSExpression,
+  alreadyExistingUIDs: Set<string>,
+): string {
+  const parsedUID = parseUIDFromComments(comments)
+  return foldEither(
+    () => {
+      return generateUIDAndAddToExistingUIDs(sourceFile, value, alreadyExistingUIDs)
+    },
+    (uidFromComments) => {
+      if (alreadyExistingUIDs.has(uidFromComments)) {
+        return generateUIDAndAddToExistingUIDs(sourceFile, value, alreadyExistingUIDs)
+      } else {
+        return uidFromComments
+      }
+    },
+    parsedUID,
+  )
+}
+
+function createJSElementAccess(
+  sourceFile: TS.SourceFile,
+  node: TS.Node,
+  onValue: JSExpression,
+  element: JSExpression,
+  comments: ParsedComments,
+  alreadyExistingUIDs: Set<string>,
+): WithParserMetadata<JSElementAccess> {
+  const value = jsElementAccess(onValue, element, '', comments)
+  const uid = getUIDFromCommentsOrValue(comments, sourceFile, value, alreadyExistingUIDs)
+  const valueWithUID = jsElementAccess(onValue, element, uid, comments)
+  return withParserMetadata(
+    valueWithUID,
+    buildHighlightBoundsForUids(sourceFile, node, uid),
+    [],
+    [],
+  )
+}
+
+function createJSPropertyAccess(
+  sourceFile: TS.SourceFile,
+  node: TS.Node,
+  onValue: JSExpression,
+  property: string,
+  comments: ParsedComments,
+  alreadyExistingUIDs: Set<string>,
+): WithParserMetadata<JSPropertyAccess> {
+  const value = jsPropertyAccess(onValue, property, '', comments)
+  const uid = getUIDFromCommentsOrValue(comments, sourceFile, value, alreadyExistingUIDs)
+  const valueWithUID = jsPropertyAccess(onValue, property, uid, comments)
+  return withParserMetadata(
+    valueWithUID,
+    buildHighlightBoundsForUids(sourceFile, node, uid),
+    [],
+    [],
+  )
+}
+
+function createJSIdentifier(
+  sourceFile: TS.SourceFile,
+  node: TS.Node,
+  identifierName: string,
+  comments: ParsedComments,
+  alreadyExistingUIDs: Set<string>,
+): WithParserMetadata<JSIdentifier> {
+  const value = jsIdentifier(identifierName, '', comments)
+  const uid = getUIDFromCommentsOrValue(comments, sourceFile, value, alreadyExistingUIDs)
+  const valueWithUID = jsIdentifier(identifierName, uid, comments)
+  return withParserMetadata(
+    valueWithUID,
+    buildHighlightBoundsForUids(sourceFile, node, uid),
+    [],
+    [],
+  )
+}
+
 function createArbitraryJSBlock(
   sourceFile: TS.SourceFile,
   params: Array<Param>,
@@ -1802,6 +1891,7 @@ export function parseAttributeExpression(
   alreadyExistingUIDs: Set<string>,
   trailingCommentsFromPriorToken: Array<Comment>,
   applySteganography: SteganographyMode,
+  partOfExpression: PartOfExpression,
 ): Either<string, WithParserMetadata<JSExpression>> {
   let comments = getComments(sourceText, expression)
   if (trailingCommentsFromPriorToken.length > 0) {
@@ -1828,7 +1918,6 @@ export function parseAttributeExpression(
     // Then we parse out the parameters passed to the function.
     // Commented out as the style of this is likely to be re-used but we're not using it right now.
     if (TS.isPropertyAccessExpression(expression.expression)) {
-      // if (TS.isIdentifier(expression.expression)) {
       const propertyAccess = expression.expression
       const leftHandSide = propertyAccess.expression
       const identifier = propertyAccess.name
@@ -1850,6 +1939,7 @@ export function parseAttributeExpression(
             alreadyExistingUIDs,
             [],
             applySteganography,
+            'part-of-expression',
           )
           if (isLeft(parsedArgument)) {
             return left(`Error parsing function expression: ${parsedArgument.value}`)
@@ -1890,11 +1980,8 @@ export function parseAttributeExpression(
       alreadyExistingUIDs,
       applySteganography,
     )
-  } else if (
-    TS.isElementAccessExpression(expression) ||
-    TS.isPropertyAccessExpression(expression)
-  ) {
-    return parseAttributeOtherJavaScript(
+  } else if (TS.isElementAccessExpression(expression)) {
+    return parseElementAccessExpression(
       sourceFile,
       sourceText,
       filename,
@@ -1904,6 +1991,25 @@ export function parseAttributeExpression(
       expression,
       existingHighlightBounds,
       alreadyExistingUIDs,
+      trailingCommentsFromPriorToken,
+      comments,
+      partOfExpression,
+      applySteganography,
+    )
+  } else if (TS.isPropertyAccessExpression(expression)) {
+    return parsePropertyAccessExpression(
+      expression,
+      sourceFile,
+      sourceText,
+      filename,
+      imports,
+      topLevelNames,
+      propsObjectName,
+      existingHighlightBounds,
+      alreadyExistingUIDs,
+      trailingCommentsFromPriorToken,
+      comments,
+      partOfExpression,
       applySteganography,
     )
   } else if (
@@ -1913,6 +2019,8 @@ export function parseAttributeExpression(
     return right(
       createExpressionValue(sourceFile, expression, undefined, comments, alreadyExistingUIDs),
     )
+  } else if (TS.isIdentifier(expression)) {
+    return parseIdentifier(sourceFile, expression, comments, partOfExpression, alreadyExistingUIDs)
   } else if (TS.isNumericLiteral(expression)) {
     return right(
       createExpressionValue(
@@ -2000,6 +2108,168 @@ export function parseAttributeExpression(
   }
 }
 
+function parseIdentifier(
+  sourceFile: TS.SourceFile,
+  expression: TS.Identifier,
+  comments: ParsedComments,
+  partOfExpression: PartOfExpression,
+  alreadyExistingUIDs: Set<string>,
+): Either<string, WithParserMetadata<JSExpression>> {
+  return right(
+    createJSIdentifier(
+      sourceFile,
+      expression,
+      expression.text,
+      partOfExpression === 'outermost-expression' ? comments : emptyComments,
+      alreadyExistingUIDs,
+    ),
+  )
+}
+
+function parseElementAccessExpression(
+  sourceFile: TS.SourceFile,
+  sourceText: string,
+  filename: string,
+  imports: Imports,
+  topLevelNames: Array<string>,
+  propsObjectName: string | null,
+  expression: TS.ElementAccessExpression,
+  existingHighlightBounds: Readonly<HighlightBoundsForUids>,
+  alreadyExistingUIDs: Set<string>,
+  trailingCommentsFromPriorToken: Array<Comment>,
+  comments: ParsedComments,
+  partOfExpression: PartOfExpression,
+  applySteganography: SteganographyMode,
+): Either<string, WithParserMetadata<JSElementAccess | JSExpressionMapOrOtherJavascript>> {
+  if (expression.questionDotToken != null) {
+    return parseAttributeOtherJavaScript(
+      sourceFile,
+      sourceText,
+      filename,
+      imports,
+      topLevelNames,
+      propsObjectName,
+      expression,
+      existingHighlightBounds,
+      alreadyExistingUIDs,
+      applySteganography,
+    )
+  }
+  const parsedOnValue = parseAttributeExpression(
+    sourceFile,
+    sourceText,
+    filename,
+    imports,
+    topLevelNames,
+    propsObjectName,
+    expression.expression,
+    existingHighlightBounds,
+    alreadyExistingUIDs,
+    trailingCommentsFromPriorToken,
+    applySteganography,
+    'part-of-expression',
+  )
+  const parsedElement = parseAttributeExpression(
+    sourceFile,
+    sourceText,
+    filename,
+    imports,
+    topLevelNames,
+    propsObjectName,
+    expression.argumentExpression,
+    existingHighlightBounds,
+    alreadyExistingUIDs,
+    trailingCommentsFromPriorToken,
+    applySteganography,
+    'part-of-expression',
+  )
+  return applicative2Either(
+    (onValue, element) => {
+      return merge2WithParserMetadata(onValue, element, (onValueValue, elementValue) => {
+        return createJSElementAccess(
+          sourceFile,
+          expression,
+          onValueValue,
+          elementValue,
+          partOfExpression === 'outermost-expression' ? comments : emptyComments,
+          alreadyExistingUIDs,
+        )
+      })
+    },
+    parsedOnValue,
+    parsedElement,
+  )
+}
+
+function parsePropertyAccessExpression(
+  expression: TS.PropertyAccessExpression,
+  sourceFile: TS.SourceFile,
+  sourceText: string,
+  filename: string,
+  imports: Imports,
+  topLevelNames: Array<string>,
+  propsObjectName: string | null,
+  existingHighlightBounds: Readonly<HighlightBoundsForUids>,
+  alreadyExistingUIDs: Set<string>,
+  trailingCommentsFromPriorToken: Array<Comment>,
+  comments: ParsedComments,
+  partOfExpression: PartOfExpression,
+  applySteganography: SteganographyMode,
+): Either<string, WithParserMetadata<JSPropertyAccess | JSExpressionMapOrOtherJavascript>> {
+  if (expression.questionDotToken != null) {
+    return parseAttributeOtherJavaScript(
+      sourceFile,
+      sourceText,
+      filename,
+      imports,
+      topLevelNames,
+      propsObjectName,
+      expression,
+      existingHighlightBounds,
+      alreadyExistingUIDs,
+      applySteganography,
+    )
+  }
+  const propertyName = expression.name.text
+  const parsedOnValue = parseAttributeExpression(
+    sourceFile,
+    sourceText,
+    filename,
+    imports,
+    topLevelNames,
+    propsObjectName,
+    expression.expression,
+    existingHighlightBounds,
+    alreadyExistingUIDs,
+    trailingCommentsFromPriorToken,
+    applySteganography,
+    'part-of-expression',
+  )
+  return mapEither((onValue) => {
+    const propertyAccessResult = createJSPropertyAccess(
+      sourceFile,
+      expression,
+      onValue.value,
+      propertyName,
+      partOfExpression === 'outermost-expression' ? comments : emptyComments,
+      alreadyExistingUIDs,
+    )
+
+    // Ensure that `propsUsed` gets populated when we have a `props.something` kind of situation.
+    let propsUsedForProperty: Array<string> = []
+    if (onValue.value.type === 'JS_IDENTIFIER' && onValue.value.name === propsObjectName) {
+      propsUsedForProperty.push(propertyName)
+    }
+
+    return withParserMetadata(
+      propertyAccessResult.value,
+      mergeHighlightBounds(propertyAccessResult.highlightBounds, onValue.highlightBounds),
+      [...propertyAccessResult.propsUsed, ...onValue.propsUsed, ...propsUsedForProperty],
+      [...propertyAccessResult.definedElsewhere, ...onValue.definedElsewhere],
+    )
+  }, parsedOnValue)
+}
+
 function getAttributeExpression(
   sourceFile: TS.SourceFile,
   sourceText: string,
@@ -2075,6 +2345,7 @@ function getAttributeExpression(
         alreadyExistingUIDs,
         openBraceComments.trailingComments,
         applySteganography,
+        'outermost-expression',
       )
     }
   } else {
@@ -2122,6 +2393,7 @@ function parseElementProps(
         alreadyExistingUIDs,
         [],
         applySteganography,
+        'part-of-expression',
       )
       if (isLeft(attributeResult)) {
         return attributeResult
@@ -2419,13 +2691,33 @@ function buildHighlightBoundsForUids(
 }
 
 function mergeHighlightBounds(
-  first: HighlightBoundsForUids,
-  second: HighlightBoundsForUids,
+  ...multipleBounds: Array<HighlightBoundsForUids>
 ): Readonly<HighlightBoundsForUids> {
-  return {
-    ...first,
-    ...second,
+  let result: HighlightBoundsForUids = {}
+  for (const bounds of multipleBounds) {
+    Object.assign(result, bounds)
   }
+  return result
+}
+
+function merge2WithParserMetadata<T1, T2, U>(
+  first: WithParserMetadata<T1>,
+  second: WithParserMetadata<T2>,
+  combine: (t1: T1, t2: T2) => WithParserMetadata<U>,
+): WithParserMetadata<U> {
+  const combinedResult = combine(first.value, second.value)
+  const highlightBounds = mergeHighlightBounds(
+    combinedResult.highlightBounds,
+    first.highlightBounds,
+    second.highlightBounds,
+  )
+  const propsUsed = [...combinedResult.propsUsed, ...first.propsUsed, ...second.propsUsed]
+  const definedElsewhere = [
+    ...combinedResult.definedElsewhere,
+    ...first.definedElsewhere,
+    ...second.definedElsewhere,
+  ]
+  return withParserMetadata(combinedResult.value, highlightBounds, propsUsed, definedElsewhere)
 }
 
 function addBoundsIntoWithParser<T>(
@@ -2636,6 +2928,8 @@ function createJSXElementOrFragmentAllocatingUID(
   )
 }
 
+type PartOfExpression = 'part-of-expression' | 'outermost-expression'
+
 export function parseOutJSXElements(
   sourceFile: TS.SourceFile,
   sourceText: string,
@@ -2687,6 +2981,85 @@ export function parseOutJSXElements(
 
           return success.value
         }, possibleConditional)
+      }
+
+      function handleIdentifier(
+        expression: TS.Identifier,
+        comments: ParsedComments,
+        partOfExpression: PartOfExpression,
+      ): Either<string, SuccessfullyParsedElement> {
+        const possibleIdentifier = parseIdentifier(
+          sourceFile,
+          expression,
+          comments,
+          partOfExpression,
+          alreadyExistingUIDs,
+        )
+        return mapEither((success) => {
+          highlightBounds = mergeHighlightBounds(highlightBounds, success.highlightBounds)
+          propsUsed.push(...success.propsUsed)
+          definedElsewhere.push(...success.definedElsewhere)
+
+          return successfullyParsedElement(sourceFile, expression, success.value)
+        }, possibleIdentifier)
+      }
+
+      function handlePropertyAccessExpression(
+        expression: TS.PropertyAccessExpression,
+        comments: ParsedComments,
+        partOfExpression: PartOfExpression,
+      ): Either<string, SuccessfullyParsedElement> {
+        const possiblePropertyAccessExpression = parsePropertyAccessExpression(
+          expression,
+          sourceFile,
+          sourceText,
+          filename,
+          imports,
+          topLevelNames,
+          propsObjectName,
+          existingHighlightBounds,
+          alreadyExistingUIDs,
+          [],
+          comments,
+          partOfExpression,
+          applySteganography,
+        )
+        return mapEither((success) => {
+          highlightBounds = mergeHighlightBounds(highlightBounds, success.highlightBounds)
+          propsUsed.push(...success.propsUsed)
+          definedElsewhere.push(...success.definedElsewhere)
+
+          return successfullyParsedElement(sourceFile, expression, success.value)
+        }, possiblePropertyAccessExpression)
+      }
+
+      function handleElementAccessExpression(
+        expression: TS.ElementAccessExpression,
+        comments: ParsedComments,
+        partOfExpression: PartOfExpression,
+      ): Either<string, SuccessfullyParsedElement> {
+        const possiblePropertyAccessExpression = parseElementAccessExpression(
+          sourceFile,
+          sourceText,
+          filename,
+          imports,
+          topLevelNames,
+          propsObjectName,
+          expression,
+          existingHighlightBounds,
+          alreadyExistingUIDs,
+          [],
+          comments,
+          partOfExpression,
+          applySteganography,
+        )
+        return mapEither((success) => {
+          highlightBounds = mergeHighlightBounds(highlightBounds, success.highlightBounds)
+          propsUsed.push(...success.propsUsed)
+          definedElsewhere.push(...success.definedElsewhere)
+
+          return successfullyParsedElement(sourceFile, expression, success.value)
+        }, possiblePropertyAccessExpression)
       }
 
       function getConditionalExpressionComments(
@@ -2747,6 +3120,31 @@ export function parseOutJSXElements(
               parseResult = handleConditionalExpression(
                 elem.expression,
                 getConditionalElementComments(elem),
+              )
+            }
+            if (
+              elem.expression != null &&
+              TS.isIdentifier(elem.expression) &&
+              elem.expression.originalKeywordKind !== TS.SyntaxKind.UndefinedKeyword
+            ) {
+              parseResult = handleIdentifier(
+                elem.expression,
+                getComments(sourceText, elem.expression),
+                'outermost-expression',
+              )
+            }
+            if (elem.expression != null && TS.isPropertyAccessExpression(elem.expression)) {
+              parseResult = handlePropertyAccessExpression(
+                elem.expression,
+                getComments(sourceText, elem.expression),
+                'outermost-expression',
+              )
+            }
+            if (elem.expression != null && TS.isElementAccessExpression(elem.expression)) {
+              parseResult = handleElementAccessExpression(
+                elem.expression,
+                getComments(sourceText, elem.expression),
+                'outermost-expression',
               )
             }
             // Fallback to arbitrary block parsing.
@@ -2975,6 +3373,7 @@ export function parseOutJSXElements(
         alreadyExistingUIDs,
         [],
         applySteganography,
+        'outermost-expression',
       )
     }
 

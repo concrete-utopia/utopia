@@ -23,6 +23,7 @@
     "@remix-run/serve": "2.5.1",
     "cookie": "0.6.0",
     "dotenv": "16.4.1",
+    "framer-motion": "11.0.6",
     "isbot": "4",
     "moment": "2.30.1",
     "prisma-client": "link:node_modules/@utopia/prisma-client",

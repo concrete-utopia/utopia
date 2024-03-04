@@ -1,11 +1,12 @@
-import { findMaybeConditionalExpression } from '../model/conditionals'
 import { MetadataUtils } from '../model/element-metadata-utils'
 import { isLeft, isRight } from './either'
 import * as EP from './element-path'
 import type { ElementInstanceMetadataMap } from './element-template'
 import {
+  isJSElementAccess,
   isJSExpressionMapOrOtherJavaScript,
-  isJSExpressionOtherJavaScript,
+  isJSIdentifier,
+  isJSPropertyAccess,
   isJSXConditionalExpression,
   isJSXElement,
   isJSXFragment,
@@ -95,7 +96,15 @@ function getChildrenPaths(
     element.element.value.children.length > 0
   ) {
     childrenFromElement = element.element.value.children
-      .filter((child) => !isJSXTextBlock(child) && !isJSExpressionMapOrOtherJavaScript(child))
+      .filter((child) => {
+        return (
+          !isJSXTextBlock(child) &&
+          !isJSExpressionMapOrOtherJavaScript(child) &&
+          !isJSIdentifier(child) &&
+          !isJSPropertyAccess(child) &&
+          !isJSElementAccess(child)
+        )
+      })
       .map((child) => EP.appendToPath(rootPath, child.uid))
   }
 
@@ -150,7 +159,10 @@ function getReorderedPaths(
     return (
       MetadataUtils.isConditionalFromMetadata(element) ||
       MetadataUtils.isExpressionOtherJavascriptFromMetadata(element) ||
-      MetadataUtils.isJSXMapExpressionFromMetadata(element)
+      MetadataUtils.isJSXMapExpressionFromMetadata(element) ||
+      MetadataUtils.isIdentifierFromMetadata(element) ||
+      MetadataUtils.isPropertyAccessFromMetadata(element) ||
+      MetadataUtils.isElementAccessFromMetadata(element)
     )
   })
   const pathsToBeReordered = original.filter(

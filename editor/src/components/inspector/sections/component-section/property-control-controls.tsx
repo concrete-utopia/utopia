@@ -1,7 +1,7 @@
 import fastDeepEquals from 'fast-deep-equal'
 import React from 'react'
 import type { CSSCursor } from '../../../../uuiui-deps'
-import { SliderControl } from '../../../../uuiui-deps'
+import { SliderControl, getControlStyles } from '../../../../uuiui-deps'
 import type {
   AllowedEnumType,
   BaseControlDescription,
@@ -23,7 +23,7 @@ import type {
   Vector3ControlDescription,
   Vector4ControlDescription,
 } from 'utopia-api/core'
-import type { InspectorInfo } from '../../common/property-path-hooks'
+import type { InspectorInfo, InspectorInfoWithRawValue } from '../../common/property-path-hooks'
 import { BooleanControl } from '../../controls/boolean-control'
 import type { NumberInputProps } from '../../../../uuiui'
 import {
@@ -36,7 +36,9 @@ import {
   FlexRow,
   UtopiaTheme,
   useColorTheme,
+  colorTheme,
   Icn,
+  Tooltip,
 } from '../../../../uuiui'
 import type { CSSNumber } from '../../common/css-utils'
 import { printCSSNumber, cssNumber, defaultCSSColor } from '../../common/css-utils'
@@ -60,6 +62,11 @@ import {
 } from '../../../custom-code/code-file'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { HtmlPreview, ImagePreview } from './property-content-preview'
+import {
+  JSElementAccess,
+  JSIdentifier,
+  JSPropertyAccess,
+} from '../../../../core/shared/element-template'
 import type { JSXParsedType, JSXParsedValue } from '../../../../utils/value-parser-utils'
 import { assertNever } from '../../../../core/shared/utils'
 
@@ -67,9 +74,10 @@ export interface ControlForPropProps<T extends BaseControlDescription> {
   propPath: PropertyPath
   propName: string
   controlDescription: T
-  propMetadata: InspectorInfo<any>
+  propMetadata: InspectorInfoWithRawValue<any>
   setGlobalCursor: (cursor: CSSCursor | null) => void
   focusOnMount: boolean
+  onOpenDataPicker: () => void
 }
 
 export const CheckboxPropertyControl = React.memo(
@@ -516,8 +524,9 @@ export const JSXPropertyControl = React.memo(
   (props: ControlForPropProps<JSXControlDescription>) => {
     const { propMetadata } = props
 
-    const colorTheme = useColorTheme()
-
+    const theme = useColorTheme()
+    const controlStatus = propMetadata.controlStatus
+    const controlStyles = getControlStyles(controlStatus)
     const value = propMetadata.propertyStatus.set ? propMetadata.value : undefined
 
     const safeValue: JSXParsedValue = value ?? { type: 'unknown', name: 'JSX' }
@@ -527,7 +536,7 @@ export const JSXPropertyControl = React.memo(
       <div
         style={{
           borderRadius: 2,
-          background: colorTheme.bg2.value,
+          background: theme.bg2.value,
           fontWeight: 600,
           display: 'flex',
           justifyContent: 'flex-start',
@@ -536,6 +545,7 @@ export const JSXPropertyControl = React.memo(
           overflowX: 'scroll',
           whiteSpace: 'nowrap',
           padding: '2px 6px',
+          color: controlStyles.mainColor,
         }}
       >
         <JSXPropIcon jsxType={safeValue.type} />
@@ -780,6 +790,58 @@ export const Matrix4PropertyControl = React.memo(
           />
         </FlexRow>
       </FlexColumn>
+    )
+  },
+)
+
+interface IdentifierExpressionCartoucheControlProps {
+  contents: string
+  matchType: 'full' | 'partial'
+  onOpenDataPicker: () => void
+}
+export const IdentifierExpressionCartoucheControl = React.memo(
+  (props: IdentifierExpressionCartoucheControlProps) => {
+    return (
+      <FlexRow
+        style={{
+          cursor: 'pointer',
+          gap: 6,
+          color: props.matchType === 'full' ? colorTheme.bg1.value : colorTheme.primary.value,
+          backgroundColor:
+            props.matchType === 'full' ? colorTheme.primary.value : colorTheme.primary10.value,
+          padding: '2px 6px',
+          borderRadius: 4,
+        }}
+        onClick={props.onOpenDataPicker}
+      >
+        <div
+          style={{
+            width: 15,
+            height: 15,
+            borderRadius: 2,
+            backgroundColor: colorTheme.secondaryBlue.value,
+          }}
+        />
+        <Tooltip title={props.contents}>
+          <div
+            style={{
+              flex: 1,
+              /* Standard CSS ellipsis */
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+
+              /* Beginning of string */
+              direction: 'rtl',
+              textAlign: 'left',
+            }}
+          >
+            {props.contents}
+            &lrm;
+            {/* the &lrm; non-printing character is added to fix the punctuation marks disappearing because of direction: rtl */}
+          </div>
+        </Tooltip>
+      </FlexRow>
     )
   },
 )
