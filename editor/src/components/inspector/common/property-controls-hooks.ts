@@ -10,7 +10,7 @@ import {
   getPropertyControlNames,
 } from '../../../core/property-controls/property-control-values'
 import type { UnionControlDescription, RegularControlDescription } from 'utopia-api/core'
-import type { InspectorInfo } from './property-path-hooks'
+import type { InspectorInfo, InspectorInfoWithRawValue } from './property-path-hooks'
 import {
   filterUtopiaSpecificProps,
   InspectorPropsContext,
@@ -21,7 +21,7 @@ import type { ModifiableAttribute } from '../../../core/shared/jsx-attributes'
 import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
 import * as PP from '../../../core/shared/property-path'
 import type { Either } from '../../../core/shared/either'
-import { eitherToMaybe } from '../../../core/shared/either'
+import { eitherToMaybe, maybeEitherToMaybe } from '../../../core/shared/either'
 import {
   calculatePropertyStatusForSelection,
   getControlStatusFromPropertyStatus,
@@ -32,7 +32,7 @@ import {
   useKeepReferenceEqualityIfPossible,
 } from '../../../utils/react-performance'
 import type { UtopiaJSXComponent } from '../../../core/shared/element-template'
-import { isJSXElement } from '../../../core/shared/element-template'
+import { emptyComments, isJSXElement, jsIdentifier } from '../../../core/shared/element-template'
 import { addUniquely, mapDropNulls } from '../../../core/shared/array-utils'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -65,7 +65,7 @@ function filterSpecialProps(props: Array<string>): Array<string> {
 export function useInspectorInfoForPropertyControl(
   propertyPath: PropertyPath,
   control: RegularControlDescription,
-): InspectorInfo<any> {
+): InspectorInfoWithRawValue<any> {
   const rawValues: RawValues = useKeepReferenceEqualityIfPossible(
     useContextSelector(
       InspectorPropsContext,
@@ -128,8 +128,11 @@ export function useInspectorInfoForPropertyControl(
     onSingleUnsetValue(propertyPath, false)
   }, [onSingleUnsetValue, propertyPath])
 
+  const attributeExpression = maybeEitherToMaybe(rawValues[0]) // TODO handle multiselection
+
   return {
     value: parsedValue,
+    attributeExpression: attributeExpression,
     controlStatus,
     propertyStatus: propertyStatusToReturn,
     controlStyles,
