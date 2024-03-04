@@ -11,7 +11,18 @@ export const projectCards = recipe({
       gridTemplateColumns: 'repeat(auto-fill, 280px)',
       justifyContent: 'space-between',
       gridGap: 30,
-      paddingRight: 30
+      paddingRight: 30,
+    },
+  ],
+})
+
+export const projectRows = recipe({
+  base: [
+    {
+      flexGrow: 1,
+      overflowY: 'scroll',
+      scrollbarColor: 'lightgrey transparent',
+      gap: 10,
     },
   ],
 })

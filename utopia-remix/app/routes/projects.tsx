@@ -26,7 +26,7 @@ import { useProjectsStore } from '../store'
 import { button } from '../styles/button.css'
 import { newProjectButton } from '../styles/newProjectButton.css'
 import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
-import { projectCards } from '../styles/projects.css'
+import { projectCards, projectRows } from '../styles/projects.css'
 import { sprinkles } from '../styles/sprinkles.css'
 import { Collaborator, CollaboratorsByProject, Operation, ProjectWithoutContent } from '../types'
 import { requireUser } from '../util/api.server'
@@ -532,14 +532,7 @@ const Projects = React.memo(
       <>
         {when(
           projects.length > 0 && !gridView,
-          <div
-            style={{
-              flexGrow: 1,
-              overflowY: 'scroll',
-              scrollbarColor: 'lightgrey transparent',
-              gap: 10,
-            }}
-          >
+          <div className={projectRows()}>
             {projects.map((project) => (
               <ProjectRow
                 key={project.proj_id}
