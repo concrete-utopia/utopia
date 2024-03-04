@@ -16,7 +16,6 @@ specifiers:
   '@types/express': 4.17.21
   '@types/jest': 29.5.12
   '@types/node': 20.11.15
-  '@types/posix': ^4.2.3
   '@types/react': 18.2.20
   '@types/react-dom': 18.2.7
   '@typescript-eslint/eslint-plugin': 6.7.4
@@ -83,7 +82,6 @@ devDependencies:
   '@types/express': 4.17.21
   '@types/jest': 29.5.12
   '@types/node': 20.11.15
-  '@types/posix': 4.2.3
   '@types/react': 18.2.20
   '@types/react-dom': 18.2.7
   '@typescript-eslint/eslint-plugin': 6.7.4_shtvzkt6s7gm4npckmp2z5nvfi
@@ -3336,10 +3334,6 @@ packages:
     resolution: {integrity: sha512-gKb0enTmRCzXSSUJDq6/sPcqrfCv2mkkG6Jt/clpn5eiCbKTY+SgZUxo+p8ZKMof5dCp9vHQUAB7wOUTod22wQ==}
     dependencies:
       undici-types: 5.26.5
-    dev: true
-
-  /@types/posix/4.2.3:
-    resolution: {integrity: sha512-fclf/js3lG8n7t8B2gE4FkFC0738KXXf8Ly9tlFsk3Et7pjaQWaLyS6aAQ3fsTbFJm04kzkH2Hd9ByCpKaoBzw==}
     dev: true
 
   /@types/prop-types/15.7.11:
