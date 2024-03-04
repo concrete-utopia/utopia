@@ -10,8 +10,7 @@ function proxy(originalRequest, originalResponse) {
   const proxyRequest = http.request(
     {
       // target the right server
-      protocol:
-        process.env.APP_ENV === 'local' || process.env.APP_ENV === 'test' ? 'http:' : 'https:',
+      protocol: originalRequest.protocol + ':',
       host: process.env.EXPRESS_PROXY_TARGET_HOST,
       port: process.env.EXPRESS_PROXY_TARGET_PORT,
 
