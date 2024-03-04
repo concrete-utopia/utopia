@@ -10,6 +10,7 @@ export const projectCards = recipe({
       display: 'grid',
       gridTemplateColumns: 'repeat(auto-fill, 280px)',
       justifyContent: 'space-between',
+      alignContent: 'flex-start',
       gridGap: '60px 40px',
       paddingRight: 30,
     },

@@ -1,5 +1,5 @@
 import { recipe } from '@vanilla-extract/recipes'
-import { sprinkles } from './sprinkles.css'
+import { sprinkles, colors } from './sprinkles.css'
 
 export const newProjectButton = recipe({
   base: [
@@ -31,6 +31,7 @@ export const newProjectButton = recipe({
       purple: { background: '#9643FF' },
       blue: { background: '#3992FF' },
       green: { background: '#96BF48' },
+      primary: { background: colors.primary}
     },
 
     size: {
