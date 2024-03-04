@@ -17,7 +17,10 @@ import {
   jsExpressionValue,
   jsxAttributesEntry,
 } from '../../core/shared/element-template'
-import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import {
+  MetadataUtils,
+  getOnlyJsxElementOfJsExpression,
+} from '../../core/model/element-metadata-utils'
 import { foldEither, isLeft, isRight } from '../../core/shared/either'
 import type { ConditionalClauseNavigatorEntry, NavigatorEntry } from '../editor/store/editor-state'
 import {
@@ -139,11 +142,11 @@ export function getNavigatorTargets(
 
             if (propValue?.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
               addedProps.add(prop)
+              const element = getOnlyJsxElementOfJsExpression(propValue)
               if (prop === 'children') {
                 hasChildrenProp = true
               }
-              const elementWithin = Object.values(propValue.elementsWithin)[0]
-              if (elementWithin == null) {
+              if (element == null) {
                 const entries = [
                   renderPropNavigatorEntry(EP.appendToPath(path, propValue.uid), prop, false),
                   syntheticNavigatorEntry(EP.appendToPath(path, propValue.uid), propValue, null),
@@ -152,7 +155,7 @@ export function getNavigatorTargets(
                 visibleNavigatorTargets.push(...entries)
                 return
               }
-              const childPath = EP.appendToPath(path, EP.createIndexedUid(elementWithin.uid, ++idx))
+              const childPath = EP.appendToPath(path, EP.createIndexedUid(element.uid, ++idx))
               const navigatorEntry = renderPropNavigatorEntry(childPath, prop, true)
               navigatorTargets.push(navigatorEntry)
               visibleNavigatorTargets.push(navigatorEntry)
@@ -164,7 +167,7 @@ export function getNavigatorTargets(
                 processedAsRenderProp.add(EP.toString(subTreeChild.path))
                 walkAndAddKeys(subTreeChild, collapsedAncestor)
               } else {
-                const entry = syntheticNavigatorEntry(childPath, elementWithin, null)
+                const entry = syntheticNavigatorEntry(childPath, element, null)
                 navigatorTargets.push(entry)
                 visibleNavigatorTargets.push(entry)
               }

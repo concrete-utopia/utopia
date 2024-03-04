@@ -46,6 +46,7 @@ import type {
   ConditionValue,
   JSXElementLike,
   JSPropertyAccess,
+  JSExpressionOtherJavaScript,
 } from '../shared/element-template'
 import {
   getJSXElementNameLastPart,
@@ -2852,4 +2853,20 @@ export function getZIndexOrderedViewsWithoutDirectChildren(
     }
   })
   return filteredTargets
+}
+
+// When the expression is just a jsx element and nothing more, it returns that jsx expression (otherwise null)
+export function getOnlyJsxElementOfJsExpression(
+  expr: JSExpressionOtherJavaScript,
+): JSXElement | null {
+  const elementsWithinUids = Object.keys(expr.elementsWithin)
+  if (elementsWithinUids.length !== 1) {
+    return null
+  }
+  const elementUid = elementsWithinUids[0]
+  const expectedTranspiledJavascript = `return utopiaCanvasJSXLookup(\"${elementUid}\", {\n  callerThis: this\n});`
+  if (expr.transpiledJavascript !== expectedTranspiledJavascript) {
+    return null
+  }
+  return expr.elementsWithin[elementUid]
 }
