@@ -13,6 +13,9 @@ import type {
   ElementsWithin,
   JSExpression,
   JSXElementLike,
+  JSIdentifier,
+  JSPropertyAccess,
+  JSElementAccess,
 } from '../../../core/shared/element-template'
 import {
   isJSXElement,
@@ -73,6 +76,7 @@ import {
 } from '../../../core/shared/comment-flags'
 import { RemixSceneComponent } from './remix-scene-component'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { jsxElementChildToText } from './jsx-element-child-to-text'
 
 export function createLookupRender(
   elementPath: ElementPath | null,
@@ -573,8 +577,22 @@ export function renderCoreElement(
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
-      const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
+    case 'JS_PROPERTY_ACCESS':
+    case 'JS_ELEMENT_ACCESS':
+    case 'JS_IDENTIFIER':
+      if (elementPath != null) {
+        addFakeSpyEntry(
+          validPaths,
+          metadataContext,
+          elementPath,
+          element,
+          filePath,
+          imports,
+          'not-a-conditional',
+        )
+      }
 
+      const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
       if (elementIsTextEdited) {
         const textContent = trimJoinUnescapeTextFromJSXElements([element])
         const textEditorProps: TextEditorProps = {
@@ -605,10 +623,6 @@ export function renderCoreElement(
       }
 
       return jsxAttributeToValue(filePath, inScope, requireResult, element)
-    case 'JS_PROPERTY_ACCESS':
-    case 'JS_ELEMENT_ACCESS':
-    case 'JS_IDENTIFIER':
-      return jsxAttributeToValue(filePath, inScope, requireResult, element)
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled type ${JSON.stringify(element)}`)
@@ -623,117 +637,11 @@ function trimJoinUnescapeTextFromJSXElements(elements: Array<JSXElementChild>): 
       elements[i - 1] ?? null,
       elements[i + 1] ?? null,
       'jsx',
+      'outermost',
     )
   }
 
   return unescapeHTML(combinedText)
-}
-
-function jsxElementChildToText(
-  element: JSXElementChild,
-  prevElement: JSXElementChild | null,
-  nextElement: JSXElementChild | null,
-  expressionContext: 'jsx' | 'javascript',
-): string {
-  switch (element.type) {
-    case 'JSX_TEXT_BLOCK':
-      return trimWhitespaces(element.text, prevElement ?? null, nextElement ?? null)
-    case 'JSX_ELEMENT':
-      if (element.name.baseVariable === 'br') {
-        return '\n'
-      }
-      return ''
-    case 'JSX_MAP_EXPRESSION':
-    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      // when the context is jsx, we need to wrap expression in curly brackets
-      return expressionContext === 'javascript'
-        ? element.originalJavascript
-        : `{${element.originalJavascript}}`
-    case 'JSX_CONDITIONAL_EXPRESSION':
-      // This is a best effort to reconstruct the original code of the conditional.
-      // Maybe it would be better to store the originalJavascript in JSXConditionalExpression, but that also has its problems, e.g.
-      // when we instantiate expressions from code (for example during wrapping), then we don't want to produce javascript code there from a full hierarchy of elements
-      return `{ ${element.originalConditionString} ? ${jsxElementChildToText(
-        element.whenTrue,
-        null,
-        null,
-        'javascript',
-      )} : ${jsxElementChildToText(element.whenFalse, null, null, 'javascript')} }`
-    case 'ATTRIBUTE_VALUE':
-      if (typeof element.value === 'string') {
-        switch (expressionContext) {
-          // when the context is javascript we need to put string values between quotation marks
-          case 'javascript':
-            const multiline = element.value.split('\n').length > 1
-            if (multiline) {
-              const escaped = element.value.replace('`', '`')
-              return '`' + escaped + '`'
-            }
-            const escaped = element.value.replace("'", "'")
-            return "'" + escaped + "'"
-          case 'jsx':
-            return element.value
-          default:
-            assertNever(expressionContext)
-        }
-      }
-      if (expressionContext == 'javascript') {
-        if (element.value === null) {
-          return 'null'
-        }
-        if (element.value === undefined) {
-          return 'undefined'
-        }
-      }
-      return element.value != null ? element.value.toString() : '{null}'
-    case 'JSX_FRAGMENT':
-    case 'ATTRIBUTE_NESTED_ARRAY':
-    case 'ATTRIBUTE_NESTED_OBJECT':
-    case 'ATTRIBUTE_FUNCTION_CALL':
-    case 'JS_IDENTIFIER':
-    case 'JS_ELEMENT_ACCESS':
-    case 'JS_PROPERTY_ACCESS':
-      return ''
-    default:
-      assertNever(element)
-  }
-}
-
-function trimWhitespaces(
-  text: string,
-  elementBefore: JSXElementChild | null,
-  elementAfter: JSXElementChild | null,
-): string {
-  if (text.length === 0) {
-    return ''
-  }
-
-  const trimmedText = text
-    // split around all whitespaces, we don't want to keep newlines or repeated spaces
-    .split(/\s/)
-    // empty strings will appear between repeated whitespaces, we can ignore them
-    .filter((s) => s.length > 0)
-    // join back everything with a single space
-    .join(' ')
-
-  // when the text has a leading whitespace and there is an arbitrary block before that, we need to keep the whitespace
-  const keepSpaceBefore = text[0] === ' ' && elementBefore?.type === 'ATTRIBUTE_OTHER_JAVASCRIPT'
-  // when the text has an trailing whitespace and there is an arbitrary block after that, we need to keep the whitespace
-  const keepSpaceAfter =
-    text[text.length - 1] === ' ' && elementAfter?.type === 'ATTRIBUTE_OTHER_JAVASCRIPT'
-
-  if (keepSpaceBefore && keepSpaceAfter) {
-    return ' ' + trimmedText + ' '
-  }
-
-  if (keepSpaceAfter) {
-    return trimmedText + ' '
-  }
-  if (keepSpaceBefore) {
-    return ' ' + trimmedText
-  }
-
-  return trimmedText
 }
 
 function renderJSXElement(
@@ -900,7 +808,7 @@ function renderJSXElement(
           variablesInScope,
           [],
         )
-        const blockScope = {
+        const blockScope: Record<any, any> = {
           ...inScope,
           [JSX_CANVAS_LOOKUP_FUNCTION_NAME]: utopiaCanvasJSXLookup({}, inScope, innerRender),
         }
@@ -910,7 +818,8 @@ function renderJSXElement(
             ? childrenWithNewTextBlock[0]
             : jsExpressionValue(null, emptyComments) // placeholder
 
-        return runJSExpression(filePath, requireResult, expressionToEvaluate, blockScope)
+        const result = runJSExpression(filePath, requireResult, expressionToEvaluate, blockScope)
+        return result
       }
 
       const originalTextContent = isFeatureEnabled('Steganography') ? runJSExpressionLazy() : null
@@ -1038,7 +947,7 @@ function runJSExpression(
     case 'JS_PROPERTY_ACCESS':
     case 'JS_ELEMENT_ACCESS':
     case 'JS_IDENTIFIER':
-      return jsxAttributeToValue(filePath, block, requireResult, block)
+      return jsxAttributeToValue(filePath, currentScope, requireResult, block)
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return resolveParamsAndRunJsCode(filePath, block, requireResult, currentScope)

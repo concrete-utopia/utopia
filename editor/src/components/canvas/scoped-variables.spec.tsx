@@ -257,7 +257,7 @@ describe('scoped variables', () => {
             },
           },
         },
-        "storyboard-entity/scene-1-entity/app-entity:cb0/fakeawaitelement/ef7/something-div~~~1": Object {
+        "storyboard-entity/scene-1-entity/app-entity:cb0/fakeawaitelement/892/something-div~~~1": Object {
           "first": Object {
             "insertionCeiling": Object {
               "parts": Array [
@@ -269,7 +269,7 @@ describe('scoped variables', () => {
                 Array [
                   "cb0",
                   "fakeawaitelement",
-                  "ef7",
+                  "892",
                   "something-div~~~1",
                 ],
               ],
@@ -303,7 +303,7 @@ describe('scoped variables', () => {
                 Array [
                   "cb0",
                   "fakeawaitelement",
-                  "ef7",
+                  "892",
                   "something-div~~~1",
                 ],
               ],
@@ -361,7 +361,7 @@ describe('scoped variables', () => {
             },
           },
         },
-        "storyboard-entity/scene-1-entity/app-entity:cb0/fakeawaitelement/a00/something-div~~~1": Object {
+        "storyboard-entity/scene-1-entity/app-entity:cb0/fakeawaitelement/68f/something-div~~~1": Object {
           "props": Object {
             "insertionCeiling": Object {
               "parts": Array [
@@ -388,7 +388,7 @@ describe('scoped variables', () => {
                 Array [
                   "cb0",
                   "fakeawaitelement",
-                  "a00",
+                  "68f",
                   "something-div~~~1",
                 ],
               ],

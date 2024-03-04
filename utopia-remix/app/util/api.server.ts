@@ -18,16 +18,16 @@ type EmptyResponse = Record<string, never>
 
 export type ApiResponse<T> = TypedResponse<T | ErrorResponse | EmptyResponse>
 
-const responseHeaders: HeadersInit = {
+const defaultResponseHeaders = new Headers({
   'Access-Control-Allow-Origin': ServerEnvironment.CORSOrigin,
   'Access-Control-Allow-Credentials': 'true',
   'Access-Control-Allow-Headers': 'content-type, origin, cookie',
   'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
   'Cache-control': 'no-cache',
-}
+})
 
 export async function handleOptions(): Promise<TypedResponse<EmptyResponse>> {
-  return json({}, { headers: responseHeaders })
+  return json({}, { headers: defaultResponseHeaders })
 }
 
 interface HandleRequest {
@@ -56,14 +56,16 @@ async function handleMethod<T>(
   try {
     const resp = await fn(request, params)
     if (resp instanceof Response) {
+      const mergedHeaders = new Headers(defaultResponseHeaders)
+      resp.headers.forEach((value, key) => {
+        mergedHeaders.set(key, value)
+      })
       return new Response(resp.body, {
-        headers: {
-          ...resp.headers,
-          ...responseHeaders,
-        },
+        status: resp.status,
+        headers: mergedHeaders,
       })
     }
-    return json(resp, { headers: responseHeaders })
+    return json(resp, { headers: defaultResponseHeaders })
   } catch (err) {
     const { message, status, name } = getErrorData(err)
 
@@ -71,7 +73,7 @@ async function handleMethod<T>(
 
     return json(
       { error: name, status: status, message: message },
-      { headers: responseHeaders, status: status },
+      { headers: defaultResponseHeaders, status: status },
     )
   }
 }
