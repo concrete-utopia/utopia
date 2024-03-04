@@ -137,7 +137,7 @@ export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> 
     const { id } = this.props
     const items = this.splitItemsForSubmenu(this.props.items)
     return (
-      <Menu key={id} id={id} animation={false} style={{ maxWidth: 22 }}>
+      <Menu key={id} id={id} animation={false}>
         {items.map((item: Submenu<T> | SimpleItem<T>, index: number) => {
           if (item.type === 'submenu') {
             return (
@@ -285,16 +285,4 @@ export const MenuProvider: React.FunctionComponent<React.PropsWithChildren<MenuP
       {props.children}
     </div>
   )
-}
-
-export const useShowRenderPropPicker = (id: string) => {
-  const { show, hideAll } = useContextMenu({ id })
-  const onClick = React.useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
-      show(event)
-    },
-    [show],
-  )
-
-  return { showRenderPropPicker: onClick, hideRenderPropPicker: hideAll }
 }

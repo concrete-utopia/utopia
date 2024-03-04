@@ -3164,12 +3164,9 @@ export function updateMainUIInEditorState(editor: EditorState, mainUI: string): 
   return updatePackageJsonInEditorState(editor, transformPackageJson)
 }
 
-export function areGeneratedElementsTargeted(
-  metadata: ElementInstanceMetadataMap,
-  targets: Array<ElementPath>,
-): boolean {
+export function areGeneratedElementsTargeted(targets: Array<ElementPath>): boolean {
   return targets.some((target) => {
-    return MetadataUtils.isElementGenerated(metadata, target)
+    return MetadataUtils.isElementGenerated(target)
   })
 }
 

@@ -187,7 +187,7 @@ export const getChildrenOfCollapsedViews = (
 
 // eslint-disable-next-line object-shorthand
 export const MetadataUtils = {
-  isElementGenerated(metadata: ElementInstanceMetadataMap, target: ElementPath): boolean {
+  isElementGenerated(target: ElementPath): boolean {
     const staticTarget = EP.dynamicPathToStaticPath(target)
     return !EP.pathsEqual(target, staticTarget)
   },
@@ -1168,7 +1168,7 @@ export const MetadataUtils = {
       .some((e) => e !== 'br')
 
     return (
-      !MetadataUtils.isElementGenerated(metadata, target) &&
+      !MetadataUtils.isElementGenerated(target) &&
       (children.length === 0 || !hasNonEditableChildren)
     )
   },

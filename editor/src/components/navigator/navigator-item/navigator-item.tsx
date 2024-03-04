@@ -22,16 +22,12 @@ import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
 } from '../../../core/shared/element-template'
-import {
-  getJSXElementNameAsString,
-  hasElementsWithin,
-  jsExpressionOtherJavaScriptSimple,
-} from '../../../core/shared/element-template'
+import { hasElementsWithin } from '../../../core/shared/element-template'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { unless, when } from '../../../utils/react-conditionals'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import type { IcnColor, IcnProps } from '../../../uuiui'
-import { FlexRow, OnClickOutsideHOC, useColorTheme, UtopiaTheme } from '../../../uuiui'
+import { FlexRow, useColorTheme, UtopiaTheme } from '../../../uuiui'
 import type { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 import { isEntryAConditionalSlot } from '../../canvas/canvas-utils'
 import type { EditorAction, EditorDispatch } from '../../editor/action-types'
@@ -59,15 +55,10 @@ import { ExpandableIndicator } from './expandable-indicator'
 import { ItemLabel } from './item-label'
 import { LayoutIcon } from './layout-icon'
 import { NavigatorItemActionSheet } from './navigator-item-components'
-import { CanvasContextMenuPortalTargetID, assertNever } from '../../../core/shared/utils'
+import { assertNever } from '../../../core/shared/utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { MapCounter } from './map-counter'
-import * as PP from '../../../core/shared/property-path'
-import { useShowRenderPropPicker } from '../../context-menu-wrapper'
-import type { ItemParams } from 'react-contexify'
-import { Item, Menu } from 'react-contexify'
-import ReactDOM from 'react-dom'
-import { useDispatch } from '../../editor/store/dispatch-context'
+import { Outlet } from 'react-router'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -150,7 +141,8 @@ function selectItem(
   const elementPath = navigatorEntry.elementPath
   const selectionActions =
     isConditionalClauseNavigatorEntry(navigatorEntry) ||
-    isInvalidOverrideNavigatorEntry(navigatorEntry)
+    isInvalidOverrideNavigatorEntry(navigatorEntry) ||
+    isRenderPropNavigatorEntry(navigatorEntry)
       ? []
       : getSelectionActions(getSelectedViewsInRange, index, elementPath, selected, event)
 
@@ -158,7 +150,7 @@ function selectItem(
     ? getConditionalOverrideActions(elementPath, conditionalOverrideUpdate)
     : getConditionalOverrideActions(EP.parentPath(elementPath), conditionalOverrideUpdate)
 
-  dispatch([...conditionalOverrideActions, ...selectionActions])
+  dispatch([...conditionalOverrideActions, ...selectionActions], 'leftpane')
 }
 
 const highlightItem = (
@@ -548,12 +540,7 @@ export const NavigatorItem: React.FunctionComponent<
 
   const childComponentCount = props.noOfChildren
 
-  const isGenerated = useEditorState(
-    Substores.metadata,
-    (store) =>
-      MetadataUtils.isElementGenerated(store.editor.jsxMetadata, navigatorEntry.elementPath),
-    'NavigatorItem isGenerated',
-  )
+  const isGenerated = MetadataUtils.isElementGenerated(navigatorEntry.elementPath)
   const isDynamic = isGenerated || containsExpressions || isConditionalDynamicBranch
 
   const codeItemType: CodeItemType = useEditorState(
@@ -750,8 +737,6 @@ export const NavigatorItem: React.FunctionComponent<
 
   const isComponentScene = useIsProbablyScene(navigatorEntry) && childComponentCount === 1
   const isRenderProp = isRenderPropNavigatorEntry(navigatorEntry)
-  const isRenderPropSlot =
-    isSyntheticNavigatorEntry(navigatorEntry) && navigatorEntry.renderProp != null
 
   const containerStyle: React.CSSProperties = React.useMemo(() => {
     return {
@@ -787,24 +772,8 @@ export const NavigatorItem: React.FunctionComponent<
     ? 'component'
     : resultingStyle.iconColor
 
-  const renderPropPickerId = varSafeNavigatorEntryToKey(navigatorEntry)
-
-  const { showRenderPropPicker: showContextMenu, hideRenderPropPicker: hideContextMenu } =
-    useShowRenderPropPicker(renderPropPickerId)
-
-  const renderPropPickerData = React.useMemo(() => {
-    const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)
-    const entry = props.navigatorEntry
-    if (portalTarget == null || entry.type !== 'SYNTHETIC' || entry.renderProp == null) {
-      return null
-    }
-
-    return { portalTarget, entry }
-  }, [props.navigatorEntry])
-
   return (
     <div
-      onClick={isRenderPropSlot ? showContextMenu : hideContextMenu}
       style={{
         outline: `1px solid ${
           props.parentOutline === 'solid' && isOutletOrDescendantOfOutlet
@@ -816,17 +785,6 @@ export const NavigatorItem: React.FunctionComponent<
         outlineOffset: props.parentOutline === 'solid' ? '-1px' : 0,
       }}
     >
-      {renderPropPickerData == null
-        ? null
-        : ReactDOM.createPortal(
-            <RenderPropPicker
-              target={props.navigatorEntry.elementPath}
-              key={renderPropPickerId}
-              id={renderPropPickerId}
-              prop={renderPropPickerData.entry.renderProp ?? ''}
-            />,
-            renderPropPickerData.portalTarget,
-          )}
       <FlexRow
         data-testid={NavigatorItemTestId(varSafeNavigatorEntryToKey(navigatorEntry))}
         style={rowStyle}
@@ -834,7 +792,7 @@ export const NavigatorItem: React.FunctionComponent<
         onMouseMove={highlight}
         onDoubleClick={focusComponent}
       >
-        {isSlot || isRenderPropSlot ? (
+        {isSlot ? (
           <div
             key={`label-${props.label}-slot`}
             style={{
@@ -864,12 +822,12 @@ export const NavigatorItem: React.FunctionComponent<
             style={{
               width: 140,
               height: 19,
-              fontWeight: 600,
-              textTransform: 'uppercase',
-              color: 'gray',
+              borderRadius: 20,
+              backgroundColor: colorTheme.dynamicBlue10.value,
+              color: colorTheme.navigatorResizeHintBorder.value,
               border: colorTheme.navigatorResizeHintBorder.value,
-              marginLeft: 23,
-              paddingTop: 6,
+              marginLeft: 28,
+              padding: '0px 10px 0px 10px',
               overflow: 'hidden',
             }}
           >
@@ -1026,123 +984,3 @@ function elementContainsExpressions(
 ): boolean {
   return MetadataUtils.isGeneratedTextFromMetadata(path, pathTrees, metadata)
 }
-
-interface RenderPropPickerProps {
-  target: ElementPath
-  prop: string
-  key: string
-  id: string
-}
-
-interface PreferredChildComponentData {
-  variantLabel: string
-  variantCode: string
-}
-
-const usePreferredChildrenForTargetProp = (
-  target: ElementPath,
-  prop: string,
-): Array<PreferredChildComponentData> | null => {
-  const selectedJSXElement = useEditorState(
-    Substores.metadata,
-    (store) => MetadataUtils.getJSXElementFromMetadata(store.editor.jsxMetadata, target),
-    'usePreferredChildrenForSelectedElement selectedJSXElement',
-  )
-
-  const preferredChildrenForTargetProp = useEditorState(
-    Substores.restOfEditor,
-    (store) => {
-      if (selectedJSXElement == null) {
-        return null
-      }
-
-      const targetName = getJSXElementNameAsString(selectedJSXElement.name)
-      // TODO: we don't deal with components registered with the same name in multiple files
-      for (const file of Object.values(store.editor.propertyControlsInfo)) {
-        for (const [name, value] of Object.entries(file)) {
-          if (name === targetName) {
-            for (const [registeredPropName, registeredPropValue] of Object.entries(
-              value.properties,
-            )) {
-              if (
-                registeredPropName === prop &&
-                registeredPropValue.control === 'jsx' &&
-                registeredPropValue.preferredChildComponents != null
-              ) {
-                return registeredPropValue.preferredChildComponents
-              }
-            }
-          }
-        }
-      }
-
-      return null
-    },
-    'usePreferredChildrenForSelectedElement propertyControlsInfo',
-  )
-
-  if (selectedJSXElement == null || preferredChildrenForTargetProp == null) {
-    return null
-  }
-
-  const preferredChildComponentData: Array<PreferredChildComponentData> =
-    preferredChildrenForTargetProp.flatMap((child) =>
-      child.variants == null
-        ? [{ variantLabel: child.name, variantCode: `<${child.name} />` }]
-        : child.variants.map((variant) => ({
-            variantLabel: child.name,
-            variantCode: variant.code,
-          })),
-    )
-
-  return preferredChildComponentData
-}
-
-const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, target, prop }) => {
-  const preferredChildrenForTargetProp = usePreferredChildrenForTargetProp(
-    EP.parentPath(target),
-    prop,
-  )
-
-  const dispatch = useDispatch()
-
-  const onItemClick = React.useCallback(
-    (rawJSCodeForRenderProp: string) =>
-      ({ event }: ItemParams) => {
-        event.stopPropagation()
-        event.preventDefault()
-
-        dispatch([
-          EditorActions.setProp_UNSAFE(
-            EP.parentPath(target),
-            PP.create(prop),
-            jsExpressionOtherJavaScriptSimple(rawJSCodeForRenderProp, []),
-          ),
-        ])
-      },
-    [dispatch, prop, target],
-  )
-
-  if (preferredChildrenForTargetProp == null) {
-    return null
-  }
-
-  return (
-    <Menu key={key} id={id} animation={false} style={{ padding: 8 }}>
-      {preferredChildrenForTargetProp.map((option, idx) => (
-        <Item
-          key={idx}
-          onClick={onItemClick(option.variantCode)}
-          style={{ height: 24, display: 'flex', alignItems: 'center' }}
-        >
-          <span style={{ flexGrow: 1, flexShrink: 0 }} className='react-contexify-span'>
-            {option.variantCode}
-          </span>
-          <span style={{ flexGrow: 0, flexShrink: 0, opacity: 0.6 }} className='shortcut'>
-            {option.variantLabel}
-          </span>
-        </Item>
-      ))}
-    </Menu>
-  )
-})
