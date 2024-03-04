@@ -24,7 +24,7 @@ const asciiBanner = `
 `
 
 // -----------------------------------------------------------------------------
-// Lines 14-77 from https://github.com/remix-run/remix/tree/main/templates/express
+// From: https://github.com/remix-run/remix/tree/main/templates/express
 // -----------------------------------------------------------------------------
 const BUILD_PATH = path.resolve('build/index.js')
 const VERSION_PATH = path.resolve('build/version.txt')
