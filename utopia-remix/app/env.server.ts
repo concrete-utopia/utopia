@@ -24,6 +24,9 @@ export const ServerEnvironment = {
   FGA_STORE_ID: mustEnv('FGA_STORE_ID', { test: '<FGA_STORE_ID>' }),
   FGA_CLIENT_ID: mustEnv('FGA_CLIENT_ID', { test: '<FGA_CLIENT_ID>' }),
   FGA_SECRET: mustEnv('FGA_SECRET', { test: '<FGA_SECRET>' }),
+  // Github OAuth credentials
+  GITHUB_OAUTH_CLIENT_ID: optionalEnv('GITHUB_OAUTH_CLIENT_ID', ''),
+  GITHUB_OAUTH_REDIRECT_URL: optionalEnv('GITHUB_OAUTH_REDIRECT_URL', ''),
 }
 
 export type BrowserEnvironment = {

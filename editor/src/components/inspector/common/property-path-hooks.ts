@@ -164,6 +164,10 @@ export interface InspectorInfo<T> {
   useSubmitValueFactory: UseSubmitValueFactory<T>
 }
 
+export type InspectorInfoWithRawValue<T> = InspectorInfo<T> & {
+  attributeExpression: ModifiableAttribute | null
+}
+
 function getSpiedValues<P extends string | number>(
   key: P,
   selectedProps: { [keyValue in P]: ReadonlyArray<any> },
