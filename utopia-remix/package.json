@@ -27,7 +27,6 @@
     "dotenv": "16.4.1",
     "express": "4.18.3",
     "framer-motion": "11.0.6",
-    "http-proxy-middleware": "2.0.6",
     "isbot": "4",
     "moment": "2.30.1",
     "prisma-client": "link:node_modules/@utopia/prisma-client",
