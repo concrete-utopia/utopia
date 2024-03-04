@@ -4,6 +4,7 @@ import { useProjectsStore } from '../store'
 import { contextMenuDropdown, contextMenuItem } from '../styles/contextMenu.css'
 import { sprinkles } from '../styles/sprinkles.css'
 import { CheckIcon } from '@radix-ui/react-icons'
+import { start } from 'repl'
 
 export const SortingContextMenu = React.memo(() => {
   const sortCriteria = useProjectsStore((store) => store.sortCriteria)
@@ -13,13 +14,7 @@ export const SortingContextMenu = React.memo(() => {
 
   return (
     <DropdownMenu.Portal>
-      <DropdownMenu.Content
-        className={contextMenuDropdown()}
-        style={{
-          right: 60,
-        }}
-        sideOffset={5}
-      >
+      <DropdownMenu.Content className={contextMenuDropdown()} sideOffset={5} align='end'>
         <DropdownMenu.Label style={{ color: 'grey', padding: 5 }}>Sort by</DropdownMenu.Label>
         <DropdownMenu.CheckboxItem
           className={contextMenuItem()}
