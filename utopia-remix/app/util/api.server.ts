@@ -19,10 +19,10 @@ type EmptyResponse = Record<string, never>
 export type ApiResponse<T> = TypedResponse<T | ErrorResponse | EmptyResponse>
 
 const responseHeaders: HeadersInit = {
-  'Access-Control-Allow-Origin': ServerEnvironment.CORSOrigin,
-  'Access-Control-Allow-Credentials': 'true',
-  'Access-Control-Allow-Headers': 'content-type, origin, cookie',
-  'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+  //   'Access-Control-Allow-Origin': ServerEnvironment.CORSOrigin,
+  //   'Access-Control-Allow-Credentials': 'true',
+  //   'Access-Control-Allow-Headers': 'content-type, origin, cookie',
+  //   'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
   'Cache-control': 'no-cache',
 }
 
