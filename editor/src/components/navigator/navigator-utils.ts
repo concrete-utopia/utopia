@@ -141,12 +141,7 @@ export function getNavigatorTargets(
               const elementWithin = Object.values(propValue.elementsWithin)[0]
               if (elementWithin == null) {
                 const entries = [
-                  renderPropNavigatorEntry(
-                    EP.appendToPath(path, propValue.uid),
-                    prop,
-                    propValue,
-                    false,
-                  ),
+                  renderPropNavigatorEntry(EP.appendToPath(path, propValue.uid), prop, false),
                   syntheticNavigatorEntry(EP.appendToPath(path, propValue.uid), propValue, null),
                 ]
                 navigatorTargets.push(...entries)
@@ -154,7 +149,7 @@ export function getNavigatorTargets(
                 return
               }
               const childPath = EP.appendToPath(path, EP.createIndexedUid(elementWithin.uid, ++idx))
-              const navigatorEntry = renderPropNavigatorEntry(childPath, prop, propValue, true)
+              const navigatorEntry = renderPropNavigatorEntry(childPath, prop, true)
               navigatorTargets.push(navigatorEntry)
               visibleNavigatorTargets.push(navigatorEntry)
 
@@ -182,7 +177,7 @@ export function getNavigatorTargets(
 
           const fakePath = EP.appendToPath(path, `prop-label-${prop}`)
 
-          const navigatorEntry = renderPropNavigatorEntry(fakePath, prop, null, false)
+          const navigatorEntry = renderPropNavigatorEntry(fakePath, prop, false)
           navigatorTargets.push(navigatorEntry)
           visibleNavigatorTargets.push(navigatorEntry)
           addedProps.add(EP.toString(fakePath))
@@ -201,7 +196,6 @@ export function getNavigatorTargets(
           const entry = renderPropNavigatorEntry(
             EP.appendToPath(path, 'children'),
             'children',
-            null,
             true,
           )
           navigatorTargets.push(entry)
