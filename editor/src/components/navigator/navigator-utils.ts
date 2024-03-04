@@ -116,7 +116,7 @@ export function getNavigatorTargets(
       ) {
         visibleNavigatorTargets.push(regularNavigatorEntry(path))
       }
-      const processedAsRenderProp = new Set<string>()
+      const processedPathAsRenderProp = new Set<string>()
 
       function walkPropertyControls(propControls: PropertyControls): void {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
@@ -129,9 +129,10 @@ export function getNavigatorTargets(
         }
 
         const jsxElement = elementMetadata.element.value
-        let idx = 0
-        const addedProps = new Set<string>()
-        let hasChildrenProp = false
+        let idx = 0 // the idx is to recreate the dynamic path for the render prop children
+        const addedProps = new Set<string>() // track the props which were already added
+
+        // add navigator entries for existing props
         Object.values(jsxElement.props).forEach((attr) => {
           if (!isJSXAttributesEntry(attr)) {
             return
@@ -143,9 +144,6 @@ export function getNavigatorTargets(
             if (propValue?.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
               addedProps.add(prop)
               const element = getOnlyJsxElementOfJsExpression(propValue)
-              if (prop === 'children') {
-                hasChildrenProp = true
-              }
               if (element == null) {
                 const entries = [
                   renderPropNavigatorEntry(EP.appendToPath(path, propValue.uid), prop, false),
@@ -164,7 +162,7 @@ export function getNavigatorTargets(
                 EP.pathsEqual(child.path, childPath),
               )
               if (subTreeChild != null) {
-                processedAsRenderProp.add(EP.toString(subTreeChild.path))
+                processedPathAsRenderProp.add(EP.toString(subTreeChild.path))
                 walkAndAddKeys(subTreeChild, collapsedAncestor)
               } else {
                 const entry = syntheticNavigatorEntry(childPath, element, null)
@@ -174,11 +172,9 @@ export function getNavigatorTargets(
             }
           }
         })
+        // add navigator entries for missing props which were registered
         Object.entries(propControls).forEach(([prop, control]) => {
-          if (addedProps.has(prop)) {
-            return
-          }
-          if (control.control !== 'jsx') {
+          if (control.control !== 'jsx' || addedProps.has(prop)) {
             return
           }
 
@@ -188,9 +184,6 @@ export function getNavigatorTargets(
           navigatorTargets.push(navigatorEntry)
           visibleNavigatorTargets.push(navigatorEntry)
           addedProps.add(EP.toString(fakePath))
-          if (prop === 'children') {
-            hasChildrenProp = true
-          }
 
           const propValue = getJSXAttribute(jsxElement.props, prop)
 
@@ -202,7 +195,9 @@ export function getNavigatorTargets(
           navigatorTargets.push(slotEntry)
           visibleNavigatorTargets.push(slotEntry)
         })
-        if (addedProps.size > 0 && !hasChildrenProp) {
+        // if there are added render props, and no children prop has been added, add a children prop label
+        // so we can separate real children from render props
+        if (addedProps.size > 0 && !addedProps.has('children')) {
           const entry = renderPropNavigatorEntry(
             EP.appendToPath(path, 'children'),
             'children',
@@ -335,7 +330,7 @@ export function getNavigatorTargets(
         }
       } else {
         fastForEach(Object.values(subTree.children), (child) => {
-          if (!processedAsRenderProp.has(child.pathString)) {
+          if (!processedPathAsRenderProp.has(child.pathString)) {
             walkAndAddKeys(child, newCollapsedAncestor)
           }
         })
