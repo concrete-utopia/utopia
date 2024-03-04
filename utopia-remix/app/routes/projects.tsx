@@ -26,6 +26,7 @@ import { useProjectsStore } from '../store'
 import { button } from '../styles/button.css'
 import { newProjectButton } from '../styles/newProjectButton.css'
 import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
+import { projectCards } from '../styles/projects.css'
 import { sprinkles } from '../styles/sprinkles.css'
 import { Collaborator, CollaboratorsByProject, Operation, ProjectWithoutContent } from '../types'
 import { requireUser } from '../util/api.server'
@@ -552,18 +553,7 @@ const Projects = React.memo(
         )}
         {when(
           projects.length > 0 && gridView,
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              alignContent: 'flex-start',
-              gap: MarginSize,
-              flexGrow: 1,
-              flexDirection: 'row',
-              overflowY: 'scroll',
-              scrollbarColor: 'lightgrey transparent',
-            }}
-          >
+          <div className={projectCards()}>
             {projects.map((project) => (
               <ProjectCard
                 key={project.proj_id}
@@ -621,11 +611,10 @@ const ProjectCard = React.memo(
     return (
       <div
         style={{
-          height: 2200,
-          // width: 170,
+          height: 220,
           display: 'flex',
           flexDirection: 'column',
-          gap: 5,
+          gap: 10,
         }}
       >
         <div
@@ -635,7 +624,6 @@ const ProjectCard = React.memo(
             overflow: 'hidden',
             height: 170,
             width: 280,
-            // width: '100%',
             background: 'linear-gradient(rgba(77, 255, 223, 0.4), rgba(255,250,220,.8))',
             backgroundAttachment: 'local',
             backgroundRepeat: 'no-repeat',
