@@ -85,6 +85,7 @@ export function jsxSimpleAttributeToValue(attribute: ModifiableAttribute): Eithe
       return right(undefined)
     case 'ATTRIBUTE_FUNCTION_CALL':
     case 'JSX_MAP_EXPRESSION':
+    case 'JSX_ELEMENT':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return left('Unable to get value from attribute.')
     case 'ATTRIBUTE_VALUE':
@@ -168,6 +169,7 @@ export function jsxFunctionAttributeToValue(
     case 'JS_ELEMENT_ACCESS':
     case 'JS_PROPERTY_ACCESS':
     case 'JS_IDENTIFIER':
+    case 'JSX_ELEMENT':
       return left(null)
     case 'ATTRIBUTE_FUNCTION_CALL':
       const extractedSimpleValueParameters = traverseEither(
@@ -201,6 +203,7 @@ export function jsxFunctionAttributeToRawValue(
     case 'JS_ELEMENT_ACCESS':
     case 'JS_PROPERTY_ACCESS':
     case 'JS_IDENTIFIER':
+    case 'JSX_ELEMENT':
       return left(null)
     case 'ATTRIBUTE_FUNCTION_CALL':
       return right({
@@ -219,6 +222,8 @@ export function jsxAttributeToValue(
   attribute: JSExpression,
 ): any {
   switch (attribute.type) {
+    case 'JSX_ELEMENT':
+      return null // TODO: implement
     case 'ATTRIBUTE_VALUE':
       return attribute.value
     case 'JS_IDENTIFIER':
@@ -443,6 +448,7 @@ export function getJSExpressionAtPathParts(
     case 'ATTRIBUTE_FUNCTION_CALL':
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+    case 'JSX_ELEMENT':
       return getJSXAttributeResult(attribute, PP.createFromArray(path.slice(pathIndex)))
     case 'ATTRIBUTE_VALUE':
       const slicedPath = path.slice(pathIndex)
@@ -561,6 +567,7 @@ export function setJSXValueInAttributeAtPathParts(
       case 'JS_IDENTIFIER':
       case 'JS_PROPERTY_ACCESS':
       case 'JS_ELEMENT_ACCESS':
+      case 'JSX_ELEMENT':
         return left(
           `Attempted to set a value at ${PP.toString(
             PP.createFromArray(path.slice(pathIndex)),
@@ -847,6 +854,7 @@ function unsetJSXValueInAttributeAtPath(
         case 'JS_ELEMENT_ACCESS':
         case 'JS_PROPERTY_ACCESS':
         case 'JS_IDENTIFIER':
+        case 'JSX_ELEMENT':
           return left('Cannot unset a value set inside a value set from elsewhere.')
         case 'ATTRIBUTE_NESTED_ARRAY':
           if (typeof attributeKey === 'number') {
@@ -963,6 +971,7 @@ function walkAttribute(
     case 'JS_IDENTIFIER':
     case 'JS_PROPERTY_ACCESS':
     case 'JS_ELEMENT_ACCESS':
+    case 'JSX_ELEMENT':
       break
     case 'ATTRIBUTE_NESTED_ARRAY':
       fastForEach(attribute.content, (elem, index) => {

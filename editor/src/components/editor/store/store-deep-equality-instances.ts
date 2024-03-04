@@ -1146,6 +1146,11 @@ export const JSExpressionKeepDeepEqualityCall: KeepDeepEqualityCall<JSExpression
         return JSExpressionOtherJavaScriptKeepDeepEqualityCall()(oldAttribute, newAttribute)
       }
       break
+    case 'JSX_ELEMENT':
+      if (isJSXElement(newAttribute)) {
+        return JSXElementKeepDeepEquality(oldAttribute, newAttribute)
+      }
+      break
     default:
       assertNever(oldAttribute)
   }

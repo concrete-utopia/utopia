@@ -71,6 +71,8 @@ const expressionFunctionCallUIDOptic: Optic<JSExpressionFunctionCall, string> = 
 const expressionOtherJavaScriptUIDOptic: Optic<JSExpressionOtherJavaScript, string> =
   fromField('uid')
 
+const expressionJSXElementOptic: Optic<JSXElement, string> = fromField('uid')
+
 const expressionJSXMapExpressionUIDOptic: Optic<JSXMapExpression, string> = fromField('uid')
 
 const expressionJSIdentifierUIDOptic: Optic<JSIdentifier, string> = fromField('uid')
@@ -844,7 +846,8 @@ export function fixExpressionUIDs(
         },
       )
     }
-
+    case 'JSX_ELEMENT':
+      return fixJSXElementUIDs(oldExpression, newExpression, fixUIDsState)
     default:
       assertNever(newExpression)
   }

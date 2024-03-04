@@ -524,6 +524,7 @@ export type JSExpression =
   | JSExpressionNestedObject
   | JSExpressionFunctionCall
   | JSXMapExpression
+  | JSXElement
 
 export type JSExpressionMapOrOtherJavascript = JSExpressionOtherJavaScript | JSXMapExpression
 
@@ -568,6 +569,7 @@ export function simplifyAttributeIfPossible(attribute: JSExpression): JSExpressi
     case 'JS_IDENTIFIER':
     case 'JS_ELEMENT_ACCESS':
     case 'JS_PROPERTY_ACCESS':
+    case 'JSX_ELEMENT':
       return attribute
     case 'ATTRIBUTE_NESTED_ARRAY':
       let simpleArray: Array<unknown> = []
@@ -656,6 +658,8 @@ export function simplifyAttributeIfPossible(attribute: JSExpression): JSExpressi
 
 export function clearExpressionUniqueIDs(attribute: JSExpression): JSExpression {
   switch (attribute.type) {
+    case 'JSX_ELEMENT':
+      return jsxElement(attribute.name, '', attribute.props, attribute.children)
     case 'ATTRIBUTE_VALUE':
       return jsExpressionValue(attribute.value, attribute.comments, '')
     case 'JSX_MAP_EXPRESSION':
@@ -737,6 +741,8 @@ export function clearJSXAttributeOtherJavaScriptSourceMaps(
 
 export function clearAttributeSourceMaps(attribute: JSExpression): JSExpression {
   switch (attribute.type) {
+    case 'JSX_ELEMENT':
+      return attribute // TODO: implement this
     case 'ATTRIBUTE_VALUE':
       return attribute
     case 'JSX_MAP_EXPRESSION':
@@ -1010,6 +1016,8 @@ const AllowedExternalReferences = ['React', 'utopiaCanvasJSXLookup']
 
 export function attributeReferencesElsewhere(attribute: JSExpression): boolean {
   switch (attribute.type) {
+    case 'JSX_ELEMENT':
+      return false // TODO: implement this
     case 'ATTRIBUTE_VALUE':
       return false
     case 'JSX_MAP_EXPRESSION':
@@ -1139,6 +1147,8 @@ export function getElementReferencesElsewherePathsFromProps(
 
 export function getDefinedElsewhereFromAttribute(attribute: JSExpression): Array<string> {
   switch (attribute.type) {
+    case 'JSX_ELEMENT':
+      return [] // TODO: implement
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return attribute.definedElsewhere
     case 'ATTRIBUTE_NESTED_OBJECT':

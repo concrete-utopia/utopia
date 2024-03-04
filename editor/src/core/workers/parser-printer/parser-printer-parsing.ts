@@ -52,6 +52,7 @@ import type {
   JSPropertyAccess,
   JSElementAccess,
   JSIdentifier,
+  JSXElement,
 } from '../../shared/element-template'
 import {
   arbitraryJSBlock,
@@ -2261,6 +2262,7 @@ function parsePropertyAccessExpression(
   }, parsedOnValue)
 }
 
+// this parses the attribute value
 function getAttributeExpression(
   sourceFile: TS.SourceFile,
   sourceText: string,
@@ -2321,6 +2323,39 @@ function getAttributeExpression(
           buildHighlightBoundsForUids(sourceFile, initializer, withoutParserMetadata.uid),
           [],
           [],
+        ),
+      )
+    } else if (TS.isJsxElement(initializer.expression!)) {
+      const parseResult = parseOutJSXElements(
+        sourceFile,
+        sourceText,
+        filename,
+        [initializer],
+        imports,
+        topLevelNames,
+        propsObjectName,
+        existingHighlightBounds,
+        alreadyExistingUIDs,
+        applySteganography,
+      )
+
+      if (parseResult.type === 'LEFT') {
+        return parseResult
+      }
+
+      if (
+        parseResult.value.value.length !== 1 ||
+        parseResult.value.value[0].value.type !== 'JSX_ELEMENT'
+      ) {
+        return left('Cannot parse jsx element')
+      }
+
+      return right(
+        withParserMetadata(
+          parseResult.value.value[0].value,
+          parseResult.value.highlightBounds,
+          parseResult.value.propsUsed,
+          parseResult.value.definedElsewhere,
         ),
       )
     } else {

@@ -947,6 +947,7 @@ function runJSExpression(
     case 'JS_PROPERTY_ACCESS':
     case 'JS_ELEMENT_ACCESS':
     case 'JS_IDENTIFIER':
+    case 'JSX_ELEMENT':
       return jsxAttributeToValue(filePath, currentScope, requireResult, block)
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
