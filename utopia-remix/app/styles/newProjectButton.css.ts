@@ -14,6 +14,7 @@ export const newProjectButton = recipe({
       alignItems: 'center',
       gap: 10,
       fontSize: 16,
+      fontWeight: 500,
       color: 'white',
       height: 40,
       opacity: 1,

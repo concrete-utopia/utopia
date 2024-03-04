@@ -237,7 +237,6 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
               display: 'flex',
               flexDirection: 'row',
               alignItems: 'center',
-              padding: '0 14px',
             }}
             placeholder='Search…'
           />
@@ -322,6 +321,7 @@ const TopActionBar = React.memo(() => {
         height: 60,
         flex: 0,
         display: 'flex',
+        justifyContent: 'flex-end',
         flexDirection: 'row',
         gap: 15,
       }}
@@ -665,7 +665,7 @@ const ProjectCard = React.memo(
           }}
         >
           <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 10, flex: 1 }}>
-            <div style={{ fontWeight: 600 }}>{project.title}</div>
+            <div style={{ fontWeight: 500 }}>{project.title}</div>
             <div style={{ opacity: 0.5 }}>{moment(project.modified_at).fromNow()}</div>
           </div>
           <ProjectCardActions project={project} />
@@ -735,7 +735,7 @@ const ProjectRow = React.memo(
                 flexGrow: 1,
                 minWidth: 180,
                 maxWidth: 380,
-                fontWeight: 600,
+                fontWeight: 500,
               }}
             >
               {project.title}
