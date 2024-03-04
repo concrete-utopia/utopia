@@ -1151,7 +1151,7 @@ export function getElementReferencesElsewherePathsFromProps(
 export function getDefinedElsewhereFromAttribute(attribute: JSExpression): Array<string> {
   switch (attribute.type) {
     case 'JSX_ELEMENT':
-      return [] // TODO: implement
+      return getDefinedElsewhereFromElement(attribute)
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return attribute.definedElsewhere
     case 'ATTRIBUTE_NESTED_OBJECT':
