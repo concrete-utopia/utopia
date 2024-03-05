@@ -23,6 +23,9 @@ import type {
   JSXProperty,
   PartOfJSXAttributeValue,
   ElementsWithin,
+  JSIdentifier,
+  JSPropertyAccess,
+  JSElementAccess,
 } from './element-template'
 import {
   isArraySpread,
@@ -47,6 +50,7 @@ import {
   clearExpressionUniqueIDs,
   jsExpressionOtherJavaScript,
   getDefinedElsewhereFromAttribute,
+  isJSIdentifier,
 } from './element-template'
 import { resolveParamsAndRunJsCode } from './javascript-cache'
 import type { PropertyPath, PropertyPathPart } from './project-file-types'
@@ -220,6 +224,51 @@ export function jsxAttributeToValue(
   requireResult: MapLike<any>,
   attribute: JSExpression,
 ): any {
+  if (isExpressionAccessLike(attribute)) {
+    try {
+      return innerAttributeToValue(filePath, inScope, requireResult, attribute)
+    } catch {
+      const originalJavascript = isJSIdentifier(attribute)
+        ? attribute.name
+        : attribute.originalJavascript
+      // Run some arbitrary JavaScript to get a better error.
+      const otherJavaScript = jsExpressionOtherJavaScript(
+        [],
+        originalJavascript,
+        originalJavascript,
+        `return ${originalJavascript}`,
+        getDefinedElsewhereFromAttribute(attribute),
+        attribute.sourceMap,
+        {},
+        attribute.comments,
+        attribute.uid,
+      )
+      return resolveParamsAndRunJsCode(filePath, otherJavaScript, requireResult, inScope)
+    }
+  } else {
+    return innerAttributeToValue(filePath, inScope, requireResult, attribute)
+  }
+}
+
+function isExpressionAccessLike(
+  expression: JSExpression,
+): expression is JSIdentifier | JSPropertyAccess | JSElementAccess {
+  switch (expression.type) {
+    case 'JS_IDENTIFIER':
+    case 'JS_PROPERTY_ACCESS':
+    case 'JS_ELEMENT_ACCESS':
+      return true
+    default:
+      return false
+  }
+}
+
+export function innerAttributeToValue(
+  filePath: string,
+  inScope: MapLike<any>,
+  requireResult: MapLike<any>,
+  attribute: JSExpression,
+): any {
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
       return attribute.value
@@ -229,70 +278,31 @@ export function jsxAttributeToValue(
       } else if (attribute.name in requireResult) {
         return requireResult[attribute.name]
       } else {
-        // Run some arbitrary JavaScript to get a better error.
-        const otherJavaScript = jsExpressionOtherJavaScript(
-          [],
-          attribute.name,
-          attribute.name,
-          `return ${attribute.name}`,
-          [],
-          attribute.sourceMap,
-          {},
-          attribute.comments,
-          attribute.uid,
-        )
-        return resolveParamsAndRunJsCode(filePath, otherJavaScript, requireResult, inScope)
+        throw new Error('Identifier does not exist.')
       }
     case 'JS_PROPERTY_ACCESS': {
-      try {
-        const onValue = jsxAttributeToValue(filePath, inScope, requireResult, attribute.onValue)
+      const onValue = jsxAttributeToValue(filePath, inScope, requireResult, attribute.onValue)
+      if (onValue == null) {
         if (attribute.optionallyChained === 'optionally-chained') {
-          return onValue == null ? onValue : onValue[attribute.property]
+          return undefined
+        } else {
+          throw new Error('The value is not defined.')
+        }
+      } else {
+        if (Object.getOwnPropertyDescriptor(onValue, attribute.property) == null) {
+          throw new Error('Does not have this property.')
         } else {
           return onValue[attribute.property]
         }
-      } catch {
-        // Run some arbitrary JavaScript to get a better error.
-        const otherJavaScript = jsExpressionOtherJavaScript(
-          [],
-          attribute.originalJavascript,
-          attribute.originalJavascript,
-          `return ${attribute.originalJavascript}`,
-          getDefinedElsewhereFromAttribute(attribute.onValue),
-          attribute.sourceMap,
-          {},
-          attribute.comments,
-          attribute.uid,
-        )
-        return resolveParamsAndRunJsCode(filePath, otherJavaScript, requireResult, inScope)
       }
     }
     case 'JS_ELEMENT_ACCESS': {
-      try {
-        const onValue = jsxAttributeToValue(filePath, inScope, requireResult, attribute.onValue)
-        const element = jsxAttributeToValue(filePath, inScope, requireResult, attribute.element)
-        if (attribute.optionallyChained === 'optionally-chained') {
-          return onValue == null ? onValue : onValue[element]
-        } else {
-          return onValue[element]
-        }
-      } catch {
-        // Run some arbitrary JavaScript to get a better error.
-        const otherJavaScript = jsExpressionOtherJavaScript(
-          [],
-          attribute.originalJavascript,
-          attribute.originalJavascript,
-          `return ${attribute.originalJavascript}`,
-          [
-            ...getDefinedElsewhereFromAttribute(attribute.onValue),
-            ...getDefinedElsewhereFromAttribute(attribute.element),
-          ],
-          attribute.sourceMap,
-          {},
-          attribute.comments,
-          attribute.uid,
-        )
-        return resolveParamsAndRunJsCode(filePath, otherJavaScript, requireResult, inScope)
+      const onValue = jsxAttributeToValue(filePath, inScope, requireResult, attribute.onValue)
+      const element = jsxAttributeToValue(filePath, inScope, requireResult, attribute.element)
+      if (attribute.optionallyChained === 'optionally-chained') {
+        return onValue == null ? undefined : onValue[element]
+      } else {
+        return onValue[element]
       }
     }
     case 'ATTRIBUTE_NESTED_ARRAY':
