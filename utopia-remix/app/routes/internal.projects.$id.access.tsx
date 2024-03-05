@@ -4,11 +4,17 @@ import { ensure, handle, requireUser } from '../util/api.server'
 import { Status } from '../util/statusCodes'
 import { setProjectAccess } from '../models/projectAccess.server'
 import { asNumber } from '../util/common'
-import { AccessLevel, asAccessLevel } from '../types'
+import { AccessLevel, UserProjectPermission, asAccessLevel } from '../types'
 import { getProject } from '../models/project.server'
+import { validateProjectAccess } from '../handlers/validators'
 
 export async function action(args: ActionFunctionArgs) {
-  return handle(args, { POST: handleChangeProjectAccess })
+  return handle(args, {
+    POST: {
+      handler: handleChangeProjectAccess,
+      validator: validateProjectAccess(UserProjectPermission.CAN_MANAGE_PROJECT),
+    },
+  })
 }
 
 export async function handleChangeProjectAccess(req: Request, params: Params<string>) {

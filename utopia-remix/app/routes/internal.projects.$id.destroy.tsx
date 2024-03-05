@@ -3,9 +3,16 @@ import { Params } from '@remix-run/react'
 import { ensure, handle, requireUser } from '../util/api.server'
 import { Status } from '../util/statusCodes'
 import { hardDeleteProject } from '../models/project.server'
+import { validateProjectAccess } from '../handlers/validators'
+import { UserProjectPermission } from '../types'
 
 export async function action(args: ActionFunctionArgs) {
-  return handle(args, { POST: handleDestroyProject })
+  return handle(args, {
+    POST: {
+      handler: handleDestroyProject,
+      validator: validateProjectAccess(UserProjectPermission.CAN_MANAGE_PROJECT),
+    },
+  })
 }
 
 export async function handleDestroyProject(req: Request, params: Params<string>) {

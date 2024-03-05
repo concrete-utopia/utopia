@@ -2,17 +2,22 @@ import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node'
 import { proxy } from '../util/proxy.server'
 import { ensure, handle, handleOptions } from '../util/api.server'
 import { Params } from '@remix-run/react'
+import { ALLOW, validateProjectAccess } from '../handlers/validators'
+import { UserProjectPermission } from '../types'
 
 export async function loader(args: LoaderFunctionArgs) {
   return handle(args, {
     OPTIONS: handleOptions,
-    GET: handleGetThumbnail(args.params),
+    GET: { handler: handleGetThumbnail(args.params), validator: ALLOW },
   })
 }
 
 export async function action(args: ActionFunctionArgs) {
   return handle(args, {
-    POST: proxy,
+    POST: {
+      handler: proxy,
+      validator: validateProjectAccess(UserProjectPermission.CAN_MANAGE_PROJECT),
+    },
   })
 }
 

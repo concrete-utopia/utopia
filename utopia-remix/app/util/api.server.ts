@@ -9,7 +9,7 @@ import { getUserFromSession } from '../models/session.server'
 import { ApiError } from './errors'
 import { Method } from './methods.server'
 import { Status } from './statusCodes'
-import { ALLOW } from '~/handlers/validators'
+import { ALLOW } from '../handlers/validators'
 
 interface ErrorResponse {
   error: string
@@ -27,26 +27,35 @@ const defaultResponseHeaders = new Headers({
   'Cache-control': 'no-cache',
 })
 
-export async function handleOptions(): Promise<TypedResponse<EmptyResponse>> {
+export function alwaysAllow(
+  handler: (request: Request, params: Params<string>) => Promise<unknown>,
+): ValidatedHandler {
+  return {
+    handler: handler,
+    validator: ALLOW,
+  }
+}
+
+async function optionsHandler(): Promise<TypedResponse<EmptyResponse>> {
   return json({}, { headers: defaultResponseHeaders })
 }
+export const handleOptions = alwaysAllow(optionsHandler)
 
 interface HandleRequest {
   request: Request
   params: Params<string>
 }
 
-export type ProjectAccessValidator = (request: Request, params: Params<string>) => Promise<boolean>
+export type ProjectAccessValidator = (request: Request, params: Params<string>) => Promise<unknown>
 
 export type AccessValidator = ProjectAccessValidator
 
-type Handler = (request: Request, params: Params<string>) => Promise<unknown>
 type ValidatedHandler = {
-  handler: Handler
+  handler: (request: Request, params: Params<string>) => Promise<unknown>
   validator: AccessValidator
 }
 
-function toValidatedHandler(descriptor: Handler | ValidatedHandler): ValidatedHandler {
+function toValidatedHandler(descriptor: ValidatedHandler): ValidatedHandler {
   if (typeof descriptor === 'function') {
     return { handler: descriptor, validator: ALLOW }
   }
@@ -56,7 +65,7 @@ function toValidatedHandler(descriptor: Handler | ValidatedHandler): ValidatedHa
 export function handle(
   { request, params }: HandleRequest,
   handlers: {
-    [method in Method]?: Handler | ValidatedHandler
+    [method in Method]?: ValidatedHandler
   },
 ): Promise<unknown> {
   const handlerDescriptor = handlers[request.method as Method]

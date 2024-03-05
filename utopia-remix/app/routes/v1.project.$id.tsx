@@ -7,7 +7,7 @@ import { ALLOW, validateProjectAccess } from '../handlers/validators'
 
 export async function loader(args: LoaderFunctionArgs) {
   return handle(args, {
-    OPTIONS: { handler: handleOptions, validator: ALLOW },
+    OPTIONS: handleOptions,
     GET: {
       handler: proxy,
       validator: validateProjectAccess(UserProjectPermission.CAN_VIEW_PROJECT, {
@@ -20,6 +20,9 @@ export async function loader(args: LoaderFunctionArgs) {
 
 export async function action(args: ActionFunctionArgs) {
   return handle(args, {
-    PUT: proxy,
+    PUT: {
+      handler: proxy,
+      validator: validateProjectAccess(UserProjectPermission.CAN_MANAGE_PROJECT),
+    },
   })
 }
