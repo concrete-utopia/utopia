@@ -11,7 +11,7 @@ import {
   adjustFontSize,
   getFontSize,
   isAdjustFontSizeShortcut,
-} from '../canvas/canvas-strategies/strategies/keyboard-set-font-size-strategy'
+} from '../canvas/canvas-strategies/strategies/text-editor-utils'
 import {
   adjustFontWeight,
   getFontWeightFromMetadata,
