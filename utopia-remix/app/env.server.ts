@@ -15,12 +15,12 @@ export const ServerEnvironment = {
   // the CORS allowed origin for incoming requests
   CORSOrigin: mustEnv('CORS_ORIGIN'),
   // Auth0 credentials
-  AUTH0_ENDPOINT: optionalEnv('AUTH0_ENDPOINT', '<AUTH0_ENDPOINT>'),
-  AUTH0_CLIENT_ID: optionalEnv('AUTH0_CLIENT_ID', '<AUTH0_CLIENT_ID>'),
-  AUTH0_REDIRECT_URI: optionalEnv('AUTH0_REDIRECT_URI', '<AUTH0_REDIRECT_URI>'),
+  Auth0Endpoint: optionalEnv('AUTH0_ENDPOINT', ''),
+  Auth0ClientId: optionalEnv('AUTH0_CLIENT_ID', ''),
+  Auth0RedirectUri: optionalEnv('AUTH0_REDIRECT_URI', ''),
   // Github OAuth credentials
-  GITHUB_OAUTH_CLIENT_ID: optionalEnv('GITHUB_OAUTH_CLIENT_ID', ''),
-  GITHUB_OAUTH_REDIRECT_URL: optionalEnv('GITHUB_OAUTH_REDIRECT_URL', ''),
+  GithubOAuthClientId: optionalEnv('GITHUB_OAUTH_CLIENT_ID', ''),
+  GithubOAuthRedirectUrl: optionalEnv('GITHUB_OAUTH_REDIRECT_URL', ''),
 }
 
 export type BrowserEnvironment = {
