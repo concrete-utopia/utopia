@@ -10,6 +10,6 @@ export async function loader(args: LoaderFunctionArgs) {
 
 export async function action(args: ActionFunctionArgs) {
   return handle(args, {
-    POST: (req) => proxy(req, { rawOutput: true }),
+    POST: proxy,
   })
 }
