@@ -55,13 +55,6 @@ type ValidatedHandler = {
   validator: AccessValidator
 }
 
-function toValidatedHandler(descriptor: ValidatedHandler): ValidatedHandler {
-  if (typeof descriptor === 'function') {
-    return { handler: descriptor, validator: ALLOW }
-  }
-  return descriptor
-}
-
 export function handle(
   { request, params }: HandleRequest,
   handlers: {
@@ -72,7 +65,7 @@ export function handle(
   if (handlerDescriptor == null) {
     throw new ApiError('invalid method', Status.METHOD_NOT_ALLOWED)
   }
-  const { handler, validator } = toValidatedHandler(handlerDescriptor)
+  const { handler, validator } = handlerDescriptor
   return handleMethod(request, params, handler, validator)
 }
 
