@@ -911,6 +911,12 @@ export function modifiableAttributeIsAttributeOtherJavaScript(
   return attribute != null && attribute.type === 'ATTRIBUTE_OTHER_JAVASCRIPT'
 }
 
+export function modifiableAttributeIsJsxElement(
+  attribute: ModifiableAttribute,
+): attribute is JSXElement {
+  return attribute != null && attribute.type === 'JSX_ELEMENT'
+}
+
 export function modifiableAttributeIsAttributeFunctionCall(
   attribute: ModifiableAttribute,
 ): attribute is JSExpressionFunctionCall {
