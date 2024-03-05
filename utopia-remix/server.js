@@ -144,11 +144,18 @@ app.use(express.static('public'))
 // remix handler
 app.all('*', remixHandler)
 
-const port = process.env.PORT ?? 8002
-app.listen(port, () => {
-  console.log(asciiBanner)
-  console.log(`Express listening on http://localhost:${port}`)
-  if (process.env.NODE_ENV === 'development') {
-    broadcastDevReady(initialBuild)
+const portFromEnv = Number.parseInt(process.env.PORT)
+const port = isNaN(portFromEnv) ? 8000 : portFromEnv
+
+function listenCallback(portNumber) {
+  return () => {
+    console.log(asciiBanner)
+    console.log(`Express listening on http://localhost:${portNumber}`)
+    if (process.env.NODE_ENV === 'development') {
+      broadcastDevReady(initialBuild)
+    }
   }
-})
+}
+
+app.listen(port, listenCallback(port))
+app.listen(port + 1, listenCallback(port + 1))

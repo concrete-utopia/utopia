@@ -541,7 +541,7 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-remix
       ${pnpm}/bin/pnpm install
       ${pnpm}/bin/pnpm exec prisma generate
-      PORT=8002 ${pnpm}/bin/pnpm run dev
+      PORT=8000 ${pnpm}/bin/pnpm run dev
     '')
   ];
 
