@@ -47,11 +47,24 @@ import {
   clearExpressionUniqueIDs,
 } from './element-template'
 import { resolveParamsAndRunJsCode } from './javascript-cache'
-import type { PropertyPath, PropertyPathPart } from './project-file-types'
+import type {
+  ElementPath,
+  HighlightBoundsForUids,
+  Imports,
+  PropertyPath,
+  PropertyPathPart,
+} from './project-file-types'
 import * as PP from './property-path'
 import { assertNever, fastForEach } from './utils'
 import { optionalMap } from './optional-utils'
 import { getAllObjectPaths } from './object-utils'
+import type { UIFileBase64Blobs } from '../../components/editor/store/editor-state'
+import type {
+  DomWalkerInvalidatePathsCtxData,
+  UiJsxCanvasContextData,
+  VariableData,
+} from '../../components/canvas/ui-jsx-canvas'
+import { renderCoreElement } from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-element-renderer-utils'
 
 export type AnyMap = { [key: string]: any }
 
@@ -220,27 +233,166 @@ export function jsxAttributeToValue(
   inScope: MapLike<any>,
   requireResult: MapLike<any>,
   attribute: JSExpression,
+  elementPath: ElementPath | null,
+  rootScope: MapLike<any>,
+  parentComponentInputProps: MapLike<any>,
+  hiddenInstances: Array<ElementPath>,
+  displayNoneInstances: Array<ElementPath>,
+  fileBlobs: UIFileBase64Blobs,
+  validPaths: Set<string>,
+  uid: string | undefined,
+  reactChildren: React.ReactNode | undefined,
+  metadataContext: UiJsxCanvasContextData,
+  updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
+  jsxFactoryFunctionName: string | null,
+  codeError: Error | null,
+  shouldIncludeCanvasRootInTheSpy: boolean,
+  imports: Imports,
+  code: string,
+  highlightBounds: HighlightBoundsForUids | null,
+  editedText: ElementPath | null,
+  variablesInScope: VariableData,
 ): any {
   switch (attribute.type) {
     case 'JSX_ELEMENT':
-      return null // TODO: implement
+      return renderCoreElement(
+        attribute,
+        elementPath,
+        rootScope,
+        inScope,
+        parentComponentInputProps,
+        requireResult,
+        hiddenInstances,
+        displayNoneInstances,
+        fileBlobs,
+        validPaths,
+        uid,
+        reactChildren,
+        metadataContext,
+        updateInvalidatedPaths,
+        jsxFactoryFunctionName,
+        codeError,
+        shouldIncludeCanvasRootInTheSpy,
+        filePath,
+        imports,
+        code,
+        highlightBounds,
+        editedText,
+        variablesInScope,
+      )
     case 'ATTRIBUTE_VALUE':
       return attribute.value
     case 'JS_IDENTIFIER':
       return inScope[attribute.name] ?? requireResult[attribute.name]
     case 'JS_PROPERTY_ACCESS': {
-      const onValue = jsxAttributeToValue(filePath, inScope, requireResult, attribute.onValue)
+      const onValue = jsxAttributeToValue(
+        filePath,
+        inScope,
+        requireResult,
+        attribute.onValue,
+        elementPath,
+        rootScope,
+        parentComponentInputProps,
+        hiddenInstances,
+        displayNoneInstances,
+        fileBlobs,
+        validPaths,
+        uid,
+        reactChildren,
+        metadataContext,
+        updateInvalidatedPaths,
+        jsxFactoryFunctionName,
+        codeError,
+        shouldIncludeCanvasRootInTheSpy,
+        imports,
+        code,
+        highlightBounds,
+        editedText,
+        variablesInScope,
+      )
       return onValue[attribute.property]
     }
     case 'JS_ELEMENT_ACCESS': {
-      const onValue = jsxAttributeToValue(filePath, inScope, requireResult, attribute.onValue)
-      const element = jsxAttributeToValue(filePath, inScope, requireResult, attribute.element)
+      const onValue = jsxAttributeToValue(
+        filePath,
+        inScope,
+        requireResult,
+        attribute.onValue,
+        elementPath,
+        rootScope,
+        parentComponentInputProps,
+        hiddenInstances,
+        displayNoneInstances,
+        fileBlobs,
+        validPaths,
+        uid,
+        reactChildren,
+        metadataContext,
+        updateInvalidatedPaths,
+        jsxFactoryFunctionName,
+        codeError,
+        shouldIncludeCanvasRootInTheSpy,
+        imports,
+        code,
+        highlightBounds,
+        editedText,
+        variablesInScope,
+      )
+      const element = jsxAttributeToValue(
+        filePath,
+        inScope,
+        requireResult,
+        attribute.element,
+        elementPath,
+        rootScope,
+        parentComponentInputProps,
+        hiddenInstances,
+        displayNoneInstances,
+        fileBlobs,
+        validPaths,
+        uid,
+        reactChildren,
+        metadataContext,
+        updateInvalidatedPaths,
+        jsxFactoryFunctionName,
+        codeError,
+        shouldIncludeCanvasRootInTheSpy,
+        imports,
+        code,
+        highlightBounds,
+        editedText,
+        variablesInScope,
+      )
       return onValue[element]
     }
     case 'ATTRIBUTE_NESTED_ARRAY':
       let returnArray: Array<any> = []
       for (const elem of attribute.content) {
-        const value = jsxAttributeToValue(filePath, inScope, requireResult, elem.value)
+        const value = jsxAttributeToValue(
+          filePath,
+          inScope,
+          requireResult,
+          elem.value,
+          elementPath,
+          rootScope,
+          parentComponentInputProps,
+          hiddenInstances,
+          displayNoneInstances,
+          fileBlobs,
+          validPaths,
+          uid,
+          reactChildren,
+          metadataContext,
+          updateInvalidatedPaths,
+          jsxFactoryFunctionName,
+          codeError,
+          shouldIncludeCanvasRootInTheSpy,
+          imports,
+          code,
+          highlightBounds,
+          editedText,
+          variablesInScope,
+        )
         switch (elem.type) {
           case 'ARRAY_VALUE':
             returnArray.push(value)
@@ -257,7 +409,31 @@ export function jsxAttributeToValue(
     case 'ATTRIBUTE_NESTED_OBJECT':
       let returnObject: { [key: string]: any } = {}
       for (const prop of attribute.content) {
-        const value = jsxAttributeToValue(filePath, inScope, requireResult, prop.value)
+        const value = jsxAttributeToValue(
+          filePath,
+          inScope,
+          requireResult,
+          prop.value,
+          elementPath,
+          rootScope,
+          parentComponentInputProps,
+          hiddenInstances,
+          displayNoneInstances,
+          fileBlobs,
+          validPaths,
+          uid,
+          reactChildren,
+          metadataContext,
+          updateInvalidatedPaths,
+          jsxFactoryFunctionName,
+          codeError,
+          shouldIncludeCanvasRootInTheSpy,
+          imports,
+          code,
+          highlightBounds,
+          editedText,
+          variablesInScope,
+        )
 
         switch (prop.type) {
           case 'PROPERTY_ASSIGNMENT':
@@ -276,7 +452,31 @@ export function jsxAttributeToValue(
       const foundFunction = (UtopiaUtils as any)[attribute.functionName]
       if (foundFunction != null) {
         const resolvedParameters = attribute.parameters.map((param) => {
-          return jsxAttributeToValue(filePath, inScope, requireResult, param)
+          return jsxAttributeToValue(
+            filePath,
+            inScope,
+            requireResult,
+            param,
+            elementPath,
+            rootScope,
+            parentComponentInputProps,
+            hiddenInstances,
+            displayNoneInstances,
+            fileBlobs,
+            validPaths,
+            uid,
+            reactChildren,
+            metadataContext,
+            updateInvalidatedPaths,
+            jsxFactoryFunctionName,
+            codeError,
+            shouldIncludeCanvasRootInTheSpy,
+            imports,
+            code,
+            highlightBounds,
+            editedText,
+            variablesInScope,
+          )
         })
         return foundFunction(...resolvedParameters)
       }
@@ -294,17 +494,84 @@ export function jsxAttributesToProps(
   inScope: MapLike<any>,
   attributes: JSXAttributes,
   requireResult: MapLike<any>,
+  elementPath: ElementPath | null,
+  rootScope: MapLike<any>,
+  parentComponentInputProps: MapLike<any>,
+  hiddenInstances: Array<ElementPath>,
+  displayNoneInstances: Array<ElementPath>,
+  fileBlobs: UIFileBase64Blobs,
+  validPaths: Set<string>,
+  uid: string | undefined,
+  reactChildren: React.ReactNode | undefined,
+  metadataContext: UiJsxCanvasContextData,
+  updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
+  jsxFactoryFunctionName: string | null,
+  codeError: Error | null,
+  shouldIncludeCanvasRootInTheSpy: boolean,
+  imports: Imports,
+  code: string,
+  highlightBounds: HighlightBoundsForUids | null,
+  editedText: ElementPath | null,
+  variablesInScope: VariableData,
 ): any {
   let result: any = {}
   for (const entry of attributes) {
     switch (entry.type) {
       case 'JSX_ATTRIBUTES_ENTRY':
-        result[entry.key] = jsxAttributeToValue(filePath, inScope, requireResult, entry.value)
+        result[entry.key] = jsxAttributeToValue(
+          filePath,
+          inScope,
+          requireResult,
+          entry.value,
+          elementPath,
+          rootScope,
+          parentComponentInputProps,
+          hiddenInstances,
+          displayNoneInstances,
+          fileBlobs,
+          validPaths,
+          uid,
+          reactChildren,
+          metadataContext,
+          updateInvalidatedPaths,
+          jsxFactoryFunctionName,
+          codeError,
+          shouldIncludeCanvasRootInTheSpy,
+          imports,
+          code,
+          highlightBounds,
+          editedText,
+          variablesInScope,
+        )
         break
       case 'JSX_ATTRIBUTES_SPREAD':
         Object.assign(
           result,
-          jsxAttributeToValue(filePath, inScope, requireResult, entry.spreadValue),
+          jsxAttributeToValue(
+            filePath,
+            inScope,
+            requireResult,
+            entry.spreadValue,
+            elementPath,
+            rootScope,
+            parentComponentInputProps,
+            hiddenInstances,
+            displayNoneInstances,
+            fileBlobs,
+            validPaths,
+            uid,
+            reactChildren,
+            metadataContext,
+            updateInvalidatedPaths,
+            jsxFactoryFunctionName,
+            codeError,
+            shouldIncludeCanvasRootInTheSpy,
+            imports,
+            code,
+            highlightBounds,
+            editedText,
+            variablesInScope,
+          ),
         )
         break
       default:

@@ -84,6 +84,7 @@ import { CanvasToolbarSearchTestID } from '../components/editor/canvas-toolbar'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
 import { editorStateToElementChildOptic } from '../core/model/common-optics'
 import { toFirst } from '../core/shared/optics/optic-utilities'
+import { emptyUiJsxCanvasContextData } from '../components/canvas/ui-jsx-canvas'
 
 export function delay(time: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, time))
@@ -306,7 +307,32 @@ function createFakeMetadataForJSXElement(
       ),
       ...parentScope,
     }
-    const props = jsxAttributesToProps('test.js', inScope, element.props, Utils.NO_OP)
+    const props = jsxAttributesToProps(
+      'test.js',
+      inScope,
+      element.props,
+      Utils.NO_OP,
+      null,
+      {},
+      {},
+      [],
+      [],
+      {},
+      new Set(),
+      undefined,
+      undefined,
+      emptyUiJsxCanvasContextData(),
+      Utils.NO_OP,
+      null,
+      null,
+      false,
+      {},
+      '',
+      null,
+      null,
+      {},
+    )
+
     const children = element.children.flatMap((child) =>
       createFakeMetadataForJSXElement(
         child,

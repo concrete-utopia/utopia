@@ -259,6 +259,25 @@ export function renderCoreElement(
         blockScope,
         element.props,
         requireResult,
+        elementPath,
+        rootScope,
+        parentComponentInputProps,
+        hiddenInstances,
+        displayNoneInstances,
+        fileBlobs,
+        validPaths,
+        uid,
+        reactChildren,
+        metadataContext,
+        updateInvalidatedPaths,
+        jsxFactoryFunctionName,
+        codeError,
+        shouldIncludeCanvasRootInTheSpy,
+        imports,
+        code,
+        highlightBounds,
+        editedText,
+        variablesInScope,
       )
 
       const passthroughProps = monkeyUidProp(uid, assembledProps)
@@ -352,7 +371,31 @@ export function renderCoreElement(
               innerRender,
             ),
           }
-          return runJSExpression(filePath, requireResult, element, blockScope)
+          return runJSExpression(
+            filePath,
+            requireResult,
+            element,
+            blockScope,
+            elementPath,
+            rootScope,
+            parentComponentInputProps,
+            hiddenInstances,
+            displayNoneInstances,
+            fileBlobs,
+            validPaths,
+            uid,
+            reactChildren,
+            metadataContext,
+            updateInvalidatedPaths,
+            jsxFactoryFunctionName,
+            codeError,
+            shouldIncludeCanvasRootInTheSpy,
+            imports,
+            code,
+            highlightBounds,
+            editedText,
+            variablesInScope,
+          )
         }
 
         const originalTextContent = isFeatureEnabled('Steganography') ? runJSExpressionLazy() : null
@@ -416,7 +459,31 @@ export function renderCoreElement(
           innerRender,
         ),
       }
-      return runJSExpression(filePath, requireResult, element, blockScope)
+      return runJSExpression(
+        filePath,
+        requireResult,
+        element,
+        blockScope,
+        elementPath,
+        rootScope,
+        parentComponentInputProps,
+        hiddenInstances,
+        displayNoneInstances,
+        fileBlobs,
+        validPaths,
+        uid,
+        reactChildren,
+        metadataContext,
+        updateInvalidatedPaths,
+        jsxFactoryFunctionName,
+        codeError,
+        shouldIncludeCanvasRootInTheSpy,
+        imports,
+        code,
+        highlightBounds,
+        editedText,
+        variablesInScope,
+      )
     }
     case 'JSX_FRAGMENT': {
       const key = optionalMap(EP.toString, elementPath) ?? element.uid
@@ -474,6 +541,25 @@ export function renderCoreElement(
         inScope,
         requireResult,
         element.condition,
+        elementPath,
+        rootScope,
+        parentComponentInputProps,
+        hiddenInstances,
+        displayNoneInstances,
+        fileBlobs,
+        validPaths,
+        uid,
+        reactChildren,
+        metadataContext,
+        updateInvalidatedPaths,
+        jsxFactoryFunctionName,
+        codeError,
+        shouldIncludeCanvasRootInTheSpy,
+        imports,
+        code,
+        highlightBounds,
+        editedText,
+        variablesInScope,
       )
       // Coerce `defaultConditionValueAsAny` to a value that is definitely a boolean, not something that is truthy.
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
@@ -622,7 +708,31 @@ export function renderCoreElement(
         )
       }
 
-      return jsxAttributeToValue(filePath, inScope, requireResult, element)
+      return jsxAttributeToValue(
+        filePath,
+        inScope,
+        requireResult,
+        element,
+        elementPath,
+        rootScope,
+        parentComponentInputProps,
+        hiddenInstances,
+        displayNoneInstances,
+        fileBlobs,
+        validPaths,
+        uid,
+        reactChildren,
+        metadataContext,
+        updateInvalidatedPaths,
+        jsxFactoryFunctionName,
+        codeError,
+        shouldIncludeCanvasRootInTheSpy,
+        imports,
+        code,
+        highlightBounds,
+        editedText,
+        variablesInScope,
+      )
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled type ${JSON.stringify(element)}`)
@@ -818,7 +928,31 @@ function renderJSXElement(
             ? childrenWithNewTextBlock[0]
             : jsExpressionValue(null, emptyComments) // placeholder
 
-        const result = runJSExpression(filePath, requireResult, expressionToEvaluate, blockScope)
+        const result = runJSExpression(
+          filePath,
+          requireResult,
+          expressionToEvaluate,
+          blockScope,
+          elementPath,
+          rootScope,
+          parentComponentInputProps,
+          hiddenInstances,
+          displayNoneInstances,
+          fileBlobs,
+          validPaths,
+          jsx.uid,
+          [],
+          metadataContext,
+          updateInvalidatedPaths,
+          jsxFactoryFunctionName,
+          codeError,
+          shouldIncludeCanvasRootInTheSpy,
+          imports,
+          code,
+          highlightBounds,
+          editedText,
+          variablesInScope,
+        )
         return result
       }
 
@@ -937,6 +1071,25 @@ function runJSExpression(
   requireResult: MapLike<any>,
   block: JSExpression,
   currentScope: MapLike<any>,
+  elementPath: ElementPath | null,
+  rootScope: MapLike<any>,
+  parentComponentInputProps: MapLike<any>,
+  hiddenInstances: Array<ElementPath>,
+  displayNoneInstances: Array<ElementPath>,
+  fileBlobs: UIFileBase64Blobs,
+  validPaths: Set<string>,
+  uid: string | undefined,
+  reactChildren: React.ReactNode | undefined,
+  metadataContext: UiJsxCanvasContextData,
+  updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
+  jsxFactoryFunctionName: string | null,
+  codeError: Error | null,
+  shouldIncludeCanvasRootInTheSpy: boolean,
+  imports: Imports,
+  code: string,
+  highlightBounds: HighlightBoundsForUids | null,
+  editedText: ElementPath | null,
+  variablesInScope: VariableData,
   limit?: number,
 ): any {
   switch (block.type) {
@@ -948,7 +1101,31 @@ function runJSExpression(
     case 'JS_ELEMENT_ACCESS':
     case 'JS_IDENTIFIER':
     case 'JSX_ELEMENT':
-      return jsxAttributeToValue(filePath, currentScope, requireResult, block)
+      return jsxAttributeToValue(
+        filePath,
+        currentScope,
+        requireResult,
+        block,
+        elementPath,
+        rootScope,
+        parentComponentInputProps,
+        hiddenInstances,
+        displayNoneInstances,
+        fileBlobs,
+        validPaths,
+        uid,
+        reactChildren,
+        metadataContext,
+        updateInvalidatedPaths,
+        jsxFactoryFunctionName,
+        codeError,
+        shouldIncludeCanvasRootInTheSpy,
+        imports,
+        code,
+        highlightBounds,
+        editedText,
+        variablesInScope,
+      )
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return resolveParamsAndRunJsCode(filePath, block, requireResult, currentScope)
