@@ -91,6 +91,7 @@ describe('handle', () => {
     ) as Promise<ApiResponse<{ data: string }>>)
     const result = await response.json()
     expect(result).toEqual({
+      error: 'Error',
       message: 'failed',
       status: 400,
     })

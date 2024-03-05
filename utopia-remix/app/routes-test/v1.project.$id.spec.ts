@@ -1,9 +1,14 @@
 jest.mock('@openfga/sdk')
 import { prisma } from '../db.server'
 
-import { clearDb, createTestSession, createTestUser, newTestRequest } from '../test-util'
+import {
+  clearDb,
+  createTestProject,
+  createTestSession,
+  createTestUser,
+  newTestRequest,
+} from '../test-util'
 import { loader } from '../routes/v1.project.$id'
-import * as serverProxy from '../util/proxy.server'
 import * as permissionsService from '../services/permissionsService.server'
 import { UserProjectPermission } from '../types'
 import { ApiResponse } from '../util/api.server'
@@ -20,12 +25,10 @@ describe('getProject', () => {
     const projectId = 'project1'
     const userId = 'user1'
 
-    let projectProxyMock: jest.SpyInstance
     let hasUserProjectPermission: jest.SpyInstance
     afterEach(async () => {
       await clearDb(prisma)
 
-      projectProxyMock.mockClear()
       hasUserProjectPermission.mockClear()
     })
 
@@ -33,12 +36,11 @@ describe('getProject', () => {
       await createTestUser(prisma, { id: userId })
       await createTestSession(prisma, { key: 'the-key', userId: userId })
 
-      projectProxyMock = jest.spyOn(serverProxy, 'proxy')
       hasUserProjectPermission = jest.spyOn(permissionsService, 'hasUserProjectPermission')
     })
 
     it('should check access level for a project', async () => {
-      projectProxyMock.mockResolvedValue({ id: projectId, ownerId: 'user2' })
+      await createTestProject(prisma, { id: projectId, ownerId: 'user2' })
       hasUserProjectPermission.mockResolvedValue(true)
       const req = newTestRequest({ method: 'GET', authCookie: 'the-key' })
       const response = await (loader({
@@ -56,7 +58,7 @@ describe('getProject', () => {
     })
 
     it('should deny access for an unauthorized project', async () => {
-      projectProxyMock.mockResolvedValue({ id: projectId, ownerId: 'user2' })
+      await createTestProject(prisma, { id: projectId, ownerId: 'user2' })
       hasUserProjectPermission.mockResolvedValue(false)
       const req = newTestRequest({ method: 'GET', authCookie: 'the-key' })
       const response = await (loader({
@@ -69,7 +71,7 @@ describe('getProject', () => {
     })
 
     it('should allow access to the owner', async () => {
-      projectProxyMock.mockResolvedValue({ id: projectId, ownerId: userId })
+      await createTestProject(prisma, { id: projectId, ownerId: userId })
       // mock the permission check to return false
       hasUserProjectPermission.mockResolvedValue(false)
       const req = newTestRequest({ method: 'GET', authCookie: 'the-key' })
