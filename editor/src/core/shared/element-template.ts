@@ -762,10 +762,47 @@ export function clearJSXAttributeOtherJavaScriptSourceMaps(
   }
 }
 
+function clearJSXElementChildSourceMaps(element: JSXElementChild): JSXElementChild {
+  if (isJSXElement(element)) {
+    return jsxElement(
+      element.name,
+      element.uid,
+      clearAttributesSourceMaps(element.props),
+      element.children.map((c) => clearJSXElementChildSourceMaps(c)),
+    )
+  } else if (isJSExpression(element)) {
+    return clearExpressionSourceMaps(element)
+  } else if (isJSXTextBlock(element)) {
+    return element
+  } else if (isJSXFragment(element)) {
+    return jsxFragment(
+      element.uid,
+      element.children.map((c) => clearJSXElementChildSourceMaps(c)),
+      element.longForm,
+    )
+  } else if (isJSXConditionalExpression(element)) {
+    return jsxConditionalExpression(
+      element.uid,
+      element.condition,
+      element.originalConditionString,
+      clearJSXElementChildSourceMaps(element.whenTrue),
+      clearJSXElementChildSourceMaps(element.whenFalse),
+      element.comments,
+    )
+  } else {
+    assertNever(element)
+  }
+}
+
 export function clearExpressionSourceMaps(attribute: JSExpression): JSExpression {
   switch (attribute.type) {
     case 'JSX_ELEMENT':
-      return attribute // TODO: implement this
+      return jsxElement(
+        attribute.name,
+        attribute.uid,
+        clearAttributesSourceMaps(attribute.props),
+        attribute.children.map((c) => clearJSXElementChildSourceMaps(c)),
+      )
     case 'ATTRIBUTE_VALUE':
       return attribute
     case 'JSX_MAP_EXPRESSION':
