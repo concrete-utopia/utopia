@@ -375,6 +375,9 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
   }
 
   const [sortMenuOpen, setSortMenuOpen] = React.useState(false)
+  const handleSortMenuOpenChange = React.useCallback(() => {
+    setSortMenuOpen((prevSortMenuOpen) => !prevSortMenuOpen)
+  }, [])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
@@ -437,14 +440,14 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
         <div style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
           {when(
             projects.length > 1,
-            <DropdownMenuRoot onOpenChange={() => setSortMenuOpen(!sortMenuOpen)}>
+            <DropdownMenuRoot onOpenChange={handleSortMenuOpenChange}>
               <DropdownMenuTrigger asChild>
                 <div
                   className={button()}
                   style={{
                     justifyContent: 'flex-end',
                     gap: 10,
-                    background: sortMenuOpen ? '#a4a4a415' : 'inherit',
+                    background: sortMenuOpen ? '#a4a4a430' : 'inherit',
                   }}
                 >
                   <div>{convertToTitleCase(sortCriteria)} </div>
@@ -838,14 +841,17 @@ ProjectRow.displayName = 'ProjectRow'
 
 const ProjectCardActions = React.memo(({ project }: { project: ProjectWithoutContent }) => {
   const [sortMenuOpen, setSortMenuOpen] = React.useState(false)
+  const handleSortMenuOpenChange = React.useCallback(() => {
+    setSortMenuOpen((prevSortMenuOpen) => !prevSortMenuOpen)
+  }, [])
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-      <DropdownMenuRoot onOpenChange={() => setSortMenuOpen(!sortMenuOpen)}>
+      <DropdownMenuRoot onOpenChange={handleSortMenuOpenChange}>
         <DropdownMenuTrigger asChild>
           <DotsHorizontalIcon
             className={button()}
-            style={{ background: sortMenuOpen ? '#a4a4a415' : 'inherit' }}
+            style={{ background: sortMenuOpen ? '#a4a4a430' : 'inherit' }}
           />
         </DropdownMenuTrigger>
         <ProjectContextMenu project={project} />
