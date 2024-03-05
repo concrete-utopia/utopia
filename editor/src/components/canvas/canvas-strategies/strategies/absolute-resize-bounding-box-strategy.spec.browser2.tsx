@@ -266,8 +266,8 @@ export const App2 = (props) => {
         width: props.style.width,
         height: props.style.height,
       }}
-      data-uid='aaa'
-      data-testid='aaa'
+      data-uid='div'
+      data-testid='div'
     />
   )
 }

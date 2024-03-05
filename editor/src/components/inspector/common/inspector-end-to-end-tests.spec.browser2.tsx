@@ -1238,7 +1238,7 @@ describe('inspector tests with real metadata', () => {
         return (
           <div
             style={{ ...props.style, position: 'absolute', backgroundColor: '#FFFFFF' }}
-            data-uid={'aaa'}
+            data-uid={'div'}
           >
             <div
               style={{
@@ -1284,7 +1284,7 @@ describe('inspector tests with real metadata', () => {
       'await-first-dom-report',
     )
 
-    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['div', 'bbb'])
 
     await act(async () => {
       const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()

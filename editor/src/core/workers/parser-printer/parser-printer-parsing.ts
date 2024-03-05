@@ -1,5 +1,5 @@
 import * as TS from 'typescript-for-the-editor'
-import { SourceNode } from 'source-map'
+import { SourceNode, SourceMapGenerator } from 'source-map'
 import {
   addUniquely,
   dropLast,
@@ -87,7 +87,7 @@ import {
   isJSXFragment,
   jsxConditionalExpression,
   isJSXConditionalExpression,
-  clearAttributeSourceMaps,
+  clearExpressionSourceMaps,
   clearExpressionUniqueIDs,
   isJSXElementLike,
   isJSXAttributeValue,
@@ -102,6 +102,7 @@ import {
   jsElementAccess,
   jsPropertyAccess,
   jsIdentifier,
+  clearExpressionUniqueIDsAndSourceMaps,
 } from '../../shared/element-template'
 import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
 import type {
@@ -1770,6 +1771,24 @@ function getUIDFromCommentsOrValue(
   )
 }
 
+function createNodeSourceMap(sourceFile: TS.SourceFile, node: TS.Node): RawSourceMap {
+  const sourceMapGenerator = new SourceMapGenerator()
+  const originalPosition = TS.getLineAndCharacterOfPosition(sourceFile, node.getStart(sourceFile))
+  sourceMapGenerator.addMapping({
+    generated: {
+      line: 1,
+      column: 1,
+    },
+    source: sourceFile.fileName,
+    original: {
+      line: originalPosition.line + 1,
+      column: originalPosition.character + 1,
+    },
+  })
+  sourceMapGenerator.setSourceContent(sourceFile.fileName, sourceFile.getFullText(sourceFile))
+  return sourceMapGenerator.toJSON()
+}
+
 function createJSElementAccess(
   sourceFile: TS.SourceFile,
   node: TS.Node,
@@ -1778,9 +1797,24 @@ function createJSElementAccess(
   comments: ParsedComments,
   alreadyExistingUIDs: Set<string>,
 ): WithParserMetadata<JSElementAccess> {
-  const value = jsElementAccess(onValue, element, '', comments)
+  const originalJavascript = node.getText(sourceFile)
+  const value = jsElementAccess(
+    clearExpressionUniqueIDsAndSourceMaps(onValue),
+    clearExpressionUniqueIDsAndSourceMaps(element),
+    '',
+    null,
+    comments,
+    originalJavascript,
+  )
   const uid = getUIDFromCommentsOrValue(comments, sourceFile, value, alreadyExistingUIDs)
-  const valueWithUID = jsElementAccess(onValue, element, uid, comments)
+  const valueWithUID = jsElementAccess(
+    onValue,
+    element,
+    uid,
+    createNodeSourceMap(sourceFile, node),
+    comments,
+    originalJavascript,
+  )
   return withParserMetadata(
     valueWithUID,
     buildHighlightBoundsForUids(sourceFile, node, uid),
@@ -1797,9 +1831,24 @@ function createJSPropertyAccess(
   comments: ParsedComments,
   alreadyExistingUIDs: Set<string>,
 ): WithParserMetadata<JSPropertyAccess> {
-  const value = jsPropertyAccess(onValue, property, '', comments)
+  const originalJavascript = node.getText(sourceFile)
+  const value = jsPropertyAccess(
+    clearExpressionUniqueIDsAndSourceMaps(onValue),
+    property,
+    '',
+    null,
+    comments,
+    originalJavascript,
+  )
   const uid = getUIDFromCommentsOrValue(comments, sourceFile, value, alreadyExistingUIDs)
-  const valueWithUID = jsPropertyAccess(onValue, property, uid, comments)
+  const valueWithUID = jsPropertyAccess(
+    onValue,
+    property,
+    uid,
+    createNodeSourceMap(sourceFile, node),
+    comments,
+    originalJavascript,
+  )
   return withParserMetadata(
     valueWithUID,
     buildHighlightBoundsForUids(sourceFile, node, uid),
@@ -1815,9 +1864,14 @@ function createJSIdentifier(
   comments: ParsedComments,
   alreadyExistingUIDs: Set<string>,
 ): WithParserMetadata<JSIdentifier> {
-  const value = jsIdentifier(identifierName, '', comments)
+  const value = jsIdentifier(identifierName, '', null, comments)
   const uid = getUIDFromCommentsOrValue(comments, sourceFile, value, alreadyExistingUIDs)
-  const valueWithUID = jsIdentifier(identifierName, uid, comments)
+  const valueWithUID = jsIdentifier(
+    identifierName,
+    uid,
+    createNodeSourceMap(sourceFile, node),
+    comments,
+  )
   return withParserMetadata(
     valueWithUID,
     buildHighlightBoundsForUids(sourceFile, node, uid),
@@ -2785,7 +2839,7 @@ function getUIDBasedOnElement(
   } else if (Array.isArray(props)) {
     cleansedProps = clearAttributesSourceMaps(clearAttributesUniqueIDs(props))
   } else {
-    cleansedProps = clearAttributeSourceMaps(clearExpressionUniqueIDs(props))
+    cleansedProps = clearExpressionSourceMaps(clearExpressionUniqueIDs(props))
   }
   const hash = Hash({
     fileName: sourceFile.fileName,
