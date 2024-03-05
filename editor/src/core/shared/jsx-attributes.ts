@@ -45,6 +45,8 @@ import {
   emptyComments,
   jsxAttributeNestedArraySimple,
   clearExpressionUniqueIDs,
+  jsExpressionOtherJavaScript,
+  getDefinedElsewhereFromAttribute,
 } from './element-template'
 import { resolveParamsAndRunJsCode } from './javascript-cache'
 import type { PropertyPath, PropertyPathPart } from './project-file-types'
@@ -222,15 +224,68 @@ export function jsxAttributeToValue(
     case 'ATTRIBUTE_VALUE':
       return attribute.value
     case 'JS_IDENTIFIER':
-      return inScope[attribute.name] ?? requireResult[attribute.name]
+      if (attribute.name in inScope) {
+        return inScope[attribute.name]
+      } else if (attribute.name in requireResult) {
+        return requireResult[attribute.name]
+      } else {
+        // Run some arbitrary JavaScript to get a better error.
+        const otherJavaScript = jsExpressionOtherJavaScript(
+          [],
+          attribute.name,
+          attribute.name,
+          `return ${attribute.name}`,
+          [],
+          attribute.sourceMap,
+          {},
+          attribute.comments,
+          attribute.uid,
+        )
+        return resolveParamsAndRunJsCode(filePath, otherJavaScript, requireResult, inScope)
+      }
     case 'JS_PROPERTY_ACCESS': {
-      const onValue = jsxAttributeToValue(filePath, inScope, requireResult, attribute.onValue)
-      return onValue[attribute.property]
+      try {
+        const onValue = jsxAttributeToValue(filePath, inScope, requireResult, attribute.onValue)
+        return onValue[attribute.property]
+      } catch {
+        // Run some arbitrary JavaScript to get a better error.
+        const otherJavaScript = jsExpressionOtherJavaScript(
+          [],
+          attribute.originalJavascript,
+          attribute.originalJavascript,
+          `return ${attribute.originalJavascript}`,
+          getDefinedElsewhereFromAttribute(attribute.onValue),
+          attribute.sourceMap,
+          {},
+          attribute.comments,
+          attribute.uid,
+        )
+        return resolveParamsAndRunJsCode(filePath, otherJavaScript, requireResult, inScope)
+      }
     }
     case 'JS_ELEMENT_ACCESS': {
-      const onValue = jsxAttributeToValue(filePath, inScope, requireResult, attribute.onValue)
-      const element = jsxAttributeToValue(filePath, inScope, requireResult, attribute.element)
-      return onValue[element]
+      try {
+        const onValue = jsxAttributeToValue(filePath, inScope, requireResult, attribute.onValue)
+        const element = jsxAttributeToValue(filePath, inScope, requireResult, attribute.element)
+        return onValue[element]
+      } catch {
+        // Run some arbitrary JavaScript to get a better error.
+        const otherJavaScript = jsExpressionOtherJavaScript(
+          [],
+          attribute.originalJavascript,
+          attribute.originalJavascript,
+          `return ${attribute.originalJavascript}`,
+          [
+            ...getDefinedElsewhereFromAttribute(attribute.onValue),
+            ...getDefinedElsewhereFromAttribute(attribute.element),
+          ],
+          attribute.sourceMap,
+          {},
+          attribute.comments,
+          attribute.uid,
+        )
+        return resolveParamsAndRunJsCode(filePath, otherJavaScript, requireResult, inScope)
+      }
     }
     case 'ATTRIBUTE_NESTED_ARRAY':
       let returnArray: Array<any> = []
