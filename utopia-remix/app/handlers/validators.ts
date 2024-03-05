@@ -23,9 +23,9 @@ export function validateProjectAccess(
     ensure(projectData != null, 'Project not found', Status.NOT_FOUND)
 
     let user = await getUser(req)
-    let userId = user?.user_id ?? 'ANON'
+    let userId = user?.user_id ?? null
     const creatorId = projectData.owner_id
-    const isCreator = creatorId === userId
+    const isCreator = userId ? creatorId === userId : false
 
     const allowed = isCreator || (await hasUserProjectPermission(projectId, userId, permission))
     ensure(allowed, errorMessage ?? 'Unauthorized Access', status ?? Status.UNAUTHORIZED)

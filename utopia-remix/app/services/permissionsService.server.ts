@@ -2,11 +2,14 @@ import { assertNever } from '../util/assertNever'
 import { AccessLevel, UserProjectPermission } from '../types'
 import * as fgaService from './fgaService.server'
 
+const ANONYMOUS_USER_ID = '__ANON__'
+
 export async function hasUserProjectPermission(
   projectId: string,
-  userId: string,
+  requestUserId: string | null,
   permission: UserProjectPermission,
 ) {
+  const userId = requestUserId ?? ANONYMOUS_USER_ID
   switch (permission) {
     case UserProjectPermission.CAN_VIEW_PROJECT:
       return fgaService.canViewProject(projectId, userId)
