@@ -1,6 +1,6 @@
 import { ActionFunctionArgs } from '@remix-run/node'
 import { renameProject } from '../models/project.server'
-import { ensure, handle, requireUser } from '../util/api.server'
+import { chain, ensure, handle, requireUser } from '../util/api.server'
 import slugify from 'slugify'
 import { Status } from '../util/statusCodes'
 import { Params } from '@remix-run/react'
@@ -8,7 +8,7 @@ import { Params } from '@remix-run/react'
 export const SLUGIFY_OPTIONS = { lower: true, remove: /[^a-z0-9A-Z ]/ }
 
 export async function action(args: ActionFunctionArgs) {
-  return handle(args, { POST: handleRenameProject })
+  return handle(args, { POST: chain([handleRenameProject]) })
 }
 
 export async function handleRenameProject(req: Request, params: Params<string>) {

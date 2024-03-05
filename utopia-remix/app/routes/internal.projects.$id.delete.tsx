@@ -1,11 +1,11 @@
 import { ActionFunctionArgs } from '@remix-run/node'
 import { Params } from '@remix-run/react'
 import { softDeleteProject } from '../models/project.server'
-import { ensure, handle, requireUser } from '../util/api.server'
+import { chain, ensure, handle, requireUser } from '../util/api.server'
 import { Status } from '../util/statusCodes'
 
 export async function action(args: ActionFunctionArgs) {
-  return handle(args, { POST: handleDeleteProject })
+  return handle(args, { POST: chain([handleDeleteProject]) })
 }
 
 export async function handleDeleteProject(req: Request, params: Params<string>) {

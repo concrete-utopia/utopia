@@ -1,5 +1,5 @@
 import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node'
-import { ensure, handle, requireUser } from '../util/api.server'
+import { chain, ensure, handle, requireUser } from '../util/api.server'
 import { Status } from '../util/statusCodes'
 import { Params } from '@remix-run/react'
 import {
@@ -9,7 +9,7 @@ import {
 import { userToCollaborator } from '../types'
 
 export async function loader(args: LoaderFunctionArgs) {
-  return handle(args, { GET: getProjectCollaborators })
+  return handle(args, { GET: chain([getProjectCollaborators]) })
 }
 
 export async function getProjectCollaborators(req: Request, params: Params<string>) {
@@ -23,7 +23,7 @@ export async function getProjectCollaborators(req: Request, params: Params<strin
 }
 
 export async function action(args: ActionFunctionArgs) {
-  return handle(args, { POST: addToCollaborators })
+  return handle(args, { POST: chain([addToCollaborators]) })
 }
 
 export async function addToCollaborators(req: Request, params: Params<string>) {
