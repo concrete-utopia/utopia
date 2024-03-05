@@ -47,11 +47,11 @@ export var App = props => {
         UNPARSED_CODE
         UTOPIA_JSX_COMPONENT - App
           JSX_ELEMENT - div - aaa
-            JSX_MAP_EXPRESSION - 574
+            JSX_MAP_EXPRESSION - 8fa
               JSX_ELEMENT - div - bbb
-                JS_IDENTIFIER - 799
+                JS_IDENTIFIER - 833
                 JSX_TEXT_BLOCK - d01
-                JS_IDENTIFIER - 4c2"
+                JS_IDENTIFIER - b90"
       `)
 
       const aaaElement = findJSXElementAtStaticPath(
@@ -180,7 +180,7 @@ export var App = props => {
       UNPARSED_CODE
       UTOPIA_JSX_COMPONENT - Test
         JSX_ELEMENT - div - mapper-parent
-          JSX_MAP_EXPRESSION - 445
+          JSX_MAP_EXPRESSION - 22f
             JSX_ELEMENT - Card - card"
     `)
     expect(elementsStructure((testParseCode(spreadCode) as any).topLevelElements))
@@ -192,7 +192,7 @@ export var App = props => {
       UNPARSED_CODE
       UTOPIA_JSX_COMPONENT - Test
         JSX_ELEMENT - div - mapper-parent
-          JSX_MAP_EXPRESSION - 109
+          JSX_MAP_EXPRESSION - 14e
             JSX_ELEMENT - Card - card"
     `)
   })
