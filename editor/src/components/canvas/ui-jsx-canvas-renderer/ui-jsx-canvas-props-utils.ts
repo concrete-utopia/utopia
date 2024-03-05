@@ -11,6 +11,17 @@ import {
   isOmittedParam,
 } from '../../../core/shared/element-template'
 import { AnyMap, jsxAttributeToValue } from '../../../core/shared/jsx-attributes'
+import type {
+  ElementPath,
+  HighlightBoundsForUids,
+  Imports,
+} from '../../../core/shared/project-file-types'
+import type { UIFileBase64Blobs } from '../../editor/store/editor-state'
+import type {
+  DomWalkerInvalidatePathsCtxData,
+  UiJsxCanvasContextData,
+  VariableData,
+} from '../ui-jsx-canvas'
 
 export function applyPropsParamToPassedProps(
   filePath: string,
@@ -18,6 +29,25 @@ export function applyPropsParamToPassedProps(
   requireResult: MapLike<any>,
   passedProps: MapLike<unknown>,
   propsParam: Param,
+  elementPath: ElementPath | null,
+  rootScope: MapLike<any>,
+  parentComponentInputProps: MapLike<any>,
+  hiddenInstances: Array<ElementPath>,
+  displayNoneInstances: Array<ElementPath>,
+  fileBlobs: UIFileBase64Blobs,
+  validPaths: Set<string>,
+  uid: string | undefined,
+  reactChildren: React.ReactNode | undefined,
+  metadataContext: UiJsxCanvasContextData,
+  updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
+  jsxFactoryFunctionName: string | null,
+  codeError: Error | null,
+  shouldIncludeCanvasRootInTheSpy: boolean,
+  imports: Imports,
+  code: string,
+  highlightBounds: HighlightBoundsForUids | null,
+  editedText: ElementPath | null,
+  variablesInScope: VariableData,
 ): MapLike<unknown> {
   let output: MapLike<unknown> = {}
 
@@ -26,7 +56,31 @@ export function applyPropsParamToPassedProps(
     defaultExpression: JSExpressionMapOrOtherJavascript | null,
   ): unknown {
     if (value === undefined && defaultExpression != null) {
-      return jsxAttributeToValue(filePath, inScope, requireResult, defaultExpression)
+      return jsxAttributeToValue(
+        filePath,
+        inScope,
+        requireResult,
+        defaultExpression,
+        elementPath,
+        rootScope,
+        parentComponentInputProps,
+        hiddenInstances,
+        displayNoneInstances,
+        fileBlobs,
+        validPaths,
+        uid,
+        reactChildren,
+        metadataContext,
+        updateInvalidatedPaths,
+        jsxFactoryFunctionName,
+        codeError,
+        shouldIncludeCanvasRootInTheSpy,
+        imports,
+        code,
+        highlightBounds,
+        editedText,
+        variablesInScope,
+      )
     } else {
       return value
     }

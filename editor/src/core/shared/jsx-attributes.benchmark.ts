@@ -15,6 +15,7 @@ import {
 } from './element-template'
 import { NO_OP } from './utils'
 import { forEachLeft } from './either'
+import { emptyUiJsxCanvasContextData } from '../../components/canvas/ui-jsx-canvas'
 
 function sampleJsxAttributes(): JSXAttributes {
   return jsxAttributesFromMap({
@@ -168,7 +169,31 @@ export async function benchmarkAttributes(): Promise<void> {
       }
       const attributes = sampleJsxAttributes()
       return () => {
-        jsxAttributesToProps('test.js', inScope, attributes, NO_OP)
+        jsxAttributesToProps(
+          'test.js',
+          inScope,
+          attributes,
+          NO_OP,
+          null,
+          {},
+          {},
+          [],
+          [],
+          {},
+          new Set(),
+          undefined,
+          undefined,
+          emptyUiJsxCanvasContextData(),
+          NO_OP,
+          null,
+          null,
+          false,
+          {},
+          '',
+          null,
+          null,
+          {},
+        )
       }
     }),
     Benny.cycle(),
