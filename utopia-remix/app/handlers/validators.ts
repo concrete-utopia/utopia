@@ -29,8 +29,6 @@ export function validateProjectAccess(
 
     const allowed = isCreator || (await hasUserProjectPermission(projectId, userId, permission))
     ensure(allowed, errorMessage ?? 'Unauthorized Access', status ?? Status.UNAUTHORIZED)
-
-    return allowed
   }
 }
 
