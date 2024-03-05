@@ -67,7 +67,11 @@ describe('getProject', () => {
         context: {},
       }) as Promise<ApiResponse<{ id: string; projectId: string }>>)
       const error = await response.json()
-      expect(error).toEqual({ message: 'Project not found', status: Status.NOT_FOUND })
+      expect(error).toEqual({
+        message: 'Project not found',
+        status: Status.NOT_FOUND,
+        error: 'Error',
+      })
     })
 
     it('should allow access to the owner', async () => {
