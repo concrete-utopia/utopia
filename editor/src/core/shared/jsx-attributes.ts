@@ -66,7 +66,7 @@ import type {
   UiJsxCanvasContextData,
   VariableData,
 } from '../../components/canvas/ui-jsx-canvas'
-import { renderCoreElement } from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-element-renderer-utils'
+// import { renderCoreElement } from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-element-renderer-utils'
 
 export type AnyMap = { [key: string]: any }
 
@@ -257,31 +257,32 @@ export function jsxAttributeToValue(
 ): any {
   switch (attribute.type) {
     case 'JSX_ELEMENT':
-      return renderCoreElement(
-        attribute,
-        elementPath,
-        rootScope,
-        inScope,
-        parentComponentInputProps,
-        requireResult,
-        hiddenInstances,
-        displayNoneInstances,
-        fileBlobs,
-        validPaths,
-        uid,
-        reactChildren,
-        metadataContext,
-        updateInvalidatedPaths,
-        jsxFactoryFunctionName,
-        codeError,
-        shouldIncludeCanvasRootInTheSpy,
-        filePath,
-        imports,
-        code,
-        highlightBounds,
-        editedText,
-        variablesInScope,
-      )
+      return null
+    // return renderCoreElement(
+    //   attribute,
+    //   elementPath,
+    //   rootScope,
+    //   inScope,
+    //   parentComponentInputProps,
+    //   requireResult,
+    //   hiddenInstances,
+    //   displayNoneInstances,
+    //   fileBlobs,
+    //   validPaths,
+    //   uid,
+    //   reactChildren,
+    //   metadataContext,
+    //   updateInvalidatedPaths,
+    //   jsxFactoryFunctionName,
+    //   codeError,
+    //   shouldIncludeCanvasRootInTheSpy,
+    //   filePath,
+    //   imports,
+    //   code,
+    //   highlightBounds,
+    //   editedText,
+    //   variablesInScope,
+    // )
     case 'ATTRIBUTE_VALUE':
       return attribute.value
     case 'JS_IDENTIFIER':
