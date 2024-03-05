@@ -42,6 +42,7 @@ export async function getProjectOwnerById(params: { id: string }): Promise<strin
     select: { owner_id: true },
     where: {
       proj_id: params.id,
+      OR: [{ deleted: null }, { deleted: false }],
     },
   })
   return project?.owner_id ?? null
