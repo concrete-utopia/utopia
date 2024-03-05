@@ -9,6 +9,7 @@ import {
   newTestRequest,
 } from '../test-util'
 import { loader } from '../routes/v1.project.$id'
+import * as proxyServer from '../util/proxy.server'
 import * as permissionsService from '../services/permissionsService.server'
 import { UserProjectPermission } from '../types'
 import { ApiResponse } from '../util/api.server'
@@ -25,10 +26,12 @@ describe('getProject', () => {
     const projectId = 'project1'
     const userId = 'user1'
 
+    let projectProxy: jest.SpyInstance
     let hasUserProjectPermission: jest.SpyInstance
     afterEach(async () => {
       await clearDb(prisma)
 
+      projectProxy.mockClear()
       hasUserProjectPermission.mockClear()
     })
 
@@ -36,11 +39,13 @@ describe('getProject', () => {
       await createTestUser(prisma, { id: userId })
       await createTestSession(prisma, { key: 'the-key', userId: userId })
 
+      projectProxy = jest.spyOn(proxyServer, 'proxy')
       hasUserProjectPermission = jest.spyOn(permissionsService, 'hasUserProjectPermission')
     })
 
     it('should check access level for a project', async () => {
       await createTestProject(prisma, { id: projectId, ownerId: 'user2' })
+      projectProxy.mockResolvedValue({ id: projectId, ownerId: 'user2' })
       hasUserProjectPermission.mockResolvedValue(true)
       const req = newTestRequest({ method: 'GET', authCookie: 'the-key' })
       const response = await (loader({
@@ -59,6 +64,7 @@ describe('getProject', () => {
 
     it('should deny access for an unauthorized project', async () => {
       await createTestProject(prisma, { id: projectId, ownerId: 'user2' })
+      projectProxy.mockResolvedValue({ id: projectId, ownerId: 'user2' })
       hasUserProjectPermission.mockResolvedValue(false)
       const req = newTestRequest({ method: 'GET', authCookie: 'the-key' })
       const response = await (loader({
@@ -76,6 +82,7 @@ describe('getProject', () => {
 
     it('should allow access to the owner', async () => {
       await createTestProject(prisma, { id: projectId, ownerId: userId })
+      projectProxy.mockResolvedValue({ id: projectId, ownerId: userId })
       // mock the permission check to return false
       hasUserProjectPermission.mockResolvedValue(false)
       const req = newTestRequest({ method: 'GET', authCookie: 'the-key' })
