@@ -62,8 +62,8 @@ import {
 } from '../shared/uid-utils'
 import { assertNever } from '../shared/utils'
 import { getComponentsFromTopLevelElements, isSceneAgainstImports } from './project-file-utils'
-import type { GetJSXAttributeResult } from '../shared/jsx-attributes'
-import { getJSXAttributesAtPath } from '../shared/jsx-attributes'
+import type { GetJSXAttributeResult } from '../shared/jsx-attribute-utils'
+import { getJSXAttributesAtPath } from '../shared/jsx-attribute-utils'
 import { forceNotNull } from '../shared/optional-utils'
 import {
   conditionalWhenFalseOptic,

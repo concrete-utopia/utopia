@@ -74,10 +74,9 @@ import {
   isJSElementAccess,
 } from '../shared/element-template'
 import {
-  getJSXAttributesAtPath,
   getModifiableJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
-} from '../shared/jsx-attributes'
+} from '../shared/jsx-attribute-utils'
 import type {
   CanvasRectangle,
   LocalRectangle,

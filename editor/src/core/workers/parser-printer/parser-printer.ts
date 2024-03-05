@@ -114,12 +114,13 @@ import { difference } from '../../shared/set-utils'
 import { addCommentsToNode } from './parser-printer-comments'
 import { fixParseSuccessUIDs } from './uid-fix'
 import { applyPrettier } from 'utopia-vscode-common'
-import { BakedInStoryboardVariableName } from '../../model/scene-utils'
 import { stripExtension } from '../../../components/custom-code/custom-code-utils'
 import { absolutePathFromRelativePath } from '../../../utils/path-utils'
 import { fromField } from '../../../core/shared/optics/optic-creators'
 import type { Optic } from '../../../core/shared/optics/optics'
 import { modify } from '../../../core/shared/optics/optic-utilities'
+
+const BakedInStoryboardVariableName = 'storyboard'
 
 function buildPropertyCallingFunction(
   functionName: string,

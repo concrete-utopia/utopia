@@ -19,7 +19,7 @@ import {
   jsxMapExpression,
   jsIdentifier,
 } from '../../shared/element-template'
-import { setJSXValueAtPath } from '../../shared/jsx-attributes'
+import { setJSXValueAtPath } from '../../shared/jsx-attribute-utils'
 import { forEachRight } from '../../shared/either'
 import type { ParseSuccess } from '../../shared/project-file-types'
 import {

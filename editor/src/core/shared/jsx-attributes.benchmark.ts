@@ -1,6 +1,7 @@
 import * as Benny from 'benny'
 import * as PP from './property-path'
-import { getJSXAttributesAtPath, jsxAttributesToProps, setJSXValueAtPath } from './jsx-attributes'
+import { jsxAttributesToProps } from './jsx-attributes'
+import { getJSXAttributesAtPath, setJSXValueAtPath } from './jsx-attribute-utils'
 import type { JSXAttributes } from './element-template'
 import {
   emptyComments,
