@@ -124,14 +124,15 @@ const app = express()
 app.disable('x-powered-by')
 
 // proxy middleware hooks
+app.use('/authenticate', proxy)
 app.use('/editor', proxy)
 app.use('/hashed-assets.json', proxy)
-app.use('/p', proxy)
-app.use('/v1', proxy)
-app.use('/vscode', proxy)
 app.use('/logout', proxy)
+app.use('/p', proxy)
+app.use('/project', proxy)
 app.use('/share', proxy)
-app.use('/authenticate', proxy)
+app.use('/v1/javascript', proxy)
+app.use('/vscode', proxy)
 
 // other middlewares
 app.use(corsMiddleware)
