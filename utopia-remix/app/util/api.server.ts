@@ -60,7 +60,7 @@ export function handle(
   handlers: {
     [method in Method]?: ValidatedHandler
   },
-): Promise<unknown> {
+) {
   const handlerDescriptor = handlers[request.method as Method]
   if (handlerDescriptor == null) {
     throw new ApiError('invalid method', Status.METHOD_NOT_ALLOWED)

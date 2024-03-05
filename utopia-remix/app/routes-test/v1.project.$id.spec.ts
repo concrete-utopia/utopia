@@ -6,7 +6,8 @@ import { loader } from '../routes/v1.project.$id'
 import * as serverProxy from '../util/proxy.server'
 import * as permissionsService from '../services/permissionsService.server'
 import { UserProjectPermission } from '../types'
-import { ApiError } from '../util/errors'
+import { ApiResponse } from '../util/api.server'
+import { Status } from '../util/statusCodes'
 
 describe('getProject', () => {
   beforeAll(async () => {
@@ -40,8 +41,13 @@ describe('getProject', () => {
       projectProxyMock.mockResolvedValue({ id: projectId, ownerId: 'user2' })
       hasUserProjectPermission.mockResolvedValue(true)
       const req = newTestRequest({ method: 'GET', authCookie: 'the-key' })
-      const projectResult = await loader({ request: req, params: { id: projectId }, context: {} })
-      expect(projectResult).toEqual({ id: projectId, ownerId: 'user2' })
+      const response = await (loader({
+        request: req,
+        params: { id: projectId },
+        context: {},
+      }) as Promise<ApiResponse<{ id: string; projectId: string }>>)
+      const project = await response.json()
+      expect(project).toEqual({ id: projectId, ownerId: 'user2' })
       expect(hasUserProjectPermission).toHaveBeenCalledWith(
         projectId,
         userId,
@@ -53,10 +59,13 @@ describe('getProject', () => {
       projectProxyMock.mockResolvedValue({ id: projectId, ownerId: 'user2' })
       hasUserProjectPermission.mockResolvedValue(false)
       const req = newTestRequest({ method: 'GET', authCookie: 'the-key' })
-      const fn = async () => {
-        return loader({ request: req, params: { id: projectId }, context: {} })
-      }
-      expect(fn).rejects.toThrow(ApiError)
+      const response = await (loader({
+        request: req,
+        params: { id: projectId },
+        context: {},
+      }) as Promise<ApiResponse<{ id: string; projectId: string }>>)
+      const error = await response.json()
+      expect(error).toEqual({ message: 'Project not found', status: Status.NOT_FOUND })
     })
 
     it('should allow access to the owner', async () => {
@@ -64,7 +73,12 @@ describe('getProject', () => {
       // mock the permission check to return false
       hasUserProjectPermission.mockResolvedValue(false)
       const req = newTestRequest({ method: 'GET', authCookie: 'the-key' })
-      const projectResult = await loader({ request: req, params: { id: projectId }, context: {} })
+      const response = await (loader({
+        request: req,
+        params: { id: projectId },
+        context: {},
+      }) as Promise<ApiResponse<{ id: string; projectId: string }>>)
+      const projectResult = await response.json()
       expect(projectResult).toEqual({ id: projectId, ownerId: userId })
     })
   })

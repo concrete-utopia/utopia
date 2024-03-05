@@ -1,6 +1,6 @@
 import { prisma } from '../db.server'
 import { createTestSession, createTestUser, newTestRequest, truncateTables } from '../test-util'
-import { requireUser } from './api.server'
+import { ApiResponse, handle, requireUser } from './api.server'
 import { ApiError } from './errors'
 
 describe('requireUser', () => {
@@ -50,5 +50,49 @@ describe('requireUser', () => {
     got = await requireUser(req)
     expect(got.user_id).toBe('bob')
     expect(got.name).toBe('Bob Bobson')
+  })
+})
+
+describe('handle', () => {
+  it('runs handler', async () => {
+    const request = newTestRequest({ method: 'POST' })
+    const response = await (handle(
+      { request: request, params: {} },
+      {
+        POST: {
+          handler: async () => {
+            return { data: 'success' }
+          },
+          validator: async () => {
+            // passes
+          },
+        },
+      },
+    ) as Promise<ApiResponse<{ data: string }>>)
+    const result = await response.json()
+    expect(result).toEqual({
+      data: 'success',
+    })
+  })
+  it('fails on validator', async () => {
+    const request = newTestRequest({ method: 'POST' })
+    const response = await (handle(
+      { request: request, params: {} },
+      {
+        POST: {
+          handler: async () => {
+            return { data: 'success' }
+          },
+          validator: async () => {
+            throw new ApiError('failed', 400)
+          },
+        },
+      },
+    ) as Promise<ApiResponse<{ data: string }>>)
+    const result = await response.json()
+    expect(result).toEqual({
+      message: 'failed',
+      status: 400,
+    })
   })
 })
