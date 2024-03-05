@@ -152,15 +152,18 @@ export async function proxiedResponse(response: Response): Promise<unknown> {
 }
 
 export const SESSION_COOKIE_NAME = 'JSESSIONID'
+function getSessionId(request: Request): string | null {
+  const cookieHeader = request.headers.get('cookie') ?? ''
+  const cookies = cookie.parse(cookieHeader)
+  return cookies[SESSION_COOKIE_NAME] ?? null
+}
 
 export async function requireUser(
   request: Request,
   options?: { redirect?: string },
 ): Promise<UserDetails> {
-  const cookieHeader = request.headers.get('cookie') ?? ''
-  const cookies = cookie.parse(cookieHeader)
-  const sessionId = cookies[SESSION_COOKIE_NAME] ?? null
   try {
+    const sessionId = getSessionId(request)
     ensure(sessionId != null, 'missing session cookie', Status.UNAUTHORIZED)
     const user = await getUserFromSession({ key: sessionId })
     ensure(user != null, 'user not found', Status.UNAUTHORIZED)
@@ -176,9 +179,7 @@ export async function requireUser(
 }
 
 export async function getUser(request: Request): Promise<UserDetails | null> {
-  const cookieHeader = request.headers.get('cookie') ?? ''
-  const cookies = cookie.parse(cookieHeader)
-  const sessionId = cookies[SESSION_COOKIE_NAME] ?? null
+  const sessionId = getSessionId(request)
   if (sessionId == null) {
     return null
   }
