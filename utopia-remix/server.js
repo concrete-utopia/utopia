@@ -129,6 +129,9 @@ app.use('/hashed-assets.json', proxy)
 app.use('/p', proxy)
 app.use('/v1', proxy)
 app.use('/vscode', proxy)
+app.use('/logout', proxy)
+app.use('/share', proxy)
+app.use('/authenticate', proxy)
 
 // other middlewares
 app.use(corsMiddleware)
