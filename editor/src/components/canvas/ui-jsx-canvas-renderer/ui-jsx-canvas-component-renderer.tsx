@@ -138,7 +138,7 @@ export function createComponentRendererComponent(params: {
           displayNoneInstances,
           mutableContext.fileBlobs,
           sceneContext.validPaths,
-          undefined, // TODO: uid?
+          undefined,
           undefined,
           metadataContext,
           updateInvalidatedPaths,

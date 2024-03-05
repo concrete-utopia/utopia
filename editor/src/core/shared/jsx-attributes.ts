@@ -75,6 +75,7 @@ import {
   jsxSimpleAttributeToValue,
   dropKeyFromNestedObject,
 } from './jsx-attribute-utils'
+import * as EP from './element-path'
 
 export type AnyMap = { [key: string]: any }
 
@@ -165,9 +166,10 @@ export function jsxAttributeToValue(
 ): any {
   switch (attribute.type) {
     case 'JSX_ELEMENT':
+      const innerPath = optionalMap((path) => EP.appendToPath(path, attribute.uid), elementPath)
       return renderCoreElement(
         attribute,
-        elementPath,
+        innerPath,
         rootScope,
         inScope,
         parentComponentInputProps,
@@ -176,7 +178,7 @@ export function jsxAttributeToValue(
         displayNoneInstances,
         fileBlobs,
         validPaths,
-        uid,
+        attribute.uid,
         reactChildren,
         metadataContext,
         updateInvalidatedPaths,
