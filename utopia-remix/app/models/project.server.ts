@@ -37,6 +37,16 @@ export async function getProject(params: {
   })
 }
 
+export async function getProjectOwnerById(params: { id: string }): Promise<string | null> {
+  const project = await prisma.project.findFirst({
+    select: { owner_id: true },
+    where: {
+      proj_id: params.id,
+    },
+  })
+  return project?.owner_id ?? null
+}
+
 export async function getProjectById(params: {
   id: string
 }): Promise<ProjectWithoutContent | null> {
