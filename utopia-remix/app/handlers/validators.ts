@@ -3,7 +3,7 @@ import { UserProjectPermission } from '../types'
 import { Params } from '@remix-run/react'
 import { Status } from '../util/statusCodes'
 import { hasUserProjectPermission } from '../services/permissionsService.server'
-import { getProjectOwnerById } from '../models/project.server'
+import { getProjectById, getProjectOwnerById } from '../models/project.server'
 
 export function validateProjectAccess(
   permission: UserProjectPermission,
@@ -19,12 +19,13 @@ export function validateProjectAccess(
     const { id: projectId } = params
     ensure(projectId != null, 'project id is null', Status.BAD_REQUEST)
 
-    const projectCreatorId = await getProjectOwnerById({ id: projectId })
-    ensure(projectCreatorId != null, 'Project creator id not found', Status.NOT_FOUND)
+    const project = await getProjectById({ id: projectId })
+    ensure(project != null, `Project ${projectId} not found`, Status.NOT_FOUND)
+    const creatorId = project.owner_id
 
     let user = await getUser(req)
     let userId = user?.user_id ?? null
-    const isCreator = userId ? projectCreatorId === userId : false
+    const isCreator = userId ? creatorId === userId : false
 
     const allowed = isCreator || (await hasUserProjectPermission(projectId, userId, permission))
     ensure(allowed, errorMessage ?? 'Unauthorized Access', status ?? Status.UNAUTHORIZED)
