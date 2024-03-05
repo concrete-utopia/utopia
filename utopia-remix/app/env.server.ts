@@ -21,9 +21,9 @@ export const ServerEnvironment = {
   AUTH0_CLIENT_ID: optionalEnv('AUTH0_CLIENT_ID', '<AUTH0_CLIENT_ID>'),
   AUTH0_REDIRECT_URI: optionalEnv('AUTH0_REDIRECT_URI', '<AUTH0_REDIRECT_URI>'),
   // FGA Credentials
-  FGA_STORE_ID: mustEnv('FGA_STORE_ID', { test: '<FGA_STORE_ID>' }),
-  FGA_CLIENT_ID: mustEnv('FGA_CLIENT_ID', { test: '<FGA_CLIENT_ID>' }),
-  FGA_SECRET: mustEnv('FGA_SECRET', { test: '<FGA_SECRET>' }),
+  FGA_STORE_ID: optionalEnv('FGA_STORE_ID', '<FGA_STORE_ID>'),
+  FGA_CLIENT_ID: optionalEnv('FGA_CLIENT_ID', '<FGA_CLIENT_ID>'),
+  FGA_SECRET: optionalEnv('FGA_SECRET', '<FGA_SECRET>'),
   // Github OAuth credentials
   GITHUB_OAUTH_CLIENT_ID: optionalEnv('GITHUB_OAUTH_CLIENT_ID', ''),
   GITHUB_OAUTH_REDIRECT_URL: optionalEnv('GITHUB_OAUTH_REDIRECT_URL', ''),
@@ -37,13 +37,9 @@ export const BrowserEnvironment: BrowserEnvironment = {
   EDITOR_URL: mustEnv('REACT_APP_EDITOR_URL'),
 }
 
-function mustEnv(key: string, envFallback: Partial<Record<AppEnv, string>> = {}): string {
+function mustEnv(key: string): string {
   const value = process.env[key]
   if (value == null) {
-    const fallback = envFallback[serverEnvironemnt]
-    if (fallback != null) {
-      return fallback
-    }
     throw new Error(`missing required environment variable ${key}`)
   }
   return value
