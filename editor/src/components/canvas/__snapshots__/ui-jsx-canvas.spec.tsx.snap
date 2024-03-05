@@ -47247,7 +47247,9 @@ exports[`UiJsxCanvas render renders correctly when a component is passed in via 
           data-uid=\\"ddd\\"
           style=\\"background-color: pink; width: 100%; height: 20px\\"
           data-path=\\"eee/fff/app-entity:aaa/bbb:ddd\\"
-        ></div>
+        >
+          <div data-uid=\\"ccc\\" data-path=\\"eee/fff/app-entity:aaa/bbb\\">test</div>
+        </div>
       </div>
     </div>
   </div>
@@ -47776,9 +47778,15 @@ Object {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
-        "children": Array [],
+        "children": Array [
+          Object {
+            "text": "test",
+            "type": "JSX_TEXT_BLOCK",
+            "uid": "",
+          },
+        ],
         "name": Object {
-          "baseVariable": "Thing",
+          "baseVariable": "div",
           "propertyPath": Object {
             "propertyElements": Array [],
           },
@@ -47798,51 +47806,7 @@ Object {
               },
               "type": "ATTRIBUTE_VALUE",
               "uid": "",
-              "value": "bbb",
-            },
-          },
-          Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "key": "thing",
-            "type": "JSX_ATTRIBUTES_ENTRY",
-            "value": Object {
-              "children": Array [
-                Object {
-                  "text": "test",
-                  "type": "JSX_TEXT_BLOCK",
-                  "uid": "c74",
-                },
-              ],
-              "name": Object {
-                "baseVariable": "div",
-                "propertyPath": Object {
-                  "propertyElements": Array [],
-                },
-              },
-              "props": Array [
-                Object {
-                  "comments": Object {
-                    "leadingComments": Array [],
-                    "trailingComments": Array [],
-                  },
-                  "key": "data-uid",
-                  "type": "JSX_ATTRIBUTES_ENTRY",
-                  "value": Object {
-                    "comments": Object {
-                      "leadingComments": Array [],
-                      "trailingComments": Array [],
-                    },
-                    "type": "ATTRIBUTE_VALUE",
-                    "uid": "77c",
-                    "value": "ccc",
-                  },
-                },
-              ],
-              "type": "JSX_ELEMENT",
-              "uid": "",
+              "value": "ccc",
             },
           },
         ],
@@ -47868,7 +47832,7 @@ Object {
     "importInfo": Object {
       "filePath": "test.js",
       "type": "SAME_FILE_ORIGIN",
-      "variableName": "Thing",
+      "variableName": "div",
     },
     "isEmotionOrStyledComponent": false,
     "label": null,
