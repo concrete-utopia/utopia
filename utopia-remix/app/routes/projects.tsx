@@ -14,7 +14,7 @@ import { LoaderFunctionArgs, json } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { UserDetails } from 'prisma-client'
-import React, { useState } from 'react'
+import React from 'react'
 import { ProjectContextMenu } from '../components/projectActionContextMenu'
 import { SortingContextMenu } from '../components/sortProjectsContextMenu'
 import { Spinner } from '../components/spinner'
@@ -374,7 +374,7 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
     }
   }
 
-  const [sortMenuOpen, setSortMenuOpen] = useState(false)
+  const [sortMenuOpen, setSortMenuOpen] = React.useState(false)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
@@ -837,7 +837,7 @@ const ProjectRow = React.memo(
 ProjectRow.displayName = 'ProjectRow'
 
 const ProjectCardActions = React.memo(({ project }: { project: ProjectWithoutContent }) => {
-  const [sortMenuOpen, setSortMenuOpen] = useState(false)
+  const [sortMenuOpen, setSortMenuOpen] = React.useState(false)
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>

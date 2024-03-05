@@ -4,7 +4,6 @@ import { useProjectsStore } from '../store'
 import { contextMenuDropdown, contextMenuItem } from '../styles/contextMenu.css'
 import { sprinkles } from '../styles/sprinkles.css'
 import { CheckIcon } from '@radix-ui/react-icons'
-import { start } from 'repl'
 
 export const SortingContextMenu = React.memo(() => {
   const sortCriteria = useProjectsStore((store) => store.sortCriteria)
