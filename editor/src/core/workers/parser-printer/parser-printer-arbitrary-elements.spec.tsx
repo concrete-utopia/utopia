@@ -321,7 +321,7 @@ export var whatever = (props) => {
               'aab',
               jsxAttributesFromMap({
                 'data-uid': jsExpressionValue('aab', emptyComments),
-                thing: jsIdentifier('n', '', emptyComments),
+                thing: jsIdentifier('n', '', expect.objectContaining({}), emptyComments),
               }),
               [],
             ),
@@ -417,7 +417,7 @@ export var whatever = (props) => {
               'aab',
               jsxAttributesFromMap({
                 'data-uid': jsExpressionValue('aab', emptyComments),
-                thing: jsIdentifier('n', '', emptyComments),
+                thing: jsIdentifier('n', '', expect.objectContaining({}), emptyComments),
               }),
               [],
             ),
@@ -514,7 +514,7 @@ export var whatever = (props) => {
               'aab',
               jsxAttributesFromMap({
                 'data-uid': jsExpressionValue('aab', emptyComments),
-                thing: jsIdentifier('n', '', emptyComments),
+                thing: jsIdentifier('n', '', expect.objectContaining({}), emptyComments),
               }),
               [],
             ),
@@ -610,7 +610,7 @@ export var whatever = (props) => {
                   jsxAttributesFromMap({
                     'data-uid': jsExpressionValue('aac', emptyComments),
                   }),
-                  [jsIdentifier(`n`, ``, emptyComments)],
+                  [jsIdentifier(`n`, ``, expect.objectContaining({}), emptyComments)],
                 ),
               ],
             ),
@@ -801,7 +801,7 @@ export var whatever = (props) => {
                   jsxAttributesFromMap({
                     'data-uid': jsExpressionValue('aac', emptyComments),
                   }),
-                  [jsIdentifier(`n`, '', emptyComments)],
+                  [jsIdentifier(`n`, '', expect.objectContaining({}), emptyComments)],
                 ),
               ],
             ),

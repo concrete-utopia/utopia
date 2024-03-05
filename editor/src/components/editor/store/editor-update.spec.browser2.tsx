@@ -33,7 +33,7 @@ describe('actions', () => {
                 position: 'absolute',
                 backgroundColor: 'lightgrey',
               }}
-              data-uid='aaa'
+              data-uid='view'
             >
               <React.Fragment>
                 <Ellipse
@@ -159,7 +159,7 @@ describe('actions', () => {
       'await-first-dom-report',
     )
 
-    const elementPathToMove = EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'ddd'])
+    const elementPathToMove = EP.appendNewElementPath(ScenePathForTestUiJsFile, ['view', 'ddd'])
 
     await selectComponentsForTest(editor, [elementPathToMove])
 

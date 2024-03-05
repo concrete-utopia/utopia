@@ -433,13 +433,20 @@ export interface JSIdentifier extends WithComments {
   type: 'JS_IDENTIFIER'
   name: string
   uid: string
+  sourceMap: RawSourceMap | null
 }
 
-export function jsIdentifier(name: string, uid: string, comments: ParsedComments): JSIdentifier {
+export function jsIdentifier(
+  name: string,
+  uid: string,
+  sourceMap: RawSourceMap | null,
+  comments: ParsedComments,
+): JSIdentifier {
   return {
     type: 'JS_IDENTIFIER',
     name: name,
     uid: uid,
+    sourceMap: sourceMap,
     comments: comments,
   }
 }
@@ -460,19 +467,25 @@ export interface JSPropertyAccess extends WithComments {
   onValue: JSExpression
   property: string
   uid: string
+  sourceMap: RawSourceMap | null
+  originalJavascript: string
 }
 
 export function jsPropertyAccess(
   onValue: JSExpression,
   property: string,
   uid: string,
+  sourceMap: RawSourceMap | null,
   comments: ParsedComments,
+  originalJavascript: string,
 ): JSPropertyAccess {
   return {
     type: 'JS_PROPERTY_ACCESS',
     onValue: onValue,
     property: property,
     uid: uid,
+    sourceMap: sourceMap,
+    originalJavascript: originalJavascript,
     comments: comments,
   }
 }
@@ -493,19 +506,25 @@ export interface JSElementAccess extends WithComments {
   onValue: JSExpression
   element: JSExpression
   uid: string
+  sourceMap: RawSourceMap | null
+  originalJavascript: string
 }
 
 export function jsElementAccess(
   onValue: JSExpression,
   element: JSExpression,
   uid: string,
+  sourceMap: RawSourceMap | null,
   comments: ParsedComments,
+  originalJavascript: string,
 ): JSElementAccess {
   return {
     type: 'JS_ELEMENT_ACCESS',
     onValue: onValue,
     element: element,
     uid: uid,
+    sourceMap: sourceMap,
+    originalJavascript: originalJavascript,
     comments: comments,
   }
 }
@@ -678,20 +697,24 @@ export function clearExpressionUniqueIDs(attribute: JSExpression): JSExpression 
         '',
       )
     case 'JS_IDENTIFIER':
-      return jsIdentifier(attribute.name, '', attribute.comments)
+      return jsIdentifier(attribute.name, '', attribute.sourceMap, attribute.comments)
     case 'JS_PROPERTY_ACCESS':
       return jsPropertyAccess(
         clearExpressionUniqueIDs(attribute.onValue),
         attribute.property,
         '',
+        attribute.sourceMap,
         attribute.comments,
+        attribute.originalJavascript,
       )
     case 'JS_ELEMENT_ACCESS':
       return jsElementAccess(
         clearExpressionUniqueIDs(attribute.onValue),
         clearExpressionUniqueIDs(attribute.element),
         '',
+        attribute.sourceMap,
         attribute.comments,
+        attribute.originalJavascript,
       )
     case 'ATTRIBUTE_FUNCTION_CALL':
       return jsExpressionFunctionCall(
@@ -735,7 +758,7 @@ export function clearJSXAttributeOtherJavaScriptSourceMaps(
   }
 }
 
-export function clearAttributeSourceMaps(attribute: JSExpression): JSExpression {
+export function clearExpressionSourceMaps(attribute: JSExpression): JSExpression {
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
       return attribute
@@ -747,9 +770,9 @@ export function clearAttributeSourceMaps(attribute: JSExpression): JSExpression 
         attribute.content.map((elem) => {
           switch (elem.type) {
             case 'ARRAY_SPREAD':
-              return jsxArraySpread(clearAttributeSourceMaps(elem.value), emptyComments)
+              return jsxArraySpread(clearExpressionSourceMaps(elem.value), emptyComments)
             case 'ARRAY_VALUE':
-              return jsxArrayValue(clearAttributeSourceMaps(elem.value), emptyComments)
+              return jsxArrayValue(clearExpressionSourceMaps(elem.value), emptyComments)
             default:
               const _exhaustiveCheck: never = elem
               throw new Error(`Unhandled array element type ${JSON.stringify(elem)}`)
@@ -759,25 +782,29 @@ export function clearAttributeSourceMaps(attribute: JSExpression): JSExpression 
         attribute.uid,
       )
     case 'JS_IDENTIFIER':
-      return jsIdentifier(attribute.name, attribute.uid, attribute.comments)
+      return jsIdentifier(attribute.name, attribute.uid, null, attribute.comments)
     case 'JS_PROPERTY_ACCESS':
       return jsPropertyAccess(
-        clearAttributeSourceMaps(attribute.onValue),
+        clearExpressionSourceMaps(attribute.onValue),
         attribute.property,
         attribute.uid,
+        null,
         attribute.comments,
+        attribute.originalJavascript,
       )
     case 'JS_ELEMENT_ACCESS':
       return jsElementAccess(
-        clearAttributeSourceMaps(attribute.onValue),
-        clearAttributeSourceMaps(attribute.element),
+        clearExpressionSourceMaps(attribute.onValue),
+        clearExpressionSourceMaps(attribute.element),
         attribute.uid,
+        null,
         attribute.comments,
+        attribute.originalJavascript,
       )
     case 'ATTRIBUTE_FUNCTION_CALL':
       return jsExpressionFunctionCall(
         attribute.functionName,
-        attribute.parameters.map(clearAttributeSourceMaps),
+        attribute.parameters.map(clearExpressionSourceMaps),
         attribute.uid,
       )
     case 'ATTRIBUTE_NESTED_OBJECT':
@@ -785,11 +812,11 @@ export function clearAttributeSourceMaps(attribute: JSExpression): JSExpression 
         attribute.content.map((prop) => {
           switch (prop.type) {
             case 'SPREAD_ASSIGNMENT':
-              return jsxSpreadAssignment(clearAttributeSourceMaps(prop.value), emptyComments)
+              return jsxSpreadAssignment(clearExpressionSourceMaps(prop.value), emptyComments)
             case 'PROPERTY_ASSIGNMENT':
               return jsxPropertyAssignment(
                 prop.key,
-                clearAttributeSourceMaps(prop.value),
+                clearExpressionSourceMaps(prop.value),
                 emptyComments,
                 emptyComments,
               )
@@ -805,6 +832,10 @@ export function clearAttributeSourceMaps(attribute: JSExpression): JSExpression 
       const _exhaustiveCheck: never = attribute
       throw new Error(`Unhandled attribute ${JSON.stringify(attribute)}`)
   }
+}
+
+export function clearExpressionUniqueIDsAndSourceMaps(expression: JSExpression): JSExpression {
+  return clearExpressionUniqueIDs(clearExpressionSourceMaps(expression))
 }
 
 export function isJSXAttributeValue(element: JSXElementChild): element is JSExpressionValue<any> {
@@ -1273,12 +1304,12 @@ export function clearAttributesSourceMaps(attributes: JSXAttributes): JSXAttribu
       case 'JSX_ATTRIBUTES_ENTRY':
         return jsxAttributesEntry(
           attribute.key,
-          clearAttributeSourceMaps(attribute.value),
+          clearExpressionSourceMaps(attribute.value),
           attribute.comments,
         )
       case 'JSX_ATTRIBUTES_SPREAD':
         return jsxAttributesSpread(
-          clearAttributeSourceMaps(attribute.spreadValue),
+          clearExpressionSourceMaps(attribute.spreadValue),
           attribute.comments,
         )
       default:

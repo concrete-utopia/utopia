@@ -11,6 +11,6 @@ export async function loader(args: LoaderFunctionArgs) {
 
 export async function action(args: ActionFunctionArgs) {
   return handle(args, {
-    POST: { handler: (req) => proxy(req, { rawOutput: true }), validator: ALLOW },
+    POST: { handler: proxy, validator: ALLOW },
   })
 }
