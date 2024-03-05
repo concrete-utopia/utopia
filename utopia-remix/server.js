@@ -131,7 +131,7 @@ app.use('/logout', proxy)
 app.use('/p', proxy)
 app.use('/project', proxy)
 app.use('/share', proxy)
-app.use('/v1/javascript', proxy)
+app.use('/v1/javascript/packager', proxy)
 app.use('/vscode', proxy)
 
 // other middlewares
