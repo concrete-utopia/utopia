@@ -1,9 +1,10 @@
 import { ActionFunctionArgs } from '@remix-run/node'
-import { alwaysAllow, handle } from '../util/api.server'
+import { handle } from '../util/api.server'
 import { proxy } from '../util/proxy.server'
+import { ALLOW } from '../handlers/validators'
 
 export async function action(args: ActionFunctionArgs) {
   return handle(args, {
-    DELETE: alwaysAllow(proxy),
+    DELETE: { handler: proxy, validator: ALLOW },
   })
 }
