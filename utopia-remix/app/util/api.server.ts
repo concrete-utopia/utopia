@@ -58,6 +58,26 @@ export function chain<T = unknown>(handlers: Handler<T>[], contextInitialValue?:
 
 type Handler<T> = (request: Request, params: Params<string>, context: T | null) => Promise<unknown>
 
+async function handleRequest<T>(
+  context: T | null,
+  request: Request,
+  params: Params<string>,
+  fn: Handler<T>,
+): Promise<ApiResponse<T> | unknown> {
+  const resp = await fn(request, params, context)
+  if (resp instanceof Response) {
+    const mergedHeaders = new Headers(defaultResponseHeaders)
+    resp.headers.forEach((value, key) => {
+      mergedHeaders.set(key, value)
+    })
+    return new Response(resp.body, {
+      status: resp.status,
+      headers: mergedHeaders,
+    })
+  }
+  return json(resp, { headers: defaultResponseHeaders })
+}
+
 /**
  * Process the Chain against the given request, returning the last result.
  */
@@ -69,7 +89,7 @@ async function handleChain<T>(
   try {
     let result: unknown = null
     for (const handler of chain.handlers) {
-      result = await handleMethod(chain.context, request, params, handler)
+      result = await handleRequest(chain.context, request, params, handler)
     }
     return result
   } catch (err) {
@@ -95,26 +115,6 @@ export function handle<T>(
     throw new ApiError('invalid method', Status.METHOD_NOT_ALLOWED)
   }
   return handleChain(request, params, chain)
-}
-
-async function handleMethod<T>(
-  context: T | null,
-  request: Request,
-  params: Params<string>,
-  fn: Handler<T>,
-): Promise<ApiResponse<T> | unknown> {
-  const resp = await fn(request, params, context)
-  if (resp instanceof Response) {
-    const mergedHeaders = new Headers(defaultResponseHeaders)
-    resp.headers.forEach((value, key) => {
-      mergedHeaders.set(key, value)
-    })
-    return new Response(resp.body, {
-      status: resp.status,
-      headers: mergedHeaders,
-    })
-  }
-  return json(resp, { headers: defaultResponseHeaders })
 }
 
 function getErrorData(err: unknown): { message: string; status: number; name: string } {
