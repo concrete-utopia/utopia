@@ -246,7 +246,11 @@ export function jsxAttributeToValue(
     case 'JS_PROPERTY_ACCESS': {
       try {
         const onValue = jsxAttributeToValue(filePath, inScope, requireResult, attribute.onValue)
-        return onValue[attribute.property]
+        if (attribute.optionallyChained === 'optionally-chained') {
+          return onValue == null ? onValue : onValue[attribute.property]
+        } else {
+          return onValue[attribute.property]
+        }
       } catch {
         // Run some arbitrary JavaScript to get a better error.
         const otherJavaScript = jsExpressionOtherJavaScript(
@@ -267,7 +271,11 @@ export function jsxAttributeToValue(
       try {
         const onValue = jsxAttributeToValue(filePath, inScope, requireResult, attribute.onValue)
         const element = jsxAttributeToValue(filePath, inScope, requireResult, attribute.element)
-        return onValue[element]
+        if (attribute.optionallyChained === 'optionally-chained') {
+          return onValue == null ? onValue : onValue[element]
+        } else {
+          return onValue[element]
+        }
       } catch {
         // Run some arbitrary JavaScript to get a better error.
         const otherJavaScript = jsExpressionOtherJavaScript(
