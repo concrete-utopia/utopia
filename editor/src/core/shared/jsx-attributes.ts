@@ -23,6 +23,7 @@ import type {
   JSXProperty,
   PartOfJSXAttributeValue,
   ElementsWithin,
+  JSXElement,
 } from './element-template'
 import {
   isArraySpread,
@@ -45,6 +46,7 @@ import {
   emptyComments,
   jsxAttributeNestedArraySimple,
   clearExpressionUniqueIDs,
+  clearJSXElementUniqueIDs,
 } from './element-template'
 import { resolveParamsAndRunJsCode } from './javascript-cache'
 import type { PropertyPath, PropertyPathPart } from './project-file-types'
@@ -86,6 +88,7 @@ export function jsxSimpleAttributeToValue(attribute: ModifiableAttribute): Eithe
     case 'ATTRIBUTE_FUNCTION_CALL':
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+    case 'JSX_ELEMENT':
       return left('Unable to get value from attribute.')
     case 'ATTRIBUTE_VALUE':
     case 'PART_OF_ATTRIBUTE_VALUE':
@@ -168,6 +171,7 @@ export function jsxFunctionAttributeToValue(
     case 'JS_ELEMENT_ACCESS':
     case 'JS_PROPERTY_ACCESS':
     case 'JS_IDENTIFIER':
+    case 'JSX_ELEMENT':
       return left(null)
     case 'ATTRIBUTE_FUNCTION_CALL':
       const extractedSimpleValueParameters = traverseEither(
@@ -201,6 +205,7 @@ export function jsxFunctionAttributeToRawValue(
     case 'JS_ELEMENT_ACCESS':
     case 'JS_PROPERTY_ACCESS':
     case 'JS_IDENTIFIER':
+    case 'JSX_ELEMENT':
       return left(null)
     case 'ATTRIBUTE_FUNCTION_CALL':
       return right({
@@ -216,7 +221,7 @@ export function jsxAttributeToValue(
   filePath: string,
   inScope: MapLike<any>,
   requireResult: MapLike<any>,
-  attribute: JSExpression,
+  attribute: JSExpression | JSXElement,
 ): any {
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
@@ -279,6 +284,8 @@ export function jsxAttributeToValue(
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return resolveParamsAndRunJsCode(filePath, attribute, requireResult, inScope)
+    case 'JSX_ELEMENT':
+      return null // TODO: implement
     default:
       assertNever(attribute)
   }
@@ -311,7 +318,11 @@ export function jsxAttributesToProps(
 
 export type GetModifiableAttributeResult = Either<string, ModifiableAttribute>
 
-export type ModifiableAttribute = JSExpression | PartOfJSXAttributeValue | JSXAttributeNotFound
+export type ModifiableAttribute =
+  | JSExpression
+  | JSXElement
+  | PartOfJSXAttributeValue
+  | JSXAttributeNotFound
 
 export function clearModifiableAttributeUniqueIDs(
   modifiableAttribute: ModifiableAttribute,
@@ -321,6 +332,8 @@ export function clearModifiableAttributeUniqueIDs(
       return modifiableAttribute
     case 'ATTRIBUTE_NOT_FOUND':
       return modifiableAttribute
+    case 'JSX_ELEMENT':
+      return clearJSXElementUniqueIDs(modifiableAttribute)
     default:
       return clearExpressionUniqueIDs(modifiableAttribute)
   }
@@ -428,14 +441,14 @@ function getJSXAttributesAtPathParts(
 }
 
 export function getJSExpressionAtPath(
-  attribute: JSExpression,
+  attribute: JSExpression | JSXElement,
   tail: PropertyPath,
 ): GetJSXAttributeResult {
   return getJSExpressionAtPathParts(attribute, PP.getElements(tail), 0)
 }
 
 export function getJSExpressionAtPathParts(
-  attribute: JSExpression,
+  attribute: JSExpression | JSXElement,
   path: Array<PropertyPathPart>,
   pathIndex: number,
 ): GetJSXAttributeResult {
@@ -443,6 +456,7 @@ export function getJSExpressionAtPathParts(
     case 'ATTRIBUTE_FUNCTION_CALL':
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+    case 'JSX_ELEMENT':
       return getJSXAttributeResult(attribute, PP.createFromArray(path.slice(pathIndex)))
     case 'ATTRIBUTE_VALUE':
       const slicedPath = path.slice(pathIndex)
@@ -545,7 +559,7 @@ export function setJSXValueInAttributeAtPath(
 }
 
 export function setJSXValueInAttributeAtPathParts(
-  attribute: JSExpression,
+  attribute: JSExpression | JSXElement,
   path: Array<PropertyPathPart>,
   pathIndex: number,
   newAttrib: JSExpression,
@@ -561,6 +575,7 @@ export function setJSXValueInAttributeAtPathParts(
       case 'JS_IDENTIFIER':
       case 'JS_PROPERTY_ACCESS':
       case 'JS_ELEMENT_ACCESS':
+      case 'JSX_ELEMENT':
         return left(
           `Attempted to set a value at ${PP.toString(
             PP.createFromArray(path.slice(pathIndex)),
@@ -830,7 +845,7 @@ export function unsetJSXValuesAtPaths(
 }
 
 function unsetJSXValueInAttributeAtPath(
-  attribute: JSExpression,
+  attribute: JSExpression | JSXElement,
   path: PropertyPath,
 ): Either<string, JSExpression> {
   switch (PP.depth(path)) {
@@ -847,6 +862,7 @@ function unsetJSXValueInAttributeAtPath(
         case 'JS_ELEMENT_ACCESS':
         case 'JS_PROPERTY_ACCESS':
         case 'JS_IDENTIFIER':
+        case 'JSX_ELEMENT':
           return left('Cannot unset a value set inside a value set from elsewhere.')
         case 'ATTRIBUTE_NESTED_ARRAY':
           if (typeof attributeKey === 'number') {
@@ -939,10 +955,8 @@ export function unsetJSXValueAtPath(
         return right(attributes)
       } else {
         const tailPath = PP.tail(path)
-        const updatedAttribute: Either<string, JSExpression> = unsetJSXValueInAttributeAtPath(
-          existingAttribute,
-          tailPath,
-        )
+        const updatedAttribute: Either<string, JSExpression | JSXElement> =
+          unsetJSXValueInAttributeAtPath(existingAttribute, tailPath)
         return mapEither((updated) => {
           return setJSXAttributesAttribute(attributes, attributeKeyAsString, updated)
         }, updatedAttribute)
@@ -951,9 +965,9 @@ export function unsetJSXValueAtPath(
 }
 
 function walkAttribute(
-  attribute: JSExpression,
+  attribute: JSExpression | JSXElement,
   path: PropertyPath | null,
-  walk: (a: JSExpression, path: PropertyPath | null) => void,
+  walk: (a: JSExpression | JSXElement, path: PropertyPath | null) => void,
 ): void {
   walk(attribute, path)
   switch (attribute.type) {
@@ -963,6 +977,7 @@ function walkAttribute(
     case 'JS_IDENTIFIER':
     case 'JS_PROPERTY_ACCESS':
     case 'JS_ELEMENT_ACCESS':
+    case 'JSX_ELEMENT':
       break
     case 'ATTRIBUTE_NESTED_ARRAY':
       fastForEach(attribute.content, (elem, index) => {
@@ -1016,7 +1031,7 @@ export function getAccumulatedElementsWithin(attributes: JSXAttributes): Element
 
 function walkAttributes(
   attributes: JSXAttributes,
-  walk: (attribute: JSExpression, path: PropertyPath | null) => void,
+  walk: (attribute: JSExpression | JSXElement, path: PropertyPath | null) => void,
 ): void {
   fastForEach(attributes, (attr) => {
     switch (attr.type) {

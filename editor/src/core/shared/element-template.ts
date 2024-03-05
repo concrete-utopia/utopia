@@ -347,10 +347,13 @@ export function jsxAttributeNestedObjectSimple(
 
 export interface JSXArrayValue extends WithComments {
   type: 'ARRAY_VALUE'
-  value: JSExpression
+  value: JSExpression | JSXElement
 }
 
-export function jsxArrayValue(value: JSExpression, comments: ParsedComments): JSXArrayValue {
+export function jsxArrayValue(
+  value: JSExpression | JSXElement,
+  comments: ParsedComments,
+): JSXArrayValue {
   return {
     type: 'ARRAY_VALUE',
     value: value,
@@ -360,10 +363,13 @@ export function jsxArrayValue(value: JSExpression, comments: ParsedComments): JS
 
 export interface JSXArraySpread extends WithComments {
   type: 'ARRAY_SPREAD'
-  value: JSExpression
+  value: JSExpression | JSXElement
 }
 
-export function jsxArraySpread(value: JSExpression, comments: ParsedComments): JSXArraySpread {
+export function jsxArraySpread(
+  value: JSExpression | JSXElement,
+  comments: ParsedComments,
+): JSXArraySpread {
   return {
     type: 'ARRAY_SPREAD',
     value: value,
@@ -457,13 +463,13 @@ export function isJSIdentifierForName(
 
 export interface JSPropertyAccess extends WithComments {
   type: 'JS_PROPERTY_ACCESS'
-  onValue: JSExpression
+  onValue: JSExpression | JSXElement
   property: string
   uid: string
 }
 
 export function jsPropertyAccess(
-  onValue: JSExpression,
+  onValue: JSExpression | JSXElement,
   property: string,
   uid: string,
   comments: ParsedComments,
@@ -735,7 +741,9 @@ export function clearJSXAttributeOtherJavaScriptSourceMaps(
   }
 }
 
-export function clearAttributeSourceMaps(attribute: JSExpression): JSExpression {
+export function clearAttributeSourceMaps(
+  attribute: JSExpression | JSXElement,
+): JSExpression | JSXElement {
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
       return attribute
@@ -801,6 +809,8 @@ export function clearAttributeSourceMaps(attribute: JSExpression): JSExpression 
         emptyComments,
         attribute.uid,
       )
+    case 'JSX_ELEMENT':
+      return attribute // TODO: implement this
     default:
       const _exhaustiveCheck: never = attribute
       throw new Error(`Unhandled attribute ${JSON.stringify(attribute)}`)
@@ -872,12 +882,12 @@ export function isRegularJSXAttribute(attribute: ModifiableAttribute): attribute
 export interface JSXAttributesEntry extends WithComments {
   type: 'JSX_ATTRIBUTES_ENTRY'
   key: string | number
-  value: JSExpression
+  value: JSExpression | JSXElement
 }
 
 export function jsxAttributesEntry(
   key: string | number,
-  value: JSExpression,
+  value: JSExpression | JSXElement,
   comments: ParsedComments,
 ): JSXAttributesEntry {
   return {
@@ -894,11 +904,11 @@ export function simpleAttribute(key: string, value: unknown): JSXAttributesEntry
 
 export interface JSXAttributesSpread extends WithComments {
   type: 'JSX_ATTRIBUTES_SPREAD'
-  spreadValue: JSExpression
+  spreadValue: JSExpression | JSXElement
 }
 
 export function jsxAttributesSpread(
-  spreadValue: JSExpression,
+  spreadValue: JSExpression | JSXElement,
   comments: ParsedComments,
 ): JSXAttributesSpread {
   return {
@@ -929,7 +939,7 @@ export function jsxAttributesFromMap(map: MapLike<JSExpression>): Array<JSXAttri
 export function getJSXAttribute(
   attributes: JSXAttributes,
   key: string | number,
-): JSExpression | null {
+): JSExpression | JSXElement | null {
   for (let index = attributes.length - 1; index >= 0; index--) {
     const attrPart = attributes[index]
     switch (attrPart.type) {
@@ -976,7 +986,7 @@ export function deleteJSXAttribute(attributes: JSXAttributes, key: string | numb
 export function setJSXAttributesAttribute(
   attributes: JSXAttributes,
   key: string | number,
-  value: JSExpression,
+  value: JSExpression | JSXElement,
 ): JSXAttributes {
   let updatedExistingField: boolean = false
   let result: JSXAttributes = []
@@ -1008,7 +1018,7 @@ export function setJSXAttributesAttribute(
 
 const AllowedExternalReferences = ['React', 'utopiaCanvasJSXLookup']
 
-export function attributeReferencesElsewhere(attribute: JSExpression): boolean {
+export function attributeReferencesElsewhere(attribute: JSExpression | JSXElement): boolean {
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
       return false
@@ -1016,6 +1026,11 @@ export function attributeReferencesElsewhere(attribute: JSExpression): boolean {
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return (
         attribute.definedElsewhere.filter((r) => !AllowedExternalReferences.includes(r)).length > 0
+      )
+    case 'JSX_ELEMENT':
+      return (
+        attribute.props.some(jsxAttributesPartReferencesElsewhere) ||
+        attribute.children.some(elementReferencesElsewhere)
       )
     case 'ATTRIBUTE_NESTED_OBJECT':
       return attribute.content.some((subAttr) => {
@@ -1137,10 +1152,14 @@ export function getElementReferencesElsewherePathsFromProps(
   }
 }
 
-export function getDefinedElsewhereFromAttribute(attribute: JSExpression): Array<string> {
+export function getDefinedElsewhereFromAttribute(
+  attribute: JSExpression | JSXElement,
+): Array<string> {
   switch (attribute.type) {
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return attribute.definedElsewhere
+    case 'JSX_ELEMENT':
+      return getDefinedElsewhereFromElement(attribute)
     case 'ATTRIBUTE_NESTED_OBJECT':
       return attribute.content.reduce<Array<string>>((working, elem) => {
         return addAllUniquely(working, getDefinedElsewhereFromAttribute(elem.value))
@@ -1252,12 +1271,16 @@ export function clearAttributesUniqueIDs(attributes: JSXAttributes): JSXAttribut
       case 'JSX_ATTRIBUTES_ENTRY':
         return jsxAttributesEntry(
           attribute.key,
-          clearExpressionUniqueIDs(attribute.value),
+          isJSXElement(attribute.value)
+            ? clearJSXElementUniqueIDs(attribute.value)
+            : clearExpressionUniqueIDs(attribute.value),
           attribute.comments,
         )
       case 'JSX_ATTRIBUTES_SPREAD':
         return jsxAttributesSpread(
-          clearExpressionUniqueIDs(attribute.spreadValue),
+          isJSXElement(attribute.spreadValue)
+            ? clearJSXElementUniqueIDs(attribute.spreadValue)
+            : clearExpressionUniqueIDs(attribute.spreadValue),
           attribute.comments,
         )
       default:

@@ -52,6 +52,7 @@ import type {
   JSPropertyAccess,
   JSElementAccess,
   JSIdentifier,
+  JSXElement,
 } from '../../shared/element-template'
 import {
   arbitraryJSBlock,
@@ -101,6 +102,7 @@ import {
   jsElementAccess,
   jsPropertyAccess,
   jsIdentifier,
+  clearJSXElementUniqueIDs,
 } from '../../shared/element-template'
 import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
 import type {
@@ -2742,7 +2744,7 @@ interface UpdateUIDResult {
 function getUIDBasedOnElement(
   sourceFile: TS.SourceFile,
   elementName: JSXElementName | string | null,
-  props: JSXAttributes | JSExpression | null,
+  props: JSXAttributes | JSExpression | JSXElement | null,
   alreadyExistingUIDs: Set<string>,
 ): string {
   let cleansedProps: typeof props
@@ -2751,7 +2753,11 @@ function getUIDBasedOnElement(
   } else if (Array.isArray(props)) {
     cleansedProps = clearAttributesSourceMaps(clearAttributesUniqueIDs(props))
   } else {
-    cleansedProps = clearAttributeSourceMaps(clearExpressionUniqueIDs(props))
+    if (isJSXElement(props)) {
+      cleansedProps = clearAttributeSourceMaps(clearJSXElementUniqueIDs(props))
+    } else {
+      cleansedProps = clearAttributeSourceMaps(clearExpressionUniqueIDs(props))
+    }
   }
   const hash = Hash({
     fileName: sourceFile.fileName,

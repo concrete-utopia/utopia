@@ -2273,7 +2273,7 @@ describe('UiJsxCanvas render multifile projects', () => {
           id=\\"canvas-container\\"
           data-testid=\\"canvas-container\\"
           style=\\"position: absolute\\"
-          data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:outer-div utopia-storyboard-uid/scene-aaa/app-entity:outer-div/aaa utopia-storyboard-uid/scene-aaa/app-entity:outer-div/ccc\\"
+          data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:outer-div utopia-storyboard-uid/scene-aaa/app-entity:outer-div/aaa utopia-storyboard-uid/scene-aaa/app-entity:outer-div/aaa/bbb utopia-storyboard-uid/scene-aaa/app-entity:outer-div/ccc\\"
           data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
         >
           <div

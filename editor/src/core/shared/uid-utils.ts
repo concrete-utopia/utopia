@@ -287,12 +287,26 @@ export function fixUtopiaElement(
     return attributesToFix.map((attributeToFix) => {
       switch (attributeToFix.type) {
         case 'JSX_ATTRIBUTES_ENTRY':
+          if (isJSXElement(attributeToFix.value)) {
+            const updatedValue = fixJSXElement(attributeToFix.value)
+            return {
+              ...attributeToFix,
+              value: updatedValue,
+            }
+          }
           const updatedValue = fixJSExpression(attributeToFix.value)
           return {
             ...attributeToFix,
             value: updatedValue,
           }
         case 'JSX_ATTRIBUTES_SPREAD':
+          if (isJSXElement(attributeToFix.spreadValue)) {
+            const updatedSpreadValue = fixJSXElement(attributeToFix.spreadValue)
+            return {
+              ...attributeToFix,
+              value: updatedSpreadValue,
+            }
+          }
           const updatedSpreadValue = fixJSExpression(attributeToFix.spreadValue)
           return {
             ...attributeToFix,

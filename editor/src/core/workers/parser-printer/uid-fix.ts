@@ -467,6 +467,19 @@ export function fixJSXAttributesPart(
 ): JSXAttributesPart {
   switch (newExpression.type) {
     case 'JSX_ATTRIBUTES_ENTRY': {
+      if (newExpression.value.type === 'JSX_ELEMENT') {
+        const fixedValue = fixJSXElementUIDs(
+          oldExpression?.type === newExpression.type && oldExpression?.value?.type === 'JSX_ELEMENT'
+            ? oldExpression.value
+            : null,
+          newExpression.value,
+          fixUIDsState,
+        )
+        return {
+          ...newExpression,
+          value: fixedValue,
+        }
+      }
       const fixedValue = fixExpressionUIDs(
         oldExpression?.type === newExpression.type ? oldExpression.value : null,
         newExpression.value,
@@ -478,6 +491,17 @@ export function fixJSXAttributesPart(
       }
     }
     case 'JSX_ATTRIBUTES_SPREAD': {
+      if (newExpression.spreadValue.type === 'JSX_ELEMENT') {
+        const fixedSpreadValue = fixJSXElementUIDs(
+          oldExpression?.type === newExpression.type ? oldExpression.spreadValue : null,
+          newExpression.spreadValue,
+          fixUIDsState,
+        )
+        return {
+          ...newExpression,
+          spreadValue: fixedSpreadValue,
+        }
+      }
       const fixedSpreadValue = fixExpressionUIDs(
         oldExpression?.type === newExpression.type ? oldExpression.spreadValue : null,
         newExpression.spreadValue,
@@ -632,11 +656,11 @@ export function fixJSXElementUIDs(
   }
 
   // Do some analysis of the uid property of the attribute containing the `data-uid` property.
-  let oldDataUIDProp: JSExpression | null = null
+  let oldDataUIDProp: JSExpression | JSXElement | null = null
   if (oldElement != null && isJSXElement(oldElement)) {
     oldDataUIDProp = getJSXAttribute(oldElement.props, 'data-uid')
   }
-  const newDataUIDProp: JSExpression | null = getJSXAttribute(fixedProps, 'data-uid')
+  const newDataUIDProp: JSExpression | JSXElement | null = getJSXAttribute(fixedProps, 'data-uid')
   // This means the data-uid prop was present in both sets of attributes, but the uid for the value (not the value) changed.
   // Which implies that the uid is already in use elsewhere.
   const oldDataUIDPropUIDInUseElsewhere =
@@ -807,11 +831,21 @@ export function fixExpressionUIDs(
       )
     }
     case 'JS_PROPERTY_ACCESS': {
-      const onValue = fixExpressionUIDs(
-        oldExpression?.type === newExpression.type ? oldExpression.onValue : newExpression.onValue,
-        newExpression.onValue,
-        fixUIDsState,
-      )
+      const onValue = isJSXElement(newExpression.onValue)
+        ? fixJSXElementUIDs(
+            oldExpression?.type === newExpression.type
+              ? oldExpression.onValue
+              : newExpression.onValue,
+            newExpression.onValue,
+            fixUIDsState,
+          )
+        : fixExpressionUIDs(
+            oldExpression?.type === newExpression.type
+              ? oldExpression.onValue
+              : newExpression.onValue,
+            newExpression.onValue,
+            fixUIDsState,
+          )
       return updateUID(
         expressionJSPropertyAccessUIDOptic,
         oldExpression?.uid ?? newExpression.uid,
