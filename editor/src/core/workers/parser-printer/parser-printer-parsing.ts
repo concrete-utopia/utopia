@@ -2262,7 +2262,6 @@ function parsePropertyAccessExpression(
   }, parsedOnValue)
 }
 
-// this parses the attribute value
 function getAttributeExpression(
   sourceFile: TS.SourceFile,
   sourceText: string,
