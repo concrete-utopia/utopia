@@ -8,10 +8,8 @@ declare global {
 
 export type AppEnv = 'local' | 'stage' | 'prod' | 'test'
 
-const serverEnvironemnt: AppEnv = mustEnv('APP_ENV') as AppEnv
-
 export const ServerEnvironment = {
-  environment: serverEnvironemnt,
+  environment: mustEnv('APP_ENV') as AppEnv,
   // The URL of the actual backend server in the form <scheme>://<host>:<port>
   BackendURL: mustEnv('BACKEND_URL'),
   // the CORS allowed origin for incoming requests
