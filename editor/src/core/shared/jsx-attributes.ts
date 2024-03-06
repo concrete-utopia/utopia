@@ -65,6 +65,7 @@ import * as PP from './property-path'
 import { NO_OP, assertNever, fastForEach } from './utils'
 import { optionalMap } from './optional-utils'
 import { getAllObjectPaths } from './object-utils'
+import type { RenderContext } from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-element-renderer-utils'
 import { renderCoreElement } from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-element-renderer-utils'
 import { emptyUiJsxCanvasContextData } from '../../components/canvas/ui-jsx-canvas'
 import type { UIFileBase64Blobs } from '../../components/editor/store/editor-state'
@@ -82,6 +83,7 @@ import {
   dropKeyFromNestedObject,
 } from './jsx-attribute-utils'
 import * as EP from './element-path'
+import { render } from 'enzyme'
 
 export type AnyMap = { [key: string]: any }
 
@@ -146,57 +148,16 @@ export function jsxFunctionAttributeToRawValue(
 }
 
 export function jsxAttributeToValue(
-  filePath: string,
   inScope: MapLike<any>,
-  requireResult: MapLike<any>,
   attribute: JSExpression,
   elementPath: ElementPath | null,
-  rootScope: MapLike<any>,
-  parentComponentInputProps: MapLike<any>,
-  hiddenInstances: Array<ElementPath>,
-  displayNoneInstances: Array<ElementPath>,
-  fileBlobs: UIFileBase64Blobs,
-  validPaths: Set<string>,
+  renderContext: RenderContext,
   uid: string | undefined,
-  reactChildren: React.ReactNode | undefined,
-  metadataContext: UiJsxCanvasContextData,
-  updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
-  jsxFactoryFunctionName: string | null,
   codeError: Error | null,
-  shouldIncludeCanvasRootInTheSpy: boolean,
-  imports: Imports,
-  code: string,
-  highlightBounds: HighlightBoundsForUids | null,
-  editedText: ElementPath | null,
-  variablesInScope: VariableData,
 ): any {
   if (isExpressionAccessLike(attribute)) {
     try {
-      return innerAttributeToValue(
-        filePath,
-        inScope,
-        requireResult,
-        attribute,
-        elementPath,
-        rootScope,
-        parentComponentInputProps,
-        hiddenInstances,
-        displayNoneInstances,
-        fileBlobs,
-        validPaths,
-        uid,
-        reactChildren,
-        metadataContext,
-        updateInvalidatedPaths,
-        jsxFactoryFunctionName,
-        codeError,
-        shouldIncludeCanvasRootInTheSpy,
-        imports,
-        code,
-        highlightBounds,
-        editedText,
-        variablesInScope,
-      )
+      return innerAttributeToValue(attribute, elementPath, inScope, renderContext, uid, codeError)
     } catch {
       const originalJavascript = isJSIdentifier(attribute)
         ? attribute.name
@@ -213,34 +174,15 @@ export function jsxAttributeToValue(
         attribute.comments,
         attribute.uid,
       )
-      return resolveParamsAndRunJsCode(filePath, otherJavaScript, requireResult, inScope)
+      return resolveParamsAndRunJsCode(
+        renderContext.filePath,
+        otherJavaScript,
+        renderContext.requireResult,
+        inScope,
+      )
     }
   } else {
-    return innerAttributeToValue(
-      filePath,
-      inScope,
-      requireResult,
-      attribute,
-      elementPath,
-      rootScope,
-      parentComponentInputProps,
-      hiddenInstances,
-      displayNoneInstances,
-      fileBlobs,
-      validPaths,
-      uid,
-      reactChildren,
-      metadataContext,
-      updateInvalidatedPaths,
-      jsxFactoryFunctionName,
-      codeError,
-      shouldIncludeCanvasRootInTheSpy,
-      imports,
-      code,
-      highlightBounds,
-      editedText,
-      variablesInScope,
-    )
+    return innerAttributeToValue(attribute, elementPath, inScope, renderContext, uid, codeError)
   }
 }
 
@@ -258,58 +200,18 @@ function isExpressionAccessLike(
 }
 
 export function innerAttributeToValue(
-  filePath: string,
-  inScope: MapLike<any>,
-  requireResult: MapLike<any>,
   attribute: JSExpression,
   elementPath: ElementPath | null,
-  rootScope: MapLike<any>,
-  parentComponentInputProps: MapLike<any>,
-  hiddenInstances: Array<ElementPath>,
-  displayNoneInstances: Array<ElementPath>,
-  fileBlobs: UIFileBase64Blobs,
-  validPaths: Set<string>,
+  inScope: MapLike<any>,
+  renderContext: RenderContext,
   uid: string | undefined,
-  reactChildren: React.ReactNode | undefined,
-  metadataContext: UiJsxCanvasContextData,
-  updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
-  jsxFactoryFunctionName: string | null,
   codeError: Error | null,
-  shouldIncludeCanvasRootInTheSpy: boolean,
-  imports: Imports,
-  code: string,
-  highlightBounds: HighlightBoundsForUids | null,
-  editedText: ElementPath | null,
-  variablesInScope: VariableData,
 ): any {
+  const { filePath, requireResult } = renderContext
   switch (attribute.type) {
     case 'JSX_ELEMENT':
       const innerPath = optionalMap((path) => EP.appendToPath(path, attribute.uid), elementPath)
-      return renderCoreElement(
-        attribute,
-        innerPath,
-        rootScope,
-        inScope,
-        parentComponentInputProps,
-        requireResult,
-        hiddenInstances,
-        displayNoneInstances,
-        fileBlobs,
-        validPaths,
-        attribute.uid,
-        reactChildren,
-        metadataContext,
-        updateInvalidatedPaths,
-        jsxFactoryFunctionName,
-        codeError,
-        shouldIncludeCanvasRootInTheSpy,
-        filePath,
-        imports,
-        code,
-        highlightBounds,
-        editedText,
-        variablesInScope,
-      )
+      return renderCoreElement(attribute, innerPath, inScope, renderContext, uid, codeError)
     case 'ATTRIBUTE_VALUE':
       return attribute.value
     case 'JS_IDENTIFIER':
@@ -322,29 +224,12 @@ export function innerAttributeToValue(
       }
     case 'JS_PROPERTY_ACCESS': {
       const onValue = jsxAttributeToValue(
-        filePath,
         inScope,
-        requireResult,
         attribute.onValue,
         elementPath,
-        rootScope,
-        parentComponentInputProps,
-        hiddenInstances,
-        displayNoneInstances,
-        fileBlobs,
-        validPaths,
+        renderContext,
         uid,
-        reactChildren,
-        metadataContext,
-        updateInvalidatedPaths,
-        jsxFactoryFunctionName,
         codeError,
-        shouldIncludeCanvasRootInTheSpy,
-        imports,
-        code,
-        highlightBounds,
-        editedText,
-        variablesInScope,
       )
 
       if (onValue == null) {
@@ -363,54 +248,20 @@ export function innerAttributeToValue(
     }
     case 'JS_ELEMENT_ACCESS': {
       const onValue = jsxAttributeToValue(
-        filePath,
         inScope,
-        requireResult,
         attribute.onValue,
         elementPath,
-        rootScope,
-        parentComponentInputProps,
-        hiddenInstances,
-        displayNoneInstances,
-        fileBlobs,
-        validPaths,
+        renderContext,
         uid,
-        reactChildren,
-        metadataContext,
-        updateInvalidatedPaths,
-        jsxFactoryFunctionName,
         codeError,
-        shouldIncludeCanvasRootInTheSpy,
-        imports,
-        code,
-        highlightBounds,
-        editedText,
-        variablesInScope,
       )
       const element = jsxAttributeToValue(
-        filePath,
         inScope,
-        requireResult,
         attribute.element,
         elementPath,
-        rootScope,
-        parentComponentInputProps,
-        hiddenInstances,
-        displayNoneInstances,
-        fileBlobs,
-        validPaths,
+        renderContext,
         uid,
-        reactChildren,
-        metadataContext,
-        updateInvalidatedPaths,
-        jsxFactoryFunctionName,
         codeError,
-        shouldIncludeCanvasRootInTheSpy,
-        imports,
-        code,
-        highlightBounds,
-        editedText,
-        variablesInScope,
       )
       if (attribute.optionallyChained === 'optionally-chained') {
         return onValue == null ? undefined : onValue[element]
@@ -422,29 +273,12 @@ export function innerAttributeToValue(
       let returnArray: Array<any> = []
       for (const elem of attribute.content) {
         const value = jsxAttributeToValue(
-          filePath,
           inScope,
-          requireResult,
           elem.value,
           elementPath,
-          rootScope,
-          parentComponentInputProps,
-          hiddenInstances,
-          displayNoneInstances,
-          fileBlobs,
-          validPaths,
+          renderContext,
           uid,
-          reactChildren,
-          metadataContext,
-          updateInvalidatedPaths,
-          jsxFactoryFunctionName,
           codeError,
-          shouldIncludeCanvasRootInTheSpy,
-          imports,
-          code,
-          highlightBounds,
-          editedText,
-          variablesInScope,
         )
         switch (elem.type) {
           case 'ARRAY_VALUE':
@@ -463,29 +297,12 @@ export function innerAttributeToValue(
       let returnObject: { [key: string]: any } = {}
       for (const prop of attribute.content) {
         const value = jsxAttributeToValue(
-          filePath,
           inScope,
-          requireResult,
           prop.value,
           elementPath,
-          rootScope,
-          parentComponentInputProps,
-          hiddenInstances,
-          displayNoneInstances,
-          fileBlobs,
-          validPaths,
+          renderContext,
           uid,
-          reactChildren,
-          metadataContext,
-          updateInvalidatedPaths,
-          jsxFactoryFunctionName,
           codeError,
-          shouldIncludeCanvasRootInTheSpy,
-          imports,
-          code,
-          highlightBounds,
-          editedText,
-          variablesInScope,
         )
 
         switch (prop.type) {
@@ -505,31 +322,7 @@ export function innerAttributeToValue(
       const foundFunction = (UtopiaUtils as any)[attribute.functionName]
       if (foundFunction != null) {
         const resolvedParameters = attribute.parameters.map((param) => {
-          return jsxAttributeToValue(
-            filePath,
-            inScope,
-            requireResult,
-            param,
-            elementPath,
-            rootScope,
-            parentComponentInputProps,
-            hiddenInstances,
-            displayNoneInstances,
-            fileBlobs,
-            validPaths,
-            uid,
-            reactChildren,
-            metadataContext,
-            updateInvalidatedPaths,
-            jsxFactoryFunctionName,
-            codeError,
-            shouldIncludeCanvasRootInTheSpy,
-            imports,
-            code,
-            highlightBounds,
-            editedText,
-            variablesInScope,
-          )
+          return jsxAttributeToValue(inScope, param, elementPath, renderContext, uid, codeError)
         })
         return foundFunction(...resolvedParameters)
       }
@@ -543,87 +336,36 @@ export function innerAttributeToValue(
 }
 
 export function jsxAttributesToProps(
-  filePath: string,
   inScope: MapLike<any>,
   attributes: JSXAttributes,
-  requireResult: MapLike<any>,
   elementPath: ElementPath | null,
-  rootScope: MapLike<any>,
-  parentComponentInputProps: MapLike<any>,
-  hiddenInstances: Array<ElementPath>,
-  displayNoneInstances: Array<ElementPath>,
-  fileBlobs: UIFileBase64Blobs,
-  validPaths: Set<string>,
+  renderContext: RenderContext,
   uid: string | undefined,
-  reactChildren: React.ReactNode | undefined,
-  metadataContext: UiJsxCanvasContextData,
-  updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
-  jsxFactoryFunctionName: string | null,
   codeError: Error | null,
-  shouldIncludeCanvasRootInTheSpy: boolean,
-  imports: Imports,
-  code: string,
-  highlightBounds: HighlightBoundsForUids | null,
-  editedText: ElementPath | null,
-  variablesInScope: VariableData,
 ): any {
   let result: any = {}
   for (const entry of attributes) {
     switch (entry.type) {
       case 'JSX_ATTRIBUTES_ENTRY':
         result[entry.key] = jsxAttributeToValue(
-          filePath,
           inScope,
-          requireResult,
           entry.value,
           elementPath,
-          rootScope,
-          parentComponentInputProps,
-          hiddenInstances,
-          displayNoneInstances,
-          fileBlobs,
-          validPaths,
+          renderContext,
           uid,
-          reactChildren,
-          metadataContext,
-          updateInvalidatedPaths,
-          jsxFactoryFunctionName,
           codeError,
-          shouldIncludeCanvasRootInTheSpy,
-          imports,
-          code,
-          highlightBounds,
-          editedText,
-          variablesInScope,
         )
         break
       case 'JSX_ATTRIBUTES_SPREAD':
         Object.assign(
           result,
           jsxAttributeToValue(
-            filePath,
             inScope,
-            requireResult,
             entry.spreadValue,
             elementPath,
-            rootScope,
-            parentComponentInputProps,
-            hiddenInstances,
-            displayNoneInstances,
-            fileBlobs,
-            validPaths,
+            renderContext,
             uid,
-            reactChildren,
-            metadataContext,
-            updateInvalidatedPaths,
-            jsxFactoryFunctionName,
             codeError,
-            shouldIncludeCanvasRootInTheSpy,
-            imports,
-            code,
-            highlightBounds,
-            editedText,
-            variablesInScope,
           ),
         )
         break

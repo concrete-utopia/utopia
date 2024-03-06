@@ -215,29 +215,12 @@ export function renderCoreElement(
         : inScope
 
       const assembledProps = jsxAttributesToProps(
-        filePath,
         blockScope,
         element.props,
-        requireResult,
         elementPath,
-        rootScope,
-        parentComponentInputProps,
-        hiddenInstances,
-        displayNoneInstances,
-        fileBlobs,
-        validPaths,
+        renderContext,
         uid,
-        reactChildren,
-        metadataContext,
-        updateInvalidatedPaths,
-        jsxFactoryFunctionName,
         codeError,
-        shouldIncludeCanvasRootInTheSpy,
-        imports,
-        code,
-        highlightBounds,
-        editedText,
-        variablesInScope,
       )
 
       const passthroughProps = monkeyUidProp(uid, assembledProps)
@@ -298,31 +281,7 @@ export function renderCoreElement(
               innerRender,
             ),
           }
-          return runJSExpression(
-            filePath,
-            requireResult,
-            element,
-            blockScope,
-            elementPath,
-            rootScope,
-            parentComponentInputProps,
-            hiddenInstances,
-            displayNoneInstances,
-            fileBlobs,
-            validPaths,
-            uid,
-            reactChildren,
-            metadataContext,
-            updateInvalidatedPaths,
-            jsxFactoryFunctionName,
-            codeError,
-            shouldIncludeCanvasRootInTheSpy,
-            imports,
-            code,
-            highlightBounds,
-            editedText,
-            variablesInScope,
-          )
+          return runJSExpression(element, elementPath, blockScope, renderContext, uid, codeError)
         }
 
         const originalTextContent = isFeatureEnabled('Steganography') ? runJSExpressionLazy() : null
@@ -369,31 +328,7 @@ export function renderCoreElement(
           innerRender,
         ),
       }
-      return runJSExpression(
-        filePath,
-        requireResult,
-        element,
-        blockScope,
-        elementPath,
-        rootScope,
-        parentComponentInputProps,
-        hiddenInstances,
-        displayNoneInstances,
-        fileBlobs,
-        validPaths,
-        uid,
-        reactChildren,
-        metadataContext,
-        updateInvalidatedPaths,
-        jsxFactoryFunctionName,
-        codeError,
-        shouldIncludeCanvasRootInTheSpy,
-        imports,
-        code,
-        highlightBounds,
-        editedText,
-        variablesInScope,
-      )
+      return runJSExpression(element, elementPath, blockScope, renderContext, uid, codeError)
     }
     case 'JSX_FRAGMENT': {
       const key = optionalMap(EP.toString, elementPath) ?? element.uid
@@ -423,29 +358,12 @@ export function renderCoreElement(
       const commentFlag = findUtopiaCommentFlag(element.comments, 'conditional')
       const override = isUtopiaCommentFlagConditional(commentFlag) ? commentFlag.value : null
       const defaultConditionValueAsAny = jsxAttributeToValue(
-        filePath,
         inScope,
-        requireResult,
         element.condition,
         elementPath,
-        rootScope,
-        parentComponentInputProps,
-        hiddenInstances,
-        displayNoneInstances,
-        fileBlobs,
-        validPaths,
+        renderContext,
         uid,
-        reactChildren,
-        metadataContext,
-        updateInvalidatedPaths,
-        jsxFactoryFunctionName,
         codeError,
-        shouldIncludeCanvasRootInTheSpy,
-        imports,
-        code,
-        highlightBounds,
-        editedText,
-        variablesInScope,
       )
       // Coerce `defaultConditionValueAsAny` to a value that is definitely a boolean, not something that is truthy.
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
@@ -570,31 +488,7 @@ export function renderCoreElement(
         )
       }
 
-      return jsxAttributeToValue(
-        filePath,
-        inScope,
-        requireResult,
-        element,
-        elementPath,
-        rootScope,
-        parentComponentInputProps,
-        hiddenInstances,
-        displayNoneInstances,
-        fileBlobs,
-        validPaths,
-        uid,
-        reactChildren,
-        metadataContext,
-        updateInvalidatedPaths,
-        jsxFactoryFunctionName,
-        codeError,
-        shouldIncludeCanvasRootInTheSpy,
-        imports,
-        code,
-        highlightBounds,
-        editedText,
-        variablesInScope,
-      )
+      return jsxAttributeToValue(inScope, element, elementPath, renderContext, uid, codeError)
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled type ${JSON.stringify(element)}`)
@@ -747,29 +641,12 @@ function renderJSXElement(
             : jsExpressionValue(null, emptyComments) // placeholder
 
         const result = runJSExpression(
-          filePath,
-          requireResult,
           expressionToEvaluate,
-          blockScope,
           elementPath,
-          rootScope,
-          parentComponentInputProps,
-          hiddenInstances,
-          displayNoneInstances,
-          fileBlobs,
-          validPaths,
+          blockScope,
+          renderContext,
           jsx.uid,
-          [],
-          metadataContext,
-          updateInvalidatedPaths,
-          jsxFactoryFunctionName,
           codeError,
-          shouldIncludeCanvasRootInTheSpy,
-          imports,
-          code,
-          highlightBounds,
-          editedText,
-          variablesInScope,
         )
         return result
       }
@@ -885,29 +762,12 @@ export function utopiaCanvasJSXLookup(
 }
 
 function runJSExpression(
-  filePath: string,
-  requireResult: MapLike<any>,
   block: JSExpression,
-  currentScope: MapLike<any>,
   elementPath: ElementPath | null,
-  rootScope: MapLike<any>,
-  parentComponentInputProps: MapLike<any>,
-  hiddenInstances: Array<ElementPath>,
-  displayNoneInstances: Array<ElementPath>,
-  fileBlobs: UIFileBase64Blobs,
-  validPaths: Set<string>,
+  currentScope: MapLike<any>,
+  renderContext: RenderContext,
   uid: string | undefined,
-  reactChildren: React.ReactNode | undefined,
-  metadataContext: UiJsxCanvasContextData,
-  updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
-  jsxFactoryFunctionName: string | null,
   codeError: Error | null,
-  shouldIncludeCanvasRootInTheSpy: boolean,
-  imports: Imports,
-  code: string,
-  highlightBounds: HighlightBoundsForUids | null,
-  editedText: ElementPath | null,
-  variablesInScope: VariableData,
   limit?: number,
 ): any {
   switch (block.type) {
@@ -919,34 +779,16 @@ function runJSExpression(
     case 'JS_ELEMENT_ACCESS':
     case 'JS_IDENTIFIER':
     case 'JSX_ELEMENT':
-      return jsxAttributeToValue(
-        filePath,
-        currentScope,
-        requireResult,
-        block,
-        elementPath,
-        rootScope,
-        parentComponentInputProps,
-        hiddenInstances,
-        displayNoneInstances,
-        fileBlobs,
-        validPaths,
-        uid,
-        reactChildren,
-        metadataContext,
-        updateInvalidatedPaths,
-        jsxFactoryFunctionName,
-        codeError,
-        shouldIncludeCanvasRootInTheSpy,
-        imports,
-        code,
-        highlightBounds,
-        editedText,
-        variablesInScope,
-      )
+      return jsxAttributeToValue(currentScope, block, elementPath, renderContext, uid, codeError)
+
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      return resolveParamsAndRunJsCode(filePath, block, requireResult, currentScope)
+      return resolveParamsAndRunJsCode(
+        renderContext.filePath,
+        block,
+        renderContext.requireResult,
+        currentScope,
+      )
     default:
       assertNever(block)
   }
