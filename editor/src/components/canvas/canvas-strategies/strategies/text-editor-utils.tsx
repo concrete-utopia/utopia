@@ -17,6 +17,7 @@ import {
 import Keyboard from '../../../../utils/keyboard'
 import { defaultEither, isLeft, right } from '../../../../core/shared/either'
 import * as PP from '../../../../core/shared/property-path'
+import { clamp, safeParseInt } from '../../../../core/shared/math-utils'
 
 export function isAdjustFontSizeShortcut(modifiers: Modifiers, key: KeyCharacter): boolean {
   return modifiers.cmd && modifiers.shift && Keyboard.keyTriggersFontSizeStrategy(key)
@@ -78,4 +79,28 @@ export function getFontSize(
     return [size, elementPath]
   }
   return null
+}
+
+export function isAdjustFontWeightShortcut(modifiers: Modifiers, key: KeyCharacter): boolean {
+  return modifiers.alt && modifiers.cmd && Keyboard.keyTriggersFontWeightStrategy(key)
+}
+
+function parseMaybeFontWeight(maybeFontSize: unknown): number | null {
+  return safeParseInt(maybeFontSize as string)
+}
+
+export function getFontWeightFromMetadata(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): number | null {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (element == null) {
+    return null
+  }
+
+  return parseMaybeFontWeight(element.specialSizeMeasurements.fontWeight ?? null)
+}
+
+export function adjustFontWeight(value: number, delta: number): number {
+  return clamp(100, 900, value + delta * 100)
 }

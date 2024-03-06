@@ -39,15 +39,17 @@ import {
   jsExpressionOtherJavaScriptSimple,
 } from '../shared/element-template'
 import {
-  dropKeyFromNestedObject,
   getAllPathsFromAttributes,
-  getModifiableJSXAttributeAtPath,
   jsxAttributeToValue,
   jsxAttributesToProps,
-  jsxSimpleAttributeToValue,
-  setJSXValueAtPath,
   unsetJSXValueAtPath,
 } from '../shared/jsx-attributes'
+import {
+  dropKeyFromNestedObject,
+  getModifiableJSXAttributeAtPath,
+  jsxSimpleAttributeToValue,
+  setJSXValueAtPath,
+} from '../shared/jsx-attribute-utils'
 import { Substores } from '../../components/editor/store/store-hook'
 import * as FastCheck from 'fast-check'
 import { jsxElementChildToText } from '../../components/canvas/ui-jsx-canvas-renderer/jsx-element-child-to-text'
