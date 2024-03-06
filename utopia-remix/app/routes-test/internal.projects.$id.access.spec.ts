@@ -92,7 +92,7 @@ describe('handleChangeAccess', () => {
     })
   })
 
-  it('should deny access for an unauthenticated user', async () => {
+  it('should deny access for an anonymous user', async () => {
     hasUserProjectPermission.mockImplementation((projectId, userId, permission) => {
       if (permission === UserProjectPermission.CAN_MANAGE_PROJECT) {
         return Promise.resolve(false)
