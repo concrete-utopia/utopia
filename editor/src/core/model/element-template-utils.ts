@@ -1284,14 +1284,6 @@ export function elementChildSupportsChildrenAlsoText(
   metadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
 ): ElementSupportsChildren | null {
-  if (
-    isJSExpression(element) &&
-    // the condition below is a kludge to make the reparent tests pass, discuss
-    // before merge
-    element.type !== 'JSX_ELEMENT'
-  ) {
-    return 'doesNotSupportChildren'
-  }
   if (isJSXConditionalExpression(element)) {
     if (isTextEditableConditional(path, metadata, elementPathTree)) {
       return 'conditionalWithText'
@@ -1304,20 +1296,22 @@ export function elementChildSupportsChildrenAlsoText(
   if (elementOnlyHasTextChildren(element)) {
     // Prevent re-parenting into an element that only has text children, as that is rarely a desired goal.
     return 'hasOnlyTextChildren'
-  } else {
-    if (isJSXElement(element)) {
-      if (isIntrinsicElement(element.name)) {
-        return intrinsicHTMLElementNamesThatSupportChildren.includes(element.name.baseVariable)
-          ? 'supportsChildren'
-          : 'doesNotSupportChildren'
-      }
-      if (element.children.length > 0) {
-        return 'supportsChildren'
-      }
-    }
-    // We don't know at this stage.
-    return null
   }
+  if (isJSXElement(element)) {
+    if (isIntrinsicElement(element.name)) {
+      return intrinsicHTMLElementNamesThatSupportChildren.includes(element.name.baseVariable)
+        ? 'supportsChildren'
+        : 'doesNotSupportChildren'
+    }
+    if (element.children.length > 0) {
+      return 'supportsChildren'
+    }
+  }
+  if (isJSExpression(element)) {
+    return 'doesNotSupportChildren'
+  }
+
+  return null
 }
 
 export function pathPartsFromJSXElementChild(
