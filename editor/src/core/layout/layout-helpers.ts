@@ -19,11 +19,7 @@ import {
 import type { ElementInstanceMetadata, JSXAttributes, JSXElement } from '../shared/element-template'
 import { isJSXElement, jsExpressionValue, emptyComments } from '../shared/element-template'
 import type { ValueAtPath } from '../shared/jsx-attributes'
-import {
-  setJSXValueAtPath,
-  setJSXValuesAtPaths,
-  unsetJSXValuesAtPaths,
-} from '../shared/jsx-attributes'
+import { setJSXValuesAtPaths, unsetJSXValuesAtPaths } from '../shared/jsx-attributes'
 import type { PropertyPath, ElementPath } from '../shared/project-file-types'
 import { getLayoutProperty } from './getLayoutProperty'
 import type { PropsOrJSXAttributes } from '../model/element-metadata-utils'
@@ -36,6 +32,7 @@ import {
 import type { PropertyControlsInfo } from '../../components/custom-code/code-file'
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import { stylePropPathMappingFn } from '../../components/inspector/common/property-path-hooks'
+import { setJSXValueAtPath } from '../shared/jsx-attribute-utils'
 
 export function targetRespectsLayout(
   target: ElementPath,
