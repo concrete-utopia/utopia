@@ -655,44 +655,29 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           "name": "ReferenceError",
           "stackFrames": Array [
             Object {
-              "columnNumber": 57,
+              "columnNumber": 13,
               "fileName": "code.tsx",
-              "lineNumber": 8,
+              "lineNumber": 1,
               "originalCode": Array [
                 ScriptLine {
                   "content": "",
-                  "highlight": false,
-                  "lineNumber": 5,
-                },
-                ScriptLine {
-                  "content": "export var App = (props) => {",
-                  "highlight": false,
-                  "lineNumber": 6,
-                },
-                ScriptLine {
-                  "content": "  return (",
-                  "highlight": false,
-                  "lineNumber": 7,
-                },
-                ScriptLine {
-                  "content": "    <MyComp data-uid={'aaa'} someAttribute={'hello' + a.a /* 19,55 */}>",
                   "highlight": true,
-                  "lineNumber": 8,
+                  "lineNumber": 1,
                 },
                 ScriptLine {
-                  "content": "      hello!",
+                  "content": "import * as React from \\"react\\"",
                   "highlight": false,
-                  "lineNumber": 9,
+                  "lineNumber": 2,
                 },
                 ScriptLine {
-                  "content": "    </MyComp>",
+                  "content": "import { View, Storyboard, Scene } from 'utopia-api'",
                   "highlight": false,
-                  "lineNumber": 10,
+                  "lineNumber": 3,
                 },
                 ScriptLine {
-                  "content": "  )",
+                  "content": "const MyComp = (props) => <div data-uid={'bbb'}>Utopia</div>",
                   "highlight": false,
-                  "lineNumber": 11,
+                  "lineNumber": 4,
                 },
               ],
             },
