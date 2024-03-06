@@ -432,7 +432,13 @@ export function renderCoreElement(
         )
       }
 
-      return renderCoreElement(actualElement, inScope, renderContext, uid, codeError)
+      return renderCoreElement(
+        actualElement,
+        inScope,
+        { ...renderContext, elementPath: childPath },
+        uid,
+        codeError,
+      )
     }
     case 'ATTRIBUTE_VALUE':
     case 'ATTRIBUTE_NESTED_ARRAY':
