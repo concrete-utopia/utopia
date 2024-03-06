@@ -143,7 +143,13 @@ export function createLookupRender(
       }
     }
 
-    return renderCoreElement(augmentedInnerElement, scope, context, generatedUID, null)
+    return renderCoreElement(
+      augmentedInnerElement,
+      scope,
+      { ...context, elementPath: innerPath, variablesInScope: innerVariablesInScope },
+      generatedUID,
+      null,
+    )
   }
 }
 
