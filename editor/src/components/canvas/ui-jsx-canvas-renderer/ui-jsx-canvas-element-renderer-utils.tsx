@@ -174,14 +174,8 @@ export function renderCoreElement(
 ): React.ReactChild {
   const {
     elementPath,
-    rootScope,
-    parentComponentInputProps,
     requireResult,
-    hiddenInstances,
-    displayNoneInstances,
-    fileBlobs,
     validPaths,
-    reactChildren,
     metadataContext,
     updateInvalidatedPaths,
     jsxFactoryFunctionName,
@@ -189,8 +183,6 @@ export function renderCoreElement(
     shouldIncludeCanvasRootInTheSpy,
     filePath,
     imports,
-    code,
-    highlightBounds,
     editedText,
     variablesInScope,
   } = renderContext
