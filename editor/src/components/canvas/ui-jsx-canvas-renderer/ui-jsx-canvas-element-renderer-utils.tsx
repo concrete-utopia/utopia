@@ -196,7 +196,7 @@ export function renderCoreElement(
       const anyElementsWithin = Object.keys(elementsWithinProps).length > 0
 
       const innerRender = anyElementsWithin
-        ? createLookupRender(null, [], renderContext)
+        ? createLookupRender(renderContext, null, [])
         : NoOpLookupRender
 
       const blockScope = anyElementsWithin
