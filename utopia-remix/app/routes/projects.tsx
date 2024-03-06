@@ -633,6 +633,7 @@ const ProjectCard = React.memo(
       <div
         style={{
           height: 220,
+          flex: 1,
           display: 'flex',
           flexDirection: 'column',
           gap: 10,
@@ -645,7 +646,7 @@ const ProjectCard = React.memo(
             borderRadius: 10,
             overflow: 'hidden',
             height: 170,
-            width: 280,
+            flex: 1,
             background: 'linear-gradient(#a4a4a4, #a4a4a410)',
             backgroundAttachment: 'local',
             backgroundRepeat: 'no-repeat',
