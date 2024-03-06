@@ -3,7 +3,7 @@ import { UserProjectPermission } from '../types'
 import { Params } from '@remix-run/react'
 import { Status } from '../util/statusCodes'
 import { hasUserProjectPermission } from '../services/permissionsService.server'
-import { getProjectById, getProjectOwnerById } from '../models/project.server'
+import { getProjectOwnerById } from '../models/project.server'
 
 export function validateProjectAccess(
   permission: UserProjectPermission,

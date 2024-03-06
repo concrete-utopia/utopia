@@ -8,7 +8,7 @@ export async function hasUserProjectPermission(
   projectId: string,
   requestUserId: string | null,
   permission: UserProjectPermission,
-) {
+): Promise<boolean> {
   const userId = requestUserId ?? ANONYMOUS_USER_ID
   switch (permission) {
     case UserProjectPermission.CAN_VIEW_PROJECT:
