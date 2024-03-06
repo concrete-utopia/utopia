@@ -125,8 +125,8 @@ export function createExecutionScope(
     const { highlightBounds, code } = getCodeAndHighlightBoundsForFile(filePath, projectContents)
     const propertiesFromParams = propertiesExposedByParams(combinedTopLevelArbitraryBlock.params)
     const lookupRenderer = createLookupRender(
+      EP.emptyElementPath,
       {
-        elementPath: EP.emptyElementPath,
         rootScope: executionScope,
         parentComponentInputProps: {},
         requireResult: requireResult,

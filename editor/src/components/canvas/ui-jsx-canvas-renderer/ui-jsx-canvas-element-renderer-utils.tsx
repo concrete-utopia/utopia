@@ -79,7 +79,6 @@ import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { jsxElementChildToText } from './jsx-element-child-to-text'
 
 export interface RenderContext {
-  elementPath: ElementPath | null
   rootScope: MapLike<any>
   parentComponentInputProps: MapLike<any>
   requireResult: MapLike<any>
@@ -101,6 +100,7 @@ export interface RenderContext {
 }
 
 export function createLookupRender(
+  elementPath: ElementPath | null,
   context: RenderContext,
   renderLimit: number | null,
   valuesInScopeFromParameters: Array<string>,
@@ -120,10 +120,7 @@ export function createLookupRender(
       jsExpressionValue(generatedUID, emptyComments),
     )
 
-    const innerPath = optionalMap(
-      (path) => EP.appendToPath(path, generatedUID),
-      context.elementPath,
-    )
+    const innerPath = optionalMap((path) => EP.appendToPath(path, generatedUID), elementPath)
 
     let augmentedInnerElement = element
     forEachRight(withGeneratedUID, (attrs) => {
@@ -145,8 +142,9 @@ export function createLookupRender(
 
     return renderCoreElement(
       augmentedInnerElement,
+      innerPath,
       scope,
-      { ...context, elementPath: innerPath, variablesInScope: innerVariablesInScope },
+      { ...context, variablesInScope: innerVariablesInScope },
       generatedUID,
       null,
     )
@@ -173,13 +171,13 @@ function NoOpLookupRender(element: JSXElement, scope: MapLike<any>): React.React
 
 export function renderCoreElement(
   element: JSXElementChild,
+  elementPath: ElementPath | null,
   inScope: MapLike<any>,
   renderContext: RenderContext,
   uid: string | undefined,
   codeError: Error | null,
 ): React.ReactChild {
   const {
-    elementPath,
     requireResult,
     validPaths,
     metadataContext,
@@ -202,7 +200,7 @@ export function renderCoreElement(
       const anyElementsWithin = Object.keys(elementsWithinProps).length > 0
 
       const innerRender = anyElementsWithin
-        ? createLookupRender(renderContext, null, [])
+        ? createLookupRender(elementPath, renderContext, null, [])
         : NoOpLookupRender
 
       const blockScope = anyElementsWithin
@@ -230,6 +228,7 @@ export function renderCoreElement(
       return renderJSXElement(
         key,
         element,
+        elementPath,
         inScope,
         passthroughProps,
         renderContext,
@@ -266,6 +265,7 @@ export function renderCoreElement(
       if (elementIsTextEdited) {
         const runJSExpressionLazy = () => {
           const innerRender = createLookupRender(
+            elementPath,
             renderContext,
             mapCountOverride,
             valuesInScopeFromParameters,
@@ -312,6 +312,7 @@ export function renderCoreElement(
         )
       }
       const innerRender = createLookupRender(
+        elementPath,
         renderContext,
         mapCountOverride,
         valuesInScopeFromParameters,
@@ -330,7 +331,7 @@ export function renderCoreElement(
     case 'JSX_FRAGMENT': {
       const key = optionalMap(EP.toString, elementPath) ?? element.uid
 
-      return renderJSXElement(key, element, inScope, [], renderContext, codeError)
+      return renderJSXElement(key, element, elementPath, inScope, [], renderContext, codeError)
     }
     case 'JSX_TEXT_BLOCK': {
       const parentPath = Utils.optionalMap(EP.parentPath, elementPath)
@@ -432,13 +433,7 @@ export function renderCoreElement(
         )
       }
 
-      return renderCoreElement(
-        actualElement,
-        inScope,
-        { ...renderContext, elementPath: childPath },
-        uid,
-        codeError,
-      )
+      return renderCoreElement(actualElement, childPath, inScope, renderContext, uid, codeError)
     }
     case 'ATTRIBUTE_VALUE':
     case 'ATTRIBUTE_NESTED_ARRAY':
@@ -514,13 +509,13 @@ function trimJoinUnescapeTextFromJSXElements(elements: Array<JSXElementChild>): 
 function renderJSXElement(
   key: string,
   jsx: JSXElementLike,
+  elementPath: ElementPath | null,
   inScope: MapLike<any>,
   passthroughProps: MapLike<any>,
   renderContext: RenderContext,
   codeError: Error | null,
 ): React.ReactElement {
   const {
-    elementPath,
     requireResult,
     hiddenInstances,
     displayNoneInstances,
@@ -539,16 +534,7 @@ function renderJSXElement(
   } = renderContext
   const createChildrenElement = (child: JSXElementChild): React.ReactChild => {
     const childPath = optionalMap((path) => EP.appendToPath(path, getUtopiaID(child)), elementPath)
-    return renderCoreElement(
-      child,
-      inScope,
-      {
-        ...renderContext,
-        elementPath: childPath,
-      },
-      undefined,
-      codeError,
-    )
+    return renderCoreElement(child, childPath, inScope, renderContext, undefined, codeError)
   }
 
   const elementIsIntrinsic = isJSXElement(jsx) && isIntrinsicElement(jsx.name)
@@ -638,7 +624,7 @@ function renderJSXElement(
   ) {
     if (elementIsTextEdited) {
       const runJSExpressionLazy = () => {
-        const innerRender = createLookupRender(renderContext, null, [])
+        const innerRender = createLookupRender(elementPath, renderContext, null, [])
 
         const blockScope: Record<any, any> = {
           ...inScope,

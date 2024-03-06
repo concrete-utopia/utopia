@@ -204,10 +204,10 @@ export function createComponentRendererComponent(params: {
         utopiaJsxComponent.arbitraryJSBlock.params,
       )
       const lookupRenderer = createLookupRender(
+        rootElementPath,
         {
           ...renderContextBase,
           variablesInScope: {},
-          elementPath: rootElementPath,
         },
         null,
         propertiesFromParams,
@@ -246,10 +246,10 @@ export function createComponentRendererComponent(params: {
 
       const renderedCoreElement = renderCoreElement(
         element,
+        ownElementPath,
         scope,
         {
           ...renderContextBase,
-          elementPath: ownElementPath,
           variablesInScope: spiedVariablesInScope,
         },
         realPassedProps['data-uid'],
