@@ -192,7 +192,6 @@ export function createComponentRendererComponent(params: {
       metadataContext: metadataContext,
       updateInvalidatedPaths: updateInvalidatedPaths,
       jsxFactoryFunctionName: mutableContext.jsxFactoryFunctionName,
-      codeError: codeError,
       shouldIncludeCanvasRootInTheSpy: shouldIncludeCanvasRootInTheSpy,
       filePath: params.filePath,
       imports: imports,
