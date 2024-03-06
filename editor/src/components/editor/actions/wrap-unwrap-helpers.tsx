@@ -67,7 +67,7 @@ import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { foldEither, right } from '../../../core/shared/either'
 import { editorStateToElementChildOptic } from '../../../core/model/common-optics'
 import { fromField, fromTypeGuard } from '../../../core/shared/optics/optic-creators'
-import { setJSXValueAtPath } from '../../../core/shared/jsx-attribute-utils'
+import { setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
 import { addToastToState } from './toast-helpers'
 import { notice } from '../../../components/common/notice'
 

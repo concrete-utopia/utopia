@@ -25,7 +25,7 @@ import { eitherToMaybe, flatMapEither, foldEither } from '../shared/either'
 import {
   getModifiableJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
-} from '../shared/jsx-attribute-utils'
+} from '../shared/jsx-attributes'
 import * as PP from '../shared/property-path'
 import * as EP from '../shared/element-path'
 import { isTwindEnabled } from './tailwind'

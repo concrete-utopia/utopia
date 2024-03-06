@@ -84,12 +84,13 @@ import {
 } from '../../../core/shared/element-template'
 import type { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import {
+  getJSXAttributesAtPath,
+  setJSXValueAtPath,
   setJSXValuesAtPaths,
   unsetJSXValueAtPath,
   unsetJSXValuesAtPaths,
   valueAtPath,
 } from '../../../core/shared/jsx-attributes'
-import { getJSXAttributesAtPath, setJSXValueAtPath } from '../../../core/shared/jsx-attribute-utils'
 import type {
   CanvasPoint,
   CanvasRectangle,

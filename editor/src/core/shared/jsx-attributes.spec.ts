@@ -39,17 +39,15 @@ import {
   jsExpressionOtherJavaScriptSimple,
 } from '../shared/element-template'
 import {
+  dropKeyFromNestedObject,
   getAllPathsFromAttributes,
+  getModifiableJSXAttributeAtPath,
   jsxAttributeToValue,
   jsxAttributesToProps,
-  unsetJSXValueAtPath,
-} from '../shared/jsx-attributes'
-import {
-  dropKeyFromNestedObject,
-  getModifiableJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
   setJSXValueAtPath,
-} from '../shared/jsx-attribute-utils'
+  unsetJSXValueAtPath,
+} from '../shared/jsx-attributes'
 import { Substores } from '../../components/editor/store/store-hook'
 import { emptyUiJsxCanvasContextData } from '../../components/canvas/ui-jsx-canvas'
 import { NO_OP } from '../shared/utils'

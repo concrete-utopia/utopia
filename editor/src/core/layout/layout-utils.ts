@@ -44,9 +44,10 @@ import type { ValueAtPath } from '../shared/jsx-attributes'
 import {
   setJSXValuesAtPaths,
   unsetJSXValuesAtPaths,
+  getJSXAttributesAtPath,
+  setJSXValueAtPath,
   getAllPathsFromAttributes,
 } from '../shared/jsx-attributes'
-import { getJSXAttributesAtPath, setJSXValueAtPath } from '../shared/jsx-attribute-utils'
 import type { PropertyPath, ElementPath } from '../shared/project-file-types'
 import { FlexLayoutHelpers } from './layout-helpers'
 import type { LayoutPinnedProp, StyleLayoutProp } from './layout-helpers-new'

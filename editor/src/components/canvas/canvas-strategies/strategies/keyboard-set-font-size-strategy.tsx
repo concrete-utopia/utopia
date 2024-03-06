@@ -1,13 +1,23 @@
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import {
+  getSimpleAttributeAtPath,
+  MetadataUtils,
+} from '../../../../core/model/element-metadata-utils'
 import { elementOnlyHasTextChildren } from '../../../../core/model/element-template-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
-import { isLeft } from '../../../../core/shared/either'
+import { defaultEither, isLeft, right } from '../../../../core/shared/either'
 import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import { isJSXElement } from '../../../../core/shared/element-template'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
+import type { KeyCharacter } from '../../../../utils/keyboard'
 import Keyboard from '../../../../utils/keyboard'
-import { printCSSNumber } from '../../../inspector/common/css-utils'
+import type { Modifiers } from '../../../../utils/modifiers'
+import type { CSSNumber } from '../../../inspector/common/css-utils'
+import {
+  cssNumber,
+  parseCSSLengthPercent,
+  printCSSNumber,
+} from '../../../inspector/common/css-utils'
 import { setProperty } from '../../commands/set-property-command'
 import { getDescriptiveStrategyLabelWithRetargetedPaths } from '../canvas-strategies'
 import type { InteractionCanvasState, CanvasStrategy } from '../canvas-strategy-types'
@@ -15,12 +25,6 @@ import { emptyStrategyApplicationResult, strategyApplicationResult } from '../ca
 import type { InteractionSession } from '../interaction-state'
 import { retargetStrategyToChildrenOfFragmentLikeElements } from './fragment-like-helpers'
 import { accumulatePresses, getLastKeyPressState } from './shared-keyboard-strategy-helpers'
-import {
-  getFontSize,
-  adjustFontSize,
-  getFontSizeFromProp,
-  isAdjustFontSizeShortcut,
-} from './text-editor-utils'
 
 export function keyboardSetFontSizeStrategy(
   canvasState: InteractionCanvasState,
@@ -95,6 +99,10 @@ function isValidTarget(metadata: ElementInstanceMetadataMap, elementPath: Elemen
   )
 }
 
+export function isAdjustFontSizeShortcut(modifiers: Modifiers, key: KeyCharacter): boolean {
+  return modifiers.cmd && modifiers.shift && Keyboard.keyTriggersFontSizeStrategy(key)
+}
+
 function fitness(interactionSession: InteractionSession | null): number {
   if (interactionSession == null || interactionSession.interactionData.type !== 'KEYBOARD') {
     return 0
@@ -110,4 +118,62 @@ function fitness(interactionSession: InteractionSession | null): number {
     )
 
   return matches ? 1 : 0
+}
+
+const FontSizeProp = 'fontSize'
+
+function parseMaybeFontSize(maybeFontSize: unknown): CSSNumber | null {
+  return defaultEither(null, parseCSSLengthPercent(maybeFontSize))
+}
+
+function getFontSizeFromProp(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): CSSNumber | null {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (element == null || isLeft(element.element) || !isJSXElement(element.element.value)) {
+    return null
+  }
+
+  const attribute: string | null = defaultEither(
+    null,
+    getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', FontSizeProp)),
+  )
+
+  return parseMaybeFontSize(attribute)
+}
+
+function getFontSizeFromMetadata(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): CSSNumber | null {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (element == null) {
+    return null
+  }
+
+  return parseMaybeFontSize(element.specialSizeMeasurements?.fontSize)
+}
+
+export function adjustFontSize(value: CSSNumber, delta: number): CSSNumber {
+  const scaleFactor = value.unit === 'em' ? 0.1 : 1
+  if (value.unit === 'em' && value.value < 1) {
+    return value
+  }
+  if (value.unit === 'px' && value.value < 5) {
+    return value
+  }
+  return cssNumber(value.value + delta * scaleFactor, value.unit)
+}
+
+export function getFontSize(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): [CSSNumber, ElementPath] | null {
+  const size =
+    getFontSizeFromProp(metadata, elementPath) ?? getFontSizeFromMetadata(metadata, elementPath)
+  if (size != null) {
+    return [size, elementPath]
+  }
+  return null
 }

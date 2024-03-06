@@ -5,7 +5,7 @@ import * as EP from '../../../core/shared/element-path'
 import {
   getJSXAttributesAtPath,
   jsxSimpleAttributeToValue,
-} from '../../../core/shared/jsx-attribute-utils'
+} from '../../../core/shared/jsx-attributes'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'

@@ -9,7 +9,7 @@ import type {
   StyleAttributeMetadata,
 } from '../../core/shared/element-template'
 import { isJSXElement, jsExpressionValue, emptyComments } from '../../core/shared/element-template'
-import { getJSXAttributesAtPath } from '../../core/shared/jsx-attribute-utils'
+import { getJSXAttributesAtPath } from '../../core/shared/jsx-attributes'
 import * as PP from '../../core/shared/property-path'
 import * as EP from '../../core/shared/element-path'
 import Utils from '../../utils/utils'

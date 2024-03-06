@@ -53,11 +53,13 @@ import {
   modifiableAttributeIsAttributeNotFound,
 } from '../shared/element-template'
 import type { ModifiableAttribute } from '../shared/jsx-attributes'
-import { getModifiableJSXAttributeAtPathFromAttribute } from '../shared/jsx-attributes'
+import {
+  jsxSimpleAttributeToValue,
+  getModifiableJSXAttributeAtPathFromAttribute,
+} from '../shared/jsx-attributes'
 import type { PropertyPathPart } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import { forEachValue, mapToArray, objectValues } from '../shared/object-utils'
-import { jsxSimpleAttributeToValue } from '../shared/jsx-attribute-utils'
 type Printer<T> = (value: T) => JSExpression
 
 export function parseColorValue(value: unknown): ParseResult<CSSColor> {

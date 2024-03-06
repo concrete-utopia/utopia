@@ -4,7 +4,7 @@ import create from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import type { JSXElement } from '../../../core/shared/element-template'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
-import { setJSXValueAtPath } from '../../../core/shared/jsx-attribute-utils'
+import { setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
 import { isRight } from '../../../core/shared/either'
 import type {
   PropertyPath,

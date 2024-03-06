@@ -34,8 +34,8 @@ import {
   getAccumulatedElementsWithin,
   jsxAttributesToProps,
   jsxAttributeToValue,
+  setJSXValueAtPath,
 } from '../../../core/shared/jsx-attributes'
-import { setJSXValueAtPath } from '../../../core/shared/jsx-attribute-utils'
 import type {
   ElementPath,
   HighlightBoundsForUids,

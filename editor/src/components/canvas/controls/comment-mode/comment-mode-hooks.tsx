@@ -30,7 +30,7 @@ import { isJSXElement } from '../../../../core/shared/element-template'
 import {
   getJSXAttributesAtPath,
   jsxSimpleAttributeToValue,
-} from '../../../../core/shared/jsx-attribute-utils'
+} from '../../../../core/shared/jsx-attributes'
 import { create } from '../../../../core/shared/property-path'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import { useScenes } from '../../../../core/commenting/comment-hooks'

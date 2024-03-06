@@ -19,7 +19,7 @@ import {
   isJSXAttributesEntry,
   isJSXConditionalExpression,
 } from '../../core/shared/element-template'
-import { jsxSimpleAttributeToValue } from '../../core/shared/jsx-attribute-utils'
+import { jsxSimpleAttributeToValue } from '../../core/shared/jsx-attributes'
 import { foldEither } from '../../core/shared/either'
 import fastDeepEquals from 'fast-deep-equal'
 import { getUtopiaID } from '../../core/shared/uid-utils'

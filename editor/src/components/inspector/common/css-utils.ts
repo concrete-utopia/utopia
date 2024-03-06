@@ -43,16 +43,14 @@ import {
 } from '../../../core/shared/element-template'
 import type { ModifiableAttribute } from '../../../core/shared/jsx-attributes'
 import {
-  getJSExpressionAtPath,
-  jsxFunctionAttributeToRawValue,
-} from '../../../core/shared/jsx-attributes'
-import {
   getJSXAttributesAtPath,
+  getJSExpressionAtPath,
   getModifiableJSXAttributeAtPath,
+  jsxFunctionAttributeToRawValue,
   jsxSimpleAttributeToValue,
   setJSXValueAtPath,
   setJSXValueInAttributeAtPath,
-} from '../../../core/shared/jsx-attribute-utils'
+} from '../../../core/shared/jsx-attributes'
 import type { NumberOrPercent } from '../../../core/shared/math-utils'
 import {
   numberOrPercentToNumber,

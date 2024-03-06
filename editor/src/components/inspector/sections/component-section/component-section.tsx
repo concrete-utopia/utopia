@@ -100,6 +100,11 @@ import {
   jsIdentifier,
 } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
+import {
+  ModifiableAttribute,
+  getJSExpressionAtPath,
+  getJSXAttributesAtPath,
+} from '../../../../core/shared/jsx-attributes'
 import type { VariableData } from '../../../canvas/ui-jsx-canvas'
 import { array } from 'prop-types'
 import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'

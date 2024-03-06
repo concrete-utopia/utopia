@@ -40,8 +40,10 @@ import {
   unparsedCode,
   utopiaJSXComponent,
 } from '../../../core/shared/element-template'
-import { clearModifiableAttributeUniqueIDs } from '../../../core/shared/jsx-attributes'
-import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attribute-utils'
+import {
+  clearModifiableAttributeUniqueIDs,
+  getModifiableJSXAttributeAtPath,
+} from '../../../core/shared/jsx-attributes'
 import type { CanvasRectangle, LocalRectangle } from '../../../core/shared/math-utils'
 import { canvasRectangle, zeroRectangle } from '../../../core/shared/math-utils'
 import { resolvedNpmDependency } from '../../../core/shared/npm-dependency-types'

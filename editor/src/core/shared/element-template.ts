@@ -23,6 +23,7 @@ import { addAllUniquely, mapDropNulls } from './array-utils'
 import { objectMap } from './object-utils'
 import type { CSSPosition, FlexDirection } from '../../components/inspector/common/css-utils'
 import type { ModifiableAttribute } from './jsx-attributes'
+import { jsxSimpleAttributeToValue } from './jsx-attributes'
 import * as EP from './element-path'
 import { firstLetterIsLowerCase } from './string-utils'
 import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
@@ -33,7 +34,6 @@ import { allComments } from './comment-flags'
 import { defaultIndexHtmlFilePath } from '../../components/editor/store/editor-state'
 import type { Optic } from './optics/optics'
 import { fromField } from './optics/optic-creators'
-import { jsxSimpleAttributeToValue } from './jsx-attribute-utils'
 
 export interface ParsedComments {
   leadingComments: Array<Comment>

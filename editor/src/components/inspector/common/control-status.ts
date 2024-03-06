@@ -7,7 +7,7 @@ import {
   modifiableAttributeIsPartOfAttributeValue,
 } from '../../../core/shared/element-template'
 import type { GetModifiableAttributeResult } from '../../../core/shared/jsx-attributes'
-import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attribute-utils'
+import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
 import { isLeft, isRight, right, defaultEither } from '../../../core/shared/either'
 import type { ParsedCSSProperties, ParsedPropertiesKeys } from './css-utils'
 import type { MultiselectAtProps, MultiselectAtStringProps } from './property-path-hooks'

@@ -9,11 +9,12 @@ import {
   jsExpressionValue,
 } from '../../../core/shared/element-template'
 import type { ValueAtPath } from '../../../core/shared/jsx-attributes'
-import { setJSXValuesAtPaths, unsetJSXValuesAtPaths } from '../../../core/shared/jsx-attributes'
 import {
   getModifiableJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
-} from '../../../core/shared/jsx-attribute-utils'
+  setJSXValuesAtPaths,
+  unsetJSXValuesAtPaths,
+} from '../../../core/shared/jsx-attributes'
 import { roundTo, roundToNearestWhole } from '../../../core/shared/math-utils'
 import type { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'

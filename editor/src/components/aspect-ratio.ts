@@ -4,7 +4,7 @@ import { isJSXElement } from '../core/shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
-} from '../core/shared/jsx-attribute-utils'
+} from '../core/shared/jsx-attributes'
 import * as PP from '../core/shared/property-path'
 import * as ObjectPath from 'object-path'
 import type { ElementProps } from './editor/store/editor-state'

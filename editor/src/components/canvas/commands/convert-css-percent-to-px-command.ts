@@ -9,7 +9,7 @@ import type { GetModifiableAttributeResult, ValueAtPath } from '../../../core/sh
 import {
   getModifiableJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
-} from '../../../core/shared/jsx-attribute-utils'
+} from '../../../core/shared/jsx-attributes'
 import type { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import type { EditorState } from '../../editor/store/editor-state'
