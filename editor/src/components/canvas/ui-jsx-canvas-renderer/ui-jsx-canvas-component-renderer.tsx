@@ -199,31 +199,36 @@ export function createComponentRendererComponent(params: {
       })
     }
 
+    const renderContextBase = {
+      rootScope: scope,
+      parentComponentInputProps: realPassedProps,
+      requireResult: mutableContext.requireResult,
+      hiddenInstances: hiddenInstances,
+      displayNoneInstances: displayNoneInstances,
+      fileBlobs: mutableContext.fileBlobs,
+      validPaths: sceneContext.validPaths,
+      reactChildren: undefined,
+      metadataContext: metadataContext,
+      updateInvalidatedPaths: updateInvalidatedPaths,
+      jsxFactoryFunctionName: mutableContext.jsxFactoryFunctionName,
+      shouldIncludeCanvasRootInTheSpy: shouldIncludeCanvasRootInTheSpy,
+      filePath: params.filePath,
+      imports: imports,
+      code: code,
+      highlightBounds: highlightBounds,
+      editedText: rerenderUtopiaContext.editedText,
+    }
     if (utopiaJsxComponent.arbitraryJSBlock != null) {
       const propertiesFromParams = propertiesExposedByParams(
         utopiaJsxComponent.arbitraryJSBlock.params,
       )
       const lookupRenderer = createLookupRender(
         rootElementPath,
-        scope,
-        realPassedProps,
-        mutableContext.requireResult,
-        hiddenInstances,
-        displayNoneInstances,
-        mutableContext.fileBlobs,
-        sceneContext.validPaths,
-        undefined,
-        metadataContext,
-        updateInvalidatedPaths,
-        mutableContext.jsxFactoryFunctionName,
-        shouldIncludeCanvasRootInTheSpy,
-        params.filePath,
-        imports,
-        code,
-        highlightBounds,
-        rerenderUtopiaContext.editedText,
+        {
+          ...renderContextBase,
+          variablesInScope: {},
+        },
         null,
-        {},
         propertiesFromParams,
       )
 
@@ -261,27 +266,13 @@ export function createComponentRendererComponent(params: {
       const renderedCoreElement = renderCoreElement(
         element,
         ownElementPath,
-        mutableContext.rootScope,
         scope,
-        realPassedProps,
-        mutableContext.requireResult,
-        hiddenInstances,
-        displayNoneInstances,
-        mutableContext.fileBlobs,
-        sceneContext.validPaths,
+        {
+          ...renderContextBase,
+          variablesInScope: spiedVariablesInScope,
+        },
         realPassedProps['data-uid'],
-        undefined,
-        metadataContext,
-        updateInvalidatedPaths,
-        mutableContext.jsxFactoryFunctionName,
         codeError,
-        shouldIncludeCanvasRootInTheSpy,
-        params.filePath,
-        imports,
-        code,
-        highlightBounds,
-        rerenderUtopiaContext.editedText,
-        spiedVariablesInScope,
       )
 
       if (typeof renderedCoreElement === 'string' || typeof renderedCoreElement === 'number') {
