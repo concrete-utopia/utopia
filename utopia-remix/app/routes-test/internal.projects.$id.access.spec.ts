@@ -32,7 +32,7 @@ describe('handleChangeAccess', () => {
 
   it('changes access level to private', async () => {
     const formData = new FormData()
-    formData.append('accessLevel', '0')
+    formData.append('accessLevel', AccessLevel.PRIVATE.toString())
     const fn = async () =>
       handleChangeProjectAccess(
         newTestRequest({
@@ -47,13 +47,14 @@ describe('handleChangeAccess', () => {
     const projectAccess = await prisma.projectAccess.findFirst({
       where: { project_id: 'one' },
     })
-    expect(projectAccess?.access_level).toEqual(0)
+    expect(projectAccess?.access_level).toEqual(AccessLevel.PRIVATE)
     expect(permissionsService.setProjectAccess).toHaveBeenCalledWith('one', AccessLevel.PRIVATE)
   })
 
   it('doesnt accept wrong access level', async () => {
     const formData = new FormData()
-    formData.append('accessLevel', '3')
+    // set an access level that doesn't exist
+    formData.append('accessLevel', '34')
     const fn = async () =>
       handleChangeProjectAccess(
         newTestRequest({
