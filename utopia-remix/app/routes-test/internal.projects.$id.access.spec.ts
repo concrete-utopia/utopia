@@ -92,6 +92,22 @@ describe('handleChangeAccess', () => {
     })
   })
 
+  it('should deny access for an unauthenticated user', async () => {
+    hasUserProjectPermission.mockImplementation((projectId, userId, permission) => {
+      if (permission === UserProjectPermission.CAN_MANAGE_PROJECT) {
+        return Promise.resolve(false)
+      } else {
+        return Promise.resolve(true)
+      }
+    })
+    const error = await getActionResult('two', AccessLevel.PRIVATE, 'no-cookie')
+    expect(error).toEqual({
+      message: 'session not found',
+      status: Status.UNAUTHORIZED,
+      error: 'Error',
+    })
+  })
+
   it('should allow access to the owner even if permission is false', async () => {
     hasUserProjectPermission.mockImplementation((projectId, userId, permission) => {
       if (permission === UserProjectPermission.CAN_MANAGE_PROJECT) {
@@ -105,10 +121,14 @@ describe('handleChangeAccess', () => {
   })
 })
 
-async function getActionResult(projectId: string, accessLevel: AccessLevel) {
+async function getActionResult(
+  projectId: string,
+  accessLevel: AccessLevel,
+  authCookie: string = 'the-key',
+) {
   const formData = new FormData()
   formData.append('accessLevel', accessLevel.toString())
-  const req = newTestRequest({ method: 'POST', authCookie: 'the-key', formData: formData })
+  const req = newTestRequest({ method: 'POST', authCookie: authCookie, formData: formData })
   const response = await (action({
     request: req,
     params: { id: projectId },
