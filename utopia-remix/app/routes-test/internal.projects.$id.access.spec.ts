@@ -10,14 +10,20 @@ import {
 } from '../test-util'
 import { ApiError } from '../util/errors'
 import * as permissionsService from '../services/permissionsService.server'
-import { AccessLevel } from '../types'
+import { AccessLevel, UserProjectPermission } from '../types'
+import { action } from '../routes/internal.projects.$id.access'
+import { ApiResponse } from '../util/api.server'
+import { Status } from '../util/statusCodes'
 
 describe('handleChangeAccess', () => {
+  let hasUserProjectPermission: jest.SpyInstance
+
   afterAll(async () => {
     jest.restoreAllMocks()
   })
   afterEach(async () => {
     await clearDb(prisma)
+    hasUserProjectPermission.mockClear()
     jest.spyOn(permissionsService, 'setProjectAccess').mockRestore()
   })
 
@@ -28,6 +34,7 @@ describe('handleChangeAccess', () => {
     await createTestProject(prisma, { id: 'one', ownerId: 'foo', title: 'project-one' })
     await createTestProject(prisma, { id: 'two', ownerId: 'bar', title: 'project-two' })
     jest.spyOn(permissionsService, 'setProjectAccess').mockResolvedValue()
+    hasUserProjectPermission = jest.spyOn(permissionsService, 'hasUserProjectPermission')
   })
 
   it('changes access level to private', async () => {
@@ -68,4 +75,44 @@ describe('handleChangeAccess', () => {
     await expect(fn).rejects.toThrow(ApiError)
     await expect(fn).rejects.toThrow('accessLevel is not a valid AccessLevel')
   })
+
+  it('should deny access for an unauthorized project', async () => {
+    hasUserProjectPermission.mockImplementation((projectId, userId, permission) => {
+      if (permission === UserProjectPermission.CAN_MANAGE_PROJECT) {
+        return Promise.resolve(false)
+      } else {
+        return Promise.resolve(true)
+      }
+    })
+    const error = await getActionResult('two', AccessLevel.PRIVATE)
+    expect(error).toEqual({
+      message: 'Unauthorized Access',
+      status: Status.UNAUTHORIZED,
+      error: 'Error',
+    })
+  })
+
+  it('should allow access to the owner even if permission is false', async () => {
+    hasUserProjectPermission.mockImplementation((projectId, userId, permission) => {
+      if (permission === UserProjectPermission.CAN_MANAGE_PROJECT) {
+        return Promise.resolve(false)
+      } else {
+        return Promise.resolve(true)
+      }
+    })
+    const result = await getActionResult('one', AccessLevel.PRIVATE)
+    expect(result).toEqual({})
+  })
 })
+
+async function getActionResult(projectId: string, accessLevel: AccessLevel) {
+  const formData = new FormData()
+  formData.append('accessLevel', accessLevel.toString())
+  const req = newTestRequest({ method: 'POST', authCookie: 'the-key', formData: formData })
+  const response = await (action({
+    request: req,
+    params: { id: projectId },
+    context: {},
+  }) as Promise<ApiResponse<{ id: string; projectId: string }>>)
+  return await response.json()
+}
