@@ -91,7 +91,6 @@ export interface RenderContext {
   metadataContext: UiJsxCanvasContextData
   updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData
   jsxFactoryFunctionName: string | null
-  codeError: Error | null
   shouldIncludeCanvasRootInTheSpy: boolean
   filePath: string
   imports: Imports
@@ -144,7 +143,7 @@ export function createLookupRender(
       }
     }
 
-    return renderCoreElement(augmentedInnerElement, generatedUID, scope, context)
+    return renderCoreElement(augmentedInnerElement, scope, context, generatedUID, null)
   }
 }
 
@@ -171,6 +170,7 @@ export function renderCoreElement(
   inScope: MapLike<any>,
   renderContext: RenderContext,
   uid: string | undefined,
+  codeError: Error | null,
 ): React.ReactChild {
   const {
     elementPath,
@@ -179,7 +179,6 @@ export function renderCoreElement(
     metadataContext,
     updateInvalidatedPaths,
     jsxFactoryFunctionName,
-    codeError,
     shouldIncludeCanvasRootInTheSpy,
     filePath,
     imports,
@@ -222,7 +221,7 @@ export function renderCoreElement(
 
       const key = optionalMap(EP.toString, elementPath) ?? passthroughProps[UTOPIA_UID_KEY]
 
-      return renderJSXElement(key, element, inScope, passthroughProps, renderContext)
+      return renderJSXElement(key, element, inScope, passthroughProps, renderContext, codeError)
     }
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
@@ -318,7 +317,7 @@ export function renderCoreElement(
     case 'JSX_FRAGMENT': {
       const key = optionalMap(EP.toString, elementPath) ?? element.uid
 
-      return renderJSXElement(key, element, inScope, [], renderContext)
+      return renderJSXElement(key, element, inScope, [], renderContext, codeError)
     }
     case 'JSX_TEXT_BLOCK': {
       const parentPath = Utils.optionalMap(EP.parentPath, elementPath)
@@ -420,7 +419,7 @@ export function renderCoreElement(
         )
       }
 
-      return renderCoreElement(actualElement, inScope, renderContext, uid)
+      return renderCoreElement(actualElement, inScope, renderContext, uid, codeError)
     }
     case 'ATTRIBUTE_VALUE':
     case 'ATTRIBUTE_NESTED_ARRAY':
@@ -499,6 +498,7 @@ function renderJSXElement(
   inScope: MapLike<any>,
   passthroughProps: MapLike<any>,
   renderContext: RenderContext,
+  codeError: Error | null,
 ): React.ReactElement {
   const {
     elementPath,
@@ -528,6 +528,7 @@ function renderJSXElement(
         elementPath: childPath,
       },
       undefined,
+      codeError,
     )
   }
 
