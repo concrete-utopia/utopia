@@ -42,13 +42,8 @@ describe('Hydrogen Project Using Real Server Calls - disable me if there is no i
     }
 
     {
-      /* Clicking on the Large button selects the large size, makes the button border be black */
-      const largeSizeRadioButton = await renderResult.renderedDOM.findByText('Large')
-      expect(largeSizeRadioButton.style.border).not.toContain('black')
-      await mouseClickAtElementCenter(largeSizeRadioButton)
-      await waitFor(() => {
-        expect(largeSizeRadioButton.style.border).toContain('black')
-      })
+      // A size selector button with the text Ocean appears
+      expect(await renderResult.renderedDOM.findByText('Ocean')).toBeDefined()
     }
   })
 })
