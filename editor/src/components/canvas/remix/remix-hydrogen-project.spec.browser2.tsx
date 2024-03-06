@@ -9,6 +9,7 @@ import {
   renderTestEditorWithModel,
 } from '../ui-jsx.test-utils'
 import { wait } from '../../../core/model/performance-scripts'
+import { mouseClickAtPoint, mouseClickAtElementCenter } from '../event-helpers.test-utils'
 
 describe('Hydrogen November Project', () => {
   it('can navigate in play mode to a detail page', async () => {
@@ -26,5 +27,9 @@ describe('Hydrogen November Project', () => {
     )
 
     expect(await renderResult.renderedDOM.findByText('Mock.shop')).toBeDefined()
+
+    await mouseClickAtElementCenter(
+      await renderResult.renderedDOM.getByTestId('canvas-toolbar-play-mode'),
+    )
   })
 })
