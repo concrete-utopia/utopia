@@ -5,7 +5,6 @@ import { Status } from '../util/statusCodes'
 import { setProjectAccess } from '../models/projectAccess.server'
 import { asNumber } from '../util/common'
 import { AccessLevel, UserProjectPermission, asAccessLevel } from '../types'
-import { getProject } from '../models/project.server'
 import { validateProjectAccess } from '../handlers/validators'
 
 export async function action(args: ActionFunctionArgs) {
@@ -18,12 +17,9 @@ export async function action(args: ActionFunctionArgs) {
 }
 
 export async function handleChangeProjectAccess(req: Request, params: Params<string>) {
-  const user = await requireUser(req)
+  await requireUser(req)
   const { id } = params
   ensure(id != null, 'id is null', Status.BAD_REQUEST)
-
-  const project = await getProject({ id: id, owner_id: user.user_id })
-  ensure(project != null, `Project ${id} not found for user ${user.user_id}`, Status.NOT_FOUND)
 
   const formData = await req.formData()
   const accessLevelStr = formData.get('accessLevel')
