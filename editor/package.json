@@ -257,6 +257,7 @@
     "@react-three/fiber": "8.0.14",
     "@relative-ci/agent": "^2.1.0",
     "@rollup/plugin-node-resolve": "13.1.3",
+    "@shopify/remix-oxygen": "2.0.3",
     "@testing-library/react": "14.0.0",
     "@types/babel__traverse": "7.18.3",
     "@types/chai": "3.5.1",
