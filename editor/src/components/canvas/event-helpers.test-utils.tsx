@@ -14,6 +14,7 @@ import { wait } from '../../utils/utils.test-utils'
 import type { WindowPoint } from '../../core/shared/math-utils'
 import { offsetPoint, pointDifference } from '../../core/shared/math-utils'
 import selectEvent from 'react-select-event'
+import { getDomRectCenter } from '../../core/shared/dom-utils'
 
 // TODO Should the mouse move and mouse up events actually be fired at the parent of the event source?
 // Or document.body?
@@ -422,6 +423,44 @@ export async function mouseClickAtPoint(
       }),
     )
   })
+}
+
+const isRealBrowser =
+  Object.getOwnPropertyDescriptor(globalThis, 'window')
+    ?.get?.toString()
+    .includes('[native code]') ?? false
+
+export async function mouseClickAtElementCenter(
+  elementToClickAt: HTMLElement,
+  options: {
+    modifiers?: Modifiers
+    eventOptions?: MouseEventInit
+  } = {},
+): Promise<void> {
+  // throw error if used from Jest
+  if (!isRealBrowser) {
+    throw new Error(
+      'mouseClickAtElementCenter was called from a non-browser environment, probably Jest + JSDOM',
+    )
+  }
+  const elementCenter = getDomRectCenter(elementToClickAt.getBoundingClientRect())
+
+  // find what is the actual "topmost" element below the "mouse"
+  const actualElementAtMouse = document.elementFromPoint(elementCenter.x, elementCenter.y)
+
+  if (actualElementAtMouse == null) {
+    throw new Error(
+      `mouseClickAtElementCenter: Could not find an element under mouse when trying to click on this element: ${elementToClickAt.outerHTML}`,
+    )
+  }
+
+  if (!elementToClickAt?.contains(actualElementAtMouse)) {
+    throw new Error(
+      `mouseClickAtElementCenter: Tried to click on element that has been obstructed by this html element: ${actualElementAtMouse.outerHTML}`,
+    )
+  }
+
+  return mouseClickAtPoint(actualElementAtMouse as HTMLElement, elementCenter, options)
 }
 
 export function dispatchMouseDownEventAtPoint(
