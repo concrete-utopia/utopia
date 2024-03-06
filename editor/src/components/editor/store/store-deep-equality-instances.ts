@@ -135,6 +135,7 @@ import type {
   JSIdentifier,
   JSPropertyAccess,
   JSElementAccess,
+  OptionallyChained,
 } from '../../../core/shared/element-template'
 import {
   elementInstanceMetadata,
@@ -1264,7 +1265,7 @@ export function JSIdentifierKeepDeepEquality(): KeepDeepEqualityCall<JSIdentifie
 }
 
 export function JSPropertyAccessKeepDeepEquality(): KeepDeepEqualityCall<JSPropertyAccess> {
-  return combine6EqualityCalls(
+  return combine7EqualityCalls(
     (access) => access.onValue,
     JSExpressionKeepDeepEqualityCall,
     (access) => access.property,
@@ -1277,12 +1278,14 @@ export function JSPropertyAccessKeepDeepEquality(): KeepDeepEqualityCall<JSPrope
     ParsedCommentsKeepDeepEqualityCall,
     (access) => access.originalJavascript,
     createCallWithTripleEquals<string>(),
+    (access) => access.optionallyChained,
+    createCallWithTripleEquals<OptionallyChained>(),
     jsPropertyAccess,
   )
 }
 
 export function JSElementAccessKeepDeepEquality(): KeepDeepEqualityCall<JSElementAccess> {
-  return combine6EqualityCalls(
+  return combine7EqualityCalls(
     (access) => access.onValue,
     JSExpressionKeepDeepEqualityCall,
     (access) => access.element,
@@ -1295,6 +1298,8 @@ export function JSElementAccessKeepDeepEquality(): KeepDeepEqualityCall<JSElemen
     ParsedCommentsKeepDeepEqualityCall,
     (access) => access.originalJavascript,
     createCallWithTripleEquals<string>(),
+    (access) => access.optionallyChained,
+    createCallWithTripleEquals<OptionallyChained>(),
     jsElementAccess,
   )
 }

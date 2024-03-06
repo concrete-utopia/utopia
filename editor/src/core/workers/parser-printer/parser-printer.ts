@@ -264,13 +264,19 @@ function jsxAttributeToExpression(
       case 'JS_IDENTIFIER':
         return TS.factory.createIdentifier(attribute.name)
       case 'JS_ELEMENT_ACCESS':
-        return TS.factory.createElementAccessExpression(
+        return TS.factory.createElementAccessChain(
           jsxAttributeToExpression(attribute.onValue, imports, stripUIDs),
+          attribute.optionallyChained === 'optionally-chained'
+            ? TS.factory.createToken(TS.SyntaxKind.QuestionDotToken)
+            : undefined,
           jsxAttributeToExpression(attribute.element, imports, stripUIDs),
         )
       case 'JS_PROPERTY_ACCESS':
-        return TS.factory.createPropertyAccessExpression(
+        return TS.factory.createPropertyAccessChain(
           jsxAttributeToExpression(attribute.onValue, imports, stripUIDs),
+          attribute.optionallyChained === 'optionally-chained'
+            ? TS.factory.createToken(TS.SyntaxKind.QuestionDotToken)
+            : undefined,
           attribute.property,
         )
       case 'JSX_ELEMENT':

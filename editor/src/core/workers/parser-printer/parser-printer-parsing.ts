@@ -52,7 +52,7 @@ import type {
   JSPropertyAccess,
   JSElementAccess,
   JSIdentifier,
-  JSXElement,
+  OptionallyChained,
 } from '../../shared/element-template'
 import {
   arbitraryJSBlock,
@@ -1789,15 +1789,26 @@ function createNodeSourceMap(sourceFile: TS.SourceFile, node: TS.Node): RawSourc
   return sourceMapGenerator.toJSON()
 }
 
+function isOptionallyChained(
+  expression: TS.ElementAccessExpression | TS.PropertyAccessExpression,
+): OptionallyChained {
+  if (expression.questionDotToken == null) {
+    return 'not-optionally-chained'
+  } else {
+    return 'optionally-chained'
+  }
+}
+
 function createJSElementAccess(
   sourceFile: TS.SourceFile,
-  node: TS.Node,
+  node: TS.ElementAccessExpression,
   onValue: JSExpression,
   element: JSExpression,
   comments: ParsedComments,
   alreadyExistingUIDs: Set<string>,
 ): WithParserMetadata<JSElementAccess> {
   const originalJavascript = node.getText(sourceFile)
+  const optionallyChained = isOptionallyChained(node)
   const value = jsElementAccess(
     clearExpressionUniqueIDsAndSourceMaps(onValue),
     clearExpressionUniqueIDsAndSourceMaps(element),
@@ -1805,6 +1816,7 @@ function createJSElementAccess(
     null,
     comments,
     originalJavascript,
+    optionallyChained,
   )
   const uid = getUIDFromCommentsOrValue(comments, sourceFile, value, alreadyExistingUIDs)
   const valueWithUID = jsElementAccess(
@@ -1814,6 +1826,7 @@ function createJSElementAccess(
     createNodeSourceMap(sourceFile, node),
     comments,
     originalJavascript,
+    optionallyChained,
   )
   return withParserMetadata(
     valueWithUID,
@@ -1825,13 +1838,14 @@ function createJSElementAccess(
 
 function createJSPropertyAccess(
   sourceFile: TS.SourceFile,
-  node: TS.Node,
+  node: TS.PropertyAccessExpression,
   onValue: JSExpression,
   property: string,
   comments: ParsedComments,
   alreadyExistingUIDs: Set<string>,
 ): WithParserMetadata<JSPropertyAccess> {
   const originalJavascript = node.getText(sourceFile)
+  const optionallyChained = isOptionallyChained(node)
   const value = jsPropertyAccess(
     clearExpressionUniqueIDsAndSourceMaps(onValue),
     property,
@@ -1839,6 +1853,7 @@ function createJSPropertyAccess(
     null,
     comments,
     originalJavascript,
+    optionallyChained,
   )
   const uid = getUIDFromCommentsOrValue(comments, sourceFile, value, alreadyExistingUIDs)
   const valueWithUID = jsPropertyAccess(
@@ -1848,6 +1863,7 @@ function createJSPropertyAccess(
     createNodeSourceMap(sourceFile, node),
     comments,
     originalJavascript,
+    optionallyChained,
   )
   return withParserMetadata(
     valueWithUID,
@@ -2187,20 +2203,6 @@ function parseElementAccessExpression(
   partOfExpression: PartOfExpression,
   applySteganography: SteganographyMode,
 ): Either<string, WithParserMetadata<JSElementAccess | JSExpressionMapOrOtherJavascript>> {
-  if (expression.questionDotToken != null) {
-    return parseAttributeOtherJavaScript(
-      sourceFile,
-      sourceText,
-      filename,
-      imports,
-      topLevelNames,
-      propsObjectName,
-      expression,
-      existingHighlightBounds,
-      alreadyExistingUIDs,
-      applySteganography,
-    )
-  }
   const parsedOnValue = parseAttributeExpression(
     sourceFile,
     sourceText,
@@ -2262,20 +2264,6 @@ function parsePropertyAccessExpression(
   partOfExpression: PartOfExpression,
   applySteganography: SteganographyMode,
 ): Either<string, WithParserMetadata<JSPropertyAccess | JSExpressionMapOrOtherJavascript>> {
-  if (expression.questionDotToken != null) {
-    return parseAttributeOtherJavaScript(
-      sourceFile,
-      sourceText,
-      filename,
-      imports,
-      topLevelNames,
-      propsObjectName,
-      expression,
-      existingHighlightBounds,
-      alreadyExistingUIDs,
-      applySteganography,
-    )
-  }
   const propertyName = expression.name.text
   const parsedOnValue = parseAttributeExpression(
     sourceFile,

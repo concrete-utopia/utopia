@@ -462,6 +462,8 @@ export function isJSIdentifierForName(
   return isJSIdentifier(expression) && expression.name === name
 }
 
+export type OptionallyChained = 'not-optionally-chained' | 'optionally-chained'
+
 export interface JSPropertyAccess extends WithComments {
   type: 'JS_PROPERTY_ACCESS'
   onValue: JSExpression
@@ -469,6 +471,7 @@ export interface JSPropertyAccess extends WithComments {
   uid: string
   sourceMap: RawSourceMap | null
   originalJavascript: string
+  optionallyChained: OptionallyChained
 }
 
 export function jsPropertyAccess(
@@ -478,6 +481,7 @@ export function jsPropertyAccess(
   sourceMap: RawSourceMap | null,
   comments: ParsedComments,
   originalJavascript: string,
+  optionallyChained: OptionallyChained,
 ): JSPropertyAccess {
   return {
     type: 'JS_PROPERTY_ACCESS',
@@ -486,6 +490,7 @@ export function jsPropertyAccess(
     uid: uid,
     sourceMap: sourceMap,
     originalJavascript: originalJavascript,
+    optionallyChained: optionallyChained,
     comments: comments,
   }
 }
@@ -508,6 +513,7 @@ export interface JSElementAccess extends WithComments {
   uid: string
   sourceMap: RawSourceMap | null
   originalJavascript: string
+  optionallyChained: OptionallyChained
 }
 
 export function jsElementAccess(
@@ -517,6 +523,7 @@ export function jsElementAccess(
   sourceMap: RawSourceMap | null,
   comments: ParsedComments,
   originalJavascript: string,
+  optionallyChained: OptionallyChained,
 ): JSElementAccess {
   return {
     type: 'JS_ELEMENT_ACCESS',
@@ -525,6 +532,7 @@ export function jsElementAccess(
     uid: uid,
     sourceMap: sourceMap,
     originalJavascript: originalJavascript,
+    optionallyChained: optionallyChained,
     comments: comments,
   }
 }
@@ -710,6 +718,7 @@ export function clearExpressionUniqueIDs(attribute: JSExpression): JSExpression 
         attribute.sourceMap,
         attribute.comments,
         attribute.originalJavascript,
+        attribute.optionallyChained,
       )
     case 'JS_ELEMENT_ACCESS':
       return jsElementAccess(
@@ -719,6 +728,7 @@ export function clearExpressionUniqueIDs(attribute: JSExpression): JSExpression 
         attribute.sourceMap,
         attribute.comments,
         attribute.originalJavascript,
+        attribute.optionallyChained,
       )
     case 'ATTRIBUTE_FUNCTION_CALL':
       return jsExpressionFunctionCall(
@@ -834,6 +844,7 @@ export function clearExpressionSourceMaps(attribute: JSExpression): JSExpression
         null,
         attribute.comments,
         attribute.originalJavascript,
+        attribute.optionallyChained,
       )
     case 'JS_ELEMENT_ACCESS':
       return jsElementAccess(
@@ -843,6 +854,7 @@ export function clearExpressionSourceMaps(attribute: JSExpression): JSExpression
         null,
         attribute.comments,
         attribute.originalJavascript,
+        attribute.optionallyChained,
       )
     case 'ATTRIBUTE_FUNCTION_CALL':
       return jsExpressionFunctionCall(

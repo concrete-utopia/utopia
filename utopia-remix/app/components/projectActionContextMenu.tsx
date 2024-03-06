@@ -142,13 +142,7 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
 
   return (
     <DropdownMenu.Portal>
-      <DropdownMenu.Content
-        className={contextMenuDropdown()}
-        style={{
-          right: 75,
-        }}
-        sideOffset={5}
-      >
+      <DropdownMenu.Content className={contextMenuDropdown()} align='end' sideOffset={5}>
         {menuEntries.map((entry, index) => {
           if (entry === 'separator') {
             return (

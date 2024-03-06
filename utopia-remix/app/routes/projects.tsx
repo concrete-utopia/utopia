@@ -25,6 +25,7 @@ import { OperationWithKey, useProjectsStore } from '../store'
 import { button } from '../styles/button.css'
 import { newProjectButton } from '../styles/newProjectButton.css'
 import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
+import { projectCards, projectRows } from '../styles/projects.css'
 import { sprinkles } from '../styles/sprinkles.css'
 import {
   Collaborator,
@@ -249,7 +250,6 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
               display: 'flex',
               flexDirection: 'row',
               alignItems: 'center',
-              padding: '0 14px',
             }}
             placeholder='Search…'
           />
@@ -304,7 +304,7 @@ const TopActionBar = React.memo(() => {
       id: 'createProject',
       title: '+ Blank Project',
       onClick: () => window.open(projectEditorLink(null), '_blank'),
-      color: 'orange',
+      color: 'primary',
     },
     // {
     //   title: '+ Project On GitHub',
@@ -334,6 +334,7 @@ const TopActionBar = React.memo(() => {
         height: 60,
         flex: 0,
         display: 'flex',
+        justifyContent: 'flex-end',
         flexDirection: 'row',
         gap: 15,
       }}
@@ -372,6 +373,11 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
       inputElement.value = ''
     }
   }
+
+  const [sortMenuOpen, setSortMenuOpen] = React.useState(false)
+  const handleSortMenuOpenChange = React.useCallback(() => {
+    setSortMenuOpen((prevSortMenuOpen) => !prevSortMenuOpen)
+  }, [])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
@@ -434,13 +440,14 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
         <div style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
           {when(
             projects.length > 1,
-            <DropdownMenuRoot>
+            <DropdownMenuRoot onOpenChange={handleSortMenuOpenChange}>
               <DropdownMenuTrigger asChild>
                 <div
                   className={button()}
                   style={{
                     justifyContent: 'flex-end',
                     gap: 10,
+                    background: sortMenuOpen ? '#a4a4a430' : 'inherit',
                   }}
                 >
                   <div>{convertToTitleCase(sortCriteria)} </div>
@@ -544,14 +551,7 @@ const Projects = React.memo(
       <>
         {when(
           projects.length > 0 && !gridView,
-          <div
-            style={{
-              flexGrow: 1,
-              overflowY: 'scroll',
-              scrollbarColor: 'lightgrey transparent',
-              gap: 10,
-            }}
-          >
+          <div className={projectRows()}>
             {projects.map((project) => (
               <ProjectRow
                 key={project.proj_id}
@@ -565,18 +565,7 @@ const Projects = React.memo(
         )}
         {when(
           projects.length > 0 && gridView,
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              alignContent: 'flex-start',
-              gap: MarginSize,
-              flexGrow: 1,
-              flexDirection: 'row',
-              overflowY: 'scroll',
-              scrollbarColor: 'lightgrey transparent',
-            }}
-          >
+          <div className={projectCards()}>
             {projects.map((project) => (
               <ProjectCard
                 key={project.proj_id}
@@ -643,11 +632,10 @@ const ProjectCard = React.memo(
     return (
       <div
         style={{
-          height: 200,
-          width: 300,
+          height: 220,
           display: 'flex',
           flexDirection: 'column',
-          gap: 5,
+          gap: 10,
           filter: activeOperations.length > 0 ? 'grayscale(1)' : undefined,
         }}
       >
@@ -656,9 +644,9 @@ const ProjectCard = React.memo(
             border: selected ? '2px solid #0075F9' : '2px solid transparent',
             borderRadius: 10,
             overflow: 'hidden',
-            height: 180,
-            width: '100%',
-            background: 'linear-gradient(rgba(77, 255, 223, 0.4), rgba(255,250,220,.8))',
+            height: 170,
+            width: 280,
+            background: 'linear-gradient(#a4a4a4, #a4a4a410)',
             backgroundAttachment: 'local',
             backgroundRepeat: 'no-repeat',
             position: 'relative',
@@ -723,9 +711,9 @@ const ProjectCard = React.memo(
             alignItems: 'center',
           }}
         >
-          <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 5, flex: 1 }}>
-            <div style={{ fontWeight: 600 }}>{projectTitle}</div>
-            <div>{moment(project.modified_at).fromNow()}</div>
+          <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 10, flex: 1 }}>
+            <div style={{ fontWeight: 500 }}>{project.title}</div>
+            <div style={{ opacity: 0.5 }}>{moment(project.modified_at).fromNow()}</div>
           </div>
           <ProjectCardActions project={project} />
         </div>
@@ -783,7 +771,7 @@ const ProjectRow = React.memo(
                 overflow: 'hidden',
                 height: 40,
                 width: 70,
-                background: 'linear-gradient(rgba(77, 255, 223, 0.4), rgba(255,250,220,.8))',
+                background: 'linear-gradient(#a4a4a4, #a4a4a410)',
                 backgroundAttachment: 'local',
                 backgroundRepeat: 'no-repeat',
                 position: 'relative',
@@ -794,12 +782,12 @@ const ProjectRow = React.memo(
                 flexGrow: 1,
                 minWidth: 180,
                 maxWidth: 380,
-                fontWeight: 600,
+                fontWeight: 500,
               }}
             >
               {project.title}
             </div>
-            <div style={{ width: 220 }}>{moment(project.modified_at).fromNow()}</div>
+            <div style={{ width: 220, opacity: 0.5 }}>{moment(project.modified_at).fromNow()}</div>
             <div
               style={{
                 maxWidth: 480,
@@ -852,11 +840,19 @@ const ProjectRow = React.memo(
 ProjectRow.displayName = 'ProjectRow'
 
 const ProjectCardActions = React.memo(({ project }: { project: ProjectWithoutContent }) => {
+  const [sortMenuOpen, setSortMenuOpen] = React.useState(false)
+  const handleSortMenuOpenChange = React.useCallback(() => {
+    setSortMenuOpen((prevSortMenuOpen) => !prevSortMenuOpen)
+  }, [])
+
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-      <DropdownMenuRoot>
+      <DropdownMenuRoot onOpenChange={handleSortMenuOpenChange}>
         <DropdownMenuTrigger asChild>
-          <DotsHorizontalIcon className={button()} />
+          <DotsHorizontalIcon
+            className={button()}
+            style={{ background: sortMenuOpen ? '#a4a4a430' : 'inherit' }}
+          />
         </DropdownMenuTrigger>
         <ProjectContextMenu project={project} />
       </DropdownMenuRoot>
