@@ -1,5 +1,5 @@
 import { waitFor } from '@testing-library/react'
-import { HydrogenTestProject } from '../../../test-cases/hydrogen-november'
+import { HydrogenTestProject } from '../../../test-cases/hydrogen-november.test-utils'
 import { mouseClickAtElementCenter } from '../event-helpers.test-utils'
 import {
   DefaultStartingFeatureSwitches,
