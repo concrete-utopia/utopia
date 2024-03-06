@@ -456,7 +456,7 @@ export async function mouseClickAtElementCenter(
 
   if (!elementToClickAt?.contains(actualElementAtMouse)) {
     throw new Error(
-      `mouseClickAtElementCenter: Tried to click on element that has been obstructed by this html element: ${actualElementAtMouse.outerHTML}`,
+      `mouseClickAtElementCenter: Tried to click on element at coordintates {x: ${elementCenter.x}, y: ${elementCenter.y}} that has been obstructed by this html element: ${actualElementAtMouse.outerHTML}`,
     )
   }
 
