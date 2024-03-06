@@ -4,14 +4,14 @@ import { AccessLevel } from '../types'
 
 export const fgaClient = new OpenFgaClient({
   apiScheme: 'https',
-  apiHost: 'api.us1.fga.dev',
+  apiHost: ServerEnvironment.FGA_API_HOST,
   storeId: ServerEnvironment.FGA_STORE_ID,
   // authorizationModelId: 'YOUR_MODEL_ID', // Optionally, you can specify a model id to target, which can improve latency
   credentials: {
     method: CredentialsMethod.ClientCredentials,
     config: {
-      apiTokenIssuer: 'fga.us.auth0.com',
-      apiAudience: 'https://api.us1.fga.dev/',
+      apiTokenIssuer: ServerEnvironment.FGA_API_TOKEN_ISSUER,
+      apiAudience: ServerEnvironment.FGA_API_AUDIENCE,
       clientId: ServerEnvironment.FGA_CLIENT_ID,
       clientSecret: ServerEnvironment.FGA_SECRET,
     },
