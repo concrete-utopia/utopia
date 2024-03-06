@@ -78,7 +78,7 @@ specifiers:
   '@root/encoding': 1.0.1
   '@seznam/compose-react-refs': 1.0.6
   '@shopify/hydrogen': 2023.10.2
-  '@shopify/remix-oxygen': ^2.0.3
+  '@shopify/remix-oxygen': 2.0.3
   '@stitches/react': 1.2.8
   '@svgr/plugin-jsx': 5.5.0
   '@testing-library/react': 14.0.0
