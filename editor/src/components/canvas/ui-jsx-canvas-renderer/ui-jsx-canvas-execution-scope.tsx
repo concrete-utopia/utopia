@@ -124,28 +124,32 @@ export function createExecutionScope(
   if (combinedTopLevelArbitraryBlock != null && openStoryboardFileNameKILLME != null) {
     const { highlightBounds, code } = getCodeAndHighlightBoundsForFile(filePath, projectContents)
     const propertiesFromParams = propertiesExposedByParams(combinedTopLevelArbitraryBlock.params)
-    const lookupRenderer = createLookupRender(null, propertiesFromParams, {
-      elementPath: EP.emptyElementPath,
-      rootScope: executionScope,
-      parentComponentInputProps: {},
-      requireResult: requireResult,
-      hiddenInstances: hiddenInstances,
-      displayNoneInstances: displayNoneInstances,
-      fileBlobs: fileBlobsForFile,
-      validPaths: new Set(),
-      reactChildren: undefined,
-      metadataContext: metadataContext,
-      updateInvalidatedPaths: updateInvalidatedPaths,
-      jsxFactoryFunctionName: jsxFactoryFunction,
-      shouldIncludeCanvasRootInTheSpy: shouldIncludeCanvasRootInTheSpy,
-      filePath: openStoryboardFileNameKILLME,
-      imports: imports,
-      code: code,
-      highlightBounds: highlightBounds,
-      editedText: editedText,
-      variablesInScope: {},
-      codeError: null,
-    })
+    const lookupRenderer = createLookupRender(
+      {
+        elementPath: EP.emptyElementPath,
+        rootScope: executionScope,
+        parentComponentInputProps: {},
+        requireResult: requireResult,
+        hiddenInstances: hiddenInstances,
+        displayNoneInstances: displayNoneInstances,
+        fileBlobs: fileBlobsForFile,
+        validPaths: new Set(),
+        reactChildren: undefined,
+        metadataContext: metadataContext,
+        updateInvalidatedPaths: updateInvalidatedPaths,
+        jsxFactoryFunctionName: jsxFactoryFunction,
+        shouldIncludeCanvasRootInTheSpy: shouldIncludeCanvasRootInTheSpy,
+        filePath: openStoryboardFileNameKILLME,
+        imports: imports,
+        code: code,
+        highlightBounds: highlightBounds,
+        editedText: editedText,
+        variablesInScope: {},
+        codeError: null,
+      },
+      null,
+      propertiesFromParams,
+    )
 
     executionScope[JSX_CANVAS_LOOKUP_FUNCTION_NAME] = utopiaCanvasJSXLookup(
       combinedTopLevelArbitraryBlock.elementsWithin,

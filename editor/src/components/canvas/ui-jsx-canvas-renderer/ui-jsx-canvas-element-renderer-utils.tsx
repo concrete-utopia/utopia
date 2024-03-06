@@ -102,9 +102,9 @@ export interface RenderContext {
 }
 
 export function createLookupRender(
+  context: RenderContext,
   renderLimit: number | null,
   valuesInScopeFromParameters: Array<string>,
-  context: RenderContext,
 ): (element: JSXElement, scope: MapLike<any>) => React.ReactChild | null {
   let index = 0
 
@@ -168,9 +168,9 @@ function NoOpLookupRender(element: JSXElement, scope: MapLike<any>): React.React
 
 export function renderCoreElement(
   element: JSXElementChild,
-  uid: string | undefined,
   inScope: MapLike<any>,
   renderContext: RenderContext,
+  uid: string | undefined,
 ): React.ReactChild {
   const {
     elementPath,
@@ -254,9 +254,9 @@ export function renderCoreElement(
       if (elementIsTextEdited) {
         const runJSExpressionLazy = () => {
           const innerRender = createLookupRender(
+            renderContext,
             mapCountOverride,
             valuesInScopeFromParameters,
-            renderContext,
           )
 
           const blockScope = {
@@ -300,9 +300,9 @@ export function renderCoreElement(
         )
       }
       const innerRender = createLookupRender(
+        renderContext,
         mapCountOverride,
         valuesInScopeFromParameters,
-        renderContext,
       )
 
       const blockScope = {
@@ -420,7 +420,7 @@ export function renderCoreElement(
         )
       }
 
-      return renderCoreElement(actualElement, uid, inScope, renderContext)
+      return renderCoreElement(actualElement, inScope, renderContext, uid)
     }
     case 'ATTRIBUTE_VALUE':
     case 'ATTRIBUTE_NESTED_ARRAY':
@@ -520,10 +520,15 @@ function renderJSXElement(
   } = renderContext
   const createChildrenElement = (child: JSXElementChild): React.ReactChild => {
     const childPath = optionalMap((path) => EP.appendToPath(path, getUtopiaID(child)), elementPath)
-    return renderCoreElement(child, undefined, inScope, {
-      ...renderContext,
-      elementPath: childPath,
-    })
+    return renderCoreElement(
+      child,
+      inScope,
+      {
+        ...renderContext,
+        elementPath: childPath,
+      },
+      undefined,
+    )
   }
 
   const elementIsIntrinsic = isJSXElement(jsx) && isIntrinsicElement(jsx.name)
@@ -613,7 +618,7 @@ function renderJSXElement(
   ) {
     if (elementIsTextEdited) {
       const runJSExpressionLazy = () => {
-        const innerRender = createLookupRender(null, [], renderContext)
+        const innerRender = createLookupRender(renderContext, null, [])
 
         const blockScope: Record<any, any> = {
           ...inScope,

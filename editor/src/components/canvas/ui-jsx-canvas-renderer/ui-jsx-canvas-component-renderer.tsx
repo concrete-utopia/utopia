@@ -204,11 +204,15 @@ export function createComponentRendererComponent(params: {
       const propertiesFromParams = propertiesExposedByParams(
         utopiaJsxComponent.arbitraryJSBlock.params,
       )
-      const lookupRenderer = createLookupRender(null, propertiesFromParams, {
-        ...renderContextBase,
-        variablesInScope: {},
-        elementPath: rootElementPath,
-      })
+      const lookupRenderer = createLookupRender(
+        {
+          ...renderContextBase,
+          variablesInScope: {},
+          elementPath: rootElementPath,
+        },
+        null,
+        propertiesFromParams,
+      )
 
       scope[JSX_CANVAS_LOOKUP_FUNCTION_NAME] = utopiaCanvasJSXLookup(
         utopiaJsxComponent.arbitraryJSBlock.elementsWithin,
@@ -241,11 +245,16 @@ export function createComponentRendererComponent(params: {
         instancePath,
       )
 
-      const renderedCoreElement = renderCoreElement(element, realPassedProps['data-uid'], scope, {
-        ...renderContextBase,
-        elementPath: ownElementPath,
-        variablesInScope: spiedVariablesInScope,
-      })
+      const renderedCoreElement = renderCoreElement(
+        element,
+        scope,
+        {
+          ...renderContextBase,
+          elementPath: ownElementPath,
+          variablesInScope: spiedVariablesInScope,
+        },
+        realPassedProps['data-uid'],
+      )
 
       if (typeof renderedCoreElement === 'string' || typeof renderedCoreElement === 'number') {
         return <>{renderedCoreElement}</>
