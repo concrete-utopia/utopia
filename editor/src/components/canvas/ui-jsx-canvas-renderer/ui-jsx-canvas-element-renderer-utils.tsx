@@ -227,7 +227,14 @@ export function renderCoreElement(
 
       const key = optionalMap(EP.toString, elementPath) ?? passthroughProps[UTOPIA_UID_KEY]
 
-      return renderJSXElement(key, element, inScope, passthroughProps, renderContext, codeError)
+      return renderJSXElement(
+        key,
+        element,
+        inScope,
+        passthroughProps,
+        renderContext,
+        null, // this null passed as the codeError param is matching the old version of the codebase, but codeError should probably not be passed around anyways as we try to throw it as high as possible
+      )
     }
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
