@@ -23,20 +23,6 @@ export async function listProjects(params: { ownerId: string }): Promise<Project
   })
 }
 
-export async function getProject(params: {
-  id: string
-  owner_id: string
-}): Promise<ProjectWithoutContent | null> {
-  return prisma.project.findFirst({
-    select: selectProjectWithoutContent,
-    where: {
-      proj_id: params.id,
-      owner_id: params.owner_id,
-      OR: [{ deleted: null }, { deleted: false }],
-    },
-  })
-}
-
 export async function getProjectOwnerById(params: { id: string }): Promise<string | null> {
   const project = await prisma.project.findFirst({
     select: { owner_id: true },
@@ -46,17 +32,6 @@ export async function getProjectOwnerById(params: { id: string }): Promise<strin
     },
   })
   return project?.owner_id ?? null
-}
-
-export async function getProjectById(params: {
-  id: string
-}): Promise<ProjectWithoutContent | null> {
-  return prisma.project.findFirst({
-    select: selectProjectWithoutContent,
-    where: {
-      proj_id: params.id,
-    },
-  })
 }
 
 export async function renameProject(params: {

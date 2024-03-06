@@ -2,6 +2,7 @@ import { prisma } from '../db.server'
 import { createTestSession, createTestUser, newTestRequest, truncateTables } from '../test-util'
 import { ApiResponse, handle, requireUser } from './api.server'
 import { ApiError } from './errors'
+import { Status } from './statusCodes'
 
 describe('requireUser', () => {
   beforeEach(async () => {
@@ -84,7 +85,7 @@ describe('handle', () => {
             return { data: 'success' }
           },
           validator: async () => {
-            throw new ApiError('failed', 400)
+            throw new ApiError('failed', Status.BAD_REQUEST)
           },
         },
       },
@@ -93,7 +94,7 @@ describe('handle', () => {
     expect(result).toEqual({
       error: 'Error',
       message: 'failed',
-      status: 400,
+      status: Status.BAD_REQUEST,
     })
   })
 })

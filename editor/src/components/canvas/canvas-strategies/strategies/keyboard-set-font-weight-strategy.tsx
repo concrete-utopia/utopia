@@ -18,6 +18,11 @@ import { emptyStrategyApplicationResult, strategyApplicationResult } from '../ca
 import type { InteractionSession } from '../interaction-state'
 import { retargetStrategyToChildrenOfFragmentLikeElements } from './fragment-like-helpers'
 import { accumulatePresses, getLastKeyPressState } from './shared-keyboard-strategy-helpers'
+import {
+  adjustFontWeight,
+  getFontWeightFromMetadata,
+  isAdjustFontWeightShortcut,
+} from './text-editor-utils'
 
 const FontWeightProp = 'fontWeight'
 
@@ -98,10 +103,6 @@ function isValidTarget(metadata: ElementInstanceMetadataMap, elementPath: Elemen
   )
 }
 
-export function isAdjustFontWeightShortcut(modifiers: Modifiers, key: KeyCharacter): boolean {
-  return modifiers.alt && modifiers.cmd && Keyboard.keyTriggersFontWeightStrategy(key)
-}
-
 function fitness(interactionSession: InteractionSession | null): number {
   if (interactionSession == null || interactionSession.interactionData.type !== 'KEYBOARD') {
     return 0
@@ -118,24 +119,4 @@ function fitness(interactionSession: InteractionSession | null): number {
     )
 
   return matches ? 1 : 0
-}
-
-function parseMaybeFontWeight(maybeFontSize: unknown): number | null {
-  return safeParseInt(maybeFontSize as string)
-}
-
-export function getFontWeightFromMetadata(
-  metadata: ElementInstanceMetadataMap,
-  elementPath: ElementPath,
-): number | null {
-  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  if (element == null) {
-    return null
-  }
-
-  return parseMaybeFontWeight(element.specialSizeMeasurements.fontWeight ?? null)
-}
-
-export function adjustFontWeight(value: number, delta: number): number {
-  return clamp(100, 900, value + delta * 100)
 }
