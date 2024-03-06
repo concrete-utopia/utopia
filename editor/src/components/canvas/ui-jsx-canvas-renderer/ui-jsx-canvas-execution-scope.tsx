@@ -145,7 +145,6 @@ export function createExecutionScope(
         highlightBounds: highlightBounds,
         editedText: editedText,
         variablesInScope: {},
-        codeError: null,
       },
       null,
       propertiesFromParams,

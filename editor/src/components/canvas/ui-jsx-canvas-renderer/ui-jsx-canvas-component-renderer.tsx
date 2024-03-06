@@ -253,6 +253,7 @@ export function createComponentRendererComponent(params: {
           variablesInScope: spiedVariablesInScope,
         },
         realPassedProps['data-uid'],
+        codeError,
       )
 
       if (typeof renderedCoreElement === 'string' || typeof renderedCoreElement === 'number') {
