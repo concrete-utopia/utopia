@@ -5404,7 +5404,7 @@ export var App = props => {
           UNPARSED_CODE
           UTOPIA_JSX_COMPONENT - MyComp
             JSX_ELEMENT - View - aaa
-              JS_PROPERTY_ACCESS - 2a4
+              JS_PROPERTY_ACCESS - 807
                 JS_IDENTIFIER - 09c
           UNPARSED_CODE
           UTOPIA_JSX_COMPONENT - App
