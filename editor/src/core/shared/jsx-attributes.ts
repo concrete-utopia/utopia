@@ -51,6 +51,7 @@ import {
   jsExpressionOtherJavaScript,
   getDefinedElsewhereFromAttribute,
   isJSIdentifier,
+  jsxFragment,
 } from './element-template'
 import { resolveParamsAndRunJsCode } from './javascript-cache'
 import type {
@@ -61,16 +62,17 @@ import type {
   PropertyPathPart,
 } from './project-file-types'
 import * as PP from './property-path'
-import { assertNever, fastForEach } from './utils'
+import { NO_OP, assertNever, fastForEach } from './utils'
 import { optionalMap } from './optional-utils'
 import { getAllObjectPaths } from './object-utils'
+import { renderCoreElement } from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-element-renderer-utils'
+import { emptyUiJsxCanvasContextData } from '../../components/canvas/ui-jsx-canvas'
 import type { UIFileBase64Blobs } from '../../components/editor/store/editor-state'
 import type {
   DomWalkerInvalidatePathsCtxData,
   UiJsxCanvasContextData,
   VariableData,
 } from '../../components/canvas/ui-jsx-canvas'
-import { renderCoreElement } from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-element-renderer-utils'
 import {
   getJSExpressionAtPathParts,
   getJSXAttributesAtPath,
