@@ -178,10 +178,7 @@ export var App = props => {
       UNPARSED_CODE
       IMPORT_STATEMENT
       UNPARSED_CODE
-      UTOPIA_JSX_COMPONENT - Test
-        JSX_ELEMENT - div - mapper-parent
-          JSX_MAP_EXPRESSION - 1a6
-            JSX_ELEMENT - Card - card"
+      ARBITRARY_JS_BLOCK"
     `)
     expect(elementsStructure((testParseCode(spreadCode) as any).topLevelElements))
       .toMatchInlineSnapshot(`
@@ -190,10 +187,7 @@ export var App = props => {
       UNPARSED_CODE
       IMPORT_STATEMENT
       UNPARSED_CODE
-      UTOPIA_JSX_COMPONENT - Test
-        JSX_ELEMENT - div - mapper-parent
-          JSX_MAP_EXPRESSION - 14e
-            JSX_ELEMENT - Card - card"
+      ARBITRARY_JS_BLOCK"
     `)
   })
 })

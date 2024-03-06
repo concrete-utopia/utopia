@@ -552,10 +552,13 @@ return { otherFn: otherFn };",
                   "params": Array [],
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAACA,MAAOC,QAAQ,CAARA,GAAQ,CAARA,GAAR,CAAQA,CAAPD",
+                    "mappings": "OAuBeA,MAAOC,QAAQC,CAACC,GAADD,CAARD,GAAgBG,CAAhBH,CAAPD",
                     "names": Array [
                       "cakeFn",
                       "otherFn",
+                      "'",
+                      "b",
+                      ")",
                     ],
                     "sources": Array [
                       "code.tsx",
@@ -911,8 +914,11 @@ Object {
           "params": Array [],
           "sourceMap": Object {
             "file": "code.tsx",
-            "mappings": "OAAE,IAAF,CAACA",
+            "mappings": "OAIkBA,CAACC,GAAEC,CAAJC",
             "names": Array [
+              " ",
+              ">",
+              "0",
               "n",
             ],
             "sources": Array [
@@ -951,8 +957,10 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
           "params": Array [],
           "sourceMap": Object {
             "file": "code.tsx",
-            "mappings": "OAAE,CAAC,CAAH,EAAG,CAAFA",
+            "mappings": "OAIyCA,CAACC,IAAFC",
             "names": Array [
+              "(",
+              "10",
               "b",
             ],
             "sources": Array [
@@ -1121,8 +1129,11 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
           "params": Array [],
           "sourceMap": Object {
             "file": "code.tsx",
-            "mappings": "OAAE,IAAF,CAACA",
+            "mappings": "OAMkBA,CAACC,GAAEC,CAAJC",
             "names": Array [
+              " ",
+              ">",
+              "0",
               "n",
             ],
             "sources": Array [
@@ -1161,8 +1172,10 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
           "params": Array [],
           "sourceMap": Object {
             "file": "code.tsx",
-            "mappings": "OAAE,CAAC,CAAH,EAAG,CAAFA",
+            "mappings": "OAMyCA,CAACC,IAAFC",
             "names": Array [
+              "(",
+              "10",
               "a",
             ],
             "sources": Array [
@@ -1514,8 +1527,13 @@ return { a: a };",
             "params": Array [],
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAA,CAAC;AAAE,KAAH;AAAC,CAAD",
-              "names": Array [],
+              "mappings": "OAaIA,CAAEC;AAAEC,GAACC;AAAHF,CAAFD",
+              "names": Array [
+                "{",
+                ":",
+                "a",
+                "}",
+              ],
               "sources": Array [
                 "code.tsx",
               ],

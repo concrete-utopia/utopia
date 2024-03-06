@@ -1400,7 +1400,7 @@ export function parseAttributeOtherJavaScript(
       code,
       _definedWithin,
       definedElsewhere,
-      _fileSourceNode,
+      fileSourceNode,
       parsedElementsWithin,
       isList,
       params,
@@ -1425,6 +1425,9 @@ export function parseAttributeOtherJavaScript(
           ),
         )
       } else {
+        const { map } = fileSourceNode.toStringWithSourceMap({ file: filename })
+        const rawMap = JSON.parse(map.toString())
+
         const dataUIDFixed = insertDataUIDsIntoCode(
           expressionFullText,
           parsedElementsWithin,
@@ -1437,7 +1440,7 @@ export function parseAttributeOtherJavaScript(
             sourceFile.fileName,
             sourceFile.text,
             dataUIDFixResult.code,
-            dataUIDFixResult.sourceMap,
+            rawMap,
             parsedElementsWithin,
             applySteganography,
           )
