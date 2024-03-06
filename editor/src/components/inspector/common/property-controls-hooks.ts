@@ -18,7 +18,7 @@ import {
   useInspectorContext,
 } from './property-path-hooks'
 import type { ModifiableAttribute } from '../../../core/shared/jsx-attributes'
-import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
+import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attribute-utils'
 import * as PP from '../../../core/shared/property-path'
 import type { Either } from '../../../core/shared/either'
 import { eitherToMaybe, maybeEitherToMaybe } from '../../../core/shared/either'
