@@ -51,13 +51,16 @@ import {
   jsExpressionOtherJavaScript,
   getDefinedElsewhereFromAttribute,
   isJSIdentifier,
+  jsxFragment,
 } from './element-template'
 import { resolveParamsAndRunJsCode } from './javascript-cache'
 import type { PropertyPath, PropertyPathPart } from './project-file-types'
 import * as PP from './property-path'
-import { assertNever, fastForEach } from './utils'
+import { NO_OP, assertNever, fastForEach } from './utils'
 import { optionalMap } from './optional-utils'
 import { getAllObjectPaths } from './object-utils'
+import { renderCoreElement } from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-element-renderer-utils'
+import { emptyUiJsxCanvasContextData } from '../../components/canvas/ui-jsx-canvas'
 
 export type AnyMap = { [key: string]: any }
 
@@ -224,6 +227,34 @@ export function jsxAttributeToValue(
   requireResult: MapLike<any>,
   attribute: JSExpression,
 ): any {
+  {
+    renderCoreElement(
+      jsxFragment('a', [], false),
+      null,
+      {},
+      {},
+      {},
+      {},
+      [],
+      [],
+      {},
+      new Set(),
+      undefined,
+      undefined,
+      emptyUiJsxCanvasContextData(),
+      NO_OP,
+      '',
+      null,
+      false,
+      '',
+      {},
+      '',
+      null,
+      null,
+      {},
+    )
+  }
+
   if (isExpressionAccessLike(attribute)) {
     try {
       return innerAttributeToValue(filePath, inScope, requireResult, attribute)
