@@ -245,13 +245,19 @@ function jsxAttributeToExpression(attribute: JSExpression): TS.Expression {
       case 'JS_IDENTIFIER':
         return TS.factory.createIdentifier(attribute.name)
       case 'JS_ELEMENT_ACCESS':
-        return TS.factory.createElementAccessExpression(
+        return TS.factory.createElementAccessChain(
           jsxAttributeToExpression(attribute.onValue),
+          attribute.optionallyChained === 'optionally-chained'
+            ? TS.factory.createToken(TS.SyntaxKind.QuestionDotToken)
+            : undefined,
           jsxAttributeToExpression(attribute.element),
         )
       case 'JS_PROPERTY_ACCESS':
-        return TS.factory.createPropertyAccessExpression(
+        return TS.factory.createPropertyAccessChain(
           jsxAttributeToExpression(attribute.onValue),
+          attribute.optionallyChained === 'optionally-chained'
+            ? TS.factory.createToken(TS.SyntaxKind.QuestionDotToken)
+            : undefined,
           attribute.property,
         )
       default:

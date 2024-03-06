@@ -595,6 +595,7 @@ Object {
                       "type": "JS_IDENTIFIER",
                       "uid": "",
                     },
+                    "optionallyChained": "not-optionally-chained",
                     "originalJavascript": "props.style",
                     "property": "style",
                     "sourceMap": Object {
@@ -1828,6 +1829,7 @@ Object {
                       "type": "JS_IDENTIFIER",
                       "uid": "",
                     },
+                    "optionallyChained": "not-optionally-chained",
                     "originalJavascript": "props.style",
                     "property": "style",
                     "sourceMap": Object {
@@ -2029,9 +2031,9 @@ exports[`UiJsxCanvas render Renders input tag without errors 1`] = `
       data-uid=\\"scene-aaa\\"
     >
       <input
-        data-uid=\\"b07\\"
+        data-uid=\\"119\\"
         style=\\"top: 10px\\"
-        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:567:b07\\"
+        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:567:119\\"
       />
     </div>
   </div>
@@ -11484,6 +11486,7 @@ Object {
                       "type": "JS_IDENTIFIER",
                       "uid": "",
                     },
+                    "optionallyChained": "not-optionally-chained",
                     "originalJavascript": "props.style",
                     "property": "style",
                     "sourceMap": Object {
@@ -17038,6 +17041,7 @@ Object {
                     "type": "JS_IDENTIFIER",
                     "uid": "",
                   },
+                  "optionallyChained": "not-optionally-chained",
                   "originalJavascript": "props.title",
                   "property": "title",
                   "sourceMap": Object {
@@ -17173,6 +17177,7 @@ Object {
                       "type": "JS_IDENTIFIER",
                       "uid": "",
                     },
+                    "optionallyChained": "not-optionally-chained",
                     "originalJavascript": "props.style",
                     "property": "style",
                     "sourceMap": Object {
@@ -17468,6 +17473,7 @@ Object {
                 "type": "JS_IDENTIFIER",
                 "uid": "",
               },
+              "optionallyChained": "not-optionally-chained",
               "originalJavascript": "props.title",
               "property": "title",
               "sourceMap": Object {
@@ -18147,6 +18153,7 @@ Object {
                     "type": "JS_IDENTIFIER",
                     "uid": "",
                   },
+                  "optionallyChained": "not-optionally-chained",
                   "originalJavascript": "props.title",
                   "property": "title",
                   "sourceMap": Object {
@@ -18282,6 +18289,7 @@ Object {
                       "type": "JS_IDENTIFIER",
                       "uid": "",
                     },
+                    "optionallyChained": "not-optionally-chained",
                     "originalJavascript": "props.style",
                     "property": "style",
                     "sourceMap": Object {
@@ -18577,6 +18585,7 @@ Object {
                 "type": "JS_IDENTIFIER",
                 "uid": "",
               },
+              "optionallyChained": "not-optionally-chained",
               "originalJavascript": "props.title",
               "property": "title",
               "sourceMap": Object {
@@ -19269,6 +19278,7 @@ Object {
                           "type": "JS_IDENTIFIER",
                           "uid": "",
                         },
+                        "optionallyChained": "not-optionally-chained",
                         "originalJavascript": "props.title",
                         "property": "title",
                         "sourceMap": Object {
@@ -19443,6 +19453,7 @@ Object {
                       "type": "JS_IDENTIFIER",
                       "uid": "",
                     },
+                    "optionallyChained": "not-optionally-chained",
                     "originalJavascript": "props.style",
                     "property": "style",
                     "sourceMap": Object {
@@ -19750,6 +19761,7 @@ Object {
                       "type": "JS_IDENTIFIER",
                       "uid": "",
                     },
+                    "optionallyChained": "not-optionally-chained",
                     "originalJavascript": "props.title",
                     "property": "title",
                     "sourceMap": Object {
@@ -20481,6 +20493,7 @@ Object {
                           "type": "JS_IDENTIFIER",
                           "uid": "",
                         },
+                        "optionallyChained": "not-optionally-chained",
                         "originalJavascript": "props.title",
                         "property": "title",
                         "sourceMap": Object {
@@ -20655,6 +20668,7 @@ Object {
                       "type": "JS_IDENTIFIER",
                       "uid": "",
                     },
+                    "optionallyChained": "not-optionally-chained",
                     "originalJavascript": "props.style",
                     "property": "style",
                     "sourceMap": Object {
@@ -20962,6 +20976,7 @@ Object {
                       "type": "JS_IDENTIFIER",
                       "uid": "",
                     },
+                    "optionallyChained": "not-optionally-chained",
                     "originalJavascript": "props.title",
                     "property": "title",
                     "sourceMap": Object {
@@ -21648,7 +21663,7 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
     id=\\"canvas-container\\"
     data-testid=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/834 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/834/d31 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/999 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/999/000\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/834 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/834/20b utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/999 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/999/000\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -21704,32 +21719,32 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
           <div
             data-uid=\\"834~~~1\\"
             data-label=\\"Copy\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/834~~~1\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/834~~~1\\"
           >
             Copy
           </div>
           <div
             data-uid=\\"999~~~2\\"
             data-label=\\"⌘,⎇,C\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/999~~~2\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/999~~~2\\"
           >
             <span
               data-uid=\\"6a8\\"
-              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/999~~~2/000:6a8\\"
+              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/999~~~2/000:6a8\\"
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~1\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/999~~~2/000:6a8/4d8/726~~~1\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/999~~~2/000:6a8/4d8/726~~~1\\"
                 >⌘</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~2\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/999~~~2/000:6a8/4d8/726~~~2\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/999~~~2/000:6a8/4d8/726~~~2\\"
                 >⎇</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~3\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/999~~~2/000:6a8/4d8/726~~~3\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/999~~~2/000:6a8/4d8/726~~~3\\"
                 >C</span
               ></span
             >
@@ -21737,32 +21752,32 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
           <div
             data-uid=\\"834~~~3\\"
             data-label=\\"Paste\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/834~~~3\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/834~~~3\\"
           >
             Paste
           </div>
           <div
             data-uid=\\"999~~~4\\"
             data-label=\\"⌘⎇V\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/999~~~4\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/999~~~4\\"
           >
             <span
               data-uid=\\"6a8\\"
-              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/999~~~4/000:6a8\\"
+              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/999~~~4/000:6a8\\"
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~1\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/999~~~4/000:6a8/4d8/726~~~1\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/999~~~4/000:6a8/4d8/726~~~1\\"
                 >⌘</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~2\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/999~~~4/000:6a8/4d8/726~~~2\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/999~~~4/000:6a8/4d8/726~~~2\\"
                 >⎇</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~3\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/999~~~4/000:6a8/4d8/726~~~3\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/999~~~4/000:6a8/4d8/726~~~3\\"
                 >V</span
               ></span
             >
@@ -21770,32 +21785,32 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
           <div
             data-uid=\\"834~~~5\\"
             data-label=\\"Cut\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/834~~~5\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/834~~~5\\"
           >
             Cut
           </div>
           <div
             data-uid=\\"999~~~6\\"
             data-label=\\"⌘⎇C\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/999~~~6\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/999~~~6\\"
           >
             <span
               data-uid=\\"6a8\\"
-              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/999~~~6/000:6a8\\"
+              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/999~~~6/000:6a8\\"
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~1\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/999~~~6/000:6a8/4d8/726~~~1\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/999~~~6/000:6a8/4d8/726~~~1\\"
                 >⌘</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~2\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/999~~~6/000:6a8/4d8/726~~~2\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/999~~~6/000:6a8/4d8/726~~~2\\"
                 >⎇</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~3\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/999~~~6/000:6a8/4d8/726~~~3\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/999~~~6/000:6a8/4d8/726~~~3\\"
                 >C</span
               ></span
             >
@@ -22288,6 +22303,7 @@ export var storyboard = (props) => {
                           "type": "JS_IDENTIFIER",
                           "uid": "",
                         },
+                        "optionallyChained": "not-optionally-chained",
                         "originalJavascript": "pair.label",
                         "property": "label",
                         "sourceMap": Object {
@@ -22549,6 +22565,7 @@ export var storyboard = (props) => {
                             "type": "JS_IDENTIFIER",
                             "uid": "",
                           },
+                          "optionallyChained": "not-optionally-chained",
                           "originalJavascript": "pair.label",
                           "property": "label",
                           "sourceMap": Object {
@@ -22818,6 +22835,7 @@ export var storyboard = (props) => {
                                 "type": "JS_IDENTIFIER",
                                 "uid": "",
                               },
+                              "optionallyChained": "not-optionally-chained",
                               "originalJavascript": "pair.macKeys",
                               "property": "macKeys",
                               "sourceMap": Object {
@@ -23084,6 +23102,7 @@ export var storyboard = (props) => {
                             "type": "JS_IDENTIFIER",
                             "uid": "",
                           },
+                          "optionallyChained": "not-optionally-chained",
                           "originalJavascript": "pair.macKeys",
                           "property": "macKeys",
                           "sourceMap": Object {
@@ -23517,6 +23536,7 @@ export var storyboard = (props) => {
                       "type": "JS_IDENTIFIER",
                       "uid": "",
                     },
+                    "optionallyChained": "not-optionally-chained",
                     "originalJavascript": "props.style",
                     "property": "style",
                     "sourceMap": Object {
@@ -24048,6 +24068,7 @@ export var storyboard = (props) => {
                       "type": "JS_IDENTIFIER",
                       "uid": "",
                     },
+                    "optionallyChained": "not-optionally-chained",
                     "originalJavascript": "pair.label",
                     "property": "label",
                     "sourceMap": Object {
@@ -24309,6 +24330,7 @@ export var storyboard = (props) => {
                         "type": "JS_IDENTIFIER",
                         "uid": "",
                       },
+                      "optionallyChained": "not-optionally-chained",
                       "originalJavascript": "pair.label",
                       "property": "label",
                       "sourceMap": Object {
@@ -24578,6 +24600,7 @@ export var storyboard = (props) => {
                             "type": "JS_IDENTIFIER",
                             "uid": "",
                           },
+                          "optionallyChained": "not-optionally-chained",
                           "originalJavascript": "pair.macKeys",
                           "property": "macKeys",
                           "sourceMap": Object {
@@ -24844,6 +24867,7 @@ export var storyboard = (props) => {
                         "type": "JS_IDENTIFIER",
                         "uid": "",
                       },
+                      "optionallyChained": "not-optionally-chained",
                       "originalJavascript": "pair.macKeys",
                       "property": "macKeys",
                       "sourceMap": Object {
@@ -25215,7 +25239,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -25355,6 +25379,7 @@ export var storyboard = (props) => {
                   "type": "JS_IDENTIFIER",
                   "uid": "",
                 },
+                "optionallyChained": "not-optionally-chained",
                 "originalJavascript": "pair.label",
                 "property": "label",
                 "sourceMap": Object {
@@ -25616,6 +25641,7 @@ export var storyboard = (props) => {
                     "type": "JS_IDENTIFIER",
                     "uid": "",
                   },
+                  "optionallyChained": "not-optionally-chained",
                   "originalJavascript": "pair.label",
                   "property": "label",
                   "sourceMap": Object {
@@ -25885,6 +25911,7 @@ export var storyboard = (props) => {
                         "type": "JS_IDENTIFIER",
                         "uid": "",
                       },
+                      "optionallyChained": "not-optionally-chained",
                       "originalJavascript": "pair.macKeys",
                       "property": "macKeys",
                       "sourceMap": Object {
@@ -26151,6 +26178,7 @@ export var storyboard = (props) => {
                     "type": "JS_IDENTIFIER",
                     "uid": "",
                   },
+                  "optionallyChained": "not-optionally-chained",
                   "originalJavascript": "pair.macKeys",
                   "property": "macKeys",
                   "sourceMap": Object {
@@ -26420,7 +26448,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "081",
+          "08a",
         ],
       ],
       "type": "elementpath",
@@ -26490,7 +26518,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/834~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/834~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -26618,6 +26646,7 @@ export var storyboard = (props) => {
               "type": "JS_IDENTIFIER",
               "uid": "",
             },
+            "optionallyChained": "not-optionally-chained",
             "originalJavascript": "pair.label",
             "property": "label",
             "sourceMap": Object {
@@ -26879,6 +26908,7 @@ export var storyboard = (props) => {
                 "type": "JS_IDENTIFIER",
                 "uid": "",
               },
+              "optionallyChained": "not-optionally-chained",
               "originalJavascript": "pair.label",
               "property": "label",
               "sourceMap": Object {
@@ -27005,7 +27035,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "081",
+          "08a",
           "834~~~1",
         ],
       ],
@@ -27080,7 +27110,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/834~~~1/d31": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/834~~~1/20b": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -27206,6 +27236,7 @@ export var storyboard = (props) => {
           "type": "JS_IDENTIFIER",
           "uid": "",
         },
+        "optionallyChained": "not-optionally-chained",
         "originalJavascript": "pair.label",
         "property": "label",
         "sourceMap": Object {
@@ -27327,9 +27358,9 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "081",
+          "08a",
           "834~~~1",
-          "d31",
+          "20b",
         ],
       ],
       "type": "elementpath",
@@ -27399,7 +27430,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/834~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/834~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -27527,6 +27558,7 @@ export var storyboard = (props) => {
               "type": "JS_IDENTIFIER",
               "uid": "",
             },
+            "optionallyChained": "not-optionally-chained",
             "originalJavascript": "pair.label",
             "property": "label",
             "sourceMap": Object {
@@ -27788,6 +27820,7 @@ export var storyboard = (props) => {
                 "type": "JS_IDENTIFIER",
                 "uid": "",
               },
+              "optionallyChained": "not-optionally-chained",
               "originalJavascript": "pair.label",
               "property": "label",
               "sourceMap": Object {
@@ -27914,7 +27947,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "081",
+          "08a",
           "834~~~3",
         ],
       ],
@@ -27989,7 +28022,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/834~~~3/d31": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/834~~~3/20b": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -28115,6 +28148,7 @@ export var storyboard = (props) => {
           "type": "JS_IDENTIFIER",
           "uid": "",
         },
+        "optionallyChained": "not-optionally-chained",
         "originalJavascript": "pair.label",
         "property": "label",
         "sourceMap": Object {
@@ -28236,9 +28270,9 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "081",
+          "08a",
           "834~~~3",
-          "d31",
+          "20b",
         ],
       ],
       "type": "elementpath",
@@ -28308,7 +28342,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/834~~~5": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/834~~~5": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -28436,6 +28470,7 @@ export var storyboard = (props) => {
               "type": "JS_IDENTIFIER",
               "uid": "",
             },
+            "optionallyChained": "not-optionally-chained",
             "originalJavascript": "pair.label",
             "property": "label",
             "sourceMap": Object {
@@ -28697,6 +28732,7 @@ export var storyboard = (props) => {
                 "type": "JS_IDENTIFIER",
                 "uid": "",
               },
+              "optionallyChained": "not-optionally-chained",
               "originalJavascript": "pair.label",
               "property": "label",
               "sourceMap": Object {
@@ -28823,7 +28859,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "081",
+          "08a",
           "834~~~5",
         ],
       ],
@@ -28898,7 +28934,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/834~~~5/d31": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/834~~~5/20b": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -29024,6 +29060,7 @@ export var storyboard = (props) => {
           "type": "JS_IDENTIFIER",
           "uid": "",
         },
+        "optionallyChained": "not-optionally-chained",
         "originalJavascript": "pair.label",
         "property": "label",
         "sourceMap": Object {
@@ -29145,9 +29182,9 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "081",
+          "08a",
           "834~~~5",
-          "d31",
+          "20b",
         ],
       ],
       "type": "elementpath",
@@ -29217,7 +29254,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/999~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/999~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -29378,6 +29415,7 @@ export var storyboard = (props) => {
                     "type": "JS_IDENTIFIER",
                     "uid": "",
                   },
+                  "optionallyChained": "not-optionally-chained",
                   "originalJavascript": "pair.macKeys",
                   "property": "macKeys",
                   "sourceMap": Object {
@@ -29644,6 +29682,7 @@ export var storyboard = (props) => {
                 "type": "JS_IDENTIFIER",
                 "uid": "",
               },
+              "optionallyChained": "not-optionally-chained",
               "originalJavascript": "pair.macKeys",
               "property": "macKeys",
               "sourceMap": Object {
@@ -29770,7 +29809,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "081",
+          "08a",
           "999~~~2",
         ],
       ],
@@ -29845,7 +29884,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/999~~~2/000": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/999~~~2/000": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -30004,6 +30043,7 @@ export var storyboard = (props) => {
                 "type": "JS_IDENTIFIER",
                 "uid": "",
               },
+              "optionallyChained": "not-optionally-chained",
               "originalJavascript": "pair.macKeys",
               "property": "macKeys",
               "sourceMap": Object {
@@ -30130,7 +30170,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "081",
+          "08a",
           "999~~~2",
           "000",
         ],
@@ -30206,7 +30246,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/999~~~4": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/999~~~4": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -30367,6 +30407,7 @@ export var storyboard = (props) => {
                     "type": "JS_IDENTIFIER",
                     "uid": "",
                   },
+                  "optionallyChained": "not-optionally-chained",
                   "originalJavascript": "pair.macKeys",
                   "property": "macKeys",
                   "sourceMap": Object {
@@ -30633,6 +30674,7 @@ export var storyboard = (props) => {
                 "type": "JS_IDENTIFIER",
                 "uid": "",
               },
+              "optionallyChained": "not-optionally-chained",
               "originalJavascript": "pair.macKeys",
               "property": "macKeys",
               "sourceMap": Object {
@@ -30759,7 +30801,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "081",
+          "08a",
           "999~~~4",
         ],
       ],
@@ -30834,7 +30876,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/999~~~4/000": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/999~~~4/000": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -30993,6 +31035,7 @@ export var storyboard = (props) => {
                 "type": "JS_IDENTIFIER",
                 "uid": "",
               },
+              "optionallyChained": "not-optionally-chained",
               "originalJavascript": "pair.macKeys",
               "property": "macKeys",
               "sourceMap": Object {
@@ -31119,7 +31162,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "081",
+          "08a",
           "999~~~4",
           "000",
         ],
@@ -31195,7 +31238,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/999~~~6": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/999~~~6": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -31356,6 +31399,7 @@ export var storyboard = (props) => {
                     "type": "JS_IDENTIFIER",
                     "uid": "",
                   },
+                  "optionallyChained": "not-optionally-chained",
                   "originalJavascript": "pair.macKeys",
                   "property": "macKeys",
                   "sourceMap": Object {
@@ -31622,6 +31666,7 @@ export var storyboard = (props) => {
                 "type": "JS_IDENTIFIER",
                 "uid": "",
               },
+              "optionallyChained": "not-optionally-chained",
               "originalJavascript": "pair.macKeys",
               "property": "macKeys",
               "sourceMap": Object {
@@ -31748,7 +31793,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "081",
+          "08a",
           "999~~~6",
         ],
       ],
@@ -31823,7 +31868,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/081/999~~~6/000": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/08a/999~~~6/000": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -31982,6 +32027,7 @@ export var storyboard = (props) => {
                 "type": "JS_IDENTIFIER",
                 "uid": "",
               },
+              "optionallyChained": "not-optionally-chained",
               "originalJavascript": "pair.macKeys",
               "property": "macKeys",
               "sourceMap": Object {
@@ -32108,7 +32154,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "081",
+          "08a",
           "999~~~6",
           "000",
         ],
@@ -34179,6 +34225,7 @@ Object {
                       "type": "JS_IDENTIFIER",
                       "uid": "",
                     },
+                    "optionallyChained": "not-optionally-chained",
                     "originalJavascript": "props.style",
                     "property": "style",
                     "sourceMap": Object {
@@ -35918,6 +35965,7 @@ Object {
                       "type": "JS_IDENTIFIER",
                       "uid": "",
                     },
+                    "optionallyChained": "not-optionally-chained",
                     "originalJavascript": "props.style",
                     "property": "style",
                     "sourceMap": Object {
@@ -36970,6 +37018,7 @@ Object {
                       "type": "JS_IDENTIFIER",
                       "uid": "",
                     },
+                    "optionallyChained": "not-optionally-chained",
                     "originalJavascript": "props.style",
                     "property": "style",
                     "sourceMap": Object {
@@ -52042,6 +52091,7 @@ export var storyboard = (
                       "type": "JS_IDENTIFIER",
                       "uid": "",
                     },
+                    "optionallyChained": "not-optionally-chained",
                     "originalJavascript": "props.style",
                     "property": "style",
                     "sourceMap": Object {

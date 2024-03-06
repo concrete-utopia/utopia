@@ -1,7 +1,14 @@
 import * as PP from '../shared/property-path'
 import { deepFreeze } from '../../utils/deep-freeze'
 import { Either, forceRight, isLeft, isRight, mapEither, right } from '../shared/either'
-import type { JSXAttributes } from '../shared/element-template'
+import type {
+  JSElementAccess,
+  JSExpression,
+  JSIdentifier,
+  JSPropertyAccess,
+  JSXAttributes,
+  OptionallyChained,
+} from '../shared/element-template'
 import {
   emptyComments,
   getJSXAttributeForced,
@@ -26,17 +33,25 @@ import {
   modifiableAttributeIsAttributeValue,
   clearExpressionUniqueIDs,
   clearAttributesUniqueIDs,
+  jsIdentifier,
+  jsPropertyAccess,
+  jsElementAccess,
+  jsExpressionOtherJavaScriptSimple,
 } from '../shared/element-template'
 import {
   dropKeyFromNestedObject,
   getAllPathsFromAttributes,
   getModifiableJSXAttributeAtPath,
+  jsxAttributeToValue,
   jsxAttributesToProps,
   jsxSimpleAttributeToValue,
   setJSXValueAtPath,
   unsetJSXValueAtPath,
 } from '../shared/jsx-attributes'
 import { Substores } from '../../components/editor/store/store-hook'
+import * as FastCheck from 'fast-check'
+import { jsxElementChildToText } from '../../components/canvas/ui-jsx-canvas-renderer/jsx-element-child-to-text'
+import { resultOrError } from '../../utils/exceptions'
 
 const sampleParentProps = {
   hello: 'kitty',
@@ -188,6 +203,172 @@ const expectedCompiledProps = {
   otherJs: 10,
   'data-uid': 'aaa',
 }
+
+const propertyNameArbitrary: FastCheck.Arbitrary<string> = FastCheck.oneof(
+  FastCheck.constant('a'),
+  FastCheck.constant('b'),
+  FastCheck.constant('c'),
+)
+
+const valueArbitrary: FastCheck.Arbitrary<unknown> = FastCheck.oneof(
+  FastCheck.constant(false),
+  FastCheck.constant(true),
+  FastCheck.constant(null),
+  FastCheck.constant(undefined),
+  FastCheck.constant([]),
+  FastCheck.constant(['a', 'b']),
+  FastCheck.constant(0),
+  FastCheck.constant(1),
+  FastCheck.constant(2),
+  FastCheck.constant('a'),
+  FastCheck.constant('b'),
+  FastCheck.constant('c'),
+  FastCheck.constant({}),
+  FastCheck.constant({ a: 0, b: 1 }),
+)
+
+const optionallyChainedArbitrary: FastCheck.Arbitrary<OptionallyChained> =
+  FastCheck.boolean().map<OptionallyChained>((optionallyChained) => {
+    return optionallyChained ? 'optionally-chained' : 'not-optionally-chained'
+  })
+
+interface ExpressionAndValues<T extends JSExpression> {
+  values: Record<string, unknown>
+  expression: T
+}
+
+function identifierArbitrary(): FastCheck.Arbitrary<ExpressionAndValues<JSIdentifier>> {
+  return FastCheck.tuple(propertyNameArbitrary, valueArbitrary).map(
+    ([identifierName, identifierValue]) => {
+      return {
+        values: { [identifierName]: identifierValue },
+        expression: jsIdentifier(identifierName, '', null, emptyComments),
+      }
+    },
+  )
+}
+
+function jsPropertyAccessArbitrary(
+  depth: number = 3,
+): FastCheck.Arbitrary<ExpressionAndValues<JSPropertyAccess>> {
+  return FastCheck.tuple(
+    identifierPropertyElementAccessArbitrary(depth - 1),
+    optionallyChainedArbitrary,
+    propertyNameArbitrary,
+  ).map(([onValue, optionallyChained, propertyName]) => {
+    function getPropertyAccess(originalJavascript: string): JSPropertyAccess {
+      return jsPropertyAccess(
+        onValue.expression,
+        propertyName,
+        '',
+        null,
+        emptyComments,
+        originalJavascript,
+        optionallyChained,
+      )
+    }
+    const accessWithoutJavascript = getPropertyAccess('')
+    const originalJavascript = jsxElementChildToText(
+      accessWithoutJavascript,
+      null,
+      null,
+      'javascript',
+      'inner',
+    )
+    return {
+      values: onValue.values,
+      expression: getPropertyAccess(originalJavascript),
+    }
+  })
+}
+
+function jsElementAccessArbitrary(
+  depth: number = 3,
+): FastCheck.Arbitrary<ExpressionAndValues<JSElementAccess>> {
+  return FastCheck.tuple(
+    identifierPropertyElementAccessArbitrary(depth - 1),
+    identifierPropertyElementAccessArbitrary(depth - 1),
+    optionallyChainedArbitrary,
+  ).map(([onValue, element, optionallyChained]) => {
+    function getElementAccess(originalJavascript: string): JSElementAccess {
+      return jsElementAccess(
+        onValue.expression,
+        element.expression,
+        '',
+        null,
+        emptyComments,
+        originalJavascript,
+        optionallyChained,
+      )
+    }
+    const accessWithoutJavascript = getElementAccess('')
+    const originalJavascript = jsxElementChildToText(
+      accessWithoutJavascript,
+      null,
+      null,
+      'javascript',
+      'inner',
+    )
+    return {
+      values: {
+        ...onValue.values,
+        ...element.values,
+      },
+      expression: getElementAccess(originalJavascript),
+    }
+  })
+}
+
+function identifierPropertyElementAccessArbitrary(
+  depth: number = 3,
+): FastCheck.Arbitrary<ExpressionAndValues<JSIdentifier | JSPropertyAccess | JSElementAccess>> {
+  if (depth <= 1) {
+    return identifierArbitrary()
+  } else {
+    return FastCheck.oneof<ExpressionAndValues<JSIdentifier | JSPropertyAccess | JSElementAccess>>(
+      identifierArbitrary(),
+      jsPropertyAccessArbitrary(depth),
+      jsElementAccessArbitrary(depth),
+    )
+  }
+}
+
+describe('jsxAttributeToValue', () => {
+  it('nested identifier, property and element accesses produce the same result as an arbitrary block', () => {
+    const prop = FastCheck.property(
+      identifierPropertyElementAccessArbitrary(),
+      (expressionAndValues: ExpressionAndValues<JSExpression>) => {
+        function getExpectedResult() {
+          return jsxAttributeToValue(
+            'test.js',
+            expressionAndValues.values,
+            {},
+            jsExpressionOtherJavaScriptSimple(
+              jsxElementChildToText(
+                expressionAndValues.expression,
+                null,
+                null,
+                'javascript',
+                'inner',
+              ),
+              Object.keys(expressionAndValues.values),
+            ),
+          )
+        }
+        function getActualResult() {
+          return jsxAttributeToValue(
+            'test.js',
+            expressionAndValues.values,
+            {},
+            expressionAndValues.expression,
+          )
+        }
+        expect(resultOrError(getActualResult)).toEqual(resultOrError(getExpectedResult))
+      },
+    )
+    FastCheck.assert(prop, { verbose: true, numRuns: 1000 })
+  })
+})
 
 describe('setJSXValueAtPath', () => {
   it('sets a simple value at a simple path', () => {
