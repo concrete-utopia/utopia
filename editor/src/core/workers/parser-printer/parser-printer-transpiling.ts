@@ -339,7 +339,10 @@ export function transpileJavascript(
 }
 
 export function insertDataUIDsIntoCode(
+  sourceFileName: string,
+  sourceFileText: string,
   code: string,
+  map: RawSourceMap,
   elementsWithin: ElementsWithinInPosition,
   wrapInParens: boolean,
   rootLevel: boolean,
@@ -347,8 +350,16 @@ export function insertDataUIDsIntoCode(
 ): Either<string, CodeWithMap> {
   try {
     let codeToUse: string = code
+    let mapToUse: RawSourceMap = map
     if (wrapInParens) {
-      codeToUse = wrapCodeInParens(codeToUse)
+      const wrappedInParens = wrapCodeInParensWithMap(
+        sourceFileName,
+        sourceFileText,
+        codeToUse,
+        mapToUse,
+      )
+      codeToUse = wrappedInParens.code
+      mapToUse = wrappedInParens.sourceMap
     }
     const plugins: Array<any> = [
       babelRewriteJSExpressionCode(elementsWithin, false),
@@ -360,6 +371,7 @@ export function insertDataUIDsIntoCode(
       sourceType: rootLevel ? 'module' : 'script',
       sourceMaps: true,
       retainLines: true,
+      inputSourceMap: mapToUse,
       filename: filename,
     })
     return right({

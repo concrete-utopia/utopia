@@ -1429,7 +1429,10 @@ export function parseAttributeOtherJavaScript(
         const rawMap = JSON.parse(map.toString())
 
         const dataUIDFixed = insertDataUIDsIntoCode(
+          filename,
+          sourceText,
           expressionFullText,
+          rawMap,
           parsedElementsWithin,
           true,
           false,
@@ -1440,7 +1443,7 @@ export function parseAttributeOtherJavaScript(
             sourceFile.fileName,
             sourceFile.text,
             dataUIDFixResult.code,
-            rawMap,
+            dataUIDFixResult.sourceMap,
             parsedElementsWithin,
             applySteganography,
           )
@@ -3572,6 +3575,9 @@ export function parseArbitraryNodes(
       const definedWithinFields = definedWithin.map((within) => `${within}: ${within}`).join(', ')
       const definedWithCode = `return { ${definedWithinFields} };`
 
+      const { map } = fileSourceNode.toStringWithSourceMap({ file: filename })
+      const rawMap = JSON.parse(map.toString())
+
       const transpileEither = transpileJavascript(
         sourceFile.fileName,
         sourceFile.text,
@@ -3584,7 +3590,10 @@ export function parseArbitraryNodes(
         applySteganography,
       )
       const dataUIDFixed = insertDataUIDsIntoCode(
+        filename,
+        sourceText,
         code,
+        rawMap,
         parsedElementsWithin,
         false,
         rootLevel,
