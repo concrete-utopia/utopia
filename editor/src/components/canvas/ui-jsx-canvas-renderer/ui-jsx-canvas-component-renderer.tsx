@@ -116,14 +116,42 @@ export function createComponentRendererComponent(params: {
       throw new ReferenceError(`${params.topLevelElementName} is not defined`)
     }
 
+    const rootElementPath = optionalMap(
+      (path) => EP.appendNewElementPath(path, getUtopiaID(utopiaJsxComponent.rootElement)),
+      instancePath,
+    )
+
+    let codeError: Error | null = null
+
     const appliedProps = optionalMap(
       (param) =>
         applyPropsParamToPassedProps(
-          params.filePath,
           mutableContext.rootScope,
-          mutableContext.requireResult,
+          rootElementPath,
           realPassedProps,
           param,
+          {
+            requireResult: mutableContext.requireResult,
+            rootScope: mutableContext.rootScope,
+            parentComponentInputProps: realPassedProps,
+            filePath: params.filePath,
+            hiddenInstances: hiddenInstances,
+            displayNoneInstances: displayNoneInstances,
+            fileBlobs: mutableContext.fileBlobs,
+            validPaths: sceneContext.validPaths,
+            reactChildren: undefined,
+            metadataContext: metadataContext,
+            updateInvalidatedPaths: updateInvalidatedPaths,
+            jsxFactoryFunctionName: mutableContext.jsxFactoryFunctionName,
+            shouldIncludeCanvasRootInTheSpy: shouldIncludeCanvasRootInTheSpy,
+            imports: imports,
+            code: code,
+            highlightBounds: highlightBounds,
+            editedText: rerenderUtopiaContext.editedText,
+            variablesInScope: {},
+          },
+          undefined,
+          codeError,
         ),
       utopiaJsxComponent.param,
     ) ?? { props: realPassedProps }
@@ -149,19 +177,12 @@ export function createComponentRendererComponent(params: {
       )
     }
 
-    let codeError: Error | null = null
-
     // Protect against infinite recursion by taking the view that anything
     // beyond a particular depth is going infinite or is likely
     // to be out of control otherwise.
     if (instancePath != null && EP.depth(instancePath) > 100) {
       throw new Error(`Element hierarchy is too deep, potentially has become infinite.`)
     }
-
-    const rootElementPath = optionalMap(
-      (path) => EP.appendNewElementPath(path, getUtopiaID(utopiaJsxComponent.rootElement)),
-      instancePath,
-    )
 
     // either this updateInvalidatedPaths or the one in SpyWrapper is probably redundant
     if (shouldUpdate()) {

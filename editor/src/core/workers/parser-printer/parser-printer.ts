@@ -32,6 +32,7 @@ import type {
   ParsedComments,
   JSExpressionMapOrOtherJavascript,
   JSExpressionOtherJavaScript,
+  JSXElement,
 } from '../../shared/element-template'
 import {
   destructuredArray,
@@ -124,11 +125,13 @@ const BakedInStoryboardVariableName = 'storyboard'
 function buildPropertyCallingFunction(
   functionName: string,
   parameters: JSExpression[],
+  imports: Imports,
+  stripUIDs: boolean,
 ): TS.Expression {
   return TS.createCall(
     TS.createPropertyAccess(TS.createIdentifier('UtopiaUtils'), TS.createIdentifier(functionName)),
     undefined,
-    parameters.map(jsxAttributeToExpression),
+    parameters.map((p) => jsxAttributeToExpression(p, imports, stripUIDs)),
   )
 }
 
@@ -144,6 +147,7 @@ function getJSXAttributeComments(attribute: JSExpression): ParsedComments {
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
     case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'JSX_ELEMENT':
       return emptyComments
     default:
       const _exhaustiveCheck: never = attribute
@@ -186,7 +190,11 @@ function rawCodeToExpressionStatement(rawCode: string): {
   }
 }
 
-function jsxAttributeToExpression(attribute: JSExpression): TS.Expression {
+function jsxAttributeToExpression(
+  attribute: JSExpression,
+  imports: Imports,
+  stripUIDs: boolean,
+): TS.Expression {
   function createExpression(): TS.Expression {
     switch (attribute.type) {
       case 'ATTRIBUTE_VALUE':
@@ -206,9 +214,14 @@ function jsxAttributeToExpression(attribute: JSExpression): TS.Expression {
                     ? TS.createStringLiteral(prop.key)
                     : TS.createNumericLiteral(prop.key)
                 addCommentsToNode(key, prop.keyComments)
-                return TS.createPropertyAssignment(key, jsxAttributeToExpression(prop.value))
+                return TS.createPropertyAssignment(
+                  key,
+                  jsxAttributeToExpression(prop.value, imports, stripUIDs),
+                )
               case 'SPREAD_ASSIGNMENT':
-                return TS.createSpreadAssignment(jsxAttributeToExpression(prop.value))
+                return TS.createSpreadAssignment(
+                  jsxAttributeToExpression(prop.value, imports, stripUIDs),
+                )
               default:
                 const _exhaustiveCheck: never = prop
                 throw new Error(`Unhandled prop type ${prop}`)
@@ -220,9 +233,9 @@ function jsxAttributeToExpression(attribute: JSExpression): TS.Expression {
         const arrayExpressions: Array<TS.Expression> = attribute.content.map((elem) => {
           switch (elem.type) {
             case 'ARRAY_SPREAD':
-              return TS.createSpread(jsxAttributeToExpression(elem.value))
+              return TS.createSpread(jsxAttributeToExpression(elem.value, imports, stripUIDs))
             case 'ARRAY_VALUE':
-              return jsxAttributeToExpression(elem.value)
+              return jsxAttributeToExpression(elem.value, imports, stripUIDs)
             default:
               const _exhaustiveCheck: never = elem
               throw new Error(`Unhandled array element type ${elem}`)
@@ -242,25 +255,32 @@ function jsxAttributeToExpression(attribute: JSExpression): TS.Expression {
           return TS.factory.createNull()
         }
       case 'ATTRIBUTE_FUNCTION_CALL':
-        return buildPropertyCallingFunction(attribute.functionName, attribute.parameters)
+        return buildPropertyCallingFunction(
+          attribute.functionName,
+          attribute.parameters,
+          imports,
+          stripUIDs,
+        )
       case 'JS_IDENTIFIER':
         return TS.factory.createIdentifier(attribute.name)
       case 'JS_ELEMENT_ACCESS':
         return TS.factory.createElementAccessChain(
-          jsxAttributeToExpression(attribute.onValue),
+          jsxAttributeToExpression(attribute.onValue, imports, stripUIDs),
           attribute.optionallyChained === 'optionally-chained'
             ? TS.factory.createToken(TS.SyntaxKind.QuestionDotToken)
             : undefined,
-          jsxAttributeToExpression(attribute.element),
+          jsxAttributeToExpression(attribute.element, imports, stripUIDs),
         )
       case 'JS_PROPERTY_ACCESS':
         return TS.factory.createPropertyAccessChain(
-          jsxAttributeToExpression(attribute.onValue),
+          jsxAttributeToExpression(attribute.onValue, imports, stripUIDs),
           attribute.optionallyChained === 'optionally-chained'
             ? TS.factory.createToken(TS.SyntaxKind.QuestionDotToken)
             : undefined,
           attribute.property,
         )
+      case 'JSX_ELEMENT':
+        return jsxElementToTSJSXElement(attribute, imports, stripUIDs)
       default:
         const _exhaustiveCheck: never = attribute
         throw new Error(`Unhandled prop type ${JSON.stringify(attribute)}`)
@@ -410,6 +430,77 @@ function getFragmentElementNameFromImports(imports: Imports): JSXElementName {
   return jsxElementName('React', ['Fragment'])
 }
 
+function jsxElementToTSJSXElement(
+  element: JSXElement,
+  imports: Imports,
+  stripUIDs: boolean,
+): TS.JsxElement | TS.JsxSelfClosingElement {
+  let attribsArray: Array<TS.JsxAttributeLike> = []
+  fastForEach(element.props, (propEntry) => {
+    switch (propEntry.type) {
+      case 'JSX_ATTRIBUTES_ENTRY':
+        const skip = stripUIDs && propEntry.key === 'data-uid'
+        if (!skip) {
+          const prop = propEntry.value
+          const identifier = TS.createIdentifier(
+            typeof propEntry.key === 'string' ? propEntry.key : `${propEntry.key}`,
+          )
+          let attributeToAdd: TS.JsxAttribute
+          if (isJSXAttributeValue(prop) && typeof prop.value === 'boolean') {
+            // Use the shorthand style for true values, and the explicit style for false values
+            if (prop.value) {
+              // The `any` allows our `undefined` to punch through the invalid typing
+              // of `createJsxAttribute`.
+              attributeToAdd = TS.createJsxAttribute(identifier, undefined as any)
+            } else {
+              attributeToAdd = TS.createJsxAttribute(
+                identifier,
+                TS.createJsxExpression(undefined, TS.createFalse()),
+              )
+            }
+          } else {
+            const attributeExpression = jsxAttributeToExpression(prop, imports, stripUIDs)
+            const initializer: TS.StringLiteral | TS.JsxExpression = TS.isStringLiteral(
+              attributeExpression,
+            )
+              ? attributeExpression
+              : TS.createJsxExpression(undefined, attributeExpression)
+            attributeToAdd = TS.createJsxAttribute(identifier, initializer)
+          }
+          addCommentsToNode(attributeToAdd, propEntry.comments)
+          attribsArray.push(attributeToAdd)
+        }
+        break
+      case 'JSX_ATTRIBUTES_SPREAD':
+        const attributeExpression = jsxAttributeToExpression(
+          propEntry.spreadValue,
+          imports,
+          stripUIDs,
+        )
+        const attributeToAdd = TS.createJsxSpreadAttribute(attributeExpression)
+        addCommentsToNode(attributeToAdd, propEntry.comments)
+        attribsArray.push(attributeToAdd)
+        break
+      default:
+        const _exhaustiveCheck: never = propEntry
+        throw new Error(`Unhandled attribute type ${JSON.stringify(propEntry)}`)
+    }
+  })
+  const attribs = TS.createJsxAttributes(attribsArray)
+  const tagName = jsxElementNameToExpression(element.name)
+  if (element.children.length === 0) {
+    return TS.createJsxSelfClosingElement(tagName, undefined, attribs)
+  } else {
+    const opening = TS.createJsxOpeningElement(tagName, undefined, attribs)
+    const closing = TS.createJsxClosingElement(tagName)
+    return TS.createJsxElement(
+      opening,
+      element.children.map((child) => jsxElementToJSXExpression(child, imports, stripUIDs)),
+      closing,
+    )
+  }
+}
+
 function jsxElementToExpression(
   element: JSXElementChild,
   imports: Imports,
@@ -425,66 +516,7 @@ function jsxElementToExpression(
   | TS.Expression {
   switch (element.type) {
     case 'JSX_ELEMENT': {
-      let attribsArray: Array<TS.JsxAttributeLike> = []
-      fastForEach(element.props, (propEntry) => {
-        switch (propEntry.type) {
-          case 'JSX_ATTRIBUTES_ENTRY':
-            const skip = stripUIDs && propEntry.key === 'data-uid'
-            if (!skip) {
-              const prop = propEntry.value
-              const identifier = TS.createIdentifier(
-                typeof propEntry.key === 'string' ? propEntry.key : `${propEntry.key}`,
-              )
-              let attributeToAdd: TS.JsxAttribute
-              if (isJSXAttributeValue(prop) && typeof prop.value === 'boolean') {
-                // Use the shorthand style for true values, and the explicit style for false values
-                if (prop.value) {
-                  // The `any` allows our `undefined` to punch through the invalid typing
-                  // of `createJsxAttribute`.
-                  attributeToAdd = TS.createJsxAttribute(identifier, undefined as any)
-                } else {
-                  attributeToAdd = TS.createJsxAttribute(
-                    identifier,
-                    TS.createJsxExpression(undefined, TS.createFalse()),
-                  )
-                }
-              } else {
-                const attributeExpression = jsxAttributeToExpression(prop)
-                const initializer: TS.StringLiteral | TS.JsxExpression = TS.isStringLiteral(
-                  attributeExpression,
-                )
-                  ? attributeExpression
-                  : TS.createJsxExpression(undefined, attributeExpression)
-                attributeToAdd = TS.createJsxAttribute(identifier, initializer)
-              }
-              addCommentsToNode(attributeToAdd, propEntry.comments)
-              attribsArray.push(attributeToAdd)
-            }
-            break
-          case 'JSX_ATTRIBUTES_SPREAD':
-            const attributeExpression = jsxAttributeToExpression(propEntry.spreadValue)
-            const attributeToAdd = TS.createJsxSpreadAttribute(attributeExpression)
-            addCommentsToNode(attributeToAdd, propEntry.comments)
-            attribsArray.push(attributeToAdd)
-            break
-          default:
-            const _exhaustiveCheck: never = propEntry
-            throw new Error(`Unhandled attribute type ${JSON.stringify(propEntry)}`)
-        }
-      })
-      const attribs = TS.createJsxAttributes(attribsArray)
-      const tagName = jsxElementNameToExpression(element.name)
-      if (element.children.length === 0) {
-        return TS.createJsxSelfClosingElement(tagName, undefined, attribs)
-      } else {
-        const opening = TS.createJsxOpeningElement(tagName, undefined, attribs)
-        const closing = TS.createJsxClosingElement(tagName)
-        return TS.createJsxElement(
-          opening,
-          element.children.map((child) => jsxElementToJSXExpression(child, imports, stripUIDs)),
-          closing,
-        )
-      }
+      return jsxElementToTSJSXElement(element, imports, stripUIDs)
     }
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
@@ -511,7 +543,7 @@ function jsxElementToExpression(
         // By creating a `JsxText` element containing the raw code surrounded by braces, we can print the code directly
         return TS.factory.createJsxText(`{${rawCode}}`)
       } else {
-        return jsxAttributeToExpression(element)
+        return jsxAttributeToExpression(element, imports, stripUIDs)
       }
     }
     case 'JSX_FRAGMENT': {
@@ -539,7 +571,7 @@ function jsxElementToExpression(
       return TS.createJsxText(element.text)
     }
     case 'JSX_CONDITIONAL_EXPRESSION': {
-      const condition = jsxAttributeToExpression(element.condition)
+      const condition = jsxAttributeToExpression(element.condition, imports, stripUIDs)
       const whenTrue = jsxElementToExpression(element.whenTrue, imports, stripUIDs, false)
       const whenFalse = jsxElementToExpression(element.whenFalse, imports, stripUIDs, false)
 
@@ -560,7 +592,7 @@ function jsxElementToExpression(
     case 'JS_PROPERTY_ACCESS':
     case 'JS_ELEMENT_ACCESS':
     case 'JS_IDENTIFIER':
-      return jsxAttributeToExpression(element)
+      return jsxAttributeToExpression(element, imports, stripUIDs)
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled element type ${JSON.stringify(element)}`)
@@ -690,7 +722,9 @@ function printUtopiaJSXComponent(
         ? TS.NodeFlags.None
         : nodeFlagsForVarLetOrConst(element.declarationSyntax)
     if (element.isFunction) {
-      const functionParams = maybeToArray(element.param).map(printParam)
+      const functionParams = maybeToArray(element.param).map((p) =>
+        printParam(p, imports, printOptions.stripUIDs),
+      )
 
       function bodyForFunction(): TS.Block {
         let statements: Array<TS.Statement> = []
@@ -772,13 +806,13 @@ function printUtopiaJSXComponent(
   }
 }
 
-function printParam(param: Param): TS.ParameterDeclaration {
+function printParam(param: Param, imports: Imports, stripUIDs: boolean): TS.ParameterDeclaration {
   const dotDotDotToken = optionallyCreateDotDotDotToken(param.dotDotDotToken)
   return TS.createParameter(
     undefined,
     undefined,
     dotDotDotToken,
-    printBoundParam(param.boundParam),
+    printBoundParam(param.boundParam, imports, stripUIDs),
     undefined,
     undefined,
     undefined,
@@ -787,32 +821,43 @@ function printParam(param: Param): TS.ParameterDeclaration {
 
 function printBindingExpression(
   defaultExpression: JSExpressionMapOrOtherJavascript | null,
+  imports: Imports,
+  stripUIDs: boolean,
 ): TS.Expression | undefined {
   if (defaultExpression == null) {
     return undefined
   } else {
-    return jsxAttributeToExpression(defaultExpression)
+    return jsxAttributeToExpression(defaultExpression, imports, stripUIDs)
   }
 }
 
-function printBindingElement(propertyName: string | undefined, param: Param): TS.BindingElement {
+function printBindingElement(
+  propertyName: string | undefined,
+  param: Param,
+  imports: Imports,
+  stripUIDs: boolean,
+): TS.BindingElement {
   const dotDotDotToken = optionallyCreateDotDotDotToken(param.dotDotDotToken)
   return TS.createBindingElement(
     dotDotDotToken,
     optionalMap(TS.createIdentifier, propertyName) ?? undefined,
-    printBoundParam(param.boundParam),
+    printBoundParam(param.boundParam, imports, stripUIDs),
     param.boundParam.type === 'REGULAR_PARAM'
-      ? printBindingExpression(param.boundParam.defaultExpression)
+      ? printBindingExpression(param.boundParam.defaultExpression, imports, stripUIDs)
       : undefined,
   )
 }
 
-function printBoundParam(boundParam: BoundParam): TS.BindingName {
+function printBoundParam(
+  boundParam: BoundParam,
+  imports: Imports,
+  stripUIDs: boolean,
+): TS.BindingName {
   if (isRegularParam(boundParam)) {
     return TS.createIdentifier(boundParam.paramName)
   } else if (isDestructuredObject(boundParam)) {
     const printedParts = boundParam.parts.map((part) =>
-      printBindingElement(part.propertyName, part.param),
+      printBindingElement(part.propertyName, part.param, imports, stripUIDs),
     )
     return TS.createObjectBindingPattern(printedParts)
   } else {
@@ -820,7 +865,7 @@ function printBoundParam(boundParam: BoundParam): TS.BindingName {
       if (isOmittedParam(part)) {
         return TS.createOmittedExpression()
       } else {
-        return printBindingElement(undefined, part)
+        return printBindingElement(undefined, part, imports, stripUIDs)
       }
     })
     return TS.createArrayBindingPattern(printedParts)

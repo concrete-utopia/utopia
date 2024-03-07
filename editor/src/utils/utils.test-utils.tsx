@@ -84,6 +84,29 @@ import { CanvasToolbarSearchTestID } from '../components/editor/canvas-toolbar'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
 import { editorStateToElementChildOptic } from '../core/model/common-optics'
 import { toFirst } from '../core/shared/optics/optic-utilities'
+import { emptyUiJsxCanvasContextData } from '../components/canvas/ui-jsx-canvas'
+import type { RenderContext } from '../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-element-renderer-utils'
+
+export const testRenderContext: RenderContext = {
+  rootScope: {},
+  parentComponentInputProps: {},
+  requireResult: Utils.NO_OP,
+  hiddenInstances: [],
+  displayNoneInstances: [],
+  fileBlobs: {},
+  validPaths: new Set(),
+  reactChildren: undefined,
+  metadataContext: emptyUiJsxCanvasContextData(),
+  updateInvalidatedPaths: Utils.NO_OP,
+  jsxFactoryFunctionName: null,
+  shouldIncludeCanvasRootInTheSpy: false,
+  filePath: 'test.js',
+  imports: {},
+  code: '',
+  highlightBounds: null,
+  editedText: null,
+  variablesInScope: {},
+}
 
 export function delay(time: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, time))
@@ -306,7 +329,14 @@ function createFakeMetadataForJSXElement(
       ),
       ...parentScope,
     }
-    const props = jsxAttributesToProps('test.js', inScope, element.props, Utils.NO_OP)
+    const props = jsxAttributesToProps(
+      inScope,
+      element.props,
+      null,
+      testRenderContext,
+      undefined,
+      null,
+    )
     const children = element.children.flatMap((child) =>
       createFakeMetadataForJSXElement(
         child,

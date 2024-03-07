@@ -844,7 +844,8 @@ export function fixExpressionUIDs(
         },
       )
     }
-
+    case 'JSX_ELEMENT':
+      return fixJSXElementUIDs(oldExpression, newExpression, fixUIDsState)
     default:
       assertNever(newExpression)
   }

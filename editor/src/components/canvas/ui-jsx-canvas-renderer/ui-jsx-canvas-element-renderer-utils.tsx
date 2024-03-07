@@ -215,10 +215,12 @@ export function renderCoreElement(
         : inScope
 
       const assembledProps = jsxAttributesToProps(
-        filePath,
         blockScope,
         element.props,
-        requireResult,
+        elementPath,
+        renderContext,
+        uid,
+        codeError,
       )
 
       const passthroughProps = monkeyUidProp(uid, assembledProps)
@@ -279,7 +281,7 @@ export function renderCoreElement(
               innerRender,
             ),
           }
-          return runJSExpression(filePath, requireResult, element, blockScope)
+          return runJSExpression(element, elementPath, blockScope, renderContext, uid, codeError)
         }
 
         const originalTextContent = isFeatureEnabled('Steganography') ? runJSExpressionLazy() : null
@@ -326,7 +328,7 @@ export function renderCoreElement(
           innerRender,
         ),
       }
-      return runJSExpression(filePath, requireResult, element, blockScope)
+      return runJSExpression(element, elementPath, blockScope, renderContext, uid, codeError)
     }
     case 'JSX_FRAGMENT': {
       const key = optionalMap(EP.toString, elementPath) ?? element.uid
@@ -356,10 +358,12 @@ export function renderCoreElement(
       const commentFlag = findUtopiaCommentFlag(element.comments, 'conditional')
       const override = isUtopiaCommentFlagConditional(commentFlag) ? commentFlag.value : null
       const defaultConditionValueAsAny = jsxAttributeToValue(
-        filePath,
         inScope,
-        requireResult,
         element.condition,
+        elementPath,
+        renderContext,
+        uid,
+        codeError,
       )
       // Coerce `defaultConditionValueAsAny` to a value that is definitely a boolean, not something that is truthy.
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
@@ -484,7 +488,7 @@ export function renderCoreElement(
         )
       }
 
-      return jsxAttributeToValue(filePath, inScope, requireResult, element)
+      return jsxAttributeToValue(inScope, element, elementPath, renderContext, uid, codeError)
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled type ${JSON.stringify(element)}`)
@@ -636,7 +640,14 @@ function renderJSXElement(
             ? childrenWithNewTextBlock[0]
             : jsExpressionValue(null, emptyComments) // placeholder
 
-        const result = runJSExpression(filePath, requireResult, expressionToEvaluate, blockScope)
+        const result = runJSExpression(
+          expressionToEvaluate,
+          elementPath,
+          blockScope,
+          renderContext,
+          jsx.uid,
+          codeError,
+        )
         return result
       }
 
@@ -751,11 +762,12 @@ export function utopiaCanvasJSXLookup(
 }
 
 function runJSExpression(
-  filePath: string,
-  requireResult: MapLike<any>,
   block: JSExpression,
+  elementPath: ElementPath | null,
   currentScope: MapLike<any>,
-  limit?: number,
+  renderContext: RenderContext,
+  uid: string | undefined,
+  codeError: Error | null, // this can be probably deleted, it is passed down through multiple layers but we just throw the error in the end
 ): any {
   switch (block.type) {
     case 'ATTRIBUTE_VALUE':
@@ -765,10 +777,17 @@ function runJSExpression(
     case 'JS_PROPERTY_ACCESS':
     case 'JS_ELEMENT_ACCESS':
     case 'JS_IDENTIFIER':
-      return jsxAttributeToValue(filePath, currentScope, requireResult, block)
+    case 'JSX_ELEMENT':
+      return jsxAttributeToValue(currentScope, block, elementPath, renderContext, uid, codeError)
+
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      return resolveParamsAndRunJsCode(filePath, block, requireResult, currentScope)
+      return resolveParamsAndRunJsCode(
+        renderContext.filePath,
+        block,
+        renderContext.requireResult,
+        currentScope,
+      )
     default:
       assertNever(block)
   }
