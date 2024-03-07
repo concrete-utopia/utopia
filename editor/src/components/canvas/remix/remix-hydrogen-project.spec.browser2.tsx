@@ -45,5 +45,5 @@ describe('Hydrogen Project Using Real Server Calls - disable me if there is no i
       // A size selector button with the text Ocean appears
       expect(await renderResult.renderedDOM.findByText('Ocean')).toBeDefined()
     }
-  })
+  }, 60000)
 })
