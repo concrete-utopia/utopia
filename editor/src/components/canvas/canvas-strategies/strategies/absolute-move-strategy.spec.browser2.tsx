@@ -94,8 +94,8 @@ export const App2 = (props) => {
         width: 350,
         height: 400,
       }}
-      data-uid='aaa'
-      data-testid='aaa'
+      data-uid='div'
+      data-testid='div'
     />
   )
 }
@@ -140,8 +140,8 @@ export const App2 = (props) => {
         width: props.style.width,
         height: props.style.height,
       }}
-      data-uid='aaa'
-      data-testid='aaa'
+      data-uid='div'
+      data-testid='div'
     />
   )
 }
@@ -618,7 +618,7 @@ describe('Absolute Move Strategy', () => {
       projectDoesHonourPositionProperties(20, 20),
       'await-first-dom-report',
     )
-    const targetElement = renderResult.renderedDOM.getByTestId('aaa')
+    const targetElement = renderResult.renderedDOM.getByTestId('div')
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -646,7 +646,7 @@ describe('Absolute Move Strategy', () => {
       projectDoesHonourPositionProperties(20, 20),
       'await-first-dom-report',
     )
-    const targetElement = renderResult.renderedDOM.getByTestId('aaa')
+    const targetElement = renderResult.renderedDOM.getByTestId('div')
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -667,7 +667,7 @@ describe('Absolute Move Strategy', () => {
       projectDoesHonourPositionProperties(20, 20),
       'await-first-dom-report',
     )
-    const targetElement = renderResult.renderedDOM.getByTestId('aaa')
+    const targetElement = renderResult.renderedDOM.getByTestId('div')
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
@@ -694,7 +694,7 @@ describe('Absolute Move Strategy', () => {
       projectDoesNotHonourPositionProperties,
       'await-first-dom-report',
     )
-    const targetElement = renderResult.renderedDOM.getByTestId('aaa')
+    const targetElement = renderResult.renderedDOM.getByTestId('div')
     const targetElementBounds = targetElement.getBoundingClientRect()
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 

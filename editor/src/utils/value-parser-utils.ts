@@ -325,7 +325,6 @@ export function parseJsx(_: unknown, value: unknown): ParseResult<JSXParsedValue
         name: type,
       })
     }
-
     if (value.hasOwnProperty('props')) {
       const props = (value as any).props
       if (props.hasOwnProperty('elementToRender') === true) {

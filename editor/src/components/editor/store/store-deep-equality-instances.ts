@@ -135,6 +135,7 @@ import type {
   JSIdentifier,
   JSPropertyAccess,
   JSElementAccess,
+  OptionallyChained,
 } from '../../../core/shared/element-template'
 import {
   elementInstanceMetadata,
@@ -1148,6 +1149,11 @@ export const JSExpressionKeepDeepEqualityCall: KeepDeepEqualityCall<JSExpression
         return JSExpressionOtherJavaScriptKeepDeepEqualityCall()(oldAttribute, newAttribute)
       }
       break
+    case 'JSX_ELEMENT':
+      if (isJSXElement(newAttribute)) {
+        return JSXElementKeepDeepEquality(oldAttribute, newAttribute)
+      }
+      break
     default:
       assertNever(oldAttribute)
   }
@@ -1247,11 +1253,13 @@ export function ArbitraryJSBlockKeepDeepEquality(): KeepDeepEqualityCall<Arbitra
 }
 
 export function JSIdentifierKeepDeepEquality(): KeepDeepEqualityCall<JSIdentifier> {
-  return combine3EqualityCalls(
+  return combine4EqualityCalls(
     (identifier) => identifier.name,
     createCallWithTripleEquals<string>(),
     (identifier) => identifier.uid,
     createCallWithTripleEquals<string>(),
+    (identifier) => identifier.sourceMap,
+    nullableDeepEquality(RawSourceMapKeepDeepEquality),
     (identifier) => identifier.comments,
     ParsedCommentsKeepDeepEqualityCall,
     jsIdentifier,
@@ -1259,29 +1267,41 @@ export function JSIdentifierKeepDeepEquality(): KeepDeepEqualityCall<JSIdentifie
 }
 
 export function JSPropertyAccessKeepDeepEquality(): KeepDeepEqualityCall<JSPropertyAccess> {
-  return combine4EqualityCalls(
+  return combine7EqualityCalls(
     (access) => access.onValue,
     JSExpressionKeepDeepEqualityCall,
     (access) => access.property,
     createCallWithTripleEquals<string>(),
     (access) => access.uid,
     createCallWithTripleEquals<string>(),
+    (access) => access.sourceMap,
+    nullableDeepEquality(RawSourceMapKeepDeepEquality),
     (access) => access.comments,
     ParsedCommentsKeepDeepEqualityCall,
+    (access) => access.originalJavascript,
+    createCallWithTripleEquals<string>(),
+    (access) => access.optionallyChained,
+    createCallWithTripleEquals<OptionallyChained>(),
     jsPropertyAccess,
   )
 }
 
 export function JSElementAccessKeepDeepEquality(): KeepDeepEqualityCall<JSElementAccess> {
-  return combine4EqualityCalls(
+  return combine7EqualityCalls(
     (access) => access.onValue,
     JSExpressionKeepDeepEqualityCall,
     (access) => access.element,
     JSExpressionKeepDeepEqualityCall,
     (access) => access.uid,
     createCallWithTripleEquals<string>(),
+    (access) => access.sourceMap,
+    nullableDeepEquality(RawSourceMapKeepDeepEquality),
     (access) => access.comments,
     ParsedCommentsKeepDeepEqualityCall,
+    (access) => access.originalJavascript,
+    createCallWithTripleEquals<string>(),
+    (access) => access.optionallyChained,
+    createCallWithTripleEquals<OptionallyChained>(),
     jsElementAccess,
   )
 }

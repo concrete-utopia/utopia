@@ -11,12 +11,10 @@ import {
   adjustFontSize,
   getFontSize,
   isAdjustFontSizeShortcut,
-} from '../canvas/canvas-strategies/strategies/keyboard-set-font-size-strategy'
-import {
   adjustFontWeight,
   getFontWeightFromMetadata,
   isAdjustFontWeightShortcut,
-} from '../canvas/canvas-strategies/strategies/keyboard-set-font-weight-strategy'
+} from '../canvas/canvas-strategies/strategies/text-editor-utils'
 import { setProperty } from '../canvas/commands/set-property-command'
 import type { ApplyCommandsAction, EditorAction, EditorDispatch } from '../editor/action-types'
 import {

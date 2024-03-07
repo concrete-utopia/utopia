@@ -1,5 +1,5 @@
 import * as TS from 'typescript-for-the-editor'
-import { SourceNode } from 'source-map'
+import { SourceNode, SourceMapGenerator } from 'source-map'
 import {
   addUniquely,
   dropLast,
@@ -52,6 +52,7 @@ import type {
   JSPropertyAccess,
   JSElementAccess,
   JSIdentifier,
+  OptionallyChained,
 } from '../../shared/element-template'
 import {
   arbitraryJSBlock,
@@ -86,7 +87,7 @@ import {
   isJSXFragment,
   jsxConditionalExpression,
   isJSXConditionalExpression,
-  clearAttributeSourceMaps,
+  clearExpressionSourceMaps,
   clearExpressionUniqueIDs,
   isJSXElementLike,
   isJSXAttributeValue,
@@ -101,6 +102,7 @@ import {
   jsElementAccess,
   jsPropertyAccess,
   jsIdentifier,
+  clearExpressionUniqueIDsAndSourceMaps,
 } from '../../shared/element-template'
 import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
 import type {
@@ -1778,17 +1780,63 @@ function getUIDFromCommentsOrValue(
   )
 }
 
+function createNodeSourceMap(sourceFile: TS.SourceFile, node: TS.Node): RawSourceMap {
+  const sourceMapGenerator = new SourceMapGenerator()
+  const originalPosition = TS.getLineAndCharacterOfPosition(sourceFile, node.getStart(sourceFile))
+  sourceMapGenerator.addMapping({
+    generated: {
+      line: 1,
+      column: 1,
+    },
+    source: sourceFile.fileName,
+    original: {
+      line: originalPosition.line + 1,
+      column: originalPosition.character + 1,
+    },
+  })
+  sourceMapGenerator.setSourceContent(sourceFile.fileName, sourceFile.getFullText(sourceFile))
+  return sourceMapGenerator.toJSON()
+}
+
+function isOptionallyChained(
+  expression: TS.ElementAccessExpression | TS.PropertyAccessExpression,
+): OptionallyChained {
+  if (expression.questionDotToken == null) {
+    return 'not-optionally-chained'
+  } else {
+    return 'optionally-chained'
+  }
+}
+
 function createJSElementAccess(
   sourceFile: TS.SourceFile,
-  node: TS.Node,
+  node: TS.ElementAccessExpression,
   onValue: JSExpression,
   element: JSExpression,
   comments: ParsedComments,
   alreadyExistingUIDs: Set<string>,
 ): WithParserMetadata<JSElementAccess> {
-  const value = jsElementAccess(onValue, element, '', comments)
+  const originalJavascript = node.getText(sourceFile)
+  const optionallyChained = isOptionallyChained(node)
+  const value = jsElementAccess(
+    clearExpressionUniqueIDsAndSourceMaps(onValue),
+    clearExpressionUniqueIDsAndSourceMaps(element),
+    '',
+    null,
+    comments,
+    originalJavascript,
+    optionallyChained,
+  )
   const uid = getUIDFromCommentsOrValue(comments, sourceFile, value, alreadyExistingUIDs)
-  const valueWithUID = jsElementAccess(onValue, element, uid, comments)
+  const valueWithUID = jsElementAccess(
+    onValue,
+    element,
+    uid,
+    createNodeSourceMap(sourceFile, node),
+    comments,
+    originalJavascript,
+    optionallyChained,
+  )
   return withParserMetadata(
     valueWithUID,
     buildHighlightBoundsForUids(sourceFile, node, uid),
@@ -1799,15 +1847,33 @@ function createJSElementAccess(
 
 function createJSPropertyAccess(
   sourceFile: TS.SourceFile,
-  node: TS.Node,
+  node: TS.PropertyAccessExpression,
   onValue: JSExpression,
   property: string,
   comments: ParsedComments,
   alreadyExistingUIDs: Set<string>,
 ): WithParserMetadata<JSPropertyAccess> {
-  const value = jsPropertyAccess(onValue, property, '', comments)
+  const originalJavascript = node.getText(sourceFile)
+  const optionallyChained = isOptionallyChained(node)
+  const value = jsPropertyAccess(
+    clearExpressionUniqueIDsAndSourceMaps(onValue),
+    property,
+    '',
+    null,
+    comments,
+    originalJavascript,
+    optionallyChained,
+  )
   const uid = getUIDFromCommentsOrValue(comments, sourceFile, value, alreadyExistingUIDs)
-  const valueWithUID = jsPropertyAccess(onValue, property, uid, comments)
+  const valueWithUID = jsPropertyAccess(
+    onValue,
+    property,
+    uid,
+    createNodeSourceMap(sourceFile, node),
+    comments,
+    originalJavascript,
+    optionallyChained,
+  )
   return withParserMetadata(
     valueWithUID,
     buildHighlightBoundsForUids(sourceFile, node, uid),
@@ -1823,9 +1889,14 @@ function createJSIdentifier(
   comments: ParsedComments,
   alreadyExistingUIDs: Set<string>,
 ): WithParserMetadata<JSIdentifier> {
-  const value = jsIdentifier(identifierName, '', comments)
+  const value = jsIdentifier(identifierName, '', null, comments)
   const uid = getUIDFromCommentsOrValue(comments, sourceFile, value, alreadyExistingUIDs)
-  const valueWithUID = jsIdentifier(identifierName, uid, comments)
+  const valueWithUID = jsIdentifier(
+    identifierName,
+    uid,
+    createNodeSourceMap(sourceFile, node),
+    comments,
+  )
   return withParserMetadata(
     valueWithUID,
     buildHighlightBoundsForUids(sourceFile, node, uid),
@@ -2141,20 +2212,6 @@ function parseElementAccessExpression(
   partOfExpression: PartOfExpression,
   applySteganography: SteganographyMode,
 ): Either<string, WithParserMetadata<JSElementAccess | JSExpressionMapOrOtherJavascript>> {
-  if (expression.questionDotToken != null) {
-    return parseAttributeOtherJavaScript(
-      sourceFile,
-      sourceText,
-      filename,
-      imports,
-      topLevelNames,
-      propsObjectName,
-      expression,
-      existingHighlightBounds,
-      alreadyExistingUIDs,
-      applySteganography,
-    )
-  }
   const parsedOnValue = parseAttributeExpression(
     sourceFile,
     sourceText,
@@ -2216,20 +2273,6 @@ function parsePropertyAccessExpression(
   partOfExpression: PartOfExpression,
   applySteganography: SteganographyMode,
 ): Either<string, WithParserMetadata<JSPropertyAccess | JSExpressionMapOrOtherJavascript>> {
-  if (expression.questionDotToken != null) {
-    return parseAttributeOtherJavaScript(
-      sourceFile,
-      sourceText,
-      filename,
-      imports,
-      topLevelNames,
-      propsObjectName,
-      expression,
-      existingHighlightBounds,
-      alreadyExistingUIDs,
-      applySteganography,
-    )
-  }
   const propertyName = expression.name.text
   const parsedOnValue = parseAttributeExpression(
     sourceFile,
@@ -2330,6 +2373,38 @@ function getAttributeExpression(
           buildHighlightBoundsForUids(sourceFile, initializer, withoutParserMetadata.uid),
           [],
           [],
+        ),
+      )
+    } else if (TS.isJsxElement(initializer.expression!)) {
+      const parseResult = parseOutJSXElements(
+        sourceFile,
+        sourceText,
+        filename,
+        [initializer.expression],
+        imports,
+        topLevelNames,
+        propsObjectName,
+        existingHighlightBounds,
+        alreadyExistingUIDs,
+        applySteganography,
+      )
+
+      if (parseResult.type === 'LEFT') {
+        return parseResult
+      }
+
+      const parsedElements = parseResult.value.value
+
+      if (parsedElements.length !== 1 || parsedElements[0].value.type !== 'JSX_ELEMENT') {
+        return left('Cannot parse jsx element')
+      }
+
+      return right(
+        withParserMetadata(
+          parsedElements[0].value,
+          parseResult.value.highlightBounds,
+          parseResult.value.propsUsed,
+          parseResult.value.definedElsewhere,
         ),
       )
     } else {
@@ -2760,7 +2835,7 @@ function getUIDBasedOnElement(
   } else if (Array.isArray(props)) {
     cleansedProps = clearAttributesSourceMaps(clearAttributesUniqueIDs(props))
   } else {
-    cleansedProps = clearAttributeSourceMaps(clearExpressionUniqueIDs(props))
+    cleansedProps = clearExpressionSourceMaps(clearExpressionUniqueIDs(props))
   }
   const hash = Hash({
     fileName: sourceFile.fileName,

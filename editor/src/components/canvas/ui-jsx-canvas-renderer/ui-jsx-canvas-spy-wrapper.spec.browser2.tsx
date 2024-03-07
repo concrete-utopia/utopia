@@ -579,7 +579,7 @@ describe('Spy Wrapper Template Path Tests', () => {
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance:other-button-root": Object {
           "name": "div",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance:other-button-root/ba0": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance:other-button-root/e06": Object {
           "name": "not-jsx-element",
         },
         "storyboard/scene-2": Object {
@@ -682,7 +682,7 @@ describe('Spy Wrapper Template Path Tests', () => {
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance:other-button-root": Object {
           "name": "div",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance:other-button-root/ba0": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance:other-button-root/e06": Object {
           "name": "not-jsx-element",
         },
         "storyboard/scene-2": Object {
@@ -1862,7 +1862,7 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/expr/hi-element~~~2:hi-element-root": Object {
           "name": "div",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/expr/hi-element~~~2:hi-element-root/338": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/expr/hi-element~~~2:hi-element-root/dad": Object {
           "name": "not-jsx-element",
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/expr/hi-element~~~3": Object {
@@ -1974,7 +1974,7 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/expr/hi-element~~~2:hi-element-root": Object {
           "name": "div",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/expr/hi-element~~~2:hi-element-root/338": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/expr/hi-element~~~2:hi-element-root/dad": Object {
           "name": "not-jsx-element",
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/expr/hi-element~~~3": Object {

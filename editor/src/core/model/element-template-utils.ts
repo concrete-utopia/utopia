@@ -62,8 +62,8 @@ import {
 } from '../shared/uid-utils'
 import { assertNever } from '../shared/utils'
 import { getComponentsFromTopLevelElements, isSceneAgainstImports } from './project-file-utils'
-import type { GetJSXAttributeResult } from '../shared/jsx-attributes'
-import { getJSXAttributesAtPath } from '../shared/jsx-attributes'
+import type { GetJSXAttributeResult } from '../shared/jsx-attribute-utils'
+import { getJSXAttributesAtPath } from '../shared/jsx-attribute-utils'
 import { forceNotNull } from '../shared/optional-utils'
 import {
   conditionalWhenFalseOptic,
@@ -931,6 +931,7 @@ function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttributes): b
           return true
         case 'JS_PROPERTY_ACCESS':
         case 'JS_ELEMENT_ACCESS':
+        case 'JSX_ELEMENT':
           return false
         default:
           const _exhaustiveCheck: never = styleAttribute
@@ -992,6 +993,7 @@ function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttributes): b
                   isJSIdentifierForName(styleAttribute.onValue, 'style')
                 )
               case 'JS_ELEMENT_ACCESS':
+              case 'JSX_ELEMENT':
                 return false
               default:
                 const _exhaustiveCheck: never = styleAttribute
@@ -1144,6 +1146,7 @@ export function propertyComesFromPropsStyle(
           return assertNever(boundParam)
       }
     case 'JS_ELEMENT_ACCESS':
+    case 'JSX_ELEMENT':
       return false
     case 'JS_PROPERTY_ACCESS':
       return propertyAccessLookupForPropsStyleProperty(propsParam, attribute, propName)
@@ -1297,6 +1300,12 @@ export function attributeUsesProperty(
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
       return false
+    case 'JSX_ELEMENT':
+      const fromChildren = attribute.children.some((child) => {
+        return elementUsesProperty(child, propsParam, property)
+      })
+      const fromAttributes = attributesUseProperty(attribute.props, propsParam, property)
+      return fromChildren || fromAttributes
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return codeUsesProperty(attribute.javascript, propsParam, property)
@@ -1355,9 +1364,6 @@ export function elementChildSupportsChildrenAlsoText(
   metadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
 ): ElementSupportsChildren | null {
-  if (isJSExpression(element)) {
-    return 'doesNotSupportChildren'
-  }
   if (isJSXConditionalExpression(element)) {
     if (isTextEditableConditional(path, metadata, elementPathTree)) {
       return 'conditionalWithText'
@@ -1370,20 +1376,22 @@ export function elementChildSupportsChildrenAlsoText(
   if (elementOnlyHasTextChildren(element)) {
     // Prevent re-parenting into an element that only has text children, as that is rarely a desired goal.
     return 'hasOnlyTextChildren'
-  } else {
-    if (isJSXElement(element)) {
-      if (isIntrinsicElement(element.name)) {
-        return intrinsicHTMLElementNamesThatSupportChildren.includes(element.name.baseVariable)
-          ? 'supportsChildren'
-          : 'doesNotSupportChildren'
-      }
-      if (element.children.length > 0) {
-        return 'supportsChildren'
-      }
-    }
-    // We don't know at this stage.
-    return null
   }
+  if (isJSXElement(element)) {
+    if (isIntrinsicElement(element.name)) {
+      return intrinsicHTMLElementNamesThatSupportChildren.includes(element.name.baseVariable)
+        ? 'supportsChildren'
+        : 'doesNotSupportChildren'
+    }
+    if (element.children.length > 0) {
+      return 'supportsChildren'
+    }
+  }
+  if (isJSExpression(element)) {
+    return 'doesNotSupportChildren'
+  }
+
+  return null
 }
 
 export function pathPartsFromJSXElementChild(

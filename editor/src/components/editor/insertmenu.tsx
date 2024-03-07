@@ -23,7 +23,7 @@ import {
   jsxElementNameEquals,
   setJSXAttributesAttribute,
 } from '../../core/shared/element-template'
-import { setJSXValueInAttributeAtPath } from '../../core/shared/jsx-attributes'
+import { setJSXValueInAttributeAtPath } from '../../core/shared/jsx-attribute-utils'
 import type { CanvasVector } from '../../core/shared/math-utils'
 import { canvasPoint, point, windowPoint } from '../../core/shared/math-utils'
 import type {

@@ -57,17 +57,17 @@ import {
   jsxMapExpression,
 } from './element-template'
 import { shallowEqual } from './equality-utils'
-import {
-  getModifiableJSXAttributeAtPath,
-  jsxSimpleAttributeToValue,
-  setJSXValueAtPath,
-} from './jsx-attributes'
 import { objectMap } from './object-utils'
 import type { ElementPath, HighlightBoundsForUids } from './project-file-types'
 import * as PP from './property-path'
 import { assertNever } from './utils'
 import fastDeepEquals from 'fast-deep-equal'
 import { emptySet } from './set-utils'
+import {
+  getModifiableJSXAttributeAtPath,
+  jsxSimpleAttributeToValue,
+  setJSXValueAtPath,
+} from './jsx-attribute-utils'
 
 export const MOCK_NEXT_GENERATED_UIDS: { current: Array<string> } = { current: [] }
 export const MOCK_NEXT_GENERATED_UIDS_IDX = { current: 0 }
@@ -500,6 +500,8 @@ export function fixUtopiaElement(
         return fixJSPropertyAccess(value)
       case 'JS_IDENTIFIER':
         return fixJSIdentifier(value)
+      case 'JSX_ELEMENT':
+        return fixJSXElement(value)
       default:
         assertNever(value)
     }

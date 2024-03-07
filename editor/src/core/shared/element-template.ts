@@ -23,7 +23,6 @@ import { addAllUniquely, mapDropNulls } from './array-utils'
 import { objectMap } from './object-utils'
 import type { CSSPosition, FlexDirection } from '../../components/inspector/common/css-utils'
 import type { ModifiableAttribute } from './jsx-attributes'
-import { jsxSimpleAttributeToValue } from './jsx-attributes'
 import * as EP from './element-path'
 import { firstLetterIsLowerCase } from './string-utils'
 import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
@@ -34,6 +33,7 @@ import { allComments } from './comment-flags'
 import { defaultIndexHtmlFilePath } from '../../components/editor/store/editor-state'
 import type { Optic } from './optics/optics'
 import { fromField } from './optics/optic-creators'
+import { jsxSimpleAttributeToValue } from './jsx-attribute-utils'
 
 export interface ParsedComments {
   leadingComments: Array<Comment>
@@ -433,13 +433,20 @@ export interface JSIdentifier extends WithComments {
   type: 'JS_IDENTIFIER'
   name: string
   uid: string
+  sourceMap: RawSourceMap | null
 }
 
-export function jsIdentifier(name: string, uid: string, comments: ParsedComments): JSIdentifier {
+export function jsIdentifier(
+  name: string,
+  uid: string,
+  sourceMap: RawSourceMap | null,
+  comments: ParsedComments,
+): JSIdentifier {
   return {
     type: 'JS_IDENTIFIER',
     name: name,
     uid: uid,
+    sourceMap: sourceMap,
     comments: comments,
   }
 }
@@ -455,24 +462,35 @@ export function isJSIdentifierForName(
   return isJSIdentifier(expression) && expression.name === name
 }
 
+export type OptionallyChained = 'not-optionally-chained' | 'optionally-chained'
+
 export interface JSPropertyAccess extends WithComments {
   type: 'JS_PROPERTY_ACCESS'
   onValue: JSExpression
   property: string
   uid: string
+  sourceMap: RawSourceMap | null
+  originalJavascript: string
+  optionallyChained: OptionallyChained
 }
 
 export function jsPropertyAccess(
   onValue: JSExpression,
   property: string,
   uid: string,
+  sourceMap: RawSourceMap | null,
   comments: ParsedComments,
+  originalJavascript: string,
+  optionallyChained: OptionallyChained,
 ): JSPropertyAccess {
   return {
     type: 'JS_PROPERTY_ACCESS',
     onValue: onValue,
     property: property,
     uid: uid,
+    sourceMap: sourceMap,
+    originalJavascript: originalJavascript,
+    optionallyChained: optionallyChained,
     comments: comments,
   }
 }
@@ -493,19 +511,28 @@ export interface JSElementAccess extends WithComments {
   onValue: JSExpression
   element: JSExpression
   uid: string
+  sourceMap: RawSourceMap | null
+  originalJavascript: string
+  optionallyChained: OptionallyChained
 }
 
 export function jsElementAccess(
   onValue: JSExpression,
   element: JSExpression,
   uid: string,
+  sourceMap: RawSourceMap | null,
   comments: ParsedComments,
+  originalJavascript: string,
+  optionallyChained: OptionallyChained,
 ): JSElementAccess {
   return {
     type: 'JS_ELEMENT_ACCESS',
     onValue: onValue,
     element: element,
     uid: uid,
+    sourceMap: sourceMap,
+    originalJavascript: originalJavascript,
+    optionallyChained: optionallyChained,
     comments: comments,
   }
 }
@@ -524,6 +551,7 @@ export type JSExpression =
   | JSExpressionNestedObject
   | JSExpressionFunctionCall
   | JSXMapExpression
+  | JSXElement
 
 export type JSExpressionMapOrOtherJavascript = JSExpressionOtherJavaScript | JSXMapExpression
 
@@ -568,6 +596,7 @@ export function simplifyAttributeIfPossible(attribute: JSExpression): JSExpressi
     case 'JS_IDENTIFIER':
     case 'JS_ELEMENT_ACCESS':
     case 'JS_PROPERTY_ACCESS':
+    case 'JSX_ELEMENT':
       return attribute
     case 'ATTRIBUTE_NESTED_ARRAY':
       let simpleArray: Array<unknown> = []
@@ -656,6 +685,8 @@ export function simplifyAttributeIfPossible(attribute: JSExpression): JSExpressi
 
 export function clearExpressionUniqueIDs(attribute: JSExpression): JSExpression {
   switch (attribute.type) {
+    case 'JSX_ELEMENT':
+      return jsxElement(attribute.name, '', attribute.props, attribute.children)
     case 'ATTRIBUTE_VALUE':
       return jsExpressionValue(attribute.value, attribute.comments, '')
     case 'JSX_MAP_EXPRESSION':
@@ -678,20 +709,26 @@ export function clearExpressionUniqueIDs(attribute: JSExpression): JSExpression 
         '',
       )
     case 'JS_IDENTIFIER':
-      return jsIdentifier(attribute.name, '', attribute.comments)
+      return jsIdentifier(attribute.name, '', attribute.sourceMap, attribute.comments)
     case 'JS_PROPERTY_ACCESS':
       return jsPropertyAccess(
         clearExpressionUniqueIDs(attribute.onValue),
         attribute.property,
         '',
+        attribute.sourceMap,
         attribute.comments,
+        attribute.originalJavascript,
+        attribute.optionallyChained,
       )
     case 'JS_ELEMENT_ACCESS':
       return jsElementAccess(
         clearExpressionUniqueIDs(attribute.onValue),
         clearExpressionUniqueIDs(attribute.element),
         '',
+        attribute.sourceMap,
         attribute.comments,
+        attribute.originalJavascript,
+        attribute.optionallyChained,
       )
     case 'ATTRIBUTE_FUNCTION_CALL':
       return jsExpressionFunctionCall(
@@ -735,8 +772,47 @@ export function clearJSXAttributeOtherJavaScriptSourceMaps(
   }
 }
 
-export function clearAttributeSourceMaps(attribute: JSExpression): JSExpression {
+function clearJSXElementChildSourceMaps(element: JSXElementChild): JSXElementChild {
+  if (isJSXElement(element)) {
+    return jsxElement(
+      element.name,
+      element.uid,
+      clearAttributesSourceMaps(element.props),
+      element.children.map((c) => clearJSXElementChildSourceMaps(c)),
+    )
+  } else if (isJSExpression(element)) {
+    return clearExpressionSourceMaps(element)
+  } else if (isJSXTextBlock(element)) {
+    return element
+  } else if (isJSXFragment(element)) {
+    return jsxFragment(
+      element.uid,
+      element.children.map((c) => clearJSXElementChildSourceMaps(c)),
+      element.longForm,
+    )
+  } else if (isJSXConditionalExpression(element)) {
+    return jsxConditionalExpression(
+      element.uid,
+      element.condition,
+      element.originalConditionString,
+      clearJSXElementChildSourceMaps(element.whenTrue),
+      clearJSXElementChildSourceMaps(element.whenFalse),
+      element.comments,
+    )
+  } else {
+    assertNever(element)
+  }
+}
+
+export function clearExpressionSourceMaps(attribute: JSExpression): JSExpression {
   switch (attribute.type) {
+    case 'JSX_ELEMENT':
+      return jsxElement(
+        attribute.name,
+        attribute.uid,
+        clearAttributesSourceMaps(attribute.props),
+        attribute.children.map((c) => clearJSXElementChildSourceMaps(c)),
+      )
     case 'ATTRIBUTE_VALUE':
       return attribute
     case 'JSX_MAP_EXPRESSION':
@@ -747,9 +823,9 @@ export function clearAttributeSourceMaps(attribute: JSExpression): JSExpression 
         attribute.content.map((elem) => {
           switch (elem.type) {
             case 'ARRAY_SPREAD':
-              return jsxArraySpread(clearAttributeSourceMaps(elem.value), emptyComments)
+              return jsxArraySpread(clearExpressionSourceMaps(elem.value), emptyComments)
             case 'ARRAY_VALUE':
-              return jsxArrayValue(clearAttributeSourceMaps(elem.value), emptyComments)
+              return jsxArrayValue(clearExpressionSourceMaps(elem.value), emptyComments)
             default:
               const _exhaustiveCheck: never = elem
               throw new Error(`Unhandled array element type ${JSON.stringify(elem)}`)
@@ -759,25 +835,31 @@ export function clearAttributeSourceMaps(attribute: JSExpression): JSExpression 
         attribute.uid,
       )
     case 'JS_IDENTIFIER':
-      return jsIdentifier(attribute.name, attribute.uid, attribute.comments)
+      return jsIdentifier(attribute.name, attribute.uid, null, attribute.comments)
     case 'JS_PROPERTY_ACCESS':
       return jsPropertyAccess(
-        clearAttributeSourceMaps(attribute.onValue),
+        clearExpressionSourceMaps(attribute.onValue),
         attribute.property,
         attribute.uid,
+        null,
         attribute.comments,
+        attribute.originalJavascript,
+        attribute.optionallyChained,
       )
     case 'JS_ELEMENT_ACCESS':
       return jsElementAccess(
-        clearAttributeSourceMaps(attribute.onValue),
-        clearAttributeSourceMaps(attribute.element),
+        clearExpressionSourceMaps(attribute.onValue),
+        clearExpressionSourceMaps(attribute.element),
         attribute.uid,
+        null,
         attribute.comments,
+        attribute.originalJavascript,
+        attribute.optionallyChained,
       )
     case 'ATTRIBUTE_FUNCTION_CALL':
       return jsExpressionFunctionCall(
         attribute.functionName,
-        attribute.parameters.map(clearAttributeSourceMaps),
+        attribute.parameters.map(clearExpressionSourceMaps),
         attribute.uid,
       )
     case 'ATTRIBUTE_NESTED_OBJECT':
@@ -785,11 +867,11 @@ export function clearAttributeSourceMaps(attribute: JSExpression): JSExpression 
         attribute.content.map((prop) => {
           switch (prop.type) {
             case 'SPREAD_ASSIGNMENT':
-              return jsxSpreadAssignment(clearAttributeSourceMaps(prop.value), emptyComments)
+              return jsxSpreadAssignment(clearExpressionSourceMaps(prop.value), emptyComments)
             case 'PROPERTY_ASSIGNMENT':
               return jsxPropertyAssignment(
                 prop.key,
-                clearAttributeSourceMaps(prop.value),
+                clearExpressionSourceMaps(prop.value),
                 emptyComments,
                 emptyComments,
               )
@@ -805,6 +887,10 @@ export function clearAttributeSourceMaps(attribute: JSExpression): JSExpression 
       const _exhaustiveCheck: never = attribute
       throw new Error(`Unhandled attribute ${JSON.stringify(attribute)}`)
   }
+}
+
+export function clearExpressionUniqueIDsAndSourceMaps(expression: JSExpression): JSExpression {
+  return clearExpressionUniqueIDs(clearExpressionSourceMaps(expression))
 }
 
 export function isJSXAttributeValue(element: JSXElementChild): element is JSExpressionValue<any> {
@@ -835,6 +921,12 @@ export function modifiableAttributeIsAttributeOtherJavaScript(
   attribute: ModifiableAttribute,
 ): attribute is JSExpressionOtherJavaScript {
   return attribute != null && attribute.type === 'ATTRIBUTE_OTHER_JAVASCRIPT'
+}
+
+export function modifiableAttributeIsJsxElement(
+  attribute: ModifiableAttribute,
+): attribute is JSXElement {
+  return attribute != null && attribute.type === 'JSX_ELEMENT'
 }
 
 export function modifiableAttributeIsAttributeFunctionCall(
@@ -1010,6 +1102,11 @@ const AllowedExternalReferences = ['React', 'utopiaCanvasJSXLookup']
 
 export function attributeReferencesElsewhere(attribute: JSExpression): boolean {
   switch (attribute.type) {
+    case 'JSX_ELEMENT':
+      return (
+        attribute.props.some(jsxAttributesPartReferencesElsewhere) ||
+        attribute.children.some(elementReferencesElsewhere)
+      )
     case 'ATTRIBUTE_VALUE':
       return false
     case 'JSX_MAP_EXPRESSION':
@@ -1139,6 +1236,8 @@ export function getElementReferencesElsewherePathsFromProps(
 
 export function getDefinedElsewhereFromAttribute(attribute: JSExpression): Array<string> {
   switch (attribute.type) {
+    case 'JSX_ELEMENT':
+      return getDefinedElsewhereFromElement(attribute)
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return attribute.definedElsewhere
     case 'ATTRIBUTE_NESTED_OBJECT':
@@ -1273,12 +1372,12 @@ export function clearAttributesSourceMaps(attributes: JSXAttributes): JSXAttribu
       case 'JSX_ATTRIBUTES_ENTRY':
         return jsxAttributesEntry(
           attribute.key,
-          clearAttributeSourceMaps(attribute.value),
+          clearExpressionSourceMaps(attribute.value),
           attribute.comments,
         )
       case 'JSX_ATTRIBUTES_SPREAD':
         return jsxAttributesSpread(
-          clearAttributeSourceMaps(attribute.spreadValue),
+          clearExpressionSourceMaps(attribute.spreadValue),
           attribute.comments,
         )
       default:
