@@ -6,8 +6,8 @@ export function auth0LoginURL(): string {
 
   const useAuth0 =
     ServerEnvironment.Auth0Endpoint !== '' &&
-    ServerEnvironment.Auth0ClientId != '' &&
-    ServerEnvironment.Auth0RedirectUri != ''
+    ServerEnvironment.Auth0ClientId !== '' &&
+    ServerEnvironment.Auth0RedirectUri !== ''
   if (!useAuth0) {
     console.warn(
       'Auth0 is disabled, if you need it be sure to set the AUTH0_ENDPOINT, AUTH0_CLIENT_ID, AUTH0_REDIRECT_URI environment variables',
