@@ -193,6 +193,32 @@ function transformAtPathOptionally(
           }
         }
       }
+      if (isJSXElement(element)) {
+        let propsUpdated: boolean = false
+        const updatedProps = element.props.map((prop) => {
+          if (prop.type === 'JSX_ATTRIBUTES_ENTRY') {
+            const propValue = prop.value
+            if (isJSXElement(propValue)) {
+              const updated = findAndTransformAtPathInner(propValue, tailPath)
+              if (updated != null && isJSXElement(updated)) {
+                propsUpdated = true
+                return {
+                  ...prop,
+                  value: updated,
+                }
+              }
+            }
+          }
+          return prop
+        })
+
+        if (propsUpdated) {
+          return {
+            ...element,
+            props: updatedProps,
+          }
+        }
+      }
     } else if (isJSExpressionMapOrOtherJavaScript(element)) {
       if (element.uid === firstUIDOrIndex) {
         let childrenUpdated: boolean = false
@@ -338,6 +364,19 @@ export function findJSXElementChildAtPath(
             const childResult = findAtPathInner(child, tailPath)
             if (childResult != null) {
               return childResult
+            }
+          }
+          if (isJSXElement(element)) {
+            for (const prop of element.props) {
+              if (prop.type === 'JSX_ATTRIBUTES_ENTRY') {
+                const propValue = prop.value
+                if (isJSXElement(propValue)) {
+                  const propResult = findAtPathInner(propValue, tailPath)
+                  if (propResult != null) {
+                    return propResult
+                  }
+                }
+              }
             }
           }
         }
