@@ -299,7 +299,7 @@ export const CookieConsentBar = () => {
         borderRadius: 5,
         backgroundColor: '#00FC00',
       }}
-      //   onAccept={enableCookies}
+      onAccept={enableCookies}
     >
       This website uses cookies to enhance the user experience.
     </CookieConsent>
