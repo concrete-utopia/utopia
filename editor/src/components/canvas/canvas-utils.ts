@@ -1826,22 +1826,19 @@ function getValidElementPathsFromElement(
       fastForEach(element.props, (p) => {
         if (p.type === 'JSX_ATTRIBUTES_ENTRY') {
           const prop = p.value
-          if (prop.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
-            const elementsWithin = prop.elementsWithin
-            fastForEach(Object.values(elementsWithin), (e) =>
-              paths.push(
-                ...getValidElementPathsFromElement(
-                  focusedElementPath,
-                  e,
-                  path,
-                  projectContents,
-                  filePath,
-                  uiFilePath,
-                  isSceneWithOneChild,
-                  false,
-                  resolve,
-                  getRemixValidPathsGenerationContext,
-                ),
+          if (prop.type === 'JSX_ELEMENT') {
+            paths.push(
+              ...getValidElementPathsFromElement(
+                focusedElementPath,
+                prop,
+                path,
+                projectContents,
+                filePath,
+                uiFilePath,
+                isSceneWithOneChild,
+                false,
+                resolve,
+                getRemixValidPathsGenerationContext,
               ),
             )
           }
