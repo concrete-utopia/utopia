@@ -193,6 +193,32 @@ function transformAtPathOptionally(
           }
         }
       }
+      if (isJSXElement(element)) {
+        let propsUpdated: boolean = false
+        const updatedProps = element.props.map((prop) => {
+          if (prop.type === 'JSX_ATTRIBUTES_ENTRY') {
+            const propValue = prop.value
+            if (isJSXElement(propValue)) {
+              const updated = findAndTransformAtPathInner(propValue, tailPath)
+              if (updated != null && isJSXElement(updated)) {
+                propsUpdated = true
+                return {
+                  ...prop,
+                  value: updated,
+                }
+              }
+            }
+          }
+          return prop
+        })
+
+        if (propsUpdated) {
+          return {
+            ...element,
+            props: updatedProps,
+          }
+        }
+      }
     } else if (isJSExpressionMapOrOtherJavaScript(element)) {
       if (element.uid === firstUIDOrIndex) {
         let childrenUpdated: boolean = false
@@ -338,6 +364,19 @@ export function findJSXElementChildAtPath(
             const childResult = findAtPathInner(child, tailPath)
             if (childResult != null) {
               return childResult
+            }
+          }
+          if (isJSXElement(element)) {
+            for (const prop of element.props) {
+              if (prop.type === 'JSX_ATTRIBUTES_ENTRY') {
+                const propValue = prop.value
+                if (isJSXElement(propValue)) {
+                  const propResult = findAtPathInner(propValue, tailPath)
+                  if (propResult != null) {
+                    return propResult
+                  }
+                }
+              }
             }
           }
         }
@@ -851,6 +890,7 @@ function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttributes): b
           return true
         case 'JS_PROPERTY_ACCESS':
         case 'JS_ELEMENT_ACCESS':
+        case 'JSX_ELEMENT':
           return false
         default:
           const _exhaustiveCheck: never = styleAttribute
@@ -912,6 +952,7 @@ function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttributes): b
                   isJSIdentifierForName(styleAttribute.onValue, 'style')
                 )
               case 'JS_ELEMENT_ACCESS':
+              case 'JSX_ELEMENT':
                 return false
               default:
                 const _exhaustiveCheck: never = styleAttribute
@@ -1064,6 +1105,7 @@ export function propertyComesFromPropsStyle(
           return assertNever(boundParam)
       }
     case 'JS_ELEMENT_ACCESS':
+    case 'JSX_ELEMENT':
       return false
     case 'JS_PROPERTY_ACCESS':
       return propertyAccessLookupForPropsStyleProperty(propsParam, attribute, propName)
@@ -1217,6 +1259,12 @@ export function attributeUsesProperty(
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
       return false
+    case 'JSX_ELEMENT':
+      const fromChildren = attribute.children.some((child) => {
+        return elementUsesProperty(child, propsParam, property)
+      })
+      const fromAttributes = attributesUseProperty(attribute.props, propsParam, property)
+      return fromChildren || fromAttributes
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return codeUsesProperty(attribute.javascript, propsParam, property)
@@ -1275,9 +1323,6 @@ export function elementChildSupportsChildrenAlsoText(
   metadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
 ): ElementSupportsChildren | null {
-  if (isJSExpression(element)) {
-    return 'doesNotSupportChildren'
-  }
   if (isJSXConditionalExpression(element)) {
     if (isTextEditableConditional(path, metadata, elementPathTree)) {
       return 'conditionalWithText'
@@ -1290,20 +1335,22 @@ export function elementChildSupportsChildrenAlsoText(
   if (elementOnlyHasTextChildren(element)) {
     // Prevent re-parenting into an element that only has text children, as that is rarely a desired goal.
     return 'hasOnlyTextChildren'
-  } else {
-    if (isJSXElement(element)) {
-      if (isIntrinsicElement(element.name)) {
-        return intrinsicHTMLElementNamesThatSupportChildren.includes(element.name.baseVariable)
-          ? 'supportsChildren'
-          : 'doesNotSupportChildren'
-      }
-      if (element.children.length > 0) {
-        return 'supportsChildren'
-      }
-    }
-    // We don't know at this stage.
-    return null
   }
+  if (isJSXElement(element)) {
+    if (isIntrinsicElement(element.name)) {
+      return intrinsicHTMLElementNamesThatSupportChildren.includes(element.name.baseVariable)
+        ? 'supportsChildren'
+        : 'doesNotSupportChildren'
+    }
+    if (element.children.length > 0) {
+      return 'supportsChildren'
+    }
+  }
+  if (isJSExpression(element)) {
+    return 'doesNotSupportChildren'
+  }
+
+  return null
 }
 
 export function pathPartsFromJSXElementChild(

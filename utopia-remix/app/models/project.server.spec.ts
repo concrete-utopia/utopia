@@ -9,6 +9,7 @@ import {
   renameProject,
   restoreDeletedProject,
   softDeleteProject,
+  getProjectOwnerById,
 } from './project.server'
 
 describe('project model', () => {
@@ -147,6 +148,31 @@ describe('project model', () => {
       await softDeleteProject({ id: 'foo', userId: 'bob' })
       const got = await prisma.project.findFirst({ where: { proj_id: 'foo' } })
       expect(got?.deleted).toEqual(true)
+    })
+  })
+
+  describe('getProjectOwnerById', () => {
+    beforeEach(async () => {
+      await createTestUser(prisma, { id: 'bob' })
+      await createTestUser(prisma, { id: 'alice' })
+      await createTestProject(prisma, { id: 'foo', ownerId: 'bob' })
+      await createTestProject(prisma, {
+        id: 'deleted-project',
+        ownerId: 'bob',
+        deleted: true,
+      })
+    })
+    it('returns the project owner', async () => {
+      const got = await getProjectOwnerById({ id: 'foo' }, { includeDeleted: false })
+      expect(got).toEqual('bob')
+    })
+    it('doesnt return the owner if the project is soft-deleted', async () => {
+      const got = await getProjectOwnerById({ id: 'deleted-project' }, { includeDeleted: false })
+      expect(got).toEqual(null)
+    })
+    it('returns soft-deleted owner if includeDeleted is true', async () => {
+      const got = await getProjectOwnerById({ id: 'deleted-project' }, { includeDeleted: true })
+      expect(got).toEqual('bob')
     })
   })
 

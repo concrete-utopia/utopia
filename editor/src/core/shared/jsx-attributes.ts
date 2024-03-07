@@ -54,11 +54,18 @@ import {
   jsxFragment,
 } from './element-template'
 import { resolveParamsAndRunJsCode } from './javascript-cache'
-import type { PropertyPath, PropertyPathPart } from './project-file-types'
+import type {
+  ElementPath,
+  HighlightBoundsForUids,
+  Imports,
+  PropertyPath,
+  PropertyPathPart,
+} from './project-file-types'
 import * as PP from './property-path'
 import { NO_OP, assertNever, fastForEach } from './utils'
 import { optionalMap } from './optional-utils'
 import { getAllObjectPaths } from './object-utils'
+import type { RenderContext } from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-element-renderer-utils'
 import { renderCoreElement } from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-element-renderer-utils'
 import { emptyUiJsxCanvasContextData } from '../../components/canvas/ui-jsx-canvas'
 import type { UIFileBase64Blobs } from '../../components/editor/store/editor-state'
@@ -75,6 +82,8 @@ import {
   jsxSimpleAttributeToValue,
   dropKeyFromNestedObject,
 } from './jsx-attribute-utils'
+import * as EP from './element-path'
+import { render } from 'enzyme'
 
 export type AnyMap = { [key: string]: any }
 
@@ -92,6 +101,7 @@ export function jsxFunctionAttributeToValue(
     case 'JS_ELEMENT_ACCESS':
     case 'JS_PROPERTY_ACCESS':
     case 'JS_IDENTIFIER':
+    case 'JSX_ELEMENT':
       return left(null)
     case 'ATTRIBUTE_FUNCTION_CALL':
       const extractedSimpleValueParameters = traverseEither(
@@ -125,6 +135,7 @@ export function jsxFunctionAttributeToRawValue(
     case 'JS_ELEMENT_ACCESS':
     case 'JS_PROPERTY_ACCESS':
     case 'JS_IDENTIFIER':
+    case 'JSX_ELEMENT':
       return left(null)
     case 'ATTRIBUTE_FUNCTION_CALL':
       return right({
@@ -137,14 +148,16 @@ export function jsxFunctionAttributeToRawValue(
 }
 
 export function jsxAttributeToValue(
-  filePath: string,
   inScope: MapLike<any>,
-  requireResult: MapLike<any>,
   attribute: JSExpression,
+  elementPath: ElementPath | null,
+  renderContext: RenderContext,
+  uid: string | undefined,
+  codeError: Error | null,
 ): any {
   if (isExpressionAccessLike(attribute)) {
     try {
-      return innerAttributeToValue(filePath, inScope, requireResult, attribute)
+      return innerAttributeToValue(attribute, elementPath, inScope, renderContext, uid, codeError)
     } catch {
       const originalJavascript = isJSIdentifier(attribute)
         ? attribute.name
@@ -161,10 +174,15 @@ export function jsxAttributeToValue(
         attribute.comments,
         attribute.uid,
       )
-      return resolveParamsAndRunJsCode(filePath, otherJavaScript, requireResult, inScope)
+      return resolveParamsAndRunJsCode(
+        renderContext.filePath,
+        otherJavaScript,
+        renderContext.requireResult,
+        inScope,
+      )
     }
   } else {
-    return innerAttributeToValue(filePath, inScope, requireResult, attribute)
+    return innerAttributeToValue(attribute, elementPath, inScope, renderContext, uid, codeError)
   }
 }
 
@@ -182,12 +200,18 @@ function isExpressionAccessLike(
 }
 
 export function innerAttributeToValue(
-  filePath: string,
-  inScope: MapLike<any>,
-  requireResult: MapLike<any>,
   attribute: JSExpression,
+  elementPath: ElementPath | null,
+  inScope: MapLike<any>,
+  renderContext: RenderContext,
+  uid: string | undefined,
+  codeError: Error | null,
 ): any {
+  const { filePath, requireResult } = renderContext
   switch (attribute.type) {
+    case 'JSX_ELEMENT':
+      const innerPath = optionalMap((path) => EP.appendToPath(path, attribute.uid), elementPath)
+      return renderCoreElement(attribute, innerPath, inScope, renderContext, uid, codeError)
     case 'ATTRIBUTE_VALUE':
       return attribute.value
     case 'JS_IDENTIFIER':
@@ -199,7 +223,15 @@ export function innerAttributeToValue(
         throw new Error('Identifier does not exist.')
       }
     case 'JS_PROPERTY_ACCESS': {
-      const onValue = jsxAttributeToValue(filePath, inScope, requireResult, attribute.onValue)
+      const onValue = jsxAttributeToValue(
+        inScope,
+        attribute.onValue,
+        elementPath,
+        renderContext,
+        uid,
+        codeError,
+      )
+
       if (onValue == null) {
         if (attribute.optionallyChained === 'optionally-chained') {
           return undefined
@@ -215,8 +247,22 @@ export function innerAttributeToValue(
       }
     }
     case 'JS_ELEMENT_ACCESS': {
-      const onValue = jsxAttributeToValue(filePath, inScope, requireResult, attribute.onValue)
-      const element = jsxAttributeToValue(filePath, inScope, requireResult, attribute.element)
+      const onValue = jsxAttributeToValue(
+        inScope,
+        attribute.onValue,
+        elementPath,
+        renderContext,
+        uid,
+        codeError,
+      )
+      const element = jsxAttributeToValue(
+        inScope,
+        attribute.element,
+        elementPath,
+        renderContext,
+        uid,
+        codeError,
+      )
       if (attribute.optionallyChained === 'optionally-chained') {
         return onValue == null ? undefined : onValue[element]
       } else {
@@ -226,7 +272,14 @@ export function innerAttributeToValue(
     case 'ATTRIBUTE_NESTED_ARRAY':
       let returnArray: Array<any> = []
       for (const elem of attribute.content) {
-        const value = jsxAttributeToValue(filePath, inScope, requireResult, elem.value)
+        const value = jsxAttributeToValue(
+          inScope,
+          elem.value,
+          elementPath,
+          renderContext,
+          uid,
+          codeError,
+        )
         switch (elem.type) {
           case 'ARRAY_VALUE':
             returnArray.push(value)
@@ -243,7 +296,14 @@ export function innerAttributeToValue(
     case 'ATTRIBUTE_NESTED_OBJECT':
       let returnObject: { [key: string]: any } = {}
       for (const prop of attribute.content) {
-        const value = jsxAttributeToValue(filePath, inScope, requireResult, prop.value)
+        const value = jsxAttributeToValue(
+          inScope,
+          prop.value,
+          elementPath,
+          renderContext,
+          uid,
+          codeError,
+        )
 
         switch (prop.type) {
           case 'PROPERTY_ASSIGNMENT':
@@ -262,7 +322,7 @@ export function innerAttributeToValue(
       const foundFunction = (UtopiaUtils as any)[attribute.functionName]
       if (foundFunction != null) {
         const resolvedParameters = attribute.parameters.map((param) => {
-          return jsxAttributeToValue(filePath, inScope, requireResult, param)
+          return jsxAttributeToValue(inScope, param, elementPath, renderContext, uid, codeError)
         })
         return foundFunction(...resolvedParameters)
       }
@@ -276,21 +336,37 @@ export function innerAttributeToValue(
 }
 
 export function jsxAttributesToProps(
-  filePath: string,
   inScope: MapLike<any>,
   attributes: JSXAttributes,
-  requireResult: MapLike<any>,
+  elementPath: ElementPath | null,
+  renderContext: RenderContext,
+  uid: string | undefined,
+  codeError: Error | null,
 ): any {
   let result: any = {}
   for (const entry of attributes) {
     switch (entry.type) {
       case 'JSX_ATTRIBUTES_ENTRY':
-        result[entry.key] = jsxAttributeToValue(filePath, inScope, requireResult, entry.value)
+        result[entry.key] = jsxAttributeToValue(
+          inScope,
+          entry.value,
+          elementPath,
+          renderContext,
+          uid,
+          codeError,
+        )
         break
       case 'JSX_ATTRIBUTES_SPREAD':
         Object.assign(
           result,
-          jsxAttributeToValue(filePath, inScope, requireResult, entry.spreadValue),
+          jsxAttributeToValue(
+            inScope,
+            entry.spreadValue,
+            elementPath,
+            renderContext,
+            uid,
+            codeError,
+          ),
         )
         break
       default:
@@ -450,6 +526,7 @@ function unsetJSXValueInAttributeAtPath(
         case 'JS_ELEMENT_ACCESS':
         case 'JS_PROPERTY_ACCESS':
         case 'JS_IDENTIFIER':
+        case 'JSX_ELEMENT':
           return left('Cannot unset a value set inside a value set from elsewhere.')
         case 'ATTRIBUTE_NESTED_ARRAY':
           if (typeof attributeKey === 'number') {
@@ -566,6 +643,7 @@ function walkAttribute(
     case 'JS_IDENTIFIER':
     case 'JS_PROPERTY_ACCESS':
     case 'JS_ELEMENT_ACCESS':
+    case 'JSX_ELEMENT':
       break
     case 'ATTRIBUTE_NESTED_ARRAY':
       fastForEach(attribute.content, (elem, index) => {

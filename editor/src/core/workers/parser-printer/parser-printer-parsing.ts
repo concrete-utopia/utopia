@@ -2366,6 +2366,38 @@ function getAttributeExpression(
           [],
         ),
       )
+    } else if (TS.isJsxElement(initializer.expression!)) {
+      const parseResult = parseOutJSXElements(
+        sourceFile,
+        sourceText,
+        filename,
+        [initializer.expression],
+        imports,
+        topLevelNames,
+        propsObjectName,
+        existingHighlightBounds,
+        alreadyExistingUIDs,
+        applySteganography,
+      )
+
+      if (parseResult.type === 'LEFT') {
+        return parseResult
+      }
+
+      const parsedElements = parseResult.value.value
+
+      if (parsedElements.length !== 1 || parsedElements[0].value.type !== 'JSX_ELEMENT') {
+        return left('Cannot parse jsx element')
+      }
+
+      return right(
+        withParserMetadata(
+          parsedElements[0].value,
+          parseResult.value.highlightBounds,
+          parseResult.value.propsUsed,
+          parseResult.value.definedElsewhere,
+        ),
+      )
     } else {
       return parseAttributeExpression(
         sourceFile,

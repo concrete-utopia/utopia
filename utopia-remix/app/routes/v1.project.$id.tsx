@@ -13,6 +13,7 @@ export async function loader(args: LoaderFunctionArgs) {
       validator: validateProjectAccess(UserProjectPermission.CAN_VIEW_PROJECT, {
         errorMessage: 'Project not found',
         status: Status.NOT_FOUND,
+        getProjectId: (params) => params.id,
       }),
     },
   })
@@ -22,7 +23,9 @@ export async function action(args: ActionFunctionArgs) {
   return handle(args, {
     PUT: {
       handler: proxy,
-      validator: validateProjectAccess(UserProjectPermission.CAN_MANAGE_PROJECT),
+      validator: validateProjectAccess(UserProjectPermission.CAN_MANAGE_PROJECT, {
+        getProjectId: (params) => params.id,
+      }),
     },
   })
 }
