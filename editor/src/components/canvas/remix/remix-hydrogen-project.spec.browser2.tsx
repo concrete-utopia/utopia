@@ -10,7 +10,7 @@ import {
 import * as RemixOxygen from '@shopify/remix-oxygen'
 import * as PackageJSON from '../../../../package.json'
 
-describe('Hydrogen Project Using Real Server Calls - disable me if there is no internet access', () => {
+describe.only('Hydrogen Project Using Real Server Calls - disable me if there is no internet access', () => {
   it('can navigate in play mode to a detail page', async () => {
     console.log('logpoint 0')
     const renderResult = await renderTestEditorWithModel(
