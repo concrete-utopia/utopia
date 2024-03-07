@@ -46,6 +46,7 @@ import {
   useSortCompareProject,
 } from '../util/use-sort-compare-project'
 import { useCleanupOperations } from '../hooks/useCleanupOperations'
+import '@radix-ui/themes/styles.css'
 import { Flex, Text, Button } from '@radix-ui/themes'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
