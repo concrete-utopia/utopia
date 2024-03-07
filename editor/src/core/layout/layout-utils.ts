@@ -44,10 +44,9 @@ import type { ValueAtPath } from '../shared/jsx-attributes'
 import {
   setJSXValuesAtPaths,
   unsetJSXValuesAtPaths,
-  getJSXAttributesAtPath,
-  setJSXValueAtPath,
   getAllPathsFromAttributes,
 } from '../shared/jsx-attributes'
+import { getJSXAttributesAtPath, setJSXValueAtPath } from '../shared/jsx-attribute-utils'
 import type { PropertyPath, ElementPath } from '../shared/project-file-types'
 import { FlexLayoutHelpers } from './layout-helpers'
 import type { LayoutPinnedProp, StyleLayoutProp } from './layout-helpers-new'
@@ -793,6 +792,7 @@ export function roundAttributeLayoutValues(
       case 'JS_PROPERTY_ACCESS':
       case 'JS_ELEMENT_ACCESS':
       case 'JS_IDENTIFIER':
+      case 'JSX_ELEMENT':
         return workingAttributes
       default:
         const _exhaustiveCheck: never = value

@@ -12,8 +12,10 @@ export const projectCategoryButton = recipe({
       display: 'flex',
       alignItems: 'center',
       gap: 10,
-      padding: '0 14px',
+      padding: '3px 14px',
       height: 30,
+      fontWeight: 600,
+      fontSize: '12px',
       color: 'gray', //fix me to be theme responsive
     },
   ],

@@ -34,8 +34,8 @@ import {
   getAccumulatedElementsWithin,
   jsxAttributesToProps,
   jsxAttributeToValue,
-  setJSXValueAtPath,
 } from '../../../core/shared/jsx-attributes'
+import { setJSXValueAtPath } from '../../../core/shared/jsx-attribute-utils'
 import type {
   ElementPath,
   HighlightBoundsForUids,
@@ -78,27 +78,31 @@ import { RemixSceneComponent } from './remix-scene-component'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { jsxElementChildToText } from './jsx-element-child-to-text'
 
+export interface RenderContext {
+  rootScope: MapLike<any>
+  parentComponentInputProps: MapLike<any>
+  requireResult: MapLike<any>
+  hiddenInstances: Array<ElementPath>
+  displayNoneInstances: Array<ElementPath>
+  fileBlobs: UIFileBase64Blobs
+  validPaths: Set<string>
+  reactChildren: React.ReactNode | undefined
+  metadataContext: UiJsxCanvasContextData
+  updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData
+  jsxFactoryFunctionName: string | null
+  shouldIncludeCanvasRootInTheSpy: boolean
+  filePath: string
+  imports: Imports
+  code: string
+  highlightBounds: HighlightBoundsForUids | null
+  editedText: ElementPath | null
+  variablesInScope: VariableData
+}
+
 export function createLookupRender(
   elementPath: ElementPath | null,
-  rootScope: MapLike<any>,
-  parentComponentInputProps: MapLike<any>,
-  requireResult: MapLike<any>,
-  hiddenInstances: Array<ElementPath>,
-  displayNoneInstances: Array<ElementPath>,
-  fileBlobs: UIFileBase64Blobs,
-  validPaths: Set<string>,
-  reactChildren: React.ReactNode | undefined,
-  metadataContext: UiJsxCanvasContextData,
-  updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
-  jsxFactoryFunctionName: string | null,
-  shouldIncludeCanvasRootInTheSpy: boolean,
-  filePath: string,
-  imports: Imports,
-  code: string,
-  highlightBounds: HighlightBoundsForUids | null,
-  editedText: ElementPath | null,
+  context: RenderContext,
   renderLimit: number | null,
-  variablesInScope: VariableData,
   valuesInScopeFromParameters: Array<string>,
 ): (element: JSXElement, scope: MapLike<any>) => React.ReactChild | null {
   let index = 0
@@ -127,7 +131,7 @@ export function createLookupRender(
     })
 
     let innerVariablesInScope: VariableData = {
-      ...variablesInScope,
+      ...context.variablesInScope,
     }
     for (const valueInScope of valuesInScopeFromParameters) {
       innerVariablesInScope[valueInScope] = {
@@ -139,27 +143,10 @@ export function createLookupRender(
     return renderCoreElement(
       augmentedInnerElement,
       innerPath,
-      rootScope,
       scope,
-      parentComponentInputProps,
-      requireResult,
-      hiddenInstances,
-      displayNoneInstances,
-      fileBlobs,
-      validPaths,
+      { ...context, variablesInScope: innerVariablesInScope },
       generatedUID,
-      reactChildren,
-      metadataContext,
-      updateInvalidatedPaths,
-      jsxFactoryFunctionName,
       null,
-      shouldIncludeCanvasRootInTheSpy,
-      filePath,
-      imports,
-      code,
-      highlightBounds,
-      editedText,
-      innerVariablesInScope,
     )
   }
 }
@@ -185,28 +172,23 @@ function NoOpLookupRender(element: JSXElement, scope: MapLike<any>): React.React
 export function renderCoreElement(
   element: JSXElementChild,
   elementPath: ElementPath | null,
-  rootScope: MapLike<any>,
   inScope: MapLike<any>,
-  parentComponentInputProps: MapLike<any>,
-  requireResult: MapLike<any>,
-  hiddenInstances: Array<ElementPath>,
-  displayNoneInstances: Array<ElementPath>,
-  fileBlobs: UIFileBase64Blobs,
-  validPaths: Set<string>,
+  renderContext: RenderContext,
   uid: string | undefined,
-  reactChildren: React.ReactNode | undefined,
-  metadataContext: UiJsxCanvasContextData,
-  updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
-  jsxFactoryFunctionName: string | null,
   codeError: Error | null,
-  shouldIncludeCanvasRootInTheSpy: boolean,
-  filePath: string,
-  imports: Imports,
-  code: string,
-  highlightBounds: HighlightBoundsForUids | null,
-  editedText: ElementPath | null,
-  variablesInScope: VariableData,
 ): React.ReactChild {
+  const {
+    requireResult,
+    validPaths,
+    metadataContext,
+    updateInvalidatedPaths,
+    jsxFactoryFunctionName,
+    shouldIncludeCanvasRootInTheSpy,
+    filePath,
+    imports,
+    editedText,
+    variablesInScope,
+  } = renderContext
   if (codeError != null) {
     throw codeError
   }
@@ -218,29 +200,7 @@ export function renderCoreElement(
       const anyElementsWithin = Object.keys(elementsWithinProps).length > 0
 
       const innerRender = anyElementsWithin
-        ? createLookupRender(
-            elementPath,
-            rootScope,
-            parentComponentInputProps,
-            requireResult,
-            hiddenInstances,
-            displayNoneInstances,
-            fileBlobs,
-            validPaths,
-            reactChildren,
-            metadataContext,
-            updateInvalidatedPaths,
-            jsxFactoryFunctionName,
-            shouldIncludeCanvasRootInTheSpy,
-            filePath,
-            imports,
-            code,
-            highlightBounds,
-            editedText,
-            null,
-            variablesInScope,
-            [],
-          )
+        ? createLookupRender(elementPath, renderContext, null, [])
         : NoOpLookupRender
 
       const blockScope = anyElementsWithin
@@ -255,10 +215,12 @@ export function renderCoreElement(
         : inScope
 
       const assembledProps = jsxAttributesToProps(
-        filePath,
         blockScope,
         element.props,
-        requireResult,
+        elementPath,
+        renderContext,
+        uid,
+        codeError,
       )
 
       const passthroughProps = monkeyUidProp(uid, assembledProps)
@@ -269,26 +231,10 @@ export function renderCoreElement(
         key,
         element,
         elementPath,
-        parentComponentInputProps,
-        requireResult,
-        rootScope,
         inScope,
-        hiddenInstances,
-        displayNoneInstances,
-        fileBlobs,
-        validPaths,
         passthroughProps,
-        metadataContext,
-        updateInvalidatedPaths,
-        jsxFactoryFunctionName,
-        null,
-        shouldIncludeCanvasRootInTheSpy,
-        filePath,
-        imports,
-        code,
-        highlightBounds,
-        editedText,
-        variablesInScope,
+        renderContext,
+        null, // this null passed as the codeError param is matching the old version of the codebase, but codeError should probably not be passed around anyways as we try to throw it as high as possible
       )
     }
     case 'JSX_MAP_EXPRESSION':
@@ -322,25 +268,8 @@ export function renderCoreElement(
         const runJSExpressionLazy = () => {
           const innerRender = createLookupRender(
             elementPath,
-            rootScope,
-            parentComponentInputProps,
-            requireResult,
-            hiddenInstances,
-            displayNoneInstances,
-            fileBlobs,
-            validPaths,
-            reactChildren,
-            metadataContext,
-            updateInvalidatedPaths,
-            jsxFactoryFunctionName,
-            shouldIncludeCanvasRootInTheSpy,
-            filePath,
-            imports,
-            code,
-            highlightBounds,
-            editedText,
+            renderContext,
             mapCountOverride,
-            variablesInScope,
             valuesInScopeFromParameters,
           )
 
@@ -352,7 +281,7 @@ export function renderCoreElement(
               innerRender,
             ),
           }
-          return runJSExpression(filePath, requireResult, element, blockScope)
+          return runJSExpression(element, elementPath, blockScope, renderContext, uid, codeError)
         }
 
         const originalTextContent = isFeatureEnabled('Steganography') ? runJSExpressionLazy() : null
@@ -386,25 +315,8 @@ export function renderCoreElement(
       }
       const innerRender = createLookupRender(
         elementPath,
-        rootScope,
-        parentComponentInputProps,
-        requireResult,
-        hiddenInstances,
-        displayNoneInstances,
-        fileBlobs,
-        validPaths,
-        reactChildren,
-        metadataContext,
-        updateInvalidatedPaths,
-        jsxFactoryFunctionName,
-        shouldIncludeCanvasRootInTheSpy,
-        filePath,
-        imports,
-        code,
-        highlightBounds,
-        editedText,
+        renderContext,
         mapCountOverride,
-        variablesInScope,
         valuesInScopeFromParameters,
       )
 
@@ -416,36 +328,12 @@ export function renderCoreElement(
           innerRender,
         ),
       }
-      return runJSExpression(filePath, requireResult, element, blockScope)
+      return runJSExpression(element, elementPath, blockScope, renderContext, uid, codeError)
     }
     case 'JSX_FRAGMENT': {
       const key = optionalMap(EP.toString, elementPath) ?? element.uid
 
-      return renderJSXElement(
-        key,
-        element,
-        elementPath,
-        parentComponentInputProps,
-        requireResult,
-        rootScope,
-        inScope,
-        hiddenInstances,
-        displayNoneInstances,
-        fileBlobs,
-        validPaths,
-        [],
-        metadataContext,
-        updateInvalidatedPaths,
-        jsxFactoryFunctionName,
-        null,
-        shouldIncludeCanvasRootInTheSpy,
-        filePath,
-        imports,
-        code,
-        highlightBounds,
-        editedText,
-        variablesInScope,
-      )
+      return renderJSXElement(key, element, elementPath, inScope, [], renderContext, codeError)
     }
     case 'JSX_TEXT_BLOCK': {
       const parentPath = Utils.optionalMap(EP.parentPath, elementPath)
@@ -470,10 +358,12 @@ export function renderCoreElement(
       const commentFlag = findUtopiaCommentFlag(element.comments, 'conditional')
       const override = isUtopiaCommentFlagConditional(commentFlag) ? commentFlag.value : null
       const defaultConditionValueAsAny = jsxAttributeToValue(
-        filePath,
         inScope,
-        requireResult,
         element.condition,
+        elementPath,
+        renderContext,
+        uid,
+        codeError,
       )
       // Coerce `defaultConditionValueAsAny` to a value that is definitely a boolean, not something that is truthy.
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
@@ -547,31 +437,7 @@ export function renderCoreElement(
         )
       }
 
-      return renderCoreElement(
-        actualElement,
-        childPath,
-        rootScope,
-        inScope,
-        parentComponentInputProps,
-        requireResult,
-        hiddenInstances,
-        displayNoneInstances,
-        fileBlobs,
-        validPaths,
-        uid,
-        reactChildren,
-        metadataContext,
-        updateInvalidatedPaths,
-        jsxFactoryFunctionName,
-        codeError,
-        shouldIncludeCanvasRootInTheSpy,
-        filePath,
-        imports,
-        code,
-        highlightBounds,
-        editedText,
-        variablesInScope,
-      )
+      return renderCoreElement(actualElement, childPath, inScope, renderContext, uid, codeError)
     }
     case 'ATTRIBUTE_VALUE':
     case 'ATTRIBUTE_NESTED_ARRAY':
@@ -622,7 +488,7 @@ export function renderCoreElement(
         )
       }
 
-      return jsxAttributeToValue(filePath, inScope, requireResult, element)
+      return jsxAttributeToValue(inScope, element, elementPath, renderContext, uid, codeError)
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled type ${JSON.stringify(element)}`)
@@ -648,54 +514,31 @@ function renderJSXElement(
   key: string,
   jsx: JSXElementLike,
   elementPath: ElementPath | null,
-  parentComponentInputProps: MapLike<any>,
-  requireResult: MapLike<any>,
-  rootScope: MapLike<any>,
   inScope: MapLike<any>,
-  hiddenInstances: Array<ElementPath>,
-  displayNoneInstances: Array<ElementPath>,
-  fileBlobs: UIFileBase64Blobs,
-  validPaths: Set<string>,
   passthroughProps: MapLike<any>,
-  metadataContext: UiJsxCanvasContextData,
-  updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
-  jsxFactoryFunctionName: string | null,
+  renderContext: RenderContext,
   codeError: Error | null,
-  shouldIncludeCanvasRootInTheSpy: boolean,
-  filePath: string,
-  imports: Imports,
-  code: string,
-  highlightBounds: HighlightBoundsForUids | null,
-  editedText: ElementPath | null,
-  variablesInScope: VariableData,
 ): React.ReactElement {
+  const {
+    requireResult,
+    hiddenInstances,
+    displayNoneInstances,
+    fileBlobs,
+    validPaths,
+    metadataContext,
+    updateInvalidatedPaths,
+    jsxFactoryFunctionName,
+    shouldIncludeCanvasRootInTheSpy,
+    filePath,
+    imports,
+    code,
+    highlightBounds,
+    editedText,
+    variablesInScope,
+  } = renderContext
   const createChildrenElement = (child: JSXElementChild): React.ReactChild => {
     const childPath = optionalMap((path) => EP.appendToPath(path, getUtopiaID(child)), elementPath)
-    return renderCoreElement(
-      child,
-      childPath,
-      rootScope,
-      inScope,
-      parentComponentInputProps,
-      requireResult,
-      hiddenInstances,
-      displayNoneInstances,
-      fileBlobs,
-      validPaths,
-      undefined,
-      undefined,
-      metadataContext,
-      updateInvalidatedPaths,
-      jsxFactoryFunctionName,
-      codeError,
-      shouldIncludeCanvasRootInTheSpy,
-      filePath,
-      imports,
-      code,
-      highlightBounds,
-      editedText,
-      variablesInScope,
-    )
+    return renderCoreElement(child, childPath, inScope, renderContext, undefined, codeError)
   }
 
   const elementIsIntrinsic = isJSXElement(jsx) && isIntrinsicElement(jsx.name)
@@ -785,29 +628,8 @@ function renderJSXElement(
   ) {
     if (elementIsTextEdited) {
       const runJSExpressionLazy = () => {
-        const innerRender = createLookupRender(
-          elementPath,
-          rootScope,
-          parentComponentInputProps,
-          requireResult,
-          hiddenInstances,
-          displayNoneInstances,
-          fileBlobs,
-          validPaths,
-          [],
-          metadataContext,
-          updateInvalidatedPaths,
-          jsxFactoryFunctionName,
-          shouldIncludeCanvasRootInTheSpy,
-          filePath,
-          imports,
-          code,
-          highlightBounds,
-          editedText,
-          null,
-          variablesInScope,
-          [],
-        )
+        const innerRender = createLookupRender(elementPath, renderContext, null, [])
+
         const blockScope: Record<any, any> = {
           ...inScope,
           [JSX_CANVAS_LOOKUP_FUNCTION_NAME]: utopiaCanvasJSXLookup({}, inScope, innerRender),
@@ -818,7 +640,14 @@ function renderJSXElement(
             ? childrenWithNewTextBlock[0]
             : jsExpressionValue(null, emptyComments) // placeholder
 
-        const result = runJSExpression(filePath, requireResult, expressionToEvaluate, blockScope)
+        const result = runJSExpression(
+          expressionToEvaluate,
+          elementPath,
+          blockScope,
+          renderContext,
+          jsx.uid,
+          codeError,
+        )
         return result
       }
 
@@ -933,11 +762,12 @@ export function utopiaCanvasJSXLookup(
 }
 
 function runJSExpression(
-  filePath: string,
-  requireResult: MapLike<any>,
   block: JSExpression,
+  elementPath: ElementPath | null,
   currentScope: MapLike<any>,
-  limit?: number,
+  renderContext: RenderContext,
+  uid: string | undefined,
+  codeError: Error | null, // this can be probably deleted, it is passed down through multiple layers but we just throw the error in the end
 ): any {
   switch (block.type) {
     case 'ATTRIBUTE_VALUE':
@@ -947,10 +777,17 @@ function runJSExpression(
     case 'JS_PROPERTY_ACCESS':
     case 'JS_ELEMENT_ACCESS':
     case 'JS_IDENTIFIER':
-      return jsxAttributeToValue(filePath, currentScope, requireResult, block)
+    case 'JSX_ELEMENT':
+      return jsxAttributeToValue(currentScope, block, elementPath, renderContext, uid, codeError)
+
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      return resolveParamsAndRunJsCode(filePath, block, requireResult, currentScope)
+      return resolveParamsAndRunJsCode(
+        renderContext.filePath,
+        block,
+        renderContext.requireResult,
+        currentScope,
+      )
     default:
       assertNever(block)
   }

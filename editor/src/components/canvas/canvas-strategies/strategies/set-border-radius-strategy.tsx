@@ -73,7 +73,7 @@ import { allElemsEqual } from '../../../../core/shared/array-utils'
 import * as PP from '../../../../core/shared/property-path'
 import { withUnderlyingTarget } from '../../../editor/store/editor-state'
 import type { ProjectContentTreeRoot } from '../../../assets'
-import { getModifiableJSXAttributeAtPath } from '../../../../core/shared/jsx-attributes'
+import { getModifiableJSXAttributeAtPath } from '../../../../core/shared/jsx-attribute-utils'
 import { showToastCommand } from '../../commands/show-toast-command'
 import { activeFrameTargetPath, setActiveFrames } from '../../commands/set-active-frames-command'
 

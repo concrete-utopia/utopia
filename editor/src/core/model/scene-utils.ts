@@ -26,7 +26,7 @@ import fastDeepEqual from 'fast-deep-equal'
 import {
   getModifiableJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
-} from '../shared/jsx-attributes'
+} from '../shared/jsx-attribute-utils'
 import { stripNulls } from '../shared/array-utils'
 import { UTOPIA_UID_KEY } from './utopia-constants'
 import type { ProjectContentTreeRoot } from '../../components/assets'

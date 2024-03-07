@@ -25,10 +25,12 @@ export const ServerEnvironment = {
 
 export type BrowserEnvironment = {
   EDITOR_URL: string
+  UTOPIA_CDN_URL: string
 }
 
 export const BrowserEnvironment: BrowserEnvironment = {
   EDITOR_URL: mustEnv('REACT_APP_EDITOR_URL'),
+  UTOPIA_CDN_URL: optionalEnv('UTOPIA_CDN_URL', ''),
 }
 
 function mustEnv(key: string): string {

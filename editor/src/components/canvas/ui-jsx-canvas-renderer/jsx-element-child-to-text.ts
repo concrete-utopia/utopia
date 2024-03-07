@@ -9,7 +9,7 @@ export function jsxElementChildToText(
   outermost: 'outermost' | 'inner',
 ): string {
   function outermostWrapInBraces(value: string): string {
-    if (outermost === 'outermost') {
+    if (outermost === 'outermost' && expressionContext === 'jsx') {
       return `{${value}}`
     } else {
       return value
@@ -74,7 +74,8 @@ export function jsxElementChildToText(
       return ''
     case 'JS_IDENTIFIER':
       return outermostWrapInBraces(element.name)
-    case 'JS_ELEMENT_ACCESS':
+    case 'JS_ELEMENT_ACCESS': {
+      const optionalChainedText = element.optionallyChained === 'optionally-chained' ? '?.' : ''
       return outermostWrapInBraces(
         `${jsxElementChildToText(
           element.onValue,
@@ -82,14 +83,27 @@ export function jsxElementChildToText(
           null,
           'javascript',
           'inner',
-        )}[${jsxElementChildToText(element.element, null, null, 'javascript', 'inner')}]`,
+        )}${optionalChainedText}[${jsxElementChildToText(
+          element.element,
+          null,
+          null,
+          'javascript',
+          'inner',
+        )}]`,
       )
-    case 'JS_PROPERTY_ACCESS':
+    }
+    case 'JS_PROPERTY_ACCESS': {
+      const optionalChainedText = element.optionallyChained === 'optionally-chained' ? '?.' : '.'
       return outermostWrapInBraces(
-        `${jsxElementChildToText(element.onValue, null, null, 'javascript', 'inner')}.${
-          element.property
-        }`,
+        `${jsxElementChildToText(
+          element.onValue,
+          null,
+          null,
+          'javascript',
+          'inner',
+        )}${optionalChainedText}${element.property}`,
       )
+    }
     default:
       assertNever(element)
   }
