@@ -552,13 +552,11 @@ return { otherFn: otherFn };",
                   "params": Array [],
                   "sourceMap": Object {
                     "file": "code.tsx",
-                    "mappings": "OAuBeA,MAAOC,QAAQC,CAACC,GAADD,CAARD,GAAgBG,CAAhBH,CAAPD",
+                    "mappings": "OAuBeA,MAAOC,QAASC,CAATD,GAASC,CAATD,GAAPD,CAAOC,CAAPD",
                     "names": Array [
                       "cakeFn",
                       "otherFn",
-                      "'",
                       "b",
-                      ")",
                     ],
                     "sources": Array [
                       "code.tsx",
@@ -914,12 +912,11 @@ Object {
           "params": Array [],
           "sourceMap": Object {
             "file": "code.tsx",
-            "mappings": "OAIkBA,CAACC,GAAEC,CAAJC",
+            "mappings": "OAImBA,IAAFC,CAACC",
             "names": Array [
-              " ",
               ">",
-              "0",
               "n",
+              " ",
             ],
             "sources": Array [
               "code.tsx",
@@ -957,11 +954,11 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
           "params": Array [],
           "sourceMap": Object {
             "file": "code.tsx",
-            "mappings": "OAIyCA,CAACC,IAAFC",
+            "mappings": "OAI0CA,EAAFC,EAAED,CAADE",
             "names": Array [
-              "(",
               "10",
               "b",
+              "(",
             ],
             "sources": Array [
               "code.tsx",
@@ -1129,12 +1126,11 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
           "params": Array [],
           "sourceMap": Object {
             "file": "code.tsx",
-            "mappings": "OAMkBA,CAACC,GAAEC,CAAJC",
+            "mappings": "OAMmBA,IAAFC,CAACC",
             "names": Array [
-              " ",
               ">",
-              "0",
               "n",
+              " ",
             ],
             "sources": Array [
               "code.tsx",
@@ -1172,11 +1168,11 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
           "params": Array [],
           "sourceMap": Object {
             "file": "code.tsx",
-            "mappings": "OAMyCA,CAACC,IAAFC",
+            "mappings": "OAM0CA,EAAFC,EAAED,CAADE",
             "names": Array [
-              "(",
               "10",
               "a",
+              "(",
             ],
             "sources": Array [
               "code.tsx",
@@ -1527,12 +1523,11 @@ return { a: a };",
             "params": Array [],
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAaIA,CAAEC;AAAEC,GAACC;AAAHF,CAAFD",
+              "mappings": "OAaIA,CAACC;AAAEC,KAAHF;AAACC,CAADD",
               "names": Array [
                 "{",
-                ":",
                 "a",
-                "}",
+                " ",
               ],
               "sources": Array [
                 "code.tsx",

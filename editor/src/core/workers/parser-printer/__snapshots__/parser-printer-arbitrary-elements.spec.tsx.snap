@@ -575,12 +575,12 @@ return { a: a };",
             "params": Array [],
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAsBQA,CAACC,CAACC,CAADD,CAAFE",
+              "mappings": "OAsBSA,CAACC,CAAHC,CAAGD,CAAFE",
               "names": Array [
-                "(",
                 "5",
                 ")",
                 "b",
+                "(",
               ],
               "sources": Array [
                 "code.tsx",
@@ -656,12 +656,12 @@ export var storyboard = (
             "params": Array [],
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAsBiBA,CAACC,CAACC,CAADD,CAAFE",
+              "mappings": "OAsBkBA,CAACC,CAAHC,CAAGD,CAAFE",
               "names": Array [
-                "(",
                 "5",
                 ")",
                 "a",
+                "(",
               ],
               "sources": Array [
                 "code.tsx",

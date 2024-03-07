@@ -2273,7 +2273,7 @@ describe('UiJsxCanvas render multifile projects', () => {
           id=\\"canvas-container\\"
           data-testid=\\"canvas-container\\"
           style=\\"position: absolute\\"
-          data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+          data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:outer-div utopia-storyboard-uid/scene-aaa/app-entity:outer-div/aaa utopia-storyboard-uid/scene-aaa/app-entity:outer-div/ccc\\"
           data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
         >
           <div
@@ -2302,12 +2302,29 @@ describe('UiJsxCanvas render multifile projects', () => {
           >
             <div
               data-uid=\\"outer-div\\"
-              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity\\"
+              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div\\"
             >
-              <div data-uid=\\"aaa\\"><div data-uid=\\"bbb\\"></div></div>
-              <div data-uid=\\"ccc\\">
-                <div data-uid=\\"ddd\\"></div>
-                <div data-uid=\\"eee\\"></div>
+              <div
+                data-uid=\\"aaa\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div/aaa\\"
+              >
+                <div
+                  data-uid=\\"bbb~~~1\\"
+                  data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div/aaa/bbb~~~1\\"
+                ></div>
+              </div>
+              <div
+                data-uid=\\"ccc\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div/ccc\\"
+              >
+                <div
+                  data-uid=\\"ddd~~~1\\"
+                  data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div/ccc/ddd~~~1\\"
+                ></div>
+                <div
+                  data-uid=\\"eee~~~2\\"
+                  data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div/ccc/eee~~~2\\"
+                ></div>
               </div>
             </div>
           </div>
