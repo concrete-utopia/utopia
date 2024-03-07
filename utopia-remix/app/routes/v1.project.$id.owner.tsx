@@ -9,7 +9,9 @@ export async function loader(args: LoaderFunctionArgs) {
     OPTIONS: handleOptions,
     GET: {
       handler: proxy,
-      validator: validateProjectAccess(UserProjectPermission.CAN_VIEW_PROJECT),
+      validator: validateProjectAccess(UserProjectPermission.CAN_VIEW_PROJECT, {
+        getProjectId: (params) => params.id,
+      }),
     },
   })
 }

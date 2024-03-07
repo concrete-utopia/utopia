@@ -11,7 +11,8 @@ export async function action(args: ActionFunctionArgs) {
     POST: {
       handler: handleRestoreDeletedProject,
       validator: validateProjectAccess(UserProjectPermission.CAN_MANAGE_PROJECT, {
-        allowDeleted: true,
+        includeDeleted: true,
+        getProjectId: (params) => params.id,
       }),
     },
   })

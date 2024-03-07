@@ -15,7 +15,7 @@ export async function action(args: ActionFunctionArgs) {
     POST: {
       handler: proxy,
       validator: validateProjectAccess(UserProjectPermission.CAN_EDIT_PROJECT, {
-        idRouteParam: 'projectId',
+        getProjectId: (params) => params.projectId,
       }),
     },
   })

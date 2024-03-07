@@ -25,13 +25,13 @@ export async function listProjects(params: { ownerId: string }): Promise<Project
 
 export async function getProjectOwnerById(
   params: { id: string },
-  config: { allowDeleted: boolean } = { allowDeleted: false },
+  config: { includeDeleted: boolean } = { includeDeleted: false },
 ): Promise<string | null> {
   const project = await prisma.project.findFirst({
     select: { owner_id: true },
     where: {
       proj_id: params.id,
-      OR: config.allowDeleted ? [] : [{ deleted: null }, { deleted: false }],
+      OR: config.includeDeleted ? [] : [{ deleted: null }, { deleted: false }],
     },
   })
   return project?.owner_id ?? null

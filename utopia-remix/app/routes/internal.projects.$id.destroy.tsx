@@ -10,7 +10,9 @@ export async function action(args: ActionFunctionArgs) {
   return handle(args, {
     POST: {
       handler: handleDestroyProject,
-      validator: validateProjectAccess(UserProjectPermission.CAN_MANAGE_PROJECT),
+      validator: validateProjectAccess(UserProjectPermission.CAN_MANAGE_PROJECT, {
+        getProjectId: (params) => params.id,
+      }),
     },
   })
 }

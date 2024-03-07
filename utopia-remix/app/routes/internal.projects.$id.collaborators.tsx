@@ -13,7 +13,9 @@ export async function loader(args: LoaderFunctionArgs) {
   return handle(args, {
     GET: {
       handler: getProjectCollaborators,
-      validator: validateProjectAccess(UserProjectPermission.CAN_VIEW_PROJECT),
+      validator: validateProjectAccess(UserProjectPermission.CAN_VIEW_PROJECT, {
+        getProjectId: (params) => params.id,
+      }),
     },
   })
 }
@@ -32,7 +34,9 @@ export async function action(args: ActionFunctionArgs) {
   return handle(args, {
     POST: {
       handler: addToCollaborators,
-      validator: validateProjectAccess(UserProjectPermission.CAN_MANAGE_PROJECT),
+      validator: validateProjectAccess(UserProjectPermission.CAN_MANAGE_PROJECT, {
+        getProjectId: (params) => params.id,
+      }),
     },
   })
 }
