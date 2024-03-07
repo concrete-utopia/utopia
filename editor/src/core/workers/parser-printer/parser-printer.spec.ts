@@ -1137,7 +1137,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       onClick: jsExpressionOtherJavaScript(
         [],
         `function click(){console.log('click')}`,
-        `(function click(){console.log('click');});`,
+        `(function click() {console.log('click');});`,
         `return (function click() {
   console.log('click');
 });`,

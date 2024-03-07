@@ -51044,8 +51044,8 @@ exports[`UiJsxCanvas render renders fine with two components that reference each
       data-uid=\\"scene\\"
     >
       <div
-        data-uid=\\"aaa-root-true\\"
-        data-path=\\"utopia-storyboard-uid/scene/app-entity:BBB\\"
+        data-uid=\\"aaa-root-true~~~1\\"
+        data-path=\\"utopia-storyboard-uid/scene/app-entity:BBB:bbb-root/bbb-root-false~~~1:aaa-root/aaa-root-false~~~1:bbb-root/bbb-root-false~~~1:aaa-root/aaa-root-false~~~1:bbb-root/bbb-root-false~~~1:aaa-root/aaa-root-true~~~1\\"
       >
         great
       </div>
