@@ -100,7 +100,7 @@ jobs:
   test-editor-karma-hydrogen:
     name: Test Editor Hydrogen Support
     timeout-minutes: 15
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: [cache-pnpm-store]
     env:
       UTOPIA_SHA: ${{ github.sha }}
