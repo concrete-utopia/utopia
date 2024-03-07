@@ -66,11 +66,11 @@ import type {
   GetModifiableAttributeResult,
   ModifiableAttribute,
 } from '../../../core/shared/jsx-attributes'
+import { getAllPathsFromAttributes } from '../../../core/shared/jsx-attributes'
 import {
-  getAllPathsFromAttributes,
   getModifiableJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
-} from '../../../core/shared/jsx-attributes'
+} from '../../../core/shared/jsx-attribute-utils'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import type {
   PropertyPath,

@@ -13,13 +13,7 @@ export const SortingContextMenu = React.memo(() => {
 
   return (
     <DropdownMenu.Portal>
-      <DropdownMenu.Content
-        className={contextMenuDropdown()}
-        style={{
-          right: 60,
-        }}
-        sideOffset={5}
-      >
+      <DropdownMenu.Content className={contextMenuDropdown()} sideOffset={5} align='end'>
         <DropdownMenu.Label style={{ color: 'grey', padding: 5 }}>Sort by</DropdownMenu.Label>
         <DropdownMenu.CheckboxItem
           className={contextMenuItem()}

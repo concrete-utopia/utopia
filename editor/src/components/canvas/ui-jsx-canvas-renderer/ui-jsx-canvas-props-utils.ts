@@ -1,7 +1,6 @@
 import type { MapLike } from 'typescript'
 import type {
   Param,
-  JSExpressionOtherJavaScript,
   BoundParam,
   JSExpressionMapOrOtherJavascript,
 } from '../../../core/shared/element-template'
@@ -10,14 +9,18 @@ import {
   isDestructuredObject,
   isOmittedParam,
 } from '../../../core/shared/element-template'
-import { AnyMap, jsxAttributeToValue } from '../../../core/shared/jsx-attributes'
+import { jsxAttributeToValue } from '../../../core/shared/jsx-attributes'
+import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { RenderContext } from './ui-jsx-canvas-element-renderer-utils'
 
 export function applyPropsParamToPassedProps(
-  filePath: string,
   inScope: MapLike<any>,
-  requireResult: MapLike<any>,
+  elementPath: ElementPath | null,
   passedProps: MapLike<unknown>,
   propsParam: Param,
+  renderContext: RenderContext,
+  uid: string | undefined,
+  codeError: Error | null,
 ): MapLike<unknown> {
   let output: MapLike<unknown> = {}
 
@@ -26,7 +29,14 @@ export function applyPropsParamToPassedProps(
     defaultExpression: JSExpressionMapOrOtherJavascript | null,
   ): unknown {
     if (value === undefined && defaultExpression != null) {
-      return jsxAttributeToValue(filePath, inScope, requireResult, defaultExpression)
+      return jsxAttributeToValue(
+        inScope,
+        defaultExpression,
+        elementPath,
+        renderContext,
+        uid,
+        codeError,
+      )
     } else {
       return value
     }

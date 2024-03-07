@@ -6,7 +6,7 @@ import {
   isJSXElement,
   jsExpressionValue,
 } from '../../../core/shared/element-template'
-import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
+import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attribute-utils'
 import type { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import type { EditorState } from '../../editor/store/editor-state'

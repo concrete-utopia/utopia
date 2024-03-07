@@ -11,7 +11,7 @@ import {
   operationRestore,
 } from '../types'
 import { assertNever } from '../util/assertNever'
-import { projectEditorLink } from '../util/links'
+import { useProjectEditorLink } from '../util/links'
 import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
 import slugify from 'slugify'
 import { SLUGIFY_OPTIONS } from '../routes/internal.projects.$id.rename'
@@ -78,6 +78,8 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
     [renameFetcher],
   )
 
+  const projectEditorLink = useProjectEditorLink()
+
   const menuEntries = React.useMemo((): ContextMenuEntry[] => {
     switch (selectedCategory) {
       case 'allProjects':
@@ -142,13 +144,7 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
 
   return (
     <DropdownMenu.Portal>
-      <DropdownMenu.Content
-        className={contextMenuDropdown()}
-        style={{
-          right: 75,
-        }}
-        sideOffset={5}
-      >
+      <DropdownMenu.Content className={contextMenuDropdown()} align='end' sideOffset={5}>
         {menuEntries.map((entry, index) => {
           if (entry === 'separator') {
             return (

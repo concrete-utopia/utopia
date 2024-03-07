@@ -165,7 +165,7 @@ module.exports = {
       severity: 'error',
       from: {
         pathNot:
-          '\\.(spec|test|spec.browser|spec.browser2|spec.hydrogen.browser2|test-utils)\\.(js|mjs|cjs|ts|tsx|ls|coffee|litcoffee|coffee\\.md)$|(src/scripts/.*$)',
+          '\\.(benchmark|spec|test|spec.browser|spec.browser2|spec.hydrogen.browser2|test-utils)\\.(js|mjs|cjs|ts|tsx|ls|coffee|litcoffee|coffee\\.md)$|(src/scripts/.*$)',
       },
       to: {
         path: '\\.(test-utils)\\.(js|mjs|cjs|ts|tsx|ls|coffee|litcoffee|coffee\\.md)$',
