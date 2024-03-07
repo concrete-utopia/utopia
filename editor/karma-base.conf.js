@@ -90,7 +90,6 @@ module.exports = function (config) {
       './src/**/*.ts': ['webpack'],
       './src/**/*.tsx': ['webpack'],
     },
-    browserDisconnectTimeout: 10000, // DO NOT MERGE
     client: {
       mocha: {
         timeout: 200000, // DO NOT MERGE
