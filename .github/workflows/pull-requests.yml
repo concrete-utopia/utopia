@@ -117,7 +117,7 @@ jobs:
         with:
           # For the tests it doesn't really matter what we cache
           path: editor/lib
-          key: ${{ runner.os }}-editor-hydrogen-karma-tests-${{ inputs.branch }}-${{ hashFiles('editor/src/**') }}-${{ hashFiles('utopia-api/src/**') }}-${{ hashFiles('editor/package.json') }}-${{ hashFiles('utopia-api/package.json') }}
+          key: ${{ runner.os }}-editor-hydrogen-karma-tests-${{ hashFiles('editor/src/**') }}-${{ hashFiles('utopia-api/src/**') }}-${{ hashFiles('editor/package.json') }}-${{ hashFiles('utopia-api/package.json') }}
       - name: Cache .pnpm-store
         uses: actions/cache@v2
         with:
