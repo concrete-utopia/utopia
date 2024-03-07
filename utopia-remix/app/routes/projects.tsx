@@ -198,6 +198,7 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
       }}
     >
       <div style={{ width: 230, height: 60, background: 'blue' }}>
+        hii
         <Text>Hello from Radix Themes!</Text>
         <Button>Let's go</Button>
       </div>
