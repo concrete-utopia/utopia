@@ -84,7 +84,7 @@ export function multiplayerInitialsFromName(name: string): string {
   }
 }
 
-export function normalizeMultiplayerName(name: string | null): string {
+export function normalizeMultiplayerName(name: string | undefined): string {
   if (name == null) {
     return 'Unknown'
   }
