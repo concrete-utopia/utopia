@@ -18,8 +18,8 @@ import type { ElementPath } from './project-file-types'
 
 export type Collaborator = {
   id: string
-  name: string | null
-  avatar: string | null
+  name: string | undefined
+  avatar: string | undefined
 }
 
 export type MultiplayerColor = {
