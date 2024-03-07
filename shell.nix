@@ -188,6 +188,13 @@ let
       install-website
       check-editor-jest
     '')
+    (pkgs.writeScriptBin "check-editor-karma-ci-hydrogen" ''
+      #!/usr/bin/env bash
+      set -e
+      install-editor-ci
+      install-website
+      check-editor-karma-hydrogen
+    '')
     (pkgs.writeScriptBin "check-editor-karma-ci-shard-1" ''
       #!/usr/bin/env bash
       set -e
