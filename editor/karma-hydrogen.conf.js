@@ -8,7 +8,7 @@ module.exports = function (config) {
     files: [...config.files, './src/**/*.spec.hydrogen.browser2.+(ts|tsx)'],
     client: {
       mocha: {
-        timeout: 100000,
+        timeout: 30000,
       },
     },
   })
