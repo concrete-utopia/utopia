@@ -1,4 +1,5 @@
 import { LinksFunction, MetaFunction } from '@remix-run/node'
+import React from 'react'
 import stylesheet from '~/styles/next-tailwind.css'
 
 export const links: LinksFunction = () => [{ rel: 'stylesheet', href: stylesheet }]
@@ -7,7 +8,7 @@ export const meta: MetaFunction = () => {
   return [{ title: 'Utopia' }]
 }
 
-export default function Policies() {
+const PoliciesPage = React.memo(() => {
   return (
     <div className='max-w-3xl mx-auto'>
       <h1>Momentumworks Inc / Utopia's Terms of Service, Privacy Policy, and GDPR policy</h1>
@@ -1448,4 +1449,7 @@ export default function Policies() {
       </p>
     </div>
   )
-}
+})
+PoliciesPage.displayName = 'PoliciesPage'
+
+export default PoliciesPage

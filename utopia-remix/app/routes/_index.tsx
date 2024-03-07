@@ -12,6 +12,7 @@ import {
 import stylesheet from '~/styles/next-tailwind.css'
 import urlJoin from 'url-join'
 import { rootLoader } from '../root'
+import React from 'react'
 
 export const links: LinksFunction = () => [
   // css
@@ -65,7 +66,7 @@ export const meta: MetaFunction<typeof rootLoader> = ({ data }) => {
   ]
 }
 
-export default function Index() {
+const IndexPage = React.memo(() => {
   return (
     <div className='bg-white'>
       <div
@@ -226,4 +227,7 @@ export default function Index() {
       />
     </div>
   )
-}
+})
+IndexPage.displayName = 'IndexPage'
+
+export default IndexPage
