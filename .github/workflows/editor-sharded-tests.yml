@@ -16,7 +16,7 @@ jobs:
   test-editor-karma-shard:
     name: Test Editor PR – Karma tests (Shard ${{ inputs.shard_number }})
     timeout-minutes: 15
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     env:
       UTOPIA_SHA: ${{ github.sha }}
     steps:
