@@ -40,7 +40,7 @@ import {
 import { requireUser } from '../util/api.server'
 import { assertNever } from '../util/assertNever'
 import { auth0LoginURL } from '../util/auth0.server'
-import { projectEditorLink } from '../util/links'
+import { useProjectEditorLink } from '../util/links'
 import { unless, when } from '../util/react-conditionals'
 import { UnknownPlayerName, multiplayerInitialsFromName } from '../util/strings'
 import {
@@ -302,34 +302,37 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
 Sidebar.displayName = 'Sidebar'
 
 const TopActionBar = React.memo(() => {
-  const newProjectButtons = [
-    {
-      id: 'createProject',
-      title: '+ Blank Project',
-      onClick: () => window.open(projectEditorLink(null), '_blank'),
-      color: 'primary',
-    },
-    // {
-    //   title: '+ Project On GitHub',
-    //   onClick: () => {},
-    //   color: 'pink',
-    // },
-    // {
-    //   title: '+ Import From GitHub',
-    //   onClick: () => {},
-    //   color: 'purple',
-    // },
-    // {
-    //   title: '+ Remix Project',
-    //   onClick: () => {},
-    //   color: 'blue',
-    // },
-    // {
-    //   title: '+ Shopify Store',
-    //   onClick: () => {},
-    //   color: 'green',
-    // },
-  ] as const
+  const projectEditorLink = useProjectEditorLink()
+  const newProjectButtons = React.useMemo(() => {
+    return [
+      {
+        id: 'createProject',
+        title: '+ Blank Project',
+        onClick: () => window.open(projectEditorLink(null), '_blank'),
+        color: 'orange',
+      },
+      // {
+      //   title: '+ Project On GitHub',
+      //   onClick: () => {},
+      //   color: 'pink',
+      // },
+      // {
+      //   title: '+ Import From GitHub',
+      //   onClick: () => {},
+      //   color: 'purple',
+      // },
+      // {
+      //   title: '+ Remix Project',
+      //   onClick: () => {},
+      //   color: 'blue',
+      // },
+      // {
+      //   title: '+ Shopify Store',
+      //   onClick: () => {},
+      //   color: 'green',
+      // },
+    ] as const
+  }, [projectEditorLink])
 
   return (
     <div
@@ -619,9 +622,11 @@ const ProjectCard = React.memo(
     selected: boolean
     onSelect: () => void
   }) => {
+    const projectEditorLink = useProjectEditorLink()
+
     const openProject = React.useCallback(() => {
       window.open(projectEditorLink(project.proj_id), '_blank')
-    }, [project.proj_id])
+    }, [project.proj_id, projectEditorLink])
 
     const activeOperations = useProjectsStore((store) =>
       store.operations.filter((op) => op.projectId === project.proj_id && !op.errored),
@@ -714,9 +719,9 @@ const ProjectCard = React.memo(
             alignItems: 'center',
           }}
         >
-          <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 5, flex: 1 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 10, flex: 1 }}>
             <div style={{ fontWeight: 500, display: 'flex', gap: '10px', alignItems: 'center' }}>
-              <span>{projectTitle}</span>
+              <div style={{ fontWeight: 500 }}>{projectTitle}</div>
               <ProjectBadge
                 accessLevel={
                   asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
@@ -745,9 +750,11 @@ const ProjectRow = React.memo(
     selected: boolean
     onSelect: () => void
   }) => {
+    const projectEditorLink = useProjectEditorLink()
+
     const openProject = React.useCallback(() => {
       window.open(projectEditorLink(project.proj_id), '_blank')
-    }, [project.proj_id])
+    }, [project.proj_id, projectEditorLink])
 
     return (
       <div style={{ padding: '8px 0' }}>

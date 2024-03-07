@@ -551,6 +551,7 @@ export type JSExpression =
   | JSExpressionNestedObject
   | JSExpressionFunctionCall
   | JSXMapExpression
+  | JSXElement
 
 export type JSExpressionMapOrOtherJavascript = JSExpressionOtherJavaScript | JSXMapExpression
 
@@ -595,6 +596,7 @@ export function simplifyAttributeIfPossible(attribute: JSExpression): JSExpressi
     case 'JS_IDENTIFIER':
     case 'JS_ELEMENT_ACCESS':
     case 'JS_PROPERTY_ACCESS':
+    case 'JSX_ELEMENT':
       return attribute
     case 'ATTRIBUTE_NESTED_ARRAY':
       let simpleArray: Array<unknown> = []
@@ -683,6 +685,8 @@ export function simplifyAttributeIfPossible(attribute: JSExpression): JSExpressi
 
 export function clearExpressionUniqueIDs(attribute: JSExpression): JSExpression {
   switch (attribute.type) {
+    case 'JSX_ELEMENT':
+      return jsxElement(attribute.name, '', attribute.props, attribute.children)
     case 'ATTRIBUTE_VALUE':
       return jsExpressionValue(attribute.value, attribute.comments, '')
     case 'JSX_MAP_EXPRESSION':
@@ -768,8 +772,47 @@ export function clearJSXAttributeOtherJavaScriptSourceMaps(
   }
 }
 
+function clearJSXElementChildSourceMaps(element: JSXElementChild): JSXElementChild {
+  if (isJSXElement(element)) {
+    return jsxElement(
+      element.name,
+      element.uid,
+      clearAttributesSourceMaps(element.props),
+      element.children.map((c) => clearJSXElementChildSourceMaps(c)),
+    )
+  } else if (isJSExpression(element)) {
+    return clearExpressionSourceMaps(element)
+  } else if (isJSXTextBlock(element)) {
+    return element
+  } else if (isJSXFragment(element)) {
+    return jsxFragment(
+      element.uid,
+      element.children.map((c) => clearJSXElementChildSourceMaps(c)),
+      element.longForm,
+    )
+  } else if (isJSXConditionalExpression(element)) {
+    return jsxConditionalExpression(
+      element.uid,
+      element.condition,
+      element.originalConditionString,
+      clearJSXElementChildSourceMaps(element.whenTrue),
+      clearJSXElementChildSourceMaps(element.whenFalse),
+      element.comments,
+    )
+  } else {
+    assertNever(element)
+  }
+}
+
 export function clearExpressionSourceMaps(attribute: JSExpression): JSExpression {
   switch (attribute.type) {
+    case 'JSX_ELEMENT':
+      return jsxElement(
+        attribute.name,
+        attribute.uid,
+        clearAttributesSourceMaps(attribute.props),
+        attribute.children.map((c) => clearJSXElementChildSourceMaps(c)),
+      )
     case 'ATTRIBUTE_VALUE':
       return attribute
     case 'JSX_MAP_EXPRESSION':
@@ -878,6 +921,12 @@ export function modifiableAttributeIsAttributeOtherJavaScript(
   attribute: ModifiableAttribute,
 ): attribute is JSExpressionOtherJavaScript {
   return attribute != null && attribute.type === 'ATTRIBUTE_OTHER_JAVASCRIPT'
+}
+
+export function modifiableAttributeIsJsxElement(
+  attribute: ModifiableAttribute,
+): attribute is JSXElement {
+  return attribute != null && attribute.type === 'JSX_ELEMENT'
 }
 
 export function modifiableAttributeIsAttributeFunctionCall(
@@ -1053,6 +1102,11 @@ const AllowedExternalReferences = ['React', 'utopiaCanvasJSXLookup']
 
 export function attributeReferencesElsewhere(attribute: JSExpression): boolean {
   switch (attribute.type) {
+    case 'JSX_ELEMENT':
+      return (
+        attribute.props.some(jsxAttributesPartReferencesElsewhere) ||
+        attribute.children.some(elementReferencesElsewhere)
+      )
     case 'ATTRIBUTE_VALUE':
       return false
     case 'JSX_MAP_EXPRESSION':
@@ -1182,6 +1236,8 @@ export function getElementReferencesElsewherePathsFromProps(
 
 export function getDefinedElsewhereFromAttribute(attribute: JSExpression): Array<string> {
   switch (attribute.type) {
+    case 'JSX_ELEMENT':
+      return getDefinedElsewhereFromElement(attribute)
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return attribute.definedElsewhere
     case 'ATTRIBUTE_NESTED_OBJECT':

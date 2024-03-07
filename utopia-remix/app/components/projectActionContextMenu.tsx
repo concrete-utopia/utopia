@@ -12,8 +12,8 @@ import {
   operationRestore,
 } from '../types'
 import { assertNever } from '../util/assertNever'
-import { projectEditorLink } from '../util/links'
 import { AccessLevel } from '../types'
+import { useProjectEditorLink } from '../util/links'
 import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
 import slugify from 'slugify'
 import { SLUGIFY_OPTIONS } from '../routes/internal.projects.$id.rename'
@@ -92,6 +92,7 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
     },
     [changeAccessFetcher],
   )
+  const projectEditorLink = useProjectEditorLink()
 
   const menuEntries = React.useMemo((): ContextMenuEntry[] => {
     switch (selectedCategory) {

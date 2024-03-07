@@ -35,6 +35,8 @@ export async function loader() {
   })
 }
 
+export const rootLoader = loader
+
 export const headers: HeadersFunction = () => ({
   'cache-control': 'no-cache',
 })

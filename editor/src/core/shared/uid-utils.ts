@@ -500,6 +500,8 @@ export function fixUtopiaElement(
         return fixJSPropertyAccess(value)
       case 'JS_IDENTIFIER':
         return fixJSIdentifier(value)
+      case 'JSX_ELEMENT':
+        return fixJSXElement(value)
       default:
         assertNever(value)
     }
