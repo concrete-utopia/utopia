@@ -93,7 +93,7 @@ module.exports = function (config) {
     browserDisconnectTimeout: 10000, // DO NOT MERGE
     client: {
       mocha: {
-        timeout: 100000, // DO NOT MERGE
+        timeout: 200000, // DO NOT MERGE
       },
     },
     parallelOptions: {

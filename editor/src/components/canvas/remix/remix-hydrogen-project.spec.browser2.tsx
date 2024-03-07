@@ -56,5 +56,5 @@ describe('Hydrogen Project Using Real Server Calls - disable me if there is no i
     }
 
     console.log('logpoint 6')
-  }, 60000)
+  }, 120000)
 })
