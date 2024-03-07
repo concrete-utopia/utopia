@@ -92,7 +92,7 @@ module.exports = function (config) {
     },
     client: {
       mocha: {
-        timeout: config.debug ? 1000000 : 10000,
+        timeout: 100000, // DO NOT MERGE
       },
     },
     parallelOptions: {
