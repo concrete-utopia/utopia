@@ -51,9 +51,14 @@ import {
   setJSXValueAtPath,
 } from '../shared/jsx-attribute-utils'
 import { Substores } from '../../components/editor/store/store-hook'
+import { emptyUiJsxCanvasContextData } from '../../components/canvas/ui-jsx-canvas'
+import { NO_OP } from '../shared/utils'
 import * as FastCheck from 'fast-check'
 import { jsxElementChildToText } from '../../components/canvas/ui-jsx-canvas-renderer/jsx-element-child-to-text'
 import { resultOrError } from '../../utils/exceptions'
+import { testRenderContext } from '../../utils/utils.test-utils'
+import { render } from 'enzyme'
+import { renderCanvasReturnResultAndError } from '../../components/canvas/ui-jsx-canvas.test-utils'
 
 const sampleParentProps = {
   hello: 'kitty',
@@ -342,9 +347,7 @@ describe('jsxAttributeToValue', () => {
       (expressionAndValues: ExpressionAndValues<JSExpression>) => {
         function getExpectedResult() {
           return jsxAttributeToValue(
-            'test.js',
             expressionAndValues.values,
-            {},
             jsExpressionOtherJavaScriptSimple(
               jsxElementChildToText(
                 expressionAndValues.expression,
@@ -355,14 +358,20 @@ describe('jsxAttributeToValue', () => {
               ),
               Object.keys(expressionAndValues.values),
             ),
+            null,
+            testRenderContext,
+            undefined,
+            null,
           )
         }
         function getActualResult() {
           return jsxAttributeToValue(
-            'test.js',
             expressionAndValues.values,
-            {},
             expressionAndValues.expression,
+            null,
+            testRenderContext,
+            undefined,
+            null,
           )
         }
         expect(resultOrError(getActualResult)).toEqual(resultOrError(getExpectedResult))
@@ -382,10 +391,12 @@ describe('setJSXValueAtPath', () => {
       ),
     )
     const compiledProps = jsxAttributesToProps(
-      'test.js',
       { props: sampleParentProps },
       updatedAttributes,
-      {},
+      null,
+      testRenderContext,
+      undefined,
+      null,
     )
     expect(compiledProps.top).toEqual(55)
   })
@@ -410,10 +421,12 @@ describe('setJSXValueAtPath', () => {
       ),
     )
     const compiledProps = jsxAttributesToProps(
-      'test.js',
       { props: sampleParentProps },
       updatedAttributes,
-      {},
+      null,
+      testRenderContext,
+      undefined,
+      null,
     )
     expect(compiledProps.my.property.path).toEqual('hello')
   })
@@ -427,10 +440,12 @@ describe('setJSXValueAtPath', () => {
       ),
     )
     const compiledProps = jsxAttributesToProps(
-      'test.js',
       { props: sampleParentProps },
       updatedAttributes,
-      {},
+      null,
+      testRenderContext,
+      undefined,
+      null,
     )
     expect(compiledProps.layout.left).toEqual(2000)
   })
@@ -444,10 +459,12 @@ describe('setJSXValueAtPath', () => {
       ),
     )
     const compiledProps = jsxAttributesToProps(
-      'test.js',
       { props: sampleParentProps },
       updatedAttributes,
-      {},
+      null,
+      testRenderContext,
+      undefined,
+      null,
     )
     expect(compiledProps.layout.deep.path).toEqual('easy!')
   })
@@ -461,10 +478,12 @@ describe('setJSXValueAtPath', () => {
       ),
     )
     const compiledProps = jsxAttributesToProps(
-      'test.js',
       { props: sampleParentProps },
       updatedAttributes,
-      {},
+      null,
+      testRenderContext,
+      undefined,
+      null,
     )
     expect(compiledProps.objectWithArray.array).toEqual([0, 1, 'wee'])
   })
@@ -478,10 +497,12 @@ describe('setJSXValueAtPath', () => {
       ),
     )
     const compiledProps = jsxAttributesToProps(
-      'test.js',
       { props: sampleParentProps },
       updatedAttributes,
-      {},
+      null,
+      testRenderContext,
+      undefined,
+      null,
     )
     expect(compiledProps.objectWithNestedArray.array).toEqual([0, 1, 'wee'])
   })
@@ -495,10 +516,12 @@ describe('setJSXValueAtPath', () => {
       ),
     )
     const compiledProps = jsxAttributesToProps(
-      'test.js',
       { props: sampleParentProps },
       updatedAttributes,
-      {},
+      null,
+      testRenderContext,
+      undefined,
+      null,
     )
     expect(compiledProps.objectWithNestedArray.array).toEqual([0, 1, 'wee'])
   })
@@ -512,10 +535,12 @@ describe('setJSXValueAtPath', () => {
       ),
     )
     const compiledProps = jsxAttributesToProps(
-      'test.js',
       { props: sampleParentProps },
       updatedAttributes,
-      {},
+      null,
+      testRenderContext,
+      undefined,
+      null,
     )
     expect(compiledProps.objectWithNestedArray.array).toEqual({ 0: 0, 1: 1, 2: 2, wee: 'wee' })
   })
@@ -530,10 +555,12 @@ describe('setJSXValueAtPath', () => {
         ),
       )
       const compiledProps = jsxAttributesToProps(
-        'test.js',
         { props: sampleParentProps },
         updatedAttributes,
-        {},
+        null,
+        testRenderContext,
+        undefined,
+        null,
       )
     }).toThrow()
   })
@@ -547,10 +574,12 @@ describe('setJSXValueAtPath', () => {
       ),
     )
     const compiledProps = jsxAttributesToProps(
-      'test.js',
       { props: sampleParentProps },
       updatedAttributes,
-      {},
+      null,
+      testRenderContext,
+      undefined,
+      null,
     )
     expect(compiledProps.style.backgroundColor).toEqual('wee')
   })
@@ -571,10 +600,12 @@ describe('setJSXValueAtPath', () => {
       ),
     )
     const compiledProps = jsxAttributesToProps(
-      'test.js',
       { props: sampleParentProps },
       updatedAttributes2,
-      {},
+      null,
+      testRenderContext,
+      undefined,
+      null,
     )
     expect(compiledProps.my.property.path).toEqual('hello')
     expect(compiledProps.my.property.other.path).toEqual('hola')
@@ -589,10 +620,12 @@ describe('setJSXValueAtPath', () => {
       ),
     )
     const compiledProps = jsxAttributesToProps(
-      'test.js',
       { props: sampleParentProps },
       updatedAttributes,
-      {},
+      null,
+      testRenderContext,
+      undefined,
+      null,
     )
     expect(compiledProps.style.backgroundColor).toEqual('blue')
   })
@@ -746,10 +779,12 @@ describe('setJSXValueAtPath', () => {
       setJSXValueAtPath([], PP.create('top', 0), jsExpressionValue(55, emptyComments)),
     )
     const compiledProps = jsxAttributesToProps(
-      'test.js',
       { props: sampleParentProps },
       updatedAttributes,
-      {},
+      null,
+      testRenderContext,
+      undefined,
+      null,
     )
     expect(compiledProps).toEqual({ top: [55] })
   })
@@ -758,10 +793,12 @@ describe('setJSXValueAtPath', () => {
 describe('jsxAttributesToProps', () => {
   it('works', () => {
     const compiledProps = jsxAttributesToProps(
-      'test.js',
       { props: sampleParentProps },
       sampleJsxAttributes(),
-      {},
+      null,
+      testRenderContext,
+      undefined,
+      null,
     )
     expect(compiledProps).toEqual(expectedCompiledProps)
   })
@@ -782,7 +819,14 @@ describe('jsxAttributesToProps', () => {
         emptyComments,
       ),
     })
-    const compiledProps = jsxAttributesToProps('test.js', {}, attributes, {})
+    const compiledProps = jsxAttributesToProps(
+      {},
+      attributes,
+      null,
+      testRenderContext,
+      undefined,
+      null,
+    )
 
     expect(compiledProps).toEqual({ style: { paddingLeft: 23, padding: 5 } })
     expect(Object.entries(compiledProps.style)).toEqual([
@@ -824,7 +868,14 @@ describe('jsxAttributesToProps', () => {
       ),
     })
 
-    const compiledProps = jsxAttributesToProps('test.js', {}, attributes, {})
+    const compiledProps = jsxAttributesToProps(
+      {},
+      attributes,
+      null,
+      testRenderContext,
+      undefined,
+      null,
+    )
 
     expect(compiledProps).toEqual({ style: { paddingLeft: 23, padding: 5 } })
     expect(Object.entries(compiledProps.style)).toEqual([

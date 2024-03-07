@@ -31785,10 +31785,7 @@ exports[`UiJsxCanvas render renders correctly when a component is passed in via 
           style=\\"background-color: pink; width: 100%; height: 20px\\"
           data-path=\\"eee/fff/app-entity:aaa/bbb:ddd\\"
         >
-          <div
-            data-uid=\\"ccc~~~1\\"
-            data-path=\\"eee/fff/app-entity:aaa/bbb/ccc~~~1\\"
-          >
+          <div data-uid=\\"ccc\\" data-path=\\"eee/fff/app-entity:aaa/bbb/ccc\\">
             test
           </div>
         </div>
@@ -32139,52 +32136,20 @@ Object {
                 "key": "thing",
                 "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
-                  "comments": Object {
-                    "leadingComments": Array [],
-                    "trailingComments": Array [],
-                  },
-                  "definedElsewhere": Array [
-                    "React",
-                    "utopiaCanvasJSXLookup",
+                  "children": Array [
+                    Object {
+                      "text": "test",
+                      "type": "JSX_TEXT_BLOCK",
+                      "uid": "c74",
+                    },
                   ],
-                  "elementsWithin": Object {
-                    "ccc": Object {
-                      "children": Array [
-                        Object {
-                          "text": "test",
-                          "type": "JSX_TEXT_BLOCK",
-                          "uid": "",
-                        },
-                      ],
-                      "name": Object {
-                        "baseVariable": "div",
-                        "propertyPath": Object {
-                          "propertyElements": Array [],
-                        },
-                      },
-                      "props": Array [
-                        Object {
-                          "comments": Object {
-                            "leadingComments": Array [],
-                            "trailingComments": Array [],
-                          },
-                          "key": "data-uid",
-                          "type": "JSX_ATTRIBUTES_ENTRY",
-                          "value": Object {
-                            "comments": Object {
-                              "leadingComments": Array [],
-                              "trailingComments": Array [],
-                            },
-                            "type": "ATTRIBUTE_VALUE",
-                            "uid": "",
-                            "value": "ccc",
-                          },
-                        },
-                      ],
-                      "type": "JSX_ELEMENT",
-                      "uid": "",
+                  "name": Object {
+                    "baseVariable": "div",
+                    "propertyPath": Object {
+                      "propertyElements": Array [],
                     },
                   },
+<<<<<<< HEAD
                   "javascript": "<div data-uid={'ccc'}>test</div>;",
                   "originalJavascript": "<div data-uid={'ccc'}>test</div>",
                   "params": Array [],
@@ -32239,6 +32204,28 @@ export var storyboard = (
   callerThis: this
 });",
                   "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
+=======
+                  "props": Array [
+                    Object {
+                      "comments": Object {
+                        "leadingComments": Array [],
+                        "trailingComments": Array [],
+                      },
+                      "key": "data-uid",
+                      "type": "JSX_ATTRIBUTES_ENTRY",
+                      "value": Object {
+                        "comments": Object {
+                          "leadingComments": Array [],
+                          "trailingComments": Array [],
+                        },
+                        "type": "ATTRIBUTE_VALUE",
+                        "uid": "77c",
+                        "value": "ccc",
+                      },
+                    },
+                  ],
+                  "type": "JSX_ELEMENT",
+>>>>>>> master
                   "uid": "",
                 },
               },
@@ -32420,50 +32407,17 @@ export var storyboard = (
             "key": "thing",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "definedElsewhere": Array [
-                "React",
-                "utopiaCanvasJSXLookup",
+              "children": Array [
+                Object {
+                  "text": "test",
+                  "type": "JSX_TEXT_BLOCK",
+                  "uid": "c74",
+                },
               ],
-              "elementsWithin": Object {
-                "ccc": Object {
-                  "children": Array [
-                    Object {
-                      "text": "test",
-                      "type": "JSX_TEXT_BLOCK",
-                      "uid": "",
-                    },
-                  ],
-                  "name": Object {
-                    "baseVariable": "div",
-                    "propertyPath": Object {
-                      "propertyElements": Array [],
-                    },
-                  },
-                  "props": Array [
-                    Object {
-                      "comments": Object {
-                        "leadingComments": Array [],
-                        "trailingComments": Array [],
-                      },
-                      "key": "data-uid",
-                      "type": "JSX_ATTRIBUTES_ENTRY",
-                      "value": Object {
-                        "comments": Object {
-                          "leadingComments": Array [],
-                          "trailingComments": Array [],
-                        },
-                        "type": "ATTRIBUTE_VALUE",
-                        "uid": "",
-                        "value": "ccc",
-                      },
-                    },
-                  ],
-                  "type": "JSX_ELEMENT",
-                  "uid": "",
+              "name": Object {
+                "baseVariable": "div",
+                "propertyPath": Object {
+                  "propertyElements": Array [],
                 },
               },
               "javascript": "<div data-uid={'ccc'}>test</div>;",
