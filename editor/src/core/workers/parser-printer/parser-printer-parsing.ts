@@ -2384,16 +2384,15 @@ function getAttributeExpression(
         return parseResult
       }
 
-      if (
-        parseResult.value.value.length !== 1 ||
-        parseResult.value.value[0].value.type !== 'JSX_ELEMENT'
-      ) {
+      const parsedElements = parseResult.value.value
+
+      if (parsedElements.length !== 1 || parsedElements[0].value.type !== 'JSX_ELEMENT') {
         return left('Cannot parse jsx element')
       }
 
       return right(
         withParserMetadata(
-          parseResult.value.value[0].value,
+          parsedElements[0].value,
           parseResult.value.highlightBounds,
           parseResult.value.propsUsed,
           parseResult.value.definedElsewhere,
