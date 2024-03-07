@@ -14,7 +14,7 @@ import { getCollaborators } from './src/components/editor/server'
 
 export const liveblocksThrottle = 100 // ms
 
-async function authCall(room: string) {
+async function authCall(room?: string) {
   const resp = await fetch(urljoin(UTOPIA_BACKEND, 'liveblocks', 'authentication'), {
     credentials: 'include',
     method: 'POST',
