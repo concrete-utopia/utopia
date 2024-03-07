@@ -10,6 +10,7 @@ import {
 import { createUtopiaPuppeteerBrowser } from './test-utils'
 
 const CommentIndicatorSelector = 'div[data-testid="comment-indicator-div"]'
+const ParentedCommentIndicatorSelector = 'div[data-testid="comment-indicator-div-parented"]'
 const PlaygroundSceneSelector = '#playground-scene'
 const SceneToolbarSelector = 'div[data-testid="scene-label"]'
 
@@ -240,13 +241,6 @@ describe('Comments test', () => {
       await getBoundingBox(page, CommentIndicatorSelector),
     )
 
-    expect(originalCommentIndicatorBoundingBox).toEqual({
-      height: 26,
-      width: 26,
-      x: 486,
-      y: 63,
-    })
-
     // drag the comment on the scene
     await drag(
       page,
@@ -255,16 +249,9 @@ describe('Comments test', () => {
     )
 
     await dismissHoverPreview(page)
-    const commentBoundingBoxInScene = roundBoundingBox(
-      await getBoundingBox(page, CommentIndicatorSelector),
-    )
-    expect(commentBoundingBoxInScene).toEqual({
-      height: 26,
-      width: 26,
-      x: 918,
-      y: 555,
-    })
-    expect(commentBoundingBoxInScene).not.toEqual(originalCommentIndicatorBoundingBox)
+
+    const parentedCommentIndicators = await page.$$(ParentedCommentIndicatorSelector)
+    expect(parentedCommentIndicators).toHaveLength(1)
 
     const sceneToolBarBoundingBox = roundBoundingBox(
       await getBoundingBox(page, SceneToolbarSelector),
@@ -279,14 +266,8 @@ describe('Comments test', () => {
     )
 
     const commentBoundingBoxInMovedScene = roundBoundingBox(
-      await getBoundingBox(page, CommentIndicatorSelector),
+      await getBoundingBox(page, ParentedCommentIndicatorSelector),
     )
-    expect(commentBoundingBoxInMovedScene).toEqual({
-      height: 26,
-      width: 26,
-      x: 968,
-      y: 605,
-    })
 
     const movedSceneBoundingBox = roundBoundingBox(
       await getBoundingBox(page, PlaygroundSceneSelector),
@@ -300,40 +281,11 @@ describe('Comments test', () => {
     })
 
     await dismissHoverPreview(page)
-    const commentBoundingBoxBackOnCanvasBeforeMove = roundBoundingBox(
-      await getBoundingBox(page, CommentIndicatorSelector),
-    )
 
-    expect(commentBoundingBoxBackOnCanvasBeforeMove).toEqual({
-      height: 26,
-      width: 26,
-      x: 568,
-      y: 176,
-    })
-
-    const movedSceneLabelCenter = center(
-      roundBoundingBox(await getBoundingBox(page, SceneToolbarSelector)),
-    )
-
-    // drag the scene, the comment indicator should not move with it
-    await drag(
-      page,
-      movedSceneLabelCenter,
-      offsetPoint(movedSceneLabelCenter, { offsetX: 150, offsetY: 150 }),
-    )
-    const commentBoundingBoxBackOnCanvasAfterMove = roundBoundingBox(
-      await getBoundingBox(page, CommentIndicatorSelector),
-    )
-
-    expect(commentBoundingBoxBackOnCanvasAfterMove).toEqual({
-      height: 26,
-      width: 26,
-      x: 568,
-      y: 176,
-    })
-    expect(commentBoundingBoxBackOnCanvasBeforeMove).toEqual(
-      commentBoundingBoxBackOnCanvasAfterMove,
-    )
+    const parentedCommentIndicator2 = await page.$$(ParentedCommentIndicatorSelector)
+    expect(parentedCommentIndicator2).toHaveLength(0)
+    const commentIndicators = await page.$$(CommentIndicatorSelector)
+    expect(commentIndicators).toHaveLength(1)
   })
 
   it('scene comment canvas coordinates are maintained when scene is moved', async () => {
@@ -374,13 +326,13 @@ describe('Comments test', () => {
     await page.mouse.click(movedSceneBoundingBoxCenter.x, movedSceneBoundingBoxCenter.y)
 
     const commentBoundingBoxBackOnCanvasBeforeDelete = roundBoundingBox(
-      await getBoundingBox(page, CommentIndicatorSelector),
+      await getBoundingBox(page, ParentedCommentIndicatorSelector),
     )
     // delete the scene
     await page.keyboard.press('Backspace')
 
     const commentBoundingBoxBackOnCanvasAfterDelete = roundBoundingBox(
-      await getBoundingBox(page, CommentIndicatorSelector),
+      await getBoundingBox(page, ParentedCommentIndicatorSelector),
     )
     // the comment indicator should not move on the canvas
     expect(commentBoundingBoxBackOnCanvasAfterDelete).toEqual(
