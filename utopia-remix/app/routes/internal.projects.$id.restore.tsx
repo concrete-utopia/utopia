@@ -3,13 +3,16 @@ import { Params } from '@remix-run/react'
 import { restoreDeletedProject } from '../models/project.server'
 import { ensure, handle, requireUser } from '../util/api.server'
 import { Status } from '../util/statusCodes'
-import { ALLOW } from '../handlers/validators'
+import { validateProjectAccess } from '../handlers/validators'
+import { UserProjectPermission } from '../types'
 
 export async function action(args: ActionFunctionArgs) {
   return handle(args, {
     POST: {
       handler: handleRestoreDeletedProject,
-      validator: ALLOW,
+      validator: validateProjectAccess(UserProjectPermission.CAN_MANAGE_PROJECT, {
+        allowDeleted: true,
+      }),
     },
   })
 }

@@ -10,16 +10,20 @@ export function validateProjectAccess(
   {
     errorMessage,
     status,
+    idRouteParam = 'id',
+    allowDeleted = false,
   }: {
     errorMessage?: string
     status?: number
+    idRouteParam?: string
+    allowDeleted?: boolean
   } = {},
 ): AccessValidator {
   return async function (req: Request, params: Params<string>) {
-    const { id: projectId } = params
+    const projectId = params[idRouteParam]
     ensure(projectId != null, 'project id is null', Status.BAD_REQUEST)
 
-    const ownerId = await getProjectOwnerById({ id: projectId })
+    const ownerId = await getProjectOwnerById({ id: projectId }, { allowDeleted: allowDeleted })
     ensure(ownerId != null, `Project ${projectId} not found or has no owner`, Status.NOT_FOUND)
 
     let user = await getUser(req)
