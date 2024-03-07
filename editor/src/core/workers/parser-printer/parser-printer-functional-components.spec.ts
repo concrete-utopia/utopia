@@ -234,7 +234,7 @@ describe('Parsing a function component with props', () => {
         jsExpressionOtherJavaScript(
           [],
           '{thing: true}',
-          '{thing: true}',
+          '{thing: true};',
           `return ({
   thing: true
 });`,
@@ -369,7 +369,7 @@ describe('Parsing a function component with props', () => {
         jsExpressionOtherJavaScript(
           [],
           '5',
-          '5',
+          '5;',
           'return 5;',
           [],
           expect.objectContaining({}),
@@ -469,7 +469,7 @@ describe('Parsing a function component with props', () => {
         jsExpressionOtherJavaScript(
           [],
           '5',
-          '5',
+          '5;',
           'return 5;',
           [],
           expect.objectContaining({}),
@@ -609,7 +609,7 @@ describe('Parsing a function component with props', () => {
         jsExpressionOtherJavaScript(
           [],
           '5',
-          '5',
+          '5;',
           'return 5;',
           [],
           expect.objectContaining({}),
@@ -763,7 +763,7 @@ describe('Parsing a function component with props', () => {
         jsExpressionOtherJavaScript(
           [],
           '{thing: true}',
-          '{thing: true}',
+          '{thing: true};',
           `return ({
   thing: true
 });`,
@@ -789,7 +789,7 @@ describe('Parsing a function component with props', () => {
         jsExpressionOtherJavaScript(
           [],
           '5',
-          '5',
+          '5;',
           'return 5;',
           [],
           expect.objectContaining({}),
