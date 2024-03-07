@@ -767,8 +767,7 @@ function runJSExpression(
   currentScope: MapLike<any>,
   renderContext: RenderContext,
   uid: string | undefined,
-  codeError: Error | null,
-  limit?: number,
+  codeError: Error | null, // this can be probably deleted, it is passed down through multiple layers but we just throw the error in the end
 ): any {
   switch (block.type) {
     case 'ATTRIBUTE_VALUE':
