@@ -1,0 +1,62 @@
+/* ./styles/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: 'Moderat-Regular', sans-serif, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
+    Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  font-feature-settings: 'salt', 'cpsp';
+  text-rendering: geometricPrecision;
+  color: #222;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+@font-face {
+  font-family: 'Moderat-Regular';
+  src: url('/fonts/Moderat-Regular.woff2');
+  fallback: serif, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell,
+    Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-display: optional;
+}
+
+@font-face {
+  font-family: 'RecklessNeue-Book';
+  src: url('/fonts/RecklessNeue-Book.woff2');
+  fallback: serif, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell,
+    Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-display: optional;
+}
+
+@font-face {
+  font-family: 'RecklessNeue-Semibold';
+  src: url('/fonts/RecklessNeue-Semibold.woff2');
+  fallback: serif, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell,
+    Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  font-style: normal;
+  font-display: optional;
+}
+
+@font-face {
+  font-family: 'RecklessNeue-SemiBoldItalic';
+  src: url('/fonts/RecklessNeue-SemiBoldItalic.woff2');
+  fallback: serif, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell,
+    Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  font-style: normal;
+  font-display: optional;
+}
