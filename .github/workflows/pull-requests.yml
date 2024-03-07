@@ -97,6 +97,40 @@ jobs:
       branch: PR
       pnpm-store-path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
 
+  test-editor-karma-hydrogen:
+    name: Test Editor Hydrogen Support
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    needs: [cache-pnpm-store]
+    env:
+      UTOPIA_SHA: ${{ github.sha }}
+    steps:
+      - name: Cancel existing runs on this branch
+        uses: fauguste/auto-cancellation-running-action@0.1.4
+        with:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Cache editor test result
+        id: cache-editor-tests
+        uses: actions/cache@v2
+        with:
+          # For the tests it doesn't really matter what we cache
+          path: editor/lib
+          key: ${{ runner.os }}-editor-hydrogen-karma-tests-${{ inputs.branch }}-${{ hashFiles('editor/src/**') }}-${{ hashFiles('utopia-api/src/**') }}-${{ hashFiles('editor/package.json') }}-${{ hashFiles('utopia-api/package.json') }}
+      - name: Cache .pnpm-store
+        uses: actions/cache@v2
+        with:
+          path: ${{ needs.cache-pnpm-store.outputs.pnpm-store-path }}
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-captured-location
+      - name: Install nix
+        uses: cachix/install-nix-action@v12
+        with:
+          nix_path: nixpkgs=https://github.com/NixOS/nixpkgs/archive/6120ac5cd201f6cb593d1b80e861be0342495be9.tar.gz
+      - name: Run the Karma tests
+        if: steps.cache-editor-tests.outputs.cache-hit != 'true'
+        run: nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run check-editor-karma-hydrogen
+
   test-server:
     name: Test Server
     timeout-minutes: 25

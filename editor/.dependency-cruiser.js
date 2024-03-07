@@ -153,7 +153,7 @@ module.exports = {
       severity: 'error',
       from: {},
       to: {
-        path: '\\.(spec|test|spec.browser|spec.browser2)\\.(js|mjs|cjs|ts|tsx|ls|coffee|litcoffee|coffee\\.md)$',
+        path: '\\.(spec|test|spec.browser|spec.browser2|spec.hydrogen.browser2)\\.(js|mjs|cjs|ts|tsx|ls|coffee|litcoffee|coffee\\.md)$',
       },
     },
     {
@@ -165,7 +165,7 @@ module.exports = {
       severity: 'error',
       from: {
         pathNot:
-          '\\.(spec|test|spec.browser|spec.browser2|test-utils)\\.(js|mjs|cjs|ts|tsx|ls|coffee|litcoffee|coffee\\.md)$|(src/scripts/.*$)',
+          '\\.(spec|test|spec.browser|spec.browser2|spec.hydrogen.browser2|test-utils)\\.(js|mjs|cjs|ts|tsx|ls|coffee|litcoffee|coffee\\.md)$|(src/scripts/.*$)',
       },
       to: {
         path: '\\.(test-utils)\\.(js|mjs|cjs|ts|tsx|ls|coffee|litcoffee|coffee\\.md)$',
@@ -205,7 +205,7 @@ module.exports = {
         path: '^src',
         pathNot: [
           '^src/core/workers/',
-          '\\.(spec|test|spec.browser|spec.browser2|test-utils)\\.(js|mjs|cjs|ts|tsx|ls|coffee|litcoffee|coffee\\.md)$|(src/scripts/.*$)',
+          '\\.(spec|test|spec.browser|spec.browser2|spec.hydrogen.browser2|test-utils)\\.(js|mjs|cjs|ts|tsx|ls|coffee|litcoffee|coffee\\.md)$|(src/scripts/.*$)',
         ],
       },
       to: {
@@ -255,7 +255,7 @@ module.exports = {
       from: {
         path: '^(src)',
         pathNot:
-          '\\.(spec|test|spec.browser|spec.browser2|test-utils|benchmark)\\.(js|mjs|cjs|ts|tsx|ls|coffee|litcoffee|coffee\\.md)$|(src/scripts/.*$)',
+          '\\.(spec|test|spec.browser|spec.browser2|spec.hydrogen.browser2|test-utils|benchmark)\\.(js|mjs|cjs|ts|tsx|ls|coffee|litcoffee|coffee\\.md)$|(src/scripts/.*$)',
       },
       to: {
         dependencyTypes: ['npm-dev'],

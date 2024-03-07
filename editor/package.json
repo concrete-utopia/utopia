@@ -28,6 +28,7 @@
     "test-update-snapshot": "pnpm run test -- --updateSnapshot",
     "test-browser-base": "NODE_OPTIONS=$NODE_OPENSSL_OPTION REACT_APP_AUTH0_CLIENT_ID='test' REACT_APP_AUTH0_ENDPOINT='test' REACT_APP_ENVIRONMENT_CONFIG=development karma start",
     "test-browser": "pnpm run test-browser-base karma-no-shard.conf.js --single-run",
+    "test-browser-hydrogen": "pnpm run test-browser-base karma-hydrogen.conf.js --single-run",
     "test-browser-full-output": "pnpm run test-browser-base karma-no-shard.conf.js --single-run --full-output",
     "test-browser-debug": "REACT_APP_BROWSER_TEST_DEBUG='true' pnpm run test-browser-base karma-no-shard.conf.js --debug",
     "test-browser-shard-1": "pnpm run test-browser-base karma-shard-1.conf.js --single-run",
