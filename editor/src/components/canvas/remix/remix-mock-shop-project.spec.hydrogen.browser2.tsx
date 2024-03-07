@@ -1,4 +1,3 @@
-import { waitFor } from '@testing-library/react'
 import { HydrogenTestProject } from '../../../test-cases/hydrogen-november.test-utils'
 import { mouseClickAtElementCenter } from '../event-helpers.test-utils'
 import {
@@ -12,7 +11,6 @@ import * as PackageJSON from '../../../../package.json'
 
 describe('Hydrogen Project Using Real Server Calls - disable me if there is no internet access', () => {
   it('can navigate in play mode to a detail page', async () => {
-    console.log('logpoint 0')
     const renderResult = await renderTestEditorWithModel(
       HydrogenTestProject,
       'await-first-dom-report',
@@ -26,11 +24,7 @@ describe('Hydrogen Project Using Real Server Calls - disable me if there is no i
       ]),
     )
 
-    console.log('logpoint 1')
-
     expect(await renderResult.renderedDOM.findByText('Mock.shop')).toBeDefined()
-
-    console.log('logpoint 2')
 
     {
       /* Enter play mode, turning the play button white-on-blue */
@@ -39,22 +33,16 @@ describe('Hydrogen Project Using Real Server Calls - disable me if there is no i
       await mouseClickAtElementCenter(playModeButton)
       expect(playModeButton.innerHTML).toContain('white')
     }
-    console.log('logpoint 3')
 
     {
       /* Navigate to Hoodie's product detail page */
       await mouseClickAtElementCenter((await renderResult.renderedDOM.findAllByText('Unisex'))[1])
-      console.log('logpoint 4')
       await mouseClickAtElementCenter(await renderResult.renderedDOM.findByAltText('Hoodie'))
     }
-
-    console.log('logpoint 5')
 
     {
       // A size selector button with the text Ocean appears
       expect(await renderResult.renderedDOM.findByText('Ocean')).toBeDefined()
     }
-
-    console.log('logpoint 6')
-  }, 120000)
+  })
 })
