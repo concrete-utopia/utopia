@@ -1,13 +1,12 @@
 import { CredentialsMethod, OpenFgaClient } from '@openfga/sdk'
 import { ServerEnvironment } from '../../env.server'
 import { AccessLevel } from '../../types'
-import { currentModelId } from './models/model.id'
 
 export const fgaClient = new OpenFgaClient({
-  apiScheme: 'https',
+  apiScheme: ServerEnvironment.FGA_API_SCHEME,
   apiHost: ServerEnvironment.FGA_API_HOST,
   storeId: ServerEnvironment.FGA_STORE_ID,
-  authorizationModelId: currentModelId,
+  // authorizationModelId: <ODEL_ID>, // we can specifiy a model id here, otherwise it defaults to the latest
   credentials: {
     method: CredentialsMethod.ClientCredentials,
     config: {

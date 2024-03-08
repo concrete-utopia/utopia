@@ -25,6 +25,7 @@ export const ServerEnvironment = {
   FGA_API_HOST: optionalEnv('FGA_API_HOST', '<FGA_API_HOST>'),
   FGA_API_TOKEN_ISSUER: optionalEnv('FGA_API_TOKEN_ISSUER', '<FGA_API_TOKEN_ISSUER>'),
   FGA_API_AUDIENCE: optionalEnv('FGA_API_AUDIENCE', '<FGA_API_AUDIENCE>'),
+  FGA_API_SCHEME: optionalEnv('FGA_API_SCHEME', 'https'),
   // Github OAuth credentials
   GITHUB_OAUTH_CLIENT_ID: optionalEnv('GITHUB_OAUTH_CLIENT_ID', ''),
   GITHUB_OAUTH_REDIRECT_URL: optionalEnv('GITHUB_OAUTH_REDIRECT_URL', ''),
