@@ -150,6 +150,7 @@ import {
   emptyProjectServerState,
   getUpdateProjectServerStateInStoreRunCount,
 } from '../editor/store/project-server-state'
+import { uniqBy } from '../../core/shared/array-utils'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -981,5 +982,22 @@ export function testPrintParsedTextFile(filename: string, parsedTextFile: Parsed
     (success) => testPrintCodeFromParseSuccess(filename, success),
     (_) => 'UNPARSED',
     parsedTextFile,
+  )
+}
+
+// TODO refactor all createBuiltInDependenciesList(null) calls with the use of createBuiltinDependenciesWithTestWorkers, simplify API
+export function createBuiltinDependenciesWithTestWorkers(
+  extraBuiltinDependencies: BuiltInDependencies,
+): BuiltInDependencies {
+  const workers = new UtopiaTsWorkersImplementation(
+    new FakeParserPrinterWorker(),
+    new FakeLinterWorker(),
+    new FakeWatchdogWorker(),
+  )
+
+  const defaultDependencies = createBuiltInDependenciesList(workers)
+  return uniqBy(
+    [...extraBuiltinDependencies, ...defaultDependencies], // ordered like this so the user's extra dependencies take priority over the default dependencies
+    (l, r) => l.moduleName === r.moduleName,
   )
 }

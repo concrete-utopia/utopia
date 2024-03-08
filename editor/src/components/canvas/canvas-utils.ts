@@ -1822,6 +1822,30 @@ function getValidElementPathsFromElement(
       ),
     )
 
+    if (element.type === 'JSX_ELEMENT') {
+      fastForEach(element.props, (p) => {
+        if (p.type === 'JSX_ATTRIBUTES_ENTRY') {
+          const prop = p.value
+          if (prop.type === 'JSX_ELEMENT') {
+            paths.push(
+              ...getValidElementPathsFromElement(
+                focusedElementPath,
+                prop,
+                path,
+                projectContents,
+                filePath,
+                uiFilePath,
+                isSceneWithOneChild,
+                false,
+                resolve,
+                getRemixValidPathsGenerationContext,
+              ),
+            )
+          }
+        }
+      })
+    }
+
     const name = isJSXElement(element) ? getJSXElementNameAsString(element.name) : 'Fragment'
     const lastElementPathPart = EP.lastElementPathForPath(path)
     const matchingFocusedPathPart =
