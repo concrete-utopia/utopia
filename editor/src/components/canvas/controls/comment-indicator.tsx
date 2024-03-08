@@ -59,7 +59,13 @@ import { useRefAtom } from '../../editor/hook-utils'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import * as PP from '../../../core/shared/property-path'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
-import { utopiaThreadMetadataToLiveblocksPartial } from '../../../core/commenting/comment-types'
+import {
+  liveblocksThreadMetadataToUtopia,
+  utopiaThreadMetadataToLiveblocksPartial,
+} from '../../../core/commenting/comment-types'
+
+export const CommentIndicatorTestId = 'comment-indicator-div'
+export const ParentedCommentIndicatorTestId = 'comment-indicator-div-parented'
 
 export const CommentIndicators = React.memo(() => {
   const projectId = useEditorState(
@@ -578,6 +584,9 @@ const CommentIndicatorWrapper = React.memo((props: CommentIndicatorWrapper) => {
     return <Comment {...updatedCommentProps} />
   }
 
+  const isThreadParented = liveblocksThreadMetadataToUtopia(thread.metadata).type === 'scene'
+  const testId = isThreadParented ? ParentedCommentIndicatorTestId : CommentIndicatorTestId
+
   return (
     <div
       data-testid='comment-indicator-wrapper'
@@ -589,7 +598,7 @@ const CommentIndicatorWrapper = React.memo((props: CommentIndicatorWrapper) => {
       }}
     >
       <motion.div
-        data-testid='comment-indicator-div'
+        data-testid={testId}
         ref={avatarRef}
         style={{ ...baseMultiplayerAvatarStyle, left: 0, top: 0 }}
       >

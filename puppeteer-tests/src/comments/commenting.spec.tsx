@@ -10,6 +10,7 @@ import {
 import { createUtopiaPuppeteerBrowser } from './test-utils'
 
 const CommentIndicatorSelector = 'div[data-testid="comment-indicator-div"]'
+const ParentedCommentIndicatorSelector = 'div[data-testid="comment-indicator-div-parented"]'
 const PlaygroundSceneSelector = '#playground-scene'
 const SceneToolbarSelector = 'div[data-testid="scene-label"]'
 
@@ -256,7 +257,7 @@ describe('Comments test', () => {
 
     await dismissHoverPreview(page)
     const commentBoundingBoxInScene = roundBoundingBox(
-      await getBoundingBox(page, CommentIndicatorSelector),
+      await getBoundingBox(page, ParentedCommentIndicatorSelector),
     )
     expect(commentBoundingBoxInScene).toEqual({
       height: 26,
@@ -279,7 +280,7 @@ describe('Comments test', () => {
     )
 
     const commentBoundingBoxInMovedScene = roundBoundingBox(
-      await getBoundingBox(page, CommentIndicatorSelector),
+      await getBoundingBox(page, ParentedCommentIndicatorSelector),
     )
     expect(commentBoundingBoxInMovedScene).toEqual({
       height: 26,
@@ -374,13 +375,13 @@ describe('Comments test', () => {
     await page.mouse.click(movedSceneBoundingBoxCenter.x, movedSceneBoundingBoxCenter.y)
 
     const commentBoundingBoxBackOnCanvasBeforeDelete = roundBoundingBox(
-      await getBoundingBox(page, CommentIndicatorSelector),
+      await getBoundingBox(page, ParentedCommentIndicatorSelector),
     )
     // delete the scene
     await page.keyboard.press('Backspace')
 
     const commentBoundingBoxBackOnCanvasAfterDelete = roundBoundingBox(
-      await getBoundingBox(page, CommentIndicatorSelector),
+      await getBoundingBox(page, ParentedCommentIndicatorSelector),
     )
     // the comment indicator should not move on the canvas
     expect(commentBoundingBoxBackOnCanvasAfterDelete).toEqual(
