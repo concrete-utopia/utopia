@@ -2,11 +2,11 @@ jest.mock('@openfga/sdk')
 import { prisma } from '../db.server'
 
 import {
-  clearDb,
   createTestProject,
   createTestSession,
   createTestUser,
   newTestRequest,
+  truncateTables,
 } from '../test-util'
 import { loader } from '../routes/v1.project.$id'
 import * as proxyServer from '../util/proxy.server'
@@ -17,7 +17,14 @@ import { Status } from '../util/statusCodes'
 
 describe('getProject', () => {
   beforeAll(async () => {
-    await clearDb(prisma)
+    await truncateTables([
+      prisma.projectAccess,
+      prisma.projectCollaborator,
+      prisma.userDetails,
+      prisma.persistentSession,
+      prisma.project,
+      prisma.projectID,
+    ])
   })
   afterAll(async () => {
     jest.restoreAllMocks()
@@ -29,7 +36,14 @@ describe('getProject', () => {
     let projectProxy: jest.SpyInstance
     let hasUserProjectPermission: jest.SpyInstance
     afterEach(async () => {
-      await clearDb(prisma)
+      await truncateTables([
+        prisma.projectAccess,
+        prisma.projectCollaborator,
+        prisma.userDetails,
+        prisma.persistentSession,
+        prisma.project,
+        prisma.projectID,
+      ])
 
       projectProxy.mockClear()
       hasUserProjectPermission.mockClear()
