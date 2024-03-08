@@ -2,7 +2,7 @@ lockfileVersion: 5.4
 
 specifiers:
   '@radix-ui/themes': 2.0.3
-  classnames: ^2.5.1
+  classnames: 2.5.1
   husky: 7.0.2
 
 dependencies:
