@@ -2,7 +2,7 @@ jest.mock('@openfga/sdk')
 import { prisma } from '../db.server'
 import { clearDb, createTestProject, createTestProjectAccess, createTestUser } from '../test-util'
 import { setProjectAccess } from './projectAccess.server'
-import * as permissionsService from '../services/permissionsService.server'
+import * as permissionsService from '../services/permissions/permissionsService.server'
 
 describe('projectAccess model', () => {
   afterAll(async () => {

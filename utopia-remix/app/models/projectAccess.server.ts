@@ -1,6 +1,6 @@
 import { AccessLevel } from '../types'
 import { prisma } from '../db.server'
-import * as permissionsService from '../services/permissionsService.server'
+import * as permissionsService from '../services/permissions/permissionsService.server'
 
 export async function setProjectAccess(params: {
   projectId: string

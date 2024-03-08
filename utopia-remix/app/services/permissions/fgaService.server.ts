@@ -1,6 +1,6 @@
 import { CredentialsMethod, OpenFgaClient } from '@openfga/sdk'
-import { ServerEnvironment } from '../env.server'
-import { AccessLevel } from '../types'
+import { ServerEnvironment } from '../../env.server'
+import { AccessLevel } from '../../types'
 
 export const fgaClient = new OpenFgaClient({
   apiScheme: 'https',

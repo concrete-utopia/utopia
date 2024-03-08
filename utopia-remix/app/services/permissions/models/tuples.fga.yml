@@ -1,0 +1,15 @@
+- user: user:user1
+  relation: owner
+  object: project:project1
+
+- user: user:user2
+  relation: owner
+  object: project:project2
+
+- user: user:user3
+  relation: viewer
+  object: project:project1
+
+- user: user:user2
+  relation: viewer
+  object: project:project1

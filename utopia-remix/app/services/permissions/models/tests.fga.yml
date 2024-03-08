@@ -1,0 +1,44 @@
+name: Model Tests
+model_file: ./model.fga.yml
+tuple_file: ./tuples.fga.yml
+tests:
+  - name: Basic Test
+    check:
+      - user: user:user1
+        object: project:project1
+        assertions:
+          can_view: true
+          can_fork: true
+          can_play: true
+          can_edit: true
+          can_comment: true
+          can_show_presence: true
+          can_see_live_changes: true
+          can_request_access: false
+          can_manage: true
+      - user: user:user2
+        object: project:project1
+        assertions:
+          can_view: true
+          can_fork: true
+          can_play: true
+          can_edit: false
+          can_comment: false
+          can_show_presence: false
+          can_see_live_changes: false
+          can_request_access: true
+          can_manage: false
+      - user: user:user3
+        object: project:project1
+        assertions:
+          can_view: true
+          can_edit: false
+    list_objects:
+      - user: user:user2
+        type: project
+        assertions:
+          can_view:
+            - project:project1
+            - project:project2
+          can_manage:
+            - project:project2

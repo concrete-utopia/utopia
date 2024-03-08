@@ -1,0 +1,26 @@
+model
+  schema 1.1
+
+type user
+
+type project
+  relations
+    define can_change_owner: owner
+    define can_comment: collaborator or editor or owner
+    define can_edit: editor or owner
+    define can_fork: viewer or collaborator or editor or owner
+    define can_manage: owner
+    define can_play: viewer or collaborator or editor or owner
+    define can_request_access: viewer or collaborator
+    define can_see_live_changes: collaborator or editor or owner
+    define can_show_presence: collaborator or editor or owner
+    define can_view: viewer or collaborator or editor or owner
+    define collaborator: [user, user:*, group#member]
+    define creator: [user]
+    define editor: [user, group#member]
+    define owner: [user] or creator
+    define viewer: [user, user:*, group#member]
+
+type group
+  relations
+    define member: [user]

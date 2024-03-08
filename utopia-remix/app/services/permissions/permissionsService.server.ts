@@ -1,5 +1,5 @@
-import { assertNever } from '../util/assertNever'
-import { AccessLevel, UserProjectPermission } from '../types'
+import { assertNever } from '../../util/assertNever'
+import { AccessLevel, UserProjectPermission } from '../../types'
 import * as fgaService from './fgaService.server'
 
 const ANONYMOUS_USER_ID = '__ANON__'

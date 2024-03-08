@@ -9,7 +9,7 @@ import {
   newTestRequest,
 } from '../test-util'
 import { ApiError } from '../util/errors'
-import * as permissionsService from '../services/permissionsService.server'
+import * as permissionsService from '../services/permissions/permissionsService.server'
 import { AccessLevel, UserProjectPermission } from '../types'
 import { action } from '../routes/internal.projects.$id.access'
 import { ApiResponse } from '../util/api.server'
