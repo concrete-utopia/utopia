@@ -360,6 +360,28 @@ describe('Use the text editor', () => {
         )`),
     )
   })
+  it('handles an element access using a function', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectWithSnippet(`<span data-uid='span'>{style[getBackgroundColor()]}</span>`),
+      'await-first-dom-report',
+    )
+    expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('lightblue')
+
+    await editor.dispatch([selectComponents([EP.fromString('sb/39e/span')], false)], true)
+    await pressKey('enter')
+    await editor.getDispatchFollowUpActionsFinished()
+
+    typeText(`{style[getColor()]}`)
+    await closeTextEditor()
+
+    await editor.getDispatchFollowUpActionsFinished()
+    await wait(50)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      projectWithSnippet(`<span data-uid='span'>{style[getColor()]}</span>`),
+    )
+    expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('green')
+  })
   describe('blur', () => {
     describe('when the element is empty', () => {
       it('keeps existing elements', async () => {
@@ -2457,6 +2479,17 @@ export var storyboard = (
 function projectWithSnippet(snippet: string) {
   return formatTestProjectCode(`import * as React from 'react'
 import { Storyboard } from 'utopia-api'
+
+function getBackgroundColor() {
+  return 'backgroundColor'
+}
+function getColor() {
+  return 'color'
+}
+const style = {
+  backgroundColor: 'lightblue',
+  color: 'green'
+}
 
 const myvar1 = 'content of myvar1'
 const myvar2 = 'content of myvar2'
