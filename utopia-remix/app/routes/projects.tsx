@@ -46,7 +46,7 @@ import {
   useSortCompareProject,
 } from '../util/use-sort-compare-project'
 import { useCleanupOperations } from '../hooks/useCleanupOperations'
-import '@radix-ui/themes/styles.css'
+
 import { Flex, Text, Button } from '@radix-ui/themes'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
@@ -198,11 +198,10 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
         justifyContent: 'space-between',
       }}
     >
-      <div style={{ width: 230, height: 60, background: 'blue' }}>
-        hii
-        <Text>Hello from Radix Themes!</Text>
+      <Flex direction='column' gap='2'>
+        <Text>Hello from Radix Themes</Text>
         <Button>Let's go</Button>
-      </div>
+      </Flex>
       <div
         style={{
           display: 'flex',

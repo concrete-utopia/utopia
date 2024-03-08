@@ -15,6 +15,7 @@ import { BrowserEnvironment } from './env.server'
 import { styles } from './styles/styles.css'
 import { ErrorWithStatus, isErrorWithStatus } from './util/errors'
 import { Status, getStatusName } from './util/statusCodes'
+import radixStyle from '@radix-ui/themes/styles.css'
 
 import './normalize.css'
 
@@ -25,7 +26,7 @@ declare global {
 }
 
 export const links: LinksFunction = () => [
-  ...(cssBundleHref ? [{ rel: 'stylesheet', href: cssBundleHref }] : []),
+  ...(cssBundleHref ? [{ rel: 'stylesheet', href: cssBundleHref }] : []), {rel: 'stylesheet', href: radixStyle}
 ]
 
 export async function loader() {

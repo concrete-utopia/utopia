@@ -6,7 +6,7 @@
   "main": "./editor",
   "directories": {},
   "devDependencies": {
-    "husky": "^7.0.2"
+    "husky": "7.0.2"
   },
   "scripts": {
     "prepare": "husky install",
@@ -21,6 +21,7 @@
   },
   "homepage": "https://utopia.app",
   "dependencies": {
-    "@radix-ui/themes": "2.0.3"
+    "@radix-ui/themes": "2.0.3",
+    "classnames": "2.5.1"
   }
 }

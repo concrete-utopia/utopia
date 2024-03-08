@@ -4,6 +4,7 @@ export default {
   future: {
     v3_fetcherPersist: true,
   },
+  serverDependenciesToBundle: ['@radix-ui/themes'],
   // appDirectory: "app",
   // assetsBuildDirectory: "public/build",
   // publicPath: "/build/",
