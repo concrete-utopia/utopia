@@ -606,9 +606,9 @@ export const CollaboratorKeepDeepEquality: KeepDeepEqualityCall<Collaborator> =
     (data) => data.id,
     StringKeepDeepEquality,
     (data) => data.name,
-    NullableStringKeepDeepEquality,
+    undefinableDeepEquality(StringKeepDeepEquality),
     (data) => data.avatar,
-    NullableStringKeepDeepEquality,
+    undefinableDeepEquality(StringKeepDeepEquality),
     (id, name, avatar) => ({ id, name, avatar }),
   )
 

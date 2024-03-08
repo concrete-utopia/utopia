@@ -1121,7 +1121,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       left: jsExpressionOtherJavaScript(
         [],
         'getSizing(spacing)',
-        'getSizing(spacing)',
+        'getSizing(spacing);',
         'return getSizing(spacing);',
         ['getSizing', 'spacing'],
         expect.objectContaining({
@@ -1137,7 +1137,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       onClick: jsExpressionOtherJavaScript(
         [],
         `function click(){console.log('click')}`,
-        `function click(){console.log('click')}`,
+        `(function click() {console.log('click');});`,
         `return (function click() {
   console.log('click');
 });`,
@@ -1860,7 +1860,7 @@ export var whatever = (props) => {
       left: jsExpressionOtherJavaScript(
         [],
         'a + b',
-        'a + b',
+        'a + b;',
         'return a + b;',
         ['a', 'b'],
         expect.objectContaining({
@@ -1937,7 +1937,7 @@ export var whatever = (props) => {
       left: jsExpressionOtherJavaScript(
         [],
         'a ? b : c',
-        'a ? b : c',
+        'a ? b : c;',
         'return a ? b : c;',
         ['a', 'b', 'c'],
         expect.objectContaining({
@@ -2014,7 +2014,7 @@ export var whatever = (props) => {
       left: jsExpressionOtherJavaScript(
         [],
         'a++',
-        'a++',
+        'a++;',
         'return a++;',
         ['a'],
         expect.objectContaining({
@@ -2028,7 +2028,7 @@ export var whatever = (props) => {
       right: jsExpressionOtherJavaScript(
         [],
         '++a',
-        '++a',
+        '++a;',
         'return ++a;',
         ['a'],
         expect.objectContaining({
@@ -2312,7 +2312,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       text: jsExpressionOtherJavaScript(
         [],
         '`Count ${count}`',
-        '`Count ${count}`',
+        '`Count ${count}`;',
         'return `Count ${count}`;',
         ['count'],
         expect.objectContaining({
@@ -2407,7 +2407,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       left: jsExpressionOtherJavaScript(
         [],
         'use20 ? 20 : 10',
-        'use20 ? 20 : 10',
+        'use20 ? 20 : 10;',
         'return use20 ? 20 : 10;',
         ['use20'],
         expect.objectContaining({
@@ -2568,7 +2568,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       left: jsExpressionOtherJavaScript(
         [],
         'props.left + spacing',
-        'props.left + spacing',
+        'props.left + spacing;',
         'return props.left + spacing;',
         ['spacing', 'props'],
         expect.objectContaining({
@@ -3274,7 +3274,7 @@ export var App = (props) => <View data-uid='bbb'>
       left: jsExpressionOtherJavaScript(
         [],
         'getSizing(spacing)',
-        'getSizing(spacing)',
+        'getSizing(spacing);',
         'return getSizing(spacing);',
         ['getSizing', 'spacing'],
         expect.objectContaining({
@@ -3880,7 +3880,7 @@ return { test: test };`
                     left: jsExpressionOtherJavaScript(
                       [],
                       'test(100)',
-                      'test(100)',
+                      'test(100);',
                       'return test(100);',
                       ['test'],
                       expect.objectContaining({
@@ -3951,7 +3951,7 @@ return { test: test };`
                   left: jsExpressionOtherJavaScript(
                     [],
                     'test(100)',
-                    'test(100)',
+                    'test(100);',
                     'return test(100);',
                     ['test'],
                     expect.objectContaining({
@@ -4909,7 +4909,7 @@ export var whatever = props => {
                 jsExpressionOtherJavaScript(
                   [],
                   `n * 30`,
-                  `n * 30`,
+                  `n * 30;`,
                   `return n * 30;`,
                   ['n'],
                   expect.objectContaining({}),
@@ -4924,7 +4924,7 @@ export var whatever = props => {
                 jsExpressionOtherJavaScript(
                   [],
                   `n * 30`,
-                  `n * 30`,
+                  `n * 30;`,
                   `return n * 30;`,
                   ['n'],
                   expect.objectContaining({}),
@@ -5025,7 +5025,7 @@ export var whatever = props => {
                 jsExpressionOtherJavaScript(
                   [],
                   `n * a`,
-                  `n * a`,
+                  `n * a;`,
                   `return n * a;`,
                   ['n', 'a'],
                   expect.objectContaining({}),
@@ -5040,7 +5040,7 @@ export var whatever = props => {
                 jsExpressionOtherJavaScript(
                   [],
                   `n * a`,
-                  `n * a`,
+                  `n * a;`,
                   `return n * a;`,
                   ['n', 'a'],
                   expect.objectContaining({}),
@@ -5558,7 +5558,7 @@ export var App = props => {
 
     const position = consumer.getOriginalPosition(transpiledLine, transpiledCharacter)
 
-    expect(position).toEqual(expect.objectContaining({ line: 29, column: 26 }))
+    expect(position).toEqual(expect.objectContaining({ line: 29, column: 18 }))
   })
 })
 
