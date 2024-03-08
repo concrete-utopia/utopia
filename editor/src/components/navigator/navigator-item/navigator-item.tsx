@@ -22,7 +22,10 @@ import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
 } from '../../../core/shared/element-template'
-import { hasElementsWithin } from '../../../core/shared/element-template'
+import {
+  hasElementsWithin,
+  jsExpressionOtherJavaScriptSimple,
+} from '../../../core/shared/element-template'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { unless, when } from '../../../utils/react-conditionals'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
@@ -58,7 +61,7 @@ import { NavigatorItemActionSheet } from './navigator-item-components'
 import { assertNever } from '../../../core/shared/utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { MapCounter } from './map-counter'
-import { Outlet } from 'react-router'
+import * as PP from '../../../core/shared/property-path'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -150,7 +153,17 @@ function selectItem(
     ? getConditionalOverrideActions(elementPath, conditionalOverrideUpdate)
     : getConditionalOverrideActions(EP.parentPath(elementPath), conditionalOverrideUpdate)
 
-  dispatch([...conditionalOverrideActions, ...selectionActions], 'leftpane')
+  const renderPropInsertActions =
+    isRenderPropNavigatorEntry(navigatorEntry) && navigatorEntry.childOrAttribute == null
+      ? [
+          EditorActions.setProp_UNSAFE(
+            EP.parentPath(elementPath),
+            PP.create(navigatorEntry.propName),
+            jsExpressionOtherJavaScriptSimple('<div />', []),
+          ),
+        ]
+      : []
+  dispatch([...conditionalOverrideActions, ...selectionActions, ...renderPropInsertActions])
 }
 
 const highlightItem = (
