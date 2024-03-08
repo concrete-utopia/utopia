@@ -3,7 +3,7 @@ import { proxy } from '../util/proxy.server'
 import { handle, handleOptions } from '../util/api.server'
 import { Status } from '../util/statusCodes'
 import { UserProjectPermission } from '../types'
-import { validateProjectAccess } from '../handlers/validators'
+import { ALLOW, validateProjectAccess } from '../handlers/validators'
 
 export async function loader(args: LoaderFunctionArgs) {
   return handle(args, {
@@ -23,9 +23,7 @@ export async function action(args: ActionFunctionArgs) {
   return handle(args, {
     PUT: {
       handler: proxy,
-      validator: validateProjectAccess(UserProjectPermission.CAN_MANAGE_PROJECT, {
-        getProjectId: (params) => params.id,
-      }),
+      validator: ALLOW,
     },
   })
 }
