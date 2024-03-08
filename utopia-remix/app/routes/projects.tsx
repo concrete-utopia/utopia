@@ -197,10 +197,6 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
         justifyContent: 'space-between',
       }}
     >
-      <Flex direction='column' gap='2'>
-        <Text>Hello from Radix Themes</Text>
-        <Button>Let's go</Button>
-      </Flex>
       <div
         style={{
           display: 'flex',
@@ -217,7 +213,7 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
         >
           <img
             className={sprinkles({ borderRadius: 'medium' })}
-            style={{ width: 40 }}
+            style={{ width: 36 }}
             src={user.picture ?? undefined}
             referrerPolicy='no-referrer'
           />
@@ -311,7 +307,7 @@ const TopActionBar = React.memo(() => {
         id: 'createProject',
         title: '+ Blank Project',
         onClick: () => window.open(projectEditorLink(null), '_blank'),
-        color: 'orange',
+        color: 'blue',
       },
       // {
       //   title: '+ Project On GitHub',
@@ -348,9 +344,9 @@ const TopActionBar = React.memo(() => {
       }}
     >
       {newProjectButtons.map((p) => (
-        <button key={p.id} className={newProjectButton({ color: p.color })} onClick={p.onClick}>
-          <span>{p.title}</span>
-        </button>
+        <Button key={p.id} color={p.color} onClick={p.onClick}>
+          {p.title}
+        </Button>
       ))}
     </div>
   )
