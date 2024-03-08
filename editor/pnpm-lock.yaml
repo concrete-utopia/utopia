@@ -227,6 +227,7 @@ specifiers:
   karma-mocha: 2.0.1
   karma-mocha-reporter: 2.2.5
   karma-parallel: ^0.3.1
+  karma-time-stats-reporter: ^0.1.0
   karma-viewport: ^1.0.8
   karma-webpack: 5.0.0
   keycode: 2.2.1
@@ -606,6 +607,7 @@ devDependencies:
   karma-mocha: 2.0.1
   karma-mocha-reporter: 2.2.5_mok7ytollbnywezj4pomfmw2yy_karma@6.4.1
   karma-parallel: 0.3.1_karma@6.4.1
+  karma-time-stats-reporter: 0.1.0
   karma-viewport: 1.0.8
   karma-webpack: 5.0.0_webpack@5.88.2
   lint-staged: 8.1.7
@@ -7553,6 +7555,14 @@ packages:
     engines: {node: '>=0.1.90'}
     dev: true
 
+  /columnify/1.6.0:
+    resolution: {integrity: sha512-lomjuFZKfM6MSAnV9aCZC9sc0qGbmZdfygNv+nCpqVkSKdCxCklLtd16O0EILGkImHw9ZpHkAnHaB+8Zxq5W6Q==}
+    engines: {node: '>=8.0.0'}
+    dependencies:
+      strip-ansi: 6.0.1
+      wcwidth: 1.0.1
+    dev: true
+
   /combine-source-map/0.8.0:
     resolution: {integrity: sha1-pY0N8ELBhvz4IqjoAV9UUNLXmos=}
     dependencies:
@@ -8332,6 +8342,12 @@ packages:
     engines: {node: '>= 10'}
     dependencies:
       execa: 5.1.1
+    dev: true
+
+  /defaults/1.0.4:
+    resolution: {integrity: sha512-eFuaLoy/Rxalv2kr+lqMlUnrDWV+3j4pljOIJgLIhI058IQfWJ7vXhyEIHu+HtC738klGALYxOKDO0bQP3tg8A==}
+    dependencies:
+      clone: 1.0.4
     dev: true
 
   /defer-to-connect/2.0.1:
@@ -12972,6 +12988,13 @@ packages:
       istanbul: 0.4.5
       karma: 6.4.1
       lodash: 4.17.21
+    dev: true
+
+  /karma-time-stats-reporter/0.1.0:
+    resolution: {integrity: sha512-7oCfFIqFs8D3xcDBfP75taNlmiSe9KeWfi+VChy31EHG+JL7Hf9B58Opyb5uG0aeKdsXfLWptG3KTt0duwCzjQ==}
+    dependencies:
+      chalk: 2.4.2
+      columnify: 1.6.0
     dev: true
 
   /karma-viewport/1.0.8:
@@ -19201,6 +19224,12 @@ packages:
     resolution: {integrity: sha512-O84QOnr0icsbFGLS0O3bI5FswxzRr8/gHwWkDlQFskhSPryQXvrTMxjxGP4+iWYoauLoBvfDpkrOauZ+0iZpDA==}
     dependencies:
       minimalistic-assert: 1.0.1
+    dev: true
+
+  /wcwidth/1.0.1:
+    resolution: {integrity: sha512-XHPEwS0q6TaxcvG85+8EYkbiCux2XtWG2mkc47Ng2A77BQu9+DqIOJldST4HgPkuea7dvKSj5VgX3P1d4rW8Tg==}
+    dependencies:
+      defaults: 1.0.4
     dev: true
 
   /webcrypto-core/1.7.7:

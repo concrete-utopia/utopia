@@ -359,6 +359,7 @@
     "karma-mocha": "2.0.1",
     "karma-mocha-reporter": "2.2.5",
     "karma-parallel": "^0.3.1",
+    "karma-time-stats-reporter": "^0.1.0",
     "karma-viewport": "^1.0.8",
     "karma-webpack": "5.0.0",
     "lint-staged": "8.1.7",

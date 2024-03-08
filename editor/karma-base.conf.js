@@ -21,12 +21,13 @@ webpackConfig['plugins'].push(
 )
 
 module.exports = function (config) {
-  var reporters = ['mocha', 'short-console-messages']
+  const baseReporters = ['mocha', 'time-stats']
+  var reporters = [...baseReporters, 'short-console-messages']
   if (config.debug) {
-    reporters = ['mocha']
+    reporters = [...baseReporters]
   }
   if (config.fullOutput) {
-    reporters = ['mocha', 'full-console-messages']
+    reporters = [...baseReporters, 'full-console-messages']
   }
   config.set({
     plugins: [
@@ -38,6 +39,7 @@ module.exports = function (config) {
       'karma-mocha-reporter',
       require('./test/karma-custom-reporter/short-console-messages'),
       require('./test/karma-custom-reporter/full-console-messages'),
+      'karma-time-stats-reporter',
     ],
     reporters: reporters,
     // base path that will be used to resolve all patterns (eg. files, exclude)
