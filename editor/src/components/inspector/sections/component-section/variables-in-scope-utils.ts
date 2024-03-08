@@ -1,18 +1,18 @@
+import React from 'react'
 import type {
-  ControlDescription,
   ArrayControlDescription,
+  ControlDescription,
   ObjectControlDescription,
 } from 'utopia-api/core'
-import type { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
-import type { VariableData } from '../../../canvas/ui-jsx-canvas'
-import { useEditorState, Substores } from '../../../editor/store/store-hook'
-import type { VariableOption } from './data-picker-popup'
-import * as EP from '../../../../core/shared/element-path'
-import React from 'react'
-import { useGetPropertyControlsForSelectedComponents } from '../../common/property-controls-hooks'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
+import * as EP from '../../../../core/shared/element-path'
+import type { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import { isValidReactNode } from '../../../../utils/react-utils'
+import type { VariableData } from '../../../canvas/ui-jsx-canvas'
+import { Substores, useEditorState } from '../../../editor/store/store-hook'
+import { useGetPropertyControlsForSelectedComponents } from '../../common/property-controls-hooks'
+import type { VariableOption } from './data-picker-popup'
 
 function valuesFromObject(
   variable: ArrayInfo | ObjectInfo,
