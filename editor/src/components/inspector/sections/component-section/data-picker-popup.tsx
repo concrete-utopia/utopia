@@ -22,12 +22,14 @@ import type {
 } from './variables-in-scope-utils'
 import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
 import { assertNever } from '../../../../core/shared/utils'
+import { isPrefixOf } from '../../../../core/shared/array-utils'
 
 export interface PrimitiveOption {
   type: 'primitive'
   variableInfo: PrimitiveInfo
   definedElsewhere: string
   depth: number
+  valuePath: Array<string | number>
 }
 
 export interface ArrayOption {
@@ -36,6 +38,7 @@ export interface ArrayOption {
   depth: number
   definedElsewhere: string
   children: Array<VariableOption>
+  valuePath: Array<string | number>
 }
 
 export interface ObjectOption {
@@ -44,6 +47,7 @@ export interface ObjectOption {
   depth: number
   definedElsewhere: string
   children: Array<VariableOption>
+  valuePath: Array<string | number>
 }
 
 export interface JSXOption {
@@ -51,6 +55,7 @@ export interface JSXOption {
   variableInfo: JSXInfo
   definedElsewhere: string
   depth: number
+  valuePath: Array<string | number>
 }
 
 export type VariableOption = PrimitiveOption | ArrayOption | ObjectOption | JSXOption
@@ -82,11 +87,12 @@ export interface DataPickerPopupProps {
   closePopup: () => void
   style: React.CSSProperties
   propPath: PropertyPath
+  propExpressionPath: Array<string | number> | null
 }
 
 export const DataPickerPopup = React.memo(
   React.forwardRef<HTMLDivElement, DataPickerPopupProps>((props, forwardedRef) => {
-    const { closePopup, propPath } = props
+    const { closePopup, propPath, propExpressionPath } = props
 
     const selectedViewPathRef = useRefEditorState(
       (store) => store.editor.selectedViews.at(0) ?? null,
@@ -163,10 +169,11 @@ export const DataPickerPopup = React.memo(
           {variableNamesInScope.map((variableOption, idx) => {
             return (
               <ValueRow
-                key={variableOption.variableInfo.variableName}
+                key={variableOption.valuePath.toString()}
                 variableOption={variableOption}
                 idx={`${idx}`}
                 onTweakProperty={onTweakProperty}
+                currentPropExpressionPath={propExpressionPath}
               />
             )
           })}
@@ -180,12 +187,20 @@ interface ValueRowProps {
   variableOption: VariableOption
   idx: string
   onTweakProperty: (name: string, definedElsewhere: string | null) => (e: React.MouseEvent) => void
+  currentPropExpressionPath: Array<string | number> | null
+  overriddenTitle?: string
 }
 
 const anyObjectChildMatches = (info: VariableInfo): boolean =>
   info.type === 'object' && info.props.some((c) => c.matches || anyObjectChildMatches(c))
 
-function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
+function ValueRow({
+  variableOption,
+  idx,
+  onTweakProperty,
+  currentPropExpressionPath,
+  overriddenTitle,
+}: ValueRowProps) {
   const colorTheme = useColorTheme()
   const [selectedIndex, setSelectedIndex] = React.useState<number>(0)
 
@@ -204,7 +219,7 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
   const isArray = variableOption.variableInfo.type === 'array'
 
   const tweakProperty = onTweakProperty(
-    variableOption.variableInfo.variableName,
+    variableOption.variableInfo.expression,
     variableOption.definedElsewhere,
   )
   const stopPropagation = useCallback((e: React.MouseEvent) => {
@@ -217,6 +232,11 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
       : null
 
   const hasObjectChildren = variableOption.type === 'object' && variableOption.children.length > 0
+
+  const currentExpressionMatches =
+    currentPropExpressionPath != null &&
+    isPrefixOf(variableOption.valuePath, currentPropExpressionPath)
+
   return (
     <>
       <Button
@@ -249,10 +269,12 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
         >
           <div onClick={tweakProperty}>
             <span
+              data-testid={`variable-from-scope-span-${variableOption.valuePath}`}
               style={{
                 marginLeft: 4 * variableOption.depth,
                 borderRadius: 2,
                 fontWeight: 400,
+                fontStyle: currentExpressionMatches ? 'italic' : undefined,
                 display: 'flex',
                 maxWidth: '100%',
               }}
@@ -272,7 +294,7 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
                   opacity: variableOption.variableInfo.matches ? 1 : 0.5,
                 }}
               >
-                {variableOption.variableInfo.displayName}
+                {overriddenTitle ?? variableOption.variableInfo.expressionPathPart}
               </span>
             </span>
           </div>
@@ -311,19 +333,22 @@ function ValueRow({ variableOption, idx, onTweakProperty }: ValueRowProps) {
       {variableChildren != null ? (
         isArray ? (
           <ValueRow
-            key={variableChildren[selectedIndex].variableInfo.variableName}
+            key={variableChildren[selectedIndex].valuePath.toString()}
             variableOption={variableChildren[selectedIndex]}
             idx={`${idx}-${selectedIndex}`}
             onTweakProperty={onTweakProperty}
+            currentPropExpressionPath={currentPropExpressionPath}
+            overriddenTitle={`${variableOption.variableInfo.expressionPathPart}[${selectedIndex}]`}
           />
         ) : childrenOpen ? (
           variableChildren.map((child, index) => {
             return (
               <ValueRow
-                key={child.variableInfo.variableName}
+                key={child.valuePath.toString()}
                 variableOption={child}
                 idx={`${idx}-${index}`}
                 onTweakProperty={onTweakProperty}
+                currentPropExpressionPath={currentPropExpressionPath}
               />
             )
           })

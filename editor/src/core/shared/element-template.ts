@@ -12,7 +12,7 @@ import type {
 } from './math-utils'
 import { zeroCanvasRect } from './math-utils'
 import type { Either } from './either'
-import { isRight } from './either'
+import { flatMapEither, isRight, left, mapEither, right } from './either'
 import { v4 as UUID } from 'uuid'
 import type { RawSourceMap } from '../workers/ts/ts-typings/RawSourceMap'
 import * as PP from './property-path'
@@ -30,7 +30,6 @@ import type { MapLike } from 'typescript'
 import { forceNotNull } from './optional-utils'
 import type { FlexAlignment, FlexJustifyContent } from '../../components/inspector/inspector-common'
 import { allComments } from './comment-flags'
-import { defaultIndexHtmlFilePath } from '../../components/editor/store/editor-state'
 import type { Optic } from './optics/optics'
 import { fromField } from './optics/optic-creators'
 import { jsxSimpleAttributeToValue } from './jsx-attribute-utils'
@@ -959,6 +958,32 @@ export function isRegularJSXAttribute(attribute: ModifiableAttribute): attribute
     !modifiableAttributeIsPartOfAttributeValue(attribute) &&
     !modifiableAttributeIsAttributeNotFound(attribute)
   )
+}
+
+export function modifiableAttributeToValuePath(
+  attribute: ModifiableAttribute,
+): Either<string, Array<string | number>> {
+  switch (attribute.type) {
+    case 'JS_IDENTIFIER':
+      return right([attribute.name])
+    case 'JS_PROPERTY_ACCESS':
+      return mapEither((onValueArray) => {
+        return [...onValueArray, attribute.property]
+      }, modifiableAttributeToValuePath(attribute.onValue))
+    case 'JS_ELEMENT_ACCESS':
+      return flatMapEither((onValueArray) => {
+        if (isJSExpressionValue(attribute.element)) {
+          switch (typeof attribute.element.value) {
+            case 'number':
+            case 'string':
+              return right([...onValueArray, attribute.element.value])
+          }
+        }
+        return left('Unable to handle this element access.')
+      }, modifiableAttributeToValuePath(attribute.onValue))
+    default:
+      return left('Unable to handle this expression type.')
+  }
 }
 
 export interface JSXAttributesEntry extends WithComments {
