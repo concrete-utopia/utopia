@@ -50,9 +50,6 @@ export const AccessLevel = {
 export type AccessLevel = (typeof AccessLevel)[keyof typeof AccessLevel]
 
 export function asAccessLevel(accessLevel: number | undefined | null): AccessLevel | null {
-  if (accessLevel == null) {
-    return null
-  }
   switch (accessLevel) {
     case AccessLevel.PRIVATE:
       return AccessLevel.PRIVATE

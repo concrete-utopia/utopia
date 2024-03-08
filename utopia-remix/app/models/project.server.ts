@@ -33,9 +33,11 @@ export async function getProjectOwnerById(
   } = {
     proj_id: params.id,
   }
+  // if we're not including deleted projects, we need to add a condition to the query
   if (!config.includeDeleted) {
     whereOptions.OR = [{ deleted: null }, { deleted: false }]
   }
+  // find the project and return the owner_id
   const project = await prisma.project.findFirst({
     select: { owner_id: true },
     where: whereOptions,
