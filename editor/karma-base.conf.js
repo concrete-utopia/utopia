@@ -105,9 +105,9 @@ module.exports = function (config) {
     timeStatsReporter: {
       reportTimeStats: true, // Print Time Stats (histogram)
 
-      binSize: 100, // Bin size for histogram (in milliseconds)
+      binSize: 300, // Bin size for histogram (in milliseconds)
 
-      slowThreshold: 500, // The threshold for what is considered a slow test (in milliseconds).
+      slowThreshold: 3000, // The threshold for what is considered a slow test (in milliseconds).
       // This is also the max value for last bin histogram
       // Note that this will automatically be rounded up to be evenly divisible by binSize
 
