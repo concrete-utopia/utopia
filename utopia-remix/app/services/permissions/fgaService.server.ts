@@ -7,16 +7,24 @@ export const fgaClient = new OpenFgaClient({
   apiHost: ServerEnvironment.FGA_API_HOST,
   storeId: ServerEnvironment.FGA_STORE_ID,
   // authorizationModelId: <ODEL_ID>, // we can specifiy a model id here, otherwise it defaults to the latest
-  credentials: {
-    method: CredentialsMethod.ClientCredentials,
-    config: {
-      apiTokenIssuer: ServerEnvironment.FGA_API_TOKEN_ISSUER,
-      apiAudience: ServerEnvironment.FGA_API_AUDIENCE,
-      clientId: ServerEnvironment.FGA_CLIENT_ID,
-      clientSecret: ServerEnvironment.FGA_SECRET,
-    },
-  },
+  credentials: getCredentials(),
 })
+
+function getCredentials() {
+  if (ServerEnvironment.environment === 'local') {
+    return { method: CredentialsMethod.None } as const
+  } else {
+    return {
+      method: CredentialsMethod.ClientCredentials,
+      config: {
+        apiTokenIssuer: ServerEnvironment.FGA_API_TOKEN_ISSUER,
+        apiAudience: ServerEnvironment.FGA_API_AUDIENCE,
+        clientId: ServerEnvironment.FGA_CLIENT_ID,
+        clientSecret: ServerEnvironment.FGA_SECRET,
+      },
+    } as const
+  }
+}
 
 export async function updateAccessLevel(projectId: string, accessLevel: AccessLevel) {
   switch (accessLevel) {
