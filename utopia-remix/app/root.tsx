@@ -16,8 +16,8 @@ import { styles } from './styles/styles.css'
 import { ErrorWithStatus, isErrorWithStatus } from './util/errors'
 import { Status, getStatusName } from './util/statusCodes'
 import radixStyle from '@radix-ui/themes/styles.css'
-
 import './normalize.css'
+import { Theme } from '@radix-ui/themes'
 
 declare global {
   interface Window {
@@ -26,7 +26,8 @@ declare global {
 }
 
 export const links: LinksFunction = () => [
-  ...(cssBundleHref ? [{ rel: 'stylesheet', href: cssBundleHref }] : []), {rel: 'stylesheet', href: radixStyle}
+  ...(cssBundleHref ? [{ rel: 'stylesheet', href: cssBundleHref }] : []),
+  { rel: 'stylesheet', href: radixStyle },
 ]
 
 export async function loader() {
@@ -53,7 +54,9 @@ export default function App() {
         <Links />
       </head>
       <body className={styles.root}>
-        <Outlet />
+        <Theme>
+          <Outlet />
+        </Theme>
         <script
           // https://remix.run/docs/en/1.19.3/guides/envvars#browser-environment-variables
           dangerouslySetInnerHTML={{
