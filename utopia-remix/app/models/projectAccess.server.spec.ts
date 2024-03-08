@@ -7,7 +7,11 @@ import {
   truncateTables,
 } from '../test-util'
 import { setProjectAccess } from './projectAccess.server'
+<<<<<<< HEAD
 import * as permissionsService from '../services/permissions/permissionsService.server'
+=======
+import * as permissionsService from '../services/permissionsService.server'
+>>>>>>> master
 
 describe('projectAccess model', () => {
   afterAll(async () => {
