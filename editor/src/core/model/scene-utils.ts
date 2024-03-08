@@ -224,7 +224,7 @@ function getSimpleAttributeAtPathCustom(attributes: JSXAttributes, path: Propert
   return flatMapEither((attr) => {
     const simpleValue = jsxSimpleAttributeToValue(attr)
     if (isLeft(simpleValue) && attr.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
-      return right(attr.javascript)
+      return right(attr.javascriptWithUIDs)
     } else {
       return simpleValue
     }

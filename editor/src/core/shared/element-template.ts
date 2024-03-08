@@ -179,7 +179,7 @@ export interface JSExpressionOtherJavaScript extends WithComments, WithElementsW
   type: 'ATTRIBUTE_OTHER_JAVASCRIPT'
   params: Array<Param>
   originalJavascript: string
-  javascript: string
+  javascriptWithUIDs: string
   transpiledJavascript: string
   definedElsewhere: Array<string>
   sourceMap: RawSourceMap | null
@@ -189,7 +189,7 @@ export interface JSExpressionOtherJavaScript extends WithComments, WithElementsW
 export function jsExpressionOtherJavaScript(
   params: Array<Param>,
   originalJavascript: string,
-  javascript: string,
+  javascriptWithUIDs: string,
   transpiledJavascript: string,
   definedElsewhere: Array<string>,
   sourceMap: RawSourceMap | null,
@@ -201,7 +201,7 @@ export function jsExpressionOtherJavaScript(
     type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
     params: params,
     originalJavascript: originalJavascript,
-    javascript: javascript,
+    javascriptWithUIDs: javascriptWithUIDs,
     transpiledJavascript: transpiledJavascript,
     definedElsewhere: definedElsewhere,
     sourceMap: sourceMap,
@@ -230,7 +230,7 @@ export function jsExpressionOtherJavaScriptSimple(
 export interface JSXMapExpression extends WithComments, WithElementsWithin {
   type: 'JSX_MAP_EXPRESSION'
   originalJavascript: string
-  javascript: string
+  javascriptWithUIDs: string
   transpiledJavascript: string
   definedElsewhere: Array<string>
   sourceMap: RawSourceMap | null
@@ -240,7 +240,7 @@ export interface JSXMapExpression extends WithComments, WithElementsWithin {
 
 export function jsxMapExpression(
   originalJavascript: string,
-  javascript: string,
+  javascriptWithUIDs: string,
   transpiledJavascript: string,
   definedElsewhere: Array<string>,
   sourceMap: RawSourceMap | null,
@@ -252,7 +252,7 @@ export function jsxMapExpression(
   return {
     type: 'JSX_MAP_EXPRESSION',
     originalJavascript: originalJavascript,
-    javascript: javascript,
+    javascriptWithUIDs: javascriptWithUIDs,
     transpiledJavascript: transpiledJavascript,
     definedElsewhere: definedElsewhere,
     sourceMap: sourceMap,
