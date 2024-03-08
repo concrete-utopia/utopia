@@ -3,7 +3,7 @@ import { proxy } from '../util/proxy.server'
 import { handle, handleOptions } from '../util/api.server'
 import { Status } from '../util/statusCodes'
 import { UserProjectPermission } from '../types'
-import { ALLOW, validateProjectAccess } from '../handlers/validators'
+import { validateProjectAccess } from '../handlers/validators'
 
 export async function loader(args: LoaderFunctionArgs) {
   return handle(args, {

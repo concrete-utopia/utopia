@@ -1,6 +1,11 @@
 jest.mock('@openfga/sdk')
 import { prisma } from '../db.server'
-import { clearDb, createTestProject, createTestProjectAccess, createTestUser } from '../test-util'
+import {
+  createTestProject,
+  createTestProjectAccess,
+  createTestUser,
+  truncateTables,
+} from '../test-util'
 import { setProjectAccess } from './projectAccess.server'
 import * as permissionsService from '../services/permissionsService.server'
 
@@ -11,7 +16,14 @@ describe('projectAccess model', () => {
 
   describe('setProjectAccess', () => {
     beforeAll(async () => {
-      await clearDb(prisma)
+      await truncateTables([
+        prisma.projectAccess,
+        prisma.projectCollaborator,
+        prisma.userDetails,
+        prisma.persistentSession,
+        prisma.project,
+        prisma.projectID,
+      ])
     })
     beforeEach(async () => {
       await createTestUser(prisma, { id: 'bob' })
@@ -23,7 +35,14 @@ describe('projectAccess model', () => {
       jest.spyOn(permissionsService, 'setProjectAccess').mockResolvedValue()
     })
     afterEach(async () => {
-      await clearDb(prisma)
+      await truncateTables([
+        prisma.projectAccess,
+        prisma.projectCollaborator,
+        prisma.userDetails,
+        prisma.persistentSession,
+        prisma.project,
+        prisma.projectID,
+      ])
       jest.spyOn(permissionsService, 'setProjectAccess').mockRestore()
     })
     it('sets the access level for a project', async () => {
