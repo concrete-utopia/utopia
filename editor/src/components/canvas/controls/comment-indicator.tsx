@@ -133,7 +133,7 @@ function useCommentBeingComposed(): TemporaryCommentIndicatorProps | null {
 
   return {
     position: location,
-    avatarUrl: collaboratorInfo.avatar,
+    avatarUrl: collaboratorInfo.avatar ?? null,
     initials: collaboratorInfo.initials,
   }
 }

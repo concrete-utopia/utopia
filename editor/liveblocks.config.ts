@@ -14,7 +14,7 @@ import { getCollaborators } from './src/components/editor/server'
 
 export const liveblocksThrottle = 100 // ms
 
-async function authCall(room: string) {
+async function authCall(room?: string) {
   const resp = await fetch(urljoin(UTOPIA_BACKEND, 'liveblocks', 'authentication'), {
     credentials: 'include',
     method: 'POST',
@@ -28,6 +28,47 @@ export const liveblocksClient = createClient({
   throttle: liveblocksThrottle,
   authEndpoint: isBackendBFF() ? authCall : '/v1/liveblocks/authentication',
   unstable_fallbackToHTTP: true,
+  resolveUsers: async ({ userIds }) => {
+    // Used only for Comments. Return a list of user information retrieved
+    // from `userIds`. This info is used in comments, mentions etc.
+
+    const projectId = getProjectID()
+    if (projectId == null) {
+      return []
+    }
+
+    const users = await getCollaborators(projectId)
+    return users.filter((u) => userIds.includes(u.id))
+  },
+  resolveMentionSuggestions: async ({ text }) => {
+    // Used only for Comments. Return a list of userIds where the name matches `text`.
+    // These userIds are used to create a mention list when typing in the
+    // composer.
+    //
+    // For example when you type "@jo", `text` will be `"jo"`, and
+    // you should to return an array with John and Joanna's userIds.
+
+    const projectId = getProjectID()
+    if (projectId == null) {
+      return []
+    }
+
+    const users = await getCollaborators(projectId)
+
+    if (text == null) {
+      return users.map((u) => u.id)
+    }
+
+    // Otherwise, filter user names for the search `text` and return
+    return users
+      .filter((u) => {
+        if (u.name == null) {
+          return false
+        }
+        return u.name.toLowerCase().includes(text.toLowerCase())
+      })
+      .map((u) => u.id)
+  },
 })
 
 // Presence represents the properties that exist on every user in the Room
@@ -98,8 +139,8 @@ export type ConnectionInfo = {
 // will not change during a session, like a user's name or avatar.
 export type UserMeta = {
   id: string // Accessible through `user.id`
-  name: string | null
-  avatar: string | null
+  name: string | undefined
+  avatar: string | undefined
 }
 
 // Optionally, the type of custom events broadcast and listened to in this
@@ -159,46 +200,4 @@ export const {
     useDeleteComment,
     useAddReaction,
   },
-} = createRoomContext<Presence, Storage, UserMeta, RoomEvent, ThreadMetadata>(liveblocksClient, {
-  async resolveUsers({ userIds }) {
-    // Used only for Comments. Return a list of user information retrieved
-    // from `userIds`. This info is used in comments, mentions etc.
-
-    const projectId = getProjectID()
-    if (projectId == null) {
-      return []
-    }
-
-    const users = await getCollaborators(projectId)
-    return users.filter((u) => userIds.includes(u.id))
-  },
-  async resolveMentionSuggestions({ text }) {
-    // Used only for Comments. Return a list of userIds where the name matches `text`.
-    // These userIds are used to create a mention list when typing in the
-    // composer.
-    //
-    // For example when you type "@jo", `text` will be `"jo"`, and
-    // you should to return an array with John and Joanna's userIds.
-
-    const projectId = getProjectID()
-    if (projectId == null) {
-      return []
-    }
-
-    const users = await getCollaborators(projectId)
-
-    if (text == null) {
-      return users.map((u) => u.id)
-    }
-
-    // Otherwise, filter user names for the search `text` and return
-    return users
-      .filter((u) => {
-        if (u.name == null) {
-          return false
-        }
-        return u.name.toLowerCase().includes(text.toLowerCase())
-      })
-      .map((u) => u.id)
-  },
-})
+} = createRoomContext<Presence, Storage, UserMeta, RoomEvent, ThreadMetadata>(liveblocksClient, {})
