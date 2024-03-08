@@ -1,12 +1,13 @@
 import { CredentialsMethod, OpenFgaClient } from '@openfga/sdk'
 import { ServerEnvironment } from '../../env.server'
 import { AccessLevel } from '../../types'
+import { currentModelId } from './models/model.id'
 
 export const fgaClient = new OpenFgaClient({
   apiScheme: 'https',
   apiHost: ServerEnvironment.FGA_API_HOST,
   storeId: ServerEnvironment.FGA_STORE_ID,
-  // authorizationModelId: 'YOUR_MODEL_ID', // Optionally, you can specify a model id to target, which can improve latency
+  authorizationModelId: currentModelId,
   credentials: {
     method: CredentialsMethod.ClientCredentials,
     config: {
