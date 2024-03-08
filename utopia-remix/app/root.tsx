@@ -18,6 +18,8 @@ import { Status, getStatusName } from './util/statusCodes'
 import radixStyle from '@radix-ui/themes/styles.css'
 import './normalize.css'
 import { Theme } from '@radix-ui/themes'
+// import { useIsDarkMode } from '../hooks/useIsDarkMode'
+import { useIsDarkMode } from './hooks/useIsDarkMode'
 
 declare global {
   interface Window {
@@ -44,6 +46,9 @@ export const headers: HeadersFunction = () => ({
 
 export default function App() {
   const data = useLoaderData<typeof loader>()
+  const isDarkMode = useIsDarkMode()
+
+  const theme = isDarkMode ? 'dark' : 'light'
 
   return (
     <html lang='en'>
@@ -54,7 +59,7 @@ export default function App() {
         <Links />
       </head>
       <body className={styles.root}>
-        <Theme>
+        <Theme appearance={theme} accentColor='blue' panelBackground='solid'>
           <Outlet />
         </Theme>
         <script
