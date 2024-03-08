@@ -17,6 +17,7 @@ import { ErrorWithStatus, isErrorWithStatus } from './util/errors'
 import { Status, getStatusName } from './util/statusCodes'
 
 import './normalize.css'
+import '@radix-ui/themes/styles.css'
 
 declare global {
   interface Window {

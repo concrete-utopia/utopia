@@ -1,11 +1,12 @@
 import { LoaderFunctionArgs } from '@remix-run/node'
 import { handle, handleOptions } from '../util/api.server'
 import { ListProjectsResponse } from '../types'
+import { ALLOW } from '../handlers/validators'
 
 export async function loader(args: LoaderFunctionArgs) {
   return handle(args, {
     OPTIONS: handleOptions,
-    GET: handleShowcase,
+    GET: { handler: handleShowcase, validator: ALLOW },
   })
 }
 

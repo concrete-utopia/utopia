@@ -5,12 +5,14 @@ import { contextMenuDropdown, contextMenuItem } from '../styles/contextMenu.css'
 import { sprinkles } from '../styles/sprinkles.css'
 import {
   ProjectWithoutContent,
+  operationChangeAccess,
   operationDelete,
   operationDestroy,
   operationRename,
   operationRestore,
 } from '../types'
 import { assertNever } from '../util/assertNever'
+import { AccessLevel } from '../types'
 import { useProjectEditorLink } from '../util/links'
 import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
 import slugify from 'slugify'
@@ -28,8 +30,10 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
   const destroyFetcher = useFetcherWithOperation(project.proj_id, 'destroy')
   const restoreFetcher = useFetcherWithOperation(project.proj_id, 'restore')
   const renameFetcher = useFetcherWithOperation(project.proj_id, 'rename')
+  const changeAccessFetcher = useFetcherWithOperation(project.proj_id, 'changeAccess')
 
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
+  let accessLevel = project.ProjectAccess?.access_level ?? AccessLevel.PRIVATE
 
   const deleteProject = React.useCallback(
     (projectId: string) => {
@@ -78,6 +82,16 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
     [renameFetcher],
   )
 
+  const changeAccessLevel = React.useCallback(
+    (projectId: string, accessLevel: AccessLevel) => {
+      changeAccessFetcher.submit(
+        operationChangeAccess(project, accessLevel),
+        { accessLevel: accessLevel.toString() },
+        { method: 'POST', action: `/internal/projects/${projectId}/access` },
+      )
+    },
+    [changeAccessFetcher],
+  )
   const projectEditorLink = useProjectEditorLink()
 
   const menuEntries = React.useMemo((): ContextMenuEntry[] => {
@@ -120,6 +134,15 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
               deleteProject(project.proj_id)
             },
           },
+          {
+            text: accessLevel === AccessLevel.PUBLIC ? 'Make Private' : 'Make Public',
+            onClick: (project) => {
+              changeAccessLevel(
+                project.proj_id,
+                accessLevel === AccessLevel.PUBLIC ? AccessLevel.PRIVATE : AccessLevel.PUBLIC,
+              )
+            },
+          },
         ]
       case 'trash':
         return [
@@ -140,7 +163,7 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
       default:
         assertNever(selectedCategory)
     }
-  }, [selectedCategory])
+  }, [selectedCategory, accessLevel, projectEditorLink])
 
   return (
     <DropdownMenu.Portal>
