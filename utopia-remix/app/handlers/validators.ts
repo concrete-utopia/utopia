@@ -26,8 +26,8 @@ export function validateProjectAccess(
     const ownerId = await getProjectOwnerById({ id: projectId }, { includeDeleted: includeDeleted })
     ensure(ownerId != null, `Project ${projectId} not found or has no owner`, Status.NOT_FOUND)
 
-    let user = await getUser(req)
-    let userId = user?.user_id ?? null
+    const user = await getUser(req)
+    const userId = user?.user_id ?? null
     const isCreator = userId ? ownerId === userId : false
 
     const allowed = isCreator || (await hasUserProjectPermission(projectId, userId, permission))

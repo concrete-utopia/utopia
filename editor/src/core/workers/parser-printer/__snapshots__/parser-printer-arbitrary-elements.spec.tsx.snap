@@ -575,9 +575,12 @@ return { a: a };",
             "params": Array [],
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAE,CAAC,CAAH,CAAG,CAAFA",
+              "mappings": "OAsBSA,CAACC,CAAHC,CAAGD,CAAFE",
               "names": Array [
+                "5",
+                ")",
                 "b",
+                "(",
               ],
               "sources": Array [
                 "code.tsx",
@@ -653,9 +656,12 @@ export var storyboard = (
             "params": Array [],
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAE,CAAC,CAAH,CAAG,CAAFA",
+              "mappings": "OAsBkBA,CAACC,CAAHC,CAAGD,CAAFE",
               "names": Array [
+                "5",
+                ")",
                 "a",
+                "(",
               ],
               "sources": Array [
                 "code.tsx",

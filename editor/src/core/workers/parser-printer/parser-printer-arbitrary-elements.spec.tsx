@@ -696,7 +696,7 @@ export var whatever = (props) => {
                 thing: jsExpressionOtherJavaScript(
                   [],
                   'n',
-                  'n',
+                  'n;',
                   'return n;',
                   ['n'],
                   expect.objectContaining({

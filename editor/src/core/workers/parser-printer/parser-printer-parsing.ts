@@ -1342,97 +1342,6 @@ function parseOtherJavaScript<E extends TS.Node, T extends { uid: string }>(
   }
 }
 
-// FIXME It looks like this should now be merged with parseJSExpression
-export function parseAttributeOtherJavaScript(
-  sourceFile: TS.SourceFile,
-  sourceText: string,
-  filename: string,
-  imports: Imports,
-  topLevelNames: Array<string>,
-  propsObjectName: string | null,
-  expression: TS.Node,
-  existingHighlightBounds: Readonly<HighlightBoundsForUids>,
-  alreadyExistingUIDs: Set<string>,
-  applySteganography: SteganographyMode,
-): Either<string, WithParserMetadata<JSExpressionMapOrOtherJavascript>> {
-  const expressionAndText = createExpressionAndText(
-    expression,
-    expression.getText(sourceFile),
-    expression.getStart(sourceFile, false),
-    expression.getEnd(),
-  )
-  return parseOtherJavaScript(
-    sourceFile,
-    sourceText,
-    filename,
-    [expressionAndText],
-    imports,
-    topLevelNames,
-    propsObjectName,
-    existingHighlightBounds,
-    alreadyExistingUIDs,
-    '',
-    applySteganography,
-    (
-      code,
-      _,
-      definedElsewhere,
-      fileSourceNode,
-      parsedElementsWithin,
-      otherJavaScriptType,
-      params,
-    ) => {
-      const { code: codeFromFile, map } = fileSourceNode.toStringWithSourceMap({ file: filename })
-      const rawMap = JSON.parse(map.toString())
-
-      const transpileEither = wrapAndTranspileJavascript(
-        sourceFile.fileName,
-        sourceFile.text,
-        codeFromFile,
-        rawMap,
-        parsedElementsWithin,
-        applySteganography,
-      )
-
-      return mapEither((transpileResult) => {
-        const prependedWithReturn = prependToSourceString(
-          sourceFile.fileName,
-          sourceFile.text,
-          transpileResult.code,
-          transpileResult.sourceMap,
-          RETURN_TO_PREPEND,
-          '',
-        )
-        // Sneak the function in here if something needs to use it to display
-        // the element on the canvas.
-        let innerDefinedElsewhere = definedElsewhere
-        if (Object.keys(parsedElementsWithin).length > 0) {
-          innerDefinedElsewhere = [...innerDefinedElsewhere, JSX_CANVAS_LOOKUP_FUNCTION_NAME]
-        }
-
-        const comments = getCommentsOnExpression(sourceText, expression)
-
-        return createExpressionOtherJavaScript(
-          sourceFile,
-          expression,
-          params,
-          expressionAndText.text,
-          code,
-          prependedWithReturn.code,
-          innerDefinedElsewhere,
-          prependedWithReturn.sourceMap,
-          inPositionToElementsWithin(parsedElementsWithin),
-          otherJavaScriptType,
-          comments,
-          alreadyExistingUIDs,
-          existingHighlightBounds,
-          imports,
-        )
-      }, transpileEither)
-    },
-  )
-}
-
 function getCommentsOnExpression(sourceText: string, expression: TS.Node): ParsedComments {
   if (TS.isJsxExpression(expression)) {
     return expression.expression == null
@@ -1443,19 +1352,18 @@ function getCommentsOnExpression(sourceText: string, expression: TS.Node): Parse
   }
 }
 
-// FIXME It looks like this should now be merged with parseAttributeOtherJavaScript
-function parseJSExpression(
+export function parseAttributeOtherJavaScript(
   sourceFile: TS.SourceFile,
   sourceText: string,
   filename: string,
   imports: Imports,
   topLevelNames: Array<string>,
   propsObjectName: string | null,
-  jsxExpression: TS.Expression,
+  jsxExpression: TS.Node,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
   applySteganography: SteganographyMode,
-): Either<string, WithParserMetadata<JSExpression>> {
+): Either<string, WithParserMetadata<JSExpressionMapOrOtherJavascript>> {
   const expression = TS.isJsxExpression(jsxExpression) ? jsxExpression.expression : jsxExpression
   const expressionFullText = expression == null ? '' : expression.getText(sourceFile)
   const expressionForLocation = expression ?? jsxExpression
@@ -1492,7 +1400,7 @@ function parseJSExpression(
       code,
       _definedWithin,
       definedElsewhere,
-      _fileSourceNode,
+      fileSourceNode,
       parsedElementsWithin,
       isList,
       params,
@@ -1517,8 +1425,14 @@ function parseJSExpression(
           ),
         )
       } else {
+        const { map } = fileSourceNode.toStringWithSourceMap({ file: filename })
+        const rawMap = JSON.parse(map.toString())
+
         const dataUIDFixed = insertDataUIDsIntoCode(
+          filename,
+          sourceText,
           expressionFullText,
+          rawMap,
           parsedElementsWithin,
           true,
           false,
@@ -3266,7 +3180,7 @@ export function parseOutJSXElements(
   function produceArbitraryBlockFromExpression(
     tsExpression: TS.Expression | LiteralLikeTypes,
   ): Either<string, SuccessfullyParsedElement> {
-    const result = parseJSExpression(
+    const result = parseAttributeOtherJavaScript(
       sourceFile,
       sourceText,
       filename,
@@ -3693,6 +3607,9 @@ export function parseArbitraryNodes(
       const definedWithinFields = definedWithin.map((within) => `${within}: ${within}`).join(', ')
       const definedWithCode = `return { ${definedWithinFields} };`
 
+      const { map } = fileSourceNode.toStringWithSourceMap({ file: filename })
+      const rawMap = JSON.parse(map.toString())
+
       const transpileEither = transpileJavascript(
         sourceFile.fileName,
         sourceFile.text,
@@ -3705,7 +3622,10 @@ export function parseArbitraryNodes(
         applySteganography,
       )
       const dataUIDFixed = insertDataUIDsIntoCode(
+        filename,
+        sourceText,
         code,
+        rawMap,
         parsedElementsWithin,
         false,
         rootLevel,
