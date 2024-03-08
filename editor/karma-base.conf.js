@@ -101,5 +101,24 @@ module.exports = function (config) {
       executors: isGithubActionsEnvironment ? cpuCores : cpuCores / 2,
       shardStrategy: 'round-robin', // if we need a customShardStrategy, see https://github.com/joeljeske/karma-parallel
     },
+
+    timeStatsReporter: {
+      reportTimeStats: true, // Print Time Stats (histogram)
+
+      binSize: 100, // Bin size for histogram (in milliseconds)
+
+      slowThreshold: 500, // The threshold for what is considered a slow test (in milliseconds).
+      // This is also the max value for last bin histogram
+      // Note that this will automatically be rounded up to be evenly divisible by binSize
+
+      reportSlowestTests: true, // Print top slowest tests
+
+      showSlowTestRankNumber: false, // Displays rank number next to slow tests, e.g. `1) Slow Test`
+
+      longestTestsCount: 5, // Number of top slowest tests to list
+      // Set to `Infinity` to show all slow tests. Useful in combination with `reportOnlyBeyondThreshold` as `true`
+
+      reportOnlyBeyondThreshold: false, // Only report tests that are slower than threshold
+    },
   })
 }
