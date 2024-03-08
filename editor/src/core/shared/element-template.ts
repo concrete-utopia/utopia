@@ -1900,6 +1900,7 @@ export function utopiaJSXComponent(
   }
 }
 
+// FIXME we need to inject data-uids using insertDataUIDsIntoCode
 export function arbitraryJSBlock(
   params: Array<Param>,
   javascript: string,
@@ -2133,6 +2134,7 @@ export interface UtopiaJSXComponent {
   returnStatementComments: ParsedComments
 }
 
+// FIXME we need to inject data-uids using insertDataUIDsIntoCode
 export type ArbitraryJSBlock = {
   type: 'ARBITRARY_JS_BLOCK'
   params: Array<Param>
