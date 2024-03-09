@@ -262,19 +262,12 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
                 radius='full'
                 key={`category-${category}`}
                 onClick={handleSelectCategory(category)}
+                variant={category === selectedCategory && searchQuery === '' ? 'solid' : 'outline'}
                 style={{
                   justifyContent: 'flex-start',
                   padding: '0 14px',
-                  background:
-                    category === selectedCategory && searchQuery === ''
-                      ? 'color(display-p3 0.247 0.556 0.969)'
-                      : 'transparent',
+                  gap: 10,
                 }}
-                className={projectCategoryButton({
-                  color:
-                    category === selectedCategory && searchQuery === '' ? 'selected' : 'neutral',
-                })}
-                // variant={category === selectedCategory && searchQuery === '' ? 'solid' : 'soft'}
               >
                 {data.icon}
                 <Text size='1'>{data.name}</Text>
@@ -530,13 +523,15 @@ const CategoryTrashActions = React.memo(({ projects }: { projects: ProjectWithou
 
   return (
     <>
-      <div
+      <Button
         className={button({ color: 'subtle' })}
         onClick={handleEmptyTrash}
         style={{ display: projects.length === 0 ? 'none' : 'block' }}
+        color='gray'
+        variant='soft'
       >
         Empty Trash
-      </div>
+      </Button>
     </>
   )
 })
