@@ -60,8 +60,8 @@ function isCategory(category: unknown): category is Category {
 export type Category = (typeof Categories)[number]
 
 const categories: { [key in Category]: { name: string; icon: React.ReactNode } } = {
-  allProjects: { name: 'All My Projects', icon: <CubeIcon /> },
-  trash: { name: 'Trash', icon: <TrashIcon /> },
+  allProjects: { name: 'All My Projects', icon: <CubeIcon width='16' height='16' /> },
+  trash: { name: 'Trash', icon: <TrashIcon width='16' height='16' /> },
 }
 
 const MarginSize = 30
@@ -213,7 +213,7 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
         >
           <img
             className={sprinkles({ borderRadius: 'medium' })}
-            style={{ width: 36 }}
+            style={{ width: 32 }}
             src={user.picture ?? undefined}
             referrerPolicy='no-referrer'
           />
@@ -232,7 +232,7 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
             gap: 10,
           }}
         >
-          <MagnifyingGlassIcon />
+          <MagnifyingGlassIcon width='16' height='16' />
           <input
             id='search-input'
             autoFocus={true}
@@ -246,11 +246,11 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
               border: 'none',
               background: 'transparent',
               outline: 'none',
-              color: 'grey',
               height: SidebarRowHeight,
               display: 'flex',
               flexDirection: 'row',
               alignItems: 'center',
+              fontSize: 12,
             }}
             placeholder='Search…'
           />
@@ -258,17 +258,27 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
           {Object.entries(categories).map(([category, data]) => {
             return (
-              <button
+              <Button
+                radius='full'
                 key={`category-${category}`}
+                onClick={handleSelectCategory(category)}
+                style={{
+                  justifyContent: 'flex-start',
+                  padding: '0 14px',
+                  background:
+                    category === selectedCategory && searchQuery === ''
+                      ? 'color(display-p3 0.247 0.556 0.969)'
+                      : 'transparent',
+                }}
                 className={projectCategoryButton({
                   color:
                     category === selectedCategory && searchQuery === '' ? 'selected' : 'neutral',
                 })}
-                onClick={handleSelectCategory(category)}
+                // variant={category === selectedCategory && searchQuery === '' ? 'solid' : 'soft'}
               >
                 {data.icon}
-                <span>{data.name}</span>
-              </button>
+                <Text size='1'>{data.name}</Text>
+              </Button>
             )
           })}
         </div>
