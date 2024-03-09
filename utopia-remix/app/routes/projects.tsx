@@ -133,7 +133,7 @@ const ProjectsPage = React.memo(() => {
         margin: MarginSize,
         height: `calc(100vh - ${MarginSize * 2}px)`,
         width: `calc(100vw - ${MarginSize * 2}px)`,
-        gap: MarginSize,
+        gap: 45,
         overflow: 'hidden',
         boxSizing: 'border-box',
         display: 'flex',
@@ -647,7 +647,7 @@ const ProjectCard = React.memo(
           height: 'min-content',
           display: 'flex',
           flexDirection: 'column',
-          gap: 10,
+          gap: 5,
           filter: activeOperations.length > 0 ? 'grayscale(1)' : undefined,
         }}
       >
@@ -723,9 +723,19 @@ const ProjectCard = React.memo(
             alignItems: 'center',
           }}
         >
-          <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 10, flex: 1 }}>
-            <div style={{ fontWeight: 500 }}>{projectTitle}</div>
-            <div style={{ opacity: 0.5 }}>{moment(project.modified_at).fromNow()}</div>
+          <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 5, flex: 1 }}>
+            <Text
+              size='1'
+              style={{
+                flexGrow: 1,
+                fontWeight: 500,
+              }}
+            >
+              {project.title}
+            </Text>
+            <Text size='1' style={{ opacity: 0.5 }}>
+              {moment(project.modified_at).fromNow()}
+            </Text>
           </div>
           <ProjectCardActions project={project} />
         </div>
@@ -791,7 +801,9 @@ const ProjectRow = React.memo(
                 position: 'relative',
               }}
             />
-            <div
+
+            <Text
+              size='1'
               style={{
                 flexGrow: 1,
                 minWidth: 180,
@@ -800,8 +812,10 @@ const ProjectRow = React.memo(
               }}
             >
               {project.title}
-            </div>
-            <div style={{ width: 220, opacity: 0.5 }}>{moment(project.modified_at).fromNow()}</div>
+            </Text>
+            <Text size='1' style={{ width: 220, opacity: 0.5 }}>
+              {moment(project.modified_at).fromNow()}
+            </Text>
             <div
               style={{
                 maxWidth: 480,
