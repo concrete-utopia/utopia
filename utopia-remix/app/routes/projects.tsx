@@ -457,7 +457,7 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
                     background: sortMenuOpen ? '#a4a4a430' : 'inherit',
                   }}
                 >
-                  <div>{convertToTitleCase(sortCriteria)} </div>
+                  <Text size='1'>{convertToTitleCase(sortCriteria)} </Text>
                   <div>{sortAscending ? '↑' : '↓'}</div>
                 </div>
               </DropdownMenuTrigger>
@@ -466,7 +466,7 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
           )}
           {when(
             projects.length > 0,
-            <div style={{ display: 'flex', flexDirection: 'row', gap: 1 }}>
+            <div style={{ display: 'flex', flexDirection: 'row', gap: 1, alignItems: 'center' }}>
               <HamburgerMenuIcon
                 onClick={() => {
                   setGridView(false)
@@ -522,17 +522,15 @@ const CategoryTrashActions = React.memo(({ projects }: { projects: ProjectWithou
   }, [fetcher])
 
   return (
-    <>
-      <Button
-        className={button({ color: 'subtle' })}
-        onClick={handleEmptyTrash}
-        style={{ display: projects.length === 0 ? 'none' : 'block' }}
-        color='gray'
-        variant='soft'
-      >
-        Empty Trash
-      </Button>
-    </>
+    <Button
+      onClick={handleEmptyTrash}
+      style={{ display: projects.length === 0 ? 'none' : 'block' }}
+      color='gray'
+      variant='soft'
+      highContrast
+    >
+      Empty Trash
+    </Button>
   )
 })
 CategoryTrashActions.displayName = 'CategoryTrashActions'
