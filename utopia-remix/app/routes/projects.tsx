@@ -727,7 +727,7 @@ const ProjectCard = React.memo(
           }}
         >
           <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 5, flex: 1 }}>
-            <div style={{ display: 'flex', padding: 10, gap: 5, flex: 1 }}>
+            <div style={{ display: 'flex', gap: 5, flex: 1 }}>
               <Text
                 size='1'
                 style={{
@@ -943,6 +943,7 @@ const ProjectBadge = React.memo(({ accessLevel }: { accessLevel: AccessLevel }) 
         fontSize: 9,
         borderRadius: 3,
         fontWeight: 400,
+        height: 20,
       }}
     >
       {text}
