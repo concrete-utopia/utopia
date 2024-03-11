@@ -10,10 +10,10 @@ export const projectCategoryButton = recipe({
       border: 'none',
       cursor: 'pointer',
       display: 'flex',
-      justifyContent: 'flex-start',
+      alignItems: 'center',
       gap: 10,
       padding: '3px 14px',
-      height: 30,
+      height: 32,
       fontWeight: 600,
       fontSize: '12px',
     },
@@ -24,10 +24,10 @@ export const projectCategoryButton = recipe({
       neutral: {
         background: 'transparent',
         ':hover': {
-          background: '#0075F910',
+          background: '#0090ff30',
         },
       },
-      selected: { background: '#0075F9', color: 'white' },
+      selected: { background: '#0090ff', color: 'white' },
     },
   },
 

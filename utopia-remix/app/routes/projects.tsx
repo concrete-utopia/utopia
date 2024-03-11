@@ -11,7 +11,7 @@ import {
   TrashIcon,
 } from '@radix-ui/react-icons'
 import React from 'react'
-import { Badge } from '@radix-ui/themes'
+import { Badge, Flex } from '@radix-ui/themes'
 import { LoaderFunctionArgs, json } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
@@ -258,26 +258,23 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
             placeholder='Search…'
           />
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+        <Flex direction='column' gap='2'>
           {Object.entries(categories).map(([category, data]) => {
             return (
-              <Button
-                radius='full'
+              <button
                 key={`category-${category}`}
+                className={projectCategoryButton({
+                  color:
+                    category === selectedCategory && searchQuery === '' ? 'selected' : 'neutral',
+                })}
                 onClick={handleSelectCategory(category)}
-                variant={category === selectedCategory && searchQuery === '' ? 'solid' : 'outline'}
-                style={{
-                  justifyContent: 'flex-start',
-                  padding: '0 14px',
-                  gap: 10,
-                }}
               >
                 {data.icon}
                 <Text size='1'>{data.name}</Text>
-              </Button>
+              </button>
             )
           })}
-        </div>
+        </Flex>
       </div>
       <div
         style={{
