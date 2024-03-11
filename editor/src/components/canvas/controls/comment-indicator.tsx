@@ -556,6 +556,9 @@ const CommentIndicatorWrapper = React.memo((props: CommentIndicatorWrapper) => {
   const animDuration = 0.1
 
   React.useEffect(() => {
+    if (avatarRef.current == null) {
+      return
+    }
     void animateAvatar(
       avatarRef.current,
       {
