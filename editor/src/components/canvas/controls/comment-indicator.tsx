@@ -262,7 +262,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
   const readByMe = useMyThreadReadStatus(thread)
   const isRead = readByMe === 'read'
 
-  const { hovered, onMouseOver, onMouseOut: onHoverMouseOut, cancelHover, wasHovered } = useHover()
+  const { hovered, onMouseOver, onMouseOut: onHoverMouseOut, cancelHover } = useHover()
 
   const [dragging, setDragging] = React.useState(false)
   const draggingCallback = React.useCallback((isDragging: boolean) => setDragging(isDragging), [])
@@ -351,7 +351,6 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
       <CommentIndicatorWrapper
         thread={thread}
         expanded={preview}
-        animatable={wasHovered}
         user={user}
         comment={firstComment}
         showActions={false}
@@ -526,10 +525,8 @@ function useDragging(
 
 function useHover() {
   const [hovered, setHovered] = React.useState(false)
-  const [wasHovered, setWasHovered] = React.useState(false)
 
   const onMouseOver = React.useCallback(() => {
-    setWasHovered(true)
     setHovered(true)
   }, [])
 
@@ -541,19 +538,18 @@ function useHover() {
     setHovered(false)
   }, [])
 
-  return { hovered, onMouseOver, onMouseOut, cancelHover, wasHovered }
+  return { hovered, onMouseOver, onMouseOut, cancelHover }
 }
 
 type CommentIndicatorWrapper = {
   thread: ThreadData<ThreadMetadata>
   user: UserMeta | null
   expanded: boolean
-  animatable: boolean
   forceDarkMode: boolean
 } & CommentProps
 
 const CommentIndicatorWrapper = React.memo((props: CommentIndicatorWrapper) => {
-  const { thread, expanded, user, forceDarkMode, animatable, ...commentProps } = props
+  const { thread, expanded, user, forceDarkMode, ...commentProps } = props
 
   const animDuration = 0.1
 
