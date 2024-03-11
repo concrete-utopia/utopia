@@ -451,12 +451,14 @@ function useDragging(
         const maybeSceneUnderPoint = getSceneUnderPoint(newPositionOnCanvas, scenesRef.current)
 
         if (maybeSceneUnderPoint == null) {
+          const zoot = utopiaThreadMetadataToLiveblocksPartial({
+            type: 'canvas',
+            position: newPositionOnCanvas,
+          })
+          console.info('maybeSceneUnderPoint == null', zoot)
           editThreadMetadata({
             threadId: thread.id,
-            metadata: utopiaThreadMetadataToLiveblocksPartial({
-              type: 'canvas',
-              position: newPositionOnCanvas,
-            }),
+            metadata: zoot,
           })
           return
         }
@@ -466,6 +468,11 @@ function useDragging(
           : null
 
         if (localPointInScene == null) {
+          const zoot = utopiaThreadMetadataToLiveblocksPartial({
+            type: 'canvas',
+            position: newPositionOnCanvas,
+          })
+          console.info('localPointInScene == null', zoot)
           editThreadMetadata({
             threadId: thread.id,
             metadata: utopiaThreadMetadataToLiveblocksPartial({
@@ -491,6 +498,18 @@ function useDragging(
             ),
           ])
         }
+        const zoot = utopiaThreadMetadataToLiveblocksPartial({
+          type: 'scene',
+          position: newPositionOnCanvas,
+          scenePosition: localPointInScene,
+          sceneId: sceneIdToUse,
+          remixLocationRoute: remixRoute != null ? remixRoute.location.pathname : undefined,
+        })
+        console.info('scene', zoot)
+        editThreadMetadata({
+          threadId: thread.id,
+          metadata: zoot,
+        })
         editThreadMetadata({
           threadId: thread.id,
           metadata: utopiaThreadMetadataToLiveblocksPartial({
