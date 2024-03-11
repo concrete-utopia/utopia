@@ -1049,7 +1049,7 @@ export function propertyComesFromPropsStyle(
         case 'REGULAR_PARAM':
           return (
             attribute.definedElsewhere.includes(boundParam.paramName) &&
-            attribute.javascript.includes(`${boundParam.paramName}.style.${propName}`)
+            attribute.javascriptWithUIDs.includes(`${boundParam.paramName}.style.${propName}`)
           )
         case 'DESTRUCTURED_OBJECT':
           return boundParam.parts.some((part) => {
@@ -1267,7 +1267,7 @@ export function attributeUsesProperty(
       return fromChildren || fromAttributes
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      return codeUsesProperty(attribute.javascript, propsParam, property)
+      return codeUsesProperty(attribute.javascriptWithUIDs, propsParam, property)
     case 'ATTRIBUTE_NESTED_ARRAY':
       return attribute.content.some((elem) => {
         return arrayElementUsesProperty(elem, propsParam, property)
