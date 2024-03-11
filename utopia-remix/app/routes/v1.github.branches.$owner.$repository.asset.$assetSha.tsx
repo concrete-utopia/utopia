@@ -1,6 +1,7 @@
 import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node'
 import { handle, handleOptions } from '../util/api.server'
 import { proxy } from '../util/proxy.server'
+import { ALLOW } from '../handlers/validators'
 
 export async function loader(args: LoaderFunctionArgs) {
   return handle(args, {
@@ -10,6 +11,6 @@ export async function loader(args: LoaderFunctionArgs) {
 
 export async function action(args: ActionFunctionArgs) {
   return handle(args, {
-    POST: proxy,
+    POST: { handler: proxy, validator: ALLOW },
   })
 }

@@ -4,11 +4,20 @@ import { ensure, handle, requireUser } from '../util/api.server'
 import slugify from 'slugify'
 import { Status } from '../util/statusCodes'
 import { Params } from '@remix-run/react'
+import { validateProjectAccess } from '../handlers/validators'
+import { UserProjectPermission } from '../types'
 
 export const SLUGIFY_OPTIONS = { lower: true, remove: /[^a-z0-9A-Z ]/ }
 
 export async function action(args: ActionFunctionArgs) {
-  return handle(args, { POST: handleRenameProject })
+  return handle(args, {
+    POST: {
+      handler: handleRenameProject,
+      validator: validateProjectAccess(UserProjectPermission.CAN_MANAGE_PROJECT, {
+        getProjectId: (params) => params.id,
+      }),
+    },
+  })
 }
 
 export async function handleRenameProject(req: Request, params: Params<string>) {

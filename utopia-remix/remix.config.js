@@ -1,6 +1,7 @@
 /** @type {import('@remix-run/dev').AppConfig} */
 export default {
   ignoredRouteFiles: ['**/.*'],
+  serverDependenciesToBundle: ['@radix-ui/themes'],
   future: {
     v3_fetcherPersist: true,
   },

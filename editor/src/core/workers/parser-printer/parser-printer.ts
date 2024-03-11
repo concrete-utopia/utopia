@@ -100,7 +100,7 @@ import {
   parseArbitraryNodes,
   parseOutFunctionContents,
   parseOutJSXElements,
-  parseAttributeOtherJavaScript,
+  parseJSExpressionMapOrOtherJavascript,
   withParserMetadata,
   isExported,
   expressionTypeForExpression,
@@ -245,7 +245,7 @@ function jsxAttributeToExpression(
       case 'JSX_MAP_EXPRESSION':
       case 'ATTRIBUTE_OTHER_JAVASCRIPT':
         const maybeExpressionStatement = rawCodeToExpressionStatement(
-          attribute.javascript,
+          attribute.javascriptWithUIDs,
         ).statement
         if (TS.isExpressionStatement(maybeExpressionStatement)) {
           const expression = maybeExpressionStatement.expression
@@ -521,7 +521,7 @@ function jsxElementToExpression(
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
       if (parentIsJSX) {
-        const maybeExpressionStatement = rawCodeToExpressionStatement(element.javascript)
+        const maybeExpressionStatement = rawCodeToExpressionStatement(element.javascriptWithUIDs)
         const { statement, sourceFile } = maybeExpressionStatement
 
         const targetNode = TS.isExpressionStatement(statement)

@@ -10,11 +10,12 @@ import {
   MagnifyingGlassIcon,
   TrashIcon,
 } from '@radix-ui/react-icons'
+import React from 'react'
+import { Badge } from '@radix-ui/themes'
 import { LoaderFunctionArgs, json } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { UserDetails } from 'prisma-client'
-import React from 'react'
 import { ProjectContextMenu } from '../components/projectActionContextMenu'
 import { SortingContextMenu } from '../components/sortProjectsContextMenu'
 import { Spinner } from '../components/spinner'
@@ -29,10 +30,12 @@ import { projectCards, projectRows } from '../styles/projects.css'
 import { sprinkles } from '../styles/sprinkles.css'
 import {
   Collaborator,
+  AccessLevel,
   CollaboratorsByProject,
   Operation,
   ProjectWithoutContent,
   getOperationDescription,
+  asAccessLevel,
 } from '../types'
 import { requireUser } from '../util/api.server'
 import { assertNever } from '../util/assertNever'
@@ -724,15 +727,22 @@ const ProjectCard = React.memo(
           }}
         >
           <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 5, flex: 1 }}>
-            <Text
-              size='1'
-              style={{
-                flexGrow: 1,
-                fontWeight: 500,
-              }}
-            >
-              {project.title}
-            </Text>
+            <div style={{ display: 'flex', padding: 10, gap: 5, flex: 1 }}>
+              <Text
+                size='1'
+                style={{
+                  flexGrow: 1,
+                  fontWeight: 500,
+                }}
+              >
+                {projectTitle}
+              </Text>
+              <ProjectBadge
+                accessLevel={
+                  asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
+                }
+              />
+            </div>
             <Text size='1' style={{ opacity: 0.5 }}>
               {moment(project.modified_at).fromNow()}
             </Text>
@@ -805,6 +815,9 @@ const ProjectRow = React.memo(
             <Text
               size='1'
               style={{
+                display: 'flex',
+                gap: '10px',
+                alignItems: 'center',
                 flexGrow: 1,
                 minWidth: 180,
                 maxWidth: 380,
@@ -813,9 +826,15 @@ const ProjectRow = React.memo(
             >
               {project.title}
             </Text>
+            <ProjectBadge
+              accessLevel={
+                asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
+              }
+            />
             <Text size='1' style={{ width: 220, opacity: 0.5 }}>
               {moment(project.modified_at).fromNow()}
             </Text>
+
             <div
               style={{
                 maxWidth: 480,
@@ -888,6 +907,49 @@ const ProjectCardActions = React.memo(({ project }: { project: ProjectWithoutCon
   )
 })
 ProjectCardActions.displayName = 'ProjectCardActions'
+
+const ProjectBadge = React.memo(({ accessLevel }: { accessLevel: AccessLevel }) => {
+  const [color, backgroundColor] = React.useMemo(() => {
+    switch (accessLevel) {
+      case AccessLevel.PRIVATE:
+        return ['rgb(209 78 0)', 'rgb(249 144 0 / 15%)']
+      case AccessLevel.PUBLIC:
+        return ['rgb(0 130 77)', 'rgb(0 155 0 / 9%)']
+      case AccessLevel.WITH_LINK:
+        return ['rgb(0 114 222)', 'rgb(0 132 241 / 9%)']
+      default:
+        return ['gray', 'lightgray']
+    }
+  }, [accessLevel])
+
+  const text = React.useMemo(() => {
+    switch (accessLevel) {
+      case AccessLevel.PRIVATE:
+        return 'Private'
+      case AccessLevel.PUBLIC:
+        return 'Public'
+      case AccessLevel.WITH_LINK:
+        return 'With Link'
+      default:
+        return 'Unknown'
+    }
+  }, [accessLevel])
+  return (
+    <Badge
+      style={{
+        backgroundColor: backgroundColor,
+        color: color,
+        padding: '2px 6px',
+        fontSize: 9,
+        borderRadius: 3,
+        fontWeight: 400,
+      }}
+    >
+      {text}
+    </Badge>
+  )
+})
+ProjectBadge.displayName = 'ProjectBadge'
 
 const ActiveOperations = React.memo(({ projects }: { projects: ProjectWithoutContent[] }) => {
   const operations = useProjectsStore((store) =>

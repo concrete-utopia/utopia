@@ -9,6 +9,7 @@ import { getUserFromSession } from '../models/session.server'
 import { ApiError } from './errors'
 import { Method } from './methods.server'
 import { Status } from './statusCodes'
+import { ALLOW } from '../handlers/validators'
 
 interface ErrorResponse {
   error: string
@@ -26,34 +27,58 @@ const defaultResponseHeaders = new Headers({
   'Cache-control': 'no-cache',
 })
 
-export async function handleOptions(): Promise<TypedResponse<EmptyResponse>> {
+export function alwaysAllow(
+  handler: (request: Request, params: Params<string>) => Promise<unknown>,
+): ValidatedHandler {
+  return {
+    handler: handler,
+    validator: ALLOW,
+  }
+}
+
+async function optionsHandler(): Promise<TypedResponse<EmptyResponse>> {
   return json({}, { headers: defaultResponseHeaders })
 }
+export const handleOptions = alwaysAllow(optionsHandler)
 
 interface HandleRequest {
   request: Request
   params: Params<string>
 }
 
+export type ProjectAccessValidator = (request: Request, params: Params<string>) => Promise<unknown>
+
+export type AccessValidator = ProjectAccessValidator
+
+type ValidatedHandler = {
+  handler: (request: Request, params: Params<string>) => Promise<unknown>
+  validator: AccessValidator
+}
+
 export function handle(
   { request, params }: HandleRequest,
   handlers: {
-    [method in Method]?: (request: Request, params: Params<string>) => Promise<unknown>
+    [method in Method]?: ValidatedHandler
   },
-): Promise<unknown> {
-  const handler = handlers[request.method as Method]
-  if (handler == null) {
+) {
+  const handlerDescriptor = handlers[request.method as Method]
+  if (handlerDescriptor == null) {
     throw new ApiError('invalid method', Status.METHOD_NOT_ALLOWED)
   }
-  return handleMethod(request, params, handler)
+  const { handler, validator } = handlerDescriptor
+  return handleMethod(request, params, handler, validator)
 }
 
 async function handleMethod<T>(
   request: Request,
   params: Params<string>,
   fn: (request: Request, params: Params<string>) => Promise<T>,
+  validator?: AccessValidator,
 ): Promise<ApiResponse<T> | unknown> {
   try {
+    if (validator != null) {
+      await validator(request, params)
+    }
     const resp = await fn(request, params)
     if (resp instanceof Response) {
       const mergedHeaders = new Headers(defaultResponseHeaders)
@@ -120,15 +145,18 @@ export async function proxiedResponse(response: Response): Promise<unknown> {
 }
 
 export const SESSION_COOKIE_NAME = 'JSESSIONID'
+function getSessionId(request: Request): string | null {
+  const cookieHeader = request.headers.get('cookie') ?? ''
+  const cookies = cookie.parse(cookieHeader)
+  return cookies[SESSION_COOKIE_NAME] ?? null
+}
 
 export async function requireUser(
   request: Request,
   options?: { redirect?: string },
 ): Promise<UserDetails> {
-  const cookieHeader = request.headers.get('cookie') ?? ''
-  const cookies = cookie.parse(cookieHeader)
-  const sessionId = cookies[SESSION_COOKIE_NAME] ?? null
   try {
+    const sessionId = getSessionId(request)
     ensure(sessionId != null, 'missing session cookie', Status.UNAUTHORIZED)
     const user = await getUserFromSession({ key: sessionId })
     ensure(user != null, 'user not found', Status.UNAUTHORIZED)
@@ -141,4 +169,12 @@ export async function requireUser(
     }
     throw error
   }
+}
+
+export async function getUser(request: Request): Promise<UserDetails | null> {
+  const sessionId = getSessionId(request)
+  if (sessionId == null) {
+    return null
+  }
+  return getUserFromSession({ key: sessionId })
 }

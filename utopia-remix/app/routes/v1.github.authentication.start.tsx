@@ -1,11 +1,12 @@
 import { LoaderFunctionArgs, redirect } from '@remix-run/node'
 import { handle, handleOptions } from '../util/api.server'
 import { ServerEnvironment } from '../env.server'
+import { ALLOW } from '../handlers/validators'
 
 export async function loader(args: LoaderFunctionArgs) {
   return handle(args, {
     OPTIONS: handleOptions,
-    GET: redirectToGithubAuthStart,
+    GET: { handler: redirectToGithubAuthStart, validator: ALLOW },
   })
 }
 

@@ -171,7 +171,7 @@ describe('variables menu', () => {
 
       await selectComponentsForTest(editor, [
         EP.fromString(
-          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/b5f/020~~~1`,
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/map-1/img-1~~~1`,
         ),
       ])
 
@@ -206,7 +206,7 @@ describe('variables menu', () => {
 
       await selectComponentsForTest(editor, [
         EP.fromString(
-          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/414/586~~~1`,
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/map-2/div-2~~~1`,
         ),
       ])
 
@@ -238,25 +238,29 @@ describe('variables menu', () => {
               }}
               data-uid='container'
             >
-              {[1, 2].map((value, index) => {
+              {
+                // @utopia/uid=map-1
+                [1, 2].map((value, index) => {
                 return (
                   <img
                     src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
                     alt='Utopia logo'
                     style={{ width: 118, height: 150 }}
-                    data-uid='020'
+                    data-uid='img-1'
                   />
                 )
               })}
-              {[{ thing: 1 }, { thing: 2 }, { thing: 3 }].map(
+              {
+                // @utopia/uid=map-2
+                [{ thing: 1 }, { thing: 2 }, { thing: 3 }].map(
                 (someValue, index) => {
                   return (
-                    <div data-uid='586'>
+                    <div data-uid='div-2'>
                       <img
                         src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
                         alt='Utopia logo'
                         style={{ width: 118, height: 150 }}
-                        data-uid='054'
+                        data-uid='img-2'
                       />
                       <span
                         style={{
@@ -287,7 +291,7 @@ describe('variables menu', () => {
 
       await selectComponentsForTest(editor, [
         EP.fromString(
-          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/414/586~~~1`,
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/map-2/div-2~~~1`,
         ),
       ])
 
@@ -319,25 +323,29 @@ describe('variables menu', () => {
               }}
               data-uid='container'
             >
-              {[1, 2].map((value, index) => {
+              {
+                // @utopia/uid=map-1
+                [1, 2].map((value, index) => {
                 return (
                   <img
                     src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
                     alt='Utopia logo'
                     style={{ width: 118, height: 150 }}
-                    data-uid='020'
+                    data-uid='img-1'
                   />
                 )
               })}
-              {[{ thing: 1 }, { thing: 2 }, { thing: 3 }].map(
+              {
+                // @utopia/uid=map-2
+                [{ thing: 1 }, { thing: 2 }, { thing: 3 }].map(
                 (someValue, index) => {
                   return (
-                    <div data-uid='586'>
+                    <div data-uid='div-2'>
                       <img
                         src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
                         alt='Utopia logo'
                         style={{ width: 118, height: 150 }}
-                        data-uid='054'
+                        data-uid='img-2'
                       />
                       <span
                         style={{
@@ -369,7 +377,7 @@ describe('variables menu', () => {
 
       await selectComponentsForTest(editor, [
         EP.fromString(
-          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/414/586~~~1`,
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/map-2/div-2~~~1`,
         ),
       ])
 
@@ -401,25 +409,29 @@ describe('variables menu', () => {
               }}
               data-uid='container'
             >
-              {[1, 2].map((value, index) => {
+              {
+                // @utopia/uid=map-1
+                [1, 2].map((value, index) => {
                 return (
                   <img
                     src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
                     alt='Utopia logo'
                     style={{ width: 118, height: 150 }}
-                    data-uid='020'
+                    data-uid='img-1'
                   />
                 )
               })}
-              {[{ thing: 1 }, { thing: 2 }, { thing: 3 }].map(
+              {
+                // @utopia/uid=map-2
+                [{ thing: 1 }, { thing: 2 }, { thing: 3 }].map(
                 (someValue, index) => {
                   return (
-                    <div data-uid='586'>
+                    <div data-uid='div-2'>
                       <img
                         src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
                         alt='Utopia logo'
                         style={{ width: 118, height: 150 }}
-                        data-uid='054'
+                        data-uid='img-2'
                       />
                       <span
                         style={{
@@ -451,7 +463,7 @@ describe('variables menu', () => {
 
       await selectComponentsForTest(editor, [
         EP.fromString(
-          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/414/586~~~1`,
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/map-2/div-2~~~1`,
         ),
       ])
 
@@ -483,25 +495,29 @@ describe('variables menu', () => {
               }}
               data-uid='container'
             >
-              {[1, 2].map((value, index) => {
+              {
+                // @utopia/uid=map-1
+                [1, 2].map((value, index) => {
                 return (
                   <img
                     src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
                     alt='Utopia logo'
                     style={{ width: 118, height: 150 }}
-                    data-uid='020'
+                    data-uid='img-1'
                   />
                 )
               })}
-              {[{ thing: 1 }, { thing: 2 }, { thing: 3 }].map(
+              {
+                // @utopia/uid=map-2
+                [{ thing: 1 }, { thing: 2 }, { thing: 3 }].map(
                 (someValue, index) => {
                   return (
-                    <div data-uid='586'>
+                    <div data-uid='div-2'>
                       <img
                         src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
                         alt='Utopia logo'
                         style={{ width: 118, height: 150 }}
-                        data-uid='054'
+                        data-uid='img-2'
                       />
                       <span
                         style={{
@@ -533,7 +549,7 @@ describe('variables menu', () => {
 
       await selectComponentsForTest(editor, [
         EP.fromString(
-          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/414/586~~~1`,
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/map-2/div-2~~~1`,
         ),
       ])
 
@@ -565,25 +581,29 @@ describe('variables menu', () => {
               }}
               data-uid='container'
             >
-              {[1, 2].map((value, index) => {
+              {
+                // @utopia/uid=map-1
+                [1, 2].map((value, index) => {
                 return (
                   <img
                     src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
                     alt='Utopia logo'
                     style={{ width: 118, height: 150 }}
-                    data-uid='020'
+                    data-uid='img-1'
                   />
                 )
               })}
-              {[{ thing: 1 }, { thing: 2 }, { thing: 3 }].map(
+              {
+                // @utopia/uid=map-2
+                [{ thing: 1 }, { thing: 2 }, { thing: 3 }].map(
                 (someValue, index) => {
                   return (
-                    <div data-uid='586'>
+                    <div data-uid='div-2'>
                       <img
                         src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
                         alt='Utopia logo'
                         style={{ width: 118, height: 150 }}
-                        data-uid='054'
+                        data-uid='img-2'
                       />
                       <span
                         style={{
@@ -615,10 +635,10 @@ describe('variables menu', () => {
 
       await selectComponentsForTest(editor, [
         EP.fromString(
-          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/414/586~~~1`,
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/map-2/div-2~~~1`,
         ),
         EP.fromString(
-          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/414/586~~~2`,
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/map-2/div-2~~~2`,
         ),
       ])
 
@@ -650,25 +670,29 @@ describe('variables menu', () => {
               }}
               data-uid='container'
             >
-              {[1, 2].map((value, index) => {
+              {
+                // @utopia/uid=map-1
+                [1, 2].map((value, index) => {
                 return (
                   <img
                     src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
                     alt='Utopia logo'
                     style={{ width: 118, height: 150 }}
-                    data-uid='020'
+                    data-uid='img-1'
                   />
                 )
               })}
-              {[{ thing: 1 }, { thing: 2 }, { thing: 3 }].map(
+              {
+                // @utopia/uid=map-2
+                [{ thing: 1 }, { thing: 2 }, { thing: 3 }].map(
                 (someValue, index) => {
                   return (
-                    <div data-uid='586'>
+                    <div data-uid='div-2'>
                       <img
                         src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
                         alt='Utopia logo'
                         style={{ width: 118, height: 150 }}
-                        data-uid='054'
+                        data-uid='img-2'
                       />
                       <span
                         style={{
@@ -901,24 +925,29 @@ const mappingFunctionAppJS: string = `
         }}
         data-uid='container'
       >
-        {[1, 2].map((value, index) => {
+        {
+          // @utopia/uid=map-1
+          [1, 2].map((value, index) => {
           return (
             <img
               src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
               alt='Utopia logo'
               style={{ width: 118, height: 150 }}
+              data-uid='img-1'
             />
           )
         })}
-        {[{ thing: 1 }, { thing: 2 }, { thing: 3 }].map(
+        {
+          // @utopia/uid=map-2
+          [{ thing: 1 }, { thing: 2 }, { thing: 3 }].map(
           (someValue, index) => {
             return (
-              <div
-              >
+              <div data-uid='div-2'>
                 <img
                   src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
                   alt='Utopia logo'
                   style={{ width: 118, height: 150 }}
+                  data-uid='img-2'
                 />
               </div>
             )

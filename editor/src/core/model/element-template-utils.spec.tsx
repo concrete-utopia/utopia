@@ -34,6 +34,7 @@ import type {
   JSXTextBlock,
   UtopiaJSXComponent,
   JSXElementChild,
+  JSExpressionOtherJavaScript,
 } from '../shared/element-template'
 import {
   defaultPropsParam,
@@ -1911,7 +1912,7 @@ describe('transformJSXComponentAtPath', () => {
         if (isJSExpressionMapOrOtherJavaScript(element)) {
           return {
             ...element,
-            javascript: "(() => { return 'hello2' })()",
+            javascriptWithUIDs: "(() => { return 'hello2' })()",
           }
         }
         return element
@@ -1919,8 +1920,12 @@ describe('transformJSXComponentAtPath', () => {
     )
 
     const updatedElement = findElement(updatedComponents, pathToModify)
-    expect((updatedElement as any).type).toEqual('ATTRIBUTE_OTHER_JAVASCRIPT')
-    expect((updatedElement as any).javascript).toEqual("(() => { return 'hello2' })()")
+    expect((updatedElement as JSExpressionOtherJavaScript).type).toEqual(
+      'ATTRIBUTE_OTHER_JAVASCRIPT',
+    )
+    expect((updatedElement as JSExpressionOtherJavaScript).javascriptWithUIDs).toEqual(
+      "(() => { return 'hello2' })()",
+    )
   })
   // enable it after findJSXElementPath is fixed too
   xit('updates elementsWithin of other javascript expression', () => {
