@@ -3,9 +3,18 @@ import { Params } from '@remix-run/react'
 import { softDeleteProject } from '../models/project.server'
 import { ensure, handle, requireUser } from '../util/api.server'
 import { Status } from '../util/statusCodes'
+import { validateProjectAccess } from '../handlers/validators'
+import { UserProjectPermission } from '../types'
 
 export async function action(args: ActionFunctionArgs) {
-  return handle(args, { POST: handleDeleteProject })
+  return handle(args, {
+    POST: {
+      handler: handleDeleteProject,
+      validator: validateProjectAccess(UserProjectPermission.CAN_MANAGE_PROJECT, {
+        getProjectId: (params) => params.id,
+      }),
+    },
+  })
 }
 
 export async function handleDeleteProject(req: Request, params: Params<string>) {

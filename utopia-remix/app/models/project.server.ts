@@ -9,6 +9,7 @@ const selectProjectWithoutContent: Record<keyof ProjectWithoutContent, true> = {
   created_at: true,
   modified_at: true,
   deleted: true,
+  ProjectAccess: true,
 }
 
 export async function listProjects(params: { ownerId: string }): Promise<ProjectWithoutContent[]> {
@@ -20,6 +21,28 @@ export async function listProjects(params: { ownerId: string }): Promise<Project
     },
     orderBy: { modified_at: 'desc' },
   })
+}
+
+export async function getProjectOwnerById(
+  params: { id: string },
+  config: { includeDeleted: boolean } = { includeDeleted: false },
+): Promise<string | null> {
+  let whereOptions: {
+    proj_id: string
+    OR?: { deleted: boolean | null }[]
+  } = {
+    proj_id: params.id,
+  }
+  // if we're not including deleted projects, we need to add a condition to the query
+  if (!config.includeDeleted) {
+    whereOptions.OR = [{ deleted: null }, { deleted: false }]
+  }
+  // find the project and return the owner_id
+  const project = await prisma.project.findFirst({
+    select: { owner_id: true },
+    where: whereOptions,
+  })
+  return project?.owner_id ?? null
 }
 
 export async function renameProject(params: {

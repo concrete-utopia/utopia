@@ -338,18 +338,40 @@ export function transpileJavascript(
   }
 }
 
-export function insertDataUIDsIntoCode(
+function insertDataUIDsIntoCodeInner(
+  sourceFileName: string,
+  sourceFileText: string,
   code: string,
+  map: RawSourceMap,
   elementsWithin: ElementsWithinInPosition,
-  wrapInParens: boolean,
+  wrap: 'wrap-in-parens' | 'wrap-in-anon-fn' | 'do-not-wrap',
   rootLevel: boolean,
   filename: string,
 ): Either<string, CodeWithMap> {
   try {
     let codeToUse: string = code
-    if (wrapInParens) {
-      codeToUse = wrapCodeInParens(codeToUse)
+    let mapToUse: RawSourceMap = map
+
+    if (wrap === 'wrap-in-parens') {
+      const wrappedInParens = wrapCodeInParensWithMap(
+        sourceFileName,
+        sourceFileText,
+        codeToUse,
+        mapToUse,
+      )
+      codeToUse = wrappedInParens.code
+      mapToUse = wrappedInParens.sourceMap
+    } else if (wrap === 'wrap-in-anon-fn') {
+      const wrappedInAnonFunction = wrapCodeInAnonFunctionWithMap(
+        sourceFileName,
+        sourceFileText,
+        codeToUse,
+        mapToUse,
+      )
+      codeToUse = wrappedInAnonFunction.code
+      mapToUse = wrappedInAnonFunction.sourceMap
     }
+
     const plugins: Array<any> = [
       babelRewriteJSExpressionCode(elementsWithin, false),
       ReactSyntaxPlugin,
@@ -360,6 +382,7 @@ export function insertDataUIDsIntoCode(
       sourceType: rootLevel ? 'module' : 'script',
       sourceMaps: true,
       retainLines: true,
+      inputSourceMap: mapToUse,
       filename: filename,
     })
     return right({
@@ -368,6 +391,56 @@ export function insertDataUIDsIntoCode(
     })
   } catch (e: any) {
     return left(e.message)
+  }
+}
+
+export function insertDataUIDsIntoCode(
+  sourceFileName: string,
+  sourceFileText: string,
+  code: string,
+  map: RawSourceMap,
+  elementsWithin: ElementsWithinInPosition,
+  wrapInParens: boolean,
+  rootLevel: boolean,
+  filename: string,
+): Either<string, CodeWithMap> {
+  if (wrapInParens) {
+    const wrappedInParensResult = insertDataUIDsIntoCodeInner(
+      sourceFileName,
+      sourceFileText,
+      code,
+      map,
+      elementsWithin,
+      'wrap-in-parens',
+      rootLevel,
+      filename,
+    )
+
+    if (isRight(wrappedInParensResult)) {
+      return wrappedInParensResult
+    } else {
+      return insertDataUIDsIntoCodeInner(
+        sourceFileName,
+        sourceFileText,
+        code,
+        map,
+        elementsWithin,
+        'wrap-in-anon-fn',
+        rootLevel,
+        filename,
+      )
+    }
+  } else {
+    return insertDataUIDsIntoCodeInner(
+      sourceFileName,
+      sourceFileText,
+      code,
+      map,
+      elementsWithin,
+      'do-not-wrap',
+      rootLevel,
+      filename,
+    )
   }
 }
 

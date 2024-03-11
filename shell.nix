@@ -135,6 +135,12 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${pnpm}/bin/pnpm run test-browser
     '')
+    (pkgs.writeScriptBin "check-editor-karma-hydrogen" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
+      ${pnpm}/bin/pnpm run test-browser-hydrogen
+    '')
     (pkgs.writeScriptBin "check-editor-karma-shard-1" ''
       #!/usr/bin/env bash
       set -e
@@ -181,6 +187,13 @@ let
       install-editor-ci
       install-website
       check-editor-jest
+    '')
+    (pkgs.writeScriptBin "check-editor-karma-ci-hydrogen" ''
+      #!/usr/bin/env bash
+      set -e
+      install-editor-ci
+      install-website
+      check-editor-karma-hydrogen
     '')
     (pkgs.writeScriptBin "check-editor-karma-ci-shard-1" ''
       #!/usr/bin/env bash

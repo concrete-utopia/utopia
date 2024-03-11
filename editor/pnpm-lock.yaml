@@ -63,10 +63,10 @@ specifiers:
   '@emotion/styled': 11.0.0
   '@emotion/styled-base': 11.0.0
   '@hot-loader/react-dom': 16.13.0
-  '@liveblocks/client': 1.9.0
-  '@liveblocks/react': 1.9.0
-  '@liveblocks/react-comments': 1.9.0
-  '@liveblocks/yjs': 1.9.0
+  '@liveblocks/client': 1.10.0
+  '@liveblocks/react': 1.10.0
+  '@liveblocks/react-comments': 1.10.0
+  '@liveblocks/yjs': 1.10.0
   '@originjs/vite-plugin-commonjs': 1.0.3
   '@peculiar/webcrypto': 1.4.3
   '@popperjs/core': 2.4.4
@@ -78,6 +78,7 @@ specifiers:
   '@root/encoding': 1.0.1
   '@seznam/compose-react-refs': 1.0.6
   '@shopify/hydrogen': 2023.10.2
+  '@shopify/remix-oxygen': 2.0.3
   '@stitches/react': 1.2.8
   '@svgr/plugin-jsx': 5.5.0
   '@testing-library/react': 14.0.0
@@ -356,10 +357,10 @@ dependencies:
   '@emotion/serialize': 1.0.2
   '@emotion/styled': 11.0.0_pbv2jdxnktdx6pqidqmf5xa3ty
   '@emotion/styled-base': 11.0.0
-  '@liveblocks/client': 1.9.0
-  '@liveblocks/react': 1.9.0_react@18.1.0
-  '@liveblocks/react-comments': 1.9.0_wgqxz3kjpz4ixw4iz4mbg2tk4i
-  '@liveblocks/yjs': 1.9.0_yjs@13.6.8
+  '@liveblocks/client': 1.10.0
+  '@liveblocks/react': 1.10.0_react@18.1.0
+  '@liveblocks/react-comments': 1.10.0_wgqxz3kjpz4ixw4iz4mbg2tk4i
+  '@liveblocks/yjs': 1.10.0_yjs@13.6.8
   '@popperjs/core': 2.4.4
   '@remix-run/react': 2.0.1_4uzd4uhfxjy6hfd2xmixhrzbqy_njludxb6fcqnim6moy22jieofi
   '@remix-run/server-runtime': 2.3.1_typescript@5.2.2
@@ -504,6 +505,7 @@ devDependencies:
   '@react-three/fiber': 8.0.14_5vzz734aui5gu3jm6wlduec5ym
   '@relative-ci/agent': 2.1.0_webpack@5.88.2
   '@rollup/plugin-node-resolve': 13.1.3
+  '@shopify/remix-oxygen': 2.0.3_7d3z4mwwjazrsw5sc36gfmw2te
   '@testing-library/react': 14.0.0_ef5jwxihqo6n7gxfmzogljlgcm
   '@types/babel__traverse': 7.18.3
   '@types/chai': 3.5.1
@@ -3103,25 +3105,25 @@ packages:
       '@lit-labs/ssr-dom-shim': 1.1.2
     dev: false
 
-  /@liveblocks/client/1.9.0:
-    resolution: {integrity: sha512-Q0wvvjDBgUgfp4GS1JoZ8J0ZRpgtYKGXNWVyOYKAaqiKrynjVsmhNkH5bm9+7OZ/PckSfochdbym9GnlKwKDug==}
+  /@liveblocks/client/1.10.0:
+    resolution: {integrity: sha512-UL32qEgjYdUaQbTBnMAegab4umVRQYFJEBccVW94hDc2wwxdf0rIcqZTvZOX2vqmWXWhKiIiWo1Pu8rCTorFfg==}
     dependencies:
-      '@liveblocks/core': 1.9.0
+      '@liveblocks/core': 1.10.0
     dev: false
 
-  /@liveblocks/core/1.9.0:
-    resolution: {integrity: sha512-dBrcrUs3fld8ReUMK0603GUW17r1GB0dCz9pDy6pNN0AZnSNveUR+chr8y1+MPIz1uJeLomzy9AvSHhBDouT2A==}
+  /@liveblocks/core/1.10.0:
+    resolution: {integrity: sha512-FwIHCITs34GrsjEx9gty+4KQQ89IDjKoivuuqDio0oSoZeZn2z5QxOfX6T2E189HDrviTp2998vtz7kKQLCPiA==}
     dev: false
 
-  /@liveblocks/react-comments/1.9.0_wgqxz3kjpz4ixw4iz4mbg2tk4i:
-    resolution: {integrity: sha512-Auc5XAJrY8eOSngCKDCaz8ac43HgSRK6+OxkY/5+KtXz/EPQYaxzJ0Ydbk3K4jMYB3KYsmeQwLFu/rG6/vJ9mQ==}
+  /@liveblocks/react-comments/1.10.0_wgqxz3kjpz4ixw4iz4mbg2tk4i:
+    resolution: {integrity: sha512-a645aJ6rhkmWB3detZhhTp5zu5LV8mTg3K7r54sAFz6cDaV6inKNibZCOQfLgFWmqBnWBy/MUrMwlOpFxeD/7g==}
     peerDependencies:
       react: ^16.14.0 || ^17 || ^18
     dependencies:
       '@floating-ui/react-dom': 2.0.4_ef5jwxihqo6n7gxfmzogljlgcm
-      '@liveblocks/client': 1.9.0
-      '@liveblocks/core': 1.9.0
-      '@liveblocks/react': 1.9.0_react@18.1.0
+      '@liveblocks/client': 1.10.0
+      '@liveblocks/core': 1.10.0
+      '@liveblocks/react': 1.10.0_react@18.1.0
       '@radix-ui/react-dropdown-menu': 2.0.6_wgqxz3kjpz4ixw4iz4mbg2tk4i
       '@radix-ui/react-popover': 1.0.7_wgqxz3kjpz4ixw4iz4mbg2tk4i
       '@radix-ui/react-slot': 1.0.2_7cpxmzzodpxnolj5zcc5cr63ji
@@ -3139,25 +3141,25 @@ packages:
       - react-dom
     dev: false
 
-  /@liveblocks/react/1.9.0_react@18.1.0:
-    resolution: {integrity: sha512-WQGEkf9ZeekgSYq1qYuNgVD1qS4Rk+JGxYHR9zslaXNdVh/Hl3VYWMrdIqte1f5wRRVtjGBTcrnVETOO038ZnQ==}
+  /@liveblocks/react/1.10.0_react@18.1.0:
+    resolution: {integrity: sha512-SASkpQFeeHtD3QG+4sCZ9v4ofVyhZB3EE1jYTSzvnVMaoxThyOlxt5FRzRa/XZRpjihbQOpI6vLdiZGZDBgVJw==}
     peerDependencies:
       react: ^16.14.0 || ^17 || ^18
     dependencies:
-      '@liveblocks/client': 1.9.0
-      '@liveblocks/core': 1.9.0
+      '@liveblocks/client': 1.10.0
+      '@liveblocks/core': 1.10.0
       nanoid: 3.3.6
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
       use-sync-external-store: 1.2.0_react@18.1.0
     dev: false
 
-  /@liveblocks/yjs/1.9.0_yjs@13.6.8:
-    resolution: {integrity: sha512-V+fDH7SCXNsHOVZP531xeiagnfp/Z+rm7KYCaeVnYvC2VoKuG3fAwcFfVle8pXnYVPXpUuNSQ2TSatXGz51KvQ==}
+  /@liveblocks/yjs/1.10.0_yjs@13.6.8:
+    resolution: {integrity: sha512-Q5FVdtMMdhgR7N+gfEEECmBXcHC0ZnrUl675GQD8Up8nQy+1eJyyqPdiGNdPJa29dbADiQQCD8EiOdJHRlS8fw==}
     peerDependencies:
       yjs: ^13.6.1
     dependencies:
-      '@liveblocks/client': 1.9.0
-      '@liveblocks/core': 1.9.0
+      '@liveblocks/client': 1.10.0
+      '@liveblocks/core': 1.10.0
       js-base64: 3.7.5
       yjs: 13.6.8
     dev: false
@@ -4218,7 +4220,6 @@ packages:
   /@remix-run/router/1.13.0:
     resolution: {integrity: sha512-5dMOnVnefRsl4uRnAdoWjtVTdh8e6aZqgM4puy9nmEADH72ck+uXwzpJLEKE9Q6F8ZljNewLgmTfkxUrBdv4WA==}
     engines: {node: '>=14.0.0'}
-    dev: false
 
   /@remix-run/router/1.9.0:
     resolution: {integrity: sha512-bV63itrKBC0zdT27qYm6SDZHlkXwFL1xMBuhkn+X7l0+IIhNaH5wuuvZKp6eKhCD4KFhujhfhCT1YxXW6esUIA==}
@@ -4260,7 +4261,6 @@ packages:
       set-cookie-parser: 2.6.0
       source-map: 0.7.4
       typescript: 5.2.2
-    dev: false
 
   /@remixproject/plugin-api/0.3.38:
     resolution: {integrity: sha512-GLXAnV7TMYV2KlXTml+W0H6s0m5EkVb5w610Jh9k4PLFVrocl9xDEG4VlZ8BF/uv+yjXRi4dn++8zWMRe5375Q==}
@@ -4392,6 +4392,15 @@ packages:
       - react-dom
       - xstate
     dev: false
+
+  /@shopify/remix-oxygen/2.0.3_7d3z4mwwjazrsw5sc36gfmw2te:
+    resolution: {integrity: sha512-tR961NkggQTy868tXPj4BNsVHV7nE3KHiMbQct/Psx69nSnQb999/v/HQiVKBbQ5ZZ8qyygSCXct5CrKGpb/pA==}
+    peerDependencies:
+      '@remix-run/server-runtime': ^2.1.0
+      '@shopify/oxygen-workers-types': ^3.17.3 || ^4.0.0
+    dependencies:
+      '@remix-run/server-runtime': 2.3.1_typescript@5.2.2
+    dev: true
 
   /@sinclair/typebox/0.27.8:
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
@@ -4671,7 +4680,6 @@ packages:
 
   /@types/cookie/0.5.4:
     resolution: {integrity: sha512-7z/eR6O859gyWIAjuvBWFzNURmf2oPBmJlfVWkwehU5nzIyjwBsTh7WMmEEV4JFnHuQ3ex4oyTvfKzcyJVDBNA==}
-    dev: false
 
   /@types/cors/2.8.12:
     resolution: {integrity: sha512-vt+kDhq/M2ayberEtJcIN/hxXy1Pk+59g2FV/ZQceeaTyCtCucjL2Q7FXlFjtWn4n15KCr1NE2lNNFhp0lEThw==}
@@ -5477,7 +5485,6 @@ packages:
 
   /@web3-storage/multipart-parser/1.0.0:
     resolution: {integrity: sha512-BEO6al7BYqcnfX15W2cnGR+Q566ACXAT9UQykORCWW80lmkpWsnEob6zJS1ZVBKsSJC8+7vJkHwlp+lXG1UCdw==}
-    dev: false
 
   /@webassemblyjs/ast/1.11.6:
     resolution: {integrity: sha512-IN1xI7PwOvLPgjcf180gC1bqn3q/QaOCwYUahIOhbYUu8KA/3tw2RT/T0Gidi1l7Hhj5D/INhJxiICObqpMu4Q==}
@@ -17291,7 +17298,6 @@ packages:
 
   /set-cookie-parser/2.6.0:
     resolution: {integrity: sha512-RVnVQxTXuerk653XfuliOxBP81Sf0+qfQE73LIYKcyMYHG94AuH0kgrQpRDuTZnSmjpysHmzxJXKNfa6PjFhyQ==}
-    dev: false
 
   /set-immediate-shim/1.0.1:
     resolution: {integrity: sha1-SysbJ+uAip+NzEgaWOXlb1mfP2E=}

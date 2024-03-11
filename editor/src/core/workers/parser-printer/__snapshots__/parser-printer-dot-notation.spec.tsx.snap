@@ -112,8 +112,10 @@ Array [
           "params": Array [],
           "sourceMap": Object {
             "file": "code.tsx",
-            "mappings": "OAAA;AAAA;AAAA",
-            "names": Array [],
+            "mappings": "OAMQA;AAAAA;AAAAA",
+            "names": Array [
+              "<",
+            ],
             "sources": Array [
               "code.tsx",
             ],
