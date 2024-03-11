@@ -196,7 +196,7 @@ export function parseParam(
     WithParserMetadata<JSExpressionMapOrOtherJavascript | undefined>
   > = param.initializer == null
     ? right(withParserMetadata(undefined, existingHighlightBounds, [], []))
-    : parseAttributeOtherJavaScript(
+    : parseJSExpressionMapOrOtherJavascript(
         file,
         sourceText,
         filename,
@@ -1352,7 +1352,7 @@ function getCommentsOnExpression(sourceText: string, expression: TS.Node): Parse
   }
 }
 
-export function parseAttributeOtherJavaScript(
+export function parseJSExpressionMapOrOtherJavascript(
   sourceFile: TS.SourceFile,
   sourceText: string,
   filename: string,
@@ -1531,7 +1531,7 @@ function createExpressionOtherJavaScript(
   node: TS.Node,
   params: Array<Param>,
   originalJavascript: string,
-  javascript: string,
+  javascriptWithUIDs: string,
   transpiledJavascript: string,
   definedElsewhere: Array<string>,
   sourceMap: RawSourceMap | null,
@@ -1547,7 +1547,7 @@ function createExpressionOtherJavaScript(
     otherJavaScriptType.type === 'MAP_OTHER_JAVASCRIPT'
       ? jsxMapExpression(
           originalJavascript,
-          javascript,
+          javascriptWithUIDs,
           transpiledJavascript,
           definedElsewhere,
           null,
@@ -1559,7 +1559,7 @@ function createExpressionOtherJavaScript(
       : jsExpressionOtherJavaScript(
           params,
           originalJavascript,
-          javascript,
+          javascriptWithUIDs,
           transpiledJavascript,
           definedElsewhere,
           null,
@@ -1581,7 +1581,7 @@ function createExpressionOtherJavaScript(
   return otherJavaScriptType.type === 'MAP_OTHER_JAVASCRIPT'
     ? jsxMapExpression(
         originalJavascript,
-        javascript,
+        javascriptWithUIDs,
         transpiledJavascript,
         definedElsewhere,
         sourceMap,
@@ -1593,7 +1593,7 @@ function createExpressionOtherJavaScript(
     : jsExpressionOtherJavaScript(
         params,
         originalJavascript,
-        javascript,
+        javascriptWithUIDs,
         transpiledJavascript,
         definedElsewhere,
         sourceMap,
@@ -1944,7 +1944,7 @@ export function parseAttributeExpression(
         return right(withParserMetadata(fnCall.value, highlightBounds, propsUsed, definedElsewhere))
       }
     }
-    return parseAttributeOtherJavaScript(
+    return parseJSExpressionMapOrOtherJavascript(
       sourceFile,
       sourceText,
       filename,
@@ -2037,7 +2037,7 @@ export function parseAttributeExpression(
         )
       }
     }
-    return parseAttributeOtherJavaScript(
+    return parseJSExpressionMapOrOtherJavascript(
       sourceFile,
       sourceText,
       filename,
@@ -2068,7 +2068,7 @@ export function parseAttributeExpression(
           createExpressionValue(sourceFile, expression, null, comments, alreadyExistingUIDs),
         )
       default:
-        return parseAttributeOtherJavaScript(
+        return parseJSExpressionMapOrOtherJavascript(
           sourceFile,
           sourceText,
           filename,
@@ -3180,7 +3180,7 @@ export function parseOutJSXElements(
   function produceArbitraryBlockFromExpression(
     tsExpression: TS.Expression | LiteralLikeTypes,
   ): Either<string, SuccessfullyParsedElement> {
-    const result = parseAttributeOtherJavaScript(
+    const result = parseJSExpressionMapOrOtherJavascript(
       sourceFile,
       sourceText,
       filename,
@@ -3634,6 +3634,7 @@ export function parseArbitraryNodes(
       return applicative2Either(
         (transpileResult, dataUIDFixResult) => {
           const transpiled = `${transpileResult.code}\n${definedWithCode}`
+          // FIXME Pass in the dataUIDFixResult below
           return createArbitraryJSBlock(
             sourceFile,
             params,
@@ -3751,7 +3752,7 @@ export function parseOutFunctionContents(
         jsBlock = createArbitraryJSBlock(
           sourceFile,
           [],
-          returnStatementPrefixCode,
+          returnStatementPrefixCode, // FIXME we need to inject data-uids using insertDataUIDsIntoCode
           returnStatementPrefixCode,
           [],
           [],
@@ -3786,7 +3787,7 @@ export function parseOutFunctionContents(
         () => {
           // If we aren't able to parse out the individual JSX elements (because they don't form part of a simple return statement)
           // we attempt to parse the entire function body as arbitrary JS
-          const parsedAsArbitrary = parseAttributeOtherJavaScript(
+          const parsedAsArbitrary = parseJSExpressionMapOrOtherJavascript(
             sourceFile,
             sourceText,
             filename,

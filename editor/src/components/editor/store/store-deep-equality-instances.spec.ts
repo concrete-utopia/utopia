@@ -477,7 +477,7 @@ describe('JSXAttributeOtherJavaScriptKeepDeepEqualityCall', () => {
     type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
     params: [],
     originalJavascript: 'old',
-    javascript: 'old',
+    javascriptWithUIDs: 'old',
     transpiledJavascript: 'old',
     definedElsewhere: ['old'],
     sourceMap: { a: 1, b: [2] } as any,
@@ -489,7 +489,7 @@ describe('JSXAttributeOtherJavaScriptKeepDeepEqualityCall', () => {
     type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
     params: [],
     originalJavascript: 'old',
-    javascript: 'old',
+    javascriptWithUIDs: 'old',
     transpiledJavascript: 'old',
     definedElsewhere: ['old'],
     sourceMap: { a: 1, b: [2] } as any,
@@ -501,7 +501,7 @@ describe('JSXAttributeOtherJavaScriptKeepDeepEqualityCall', () => {
     type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
     params: [],
     originalJavascript: 'new',
-    javascript: 'new',
+    javascriptWithUIDs: 'new',
     transpiledJavascript: 'old',
     definedElsewhere: ['old'],
     sourceMap: { a: 1, b: [2] } as any,
@@ -523,7 +523,7 @@ describe('JSXAttributeOtherJavaScriptKeepDeepEqualityCall', () => {
   it('different but similar value handled appropriately', () => {
     const result = JSExpressionOtherJavaScriptKeepDeepEqualityCall()(oldValue, newDifferentValue)
     expect(result.value.type).toBe(oldValue.type)
-    expect(result.value.javascript).toBe(newDifferentValue.javascript)
+    expect(result.value.javascriptWithUIDs).toBe(newDifferentValue.javascriptWithUIDs)
     expect(result.value.transpiledJavascript).toBe(oldValue.transpiledJavascript)
     expect(result.value.definedElsewhere).toBe(oldValue.definedElsewhere)
     expect(result.value.sourceMap).toBe(oldValue.sourceMap)

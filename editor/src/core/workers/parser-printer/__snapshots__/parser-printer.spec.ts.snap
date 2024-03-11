@@ -151,19 +151,19 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
     },
   ],
   "fullHighlightBounds": Object {
-    "3ba": Object {
-      "endCol": 38,
-      "endLine": 23,
-      "startCol": 14,
-      "startLine": 23,
-      "uid": "3ba",
-    },
     "6e3": Object {
       "endCol": 24,
       "endLine": 20,
       "startCol": 19,
       "startLine": 20,
       "uid": "6e3",
+    },
+    "8f7": Object {
+      "endCol": 38,
+      "endLine": 23,
+      "startCol": 14,
+      "startLine": 23,
+      "uid": "8f7",
     },
     "aaa": Object {
       "endCol": 11,
@@ -547,7 +547,7 @@ return { otherFn: otherFn };",
                     "otherFn",
                   ],
                   "elementsWithin": Object {},
-                  "javascript": "cakeFn(otherFn('b') + 2);",
+                  "javascriptWithUIDs": "cakeFn(otherFn('b') + 2);",
                   "originalJavascript": "cakeFn(otherFn('b') + 2)",
                   "params": Array [],
                   "sourceMap": Object {
@@ -655,6 +655,13 @@ Object {
     },
   ],
   "fullHighlightBounds": Object {
+    "13e": Object {
+      "endCol": 22,
+      "endLine": 6,
+      "startCol": 17,
+      "startLine": 6,
+      "uid": "13e",
+    },
     "1e3": Object {
       "endCol": 37,
       "endLine": 6,
@@ -675,6 +682,13 @@ Object {
       "startCol": 25,
       "startLine": 4,
       "uid": "4cf",
+    },
+    "58b": Object {
+      "endCol": 45,
+      "endLine": 4,
+      "startCol": 40,
+      "startLine": 4,
+      "uid": "58b",
     },
     "67f": Object {
       "endCol": 45,
@@ -697,19 +711,19 @@ Object {
       "startLine": 5,
       "uid": "6e3",
     },
-    "7c4": Object {
-      "endCol": 22,
-      "endLine": 6,
-      "startCol": 17,
-      "startLine": 6,
-      "uid": "7c4",
-    },
-    "975": Object {
+    "7cb": Object {
       "endCol": 22,
       "endLine": 4,
       "startCol": 17,
       "startLine": 4,
-      "uid": "975",
+      "uid": "7cb",
+    },
+    "7df": Object {
+      "endCol": 45,
+      "endLine": 6,
+      "startCol": 40,
+      "startLine": 6,
+      "uid": "7df",
     },
     "aaa": Object {
       "endCol": 56,
@@ -724,20 +738,6 @@ Object {
       "startCol": 25,
       "startLine": 6,
       "uid": "b93",
-    },
-    "ce5": Object {
-      "endCol": 45,
-      "endLine": 4,
-      "startCol": 40,
-      "startLine": 4,
-      "uid": "ce5",
-    },
-    "dfc": Object {
-      "endCol": 45,
-      "endLine": 6,
-      "startCol": 40,
-      "startLine": 6,
-      "uid": "dfc",
     },
     "fa9": Object {
       "endCol": 37,
@@ -755,12 +755,26 @@ Object {
     },
   },
   "highlightBounds": Object {
+    "13e": Object {
+      "endCol": 22,
+      "endLine": 6,
+      "startCol": 17,
+      "startLine": 6,
+      "uid": "13e",
+    },
     "4cf": Object {
       "endCol": 37,
       "endLine": 4,
       "startCol": 25,
       "startLine": 4,
       "uid": "4cf",
+    },
+    "58b": Object {
+      "endCol": 45,
+      "endLine": 4,
+      "startCol": 40,
+      "startLine": 4,
+      "uid": "58b",
     },
     "67f": Object {
       "endCol": 45,
@@ -776,19 +790,19 @@ Object {
       "startLine": 6,
       "uid": "6c7",
     },
-    "7c4": Object {
-      "endCol": 22,
-      "endLine": 6,
-      "startCol": 17,
-      "startLine": 6,
-      "uid": "7c4",
-    },
-    "975": Object {
+    "7cb": Object {
       "endCol": 22,
       "endLine": 4,
       "startCol": 17,
       "startLine": 4,
-      "uid": "975",
+      "uid": "7cb",
+    },
+    "7df": Object {
+      "endCol": 45,
+      "endLine": 6,
+      "startCol": 40,
+      "startLine": 6,
+      "uid": "7df",
     },
     "aaa": Object {
       "endCol": 56,
@@ -803,20 +817,6 @@ Object {
       "startCol": 25,
       "startLine": 6,
       "uid": "b93",
-    },
-    "ce5": Object {
-      "endCol": 45,
-      "endLine": 4,
-      "startCol": 40,
-      "startLine": 4,
-      "uid": "ce5",
-    },
-    "dfc": Object {
-      "endCol": 45,
-      "endLine": 6,
-      "startCol": 40,
-      "startLine": 6,
-      "uid": "dfc",
     },
   },
   "imports": Object {
@@ -907,7 +907,7 @@ Object {
             "n",
           ],
           "elementsWithin": Object {},
-          "javascript": "n > 0;",
+          "javascriptWithUIDs": "n > 0;",
           "originalJavascript": "n > 0",
           "params": Array [],
           "sourceMap": Object {
@@ -949,7 +949,7 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
             "b",
           ],
           "elementsWithin": Object {},
-          "javascript": "b(10);",
+          "javascriptWithUIDs": "b(10);",
           "originalJavascript": "b(10)",
           "params": Array [],
           "sourceMap": Object {
@@ -1121,7 +1121,7 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
             "n",
           ],
           "elementsWithin": Object {},
-          "javascript": "n > 0;",
+          "javascriptWithUIDs": "n > 0;",
           "originalJavascript": "n > 0",
           "params": Array [],
           "sourceMap": Object {
@@ -1163,7 +1163,7 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
             "a",
           ],
           "elementsWithin": Object {},
-          "javascript": "a(10);",
+          "javascriptWithUIDs": "a(10);",
           "originalJavascript": "a(10)",
           "params": Array [],
           "sourceMap": Object {
@@ -1299,12 +1299,12 @@ return { a: a };",
     },
   ],
   "fullHighlightBounds": Object {
-    "23f": Object {
+    "5b5": Object {
       "endCol": 9,
       "endLine": 13,
       "startCol": 3,
       "startLine": 13,
-      "uid": "23f",
+      "uid": "5b5",
     },
     "854": Object {
       "endCol": 48,
@@ -1329,12 +1329,12 @@ return { a: a };",
     },
   },
   "highlightBounds": Object {
-    "23f": Object {
+    "5b5": Object {
       "endCol": 9,
       "endLine": 13,
       "startCol": 3,
       "startLine": 13,
-      "uid": "23f",
+      "uid": "5b5",
     },
     "bbb": Object {
       "endCol": 7,
@@ -1518,7 +1518,7 @@ return { a: a };",
               "a",
             ],
             "elementsWithin": Object {},
-            "javascript": "({ a: a });",
+            "javascriptWithUIDs": "({ a: a });",
             "originalJavascript": "{a: a}",
             "params": Array [],
             "sourceMap": Object {
