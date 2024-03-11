@@ -2,21 +2,29 @@ import { CredentialsMethod, OpenFgaClient } from '@openfga/sdk'
 import { ServerEnvironment } from '../env.server'
 import { AccessLevel } from '../types'
 
-export const fgaClient = new OpenFgaClient({
-  apiScheme: 'https',
-  apiHost: ServerEnvironment.FGA_API_HOST,
-  storeId: ServerEnvironment.FGA_STORE_ID,
-  // authorizationModelId: 'YOUR_MODEL_ID', // Optionally, you can specify a model id to target, which can improve latency
-  credentials: {
-    method: CredentialsMethod.ClientCredentials,
-    config: {
-      apiTokenIssuer: ServerEnvironment.FGA_API_TOKEN_ISSUER,
-      apiAudience: ServerEnvironment.FGA_API_AUDIENCE,
-      clientId: ServerEnvironment.FGA_CLIENT_ID,
-      clientSecret: ServerEnvironment.FGA_SECRET,
-    },
-  },
-})
+const localFgaClient = {
+  write: async () => {},
+  check: async () => ({ allowed: true }),
+}
+
+export const fgaClient =
+  ServerEnvironment.environment === 'local'
+    ? localFgaClient
+    : new OpenFgaClient({
+        apiScheme: 'https',
+        apiHost: ServerEnvironment.FGA_API_HOST,
+        storeId: ServerEnvironment.FGA_STORE_ID,
+        // authorizationModelId: 'YOUR_MODEL_ID', // Optionally, you can specify a model id to target, which can improve latency
+        credentials: {
+          method: CredentialsMethod.ClientCredentials,
+          config: {
+            apiTokenIssuer: ServerEnvironment.FGA_API_TOKEN_ISSUER,
+            apiAudience: ServerEnvironment.FGA_API_AUDIENCE,
+            clientId: ServerEnvironment.FGA_CLIENT_ID,
+            clientSecret: ServerEnvironment.FGA_SECRET,
+          },
+        },
+      })
 
 export async function updateAccessLevel(projectId: string, accessLevel: AccessLevel) {
   switch (accessLevel) {
