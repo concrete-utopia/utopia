@@ -262,7 +262,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
   const readByMe = useMyThreadReadStatus(thread)
   const isRead = readByMe === 'read'
 
-  const { hovered, onMouseOver, onMouseOut: onHoverMouseOut, cancelHover } = useHover()
+  const { hovered, onMouseOver, onMouseOut: onHoverMouseOut, cancelHover, wasHovered } = useHover()
 
   const [dragging, setDragging] = React.useState(false)
   const draggingCallback = React.useCallback((isDragging: boolean) => setDragging(isDragging), [])
@@ -351,6 +351,7 @@ const CommentIndicator = React.memo(({ thread }: CommentIndicatorProps) => {
       <CommentIndicatorWrapper
         thread={thread}
         expanded={preview}
+        animatable={wasHovered}
         user={user}
         comment={firstComment}
         showActions={false}
@@ -525,8 +526,10 @@ function useDragging(
 
 function useHover() {
   const [hovered, setHovered] = React.useState(false)
+  const [wasHovered, setWasHovered] = React.useState(false)
 
   const onMouseOver = React.useCallback(() => {
+    setWasHovered(true)
     setHovered(true)
   }, [])
 
@@ -538,25 +541,26 @@ function useHover() {
     setHovered(false)
   }, [])
 
-  return { hovered, onMouseOver, onMouseOut, cancelHover }
+  return { hovered, onMouseOver, onMouseOut, cancelHover, wasHovered }
 }
 
 type CommentIndicatorWrapper = {
   thread: ThreadData<ThreadMetadata>
   user: UserMeta | null
   expanded: boolean
+  animatable: boolean
   forceDarkMode: boolean
 } & CommentProps
 
 const CommentIndicatorWrapper = React.memo((props: CommentIndicatorWrapper) => {
-  const { thread, expanded, user, forceDarkMode, ...commentProps } = props
+  const { thread, expanded, user, forceDarkMode, animatable, ...commentProps } = props
 
   const [avatarRef, animateAvatar] = useAnimate()
 
   const animDuration = 0.1
 
   React.useEffect(() => {
-    if (avatarRef.current == null) {
+    if (avatarRef.current == null || !animatable) {
       return
     }
     void animateAvatar(
@@ -569,7 +573,7 @@ const CommentIndicatorWrapper = React.memo((props: CommentIndicatorWrapper) => {
         duration: expanded ? animDuration : animDuration / 2,
       },
     )
-  }, [expanded, avatarRef, animateAvatar])
+  }, [expanded, avatarRef, animateAvatar, animatable])
 
   // This is a hack: when the comment is unread, we show a dark background, so we need light foreground colors.
   // So we trick the Liveblocks Comment component and lie to it that the theme is dark mode.
