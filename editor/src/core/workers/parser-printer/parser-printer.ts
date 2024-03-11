@@ -248,7 +248,12 @@ function jsxAttributeToExpression(
           attribute.javascriptWithUIDs,
         ).statement
         if (TS.isExpressionStatement(maybeExpressionStatement)) {
-          const expression = maybeExpressionStatement.expression
+          const expression = updateJSXElementsWithin(
+            maybeExpressionStatement.expression,
+            attribute.elementsWithin,
+            imports,
+            stripUIDs,
+          )
           addCommentsToNode(expression, attribute.comments)
           return expression
         } else {
