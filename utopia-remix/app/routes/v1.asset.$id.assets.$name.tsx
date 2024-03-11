@@ -15,5 +15,13 @@ export async function action(args: ActionFunctionArgs) {
       handler: (req) => proxy(req, { rawOutput: true }),
       validator: ALLOW,
     },
+    DELETE: {
+      handler: proxy,
+      validator: ALLOW,
+    },
+    PUT: {
+      handler: proxy,
+      validator: ALLOW,
+    },
   })
 }
