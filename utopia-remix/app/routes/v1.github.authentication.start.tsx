@@ -14,6 +14,6 @@ async function redirectToGithubAuthStart() {
   const scopes = 'repo'
 
   return redirect(
-    `https://github.com/login/oauth/authorize?client_id=${ServerEnvironment.GithubOAuthClientId}&redirect_uri=${ServerEnvironment.GithubOAuthRedirectUrl}&scope=${scopes}`,
+    `https://github.com/login/oauth/authorize?client_id=${ServerEnvironment.GITHUB_OAUTH_CLIENT_ID}&redirect_uri=${ServerEnvironment.GITHUB_OAUTH_REDIRECT_URL}&scope=${scopes}`,
   )
 }
