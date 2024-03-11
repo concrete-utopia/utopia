@@ -46,7 +46,7 @@ import {
   useSortCompareProject,
 } from '../util/use-sort-compare-project'
 import { useCleanupOperations } from '../hooks/useCleanupOperations'
-import { Flex, Text, Button } from '@radix-ui/themes'
+import { Text, Button } from '@radix-ui/themes'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]

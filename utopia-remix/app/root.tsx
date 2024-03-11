@@ -18,7 +18,6 @@ import { Status, getStatusName } from './util/statusCodes'
 import radixStyle from '@radix-ui/themes/styles.css'
 import './normalize.css'
 import { Theme } from '@radix-ui/themes'
-// import { useIsDarkMode } from '../hooks/useIsDarkMode'
 import { useIsDarkMode } from './hooks/useIsDarkMode'
 
 declare global {
