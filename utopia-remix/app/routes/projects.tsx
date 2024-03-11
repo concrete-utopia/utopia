@@ -897,7 +897,7 @@ const ProjectCardActions = React.memo(({ project }: { project: ProjectWithoutCon
       <DropdownMenuRoot onOpenChange={handleSortMenuOpenChange}>
         <DropdownMenuTrigger asChild>
           <DotsHorizontalIcon
-            className={button()}
+            className={button({ size: 'ellipses' })}
             style={{ background: sortMenuOpen ? '#a4a4a430' : 'inherit' }}
           />
         </DropdownMenuTrigger>
