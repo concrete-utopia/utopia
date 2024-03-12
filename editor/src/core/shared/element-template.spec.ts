@@ -1,3 +1,4 @@
+import { left, right } from './either'
 import {
   attributeReferencesElsewhere,
   deleteJSXAttribute,
@@ -12,6 +13,13 @@ import {
   jsExpressionValue,
   jsxPropertyAssignment,
   setJSXAttributesAttribute,
+  modifiableAttributeToValuePath,
+  jsIdentifier,
+  jsPropertyAccess,
+  jsElementAccess,
+  jsExpressionOtherJavaScriptSimple,
+  jsxMapExpression,
+  jsxElement,
 } from './element-template'
 
 describe('setJSXAttributesAttribute', () => {
@@ -207,5 +215,125 @@ describe('attributeReferencesElsewhere', () => {
         ]),
       ),
     ).toEqual(false)
+  })
+})
+
+describe('modifiableAttributeToValuePath', () => {
+  it('works for an identifier', () => {
+    const actualResult = modifiableAttributeToValuePath(
+      jsIdentifier('thing', 'thing-uid', null, emptyComments),
+    )
+    expect(actualResult).toEqual(right(['thing']))
+  })
+  it('works for a simple property access', () => {
+    const actualResult = modifiableAttributeToValuePath(
+      jsPropertyAccess(
+        jsIdentifier('thing', 'thing-uid', null, emptyComments),
+        'property',
+        'property-uid',
+        null,
+        emptyComments,
+        'thing.property',
+        'not-optionally-chained',
+      ),
+    )
+    expect(actualResult).toEqual(right(['thing', 'property']))
+  })
+  it('works for a simple element access', () => {
+    const actualResult = modifiableAttributeToValuePath(
+      jsElementAccess(
+        jsIdentifier('thing', 'thing-uid', null, emptyComments),
+        jsExpressionValue(1, emptyComments, 'one-uid'),
+        'element-uid',
+        null,
+        emptyComments,
+        'thing[1]',
+        'not-optionally-chained',
+      ),
+    )
+    expect(actualResult).toEqual(right(['thing', 1]))
+  })
+  it('rejects a property access involving something arbitrary', () => {
+    const actualResult = modifiableAttributeToValuePath(
+      jsPropertyAccess(
+        jsExpressionOtherJavaScriptSimple('something()', ['something']),
+        'property',
+        'property-uid',
+        null,
+        emptyComments,
+        'thing.property',
+        'not-optionally-chained',
+      ),
+    )
+    expect(actualResult).toEqual(left('Unable to handle this expression type.'))
+  })
+  it('rejects an element access with an arbitrary onValue', () => {
+    const actualResult = modifiableAttributeToValuePath(
+      jsElementAccess(
+        jsExpressionOtherJavaScriptSimple('something()', ['something']),
+        jsExpressionValue(1, emptyComments, 'one-uid'),
+        'element-uid',
+        null,
+        emptyComments,
+        'thing[1]',
+        'not-optionally-chained',
+      ),
+    )
+    expect(actualResult).toEqual(left('Unable to handle this expression type.'))
+  })
+  it('rejects an element access with an arbitrary element', () => {
+    const actualResult = modifiableAttributeToValuePath(
+      jsElementAccess(
+        jsIdentifier('thing', 'thing-uid', null, emptyComments),
+        jsExpressionOtherJavaScriptSimple('something()', ['something']),
+        'element-uid',
+        null,
+        emptyComments,
+        'thing[1]',
+        'not-optionally-chained',
+      ),
+    )
+    expect(actualResult).toEqual(left('Unable to handle this element access.'))
+  })
+  it('rejects an expression value', () => {
+    const actualResult = modifiableAttributeToValuePath(jsExpressionValue('thing', emptyComments))
+    expect(actualResult).toEqual(left('Unable to handle this expression type.'))
+  })
+  it('rejects an other javascript', () => {
+    const actualResult = modifiableAttributeToValuePath(
+      jsExpressionOtherJavaScriptSimple('something()', ['something']),
+    )
+    expect(actualResult).toEqual(left('Unable to handle this expression type.'))
+  })
+  it('rejects a nested array', () => {
+    const actualResult = modifiableAttributeToValuePath(jsExpressionNestedArray([], emptyComments))
+    expect(actualResult).toEqual(left('Unable to handle this expression type.'))
+  })
+  it('rejects a nested object', () => {
+    const actualResult = modifiableAttributeToValuePath(jsExpressionNestedObject([], emptyComments))
+    expect(actualResult).toEqual(left('Unable to handle this expression type.'))
+  })
+  it('rejects a function call', () => {
+    const actualResult = modifiableAttributeToValuePath(jsExpressionFunctionCall('something', []))
+    expect(actualResult).toEqual(left('Unable to handle this expression type.'))
+  })
+  it('rejects a map expression', () => {
+    const actualResult = modifiableAttributeToValuePath(
+      jsxMapExpression(
+        '[1, 2, 3].map(a => <div />)',
+        '[1, 2, 3].map(a => <div />)',
+        '[1, 2, 3].map(a => <div />)',
+        [],
+        null,
+        {},
+        emptyComments,
+        [],
+      ),
+    )
+    expect(actualResult).toEqual(left('Unable to handle this expression type.'))
+  })
+  it('rejects a jsx element', () => {
+    const actualResult = modifiableAttributeToValuePath(jsxElement('div', 'div-uid', [], []))
+    expect(actualResult).toEqual(left('Unable to handle this expression type.'))
   })
 })

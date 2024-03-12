@@ -10,16 +10,23 @@ import {
   VariableFromScopeOptionTestId,
 } from './component-section'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { isRight, type Right } from '../../../../core/shared/either'
+import { isRight } from '../../../../core/shared/either'
 import {
   isJSElementAccess,
   isJSExpressionValue,
   isJSIdentifier,
-  type JSExpressionOtherJavaScript,
 } from '../../../../core/shared/element-template'
 
 describe('Set element prop via the data picker', () => {
   it('can pick from the property data picker', async () => {
+    function checkIsItalicised(testID: string, shouldBeItalicised: boolean): void {
+      const htmlElement = editor.renderedDOM.getByTestId(testID)
+      if (shouldBeItalicised) {
+        expect(htmlElement.style.getPropertyValue('font-style')).toContain('italic')
+      } else {
+        expect(htmlElement.style.getPropertyValue('font-style')).not.toContain('italic')
+      }
+    }
     const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/title')])
 
@@ -50,30 +57,65 @@ describe('Set element prop via the data picker', () => {
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Title too')).not.toBeNull()
     expect(within(theInspector).queryByText('Title too')).not.toBeNull()
+    checkIsItalicised(`variable-from-scope-span-titleToo`, true)
+    checkIsItalicised(`variable-from-scope-span-alternateTitle`, false)
+    checkIsItalicised(`variable-from-scope-span-titles`, false)
+    checkIsItalicised(`variable-from-scope-span-titles,one`, false)
+    checkIsItalicised(`variable-from-scope-span-titles,also JS`, false)
+    checkIsItalicised(`variable-from-scope-span-titleIdeas`, false)
+    checkIsItalicised(`variable-from-scope-span-titleIdeas,0`, false)
 
     // choose another string-valued variable
     currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId('1'))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Alternate title')).not.toBeNull()
     expect(within(theInspector).queryByText('Alternate title')).not.toBeNull()
+    checkIsItalicised(`variable-from-scope-span-titleToo`, false)
+    checkIsItalicised(`variable-from-scope-span-alternateTitle`, true)
+    checkIsItalicised(`variable-from-scope-span-titles`, false)
+    checkIsItalicised(`variable-from-scope-span-titles,one`, false)
+    checkIsItalicised(`variable-from-scope-span-titles,also JS`, false)
+    checkIsItalicised(`variable-from-scope-span-titleIdeas`, false)
+    checkIsItalicised(`variable-from-scope-span-titleIdeas,0`, false)
 
     // choose an object prop
     currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId('2-0'))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('The First Title')).not.toBeNull()
     expect(within(theInspector).queryByText('The First Title')).not.toBeNull()
+    checkIsItalicised(`variable-from-scope-span-titleToo`, false)
+    checkIsItalicised(`variable-from-scope-span-alternateTitle`, false)
+    checkIsItalicised(`variable-from-scope-span-titles`, true)
+    checkIsItalicised(`variable-from-scope-span-titles,one`, true)
+    checkIsItalicised(`variable-from-scope-span-titles,also JS`, false)
+    checkIsItalicised(`variable-from-scope-span-titleIdeas`, false)
+    checkIsItalicised(`variable-from-scope-span-titleIdeas,0`, false)
 
     // choose an object prop
     currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId('2-1'))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Sweet')).not.toBeNull()
     expect(within(theInspector).queryByText('Sweet')).not.toBeNull()
+    checkIsItalicised(`variable-from-scope-span-titleToo`, false)
+    checkIsItalicised(`variable-from-scope-span-alternateTitle`, false)
+    checkIsItalicised(`variable-from-scope-span-titles`, true)
+    checkIsItalicised(`variable-from-scope-span-titles,one`, false)
+    checkIsItalicised(`variable-from-scope-span-titles,also JS`, true)
+    checkIsItalicised(`variable-from-scope-span-titleIdeas`, false)
+    checkIsItalicised(`variable-from-scope-span-titleIdeas,0`, false)
 
     // choose an array element
     currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId('3-0'))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Chapter One')).not.toBeNull()
     expect(within(theInspector).queryByText('Chapter One')).not.toBeNull()
+    checkIsItalicised(`variable-from-scope-span-titleToo`, false)
+    checkIsItalicised(`variable-from-scope-span-alternateTitle`, false)
+    checkIsItalicised(`variable-from-scope-span-titles`, false)
+    checkIsItalicised(`variable-from-scope-span-titles,one`, false)
+    checkIsItalicised(`variable-from-scope-span-titles,also JS`, false)
+    checkIsItalicised(`variable-from-scope-span-titleIdeas`, true)
+    checkIsItalicised(`variable-from-scope-span-titleIdeas,0`, true)
   })
 
   it('with number input control descriptor present', async () => {
@@ -324,7 +366,7 @@ describe('Set element prop via the data picker', () => {
     ])
   })
 
-  it('style props are filterd from destructured props', async () => {
+  it('style props are filtered from destructured props', async () => {
     const editor = await renderTestEditorWithCode(
       DataPickerProjectShell(`
       function TableOfContents({ titles }) {
