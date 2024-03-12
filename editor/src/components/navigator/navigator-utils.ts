@@ -300,7 +300,11 @@ export function getNavigatorTargets(
         const notProcessedChildren = Object.values(subTree.children).filter(
           (c) => !processedPathsAsRenderProp.has(c.pathString),
         )
-        if (processedPathsAsRenderProp.size > 0 && notProcessedChildren.length > 0) {
+        if (
+          propertyControls != null &&
+          Object.keys(propertyControls).length > 0 &&
+          notProcessedChildren.length > 0
+        ) {
           // if there are added render props, and no children prop has been added, add a children prop label
           // so we can separate real children from render props
           const entry = renderPropNavigatorEntry(
