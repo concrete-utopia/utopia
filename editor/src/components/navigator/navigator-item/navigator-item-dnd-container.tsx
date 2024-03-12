@@ -30,6 +30,7 @@ import {
   navigatorEntriesEqual,
   regularNavigatorEntry,
   renderPropNavigatorEntry,
+  slotNavigatorEntry,
   syntheticNavigatorEntry,
   varSafeNavigatorEntryToKey,
 } from '../../editor/store/editor-state'
@@ -134,6 +135,10 @@ export interface RenderPropNavigatorItemContainerProps
   isOutletOrDescendantOfOutlet: boolean
   elementPath: ElementPath
   propName: string
+}
+
+export interface SlotNavigatorItemContainerProps extends NavigatorItemDragAndDropWrapperPropsBase {
+  parentElementPath: ElementPath
 }
 
 export interface ConditionalClauseNavigatorItemContainerProps
@@ -1083,6 +1088,46 @@ export const RenderPropNavigatorItemContainer = React.memo(
     )
   },
 )
+
+export const SlotNavigatorItemContainer = React.memo((props: SlotNavigatorItemContainerProps) => {
+  const navigatorEntry = React.useMemo(
+    () => slotNavigatorEntry(props.parentElementPath),
+    [props.parentElementPath],
+  )
+
+  const safeComponentId = varSafeNavigatorEntryToKey(navigatorEntry)
+  return (
+    <div
+      data-testid={DragItemTestId(safeComponentId)}
+      style={{
+        ...props.windowStyle,
+      }}
+    >
+      <div
+        key='navigatorItem'
+        id={`navigator-item-${safeComponentId}`}
+        data-testid={`navigator-item-${safeComponentId}`}
+      >
+        <NavigatorItem
+          navigatorEntry={navigatorEntry}
+          index={props.index}
+          getSelectedViewsInRange={props.getSelectedViewsInRange}
+          noOfChildren={props.noOfChildren}
+          label={props.label}
+          dispatch={props.editorDispatch}
+          isHighlighted={props.highlighted}
+          isElementVisible={props.isElementVisible}
+          renamingTarget={props.renamingTarget}
+          collapsed={props.collapsed}
+          selected={props.selected}
+          parentOutline={'none'}
+          visibleNavigatorTargets={props.visibleNavigatorTargets}
+          isOutletOrDescendantOfOutlet={false}
+        />
+      </div>
+    </div>
+  )
+})
 
 export const ConditionalClauseNavigatorItemContainer = React.memo(
   (props: ConditionalClauseNavigatorItemContainerProps) => {

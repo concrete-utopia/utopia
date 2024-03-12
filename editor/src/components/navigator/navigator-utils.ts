@@ -25,6 +25,7 @@ import {
   isConditionalClauseNavigatorEntry,
   regularNavigatorEntry,
   renderPropNavigatorEntry,
+  slotNavigatorEntry,
   syntheticNavigatorEntry,
 } from '../editor/store/editor-state'
 import type { ElementPathTree, ElementPathTrees } from '../../core/shared/element-path-tree'
@@ -138,13 +139,7 @@ export function getNavigatorTargets(
           if (propValue == null || (isJSExpressionValue(propValue) && propValue.value == null)) {
             const fakePath = EP.appendToPath(path, `prop-label-${prop}`)
 
-            const entries = [
-              renderPropNavigatorEntry(fakePath, prop),
-              syntheticNavigatorEntry(
-                EP.appendToPath(path, `prop-slot-${prop}`),
-                jsExpressionValue(null, emptyComments),
-              ),
-            ]
+            const entries = [renderPropNavigatorEntry(fakePath, prop), slotNavigatorEntry(path)]
             navigatorTargets.push(...entries)
             visibleNavigatorTargets.push(...entries)
             return
@@ -163,9 +158,9 @@ export function getNavigatorTargets(
               processedPathsAsRenderProp.add(EP.toString(subTreeChild.path))
               walkAndAddKeys(subTreeChild, collapsedAncestor)
             } else {
-              const synthEntry = syntheticNavigatorEntry(childPath, propValue)
-              navigatorTargets.push(synthEntry)
-              visibleNavigatorTargets.push(synthEntry)
+              const slotEntry = slotNavigatorEntry(childPath)
+              navigatorTargets.push(slotEntry)
+              visibleNavigatorTargets.push(slotEntry)
             }
           }
         })

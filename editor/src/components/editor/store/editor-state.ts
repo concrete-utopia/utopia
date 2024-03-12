@@ -2117,6 +2117,18 @@ export function syntheticNavigatorEntry(
   }
 }
 
+export interface SlotNavigatorEntry {
+  type: 'SLOT'
+  elementPath: ElementPath
+}
+
+export function slotNavigatorEntry(elementPath: ElementPath): SlotNavigatorEntry {
+  return {
+    type: 'SLOT',
+    elementPath: elementPath,
+  }
+}
+
 export function syntheticNavigatorEntriesEqual(
   first: SyntheticNavigatorEntry,
   second: SyntheticNavigatorEntry,
@@ -2184,6 +2196,7 @@ export type NavigatorEntry =
   | SyntheticNavigatorEntry
   | InvalidOverrideNavigatorEntry
   | RenderPropNavigatorEntry
+  | SlotNavigatorEntry
 
 export function navigatorEntriesEqual(
   first: NavigatorEntry | null,
@@ -2223,6 +2236,8 @@ export function navigatorEntryToKey(entry: NavigatorEntry): string {
     }
     case 'INVALID_OVERRIDE':
       return `error-${EP.toComponentId(entry.elementPath)}`
+    case 'SLOT':
+      return `slot_${EP.toComponentId(entry.elementPath)}`
     default:
       assertNever(entry)
   }
@@ -2243,6 +2258,8 @@ export function varSafeNavigatorEntryToKey(entry: NavigatorEntry): string {
       return `renderprop_${EP.toVarSafeComponentId(entry.elementPath)}_${entry.propName}`
     case 'INVALID_OVERRIDE':
       return `error_${EP.toVarSafeComponentId(entry.elementPath)}`
+    case 'SLOT':
+      return `slot_${EP.toVarSafeComponentId(entry.elementPath)}`
     default:
       assertNever(entry)
   }

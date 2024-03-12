@@ -2056,10 +2056,11 @@ export function isEntryAConditionalSlot(
 }
 
 export function isEntryAPlaceholder(navigatorEntry: NavigatorEntry): boolean {
-  return (
+  const isSyntheticWithNull =
     isSyntheticNavigatorEntry(navigatorEntry) &&
     isNullJSXAttributeValue(navigatorEntry.childOrAttribute)
-  )
+  const isSlot = navigatorEntry.type === 'SLOT'
+  return isSyntheticWithNull || isSlot
 }
 
 export function shouldShowErrorOverlay(

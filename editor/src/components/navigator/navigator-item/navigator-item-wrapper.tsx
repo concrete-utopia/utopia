@@ -39,6 +39,7 @@ import type {
   NavigatorItemDragAndDropWrapperProps,
   NavigatorItemDragAndDropWrapperPropsBase,
   RenderPropNavigatorItemContainerProps,
+  SlotNavigatorItemContainerProps,
   SyntheticNavigatorItemContainerProps,
 } from './navigator-item-dnd-container'
 import {
@@ -47,6 +48,7 @@ import {
   NavigatorItemContainer,
   NavigatorItemDragType,
   RenderPropNavigatorItemContainer,
+  SlotNavigatorItemContainer,
   SyntheticNavigatorItemContainer,
 } from './navigator-item-dnd-container'
 import { navigatorDepth } from '../navigator-utils'
@@ -196,6 +198,8 @@ export function getNavigatorEntryLabel(
       return navigatorEntry.propName
     case 'INVALID_OVERRIDE':
       return navigatorEntry.message
+    case 'SLOT':
+      return '(empty)'
     default:
       assertNever(navigatorEntry)
   }
@@ -390,6 +394,14 @@ export const NavigatorItemWrapper: React.FunctionComponent<
       isOutletOrDescendantOfOutlet: false,
     }
     return <RenderPropNavigatorItemContainer {...entryProps} />
+  }
+
+  if (props.navigatorEntry.type === 'SLOT') {
+    const entryProps: SlotNavigatorItemContainerProps = {
+      ...navigatorItemProps,
+      parentElementPath: props.navigatorEntry.elementPath,
+    }
+    return <SlotNavigatorItemContainer {...entryProps} />
   }
 
   assertNever(props.navigatorEntry)

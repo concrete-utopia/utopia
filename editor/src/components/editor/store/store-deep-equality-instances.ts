@@ -339,6 +339,7 @@ import type {
   InvalidOverrideNavigatorEntry,
   TrueUpHuggingElement,
   RenderPropNavigatorEntry,
+  SlotNavigatorEntry,
 } from './editor-state'
 import {
   trueUpGroupElementChanged,
@@ -669,6 +670,13 @@ export const InvalidOverrideNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall
     invalidOverrideNavigatorEntry,
   )
 
+export const SlotNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<SlotNavigatorEntry> =
+  combine1EqualityCall(
+    (entry) => entry.elementPath,
+    ElementPathKeepDeepEquality,
+    (path) => ({ type: 'SLOT', elementPath: path }),
+  )
+
 export const NavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<NavigatorEntry> = (
   oldValue,
   newValue,
@@ -697,6 +705,11 @@ export const NavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<NavigatorEntry
     case 'INVALID_OVERRIDE':
       if (oldValue.type === newValue.type) {
         return InvalidOverrideNavigatorEntryKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'SLOT':
+      if (oldValue.type === newValue.type) {
+        return SlotNavigatorEntryKeepDeepEquality(oldValue, newValue)
       }
       break
     default:

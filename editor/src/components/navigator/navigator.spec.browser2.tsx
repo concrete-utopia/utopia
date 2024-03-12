@@ -5245,7 +5245,7 @@ describe('Navigator row order', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header}',
-        'synthetic-sb/scene/pg:dbc/78c/prop-slot-header-attribute', // <- the slot is shown
+        'slot_sb/scene/pg:dbc/78c', // <- the slot is shown
         'render-prop-sb/scene/pg:dbc/78c/children-children}',
         'regular-sb/scene/pg:dbc/78c/88b',
       ],
@@ -5258,7 +5258,7 @@ describe('Navigator row order', () => {
       'regular-sb/scene/pg:dbc',
       'regular-sb/scene/pg:dbc/78c',
       'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header}',
-      'synthetic-sb/scene/pg:dbc/78c/prop-slot-header-attribute', // <- the slot is shown
+      'slot_sb/scene/pg:dbc/78c', // <- the slot is shown
       'render-prop-sb/scene/pg:dbc/78c/children-children}',
       'regular-sb/scene/pg:dbc/78c/88b',
     ])
@@ -5278,7 +5278,7 @@ describe('Navigator row order', () => {
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header}',
-        'synthetic-sb/scene/pg:dbc/78c/prop-slot-header-attribute',
+        'slot_sb/scene/pg:dbc/78c',
         'render-prop-sb/scene/pg:dbc/78c/children-children}',
         'regular-sb/scene/pg:dbc/78c/88b',
       ],
@@ -5291,7 +5291,7 @@ describe('Navigator row order', () => {
       'regular-sb/scene/pg:dbc',
       'regular-sb/scene/pg:dbc/78c',
       'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header}',
-      'synthetic-sb/scene/pg:dbc/78c/prop-slot-header-attribute',
+      'slot_sb/scene/pg:dbc/78c',
       'render-prop-sb/scene/pg:dbc/78c/children-children}',
       'regular-sb/scene/pg:dbc/78c/88b',
     ])
