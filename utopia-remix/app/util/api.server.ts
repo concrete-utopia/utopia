@@ -84,7 +84,7 @@ async function handleMethod<T>(
 
     const resp = await fn(request, params)
     if (resp instanceof Response) {
-      const headers = new Headers()
+      let headers = new Headers()
       resp.headers.forEach((value, key) => {
         headers.set(key, value)
       })
