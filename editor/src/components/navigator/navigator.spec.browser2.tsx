@@ -828,6 +828,85 @@ export var storyboard = (props) => {
 }
 `
 
+const projectWithRenderProp = `import * as React from 'react'
+import * as Utopia from 'utopia-api'
+import {
+  Storyboard,
+  Scene,
+  registerInternalComponent,
+} from 'utopia-api'
+
+registerInternalComponent(Card, {
+  properties: {
+    header: {
+      control: 'jsx',
+      preferredChildComponents: [
+        {
+          name: 'span',
+          variants: [{ code: '<span>Title</span>' }],
+        },
+      ],
+    },
+  },
+  supportsChildren: true,
+  variants: [],
+})
+
+function Card({ header, children }) {
+  return (
+    <div data-uid='root'>
+      <h2>{header}</h2>
+      {children}
+    </div>
+  )
+}
+
+var Playground = ({ style }) => {
+  return (
+    <div style={style} data-uid='dbc'>
+      <Card header={<span>Title</span>} data-uid='78c'>
+        <p>Card contents</p>
+      </Card>
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 521,
+        height: 266,
+        position: 'absolute',
+        left: 554,
+        top: 247,
+        backgroundColor: 'white',
+      }}
+      data-uid='scene'
+      data-testid='scene'
+      commentId='120'
+    >
+      <Playground
+        style={{
+          width: 454,
+          height: 177,
+          position: 'absolute',
+          left: 34,
+          top: 44,
+          backgroundColor: 'white',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+        className='playground'
+        css={{ color: 'red' }}
+        data-uid='pg'
+      />
+    </Scene>
+  </Storyboard>
+)
+`
+
 function getProjectCodeForMultipleSelection(): string {
   return `import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
@@ -5071,6 +5150,56 @@ describe('Navigator row order', () => {
   it('is correct for an expressions with a generated element', async () => {
     const renderResult = await renderTestEditorWithCode(
       projectWithExpression,
+      'await-first-dom-report',
+    )
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
+      [
+        'regular-sb/group',
+        'regular-sb/group/0b5',
+        'regular-sb/group/0b5/33d~~~1',
+        'regular-sb/group/foo',
+        'regular-sb/group/809',
+        'regular-sb/group/809/46a~~~1',
+        'regular-sb/group/809/46a~~~2',
+        'regular-sb/group/cond',
+        'conditional-clause-sb/group/cond-true-case',
+        'regular-sb/group/cond/4ce',
+        'regular-sb/group/cond/4ce/f23~~~1',
+        'conditional-clause-sb/group/cond-false-case',
+        'synthetic-sb/group/cond/15e-element-15e',
+        'regular-sb/group/bar',
+        'regular-sb/group/bf0',
+        'regular-sb/group/bf0/3bc~~~1',
+      ],
+    )
+    expect(
+      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+    ).toEqual([
+      'regular-sb/group',
+      'regular-sb/group/0b5',
+      'regular-sb/group/0b5/33d~~~1',
+      'regular-sb/group/foo',
+      'regular-sb/group/809',
+      'regular-sb/group/809/46a~~~1',
+      'regular-sb/group/809/46a~~~2',
+      'regular-sb/group/cond',
+      'conditional-clause-sb/group/cond-true-case',
+      'regular-sb/group/cond/4ce',
+      'regular-sb/group/cond/4ce/f23~~~1',
+      'conditional-clause-sb/group/cond-false-case',
+      'synthetic-sb/group/cond/15e-element-15e',
+      'regular-sb/group/bar',
+      'regular-sb/group/bf0',
+      'regular-sb/group/bf0/3bc~~~1',
+    ])
+  })
+
+  it('is correct for a project with elements with render props', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      projectWithRenderProp,
       'await-first-dom-report',
     )
 
