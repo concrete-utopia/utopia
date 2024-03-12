@@ -828,7 +828,7 @@ export var storyboard = (props) => {
 }
 `
 
-const projectWithRenderProp = `import * as React from 'react'
+const projectWithRenderProp = (renderPropSource: string) => `import * as React from 'react'
 import * as Utopia from 'utopia-api'
 import {
   Storyboard,
@@ -864,7 +864,7 @@ function Card({ header, children }) {
 var Playground = ({ style }) => {
   return (
     <div style={style} data-uid='dbc'>
-      <Card header={<span>Title</span>} data-uid='78c'>
+      <Card ${renderPropSource} data-uid='78c'>
         <p>Card contents</p>
       </Card>
     </div>
@@ -5197,9 +5197,9 @@ describe('Navigator row order', () => {
     ])
   })
 
-  it('is correct for a project with elements with render props', async () => {
+  it('is correct for a project with elements with render prop', async () => {
     const renderResult = await renderTestEditorWithCode(
-      projectWithRenderProp,
+      projectWithRenderProp('header={<span>Title</span>}'),
       'await-first-dom-report',
     )
 
@@ -5226,6 +5226,39 @@ describe('Navigator row order', () => {
       'regular-sb/scene/pg:dbc/78c',
       'render-prop-sb/scene/pg:dbc/78c/a6e-header}',
       'regular-sb/scene/pg:dbc/78c/a6e',
+      'render-prop-sb/scene/pg:dbc/78c/children-children}',
+      'regular-sb/scene/pg:dbc/78c/88b',
+    ])
+  })
+  it('is correct for a project with elements with missing render prop', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      projectWithRenderProp(''), // <- no render prop
+      'await-first-dom-report',
+    )
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
+      [
+        'regular-sb/scene',
+        'regular-sb/scene/pg',
+        'regular-sb/scene/pg:dbc',
+        'regular-sb/scene/pg:dbc/78c',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header}',
+        'synthetic-sb/scene/pg:dbc/78c/prop-slot-header-attribute', // <- the slot is shown
+        'render-prop-sb/scene/pg:dbc/78c/children-children}',
+        'regular-sb/scene/pg:dbc/78c/88b',
+      ],
+    )
+    expect(
+      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+    ).toEqual([
+      'regular-sb/scene',
+      'regular-sb/scene/pg',
+      'regular-sb/scene/pg:dbc',
+      'regular-sb/scene/pg:dbc/78c',
+      'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header}',
+      'synthetic-sb/scene/pg:dbc/78c/prop-slot-header-attribute', // <- the slot is shown
       'render-prop-sb/scene/pg:dbc/78c/children-children}',
       'regular-sb/scene/pg:dbc/78c/88b',
     ])
