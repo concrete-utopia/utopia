@@ -6,10 +6,18 @@ import {
   listProjectCollaborators,
   addToProjectCollaborators,
 } from '../models/projectCollaborators.server'
-import { userToCollaborator } from '../types'
+import { UserProjectPermission, userToCollaborator } from '../types'
+import { validateProjectAccess } from '../handlers/validators'
 
 export async function loader(args: LoaderFunctionArgs) {
-  return handle(args, { GET: getProjectCollaborators })
+  return handle(args, {
+    GET: {
+      handler: getProjectCollaborators,
+      validator: validateProjectAccess(UserProjectPermission.CAN_VIEW_PROJECT, {
+        getProjectId: (params) => params.id,
+      }),
+    },
+  })
 }
 
 export async function getProjectCollaborators(req: Request, params: Params<string>) {
@@ -23,7 +31,14 @@ export async function getProjectCollaborators(req: Request, params: Params<strin
 }
 
 export async function action(args: ActionFunctionArgs) {
-  return handle(args, { POST: addToCollaborators })
+  return handle(args, {
+    POST: {
+      handler: addToCollaborators,
+      validator: validateProjectAccess(UserProjectPermission.CAN_MANAGE_PROJECT, {
+        getProjectId: (params) => params.id,
+      }),
+    },
+  })
 }
 
 export async function addToCollaborators(req: Request, params: Params<string>) {

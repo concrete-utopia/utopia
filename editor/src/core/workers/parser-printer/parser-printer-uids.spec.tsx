@@ -394,7 +394,7 @@ export var app = (props) => {
                 const updatedFirstChild = jsExpressionOtherJavaScript(
                   isJSExpressionOtherJavaScript(firstChild) ? firstChild.params : [],
                   firstChild.originalJavascript,
-                  firstChild.javascript,
+                  firstChild.javascriptWithUIDs,
                   firstChild.transpiledJavascript,
                   firstChild.definedElsewhere,
                   firstChild.sourceMap,

@@ -1102,21 +1102,6 @@ export const MetadataUtils = {
       intrinsicHTMLElementNamesThatSupportChildren.includes(element.name.baseVariable)
     )
   },
-  isTextEditablePropertyAccessElementAccessOrIdentifier(element: JSXElementChild): boolean {
-    // Somewhat special case these to work our way down as these 3 types tend to go together.
-    if (isJSIdentifier(element)) {
-      return true
-    } else if (isJSPropertyAccess(element)) {
-      return MetadataUtils.isTextEditablePropertyAccessElementAccessOrIdentifier(element.onValue)
-    } else if (isJSElementAccess(element)) {
-      return (
-        MetadataUtils.isTextEditablePropertyAccessElementAccessOrIdentifier(element.onValue) &&
-        MetadataUtils.isTextEditablePropertyAccessElementAccessOrIdentifier(element.element)
-      )
-    } else {
-      return false
-    }
-  },
   targetTextEditable(
     metadata: ElementInstanceMetadataMap,
     pathTree: ElementPathTrees,
@@ -1135,17 +1120,20 @@ export const MetadataUtils = {
       return false
     }
 
-    if (
-      MetadataUtils.isTextEditablePropertyAccessElementAccessOrIdentifier(element.element.value)
-    ) {
-      return true
+    const elementValue = element.element.value
+    switch (elementValue.type) {
+      case 'JS_IDENTIFIER':
+      case 'JS_PROPERTY_ACCESS':
+      case 'JS_ELEMENT_ACCESS':
+        return true
+      default:
+        break
     }
 
     if (treatElementAsGroupLikeFromMetadata(element)) {
       return false
     }
 
-    const elementValue = element.element.value
     if (
       isJSXElement(elementValue) &&
       isIntrinsicHTMLElement(elementValue.name) &&
@@ -1194,12 +1182,15 @@ export const MetadataUtils = {
       if (isJSXElement(elementValue)) {
         return (
           elementValue.children.length >= 1 &&
-          elementValue.children.some(
-            (c) =>
+          elementValue.children.some((c) => {
+            return (
               isJSXTextBlock(c) ||
               isJSExpressionMapOrOtherJavaScript(c) ||
-              MetadataUtils.isTextEditablePropertyAccessElementAccessOrIdentifier(c),
-          )
+              isJSIdentifier(c) ||
+              isJSElementAccess(c) ||
+              isJSPropertyAccess(c)
+            )
+          })
         )
       }
       if (isJSXConditionalExpression(elementValue)) {

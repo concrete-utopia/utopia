@@ -1,4 +1,5 @@
 import { UtopiaPrismaClient } from './db.server'
+import { AccessLevel } from './types'
 import { SESSION_COOKIE_NAME } from './util/api.server'
 
 export async function wait(ms: number) {
@@ -74,6 +75,19 @@ export async function createTestProjectCollaborator(
 ) {
   await client.projectCollaborator.create({
     data: { project_id: params.projectId, user_id: params.userId },
+  })
+}
+
+export async function createTestProjectAccess(
+  client: UtopiaPrismaClient,
+  params: { projectId: string; accessLevel: AccessLevel },
+) {
+  await client.projectAccess.create({
+    data: {
+      project_id: params.projectId,
+      access_level: params.accessLevel,
+      modified_at: new Date(),
+    },
   })
 }
 

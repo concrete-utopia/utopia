@@ -111,8 +111,8 @@ export function useCanvasCommentThreadAndLocation(comment: CommentId): {
 function placeholderUserMeta(user: User<Presence, UserMeta>): UserMeta {
   return {
     id: user.id,
-    name: null,
-    avatar: null,
+    name: undefined,
+    avatar: undefined,
   }
 }
 
@@ -229,8 +229,8 @@ export function useAddMyselfToCollaborators_DEPRECATED() {
           self.id,
           new LiveObject({
             id: loginState.user.userId,
-            name: normalizeMultiplayerName(loginState.user.name ?? null),
-            avatar: loginState.user.picture ?? null,
+            name: normalizeMultiplayerName(loginState.user.name),
+            avatar: loginState.user.picture,
           }),
         )
       }

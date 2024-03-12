@@ -822,7 +822,7 @@ export function setUtopiaID(element: JSXElementChild, uid: string): JSXElementCh
     return jsExpressionOtherJavaScript(
       element.params,
       element.originalJavascript,
-      element.javascript,
+      element.javascriptWithUIDs,
       element.transpiledJavascript,
       element.definedElsewhere,
       element.sourceMap,
@@ -833,7 +833,7 @@ export function setUtopiaID(element: JSXElementChild, uid: string): JSXElementCh
   } else if (isUtopiaJSXMapExpression(element)) {
     return jsxMapExpression(
       element.originalJavascript,
-      element.javascript,
+      element.javascriptWithUIDs,
       element.transpiledJavascript,
       element.definedElsewhere,
       element.sourceMap,

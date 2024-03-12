@@ -107,13 +107,15 @@ Array [
               "uid": "",
             },
           },
-          "javascript": "<div data-uid='bbb' />;",
+          "javascriptWithUIDs": "<div data-uid='bbb' />;",
           "originalJavascript": "<div data-uid='bbb' />",
           "params": Array [],
           "sourceMap": Object {
             "file": "code.tsx",
-            "mappings": "OAAA;AAAA;AAAA",
-            "names": Array [],
+            "mappings": "OAMQA;AAAAA;AAAAA",
+            "names": Array [
+              "<",
+            ],
             "sources": Array [
               "code.tsx",
             ],

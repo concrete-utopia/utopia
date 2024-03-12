@@ -55,7 +55,8 @@ function getOrUpdateFunctionCache(
   const uidPart = javascript.uid
   const definedElsewherePart = javascript.definedElsewhere.join('_')
   const elementsWithinPart = Object.keys(javascript.elementsWithin).join('_')
-  const codePart = javascript.javascript
+  const codePart =
+    javascript.type === 'ARBITRARY_JS_BLOCK' ? javascript.javascript : javascript.javascriptWithUIDs
   const cacheKey = `uid${uidPart}_de${definedElsewherePart}_ew${elementsWithinPart}_code${codePart}`
   const fromCache = functionCache[cacheKey]
   if (fromCache == null) {
