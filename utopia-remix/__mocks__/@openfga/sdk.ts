@@ -6,3 +6,5 @@ export function OpenFgaClient() {
 }
 
 export const CredentialsMethod = {}
+export const ErrorCode = {}
+export type FgaApiValidationError = {}
