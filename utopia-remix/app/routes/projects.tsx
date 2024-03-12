@@ -660,7 +660,7 @@ const ProjectCard = React.memo(
             overflow: 'hidden',
             height: '100%',
             aspectRatio: 1.6,
-            background: 'linear-gradient(#a4a4a4, #a4a4a410)',
+            background: 'linear-gradient(#a1a1a130, #a1a1a115)',
             backgroundAttachment: 'local',
             backgroundRepeat: 'no-repeat',
             position: 'relative',
