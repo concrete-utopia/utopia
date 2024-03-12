@@ -1,5 +1,6 @@
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "testParseModifyPrint"] }] */
 import * as PP from '../../shared/property-path'
-import type { ArbitraryJSBlock } from '../../shared/element-template'
+import type { ArbitraryJSBlock, JSXAttributesEntry } from '../../shared/element-template'
 import {
   arbitraryJSBlock,
   clearTopLevelElementUniqueIDs,
@@ -18,6 +19,7 @@ import {
   emptyComments,
   jsxMapExpression,
   jsIdentifier,
+  isJSXAttributesEntry,
 } from '../../shared/element-template'
 import { setJSXValueAtPath } from '../../shared/jsx-attribute-utils'
 import { forEachRight } from '../../shared/either'
@@ -107,7 +109,6 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       parseResult,
     )
   })
-  // eslint-disable-next-line jest/expect-expect
   it('should write updated arbitrary elements back into code', () => {
     const code = applyPrettier(
       `import * as React from "react";
@@ -181,6 +182,92 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           const firstChild = view.children[0]
           if (isJSExpressionMapOrOtherJavaScript(firstChild)) {
             const elementWithin = firstChild.elementsWithin['bbb']
+            const newAttributes = setJSXValueAtPath(
+              elementWithin.props,
+              PP.create('style'),
+              jsExpressionValue({ left: 20, top: 300 }, emptyComments),
+            )
+            forEachRight(newAttributes, (updated) => {
+              elementWithin.props = updated
+            })
+          }
+        }
+      }
+      return success
+    })
+  })
+
+  it('should write updated JSX inside a prop back into code', () => {
+    const code = applyPrettier(
+      `import * as React from "react";
+import { View, Storyboard, Scene } from 'utopia-api';
+
+export var App = props => {
+  return (
+    <View thing={<div data-uid='bbb' />} data-uid='aaa' />
+  )
+}
+
+export var ${BakedInStoryboardVariableName} = (props) => {
+  return (
+    <Storyboard data-uid='${BakedInStoryboardUID}'>
+      <Scene
+        style={{ height: 200, left: 59, width: 200, top: 79 }}
+        data-uid='${TestSceneUID}'
+      >
+        <App
+          data-uid='${TestAppUID}'
+          style={{ height: '100%', width: '100%' }}
+          title='Hi there!'
+        />
+      </Scene>
+    </Storyboard>
+  )
+}
+`,
+      false,
+    ).formatted
+
+    const expectedCode = applyPrettier(
+      `import * as React from "react";
+import { View, Storyboard, Scene } from 'utopia-api';
+
+export var App = props => {
+  return (
+    <View thing={<div data-uid="bbb" style={{ left: 20, top: 300 }} />} data-uid="aaa" />
+  );
+};
+
+export var ${BakedInStoryboardVariableName} = (props) => {
+  return (
+    <Storyboard data-uid='${BakedInStoryboardUID}'>
+      <Scene
+        style={{ height: 200, left: 59, width: 200, top: 79 }}
+        data-uid='${TestSceneUID}'
+      >
+        <App
+          data-uid='${TestAppUID}'
+          style={{ height: '100%', width: '100%' }}
+          title='Hi there!'
+        />
+      </Scene>
+    </Storyboard>
+  )
+}
+`,
+      false,
+    ).formatted
+
+    testParseModifyPrint('/index.js', code, expectedCode, (success: ParseSuccess) => {
+      const firstComponent = success.topLevelElements.find(isUtopiaJSXComponent)
+      if (firstComponent != null) {
+        const view = firstComponent.rootElement
+        if (isJSXElement(view)) {
+          const jsxProp: JSXAttributesEntry | undefined = view.props
+            .filter(isJSXAttributesEntry)
+            .find((prop) => prop.key === 'thing')
+          if (jsxProp != null && isJSExpressionMapOrOtherJavaScript(jsxProp.value)) {
+            const elementWithin = jsxProp.value.elementsWithin['bbb']
             const newAttributes = setJSXValueAtPath(
               elementWithin.props,
               PP.create('style'),
