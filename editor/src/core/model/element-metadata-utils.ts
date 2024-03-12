@@ -46,7 +46,6 @@ import type {
   ConditionValue,
   JSXElementLike,
   JSPropertyAccess,
-  JSExpressionOtherJavaScript,
 } from '../shared/element-template'
 import {
   getJSXElementNameLastPart,
