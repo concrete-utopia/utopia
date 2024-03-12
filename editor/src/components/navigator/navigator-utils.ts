@@ -118,7 +118,7 @@ export function getNavigatorTargets(
       }
       // We collect the paths which are shown in render props, so we can filter them out from regular
       // children to avoid duplications.
-      const processedPathAsRenderProp = new Set<string>()
+      const processedPathsAsRenderProp = new Set<string>()
 
       function walkPropertyControls(propControls: PropertyControls): void {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
@@ -165,7 +165,7 @@ export function getNavigatorTargets(
               EP.pathsEqual(child.path, childPath),
             )
             if (subTreeChild != null) {
-              processedPathAsRenderProp.add(EP.toString(subTreeChild.path))
+              processedPathsAsRenderProp.add(EP.toString(subTreeChild.path))
               walkAndAddKeys(subTreeChild, collapsedAncestor)
             } else {
               const synthEntry = syntheticNavigatorEntry(childPath, propValue, null)
@@ -174,21 +174,6 @@ export function getNavigatorTargets(
             }
           }
         })
-
-        // if there are added render props, and no children prop has been added, add a children prop label
-        // so we can separate real children from render props
-        if (
-          Object.keys(propControls).length > 0 &&
-          Object.keys(propControls).indexOf('children') > -1
-        ) {
-          const entry = renderPropNavigatorEntry(
-            EP.appendToPath(path, 'children'),
-            'children',
-            true,
-          )
-          navigatorTargets.push(entry)
-          visibleNavigatorTargets.push(entry)
-        }
       }
 
       const propertyControls = getPropertyControlsForTarget(
@@ -312,10 +297,22 @@ export function getNavigatorTargets(
           }
         }
       } else {
-        fastForEach(Object.values(subTree.children), (child) => {
-          if (!processedPathAsRenderProp.has(child.pathString)) {
-            walkAndAddKeys(child, newCollapsedAncestor)
-          }
+        const notProcessedChildren = Object.values(subTree.children).filter(
+          (c) => !processedPathsAsRenderProp.has(c.pathString),
+        )
+        if (processedPathsAsRenderProp.size > 0 && notProcessedChildren.length > 0) {
+          // if there are added render props, and no children prop has been added, add a children prop label
+          // so we can separate real children from render props
+          const entry = renderPropNavigatorEntry(
+            EP.appendToPath(path, 'children'),
+            'children',
+            true,
+          )
+          navigatorTargets.push(entry)
+          visibleNavigatorTargets.push(entry)
+        }
+        fastForEach(notProcessedChildren, (child) => {
+          walkAndAddKeys(child, newCollapsedAncestor)
         })
       }
     }
