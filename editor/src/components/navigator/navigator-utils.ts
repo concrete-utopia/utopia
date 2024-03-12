@@ -296,10 +296,8 @@ export function getNavigatorTargets(
           propertyControls != null &&
           Object.keys(propertyControls).length > 0 &&
           notProcessedChildren.length > 0 &&
-          renderPropFound // only show a dedicated label for the children prop of there're render props in the mix
+          renderPropFound // only show a dedicated label for the children prop if the component has render props too
         ) {
-          // if there are added render props, and no children prop has been added, add a children prop label
-          // so we can separate real children from render props
           const entry = renderPropNavigatorEntry(EP.appendToPath(path, 'children'), 'children')
           navigatorTargets.push(entry)
           visibleNavigatorTargets.push(entry)
