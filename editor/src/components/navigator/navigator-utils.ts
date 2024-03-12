@@ -290,20 +290,20 @@ export function getNavigatorTargets(
           }
         }
       } else {
-        const notProcessedChildren = Object.values(subTree.children).filter(
+        const notRenderPropChildren = Object.values(subTree.children).filter(
           (c) => !processedPathsAsRenderProp.has(c.pathString),
         )
         if (
           propertyControls != null &&
           Object.keys(propertyControls).length > 0 &&
-          notProcessedChildren.length > 0 &&
+          notRenderPropChildren.length > 0 &&
           renderPropFound // only show a dedicated label for the children prop if the component has render props too
         ) {
           const entry = renderPropNavigatorEntry(EP.appendToPath(path, 'children'), 'children')
           navigatorTargets.push(entry)
           visibleNavigatorTargets.push(entry)
         }
-        fastForEach(notProcessedChildren, (child) => {
+        fastForEach(notRenderPropChildren, (child) => {
           walkAndAddKeys(child, newCollapsedAncestor)
         })
       }
