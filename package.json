@@ -6,7 +6,7 @@
   "main": "./editor",
   "directories": {},
   "devDependencies": {
-    "husky": "7.0.2"
+    "husky": "^7.0.2"
   },
   "scripts": {
     "prepare": "husky install",
@@ -19,9 +19,5 @@
   "bugs": {
     "url": "https://github.com/concrete-utopia/utopia/issues"
   },
-  "homepage": "https://utopia.app",
-  "dependencies": {
-    "@radix-ui/themes": "2.0.3",
-    "classnames": "2.5.1"
-  }
+  "homepage": "https://utopia.app"
 }
