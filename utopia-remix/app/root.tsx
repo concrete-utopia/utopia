@@ -55,7 +55,7 @@ export default function App() {
         <meta charSet='utf-8' />
         <meta name='viewport' content='width=device-width, initial-scale=1' />
         <title>Utopia</title>
-        <meta property='og:title' content='Utopia' />;
+        <meta property='og:title' content='Utopia' />
         <Meta />
         <Links />
       </head>
@@ -98,6 +98,8 @@ export function ErrorBoundary() {
       <head>
         <meta charSet='utf-8' />
         <meta name='viewport' content='width=device-width, initial-scale=1' />
+        <title>Utopia</title>
+        <meta property='og:title' content='Utopia' />
       </head>
       <body
         style={{
