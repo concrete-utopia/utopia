@@ -107,6 +107,7 @@ import { useVariablesInScopeForSelectedElement } from './variables-in-scope-util
 import { DataPickerPopup } from './data-picker-popup'
 import { jsxElementChildToText } from '../../../canvas/ui-jsx-canvas-renderer/jsx-element-child-to-text'
 import { foldEither } from '../../../../core/shared/either'
+import { stopPropagation } from '../../common/inspector-utils'
 
 export const VariableFromScopeOptionTestId = (idx: string) => `variable-from-scope-${idx}`
 export const DataPickerPopupButtonTestId = `data-picker-popup-button-test-id`
@@ -121,7 +122,7 @@ function useComponentPropsInspectorInfo(
   return useInspectorInfoForPropertyControl(propertyPath, control)
 }
 
-const ControlForProp = React.memo((props: ControlForPropProps<BaseControlDescription>) => {
+const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDescription>) => {
   const { controlDescription } = props
 
   if (controlDescription == null) {
@@ -481,6 +482,9 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
     controlDescription,
   )
 
+  const propName = `${PP.lastPart(propPath)}`
+  const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
+
   const sectionHeight = React.useMemo(
     () => getSectionHeight(controlDescription),
     [controlDescription],
@@ -531,14 +535,36 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
   return (
     <React.Fragment>
       {when(dataPickerButtonData.popupIsOpen, dataPickerButtonData.DataPickerComponent)}
-      <InspectorSectionHeader>
+      <div
+        css={{
+          '&:hover': {
+            boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,20%)',
+            background: 'hsl(0,0%,0%,1%)',
+          },
+          '&:focus-within': {
+            boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,20%)',
+            background: 'hsl(0,0%,0%,1%)',
+          },
+        }}
+      >
         <SimpleFlexRow
           style={{ gap: 5, justifyContent: 'space-between', flexGrow: 1, paddingRight: 3 }}
         >
-          <FlexRow style={{ gap: 5 }} ref={dataPickerButtonData.setReferenceElement}>
+          <FlexRow
+            style={{ flex: 1, gap: 5, justifyContent: 'space-between' }}
+            ref={dataPickerButtonData.setReferenceElement}
+          >
             <PropertyLabel
               target={[propPath]}
-              style={{ textTransform: 'capitalize', paddingTop: 2 }}
+              style={{
+                textTransform: 'capitalize',
+                display: 'flex',
+                alignItems: 'center',
+                paddingLeft: 8,
+                height: 34,
+                fontWeight: 500,
+                gap: 4,
+              }}
             >
               {title}
             </PropertyLabel>
@@ -563,28 +589,37 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
                 )}
               </SquareButton>
             ) : null}
+            <ControlForProp
+              propPath={propPath}
+              propName={propName}
+              controlDescription={controlDescription}
+              propMetadata={propMetadata}
+              setGlobalCursor={props.setGlobalCursor}
+              focusOnMount={props.focusOnMount}
+              onOpenDataPicker={dataPickerButtonData.openPopup}
+            />
           </FlexRow>
           {when(isBaseIndentationLevel(props), dataPickerButtonData.DataPickerOpener)}
         </SimpleFlexRow>
-      </InspectorSectionHeader>
-      <div
-        style={{
-          height: sectionHeight * springs.length,
-        }}
-      >
-        {springs.map((springStyle, index) => (
-          <ArrayControlItem
-            springStyle={springStyle}
-            bind={bind}
-            key={index} //FIXME this causes the row drag handle to jump after finishing the re-order
-            index={index}
-            propPath={propPath}
-            isScene={props.isScene}
-            controlDescription={controlDescription}
-            focusOnMount={props.focusOnMount}
-            setGlobalCursor={props.setGlobalCursor}
-          />
-        ))}
+        <div
+          style={{
+            height: sectionHeight * springs.length,
+          }}
+        >
+          {springs.map((springStyle, index) => (
+            <ArrayControlItem
+              springStyle={springStyle}
+              bind={bind}
+              key={index} //FIXME this causes the row drag handle to jump after finishing the re-order
+              index={index}
+              propPath={propPath}
+              isScene={props.isScene}
+              controlDescription={controlDescription}
+              focusOnMount={props.focusOnMount}
+              setGlobalCursor={props.setGlobalCursor}
+            />
+          ))}
+        </div>
       </div>
     </React.Fragment>
   )
@@ -799,6 +834,8 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
   const title = labelForControl(propPath, controlDescription)
   const indentation = props.indentationLevel * 8
 
+  const propName = `${PP.lastPart(propPath)}`
+
   const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
   const contextMenuItems = Utils.stripNulls([
     addOnUnsetValues([PP.lastPart(propPath)], propMetadata.onUnsetValues),
@@ -840,7 +877,10 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
             style={{ flexGrow: 1, justifyContent: 'space-between', paddingRight: 10 }}
             ref={dataPickerButtonData.setReferenceElement}
           >
-            <SimpleFlexRow style={{ flexGrow: 1, paddingRight: 8 }} onClick={handleOnClick}>
+            <SimpleFlexRow
+              style={{ flexGrow: 1, paddingRight: 8, justifyContent: 'space-between' }}
+              onClick={handleOnClick}
+            >
               <PropertyLabel
                 target={[propPath]}
                 style={{
@@ -857,6 +897,17 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
                 {title}
                 {unless(props.disableToggling, <ObjectIndicator open={open} />)}
               </PropertyLabel>
+              <div onClick={stopPropagation}>
+                <ControlForProp
+                  propPath={propPath}
+                  propName={propName}
+                  controlDescription={controlDescription}
+                  propMetadata={propMetadata}
+                  setGlobalCursor={props.setGlobalCursor}
+                  focusOnMount={props.focusOnMount}
+                  onOpenDataPicker={dataPickerButtonData.openPopup}
+                />
+              </div>
             </SimpleFlexRow>
             {when(isBaseIndentationLevel(props), dataPickerButtonData.DataPickerOpener)}
           </FlexRow>
