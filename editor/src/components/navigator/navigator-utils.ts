@@ -139,8 +139,7 @@ export function getNavigatorTargets(
               renderPropNavigatorEntry(fakePath, prop),
               syntheticNavigatorEntry(
                 EP.appendToPath(path, `prop-slot-${prop}`),
-                propValue ?? jsExpressionOtherJavaScriptSimple('null', []),
-                propValue == null ? prop : null,
+                jsExpressionOtherJavaScriptSimple('null', []),
               ),
             ]
             navigatorTargets.push(...entries)
@@ -161,7 +160,7 @@ export function getNavigatorTargets(
               processedPathsAsRenderProp.add(EP.toString(subTreeChild.path))
               walkAndAddKeys(subTreeChild, collapsedAncestor)
             } else {
-              const synthEntry = syntheticNavigatorEntry(childPath, propValue, null)
+              const synthEntry = syntheticNavigatorEntry(childPath, propValue)
               navigatorTargets.push(synthEntry)
               visibleNavigatorTargets.push(synthEntry)
             }
@@ -243,7 +242,7 @@ export function getNavigatorTargets(
           elementMetadata == null &&
           (clausePathTrees.length === 0 || !clausePathTrees.some((t) => isDynamic(t.path)))
         ) {
-          const clauseValueEntry = syntheticNavigatorEntry(clausePath, clauseValue, null)
+          const clauseValueEntry = syntheticNavigatorEntry(clausePath, clauseValue)
           addNavigatorTargetUnlessCollapsed(clauseValueEntry)
         }
       }

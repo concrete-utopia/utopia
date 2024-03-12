@@ -127,7 +127,6 @@ export interface SyntheticNavigatorItemContainerProps
   isOutletOrDescendantOfOutlet: boolean
   elementPath: ElementPath
   childOrAttribute: JSXElementChild
-  renderProp: string | null
 }
 
 export interface RenderPropNavigatorItemContainerProps
@@ -932,8 +931,8 @@ export const SyntheticNavigatorItemContainer = React.memo(
     const [, updateDragSessionInProgress] = useAtom(DragSessionInProgressAtom)
 
     const navigatorEntry = React.useMemo(
-      () => syntheticNavigatorEntry(props.elementPath, props.childOrAttribute, props.renderProp),
-      [props.childOrAttribute, props.elementPath, props.renderProp],
+      () => syntheticNavigatorEntry(props.elementPath, props.childOrAttribute),
+      [props.childOrAttribute, props.elementPath],
     )
 
     const [{ isOver }, reparentDropRef] = useDrop<

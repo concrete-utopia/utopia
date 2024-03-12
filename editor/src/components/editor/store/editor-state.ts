@@ -2104,19 +2104,16 @@ export interface SyntheticNavigatorEntry {
   type: 'SYNTHETIC'
   elementPath: ElementPath
   childOrAttribute: JSXElementChild
-  renderProp: string | null
 }
 
 export function syntheticNavigatorEntry(
   elementPath: ElementPath,
   childOrAttribute: JSXElementChild,
-  renderProp: string | null,
 ): SyntheticNavigatorEntry {
   return {
     type: 'SYNTHETIC',
     elementPath: elementPath,
     childOrAttribute: childOrAttribute,
-    renderProp: renderProp,
   }
 }
 

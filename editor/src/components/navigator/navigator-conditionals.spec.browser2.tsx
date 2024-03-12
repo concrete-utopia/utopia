@@ -1111,7 +1111,7 @@ describe('conditionals in the navigator', () => {
     // Getting info relating to what element will be dragged.
     const navigatorEntryToDrag = await renderResult.renderedDOM.findByTestId(
       `navigator-item-${varSafeNavigatorEntryToKey(
-        syntheticNavigatorEntry(elementPathToDrag, inactiveElement, null),
+        syntheticNavigatorEntry(elementPathToDrag, inactiveElement),
       )}`,
     )
     const navigatorEntryToDragRect = navigatorEntryToDrag.getBoundingClientRect()
@@ -1136,7 +1136,7 @@ describe('conditionals in the navigator', () => {
       dragElement(
         renderResult,
         `navigator-item-${varSafeNavigatorEntryToKey(
-          syntheticNavigatorEntry(elementPathToDrag, inactiveElement, null),
+          syntheticNavigatorEntry(elementPathToDrag, inactiveElement),
         )}`,
         `navigator-item-${varSafeNavigatorEntryToKey(regularNavigatorEntry(elementPathToTarget))}`,
         windowPoint(navigatorEntryToDragCenter),
@@ -1360,9 +1360,7 @@ describe('conditionals in the navigator', () => {
     // Getting info relating to what element will be selected.
     const navigatorEntryToSelect = await renderResult.renderedDOM.findByTestId(
       NavigatorItemTestId(
-        varSafeNavigatorEntryToKey(
-          syntheticNavigatorEntry(elementPathToDelete, elseDivElement, null),
-        ),
+        varSafeNavigatorEntryToKey(syntheticNavigatorEntry(elementPathToDelete, elseDivElement)),
       ),
     )
     const navigatorEntryToSelectRect = navigatorEntryToSelect.getBoundingClientRect()
@@ -1555,7 +1553,7 @@ describe('conditionals in the navigator', () => {
       const navigatorEntryToPasteInto = await renderResult.renderedDOM.findByTestId(
         NavigatorItemTestId(
           varSafeNavigatorEntryToKey(
-            syntheticNavigatorEntry(pasteTestCase.pathToPasteInto, elementToPasteInto, null),
+            syntheticNavigatorEntry(pasteTestCase.pathToPasteInto, elementToPasteInto),
           ),
         ),
       )
@@ -1883,7 +1881,6 @@ describe('Navigator conditional override toggling', () => {
       : syntheticNavigatorEntry(
           elementPath,
           unsafeGet(inactiveElementOptic, renderResult.getEditorState()),
-          null,
         )
 
     return clickNavigatorRow(navigatorEntry, renderResult, [elementPath])
