@@ -93,7 +93,7 @@ async function handleMethod<T>(
         headers: headers,
       })
     }
-    return json(resp, { headers: { ...defaultResponseHeaders() } })
+    return json(resp, { headers: defaultResponseHeaders() })
   } catch (err) {
     const { message, status, name } = getErrorData(err)
 
