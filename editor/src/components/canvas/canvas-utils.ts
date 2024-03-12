@@ -2055,6 +2055,13 @@ export function isEntryAConditionalSlot(
   return isParentConditional && isNullValue
 }
 
+export function isEntryAPlaceholder(navigatorEntry: NavigatorEntry): boolean {
+  return (
+    isSyntheticNavigatorEntry(navigatorEntry) &&
+    isNullJSXAttributeValue(navigatorEntry.childOrAttribute)
+  )
+}
+
 export function shouldShowErrorOverlay(
   errorRecords: ErrorMessage[],
   overlayErrors: OverlayError[],
