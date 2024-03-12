@@ -212,6 +212,7 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
             display: 'flex',
             alignItems: 'center',
             gap: 10,
+            padding: '0 6px',
           }}
         >
           <img
