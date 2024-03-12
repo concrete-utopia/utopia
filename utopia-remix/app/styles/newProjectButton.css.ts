@@ -16,7 +16,7 @@ export const newProjectButton = recipe({
       fontSize: 16,
       fontWeight: 500,
       color: 'white',
-      height: 40,
+      height: 36,
       opacity: 1,
       ':hover': {
         opacity: 0.8,

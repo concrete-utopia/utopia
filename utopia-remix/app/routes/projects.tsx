@@ -11,7 +11,7 @@ import {
   TrashIcon,
 } from '@radix-ui/react-icons'
 import React from 'react'
-import { Badge } from '@radix-ui/themes'
+import { Badge, Flex } from '@radix-ui/themes'
 import { LoaderFunctionArgs, json } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
@@ -49,6 +49,7 @@ import {
   useSortCompareProject,
 } from '../util/use-sort-compare-project'
 import { useCleanupOperations } from '../hooks/useCleanupOperations'
+import { Text, Button } from '@radix-ui/themes'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
@@ -62,8 +63,8 @@ function isCategory(category: unknown): category is Category {
 export type Category = (typeof Categories)[number]
 
 const categories: { [key in Category]: { name: string; icon: React.ReactNode } } = {
-  allProjects: { name: 'All My Projects', icon: <CubeIcon /> },
-  trash: { name: 'Trash', icon: <TrashIcon /> },
+  allProjects: { name: 'All My Projects', icon: <CubeIcon width='16' height='16' /> },
+  trash: { name: 'Trash', icon: <TrashIcon width='16' height='16' /> },
 }
 
 const MarginSize = 30
@@ -135,7 +136,7 @@ const ProjectsPage = React.memo(() => {
         margin: MarginSize,
         height: `calc(100vh - ${MarginSize * 2}px)`,
         width: `calc(100vw - ${MarginSize * 2}px)`,
-        gap: MarginSize,
+        gap: 45,
         overflow: 'hidden',
         boxSizing: 'border-box',
         display: 'flex',
@@ -215,7 +216,7 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
         >
           <img
             className={sprinkles({ borderRadius: 'medium' })}
-            style={{ width: 40 }}
+            style={{ width: 32 }}
             src={user.picture ?? undefined}
             referrerPolicy='no-referrer'
           />
@@ -234,7 +235,7 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
             gap: 10,
           }}
         >
-          <MagnifyingGlassIcon />
+          <MagnifyingGlassIcon width='16' height='16' />
           <input
             id='search-input'
             autoFocus={true}
@@ -248,16 +249,16 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
               border: 'none',
               background: 'transparent',
               outline: 'none',
-              color: 'grey',
               height: SidebarRowHeight,
               display: 'flex',
               flexDirection: 'row',
               alignItems: 'center',
+              fontSize: 12,
             }}
             placeholder='Search…'
           />
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+        <Flex direction='column' gap='2'>
           {Object.entries(categories).map(([category, data]) => {
             return (
               <button
@@ -269,11 +270,11 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
                 onClick={handleSelectCategory(category)}
               >
                 {data.icon}
-                <span>{data.name}</span>
+                <Text size='1'>{data.name}</Text>
               </button>
             )
           })}
-        </div>
+        </Flex>
       </div>
       <div
         style={{
@@ -309,7 +310,7 @@ const TopActionBar = React.memo(() => {
         id: 'createProject',
         title: '+ Blank Project',
         onClick: () => window.open(projectEditorLink(null), '_blank'),
-        color: 'orange',
+        color: 'blue',
       },
       // {
       //   title: '+ Project On GitHub',
@@ -346,9 +347,9 @@ const TopActionBar = React.memo(() => {
       }}
     >
       {newProjectButtons.map((p) => (
-        <button key={p.id} className={newProjectButton({ color: p.color })} onClick={p.onClick}>
-          <span>{p.title}</span>
-        </button>
+        <Button key={p.id} color={p.color} onClick={p.onClick}>
+          {p.title}
+        </Button>
       ))}
     </div>
   )
@@ -456,7 +457,7 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
                     background: sortMenuOpen ? '#a4a4a430' : 'inherit',
                   }}
                 >
-                  <div>{convertToTitleCase(sortCriteria)} </div>
+                  <Text size='1'>{convertToTitleCase(sortCriteria)} </Text>
                   <div>{sortAscending ? '↑' : '↓'}</div>
                 </div>
               </DropdownMenuTrigger>
@@ -465,7 +466,7 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
           )}
           {when(
             projects.length > 0,
-            <div style={{ display: 'flex', flexDirection: 'row', gap: 1 }}>
+            <div style={{ display: 'flex', flexDirection: 'row', gap: 1, alignItems: 'center' }}>
               <HamburgerMenuIcon
                 onClick={() => {
                   setGridView(false)
@@ -521,15 +522,15 @@ const CategoryTrashActions = React.memo(({ projects }: { projects: ProjectWithou
   }, [fetcher])
 
   return (
-    <>
-      <div
-        className={button({ color: 'subtle' })}
-        onClick={handleEmptyTrash}
-        style={{ display: projects.length === 0 ? 'none' : 'block' }}
-      >
-        Empty Trash
-      </div>
-    </>
+    <Button
+      onClick={handleEmptyTrash}
+      style={{ display: projects.length === 0 ? 'none' : 'block' }}
+      color='gray'
+      variant='soft'
+      highContrast
+    >
+      Empty Trash
+    </Button>
   )
 })
 CategoryTrashActions.displayName = 'CategoryTrashActions'
@@ -646,7 +647,7 @@ const ProjectCard = React.memo(
           height: 'min-content',
           display: 'flex',
           flexDirection: 'column',
-          gap: 10,
+          gap: 5,
           filter: activeOperations.length > 0 ? 'grayscale(1)' : undefined,
         }}
       >
@@ -722,16 +723,26 @@ const ProjectCard = React.memo(
             alignItems: 'center',
           }}
         >
-          <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 10, flex: 1 }}>
-            <div style={{ fontWeight: 500, display: 'flex', gap: '10px', alignItems: 'center' }}>
-              <div style={{ fontWeight: 500 }}>{projectTitle}</div>
+          <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 5, flex: 1 }}>
+            <div style={{ display: 'flex', gap: 5, flex: 1 }}>
+              <Text
+                size='1'
+                style={{
+                  flexGrow: 1,
+                  fontWeight: 500,
+                }}
+              >
+                {projectTitle}
+              </Text>
               <ProjectBadge
                 accessLevel={
                   asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
                 }
               />
             </div>
-            <div style={{ opacity: 0.5 }}>{moment(project.modified_at).fromNow()}</div>
+            <Text size='1' style={{ opacity: 0.5 }}>
+              {moment(project.modified_at).fromNow()}
+            </Text>
           </div>
           <ProjectCardActions project={project} />
         </div>
@@ -797,7 +808,9 @@ const ProjectRow = React.memo(
                 position: 'relative',
               }}
             />
-            <div
+
+            <Text
+              size='1'
               style={{
                 display: 'flex',
                 gap: '10px',
@@ -808,14 +821,17 @@ const ProjectRow = React.memo(
                 fontWeight: 500,
               }}
             >
-              <span>{project.title}</span>
-              <ProjectBadge
-                accessLevel={
-                  asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
-                }
-              />
-            </div>
-            <div style={{ width: 220, opacity: 0.5 }}>{moment(project.modified_at).fromNow()}</div>
+              {project.title}
+            </Text>
+            <ProjectBadge
+              accessLevel={
+                asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
+              }
+            />
+            <Text size='1' style={{ width: 220, opacity: 0.5 }}>
+              {moment(project.modified_at).fromNow()}
+            </Text>
+
             <div
               style={{
                 maxWidth: 480,
@@ -878,7 +894,7 @@ const ProjectCardActions = React.memo(({ project }: { project: ProjectWithoutCon
       <DropdownMenuRoot onOpenChange={handleSortMenuOpenChange}>
         <DropdownMenuTrigger asChild>
           <DotsHorizontalIcon
-            className={button()}
+            className={button({ size: 'ellipses' })}
             style={{ background: sortMenuOpen ? '#a4a4a430' : 'inherit' }}
           />
         </DropdownMenuTrigger>
@@ -924,6 +940,7 @@ const ProjectBadge = React.memo(({ accessLevel }: { accessLevel: AccessLevel }) 
         fontSize: 9,
         borderRadius: 3,
         fontWeight: 400,
+        height: 20,
       }}
     >
       {text}
