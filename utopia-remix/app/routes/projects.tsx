@@ -281,16 +281,17 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
           display: 'flex',
           flexDirection: 'row',
           alignItems: 'center',
-          gap: 14,
+          gap: 10,
           fontFamily: 'Reckless',
-          fontSize: 34,
+          fontSize: 22,
+          padding: '0 6px',
         }}
       >
         <div
           style={{
-            height: 60,
-            width: 45,
-            backgroundSize: '45px',
+            height: 40,
+            width: 30,
+            backgroundSize: '30px',
             backgroundRepeat: 'no-repeat',
             backgroundImage: logoPic,
           }}
