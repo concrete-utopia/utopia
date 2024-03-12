@@ -1,6 +1,11 @@
 import { CredentialsMethod, ErrorCode, FgaApiValidationError, OpenFgaClient } from '@openfga/sdk'
 import { ServerEnvironment } from '../env.server'
 
+const mockOpenFgaClient = {
+  write: async () => {},
+  check: async () => ({ allowed: true }),
+}
+
 export const fgaClient = createFgaClient()
 
 export function createFgaClient() {
@@ -44,11 +49,6 @@ function getFgaClientMode(): 'local_mock' | 'local' | 'remote' {
     }
   }
   return 'remote'
-}
-
-const mockOpenFgaClient = {
-  write: async () => {},
-  check: async () => ({ allowed: true }),
 }
 
 export async function safeFgaWrite(params: object) {
