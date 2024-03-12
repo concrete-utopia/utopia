@@ -2131,19 +2131,16 @@ export interface RenderPropNavigatorEntry {
   type: 'RENDER_PROP'
   elementPath: ElementPath
   propName: string
-  isRendered: boolean
 }
 
 export function renderPropNavigatorEntry(
   elementPath: ElementPath,
   propName: string,
-  isRendered: boolean,
 ): RenderPropNavigatorEntry {
   return {
     type: 'RENDER_PROP',
     elementPath: elementPath,
     propName: propName,
-    isRendered: isRendered,
   }
 }
 

@@ -6,21 +6,14 @@ import type {
   JSXConditionalExpression,
 } from '../../core/shared/element-template'
 import {
-  emptyComments,
   getJSXAttribute,
   hasElementsWithin,
-  isJSXAttributesEntry,
   isJSXConditionalExpression,
   isJSXElement,
   isJSXMapExpression,
   jsExpressionOtherJavaScriptSimple,
-  jsExpressionValue,
-  jsxAttributesEntry,
 } from '../../core/shared/element-template'
-import {
-  MetadataUtils,
-  getOnlyJsxElementOfJsExpression,
-} from '../../core/model/element-metadata-utils'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { foldEither, isLeft, isRight } from '../../core/shared/either'
 import type { ConditionalClauseNavigatorEntry, NavigatorEntry } from '../editor/store/editor-state'
 import {
@@ -42,7 +35,6 @@ import type { PropertyControlsInfo } from '../custom-code/code-file'
 import type { ProjectContentTreeRoot } from '../assets'
 import type { PropertyControls } from 'utopia-api/core'
 import { isFeatureEnabled } from '../../utils/feature-switches'
-import { jsxAttributeOtherJavaScriptArbitrary } from '../../core/workers/parser-printer/parser-printer.test-utils'
 
 export function baseNavigatorDepth(path: ElementPath): number {
   // The storyboard means that this starts at -1,
@@ -144,7 +136,7 @@ export function getNavigatorTargets(
             const fakePath = EP.appendToPath(path, `prop-label-${prop}`)
 
             const entries = [
-              renderPropNavigatorEntry(fakePath, prop, false),
+              renderPropNavigatorEntry(fakePath, prop),
               syntheticNavigatorEntry(
                 EP.appendToPath(path, `prop-slot-${prop}`),
                 propValue ?? jsExpressionOtherJavaScriptSimple('null', []),
@@ -157,7 +149,7 @@ export function getNavigatorTargets(
 
           if (propValue != null && isJSXElement(propValue)) {
             const childPath = EP.appendToPath(path, propValue.uid)
-            const entry = renderPropNavigatorEntry(childPath, prop, true)
+            const entry = renderPropNavigatorEntry(childPath, prop)
             navigatorTargets.push(entry)
             visibleNavigatorTargets.push(entry)
 
@@ -307,11 +299,7 @@ export function getNavigatorTargets(
         ) {
           // if there are added render props, and no children prop has been added, add a children prop label
           // so we can separate real children from render props
-          const entry = renderPropNavigatorEntry(
-            EP.appendToPath(path, 'children'),
-            'children',
-            true,
-          )
+          const entry = renderPropNavigatorEntry(EP.appendToPath(path, 'children'), 'children')
           navigatorTargets.push(entry)
           visibleNavigatorTargets.push(entry)
         }

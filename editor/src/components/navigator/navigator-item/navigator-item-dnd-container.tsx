@@ -135,7 +135,6 @@ export interface RenderPropNavigatorItemContainerProps
   isOutletOrDescendantOfOutlet: boolean
   elementPath: ElementPath
   propName: string
-  isRendered: boolean
 }
 
 export interface ConditionalClauseNavigatorItemContainerProps
@@ -1047,8 +1046,8 @@ export const SyntheticNavigatorItemContainer = React.memo(
 export const RenderPropNavigatorItemContainer = React.memo(
   (props: RenderPropNavigatorItemContainerProps) => {
     const navigatorEntry = React.useMemo(
-      () => renderPropNavigatorEntry(props.elementPath, props.propName, props.isRendered),
-      [props.propName, props.elementPath, props.isRendered],
+      () => renderPropNavigatorEntry(props.elementPath, props.propName),
+      [props.propName, props.elementPath],
     )
 
     const safeComponentId = varSafeNavigatorEntryToKey(navigatorEntry)

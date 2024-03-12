@@ -388,7 +388,6 @@ export const NavigatorItemWrapper: React.FunctionComponent<
       ...navigatorItemProps,
       propName: props.navigatorEntry.propName,
       elementPath: props.navigatorEntry.elementPath,
-      isRendered: props.navigatorEntry.isRendered,
       isOutletOrDescendantOfOutlet: false,
     }
     return <RenderPropNavigatorItemContainer {...entryProps} />
