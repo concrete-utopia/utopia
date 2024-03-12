@@ -92,7 +92,22 @@ const remixHandler =
     : createRequestHandler({ build: initialBuild })
 // -----------------------------------------------------------------------------
 
+function setCopyHeader(originalHeaders, targetHeaders, key) {
+  let value = originalHeaders[key]
+  if (value != null) {
+    targetHeaders[key] = value
+  }
+}
+
 function proxy(originalRequest, originalResponse) {
+  let headers = new Headers()
+
+  setCopyHeader(originalRequest.headers, headers, 'accept-encoding')
+  setCopyHeader(originalRequest.headers, headers, 'connection')
+  setCopyHeader(originalRequest.headers, headers, 'content-length')
+  setCopyHeader(originalRequest.headers, headers, 'content-type')
+  setCopyHeader(originalRequest.headers, headers, 'cookie')
+
   const proxyRequest = http.request(
     {
       // target the right server
@@ -103,7 +118,7 @@ function proxy(originalRequest, originalResponse) {
       // proxy everything
       path: originalRequest.originalUrl,
       method: originalRequest.method,
-      headers: originalRequest.headers,
+      headers: headers,
     },
     (proxyResponse) => {
       originalResponse.writeHead(proxyResponse.statusCode, proxyResponse.headers)
