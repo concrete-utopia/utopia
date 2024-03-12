@@ -45,7 +45,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     define: {
-      'process.env.LIVEBLOCKS_BASE_URL': 'https://api.liveblocks.io',
+      'process.env.LIVEBLOCKS_BASE_URL': '"https://api.liveblocks.io"',
       'process.env.NODE_ENV': `"${process.env.APP_ENV}"`,
       'process.env.REACT_APP_ENVIRONMENT_CONFIG': `"${process.env.REACT_APP_ENVIRONMENT_CONFIG}"`,
       'process.env.REACT_APP_BROWSER_TEST_DEBUG': `"${process.env.REACT_APP_BROWSER_TEST_DEBUG}"`,
