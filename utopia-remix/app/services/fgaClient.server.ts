@@ -55,7 +55,7 @@ export async function safeFgaWrite(params: object) {
   try {
     await fgaClient.write(params)
   } catch (err) {
-    if (((err as FgaApiValidationError).apiErrorCode = ErrorCode.WriteFailedDueToInvalidInput)) {
+    if ((err as FgaApiValidationError).apiErrorCode === ErrorCode.WriteFailedDueToInvalidInput) {
       // FGA throws a hard error on that, but we want to ignore it (since it's a no-op)
       console.error('Failed writing an existing tuple, or deleting a non-existing tuple', err)
     } else {
