@@ -145,9 +145,10 @@ export function getNavigatorTargets(
             ]
             navigatorTargets.push(...entries)
             visibleNavigatorTargets.push(...entries)
+            return
           }
 
-          if (propValue != null && isJSXElement(propValue)) {
+          if (isJSXElement(propValue)) {
             const childPath = EP.appendToPath(path, propValue.uid)
             const entry = renderPropNavigatorEntry(childPath, prop)
             navigatorTargets.push(entry)
