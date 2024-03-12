@@ -5263,6 +5263,39 @@ describe('Navigator row order', () => {
       'regular-sb/scene/pg:dbc/78c/88b',
     ])
   })
+  it('is correct for a project with elements with render prop set to `null`', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      projectWithRenderProp('header={null}'),
+      'await-first-dom-report',
+    )
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
+      [
+        'regular-sb/scene',
+        'regular-sb/scene/pg',
+        'regular-sb/scene/pg:dbc',
+        'regular-sb/scene/pg:dbc/78c',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header}',
+        'synthetic-sb/scene/pg:dbc/78c/prop-slot-header-attribute',
+        'render-prop-sb/scene/pg:dbc/78c/children-children}',
+        'regular-sb/scene/pg:dbc/78c/88b',
+      ],
+    )
+    expect(
+      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+    ).toEqual([
+      'regular-sb/scene',
+      'regular-sb/scene/pg',
+      'regular-sb/scene/pg:dbc',
+      'regular-sb/scene/pg:dbc/78c',
+      'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header}',
+      'synthetic-sb/scene/pg:dbc/78c/prop-slot-header-attribute',
+      'render-prop-sb/scene/pg:dbc/78c/children-children}',
+      'regular-sb/scene/pg:dbc/78c/88b',
+    ])
+  })
 })
 
 describe('Navigator labels', () => {

@@ -6,12 +6,15 @@ import type {
   JSXConditionalExpression,
 } from '../../core/shared/element-template'
 import {
+  emptyComments,
   getJSXAttribute,
   hasElementsWithin,
+  isJSExpressionValue,
   isJSXConditionalExpression,
   isJSXElement,
   isJSXMapExpression,
   jsExpressionOtherJavaScriptSimple,
+  jsExpressionValue,
 } from '../../core/shared/element-template'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { foldEither, isLeft, isRight } from '../../core/shared/either'
@@ -132,14 +135,14 @@ export function getNavigatorTargets(
           const propValue = getJSXAttribute(jsxElement.props, prop)
           renderPropFound = true
 
-          if (propValue == null) {
+          if (propValue == null || (isJSExpressionValue(propValue) && propValue.value == null)) {
             const fakePath = EP.appendToPath(path, `prop-label-${prop}`)
 
             const entries = [
               renderPropNavigatorEntry(fakePath, prop),
               syntheticNavigatorEntry(
                 EP.appendToPath(path, `prop-slot-${prop}`),
-                jsExpressionOtherJavaScriptSimple('null', []),
+                jsExpressionValue(null, emptyComments),
               ),
             ]
             navigatorTargets.push(...entries)
