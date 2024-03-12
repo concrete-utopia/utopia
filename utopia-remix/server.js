@@ -159,4 +159,6 @@ function listenCallback(portNumber) {
 }
 
 app.listen(port, listenCallback(port))
-app.listen(port + 1, listenCallback(port + 1))
+if (process.env.NODE_ENV === 'development') {
+  app.listen(port + 1, listenCallback(port + 1))
+}
