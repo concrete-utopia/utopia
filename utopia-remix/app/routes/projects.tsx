@@ -308,7 +308,7 @@ const TopActionBar = React.memo(() => {
     return [
       {
         id: 'createProject',
-        title: '+ Blank Project',
+        title: '+ New Project',
         onClick: () => window.open(projectEditorLink(null), '_blank'),
         color: 'blue',
       },
