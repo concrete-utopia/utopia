@@ -34,7 +34,7 @@ export async function action(args: ActionFunctionArgs) {
   return handle(args, {
     POST: {
       handler: addToCollaborators,
-      validator: validateProjectAccess(UserProjectPermission.CAN_MANAGE_PROJECT, {
+      validator: validateProjectAccess(UserProjectPermission.CAN_VIEW_PROJECT, {
         getProjectId: (params) => params.id,
       }),
     },
