@@ -111,6 +111,7 @@ export function getNavigatorTargets(
       // We collect the paths which are shown in render props, so we can filter them out from regular
       // children to avoid duplications.
       const processedPathsAsRenderProp = new Set<string>()
+      let renderPropFound: boolean = false
 
       function walkPropertyControls(propControls: PropertyControls): void {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
@@ -125,12 +126,11 @@ export function getNavigatorTargets(
         const jsxElement = elementMetadata.element.value
 
         Object.entries(propControls).forEach(([prop, control]) => {
-          // TODO children prop is not handled now explicitly, because it does not appear among the props
-          // of the element. To be fixed later.
           if (control.control !== 'jsx' || prop === 'children') {
             return
           }
           const propValue = getJSXAttribute(jsxElement.props, prop)
+          renderPropFound = true
 
           if (propValue == null) {
             const fakePath = EP.appendToPath(path, `prop-label-${prop}`)
@@ -295,7 +295,8 @@ export function getNavigatorTargets(
         if (
           propertyControls != null &&
           Object.keys(propertyControls).length > 0 &&
-          notProcessedChildren.length > 0
+          notProcessedChildren.length > 0 &&
+          renderPropFound // only show a dedicated label for the children prop of there're render props in the mix
         ) {
           // if there are added render props, and no children prop has been added, add a children prop label
           // so we can separate real children from render props
