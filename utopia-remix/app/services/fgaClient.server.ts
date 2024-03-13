@@ -29,7 +29,10 @@ class WriteSafeOpenFgaClient extends OpenFgaClient {
     } catch (err) {
       if ((err as FgaApiValidationError).apiErrorCode === ErrorCode.WriteFailedDueToInvalidInput) {
         // FGA throws a hard error on that, but we want to ignore it (since it's a no-op)
-        console.error('Failed writing an existing tuple, or deleting a non-existing tuple', err)
+        console.error(
+          'Failed writing an existing tuple, or deleting a non-existing tuple',
+          (err as FgaApiValidationError).requestData,
+        )
       } else {
         throw err
       }

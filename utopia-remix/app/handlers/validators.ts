@@ -12,11 +12,13 @@ export function validateProjectAccess(
     status,
     getProjectId,
     includeDeleted = false,
+    canRequestAccess = false,
   }: {
     errorMessage?: string
     status?: number
     getProjectId: (params: Params<string>) => string | null | undefined
     includeDeleted?: boolean
+    canRequestAccess?: boolean
   },
 ): AccessValidator {
   return async function (req: Request, params: Params<string>) {
@@ -31,7 +33,20 @@ export function validateProjectAccess(
     const isCreator = userId ? ownerId === userId : false
 
     const allowed = isCreator || (await hasUserProjectPermission(projectId, userId, permission))
-    ensure(allowed, errorMessage ?? 'Unauthorized Access', status ?? Status.UNAUTHORIZED)
+    let errorMessageToUse = errorMessage ?? 'Unauthorized Access'
+    let statusToUse = status ?? Status.UNAUTHORIZED
+    if (!allowed && canRequestAccess) {
+      const hasRequestAccessPermission = await hasUserProjectPermission(
+        projectId,
+        userId,
+        UserProjectPermission.CAN_REQUEST_ACCESS,
+      )
+      if (hasRequestAccessPermission) {
+        errorMessageToUse = 'Request access to this project'
+        statusToUse = Status.UNAUTHORIZED
+      }
+    }
+    ensure(allowed, errorMessageToUse, statusToUse)
   }
 }
 

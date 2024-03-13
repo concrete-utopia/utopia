@@ -24,6 +24,7 @@ type ContextMenuEntry =
       onClick: (project: ProjectWithoutContent) => void
     }
   | 'separator'
+  | null
 
 export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWithoutContent }) => {
   const deleteFetcher = useFetcherWithOperation(project.proj_id, 'delete')
@@ -94,7 +95,7 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
   )
   const projectEditorLink = useProjectEditorLink()
 
-  const menuEntries = React.useMemo((): ContextMenuEntry[] => {
+  const menuEntries = React.useMemo((): (ContextMenuEntry | null)[] => {
     switch (selectedCategory) {
       case 'allProjects':
         return [
@@ -134,6 +135,14 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
               deleteProject(project.proj_id)
             },
           },
+          accessLevel === AccessLevel.PRIVATE
+            ? {
+                text: 'Make Collaborative',
+                onClick: (project) => {
+                  changeAccessLevel(project.proj_id, AccessLevel.COLLABORATIVE)
+                },
+              }
+            : null,
           {
             text: accessLevel === AccessLevel.PUBLIC ? 'Make Private' : 'Make Public',
             onClick: (project) => {
@@ -168,7 +177,10 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
   return (
     <DropdownMenu.Portal>
       <DropdownMenu.Content className={contextMenuDropdown()} align='end' sideOffset={5}>
-        {menuEntries.map((entry, index) => {
+        {menuEntries.filter(Boolean).map((entry, index) => {
+          if (entry == null) {
+            return null
+          }
           if (entry === 'separator') {
             return (
               <DropdownMenu.Separator

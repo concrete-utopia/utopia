@@ -914,6 +914,8 @@ const ProjectBadge = React.memo(({ accessLevel }: { accessLevel: AccessLevel }) 
         return ['rgb(0 130 77)', 'rgb(0 155 0 / 9%)']
       case AccessLevel.WITH_LINK:
         return ['rgb(0 114 222)', 'rgb(0 132 241 / 9%)']
+      case AccessLevel.COLLABORATIVE:
+        return ['rgb(0 114 222)', 'rgb(0 132 241 / 9%)']
       default:
         return ['gray', 'lightgray']
     }
@@ -927,6 +929,8 @@ const ProjectBadge = React.memo(({ accessLevel }: { accessLevel: AccessLevel }) 
         return 'Public'
       case AccessLevel.WITH_LINK:
         return 'With Link'
+      case AccessLevel.COLLABORATIVE:
+        return 'Collaborative'
       default:
         return 'Unknown'
     }
