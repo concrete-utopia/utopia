@@ -1,41 +1,10 @@
 import { ClientWriteRequest } from '@openfga/sdk'
 import { AccessLevel } from '../types'
 import { fgaClient } from './fgaClient.server'
-
-function generalRelation(projectId: string, relation: string) {
-  return {
-    user: 'user:*',
-    relation: relation,
-    object: `project:${projectId}`,
-  }
-}
-
-const accessLevelToWrites = (projectId: string): Record<AccessLevel, ClientWriteRequest[]> => ({
-  [AccessLevel.PUBLIC]: [
-    { writes: [generalRelation(projectId, 'viewer')] },
-    { deletes: [generalRelation(projectId, 'collaborator')] },
-  ],
-
-  [AccessLevel.PRIVATE]: [
-    { deletes: [generalRelation(projectId, 'viewer')] },
-    { deletes: [generalRelation(projectId, 'collaborator')] },
-    { deletes: [generalRelation(projectId, 'can_request_access')] },
-  ],
-
-  [AccessLevel.WITH_LINK]: [
-    { writes: [generalRelation(projectId, 'viewer')] },
-    { writes: [generalRelation(projectId, 'collaborator')] },
-  ],
-
-  [AccessLevel.COLLABORATIVE]: [
-    { writes: [generalRelation(projectId, 'can_request_access')] },
-    { deletes: [generalRelation(projectId, 'viewer')] },
-    { deletes: [generalRelation(projectId, 'collaborator')] },
-  ],
-})
+import { assertNever } from '../util/assertNever'
 
 export async function updateAccessLevel(projectId: string, accessLevel: AccessLevel) {
-  const writes = accessLevelToWrites(projectId)[accessLevel]
+  const writes = accessLevelToFgaWrites(projectId, accessLevel)
   return await Promise.all(writes.map((write) => fgaClient.write(write)))
 }
 
@@ -126,4 +95,47 @@ export async function makeUserAdmin(projectId: string, userId: string) {
   return fgaClient.write({
     writes: [{ user: `user:${userId}`, relation: 'admin', object: `project:${projectId}` }],
   })
+}
+
+//
+
+function generalRelation(projectId: string, relation: string) {
+  return {
+    user: 'user:*',
+    relation: relation,
+    object: `project:${projectId}`,
+  }
+}
+
+function accessLevelToFgaWrites(projectId: string, accessLevel: AccessLevel): ClientWriteRequest[] {
+  switch (accessLevel) {
+    case AccessLevel.PUBLIC:
+      return [
+        { writes: [generalRelation(projectId, 'viewer')] },
+        { deletes: [generalRelation(projectId, 'collaborator')] },
+      ]
+
+    case AccessLevel.PRIVATE:
+      return [
+        { deletes: [generalRelation(projectId, 'viewer')] },
+        { deletes: [generalRelation(projectId, 'collaborator')] },
+        { deletes: [generalRelation(projectId, 'can_request_access')] },
+      ]
+
+    case AccessLevel.WITH_LINK:
+      return [
+        { writes: [generalRelation(projectId, 'viewer')] },
+        { writes: [generalRelation(projectId, 'collaborator')] },
+      ]
+
+    case AccessLevel.COLLABORATIVE:
+      return [
+        { writes: [generalRelation(projectId, 'can_request_access')] },
+        { deletes: [generalRelation(projectId, 'viewer')] },
+        { deletes: [generalRelation(projectId, 'collaborator')] },
+      ]
+
+    default:
+      assertNever(accessLevel)
+  }
 }
