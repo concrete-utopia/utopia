@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 import type { Category, SortCriteria } from './routes/projects'
-import type { Operation} from './types';
+import type { Operation } from './types'
 import { areBaseOperationsEquivalent } from './types'
 
 // State portion that will be persisted

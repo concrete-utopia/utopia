@@ -1,5 +1,5 @@
 import { assertNever } from '../util/assertNever'
-import type { AccessLevel} from '../types';
+import type { AccessLevel } from '../types'
 import { UserProjectPermission } from '../types'
 import * as fgaService from './fgaService.server'
 

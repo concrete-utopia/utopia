@@ -1,6 +1,6 @@
 import { prisma } from '../db.server'
 import { createTestSession, createTestUser, newTestRequest, truncateTables } from '../test-util'
-import type { ApiResponse} from './api.server';
+import type { ApiResponse } from './api.server'
 import { handle, requireUser } from './api.server'
 import { ApiError } from './errors'
 import { Status } from './statusCodes'

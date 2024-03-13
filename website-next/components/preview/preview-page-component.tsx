@@ -3,14 +3,13 @@
 import React from 'react'
 import { jsx } from '@emotion/react'
 import { Global } from '@emotion/react'
-import type {
-  DeviceReactSelectOption} from '../common/preview-devices';
+import type { DeviceReactSelectOption } from '../common/preview-devices'
 import {
   PreviewReactSelectDeviceSelector,
   getDeviceReactSelectOption,
   calculatePreviewScale,
 } from '../common/preview-devices'
-import type { DeviceInfo} from '../common/devices';
+import type { DeviceInfo } from '../common/devices'
 import { deviceInfoList } from '../common/devices'
 
 export type PreviewWindowProps = {

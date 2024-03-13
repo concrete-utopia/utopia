@@ -1,4 +1,4 @@
-import type { UserDetails } from 'prisma-client';
+import type { UserDetails } from 'prisma-client'
 import { Prisma } from 'prisma-client'
 import { assertNever } from './util/assertNever'
 

@@ -1,4 +1,4 @@
-import type { AccessValidator} from '../util/api.server';
+import type { AccessValidator } from '../util/api.server'
 import { ensure, getUser } from '../util/api.server'
 import type { UserProjectPermission } from '../types'
 import type { Params } from '@remix-run/react'
