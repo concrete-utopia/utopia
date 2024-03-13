@@ -489,3 +489,18 @@ export function possiblyUniqueInArray(
   }
   return index
 }
+
+export function isPrefixOf<T>(
+  possiblePrefix: Array<T>,
+  checkAgainst: Array<T>,
+  equals: (first: T, second: T) => boolean = (first, second) => first === second,
+): boolean {
+  if (possiblePrefix.length <= checkAgainst.length) {
+    return possiblePrefix.every((prefixValue, prefixIndex) => {
+      return equals(prefixValue, checkAgainst[prefixIndex])
+    })
+  } else {
+    // Prefix is too long to be a prefix.
+    return false
+  }
+}

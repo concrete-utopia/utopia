@@ -96,6 +96,7 @@ import { useDispatch } from '../../../editor/store/dispatch-context'
 import { usePopper } from 'react-popper'
 import {
   emptyComments,
+  modifiableAttributeToValuePath,
   jsExpressionOtherJavaScriptSimple,
   jsIdentifier,
 } from '../../../../core/shared/element-template'
@@ -105,6 +106,7 @@ import { array } from 'prop-types'
 import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
 import { DataPickerPopup } from './data-picker-popup'
 import { jsxElementChildToText } from '../../../canvas/ui-jsx-canvas-renderer/jsx-element-child-to-text'
+import { foldEither } from '../../../../core/shared/either'
 
 export const VariableFromScopeOptionTestId = (idx: string) => `variable-from-scope-${idx}`
 export const DataPickerPopupButtonTestId = `data-picker-popup-button-test-id`
@@ -245,7 +247,12 @@ function getLabelControlStyle(
 
 const isBaseIndentationLevel = (props: AbstractRowForControlProps) => props.indentationLevel === 1
 
-function useDataPickerButton(selectedElements: Array<ElementPath>, propPath: PropertyPath) {
+function useDataPickerButton(
+  selectedElements: Array<ElementPath>,
+  propPath: PropertyPath,
+  isScene: boolean,
+  controlDescription: RegularControlDescription,
+) {
   const [referenceElement, setReferenceElement] = React.useState<HTMLDivElement | null>(null)
   const [popperElement, setPopperElement] = React.useState<HTMLDivElement | null>(null)
   const popper = usePopper(referenceElement, popperElement, {
@@ -281,6 +288,21 @@ function useDataPickerButton(selectedElements: Array<ElementPath>, propPath: Pro
   const variablePickerButtonTooltipText = variablePickerButtonAvailable
     ? 'Pick data source'
     : 'No data sources available'
+  const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
+
+  const propExpressionPath: Array<string | number> | null = React.useMemo(() => {
+    return propMetadata.attributeExpression == null
+      ? null
+      : foldEither(
+          () => {
+            return null
+          },
+          (path) => {
+            return path
+          },
+          modifiableAttributeToValuePath(propMetadata.attributeExpression),
+        )
+  }, [propMetadata.attributeExpression])
 
   const DataPickerComponent = React.useMemo(
     () => (
@@ -290,9 +312,10 @@ function useDataPickerButton(selectedElements: Array<ElementPath>, propPath: Pro
         closePopup={closePopup}
         ref={setPopperElement}
         propPath={propPath}
+        propExpressionPath={propExpressionPath}
       />
     ),
-    [closePopup, popper.attributes.popper, popper.styles.popper, propPath],
+    [closePopup, popper.attributes.popper, popper.styles.popper, propExpressionPath, propPath],
   )
 
   const DataPickerOpener = React.useMemo(
@@ -376,7 +399,12 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
       <props.label />
     )
 
-  const dataPickerButtonData = useDataPickerButton(selectedViews, props.propPath)
+  const dataPickerButtonData = useDataPickerButton(
+    selectedViews,
+    props.propPath,
+    props.isScene,
+    props.controlDescription,
+  )
 
   if (controlDescription.control === 'none') {
     // do not list anything for `none` controls
@@ -493,7 +521,12 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
     'RowForArrayControl selectedViews',
   )
 
-  const dataPickerButtonData = useDataPickerButton(selectedViews, props.propPath)
+  const dataPickerButtonData = useDataPickerButton(
+    selectedViews,
+    props.propPath,
+    props.isScene,
+    props.controlDescription,
+  )
 
   return (
     <React.Fragment>
@@ -776,7 +809,12 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
     (store) => store.editor.selectedViews,
     'RowForObjectControl selectedViews',
   )
-  const dataPickerButtonData = useDataPickerButton(selectedViews, props.propPath)
+  const dataPickerButtonData = useDataPickerButton(
+    selectedViews,
+    props.propPath,
+    props.isScene,
+    props.controlDescription,
+  )
 
   return (
     <div

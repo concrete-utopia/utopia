@@ -16,8 +16,9 @@ import { isValidReactNode } from '../../../../utils/react-utils'
 
 function valuesFromObject(
   variable: ArrayInfo | ObjectInfo,
-  originalObjectName: string,
   depth: number,
+  originalObjectName: string,
+  valuePath: Array<string | number>,
 ): Array<VariableOption> {
   const patchDefinedElsewhereInfo = (option: VariableOption): VariableOption => ({
     ...option,
@@ -32,8 +33,11 @@ function valuesFromObject(
         depth: depth,
         definedElsewhere: originalObjectName,
         children: variable.elements
-          .flatMap((e) => valuesFromVariable(e, originalObjectName, depth + 1))
+          .flatMap((e, index) =>
+            valuesFromVariable(e, depth + 1, originalObjectName, [...valuePath, index]),
+          )
           .map(patchDefinedElsewhereInfo),
+        valuePath: valuePath,
       },
     ]
   } else if (variable.type === 'object') {
@@ -44,8 +48,14 @@ function valuesFromObject(
         depth: depth,
         definedElsewhere: originalObjectName,
         children: variable.props
-          .flatMap((e) => valuesFromVariable(e, originalObjectName, depth + 1))
+          .flatMap((e) =>
+            valuesFromVariable(e, depth + 1, originalObjectName, [
+              ...valuePath,
+              e.expressionPathPart,
+            ]),
+          )
           .map(patchDefinedElsewhereInfo),
+        valuePath: valuePath,
       },
     ]
   } else {
@@ -55,8 +65,9 @@ function valuesFromObject(
 
 function valuesFromVariable(
   variable: VariableInfo,
-  originalObjectName: string,
   depth: number,
+  originalObjectName: string,
+  valuePath: Array<string | number>,
 ): Array<VariableOption> {
   switch (variable.type) {
     case 'primitive':
@@ -64,20 +75,22 @@ function valuesFromVariable(
         {
           type: 'primitive',
           variableInfo: variable,
-          definedElsewhere: variable.variableName,
+          definedElsewhere: originalObjectName,
           depth: depth,
+          valuePath: valuePath,
         },
       ]
     case 'array':
     case 'object':
-      return valuesFromObject(variable, originalObjectName, depth)
+      return valuesFromObject(variable, depth, originalObjectName, valuePath)
     case 'jsx':
       return [
         {
           type: 'jsx',
           variableInfo: variable,
-          definedElsewhere: variable.variableName,
+          definedElsewhere: originalObjectName,
           depth: depth,
+          valuePath: valuePath,
         },
       ]
     default:
@@ -102,16 +115,16 @@ function usePropertyControlDescriptions(selectedProperty: PropertyPath): Control
 
 export interface PrimitiveInfo {
   type: 'primitive'
-  variableName: string
-  displayName: string
+  expression: string
+  expressionPathPart: string | number
   value: unknown
   matches: boolean
 }
 
 export interface ObjectInfo {
   type: 'object'
-  variableName: string
-  displayName: string
+  expression: string
+  expressionPathPart: string | number
   value: unknown
   props: Array<VariableInfo>
   matches: boolean
@@ -119,8 +132,8 @@ export interface ObjectInfo {
 
 export interface ArrayInfo {
   type: 'array'
-  variableName: string
-  displayName: string
+  expression: string
+  expressionPathPart: string | number
   value: unknown
   elements: Array<VariableInfo>
   matches: boolean
@@ -128,8 +141,8 @@ export interface ArrayInfo {
 
 export interface JSXInfo {
   type: 'jsx'
-  variableName: string
-  displayName: string
+  expression: string
+  expressionPathPart: string | number
   value: unknown
   matches: boolean
 }
@@ -137,8 +150,8 @@ export interface JSXInfo {
 export type VariableInfo = PrimitiveInfo | ArrayInfo | ObjectInfo | JSXInfo
 
 function variableInfoFromValue(
-  variableName: string,
-  displayName: string,
+  expression: string,
+  expressionPathPart: string | number,
   value: unknown,
 ): VariableInfo | null {
   switch (typeof value) {
@@ -152,8 +165,8 @@ function variableInfoFromValue(
     case 'undefined':
       return {
         type: 'primitive',
-        displayName: displayName,
-        variableName: variableName,
+        expression: expression,
+        expressionPathPart: expressionPathPart,
         value: value,
         matches: false,
       }
@@ -161,8 +174,8 @@ function variableInfoFromValue(
       if (value == null) {
         return {
           type: 'primitive',
-          displayName: displayName,
-          variableName: variableName,
+          expression: expression,
+          expressionPathPart: expressionPathPart,
           value: value,
           matches: false,
         }
@@ -170,13 +183,12 @@ function variableInfoFromValue(
       if (Array.isArray(value)) {
         return {
           type: 'array',
-          variableName: variableName,
-          displayName: displayName,
+          expression: expression,
+          expressionPathPart: expressionPathPart,
           value: value,
           matches: false,
           elements: mapDropNulls(
-            (e, idx) =>
-              variableInfoFromValue(`${variableName}[${idx}]`, `${variableName}[${idx}]`, e),
+            (e, idx) => variableInfoFromValue(`${expression}[${idx}]`, idx, e),
             value,
           ),
         }
@@ -184,20 +196,20 @@ function variableInfoFromValue(
       if (React.isValidElement(value)) {
         return {
           type: 'jsx',
-          variableName: variableName,
-          displayName: displayName,
+          expression: expression,
+          expressionPathPart: expressionPathPart,
           value: value,
           matches: false,
         }
       }
       return {
         type: 'object',
-        variableName: variableName,
-        displayName: displayName,
+        expression: expression,
+        expressionPathPart: expressionPathPart,
         value: value,
         matches: false,
         props: mapDropNulls(([key, propValue]) => {
-          return variableInfoFromValue(`${variableName}['${key}']`, key, propValue)
+          return variableInfoFromValue(`${expression}['${key}']`, key, propValue)
         }, Object.entries(value)),
       }
   }
@@ -348,7 +360,7 @@ export function useVariablesInScopeForSelectedElement(
     )
 
     return orderedVariablesInScope.flatMap((variable) =>
-      valuesFromVariable(variable, variable.variableName, 0),
+      valuesFromVariable(variable, 0, variable.expression, [variable.expressionPathPart]),
     )
   }, [controlDescriptions, currentPropertyValue, selectedViewPath, variablesInScope])
 
