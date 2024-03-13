@@ -67,9 +67,6 @@ const categories: { [key in Category]: { name: string; icon: React.ReactNode } }
   trash: { name: 'Trash', icon: <TrashIcon width='16' height='16' /> },
 }
 
-const MarginSize = 30
-const SidebarRowHeight = 30
-
 export async function loader(args: LoaderFunctionArgs) {
   const user = await requireUser(args.request, { redirect: auth0LoginURL() })
 
@@ -133,9 +130,8 @@ const ProjectsPage = React.memo(() => {
   return (
     <div
       style={{
-        margin: MarginSize,
-        height: `calc(100vh - ${MarginSize * 2}px)`,
-        width: `calc(100vw - ${MarginSize * 2}px)`,
+        height: '100vh',
+        width: '100vw',
         gap: 45,
         overflow: 'hidden',
         boxSizing: 'border-box',
@@ -150,7 +146,8 @@ const ProjectsPage = React.memo(() => {
           display: 'flex',
           flexGrow: 1,
           flexDirection: 'column',
-          gap: MarginSize,
+          gap: 30,
+          margin: '30px 30px 0px 0',
         }}
       >
         <TopActionBar />
@@ -198,6 +195,7 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
         width: 230,
         flexShrink: 0,
         justifyContent: 'space-between',
+        margin: '30px 0 30px 30px',
       }}
     >
       <div
@@ -250,7 +248,7 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
               border: 'none',
               background: 'transparent',
               outline: 'none',
-              height: SidebarRowHeight,
+              height: 30,
               display: 'flex',
               flexDirection: 'row',
               alignItems: 'center',
@@ -783,7 +781,7 @@ const ProjectRow = React.memo(
             justifyContent: 'space-between',
             border: selected ? '2px solid #0075F9' : '2px solid transparent',
             borderRadius: 10,
-            padding: '4px 30px 4px 4px',
+            padding: 4,
             transition: `.1s background-color ease-in-out`,
           }}
           onMouseDown={onSelect}
@@ -804,7 +802,7 @@ const ProjectRow = React.memo(
                 overflow: 'hidden',
                 height: 40,
                 width: 70,
-                background: 'linear-gradient(#a4a4a4, #a4a4a410)',
+                background: 'linear-gradient(#a1a1a130, #a1a1a115)',
                 backgroundAttachment: 'local',
                 backgroundRepeat: 'no-repeat',
                 position: 'relative',

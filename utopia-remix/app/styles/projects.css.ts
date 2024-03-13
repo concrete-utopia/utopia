@@ -6,13 +6,13 @@ export const projectCards = recipe({
     {
       flexGrow: 1,
       overflow: 'hidden scroll',
-      scrollbarColor: 'lightgrey transparent',
+      scrollbarColor: '#a1a1a130 transparent',
       display: 'grid',
       gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
       justifyContent: 'space-between',
       alignContent: 'flex-start',
       gridGap: '40px',
-      paddingRight: 30,
+      // paddingRight: 30,
     },
   ],
 })
@@ -22,7 +22,7 @@ export const projectRows = recipe({
     {
       flexGrow: 1,
       overflowY: 'scroll',
-      scrollbarColor: 'lightgrey transparent',
+      scrollbarColor: '#a1a1a130 transparent',
       gap: 10,
     },
   ],
