@@ -15,9 +15,10 @@
     "check": "tsc --noEmit && pnpm run lint && pnpm run check-dependency-cruiser && pnpm run prettier-check && pnpm run test && pnpm run test-browser",
     "check-ci": "tsc --noEmit && pnpm run lint && pnpm run check-dependency-cruiser && pnpm run prettier-check && pnpm run test-ci && pnpm run test-browser",
     "check-code": "tsc --version && tsc --noEmit && pnpm run lint && pnpm run check-dependency-cruiser && pnpm run prettier-check",
-    "lint": "eslint \"src/**/*.{js,ts,tsx}\" --quiet",
+    "lint-other-projects": "eslint --quiet --ignore-path ./.eslintignore --config ./.eslintrc-lite.js --ext .ts --ext .tsx ../utopia-api/src ../utopia-vscode-extension/src ../utopia-vscode-common/src ../puppeteer-tests/src ../utopia-remix/",
+    "lint": "eslint \"src/**/*.{js,ts,tsx}\" --quiet && pnpm run lint-other-projects",
     "lint-loud": "eslint \"src/**/*.{js,ts,tsx}\"",
-    "lint-lite": "pnpm run lint -- --config ./.eslintrc-lite.js --no-eslintrc",
+    "lint-lite": "eslint \"src/**/*.{js,ts,tsx}\" --quiet --config ./.eslintrc-lite.js --no-eslintrc && pnpm run lint-other-projects",
     "check-dependency-cruiser": "depcruise --config .dependency-cruiser.js src",
     "benchmark": "pnpm run build-benchmark && node dist/benchmark.js",
     "test-base": "jest --config ./jest.config.js",
@@ -44,9 +45,8 @@
     "branches": "REACT_APP_ENVIRONMENT_CONFIG=branches REACT_APP_AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID REACT_APP_AUTH0_ENDPOINT=$AUTH0_ENDPOINT REACT_APP_COMMIT_HASH=$UTOPIA_SHA WEBPACK_MODE='branches' NODE_OPTIONS=\"--max_old_space_size=6656 $NODE_OPENSSL_OPTION\" webpack",
     "branches-print-json": "pnpm run branches --  --json=lib/branches-stats.json",
     "preinstall": "npx only-allow pnpm",
-    "eslint-check": "eslint --quiet --ignore-path ./.eslintignore --config ./.eslintrc.js --ext .ts --ext .tsx src ../utopia-api/src ../utopia-vscode-extension/src ../utopia-vscode-common/src ../puppeteer-tests/src ../website-next/ ../utopia-remix/",
-    "prettier-check": "prettier --ignore-path ../.prettierignore --config ../prettier.config.js --check src/** ../utopia-api/src/**/* ../utopia-vscode-common/src/** ../utopia-vscode-extension/src/** ../puppeteer-tests/src/** ../website-next/pages/** ../website-next/components/**",
-    "prettier-fix": "prettier --ignore-path ../.prettierignore --config ../prettier.config.js --write src/** ../utopia-api/src/**/* ../utopia-vscode-common/src/** ../utopia-vscode-extension/src/** ../puppeteer-tests/src/** ../website-next/pages/** ../website-next/components/**",
+    "prettier-check": "prettier --ignore-path ../.prettierignore --config ../prettier.config.js --check src/** ../utopia-api/src/**/* ../utopia-vscode-common/src/** ../utopia-vscode-extension/src/** ../puppeteer-tests/src/** ../website-next/pages/** ../website-next/components/** ../utopia-remix/app/**",
+    "prettier-fix": "prettier --ignore-path ../.prettierignore --config ../prettier.config.js --write src/** ../utopia-api/src/**/* ../utopia-vscode-common/src/** ../utopia-vscode-extension/src/** ../puppeteer-tests/src/** ../website-next/pages/** ../website-next/components/** ../utopia-remix/app/**",
     "parse-print-analysis": "npx -s sh ts-node --require ignore-styles --transpile-only ./src/scripts/parse-print-analysis.ts",
     "parse-debug": "npx -s sh ts-node --pretty --require ignore-styles --transpile-only ./src/scripts/parse-debug.ts",
     "fetch-tailwind-classes": "npx -s sh ts-node --pretty --require ignore-styles --transpile-only ./src/scripts/fetch-and-parse-tailwind-classes.ts && npx prettier --write ./src/core/third-party/tailwind-defaults.ts",
@@ -72,6 +72,11 @@
       "git add"
     ],
     "../utopia-api/src/**/*.{js,ts,tsx}": [
+      "prettier --write",
+      "eslint --quiet --ignore-path .eslintignore --config .eslintrc-lite.js --no-eslintrc",
+      "git add"
+    ],
+    "../utopia-remix/app/**/*.{js,ts,tsx}": [
       "prettier --write",
       "eslint --quiet --ignore-path .eslintignore --config .eslintrc-lite.js --no-eslintrc",
       "git add"

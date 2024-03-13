@@ -1,8 +1,10 @@
 /** @jsx jsx */
 /** @jsxRuntime classic */
-import { jsx, Interpolation, Theme } from '@emotion/react'
+import type { Interpolation, Theme } from '@emotion/react'
+import { jsx } from '@emotion/react'
 import React from 'react'
-import { UtopiaComponentProps, addEventHandlersToDivProps } from './common'
+import type { UtopiaComponentProps } from './common'
+import { addEventHandlersToDivProps } from './common'
 
 export interface FlexRowProps
   extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>,

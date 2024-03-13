@@ -92,21 +92,16 @@ const remixHandler =
     : createRequestHandler({ build: initialBuild })
 // -----------------------------------------------------------------------------
 
-function setCopyHeader(originalHeaders, targetHeaders, key) {
-  let value = originalHeaders[key]
-  if (value != null) {
-    targetHeaders[key] = value
-  }
-}
-
 function proxy(originalRequest, originalResponse) {
   let headers = new Headers()
 
-  setCopyHeader(originalRequest.headers, headers, 'accept-encoding')
-  setCopyHeader(originalRequest.headers, headers, 'connection')
-  setCopyHeader(originalRequest.headers, headers, 'content-length')
-  setCopyHeader(originalRequest.headers, headers, 'content-type')
-  setCopyHeader(originalRequest.headers, headers, 'cookie')
+  for (const [key, value] of Object.entries(originalRequest.headers)) {
+    // add headers to ignore here, with simple comparisons to make it faster than i.e. an array lookup
+    // NOTE! this should match the check in `proxy.server.ts`!
+    if (key !== 'host') {
+      headers[key] = value
+    }
+  }
 
   const proxyRequest = http.request(
     {

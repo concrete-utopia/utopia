@@ -1,7 +1,7 @@
 import moment from 'moment'
 import React from 'react'
 import { useProjectsStore } from '../store'
-import { ProjectWithoutContent } from '../types'
+import type { ProjectWithoutContent } from '../types'
 import { assertNever } from './assertNever'
 
 export function useSortCompareProject() {

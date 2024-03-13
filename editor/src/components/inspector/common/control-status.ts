@@ -2,6 +2,8 @@ import deepEqual from 'fast-deep-equal'
 //TODO: pass in colorTheme to utility functions to get rid of colorTheme here:
 import type { JSXAttributes, StyleAttributeMetadata } from '../../../core/shared/element-template'
 import {
+  modifiableAttributeIsAttributeNestedArray,
+  modifiableAttributeIsAttributeNestedObject,
   modifiableAttributeIsAttributeNotFound,
   modifiableAttributeIsAttributeValue,
   modifiableAttributeIsPartOfAttributeValue,
@@ -174,7 +176,9 @@ function isControlled(
       return spiedValue != null
     } else if (
       modifiableAttributeIsAttributeValue(modifiableAttributeResult.value) ||
-      modifiableAttributeIsPartOfAttributeValue(modifiableAttributeResult.value)
+      modifiableAttributeIsPartOfAttributeValue(modifiableAttributeResult.value) ||
+      modifiableAttributeIsAttributeNestedArray(modifiableAttributeResult.value) ||
+      modifiableAttributeIsAttributeNestedObject(modifiableAttributeResult.value)
     ) {
       return false
     } else {

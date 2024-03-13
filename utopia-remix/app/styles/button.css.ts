@@ -55,12 +55,11 @@ export const button = recipe({
       square: {
         height: 20,
         width: 20,
-        padding:6,
+        padding: 6,
       },
       ellipses: {
         padding: '0px 6px',
-      
-      }
+      },
     },
   },
 

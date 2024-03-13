@@ -10,11 +10,8 @@ import { colors, darkColors } from './theme'
 
 import { Global } from '@emotion/react'
 import { fetchProjectList, fetchShowcaseProjects } from '../common/server'
-import {
-  ProjectListing,
-  deleteProject,
-  fetchProjectListFromLocalStorage,
-} from '../common/persistence'
+import type { ProjectListing } from '../common/persistence'
+import { deleteProject, fetchProjectListFromLocalStorage } from '../common/persistence'
 import * as timeago from 'timeago.js'
 import { Card, cardLayout, cardLayoutStyle } from './cards'
 
@@ -532,14 +529,14 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
                 <label>Sort</label>
                 <SortButton
                   selected={this.state.sortMode === 'date'}
-                  onClick={() => handleSortByDate()}
+                  onClick={handleSortByDate}
                   sortOrder={this.state.dateSortOrder}
                 >
                   Date Edited
                 </SortButton>
                 <SortButton
                   selected={this.state.sortMode === 'title'}
-                  onClick={() => handleSortByTitle()}
+                  onClick={handleSortByTitle}
                   sortOrder={this.state.titleSortOrder}
                 >
                   Title
