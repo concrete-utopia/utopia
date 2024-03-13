@@ -535,18 +535,7 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
   return (
     <React.Fragment>
       {when(dataPickerButtonData.popupIsOpen, dataPickerButtonData.DataPickerComponent)}
-      <div
-        css={{
-          '&:hover': {
-            boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,20%)',
-            background: 'hsl(0,0%,0%,1%)',
-          },
-          '&:focus-within': {
-            boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,20%)',
-            background: 'hsl(0,0%,0%,1%)',
-          },
-        }}
-      >
+      <div css={hoverBackgroundStyle}>
         <SimpleFlexRow
           style={{ gap: 5, justifyContent: 'space-between', flexGrow: 1, paddingRight: 3 }}
         >
@@ -554,18 +543,7 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
             style={{ flex: 1, gap: 5, justifyContent: 'space-between' }}
             ref={dataPickerButtonData.setReferenceElement}
           >
-            <PropertyLabel
-              target={[propPath]}
-              style={{
-                textTransform: 'capitalize',
-                display: 'flex',
-                alignItems: 'center',
-                paddingLeft: 8,
-                height: 34,
-                fontWeight: 500,
-                gap: 4,
-              }}
-            >
+            <PropertyLabel target={[propPath]} style={objectPropertyLabelStyle}>
               {title}
             </PropertyLabel>
             {propertyStatus.overwritable && !propertyStatus.controlled ? (
@@ -854,18 +832,7 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
   )
 
   return (
-    <div
-      css={{
-        '&:hover': {
-          boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,20%)',
-          background: 'hsl(0,0%,0%,1%)',
-        },
-        '&:focus-within': {
-          boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,20%)',
-          background: 'hsl(0,0%,0%,1%)',
-        },
-      }}
-    >
+    <div css={hoverBackgroundStyle}>
       <div>
         <InspectorContextMenuWrapper
           id={`context-menu-for-${PP.toString(propPath)}`}
@@ -884,13 +851,8 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
               <PropertyLabel
                 target={[propPath]}
                 style={{
-                  textTransform: 'capitalize',
+                  ...objectPropertyLabelStyle,
                   paddingLeft: indentation,
-                  display: 'flex',
-                  alignItems: 'center',
-                  height: 34,
-                  fontWeight: 500,
-                  gap: 4,
                   cursor: props.disableToggling ? 'default' : 'pointer',
                 }}
               >
@@ -1208,3 +1170,24 @@ export class ComponentSection extends React.Component<
     }
   }
 }
+
+const hoverBackgroundStyle = {
+  '&:hover': {
+    boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,20%)',
+    background: 'hsl(0,0%,0%,1%)',
+  },
+  '&:focus-within': {
+    boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,20%)',
+    background: 'hsl(0,0%,0%,1%)',
+  },
+}
+
+const objectPropertyLabelStyle = {
+  textTransform: 'capitalize',
+  paddingLeft: 8,
+  display: 'flex',
+  alignItems: 'center',
+  height: 34,
+  fontWeight: 500,
+  gap: 4,
+} as const
