@@ -36,7 +36,7 @@ export function validateProjectAccess(
     const allowed = isCreator || (await hasUserProjectPermission(projectId, userId, permission))
     let errorMessageToUse = errorMessage ?? 'Unauthorized Access'
     let statusToUse = status ?? Status.UNAUTHORIZED
-    if (!allowed && canRequestAccess) {
+    if (!allowed && canRequestAccess === true) {
       const hasRequestAccessPermission = await hasUserProjectPermission(
         projectId,
         userId,
