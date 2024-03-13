@@ -89,6 +89,21 @@ export const UserProjectRole = {
 } as const
 
 export type UserProjectRole = (typeof UserProjectRole)[keyof typeof UserProjectRole]
+
+export function asUserProjectRole(role: number | undefined | null): UserProjectRole | null {
+  switch (role) {
+    case UserProjectRole.VIEWER:
+      return UserProjectRole.VIEWER
+    case UserProjectRole.COLLABORATOR:
+      return UserProjectRole.COLLABORATOR
+    case UserProjectRole.EDITOR:
+      return UserProjectRole.EDITOR
+    case UserProjectRole.ADMIN:
+      return UserProjectRole.ADMIN
+    default:
+      return null
+  }
+}
 interface BaseOperation {
   projectId: string
 }
