@@ -820,7 +820,7 @@ export const NavigatorItem: React.FunctionComponent<
               height: 19,
               fontWeight: 600,
               textTransform: 'uppercase',
-              color: 'gray',
+              color: colorTheme.fg5.value,
               border: colorTheme.navigatorResizeHintBorder.value,
               marginLeft: 23,
               paddingTop: 6,
