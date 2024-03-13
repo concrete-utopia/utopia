@@ -1,4 +1,4 @@
-import { ClientWriteRequest } from '@openfga/sdk'
+import type { ClientWriteRequest } from '@openfga/sdk'
 import { AccessLevel } from '../types'
 import { fgaClient } from './fgaClient.server'
 import { assertNever } from '../util/assertNever'
