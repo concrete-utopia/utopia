@@ -22,7 +22,11 @@ import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
 } from '../../../core/shared/element-template'
-import { hasElementsWithin } from '../../../core/shared/element-template'
+import {
+  getJSXElementNameAsString,
+  hasElementsWithin,
+  jsExpressionOtherJavaScriptSimple,
+} from '../../../core/shared/element-template'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { unless, when } from '../../../utils/react-conditionals'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
@@ -55,10 +59,13 @@ import { ExpandableIndicator } from './expandable-indicator'
 import { ItemLabel } from './item-label'
 import { LayoutIcon } from './layout-icon'
 import { NavigatorItemActionSheet } from './navigator-item-components'
-import { assertNever } from '../../../core/shared/utils'
+import { CanvasContextMenuPortalTargetID, assertNever } from '../../../core/shared/utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { MapCounter } from './map-counter'
-import { Outlet } from 'react-router'
+import ReactDOM from 'react-dom'
+import { Menu, useContextMenu } from 'react-contexify'
+import { useDispatch } from '../../editor/store/dispatch-context'
+import * as PP from '../../../core/shared/property-path'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -760,6 +767,12 @@ export const NavigatorItem: React.FunctionComponent<
     )
   }, [childComponentCount, isFocusedComponent, isConditional])
 
+  const renderPropPickerId = varSafeNavigatorEntryToKey(navigatorEntry)
+  const { showRenderPropPicker: showContextMenu, hideRenderPropPicker: hideContextMenu } =
+    useShowRenderPropPicker(renderPropPickerId)
+
+  const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)
+
   const iconColor = isRemixItem
     ? 'remix'
     : isCodeItem
@@ -770,6 +783,7 @@ export const NavigatorItem: React.FunctionComponent<
 
   return (
     <div
+      onClick={navigatorEntry.type === 'SLOT' ? showContextMenu : hideContextMenu}
       style={{
         outline: `1px solid ${
           props.parentOutline === 'solid' && isOutletOrDescendantOfOutlet
@@ -781,6 +795,17 @@ export const NavigatorItem: React.FunctionComponent<
         outlineOffset: props.parentOutline === 'solid' ? '-1px' : 0,
       }}
     >
+      {portalTarget == null || navigatorEntry.type !== 'SLOT'
+        ? null
+        : ReactDOM.createPortal(
+            <RenderPropPicker
+              target={props.navigatorEntry.elementPath}
+              key={renderPropPickerId}
+              id={renderPropPickerId}
+              prop={navigatorEntry.prop}
+            />,
+            portalTarget,
+          )}
       <FlexRow
         data-testid={NavigatorItemTestId(varSafeNavigatorEntryToKey(navigatorEntry))}
         style={rowStyle}
@@ -905,9 +930,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
   const isComponentScene =
     useIsProbablyScene(props.navigatorEntry) && props.childComponentCount === 1
 
-  const isRemixScene = props.remixItemType === 'scene'
   const isOutlet = props.remixItemType === 'outlet'
-  const isLink = props.remixItemType === 'link'
 
   const backgroundLozengeColor =
     isCodeItem && !props.selected
@@ -980,3 +1003,111 @@ function elementContainsExpressions(
 ): boolean {
   return MetadataUtils.isGeneratedTextFromMetadata(path, pathTrees, metadata)
 }
+
+const usePreferredChildrenForTargetProp = (target: ElementPath, prop: string) => {
+  const selectedJSXElement = useEditorState(
+    Substores.metadata,
+    (store) => MetadataUtils.getJSXElementFromMetadata(store.editor.jsxMetadata, target),
+    'usePreferredChildrenForSelectedElement selectedJSXElement',
+  )
+
+  const preferredChildrenForTargetProp = useEditorState(
+    Substores.restOfEditor,
+    (store) => {
+      if (selectedJSXElement == null) {
+        return null
+      }
+
+      const targetName = getJSXElementNameAsString(selectedJSXElement.name)
+      // TODO: we don't deal with components registered with the same name in multiple files
+      for (const file of Object.values(store.editor.propertyControlsInfo)) {
+        for (const [name, value] of Object.entries(file)) {
+          if (name === targetName) {
+            for (const [registeredPropName, registeredPropValue] of Object.entries(
+              value.properties,
+            )) {
+              if (
+                registeredPropName === prop &&
+                registeredPropValue.control === 'jsx' &&
+                registeredPropValue.preferredChildComponents != null
+              ) {
+                return registeredPropValue.preferredChildComponents
+              }
+            }
+          }
+        }
+      }
+
+      return null
+    },
+    'usePreferredChildrenForSelectedElement propertyControlsInfo',
+  )
+
+  if (selectedJSXElement == null || preferredChildrenForTargetProp == null) {
+    return null
+  }
+
+  return preferredChildrenForTargetProp
+}
+
+const useShowRenderPropPicker = (id: string) => {
+  const { show, hideAll } = useContextMenu({ id })
+  const onClick = React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      show(event)
+    },
+    [show],
+  )
+
+  return { showRenderPropPicker: onClick, hideRenderPropPicker: hideAll }
+}
+
+interface RenderPropPickerProps {
+  target: ElementPath
+  prop: string
+  key: string
+  id: string
+}
+
+const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, target, prop }) => {
+  const preferredChildrenForTargetProp = usePreferredChildrenForTargetProp(
+    EP.parentPath(target),
+    prop,
+  )
+
+  const dispatch = useDispatch()
+
+  const onItemClick = React.useCallback(
+    (rawJSCodeForRenderProp: string) => (e: React.MouseEvent) => {
+      e.stopPropagation()
+      e.preventDefault()
+
+      dispatch([
+        EditorActions.setProp_UNSAFE(
+          EP.parentPath(target),
+          PP.create(prop),
+          jsExpressionOtherJavaScriptSimple(rawJSCodeForRenderProp, []),
+        ),
+      ])
+    },
+    [dispatch, prop, target],
+  )
+
+  if (preferredChildrenForTargetProp == null) {
+    return null
+  }
+
+  const rawJSToInsert: Array<string> = (preferredChildrenForTargetProp ?? []).flatMap((data) =>
+    data.variants == null ? `<${data.name} />` : data.variants.map((v) => v.code),
+  )
+
+  return (
+    <Menu key={key} id={id} animation={false} style={{ padding: 8 }}>
+      {rawJSToInsert.map((option, idx) => (
+        <div key={idx} onClick={onItemClick(option)}>
+          {option}
+        </div>
+      ))}
+    </Menu>
+  )
+})

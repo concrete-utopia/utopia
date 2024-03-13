@@ -139,7 +139,10 @@ export function getNavigatorTargets(
           if (propValue == null || (isJSExpressionValue(propValue) && propValue.value == null)) {
             const fakePath = EP.appendToPath(path, `prop-label-${prop}`)
 
-            const entries = [renderPropNavigatorEntry(fakePath, prop), slotNavigatorEntry(path)]
+            const entries = [
+              renderPropNavigatorEntry(fakePath, prop),
+              slotNavigatorEntry(fakePath, prop),
+            ]
             navigatorTargets.push(...entries)
             visibleNavigatorTargets.push(...entries)
             return
@@ -158,7 +161,7 @@ export function getNavigatorTargets(
               processedPathsAsRenderProp.add(EP.toString(subTreeChild.path))
               walkAndAddKeys(subTreeChild, collapsedAncestor)
             } else {
-              const slotEntry = slotNavigatorEntry(childPath)
+              const slotEntry = syntheticNavigatorEntry(childPath, propValue)
               navigatorTargets.push(slotEntry)
               visibleNavigatorTargets.push(slotEntry)
             }
