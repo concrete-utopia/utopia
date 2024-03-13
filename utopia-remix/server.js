@@ -103,6 +103,7 @@ function proxy(originalRequest, originalResponse) {
   let headers = new Headers()
 
   setCopyHeader(originalRequest.headers, headers, 'accept-encoding')
+  setCopyHeader(originalRequest.headers, headers, 'accept')
   setCopyHeader(originalRequest.headers, headers, 'connection')
   setCopyHeader(originalRequest.headers, headers, 'content-length')
   setCopyHeader(originalRequest.headers, headers, 'content-type')
