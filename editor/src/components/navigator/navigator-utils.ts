@@ -135,11 +135,13 @@ export function getNavigatorTargets(
           }
           const propValue = getJSXAttribute(jsxElement.props, prop)
           renderPropFound = true
+          const fakeRenderPropPath = EP.appendToPath(path, renderPropId(prop))
 
           if (propValue == null || (isJSExpressionValue(propValue) && propValue.value == null)) {
-            const fakePath = EP.appendToPath(path, `prop-label-${prop}`)
-
-            const entries = [renderPropNavigatorEntry(fakePath, prop), slotNavigatorEntry(path)]
+            const entries = [
+              renderPropNavigatorEntry(fakeRenderPropPath, prop),
+              slotNavigatorEntry(fakeRenderPropPath),
+            ]
             navigatorTargets.push(...entries)
             visibleNavigatorTargets.push(...entries)
             return
@@ -147,7 +149,7 @@ export function getNavigatorTargets(
 
           if (isJSXElement(propValue)) {
             const childPath = EP.appendToPath(path, propValue.uid)
-            const entry = renderPropNavigatorEntry(childPath, prop)
+            const entry = renderPropNavigatorEntry(fakeRenderPropPath, prop)
             navigatorTargets.push(entry)
             visibleNavigatorTargets.push(entry)
 
@@ -172,6 +174,7 @@ export function getNavigatorTargets(
         openFilePath,
         projectContents,
       )
+
       if (isFeatureEnabled('Render Props in Navigator') && propertyControls != null) {
         walkPropertyControls(propertyControls)
       }
@@ -296,7 +299,10 @@ export function getNavigatorTargets(
           notRenderPropChildren.length > 0 &&
           renderPropFound // only show a dedicated label for the children prop if the component has render props too
         ) {
-          const entry = renderPropNavigatorEntry(EP.appendToPath(path, 'children'), 'children')
+          const entry = renderPropNavigatorEntry(
+            EP.appendToPath(path, renderPropId('children')),
+            'children',
+          )
           navigatorTargets.push(entry)
           visibleNavigatorTargets.push(entry)
         }
@@ -338,4 +344,8 @@ export function getConditionalClausePathForNavigatorEntry(
   const clauseElement =
     navigatorEntry.clause === 'true-case' ? jsxElement.whenTrue : jsxElement.whenFalse
   return getConditionalClausePath(navigatorEntry.elementPath, clauseElement)
+}
+
+function renderPropId(propName: string): string {
+  return `prop-label-${propName}`
 }
