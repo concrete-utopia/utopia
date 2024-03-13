@@ -10,7 +10,9 @@
 
 ## Environment variables
 
-These are the required environment variables; for local development they can be put in a `.env` file, using `.env.sample` as a blueprint.
+For local development they can be put in a `.env` file, using `.env.sample` as a blueprint.
+
+The only *required* variable is `DATABASE_URL`.
 
 | Name                        | Description                                                                                                                                                                                                                                        | Example                                                 |
 | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
