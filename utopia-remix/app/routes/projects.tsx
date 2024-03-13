@@ -705,7 +705,6 @@ const ProjectCard = React.memo(
                   {moment(project.modified_at).fromNow()}
                 </Text>
               </div>
-              {/* <ProjectCardActions project={project} /> */}
             </div>
           </div>
         </ContextMenu.Trigger>
@@ -735,113 +734,117 @@ const ProjectRow = React.memo(
     }, [project.proj_id, projectEditorLink])
 
     return (
-      <div style={{ padding: '8px 0' }}>
-        <div
-          style={{
-            height: 40,
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            border: selected ? '2px solid #0090FF' : '2px solid transparent',
-            borderRadius: 10,
-            padding: 4,
-            transition: `.1s background-color ease-in-out`,
-          }}
-          onMouseDown={onSelect}
-          onDoubleClick={openProject}
-        >
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 15,
-              flex: 1,
-            }}
-          >
+      <ContextMenu.Root>
+        <ContextMenu.Trigger>
+          <div style={{ padding: '8px 0' }}>
             <div
               style={{
-                borderRadius: 8,
-                overflow: 'hidden',
                 height: 40,
-                width: 70,
-                background: 'linear-gradient(#a1a1a130, #a1a1a115)',
-                backgroundAttachment: 'local',
-                backgroundRepeat: 'no-repeat',
-                position: 'relative',
-              }}
-            />
-
-            <Text
-              size='1'
-              style={{
                 display: 'flex',
-                gap: '10px',
+                flexDirection: 'row',
                 alignItems: 'center',
-                flexGrow: 1,
-                minWidth: 180,
-                maxWidth: 380,
-                fontWeight: 500,
+                justifyContent: 'space-between',
+                border: selected ? '2px solid #0090FF' : '2px solid transparent',
+                borderRadius: 10,
+                padding: 4,
+                transition: `.1s background-color ease-in-out`,
               }}
+              onMouseDown={onSelect}
+              onDoubleClick={openProject}
             >
-              {project.title}
-            </Text>
-            <ProjectBadge
-              accessLevel={
-                asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
-              }
-            />
-            <Text size='1' style={{ width: 220, opacity: 0.5 }}>
-              {moment(project.modified_at).fromNow()}
-            </Text>
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 15,
+                  flex: 1,
+                }}
+              >
+                <div
+                  style={{
+                    borderRadius: 8,
+                    overflow: 'hidden',
+                    height: 40,
+                    width: 70,
+                    background: 'linear-gradient(#a1a1a130, #a1a1a115)',
+                    backgroundAttachment: 'local',
+                    backgroundRepeat: 'no-repeat',
+                    position: 'relative',
+                  }}
+                />
 
-            <div
-              style={{
-                maxWidth: 480,
-                minWidth: 100,
-                display: 'flex',
-                gap: 6,
-              }}
-            >
-              {collaborators.map((collaborator) => {
-                return (
-                  <div
-                    key={`collaborator-${project.id}-${collaborator.id}`}
-                    style={{
-                      borderRadius: '100%',
-                      width: 24,
-                      height: 24,
-                      backgroundColor: '#0075F9',
-                      backgroundImage: `url("${collaborator.avatar}")`,
-                      backgroundSize: 'cover',
-                      color: 'white',
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      fontSize: '.9em',
-                      fontWeight: 700,
-                      filter: project.deleted === true ? 'grayscale(1)' : undefined,
-                    }}
-                    title={collaborator.name ?? UnknownPlayerName}
-                    className={sprinkles({
-                      boxShadow: 'shadow',
-                      color: 'white',
-                      backgroundColor: 'primary',
-                    })}
-                  >
-                    {when(
-                      collaborator.avatar === '',
-                      multiplayerInitialsFromName(collaborator.name),
-                    )}
-                  </div>
-                )
-              })}
+                <Text
+                  size='1'
+                  style={{
+                    display: 'flex',
+                    gap: '10px',
+                    alignItems: 'center',
+                    flexGrow: 1,
+                    minWidth: 180,
+                    maxWidth: 380,
+                    fontWeight: 500,
+                  }}
+                >
+                  {project.title}
+                </Text>
+                <ProjectBadge
+                  accessLevel={
+                    asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
+                  }
+                />
+                <Text size='1' style={{ width: 220, opacity: 0.5 }}>
+                  {moment(project.modified_at).fromNow()}
+                </Text>
+
+                <div
+                  style={{
+                    maxWidth: 480,
+                    minWidth: 100,
+                    display: 'flex',
+                    gap: 6,
+                  }}
+                >
+                  {collaborators.map((collaborator) => {
+                    return (
+                      <div
+                        key={`collaborator-${project.id}-${collaborator.id}`}
+                        style={{
+                          borderRadius: '100%',
+                          width: 24,
+                          height: 24,
+                          backgroundColor: '#0075F9',
+                          backgroundImage: `url("${collaborator.avatar}")`,
+                          backgroundSize: 'cover',
+                          color: 'white',
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          fontSize: '.9em',
+                          fontWeight: 700,
+                          filter: project.deleted === true ? 'grayscale(1)' : undefined,
+                        }}
+                        title={collaborator.name ?? UnknownPlayerName}
+                        className={sprinkles({
+                          boxShadow: 'shadow',
+                          color: 'white',
+                          backgroundColor: 'primary',
+                        })}
+                      >
+                        {when(
+                          collaborator.avatar === '',
+                          multiplayerInitialsFromName(collaborator.name),
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
             </div>
           </div>
-          {/* <ProjectCardActions project={project} /> */}
-        </div>
-      </div>
+        </ContextMenu.Trigger>
+        <ProjectActionsMenu project={project} />
+      </ContextMenu.Root>
     )
   },
 )
