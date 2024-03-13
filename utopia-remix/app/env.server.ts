@@ -10,26 +10,29 @@ declare global {
 
 export type AppEnv = 'local' | 'stage' | 'prod' | 'test'
 
+const environment = getAppEnv()
+console.info(`Remix app environment: ${environment}`)
+
 export const ServerEnvironment = {
-  environment: mustEnv('APP_ENV') as AppEnv,
+  environment: environment,
   // The URL of the actual backend server in the form <scheme>://<host>:<port>
-  BackendURL: mustEnv('BACKEND_URL'),
+  BackendURL: mustEnvOrLocalFallback('BACKEND_URL', 'http://localhost:8002'),
   // the CORS allowed origin for incoming requests
-  CORSOrigin: mustEnv('CORS_ORIGIN'),
+  CORSOrigin: mustEnvOrLocalFallback('CORS_ORIGIN', 'http://localhost:8000'),
   // Auth0 credentials
-  AUTH0_ENDPOINT: optionalEnv('AUTH0_ENDPOINT', '<AUTH0_ENDPOINT>'),
-  AUTH0_CLIENT_ID: optionalEnv('AUTH0_CLIENT_ID', '<AUTH0_CLIENT_ID>'),
-  AUTH0_REDIRECT_URI: optionalEnv('AUTH0_REDIRECT_URI', '<AUTH0_REDIRECT_URI>'),
-  // FGA Credentials
-  FGA_STORE_ID: optionalEnv('FGA_STORE_ID', '<FGA_STORE_ID>'),
-  FGA_CLIENT_ID: optionalEnv('FGA_CLIENT_ID', '<FGA_CLIENT_ID>'),
-  FGA_SECRET: optionalEnv('FGA_SECRET', '<FGA_SECRET>'),
-  FGA_API_HOST: optionalEnv('FGA_API_HOST', '<FGA_API_HOST>'),
-  FGA_API_TOKEN_ISSUER: optionalEnv('FGA_API_TOKEN_ISSUER', '<FGA_API_TOKEN_ISSUER>'),
-  FGA_API_AUDIENCE: optionalEnv('FGA_API_AUDIENCE', '<FGA_API_AUDIENCE>'),
+  AUTH0_ENDPOINT: mustEnvOrLocalFallback('AUTH0_ENDPOINT', ''),
+  AUTH0_CLIENT_ID: mustEnvOrLocalFallback('AUTH0_CLIENT_ID', ''),
+  AUTH0_REDIRECT_URI: mustEnvOrLocalFallback('AUTH0_REDIRECT_URI', ''),
+  // FGA Credentialsx
+  FGA_STORE_ID: mustEnvOrLocalFallback('FGA_STORE_ID', ''),
+  FGA_CLIENT_ID: mustEnvOrLocalFallback('FGA_CLIENT_ID', ''),
+  FGA_SECRET: mustEnvOrLocalFallback('FGA_SECRET', ''),
+  FGA_API_HOST: mustEnvOrLocalFallback('FGA_API_HOST', ''),
+  FGA_API_TOKEN_ISSUER: mustEnvOrLocalFallback('FGA_API_TOKEN_ISSUER', ''),
+  FGA_API_AUDIENCE: mustEnvOrLocalFallback('FGA_API_AUDIENCE', ''),
   // Github OAuth credentials
-  GITHUB_OAUTH_CLIENT_ID: optionalEnv('GITHUB_OAUTH_CLIENT_ID', ''),
-  GITHUB_OAUTH_REDIRECT_URL: optionalEnv('GITHUB_OAUTH_REDIRECT_URL', ''),
+  GITHUB_OAUTH_CLIENT_ID: mustEnvOrLocalFallback('GITHUB_OAUTH_CLIENT_ID', ''),
+  GITHUB_OAUTH_REDIRECT_URL: mustEnvOrLocalFallback('GITHUB_OAUTH_REDIRECT_URL', ''),
 }
 
 export type BrowserEnvironment = {
@@ -38,19 +41,40 @@ export type BrowserEnvironment = {
 }
 
 export const BrowserEnvironment: BrowserEnvironment = {
-  EDITOR_URL: mustEnv('REACT_APP_EDITOR_URL'),
-  UTOPIA_CDN_URL: optionalEnv('UTOPIA_CDN_URL', ''),
+  EDITOR_URL: mustEnvOrLocalFallback('REACT_APP_EDITOR_URL', 'http://localhost:8000'),
+  UTOPIA_CDN_URL: mustEnvOrLocalFallback('UTOPIA_CDN_URL', 'http://localhost:8000'),
 }
 
-function mustEnv(key: string): string {
-  const value = process.env[key]
-  if (value == null) {
-    throw new Error(`missing required environment variable ${key}`)
+/**
+ * If the APP_ENV variable is set, return that.
+ * If it's not set, try to guess it from the NODE_ENV.
+ * If everything else fails, throw an error, because this should _never_ happen.
+ */
+function getAppEnv(): AppEnv {
+  const env = process.env['APP_ENV'] ?? ''
+  if (env !== '') {
+    return env
   }
-  return value
+
+  switch (process.env.NODE_ENV) {
+    case 'development':
+      return 'local'
+    case 'production':
+      return 'prod'
+    case 'test':
+      return 'test'
+    default:
+      throw new Error('cannot determine app environment')
+  }
 }
 
-function optionalEnv(key: string, defaultValue: string): string {
-  const value = process.env[key]
-  return value ?? defaultValue
+function mustEnvOrLocalFallback(key: string, localFallback: string) {
+  const value = process.env[key] ?? ''
+  if (value !== '') {
+    return value
+  }
+  if (environment === 'local' || environment === 'test') {
+    return localFallback
+  }
+  throw new Error(`missing required environment variable ${key}`)
 }
