@@ -2280,7 +2280,10 @@ function getAttributeExpression(
           [],
         ),
       )
-    } else if (TS.isJsxElement(initializer.expression!)) {
+    } else if (
+      TS.isJsxElement(initializer.expression) ||
+      TS.isJsxSelfClosingElement(initializer.expression)
+    ) {
       const parseResult = parseOutJSXElements(
         sourceFile,
         sourceText,

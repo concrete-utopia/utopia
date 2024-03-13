@@ -5440,6 +5440,67 @@ export var App = props => {
       actualResult,
     )
   })
+
+  it('parses self-closing jsx literal in attribute as jsx element', () => {
+    const code = `import * as React from "react";
+import { View } from "utopia-api";
+var MyComp = (props) => {
+  return <View data-uid='aaa'>{props.title}</View>
+}
+export var App = props => {
+  return (
+    <MyComp title={<div />} />
+  )
+}`
+    const actualResult = testParseCode(code)
+    foldParsedTextFile(
+      (_) => {
+        throw new Error('Unable to parse code.')
+      },
+      (success) => {
+        expect(elementsStructure(success.topLevelElements)).toMatchInlineSnapshot(`
+          "IMPORT_STATEMENT
+          UNPARSED_CODE
+          IMPORT_STATEMENT
+          UNPARSED_CODE
+          UTOPIA_JSX_COMPONENT - MyComp
+            JSX_ELEMENT - View - aaa
+              JS_PROPERTY_ACCESS - 807
+                JS_IDENTIFIER - 09c
+          UNPARSED_CODE
+          UTOPIA_JSX_COMPONENT - App
+            JSX_ELEMENT - MyComp - 26c"
+        `)
+
+        const appComponent = success.topLevelElements.find(
+          (e) => isUtopiaJSXComponent(e) && e.name === 'App',
+        )!
+        if (!isUtopiaJSXComponent(appComponent) || appComponent.name !== `App`) {
+          throw new Error('expected to have a topLevelElement which is the App component')
+        }
+        if (!isJSXElement(appComponent.rootElement)) {
+          throw new Error(`expected the App component's root element to be a JSXElement`)
+        }
+
+        appComponent.rootElement.children
+
+        const arbitraryProp = optionalMap(
+          (p) => p.value,
+          appComponent.rootElement.props
+            .filter(isJSXAttributesEntry)
+            .find((p) => p.key === 'title'),
+        )
+
+        if (arbitraryProp == null || !modifiableAttributeIsJsxElement(arbitraryProp)) {
+          throw new Error(`expected to have an jsx element prop called props.title`)
+        }
+      },
+      (_) => {
+        throw new Error('Unable to parse code.')
+      },
+      actualResult,
+    )
+  })
 })
 
 describe('SourceMap', () => {
