@@ -124,5 +124,6 @@ model ProjectAccessRequest {
     updated_at DateTime @default(now()) @db.Timestamptz(6)
 
     @@unique([project_id, user_id])
+    @@unique([project_id, token])
     @@map("project_access_request")
 }

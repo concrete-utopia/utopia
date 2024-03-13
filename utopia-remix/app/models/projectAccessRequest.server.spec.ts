@@ -122,7 +122,7 @@ describe('projectAccessRequest', () => {
           token: 'WRONG',
           status: AccessRequestStatus.APPROVED,
         })
-      await expect(fn).rejects.toThrow('request not found')
+      await expect(fn).rejects.toThrow('not found')
     })
     it("updates the request's status", async () => {
       await createTestProjectAccessRequest(prisma, {

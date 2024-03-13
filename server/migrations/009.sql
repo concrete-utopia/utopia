@@ -13,3 +13,6 @@ CREATE INDEX "idx_project_access_request_project_id" ON "public"."project_access
 ALTER TABLE ONLY "project_access_request"
     ADD CONSTRAINT "unique_project_access_request_project_id_user_id" UNIQUE ("project_id", "user_id");
 
+ALTER TABLE ONLY "project_access_request"
+    ADD CONSTRAINT "unique_project_access_request_project_id_token" UNIQUE ("project_id", "token");
+
