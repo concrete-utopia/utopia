@@ -16,9 +16,9 @@ console.info(`Remix app environment: ${environment}`)
 export const ServerEnvironment = {
   environment: environment,
   // The URL of the actual backend server in the form <scheme>://<host>:<port>
-  BackendURL: mustEnvOrLocalFallback('BACKEND_URL', 'http://localhost:8002'),
+  BACKEND_URL: mustEnvOrLocalFallback('BACKEND_URL', 'http://localhost:8002'),
   // the CORS allowed origin for incoming requests
-  CORSOrigin: mustEnvOrLocalFallback('CORS_ORIGIN', 'http://localhost:8000'),
+  CORS_ORIGIN: mustEnvOrLocalFallback('CORS_ORIGIN', 'http://localhost:8000'),
   // Auth0 credentials
   AUTH0_ENDPOINT: mustEnvOrLocalFallback('AUTH0_ENDPOINT', ''),
   AUTH0_CLIENT_ID: mustEnvOrLocalFallback('AUTH0_CLIENT_ID', ''),
