@@ -521,8 +521,8 @@ startup DevServerResources{..} = do
         killThread hashedFilenamesThread
         destroyAllResources _projectPool
 
-serverPortFromResources :: DevServerResources -> [Int]
-serverPortFromResources resources = [_serverPort resources, _serverPort resources + 1]
+serverPortFromResources :: DevServerResources -> Int
+serverPortFromResources resources = _serverPort resources
 
 shouldProxyWebpack :: IO Bool
 shouldProxyWebpack = do

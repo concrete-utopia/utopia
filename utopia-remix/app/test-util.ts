@@ -110,7 +110,7 @@ export function newTestRequest(params?: {
   formData?: FormData
 }): Request {
   const path = (params?.path ?? '').replace(/^\/+/, '')
-  const req = new Request(`http://localhost:8002/` + path, {
+  const req = new Request(`http://localhost:8000/` + path, {
     method: params?.method,
     body: params?.formData,
   })
