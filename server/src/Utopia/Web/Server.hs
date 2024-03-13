@@ -176,13 +176,14 @@ runServerWithResources EnvironmentRuntime{..} = do
   when loggingEnabled $ loggerLn logger "Starting"
   shutdown <- _startup resources
   when loggingEnabled $ loggerLn logger "Startup Processes Completed"
-  let port = _envServerPort resources
+  let ports = _envServerPort resources
   when loggingEnabled $ do
-    -- Note: '<>' is used to append text (amongst other things).
-    loggerLn logger ("Running On: http://localhost:" <> toLogStr port <> "/")
+    forM_ ports $ \port -> do
+      -- Note: '<>' is used to append text (amongst other things).
+      loggerLn logger ("Running On: http://localhost:" <> toLogStr port <> "/")
   let storeForMetrics = _metricsStore resources
   meterMap <- mkMeterMap apiProxy storeForMetrics
-  let settingsList = [Warp.setPort port $ Warp.setOnException (exceptionHandler (loggerLn logger)) Warp.defaultSettings]
+  let settingsList = [ Warp.setPort port $ Warp.setOnException (exceptionHandler (loggerLn logger)) Warp.defaultSettings | port <- ports ]
   let serverAPI = _serverAPI resources
   let assetsCache = _cacheForAssets resources
   let shouldForceSSL = _forceSSL resources

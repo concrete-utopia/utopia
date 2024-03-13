@@ -95,7 +95,7 @@ type Stop = IO ()
 data EnvironmentRuntime r = EnvironmentRuntime
   { _initialiseResources :: IO r
   , _startup             :: r -> IO Stop
-  , _envServerPort       :: r -> Int
+  , _envServerPort       :: r -> [Int]
   , _serverAPI           :: r -> Server API
   , _startupLogging      :: r -> Bool
   , _getLogger           :: r -> FastLogger
@@ -139,7 +139,7 @@ logoutOfSession sessionState cookie pageContents action = do
 portFromEnvironment :: IO Int
 portFromEnvironment = do
   fromEnvironment <- lookupEnv "PORT"
-  let portForEndpoint = fromMaybe 8002 $ do
+  let portForEndpoint = fromMaybe 8000 $ do
         envPort <- fromEnvironment
         readMaybe envPort
   return portForEndpoint

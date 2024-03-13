@@ -5,7 +5,7 @@ export default {
   future: {
     v3_fetcherPersist: true,
   },
-  serverModuleFormat: 'esm',
+  serverDependenciesToBundle: ['@radix-ui/themes'],
   // appDirectory: "app",
   // assetsBuildDirectory: "public/build",
   // publicPath: "/build/",
