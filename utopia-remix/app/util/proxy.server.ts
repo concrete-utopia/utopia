@@ -26,7 +26,7 @@ function buildProxyUrl(url: URL, path: string | null): string {
 export async function proxy(req: Request, options?: { rawOutput?: boolean; path?: string }) {
   const url = buildProxyUrl(new URL(req.url), options?.path ?? null)
 
-  const headers = new Headers()
+  let headers = new Headers()
 
   setCopyHeader(req.headers, headers, 'accept-encoding')
   setCopyHeader(req.headers, headers, 'connection')

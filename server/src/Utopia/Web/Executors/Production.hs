@@ -467,8 +467,8 @@ startup ProductionServerResources{..} = do
         killThread hashedFilenamesThread
         destroyAllResources _projectPool
 
-serverPortFromResources :: ProductionServerResources -> [Int]
-serverPortFromResources resources = [_serverPort resources]
+serverPortFromResources :: ProductionServerResources -> Int
+serverPortFromResources resources = _serverPort resources
 
 productionEnvironmentRuntime :: EnvironmentRuntime ProductionServerResources
 productionEnvironmentRuntime = EnvironmentRuntime
