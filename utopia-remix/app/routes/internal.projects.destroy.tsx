@@ -1,5 +1,5 @@
-import { ActionFunctionArgs } from '@remix-run/node'
-import { Params } from '@remix-run/react'
+import type { ActionFunctionArgs } from '@remix-run/node'
+import type { Params } from '@remix-run/react'
 import { hardDeleteAllProjects } from '../models/project.server'
 import { handle, requireUser } from '../util/api.server'
 import { ALLOW } from '../handlers/validators'

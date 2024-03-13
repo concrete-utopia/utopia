@@ -1,4 +1,4 @@
-import { PinFrameProps } from './frame'
+import type { PinFrameProps } from './frame'
 import { convertPinsToStyleProps } from './pins'
 
 describe('Pins to CSS Conversion', () => {

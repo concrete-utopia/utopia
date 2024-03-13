@@ -11,7 +11,7 @@ import {
 
 import stylesheet from '~/styles/next-tailwind.css'
 import urlJoin from 'url-join'
-import { rootLoader } from '../root'
+import type { rootLoader } from '../root'
 import React from 'react'
 
 export const links: LinksFunction = () => [

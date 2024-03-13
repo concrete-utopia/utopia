@@ -1,4 +1,4 @@
-import { ActionFunctionArgs } from '@remix-run/node'
+import type { ActionFunctionArgs } from '@remix-run/node'
 import { handle } from '../util/api.server'
 import { proxy } from '../util/proxy.server'
 import { ALLOW } from '../handlers/validators'

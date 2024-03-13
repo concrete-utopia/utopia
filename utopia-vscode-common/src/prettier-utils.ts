@@ -1,6 +1,6 @@
 import * as parserTypescript from 'prettier/parser-typescript'
 import * as prettier from 'prettier/standalone'
-import { CursorOptions, Options } from 'prettier'
+import type { CursorOptions, Options } from 'prettier'
 
 export const PrettierConfig: Options = {
   parser: 'typescript',
