@@ -186,7 +186,7 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
   return (
     <DropdownMenu.Portal>
       <DropdownMenu.Content className={contextMenuDropdown()} align='end' sideOffset={5}>
-        {menuEntries.filter(Boolean).map((entry, index) => {
+        {menuEntries.map((entry, index) => {
           if (entry == null) {
             return null
           }
