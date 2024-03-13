@@ -27,12 +27,12 @@ export async function proxy(req: Request, options?: { rawOutput?: boolean; path?
   const url = buildProxyUrl(new URL(req.url), options?.path ?? null)
 
   let headers = new Headers()
-
-  setCopyHeader(req.headers, headers, 'accept-encoding')
-  setCopyHeader(req.headers, headers, 'connection')
-  setCopyHeader(req.headers, headers, 'content-length')
-  setCopyHeader(req.headers, headers, 'content-type')
-  setCopyHeader(req.headers, headers, 'cookie')
+  req.headers.forEach((value, key) => {
+    // add headers to ignore here, with simple comparisons to make it faster than i.e. an array lookup
+    if (key !== 'host') {
+      headers.set(key, value)
+    }
+  })
 
   const response = await fetch(url, {
     credentials: 'include',
