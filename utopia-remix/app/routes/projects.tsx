@@ -40,6 +40,8 @@ import {
   Trigger as DropdownMenuTrigger,
 } from '@radix-ui/react-dropdown-menu'
 import {
+  ArrowUpIcon,
+  ArrowDownIcon,
   CubeIcon,
   DashboardIcon,
   DotsHorizontalIcon,
@@ -47,7 +49,7 @@ import {
   MagnifyingGlassIcon,
   TrashIcon,
 } from '@radix-ui/react-icons'
-import { Text, Button, Badge, Flex, TextField } from '@radix-ui/themes'
+import { Text, Button, Badge, Flex, TextField, DropdownMenu } from '@radix-ui/themes'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
@@ -403,25 +405,18 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
             </div>,
           )}
         </div>
-        <div style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
+        <div style={{ display: 'flex', flexDirection: 'row', gap: 20, alignItems: 'center' }}>
           {when(
             projects.length > 1,
-            <DropdownMenuRoot onOpenChange={handleSortMenuOpenChange}>
-              <DropdownMenuTrigger asChild>
-                <div
-                  className={button()}
-                  style={{
-                    justifyContent: 'flex-end',
-                    gap: 10,
-                    background: sortMenuOpen ? '#a4a4a430' : 'inherit',
-                  }}
-                >
-                  <Text size='1'>{convertToTitleCase(sortCriteria)} </Text>
-                  <div>{sortAscending ? '↑' : '↓'}</div>
-                </div>
-              </DropdownMenuTrigger>
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger>
+                <Button color='gray' variant='ghost' highContrast style={{ fontSize: 12 }}>
+                  {convertToTitleCase(sortCriteria)}
+                  {sortAscending ? <ArrowUpIcon /> : <ArrowDownIcon />}
+                </Button>
+              </DropdownMenu.Trigger>
               <SortingContextMenu />
-            </DropdownMenuRoot>,
+            </DropdownMenu.Root>,
           )}
           {when(
             projects.length > 0,
