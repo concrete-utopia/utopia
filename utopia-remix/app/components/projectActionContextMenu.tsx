@@ -14,7 +14,17 @@ import { useProjectEditorLink } from '../util/links'
 import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
 import slugify from 'slugify'
 import { SLUGIFY_OPTIONS } from '../routes/internal.projects.$id.rename'
-import { ContextMenu, Separator } from '@radix-ui/themes'
+import {
+  ContextMenu,
+  Separator,
+  Dialog,
+  Flex,
+  IconButton,
+  Text,
+  Button,
+  DropdownMenu,
+} from '@radix-ui/themes'
+import { CaretDownIcon, Cross2Icon, GlobeIcon, LockClosedIcon } from '@radix-ui/react-icons'
 
 type ContextMenuEntry =
   | {
@@ -22,6 +32,7 @@ type ContextMenuEntry =
       onClick: (project: ProjectWithoutContent) => void
     }
   | 'separator'
+  | 'sharing-dialog'
 
 export const ProjectActionsMenu = React.memo(({ project }: { project: ProjectWithoutContent }) => {
   const deleteFetcher = useFetcherWithOperation(project.proj_id, 'delete')
@@ -116,15 +127,7 @@ export const ProjectActionsMenu = React.memo(({ project }: { project: ProjectWit
               window.open(projectEditorLink(project.proj_id) + '/?fork=true', '_blank')
             },
           },
-          {
-            text: accessLevel === AccessLevel.PUBLIC ? 'Make Private' : 'Make Public',
-            onClick: (project) => {
-              changeAccessLevel(
-                project.proj_id,
-                accessLevel === AccessLevel.PUBLIC ? AccessLevel.PRIVATE : AccessLevel.PUBLIC,
-              )
-            },
-          },
+          'sharing-dialog',
           'separator',
           {
             text: 'Rename',
@@ -173,6 +176,80 @@ export const ProjectActionsMenu = React.memo(({ project }: { project: ProjectWit
               size='4'
               style={{ marginTop: 5, marginBottom: 5 }}
             />
+          )
+        }
+        if (entry === 'sharing-dialog') {
+          return (
+            <Dialog.Root>
+              <Dialog.Trigger>
+                <ContextMenu.Item
+                  style={{ height: 28, fontSize: 12 }}
+                  onSelect={(event) => event.preventDefault()}
+                >
+                  Share
+                </ContextMenu.Item>
+              </Dialog.Trigger>
+              <Dialog.Content>
+                <Flex direction='column' style={{ gap: 20 }}>
+                  <Flex justify='between' align='center'>
+                    <Text size='1'>Project Sharing</Text>
+                    <Dialog.Close>
+                      <IconButton variant='ghost' color='gray'>
+                        <Cross2Icon width='18' height='18' />
+                      </IconButton>
+                    </Dialog.Close>
+                  </Flex>
+                  <Flex justify='between'>
+                    <DropdownMenu.Root>
+                      <DropdownMenu.Trigger>
+                        <Button
+                          color='gray'
+                          variant='ghost'
+                          highContrast
+                          style={{ fontSize: 12, display: 'flex', flexDirection: 'row', gap: 10 }}
+                        >
+                          {accessLevel === AccessLevel.PUBLIC ? (
+                            <GlobeIcon width='16' height='16' />
+                          ) : (
+                            <LockClosedIcon width='16' height='16' />
+                          )}
+                          {accessLevel === AccessLevel.PUBLIC ? 'Public' : 'Private'}
+                          <CaretDownIcon />
+                        </Button>
+                      </DropdownMenu.Trigger>
+                      <DropdownMenu.Content>
+                        <DropdownMenu.CheckboxItem
+                          style={{ height: 28, fontSize: 12, paddingLeft: 30 }}
+                          checked={accessLevel === AccessLevel.PUBLIC}
+                          disabled={accessLevel === AccessLevel.PUBLIC ? true : false}
+                          onCheckedChange={() => {
+                            if (accessLevel === AccessLevel.PUBLIC) {
+                              return
+                            }
+                            changeAccessLevel(project.proj_id, AccessLevel.PUBLIC)
+                          }}
+                        >
+                          {accessLevel === AccessLevel.PUBLIC ? 'Public' : 'Make Public'}
+                        </DropdownMenu.CheckboxItem>
+                        <DropdownMenu.CheckboxItem
+                          style={{ height: 28, fontSize: 12, paddingLeft: 30 }}
+                          checked={accessLevel === AccessLevel.PRIVATE}
+                          disabled={accessLevel === AccessLevel.PRIVATE ? true : false}
+                          onCheckedChange={() => {
+                            if (accessLevel === AccessLevel.PRIVATE) {
+                              return
+                            }
+                            changeAccessLevel(project.proj_id, AccessLevel.PRIVATE)
+                          }}
+                        >
+                          {accessLevel === AccessLevel.PRIVATE ? 'Private' : 'Make Private'}
+                        </DropdownMenu.CheckboxItem>
+                      </DropdownMenu.Content>
+                    </DropdownMenu.Root>
+                  </Flex>
+                </Flex>
+              </Dialog.Content>
+            </Dialog.Root>
           )
         }
         return (

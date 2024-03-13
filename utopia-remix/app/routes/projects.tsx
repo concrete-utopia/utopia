@@ -36,10 +36,6 @@ import {
 } from '../util/use-sort-compare-project'
 import { useCleanupOperations } from '../hooks/useCleanupOperations'
 import {
-  Root as DropdownMenuRoot,
-  Trigger as DropdownMenuTrigger,
-} from '@radix-ui/react-dropdown-menu'
-import {
   ArrowUpIcon,
   ArrowDownIcon,
   CubeIcon,
@@ -342,11 +338,6 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
       inputElement.value = ''
     }
   }
-
-  const [sortMenuOpen, setSortMenuOpen] = React.useState(false)
-  const handleSortMenuOpenChange = React.useCallback(() => {
-    setSortMenuOpen((prevSortMenuOpen) => !prevSortMenuOpen)
-  }, [])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
@@ -881,7 +872,6 @@ const ProjectBadge = React.memo(({ accessLevel }: { accessLevel: AccessLevel }) 
       style={{
         backgroundColor: backgroundColor,
         color: color,
-        padding: '2px 6px',
         fontSize: 9,
         borderRadius: 3,
         fontWeight: 400,
