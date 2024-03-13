@@ -97,6 +97,7 @@ function proxy(originalRequest, originalResponse) {
 
   for (const [key, value] of Object.entries(originalRequest.headers)) {
     // add headers to ignore here, with simple comparisons to make it faster than i.e. an array lookup
+    // NOTE! this should match the check in `proxy.server.ts`!
     if (key !== 'host') {
       headers[key] = value
     }

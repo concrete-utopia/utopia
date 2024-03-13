@@ -29,6 +29,7 @@ export async function proxy(req: Request, options?: { rawOutput?: boolean; path?
   let headers = new Headers()
   req.headers.forEach((value, key) => {
     // add headers to ignore here, with simple comparisons to make it faster than i.e. an array lookup
+    // NOTE! this should match the check in `server.js`!
     if (key !== 'host') {
       headers.set(key, value)
     }
