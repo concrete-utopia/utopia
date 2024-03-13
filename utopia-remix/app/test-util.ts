@@ -91,6 +91,20 @@ export async function createTestProjectAccess(
   })
 }
 
+export async function createTestProjectAccessRequest(
+  client: UtopiaPrismaClient,
+  params: { projectId: string; userId: string; status: AccessLevel; token: string },
+) {
+  await client.projectAccessRequest.create({
+    data: {
+      project_id: params.projectId,
+      user_id: params.userId,
+      status: params.status,
+      token: params.token,
+    },
+  })
+}
+
 interface DeletableModel {
   /* eslint-disable-next-line no-empty-pattern */
   deleteMany: ({}) => Promise<any>
