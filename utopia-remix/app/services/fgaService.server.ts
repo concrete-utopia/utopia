@@ -1,31 +1,42 @@
+import { ClientWriteRequest } from '@openfga/sdk'
 import { AccessLevel } from '../types'
 import { fgaClient } from './fgaClient.server'
 
-export async function updateAccessLevel(projectId: string, accessLevel: AccessLevel) {
-  switch (accessLevel) {
-    case AccessLevel.PUBLIC:
-      await fgaClient.write({
-        writes: [
-          {
-            user: 'user:*',
-            relation: 'viewer',
-            object: `project:${projectId}`,
-          },
-        ],
-      })
-      break
-    case AccessLevel.PRIVATE:
-      await fgaClient.write({
-        deletes: [
-          {
-            user: 'user:*',
-            relation: 'viewer',
-            object: `project:${projectId}`,
-          },
-        ],
-      })
-      break
+function generalRelation(projectId: string, relation: string) {
+  return {
+    user: 'user:*',
+    relation: relation,
+    object: `project:${projectId}`,
   }
+}
+
+const accessLevelToWrites = (projectId: string): Record<AccessLevel, ClientWriteRequest[]> => ({
+  [AccessLevel.PUBLIC]: [
+    { writes: [generalRelation(projectId, 'viewer')] },
+    { deletes: [generalRelation(projectId, 'collaborator')] },
+  ],
+
+  [AccessLevel.PRIVATE]: [
+    { deletes: [generalRelation(projectId, 'viewer')] },
+    { deletes: [generalRelation(projectId, 'collaborator')] },
+    { deletes: [generalRelation(projectId, 'can_request_access')] },
+  ],
+
+  [AccessLevel.WITH_LINK]: [
+    { writes: [generalRelation(projectId, 'viewer')] },
+    { writes: [generalRelation(projectId, 'collaborator')] },
+  ],
+
+  [AccessLevel.COLLABORATIVE]: [
+    { writes: [generalRelation(projectId, 'can_request_access')] },
+    { deletes: [generalRelation(projectId, 'viewer')] },
+    { deletes: [generalRelation(projectId, 'collaborator')] },
+  ],
+})
+
+export async function updateAccessLevel(projectId: string, accessLevel: AccessLevel) {
+  const writes = accessLevelToWrites(projectId)[accessLevel]
+  return await Promise.all(writes.map((write) => fgaClient.write(write)))
 }
 
 const userProjectPermission = [
@@ -89,4 +100,30 @@ export async function canSeeLiveChanges(projectId: string, userId: string): Prom
 
 export async function canManageProject(projectId: string, userId: string): Promise<boolean> {
   return checkUserProjectPermission(projectId, userId, 'can_manage')
+}
+
+//
+
+export async function makeUserViewer(projectId: string, userId: string) {
+  return fgaClient.write({
+    writes: [{ user: `user:${userId}`, relation: 'viewer', object: `project:${projectId}` }],
+  })
+}
+
+export async function makeUserCollaborator(projectId: string, userId: string) {
+  return fgaClient.write({
+    writes: [{ user: `user:${userId}`, relation: 'collaborator', object: `project:${projectId}` }],
+  })
+}
+
+export async function makeUserEditor(projectId: string, userId: string) {
+  return fgaClient.write({
+    writes: [{ user: `user:${userId}`, relation: 'editor', object: `project:${projectId}` }],
+  })
+}
+
+export async function makeUserAdmin(projectId: string, userId: string) {
+  return fgaClient.write({
+    writes: [{ user: `user:${userId}`, relation: 'admin', object: `project:${projectId}` }],
+  })
 }

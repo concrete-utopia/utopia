@@ -45,6 +45,7 @@ export const AccessLevel = {
   PRIVATE: 0,
   PUBLIC: 1,
   WITH_LINK: 2,
+  COLLABORATIVE: 3,
 } as const
 
 export type AccessLevel = (typeof AccessLevel)[keyof typeof AccessLevel]
@@ -57,6 +58,8 @@ export function asAccessLevel(accessLevel: number | undefined | null): AccessLev
       return AccessLevel.PUBLIC
     case AccessLevel.WITH_LINK:
       return AccessLevel.WITH_LINK
+    case AccessLevel.COLLABORATIVE:
+      return AccessLevel.COLLABORATIVE
     default:
       return null
   }
@@ -76,6 +79,15 @@ export const UserProjectPermission = {
 
 export type UserProjectPermission =
   (typeof UserProjectPermission)[keyof typeof UserProjectPermission]
+
+export const UserProjectRole = {
+  VIEWER: 0,
+  COLLABORATOR: 1,
+  EDITOR: 2,
+  ADMIN: 3,
+} as const
+
+export type UserProjectRole = (typeof UserProjectRole)[keyof typeof UserProjectRole]
 interface BaseOperation {
   projectId: string
 }
