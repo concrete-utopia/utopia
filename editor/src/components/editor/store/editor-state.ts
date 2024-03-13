@@ -2232,7 +2232,7 @@ export function navigatorEntryToKey(entry: NavigatorEntry): string {
       return `synthetic-${EP.toComponentId(entry.elementPath)}-${childOrAttributeDetails}`
     }
     case 'RENDER_PROP': {
-      return `render-prop-${EP.toComponentId(entry.elementPath)}-${entry.propName}}`
+      return `render-prop-${EP.toComponentId(entry.elementPath)}-${entry.propName}`
     }
     case 'INVALID_OVERRIDE':
       return `error-${EP.toComponentId(entry.elementPath)}`
