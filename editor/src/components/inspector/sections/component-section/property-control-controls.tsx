@@ -18,6 +18,7 @@ import type {
   NumberInputControlDescription,
   PopUpListControlDescription,
   RadioControlDescription,
+  RegularControlDescription,
   StringInputControlDescription,
   Vector2ControlDescription,
   Vector3ControlDescription,
@@ -70,7 +71,7 @@ import {
 import type { JSXParsedType, JSXParsedValue } from '../../../../utils/value-parser-utils'
 import { assertNever } from '../../../../core/shared/utils'
 
-export interface ControlForPropProps<T extends BaseControlDescription> {
+export interface ControlForPropProps<T extends RegularControlDescription> {
   propPath: PropertyPath
   propName: string
   controlDescription: T
