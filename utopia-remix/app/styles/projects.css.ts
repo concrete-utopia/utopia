@@ -12,7 +12,7 @@ export const projectCards = recipe({
       justifyContent: 'space-between',
       alignContent: 'flex-start',
       gridGap: '40px',
-      // paddingRight: 30,
+      paddingBottom: 30,
     },
   ],
 })
@@ -24,6 +24,7 @@ export const projectRows = recipe({
       overflowY: 'scroll',
       scrollbarColor: '#a1a1a130 transparent',
       gap: 10,
+      paddingBottom: 30,
     },
   ],
 })
