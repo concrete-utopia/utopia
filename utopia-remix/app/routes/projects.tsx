@@ -448,7 +448,6 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
           )}
         </div>
       </div>
-      {when(projects.length === 0, <NoProjectsMessage />)}
     </div>
   )
 })
@@ -543,6 +542,7 @@ const Projects = React.memo(
             ))}
           </div>,
         )}
+        {when(projects.length === 0, <NoProjectsMessage />)}
       </>
     )
   },
@@ -566,7 +566,7 @@ const NoProjectsMessage = React.memo(() => {
 
   const subtitle = searchQuery !== '' ? 'No projects found.' : getCategorySubtitle(selectedCategory)
 
-  return <div style={{ padding: '0px 10px' }}>{subtitle}</div>
+  return <div style={{ padding: '30px 0px', color: 'gray' }}>{subtitle}</div>
 })
 NoProjectsMessage.displayName = 'NoProjectsMessage'
 
