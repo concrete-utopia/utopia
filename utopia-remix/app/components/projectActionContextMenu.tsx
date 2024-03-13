@@ -180,6 +180,9 @@ export const ProjectActionsMenu = React.memo(({ project }: { project: ProjectWit
             key={`entry-${index}`}
             onSelect={() => entry.onClick(project)}
             style={{ height: 28, fontSize: 12 }}
+            color={
+              entry.text === 'Delete Permanently...' || entry.text === 'Delete' ? 'red' : undefined
+            }
           >
             {entry.text}
           </ContextMenu.Item>
