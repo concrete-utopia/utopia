@@ -15,8 +15,6 @@ const mockOpenFgaClient = {
   check: async () => ({ allowed: true }),
 }
 
-export const fgaClient = singleton('fgaClient', createFgaClient)
-
 class WriteSafeOpenFgaClient extends OpenFgaClient {
   constructor(configuration: ClientConfiguration) {
     super(configuration)
@@ -39,6 +37,8 @@ class WriteSafeOpenFgaClient extends OpenFgaClient {
     return writeResponse
   }
 }
+
+export const fgaClient = singleton('fgaClient', createFgaClient)
 
 export function createFgaClient() {
   const fgaClientMode = getFgaClientMode()
