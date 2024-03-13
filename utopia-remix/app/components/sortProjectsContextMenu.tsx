@@ -5,8 +5,20 @@ import { DropdownMenu, Separator } from '@radix-ui/themes'
 export const SortingContextMenu = React.memo(() => {
   const sortCriteria = useProjectsStore((store) => store.sortCriteria)
   const setSortCriteria = useProjectsStore((store) => store.setSortCriteria)
+  const setSortByTitle = React.useCallback(() => setSortCriteria('title'), [setSortCriteria])
+  const setSortByDateCreated = React.useCallback(
+    () => setSortCriteria('dateCreated'),
+    [setSortCriteria],
+  )
+  const setSortByDateModified = React.useCallback(
+    () => setSortCriteria('dateModified'),
+    [setSortCriteria],
+  )
+
   const sortAscending = useProjectsStore((store) => store.sortAscending)
   const setSortAscending = useProjectsStore((store) => store.setSortAscending)
+  const setSortAscendingTrue = React.useCallback(() => setSortAscending(true), [setSortAscending])
+  const setSortAscendingFalse = React.useCallback(() => setSortAscending(false), [setSortAscending])
 
   return (
     <DropdownMenu.Content align='end' sideOffset={10}>

@@ -1,5 +1,5 @@
 import { defaultIfNull } from '../utils'
-import { LayoutProps } from './layout'
+import type { LayoutProps } from './layout'
 
 export interface Sides {
   top?: number

@@ -1,4 +1,4 @@
-import { AccessLevel } from '../types'
+import type { AccessLevel } from '../types'
 import { prisma } from '../db.server'
 import * as permissionsService from '../services/permissionsService.server'
 

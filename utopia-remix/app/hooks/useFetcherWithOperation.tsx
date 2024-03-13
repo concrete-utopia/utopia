@@ -1,7 +1,7 @@
 import { useFetcher } from '@remix-run/react'
 import React from 'react'
 import { useProjectsStore } from '../store'
-import { Operation, OperationType } from '../types'
+import type { Operation, OperationType } from '../types'
 
 export const operationFetcherKeyPrefix = 'operation-'
 
@@ -23,7 +23,7 @@ export function useFetcherWithOperation(projectId: string, type: OperationType) 
       addOperation(operation, key)
       fetcher.submit(data, options)
     },
-    [fetcher, addOperation],
+    [fetcher, key, addOperation],
   )
 
   return {

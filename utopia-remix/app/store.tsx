@@ -1,7 +1,8 @@
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
-import { Category, SortCriteria } from './routes/projects'
-import { Operation, areBaseOperationsEquivalent } from './types'
+import type { Category, SortCriteria } from './routes/projects'
+import type { Operation } from './types'
+import { areBaseOperationsEquivalent } from './types'
 
 // State portion that will be persisted
 interface ProjectsStoreStatePersisted {

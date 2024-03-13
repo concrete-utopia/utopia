@@ -1,32 +1,34 @@
 import { INDEXEDDB } from 'localforage'
 import { isRight } from '../lite-either'
 import { appendToPath, stripLeadingSlash, stripTrailingSlash } from '../path-utils'
+import type { AsyncFSResult } from './fs-core'
 import {
-  AsyncFSResult,
   getItem as getItemCore,
   initializeStore,
   keys as keysCore,
   removeItem as removeItemCore,
   setItem as setItemCore,
 } from './fs-core'
-import {
+import type {
   FSError,
   FSErrorHandler,
   FSNode,
+  FSStat,
+  FSDirectory,
+  FSNodeWithPath,
+  FSFile,
+  FileContent,
+  FSUser,
+} from './fs-types'
+import {
   isDirectory,
   isFile,
   enoent,
   eexist,
   eisdir,
   enotdir,
-  FSStat,
-  FSDirectory,
   fsFile,
   newFSDirectory,
-  FSNodeWithPath,
-  FSFile,
-  FileContent,
-  FSUser,
   fsDirectory,
   fsUnavailable,
 } from './fs-types'
