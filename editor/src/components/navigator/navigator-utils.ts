@@ -294,8 +294,6 @@ export function getNavigatorTargets(
           (c) => !processedPathsAsRenderProp.has(c.pathString),
         )
         if (
-          propertyControls != null &&
-          Object.keys(propertyControls).length > 0 &&
           notRenderPropChildren.length > 0 &&
           renderPropFound // only show a dedicated label for the children prop if the component has render props too
         ) {
