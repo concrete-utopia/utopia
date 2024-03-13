@@ -158,9 +158,9 @@ export function getNavigatorTargets(
               processedPathsAsRenderProp.add(EP.toString(subTreeChild.path))
               walkAndAddKeys(subTreeChild, collapsedAncestor)
             } else {
-              const slotEntry = slotNavigatorEntry(childPath)
-              navigatorTargets.push(slotEntry)
-              visibleNavigatorTargets.push(slotEntry)
+              const synthEntry = syntheticNavigatorEntry(childPath, propValue)
+              navigatorTargets.push(synthEntry)
+              visibleNavigatorTargets.push(synthEntry)
             }
           }
         })
