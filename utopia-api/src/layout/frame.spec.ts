@@ -1,11 +1,5 @@
-import {
-  NormalisedFrame,
-  Frame,
-  FramePoint,
-  toNormalisedFrame,
-  valueToUseForPin,
-  zeroIfNegative,
-} from './frame'
+import type { NormalisedFrame, Frame } from './frame'
+import { FramePoint, toNormalisedFrame, valueToUseForPin, zeroIfNegative } from './frame'
 
 const parentFrame: NormalisedFrame = {
   top: 0,

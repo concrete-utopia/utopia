@@ -1,7 +1,6 @@
 import React from 'react'
 import { useProjectsStore } from '../store'
 import {
-  ProjectWithoutContent,
   operationChangeAccess,
   operationDelete,
   operationDestroy,
@@ -52,7 +51,7 @@ export const ProjectActionsMenu = React.memo(({ project }: { project: ProjectWit
         { method: 'POST', action: `/internal/projects/${projectId}/delete` },
       )
     },
-    [deleteFetcher],
+    [deleteFetcher, project],
   )
 
   const destroyProject = React.useCallback(
@@ -66,7 +65,7 @@ export const ProjectActionsMenu = React.memo(({ project }: { project: ProjectWit
         )
       }
     },
-    [destroyFetcher],
+    [destroyFetcher, project],
   )
 
   const restoreProject = React.useCallback(
@@ -77,7 +76,7 @@ export const ProjectActionsMenu = React.memo(({ project }: { project: ProjectWit
         { method: 'POST', action: `/internal/projects/${projectId}/restore` },
       )
     },
-    [restoreFetcher],
+    [restoreFetcher, project],
   )
 
   const renameProject = React.useCallback(
@@ -88,18 +87,18 @@ export const ProjectActionsMenu = React.memo(({ project }: { project: ProjectWit
         { method: 'POST', action: `/internal/projects/${projectId}/rename` },
       )
     },
-    [renameFetcher],
+    [renameFetcher, project],
   )
 
   const changeAccessLevel = React.useCallback(
-    (projectId: string, accessLevel: AccessLevel) => {
+    (projectId: string, newAccessLevel: AccessLevel) => {
       changeAccessFetcher.submit(
-        operationChangeAccess(project, accessLevel),
-        { accessLevel: accessLevel.toString() },
+        operationChangeAccess(project, newAccessLevel),
+        { accessLevel: newAccessLevel.toString() },
         { method: 'POST', action: `/internal/projects/${projectId}/access` },
       )
     },
-    [changeAccessFetcher],
+    [changeAccessFetcher, project],
   )
   const projectEditorLink = useProjectEditorLink()
 
@@ -109,39 +108,39 @@ export const ProjectActionsMenu = React.memo(({ project }: { project: ProjectWit
         return [
           {
             text: 'Open',
-            onClick: (project) => {
-              window.open(projectEditorLink(project.proj_id), '_blank')
+            onClick: (selectedProject) => {
+              window.open(projectEditorLink(selectedProject.proj_id), '_blank')
             },
           },
           'separator',
           {
             text: 'Copy Link',
-            onClick: (project) => {
-              navigator.clipboard.writeText(projectEditorLink(project.proj_id))
+            onClick: (selectedProject) => {
+              window.navigator.clipboard.writeText(projectEditorLink(selectedProject.proj_id))
               // TODO notification toast
             },
           },
           {
             text: 'Fork',
-            onClick: (project) => {
-              window.open(projectEditorLink(project.proj_id) + '/?fork=true', '_blank')
+            onClick: (selectedProject) => {
+              window.open(projectEditorLink(selectedProject.proj_id) + '/?fork=true', '_blank')
             },
           },
           'sharing-dialog',
           'separator',
           {
             text: 'Rename',
-            onClick: (project) => {
-              const newTitle = window.prompt('New title:', project.title)
+            onClick: (selectedProject) => {
+              const newTitle = window.prompt('New title:', selectedProject.title)
               if (newTitle != null) {
-                renameProject(project.proj_id, newTitle)
+                renameProject(selectedProject.proj_id, newTitle)
               }
             },
           },
           {
             text: 'Delete',
-            onClick: (project) => {
-              deleteProject(project.proj_id)
+            onClick: (selectedProject) => {
+              deleteProject(selectedProject.proj_id)
             },
           },
         ]
@@ -149,8 +148,8 @@ export const ProjectActionsMenu = React.memo(({ project }: { project: ProjectWit
         return [
           {
             text: 'Restore',
-            onClick: (project) => {
-              restoreProject(project.proj_id)
+            onClick: (selectedProject) => {
+              restoreProject(selectedProject.proj_id)
             },
           },
           'separator',
@@ -164,7 +163,16 @@ export const ProjectActionsMenu = React.memo(({ project }: { project: ProjectWit
       default:
         assertNever(selectedCategory)
     }
-  }, [selectedCategory, accessLevel, projectEditorLink])
+  }, [
+    selectedCategory,
+    accessLevel,
+    projectEditorLink,
+    changeAccessLevel,
+    deleteProject,
+    destroyProject,
+    renameProject,
+    restoreProject,
+  ])
 
   return (
     <ContextMenu.Content style={{ width: 170 }}>

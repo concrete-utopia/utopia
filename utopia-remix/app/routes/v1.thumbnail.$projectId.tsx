@@ -1,7 +1,7 @@
-import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node'
+import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node'
 import { proxy } from '../util/proxy.server'
 import { ensure, handle, handleOptions } from '../util/api.server'
-import { Params } from '@remix-run/react'
+import type { Params } from '@remix-run/react'
 import { ALLOW, validateProjectAccess } from '../handlers/validators'
 import { UserProjectPermission } from '../types'
 

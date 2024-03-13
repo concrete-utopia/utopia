@@ -59,8 +59,7 @@ export const button = recipe({
       },
       ellipses: {
         padding: '0px 6px',
-      
-      }
+      },
     },
   },
 

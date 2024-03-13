@@ -9,20 +9,19 @@ import { Spinner } from '../components/spinner'
 import { useIsDarkMode } from '../hooks/useIsDarkMode'
 import { listDeletedProjects, listProjects } from '../models/project.server'
 import { getCollaborators } from '../models/projectCollaborators.server'
-import { OperationWithKey, useProjectsStore } from '../store'
+import type { OperationWithKey } from '../store'
+import { useProjectsStore } from '../store'
 import { button } from '../styles/button.css'
 import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
 import { projectCards, projectRows } from '../styles/projects.css'
 import { sprinkles } from '../styles/sprinkles.css'
-import {
+import type {
   Collaborator,
-  AccessLevel,
   CollaboratorsByProject,
   Operation,
   ProjectWithoutContent,
-  getOperationDescription,
-  asAccessLevel,
 } from '../types'
+import { AccessLevel, getOperationDescription, asAccessLevel } from '../types'
 import { requireUser } from '../util/api.server'
 import { assertNever } from '../util/assertNever'
 import { auth0LoginURL } from '../util/auth0.server'
@@ -324,6 +323,12 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
 
   const gridView = useProjectsStore((store) => store.gridView)
   const setGridView = useProjectsStore((store) => store.setGridView)
+  const setGridViewFalse = React.useCallback(() => {
+    setGridView(false)
+  }, [setGridView])
+  const setGridViewTrue = React.useCallback(() => {
+    setGridView(true)
+  }, [setGridView])
 
   const convertToTitleCase = (str: string): string => {
     return str
@@ -413,18 +418,14 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
             projects.length > 0,
             <div style={{ display: 'flex', flexDirection: 'row', gap: 1, alignItems: 'center' }}>
               <HamburgerMenuIcon
-                onClick={() => {
-                  setGridView(false)
-                }}
+                onClick={setGridViewFalse}
                 className={button({
                   size: 'square',
                   color: !gridView ? 'selected' : 'transparent',
                 })}
               />
               <DashboardIcon
-                onClick={() => {
-                  setGridView(true)
-                }}
+                onClick={setGridViewTrue}
                 className={button({
                   size: 'square',
                   color: gridView ? 'selected' : 'transparent',
@@ -508,6 +509,7 @@ const Projects = React.memo(
                 key={project.proj_id}
                 project={project}
                 selected={project.proj_id === selectedProjectId}
+                /* eslint-disable-next-line react/jsx-no-bind */
                 onSelect={() => handleProjectSelect(project)}
                 collaborators={collaborators[project.proj_id]}
               />
@@ -522,6 +524,7 @@ const Projects = React.memo(
                 key={project.proj_id}
                 project={project}
                 selected={project.proj_id === selectedProjectId}
+                /* eslint-disable-next-line react/jsx-no-bind */
                 onSelect={() => handleProjectSelect(project)}
                 collaborators={collaborators[project.proj_id]}
               />

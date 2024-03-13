@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-namespace */
+
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
@@ -19,12 +21,13 @@ export const ServerEnvironment = {
   AUTH0_CLIENT_ID: optionalEnv('AUTH0_CLIENT_ID', '<AUTH0_CLIENT_ID>'),
   AUTH0_REDIRECT_URI: optionalEnv('AUTH0_REDIRECT_URI', '<AUTH0_REDIRECT_URI>'),
   // FGA Credentials
-  FGA_STORE_ID: optionalEnv('FGA_STORE_ID', '<FGA_STORE_ID>'),
-  FGA_CLIENT_ID: optionalEnv('FGA_CLIENT_ID', '<FGA_CLIENT_ID>'),
-  FGA_SECRET: optionalEnv('FGA_SECRET', '<FGA_SECRET>'),
-  FGA_API_HOST: optionalEnv('FGA_API_HOST', '<FGA_API_HOST>'),
-  FGA_API_TOKEN_ISSUER: optionalEnv('FGA_API_TOKEN_ISSUER', '<FGA_API_TOKEN_ISSUER>'),
-  FGA_API_AUDIENCE: optionalEnv('FGA_API_AUDIENCE', '<FGA_API_AUDIENCE>'),
+  FGA_STORE_ID: optionalEnv('FGA_STORE_ID', ''),
+  FGA_CLIENT_ID: optionalEnv('FGA_CLIENT_ID', ''),
+  FGA_SECRET: optionalEnv('FGA_SECRET', ''),
+  FGA_API_HOST: optionalEnv('FGA_API_HOST', ''),
+  FGA_API_TOKEN_ISSUER: optionalEnv('FGA_API_TOKEN_ISSUER', ''),
+  FGA_API_AUDIENCE: optionalEnv('FGA_API_AUDIENCE', ''),
+  FGA_API_SCHEME: optionalEnv('FGA_API_SCHEME', 'https'),
   // Github OAuth credentials
   GITHUB_OAUTH_CLIENT_ID: optionalEnv('GITHUB_OAUTH_CLIENT_ID', ''),
   GITHUB_OAUTH_REDIRECT_URL: optionalEnv('GITHUB_OAUTH_REDIRECT_URL', ''),

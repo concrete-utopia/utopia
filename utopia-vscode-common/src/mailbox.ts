@@ -7,7 +7,7 @@ import {
   readFileSavedContentAsUTF8,
   writeFileSavedContentAsUTF8,
 } from './fs/fs-utils'
-import { FromVSCodeMessage, ToVSCodeMessage } from './messages'
+import type { FromVSCodeMessage, ToVSCodeMessage } from './messages'
 import { appendToPath } from './path-utils'
 
 type Mailbox = 'VSCODE_MAILBOX' | 'UTOPIA_MAILBOX'
