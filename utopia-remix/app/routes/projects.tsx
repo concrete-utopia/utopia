@@ -1,17 +1,4 @@
-import {
-  Root as DropdownMenuRoot,
-  Trigger as DropdownMenuTrigger,
-} from '@radix-ui/react-dropdown-menu'
-import {
-  CubeIcon,
-  DashboardIcon,
-  DotsHorizontalIcon,
-  HamburgerMenuIcon,
-  MagnifyingGlassIcon,
-  TrashIcon,
-} from '@radix-ui/react-icons'
 import React from 'react'
-import { Badge, Flex } from '@radix-ui/themes'
 import { LoaderFunctionArgs, json } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
@@ -24,7 +11,6 @@ import { listDeletedProjects, listProjects } from '../models/project.server'
 import { getCollaborators } from '../models/projectCollaborators.server'
 import { OperationWithKey, useProjectsStore } from '../store'
 import { button } from '../styles/button.css'
-import { newProjectButton } from '../styles/newProjectButton.css'
 import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
 import { projectCards, projectRows } from '../styles/projects.css'
 import { sprinkles } from '../styles/sprinkles.css'
@@ -49,7 +35,19 @@ import {
   useSortCompareProject,
 } from '../util/use-sort-compare-project'
 import { useCleanupOperations } from '../hooks/useCleanupOperations'
-import { Text, Button } from '@radix-ui/themes'
+import {
+  Root as DropdownMenuRoot,
+  Trigger as DropdownMenuTrigger,
+} from '@radix-ui/react-dropdown-menu'
+import {
+  CubeIcon,
+  DashboardIcon,
+  DotsHorizontalIcon,
+  HamburgerMenuIcon,
+  MagnifyingGlassIcon,
+  TrashIcon,
+} from '@radix-ui/react-icons'
+import { Text, Button, Badge, Flex, TextField } from '@radix-ui/themes'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
@@ -202,7 +200,7 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
         style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: 20,
+          gap: 30,
         }}
       >
         <div
@@ -221,21 +219,13 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
           />
           <div className={userName({})}>{user.name}</div>
         </div>
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            border: `1px solid ${isSearchFocused ? '#0075F9' : 'transparent'}`,
-            borderBottom: `1px solid ${isSearchFocused ? '#0075F9' : 'gray'}`,
-            borderRadius: isSearchFocused ? 3 : undefined,
-            overflow: 'visible',
-            padding: '0px 14px',
-            gap: 10,
-          }}
-        >
-          <MagnifyingGlassIcon width='16' height='16' />
-          <input
+        <TextField.Root>
+          <TextField.Slot>
+            <MagnifyingGlassIcon height='16' width='16' style={{ paddingLeft: 8 }} />
+          </TextField.Slot>
+          <TextField.Input
+            radius='full'
+            placeholder='Search…'
             id='search-input'
             autoFocus={true}
             value={searchQuery}
@@ -244,19 +234,9 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
             }}
             onFocus={() => setIsSearchFocused(true)}
             onBlur={() => setIsSearchFocused(false)}
-            style={{
-              border: 'none',
-              background: 'transparent',
-              outline: 'none',
-              height: 30,
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              fontSize: 12,
-            }}
-            placeholder='Search…'
+            style={{ fontSize: 12 }}
           />
-        </div>
+        </TextField.Root>
         <Flex direction='column' gap='2'>
           {Object.entries(categories).map(([category, data]) => {
             return (
@@ -312,26 +292,6 @@ const TopActionBar = React.memo(() => {
         onClick: () => window.open(projectEditorLink(null), '_blank'),
         color: 'blue',
       },
-      // {
-      //   title: '+ Project On GitHub',
-      //   onClick: () => {},
-      //   color: 'pink',
-      // },
-      // {
-      //   title: '+ Import From GitHub',
-      //   onClick: () => {},
-      //   color: 'purple',
-      // },
-      // {
-      //   title: '+ Remix Project',
-      //   onClick: () => {},
-      //   color: 'blue',
-      // },
-      // {
-      //   title: '+ Shopify Store',
-      //   onClick: () => {},
-      //   color: 'green',
-      // },
     ] as const
   }, [projectEditorLink])
 
@@ -393,7 +353,7 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          height: 40,
+          height: 32,
           flexShrink: 0,
         }}
       >
@@ -403,7 +363,6 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
             flexDirection: 'row',
             alignItems: 'center',
             gap: 10,
-            padding: '5px 10px',
           }}
         >
           <div style={{ fontSize: 16, fontWeight: 600 }}>
@@ -524,7 +483,7 @@ const CategoryTrashActions = React.memo(({ projects }: { projects: ProjectWithou
   return (
     <Button
       onClick={handleEmptyTrash}
-      style={{ display: projects.length === 0 ? 'none' : 'block' }}
+      style={{ display: projects.length === 0 ? 'none' : 'block', fontSize: 12 }}
       color='gray'
       variant='soft'
       highContrast

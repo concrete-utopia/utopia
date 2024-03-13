@@ -1,5 +1,4 @@
 import { recipe } from '@vanilla-extract/recipes'
-import { colors, sprinkles } from './sprinkles.css'
 
 export const projectCards = recipe({
   base: [
