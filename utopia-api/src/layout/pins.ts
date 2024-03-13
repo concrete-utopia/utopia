@@ -1,4 +1,4 @@
-import { PinFrameProps } from './frame'
+import type { PinFrameProps } from './frame'
 
 export interface AxisCSSProps {
   start?: number | string

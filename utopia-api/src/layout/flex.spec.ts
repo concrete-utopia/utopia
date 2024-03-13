@@ -1,6 +1,5 @@
+import type { FlexElementProps, FlexParentProps } from './flex'
 import {
-  FlexElementProps,
-  FlexParentProps,
   FlexDirection,
   FlexAlignment,
   getFlexStretchForChild,

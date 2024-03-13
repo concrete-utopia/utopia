@@ -12,7 +12,7 @@ import { ApiError } from '../util/errors'
 import * as permissionsService from '../services/permissionsService.server'
 import { AccessLevel, UserProjectPermission } from '../types'
 import { action } from '../routes/internal.projects.$id.access'
-import { ApiResponse } from '../util/api.server'
+import type { ApiResponse } from '../util/api.server'
 import { Status } from '../util/statusCodes'
 
 describe('handleChangeAccess', () => {

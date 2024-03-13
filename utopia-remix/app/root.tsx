@@ -1,3 +1,6 @@
+/* eslint-disable react/react-in-jsx-scope */
+// FIXME Move the eslint and prettier config files and scripts to the root level
+
 import { cssBundleHref } from '@remix-run/css-bundle'
 import type { HeadersFunction, LinksFunction } from '@remix-run/node'
 import {
@@ -13,7 +16,8 @@ import {
 } from '@remix-run/react'
 import { BrowserEnvironment } from './env.server'
 import { styles } from './styles/styles.css'
-import { ErrorWithStatus, isErrorWithStatus } from './util/errors'
+import type { ErrorWithStatus } from './util/errors'
+import { isErrorWithStatus } from './util/errors'
 import { Status, getStatusName } from './util/statusCodes'
 import radixStyle from '@radix-ui/themes/styles.css'
 import './normalize.css'

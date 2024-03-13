@@ -1,5 +1,5 @@
-import { StoredFile } from './fs/fs-utils'
-import { FromVSCodeMessage, ToVSCodeMessage } from './messages'
+import type { StoredFile } from './fs/fs-utils'
+import type { FromVSCodeMessage, ToVSCodeMessage } from './messages'
 
 export interface ProjectDirectory {
   type: 'PROJECT_DIRECTORY'

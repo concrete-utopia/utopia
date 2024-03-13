@@ -1,9 +1,9 @@
-import { ActionFunctionArgs } from '@remix-run/node'
+import type { ActionFunctionArgs } from '@remix-run/node'
 import { renameProject } from '../models/project.server'
 import { ensure, handle, requireUser } from '../util/api.server'
 import slugify from 'slugify'
 import { Status } from '../util/statusCodes'
-import { Params } from '@remix-run/react'
+import type { Params } from '@remix-run/react'
 import { validateProjectAccess } from '../handlers/validators'
 import { UserProjectPermission } from '../types'
 

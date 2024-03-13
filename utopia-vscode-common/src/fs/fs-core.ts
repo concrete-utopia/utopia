@@ -1,7 +1,8 @@
 import * as localforage from 'localforage'
-import { Either, left, mapEither, right } from '../lite-either'
+import type { Either } from '../lite-either'
+import { left, mapEither, right } from '../lite-either'
 import { stripTrailingSlash } from '../path-utils'
-import { FSNode } from './fs-types'
+import type { FSNode } from './fs-types'
 import { defer } from './fs-utils'
 
 let dbHeartbeatsStore: LocalForage // There is no way to request a list of existing stores, so we have to explicitly track them

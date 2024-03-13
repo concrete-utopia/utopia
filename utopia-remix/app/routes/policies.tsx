@@ -1,4 +1,4 @@
-import { LinksFunction, MetaFunction } from '@remix-run/node'
+import type { LinksFunction, MetaFunction } from '@remix-run/node'
 import React from 'react'
 import stylesheet from '~/styles/next-tailwind.css'
 

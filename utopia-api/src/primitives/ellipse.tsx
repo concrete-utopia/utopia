@@ -1,5 +1,6 @@
 import React from 'react'
-import { UtopiaComponentProps, addEventHandlersToDivProps } from './common'
+import type { UtopiaComponentProps } from './common'
+import { addEventHandlersToDivProps } from './common'
 
 export interface EllipseProps
   extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>,
