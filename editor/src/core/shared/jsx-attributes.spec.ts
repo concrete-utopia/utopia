@@ -37,6 +37,8 @@ import {
   jsPropertyAccess,
   jsElementAccess,
   jsExpressionOtherJavaScriptSimple,
+  modifiableAttributeIsJsxElement,
+  isJSIdentifier,
 } from '../shared/element-template'
 import {
   getAllPathsFromAttributes,
@@ -168,6 +170,25 @@ function sampleJsxAttributes(): JSXAttributes {
         null,
         {},
         emptyComments,
+      ),
+      identifier: jsIdentifier('hello', 'identifier', null, emptyComments),
+      propertyAccess: jsPropertyAccess(
+        jsIdentifier('hello', 'identifier', null, emptyComments),
+        'propA',
+        'propertyAccess',
+        null,
+        emptyComments,
+        'hello.propA',
+        'not-optionally-chained',
+      ),
+      elementAccess: jsElementAccess(
+        jsIdentifier('hello', 'identifier', null, emptyComments),
+        jsExpressionValue(5, emptyComments),
+        'elementAccess',
+        null,
+        emptyComments,
+        'hello[5]',
+        'not-optionally-chained',
       ),
       'data-uid': jsExpressionValue('aaa', emptyComments),
     }),
@@ -952,6 +973,15 @@ describe('getModifiableJSXAttributeAtPath', () => {
     )
     expect(isRight(impossibleAttributeInsideAValue)).toBeTruthy()
     expect(impossibleAttributeInsideAValue.value).toEqual(jsxAttributeNotFound())
+  })
+
+  it('should return not modifiable at a _path into_ a JSIdentifier', () => {
+    const foundAttribute = getModifiableJSXAttributeAtPath(
+      sampleJsxAttributes(),
+      PP.create('identifier', 'oh no'),
+    )
+
+    expect(isLeft(foundAttribute)).toBeTruthy()
   })
 })
 
