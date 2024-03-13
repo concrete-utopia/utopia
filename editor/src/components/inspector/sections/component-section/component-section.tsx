@@ -107,7 +107,7 @@ import { useVariablesInScopeForSelectedElement } from './variables-in-scope-util
 import { DataPickerPopup } from './data-picker-popup'
 import { jsxElementChildToText } from '../../../canvas/ui-jsx-canvas-renderer/jsx-element-child-to-text'
 import { foldEither } from '../../../../core/shared/either'
-import { stopPropagation, usePropControlledStateV2 } from '../../common/inspector-utils'
+import { stopPropagation } from '../../common/inspector-utils'
 
 export const VariableFromScopeOptionTestId = (idx: string) => `variable-from-scope-${idx}`
 export const DataPickerPopupButtonTestId = `data-picker-popup-button-test-id`
@@ -824,6 +824,12 @@ interface RowForObjectControlProps extends AbstractRowForControlProps {
 }
 
 const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
+  const [open, setOpen] = React.useState(true)
+  const handleOnClick = React.useCallback(() => {
+    if (!props.disableToggling) {
+      setOpen(!open)
+    }
+  }, [setOpen, open, props.disableToggling])
   const { propPath, controlDescription, isScene } = props
   const title = labelForControl(propPath, controlDescription)
   const indentation = props.indentationLevel * 8
@@ -834,17 +840,6 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
   const contextMenuItems = Utils.stripNulls([
     addOnUnsetValues([PP.lastPart(propPath)], propMetadata.onUnsetValues),
   ])
-
-  const defaultToOpen =
-    props.disableToggling ||
-    (propMetadata.propertyStatus.overwritable && !propMetadata.propertyStatus.controlled)
-
-  const [open, setOpen] = usePropControlledStateV2(defaultToOpen)
-  const handleOnClick = React.useCallback(() => {
-    if (!props.disableToggling) {
-      setOpen(!open)
-    }
-  }, [setOpen, open, props.disableToggling])
 
   const selectedViews = useEditorState(
     Substores.selectedViews,
