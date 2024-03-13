@@ -7,6 +7,7 @@ import {
   operationRename,
   operationRestore,
 } from '../types'
+import type { ProjectWithoutContent } from '../types'
 import { assertNever } from '../util/assertNever'
 import { AccessLevel } from '../types'
 import { useProjectEditorLink } from '../util/links'
@@ -155,8 +156,8 @@ export const ProjectActionsMenu = React.memo(({ project }: { project: ProjectWit
           'separator',
           {
             text: 'Delete Permanently...',
-            onClick: (project) => {
-              destroyProject(project.proj_id)
+            onClick: (selectedProject) => {
+              destroyProject(selectedProject.proj_id)
             },
           },
         ]
@@ -165,9 +166,7 @@ export const ProjectActionsMenu = React.memo(({ project }: { project: ProjectWit
     }
   }, [
     selectedCategory,
-    accessLevel,
     projectEditorLink,
-    changeAccessLevel,
     deleteProject,
     destroyProject,
     renameProject,
@@ -188,10 +187,11 @@ export const ProjectActionsMenu = React.memo(({ project }: { project: ProjectWit
         }
         if (entry === 'sharing-dialog') {
           return (
-            <Dialog.Root>
+            <Dialog.Root key={`separator-${index}`}>
               <Dialog.Trigger>
                 <ContextMenu.Item
                   style={{ height: 28, fontSize: 12 }}
+                  /* eslint-disable-next-line react/jsx-no-bind */
                   onSelect={(event) => event.preventDefault()}
                 >
                   Share
@@ -230,6 +230,7 @@ export const ProjectActionsMenu = React.memo(({ project }: { project: ProjectWit
                           style={{ height: 28, fontSize: 12, paddingLeft: 30 }}
                           checked={accessLevel === AccessLevel.PUBLIC}
                           disabled={accessLevel === AccessLevel.PUBLIC ? true : false}
+                          /* eslint-disable-next-line react/jsx-no-bind */
                           onCheckedChange={() => {
                             if (accessLevel === AccessLevel.PUBLIC) {
                               return
@@ -243,6 +244,7 @@ export const ProjectActionsMenu = React.memo(({ project }: { project: ProjectWit
                           style={{ height: 28, fontSize: 12, paddingLeft: 30 }}
                           checked={accessLevel === AccessLevel.PRIVATE}
                           disabled={accessLevel === AccessLevel.PRIVATE ? true : false}
+                          /* eslint-disable-next-line react/jsx-no-bind */
                           onCheckedChange={() => {
                             if (accessLevel === AccessLevel.PRIVATE) {
                               return
@@ -263,6 +265,7 @@ export const ProjectActionsMenu = React.memo(({ project }: { project: ProjectWit
         return (
           <ContextMenu.Item
             key={`entry-${index}`}
+            /* eslint-disable-next-line react/jsx-no-bind */
             onSelect={() => entry.onClick(project)}
             style={{ height: 28, fontSize: 12 }}
             color={
