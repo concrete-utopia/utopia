@@ -34,9 +34,8 @@ console.info(`Server environment: ${nodeEnv}`)
 
 const environment = {
   NODE_ENV: nodeEnv,
-  EXPRESS_PROXY_TARGET_HOST: mustEnvOrLocalFallback('EXPRESS_PROXY_TARGET_HOST', 'localhost'),
-  EXPRESS_PROXY_TARGET_PORT: mustEnvOrLocalFallback('EXPRESS_PROXY_TARGET_PORT', '8002'),
-  CORS_ORIGIN: mustEnvOrLocalFallback('CORS_ORIGIN', 'http://localhost:8000'),
+  BACKEND_URL: new URL(mustEnvOrLocalFallback('BACKEND_URL', 'http://localhost:8002')),
+  EDITOR_URL: mustEnvOrLocalFallback('EDITOR_URL', 'http://localhost:8000'),
   PORT: Number.parseInt(mustEnvOrLocalFallback('PORT', '8000')),
 }
 
@@ -130,8 +129,8 @@ function proxy(originalRequest, originalResponse) {
     {
       // target the right server
       protocol: originalRequest.protocol + ':',
-      host: environment.EXPRESS_PROXY_TARGET_HOST,
-      port: environment.EXPRESS_PROXY_TARGET_PORT,
+      host: environment.BACKEND_URL.hostname,
+      port: environment.BACKEND_URL.port,
 
       // proxy everything
       path: originalRequest.originalUrl,
@@ -148,7 +147,7 @@ function proxy(originalRequest, originalResponse) {
 }
 
 const corsMiddleware = cors({
-  origin: environment.CORS_ORIGIN,
+  origin: environment.EDITOR_URL,
   credentials: true,
 })
 

@@ -22,7 +22,7 @@ export type ApiResponse<T> = TypedResponse<T | ErrorResponse | EmptyResponse>
 
 function defaultResponseHeaders(): Headers {
   return new Headers({
-    'Access-Control-Allow-Origin': ServerEnvironment.CORS_ORIGIN,
+    'Access-Control-Allow-Origin': ServerEnvironment.EDITOR_URL,
     'Access-Control-Allow-Credentials': 'true',
     'Access-Control-Allow-Headers': 'content-type, origin, cookie',
     'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
