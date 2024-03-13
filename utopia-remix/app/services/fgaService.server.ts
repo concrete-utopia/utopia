@@ -1,10 +1,10 @@
 import { AccessLevel } from '../types'
-import { fgaClient, safeFgaWrite } from './fgaClient.server'
+import { fgaClient } from './fgaClient.server'
 
 export async function updateAccessLevel(projectId: string, accessLevel: AccessLevel) {
   switch (accessLevel) {
     case AccessLevel.PUBLIC:
-      await safeFgaWrite({
+      await fgaClient.write({
         writes: [
           {
             user: 'user:*',
@@ -15,7 +15,7 @@ export async function updateAccessLevel(projectId: string, accessLevel: AccessLe
       })
       break
     case AccessLevel.PRIVATE:
-      await safeFgaWrite({
+      await fgaClient.write({
         deletes: [
           {
             user: 'user:*',

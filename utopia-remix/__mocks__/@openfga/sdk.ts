@@ -7,4 +7,8 @@ export function OpenFgaClient() {
 
 export const CredentialsMethod = {}
 export const ErrorCode = {}
+export type ClientRequestOptsWithAuthZModelId = {}
+export type ClientWriteRequest = {}
+export type ClientWriteRequestOpts = {}
+export type ClientWriteResponse = {}
 export type FgaApiValidationError = {}
