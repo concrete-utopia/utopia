@@ -29,16 +29,17 @@ model PersistentSession {
 }
 
 model Project {
-    id                  Int                   @id @default(autoincrement())
-    proj_id             String                @unique(map: "unique_project") @db.VarChar
-    owner_id            String                @db.VarChar
-    title               String                @db.VarChar
-    created_at          DateTime              @db.Timestamptz(6)
-    modified_at         DateTime              @db.Timestamptz(6)
-    content             Bytes
-    deleted             Boolean?
-    ProjectCollaborator ProjectCollaborator[]
-    ProjectAccess       ProjectAccess?
+    id                   Int                    @id @default(autoincrement())
+    proj_id              String                 @unique(map: "unique_project") @db.VarChar
+    owner_id             String                 @db.VarChar
+    title                String                 @db.VarChar
+    created_at           DateTime               @db.Timestamptz(6)
+    modified_at          DateTime               @db.Timestamptz(6)
+    content              Bytes
+    deleted              Boolean?
+    ProjectCollaborator  ProjectCollaborator[]
+    ProjectAccess        ProjectAccess?
+    ProjectAccessRequest ProjectAccessRequest[]
 
     @@map("project")
 }
@@ -68,12 +69,13 @@ model UserConfiguration {
 }
 
 model UserDetails {
-    id                  Int                   @id @default(autoincrement())
-    user_id             String                @unique(map: "unique_user_details") @db.VarChar
-    email               String?               @db.VarChar
-    name                String?               @db.VarChar
-    picture             String?               @db.VarChar
-    ProjectCollaborator ProjectCollaborator[]
+    id                   Int                    @id @default(autoincrement())
+    user_id              String                 @unique(map: "unique_user_details") @db.VarChar
+    email                String?                @db.VarChar
+    name                 String?                @db.VarChar
+    picture              String?                @db.VarChar
+    ProjectCollaborator  ProjectCollaborator[]
+    ProjectAccessRequest ProjectAccessRequest[]
 
     @@map("user_details")
 }
@@ -103,4 +105,24 @@ model ProjectCollaborator {
 
     @@unique([project_id, user_id], name: "unique_project_collaborator_project_id_user_id")
     @@map("project_collaborators")
+}
+
+model ProjectAccessRequest {
+    id Int @id @default(autoincrement())
+
+    Project    Project @relation(fields: [project_id], references: [proj_id])
+    project_id String  @db.VarChar
+
+    User    UserDetails @relation(fields: [user_id], references: [user_id])
+    user_id String      @db.VarChar
+
+    status Int @db.Integer
+
+    token String
+
+    created_at DateTime @default(now()) @db.Timestamptz(6)
+    updated_at DateTime @default(now()) @db.Timestamptz(6)
+
+    @@unique([project_id, user_id])
+    @@map("project_access_request")
 }
