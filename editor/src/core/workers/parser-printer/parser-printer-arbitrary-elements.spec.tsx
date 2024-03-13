@@ -204,9 +204,9 @@ import { View, Storyboard, Scene } from 'utopia-api';
 
 export var App = props => {
   return (
-    <View thing={<div data-uid='bbb' />} data-uid='aaa' />
-  )
-}
+      <View thing={true ? <div data-uid='bbb' /> : null} data-uid='aaa' />
+    )
+  }
 
 export var ${BakedInStoryboardVariableName} = (props) => {
   return (
@@ -234,7 +234,7 @@ import { View, Storyboard, Scene } from 'utopia-api';
 
 export var App = props => {
   return (
-    <View thing={<div data-uid="bbb" style={{ left: 20, top: 300 }} />} data-uid="aaa" />
+    <View thing={true ? <div data-uid="bbb" style={{ left: 20, top: 300 }} /> : null} data-uid="aaa" />
   );
 };
 
