@@ -90,17 +90,14 @@ function getCredentials(fgaClientMode: 'local' | 'remote'): CredentialsConfig {
 function getFgaClientMode(): 'local_mock' | 'local' | 'remote' {
   if (ServerEnvironment.environment === 'local') {
     if (ServerEnvironment.FGA_API_HOST == '') {
-      // eslint-disable-next-line no-console
-      console.log('Using mock FGA client')
+      console.info('Using mock FGA client')
       return 'local_mock'
     }
     if (ServerEnvironment.FGA_API_HOST.includes('localhost')) {
-      // eslint-disable-next-line no-console
-      console.log('Using local FGA client')
+      console.info('Using local FGA client')
       return 'local'
     }
   }
-  // eslint-disable-next-line no-console
-  console.log('Using remote FGA client')
+  console.info('Using remote FGA client')
   return 'remote'
 }
