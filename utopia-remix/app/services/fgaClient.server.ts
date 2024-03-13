@@ -1,5 +1,6 @@
 import { CredentialsMethod, ErrorCode, OpenFgaClient } from '@openfga/sdk'
 import type {
+  ClientConfiguration,
   ClientRequestOptsWithAuthZModelId,
   ClientWriteRequest,
   ClientWriteRequestOpts,
@@ -17,6 +18,9 @@ const mockOpenFgaClient = {
 export const fgaClient = singleton('fgaClient', createFgaClient)
 
 class WriteSafeOpenFgaClient extends OpenFgaClient {
+  constructor(configuration: ClientConfiguration) {
+    super(configuration)
+  }
   async write(
     body: ClientWriteRequest,
     options?: ClientRequestOptsWithAuthZModelId & ClientWriteRequestOpts,
