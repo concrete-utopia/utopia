@@ -568,7 +568,7 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
             >
               {title}
             </PropertyLabel>
-            {propertyStatus.overwritable ? (
+            {propertyStatus.overwritable && !propertyStatus.controlled ? (
               <SquareButton
                 highlight
                 onMouseDown={toggleInsertRow}
