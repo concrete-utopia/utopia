@@ -1,8 +1,5 @@
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import React from 'react'
 import { useProjectsStore } from '../store'
-import { contextMenuDropdown, contextMenuItem } from '../styles/contextMenu.css'
-import { sprinkles } from '../styles/sprinkles.css'
 import {
   ProjectWithoutContent,
   operationChangeAccess,
@@ -17,6 +14,7 @@ import { useProjectEditorLink } from '../util/links'
 import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
 import slugify from 'slugify'
 import { SLUGIFY_OPTIONS } from '../routes/internal.projects.$id.rename'
+import { ContextMenu, Separator } from '@radix-ui/themes'
 
 type ContextMenuEntry =
   | {
@@ -25,7 +23,7 @@ type ContextMenuEntry =
     }
   | 'separator'
 
-export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWithoutContent }) => {
+export const ProjectActionsMenu = React.memo(({ project }: { project: ProjectWithoutContent }) => {
   const deleteFetcher = useFetcherWithOperation(project.proj_id, 'delete')
   const destroyFetcher = useFetcherWithOperation(project.proj_id, 'destroy')
   const restoreFetcher = useFetcherWithOperation(project.proj_id, 'restore')
@@ -118,6 +116,15 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
               window.open(projectEditorLink(project.proj_id) + '/?fork=true', '_blank')
             },
           },
+          {
+            text: accessLevel === AccessLevel.PUBLIC ? 'Make Private' : 'Make Public',
+            onClick: (project) => {
+              changeAccessLevel(
+                project.proj_id,
+                accessLevel === AccessLevel.PUBLIC ? AccessLevel.PRIVATE : AccessLevel.PUBLIC,
+              )
+            },
+          },
           'separator',
           {
             text: 'Rename',
@@ -134,15 +141,6 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
               deleteProject(project.proj_id)
             },
           },
-          {
-            text: accessLevel === AccessLevel.PUBLIC ? 'Make Private' : 'Make Public',
-            onClick: (project) => {
-              changeAccessLevel(
-                project.proj_id,
-                accessLevel === AccessLevel.PUBLIC ? AccessLevel.PRIVATE : AccessLevel.PUBLIC,
-              )
-            },
-          },
         ]
       case 'trash':
         return [
@@ -154,7 +152,7 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
           },
           'separator',
           {
-            text: 'Delete permanently',
+            text: 'Delete Permanently...',
             onClick: (project) => {
               destroyProject(project.proj_id)
             },
@@ -166,30 +164,28 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
   }, [selectedCategory, accessLevel, projectEditorLink])
 
   return (
-    <DropdownMenu.Portal>
-      <DropdownMenu.Content className={contextMenuDropdown()} align='end' sideOffset={5}>
-        {menuEntries.map((entry, index) => {
-          if (entry === 'separator') {
-            return (
-              <DropdownMenu.Separator
-                key={`separator-${index}`}
-                className={sprinkles({ backgroundColor: 'separator' })}
-                style={{ height: 1 }}
-              />
-            )
-          }
+    <ContextMenu.Content style={{ width: 170 }}>
+      {menuEntries.map((entry, index) => {
+        if (entry === 'separator') {
           return (
-            <DropdownMenu.Item
-              key={`entry-${index}`}
-              onClick={() => entry.onClick(project)}
-              className={contextMenuItem()}
-            >
-              {entry.text}
-            </DropdownMenu.Item>
+            <Separator
+              key={`separator-${index}`}
+              size='4'
+              style={{ marginTop: 5, marginBottom: 5 }}
+            />
           )
-        })}
-      </DropdownMenu.Content>
-    </DropdownMenu.Portal>
+        }
+        return (
+          <ContextMenu.Item
+            key={`entry-${index}`}
+            onSelect={() => entry.onClick(project)}
+            style={{ height: 28, fontSize: 12 }}
+          >
+            {entry.text}
+          </ContextMenu.Item>
+        )
+      })}
+    </ContextMenu.Content>
   )
 })
-ProjectContextMenu.displayName = 'ProjectContextMenu'
+ProjectActionsMenu.displayName = 'ProjectActionsMenu'

@@ -3,7 +3,7 @@ import { LoaderFunctionArgs, json } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { UserDetails } from 'prisma-client'
-import { ProjectContextMenu } from '../components/projectActionContextMenu'
+import { ProjectActionsMenu } from '../components/projectActionContextMenu'
 import { SortingContextMenu } from '../components/sortProjectsContextMenu'
 import { Spinner } from '../components/spinner'
 import { useIsDarkMode } from '../hooks/useIsDarkMode'
@@ -49,7 +49,7 @@ import {
   MagnifyingGlassIcon,
   TrashIcon,
 } from '@radix-ui/react-icons'
-import { Text, Button, Badge, Flex, TextField, DropdownMenu } from '@radix-ui/themes'
+import { Text, Button, Badge, Flex, TextField, DropdownMenu, ContextMenu } from '@radix-ui/themes'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
@@ -593,114 +593,124 @@ const ProjectCard = React.memo(
     }, [project, activeOperations])
 
     return (
-      <div
-        style={{
-          minHeight: 200,
-          flex: 1,
-          width: '100%',
-          height: 'min-content',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 5,
-          filter: activeOperations.length > 0 ? 'grayscale(1)' : undefined,
-        }}
-      >
-        <div
-          style={{
-            border: selected ? '2px solid #0075F9' : '2px solid transparent',
-            borderRadius: 10,
-            overflow: 'hidden',
-            height: '100%',
-            aspectRatio: 1.6,
-            background: 'linear-gradient(#a1a1a130, #a1a1a115)',
-            backgroundAttachment: 'local',
-            backgroundRepeat: 'no-repeat',
-            position: 'relative',
-          }}
-          onMouseDown={onSelect}
-          onDoubleClick={openProject}
-        >
-          <div style={{ position: 'absolute', right: 6, bottom: 6, display: 'flex', gap: 2 }}>
-            {collaborators.map((collaborator) => {
-              return (
-                <div
-                  key={`collaborator-${project.id}-${collaborator.id}`}
-                  style={{
-                    borderRadius: '100%',
-                    width: 24,
-                    height: 24,
-                    backgroundImage: `url("${collaborator.avatar}")`,
-                    backgroundSize: 'cover',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    fontSize: '.9em',
-                    fontWeight: 700,
-                    filter: project.deleted === true ? 'grayscale(1)' : undefined,
-                  }}
-                  title={collaborator.name ?? UnknownPlayerName}
-                  className={sprinkles({
-                    boxShadow: 'shadow',
-                    color: 'white',
-                    backgroundColor: 'primary',
-                  })}
-                >
-                  {when(collaborator.avatar === '', multiplayerInitialsFromName(collaborator.name))}
-                </div>
-              )
-            })}
-          </div>
-          {when(
-            activeOperations.length > 0,
+      <ContextMenu.Root>
+        <ContextMenu.Trigger>
+          <div
+            style={{
+              minHeight: 200,
+              flex: 1,
+              width: '100%',
+              height: 'min-content',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 5,
+              filter: activeOperations.length > 0 ? 'grayscale(1)' : undefined,
+            }}
+          >
             <div
               style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
+                border: selected ? '2px solid #0090FF' : '2px solid transparent',
+                borderRadius: 10,
+                overflow: 'hidden',
+                height: '100%',
+                aspectRatio: 1.6,
+                background: 'linear-gradient(#a1a1a130, #a1a1a115)',
+                backgroundAttachment: 'local',
+                backgroundRepeat: 'no-repeat',
+                position: 'relative',
+              }}
+              onMouseDown={onSelect}
+              onDoubleClick={openProject}
+            >
+              <div style={{ position: 'absolute', right: 6, bottom: 6, display: 'flex', gap: 2 }}>
+                {collaborators.map((collaborator) => {
+                  return (
+                    <div
+                      key={`collaborator-${project.id}-${collaborator.id}`}
+                      style={{
+                        borderRadius: '100%',
+                        width: 24,
+                        height: 24,
+                        backgroundImage: `url("${collaborator.avatar}")`,
+                        backgroundSize: 'cover',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        fontSize: '.9em',
+                        fontWeight: 700,
+                        filter: project.deleted === true ? 'grayscale(1)' : undefined,
+                      }}
+                      title={collaborator.name ?? UnknownPlayerName}
+                      className={sprinkles({
+                        boxShadow: 'shadow',
+                        color: 'white',
+                        backgroundColor: 'primary',
+                      })}
+                    >
+                      {when(
+                        collaborator.avatar === '',
+                        multiplayerInitialsFromName(collaborator.name),
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+              {when(
+                activeOperations.length > 0,
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    pointerEvents: 'none',
+                  }}
+                >
+                  <Spinner className={sprinkles({ backgroundColor: 'primary' })} />
+                </div>,
+              )}
+            </div>
+            <div
+              style={{
                 display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
                 alignItems: 'center',
-                justifyContent: 'center',
-                pointerEvents: 'none',
               }}
             >
-              <Spinner className={sprinkles({ backgroundColor: 'primary' })} />
-            </div>,
-          )}
-        </div>
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 5, flex: 1 }}>
-            <div style={{ display: 'flex', gap: 5, flex: 1 }}>
-              <Text
-                size='1'
-                style={{
-                  flexGrow: 1,
-                  fontWeight: 500,
-                }}
+              <div
+                style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 5, flex: 1 }}
               >
-                {projectTitle}
-              </Text>
-              <ProjectBadge
-                accessLevel={
-                  asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
-                }
-              />
+                <div style={{ display: 'flex', gap: 5, flex: 1 }}>
+                  <Text
+                    size='1'
+                    style={{
+                      flexGrow: 1,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {projectTitle}
+                  </Text>
+                  <ProjectBadge
+                    accessLevel={
+                      asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
+                    }
+                  />
+                </div>
+                <Text size='1' style={{ opacity: 0.5 }}>
+                  {moment(project.modified_at).fromNow()}
+                </Text>
+              </div>
+              {/* <ProjectCardActions project={project} /> */}
             </div>
-            <Text size='1' style={{ opacity: 0.5 }}>
-              {moment(project.modified_at).fromNow()}
-            </Text>
           </div>
-          <ProjectCardActions project={project} />
-        </div>
-      </div>
+        </ContextMenu.Trigger>
+        <ProjectActionsMenu project={project} />
+      </ContextMenu.Root>
     )
   },
 )
@@ -733,7 +743,7 @@ const ProjectRow = React.memo(
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
-            border: selected ? '2px solid #0075F9' : '2px solid transparent',
+            border: selected ? '2px solid #0090FF' : '2px solid transparent',
             borderRadius: 10,
             padding: 4,
             transition: `.1s background-color ease-in-out`,
@@ -829,35 +839,13 @@ const ProjectRow = React.memo(
               })}
             </div>
           </div>
-          <ProjectCardActions project={project} />
+          {/* <ProjectCardActions project={project} /> */}
         </div>
       </div>
     )
   },
 )
 ProjectRow.displayName = 'ProjectRow'
-
-const ProjectCardActions = React.memo(({ project }: { project: ProjectWithoutContent }) => {
-  const [sortMenuOpen, setSortMenuOpen] = React.useState(false)
-  const handleSortMenuOpenChange = React.useCallback(() => {
-    setSortMenuOpen((prevSortMenuOpen) => !prevSortMenuOpen)
-  }, [])
-
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-      <DropdownMenuRoot onOpenChange={handleSortMenuOpenChange}>
-        <DropdownMenuTrigger asChild>
-          <DotsHorizontalIcon
-            className={button({ size: 'ellipses' })}
-            style={{ background: sortMenuOpen ? '#a4a4a430' : 'inherit' }}
-          />
-        </DropdownMenuTrigger>
-        <ProjectContextMenu project={project} />
-      </DropdownMenuRoot>
-    </div>
-  )
-})
-ProjectCardActions.displayName = 'ProjectCardActions'
 
 const ProjectBadge = React.memo(({ accessLevel }: { accessLevel: AccessLevel }) => {
   const [color, backgroundColor] = React.useMemo(() => {
@@ -895,6 +883,7 @@ const ProjectBadge = React.memo(({ accessLevel }: { accessLevel: AccessLevel }) 
         borderRadius: 3,
         fontWeight: 400,
         height: 20,
+        width: 45,
       }}
     >
       {text}
