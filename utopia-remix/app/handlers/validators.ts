@@ -1,6 +1,7 @@
-import { AccessValidator, ensure, getUser } from '../util/api.server'
-import { UserProjectPermission } from '../types'
-import { Params } from '@remix-run/react'
+import type { AccessValidator} from '../util/api.server';
+import { ensure, getUser } from '../util/api.server'
+import type { UserProjectPermission } from '../types'
+import type { Params } from '@remix-run/react'
 import { Status } from '../util/statusCodes'
 import { hasUserProjectPermission } from '../services/permissionsService.server'
 import { getProjectOwnerById } from '../models/project.server'

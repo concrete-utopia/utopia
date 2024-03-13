@@ -1,13 +1,14 @@
-import { TypedResponse, json, redirect } from '@remix-run/node'
-import { Params } from '@remix-run/react'
+import type { TypedResponse} from '@remix-run/node';
+import { json, redirect } from '@remix-run/node'
+import type { Params } from '@remix-run/react'
 import * as cookie from 'cookie'
-import { UserDetails } from 'prisma-client'
+import type { UserDetails } from 'prisma-client'
 import { PrismaClientKnownRequestError } from 'prisma-client/runtime/library.js'
 import invariant from 'tiny-invariant'
 import { ServerEnvironment } from '../env.server'
 import { getUserFromSession } from '../models/session.server'
 import { ApiError } from './errors'
-import { Method } from './methods.server'
+import type { Method } from './methods.server'
 import { Status } from './statusCodes'
 import { ALLOW } from '../handlers/validators'
 

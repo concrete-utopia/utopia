@@ -1,4 +1,5 @@
-import { LoaderFunctionArgs, redirect } from '@remix-run/node'
+import type { LoaderFunctionArgs} from '@remix-run/node';
+import { redirect } from '@remix-run/node'
 import { handle, handleOptions } from '../util/api.server'
 import { ServerEnvironment } from '../env.server'
 import { ALLOW } from '../handlers/validators'

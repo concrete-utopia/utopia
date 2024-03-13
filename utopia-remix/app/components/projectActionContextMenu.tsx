@@ -3,8 +3,8 @@ import React from 'react'
 import { useProjectsStore } from '../store'
 import { contextMenuDropdown, contextMenuItem } from '../styles/contextMenu.css'
 import { sprinkles } from '../styles/sprinkles.css'
+import type { ProjectWithoutContent } from '../types'
 import {
-  ProjectWithoutContent,
   operationChangeAccess,
   operationDelete,
   operationDestroy,
@@ -43,7 +43,7 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
         { method: 'POST', action: `/internal/projects/${projectId}/delete` },
       )
     },
-    [deleteFetcher],
+    [deleteFetcher, project],
   )
 
   const destroyProject = React.useCallback(
@@ -57,7 +57,7 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
         )
       }
     },
-    [destroyFetcher],
+    [destroyFetcher, project],
   )
 
   const restoreProject = React.useCallback(
@@ -68,7 +68,7 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
         { method: 'POST', action: `/internal/projects/${projectId}/restore` },
       )
     },
-    [restoreFetcher],
+    [restoreFetcher, project],
   )
 
   const renameProject = React.useCallback(
@@ -79,18 +79,18 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
         { method: 'POST', action: `/internal/projects/${projectId}/rename` },
       )
     },
-    [renameFetcher],
+    [renameFetcher, project],
   )
 
   const changeAccessLevel = React.useCallback(
-    (projectId: string, accessLevel: AccessLevel) => {
+    (projectId: string, newAccessLevel: AccessLevel) => {
       changeAccessFetcher.submit(
-        operationChangeAccess(project, accessLevel),
-        { accessLevel: accessLevel.toString() },
+        operationChangeAccess(project, newAccessLevel),
+        { accessLevel: newAccessLevel.toString() },
         { method: 'POST', action: `/internal/projects/${projectId}/access` },
       )
     },
-    [changeAccessFetcher],
+    [changeAccessFetcher, project],
   )
   const projectEditorLink = useProjectEditorLink()
 
@@ -100,45 +100,45 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
         return [
           {
             text: 'Open',
-            onClick: (project) => {
-              window.open(projectEditorLink(project.proj_id), '_blank')
+            onClick: (selectedProject) => {
+              window.open(projectEditorLink(selectedProject.proj_id), '_blank')
             },
           },
           'separator',
           {
             text: 'Copy Link',
-            onClick: (project) => {
-              navigator.clipboard.writeText(projectEditorLink(project.proj_id))
+            onClick: (selectedProject) => {
+              window.navigator.clipboard.writeText(projectEditorLink(selectedProject.proj_id))
               // TODO notification toast
             },
           },
           {
             text: 'Fork',
-            onClick: (project) => {
-              window.open(projectEditorLink(project.proj_id) + '/?fork=true', '_blank')
+            onClick: (selectedProject) => {
+              window.open(projectEditorLink(selectedProject.proj_id) + '/?fork=true', '_blank')
             },
           },
           'separator',
           {
             text: 'Rename',
-            onClick: (project) => {
-              const newTitle = window.prompt('New title:', project.title)
+            onClick: (selectedProject) => {
+              const newTitle = window.prompt('New title:', selectedProject.title)
               if (newTitle != null) {
-                renameProject(project.proj_id, newTitle)
+                renameProject(selectedProject.proj_id, newTitle)
               }
             },
           },
           {
             text: 'Delete',
-            onClick: (project) => {
-              deleteProject(project.proj_id)
+            onClick: (selectedProject) => {
+              deleteProject(selectedProject.proj_id)
             },
           },
           {
             text: accessLevel === AccessLevel.PUBLIC ? 'Make Private' : 'Make Public',
-            onClick: (project) => {
+            onClick: (selectedProject) => {
               changeAccessLevel(
-                project.proj_id,
+                selectedProject.proj_id,
                 accessLevel === AccessLevel.PUBLIC ? AccessLevel.PRIVATE : AccessLevel.PUBLIC,
               )
             },
@@ -148,22 +148,31 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
         return [
           {
             text: 'Restore',
-            onClick: (project) => {
-              restoreProject(project.proj_id)
+            onClick: (selectedProject) => {
+              restoreProject(selectedProject.proj_id)
             },
           },
           'separator',
           {
             text: 'Delete permanently',
-            onClick: (project) => {
-              destroyProject(project.proj_id)
+            onClick: (selectedProject) => {
+              destroyProject(selectedProject.proj_id)
             },
           },
         ]
       default:
         assertNever(selectedCategory)
     }
-  }, [selectedCategory, accessLevel, projectEditorLink])
+  }, [
+    selectedCategory,
+    accessLevel,
+    projectEditorLink,
+    changeAccessLevel,
+    deleteProject,
+    destroyProject,
+    renameProject,
+    restoreProject,
+  ])
 
   return (
     <DropdownMenu.Portal>
@@ -181,6 +190,7 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
           return (
             <DropdownMenu.Item
               key={`entry-${index}`}
+              /* eslint-disable-next-line react/jsx-no-bind */
               onClick={() => entry.onClick(project)}
               className={contextMenuItem()}
             >

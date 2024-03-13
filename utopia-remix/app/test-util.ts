@@ -1,5 +1,5 @@
-import { UtopiaPrismaClient } from './db.server'
-import { AccessLevel } from './types'
+import type { UtopiaPrismaClient } from './db.server'
+import type { AccessLevel } from './types'
 import { SESSION_COOKIE_NAME } from './util/api.server'
 
 export async function wait(ms: number) {
@@ -92,6 +92,7 @@ export async function createTestProjectAccess(
 }
 
 interface DeletableModel {
+  /* eslint-disable-next-line no-empty-pattern */
   deleteMany: ({}) => Promise<any>
 }
 
