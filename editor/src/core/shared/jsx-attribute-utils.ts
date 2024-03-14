@@ -200,11 +200,7 @@ export function getJSExpressionAtPathParts(
     case 'JS_ELEMENT_ACCESS':
     case 'JS_PROPERTY_ACCESS':
     case 'JS_IDENTIFIER':
-      if (path.length - pathIndex <= 1) {
-        return getJSXAttributeResult(attribute)
-      } else {
-        return getJSXAttributeResult(attribute, PP.createFromArray(path.slice(pathIndex)))
-      }
+      return getJSXAttributeResult(attribute, PP.createFromArray(path.slice(pathIndex)))
     default:
       const _exhaustiveCheck: never = attribute
       throw new Error(`Cannot resolve attribute ${JSON.stringify(attribute)}`)

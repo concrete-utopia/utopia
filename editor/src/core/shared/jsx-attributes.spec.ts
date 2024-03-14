@@ -37,6 +37,8 @@ import {
   jsPropertyAccess,
   jsElementAccess,
   jsExpressionOtherJavaScriptSimple,
+  modifiableAttributeIsJsxElement,
+  isJSIdentifier,
 } from '../shared/element-template'
 import {
   getAllPathsFromAttributes,
@@ -169,9 +171,73 @@ function sampleJsxAttributes(): JSXAttributes {
         {},
         emptyComments,
       ),
+      otherJsReturningObject: jsExpressionOtherJavaScript(
+        [],
+        'true ? {value: 10} : {value: 5}',
+        'true ? {value: 10} : {value: 5}',
+        'return true ? {value: 10} : {value: 5}',
+        [],
+        null,
+        {},
+        emptyComments,
+      ),
       'data-uid': jsExpressionValue('aaa', emptyComments),
     }),
   ) as JSXAttributes
+}
+
+function advancedJSXSampleAttributes() {
+  return [
+    ...sampleJsxAttributes(),
+    ...jsxAttributesFromMap({
+      jsFunctionCall: jsExpressionFunctionCall('myFunction', []),
+      identifier: jsIdentifier('hello', 'identifier', null, emptyComments),
+      propertyAccess: jsPropertyAccess(
+        jsIdentifier('hello', 'identifier', null, emptyComments),
+        'propA',
+        'propertyAccess',
+        null,
+        emptyComments,
+        'hello.propA',
+        'not-optionally-chained',
+      ),
+      elementAccess: jsElementAccess(
+        jsIdentifier('hello', 'identifier', null, emptyComments),
+        jsExpressionValue(5, emptyComments),
+        'elementAccess',
+        null,
+        emptyComments,
+        'hello[5]',
+        'not-optionally-chained',
+      ),
+      fancyArray: jsxAttributeNestedArraySimple([
+        jsxAttributeNestedObjectSimple(
+          jsxAttributesFromMap({
+            identifier: jsIdentifier('hello', 'identifier', null, emptyComments),
+            propertyAccess: jsPropertyAccess(
+              jsIdentifier('hello', 'identifier', null, emptyComments),
+              'propA',
+              'propertyAccess',
+              null,
+              emptyComments,
+              'hello.propA',
+              'not-optionally-chained',
+            ),
+            elementAccess: jsElementAccess(
+              jsIdentifier('hello', 'identifier', null, emptyComments),
+              jsExpressionValue(5, emptyComments),
+              'elementAccess',
+              null,
+              emptyComments,
+              'hello[5]',
+              'not-optionally-chained',
+            ),
+          }),
+          emptyComments,
+        ),
+      ]),
+    }),
+  ]
 }
 
 const expectedCompiledProps = {
@@ -208,6 +274,7 @@ const expectedCompiledProps = {
     },
   },
   otherJs: 10,
+  otherJsReturningObject: { value: 10 },
   'data-uid': 'aaa',
 }
 
@@ -952,6 +1019,173 @@ describe('getModifiableJSXAttributeAtPath', () => {
     )
     expect(isRight(impossibleAttributeInsideAValue)).toBeTruthy()
     expect(impossibleAttributeInsideAValue.value).toEqual(jsxAttributeNotFound())
+
+    const impossibleAttributeInsideNestedObject = getModifiableJSXAttributeAtPath(
+      sampleJsxAttributes(),
+      PP.create('style', 'lol'),
+    )
+    expect(isRight(impossibleAttributeInsideNestedObject)).toBeTruthy()
+    expect(impossibleAttributeInsideNestedObject.value).toEqual(jsxAttributeNotFound())
+
+    const impossibleAttributeInsideNestedArray = getModifiableJSXAttributeAtPath(
+      advancedJSXSampleAttributes(),
+      PP.create('fancyArray', 5),
+    )
+    expect(isRight(impossibleAttributeInsideNestedArray)).toBeTruthy()
+    expect(impossibleAttributeInsideNestedArray.value).toEqual(jsxAttributeNotFound())
+  })
+
+  it('simple array access works', () => {
+    const foundAttributeObject = getModifiableJSXAttributeAtPath(
+      advancedJSXSampleAttributes(),
+      PP.create('fancyArray', 0),
+    )
+
+    expect(isRight(foundAttributeObject)).toBeTruthy()
+    if (isRight(foundAttributeObject)) {
+      expect(foundAttributeObject.value.type).toEqual('ATTRIBUTE_NESTED_OBJECT')
+    }
+  })
+
+  it('throws on wrong array access', () => {
+    const impossibleAttributeInsideNestedArray = expect(() =>
+      getModifiableJSXAttributeAtPath(
+        advancedJSXSampleAttributes(),
+        PP.create('fancyArray', 'lol'),
+      ),
+    ).toThrow()
+  })
+
+  it('returns Left on a path that points into a non-simple-value expression', () => {
+    const foundAttributeOtherJs = getModifiableJSXAttributeAtPath(
+      sampleJsxAttributes(),
+      PP.create(
+        'otherJsReturningObject',
+        'value', // accessing this prop should return a Left
+      ),
+    )
+
+    expect(isLeft(foundAttributeOtherJs)).toBeTruthy()
+
+    const foundAttributeFunctionCall = getModifiableJSXAttributeAtPath(
+      advancedJSXSampleAttributes(),
+      PP.create(
+        'jsFunctionCall',
+        'value', // accessing this prop should return a Left
+      ),
+    )
+
+    expect(isLeft(foundAttributeFunctionCall)).toBeTruthy()
+  })
+
+  it('should return modifiable when pointing at a JSIdentifier / JSElementAccess / JSPropertyAccess', () => {
+    const foundAttributeIdentifier = getModifiableJSXAttributeAtPath(
+      advancedJSXSampleAttributes(),
+      PP.create('identifier'),
+    )
+
+    expect(isRight(foundAttributeIdentifier)).toBeTruthy()
+    if (isRight(foundAttributeIdentifier)) {
+      expect(foundAttributeIdentifier.value.type).toEqual('JS_IDENTIFIER')
+    }
+
+    const foundAttributePropertyAccess = getModifiableJSXAttributeAtPath(
+      advancedJSXSampleAttributes(),
+      PP.create('propertyAccess'),
+    )
+
+    expect(isRight(foundAttributePropertyAccess)).toBeTruthy()
+    if (isRight(foundAttributePropertyAccess)) {
+      expect(foundAttributePropertyAccess.value.type).toEqual('JS_PROPERTY_ACCESS')
+    }
+
+    const foundAttributeElementAccess = getModifiableJSXAttributeAtPath(
+      advancedJSXSampleAttributes(),
+      PP.create('elementAccess'),
+    )
+
+    expect(isRight(foundAttributeElementAccess)).toBeTruthy()
+    if (isRight(foundAttributeElementAccess)) {
+      expect(foundAttributeElementAccess.value.type).toEqual('JS_ELEMENT_ACCESS')
+    }
+  })
+
+  it('should return NotModifiable at a _path into_ a JSIdentifier', () => {
+    const notModifiableAttributeIdentifier = getModifiableJSXAttributeAtPath(
+      advancedJSXSampleAttributes(),
+      PP.create('identifier', 'oh no'),
+    )
+
+    expect(isLeft(notModifiableAttributeIdentifier)).toBeTruthy()
+
+    const notModifiableAttributePropertyAccess = getModifiableJSXAttributeAtPath(
+      advancedJSXSampleAttributes(),
+      PP.create('propertyAccess', 'oh no'),
+    )
+
+    expect(isLeft(notModifiableAttributePropertyAccess)).toBeTruthy()
+
+    const notModifiableAttributeElementAccess = getModifiableJSXAttributeAtPath(
+      advancedJSXSampleAttributes(),
+      PP.create('elementAccess', 'oh no'),
+    )
+
+    expect(isLeft(notModifiableAttributeElementAccess)).toBeTruthy()
+  })
+
+  it('should return modifiable when pointing at an array containing an object containing a JSIdentifier / JSElementAccess / JSPropertyAccess', () => {
+    const foundAttributeIdentifier = getModifiableJSXAttributeAtPath(
+      advancedJSXSampleAttributes(),
+      PP.create('fancyArray', 0, 'identifier'),
+    )
+
+    expect(isRight(foundAttributeIdentifier)).toBeTruthy()
+    if (isRight(foundAttributeIdentifier)) {
+      expect(foundAttributeIdentifier.value.type).toEqual('JS_IDENTIFIER')
+    }
+
+    const foundAttributePropertyAccess = getModifiableJSXAttributeAtPath(
+      advancedJSXSampleAttributes(),
+      PP.create('fancyArray', 0, 'propertyAccess'),
+    )
+
+    expect(isRight(foundAttributePropertyAccess)).toBeTruthy()
+    if (isRight(foundAttributePropertyAccess)) {
+      expect(foundAttributePropertyAccess.value.type).toEqual('JS_PROPERTY_ACCESS')
+    }
+
+    const foundAttributeElementAccess = getModifiableJSXAttributeAtPath(
+      advancedJSXSampleAttributes(),
+      PP.create('fancyArray', 0, 'elementAccess'),
+    )
+
+    expect(isRight(foundAttributeElementAccess)).toBeTruthy()
+    if (isRight(foundAttributeElementAccess)) {
+      expect(foundAttributeElementAccess.value.type).toEqual('JS_ELEMENT_ACCESS')
+    }
+  })
+
+  it('should return NotModifiable at a path beyond an array containing an object containing a JSIdentifier', () => {
+    const notModifiableAttributeIdentifier = getModifiableJSXAttributeAtPath(
+      advancedJSXSampleAttributes(),
+      PP.create('fancyArray', 0, 'identifier', 'oh no'),
+    )
+
+    expect(isLeft(notModifiableAttributeIdentifier)).toBeTruthy()
+
+    const notModifiableAttributePropertyAccess = getModifiableJSXAttributeAtPath(
+      advancedJSXSampleAttributes(),
+      PP.create('fancyArray', 0, 'propertyAccess', 'oh no'),
+    )
+
+    expect(isLeft(notModifiableAttributePropertyAccess)).toBeTruthy()
+
+    const notModifiableAttributeElementAccess = getModifiableJSXAttributeAtPath(
+      advancedJSXSampleAttributes(),
+      PP.create('fancyArray', 0, 'elementAccess', 'oh no'),
+    )
+
+    expect(isLeft(notModifiableAttributeElementAccess)).toBeTruthy()
   })
 })
 

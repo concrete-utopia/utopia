@@ -1,7 +1,7 @@
 jest.mock('@openfga/sdk')
 import { AccessLevel, UserProjectPermission } from '../types'
 import * as permissionsService from './permissionsService.server'
-import { fgaClient } from './fgaService.server'
+import { fgaClient } from './fgaClient.server'
 const { CheckResponse } = jest.requireActual('@openfga/sdk')
 
 describe('permissionsService', () => {
