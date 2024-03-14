@@ -4,15 +4,21 @@ import { useProjectsStore } from '../store'
 import { contextMenuDropdown, contextMenuItem } from '../styles/contextMenu.css'
 import { sprinkles } from '../styles/sprinkles.css'
 import type { AccessRequest, ProjectWithoutContent } from '../types'
-import { operationDelete, operationDestroy, operationRename, operationRestore } from '../types'
+import {
+  AccessRequestStatus,
+  operationDelete,
+  operationDestroy,
+  operationRename,
+  operationRestore,
+} from '../types'
 import { assertNever } from '../util/assertNever'
-import { AccessLevel } from '../types'
 import { useProjectEditorLink } from '../util/links'
 import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
 import slugify from 'slugify'
 import { SLUGIFY_OPTIONS } from '../routes/internal.projects.$id.rename'
 import { SharePopup } from './SharePopup'
-import { ContextMenu, Dialog } from '@radix-ui/themes'
+import { ContextMenu, Dialog, Flex, Text } from '@radix-ui/themes'
+import { DotFilledIcon } from '@radix-ui/react-icons'
 
 type ContextMenuEntry =
   | {
@@ -162,6 +168,11 @@ export const ProjectContextMenu = React.memo(
       event.preventDefault()
     }, [])
 
+    const pendingAccessRequests = useMemo(
+      () => accessRequests.filter((r) => r.status === AccessRequestStatus.PENDING),
+      [accessRequests],
+    )
+
     return (
       <DropdownMenu.Portal>
         <DropdownMenu.Content className={contextMenuDropdown()} align='end' sideOffset={5}>
@@ -187,7 +198,12 @@ export const ProjectContextMenu = React.memo(
                       onSelect={preventDefault}
                       className={contextMenuItem()}
                     >
-                      Share
+                      <Flex justify={'between'} align={'center'} width={'100%'}>
+                        <Text>Share</Text>
+                        {pendingAccessRequests.length > 0 ? (
+                          <DotFilledIcon color={'#DB9A9A'} height={22} width={22} />
+                        ) : null}
+                      </Flex>
                     </DropdownMenu.Item>
                   </Dialog.Trigger>
                   <Dialog.Content>
