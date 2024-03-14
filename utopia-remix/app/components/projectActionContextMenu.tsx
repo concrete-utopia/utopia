@@ -27,7 +27,6 @@ type ContextMenuEntry =
     }
   | 'separator'
   | 'sharing-dialog'
-  | null
 
 export const ProjectContextMenu = React.memo(
   ({
@@ -93,7 +92,7 @@ export const ProjectContextMenu = React.memo(
 
     const projectEditorLink = useProjectEditorLink()
 
-    const menuEntries = React.useMemo((): (ContextMenuEntry | null)[] => {
+    const menuEntries = React.useMemo((): ContextMenuEntry[] => {
       switch (selectedCategory) {
         case 'allProjects':
           return [
@@ -177,9 +176,6 @@ export const ProjectContextMenu = React.memo(
       <DropdownMenu.Portal>
         <DropdownMenu.Content className={contextMenuDropdown()} align='end' sideOffset={5}>
           {menuEntries.map((entry, index) => {
-            if (entry == null) {
-              return null
-            }
             if (entry === 'separator') {
               return (
                 <DropdownMenu.Separator
