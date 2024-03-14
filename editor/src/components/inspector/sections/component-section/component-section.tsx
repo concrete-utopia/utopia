@@ -845,7 +845,7 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
             ref={dataPickerButtonData.setReferenceElement}
           >
             <SimpleFlexRow
-              style={{ flexGrow: 1, paddingRight: 8, justifyContent: 'space-between' }}
+              style={{ minWidth: 0, flexGrow: 1, paddingRight: 8, justifyContent: 'space-between' }}
               onClick={handleOnClick}
             >
               <PropertyLabel

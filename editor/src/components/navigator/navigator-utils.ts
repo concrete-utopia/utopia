@@ -140,7 +140,7 @@ export function getNavigatorTargets(
           if (propValue == null || (isJSExpressionValue(propValue) && propValue.value == null)) {
             const entries = [
               renderPropNavigatorEntry(fakeRenderPropPath, prop),
-              slotNavigatorEntry(fakeRenderPropPath),
+              slotNavigatorEntry(fakeRenderPropPath, prop),
             ]
             navigatorTargets.push(...entries)
             visibleNavigatorTargets.push(...entries)
