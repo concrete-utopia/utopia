@@ -5,7 +5,6 @@ import { assertNever } from './util/assertNever'
 const fullProject = Prisma.validator<Prisma.ProjectDefaultArgs>()({
   include: {
     ProjectAccess: true,
-    ProjectAccessRequest: true,
   },
 })
 
@@ -42,6 +41,20 @@ export function userToCollaborator(user: UserDetails): Collaborator {
     avatar: user.picture,
   }
 }
+
+export interface AccessRequest {
+  status: AccessRequestStatus
+  token: string
+  user_id: string
+  project_id: string
+  user: {
+    email: string | null
+    name: string | null
+    picture: string | null
+  }
+}
+
+export type AccessRequestsByProject = { [projectId: string]: AccessRequest[] }
 
 export const AccessLevel = {
   PRIVATE: 0,

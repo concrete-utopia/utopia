@@ -31,6 +31,8 @@ import { projectCategoryButton, userName } from '../styles/sidebarComponents.css
 import { projectCards, projectRows } from '../styles/projects.css'
 import { sprinkles } from '../styles/sprinkles.css'
 import type {
+  AccessRequest,
+  AccessRequestsByProject,
   Collaborator,
   CollaboratorsByProject,
   Operation,
@@ -50,6 +52,7 @@ import {
 } from '../util/use-sort-compare-project'
 import { useCleanupOperations } from '../hooks/useCleanupOperations'
 import { Text, Button } from '@radix-ui/themes'
+import { getAccessRequests } from '../models/projectAccessRequest.server'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
@@ -84,8 +87,13 @@ export async function loader(args: LoaderFunctionArgs) {
     userId: user.user_id,
   })
 
+  const accessRequests = await getAccessRequests({
+    ids: [...projects, ...deletedProjects].map((p) => p.proj_id),
+    userId: user.user_id,
+  })
+
   return json(
-    { projects, deletedProjects, user, collaborators },
+    { projects, deletedProjects, user, collaborators, accessRequests },
     { headers: { 'cache-control': 'no-cache' } },
   )
 }
@@ -98,6 +106,7 @@ const ProjectsPage = React.memo(() => {
     user: UserDetails
     deletedProjects: ProjectWithoutContent[]
     collaborators: CollaboratorsByProject
+    accessRequests: AccessRequestsByProject
   }
 
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
@@ -155,7 +164,11 @@ const ProjectsPage = React.memo(() => {
       >
         <TopActionBar />
         <ProjectsHeader projects={filteredProjects} />
-        <Projects projects={filteredProjects} collaborators={data.collaborators} />
+        <Projects
+          projects={filteredProjects}
+          collaborators={data.collaborators}
+          accessRequests={data.accessRequests}
+        />
         <ActiveOperations projects={activeProjects} />
       </div>
     </div>
@@ -541,9 +554,11 @@ const Projects = React.memo(
   ({
     projects,
     collaborators,
+    accessRequests,
   }: {
     projects: ProjectWithoutContent[]
     collaborators: CollaboratorsByProject
+    accessRequests: AccessRequestsByProject
   }) => {
     const gridView = useProjectsStore((store) => store.gridView)
 
@@ -569,6 +584,7 @@ const Projects = React.memo(
                 /* eslint-disable-next-line react/jsx-no-bind */
                 onSelect={() => handleProjectSelect(project)}
                 collaborators={collaborators[project.proj_id]}
+                accessRequests={accessRequests[project.proj_id]}
               />
             ))}
           </div>,
@@ -584,6 +600,7 @@ const Projects = React.memo(
                 /* eslint-disable-next-line react/jsx-no-bind */
                 onSelect={() => handleProjectSelect(project)}
                 collaborators={collaborators[project.proj_id]}
+                accessRequests={accessRequests[project.proj_id]}
               />
             ))}
           </div>,
@@ -619,11 +636,13 @@ const ProjectCard = React.memo(
   ({
     project,
     collaborators,
+    accessRequests,
     selected,
     onSelect,
   }: {
     project: ProjectWithoutContent
     collaborators: Collaborator[]
+    accessRequests: AccessRequest[]
     selected: boolean
     onSelect: () => void
   }) => {
@@ -748,7 +767,7 @@ const ProjectCard = React.memo(
               {moment(project.modified_at).fromNow()}
             </Text>
           </div>
-          <ProjectCardActions project={project} />
+          <ProjectCardActions project={project} accessRequests={accessRequests} />
         </div>
       </div>
     )
@@ -762,9 +781,11 @@ const ProjectRow = React.memo(
     collaborators,
     selected,
     onSelect,
+    accessRequests,
   }: {
     project: ProjectWithoutContent
     collaborators: Collaborator[]
+    accessRequests: AccessRequest[]
     selected: boolean
     onSelect: () => void
   }) => {
@@ -879,7 +900,7 @@ const ProjectRow = React.memo(
               })}
             </div>
           </div>
-          <ProjectCardActions project={project} />
+          <ProjectCardActions project={project} accessRequests={accessRequests} />
         </div>
       </div>
     )
@@ -887,26 +908,34 @@ const ProjectRow = React.memo(
 )
 ProjectRow.displayName = 'ProjectRow'
 
-const ProjectCardActions = React.memo(({ project }: { project: ProjectWithoutContent }) => {
-  const [sortMenuOpen, setSortMenuOpen] = React.useState(false)
-  const handleSortMenuOpenChange = React.useCallback(() => {
-    setSortMenuOpen((prevSortMenuOpen) => !prevSortMenuOpen)
-  }, [])
+const ProjectCardActions = React.memo(
+  ({
+    project,
+    accessRequests,
+  }: {
+    project: ProjectWithoutContent
+    accessRequests: AccessRequest[]
+  }) => {
+    const [sortMenuOpen, setSortMenuOpen] = React.useState(false)
+    const handleSortMenuOpenChange = React.useCallback(() => {
+      setSortMenuOpen((prevSortMenuOpen) => !prevSortMenuOpen)
+    }, [])
 
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-      <DropdownMenuRoot onOpenChange={handleSortMenuOpenChange}>
-        <DropdownMenuTrigger asChild>
-          <DotsHorizontalIcon
-            className={button({ size: 'ellipses' })}
-            style={{ background: sortMenuOpen ? '#a4a4a430' : 'inherit' }}
-          />
-        </DropdownMenuTrigger>
-        <ProjectContextMenu project={project} />
-      </DropdownMenuRoot>
-    </div>
-  )
-})
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+        <DropdownMenuRoot onOpenChange={handleSortMenuOpenChange}>
+          <DropdownMenuTrigger asChild>
+            <DotsHorizontalIcon
+              className={button({ size: 'ellipses' })}
+              style={{ background: sortMenuOpen ? '#a4a4a430' : 'inherit' }}
+            />
+          </DropdownMenuTrigger>
+          <ProjectContextMenu project={project} accessRequests={accessRequests} />
+        </DropdownMenuRoot>
+      </div>
+    )
+  },
+)
 ProjectCardActions.displayName = 'ProjectCardActions'
 
 const ProjectBadge = React.memo(({ accessLevel }: { accessLevel: AccessLevel }) => {

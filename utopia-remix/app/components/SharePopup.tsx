@@ -8,16 +8,24 @@ import {
   CookieIcon,
 } from '@radix-ui/react-icons'
 import {
+  type AccessRequest,
   asAccessLevel,
   operationApproveAccessRequest,
   operationChangeAccess,
   type ProjectWithoutContent,
+  AccessRequestStatus,
 } from '../types'
 import { AccessLevel } from '../types'
 import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
 import React from 'react'
 
-export function SharePopup({ project }: { project: ProjectWithoutContent }) {
+export function SharePopup({
+  project,
+  accessRequests,
+}: {
+  project: ProjectWithoutContent
+  accessRequests: AccessRequest[]
+}) {
   let accessLevel = asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
 
   const changeAccessFetcher = useFetcherWithOperation(project.proj_id, 'changeAccess')
@@ -58,8 +66,6 @@ export function SharePopup({ project }: { project: ProjectWithoutContent }) {
     [approveAccessRequestFetcher, project],
   )
 
-  const projectAccessRequests = project.ProjectAccessRequest ?? []
-
   return (
     <>
       <Flex direction='column' style={{ gap: 20 }}>
@@ -78,14 +84,53 @@ export function SharePopup({ project }: { project: ProjectWithoutContent }) {
             changeProjectAccessLevel={changeProjectAccessLevel}
           />
         </Flex>
-        <Separator />
-        <Flex justify='between'>
-          <Text size='1'>Project Access Requests</Text>
-          <Text size='1'>{projectAccessRequests.length}</Text>
-        </Flex>
+        {accessRequests.length > 0 ? (
+          <>
+            <Separator />
+            <AccessRequests
+              project={project}
+              approveAccessRequest={approveAccessRequest}
+              accessRequests={accessRequests}
+            />
+          </>
+        ) : null}
       </Flex>
     </>
   )
+}
+
+function AccessRequests({
+  project,
+  approveAccessRequest,
+  accessRequests,
+}: {
+  project: ProjectWithoutContent
+  approveAccessRequest: (projectId: string, tokenId: string) => void
+  accessRequests: AccessRequest[]
+}) {
+  return accessRequests.map((request) => {
+    const status = request.status
+    return (
+      <Flex key={request.token} justify='between'>
+        <Text size='1'>{request.user.name}</Text>
+        {status === AccessRequestStatus.PENDING ? (
+          <Button
+            size='1'
+            variant='ghost'
+            onClick={() => {
+              approveAccessRequest(project.proj_id, request.token)
+            }}
+          >
+            Approve
+          </Button>
+        ) : (
+          <Text size='1' color='gray'>
+            Approved
+          </Text>
+        )}
+      </Flex>
+    )
+  })
 }
 
 const VisibilityUIComponents = {
@@ -138,9 +183,7 @@ function VisibilityDropdown({
               disabled={accessLevel === level}
               onCheckedChange={onCheckedChange}
             >
-              {accessLevel === level
-                ? VisibilityUIComponents[level].text
-                : `Make ${VisibilityUIComponents[level].text}`}
+              {VisibilityUIComponents[level].text}
             </DropdownMenu.CheckboxItem>
           )
         })}

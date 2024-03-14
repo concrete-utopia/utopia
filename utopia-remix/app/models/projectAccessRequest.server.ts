@@ -1,5 +1,5 @@
 import { prisma } from '../db.server'
-import { AccessRequestStatus, UserProjectRole } from '../types'
+import { AccessRequestStatus, type AccessRequestsByProject, UserProjectRole } from '../types'
 import * as uuid from 'uuid'
 import { ensure } from '../util/api.server'
 import { Status } from '../util/statusCodes'
@@ -92,4 +92,29 @@ export async function updateAccessRequestStatus(params: {
     }
     // NOTE (ruggi): there should be a way to revoke the permission if the request is REJECTED (TODO)
   })
+}
+
+export async function getAccessRequests(params: {
+  ids: string[]
+  userId: string
+}): Promise<AccessRequestsByProject> {
+  const projects = await prisma.project.findMany({
+    where: { proj_id: { in: params.ids }, owner_id: params.userId },
+    include: { ProjectAccessRequest: { include: { User: true } } },
+  })
+
+  let accessRequestsByProject: AccessRequestsByProject = {}
+  for (const project of projects) {
+    const accessRequests = project.ProjectAccessRequest.map(
+      ({ User, status, user_id, project_id, token }) => ({
+        user: User,
+        status: status,
+        user_id: user_id,
+        project_id: project_id,
+        token: token,
+      }),
+    )
+    accessRequestsByProject[project.proj_id] = accessRequests
+  }
+  return accessRequestsByProject
 }
