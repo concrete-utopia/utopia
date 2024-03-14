@@ -16,7 +16,7 @@ import slugify from 'slugify'
 import { SLUGIFY_OPTIONS } from '../routes/internal.projects.$id.rename'
 import { ContextMenu, Separator, Dialog, Flex, Text } from '@radix-ui/themes'
 import { DotFilledIcon } from '@radix-ui/react-icons'
-import { SharePopup } from './SharePopup'
+import { SharingDialog } from './sharingDialog'
 
 type ContextMenuEntry =
   | {
@@ -197,7 +197,7 @@ export const ProjectActionsMenu = React.memo(
                   </ContextMenu.Item>
                 </Dialog.Trigger>
                 <Dialog.Content>
-                  <SharePopup project={project} accessRequests={accessRequests} />
+                  <SharingDialog project={project} accessRequests={accessRequests} />
                 </Dialog.Content>
               </Dialog.Root>
             )

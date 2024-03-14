@@ -21,7 +21,7 @@ import React from 'react'
 import { when } from '../util/react-conditionals'
 import moment from 'moment'
 
-export function SharePopup({
+export function SharingDialog({
   project,
   accessRequests,
 }: {
