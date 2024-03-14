@@ -175,9 +175,13 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
             return (
               <Dialog.Root key={`separator-${index}`}>
                 <Dialog.Trigger>
-                  <ContextMenu.Item style={{ height: 28, fontSize: 12 }} onSelect={preventDefault}>
+                  <DropdownMenu.Item
+                    style={{ height: 28, fontSize: 12 }}
+                    onSelect={preventDefault}
+                    className={contextMenuItem()}
+                  >
                     Share
-                  </ContextMenu.Item>
+                  </DropdownMenu.Item>
                 </Dialog.Trigger>
                 <Dialog.Content>
                   <SharePopup project={project} />

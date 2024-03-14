@@ -1,6 +1,14 @@
-import { Dialog, Flex, IconButton, Text, Button, DropdownMenu } from '@radix-ui/themes'
-import { CaretDownIcon, Cross2Icon, GlobeIcon, LockClosedIcon } from '@radix-ui/react-icons'
+/* eslint-disable react/jsx-no-bind */
+import { Dialog, Flex, IconButton, Text, Button, DropdownMenu, Separator } from '@radix-ui/themes'
 import {
+  CaretDownIcon,
+  Cross2Icon,
+  GlobeIcon,
+  LockClosedIcon,
+  CookieIcon,
+} from '@radix-ui/react-icons'
+import {
+  asAccessLevel,
   operationApproveAccessRequest,
   operationChangeAccess,
   type ProjectWithoutContent,
@@ -10,7 +18,7 @@ import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
 import React from 'react'
 
 export function SharePopup({ project }: { project: ProjectWithoutContent }) {
-  let accessLevel = project.ProjectAccess?.access_level ?? AccessLevel.PRIVATE
+  let accessLevel = asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
 
   const changeAccessFetcher = useFetcherWithOperation(project.proj_id, 'changeAccess')
   const approveAccessRequestFetcher = useFetcherWithOperation(
@@ -27,6 +35,13 @@ export function SharePopup({ project }: { project: ProjectWithoutContent }) {
       )
     },
     [changeAccessFetcher, project],
+  )
+
+  const changeProjectAccessLevel = React.useCallback(
+    (newAccessLevel: AccessLevel) => {
+      changeAccessLevel(project.proj_id, newAccessLevel)
+    },
+    [changeAccessLevel, project],
   )
 
   const approveAccessRequest = React.useCallback(
@@ -49,7 +64,7 @@ export function SharePopup({ project }: { project: ProjectWithoutContent }) {
     <>
       <Flex direction='column' style={{ gap: 20 }}>
         <Flex justify='between' align='center'>
-          <Text size='1'>Project Sharing</Text>
+          <Text size='3'>Project Sharing</Text>
           <Dialog.Close>
             <IconButton variant='ghost' color='gray'>
               <Cross2Icon width='18' height='18' />
@@ -57,57 +72,80 @@ export function SharePopup({ project }: { project: ProjectWithoutContent }) {
           </Dialog.Close>
         </Flex>
         <Flex justify='between'>
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger>
-              <Button
-                color='gray'
-                variant='ghost'
-                highContrast
-                style={{ fontSize: 12, display: 'flex', flexDirection: 'row', gap: 10 }}
-              >
-                {accessLevel === AccessLevel.PUBLIC ? (
-                  <GlobeIcon width='16' height='16' />
-                ) : (
-                  <LockClosedIcon width='16' height='16' />
-                )}
-                {accessLevel === AccessLevel.PUBLIC ? 'Public' : 'Private'}
-                <CaretDownIcon />
-              </Button>
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Content>
-              <DropdownMenu.CheckboxItem
-                style={{ height: 28, fontSize: 12, paddingLeft: 30 }}
-                checked={accessLevel === AccessLevel.PUBLIC}
-                disabled={accessLevel === AccessLevel.PUBLIC ? true : false}
-                /* eslint-disable-next-line react/jsx-no-bind */
-                onCheckedChange={() => {
-                  if (accessLevel === AccessLevel.PUBLIC) {
-                    return
-                  }
-                  changeAccessLevel(project.proj_id, AccessLevel.PUBLIC)
-                }}
-              >
-                {accessLevel === AccessLevel.PUBLIC ? 'Public' : 'Make Public'}
-              </DropdownMenu.CheckboxItem>
-              <DropdownMenu.CheckboxItem
-                style={{ height: 28, fontSize: 12, paddingLeft: 30 }}
-                checked={accessLevel === AccessLevel.PRIVATE}
-                disabled={accessLevel === AccessLevel.PRIVATE ? true : false}
-                /* eslint-disable-next-line react/jsx-no-bind */
-                onCheckedChange={() => {
-                  if (accessLevel === AccessLevel.PRIVATE) {
-                    return
-                  }
-                  changeAccessLevel(project.proj_id, AccessLevel.PRIVATE)
-                }}
-              >
-                {accessLevel === AccessLevel.PRIVATE ? 'Private' : 'Make Private'}
-              </DropdownMenu.CheckboxItem>
-            </DropdownMenu.Content>
-          </DropdownMenu.Root>
+          <Text size='1'>Project Visibility</Text>
+          <VisibilityDropdown
+            accessLevel={accessLevel}
+            changeProjectAccessLevel={changeProjectAccessLevel}
+          />
+        </Flex>
+        <Separator />
+        <Flex justify='between'>
+          <Text size='1'>Project Access Requests</Text>
+          <Text size='1'>{projectAccessRequests.length}</Text>
         </Flex>
       </Flex>
     </>
+  )
+}
+
+const VisibilityUIComponents = {
+  [AccessLevel.PUBLIC]: { text: 'Public', icon: <GlobeIcon width='16' height='16' /> },
+  [AccessLevel.PRIVATE]: { text: 'Private', icon: <LockClosedIcon width='16' height='16' /> },
+  [AccessLevel.COLLABORATIVE]: {
+    text: 'Collaborative',
+    icon: <CookieIcon width='16' height='16' />,
+  },
+  [AccessLevel.WITH_LINK]: {
+    text: 'With Link',
+    icon: <CookieIcon width='16' height='16' />,
+  },
+}
+
+function VisibilityDropdown({
+  accessLevel,
+  changeProjectAccessLevel,
+}: {
+  accessLevel: AccessLevel
+  changeProjectAccessLevel: (newAccessLevel: AccessLevel) => void
+}) {
+  return (
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger>
+        <Button
+          color='gray'
+          variant='ghost'
+          highContrast
+          style={{ fontSize: 12, display: 'flex', flexDirection: 'row', gap: 10 }}
+        >
+          {VisibilityUIComponents[accessLevel].icon}
+          {VisibilityUIComponents[accessLevel].text}
+          <CaretDownIcon />
+        </Button>
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Content>
+        {[AccessLevel.PUBLIC, AccessLevel.PRIVATE, AccessLevel.COLLABORATIVE].map((level) => {
+          const onCheckedChange = () => {
+            if (accessLevel === level) {
+              return
+            }
+            changeProjectAccessLevel(level)
+          }
+          return (
+            <DropdownMenu.CheckboxItem
+              key={level}
+              style={{ height: 28, fontSize: 12, paddingLeft: 30 }}
+              checked={accessLevel === level}
+              disabled={accessLevel === level}
+              onCheckedChange={onCheckedChange}
+            >
+              {accessLevel === level
+                ? VisibilityUIComponents[level].text
+                : `Make ${VisibilityUIComponents[level].text}`}
+            </DropdownMenu.CheckboxItem>
+          )
+        })}
+      </DropdownMenu.Content>
+    </DropdownMenu.Root>
   )
 }
 
