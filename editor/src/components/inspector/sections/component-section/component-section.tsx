@@ -138,7 +138,7 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
 
   const attributeExpression = props.propMetadata.attributeExpression
 
-  if (attributeExpression != null && PP.depth(props.propPath) === 1) {
+  if (attributeExpression != null) {
     if (
       attributeExpression.type === 'JS_IDENTIFIER' ||
       attributeExpression.type === 'JS_PROPERTY_ACCESS' ||
@@ -863,7 +863,7 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
             ref={dataPickerButtonData.setReferenceElement}
           >
             <SimpleFlexRow
-              style={{ flexGrow: 1, paddingRight: 8, justifyContent: 'space-between' }}
+              style={{ minWidth: 0, flexGrow: 1, paddingRight: 8, justifyContent: 'space-between' }}
               onClick={handleOnClick}
             >
               <PropertyLabel
@@ -877,7 +877,7 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
                 {title}
                 {unless(props.disableToggling, <ObjectIndicator open={open} />)}
               </PropertyLabel>
-              <div onClick={stopPropagation}>
+              <div style={{ minWidth: 0 }} onClick={stopPropagation}>
                 <ControlForProp
                   propPath={propPath}
                   propName={propName}

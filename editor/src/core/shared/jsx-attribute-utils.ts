@@ -182,9 +182,6 @@ export function getJSExpressionAtPathParts(
     case 'ATTRIBUTE_NESTED_ARRAY': {
       const possibleIndex = path[pathIndex]
       const index = typeof possibleIndex === 'number' ? possibleIndex : parseInt(possibleIndex)
-      if (isNaN(index)) {
-        throw new Error(`Attempted to access an array item at index ${possibleIndex}`)
-      }
       const foundProp = attribute.content[index]
       if (foundProp == null) {
         return getJSXAttributeResult(jsxAttributeNotFound())
