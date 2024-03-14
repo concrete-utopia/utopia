@@ -2117,6 +2117,18 @@ export function syntheticNavigatorEntry(
   }
 }
 
+export interface SlotNavigatorEntry {
+  type: 'SLOT'
+  elementPath: ElementPath
+}
+
+export function slotNavigatorEntry(elementPath: ElementPath): SlotNavigatorEntry {
+  return {
+    type: 'SLOT',
+    elementPath: elementPath,
+  }
+}
+
 export function syntheticNavigatorEntriesEqual(
   first: SyntheticNavigatorEntry,
   second: SyntheticNavigatorEntry,
@@ -2128,19 +2140,16 @@ export interface RenderPropNavigatorEntry {
   type: 'RENDER_PROP'
   elementPath: ElementPath
   propName: string
-  childOrAttribute: JSXElementChild | null
 }
 
 export function renderPropNavigatorEntry(
   elementPath: ElementPath,
   propName: string,
-  childOrAttribute: JSXElementChild | null,
 ): RenderPropNavigatorEntry {
   return {
     type: 'RENDER_PROP',
     elementPath: elementPath,
     propName: propName,
-    childOrAttribute: childOrAttribute,
   }
 }
 
@@ -2187,6 +2196,7 @@ export type NavigatorEntry =
   | SyntheticNavigatorEntry
   | InvalidOverrideNavigatorEntry
   | RenderPropNavigatorEntry
+  | SlotNavigatorEntry
 
 export function navigatorEntriesEqual(
   first: NavigatorEntry | null,
@@ -2222,10 +2232,12 @@ export function navigatorEntryToKey(entry: NavigatorEntry): string {
       return `synthetic-${EP.toComponentId(entry.elementPath)}-${childOrAttributeDetails}`
     }
     case 'RENDER_PROP': {
-      return `render-prop-${EP.toComponentId(entry.elementPath)}-${entry.propName}}`
+      return `render-prop-${EP.toComponentId(entry.elementPath)}-${entry.propName}`
     }
     case 'INVALID_OVERRIDE':
       return `error-${EP.toComponentId(entry.elementPath)}`
+    case 'SLOT':
+      return `slot_${EP.toComponentId(entry.elementPath)}`
     default:
       assertNever(entry)
   }
@@ -2246,6 +2258,8 @@ export function varSafeNavigatorEntryToKey(entry: NavigatorEntry): string {
       return `renderprop_${EP.toVarSafeComponentId(entry.elementPath)}_${entry.propName}`
     case 'INVALID_OVERRIDE':
       return `error_${EP.toVarSafeComponentId(entry.elementPath)}`
+    case 'SLOT':
+      return `slot_${EP.toVarSafeComponentId(entry.elementPath)}`
     default:
       assertNever(entry)
   }
@@ -3156,10 +3170,6 @@ export function updateMainUIInEditorState(editor: EditorState, mainUI: string): 
     return updateMainUIInPackageJson(packageJson, mainUI)
   }
   return updatePackageJsonInEditorState(editor, transformPackageJson)
-}
-
-export function areGeneratedElementsSelected(editor: EditorState): boolean {
-  return areGeneratedElementsTargeted(editor.selectedViews)
 }
 
 export function areGeneratedElementsTargeted(targets: Array<ElementPath>): boolean {
