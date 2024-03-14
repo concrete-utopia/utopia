@@ -21,23 +21,24 @@ export async function action(args: ActionFunctionArgs) {
 
 async function changeProjectUserRole(req: Request, params: Params<string>) {
   await requireUser(req)
+
   const { id } = params
   ensure(id != null, 'id is null', Status.BAD_REQUEST)
 
   const formData = await req.formData()
-  const userIdStr = formData.get('userId')
-  ensure(userIdStr != null, 'userId is null', Status.BAD_REQUEST)
-  const user = await getUserDetails(String(userIdStr))
+
+  const userId = formData.get('userId')
+  ensure(userId != null && typeof userId === 'string', 'invalid user id', Status.BAD_REQUEST)
+
+  const user = await getUserDetails(userId)
   ensure(user != null, 'user not found', Status.BAD_REQUEST)
+
   const userRoleStr = formData.get('userRole')
   const userRoleNumber = asNumber(userRoleStr)
-  ensure(!isNaN(userRoleNumber), 'userRole is not a number', Status.BAD_REQUEST)
+  ensure(!isNaN(userRoleNumber), 'invalid user role', Status.BAD_REQUEST)
+
   const userRole = asUserProjectRole(userRoleNumber)
-  ensure(
-    userRole != null && Object.values(UserProjectRole).includes(userRole),
-    'userRole is not a valid UserProjectRole',
-    Status.BAD_REQUEST,
-  )
+  ensure(userRole != null, 'invalid user role', Status.BAD_REQUEST)
   await permissionService.grantProjectRoleToUser(id, user.user_id, userRole)
 
   return {}
