@@ -4,21 +4,15 @@ import { useProjectsStore } from '../store'
 import { contextMenuDropdown, contextMenuItem } from '../styles/contextMenu.css'
 import { sprinkles } from '../styles/sprinkles.css'
 import type { ProjectWithoutContent } from '../types'
-import {
-  operationChangeAccess,
-  operationDelete,
-  operationDestroy,
-  operationRename,
-  operationRestore,
-  operationApproveAccessRequest,
-  AccessRequestStatus,
-} from '../types'
+import { operationDelete, operationDestroy, operationRename, operationRestore } from '../types'
 import { assertNever } from '../util/assertNever'
 import { AccessLevel } from '../types'
 import { useProjectEditorLink } from '../util/links'
 import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
 import slugify from 'slugify'
 import { SLUGIFY_OPTIONS } from '../routes/internal.projects.$id.rename'
+import { SharePopup } from './SharePopup'
+import { ContextMenu, Dialog } from '@radix-ui/themes'
 
 type ContextMenuEntry =
   | {
@@ -26,6 +20,7 @@ type ContextMenuEntry =
       onClick: (project: ProjectWithoutContent) => void
     }
   | 'separator'
+  | 'sharing-dialog'
   | null
 
 export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWithoutContent }) => {
@@ -33,14 +28,8 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
   const destroyFetcher = useFetcherWithOperation(project.proj_id, 'destroy')
   const restoreFetcher = useFetcherWithOperation(project.proj_id, 'restore')
   const renameFetcher = useFetcherWithOperation(project.proj_id, 'rename')
-  const changeAccessFetcher = useFetcherWithOperation(project.proj_id, 'changeAccess')
-  const approveAccessRequestFetcher = useFetcherWithOperation(
-    project.proj_id,
-    'approveAccessRequest',
-  )
 
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
-  let accessLevel = project.ProjectAccess?.access_level ?? AccessLevel.PRIVATE
 
   const deleteProject = React.useCallback(
     (projectId: string) => {
@@ -89,63 +78,7 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
     [renameFetcher, project],
   )
 
-  const changeAccessLevel = React.useCallback(
-    (projectId: string, newAccessLevel: AccessLevel) => {
-      changeAccessFetcher.submit(
-        operationChangeAccess(project, newAccessLevel),
-        { accessLevel: newAccessLevel.toString() },
-        { method: 'POST', action: `/internal/projects/${projectId}/access` },
-      )
-    },
-    [changeAccessFetcher, project],
-  )
-
-  const approveAccessRequest = React.useCallback(
-    (projectId: string, tokenId: string) => {
-      approveAccessRequestFetcher.submit(
-        operationApproveAccessRequest(project, tokenId),
-        { tokenId: tokenId },
-        {
-          method: 'POST',
-          action: `/internal/projects/${projectId}/access/request/${tokenId}/approve`,
-        },
-      )
-    },
-    [approveAccessRequestFetcher, project],
-  )
-
   const projectEditorLink = useProjectEditorLink()
-
-  const shareOptions: ContextMenuEntry[] = useMemo(() => {
-    const projectAccessRequests = project.ProjectAccessRequest ?? []
-    return [
-      accessLevel === AccessLevel.PRIVATE
-        ? {
-            text: 'Make Collaborative',
-            onClick: (selectedProject) => {
-              changeAccessLevel(selectedProject.proj_id, AccessLevel.COLLABORATIVE)
-            },
-          }
-        : null,
-      {
-        text: accessLevel === AccessLevel.PUBLIC ? 'Make Private' : 'Make Public',
-        onClick: (selectedProject) => {
-          changeAccessLevel(
-            selectedProject.proj_id,
-            accessLevel === AccessLevel.PUBLIC ? AccessLevel.PRIVATE : AccessLevel.PUBLIC,
-          )
-        },
-      },
-      ...projectAccessRequests
-        .filter((request) => request.status === AccessRequestStatus.PENDING)
-        .map((request) => ({
-          text: `Approve access to ${request.user_id}`,
-          onClick: (selectedProject: ProjectWithoutContent) => {
-            approveAccessRequest(selectedProject.proj_id, request.token)
-          },
-        })),
-    ]
-  }, [changeAccessLevel, approveAccessRequest, project, accessLevel])
 
   const menuEntries = React.useMemo((): (ContextMenuEntry | null)[] => {
     switch (selectedCategory) {
@@ -187,7 +120,8 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
               deleteProject(selectedProject.proj_id)
             },
           },
-          ...shareOptions,
+          'separator',
+          'sharing-dialog',
         ]
       case 'trash':
         return [
@@ -215,8 +149,11 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
     destroyProject,
     renameProject,
     restoreProject,
-    shareOptions,
   ])
+
+  const preventDefault = React.useCallback((event: Event) => {
+    event.preventDefault()
+  }, [])
 
   return (
     <DropdownMenu.Portal>
@@ -232,6 +169,20 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
                 className={sprinkles({ backgroundColor: 'separator' })}
                 style={{ height: 1 }}
               />
+            )
+          }
+          if (entry === 'sharing-dialog') {
+            return (
+              <Dialog.Root key={`separator-${index}`}>
+                <Dialog.Trigger>
+                  <ContextMenu.Item style={{ height: 28, fontSize: 12 }} onSelect={preventDefault}>
+                    Share
+                  </ContextMenu.Item>
+                </Dialog.Trigger>
+                <Dialog.Content>
+                  <SharePopup project={project} />
+                </Dialog.Content>
+              </Dialog.Root>
             )
           }
           return (
