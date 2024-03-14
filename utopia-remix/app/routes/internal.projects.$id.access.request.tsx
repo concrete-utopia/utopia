@@ -2,14 +2,17 @@ import type { ActionFunctionArgs } from '@remix-run/node'
 import type { Params } from '@remix-run/react'
 import { ensure, handle, requireUser } from '../util/api.server'
 import { Status } from '../util/statusCodes'
-import { ALLOW } from '../handlers/validators'
+import { validateProjectAccess } from '../handlers/validators'
 import { createAccessRequest } from '../models/projectAccessRequest.server'
+import { UserProjectPermission } from '../types'
 
 export async function action(args: ActionFunctionArgs) {
   return handle(args, {
     POST: {
       handler: handleRequestAccess,
-      validator: ALLOW,
+      validator: validateProjectAccess(UserProjectPermission.CAN_REQUEST_ACCESS, {
+        getProjectId: (params) => params.id,
+      }),
     },
   })
 }

@@ -5,6 +5,7 @@ import { assertNever } from './util/assertNever'
 const fullProject = Prisma.validator<Prisma.ProjectDefaultArgs>()({
   include: {
     ProjectAccess: true,
+    ProjectAccessRequest: true,
   },
 })
 
@@ -160,7 +161,19 @@ export function operationChangeAccess(
   project: ProjectWithoutContent,
   newAccessLevel: AccessLevel,
 ): OperationChangeAccess {
-  return { type: 'changeAccess', ...baseOperation(project), newAccessLevel }
+  return { type: 'changeAccess', ...baseOperation(project), newAccessLevel: newAccessLevel }
+}
+
+type OperationApproveAccessRequest = BaseOperation & {
+  type: 'approveAccessRequest'
+  tokenId: string
+}
+
+export function operationApproveAccessRequest(
+  project: ProjectWithoutContent,
+  tokenId: string,
+): OperationApproveAccessRequest {
+  return { type: 'approveAccessRequest', ...baseOperation(project), tokenId: tokenId }
 }
 
 export type Operation =
@@ -169,8 +182,15 @@ export type Operation =
   | OperationDestroy
   | OperationRestore
   | OperationChangeAccess
+  | OperationApproveAccessRequest
 
-export type OperationType = 'rename' | 'delete' | 'destroy' | 'restore' | 'changeAccess'
+export type OperationType =
+  | 'rename'
+  | 'delete'
+  | 'destroy'
+  | 'restore'
+  | 'changeAccess'
+  | 'approveAccessRequest'
 
 export function areBaseOperationsEquivalent(a: Operation, b: Operation): boolean {
   return a.projectId === b.projectId && a.type === b.type
@@ -188,6 +208,8 @@ export function getOperationDescription(op: Operation, project: ProjectWithoutCo
       return `Restoring project ${project.title}`
     case 'changeAccess':
       return `Changing access level of project ${project.title}`
+    case 'approveAccessRequest':
+      return `Granting access request to project ${project.title}`
     default:
       assertNever(op)
   }

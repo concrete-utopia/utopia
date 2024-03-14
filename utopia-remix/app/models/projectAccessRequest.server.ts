@@ -1,8 +1,9 @@
 import { prisma } from '../db.server'
-import { AccessRequestStatus } from '../types'
+import { AccessRequestStatus, UserProjectRole } from '../types'
 import * as uuid from 'uuid'
 import { ensure } from '../util/api.server'
 import { Status } from '../util/statusCodes'
+import * as permissionsService from '../services/permissionsService.server'
 
 function makeRequestToken(): string {
   return uuid.v4()
@@ -78,5 +79,18 @@ export async function updateAccessRequestStatus(params: {
         updated_at: new Date(),
       },
     })
+
+    if (params.status === AccessRequestStatus.APPROVED) {
+      // get the request
+      const request = await tx.projectAccessRequest.findFirst({
+        where: {
+          project_id: params.projectId,
+          token: params.token,
+        },
+      })
+      ensure(request != null, 'request not found', Status.NOT_FOUND)
+      const userId = request.user_id
+      permissionsService.grantProjectRoleToUser(params.projectId, userId, UserProjectRole.VIEWER)
+    }
   })
 }

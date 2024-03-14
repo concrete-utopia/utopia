@@ -32,11 +32,19 @@ export interface ProjectLoadSuccess<ModelType> extends ProjectModelWithId<ModelT
   type: 'PROJECT_LOAD_SUCCESS'
 }
 
-export interface ProjectNotFount {
+export interface ProjectNotFound {
   type: 'PROJECT_NOT_FOUND'
 }
 
-export type ProjectLoadResult<ModelType> = ProjectLoadSuccess<ModelType> | ProjectNotFount
+export interface ProjectNotAuthorized {
+  type: 'PROJECT_NOT_AUTHORIZED'
+  projectId: string
+}
+
+export type ProjectLoadResult<ModelType> =
+  | ProjectLoadSuccess<ModelType>
+  | ProjectNotFound
+  | ProjectNotAuthorized
 
 export interface FileWithFileName<FileType> {
   fileName: string

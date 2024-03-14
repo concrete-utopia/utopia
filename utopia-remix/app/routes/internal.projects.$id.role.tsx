@@ -6,6 +6,7 @@ import type { Params } from '@remix-run/react'
 import { Status } from '../util/statusCodes'
 import { asNumber } from '../util/common'
 import * as permissionService from '../services/permissionsService.server'
+import { getUserDetails } from '../models/userDetails.server'
 
 export async function action(args: ActionFunctionArgs) {
   return handle(args, {
@@ -19,11 +20,15 @@ export async function action(args: ActionFunctionArgs) {
 }
 
 async function changeProjectUserRole(req: Request, params: Params<string>) {
-  const user = await requireUser(req)
+  await requireUser(req)
   const { id } = params
   ensure(id != null, 'id is null', Status.BAD_REQUEST)
 
   const formData = await req.formData()
+  const userIdStr = formData.get('userId')
+  ensure(userIdStr != null, 'userId is null', Status.BAD_REQUEST)
+  const user = await getUserDetails(String(userIdStr))
+  ensure(user != null, 'user not found', Status.BAD_REQUEST)
   const userRoleStr = formData.get('userRole')
   const userRoleNumber = asNumber(userRoleStr)
   ensure(!isNaN(userRoleNumber), 'userRole is not a number', Status.BAD_REQUEST)

@@ -66,7 +66,15 @@ interface ProjectNotFound {
   type: 'ProjectNotFound'
 }
 
-export type LoadProjectResponse = ProjectLoaded | ProjectUnchanged | ProjectNotFound
+interface ProjectNotAuthorized {
+  type: 'ProjectNotAuthorized'
+}
+
+export type LoadProjectResponse =
+  | ProjectLoaded
+  | ProjectUnchanged
+  | ProjectNotFound
+  | ProjectNotAuthorized
 
 interface SaveAssetResponse {
   id: string
@@ -176,6 +184,8 @@ export async function loadProject(
     return response.json()
   } else if (response.status === 404) {
     return { type: 'ProjectNotFound' }
+  } else if (response.status === 401) {
+    return { type: 'ProjectNotAuthorized' }
   } else {
     // FIXME Client should show an error if server requests fail
     throw new Error(`server responded with ${response.status} ${response.statusText}`)

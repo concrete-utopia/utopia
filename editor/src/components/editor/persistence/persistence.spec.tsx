@@ -175,6 +175,7 @@ function setupTest(saveThrottle: number = 0) {
     updatedFiles: {} as { [fileName: string]: AssetFile },
     dispatchedActions: [] as Array<EditorAction>,
     projectNotFound: false,
+    projectNotAuthorized: false,
     createdOrLoadedProject: undefined as PersistentModel | undefined,
     latestContext: {
       projectOwnership: { ownerId: null, isOwner: false },
@@ -192,6 +193,7 @@ function setupTest(saveThrottle: number = 0) {
     })
   }
   const onProjectNotFound = () => (capturedData.projectNotFound = true)
+  const onProjectNotAuthorized = () => (capturedData.projectNotFound = true)
   const onCreatedOrLoadedProject = (
     _projectId: string,
     _projectName: string,
@@ -206,6 +208,7 @@ function setupTest(saveThrottle: number = 0) {
     PersistenceBackend,
     testDispatch,
     onProjectNotFound,
+    onProjectNotAuthorized,
     onCreatedOrLoadedProject,
     onContextChange,
     saveThrottle,
