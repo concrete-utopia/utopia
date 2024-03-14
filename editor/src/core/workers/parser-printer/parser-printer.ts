@@ -1863,18 +1863,10 @@ export function trimHighlightBounds(success: ParseSuccess): ParseSuccess {
       function walkJSXElementChild(element: JSXElementChild): void {
         switch (element.type) {
           case 'JSX_ELEMENT':
-            includeElement(element)
-            for (const child of element.children) {
-              walkJSXElementChild(child)
-            }
-            for (const prop of element.props) {
-              if (prop.type === 'JSX_ATTRIBUTES_ENTRY') {
-                walkJSXElementChild(prop.value)
-              }
-            }
-            break
           case 'JSX_FRAGMENT':
             includeElement(element)
+            // Don't include the properties of elements, but concievably we would want
+            // to include things like render props which include an element.
             for (const child of element.children) {
               walkJSXElementChild(child)
             }
