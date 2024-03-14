@@ -94,7 +94,7 @@ function variantsForComponentToRegister(
   }
 }
 
-async function makeDeferredChildDescriptior(
+async function makePreferredChildDescriptior(
   preferredChild: PreferredChildComponent,
   componentName: string,
   moduleName: string,
@@ -146,7 +146,7 @@ async function componentDescriptorForComponentToRegister(
     componentToRegister.preferredChildComponents == null
       ? []
       : componentToRegister.preferredChildComponents.map((c) =>
-          makeDeferredChildDescriptior(c, c.name, moduleName, workers),
+          makePreferredChildDescriptior(c, c.name, moduleName, workers),
         )
 
   const parsedPreferredChildren = sequenceEither(await Promise.all(parsePreferredChildrenPromises))
