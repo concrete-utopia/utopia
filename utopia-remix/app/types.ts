@@ -1,11 +1,10 @@
-import type { UserDetails } from 'prisma-client'
+import type { ProjectAccessRequest, UserDetails } from 'prisma-client'
 import { Prisma } from 'prisma-client'
 import { assertNever } from './util/assertNever'
 
 const fullProject = Prisma.validator<Prisma.ProjectDefaultArgs>()({
   include: {
     ProjectAccess: true,
-    ProjectAccessRequest: true,
   },
 })
 
@@ -219,4 +218,34 @@ export enum AccessRequestStatus {
   PENDING,
   APPROVED,
   REJECTED,
+}
+
+export type ProjectAccessRequestWithUserDetails = ProjectAccessRequest & {
+  User: UserDetails | null
+}
+
+export function isProjectAccessRequestWithUserDetails(
+  u: unknown,
+): u is ProjectAccessRequestWithUserDetails {
+  const maybe = u as ProjectAccessRequestWithUserDetails
+  return (
+    u != null &&
+    typeof u === 'object' &&
+    maybe.id != null &&
+    maybe.status != null &&
+    maybe.user_id != null &&
+    maybe.project_id != null
+  )
+}
+
+export function isProjectAccessRequestWithUserDetailsArray(
+  u: unknown,
+): u is ProjectAccessRequestWithUserDetails[] {
+  const maybe = u as ProjectAccessRequestWithUserDetails[]
+  return (
+    u != null &&
+    typeof u === 'object' &&
+    Array.isArray(u) &&
+    maybe.every(isProjectAccessRequestWithUserDetails)
+  )
 }

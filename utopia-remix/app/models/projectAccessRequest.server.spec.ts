@@ -6,7 +6,11 @@ import {
   truncateTables,
 } from '../test-util'
 import { AccessRequestStatus } from '../types'
-import { createAccessRequest, updateAccessRequestStatus } from './projectAccessRequest.server'
+import {
+  createAccessRequest,
+  listPendingProjectAccessRequests,
+  updateAccessRequestStatus,
+} from './projectAccessRequest.server'
 
 describe('projectAccessRequest', () => {
   describe('createAccessRequest', () => {
@@ -142,6 +146,89 @@ describe('projectAccessRequest', () => {
       expect(requests[0].project_id).toBe('one')
       expect(requests[0].user_id).toBe('alice')
       expect(requests[0].status).toBe(AccessRequestStatus.APPROVED)
+    })
+  })
+
+  describe('listPendingProjectAccessRequests', () => {
+    afterEach(async () => {
+      await truncateTables([
+        prisma.projectID,
+        prisma.projectAccessRequest,
+        prisma.project,
+        prisma.userDetails,
+      ])
+    })
+    beforeEach(async () => {
+      await createTestUser(prisma, { id: 'bob' })
+      await createTestUser(prisma, { id: 'alice' })
+      await createTestUser(prisma, { id: 'p1', name: 'person1' })
+      await createTestUser(prisma, { id: 'p2', name: 'person2' })
+      await createTestUser(prisma, { id: 'p3', name: 'person3' })
+      await createTestUser(prisma, { id: 'p4', name: 'person4' })
+      await createTestUser(prisma, { id: 'p5', name: 'person5' })
+      await createTestProject(prisma, { id: 'one', ownerId: 'bob' })
+      await createTestProject(prisma, { id: 'two', ownerId: 'alice' })
+      await createTestProjectAccessRequest(prisma, {
+        userId: 'p1',
+        projectId: 'two',
+        status: AccessRequestStatus.APPROVED,
+        token: 'test1',
+      })
+      await createTestProjectAccessRequest(prisma, {
+        userId: 'p2',
+        projectId: 'two',
+        status: AccessRequestStatus.PENDING,
+        token: 'test2',
+      })
+      await createTestProjectAccessRequest(prisma, {
+        userId: 'p3',
+        projectId: 'two',
+        status: AccessRequestStatus.PENDING,
+        token: 'test3',
+      })
+      await createTestProjectAccessRequest(prisma, {
+        userId: 'p4',
+        projectId: 'two',
+        status: AccessRequestStatus.REJECTED,
+        token: 'test4',
+      })
+    })
+
+    it('requires an existing project', async () => {
+      const fn = async () =>
+        listPendingProjectAccessRequests({
+          projectId: 'unknown',
+          userId: 'bob',
+        })
+      await expect(fn).rejects.toThrow('project not found')
+    })
+    it('requires the user to own the project', async () => {
+      const fn = async () =>
+        listPendingProjectAccessRequests({
+          projectId: 'two',
+          userId: 'bob',
+        })
+      await expect(fn).rejects.toThrow('project not found')
+    })
+    it('returns an empty list if there are no pending requests', async () => {
+      const got = await listPendingProjectAccessRequests({
+        projectId: 'one',
+        userId: 'bob',
+      })
+      expect(got.length).toBe(0)
+    })
+    it('returns the list of pending requests including their user details', async () => {
+      const got = await listPendingProjectAccessRequests({
+        projectId: 'two',
+        userId: 'alice',
+      })
+      expect(got.length).toBe(2)
+      expect(got[0].token).toBe('test2')
+      expect(got[0].user_id).toBe('p2')
+      expect(got[0].User.name).toBe('person2')
+      expect(got[1].token).toBe('test3')
+      expect(got[1].user_id).toBe('p3')
+      expect(got[1].User.name).toBe('person3')
     })
   })
 })

@@ -10,7 +10,6 @@ const selectProjectWithoutContent: Record<keyof ProjectWithoutContent, true> = {
   modified_at: true,
   deleted: true,
   ProjectAccess: true,
-  ProjectAccessRequest: true,
 }
 
 export async function listProjects(params: { ownerId: string }): Promise<ProjectWithoutContent[]> {
