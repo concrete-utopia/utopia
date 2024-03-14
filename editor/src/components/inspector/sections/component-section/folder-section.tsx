@@ -136,6 +136,7 @@ export const FolderSection = React.memo((props: FolderSectionProps) => {
                 isScene={false}
                 setGlobalCursor={props.setGlobalCursor}
                 indentationLevel={props.indentationLevel + 1}
+                showHiddenControl={props.showHiddenControl}
                 focusOnMount={false}
               />
             )

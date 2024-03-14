@@ -50,6 +50,7 @@ export const RowOrFolderWrapper = React.memo((props: RowOrFolderWrapperProps) =>
             setGlobalCursor={props.setGlobalCursor}
             indentationLevel={props.indentationLevel}
             focusOnMount={props.focusOnMount ?? false}
+            showHiddenControl={props.showHiddenControl}
           />
         </UIGridRow>
       )
