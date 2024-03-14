@@ -13,6 +13,7 @@ export async function loader(args: LoaderFunctionArgs) {
       validator: validateProjectAccess(UserProjectPermission.CAN_VIEW_PROJECT, {
         errorMessage: 'Project not found',
         status: Status.NOT_FOUND,
+        canRequestAccess: true,
         getProjectId: (params) => params.id,
       }),
     },

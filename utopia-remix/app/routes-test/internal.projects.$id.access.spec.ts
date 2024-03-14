@@ -94,7 +94,7 @@ describe('handleChangeAccess', () => {
     const error = await getActionResult('two', AccessLevel.PRIVATE)
     expect(error).toEqual({
       message: 'Unauthorized Access',
-      status: Status.UNAUTHORIZED,
+      status: Status.FORBIDDEN,
       error: 'Error',
     })
   })

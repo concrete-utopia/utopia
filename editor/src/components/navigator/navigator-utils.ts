@@ -6,11 +6,15 @@ import type {
   JSXConditionalExpression,
 } from '../../core/shared/element-template'
 import {
+  emptyComments,
   getJSXAttribute,
   hasElementsWithin,
+  isJSExpressionValue,
   isJSXConditionalExpression,
   isJSXElement,
   isJSXMapExpression,
+  jsExpressionOtherJavaScriptSimple,
+  jsExpressionValue,
 } from '../../core/shared/element-template'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { foldEither, isLeft, isRight } from '../../core/shared/either'
@@ -21,6 +25,7 @@ import {
   isConditionalClauseNavigatorEntry,
   regularNavigatorEntry,
   renderPropNavigatorEntry,
+  slotNavigatorEntry,
   syntheticNavigatorEntry,
 } from '../editor/store/editor-state'
 import type { ElementPathTree, ElementPathTrees } from '../../core/shared/element-path-tree'
@@ -107,6 +112,10 @@ export function getNavigatorTargets(
       ) {
         visibleNavigatorTargets.push(regularNavigatorEntry(path))
       }
+      // We collect the paths which are shown in render props, so we can filter them out from regular
+      // children to avoid duplications.
+      const processedPathsAsRenderProp = new Set<string>()
+      let renderPropFound: boolean = false
 
       function walkPropertyControls(propControls: PropertyControls): void {
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
@@ -119,19 +128,43 @@ export function getNavigatorTargets(
         }
 
         const jsxElement = elementMetadata.element.value
+
         Object.entries(propControls).forEach(([prop, control]) => {
-          if (control.control !== 'jsx') {
+          if (control.control !== 'jsx' || prop === 'children') {
             return
           }
           const propValue = getJSXAttribute(jsxElement.props, prop)
+          renderPropFound = true
+          const fakeRenderPropPath = EP.appendToPath(path, renderPropId(prop))
 
-          const navigatorEntry = renderPropNavigatorEntry(
-            EP.appendToPath(path, propValue?.uid ?? 'fake-uid'),
-            prop,
-            propValue,
-          )
-          navigatorTargets.push(navigatorEntry)
-          visibleNavigatorTargets.push(navigatorEntry)
+          if (propValue == null || (isJSExpressionValue(propValue) && propValue.value == null)) {
+            const entries = [
+              renderPropNavigatorEntry(fakeRenderPropPath, prop),
+              slotNavigatorEntry(fakeRenderPropPath, prop),
+            ]
+            navigatorTargets.push(...entries)
+            visibleNavigatorTargets.push(...entries)
+            return
+          }
+
+          if (isJSXElement(propValue)) {
+            const childPath = EP.appendToPath(path, propValue.uid)
+            const entry = renderPropNavigatorEntry(fakeRenderPropPath, prop)
+            navigatorTargets.push(entry)
+            visibleNavigatorTargets.push(entry)
+
+            const subTreeChild = subTree?.children.find((child) =>
+              EP.pathsEqual(child.path, childPath),
+            )
+            if (subTreeChild != null) {
+              processedPathsAsRenderProp.add(EP.toString(subTreeChild.path))
+              walkAndAddKeys(subTreeChild, collapsedAncestor)
+            } else {
+              const synthEntry = syntheticNavigatorEntry(childPath, propValue)
+              navigatorTargets.push(synthEntry)
+              visibleNavigatorTargets.push(synthEntry)
+            }
+          }
         })
       }
 
@@ -141,6 +174,7 @@ export function getNavigatorTargets(
         openFilePath,
         projectContents,
       )
+
       if (isFeatureEnabled('Render Props in Navigator') && propertyControls != null) {
         walkPropertyControls(propertyControls)
       }
@@ -256,7 +290,21 @@ export function getNavigatorTargets(
           }
         }
       } else {
-        fastForEach(Object.values(subTree.children), (child) => {
+        const notRenderPropChildren = Object.values(subTree.children).filter(
+          (c) => !processedPathsAsRenderProp.has(c.pathString),
+        )
+        if (
+          notRenderPropChildren.length > 0 &&
+          renderPropFound // only show a dedicated label for the children prop if the component has render props too
+        ) {
+          const entry = renderPropNavigatorEntry(
+            EP.appendToPath(path, renderPropId('children')),
+            'children',
+          )
+          navigatorTargets.push(entry)
+          visibleNavigatorTargets.push(entry)
+        }
+        fastForEach(notRenderPropChildren, (child) => {
           walkAndAddKeys(child, newCollapsedAncestor)
         })
       }
@@ -294,4 +342,8 @@ export function getConditionalClausePathForNavigatorEntry(
   const clauseElement =
     navigatorEntry.clause === 'true-case' ? jsxElement.whenTrue : jsxElement.whenFalse
   return getConditionalClausePath(navigatorEntry.elementPath, clauseElement)
+}
+
+function renderPropId(propName: string): string {
+  return `prop-label-${propName}`
 }

@@ -29,7 +29,10 @@ class WriteSafeOpenFgaClient extends OpenFgaClient {
     } catch (err) {
       if ((err as FgaApiValidationError).apiErrorCode === ErrorCode.WriteFailedDueToInvalidInput) {
         // FGA throws a hard error on that, but we want to ignore it (since it's a no-op)
-        console.error('Failed writing an existing tuple, or deleting a non-existing tuple', err)
+        console.error(
+          'Failed writing an existing tuple, or deleting a non-existing tuple',
+          (err as FgaApiValidationError).requestData,
+        )
       } else {
         throw err
       }
@@ -46,7 +49,7 @@ export function createFgaClient() {
     return mockOpenFgaClient
   }
   return new WriteSafeOpenFgaClient({
-    apiScheme: ServerEnvironment.FGA_API_SCHEME,
+    apiScheme: fgaClientMode === 'local' ? 'http' : 'https',
     apiHost: ServerEnvironment.FGA_API_HOST,
     storeId: ServerEnvironment.FGA_STORE_ID,
     // authorizationModelId: 'YOUR_MODEL_ID', // optional
@@ -87,14 +90,14 @@ function getCredentials(fgaClientMode: 'local' | 'remote'): CredentialsConfig {
 function getFgaClientMode(): 'local_mock' | 'local' | 'remote' {
   if (ServerEnvironment.environment === 'local') {
     if (ServerEnvironment.FGA_API_HOST == '') {
-      console.log('Using mock FGA client')
+      console.info('Using mock FGA client')
       return 'local_mock'
     }
     if (ServerEnvironment.FGA_API_HOST.includes('localhost')) {
-      console.log('Using local FGA client')
+      console.info('Using local FGA client')
       return 'local'
     }
   }
-  console.log('Using remote FGA client')
+  console.info('Using remote FGA client')
   return 'remote'
 }

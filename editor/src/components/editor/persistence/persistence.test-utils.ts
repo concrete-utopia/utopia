@@ -13,4 +13,5 @@ export const DummyPersistenceMachine: PersistenceMachine = new PersistenceMachin
   NO_OP,
   NO_OP,
   NO_OP,
+  NO_OP,
 )

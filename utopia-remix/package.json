@@ -63,6 +63,7 @@
     "@types/node": "20.11.15",
     "@types/react": "18.2.20",
     "@types/react-dom": "18.2.7",
+    "@types/uuid": "9.0.8",
     "@typescript-eslint/eslint-plugin": "6.7.4",
     "@typescript-eslint/parser": ">=6.0.0 <7.0.0",
     "@vanilla-extract/css": "1.14.1",
@@ -82,7 +83,8 @@
     "source-map-support": "0.5.21",
     "tailwindcss": "3.4.1",
     "ts-node": "10.9.2",
-    "typescript": "5.1.6"
+    "typescript": "5.1.6",
+    "uuid": "9.0.1"
   },
   "engines": {
     "node": ">=18.0.0"

@@ -4,10 +4,19 @@ import React from 'react'
 import { jsx } from '@emotion/react'
 import { Button } from '../../uuiui/button'
 import { UTOPIA_BACKEND_BASE_URL } from '../../common/env-vars'
+import { when } from '../../utils/react-conditionals'
+import { requestProjectAccess } from '../../components/editor/server'
 
 const PyramidLight404 = `${process.env.UTOPIA_DOMAIN}/editor/404_pyramid_light.png?hash=${process.env.UTOPIA_SHA}`
 
-export default function ProjectNotFound() {
+export default function ProjectNotFound({ projectId }: { projectId?: string }) {
+  const [accessRequested, setAccessRequested] = React.useState(false)
+  const requestAccess = React.useCallback(async () => {
+    if (projectId != null) {
+      void requestProjectAccess(projectId)
+      setAccessRequested(true)
+    }
+  }, [projectId])
   return (
     <div
       style={{
@@ -45,33 +54,59 @@ export default function ProjectNotFound() {
         <div style={{ fontSize: '22px', width: '430px', textAlign: 'center', lineHeight: '40px' }}>
           Either this project does not exist, or you do not have access to it.
         </div>
-        <a
-          href={`${UTOPIA_BACKEND_BASE_URL}projects`}
-          rel='noopener noreferrer'
-          style={{ textDecoration: 'none' }}
-        >
-          <Button
-            css={{
-              boxSizing: 'border-box',
-              height: 'auto',
-              fontSize: '18px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white',
-              backgroundColor: '#0075f9',
-              borderRadius: '90px',
-              padding: '10px 30px',
-              transition: 'background-color 0.3s',
-              '&:hover': {
-                backgroundColor: '#5DA9FF',
-              },
-            }}
+        <div style={{ display: 'flex', gap: '20px' }}>
+          <a
+            href={`${UTOPIA_BACKEND_BASE_URL}projects`}
+            rel='noopener noreferrer'
+            style={{ textDecoration: 'none' }}
           >
-            Return Home
-          </Button>
-        </a>
+            <ActionButton text='Return Home' />
+          </a>
+          {when(
+            projectId != null,
+            <ActionButton
+              text={accessRequested ? 'Access Requested' : 'Request Access'}
+              onClick={requestAccess}
+              disabled={accessRequested}
+            />,
+          )}
+        </div>
       </div>
     </div>
+  )
+}
+
+function ActionButton({
+  text,
+  onClick,
+  disabled,
+}: {
+  text: string
+  onClick?: () => void
+  disabled?: boolean
+}) {
+  return (
+    <Button
+      disabled={disabled}
+      onClick={onClick}
+      css={{
+        boxSizing: 'border-box',
+        height: 'auto',
+        fontSize: '18px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: 'white',
+        backgroundColor: '#0075f9',
+        borderRadius: '90px',
+        padding: '10px 30px',
+        transition: 'background-color 0.3s',
+        '&:hover': {
+          backgroundColor: '#5DA9FF',
+        },
+      }}
+    >
+      {text}
+    </Button>
   )
 }

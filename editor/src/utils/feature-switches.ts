@@ -47,7 +47,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Debug - Print UIDs': false,
   Steganography: false,
   'Debug – Connections': false,
-  'Render Props in Navigator': false,
+  'Render Props in Navigator': true,
 }
 
 let FeatureSwitchLoaded: { [feature in FeatureName]?: boolean } = {}

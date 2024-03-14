@@ -92,6 +92,12 @@ async function loadProject(projectId: string): Promise<ProjectLoadResult<Persist
           type: 'PROJECT_NOT_FOUND',
         }
 
+      case 'ProjectNotAuthorized':
+        return {
+          type: 'PROJECT_NOT_AUTHORIZED',
+          projectId: projectId,
+        }
+
       default:
         throw new Error(`Invalid project load response: ${JSON.stringify(serverProject)}`)
     }

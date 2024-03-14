@@ -273,6 +273,7 @@ export class Editor {
         PersistenceBackend,
         this.boundDispatch,
         renderProjectNotFound,
+        renderProjectNotAuthorized,
         onCreatedOrLoadedProject,
       ),
       builtInDependencies: builtInDependencies,
@@ -824,5 +825,13 @@ async function renderProjectNotFound(): Promise<void> {
   if (rootElement != null) {
     const root = createRoot(rootElement)
     root.render(<ProjectNotFound />)
+  }
+}
+
+async function renderProjectNotAuthorized(projectId: string): Promise<void> {
+  const rootElement = document.getElementById(EditorID)
+  if (rootElement != null) {
+    const root = createRoot(rootElement)
+    root.render(<ProjectNotFound projectId={projectId} />)
   }
 }

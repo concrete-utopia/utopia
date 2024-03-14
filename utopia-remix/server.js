@@ -29,6 +29,28 @@ const asciiBanner = `
 const BUILD_PATH = path.resolve('build/index.js')
 const VERSION_PATH = path.resolve('build/version.txt')
 
+const nodeEnv = process.env.NODE_ENV
+console.info(`Server environment: ${nodeEnv}`)
+
+const environment = {
+  NODE_ENV: nodeEnv,
+  BACKEND_URL: new URL(mustEnvOrLocalFallback('BACKEND_URL', 'http://localhost:8002')),
+  EDITOR_URL: mustEnvOrLocalFallback('EDITOR_URL', 'http://localhost:8000'),
+  PORT: Number.parseInt(mustEnvOrLocalFallback('PORT', '8000')),
+}
+
+// counterpart of `env.server.ts`'s mustEnvOrLocalFallback
+function mustEnvOrLocalFallback(key, localFallback) {
+  const value = process.env[key] ?? ''
+  if (value !== '') {
+    return value
+  }
+  if (nodeEnv === 'development' || nodeEnv === 'test') {
+    return localFallback
+  }
+  throw new Error(`missing required environment variable ${key}`)
+}
+
 sourceMapSupport.install({
   retrieveSourceMap: function (source) {
     const match = source.startsWith('file://')
@@ -87,7 +109,7 @@ async function reimportServer() {
 const initialBuild = await reimportServer()
 
 const remixHandler =
-  process.env.NODE_ENV === 'development'
+  environment.NODE_ENV === 'development'
     ? await createDevRequestHandler(initialBuild)
     : createRequestHandler({ build: initialBuild })
 // -----------------------------------------------------------------------------
@@ -107,8 +129,8 @@ function proxy(originalRequest, originalResponse) {
     {
       // target the right server
       protocol: originalRequest.protocol + ':',
-      host: process.env.EXPRESS_PROXY_TARGET_HOST,
-      port: process.env.EXPRESS_PROXY_TARGET_PORT,
+      host: environment.BACKEND_URL.hostname,
+      port: environment.BACKEND_URL.port,
 
       // proxy everything
       path: originalRequest.originalUrl,
@@ -125,7 +147,7 @@ function proxy(originalRequest, originalResponse) {
 }
 
 const corsMiddleware = cors({
-  origin: process.env.CORS_ORIGIN,
+  origin: environment.EDITOR_URL,
   credentials: true,
 })
 
@@ -155,9 +177,6 @@ app.use(express.static('public'))
 // remix handler
 app.all('*', remixHandler)
 
-const portFromEnv = Number.parseInt(process.env.PORT)
-const port = isNaN(portFromEnv) ? 8000 : portFromEnv
-
 function listenCallback(portNumber) {
   return () => {
     console.log(asciiBanner)
@@ -168,7 +187,7 @@ function listenCallback(portNumber) {
   }
 }
 
-app.listen(port, listenCallback(port))
+app.listen(environment.PORT, listenCallback(environment.PORT))
 if (process.env.NODE_ENV === 'development') {
-  app.listen(port + 1, listenCallback(port + 1))
+  app.listen(environment.PORT + 1, listenCallback(environment.PORT + 1))
 }
