@@ -3,7 +3,7 @@ import React from 'react'
 import { useProjectsStore } from '../store'
 import { contextMenuDropdown, contextMenuItem } from '../styles/contextMenu.css'
 import { sprinkles } from '../styles/sprinkles.css'
-import type { AccessRequest, ProjectWithoutContent } from '../types'
+import type { ProjectAccessRequestWithUserDetails, ProjectWithoutContent } from '../types'
 import {
   AccessRequestStatus,
   operationDelete,
@@ -35,7 +35,7 @@ export const ProjectContextMenu = React.memo(
     accessRequests,
   }: {
     project: ProjectWithoutContent
-    accessRequests: AccessRequest[]
+    accessRequests: ProjectAccessRequestWithUserDetails[]
   }) => {
     const deleteFetcher = useFetcherWithOperation(project.proj_id, 'delete')
     const destroyFetcher = useFetcherWithOperation(project.proj_id, 'destroy')

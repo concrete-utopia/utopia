@@ -26,7 +26,6 @@ import { getCollaborators } from '../models/projectCollaborators.server'
 import type { OperationWithKey } from '../store'
 import { useProjectsStore } from '../store'
 import { button } from '../styles/button.css'
-import { newProjectButton } from '../styles/newProjectButton.css'
 import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
 import { projectCards, projectRows } from '../styles/projects.css'
 import { sprinkles } from '../styles/sprinkles.css'
@@ -38,7 +37,13 @@ import type {
   Operation,
   ProjectWithoutContent,
 } from '../types'
-import { AccessLevel, getOperationDescription, asAccessLevel } from '../types'
+import {
+  AccessLevel,
+  getOperationDescription,
+  asAccessLevel,
+  isProjectAccessRequestWithUserDetailsArray,
+} from '../types'
+import type { ProjectAccessRequestWithUserDetails } from '../types'
 import { requireUser } from '../util/api.server'
 import { assertNever } from '../util/assertNever'
 import { auth0LoginURL } from '../util/auth0.server'
@@ -767,7 +772,7 @@ const ProjectCard = React.memo(
               {moment(project.modified_at).fromNow()}
             </Text>
           </div>
-          <ProjectCardActions project={project} accessRequests={accessRequests} />
+          <ProjectCardActions project={project} />
         </div>
       </div>
     )
@@ -900,7 +905,7 @@ const ProjectRow = React.memo(
               })}
             </div>
           </div>
-          <ProjectCardActions project={project} accessRequests={accessRequests} />
+          <ProjectCardActions project={project} />
         </div>
       </div>
     )
@@ -908,34 +913,40 @@ const ProjectRow = React.memo(
 )
 ProjectRow.displayName = 'ProjectRow'
 
-const ProjectCardActions = React.memo(
-  ({
-    project,
-    accessRequests,
-  }: {
-    project: ProjectWithoutContent
-    accessRequests: AccessRequest[]
-  }) => {
-    const [sortMenuOpen, setSortMenuOpen] = React.useState(false)
-    const handleSortMenuOpenChange = React.useCallback(() => {
-      setSortMenuOpen((prevSortMenuOpen) => !prevSortMenuOpen)
-    }, [])
+const ProjectCardActions = React.memo(({ project }: { project: ProjectWithoutContent }) => {
+  const [sortMenuOpen, setSortMenuOpen] = React.useState(false)
+  const [accessRequests, setAccessRequests] = React.useState<ProjectAccessRequestWithUserDetails[]>(
+    [],
+  )
+  const accessRequestsFetcher = useFetcher()
+  const handleSortMenuOpenChange = React.useCallback(() => {
+    const action = `/internal/projects/${project.proj_id}/access/requests/pending`
+    accessRequestsFetcher.submit({}, { method: 'GET', action: action })
+    setSortMenuOpen((prevSortMenuOpen) => !prevSortMenuOpen)
+  }, [accessRequestsFetcher, project])
 
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-        <DropdownMenuRoot onOpenChange={handleSortMenuOpenChange}>
-          <DropdownMenuTrigger asChild>
-            <DotsHorizontalIcon
-              className={button({ size: 'ellipses' })}
-              style={{ background: sortMenuOpen ? '#a4a4a430' : 'inherit' }}
-            />
-          </DropdownMenuTrigger>
-          <ProjectContextMenu project={project} accessRequests={accessRequests} />
-        </DropdownMenuRoot>
-      </div>
-    )
-  },
-)
+  React.useEffect(() => {
+    if (accessRequestsFetcher.state === 'idle' && accessRequestsFetcher.data != null) {
+      if (isProjectAccessRequestWithUserDetailsArray(accessRequestsFetcher.data)) {
+        setAccessRequests(accessRequestsFetcher.data)
+      }
+    }
+  }, [accessRequestsFetcher])
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+      <DropdownMenuRoot onOpenChange={handleSortMenuOpenChange}>
+        <DropdownMenuTrigger asChild>
+          <DotsHorizontalIcon
+            className={button({ size: 'ellipses' })}
+            style={{ background: sortMenuOpen ? '#a4a4a430' : 'inherit' }}
+          />
+        </DropdownMenuTrigger>
+        <ProjectContextMenu project={project} accessRequests={accessRequests} />
+      </DropdownMenuRoot>
+    </div>
+  )
+})
 ProjectCardActions.displayName = 'ProjectCardActions'
 
 const ProjectBadge = React.memo(({ accessLevel }: { accessLevel: AccessLevel }) => {

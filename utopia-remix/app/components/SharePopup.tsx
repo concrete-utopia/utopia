@@ -14,6 +14,7 @@ import {
   operationChangeAccess,
   type ProjectWithoutContent,
   AccessRequestStatus,
+  type ProjectAccessRequestWithUserDetails,
 } from '../types'
 import { AccessLevel } from '../types'
 import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
@@ -24,7 +25,7 @@ export function SharePopup({
   accessRequests,
 }: {
   project: ProjectWithoutContent
-  accessRequests: AccessRequest[]
+  accessRequests: ProjectAccessRequestWithUserDetails[]
 }) {
   let accessLevel = asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
 
@@ -106,13 +107,13 @@ function AccessRequests({
 }: {
   project: ProjectWithoutContent
   approveAccessRequest: (projectId: string, tokenId: string) => void
-  accessRequests: AccessRequest[]
+  accessRequests: ProjectAccessRequestWithUserDetails[]
 }) {
   return accessRequests.map((request) => {
     const status = request.status
     return (
       <Flex key={request.token} justify='between'>
-        <Text size='1'>{request.user.name}</Text>
+        <Text size='1'>{request.User?.name ?? request.User?.email ?? request.user_id}</Text>
         {status === AccessRequestStatus.PENDING ? (
           <Button
             size='1'
@@ -191,33 +192,3 @@ function VisibilityDropdown({
     </DropdownMenu.Root>
   )
 }
-
-// const shareOptions: ContextMenuEntry[] = useMemo(() => {
-//   return [
-//     accessLevel === AccessLevel.PRIVATE
-//       ? {
-//           text: 'Make Collaborative',
-//           onClick: (selectedProject) => {
-//             changeAccessLevel(selectedProject.proj_id, AccessLevel.COLLABORATIVE)
-//           },
-//         }
-//       : null,
-//     {
-//       text: accessLevel === AccessLevel.PUBLIC ? 'Make Private' : 'Make Public',
-//       onClick: (selectedProject) => {
-//         changeAccessLevel(
-//           selectedProject.proj_id,
-//           accessLevel === AccessLevel.PUBLIC ? AccessLevel.PRIVATE : AccessLevel.PUBLIC,
-//         )
-//       },
-//     },
-//     ...projectAccessRequests
-//       .filter((request) => request.status === AccessRequestStatus.PENDING)
-//       .map((request) => ({
-//         text: `Approve access to ${request.user_id}`,
-//         onClick: (selectedProject: ProjectWithoutContent) => {
-//           approveAccessRequest(selectedProject.proj_id, request.token)
-//         },
-//       })),
-//   ]
-// }, [changeAccessLevel, approveAccessRequest, project, accessLevel])

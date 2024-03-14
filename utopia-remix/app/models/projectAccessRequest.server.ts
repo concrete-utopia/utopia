@@ -1,9 +1,10 @@
-import { prisma } from '../db.server'
-import { AccessRequestStatus, type AccessRequestsByProject, UserProjectRole } from '../types'
 import * as uuid from 'uuid'
+import { prisma } from '../db.server'
+import * as permissionsService from '../services/permissionsService.server'
 import { ensure } from '../util/api.server'
 import { Status } from '../util/statusCodes'
-import * as permissionsService from '../services/permissionsService.server'
+import type { ProjectAccessRequestWithUserDetails } from '../types'
+import { AccessRequestStatus, UserProjectRole } from '../types'
 
 function makeRequestToken(): string {
   return uuid.v4()
@@ -94,27 +95,32 @@ export async function updateAccessRequestStatus(params: {
   })
 }
 
-export async function getAccessRequests(params: {
-  ids: string[]
+export async function listPendingProjectAccessRequests(params: {
+  projectId: string
   userId: string
-}): Promise<AccessRequestsByProject> {
-  const projects = await prisma.project.findMany({
-    where: { proj_id: { in: params.ids }, owner_id: params.userId },
-    include: { ProjectAccessRequest: { include: { User: true } } },
+}): Promise<ProjectAccessRequestWithUserDetails[]> {
+  const data = await prisma.project.findFirst({
+    where: {
+      proj_id: params.projectId,
+      owner_id: params.userId,
+      OR: [{ deleted: null }, { deleted: false }],
+    },
+    select: {
+      ProjectAccessRequest: {
+        where: { status: AccessRequestStatus.PENDING },
+      },
+    },
+  })
+  ensure(data != null, 'project not found', Status.NOT_FOUND)
+
+  // VERY unfortunately we cannot include the User in the query above, because it will always return the last value :(
+  const users = await prisma.userDetails.findMany({
+    where: { user_id: { in: data.ProjectAccessRequest.map((r) => r.user_id) } },
   })
 
-  let accessRequestsByProject: AccessRequestsByProject = {}
-  for (const project of projects) {
-    const accessRequests = project.ProjectAccessRequest.map(
-      ({ User, status, user_id, project_id, token }) => ({
-        user: User,
-        status: status,
-        user_id: user_id,
-        project_id: project_id,
-        token: token,
-      }),
-    )
-    accessRequestsByProject[project.proj_id] = accessRequests
-  }
-  return accessRequestsByProject
+  // merge data
+  return data.ProjectAccessRequest.map((r) => ({
+    ...r,
+    User: users.find((u) => u.user_id === r.user_id) ?? null,
+  }))
 }
