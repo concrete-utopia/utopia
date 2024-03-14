@@ -242,11 +242,15 @@ export const ProjectContextMenu = React.memo(
                 />
               )
             }
+            function onClick() {
+              if (entry != null && typeof entry !== 'string') {
+                entry.onClick(project)
+              }
+            }
             return (
               <DropdownMenu.Item
                 key={`entry-${index}`}
-                /* eslint-disable-next-line react/jsx-no-bind */
-                onClick={() => entry.onClick(project)}
+                onClick={onClick}
                 className={contextMenuItem()}
               >
                 {entry.text}
