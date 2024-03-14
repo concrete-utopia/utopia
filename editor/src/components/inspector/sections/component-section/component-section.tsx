@@ -131,7 +131,7 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
 
   const attributeExpression = props.propMetadata.attributeExpression
 
-  if (attributeExpression != null && PP.depth(props.propPath) === 1) {
+  if (attributeExpression != null) {
     if (
       attributeExpression.type === 'JS_IDENTIFIER' ||
       attributeExpression.type === 'JS_PROPERTY_ACCESS' ||
