@@ -94,6 +94,18 @@ function loadFailedEvent(): LoadFailedEvent {
   }
 }
 
+interface LoadFailedNotAuthorizedEvent {
+  type: 'LOAD_FAILED_NOT_AUTHORIZED'
+  projectId: string
+}
+
+function loadFailedNotAuthorizedEvent(projectId: string): LoadFailedNotAuthorizedEvent {
+  return {
+    type: 'LOAD_FAILED_NOT_AUTHORIZED',
+    projectId: projectId,
+  }
+}
+
 export interface SaveEvent<ModelType> {
   type: 'SAVE'
   projectModel: ProjectModel<ModelType>
@@ -180,6 +192,7 @@ type CoreEvent<ModelType, FileType> =
   | LoadEvent
   | LoadCompleteEvent<ModelType>
   | LoadFailedEvent
+  | LoadFailedNotAuthorizedEvent
   | CheckOwnershipCompleteEvent
   | SaveEvent<ModelType>
   | SaveCompleteEvent<ModelType, FileType>
@@ -525,6 +538,8 @@ export function createPersistenceMachine<ModelType, FileType>(
                     send((_, event: DoneInvokeEvent<ProjectLoadResult<ModelType>>) => {
                       if (event.data.type === 'PROJECT_LOAD_SUCCESS') {
                         return loadCompleteEvent(event.data.projectId, event.data.projectModel)
+                      } else if (event.data.type === 'PROJECT_NOT_AUTHORIZED') {
+                        return loadFailedNotAuthorizedEvent(event.data.projectId)
                       } else {
                         return loadFailedEvent()
                       }
@@ -690,6 +705,20 @@ export function createPersistenceMachine<ModelType, FileType>(
                   actions: logError,
                 },
                 LOAD_FAILED: {
+                  target: Empty,
+                  actions: assign((_context, _event) => {
+                    return {
+                      projectId: undefined,
+                      project: undefined,
+                      queuedSave: undefined,
+                      projectOwnership: {
+                        ownerId: null,
+                        isOwner: false,
+                      },
+                    }
+                  }),
+                },
+                LOAD_FAILED_NOT_AUTHORIZED: {
                   target: Empty,
                   actions: assign((_context, _event) => {
                     return {

@@ -66,7 +66,15 @@ interface ProjectNotFound {
   type: 'ProjectNotFound'
 }
 
-export type LoadProjectResponse = ProjectLoaded | ProjectUnchanged | ProjectNotFound
+interface ProjectNotAuthorized {
+  type: 'ProjectNotAuthorized'
+}
+
+export type LoadProjectResponse =
+  | ProjectLoaded
+  | ProjectUnchanged
+  | ProjectNotFound
+  | ProjectNotAuthorized
 
 interface SaveAssetResponse {
   id: string
@@ -176,6 +184,8 @@ export async function loadProject(
     return response.json()
   } else if (response.status === 404) {
     return { type: 'ProjectNotFound' }
+  } else if (response.status === 403) {
+    return { type: 'ProjectNotAuthorized' }
   } else {
     // FIXME Client should show an error if server requests fail
     throw new Error(`server responded with ${response.status} ${response.statusText}`)
@@ -547,4 +557,18 @@ async function getCollaboratorsFromLiveblocks(projectId: string): Promise<Collab
     return []
   }
   return Object.values(collabs.toObject()).map((u) => u.toObject())
+}
+
+export async function requestProjectAccess(projectId: string): Promise<void> {
+  if (!isBackendBFF()) {
+    return
+  }
+  const response = await fetch(`/internal/projects/${projectId}/access/request`, {
+    method: 'POST',
+    credentials: 'include',
+    mode: MODE,
+  })
+  if (!response.ok) {
+    throw new Error(`Request project access failed (${response.status}): ${response.statusText}`)
+  }
 }

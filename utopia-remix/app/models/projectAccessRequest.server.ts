@@ -1,8 +1,10 @@
-import { prisma } from '../db.server'
-import { AccessRequestStatus } from '../types'
 import * as uuid from 'uuid'
+import { prisma } from '../db.server'
+import * as permissionsService from '../services/permissionsService.server'
 import { ensure } from '../util/api.server'
 import { Status } from '../util/statusCodes'
+import type { ProjectAccessRequestWithUserDetails } from '../types'
+import { AccessRequestStatus, UserProjectRole } from '../types'
 
 function makeRequestToken(): string {
   return uuid.v4()
@@ -61,13 +63,14 @@ export async function updateAccessRequestStatus(params: {
   status: AccessRequestStatus
 }) {
   await prisma.$transaction(async (tx) => {
-    // check that the project exists
+    // check that the project exists…
     const projectCount = await tx.project.count({
       where: { proj_id: params.projectId, owner_id: params.ownerId },
     })
     ensure(projectCount === 1, 'project not found', Status.NOT_FOUND)
 
-    await tx.projectAccessRequest.update({
+    // …update the request with the given status…
+    const request = await tx.projectAccessRequest.update({
       where: {
         project_id_token: {
           project_id: params.projectId,
@@ -79,5 +82,43 @@ export async function updateAccessRequestStatus(params: {
         updated_at: new Date(),
       },
     })
+
+    // …finally, grant the role.
+    if (params.status === AccessRequestStatus.APPROVED) {
+      await permissionsService.grantProjectRoleToUser(
+        params.projectId,
+        request.user_id,
+        UserProjectRole.VIEWER,
+      )
+    }
+    // NOTE (ruggi): there should be a way to revoke the permission if the request is REJECTED (TODO)
   })
+}
+
+export async function listProjectAccessRequests(params: {
+  projectId: string
+  userId: string
+}): Promise<ProjectAccessRequestWithUserDetails[]> {
+  const data = await prisma.project.findFirst({
+    where: {
+      proj_id: params.projectId,
+      owner_id: params.userId,
+      OR: [{ deleted: null }, { deleted: false }],
+    },
+    select: {
+      ProjectAccessRequest: true,
+    },
+  })
+  ensure(data != null, 'project not found', Status.NOT_FOUND)
+
+  // VERY unfortunately we cannot include the User in the query above, because it will always return the last value :(
+  const users = await prisma.userDetails.findMany({
+    where: { user_id: { in: data.ProjectAccessRequest.map((r) => r.user_id) } },
+  })
+
+  // merge data
+  return data.ProjectAccessRequest.map((r) => ({
+    ...r,
+    User: users.find((u) => u.user_id === r.user_id) ?? null,
+  }))
 }
