@@ -57,7 +57,6 @@ import {
 } from '../util/use-sort-compare-project'
 import { useCleanupOperations } from '../hooks/useCleanupOperations'
 import { Text, Button } from '@radix-ui/themes'
-import { getAccessRequests } from '../models/projectAccessRequest.server'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
@@ -92,13 +91,8 @@ export async function loader(args: LoaderFunctionArgs) {
     userId: user.user_id,
   })
 
-  const accessRequests = await getAccessRequests({
-    ids: [...projects, ...deletedProjects].map((p) => p.proj_id),
-    userId: user.user_id,
-  })
-
   return json(
-    { projects, deletedProjects, user, collaborators, accessRequests },
+    { projects, deletedProjects, user, collaborators },
     { headers: { 'cache-control': 'no-cache' } },
   )
 }
@@ -111,7 +105,6 @@ const ProjectsPage = React.memo(() => {
     user: UserDetails
     deletedProjects: ProjectWithoutContent[]
     collaborators: CollaboratorsByProject
-    accessRequests: AccessRequestsByProject
   }
 
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
@@ -169,11 +162,7 @@ const ProjectsPage = React.memo(() => {
       >
         <TopActionBar />
         <ProjectsHeader projects={filteredProjects} />
-        <Projects
-          projects={filteredProjects}
-          collaborators={data.collaborators}
-          accessRequests={data.accessRequests}
-        />
+        <Projects projects={filteredProjects} collaborators={data.collaborators} />
         <ActiveOperations projects={activeProjects} />
       </div>
     </div>
@@ -559,11 +548,9 @@ const Projects = React.memo(
   ({
     projects,
     collaborators,
-    accessRequests,
   }: {
     projects: ProjectWithoutContent[]
     collaborators: CollaboratorsByProject
-    accessRequests: AccessRequestsByProject
   }) => {
     const gridView = useProjectsStore((store) => store.gridView)
 
@@ -589,7 +576,6 @@ const Projects = React.memo(
                 /* eslint-disable-next-line react/jsx-no-bind */
                 onSelect={() => handleProjectSelect(project)}
                 collaborators={collaborators[project.proj_id]}
-                accessRequests={accessRequests[project.proj_id]}
               />
             ))}
           </div>,
@@ -605,7 +591,6 @@ const Projects = React.memo(
                 /* eslint-disable-next-line react/jsx-no-bind */
                 onSelect={() => handleProjectSelect(project)}
                 collaborators={collaborators[project.proj_id]}
-                accessRequests={accessRequests[project.proj_id]}
               />
             ))}
           </div>,
@@ -641,13 +626,11 @@ const ProjectCard = React.memo(
   ({
     project,
     collaborators,
-    accessRequests,
     selected,
     onSelect,
   }: {
     project: ProjectWithoutContent
     collaborators: Collaborator[]
-    accessRequests: AccessRequest[]
     selected: boolean
     onSelect: () => void
   }) => {
@@ -786,11 +769,9 @@ const ProjectRow = React.memo(
     collaborators,
     selected,
     onSelect,
-    accessRequests,
   }: {
     project: ProjectWithoutContent
     collaborators: Collaborator[]
-    accessRequests: AccessRequest[]
     selected: boolean
     onSelect: () => void
   }) => {
