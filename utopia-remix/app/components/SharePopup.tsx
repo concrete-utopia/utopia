@@ -25,7 +25,7 @@ export function SharePopup({
   project: ProjectWithoutContent
   accessRequests: ProjectAccessRequestWithUserDetails[]
 }) {
-  let accessLevel = asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
+  const accessLevel = asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
 
   const changeAccessFetcher = useFetcherWithOperation(project.proj_id, 'changeAccess')
   const approveAccessRequestFetcher = useFetcherWithOperation(
