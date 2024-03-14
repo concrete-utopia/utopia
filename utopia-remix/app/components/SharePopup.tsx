@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-no-bind */
 import { Dialog, Flex, IconButton, Text, Button, DropdownMenu, Separator } from '@radix-ui/themes'
 import {
   CaretDownIcon,
@@ -109,18 +108,15 @@ function AccessRequests({
   accessRequests: ProjectAccessRequestWithUserDetails[]
 }) {
   return accessRequests.map((request) => {
+    function onApprove() {
+      approveAccessRequest(project.proj_id, request.token)
+    }
     const status = request.status
     return (
       <Flex key={request.token} justify='between'>
         <Text size='1'>{request.User?.name ?? request.User?.email ?? request.user_id}</Text>
         {status === AccessRequestStatus.PENDING ? (
-          <Button
-            size='1'
-            variant='ghost'
-            onClick={() => {
-              approveAccessRequest(project.proj_id, request.token)
-            }}
-          >
+          <Button size='1' variant='ghost' onClick={onApprove}>
             Approve
           </Button>
         ) : (
@@ -169,7 +165,7 @@ function VisibilityDropdown({
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
         {[AccessLevel.PUBLIC, AccessLevel.PRIVATE, AccessLevel.COLLABORATIVE].map((level) => {
-          const onCheckedChange = () => {
+          function onCheckedChange() {
             if (accessLevel === level) {
               return
             }
