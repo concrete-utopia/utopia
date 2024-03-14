@@ -184,7 +184,7 @@ export async function loadProject(
     return response.json()
   } else if (response.status === 404) {
     return { type: 'ProjectNotFound' }
-  } else if (response.status === 401) {
+  } else if (response.status === 403) {
     return { type: 'ProjectNotAuthorized' }
   } else {
     // FIXME Client should show an error if server requests fail
