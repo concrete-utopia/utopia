@@ -24,7 +24,7 @@ import type {
 } from '../../../core/shared/element-template'
 import { hasElementsWithin } from '../../../core/shared/element-template'
 import type { ElementPath } from '../../../core/shared/project-file-types'
-import { unless, when } from '../../../utils/react-conditionals'
+import { unless } from '../../../utils/react-conditionals'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import type { IcnColor, IcnProps } from '../../../uuiui'
 import { FlexRow, useColorTheme, UtopiaTheme } from '../../../uuiui'
@@ -55,10 +55,11 @@ import { ExpandableIndicator } from './expandable-indicator'
 import { ItemLabel } from './item-label'
 import { LayoutIcon } from './layout-icon'
 import { NavigatorItemActionSheet } from './navigator-item-components'
-import { assertNever } from '../../../core/shared/utils'
+import { CanvasContextMenuPortalTargetID, assertNever } from '../../../core/shared/utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { MapCounter } from './map-counter'
-import { Outlet } from 'react-router'
+import ReactDOM from 'react-dom'
+import { RenderPropPicker, useShowRenderPropPicker } from './render-prop-selector-popup'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -205,7 +206,7 @@ const getColors = (
 
   return {
     style: { background, color },
-    iconColor,
+    iconColor: iconColor,
   }
 }
 
@@ -760,6 +761,12 @@ export const NavigatorItem: React.FunctionComponent<
     )
   }, [childComponentCount, isFocusedComponent, isConditional])
 
+  const renderPropPickerId = varSafeNavigatorEntryToKey(navigatorEntry)
+  const { showRenderPropPicker: showContextMenu, hideRenderPropPicker: hideContextMenu } =
+    useShowRenderPropPicker(renderPropPickerId)
+
+  const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)
+
   const iconColor = isRemixItem
     ? 'remix'
     : isCodeItem
@@ -770,6 +777,7 @@ export const NavigatorItem: React.FunctionComponent<
 
   return (
     <div
+      onClick={navigatorEntry.type === 'SLOT' ? showContextMenu : hideContextMenu}
       style={{
         outline: `1px solid ${
           props.parentOutline === 'solid' && isOutletOrDescendantOfOutlet
@@ -781,6 +789,17 @@ export const NavigatorItem: React.FunctionComponent<
         outlineOffset: props.parentOutline === 'solid' ? '-1px' : 0,
       }}
     >
+      {portalTarget == null || navigatorEntry.type !== 'SLOT'
+        ? null
+        : ReactDOM.createPortal(
+            <RenderPropPicker
+              target={props.navigatorEntry.elementPath}
+              key={renderPropPickerId}
+              id={renderPropPickerId}
+              prop={navigatorEntry.prop}
+            />,
+            portalTarget,
+          )}
       <FlexRow
         data-testid={NavigatorItemTestId(varSafeNavigatorEntryToKey(navigatorEntry))}
         style={rowStyle}
@@ -905,9 +924,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
   const isComponentScene =
     useIsProbablyScene(props.navigatorEntry) && props.childComponentCount === 1
 
-  const isRemixScene = props.remixItemType === 'scene'
   const isOutlet = props.remixItemType === 'outlet'
-  const isLink = props.remixItemType === 'link'
 
   const backgroundLozengeColor =
     isCodeItem && !props.selected

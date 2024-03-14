@@ -671,10 +671,12 @@ export const InvalidOverrideNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall
   )
 
 export const SlotNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<SlotNavigatorEntry> =
-  combine1EqualityCall(
+  combine2EqualityCalls(
     (entry) => entry.elementPath,
     ElementPathKeepDeepEquality,
-    (path) => ({ type: 'SLOT', elementPath: path }),
+    (entry) => entry.prop,
+    StringKeepDeepEquality,
+    (elementPath, prop) => ({ type: 'SLOT', elementPath: elementPath, prop: prop }),
   )
 
 export const NavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<NavigatorEntry> = (

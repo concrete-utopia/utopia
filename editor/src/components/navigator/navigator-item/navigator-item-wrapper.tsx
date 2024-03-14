@@ -399,6 +399,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
   if (props.navigatorEntry.type === 'SLOT') {
     const entryProps: SlotNavigatorItemContainerProps = {
       ...navigatorItemProps,
+      renderProp: props.navigatorEntry.prop,
       parentElementPath: props.navigatorEntry.elementPath,
     }
     return <SlotNavigatorItemContainer {...entryProps} />
