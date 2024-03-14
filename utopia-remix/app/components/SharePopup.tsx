@@ -17,6 +17,7 @@ import {
 import { AccessLevel } from '../types'
 import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
 import React from 'react'
+import { when } from '../util/react-conditionals'
 
 export function SharePopup({
   project,
@@ -83,7 +84,8 @@ export function SharePopup({
             changeProjectAccessLevel={changeProjectAccessLevel}
           />
         </Flex>
-        {accessRequests.length > 0 ? (
+        {when(
+          accessRequests.length > 0,
           <>
             <Separator />
             <AccessRequests
@@ -91,8 +93,8 @@ export function SharePopup({
               approveAccessRequest={approveAccessRequest}
               accessRequests={accessRequests}
             />
-          </>
-        ) : null}
+          </>,
+        )}
       </Flex>
     </>
   )
