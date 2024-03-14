@@ -11,7 +11,7 @@ if (ServerEnvironment.environment === 'local') {
   dns.setDefaultResultOrder('ipv4first')
 }
 
-const BASE_URL = ServerEnvironment.BackendURL
+const BASE_URL = ServerEnvironment.BACKEND_URL
 
 function buildProxyUrl(url: URL, path: string | null): string {
   const { pathname, search } = url

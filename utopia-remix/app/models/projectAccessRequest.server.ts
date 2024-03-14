@@ -27,8 +27,9 @@ export async function createAccessRequest(params: { projectId: string; userId: s
       select: { owner_id: true },
     })
     ensure(project != null, 'project not found', Status.NOT_FOUND)
+
+    // if the request is coming from the owner of the project, there's nothing to do
     if (project.owner_id === params.userId) {
-      // nothing to do
       return
     }
 

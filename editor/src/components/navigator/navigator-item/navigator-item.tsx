@@ -29,7 +29,7 @@ import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-perform
 import type { IcnColor, IcnProps } from '../../../uuiui'
 import { FlexRow, useColorTheme, UtopiaTheme } from '../../../uuiui'
 import type { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
-import { isEntryAConditionalSlot } from '../../canvas/canvas-utils'
+import { isEntryAPlaceholder } from '../../canvas/canvas-utils'
 import type { EditorAction, EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as MetaActions from '../../editor/actions/meta-actions'
@@ -729,23 +729,19 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem isHiddenConditionalBranch',
   )
 
-  const isSlot = useEditorState(
-    Substores.metadata,
-    (store) => isEntryAConditionalSlot(store.editor.jsxMetadata, props.navigatorEntry),
-    'NavigatorItem parentElement',
-  )
+  const isPlaceholder = isEntryAPlaceholder(props.navigatorEntry)
 
   const isComponentScene = useIsProbablyScene(navigatorEntry) && childComponentCount === 1
   const isRenderProp = isRenderPropNavigatorEntry(navigatorEntry)
 
   const containerStyle: React.CSSProperties = React.useMemo(() => {
     return {
-      opacity: isElementVisible && (!isHiddenConditionalBranch || isSlot) ? undefined : 0.4,
+      opacity: isElementVisible && (!isHiddenConditionalBranch || isPlaceholder) ? undefined : 0.4,
       overflow: 'hidden',
       flexGrow: 1,
       flexShrink: 0,
     }
-  }, [isElementVisible, isHiddenConditionalBranch, isSlot])
+  }, [isElementVisible, isHiddenConditionalBranch, isPlaceholder])
 
   const cursorStyle = isConditionalClauseNavigatorEntry(navigatorEntry) ? { cursor: 'pointer' } : {}
 
@@ -792,7 +788,7 @@ export const NavigatorItem: React.FunctionComponent<
         onMouseMove={highlight}
         onDoubleClick={focusComponent}
       >
-        {isSlot ? (
+        {isPlaceholder ? (
           <div
             key={`label-${props.label}-slot`}
             style={{
@@ -822,12 +818,12 @@ export const NavigatorItem: React.FunctionComponent<
             style={{
               width: 140,
               height: 19,
-              borderRadius: 20,
-              backgroundColor: colorTheme.dynamicBlue10.value,
-              color: colorTheme.navigatorResizeHintBorder.value,
+              fontWeight: 600,
+              textTransform: 'uppercase',
+              color: colorTheme.fg5.value,
               border: colorTheme.navigatorResizeHintBorder.value,
-              marginLeft: 28,
-              padding: '0px 10px 0px 10px',
+              marginLeft: 23,
+              paddingTop: 6,
               overflow: 'hidden',
             }}
           >
@@ -873,7 +869,7 @@ export const NavigatorItem: React.FunctionComponent<
                 isVisibleOnCanvas={isElementVisible}
                 instanceOriginalComponentName={null}
                 dispatch={dispatch}
-                isSlot={isSlot}
+                isSlot={isPlaceholder}
                 iconColor={iconColor}
                 background={rowStyle.background}
               />,
