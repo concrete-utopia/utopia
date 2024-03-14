@@ -134,10 +134,10 @@ export function getNavigatorTargets(
             return
           }
           const propValue = getJSXAttribute(jsxElement.props, prop)
-          renderPropFound = true
           const fakeRenderPropPath = EP.appendToPath(path, renderPropId(prop))
 
           if (propValue == null || (isJSExpressionValue(propValue) && propValue.value == null)) {
+            renderPropFound = true
             const entries = [
               renderPropNavigatorEntry(fakeRenderPropPath, prop),
               slotNavigatorEntry(fakeRenderPropPath, prop),
@@ -148,6 +148,7 @@ export function getNavigatorTargets(
           }
 
           if (isJSXElement(propValue)) {
+            renderPropFound = true
             const childPath = EP.appendToPath(path, propValue.uid)
             const entry = renderPropNavigatorEntry(fakeRenderPropPath, prop)
             navigatorTargets.push(entry)
