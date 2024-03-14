@@ -598,13 +598,16 @@ const ProjectCard = React.memo(
     const [accessRequests, setAccessRequests] = React.useState<
       ProjectAccessRequestWithUserDetails[]
     >([])
+
     React.useEffect(() => {
+      const action = `/internal/projects/${project.proj_id}/access/requests`
+      accessRequestsFetcher.submit({}, { method: 'GET', action: action })
       if (accessRequestsFetcher.state === 'idle' && accessRequestsFetcher.data != null) {
         if (isProjectAccessRequestWithUserDetailsArray(accessRequestsFetcher.data)) {
           setAccessRequests(accessRequestsFetcher.data)
         }
       }
-    }, [accessRequestsFetcher])
+    }, [accessRequestsFetcher, project])
 
     return (
       <ContextMenu.Root>
@@ -751,13 +754,16 @@ const ProjectRow = React.memo(
     const [accessRequests, setAccessRequests] = React.useState<
       ProjectAccessRequestWithUserDetails[]
     >([])
+
     React.useEffect(() => {
+      const action = `/internal/projects/${project.proj_id}/access/requests`
+      accessRequestsFetcher.submit({}, { method: 'GET', action: action })
       if (accessRequestsFetcher.state === 'idle' && accessRequestsFetcher.data != null) {
         if (isProjectAccessRequestWithUserDetailsArray(accessRequestsFetcher.data)) {
           setAccessRequests(accessRequestsFetcher.data)
         }
       }
-    }, [accessRequestsFetcher])
+    }, [accessRequestsFetcher, project])
 
     return (
       <ContextMenu.Root>
@@ -876,42 +882,6 @@ const ProjectRow = React.memo(
 )
 ProjectRow.displayName = 'ProjectRow'
 
-// const ProjectCardActions = React.memo(({ project }: { project: ProjectWithoutContent }) => {
-//   const accessRequestsFetcher = useFetcher()
-
-//   const [accessRequests, setAccessRequests] = React.useState<ProjectAccessRequestWithUserDetails[]>(
-//     [],
-//   )
-
-//   const handleSortMenuOpenChange = React.useCallback(() => {
-//     const action = `/internal/projects/${project.proj_id}/access/requests`
-//     accessRequestsFetcher.submit({}, { method: 'GET', action: action })
-//   }, [accessRequestsFetcher, project])
-
-//   React.useEffect(() => {
-//     if (accessRequestsFetcher.state === 'idle' && accessRequestsFetcher.data != null) {
-//       if (isProjectAccessRequestWithUserDetailsArray(accessRequestsFetcher.data)) {
-//         setAccessRequests(accessRequestsFetcher.data)
-//       }
-//     }
-//   }, [accessRequestsFetcher])
-
-//   return (
-//     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-//       <DropdownMenuRoot onOpenChange={handleSortMenuOpenChange}>
-//         <DropdownMenuTrigger asChild>
-//           <DotsHorizontalIcon
-//             className={button({ size: 'ellipses' })}
-//             style={{ background: sortMenuOpen ? '#a4a4a430' : 'inherit' }}
-//           />
-//         </DropdownMenuTrigger>
-//         <ProjectContextMenu project={project} accessRequests={accessRequests} />
-//       </DropdownMenuRoot>
-//     </div>
-//   )
-// })
-// ProjectCardActions.displayName = 'ProjectCardActions'
-
 const ProjectBadge = React.memo(({ accessLevel }: { accessLevel: AccessLevel }) => {
   const [color, backgroundColor] = React.useMemo(() => {
     switch (accessLevel) {
@@ -948,10 +918,7 @@ const ProjectBadge = React.memo(({ accessLevel }: { accessLevel: AccessLevel }) 
         backgroundColor: backgroundColor,
         color: color,
         fontSize: 9,
-        borderRadius: 3,
-        fontWeight: 400,
-        height: 20,
-        width: 45,
+        width: 80,
       }}
     >
       {text}

@@ -4,7 +4,8 @@ import {
   Cross2Icon,
   GlobeIcon,
   LockClosedIcon,
-  CookieIcon,
+  Link2Icon,
+  PersonIcon,
 } from '@radix-ui/react-icons'
 import {
   asAccessLevel,
@@ -144,11 +145,11 @@ const VisibilityUIComponents = {
   [AccessLevel.PRIVATE]: { text: 'Private', icon: <LockClosedIcon width='16' height='16' /> },
   [AccessLevel.COLLABORATIVE]: {
     text: 'Collaborative',
-    icon: <CookieIcon width='16' height='16' />,
+    icon: <PersonIcon width='16' height='16' />,
   },
   [AccessLevel.WITH_LINK]: {
     text: 'With Link',
-    icon: <CookieIcon width='16' height='16' />,
+    icon: <Link2Icon width='16' height='16' />,
   },
 }
 
