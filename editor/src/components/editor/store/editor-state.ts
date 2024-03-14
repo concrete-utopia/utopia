@@ -2120,12 +2120,14 @@ export function syntheticNavigatorEntry(
 export interface SlotNavigatorEntry {
   type: 'SLOT'
   elementPath: ElementPath
+  prop: string
 }
 
-export function slotNavigatorEntry(elementPath: ElementPath): SlotNavigatorEntry {
+export function slotNavigatorEntry(elementPath: ElementPath, prop: string): SlotNavigatorEntry {
   return {
     type: 'SLOT',
     elementPath: elementPath,
+    prop: prop,
   }
 }
 

@@ -1,5 +1,5 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
-import React, { useMemo } from 'react'
+import React from 'react'
 import { useProjectsStore } from '../store'
 import { contextMenuDropdown, contextMenuItem } from '../styles/contextMenu.css'
 import { sprinkles } from '../styles/sprinkles.css'
@@ -168,7 +168,7 @@ export const ProjectContextMenu = React.memo(
       event.preventDefault()
     }, [])
 
-    const pendingAccessRequests = useMemo(
+    const pendingAccessRequests = React.useMemo(
       () => accessRequests.filter((r) => r.status === AccessRequestStatus.PENDING),
       [accessRequests],
     )

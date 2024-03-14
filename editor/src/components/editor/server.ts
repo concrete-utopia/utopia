@@ -184,7 +184,7 @@ export async function loadProject(
     return response.json()
   } else if (response.status === 404) {
     return { type: 'ProjectNotFound' }
-  } else if (response.status === 401) {
+  } else if (response.status === 403) {
     return { type: 'ProjectNotAuthorized' }
   } else {
     // FIXME Client should show an error if server requests fail
@@ -557,4 +557,18 @@ async function getCollaboratorsFromLiveblocks(projectId: string): Promise<Collab
     return []
   }
   return Object.values(collabs.toObject()).map((u) => u.toObject())
+}
+
+export async function requestProjectAccess(projectId: string): Promise<void> {
+  if (!isBackendBFF()) {
+    return
+  }
+  const response = await fetch(`/internal/projects/${projectId}/access/request`, {
+    method: 'POST',
+    credentials: 'include',
+    mode: MODE,
+  })
+  if (!response.ok) {
+    throw new Error(`Request project access failed (${response.status}): ${response.statusText}`)
+  }
 }

@@ -209,6 +209,13 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
     },
   },
   "highlightBounds": Object {
+    "8f7": Object {
+      "endCol": 38,
+      "endLine": 23,
+      "startCol": 14,
+      "startLine": 23,
+      "uid": "8f7",
+    },
     "aaa": Object {
       "endCol": 11,
       "endLine": 25,
