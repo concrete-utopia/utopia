@@ -95,7 +95,7 @@ export async function updateAccessRequestStatus(params: {
   })
 }
 
-export async function listPendingProjectAccessRequests(params: {
+export async function listProjectAccessRequests(params: {
   projectId: string
   userId: string
 }): Promise<ProjectAccessRequestWithUserDetails[]> {
@@ -106,9 +106,7 @@ export async function listPendingProjectAccessRequests(params: {
       OR: [{ deleted: null }, { deleted: false }],
     },
     select: {
-      ProjectAccessRequest: {
-        where: { status: AccessRequestStatus.PENDING },
-      },
+      ProjectAccessRequest: true,
     },
   })
   ensure(data != null, 'project not found', Status.NOT_FOUND)

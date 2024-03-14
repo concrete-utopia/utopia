@@ -893,13 +893,15 @@ const ProjectRow = React.memo(
 ProjectRow.displayName = 'ProjectRow'
 
 const ProjectCardActions = React.memo(({ project }: { project: ProjectWithoutContent }) => {
+  const accessRequestsFetcher = useFetcher()
+
   const [sortMenuOpen, setSortMenuOpen] = React.useState(false)
   const [accessRequests, setAccessRequests] = React.useState<ProjectAccessRequestWithUserDetails[]>(
     [],
   )
-  const accessRequestsFetcher = useFetcher()
+
   const handleSortMenuOpenChange = React.useCallback(() => {
-    const action = `/internal/projects/${project.proj_id}/access/requests/pending`
+    const action = `/internal/projects/${project.proj_id}/access/requests`
     accessRequestsFetcher.submit({}, { method: 'GET', action: action })
     setSortMenuOpen((prevSortMenuOpen) => !prevSortMenuOpen)
   }, [accessRequestsFetcher, project])
