@@ -8,7 +8,7 @@ import {
 import { AccessRequestStatus } from '../types'
 import {
   createAccessRequest,
-  listPendingProjectAccessRequests,
+  listProjectAccessRequests,
   updateAccessRequestStatus,
 } from './projectAccessRequest.server'
 
@@ -149,7 +149,7 @@ describe('projectAccessRequest', () => {
     })
   })
 
-  describe('listPendingProjectAccessRequests', () => {
+  describe('listProjectAccessRequests', () => {
     afterEach(async () => {
       await truncateTables([
         prisma.projectID,
@@ -166,8 +166,11 @@ describe('projectAccessRequest', () => {
       await createTestUser(prisma, { id: 'p3', name: 'person3' })
       await createTestUser(prisma, { id: 'p4', name: 'person4' })
       await createTestUser(prisma, { id: 'p5', name: 'person5' })
+      await createTestUser(prisma, { id: 'p6', name: 'person5' })
+      await createTestUser(prisma, { id: 'p7', name: 'person5' })
       await createTestProject(prisma, { id: 'one', ownerId: 'bob' })
       await createTestProject(prisma, { id: 'two', ownerId: 'alice' })
+      await createTestProject(prisma, { id: 'three', ownerId: 'alice' })
       await createTestProjectAccessRequest(prisma, {
         userId: 'p1',
         projectId: 'two',
@@ -192,11 +195,29 @@ describe('projectAccessRequest', () => {
         status: AccessRequestStatus.REJECTED,
         token: 'test4',
       })
+      await createTestProjectAccessRequest(prisma, {
+        userId: 'p5',
+        projectId: 'three',
+        status: AccessRequestStatus.PENDING,
+        token: 'test5',
+      })
+      await createTestProjectAccessRequest(prisma, {
+        userId: 'p6',
+        projectId: 'three',
+        status: AccessRequestStatus.PENDING,
+        token: 'test6',
+      })
+      await createTestProjectAccessRequest(prisma, {
+        userId: 'p7',
+        projectId: 'three',
+        status: AccessRequestStatus.REJECTED,
+        token: 'test7',
+      })
     })
 
     it('requires an existing project', async () => {
       const fn = async () =>
-        listPendingProjectAccessRequests({
+        listProjectAccessRequests({
           projectId: 'unknown',
           userId: 'bob',
         })
@@ -204,31 +225,37 @@ describe('projectAccessRequest', () => {
     })
     it('requires the user to own the project', async () => {
       const fn = async () =>
-        listPendingProjectAccessRequests({
+        listProjectAccessRequests({
           projectId: 'two',
           userId: 'bob',
         })
       await expect(fn).rejects.toThrow('project not found')
     })
-    it('returns an empty list if there are no pending requests', async () => {
-      const got = await listPendingProjectAccessRequests({
+    it('returns an empty list if there are no requests', async () => {
+      const got = await listProjectAccessRequests({
         projectId: 'one',
         userId: 'bob',
       })
       expect(got.length).toBe(0)
     })
-    it('returns the list of pending requests including their user details', async () => {
-      const got = await listPendingProjectAccessRequests({
+    it('returns the list of requests including their user details', async () => {
+      const got = await listProjectAccessRequests({
         projectId: 'two',
         userId: 'alice',
       })
-      expect(got.length).toBe(2)
-      expect(got[0].token).toBe('test2')
-      expect(got[0].user_id).toBe('p2')
-      expect(got[0].User.name).toBe('person2')
-      expect(got[1].token).toBe('test3')
-      expect(got[1].user_id).toBe('p3')
-      expect(got[1].User.name).toBe('person3')
+      expect(got.length).toBe(4)
+      expect(got[0].token).toBe('test1')
+      expect(got[0].user_id).toBe('p1')
+      expect(got[0].User?.name).toBe('person1')
+      expect(got[1].token).toBe('test2')
+      expect(got[1].user_id).toBe('p2')
+      expect(got[1].User?.name).toBe('person2')
+      expect(got[2].token).toBe('test3')
+      expect(got[2].user_id).toBe('p3')
+      expect(got[2].User?.name).toBe('person3')
+      expect(got[3].token).toBe('test4')
+      expect(got[3].user_id).toBe('p4')
+      expect(got[3].User?.name).toBe('person4')
     })
   })
 })
