@@ -7,7 +7,7 @@ export const projectCards = recipe({
       overflow: 'hidden scroll',
       scrollbarColor: '#a1a1a130 transparent',
       display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+      gridTemplateColumns: 'repeat(auto-fill, minmax(270px, 1fr))',
       justifyContent: 'space-between',
       alignContent: 'flex-start',
       gridGap: '40px',
