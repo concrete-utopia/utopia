@@ -165,3 +165,9 @@ export function getOperationDescription(op: Operation, project: ProjectWithoutCo
       assertNever(op)
   }
 }
+
+export enum AccessRequestStatus {
+  PENDING,
+  APPROVED,
+  REJECTED,
+}
