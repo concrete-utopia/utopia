@@ -24,7 +24,7 @@ export async function handleListAccessRequests(req: Request, params: Params<stri
   const projectId = params.id
   ensure(projectId != null, 'project id is null', Status.BAD_REQUEST)
 
-  return await listProjectAccessRequests({
+  return listProjectAccessRequests({
     projectId: projectId,
     userId: user.user_id,
   })
