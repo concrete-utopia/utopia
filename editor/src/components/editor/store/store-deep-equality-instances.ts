@@ -458,6 +458,7 @@ import type {
   ComponentInfo,
   CurriedResolveFn,
   CurriedUtopiaRequireFn,
+  PreferredChildComponentDescriptor,
   PropertyControlsInfo,
 } from '../../custom-code/code-file'
 import {
@@ -3235,15 +3236,15 @@ export function PropertyControlsKeepDeepEquality(
   return getIntrospectiveKeepDeepResult<PropertyControls>(oldValue, newValue) // Do these lazily for now.
 }
 
-const PreferredChildComponentKeepDeepEquality: KeepDeepEqualityCall<PreferredChildComponent> =
+const PreferredChildComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<PreferredChildComponentDescriptor> =
   combine3EqualityCalls(
     (d) => d.name,
     StringKeepDeepEquality,
-    (d) => d.additionalImports,
+    (d) => d.imports,
     createCallWithTripleEquals(),
     (d) => d.variants,
-    undefinableDeepEquality(arrayDeepEquality(createCallWithTripleEquals())),
-    (name, additionalImports, variants) => ({ name, additionalImports, variants }),
+    arrayDeepEquality(createCallWithTripleEquals()),
+    (name, imports, variants) => ({ name, imports, variants }),
   )
 
 export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<ComponentDescriptor> =
@@ -3255,7 +3256,7 @@ export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<Component
     (descriptor) => descriptor.variants,
     arrayDeepEquality(ComponentInfoKeepDeepEquality),
     (descriptor) => descriptor.preferredChildComponents,
-    arrayDeepEquality(PreferredChildComponentKeepDeepEquality),
+    arrayDeepEquality(PreferredChildComponentDescriptorKeepDeepEquality),
     componentDescriptor,
   )
 

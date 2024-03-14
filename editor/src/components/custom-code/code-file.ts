@@ -16,7 +16,11 @@ import type { RawSourceMap } from '../../core/workers/ts/ts-typings/RawSourceMap
 import type { EmitFileResult } from '../../core/workers/ts/ts-worker'
 import Utils from '../../utils/utils'
 
-import type { PreferredChildComponent, PropertyControls } from 'utopia-api/core'
+import type {
+  ComponentInsertOption,
+  PreferredChildComponent,
+  PropertyControls,
+} from 'utopia-api/core'
 import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 import { resolveModulePath } from '../../core/es-modules/package-manager/module-resolution'
 import type { EvaluationCache } from '../../core/es-modules/package-manager/package-manager'
@@ -121,10 +125,16 @@ export function componentInfo(
   }
 }
 
+export interface PreferredChildComponentDescriptor {
+  name: string
+  imports: Imports
+  variants: Array<ComponentInfo>
+}
+
 export interface ComponentDescriptor {
   properties: PropertyControls
   supportsChildren: boolean
-  preferredChildComponents: Array<PreferredChildComponent>
+  preferredChildComponents: Array<PreferredChildComponentDescriptor>
   variants: ComponentInfo[]
 }
 
@@ -132,7 +142,7 @@ export function componentDescriptor(
   properties: PropertyControls,
   supportsChildren: boolean,
   variants: Array<ComponentInfo>,
-  preferredChildComponents: Array<PreferredChildComponent>,
+  preferredChildComponents: Array<PreferredChildComponentDescriptor>,
 ): ComponentDescriptor {
   return {
     properties: properties,
