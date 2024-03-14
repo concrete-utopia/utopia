@@ -1,5 +1,5 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
-import React, { useMemo } from 'react'
+import React from 'react'
 import { useProjectsStore } from '../store'
 import { contextMenuDropdown, contextMenuItem } from '../styles/contextMenu.css'
 import { sprinkles } from '../styles/sprinkles.css'
@@ -116,7 +116,7 @@ export const ProjectContextMenu = React.memo(({ project }: { project: ProjectWit
 
   const projectEditorLink = useProjectEditorLink()
 
-  const shareOptions: ContextMenuEntry[] = useMemo(() => {
+  const shareOptions: ContextMenuEntry[] = React.useMemo(() => {
     const projectAccessRequests = project.ProjectAccessRequest ?? []
     return [
       accessLevel === AccessLevel.PRIVATE

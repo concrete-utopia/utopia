@@ -558,3 +558,17 @@ async function getCollaboratorsFromLiveblocks(projectId: string): Promise<Collab
   }
   return Object.values(collabs.toObject()).map((u) => u.toObject())
 }
+
+export async function requestProjectAccess(projectId: string): Promise<void> {
+  if (!isBackendBFF()) {
+    return
+  }
+  const response = await fetch(`/internal/projects/${projectId}/access/request`, {
+    method: 'POST',
+    credentials: 'include',
+    mode: MODE,
+  })
+  if (!response.ok) {
+    throw new Error(`Request project access failed (${response.status}): ${response.statusText}`)
+  }
+}
