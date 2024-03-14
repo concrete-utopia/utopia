@@ -18,6 +18,7 @@ import { AccessLevel } from '../types'
 import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
 import React from 'react'
 import { when } from '../util/react-conditionals'
+import moment from 'moment'
 
 export function SharePopup({
   project,
@@ -109,26 +110,33 @@ function AccessRequests({
   approveAccessRequest: (projectId: string, tokenId: string) => void
   accessRequests: ProjectAccessRequestWithUserDetails[]
 }) {
-  return accessRequests.map((request) => {
-    function onApprove() {
-      approveAccessRequest(project.proj_id, request.token)
-    }
-    const status = request.status
-    return (
-      <Flex key={request.token} justify='between'>
-        <Text size='1'>{request.User?.name ?? request.User?.email ?? request.user_id}</Text>
-        {status === AccessRequestStatus.PENDING ? (
-          <Button size='1' variant='ghost' onClick={onApprove}>
-            Approve
-          </Button>
-        ) : (
-          <Text size='1' color='gray'>
-            {status === AccessRequestStatus.APPROVED ? 'Approved' : 'Rejected'}
-          </Text>
-        )}
-      </Flex>
-    )
-  })
+  return accessRequests
+    .sort((a, b) => {
+      if (a.status !== b.status) {
+        return a.status - b.status
+      }
+      return moment(a.updated_at).unix() - moment(b.updated_at).unix()
+    })
+    .map((request) => {
+      function onApprove() {
+        approveAccessRequest(project.proj_id, request.token)
+      }
+      const status = request.status
+      return (
+        <Flex key={request.token} justify='between'>
+          <Text size='1'>{request.User?.name ?? request.User?.email ?? request.user_id}</Text>
+          {status === AccessRequestStatus.PENDING ? (
+            <Button size='1' variant='ghost' onClick={onApprove}>
+              Approve
+            </Button>
+          ) : (
+            <Text size='1' color={status === AccessRequestStatus.APPROVED ? 'green' : 'red'}>
+              {status === AccessRequestStatus.APPROVED ? 'Approved' : 'Rejected'}
+            </Text>
+          )}
+        </Flex>
+      )
+    })
 }
 
 const VisibilityUIComponents = {
