@@ -28,5 +28,5 @@ export async function handleListAccessRequests(req: Request, params: Params<stri
     projectId: projectId,
     userId: user.user_id,
   })
-  return json(requests)
+  return json(requests, { headers: { 'cache-control': 'no-cache' } })
 }
