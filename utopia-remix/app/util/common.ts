@@ -5,11 +5,3 @@ export function asNumber(value?: unknown): number {
     return NaN
   }
 }
-
-export function asString(value?: unknown): string | null {
-  try {
-    return String(value)
-  } catch (error) {
-    return null
-  }
-}
