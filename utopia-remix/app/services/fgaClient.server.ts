@@ -46,10 +46,7 @@ export function createFgaClient() {
     return mockOpenFgaClient
   }
   return new WriteSafeOpenFgaClient({
-    apiScheme:
-      ServerEnvironment.environment === 'local' || ServerEnvironment.environment === 'test'
-        ? 'http'
-        : 'https',
+    apiScheme: fgaClientMode === 'local' ? 'http' : 'https',
     apiHost: ServerEnvironment.FGA_API_HOST,
     storeId: ServerEnvironment.FGA_STORE_ID,
     // authorizationModelId: 'YOUR_MODEL_ID', // optional
