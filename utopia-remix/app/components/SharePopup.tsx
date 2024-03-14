@@ -121,7 +121,7 @@ function AccessRequests({
           </Button>
         ) : (
           <Text size='1' color='gray'>
-            Approved
+            {status === AccessRequestStatus.APPROVED ? 'Approved' : 'Rejected'}
           </Text>
         )}
       </Flex>
