@@ -27,8 +27,9 @@ export async function createAccessRequest(params: { projectId: string; userId: s
       select: { owner_id: true },
     })
     ensure(project != null, 'project not found', Status.NOT_FOUND)
+
+    // if the request is coming from the owner of the project, there's nothing to do
     if (project.owner_id === params.userId) {
-      // nothing to do
       return
     }
 
@@ -61,13 +62,14 @@ export async function updateAccessRequestStatus(params: {
   status: AccessRequestStatus
 }) {
   await prisma.$transaction(async (tx) => {
-    // check that the project exists
+    // check that the project exists…
     const projectCount = await tx.project.count({
       where: { proj_id: params.projectId, owner_id: params.ownerId },
     })
     ensure(projectCount === 1, 'project not found', Status.NOT_FOUND)
 
-    await tx.projectAccessRequest.update({
+    // …update the request with the given status…
+    const request = await tx.projectAccessRequest.update({
       where: {
         project_id_token: {
           project_id: params.projectId,
@@ -80,17 +82,14 @@ export async function updateAccessRequestStatus(params: {
       },
     })
 
+    // …finally, grant the role.
     if (params.status === AccessRequestStatus.APPROVED) {
-      // get the request
-      const request = await tx.projectAccessRequest.findFirst({
-        where: {
-          project_id: params.projectId,
-          token: params.token,
-        },
-      })
-      ensure(request != null, 'request not found', Status.NOT_FOUND)
-      const userId = request.user_id
-      permissionsService.grantProjectRoleToUser(params.projectId, userId, UserProjectRole.VIEWER)
+      await permissionsService.grantProjectRoleToUser(
+        params.projectId,
+        request.user_id,
+        UserProjectRole.VIEWER,
+      )
     }
+    // NOTE (ruggi): there should be a way to revoke the permission if the request is REJECTED (TODO)
   })
 }

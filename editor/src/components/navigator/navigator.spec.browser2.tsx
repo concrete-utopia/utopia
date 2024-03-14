@@ -828,6 +828,85 @@ export var storyboard = (props) => {
 }
 `
 
+const projectWithRenderProp = (renderPropSource: string) => `import * as React from 'react'
+import * as Utopia from 'utopia-api'
+import {
+  Storyboard,
+  Scene,
+  registerInternalComponent,
+} from 'utopia-api'
+
+registerInternalComponent(Card, {
+  properties: {
+    header: {
+      control: 'jsx',
+      preferredChildComponents: [
+        {
+          name: 'span',
+          variants: [{ code: '<span>Title</span>' }],
+        },
+      ],
+    },
+  },
+  supportsChildren: true,
+  variants: [],
+})
+
+function Card({ header, children }) {
+  return (
+    <div data-uid='root'>
+      <h2>{header}</h2>
+      {children}
+    </div>
+  )
+}
+
+var Playground = ({ style }) => {
+  return (
+    <div style={style} data-uid='dbc'>
+      <Card ${renderPropSource} data-uid='78c'>
+        <p>Card contents</p>
+      </Card>
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 521,
+        height: 266,
+        position: 'absolute',
+        left: 554,
+        top: 247,
+        backgroundColor: 'white',
+      }}
+      data-uid='scene'
+      data-testid='scene'
+      commentId='120'
+    >
+      <Playground
+        style={{
+          width: 454,
+          height: 177,
+          position: 'absolute',
+          left: 34,
+          top: 44,
+          backgroundColor: 'white',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+        className='playground'
+        css={{ color: 'red' }}
+        data-uid='pg'
+      />
+    </Scene>
+  </Storyboard>
+)
+`
+
 function getProjectCodeForMultipleSelection(): string {
   return `import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
@@ -5115,6 +5194,106 @@ describe('Navigator row order', () => {
       'regular-sb/group/bar',
       'regular-sb/group/bf0',
       'regular-sb/group/bf0/3bc~~~1',
+    ])
+  })
+
+  it('is correct for a project with elements with render prop', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      projectWithRenderProp('header={<span>Title</span>}'),
+      'await-first-dom-report',
+    )
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
+      [
+        'regular-sb/scene',
+        'regular-sb/scene/pg',
+        'regular-sb/scene/pg:dbc',
+        'regular-sb/scene/pg:dbc/78c',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
+        'regular-sb/scene/pg:dbc/78c/a6e',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+        'regular-sb/scene/pg:dbc/78c/88b',
+      ],
+    )
+    expect(
+      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+    ).toEqual([
+      'regular-sb/scene',
+      'regular-sb/scene/pg',
+      'regular-sb/scene/pg:dbc',
+      'regular-sb/scene/pg:dbc/78c',
+      'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
+      'regular-sb/scene/pg:dbc/78c/a6e',
+      'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+      'regular-sb/scene/pg:dbc/78c/88b',
+    ])
+  })
+  it('is correct for a project with elements with missing render prop', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      projectWithRenderProp(''), // <- no render prop
+      'await-first-dom-report',
+    )
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
+      [
+        'regular-sb/scene',
+        'regular-sb/scene/pg',
+        'regular-sb/scene/pg:dbc',
+        'regular-sb/scene/pg:dbc/78c',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
+        'slot_sb/scene/pg:dbc/78c/prop-label-header', // <- the slot is shown
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+        'regular-sb/scene/pg:dbc/78c/88b',
+      ],
+    )
+    expect(
+      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+    ).toEqual([
+      'regular-sb/scene',
+      'regular-sb/scene/pg',
+      'regular-sb/scene/pg:dbc',
+      'regular-sb/scene/pg:dbc/78c',
+      'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
+      'slot_sb/scene/pg:dbc/78c/prop-label-header', // <- the slot is shown
+      'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+      'regular-sb/scene/pg:dbc/78c/88b',
+    ])
+  })
+  it('is correct for a project with elements with render prop set to `null`', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      projectWithRenderProp('header={null}'),
+      'await-first-dom-report',
+    )
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
+      [
+        'regular-sb/scene',
+        'regular-sb/scene/pg',
+        'regular-sb/scene/pg:dbc',
+        'regular-sb/scene/pg:dbc/78c',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
+        'slot_sb/scene/pg:dbc/78c/prop-label-header', // <- the slot is shown
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+        'regular-sb/scene/pg:dbc/78c/88b',
+      ],
+    )
+    expect(
+      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+    ).toEqual([
+      'regular-sb/scene',
+      'regular-sb/scene/pg',
+      'regular-sb/scene/pg:dbc',
+      'regular-sb/scene/pg:dbc/78c',
+      'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
+      'slot_sb/scene/pg:dbc/78c/prop-label-header', // <- the slot is shown
+      'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+      'regular-sb/scene/pg:dbc/78c/88b',
     ])
   })
 })

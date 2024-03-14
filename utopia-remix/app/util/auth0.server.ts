@@ -12,7 +12,7 @@ export function auth0LoginURL(): string {
     console.warn(
       'Auth0 is disabled, if you need it be sure to set the AUTH0_ENDPOINT, AUTH0_CLIENT_ID, AUTH0_REDIRECT_URI environment variables',
     )
-    const url = new URL(urlJoin(ServerEnvironment.BackendURL, 'authenticate'))
+    const url = new URL(urlJoin(ServerEnvironment.BACKEND_URL, 'authenticate'))
     url.searchParams.set('code', 'logmein')
     url.searchParams.set('onto', behaviour)
     return url.href

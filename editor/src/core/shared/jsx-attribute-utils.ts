@@ -182,9 +182,6 @@ export function getJSExpressionAtPathParts(
     case 'ATTRIBUTE_NESTED_ARRAY': {
       const possibleIndex = path[pathIndex]
       const index = typeof possibleIndex === 'number' ? possibleIndex : parseInt(possibleIndex)
-      if (isNaN(index)) {
-        throw new Error(`Attempted to access an array item at index ${possibleIndex}`)
-      }
       const foundProp = attribute.content[index]
       if (foundProp == null) {
         return getJSXAttributeResult(jsxAttributeNotFound())
@@ -200,11 +197,7 @@ export function getJSExpressionAtPathParts(
     case 'JS_ELEMENT_ACCESS':
     case 'JS_PROPERTY_ACCESS':
     case 'JS_IDENTIFIER':
-      if (path.length - pathIndex <= 1) {
-        return getJSXAttributeResult(attribute)
-      } else {
-        return getJSXAttributeResult(attribute, PP.createFromArray(path.slice(pathIndex)))
-      }
+      return getJSXAttributeResult(attribute, PP.createFromArray(path.slice(pathIndex)))
     default:
       const _exhaustiveCheck: never = attribute
       throw new Error(`Cannot resolve attribute ${JSON.stringify(attribute)}`)
