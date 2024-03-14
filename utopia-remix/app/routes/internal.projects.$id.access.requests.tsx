@@ -24,9 +24,8 @@ export async function handleListAccessRequests(req: Request, params: Params<stri
   const projectId = params.id
   ensure(projectId != null, 'project id is null', Status.BAD_REQUEST)
 
-  const requests = await listProjectAccessRequests({
+  return await listProjectAccessRequests({
     projectId: projectId,
     userId: user.user_id,
   })
-  return json(requests, { headers: { 'cache-control': 'no-cache' } })
 }
