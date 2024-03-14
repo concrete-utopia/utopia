@@ -191,7 +191,7 @@ export const ProjectActionsMenu = React.memo(
                     <Flex justify={'between'} align={'center'} width={'100%'}>
                       <Text>Share</Text>
                       {pendingAccessRequests.length > 0 ? (
-                        <DotFilledIcon color={'#DB9A9A'} height={22} width={22} />
+                        <DotFilledIcon color='red' height={22} width={22} />
                       ) : null}
                     </Flex>
                   </ContextMenu.Item>
