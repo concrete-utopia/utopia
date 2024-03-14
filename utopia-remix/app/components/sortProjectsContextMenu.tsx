@@ -28,21 +28,21 @@ export const SortingContextMenu = React.memo(() => {
       <DropdownMenu.CheckboxItem
         style={{ height: 28, fontSize: 12, paddingLeft: 30 }}
         checked={sortCriteria === 'title'}
-        onCheckedChange={() => setSortCriteria('title')}
+        onCheckedChange={setSortByTitle}
       >
         Alphabetical
       </DropdownMenu.CheckboxItem>
       <DropdownMenu.CheckboxItem
         style={{ height: 28, fontSize: 12, paddingLeft: 30 }}
         checked={sortCriteria === 'dateCreated'}
-        onCheckedChange={() => setSortCriteria('dateCreated')}
+        onCheckedChange={setSortByDateCreated}
       >
         Date Created
       </DropdownMenu.CheckboxItem>
       <DropdownMenu.CheckboxItem
         style={{ height: 28, fontSize: 12, paddingLeft: 30 }}
         checked={sortCriteria === 'dateModified'}
-        onCheckedChange={() => setSortCriteria('dateModified')}
+        onCheckedChange={setSortByDateModified}
       >
         Date Modified
       </DropdownMenu.CheckboxItem>
@@ -53,14 +53,14 @@ export const SortingContextMenu = React.memo(() => {
       <DropdownMenu.CheckboxItem
         style={{ height: 28, fontSize: 12, paddingLeft: 30 }}
         checked={sortAscending}
-        onCheckedChange={() => setSortAscending(true)}
+        onCheckedChange={setSortAscendingTrue}
       >
         Ascending
       </DropdownMenu.CheckboxItem>
       <DropdownMenu.CheckboxItem
         style={{ height: 28, fontSize: 12, paddingLeft: 30 }}
         checked={!sortAscending}
-        onCheckedChange={() => setSortAscending(false)}
+        onCheckedChange={setSortAscendingFalse}
       >
         Descending
       </DropdownMenu.CheckboxItem>

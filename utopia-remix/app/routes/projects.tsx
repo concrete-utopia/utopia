@@ -1,19 +1,30 @@
-import React from 'react'
-import { LoaderFunctionArgs, json } from '@remix-run/node'
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  CubeIcon,
+  DashboardIcon,
+  HamburgerMenuIcon,
+  MagnifyingGlassIcon,
+  TrashIcon,
+} from '@radix-ui/react-icons'
+import { Badge, Button, ContextMenu, DropdownMenu, Flex, Text, TextField } from '@radix-ui/themes'
+import { type LoaderFunctionArgs, json } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
-import { UserDetails } from 'prisma-client'
+import type { UserDetails } from 'prisma-client'
+import React from 'react'
 import { ProjectActionsMenu } from '../components/projectActionContextMenu'
 import { SortingContextMenu } from '../components/sortProjectsContextMenu'
 import { Spinner } from '../components/spinner'
+import { useCleanupOperations } from '../hooks/useCleanupOperations'
 import { useIsDarkMode } from '../hooks/useIsDarkMode'
 import { listDeletedProjects, listProjects } from '../models/project.server'
 import { getCollaborators } from '../models/projectCollaborators.server'
 import type { OperationWithKey } from '../store'
 import { useProjectsStore } from '../store'
 import { button } from '../styles/button.css'
-import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
 import { projectCards, projectRows } from '../styles/projects.css'
+import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
 import { sprinkles } from '../styles/sprinkles.css'
 import type {
   Collaborator,
@@ -21,7 +32,7 @@ import type {
   Operation,
   ProjectWithoutContent,
 } from '../types'
-import { AccessLevel, getOperationDescription, asAccessLevel } from '../types'
+import { AccessLevel, asAccessLevel, getOperationDescription } from '../types'
 import { requireUser } from '../util/api.server'
 import { assertNever } from '../util/assertNever'
 import { auth0LoginURL } from '../util/auth0.server'
@@ -33,18 +44,6 @@ import {
   useProjectMatchesQuery,
   useSortCompareProject,
 } from '../util/use-sort-compare-project'
-import { useCleanupOperations } from '../hooks/useCleanupOperations'
-import {
-  ArrowUpIcon,
-  ArrowDownIcon,
-  CubeIcon,
-  DashboardIcon,
-  DotsHorizontalIcon,
-  HamburgerMenuIcon,
-  MagnifyingGlassIcon,
-  TrashIcon,
-} from '@radix-ui/react-icons'
-import { Text, Button, Badge, Flex, TextField, DropdownMenu, ContextMenu } from '@radix-ui/themes'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
@@ -163,7 +162,6 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
   const setSelectedCategory = useProjectsStore((store) => store.setSelectedCategory)
   const setSelectedProjectId = useProjectsStore((store) => store.setSelectedProjectId)
-  const [isSearchFocused, setIsSearchFocused] = React.useState(false)
 
   const isDarkMode = useIsDarkMode()
 
@@ -180,6 +178,13 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
       }
     },
     [setSelectedCategory, setSearchQuery, setSelectedProjectId],
+  )
+
+  const onChangeSearchQuery = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchQuery(e.target.value)
+    },
+    [setSearchQuery],
   )
 
   return (
@@ -226,11 +231,7 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
             id='search-input'
             autoFocus={true}
             value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value)
-            }}
-            onFocus={() => setIsSearchFocused(true)}
-            onBlur={() => setIsSearchFocused(false)}
+            onChange={onChangeSearchQuery}
             style={{ fontSize: 12 }}
           />
         </TextField.Root>
@@ -344,6 +345,13 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
     }
   }
 
+  const onClearSearch = React.useCallback(() => {
+    return () => {
+      setSearchQuery('')
+      clearSearchInput()
+    }
+  }, [setSearchQuery])
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
       <div
@@ -368,13 +376,7 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
               searchQuery !== '',
               <span>
                 <span style={{ color: 'gray', paddingRight: 3 }}>
-                  <span
-                    onClick={() => {
-                      setSearchQuery('')
-                      clearSearchInput()
-                    }}
-                    style={{ cursor: 'pointer' }}
-                  >
+                  <span onClick={onClearSearch} style={{ cursor: 'pointer' }}>
                     ←{' '}
                   </span>{' '}
                   Search results for
