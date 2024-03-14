@@ -108,6 +108,7 @@ import { DataPickerPopup } from './data-picker-popup'
 import { jsxElementChildToText } from '../../../canvas/ui-jsx-canvas-renderer/jsx-element-child-to-text'
 import { foldEither } from '../../../../core/shared/either'
 import { stopPropagation } from '../../common/inspector-utils'
+import { NO_OP } from '../../../../core/shared/utils'
 
 export const VariableFromScopeOptionTestId = (idx: string) => `variable-from-scope-${idx}`
 export const DataPickerPopupButtonTestId = `data-picker-popup-button-test-id`
@@ -123,7 +124,13 @@ function useComponentPropsInspectorInfo(
 }
 
 const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDescription>) => {
-  const { controlDescription } = props
+  const { controlDescription, showHiddenControl } = props
+  const onSubmitValue = props.propMetadata.onSubmitValue
+
+  const onDeleteCartouche = React.useCallback(() => {
+    onSubmitValue(null, false)
+    showHiddenControl(PP.firstPartToString(props.propPath))
+  }, [onSubmitValue, showHiddenControl, props.propPath])
 
   if (controlDescription == null) {
     return null
@@ -142,6 +149,7 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
           contents={jsxElementChildToText(attributeExpression, null, null, 'jsx', 'inner')}
           matchType='full'
           onOpenDataPicker={props.onOpenDataPicker}
+          onDeleteCartouche={onDeleteCartouche}
         />
       )
     }
@@ -157,6 +165,7 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
             contents={'Expression'}
             matchType='partial'
             onOpenDataPicker={props.onOpenDataPicker}
+            onDeleteCartouche={onDeleteCartouche}
           />
         )
       }
@@ -225,6 +234,7 @@ interface AbstractRowForControlProps {
   setGlobalCursor: (cursor: CSSCursor | null) => void
   indentationLevel: number
   focusOnMount: boolean
+  showHiddenControl: (path: string) => void
 }
 
 function labelForControl(propPath: PropertyPath, control: RegularControlDescription): string {
@@ -440,6 +450,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
             setGlobalCursor={props.setGlobalCursor}
             focusOnMount={props.focusOnMount}
             onOpenDataPicker={dataPickerButtonData.openPopup}
+            showHiddenControl={props.showHiddenControl}
           />
         </div>
         {when(isBaseIndentationLevel(props), dataPickerButtonData.DataPickerOpener)}
@@ -575,6 +586,7 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
               setGlobalCursor={props.setGlobalCursor}
               focusOnMount={props.focusOnMount}
               onOpenDataPicker={dataPickerButtonData.openPopup}
+              showHiddenControl={props.showHiddenControl}
             />
           </FlexRow>
           {when(isBaseIndentationLevel(props), dataPickerButtonData.DataPickerOpener)}
@@ -595,6 +607,7 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
               controlDescription={controlDescription}
               focusOnMount={props.focusOnMount}
               setGlobalCursor={props.setGlobalCursor}
+              showHiddenControl={props.showHiddenControl}
             />
           ))}
         </div>
@@ -611,6 +624,7 @@ interface ArrayControlItemProps {
   controlDescription: ArrayControlDescription
   focusOnMount: boolean
   setGlobalCursor: (cursor: CSSCursor | null) => void
+  showHiddenControl: (path: string) => void
 }
 
 const ArrayControlItem = React.memo((props: ArrayControlItemProps) => {
@@ -656,6 +670,7 @@ const ArrayControlItem = React.memo((props: ArrayControlItemProps) => {
           indentationLevel={2}
           focusOnMount={props.focusOnMount && index === 0}
           disableToggling={true}
+          showHiddenControl={props.showHiddenControl}
         />
         <div
           style={{
@@ -728,6 +743,7 @@ const RowForTupleControl = React.memo((props: RowForTupleControlProps) => {
             isScene={props.isScene}
             controlDescription={controlDescription}
             setGlobalCursor={props.setGlobalCursor}
+            showHiddenControl={props.showHiddenControl}
           />
         ))}
       </div>
@@ -741,6 +757,7 @@ interface TupleControlItemProps {
   isScene: boolean
   controlDescription: TupleControlDescription
   setGlobalCursor: (cursor: CSSCursor | null) => void
+  showHiddenControl: (path: string) => void
 }
 
 const TupleControlItem = React.memo((props: TupleControlItemProps) => {
@@ -767,6 +784,7 @@ const TupleControlItem = React.memo((props: TupleControlItemProps) => {
         setGlobalCursor={props.setGlobalCursor}
         indentationLevel={1}
         focusOnMount={false}
+        showHiddenControl={props.showHiddenControl}
       />
     </InspectorContextMenuWrapper>
   )
@@ -868,6 +886,7 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
                   setGlobalCursor={props.setGlobalCursor}
                   focusOnMount={props.focusOnMount}
                   onOpenDataPicker={dataPickerButtonData.openPopup}
+                  showHiddenControl={props.showHiddenControl}
                 />
               </div>
             </SimpleFlexRow>
@@ -889,6 +908,7 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
               indentationLevel={props.indentationLevel + 1}
               focusOnMount={props.focusOnMount && index === 0}
               disableToggling={props.disableToggling}
+              showHiddenControl={props.showHiddenControl}
             />
           )
         }, controlDescription.object),

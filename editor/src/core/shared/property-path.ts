@@ -129,6 +129,10 @@ export function firstPart(propertyPath: PropertyPath): PropertyPathPart {
   return propertyPath.propertyElements[0]
 }
 
+export function firstPartToString(propertyPath: PropertyPath): string {
+  return `${firstPart(propertyPath)}`
+}
+
 export function tail(propertyPath: PropertyPath): PropertyPath {
   const newElements =
     propertyPath.propertyElements.length > 0 ? propertyPath.propertyElements.slice(1) : []

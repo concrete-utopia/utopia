@@ -70,6 +70,7 @@ import {
 } from '../../../../core/shared/element-template'
 import type { JSXParsedType, JSXParsedValue } from '../../../../utils/value-parser-utils'
 import { assertNever } from '../../../../core/shared/utils'
+import { preventDefault, stopPropagation } from '../../common/inspector-utils'
 
 export interface ControlForPropProps<T extends RegularControlDescription> {
   propPath: PropertyPath
@@ -79,6 +80,7 @@ export interface ControlForPropProps<T extends RegularControlDescription> {
   setGlobalCursor: (cursor: CSSCursor | null) => void
   focusOnMount: boolean
   onOpenDataPicker: () => void
+  showHiddenControl: (path: string) => void
 }
 
 export const CheckboxPropertyControl = React.memo(
@@ -799,9 +801,19 @@ interface IdentifierExpressionCartoucheControlProps {
   contents: string
   matchType: 'full' | 'partial'
   onOpenDataPicker: () => void
+  onDeleteCartouche: () => void
 }
 export const IdentifierExpressionCartoucheControl = React.memo(
   (props: IdentifierExpressionCartoucheControlProps) => {
+    const { onDeleteCartouche } = props
+    const onDelete = React.useCallback<React.MouseEventHandler<HTMLDivElement>>(
+      (e) => {
+        stopPropagation(e)
+        onDeleteCartouche()
+      },
+      [onDeleteCartouche],
+    )
+
     return (
       <FlexRow
         style={{
@@ -842,6 +854,9 @@ export const IdentifierExpressionCartoucheControl = React.memo(
             {/* the &lrm; non-printing character is added to fix the punctuation marks disappearing because of direction: rtl */}
           </div>
         </Tooltip>
+        <div style={{ paddingLeft: 5, paddingRight: 5, marginRight: -5 }} onClick={onDelete}>
+          {/* TODO replace the X button with a real icon */}×
+        </div>
       </FlexRow>
     )
   },
