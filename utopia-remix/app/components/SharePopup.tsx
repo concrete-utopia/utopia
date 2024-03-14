@@ -8,7 +8,6 @@ import {
   CookieIcon,
 } from '@radix-ui/react-icons'
 import {
-  type AccessRequest,
   asAccessLevel,
   operationApproveAccessRequest,
   operationChangeAccess,

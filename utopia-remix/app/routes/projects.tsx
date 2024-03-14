@@ -30,8 +30,6 @@ import { projectCategoryButton, userName } from '../styles/sidebarComponents.css
 import { projectCards, projectRows } from '../styles/projects.css'
 import { sprinkles } from '../styles/sprinkles.css'
 import type {
-  AccessRequest,
-  AccessRequestsByProject,
   Collaborator,
   CollaboratorsByProject,
   Operation,
