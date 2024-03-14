@@ -1033,6 +1033,13 @@ describe('getModifiableJSXAttributeAtPath', () => {
     )
     expect(isRight(impossibleAttributeInsideNestedArray)).toBeTruthy()
     expect(impossibleAttributeInsideNestedArray.value).toEqual(jsxAttributeNotFound())
+
+    const impossibleAttributeInsideNestedArrayNotNumberIndex = getModifiableJSXAttributeAtPath(
+      advancedJSXSampleAttributes(),
+      PP.create('fancyArray', 'five'),
+    )
+    expect(isRight(impossibleAttributeInsideNestedArrayNotNumberIndex)).toBeTruthy()
+    expect(impossibleAttributeInsideNestedArrayNotNumberIndex.value).toEqual(jsxAttributeNotFound())
   })
 
   it('simple array access works', () => {
@@ -1045,15 +1052,6 @@ describe('getModifiableJSXAttributeAtPath', () => {
     if (isRight(foundAttributeObject)) {
       expect(foundAttributeObject.value.type).toEqual('ATTRIBUTE_NESTED_OBJECT')
     }
-  })
-
-  it('throws on wrong array access', () => {
-    const impossibleAttributeInsideNestedArray = expect(() =>
-      getModifiableJSXAttributeAtPath(
-        advancedJSXSampleAttributes(),
-        PP.create('fancyArray', 'lol'),
-      ),
-    ).toThrow()
   })
 
   it('returns Left on a path that points into a non-simple-value expression', () => {
