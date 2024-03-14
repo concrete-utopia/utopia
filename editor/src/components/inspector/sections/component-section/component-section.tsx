@@ -859,7 +859,7 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
                 {title}
                 {unless(props.disableToggling, <ObjectIndicator open={open} />)}
               </PropertyLabel>
-              <div onClick={stopPropagation}>
+              <div style={{ minWidth: 0 }} onClick={stopPropagation}>
                 <ControlForProp
                   propPath={propPath}
                   propName={propName}
