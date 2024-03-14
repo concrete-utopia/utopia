@@ -5258,14 +5258,14 @@ export var whatever2 = (props) => <View data-uid='aaa'>
                       topLevelElement.rootElement,
                       uids,
                       isWantedElement,
-                      'do-not-walk-attributes',
+                      'walk-attributes',
                     )
                     if (topLevelElement.arbitraryJSBlock != null) {
                       ensureArbitraryBlocksHaveUID(
                         topLevelElement.arbitraryJSBlock,
                         uids,
                         isWantedElement,
-                        'do-not-walk-attributes',
+                        'walk-attributes',
                       )
                     }
                     break
@@ -5274,7 +5274,7 @@ export var whatever2 = (props) => <View data-uid='aaa'>
                       topLevelElement,
                       uids,
                       isWantedElement,
-                      'do-not-walk-attributes',
+                      'walk-attributes',
                     )
                     break
                   case 'IMPORT_STATEMENT':
