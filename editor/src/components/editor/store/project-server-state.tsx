@@ -172,6 +172,7 @@ function restartServerStateWatcher(
   forkedFromProjectId: string | null,
   dispatch: EditorDispatch,
 ): void {
+  console.log(`restartServerStateWatcher(${loggedIn}, ${projectId}, ${forkedFromProjectId})`)
   void updateProjectServerStateInStore(loggedIn, projectId, forkedFromProjectId, dispatch)
   // Reset the multiplier if triggered from outside of `restartWatcherInterval`.
   currentWatcherIntervalMultiplier = 1

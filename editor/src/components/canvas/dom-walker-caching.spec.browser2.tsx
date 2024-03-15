@@ -52,7 +52,7 @@ describe('Dom-walker Caching', () => {
     expect(saveDomReportActions.length).toBe(0)
   })
 
-  it('resizing an out-of-file element invalidates the cache for only that scene', async () => {
+  it.only('resizing an out-of-file element invalidates the cache for only that scene', async () => {
     const renderResult = await prepareTestProject()
 
     renderResult.clearRecordedActions()
