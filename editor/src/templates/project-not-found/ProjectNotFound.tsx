@@ -13,8 +13,8 @@ export default function ProjectNotFound({
   projectId,
   loggedIn,
 }: {
-  projectId?: string
-  loggedIn?: boolean
+  projectId: string | null
+  loggedIn: boolean
 }) {
   const [accessRequested, setAccessRequested] = React.useState(false)
   const requestAccess = React.useCallback(async () => {

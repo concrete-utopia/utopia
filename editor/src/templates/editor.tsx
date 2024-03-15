@@ -810,7 +810,7 @@ async function renderProjectNotFound(): Promise<void> {
   const rootElement = document.getElementById(EditorID)
   if (rootElement != null) {
     const root = createRoot(rootElement)
-    root.render(<ProjectNotFound />)
+    root.render(<ProjectNotFound projectId={null} loggedIn={false} />)
   }
 }
 
