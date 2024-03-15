@@ -630,7 +630,7 @@ let
         new-window -n "Remix" \; \
         send-keys -t :3 watch-remix C-m \; \
         new-window -n "Editor TSC" \; \
-		send-keys -t :4 watch-tsc C-m \; \
+        send-keys -t :4 watch-tsc C-m \; \
         new-window -n "Editor Vite" \; \
         send-keys -t :5 watch-editor-hmr C-m \; \
         new-window -n "Website" \; \
