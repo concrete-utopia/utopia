@@ -4,7 +4,8 @@ import {
   Cross2Icon,
   GlobeIcon,
   LockClosedIcon,
-  CookieIcon,
+  Link2Icon,
+  PersonIcon,
 } from '@radix-ui/react-icons'
 import {
   asAccessLevel,
@@ -20,7 +21,7 @@ import React from 'react'
 import { when } from '../util/react-conditionals'
 import moment from 'moment'
 
-export function SharePopup({
+export function SharingDialog({
   project,
   accessRequests,
 }: {
@@ -88,7 +89,7 @@ export function SharePopup({
         {when(
           accessRequests.length > 0,
           <>
-            <Separator />
+            <Separator size='4' />
             <AccessRequests
               project={project}
               approveAccessRequest={approveAccessRequest}
@@ -144,11 +145,11 @@ const VisibilityUIComponents = {
   [AccessLevel.PRIVATE]: { text: 'Private', icon: <LockClosedIcon width='16' height='16' /> },
   [AccessLevel.COLLABORATIVE]: {
     text: 'Collaborative',
-    icon: <CookieIcon width='16' height='16' />,
+    icon: <PersonIcon width='16' height='16' />,
   },
   [AccessLevel.WITH_LINK]: {
     text: 'With Link',
-    icon: <CookieIcon width='16' height='16' />,
+    icon: <Link2Icon width='16' height='16' />,
   },
 }
 
