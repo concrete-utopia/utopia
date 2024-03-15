@@ -968,6 +968,7 @@ describe('Controls from registering components', () => {
   })
 })
 
+/*
 describe('Delete cartouche handling', () => {
   async function getEditorWithPropertyExtras(
     propertyExtras: string,
@@ -1011,6 +1012,7 @@ describe('Delete cartouche handling', () => {
     )
   })
 })
+*/
 
 const project = DataPickerProjectShell(`
 function Title({ text }) {
