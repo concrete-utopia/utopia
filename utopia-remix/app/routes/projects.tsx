@@ -600,17 +600,20 @@ const ProjectCard = React.memo(
     >([])
 
     React.useEffect(() => {
-      const action = `/internal/projects/${project.proj_id}/access/requests`
-      accessRequestsFetcher.submit({}, { method: 'GET', action: action })
       if (accessRequestsFetcher.state === 'idle' && accessRequestsFetcher.data != null) {
         if (isProjectAccessRequestWithUserDetailsArray(accessRequestsFetcher.data)) {
           setAccessRequests(accessRequestsFetcher.data)
         }
       }
+    }, [accessRequestsFetcher])
+
+    const handleSortMenuOpenChange = React.useCallback(() => {
+      const action = `/internal/projects/${project.proj_id}/access/requests`
+      accessRequestsFetcher.submit({}, { method: 'GET', action: action })
     }, [accessRequestsFetcher, project])
 
     return (
-      <ContextMenu.Root>
+      <ContextMenu.Root onOpenChange={handleSortMenuOpenChange}>
         <ContextMenu.Trigger>
           <div
             style={{
@@ -756,17 +759,20 @@ const ProjectRow = React.memo(
     >([])
 
     React.useEffect(() => {
-      const action = `/internal/projects/${project.proj_id}/access/requests`
-      accessRequestsFetcher.submit({}, { method: 'GET', action: action })
       if (accessRequestsFetcher.state === 'idle' && accessRequestsFetcher.data != null) {
         if (isProjectAccessRequestWithUserDetailsArray(accessRequestsFetcher.data)) {
           setAccessRequests(accessRequestsFetcher.data)
         }
       }
+    }, [accessRequestsFetcher])
+
+    const handleSortMenuOpenChange = React.useCallback(() => {
+      const action = `/internal/projects/${project.proj_id}/access/requests`
+      accessRequestsFetcher.submit({}, { method: 'GET', action: action })
     }, [accessRequestsFetcher, project])
 
     return (
-      <ContextMenu.Root>
+      <ContextMenu.Root onOpenChange={handleSortMenuOpenChange}>
         <ContextMenu.Trigger>
           <div style={{ padding: '8px 0' }}>
             <div

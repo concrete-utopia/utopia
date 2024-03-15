@@ -89,7 +89,7 @@ export function SharingDialog({
         {when(
           accessRequests.length > 0,
           <>
-            <Separator />
+            <Separator size='4' />
             <AccessRequests
               project={project}
               approveAccessRequest={approveAccessRequest}

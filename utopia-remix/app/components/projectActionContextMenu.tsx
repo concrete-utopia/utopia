@@ -17,6 +17,7 @@ import { SLUGIFY_OPTIONS } from '../routes/internal.projects.$id.rename'
 import { ContextMenu, Separator, Dialog, Flex, Text } from '@radix-ui/themes'
 import { DotFilledIcon } from '@radix-ui/react-icons'
 import { SharingDialog } from './sharingDialog'
+import { when } from '~/util/react-conditionals'
 
 type ContextMenuEntry =
   | {
@@ -183,16 +184,13 @@ export const ProjectActionsMenu = React.memo(
             return (
               <Dialog.Root key={`separator-${index}`}>
                 <Dialog.Trigger>
-                  <ContextMenu.Item
-                    style={{ height: 28, fontSize: 12 }}
-                    /* eslint-disable-next-line react/jsx-no-bind */
-                    onSelect={preventDefault}
-                  >
+                  <ContextMenu.Item style={{ height: 28, fontSize: 12 }} onSelect={preventDefault}>
                     <Flex justify={'between'} align={'center'} width={'100%'}>
                       <Text>Share</Text>
-                      {pendingAccessRequests.length > 0 ? (
-                        <DotFilledIcon color='red' height={22} width={22} />
-                      ) : null}
+                      {when(
+                        pendingAccessRequests.length > 0,
+                        <DotFilledIcon color='red' height={22} width={22} />,
+                      )}
                     </Flex>
                   </ContextMenu.Item>
                 </Dialog.Trigger>
