@@ -127,10 +127,27 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
   const { controlDescription, showHiddenControl } = props
   const onSubmitValue = props.propMetadata.onSubmitValue
 
+  const isRequired: boolean = props.controlDescription.required ?? false
+  const hasDefaultValue: boolean = 'defaultValue' in props.controlDescription
+  const safeToDelete = !isRequired || hasDefaultValue
+
   const onDeleteCartouche = React.useCallback(() => {
-    onSubmitValue(null, false)
-    showHiddenControl(PP.firstPartToString(props.propPath))
-  }, [onSubmitValue, showHiddenControl, props.propPath])
+    if (safeToDelete) {
+      if (isRequired) {
+        onSubmitValue(props.controlDescription.defaultValue, false)
+      } else {
+        onSubmitValue(null, false)
+        showHiddenControl(PP.firstPartToString(props.propPath))
+      }
+    }
+  }, [
+    safeToDelete,
+    isRequired,
+    onSubmitValue,
+    props.controlDescription.defaultValue,
+    props.propPath,
+    showHiddenControl,
+  ])
 
   if (controlDescription == null) {
     return null
@@ -150,6 +167,8 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
           matchType='full'
           onOpenDataPicker={props.onOpenDataPicker}
           onDeleteCartouche={onDeleteCartouche}
+          testId={`cartouche-${PP.toString(props.propPath)}`}
+          safeToDelete={safeToDelete}
         />
       )
     }
@@ -166,6 +185,8 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
             matchType='partial'
             onOpenDataPicker={props.onOpenDataPicker}
             onDeleteCartouche={onDeleteCartouche}
+            testId={`cartouche-${PP.toString(props.propPath)}`}
+            safeToDelete={safeToDelete}
           />
         )
       }
