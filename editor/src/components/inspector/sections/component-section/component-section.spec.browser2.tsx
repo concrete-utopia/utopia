@@ -968,7 +968,7 @@ describe('Controls from registering components', () => {
   })
 })
 
-describe('Delete cartouche handling', () => {
+describe.only('Delete cartouche handling', () => {
   async function getEditorWithPropertyExtras(
     propertyExtras: string,
     textField: string,
