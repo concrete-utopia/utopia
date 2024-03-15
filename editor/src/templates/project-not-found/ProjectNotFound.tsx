@@ -69,7 +69,7 @@ export default function ProjectNotFound({
             <ActionButton text='Return Home' />
           </a>
           {when(
-            projectId != null && loggedIn === true,
+            projectId != null && loggedIn,
             <ActionButton
               text={accessRequested ? 'Access Requested' : 'Request Access'}
               onClick={requestAccess}
