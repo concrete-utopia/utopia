@@ -812,9 +812,7 @@ export const IdentifierExpressionCartoucheControl = React.memo(
     const onDelete = React.useCallback<React.MouseEventHandler<HTMLDivElement>>(
       (e) => {
         stopPropagation(e)
-        if (onDeleteCartouche != null) {
-          onDeleteCartouche()
-        }
+        onDeleteCartouche()
       },
       [onDeleteCartouche],
     )
