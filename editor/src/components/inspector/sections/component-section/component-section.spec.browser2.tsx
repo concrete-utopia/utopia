@@ -1124,6 +1124,8 @@ registerExternalComponent(
     properties: {
       sampleprop: {
         control: 'string-input',
+        required: true,
+        defaultValue: 'Sample'
       },
     },
     variants: [
