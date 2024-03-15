@@ -62,7 +62,7 @@
       "eslint --quiet --ignore-path .eslintignore --config .eslintrc-lite.js --no-eslintrc",
       "git add"
     ],
-    "*.{html}": [
+    "*.{css,html}": [
       "prettier --write",
       "git add"
     ],
@@ -71,9 +71,17 @@
       "eslint --quiet --ignore-path .eslintignore --config .eslintrc-lite.js --no-eslintrc",
       "git add"
     ],
+    "../puppeteer-tests/src/**/*.{css,html}": [
+      "prettier --write",
+      "git add"
+    ],
     "../utopia-api/src/**/*.{js,ts,tsx}": [
       "prettier --write",
       "eslint --quiet --ignore-path .eslintignore --config .eslintrc-lite.js --no-eslintrc",
+      "git add"
+    ],
+    "../utopia-api/src/**/*.{css,html}": [
+      "prettier --write",
       "git add"
     ],
     "../utopia-remix/app/**/*.{js,ts,tsx}": [
@@ -81,9 +89,17 @@
       "eslint --quiet --ignore-path .eslintignore --config .eslintrc-lite.js --no-eslintrc",
       "git add"
     ],
+    "../utopia-remix/app/**/*.{css,html}": [
+      "prettier --write",
+      "git add"
+    ],
     "../utopia-vscode-extension/src/**/*.{js,ts,tsx}": [
       "prettier --write",
       "eslint --quiet --ignore-path .eslintignore --config .eslintrc-lite.js --no-eslintrc",
+      "git add"
+    ],
+    "../utopia-vscode-extension/src/**/*.{css,html}": [
+      "prettier --write",
       "git add"
     ],
     "../utopia-vscode-common/src/**/*.{js,ts,tsx}": [
@@ -91,14 +107,26 @@
       "eslint --quiet --ignore-path .eslintignore --config .eslintrc-lite.js --no-eslintrc",
       "git add"
     ],
-    "../website-next/pages/**.{js,ts,tsx}": [
+    "../utopia-vscode-common/src/**/*.{css,html}": [
+      "prettier --write",
+      "git add"
+    ],
+    "../website-next/pages/**/*.{js,ts,tsx}": [
       "prettier --write",
       "eslint --quiet --ignore-path .eslintignore --config .eslintrc-lite.js --no-eslintrc",
       "git add"
     ],
-    "../website-next/components/**.{js,ts,tsx}": [
+    "../website-next/pages/**/*.{css,html}": [
+      "prettier --write",
+      "git add"
+    ],
+    "../website-next/components/**/*.{js,ts,tsx}": [
       "prettier --write",
       "eslint --quiet --ignore-path .eslintignore --config .eslintrc-lite.js --no-eslintrc",
+      "git add"
+    ],
+    "../website-next/components/**/*.{css,html}": [
+      "prettier --write",
       "git add"
     ]
   },
