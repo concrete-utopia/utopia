@@ -143,7 +143,14 @@ function proxy(originalRequest, originalResponse) {
     },
   )
 
-  originalRequest.pipe(proxyRequest)
+  originalRequest
+    .pipe(proxyRequest)
+    // if the request fails for any non-explicit reason (e.g. ERRCONNREFUSED),
+    // handle the error gracefully and return a common status code back to the client
+    .on('error', (err) => {
+      console.error('failed proxy request', err)
+      originalResponse.status(502).json({ error: 'Service temporarily unavailable' })
+    })
 }
 
 const corsMiddleware = cors({
@@ -191,3 +198,12 @@ app.listen(environment.PORT, listenCallback(environment.PORT))
 if (process.env.NODE_ENV === 'development') {
   app.listen(environment.PORT + 1, listenCallback(environment.PORT + 1))
 }
+
+// To make sure everythin keeps working and the server doesn't crash, if
+// there are any uncaught errors, log them out gracefully
+process.on('uncaughtException', (err) => {
+  console.error('server uncaught exception', err)
+})
+process.on('unhandledRejection', (err) => {
+  console.error('server unhandled rejection', err)
+})
