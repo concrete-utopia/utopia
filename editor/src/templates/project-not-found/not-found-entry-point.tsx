@@ -6,5 +6,5 @@ import { EditorID } from '../../core/shared/utils'
 const rootElement = document.getElementById(EditorID)
 if (rootElement != null) {
   const root = createRoot(rootElement)
-  root.render(<ProjectNotFound />)
+  root.render(<ProjectNotFound projectId={null} loggedIn={false} />)
 }
