@@ -8,6 +8,15 @@ import * as path from 'node:path'
 import * as url from 'node:url'
 import sourceMapSupport from 'source-map-support'
 
+// To make sure everything keeps working and the server doesn't crash, if
+// there are any uncaught errors, log them out gracefully
+process.on('uncaughtException', (err) => {
+  console.error('server uncaught exception', err)
+})
+process.on('unhandledRejection', (err) => {
+  console.error('server unhandled rejection', err)
+})
+
 // figlet -f isometric3 'utopia'
 const asciiBanner = `
       ___                       ___           ___                     ___
@@ -198,12 +207,3 @@ app.listen(environment.PORT, listenCallback(environment.PORT))
 if (process.env.NODE_ENV === 'development') {
   app.listen(environment.PORT + 1, listenCallback(environment.PORT + 1))
 }
-
-// To make sure everythin keeps working and the server doesn't crash, if
-// there are any uncaught errors, log them out gracefully
-process.on('uncaughtException', (err) => {
-  console.error('server uncaught exception', err)
-})
-process.on('unhandledRejection', (err) => {
-  console.error('server unhandled rejection', err)
-})
