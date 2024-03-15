@@ -771,7 +771,7 @@ const ProjectRow = React.memo(
           <div style={{ padding: '8px 0' }}>
             <div
               style={{
-                height: 40,
+                height: 60,
                 display: 'flex',
                 flexDirection: 'row',
                 alignItems: 'center',
@@ -779,6 +779,7 @@ const ProjectRow = React.memo(
                 border: selected ? '2px solid #0090FF' : '2px solid transparent',
                 borderRadius: 10,
                 padding: 4,
+                paddingRight: 10,
                 transition: `.1s background-color ease-in-out`,
               }}
               onMouseDown={onSelect}
@@ -789,49 +790,44 @@ const ProjectRow = React.memo(
                   display: 'flex',
                   flexDirection: 'row',
                   alignItems: 'center',
-                  gap: 15,
+                  justifyContent: 'space-between',
                   flex: 1,
                 }}
               >
-                <div
-                  style={{
-                    borderRadius: 8,
-                    overflow: 'hidden',
-                    height: 40,
-                    width: 70,
-                    background: 'linear-gradient(#a1a1a130, #a1a1a115)',
-                    backgroundAttachment: 'local',
-                    backgroundRepeat: 'no-repeat',
-                    position: 'relative',
-                  }}
-                />
-
-                <Text
-                  size='1'
-                  style={{
-                    display: 'flex',
-                    gap: '10px',
-                    alignItems: 'center',
-                    flexGrow: 1,
-                    minWidth: 180,
-                    maxWidth: 380,
-                    fontWeight: 500,
-                  }}
-                >
-                  {project.title}
-                </Text>
-                <ProjectBadge
-                  accessLevel={
-                    asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
-                  }
-                />
-                <Text size='1' style={{ width: 220, opacity: 0.5 }}>
+                <Flex gap='6'>
+                  <div
+                    style={{
+                      borderRadius: 6,
+                      overflow: 'hidden',
+                      height: 56,
+                      width: 90,
+                      background: 'linear-gradient(#a1a1a130, #a1a1a115)',
+                      backgroundAttachment: 'local',
+                      backgroundRepeat: 'no-repeat',
+                      position: 'relative',
+                    }}
+                  />
+                  <Text
+                    size='1'
+                    style={{
+                      display: 'flex',
+                      gap: '10px',
+                      alignItems: 'center',
+                      flexGrow: 1,
+                      minWidth: 180,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {project.title}
+                  </Text>
+                </Flex>
+                <Text size='1' style={{ width: 100, opacity: 0.5 }}>
                   {moment(project.modified_at).fromNow()}
                 </Text>
-
                 <div
                   style={{
-                    maxWidth: 480,
+                    flex: 1,
+                    maxWidth: 200,
                     minWidth: 100,
                     display: 'flex',
                     gap: 6,
@@ -871,6 +867,11 @@ const ProjectRow = React.memo(
                     )
                   })}
                 </div>
+                <ProjectBadge
+                  accessLevel={
+                    asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
+                  }
+                />
               </div>
             </div>
           </div>
@@ -913,16 +914,17 @@ const ProjectBadge = React.memo(({ accessLevel }: { accessLevel: AccessLevel }) 
     }
   }, [accessLevel])
   return (
-    <Badge
-      style={{
-        backgroundColor: backgroundColor,
-        color: color,
-        fontSize: 9,
-        width: 80,
-      }}
-    >
-      {text}
-    </Badge>
+    <div style={{ width: 80, display: 'flex', justifyContent: 'flex-end' }}>
+      <Badge
+        style={{
+          backgroundColor: backgroundColor,
+          color: color,
+          fontSize: 9,
+        }}
+      >
+        {text}
+      </Badge>
+    </div>
   )
 })
 ProjectBadge.displayName = 'ProjectBadge'
