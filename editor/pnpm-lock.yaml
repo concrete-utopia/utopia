@@ -176,6 +176,7 @@ specifiers:
   enzyme: 3.3.0
   eslint: 7.32.0
   eslint-config-prettier: 6.9.0
+  eslint-config-utopia: link:../eslint-config-utopia
   eslint-plugin-import: 2.25.3
   eslint-plugin-jest: ^25.3.0
   eslint-plugin-jsx-a11y: 6.5.1
@@ -390,6 +391,7 @@ dependencies:
   console-feed: 2.8.11_ceyt5bfod5miybgg2gmf5ylbc4
   create-react-class: 15.6.3
   css-tree: 2.3.1
+  eslint-config-utopia: link:../eslint-config-utopia
   eslint-plugin-import: 2.25.3_xoh4mdbbxtgv4pgsofz5xwre24
   eslint-plugin-jsx-a11y: 6.5.1_5wlsrnjcorawie777qour2ptie_eslint@7.32.0
   eslint-plugin-react: 7.23.2_eslint@7.32.0
