@@ -8,7 +8,7 @@ export async function updateAccessLevel(projectId: string, accessLevel: AccessLe
   return await Promise.all(writes.map((write) => fgaClient.write(write)))
 }
 
-const userProjectPermission = [
+const fgaUserProjectPermission = [
   'can_view',
   'can_fork',
   'can_play',
@@ -20,12 +20,12 @@ const userProjectPermission = [
   'can_manage',
 ] as const
 
-type UserProjectPermission = (typeof userProjectPermission)[number]
+export type FgaUserProjectPermission = (typeof fgaUserProjectPermission)[number]
 
 async function checkUserProjectPermission(
   projectId: string,
   userId: string,
-  permission: UserProjectPermission,
+  permission: FgaUserProjectPermission,
 ): Promise<boolean> {
   const { allowed } = await fgaClient.check({
     user: `user:${userId}`,
@@ -39,12 +39,12 @@ export async function getAllPermissions(projectId: string, userId: string) {
   const { relations } = await fgaClient.listRelations({
     user: `user:${userId}`,
     object: `project:${projectId}`,
-    relations: userProjectPermission.map((permission) => permission),
+    relations: fgaUserProjectPermission.map((permission) => permission),
   })
-  return userProjectPermission.reduce((acc, permission, index) => {
+  return fgaUserProjectPermission.reduce((acc, permission, index) => {
     acc[permission] = relations.includes(permission)
     return acc
-  }, {} as Record<UserProjectPermission, boolean>)
+  }, {} as Record<FgaUserProjectPermission, boolean>)
 }
 
 export async function canViewProject(projectId: string, userId: string): Promise<boolean> {

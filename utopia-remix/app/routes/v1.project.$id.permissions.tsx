@@ -15,8 +15,8 @@ export async function loader(args: LoaderFunctionArgs) {
 async function getUserProjectPermissions(req: Request, params: Params<string>) {
   const user = await getUser(req)
   const userId = user?.user_id ?? null
-  const { projectId } = params
-  ensure(projectId != null, 'projectId is null', Status.BAD_REQUEST)
-  const permissionsResult = await getAllPermissions(projectId, userId)
+  const { id } = params
+  ensure(id != null, 'projectId is null', Status.BAD_REQUEST)
+  const permissionsResult = await getAllPermissions(id, userId)
   return permissionsResult
 }
