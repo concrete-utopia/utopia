@@ -339,6 +339,7 @@ import type {
   InvalidOverrideNavigatorEntry,
   TrueUpHuggingElement,
   RenderPropNavigatorEntry,
+  SlotNavigatorEntry,
 } from './editor-state'
 import {
   trueUpGroupElementChanged,
@@ -652,13 +653,11 @@ export const SyntheticNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<Synth
   )
 
 export const RenderPropNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<RenderPropNavigatorEntry> =
-  combine3EqualityCalls(
+  combine2EqualityCalls(
     (entry) => entry.elementPath,
     ElementPathKeepDeepEquality,
     (entry) => entry.propName,
     StringKeepDeepEquality,
-    (entry) => entry.childOrAttribute,
-    nullableDeepEquality(JSXElementChildKeepDeepEquality()),
     renderPropNavigatorEntry,
   )
 
@@ -669,6 +668,15 @@ export const InvalidOverrideNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall
     (entry) => entry.message,
     StringKeepDeepEquality,
     invalidOverrideNavigatorEntry,
+  )
+
+export const SlotNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<SlotNavigatorEntry> =
+  combine2EqualityCalls(
+    (entry) => entry.elementPath,
+    ElementPathKeepDeepEquality,
+    (entry) => entry.prop,
+    StringKeepDeepEquality,
+    (elementPath, prop) => ({ type: 'SLOT', elementPath: elementPath, prop: prop }),
   )
 
 export const NavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<NavigatorEntry> = (
@@ -699,6 +707,11 @@ export const NavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<NavigatorEntry
     case 'INVALID_OVERRIDE':
       if (oldValue.type === newValue.type) {
         return InvalidOverrideNavigatorEntryKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'SLOT':
+      if (oldValue.type === newValue.type) {
+        return SlotNavigatorEntryKeepDeepEquality(oldValue, newValue)
       }
       break
     default:
@@ -916,7 +929,7 @@ export function JSExpressionOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqual
     arrayDeepEquality(ParamKeepDeepEquality()),
     (attribute) => attribute.originalJavascript,
     createCallWithTripleEquals<string>(),
-    (attribute) => attribute.javascript,
+    (attribute) => attribute.javascriptWithUIDs,
     createCallWithTripleEquals<string>(),
     (attribute) => attribute.transpiledJavascript,
     createCallWithTripleEquals<string>(),
@@ -936,7 +949,7 @@ export function JSExpressionOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqual
 
 export function JSXMapExpressionKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXMapExpression> {
   return combine9EqualityCalls(
-    (attribute) => attribute.javascript,
+    (attribute) => attribute.javascriptWithUIDs,
     createCallWithTripleEquals<string>(),
     (attribute) => attribute.originalJavascript,
     createCallWithTripleEquals<string>(),
@@ -967,7 +980,7 @@ export function JSXMapExpressionKeepDeepEqualityCall(): KeepDeepEqualityCall<JSX
     ) => {
       return {
         type: 'JSX_MAP_EXPRESSION',
-        javascript: javascript,
+        javascriptWithUIDs: javascript,
         originalJavascript: originalJavascript,
         transpiledJavascript: transpiledJavascript,
         definedElsewhere: definedElsewhere,

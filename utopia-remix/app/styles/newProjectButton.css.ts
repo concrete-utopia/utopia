@@ -16,7 +16,7 @@ export const newProjectButton = recipe({
       fontSize: 16,
       fontWeight: 500,
       color: 'white',
-      height: 40,
+      height: 36,
       opacity: 1,
       ':hover': {
         opacity: 0.8,
@@ -31,7 +31,7 @@ export const newProjectButton = recipe({
       purple: { background: '#9643FF' },
       blue: { background: '#3992FF' },
       green: { background: '#96BF48' },
-      primary: { background: colors.primary}
+      primary: { background: colors.primary },
     },
 
     size: {

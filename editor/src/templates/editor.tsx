@@ -32,11 +32,9 @@ import {
   startPreviewConnectedMonitoring,
 } from '../components/editor/preview-report-handler'
 import {
-  downloadGithubRepo,
   getLoginState,
   getUserConfiguration,
   getUserPermissions,
-  isRequestFailure,
   startPollingLoginState,
 } from '../components/editor/server'
 import {
@@ -83,12 +81,7 @@ import {
   ElementsToRerenderGLOBAL,
 } from '../components/canvas/ui-jsx-canvas'
 import { foldEither } from '../core/shared/either'
-import {
-  getURLImportDetails,
-  importZippedGitProject,
-  isProjectImportSuccess,
-  reuploadAssets,
-} from '../core/model/project-import'
+import { getURLImportDetails, reuploadAssets } from '../core/model/project-import'
 import { isSendPreviewModel, load } from '../components/editor/actions/actions'
 import { UtopiaStyles } from '../uuiui'
 import { reduxDevtoolsSendInitialState } from '../core/shared/redux-devtools'
@@ -112,10 +105,7 @@ import { waitUntil } from '../core/shared/promise-utils'
 import { sendSetVSCodeTheme } from '../core/vscode/vscode-bridge'
 import type { ElementPath } from '../core/shared/project-file-types'
 import { uniqBy } from '../core/shared/array-utils'
-import {
-  startGithubPolling,
-  updateUserDetailsWhenAuthenticated,
-} from '../core/shared/github/helpers'
+import { updateUserDetailsWhenAuthenticated } from '../core/shared/github/helpers'
 import { DispatchContext } from '../components/editor/store/dispatch-context'
 import {
   logSelectorTimings,
@@ -125,11 +115,7 @@ import { createPerformanceMeasure } from '../components/editor/store/editor-disp
 import { runDomWalkerAndSaveResults } from '../components/canvas/editor-dispatch-flow'
 import { simpleStringifyActions } from '../components/editor/actions/action-utils'
 import { unpatchedCreateRemixDerivedDataMemo } from '../components/editor/store/remix-derived-data'
-import {
-  emptyProjectServerState,
-  ProjectServerState,
-  ProjectServerStateUpdater,
-} from '../components/editor/store/project-server-state'
+import { emptyProjectServerState } from '../components/editor/store/project-server-state'
 import { GithubOperations } from '../core/shared/github/operations'
 import { GithubAuth } from '../utils/github-auth'
 import { Provider as JotaiProvider } from 'jotai'
@@ -274,6 +260,7 @@ export class Editor {
         PersistenceBackend,
         this.boundDispatch,
         renderProjectNotFound,
+        renderProjectNotAuthorized,
         onCreatedOrLoadedProject,
       ),
       builtInDependencies: builtInDependencies,
@@ -827,6 +814,14 @@ async function renderProjectNotFound(): Promise<void> {
   const rootElement = document.getElementById(EditorID)
   if (rootElement != null) {
     const root = createRoot(rootElement)
-    root.render(<ProjectNotFound />)
+    root.render(<ProjectNotFound projectId={null} loggedIn={false} />)
+  }
+}
+
+async function renderProjectNotAuthorized(projectId: string, loggedIn: boolean): Promise<void> {
+  const rootElement = document.getElementById(EditorID)
+  if (rootElement != null) {
+    const root = createRoot(rootElement)
+    root.render(<ProjectNotFound projectId={projectId} loggedIn={loggedIn} />)
   }
 }

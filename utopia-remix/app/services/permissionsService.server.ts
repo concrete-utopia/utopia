@@ -1,5 +1,6 @@
 import { assertNever } from '../util/assertNever'
-import { AccessLevel, UserProjectPermission } from '../types'
+import type { AccessLevel } from '../types'
+import { UserProjectPermission, UserProjectRole } from '../types'
 import * as fgaService from './fgaService.server'
 
 const ANONYMOUS_USER_ID = '__ANON__'
@@ -40,4 +41,27 @@ export async function setProjectAccess(projectId: string, accessLevel: AccessLev
 
 export async function getAllPermissions(projectId: string, userId: string) {
   return fgaService.getAllPermissions(projectId, userId)
+}
+
+export async function grantProjectRoleToUser(
+  projectId: string,
+  userId: string,
+  role: UserProjectRole,
+) {
+  switch (role) {
+    case UserProjectRole.VIEWER:
+      return await Promise.all([
+        fgaService.makeUserViewer(projectId, userId),
+        // we're keeping collaborator role separate from viewer, to be able to grant it separately in the future
+        fgaService.makeUserCollaborator(projectId, userId),
+      ])
+    case UserProjectRole.COLLABORATOR:
+      return await fgaService.makeUserCollaborator(projectId, userId)
+    case UserProjectRole.EDITOR:
+      return await fgaService.makeUserEditor(projectId, userId)
+    case UserProjectRole.ADMIN:
+      return await fgaService.makeUserAdmin(projectId, userId)
+    default:
+      assertNever(role)
+  }
 }

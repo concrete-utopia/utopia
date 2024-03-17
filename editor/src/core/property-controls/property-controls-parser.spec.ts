@@ -62,6 +62,8 @@ function runBaseTestSuite<T extends MapLike<any>>(
   requiredFields: Array<keyof T>,
   parseFn: (value: unknown) => ParseResult<T>,
   parseErrorDescription: string,
+  supportsRequired: 'supports-required' | 'does-not-support-required',
+  defaultValues: Array<unknown>,
 ) {
   it('parses a full value correctly', () => {
     expect(parseFn(validObject)).toEqual(right(validObject))
@@ -88,6 +90,40 @@ function runBaseTestSuite<T extends MapLike<any>>(
       left(objectFieldParseError('control', descriptionParseError(parseErrorDescription))),
     )
   })
+  if (supportsRequired === 'supports-required') {
+    it('fails on an invalid value for the required flag', () => {
+      const value = {
+        ...validObject,
+        required: 'honk',
+      }
+      expect(parseFn(value)).toEqual(
+        left(objectFieldParseError('required', descriptionParseError('Not a boolean.'))),
+      )
+    })
+    it('succeeds on a true for the required flag', () => {
+      const value = {
+        ...validObject,
+        required: true,
+      }
+      expect(parseFn(value)).toEqual(right(value))
+    })
+    it('succeeds on a false for the required flag', () => {
+      const value = {
+        ...validObject,
+        required: false,
+      }
+      expect(parseFn(value)).toEqual(right(value))
+    })
+  }
+  for (const defaultValue of defaultValues) {
+    it(`parses with a defaultValue of ${JSON.stringify(defaultValue)}`, () => {
+      const value = {
+        ...validObject,
+        defaultValue: defaultValue,
+      }
+      expect(parseFn(value)).toEqual(right(value))
+    })
+  }
 }
 
 const validCheckboxControlDescriptionValue: CheckboxControlDescription = {
@@ -104,6 +140,8 @@ describe('parseCheckboxControlDescription', () => {
     ['control'],
     parseCheckboxControlDescription,
     'Value was not checkbox.',
+    'supports-required',
+    [true, false],
   )
 })
 
@@ -119,6 +157,8 @@ describe('parseColorControlDescription', () => {
     ['control'],
     parseColorControlDescription,
     'Value was not color.',
+    'supports-required',
+    ['blue', '#aabbcc'],
   )
 })
 
@@ -134,6 +174,8 @@ describe('parseExpressionInputControlDescription', () => {
     ['control'],
     parseExpressionInputControlDescription,
     'Value was not expression-input.',
+    'supports-required',
+    ['something'],
   )
 })
 
@@ -171,6 +213,19 @@ describe('parsePopUpListControlDescription', () => {
     ['control', 'options'],
     parsePopUpListControlDescription,
     'Value was not popuplist.',
+    'supports-required',
+    [
+      'something',
+      true,
+      false,
+      100,
+      undefined,
+      null,
+      {
+        value: 1,
+        label: 'Option',
+      },
+    ],
   )
 })
 
@@ -218,6 +273,19 @@ describe('parseExpressionPopUpListControlDescription', () => {
     ['control', 'options'],
     parseExpressionPopUpListControlDescription,
     'Value was not expression-popuplist.',
+    'supports-required',
+    [
+      'something',
+      true,
+      false,
+      100,
+      undefined,
+      null,
+      {
+        value: 1,
+        label: 'Option',
+      },
+    ],
   )
 })
 
@@ -233,6 +301,8 @@ describe('parseNoneControlDescription', () => {
     ['control'],
     parseNoneControlDescription,
     'Value was not none.',
+    'supports-required',
+    ['something', true, false, 100, undefined, null],
   )
 })
 
@@ -253,6 +323,8 @@ describe('parseNumberInputControlDescription', () => {
     ['control'],
     parseNumberInputControlDescription,
     'Value was not number-input.',
+    'supports-required',
+    [-100, 0, 100],
   )
 })
 
@@ -272,6 +344,19 @@ describe('parseRadioControlDescription', () => {
     ['control', 'options'],
     parseRadioControlDescription,
     'Value was not radio.',
+    'supports-required',
+    [
+      'something',
+      true,
+      false,
+      100,
+      undefined,
+      null,
+      {
+        value: 1,
+        label: 'Option',
+      },
+    ],
   )
 })
 
@@ -289,6 +374,8 @@ describe('parseStringInputControlDescription', () => {
     ['control'],
     parseStringInputControlDescription,
     'Value was not string-input.',
+    'supports-required',
+    ['something'],
   )
 })
 
@@ -305,6 +392,8 @@ describe('parseStyleControlsControlDescription', () => {
     ['control'],
     parseStyleControlsControlDescription,
     'Value was not style-controls.',
+    'supports-required',
+    [{ backgroundColor: 'red' }],
   )
 })
 
@@ -320,6 +409,8 @@ describe('parseVector2ControlDescription', () => {
     ['control'],
     parseVector2ControlDescription,
     'Value was not vector2.',
+    'supports-required',
+    [[100, 200]],
   )
 })
 
@@ -335,6 +426,8 @@ describe('parseVector3ControlDescription', () => {
     ['control'],
     parseVector3ControlDescription,
     'Value was not vector3.',
+    'supports-required',
+    [[100, 200, 300]],
   )
 })
 
@@ -350,6 +443,8 @@ describe('parseVector4ControlDescription', () => {
     ['control'],
     parseVector4ControlDescription,
     'Value was not vector4.',
+    'supports-required',
+    [[100, 200, 300, 400]],
   )
 })
 
@@ -365,6 +460,8 @@ describe('parseEulerControlDescription', () => {
     ['control'],
     parseEulerControlDescription,
     'Value was not euler.',
+    'supports-required',
+    [[100, 200, 300, 'XYZ']],
   )
 })
 
@@ -380,6 +477,8 @@ describe('parseMatrix3ControlDescription', () => {
     ['control'],
     parseMatrix3ControlDescription,
     'Value was not matrix3.',
+    'supports-required',
+    [[1, 2, 3, 4, 5, 6, 7, 8, 9]],
   )
 })
 
@@ -395,6 +494,8 @@ describe('parseMatrix4ControlDescription', () => {
     ['control'],
     parseMatrix4ControlDescription,
     'Value was not matrix4.',
+    'supports-required',
+    [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]],
   )
 })
 
@@ -412,6 +513,11 @@ describe('parseArrayControlDescription', () => {
     ['control', 'propertyControl'],
     parseArrayControlDescription,
     'Value was not array.',
+    'supports-required',
+    [
+      ['a', 'b', 'c'],
+      [1, 2, 3],
+    ],
   )
 })
 
@@ -431,6 +537,8 @@ describe('parseObjectControlDescription', () => {
     ['control', 'object'],
     parseObjectControlDescription,
     'Value was not object.',
+    'supports-required',
+    [{ a: 1, b: 2 }],
   )
 })
 
@@ -449,6 +557,11 @@ describe('parseTupleControlDescription', () => {
     ['control', 'propertyControls'],
     parseTupleControlDescription,
     'Value was not tuple.',
+    'supports-required',
+    [
+      ['a', 'b', 'c'],
+      [1, 2, 3],
+    ],
   )
 })
 
@@ -466,6 +579,8 @@ describe('parseFolderControlDescription', () => {
     ['control', 'controls'],
     parseFolderControlDescription,
     'Value was not folder.',
+    'does-not-support-required',
+    [],
   )
 })
 

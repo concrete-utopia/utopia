@@ -452,6 +452,68 @@ export function applicative9Either<L, R1, R2, R3, R4, R5, R6, R7, R8, R9, X>(
   }
 }
 
+export function applicative10Either<L, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, X>(
+  transform: (
+    r1: R1,
+    r2: R2,
+    r3: R3,
+    r4: R4,
+    r5: R5,
+    r6: R6,
+    r7: R7,
+    r8: R8,
+    r9: R9,
+    r10: R10,
+  ) => X,
+  either1: Either<L, R1>,
+  either2: Either<L, R2>,
+  either3: Either<L, R3>,
+  either4: Either<L, R4>,
+  either5: Either<L, R5>,
+  either6: Either<L, R6>,
+  either7: Either<L, R7>,
+  either8: Either<L, R8>,
+  either9: Either<L, R9>,
+  either10: Either<L, R10>,
+): Either<L, X> {
+  if (isLeft(either1)) {
+    return either1
+  } else if (isLeft(either2)) {
+    return either2
+  } else if (isLeft(either3)) {
+    return either3
+  } else if (isLeft(either4)) {
+    return either4
+  } else if (isLeft(either5)) {
+    return either5
+  } else if (isLeft(either6)) {
+    return either6
+  } else if (isLeft(either7)) {
+    return either7
+  } else if (isLeft(either8)) {
+    return either8
+  } else if (isLeft(either9)) {
+    return either9
+  } else if (isLeft(either10)) {
+    return either10
+  } else {
+    return right(
+      transform(
+        either1.value,
+        either2.value,
+        either3.value,
+        either4.value,
+        either5.value,
+        either6.value,
+        either7.value,
+        either8.value,
+        either9.value,
+        either10.value,
+      ),
+    )
+  }
+}
+
 export function joinEither<L, R>(either: Either<L, Either<L, R>>): Either<L, R> {
   if (isLeft(either)) {
     return either

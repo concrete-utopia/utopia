@@ -1,48 +1,11 @@
-import { CredentialsMethod, OpenFgaClient } from '@openfga/sdk'
-import { ServerEnvironment } from '../env.server'
+import type { ClientWriteRequest } from '@openfga/sdk'
 import { AccessLevel } from '../types'
-
-export const fgaClient = new OpenFgaClient({
-  apiScheme: 'https',
-  apiHost: ServerEnvironment.FGA_API_HOST,
-  storeId: ServerEnvironment.FGA_STORE_ID,
-  // authorizationModelId: 'YOUR_MODEL_ID', // Optionally, you can specify a model id to target, which can improve latency
-  credentials: {
-    method: CredentialsMethod.ClientCredentials,
-    config: {
-      apiTokenIssuer: ServerEnvironment.FGA_API_TOKEN_ISSUER,
-      apiAudience: ServerEnvironment.FGA_API_AUDIENCE,
-      clientId: ServerEnvironment.FGA_CLIENT_ID,
-      clientSecret: ServerEnvironment.FGA_SECRET,
-    },
-  },
-})
+import { fgaClient } from './fgaClient.server'
+import { assertNever } from '../util/assertNever'
 
 export async function updateAccessLevel(projectId: string, accessLevel: AccessLevel) {
-  switch (accessLevel) {
-    case AccessLevel.PUBLIC:
-      await fgaClient.write({
-        writes: [
-          {
-            user: 'user:*',
-            relation: 'viewer',
-            object: `project:${projectId}`,
-          },
-        ],
-      })
-      break
-    case AccessLevel.PRIVATE:
-      await fgaClient.write({
-        deletes: [
-          {
-            user: 'user:*',
-            relation: 'viewer',
-            object: `project:${projectId}`,
-          },
-        ],
-      })
-      break
-  }
+  const writes = accessLevelToFgaWrites(projectId, accessLevel)
+  return await Promise.all(writes.map((write) => fgaClient.write(write)))
 }
 
 const userProjectPermission = [
@@ -78,13 +41,10 @@ export async function getAllPermissions(projectId: string, userId: string) {
     object: `project:${projectId}`,
     relations: userProjectPermission.map((permission) => permission),
   })
-  return userProjectPermission.reduce(
-    (acc, permission, index) => {
-      acc[permission] = relations.includes(permission)
-      return acc
-    },
-    {} as Record<UserProjectPermission, boolean>,
-  )
+  return userProjectPermission.reduce((acc, permission, index) => {
+    acc[permission] = relations.includes(permission)
+    return acc
+  }, {} as Record<UserProjectPermission, boolean>)
 }
 
 export async function canViewProject(projectId: string, userId: string): Promise<boolean> {
@@ -121,4 +81,73 @@ export async function canSeeLiveChanges(projectId: string, userId: string): Prom
 
 export async function canManageProject(projectId: string, userId: string): Promise<boolean> {
   return checkUserProjectPermission(projectId, userId, 'can_manage')
+}
+
+//
+
+export async function makeUserViewer(projectId: string, userId: string) {
+  return fgaClient.write({
+    writes: [{ user: `user:${userId}`, relation: 'viewer', object: `project:${projectId}` }],
+  })
+}
+
+export async function makeUserCollaborator(projectId: string, userId: string) {
+  return fgaClient.write({
+    writes: [{ user: `user:${userId}`, relation: 'collaborator', object: `project:${projectId}` }],
+  })
+}
+
+export async function makeUserEditor(projectId: string, userId: string) {
+  return fgaClient.write({
+    writes: [{ user: `user:${userId}`, relation: 'editor', object: `project:${projectId}` }],
+  })
+}
+
+export async function makeUserAdmin(projectId: string, userId: string) {
+  return fgaClient.write({
+    writes: [{ user: `user:${userId}`, relation: 'admin', object: `project:${projectId}` }],
+  })
+}
+
+//
+
+function generalRelation(projectId: string, relation: string) {
+  return {
+    user: 'user:*',
+    relation: relation,
+    object: `project:${projectId}`,
+  }
+}
+
+function accessLevelToFgaWrites(projectId: string, accessLevel: AccessLevel): ClientWriteRequest[] {
+  switch (accessLevel) {
+    case AccessLevel.PUBLIC:
+      return [
+        { writes: [generalRelation(projectId, 'viewer')] },
+        { deletes: [generalRelation(projectId, 'collaborator')] },
+      ]
+
+    case AccessLevel.PRIVATE:
+      return [
+        { deletes: [generalRelation(projectId, 'viewer')] },
+        { deletes: [generalRelation(projectId, 'collaborator')] },
+        { deletes: [generalRelation(projectId, 'can_request_access')] },
+      ]
+
+    case AccessLevel.WITH_LINK:
+      return [
+        { writes: [generalRelation(projectId, 'viewer')] },
+        { writes: [generalRelation(projectId, 'collaborator')] },
+      ]
+
+    case AccessLevel.COLLABORATIVE:
+      return [
+        { writes: [generalRelation(projectId, 'can_request_access')] },
+        { deletes: [generalRelation(projectId, 'viewer')] },
+        { deletes: [generalRelation(projectId, 'collaborator')] },
+      ]
+
+    default:
+      assertNever(accessLevel)
+  }
 }

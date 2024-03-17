@@ -1,4 +1,4 @@
-import { UtopiaVSCodeConfig } from './utopia-vscode-config'
+import type { UtopiaVSCodeConfig } from './utopia-vscode-config'
 
 export interface OpenFileMessage {
   type: 'OPEN_FILE'

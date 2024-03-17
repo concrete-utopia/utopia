@@ -1,4 +1,4 @@
-import { LoaderFunctionArgs } from '@remix-run/node'
+import type { LoaderFunctionArgs } from '@remix-run/node'
 import React from 'react'
 import { requireUser } from '../util/api.server'
 import { Link } from '@remix-run/react'

@@ -1,5 +1,5 @@
 import { prisma } from '../db.server'
-import { ProjectWithoutContent } from '../types'
+import type { ProjectWithoutContent } from '../types'
 
 const selectProjectWithoutContent: Record<keyof ProjectWithoutContent, true> = {
   id: true,

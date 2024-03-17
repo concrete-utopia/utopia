@@ -11,8 +11,6 @@ import {
   right,
   traverseEither,
 } from '../core/shared/either'
-import * as EP from '../core/shared/element-path'
-import type { ElementPath } from '../core/shared/project-file-types'
 import type { ComponentRendererComponent } from '../components/canvas/ui-jsx-canvas-renderer/component-renderer-component'
 
 export interface ArrayIndexNotPresentParseError {
@@ -138,6 +136,16 @@ export function getParseErrorDetails(parseError: ParseError): ParseErrorDetails 
 export type ParseResult<T> = Either<ParseError, T>
 
 export type Parser<T> = (v: unknown) => ParseResult<T>
+
+export function flatMapParser<T, U>(
+  parser: Parser<T>,
+  handleResult: (t: T) => ParseResult<U>,
+): Parser<U> {
+  return (value: unknown) => {
+    const parserResult = parser(value)
+    return flatMapEither(handleResult, parserResult)
+  }
+}
 
 export function parseAny(value: unknown): ParseResult<any> {
   return right(value)

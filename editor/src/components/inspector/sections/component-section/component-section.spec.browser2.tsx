@@ -3,23 +3,31 @@ import * as EP from '../../../../core/shared/element-path'
 import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
 import { mouseClickAtPoint, pressKey } from '../../../canvas/event-helpers.test-utils'
 import type { EditorRenderResult } from '../../../canvas/ui-jsx.test-utils'
-import { renderTestEditorWithCode } from '../../../canvas/ui-jsx.test-utils'
+import { getPrintedUiJsCode, renderTestEditorWithCode } from '../../../canvas/ui-jsx.test-utils'
 import {
   DataPickerPopupButtonTestId,
   DataPickerPopupTestId,
   VariableFromScopeOptionTestId,
 } from './component-section'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { isRight, type Right } from '../../../../core/shared/either'
+import { isRight } from '../../../../core/shared/either'
 import {
   isJSElementAccess,
   isJSExpressionValue,
   isJSIdentifier,
-  type JSExpressionOtherJavaScript,
 } from '../../../../core/shared/element-template'
+import { applyPrettier } from 'utopia-vscode-common'
 
 describe('Set element prop via the data picker', () => {
   it('can pick from the property data picker', async () => {
+    function checkIsItalicised(testID: string, shouldBeItalicised: boolean): void {
+      const htmlElement = editor.renderedDOM.getByTestId(testID)
+      if (shouldBeItalicised) {
+        expect(htmlElement.style.getPropertyValue('font-style')).toContain('italic')
+      } else {
+        expect(htmlElement.style.getPropertyValue('font-style')).not.toContain('italic')
+      }
+    }
     const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/title')])
 
@@ -50,30 +58,65 @@ describe('Set element prop via the data picker', () => {
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Title too')).not.toBeNull()
     expect(within(theInspector).queryByText('Title too')).not.toBeNull()
+    checkIsItalicised(`variable-from-scope-span-titleToo`, true)
+    checkIsItalicised(`variable-from-scope-span-alternateTitle`, false)
+    checkIsItalicised(`variable-from-scope-span-titles`, false)
+    checkIsItalicised(`variable-from-scope-span-titles,one`, false)
+    checkIsItalicised(`variable-from-scope-span-titles,also JS`, false)
+    checkIsItalicised(`variable-from-scope-span-titleIdeas`, false)
+    checkIsItalicised(`variable-from-scope-span-titleIdeas,0`, false)
 
     // choose another string-valued variable
     currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId('1'))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Alternate title')).not.toBeNull()
     expect(within(theInspector).queryByText('Alternate title')).not.toBeNull()
+    checkIsItalicised(`variable-from-scope-span-titleToo`, false)
+    checkIsItalicised(`variable-from-scope-span-alternateTitle`, true)
+    checkIsItalicised(`variable-from-scope-span-titles`, false)
+    checkIsItalicised(`variable-from-scope-span-titles,one`, false)
+    checkIsItalicised(`variable-from-scope-span-titles,also JS`, false)
+    checkIsItalicised(`variable-from-scope-span-titleIdeas`, false)
+    checkIsItalicised(`variable-from-scope-span-titleIdeas,0`, false)
 
     // choose an object prop
     currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId('2-0'))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('The First Title')).not.toBeNull()
     expect(within(theInspector).queryByText('The First Title')).not.toBeNull()
+    checkIsItalicised(`variable-from-scope-span-titleToo`, false)
+    checkIsItalicised(`variable-from-scope-span-alternateTitle`, false)
+    checkIsItalicised(`variable-from-scope-span-titles`, true)
+    checkIsItalicised(`variable-from-scope-span-titles,one`, true)
+    checkIsItalicised(`variable-from-scope-span-titles,also JS`, false)
+    checkIsItalicised(`variable-from-scope-span-titleIdeas`, false)
+    checkIsItalicised(`variable-from-scope-span-titleIdeas,0`, false)
 
     // choose an object prop
     currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId('2-1'))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Sweet')).not.toBeNull()
     expect(within(theInspector).queryByText('Sweet')).not.toBeNull()
+    checkIsItalicised(`variable-from-scope-span-titleToo`, false)
+    checkIsItalicised(`variable-from-scope-span-alternateTitle`, false)
+    checkIsItalicised(`variable-from-scope-span-titles`, true)
+    checkIsItalicised(`variable-from-scope-span-titles,one`, false)
+    checkIsItalicised(`variable-from-scope-span-titles,also JS`, true)
+    checkIsItalicised(`variable-from-scope-span-titleIdeas`, false)
+    checkIsItalicised(`variable-from-scope-span-titleIdeas,0`, false)
 
     // choose an array element
     currentOption = editor.renderedDOM.getByTestId(VariableFromScopeOptionTestId('3-0'))
     await mouseClickAtPoint(currentOption, { x: 2, y: 2 })
     expect(within(theScene).queryByText('Chapter One')).not.toBeNull()
     expect(within(theInspector).queryByText('Chapter One')).not.toBeNull()
+    checkIsItalicised(`variable-from-scope-span-titleToo`, false)
+    checkIsItalicised(`variable-from-scope-span-alternateTitle`, false)
+    checkIsItalicised(`variable-from-scope-span-titles`, false)
+    checkIsItalicised(`variable-from-scope-span-titles,one`, false)
+    checkIsItalicised(`variable-from-scope-span-titles,also JS`, false)
+    checkIsItalicised(`variable-from-scope-span-titleIdeas`, true)
+    checkIsItalicised(`variable-from-scope-span-titleIdeas,0`, true)
   })
 
   it('with number input control descriptor present', async () => {
@@ -324,7 +367,7 @@ describe('Set element prop via the data picker', () => {
     ])
   })
 
-  it('style props are filterd from destructured props', async () => {
+  it('style props are filtered from destructured props', async () => {
     const editor = await renderTestEditorWithCode(
       DataPickerProjectShell(`
       function TableOfContents({ titles }) {
@@ -925,6 +968,52 @@ describe('Controls from registering components', () => {
   })
 })
 
+/*
+describe('Delete cartouche handling', () => {
+  async function getEditorWithPropertyExtras(
+    propertyExtras: string,
+    textField: string,
+  ): Promise<EditorRenderResult> {
+    const editor = await renderTestEditorWithCode(
+      registerInternalComponentProjectWithCartouche(propertyExtras, textField),
+      'await-first-dom-report',
+    )
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/title')])
+    return editor
+  }
+  it('optional field', async () => {
+    const editor = await getEditorWithPropertyExtras(``, `text={textForTitle}`)
+    const deleteCartoucheButton = editor.renderedDOM.getByTestId(`delete-cartouche-text`)
+    await mouseClickAtPoint(deleteCartoucheButton, { x: 2, y: 2 })
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      registerInternalComponentProjectWithCartouche(``, ``),
+    )
+  })
+  it('required field without default value', async () => {
+    const editor = await getEditorWithPropertyExtras(`required: true`, `text={textForTitle}`)
+    const deleteCartoucheButton = editor.renderedDOM.queryByTestId(`delete-cartouche-text`)
+    expect(deleteCartoucheButton).toBeNull()
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      registerInternalComponentProjectWithCartouche(`required: true`, `text={textForTitle}`),
+    )
+  })
+  it('required field with default value', async () => {
+    const editor = await getEditorWithPropertyExtras(
+      `required: true, defaultValue: 'Placeholder!'`,
+      `text={textForTitle}`,
+    )
+    const deleteCartoucheButton = editor.renderedDOM.getByTestId(`delete-cartouche-text`)
+    await mouseClickAtPoint(deleteCartoucheButton, { x: 2, y: 2 })
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      registerInternalComponentProjectWithCartouche(
+        `required: true, defaultValue: 'Placeholder!'`,
+        `text='Placeholder!'`,
+      ),
+    )
+  })
+})
+*/
+
 const project = DataPickerProjectShell(`
 function Title({ text }) {
   const content = 'Content'
@@ -952,6 +1041,83 @@ var Playground = ({ style }) => {
     </div>
   )
 }`)
+
+function registerInternalComponentProjectWithCartouche(
+  propertyExtras: string,
+  textField: string,
+): string {
+  return applyPrettier(
+    `import * as React from 'react'
+import {
+  Storyboard,
+  Scene,
+  registerInternalComponent,
+} from 'utopia-api'
+
+function Title({ text }) {
+  return <h2 data-uid='0cd'>{text}</h2>
+}
+
+var Playground = ({ style }) => {
+  const textForTitle = 'Hello Utopia'
+  return (
+    <div style={style} data-uid='root'>
+      <Title ${textField} data-uid='title' />
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 521,
+        height: 266,
+        position: 'absolute',
+        left: 554,
+        top: 247,
+        backgroundColor: 'white',
+      }}
+      data-uid='scene'
+      data-testid='scene'
+      commentId='120'
+    >
+      <Playground
+        style={{
+          width: 454,
+          height: 177,
+          position: 'absolute',
+          left: 34,
+          top: 44,
+          backgroundColor: 'white',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+        title='Hello Utopia'
+        data-uid='pg'
+      />
+    </Scene>
+  </Storyboard>
+)
+
+registerInternalComponent(Title, {
+  supportsChildren: false,
+  properties: {
+    text: {
+      control: 'string-input',${propertyExtras}
+    },
+  },
+  variants: [
+    {
+      code: '<Title />',
+    },
+  ],
+})
+`,
+    false,
+  ).formatted
+}
 
 const registerInternalComponentProject = `import * as React from 'react'
 import {
@@ -1082,6 +1248,8 @@ registerExternalComponent(
     properties: {
       sampleprop: {
         control: 'string-input',
+        required: true,
+        defaultValue: 'Sample'
       },
     },
     variants: [

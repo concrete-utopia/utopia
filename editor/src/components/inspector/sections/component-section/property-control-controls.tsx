@@ -18,6 +18,7 @@ import type {
   NumberInputControlDescription,
   PopUpListControlDescription,
   RadioControlDescription,
+  RegularControlDescription,
   StringInputControlDescription,
   Vector2ControlDescription,
   Vector3ControlDescription,
@@ -69,8 +70,10 @@ import {
 } from '../../../../core/shared/element-template'
 import type { JSXParsedType, JSXParsedValue } from '../../../../utils/value-parser-utils'
 import { assertNever } from '../../../../core/shared/utils'
+import { preventDefault, stopPropagation } from '../../common/inspector-utils'
+import { unless, when } from '../../../../utils/react-conditionals'
 
-export interface ControlForPropProps<T extends BaseControlDescription> {
+export interface ControlForPropProps<T extends RegularControlDescription> {
   propPath: PropertyPath
   propName: string
   controlDescription: T
@@ -78,6 +81,7 @@ export interface ControlForPropProps<T extends BaseControlDescription> {
   setGlobalCursor: (cursor: CSSCursor | null) => void
   focusOnMount: boolean
   onOpenDataPicker: () => void
+  showHiddenControl: (path: string) => void
 }
 
 export const CheckboxPropertyControl = React.memo(
@@ -798,9 +802,21 @@ interface IdentifierExpressionCartoucheControlProps {
   contents: string
   matchType: 'full' | 'partial'
   onOpenDataPicker: () => void
+  onDeleteCartouche: () => void
+  safeToDelete: boolean
+  testId: string
 }
 export const IdentifierExpressionCartoucheControl = React.memo(
   (props: IdentifierExpressionCartoucheControlProps) => {
+    const { onDeleteCartouche, testId, safeToDelete } = props
+    const onDelete = React.useCallback<React.MouseEventHandler<HTMLDivElement>>(
+      (e) => {
+        stopPropagation(e)
+        onDeleteCartouche()
+      },
+      [onDeleteCartouche],
+    )
+
     return (
       <FlexRow
         style={{
@@ -841,6 +857,16 @@ export const IdentifierExpressionCartoucheControl = React.memo(
             {/* the &lrm; non-printing character is added to fix the punctuation marks disappearing because of direction: rtl */}
           </div>
         </Tooltip>
+        {when(
+          safeToDelete,
+          <div
+            style={{ paddingLeft: 5, paddingRight: 5, marginRight: -5 }}
+            onClick={onDelete}
+            data-testid={`delete-${testId}`}
+          >
+            {/* TODO replace the X button with a real icon */}×
+          </div>,
+        )}
       </FlexRow>
     )
   },

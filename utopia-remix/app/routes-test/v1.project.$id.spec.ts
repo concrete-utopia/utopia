@@ -12,7 +12,7 @@ import { loader } from '../routes/v1.project.$id'
 import * as proxyServer from '../util/proxy.server'
 import * as permissionsService from '../services/permissionsService.server'
 import { UserProjectPermission } from '../types'
-import { ApiResponse } from '../util/api.server'
+import type { ApiResponse } from '../util/api.server'
 import { Status } from '../util/statusCodes'
 
 describe('getProject', () => {

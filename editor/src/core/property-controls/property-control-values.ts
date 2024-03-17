@@ -235,7 +235,7 @@ function jsUnwrapper(
   realValue: unknown,
 ): string | null {
   if (isRight(rawValue) && modifiableAttributeIsAttributeOtherJavaScript(rawValue.value)) {
-    return rawValue.value.javascript
+    return rawValue.value.javascriptWithUIDs
   } else {
     return null
   }

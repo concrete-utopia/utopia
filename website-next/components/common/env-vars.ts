@@ -36,8 +36,8 @@ type BackendType =
   | 'direct' // direct calls to the backend
 
 const LOCAL_BACKEND_PORTS: { [type in BackendType]: number } = {
-  direct: 8000,
-  bff: 8002,
+  direct: 8002,
+  bff: 8000,
 }
 
 export const BACKEND_TYPE: BackendType = DEVELOPMENT_ENV || USE_BFF ? 'bff' : 'direct'
@@ -59,7 +59,7 @@ const SECONDARY_BASE_URL: string = PRODUCTION_CONFIG
   : BRANCHES_CONFIG
   ? 'https://momentumworks.co/'
   : BARE_HOST === 'localhost:8000'
-  ? 'http://localhost:8001'
+  ? 'http://localhost:8002'
   : BASE_URL
 
 export const PROBABLY_ELECTRON: boolean =

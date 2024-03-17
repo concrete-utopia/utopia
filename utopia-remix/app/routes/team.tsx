@@ -1,4 +1,4 @@
-import { LinksFunction } from '@remix-run/node'
+import type { LinksFunction } from '@remix-run/node'
 import * as React from 'react'
 
 import stylesheet from '~/styles/next-tailwind.css'

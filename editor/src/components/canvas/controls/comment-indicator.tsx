@@ -1,7 +1,7 @@
 import type { ThreadData } from '@liveblocks/client'
-import { Comment } from '@liveblocks/react-comments'
 import type { CommentProps } from '@liveblocks/react-comments'
-import { AnimatePresence, motion, useAnimate } from 'framer-motion'
+import { Comment } from '@liveblocks/react-comments'
+import { AnimatePresence, motion } from 'framer-motion'
 import type { CSSProperties } from 'react'
 import React from 'react'
 import type { ThreadMetadata, UserMeta } from '../../../../liveblocks.config'
@@ -15,6 +15,10 @@ import {
   useCollaborators,
   useMyThreadReadStatus,
 } from '../../../core/commenting/comment-hooks'
+import { utopiaThreadMetadataToLiveblocksPartial } from '../../../core/commenting/comment-types'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import * as EP from '../../../core/shared/element-path'
+import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import type { CanvasPoint } from '../../../core/shared/math-utils'
 import {
   canvasPoint,
@@ -33,6 +37,7 @@ import {
 } from '../../../core/shared/multiplayer'
 import { useMyUserId } from '../../../core/shared/multiplayer-hooks'
 import { optionalMap } from '../../../core/shared/optional-utils'
+import * as PP from '../../../core/shared/property-path'
 import { MultiplayerWrapper, baseMultiplayerAvatarStyle } from '../../../utils/multiplayer-wrapper'
 import { when } from '../../../utils/react-conditionals'
 import { UtopiaStyles, colorTheme } from '../../../uuiui'
@@ -42,6 +47,7 @@ import {
   switchEditorMode,
 } from '../../editor/actions/action-creators'
 import { EditorModes, isCommentMode, isExistingComment } from '../../editor/editor-modes'
+import { useRefAtom } from '../../editor/hook-utils'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { RightMenuTab } from '../../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
@@ -51,15 +57,9 @@ import {
   RemixNavigationAtom,
   useRemixNavigationContext,
 } from '../remix/utopia-remix-root-component'
-import { CommentRepliesCounter } from './comment-replies-counter'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { getIdOfScene, getSceneUnderPoint } from './comment-mode/comment-mode-hooks'
-import * as EP from '../../../core/shared/element-path'
-import { useRefAtom } from '../../editor/hook-utils'
-import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
-import * as PP from '../../../core/shared/property-path'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
-import { utopiaThreadMetadataToLiveblocksPartial } from '../../../core/commenting/comment-types'
+import { getIdOfScene, getSceneUnderPoint } from './comment-mode/comment-mode-hooks'
+import { CommentRepliesCounter } from './comment-replies-counter'
 
 export const CommentIndicators = React.memo(() => {
   const projectId = useEditorState(
@@ -551,22 +551,7 @@ type CommentIndicatorWrapper = {
 const CommentIndicatorWrapper = React.memo((props: CommentIndicatorWrapper) => {
   const { thread, expanded, user, forceDarkMode, ...commentProps } = props
 
-  const [avatarRef, animateAvatar] = useAnimate()
-
   const animDuration = 0.1
-
-  React.useEffect(() => {
-    void animateAvatar(
-      avatarRef.current,
-      {
-        top: expanded ? baseMultiplayerAvatarStyle.top : 0,
-        left: expanded ? baseMultiplayerAvatarStyle.left : 0,
-      },
-      {
-        duration: expanded ? animDuration : animDuration / 2,
-      },
-    )
-  }, [expanded, avatarRef, animateAvatar])
 
   // This is a hack: when the comment is unread, we show a dark background, so we need light foreground colors.
   // So we trick the Liveblocks Comment component and lie to it that the theme is dark mode.
@@ -590,8 +575,14 @@ const CommentIndicatorWrapper = React.memo((props: CommentIndicatorWrapper) => {
     >
       <motion.div
         data-testid='comment-indicator-div'
-        ref={avatarRef}
         style={{ ...baseMultiplayerAvatarStyle, left: 0, top: 0 }}
+        animate={{
+          top: expanded ? baseMultiplayerAvatarStyle.top : 0,
+          left: expanded ? baseMultiplayerAvatarStyle.left : 0,
+          transition: {
+            duration: expanded ? animDuration : animDuration / 2,
+          },
+        }}
       >
         <MultiplayerAvatar
           name={multiplayerInitialsFromName(normalizeMultiplayerName(user.name))}

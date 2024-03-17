@@ -1,5 +1,5 @@
-import { UtopiaPrismaClient } from './db.server'
-import { AccessLevel } from './types'
+import type { UtopiaPrismaClient } from './db.server'
+import type { AccessLevel } from './types'
 import { SESSION_COOKIE_NAME } from './util/api.server'
 
 export async function wait(ms: number) {
@@ -91,7 +91,22 @@ export async function createTestProjectAccess(
   })
 }
 
+export async function createTestProjectAccessRequest(
+  client: UtopiaPrismaClient,
+  params: { projectId: string; userId: string; status: AccessLevel; token: string },
+) {
+  await client.projectAccessRequest.create({
+    data: {
+      project_id: params.projectId,
+      user_id: params.userId,
+      status: params.status,
+      token: params.token,
+    },
+  })
+}
+
 interface DeletableModel {
+  /* eslint-disable-next-line no-empty-pattern */
   deleteMany: ({}) => Promise<any>
 }
 
@@ -109,7 +124,7 @@ export function newTestRequest(params?: {
   formData?: FormData
 }): Request {
   const path = (params?.path ?? '').replace(/^\/+/, '')
-  const req = new Request(`http://localhost:8002/` + path, {
+  const req = new Request(`http://localhost:8000/` + path, {
     method: params?.method,
     body: params?.formData,
   })

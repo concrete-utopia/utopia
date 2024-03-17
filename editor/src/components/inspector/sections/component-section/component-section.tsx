@@ -96,6 +96,7 @@ import { useDispatch } from '../../../editor/store/dispatch-context'
 import { usePopper } from 'react-popper'
 import {
   emptyComments,
+  modifiableAttributeToValuePath,
   jsExpressionOtherJavaScriptSimple,
   jsIdentifier,
 } from '../../../../core/shared/element-template'
@@ -105,6 +106,9 @@ import { array } from 'prop-types'
 import { useVariablesInScopeForSelectedElement } from './variables-in-scope-utils'
 import { DataPickerPopup } from './data-picker-popup'
 import { jsxElementChildToText } from '../../../canvas/ui-jsx-canvas-renderer/jsx-element-child-to-text'
+import { foldEither } from '../../../../core/shared/either'
+import { stopPropagation } from '../../common/inspector-utils'
+import { NO_OP } from '../../../../core/shared/utils'
 
 export const VariableFromScopeOptionTestId = (idx: string) => `variable-from-scope-${idx}`
 export const DataPickerPopupButtonTestId = `data-picker-popup-button-test-id`
@@ -119,8 +123,31 @@ function useComponentPropsInspectorInfo(
   return useInspectorInfoForPropertyControl(propertyPath, control)
 }
 
-const ControlForProp = React.memo((props: ControlForPropProps<BaseControlDescription>) => {
-  const { controlDescription } = props
+const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDescription>) => {
+  const { controlDescription, showHiddenControl } = props
+  const onSubmitValue = props.propMetadata.onSubmitValue
+
+  const isRequired: boolean = props.controlDescription.required ?? false
+  const hasDefaultValue: boolean = 'defaultValue' in props.controlDescription
+  const safeToDelete = !isRequired || hasDefaultValue
+
+  const onDeleteCartouche = React.useCallback(() => {
+    if (safeToDelete) {
+      if (isRequired) {
+        onSubmitValue(props.controlDescription.defaultValue, false)
+      } else {
+        onSubmitValue(null, false)
+        showHiddenControl(PP.firstPartToString(props.propPath))
+      }
+    }
+  }, [
+    safeToDelete,
+    isRequired,
+    onSubmitValue,
+    props.controlDescription.defaultValue,
+    props.propPath,
+    showHiddenControl,
+  ])
 
   if (controlDescription == null) {
     return null
@@ -128,7 +155,7 @@ const ControlForProp = React.memo((props: ControlForPropProps<BaseControlDescrip
 
   const attributeExpression = props.propMetadata.attributeExpression
 
-  if (attributeExpression != null && PP.depth(props.propPath) === 1) {
+  if (attributeExpression != null) {
     if (
       attributeExpression.type === 'JS_IDENTIFIER' ||
       attributeExpression.type === 'JS_PROPERTY_ACCESS' ||
@@ -139,6 +166,9 @@ const ControlForProp = React.memo((props: ControlForPropProps<BaseControlDescrip
           contents={jsxElementChildToText(attributeExpression, null, null, 'jsx', 'inner')}
           matchType='full'
           onOpenDataPicker={props.onOpenDataPicker}
+          onDeleteCartouche={onDeleteCartouche}
+          testId={`cartouche-${PP.toString(props.propPath)}`}
+          safeToDelete={safeToDelete}
         />
       )
     }
@@ -154,6 +184,9 @@ const ControlForProp = React.memo((props: ControlForPropProps<BaseControlDescrip
             contents={'Expression'}
             matchType='partial'
             onOpenDataPicker={props.onOpenDataPicker}
+            onDeleteCartouche={onDeleteCartouche}
+            testId={`cartouche-${PP.toString(props.propPath)}`}
+            safeToDelete={safeToDelete}
           />
         )
       }
@@ -222,6 +255,7 @@ interface AbstractRowForControlProps {
   setGlobalCursor: (cursor: CSSCursor | null) => void
   indentationLevel: number
   focusOnMount: boolean
+  showHiddenControl: (path: string) => void
 }
 
 function labelForControl(propPath: PropertyPath, control: RegularControlDescription): string {
@@ -245,7 +279,12 @@ function getLabelControlStyle(
 
 const isBaseIndentationLevel = (props: AbstractRowForControlProps) => props.indentationLevel === 1
 
-function useDataPickerButton(selectedElements: Array<ElementPath>, propPath: PropertyPath) {
+function useDataPickerButton(
+  selectedElements: Array<ElementPath>,
+  propPath: PropertyPath,
+  isScene: boolean,
+  controlDescription: RegularControlDescription,
+) {
   const [referenceElement, setReferenceElement] = React.useState<HTMLDivElement | null>(null)
   const [popperElement, setPopperElement] = React.useState<HTMLDivElement | null>(null)
   const popper = usePopper(referenceElement, popperElement, {
@@ -281,6 +320,21 @@ function useDataPickerButton(selectedElements: Array<ElementPath>, propPath: Pro
   const variablePickerButtonTooltipText = variablePickerButtonAvailable
     ? 'Pick data source'
     : 'No data sources available'
+  const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
+
+  const propExpressionPath: Array<string | number> | null = React.useMemo(() => {
+    return propMetadata.attributeExpression == null
+      ? null
+      : foldEither(
+          () => {
+            return null
+          },
+          (path) => {
+            return path
+          },
+          modifiableAttributeToValuePath(propMetadata.attributeExpression),
+        )
+  }, [propMetadata.attributeExpression])
 
   const DataPickerComponent = React.useMemo(
     () => (
@@ -290,9 +344,10 @@ function useDataPickerButton(selectedElements: Array<ElementPath>, propPath: Pro
         closePopup={closePopup}
         ref={setPopperElement}
         propPath={propPath}
+        propExpressionPath={propExpressionPath}
       />
     ),
-    [closePopup, popper.attributes.popper, popper.styles.popper, propPath],
+    [closePopup, popper.attributes.popper, popper.styles.popper, propExpressionPath, propPath],
   )
 
   const DataPickerOpener = React.useMemo(
@@ -376,7 +431,12 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
       <props.label />
     )
 
-  const dataPickerButtonData = useDataPickerButton(selectedViews, props.propPath)
+  const dataPickerButtonData = useDataPickerButton(
+    selectedViews,
+    props.propPath,
+    props.isScene,
+    props.controlDescription,
+  )
 
   if (controlDescription.control === 'none') {
     // do not list anything for `none` controls
@@ -411,6 +471,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
             setGlobalCursor={props.setGlobalCursor}
             focusOnMount={props.focusOnMount}
             onOpenDataPicker={dataPickerButtonData.openPopup}
+            showHiddenControl={props.showHiddenControl}
           />
         </div>
         {when(isBaseIndentationLevel(props), dataPickerButtonData.DataPickerOpener)}
@@ -453,6 +514,9 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
     controlDescription,
   )
 
+  const propName = `${PP.lastPart(propPath)}`
+  const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
+
   const sectionHeight = React.useMemo(
     () => getSectionHeight(controlDescription),
     [controlDescription],
@@ -493,23 +557,28 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
     'RowForArrayControl selectedViews',
   )
 
-  const dataPickerButtonData = useDataPickerButton(selectedViews, props.propPath)
+  const dataPickerButtonData = useDataPickerButton(
+    selectedViews,
+    props.propPath,
+    props.isScene,
+    props.controlDescription,
+  )
 
   return (
     <React.Fragment>
       {when(dataPickerButtonData.popupIsOpen, dataPickerButtonData.DataPickerComponent)}
-      <InspectorSectionHeader>
+      <div css={hoverBackgroundStyle}>
         <SimpleFlexRow
           style={{ gap: 5, justifyContent: 'space-between', flexGrow: 1, paddingRight: 3 }}
         >
-          <FlexRow style={{ gap: 5 }} ref={dataPickerButtonData.setReferenceElement}>
-            <PropertyLabel
-              target={[propPath]}
-              style={{ textTransform: 'capitalize', paddingTop: 2 }}
-            >
+          <FlexRow
+            style={{ flex: 1, gap: 5, justifyContent: 'space-between' }}
+            ref={dataPickerButtonData.setReferenceElement}
+          >
+            <PropertyLabel target={[propPath]} style={objectPropertyLabelStyle}>
               {title}
             </PropertyLabel>
-            {propertyStatus.overwritable ? (
+            {propertyStatus.overwritable && !propertyStatus.controlled ? (
               <SquareButton
                 highlight
                 onMouseDown={toggleInsertRow}
@@ -530,28 +599,39 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
                 )}
               </SquareButton>
             ) : null}
+            <ControlForProp
+              propPath={propPath}
+              propName={propName}
+              controlDescription={controlDescription}
+              propMetadata={propMetadata}
+              setGlobalCursor={props.setGlobalCursor}
+              focusOnMount={props.focusOnMount}
+              onOpenDataPicker={dataPickerButtonData.openPopup}
+              showHiddenControl={props.showHiddenControl}
+            />
           </FlexRow>
           {when(isBaseIndentationLevel(props), dataPickerButtonData.DataPickerOpener)}
         </SimpleFlexRow>
-      </InspectorSectionHeader>
-      <div
-        style={{
-          height: sectionHeight * springs.length,
-        }}
-      >
-        {springs.map((springStyle, index) => (
-          <ArrayControlItem
-            springStyle={springStyle}
-            bind={bind}
-            key={index} //FIXME this causes the row drag handle to jump after finishing the re-order
-            index={index}
-            propPath={propPath}
-            isScene={props.isScene}
-            controlDescription={controlDescription}
-            focusOnMount={props.focusOnMount}
-            setGlobalCursor={props.setGlobalCursor}
-          />
-        ))}
+        <div
+          style={{
+            height: sectionHeight * springs.length,
+          }}
+        >
+          {springs.map((springStyle, index) => (
+            <ArrayControlItem
+              springStyle={springStyle}
+              bind={bind}
+              key={index} //FIXME this causes the row drag handle to jump after finishing the re-order
+              index={index}
+              propPath={propPath}
+              isScene={props.isScene}
+              controlDescription={controlDescription}
+              focusOnMount={props.focusOnMount}
+              setGlobalCursor={props.setGlobalCursor}
+              showHiddenControl={props.showHiddenControl}
+            />
+          ))}
+        </div>
       </div>
     </React.Fragment>
   )
@@ -565,6 +645,7 @@ interface ArrayControlItemProps {
   controlDescription: ArrayControlDescription
   focusOnMount: boolean
   setGlobalCursor: (cursor: CSSCursor | null) => void
+  showHiddenControl: (path: string) => void
 }
 
 const ArrayControlItem = React.memo((props: ArrayControlItemProps) => {
@@ -610,6 +691,7 @@ const ArrayControlItem = React.memo((props: ArrayControlItemProps) => {
           indentationLevel={2}
           focusOnMount={props.focusOnMount && index === 0}
           disableToggling={true}
+          showHiddenControl={props.showHiddenControl}
         />
         <div
           style={{
@@ -682,6 +764,7 @@ const RowForTupleControl = React.memo((props: RowForTupleControlProps) => {
             isScene={props.isScene}
             controlDescription={controlDescription}
             setGlobalCursor={props.setGlobalCursor}
+            showHiddenControl={props.showHiddenControl}
           />
         ))}
       </div>
@@ -695,6 +778,7 @@ interface TupleControlItemProps {
   isScene: boolean
   controlDescription: TupleControlDescription
   setGlobalCursor: (cursor: CSSCursor | null) => void
+  showHiddenControl: (path: string) => void
 }
 
 const TupleControlItem = React.memo((props: TupleControlItemProps) => {
@@ -721,6 +805,7 @@ const TupleControlItem = React.memo((props: TupleControlItemProps) => {
         setGlobalCursor={props.setGlobalCursor}
         indentationLevel={1}
         focusOnMount={false}
+        showHiddenControl={props.showHiddenControl}
       />
     </InspectorContextMenuWrapper>
   )
@@ -766,6 +851,8 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
   const title = labelForControl(propPath, controlDescription)
   const indentation = props.indentationLevel * 8
 
+  const propName = `${PP.lastPart(propPath)}`
+
   const propMetadata = useComponentPropsInspectorInfo(propPath, isScene, controlDescription)
   const contextMenuItems = Utils.stripNulls([
     addOnUnsetValues([PP.lastPart(propPath)], propMetadata.onUnsetValues),
@@ -776,21 +863,15 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
     (store) => store.editor.selectedViews,
     'RowForObjectControl selectedViews',
   )
-  const dataPickerButtonData = useDataPickerButton(selectedViews, props.propPath)
+  const dataPickerButtonData = useDataPickerButton(
+    selectedViews,
+    props.propPath,
+    props.isScene,
+    props.controlDescription,
+  )
 
   return (
-    <div
-      css={{
-        '&:hover': {
-          boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,20%)',
-          background: 'hsl(0,0%,0%,1%)',
-        },
-        '&:focus-within': {
-          boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,20%)',
-          background: 'hsl(0,0%,0%,1%)',
-        },
-      }}
-    >
+    <div css={hoverBackgroundStyle}>
       <div>
         <InspectorContextMenuWrapper
           id={`context-menu-for-${PP.toString(propPath)}`}
@@ -802,23 +883,33 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
             style={{ flexGrow: 1, justifyContent: 'space-between', paddingRight: 10 }}
             ref={dataPickerButtonData.setReferenceElement}
           >
-            <SimpleFlexRow style={{ flexGrow: 1, paddingRight: 8 }} onClick={handleOnClick}>
+            <SimpleFlexRow
+              style={{ minWidth: 0, flexGrow: 1, paddingRight: 8, justifyContent: 'space-between' }}
+              onClick={handleOnClick}
+            >
               <PropertyLabel
                 target={[propPath]}
                 style={{
-                  textTransform: 'capitalize',
+                  ...objectPropertyLabelStyle,
                   paddingLeft: indentation,
-                  display: 'flex',
-                  alignItems: 'center',
-                  height: 34,
-                  fontWeight: 500,
-                  gap: 4,
                   cursor: props.disableToggling ? 'default' : 'pointer',
                 }}
               >
                 {title}
                 {unless(props.disableToggling, <ObjectIndicator open={open} />)}
               </PropertyLabel>
+              <div style={{ minWidth: 0 }} onClick={stopPropagation}>
+                <ControlForProp
+                  propPath={propPath}
+                  propName={propName}
+                  controlDescription={controlDescription}
+                  propMetadata={propMetadata}
+                  setGlobalCursor={props.setGlobalCursor}
+                  focusOnMount={props.focusOnMount}
+                  onOpenDataPicker={dataPickerButtonData.openPopup}
+                  showHiddenControl={props.showHiddenControl}
+                />
+              </div>
             </SimpleFlexRow>
             {when(isBaseIndentationLevel(props), dataPickerButtonData.DataPickerOpener)}
           </FlexRow>
@@ -838,6 +929,7 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
               indentationLevel={props.indentationLevel + 1}
               focusOnMount={props.focusOnMount && index === 0}
               disableToggling={props.disableToggling}
+              showHiddenControl={props.showHiddenControl}
             />
           )
         }, controlDescription.object),
@@ -1119,3 +1211,24 @@ export class ComponentSection extends React.Component<
     }
   }
 }
+
+const hoverBackgroundStyle = {
+  '&:hover': {
+    boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,20%)',
+    background: 'hsl(0,0%,0%,1%)',
+  },
+  '&:focus-within': {
+    boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,20%)',
+    background: 'hsl(0,0%,0%,1%)',
+  },
+}
+
+const objectPropertyLabelStyle = {
+  textTransform: 'capitalize',
+  paddingLeft: 8,
+  display: 'flex',
+  alignItems: 'center',
+  height: 34,
+  fontWeight: 500,
+  gap: 4,
+} as const

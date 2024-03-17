@@ -100,7 +100,7 @@ import {
   parseArbitraryNodes,
   parseOutFunctionContents,
   parseOutJSXElements,
-  parseAttributeOtherJavaScript,
+  parseJSExpressionMapOrOtherJavascript,
   withParserMetadata,
   isExported,
   expressionTypeForExpression,
@@ -245,10 +245,15 @@ function jsxAttributeToExpression(
       case 'JSX_MAP_EXPRESSION':
       case 'ATTRIBUTE_OTHER_JAVASCRIPT':
         const maybeExpressionStatement = rawCodeToExpressionStatement(
-          attribute.javascript,
+          attribute.javascriptWithUIDs,
         ).statement
         if (TS.isExpressionStatement(maybeExpressionStatement)) {
-          const expression = maybeExpressionStatement.expression
+          const expression = updateJSXElementsWithin(
+            maybeExpressionStatement.expression,
+            attribute.elementsWithin,
+            imports,
+            stripUIDs,
+          )
           addCommentsToNode(expression, attribute.comments)
           return expression
         } else {
@@ -521,7 +526,7 @@ function jsxElementToExpression(
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
       if (parentIsJSX) {
-        const maybeExpressionStatement = rawCodeToExpressionStatement(element.javascript)
+        const maybeExpressionStatement = rawCodeToExpressionStatement(element.javascriptWithUIDs)
         const { statement, sourceFile } = maybeExpressionStatement
 
         const targetNode = TS.isExpressionStatement(statement)
@@ -1858,10 +1863,18 @@ export function trimHighlightBounds(success: ParseSuccess): ParseSuccess {
       function walkJSXElementChild(element: JSXElementChild): void {
         switch (element.type) {
           case 'JSX_ELEMENT':
+            includeElement(element)
+            for (const child of element.children) {
+              walkJSXElementChild(child)
+            }
+            for (const prop of element.props) {
+              if (prop.type === 'JSX_ATTRIBUTES_ENTRY') {
+                walkJSXElementChild(prop.value)
+              }
+            }
+            break
           case 'JSX_FRAGMENT':
             includeElement(element)
-            // Don't include the properties of elements, but concievably we would want
-            // to include things like render props which include an element.
             for (const child of element.children) {
               walkJSXElementChild(child)
             }

@@ -49,7 +49,7 @@ function useGetEventHandlerInfo(): EventHandlerValues {
       const eitherValue = values[0]
       forEachRight(eitherValue, (value) => {
         if (modifiableAttributeIsAttributeOtherJavaScript(value)) {
-          result[eventHandlerName] = value.javascript
+          result[eventHandlerName] = value.javascriptWithUIDs
         }
       })
     }

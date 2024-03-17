@@ -1,4 +1,5 @@
-import { Fetcher, useFetchers } from '@remix-run/react'
+import type { Fetcher } from '@remix-run/react'
+import { useFetchers } from '@remix-run/react'
 import { useProjectsStore } from '../store'
 import React from 'react'
 import { isLikeApiError } from '../util/errors'
@@ -25,7 +26,7 @@ export function useCleanupOperations() {
       setIdleFetchers([])
       processIdleFetchers(idleFetchers)
     }
-  }, [idleFetchers, processIdleFetchers])
+  }, [idleFetchers, setIdleFetchers, processIdleFetchers])
 }
 
 /**
@@ -64,7 +65,7 @@ function useIdleFetchers() {
         ...loadingFetchers.filter((f) => !newIdleFetchers.some((idle) => f.key === idle.key)),
       ])
     }
-  }, [fetchers, loadingFetchers])
+  }, [fetchers, setIdleFetchers, loadingFetchers])
 
   return idleFetchersState
 }

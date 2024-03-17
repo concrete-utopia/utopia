@@ -12,7 +12,7 @@ import type {
 } from './math-utils'
 import { zeroCanvasRect } from './math-utils'
 import type { Either } from './either'
-import { isRight } from './either'
+import { flatMapEither, isRight, left, mapEither, right } from './either'
 import { v4 as UUID } from 'uuid'
 import type { RawSourceMap } from '../workers/ts/ts-typings/RawSourceMap'
 import * as PP from './property-path'
@@ -30,7 +30,6 @@ import type { MapLike } from 'typescript'
 import { forceNotNull } from './optional-utils'
 import type { FlexAlignment, FlexJustifyContent } from '../../components/inspector/inspector-common'
 import { allComments } from './comment-flags'
-import { defaultIndexHtmlFilePath } from '../../components/editor/store/editor-state'
 import type { Optic } from './optics/optics'
 import { fromField } from './optics/optic-creators'
 import { jsxSimpleAttributeToValue } from './jsx-attribute-utils'
@@ -179,7 +178,7 @@ export interface JSExpressionOtherJavaScript extends WithComments, WithElementsW
   type: 'ATTRIBUTE_OTHER_JAVASCRIPT'
   params: Array<Param>
   originalJavascript: string
-  javascript: string
+  javascriptWithUIDs: string
   transpiledJavascript: string
   definedElsewhere: Array<string>
   sourceMap: RawSourceMap | null
@@ -189,7 +188,7 @@ export interface JSExpressionOtherJavaScript extends WithComments, WithElementsW
 export function jsExpressionOtherJavaScript(
   params: Array<Param>,
   originalJavascript: string,
-  javascript: string,
+  javascriptWithUIDs: string,
   transpiledJavascript: string,
   definedElsewhere: Array<string>,
   sourceMap: RawSourceMap | null,
@@ -201,7 +200,7 @@ export function jsExpressionOtherJavaScript(
     type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
     params: params,
     originalJavascript: originalJavascript,
-    javascript: javascript,
+    javascriptWithUIDs: javascriptWithUIDs,
     transpiledJavascript: transpiledJavascript,
     definedElsewhere: definedElsewhere,
     sourceMap: sourceMap,
@@ -230,7 +229,7 @@ export function jsExpressionOtherJavaScriptSimple(
 export interface JSXMapExpression extends WithComments, WithElementsWithin {
   type: 'JSX_MAP_EXPRESSION'
   originalJavascript: string
-  javascript: string
+  javascriptWithUIDs: string
   transpiledJavascript: string
   definedElsewhere: Array<string>
   sourceMap: RawSourceMap | null
@@ -240,7 +239,7 @@ export interface JSXMapExpression extends WithComments, WithElementsWithin {
 
 export function jsxMapExpression(
   originalJavascript: string,
-  javascript: string,
+  javascriptWithUIDs: string,
   transpiledJavascript: string,
   definedElsewhere: Array<string>,
   sourceMap: RawSourceMap | null,
@@ -252,7 +251,7 @@ export function jsxMapExpression(
   return {
     type: 'JSX_MAP_EXPRESSION',
     originalJavascript: originalJavascript,
-    javascript: javascript,
+    javascriptWithUIDs: javascriptWithUIDs,
     transpiledJavascript: transpiledJavascript,
     definedElsewhere: definedElsewhere,
     sourceMap: sourceMap,
@@ -959,6 +958,32 @@ export function isRegularJSXAttribute(attribute: ModifiableAttribute): attribute
     !modifiableAttributeIsPartOfAttributeValue(attribute) &&
     !modifiableAttributeIsAttributeNotFound(attribute)
   )
+}
+
+export function modifiableAttributeToValuePath(
+  attribute: ModifiableAttribute,
+): Either<string, Array<string | number>> {
+  switch (attribute.type) {
+    case 'JS_IDENTIFIER':
+      return right([attribute.name])
+    case 'JS_PROPERTY_ACCESS':
+      return mapEither((onValueArray) => {
+        return [...onValueArray, attribute.property]
+      }, modifiableAttributeToValuePath(attribute.onValue))
+    case 'JS_ELEMENT_ACCESS':
+      return flatMapEither((onValueArray) => {
+        if (isJSExpressionValue(attribute.element)) {
+          switch (typeof attribute.element.value) {
+            case 'number':
+            case 'string':
+              return right([...onValueArray, attribute.element.value])
+          }
+        }
+        return left('Unable to handle this element access.')
+      }, modifiableAttributeToValuePath(attribute.onValue))
+    default:
+      return left('Unable to handle this expression type.')
+  }
 }
 
 export interface JSXAttributesEntry extends WithComments {
@@ -1900,6 +1925,7 @@ export function utopiaJSXComponent(
   }
 }
 
+// FIXME we need to inject data-uids using insertDataUIDsIntoCode
 export function arbitraryJSBlock(
   params: Array<Param>,
   javascript: string,
@@ -2133,6 +2159,7 @@ export interface UtopiaJSXComponent {
   returnStatementComments: ParsedComments
 }
 
+// FIXME we need to inject data-uids using insertDataUIDsIntoCode
 export type ArbitraryJSBlock = {
   type: 'ARBITRARY_JS_BLOCK'
   params: Array<Param>

@@ -1,5 +1,5 @@
-import { LoaderFunctionArgs } from '@remix-run/node'
-import { Params } from '@remix-run/react'
+import type { LoaderFunctionArgs } from '@remix-run/node'
+import type { Params } from '@remix-run/react'
 import { listDeletedProjects } from '../models/project.server'
 import { handle, requireUser } from '../util/api.server'
 import { ALLOW } from '../handlers/validators'

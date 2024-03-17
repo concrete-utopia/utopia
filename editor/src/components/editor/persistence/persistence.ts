@@ -47,6 +47,7 @@ export class PersistenceMachine {
     backendAPI: PersistenceBackendAPI<PersistentModel, ProjectFile>,
     dispatch: EditorDispatch,
     onProjectNotFound: () => void,
+    onProjectNotAuthorized: (projectId: string, loggedIn: boolean) => void,
     onCreatedOrLoadedProject: (
       projectId: string,
       projectName: string,
@@ -84,6 +85,9 @@ export class PersistenceMachine {
             break
           case 'LOAD_FAILED':
             onProjectNotFound()
+            break
+          case 'LOAD_FAILED_NOT_AUTHORIZED':
+            onProjectNotAuthorized(event.projectId, state.context.loggedIn)
             break
           case 'DOWNLOAD_ASSETS_COMPLETE': {
             if (state.matches({ core: { [Forking]: CreatingProjectId } })) {

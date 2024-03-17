@@ -5,6 +5,7 @@ export default {
   future: {
     v3_fetcherPersist: true,
   },
+  serverModuleFormat: 'esm',
   // appDirectory: "app",
   // assetsBuildDirectory: "public/build",
   // publicPath: "/build/",

@@ -1,7 +1,7 @@
-import { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node'
+import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node'
 import { ensure, handle, requireUser } from '../util/api.server'
 import { Status } from '../util/statusCodes'
-import { Params } from '@remix-run/react'
+import type { Params } from '@remix-run/react'
 import {
   listProjectCollaborators,
   addToProjectCollaborators,
@@ -34,7 +34,7 @@ export async function action(args: ActionFunctionArgs) {
   return handle(args, {
     POST: {
       handler: addToCollaborators,
-      validator: validateProjectAccess(UserProjectPermission.CAN_MANAGE_PROJECT, {
+      validator: validateProjectAccess(UserProjectPermission.CAN_VIEW_PROJECT, {
         getProjectId: (params) => params.id,
       }),
     },

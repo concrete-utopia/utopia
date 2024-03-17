@@ -1,3 +1,6 @@
+/* eslint-disable react/react-in-jsx-scope */
+// FIXME Move the eslint and prettier config files and scripts to the root level
+
 import { cssBundleHref } from '@remix-run/css-bundle'
 import type { HeadersFunction, LinksFunction } from '@remix-run/node'
 import {
@@ -13,11 +16,13 @@ import {
 } from '@remix-run/react'
 import { BrowserEnvironment } from './env.server'
 import { styles } from './styles/styles.css'
-import { ErrorWithStatus, isErrorWithStatus } from './util/errors'
+import type { ErrorWithStatus } from './util/errors'
+import { isErrorWithStatus } from './util/errors'
 import { Status, getStatusName } from './util/statusCodes'
-
+import radixStyle from '@radix-ui/themes/styles.css'
 import './normalize.css'
-import '@radix-ui/themes/styles.css'
+import { Theme } from '@radix-ui/themes'
+import { useIsDarkMode } from './hooks/useIsDarkMode'
 
 declare global {
   interface Window {
@@ -27,6 +32,7 @@ declare global {
 
 export const links: LinksFunction = () => [
   ...(cssBundleHref ? [{ rel: 'stylesheet', href: cssBundleHref }] : []),
+  { rel: 'stylesheet', href: radixStyle },
 ]
 
 export async function loader() {
@@ -43,17 +49,24 @@ export const headers: HeadersFunction = () => ({
 
 export default function App() {
   const data = useLoaderData<typeof loader>()
+  const isDarkMode = useIsDarkMode()
+
+  const theme = isDarkMode ? 'dark' : 'light'
 
   return (
     <html lang='en'>
       <head>
         <meta charSet='utf-8' />
         <meta name='viewport' content='width=device-width, initial-scale=1' />
+        <title>Utopia</title>
+        <meta property='og:title' content='Utopia' />
         <Meta />
         <Links />
       </head>
       <body className={styles.root}>
-        <Outlet />
+        <Theme appearance={theme} accentColor='blue' panelBackground='solid'>
+          <Outlet />
+        </Theme>
         <script
           // https://remix.run/docs/en/1.19.3/guides/envvars#browser-environment-variables
           dangerouslySetInnerHTML={{
@@ -89,6 +102,8 @@ export function ErrorBoundary() {
       <head>
         <meta charSet='utf-8' />
         <meta name='viewport' content='width=device-width, initial-scale=1' />
+        <title>Utopia</title>
+        <meta property='og:title' content='Utopia' />
       </head>
       <body
         style={{

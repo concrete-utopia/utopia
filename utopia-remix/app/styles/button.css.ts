@@ -44,21 +44,27 @@ export const button = recipe({
         backgroundColor: '#a4a4a430',
       },
       transparent: {
-        backgroundColor: 'transparent'
-      }
+        backgroundColor: 'transparent',
+      },
     },
     size: {
       default: {
-        padding: '6px 10px'
+        padding: '0px 10px',
+        height: 32,
       },
       square: {
-        padding: 6
-      }
-    }
+        height: 16,
+        width: 16,
+        padding: 6,
+      },
+      ellipses: {
+        padding: '0px 6px',
+      },
+    },
   },
 
   defaultVariants: {
     color: 'neutral',
-    size: 'default'
+    size: 'default',
   },
 })
