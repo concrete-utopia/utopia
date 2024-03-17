@@ -1,8 +1,9 @@
-import { LoaderFunctionArgs } from '@remix-run/node'
-import { handle, handleOptions, requireUser } from '../util/api.server'
-import { Params } from '@remix-run/react'
+import type { LoaderFunctionArgs } from '@remix-run/node'
+import { ensure, getUser, handle, handleOptions } from '../util/api.server'
+import type { Params } from '@remix-run/react'
 import { getAllPermissions } from '../services/permissionsService.server'
 import { ALLOW } from '../handlers/validators'
+import { Status } from '../util/statusCodes'
 
 export async function loader(args: LoaderFunctionArgs) {
   return handle(args, {
@@ -12,12 +13,10 @@ export async function loader(args: LoaderFunctionArgs) {
 }
 
 async function getUserProjectPermissions(req: Request, params: Params<string>) {
-  const user = await requireUser(req)
-  const { user_id } = user
+  const user = await getUser(req)
+  const userId = user?.user_id ?? null
   const { projectId } = params
-  if (user_id == null || projectId == null) {
-    throw new Error('user_id or projectId is null')
-  }
-  const permissionsResult = await getAllPermissions(projectId, user_id)
+  ensure(projectId != null, 'projectId is null', Status.BAD_REQUEST)
+  const permissionsResult = await getAllPermissions(projectId, userId)
   return permissionsResult
 }

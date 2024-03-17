@@ -39,8 +39,8 @@ export async function setProjectAccess(projectId: string, accessLevel: AccessLev
   await fgaService.updateAccessLevel(projectId, accessLevel)
 }
 
-export async function getAllPermissions(projectId: string, userId: string) {
-  return fgaService.getAllPermissions(projectId, userId)
+export async function getAllPermissions(projectId: string, userId: string | null) {
+  return fgaService.getAllPermissions(projectId, userId ?? ANONYMOUS_USER_ID)
 }
 
 export async function grantProjectRoleToUser(

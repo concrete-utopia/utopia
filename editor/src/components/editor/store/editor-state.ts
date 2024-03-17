@@ -251,33 +251,29 @@ export function originalPath(originalTP: ElementPath, currentTP: ElementPath): O
   }
 }
 
-type Permissions =
-  | 'can_view'
-  | 'can_fork'
-  | 'can_play'
-  | 'can_edit'
-  | 'can_comment'
-  | 'can_show_presence'
-  | 'can_see_live_changes'
-  | 'can_request_access'
-  | 'can_manage'
+const userProjectPermission = [
+  'can_view',
+  'can_fork',
+  'can_play',
+  'can_edit',
+  'can_comment',
+  'can_show_presence',
+  'can_see_live_changes',
+  'can_request_access',
+  'can_manage',
+] as const
+
+type Permissions = (typeof userProjectPermission)[number]
 
 export type UserPermissions = {
   [key in Permissions]: boolean
 }
 
 export function emptyUserPermissions(): UserPermissions {
-  return {
-    can_view: false,
-    can_fork: false,
-    can_play: false,
-    can_edit: false,
-    can_comment: false,
-    can_show_presence: false,
-    can_see_live_changes: false,
-    can_request_access: false,
-    can_manage: false,
-  }
+  return userProjectPermission.reduce((acc, permission) => {
+    acc[permission] = false
+    return acc
+  }, {} as UserPermissions)
 }
 
 export interface UserConfiguration {
