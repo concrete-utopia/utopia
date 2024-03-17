@@ -108,6 +108,8 @@ module.exports = {
     'react/jsx-key': ['error', { checkFragmentShorthand: true }],
     'react/no-did-mount-set-state': 'error',
     'react/no-did-update-set-state': 'error',
+    // for emotion
+    'react/no-unknown-property': ['error', { ignore: ['css'] }],
     'react/no-access-state-in-setstate': 'error',
     'react/jsx-no-bind': [
       'error',
