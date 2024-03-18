@@ -562,7 +562,7 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-remix
       ./fga-run.sh
     '')
-	(pkgs.writeScriptBin "fga-create-store" ''
+    (pkgs.writeScriptBin "fga-create-store" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-remix
