@@ -386,9 +386,9 @@ const VariablesMenuInner = React.memo((props: VariablesMenuProps) => {
     return true
   }
 
-  function noVariablesMessage() {
+  const noVariablesMessage = React.useCallback(() => {
     return hasOptions ? 'No results' : 'No variables in scope'
-  }
+  }, [hasOptions])
 
   const styles = useSelectStyles(hasResults, hasOptions)
 

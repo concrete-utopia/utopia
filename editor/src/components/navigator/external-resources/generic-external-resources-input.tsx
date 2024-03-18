@@ -22,20 +22,23 @@ export const GenericExternalResourcesInput = React.memo(
       setRelValue(e.target.value)
     }, [])
 
-    function onKeyDown(e: React.KeyboardEvent) {
-      if (e.key === 'Enter') {
-        onSubmitValues({ hrefValue, relValue })
-        closeField()
-      } else if (e.key === 'Escape') {
-        e.preventDefault()
-        closeField()
-      }
-    }
+    const onKeyDown = React.useCallback(
+      (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          onSubmitValues({ hrefValue, relValue })
+          closeField()
+        } else if (e.key === 'Escape') {
+          e.preventDefault()
+          closeField()
+        }
+      },
+      [hrefValue, relValue, onSubmitValues, closeField],
+    )
 
-    function onConfirmClick() {
+    const onConfirmClick = React.useCallback(() => {
       onSubmitValues({ hrefValue, relValue })
       closeField()
-    }
+    }, [hrefValue, relValue, onSubmitValues, closeField])
 
     const hrefInputRef = React.useRef<HTMLInputElement>(null)
     React.useEffect(() => {

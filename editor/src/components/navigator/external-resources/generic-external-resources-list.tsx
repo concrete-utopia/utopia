@@ -122,6 +122,7 @@ export const GenericExternalResourcesList = React.memo(() => {
             values.value.genericExternalResources.map((value, i) =>
               editingIndexOrInserting === i ? (
                 <GenericExternalResourcesInput
+                  key={value.href}
                   hrefValueToEdit={value.href}
                   relValueToEdit={value.rel}
                   closeField={closeInsertAndEditingFields}

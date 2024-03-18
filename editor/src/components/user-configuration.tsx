@@ -70,6 +70,7 @@ export function UserConfiguration() {
         const actions = newKeys.map((key) => setShortcut(record.name, key))
         dispatch(actions, 'everyone')
       }
+      // eslint-disable-next-line react/jsx-no-bind
       return <Checkbox checked={value} onChange={onChange} />
     },
     [dispatch],
