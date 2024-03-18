@@ -569,7 +569,7 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
   return (
     <React.Fragment>
       {when(dataPickerButtonData.popupIsOpen, dataPickerButtonData.DataPickerComponent)}
-      <div css={hoverBackgroundStyle}>
+      <div>
         <SimpleFlexRow
           style={{ gap: 5, justifyContent: 'space-between', flexGrow: 1, paddingRight: 3 }}
         >
@@ -873,7 +873,7 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
   )
 
   return (
-    <div css={hoverBackgroundStyle}>
+    <div>
       <div>
         <InspectorContextMenuWrapper
           id={`context-menu-for-${PP.toString(propPath)}`}
@@ -1218,17 +1218,6 @@ export class ComponentSection extends React.Component<
       return <ComponentSectionInner {...this.props} />
     }
   }
-}
-
-const hoverBackgroundStyle = {
-  '&:hover': {
-    boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,20%)',
-    background: 'hsl(0,0%,0%,1%)',
-  },
-  '&:focus-within': {
-    boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,20%)',
-    background: 'hsl(0,0%,0%,1%)',
-  },
 }
 
 const objectPropertyLabelStyle = {
