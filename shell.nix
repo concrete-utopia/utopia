@@ -560,13 +560,13 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-remix
-      bash ./fga-run.sh
+      ./fga-run.sh
     '')
 	(pkgs.writeScriptBin "fga-create-store" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-remix
-      bash ./fga-create-store.sh
+      ./fga-create-store.sh
     '')
   ];
 
