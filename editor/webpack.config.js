@@ -168,6 +168,7 @@ const config = {
 
     new webpack.DefinePlugin({
       // with Webpack 5, process is not shimmed anymore, these are some properties that I had to replace with undefined so the various checks do not throw a runtime type error
+      'process.env.LIVEBLOCKS_BASE_URL': '"https://api.liveblocks.io"',
       process: 'undefined',
       'process.cwd': 'undefined',
       'process.platform': 'undefined',
