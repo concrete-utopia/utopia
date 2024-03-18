@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Create a new store based on the fga/model.fga file against the local FGA server,
+# then parse the generated Store ID and save it into the .env file.
+
 set -e
 
 HOST_ENV_KEY="FGA_API_HOST"

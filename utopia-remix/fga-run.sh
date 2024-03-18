@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# Start the FGA local server with either Docker or Podman.
+
 set -e
 
 HOST_ENV_KEY="FGA_API_HOST"
