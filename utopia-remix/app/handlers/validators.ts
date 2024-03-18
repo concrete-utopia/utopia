@@ -1,14 +1,11 @@
-import type { AccessValidator } from '../util/api.server'
+import type { AccessValidator, ValidationResult } from '../util/api.server'
 import { getUser, validationError, validationOk } from '../util/api.server'
-import type { UserProjectPermission } from '../types'
+import { UserProjectPermission } from '../types'
 import { AccessLevel } from '../types'
 import type { Params } from '@remix-run/react'
 import { Status } from '../util/statusCodes'
-import {
-  hasUserProjectPermission,
-  userHasRequestProjectAccessPermission,
-} from '../services/permissionsService.server'
-import { getProjectAccessLevel, getProjectOwnerById } from '../models/project.server'
+import { hasUserProjectPermission } from '../services/permissionsService.server'
+import { getProjectOwnership } from '../models/project.server'
 import { ApiError } from '../util/errors'
 
 export function validateProjectAccess(
@@ -23,28 +20,35 @@ export function validateProjectAccess(
     canRequestAccess?: boolean
   },
 ): AccessValidator {
-  return async function (req: Request, params: Params<string>) {
+  return async function (req: Request, params: Params<string>): Promise<ValidationResult> {
     const projectId = getProjectId(params)
     if (projectId == null) {
-      return validationError(new ApiError('invalid project id', Status.BAD_REQUEST))
+      return validationError(new ApiError('Invalid project id', Status.BAD_REQUEST))
     }
 
-    const ownerId = await getProjectOwnerById({ id: projectId }, { includeDeleted: includeDeleted })
-    if (ownerId == null) {
-      return validationError(new ApiError('project not found', Status.NOT_FOUND))
+    const ownership = await getProjectOwnership(
+      { id: projectId },
+      { includeDeleted: includeDeleted },
+    )
+    if (ownership == null) {
+      return validationError(new ApiError('Project not found', Status.NOT_FOUND))
+    }
+
+    // the project is public, go on
+    if (ownership.accessLevel === AccessLevel.PUBLIC) {
+      return validationOk()
     }
 
     const user = await getUser(req)
     const userId = user?.user_id ?? null
 
     // the user owns the project, go on
-    if (userId === ownerId) {
+    if (userId === ownership.ownerId) {
       return validationOk()
     }
 
-    const accessLevel = await getProjectAccessLevel({ projectId: projectId })
     // if the project is collaborative…
-    if (accessLevel === AccessLevel.COLLABORATIVE) {
+    if (ownership.accessLevel === AccessLevel.COLLABORATIVE) {
       // the user can access the project, go on
       const hasProjectPermissions = await hasUserProjectPermission(projectId, userId, permission)
       if (hasProjectPermissions) {
@@ -54,19 +58,20 @@ export function validateProjectAccess(
       // …and access can be requested…
       if (canRequestAccess === true) {
         // …and the user can request permissions…
-        const hasRequestAccessPermission = await userHasRequestProjectAccessPermission(
+        const hasRequestAccessPermission = await hasUserProjectPermission(
           projectId,
           userId,
+          UserProjectPermission.CAN_REQUEST_ACCESS,
         )
         if (hasRequestAccessPermission) {
           // …return a 403!
-          return validationError(new ApiError('forbidden', Status.FORBIDDEN))
+          return validationError(new ApiError('Forbidden', Status.FORBIDDEN))
         }
       }
     }
 
     // the project is not available, it's conceptually a 401 but just return a 404 so we don't leak
-    return validationError(new ApiError('project not found', Status.NOT_FOUND))
+    return validationError(new ApiError('Project not found', Status.NOT_FOUND))
   }
 }
 

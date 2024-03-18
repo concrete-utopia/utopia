@@ -16,7 +16,6 @@ import type { ValidationResult } from '../util/api.server'
 describe('validators', () => {
   describe('validateProjectAccess', () => {
     let hasUserProjectPermission: jest.SpyInstance
-    let userHasRequestProjectAccessPermission: jest.SpyInstance
 
     afterEach(async () => {
       await truncateTables([
@@ -28,8 +27,6 @@ describe('validators', () => {
       ])
       hasUserProjectPermission.mockClear()
       jest.spyOn(permissionsService, 'hasUserProjectPermission').mockRestore()
-      userHasRequestProjectAccessPermission.mockClear()
-      jest.spyOn(permissionsService, 'userHasRequestProjectAccessPermission').mockRestore()
     })
     beforeEach(async () => {
       await createTestUser(prisma, { id: 'bob' })
@@ -39,10 +36,6 @@ describe('validators', () => {
       await createTestProject(prisma, { id: 'one', ownerId: 'bob' })
 
       hasUserProjectPermission = jest.spyOn(permissionsService, 'hasUserProjectPermission')
-      userHasRequestProjectAccessPermission = jest.spyOn(
-        permissionsService,
-        'userHasRequestProjectAccessPermission',
-      )
     })
 
     const perm = UserProjectPermission.CAN_COMMENT_PROJECT // just any of the permissions is fine
@@ -66,6 +59,10 @@ describe('validators', () => {
       expect(got.ok).toBe(false)
     })
     it('does nothing if the user is the owner', async () => {
+      await createTestProjectAccess(prisma, {
+        projectId: 'one',
+        accessLevel: AccessLevel.PRIVATE,
+      })
       const got = await validateProjectAccess(perm, { getProjectId: () => 'one' })(
         newTestRequest({ authCookie: 'bob-key' }),
         {},
@@ -125,17 +122,12 @@ describe('validators', () => {
           accessLevel: AccessLevel.COLLABORATIVE,
         })
 
-        // no access
-        jest.spyOn(permissionsService, 'hasUserProjectPermission').mockResolvedValue(false)
-        hasUserProjectPermission = jest.spyOn(permissionsService, 'hasUserProjectPermission')
-        // but can request it
         jest
-          .spyOn(permissionsService, 'userHasRequestProjectAccessPermission')
-          .mockResolvedValue(true)
-        userHasRequestProjectAccessPermission = jest.spyOn(
-          permissionsService,
-          'userHasRequestProjectAccessPermission',
-        )
+          .spyOn(permissionsService, 'hasUserProjectPermission')
+          .mockImplementation(async (_, __, p) => {
+            return p === UserProjectPermission.CAN_REQUEST_ACCESS
+          })
+        hasUserProjectPermission = jest.spyOn(permissionsService, 'hasUserProjectPermission')
 
         const got = await validateProjectAccess(perm, {
           getProjectId: () => 'one',
@@ -150,17 +142,12 @@ describe('validators', () => {
           accessLevel: AccessLevel.COLLABORATIVE,
         })
 
-        // no access
-        jest.spyOn(permissionsService, 'hasUserProjectPermission').mockResolvedValue(false)
-        hasUserProjectPermission = jest.spyOn(permissionsService, 'hasUserProjectPermission')
-        // and can't request it
         jest
-          .spyOn(permissionsService, 'userHasRequestProjectAccessPermission')
-          .mockResolvedValue(false)
-        userHasRequestProjectAccessPermission = jest.spyOn(
-          permissionsService,
-          'userHasRequestProjectAccessPermission',
-        )
+          .spyOn(permissionsService, 'hasUserProjectPermission')
+          .mockImplementation(async (_, __, p) => {
+            return false
+          })
+        hasUserProjectPermission = jest.spyOn(permissionsService, 'hasUserProjectPermission')
 
         const got = await validateProjectAccess(perm, {
           getProjectId: () => 'one',
@@ -177,17 +164,12 @@ describe('validators', () => {
           accessLevel: AccessLevel.PRIVATE,
         })
 
-        // no access
-        jest.spyOn(permissionsService, 'hasUserProjectPermission').mockResolvedValue(false)
-        hasUserProjectPermission = jest.spyOn(permissionsService, 'hasUserProjectPermission')
-        // and can't request it
         jest
-          .spyOn(permissionsService, 'userHasRequestProjectAccessPermission')
-          .mockResolvedValue(false)
-        userHasRequestProjectAccessPermission = jest.spyOn(
-          permissionsService,
-          'userHasRequestProjectAccessPermission',
-        )
+          .spyOn(permissionsService, 'hasUserProjectPermission')
+          .mockImplementation(async (_, __, p) => {
+            return false
+          })
+        hasUserProjectPermission = jest.spyOn(permissionsService, 'hasUserProjectPermission')
 
         const got = await validateProjectAccess(perm, {
           getProjectId: () => 'one',
@@ -201,17 +183,12 @@ describe('validators', () => {
           accessLevel: AccessLevel.COLLABORATIVE,
         })
 
-        // no access
-        jest.spyOn(permissionsService, 'hasUserProjectPermission').mockResolvedValue(false)
-        hasUserProjectPermission = jest.spyOn(permissionsService, 'hasUserProjectPermission')
-        // and can't request it
         jest
-          .spyOn(permissionsService, 'userHasRequestProjectAccessPermission')
-          .mockResolvedValue(false)
-        userHasRequestProjectAccessPermission = jest.spyOn(
-          permissionsService,
-          'userHasRequestProjectAccessPermission',
-        )
+          .spyOn(permissionsService, 'hasUserProjectPermission')
+          .mockImplementation(async (_, __, p) => {
+            return false
+          })
+        hasUserProjectPermission = jest.spyOn(permissionsService, 'hasUserProjectPermission')
 
         const got = await validateProjectAccess(perm, {
           getProjectId: () => 'one',

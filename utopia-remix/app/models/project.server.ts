@@ -25,10 +25,10 @@ export async function listProjects(params: { ownerId: string }): Promise<Project
   })
 }
 
-export async function getProjectOwnerById(
+export async function getProjectOwnership(
   params: { id: string },
   config: { includeDeleted: boolean } = { includeDeleted: false },
-): Promise<string | null> {
+): Promise<{ ownerId: string; accessLevel: AccessLevel } | null> {
   let whereOptions: {
     proj_id: string
     OR?: { deleted: boolean | null }[]
@@ -41,10 +41,21 @@ export async function getProjectOwnerById(
   }
   // find the project and return the owner_id
   const project = await prisma.project.findFirst({
-    select: { owner_id: true },
+    select: { owner_id: true, ProjectAccess: true },
     where: whereOptions,
   })
-  return project?.owner_id ?? null
+  if (project == null || project.ProjectAccess == null) {
+    return null
+  }
+  const accessLevel = asAccessLevel(project.ProjectAccess.access_level)
+  if (accessLevel == null) {
+    console.error(`invalid access level for project ${params.id}`)
+    return null
+  }
+  return {
+    ownerId: project.owner_id,
+    accessLevel: accessLevel,
+  }
 }
 
 export async function renameProject(params: {

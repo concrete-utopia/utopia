@@ -35,13 +35,6 @@ export async function hasUserProjectPermission(
   }
 }
 
-export async function userHasRequestProjectAccessPermission(
-  projectId: string,
-  userId: string | null,
-): Promise<boolean> {
-  return hasUserProjectPermission(projectId, userId, UserProjectPermission.CAN_REQUEST_ACCESS)
-}
-
 export async function setProjectAccess(projectId: string, accessLevel: AccessLevel) {
   await fgaService.updateAccessLevel(projectId, accessLevel)
 }

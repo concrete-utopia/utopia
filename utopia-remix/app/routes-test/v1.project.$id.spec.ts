@@ -101,6 +101,10 @@ describe('getProject', () => {
 
     it('should allow access to the owner', async () => {
       await createTestProject(prisma, { id: projectId, ownerId: userId })
+      await createTestProjectAccess(prisma, {
+        projectId: projectId,
+        accessLevel: AccessLevel.PRIVATE,
+      })
       projectProxy.mockResolvedValue({ id: projectId, ownerId: userId })
       // mock the permission check to return false
       hasUserProjectPermission.mockResolvedValue(false)
