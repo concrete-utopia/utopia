@@ -54,14 +54,23 @@ services:
       timeout: 30s
       retries: 3
 
-  utopia-fga-model:
+  # Two separate manual services for Docker and Podman because they behave differently :(
+  utopia-fga-model-docker:
     profiles:
       - manual
     depends_on:
       openfga:
         condition: service_healthy
+    image: openfga/cli:latest
+    container_name: utopia-fga-model-docker
+    volumes:
+      - ./fga/model.fga:/model.fga
+    command: store create --name utopia-local --model /model.fga --api-url http://openfga:8080
+  utopia-fga-model-podman:
+    profiles:
+      - manual
     image: alpine:3.19.1
-    container_name: utopia-fga-model
+    container_name: utopia-fga-model-podman
     volumes:
       - ./fga/model.fga:/model.fga
     command: >

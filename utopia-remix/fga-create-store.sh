@@ -6,7 +6,6 @@
 set -e
 
 HOST_ENV_KEY="FGA_API_HOST"
-SERVICE_NAME="utopia-fga-model"
 STORE_ENV_KEY="FGA_STORE_ID"
 
 # Only run this if the .env file uses the local FGA store
@@ -24,8 +23,10 @@ else
 	exit
 fi
 
+SERVICE_NAME="utopia-fga-model-${RUNTIME}"
+
 echo "* Creating store…"
-${RUNTIME} compose -f docker-compose.fga.yml up ${SERVICE_NAME} &> /dev/null
+${RUNTIME} compose -f docker-compose.fga.yml up ${SERVICE_NAME}
 
 # Note: it would be awesome to just use jq here, but there's no guarantee it
 # will be available on the host machine, so this is just doing a simple regex
