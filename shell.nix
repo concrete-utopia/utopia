@@ -554,7 +554,7 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-remix
       ${pnpm}/bin/pnpm install
       ${pnpm}/bin/pnpm exec prisma generate > /dev/null
-      PORT=8000 DATABASE_URL="postgres://$(whoami):postgres@localhost:5432/utopia" LOCAL=true ./run-remix.sh
+      PNPM=${pnpm}/bin/pnpm PORT=8000 DATABASE_URL="postgres://$(whoami):postgres@localhost:5432/utopia" LOCAL=true ./run-remix.sh
     '')
     (pkgs.writeScriptBin "watch-fga" ''
       #!/usr/bin/env bash

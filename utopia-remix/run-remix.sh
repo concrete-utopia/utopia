@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+## Please run this script from shell.nix with `watch-remix` or provide the
+## PNPM= environment variable with the pnpm executable path.
+
 set -e
 
 if [ "${LOCAL}" == 'true' ] ; then
@@ -19,4 +22,4 @@ if [ "${LOCAL}" == 'true' ] ; then
 	fi
 fi
 
-pnpm run dev
+${PNPM} run dev
