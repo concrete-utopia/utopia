@@ -8,8 +8,8 @@ import {
   thumbnailURL,
   userConfigURL,
 } from '../../common/server'
-import type { PersistentModel, UserConfiguration } from './store/editor-state'
-import { emptyUserConfiguration } from './store/editor-state'
+import type { PersistentModel, UserConfiguration, UserPermissions } from './store/editor-state'
+import { emptyUserConfiguration, emptyUserPermissions } from './store/editor-state'
 import type { LoginState } from '../../uuiui-deps'
 import urljoin from 'url-join'
 import JSZip from 'jszip'
@@ -33,6 +33,7 @@ import { liveblocksClient } from '../../../liveblocks.config'
 import type { Collaborator } from '../../core/shared/multiplayer'
 import type { LiveObject } from '@liveblocks/client'
 import { projectIdToRoomId } from '../../utils/room-id'
+import { assertNever } from '../../core/shared/utils'
 
 export { fetchProjectList, fetchShowcaseProjects, getLoginState } from '../../common/server'
 
@@ -322,6 +323,42 @@ export async function saveThumbnail(thumbnail: Buffer, projectId: string): Promi
     // FIXME Client should show an error if server requests fail
     console.error(`Save thumbnail request failed (${response.status}): ${response.statusText}`)
     return
+  }
+}
+
+export async function getUserPermissions(
+  loginState: LoginState,
+  projectId: string | null,
+): Promise<UserPermissions> {
+  if (!isBackendBFF()) {
+    return emptyUserPermissions(true)
+  }
+  switch (loginState.type) {
+    case 'LOGGED_IN':
+      if (projectId == null) {
+        return emptyUserPermissions(false)
+      }
+      const permissionsUrl = UTOPIA_BACKEND_BASE_URL + `internal/projects/${projectId}/permissions`
+      const response = await fetch(permissionsUrl, {
+        method: 'GET',
+        credentials: 'include',
+        headers: HEADERS,
+        mode: MODE,
+      })
+      if (response.ok) {
+        return response.json()
+      } else {
+        // FIXME Client should show an error if server requests fail
+        throw new Error(`server responded with ${response.status} ${response.statusText}`)
+      }
+    case 'LOGIN_NOT_YET_KNOWN':
+    case 'NOT_LOGGED_IN':
+    case 'LOGIN_LOST':
+    case 'OFFLINE_STATE':
+    case 'COOKIES_OR_LOCALFORAGE_UNAVAILABLE':
+      return emptyUserPermissions(false)
+    default:
+      assertNever(loginState)
   }
 }
 

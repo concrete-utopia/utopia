@@ -2,6 +2,7 @@ export function OpenFgaClient() {
   return {
     write: jest.fn(),
     check: jest.fn(),
+    listRelations: jest.fn(),
   }
 }
 

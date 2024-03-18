@@ -13,6 +13,7 @@ import { singleton } from '../singleton.server'
 const mockOpenFgaClient = {
   write: async () => {},
   check: async () => ({ allowed: true }),
+  listRelations: async ({ relations }: { relations: string[] }) => ({ relations: relations }),
 }
 
 class WriteSafeOpenFgaClient extends OpenFgaClient {
