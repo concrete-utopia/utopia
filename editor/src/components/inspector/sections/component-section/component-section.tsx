@@ -574,7 +574,7 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
           style={{ gap: 5, justifyContent: 'space-between', flexGrow: 1, paddingRight: 3 }}
         >
           <FlexRow
-            style={{ flex: 1, gap: 5, justifyContent: 'space-between' }}
+            style={{ flex: 1, flexShrink: 0, gap: 5, justifyContent: 'space-between' }}
             ref={dataPickerButtonData.setReferenceElement}
           >
             <PropertyLabel target={[propPath]} style={objectPropertyLabelStyle}>
@@ -746,7 +746,7 @@ const RowForTupleControl = React.memo((props: RowForTupleControlProps) => {
   return (
     <React.Fragment>
       <InspectorSectionHeader>
-        <SimpleFlexRow style={{ flexGrow: 1 }}>
+        <SimpleFlexRow style={{ flexGrow: 1, flexShrink: 0 }}>
           {when(isBaseIndentationLevel(props), <div>I0</div>)}
           <PropertyLabel target={[propPath]} style={{ textTransform: 'capitalize' }}>
             {title}
@@ -886,7 +886,13 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
             ref={dataPickerButtonData.setReferenceElement}
           >
             <SimpleFlexRow
-              style={{ minWidth: 0, flexGrow: 1, paddingRight: 8, justifyContent: 'space-between' }}
+              style={{
+                minWidth: 0,
+                flexGrow: 1,
+                flexShrink: 0,
+                paddingRight: 8,
+                justifyContent: 'space-between',
+              }}
               onClick={handleOnClick}
             >
               <PropertyLabel
