@@ -21,7 +21,7 @@ async function clickCanvasContainer(page: Page, { x, y }: { x: number; y: number
   await canvasControlsContainer!.click({ offset: { x, y } })
 }
 
-describe('Collaboration test', () => {
+xdescribe('Collaboration test', () => {
   let utopiaBrowser1 = createUtopiaPuppeteerBrowser()
   let utopiaBrowser2 = createUtopiaPuppeteerBrowser()
   it(

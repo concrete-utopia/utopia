@@ -561,8 +561,20 @@ let
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-remix
       ${pnpm}/bin/pnpm install
-      ${pnpm}/bin/pnpm exec prisma generate
-      PORT=8000 DATABASE_URL="postgres://$(whoami):postgres@localhost:5432/utopia" ${pnpm}/bin/pnpm run dev
+      ${pnpm}/bin/pnpm exec prisma generate > /dev/null
+      PNPM=${pnpm}/bin/pnpm PORT=8000 DATABASE_URL="postgres://$(whoami):postgres@localhost:5432/utopia" LOCAL=true ./run-remix.sh
+    '')
+    (pkgs.writeScriptBin "watch-fga" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-remix
+      ./fga-run.sh
+    '')
+    (pkgs.writeScriptBin "fga-create-store" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-remix
+      ./fga-create-store.sh
     '')
   ];
 
@@ -639,6 +651,8 @@ let
         send-keys -t :9 watch-vscode-build-extension-only C-m \; \
         new-window -n "PostgreSQL" \; \
         send-keys -t :10 start-postgres C-m \; \
+        new-window -n "FGA" \; \
+        send-keys -t :11 watch-fga C-m \; \
         select-window -t :1 \;
     '')
     (pkgs.writeScriptBin "start-full" ''
@@ -684,6 +698,8 @@ let
         send-keys -t :9 watch-vscode-build-extension-only C-m \; \
         new-window -n "PostgreSQL" \; \
         send-keys -t :10 start-postgres C-m \; \
+        new-window -n "FGA" \; \
+        send-keys -t :11 watch-fga C-m \; \
         select-window -t :1 \;
     '')
     (pkgs.writeScriptBin "start-full-webpack" ''
