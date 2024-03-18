@@ -91,7 +91,7 @@ function variantsForComponentToRegister(
   }
 }
 
-async function componentDescriptorForComponentToRegister(
+export async function componentDescriptorForComponentToRegister(
   componentToRegister: ComponentToRegister,
   componentName: string,
   moduleName: string,
@@ -199,7 +199,7 @@ function parseComponentToRegister(value: unknown): ParseResult<ComponentToRegist
   )
 }
 
-const parseComponents: (
+export const parseComponents: (
   value: unknown,
 ) => ParseResult<{ [componentName: string]: ComponentToRegister }> =
   parseObject(parseComponentToRegister)

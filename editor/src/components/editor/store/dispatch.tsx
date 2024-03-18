@@ -93,6 +93,18 @@ import { updateCollaborativeProjectContents } from './collaborative-editing'
 import { updateProjectServerStateInStore } from './project-server-state'
 import { ensureSceneIdsExist } from '../../../core/model/scene-id-utils'
 import { resolveParamsAndRunJsCode } from '../../../core/shared/javascript-cache'
+import {
+  componentDescriptorForComponentToRegister,
+  parseComponents,
+} from '../../../core/property-controls/property-controls-local'
+import { sequenceEither } from '../../../core/shared/either'
+import type {
+  ComponentDescriptorWithName,
+  ComponentDescriptorsForFile,
+  PropertyControlsInfo,
+} from '../../custom-code/code-file'
+import { mapArrayToDictionary } from '../../../core/shared/array-utils'
+import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -350,7 +362,7 @@ function maybeRequestModelUpdate(
         const updates = parseResult.map((fileResult) => {
           return parseResultToWorkerUpdates(fileResult)
         })
-        maybeRegisterComponents(parseResult, workers)
+        maybeRegisterComponents(parseResult, workers, dispatch)
 
         dispatch([EditorActions.mergeWithPrevUndo([EditorActions.updateFromWorker(updates)])])
         return true
@@ -374,7 +386,50 @@ function maybeRequestModelUpdate(
   }
 }
 
-function maybeRegisterComponents(parseResult: Array<ParseOrPrintResult>, workers: UtopiaTsWorkers) {
+const COMPONENTS_FILE_CACHE: { current: { [path: string]: ComponentDescriptorWithName[] } } = {
+  current: {},
+}
+
+export function deleteComponentRegistrationFromFile(fileName: string): PropertyControlsInfo {
+  return updateWithComponentDescriptors(fileName, [])
+}
+
+function updateWithComponentDescriptors(
+  componentFileName: string,
+  info: ComponentDescriptorWithName[],
+): PropertyControlsInfo {
+  COMPONENTS_FILE_CACHE.current[componentFileName] = info
+
+  // TODO: this might not be ideal for perf, but it's a generic problem at this point
+  const allComponentDescriptors = Object.values(COMPONENTS_FILE_CACHE.current).flatMap(
+    (descriptors) => descriptors,
+  )
+  const newDescriptorsForFile: ComponentDescriptorsForFile = mapArrayToDictionary(
+    allComponentDescriptors,
+    (descriptorWithName) => descriptorWithName.componentName,
+    (descriptorWithName) => {
+      return {
+        properties: descriptorWithName.properties,
+        supportsChildren: descriptorWithName.supportsChildren,
+        variants: descriptorWithName.variants,
+        preferredChildComponents: descriptorWithName.preferredChildComponents ?? [],
+      }
+    },
+  )
+
+  return {
+    'src/storyboard': newDescriptorsForFile,
+    ...DefaultThirdPartyControlDefinitions,
+  }
+}
+
+function maybeRegisterComponents(
+  parseResult: Array<ParseOrPrintResult>,
+  workers: UtopiaTsWorkers,
+  dispatch: EditorDispatch,
+) {
+  // TODO: check file extension here
+  // e.g. `.utopia.registration.js`
   const componentsFile = parseResult.find((parse) => parse.filename === '/utopia/components.js')
   if (componentsFile == null) {
     return
@@ -387,13 +442,52 @@ function maybeRegisterComponents(parseResult: Array<ParseOrPrintResult>, workers
   if (combinedTopLevelArbitraryBlock == null) {
     return
   }
+
   try {
+    // TODO: this isn't the right function to call, as `resolveParamsAndRunJsCode` doesn't actually give us access to the exports/default exports
     const evaluatedFile = resolveParamsAndRunJsCode(
       componentsFile.filename,
       combinedTopLevelArbitraryBlock,
       {},
       {},
     )
+
+    // TODO: unhardcode these values
+    const parsedComponents = parseComponents(evaluatedFile['Components']['/src/playground'])
+
+    if (parsedComponents.type === 'LEFT') {
+      return
+    }
+
+    const componentDescriptorPromises = Object.entries(parsedComponents.value).map(
+      ([componentName, componentToRegister]) => {
+        return componentDescriptorForComponentToRegister(
+          componentToRegister,
+          componentName,
+          '/src/playground', // TODO: unhardcode this value
+          workers,
+        )
+      },
+    )
+
+    const componentDescriptorsUnsequenced = Promise.all(componentDescriptorPromises)
+    const componentDescriptors = componentDescriptorsUnsequenced.then((unsequenced) =>
+      sequenceEither(unsequenced),
+    )
+
+    void componentDescriptors.then((result) => {
+      if (result.type === 'LEFT') {
+        // TODO: error handling
+        return
+      }
+
+      const updatePropertyControlsInfo = updateWithComponentDescriptors(
+        componentsFile.filename,
+        result.value,
+      )
+      dispatch([EditorActions.updatePropertyControlsInfo(updatePropertyControlsInfo)])
+      return
+    })
   } catch (e) {
     console.warn('Error evaluating component descriptor file')
   }

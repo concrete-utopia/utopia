@@ -126,6 +126,6 @@ export async function validateControlsToCheck(
 
   previousRegisteredModules = allRegisteredModules
   if (shouldDispatch) {
-    dispatch([updatePropertyControlsInfo(updatedPropertyControlsInfo, moduleNamesOrPathsToDelete)])
+    // dispatch([updatePropertyControlsInfo(updatedPropertyControlsInfo, moduleNamesOrPathsToDelete)])
   }
 }
