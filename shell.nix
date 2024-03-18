@@ -690,6 +690,8 @@ let
         send-keys -t :9 watch-vscode-build-extension-only C-m \; \
         new-window -n "PostgreSQL" \; \
         send-keys -t :10 start-postgres C-m \; \
+        new-window -n "FGA" \; \
+        send-keys -t :11 watch-fga C-m \; \
         select-window -t :1 \;
     '')
     (pkgs.writeScriptBin "start-full-webpack" ''
