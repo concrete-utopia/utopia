@@ -7,6 +7,7 @@ import type {
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import { packageJsonFileFromProjectContents } from '../../components/assets'
 import type {
+  ComponentDescriptor,
   ComponentDescriptorWithName,
   ComponentDescriptorsForFile,
   ComponentInfo,
@@ -98,43 +99,44 @@ export function maybeUpdateComponentDescriptor(
       return
     }
 
-    const updatedPropertyControlsInfo: PropertyControlsInfo = {}
-    Object.entries(descriptors).forEach(([filename, descriptor]) => {
+    let componentDescriptorPromises: Promise<Either<string, ComponentDescriptorWithName>>[] = []
+
+    Object.entries(descriptors).forEach(([moduleName, descriptor]) => {
       const parsedComponents = parseComponents(descriptor)
 
       if (parsedComponents.type === 'LEFT') {
         return
       }
 
-      const componentDescriptorPromises = Object.entries(parsedComponents.value).map(
-        ([componentName, componentToRegister]) => {
+      componentDescriptorPromises = componentDescriptorPromises.concat(
+        Object.entries(parsedComponents.value).map(([componentName, componentToRegister]) => {
           return componentDescriptorForComponentToRegister(
             componentToRegister,
             componentName,
-            filename,
+            moduleName,
             workers,
           )
-        },
+        }),
       )
+    })
 
-      const componentDescriptorsUnsequenced = Promise.all(componentDescriptorPromises)
-      const componentDescriptors = componentDescriptorsUnsequenced.then((unsequenced) =>
-        sequenceEither(unsequenced),
-      )
+    const componentDescriptorsUnsequenced = Promise.all(componentDescriptorPromises)
+    const componentDescriptors = componentDescriptorsUnsequenced.then((unsequenced) =>
+      sequenceEither(unsequenced),
+    )
 
-      void componentDescriptors.then((result) => {
-        if (result.type === 'LEFT') {
-          // TODO: error handling
-          return
-        }
-
-        const updatedPropertyControlsInfo = updateWithComponentDescriptors(
-          componentsFile.filename,
-          result.value,
-        )
-        dispatch([EditorActions.updatePropertyControlsInfo(updatedPropertyControlsInfo)])
+    void componentDescriptors.then((result) => {
+      if (result.type === 'LEFT') {
+        // TODO: error handling
         return
-      })
+      }
+
+      const updatedPropertyControlsInfo = updateWithComponentDescriptors(
+        componentsFile.filename,
+        result.value,
+      )
+      dispatch([EditorActions.updatePropertyControlsInfo(updatedPropertyControlsInfo)])
+      return
     })
   } catch (e) {
     console.warn('Error evaluating component descriptor file')
@@ -153,30 +155,34 @@ function updateWithComponentDescriptors(
   descriptorFileName: string,
   info: ComponentDescriptorWithName[],
 ): PropertyControlsInfo {
-  console.log('info', info)
   COMPONENTS_FILE_CACHE.current[descriptorFileName] = info
 
   // TODO: this might not be ideal for perf, but it's a generic problem at this point
   const allComponentDescriptors = Object.values(COMPONENTS_FILE_CACHE.current).flatMap(
     (descriptors) => descriptors,
   )
-  const newDescriptorsForFile: ComponentDescriptorsForFile = mapArrayToDictionary(
-    allComponentDescriptors,
-    (descriptorWithName) => descriptorWithName.componentName,
-    (descriptorWithName) => {
-      return {
-        properties: descriptorWithName.properties,
-        supportsChildren: descriptorWithName.supportsChildren,
-        variants: descriptorWithName.variants,
-        preferredChildComponents: descriptorWithName.preferredChildComponents ?? [],
-      }
-    },
-  )
 
-  return {
-    'src/playground': newDescriptorsForFile,
+  let propertyControls: PropertyControlsInfo = {
     ...DefaultThirdPartyControlDefinitions,
   }
+
+  for (const propertyControlsForComponent of allComponentDescriptors) {
+    if (propertyControls[propertyControlsForComponent.moduleName] == null) {
+      propertyControls[propertyControlsForComponent.moduleName] = {}
+    }
+
+    propertyControls[propertyControlsForComponent.moduleName] = {
+      ...propertyControls[propertyControlsForComponent.moduleName],
+      [propertyControlsForComponent.componentName]: {
+        properties: propertyControlsForComponent.properties,
+        supportsChildren: propertyControlsForComponent.supportsChildren,
+        variants: propertyControlsForComponent.variants,
+        preferredChildComponents: propertyControlsForComponent.preferredChildComponents ?? [],
+      },
+    }
+  }
+
+  return propertyControls
 }
 
 function variantsForComponentToRegister(
