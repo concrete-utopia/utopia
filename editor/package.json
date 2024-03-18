@@ -15,10 +15,10 @@
     "check": "tsc --noEmit && pnpm run lint && pnpm run check-dependency-cruiser && pnpm run prettier-check && pnpm run test && pnpm run test-browser",
     "check-ci": "tsc --noEmit && pnpm run lint && pnpm run check-dependency-cruiser && pnpm run prettier-check && pnpm run test-ci && pnpm run test-browser",
     "check-code": "tsc --version && tsc --noEmit && pnpm run lint && pnpm run check-dependency-cruiser && pnpm run prettier-check",
-    "lint-other-projects": "eslint --quiet --ignore-path ./.eslintignore --config ./.eslintrc-lite.js --ext .ts --ext .tsx ../utopia-api/src ../utopia-vscode-extension/src ../utopia-vscode-common/src ../puppeteer-tests/src ../utopia-remix/app",
+    "lint-other-projects": "eslint --quiet --ignore-path ./.eslintignore --config ../eslint-config-utopia/index.js --no-eslintrc --ext .ts --ext .tsx ../utopia-api/src ../utopia-vscode-extension/src ../utopia-vscode-common/src ../puppeteer-tests/src ../utopia-remix/app",
     "lint": "eslint \"src/**/*.{js,ts,tsx}\" --quiet && pnpm run lint-other-projects",
     "lint-loud": "eslint \"src/**/*.{js,ts,tsx}\"",
-    "lint-lite": "eslint \"src/**/*.{js,ts,tsx}\" --quiet --config ./.eslintrc-lite.js --no-eslintrc && pnpm run lint-other-projects",
+    "lint-lite": "eslint \"src/**/*.{js,ts,tsx}\" --quiet --config ../eslint-config-utopia/index.js --no-eslintrc && pnpm run lint-other-projects",
     "check-dependency-cruiser": "depcruise --config .dependency-cruiser.js src",
     "benchmark": "pnpm run build-benchmark && node dist/benchmark.js",
     "test-base": "jest --config ./jest.config.js",
@@ -59,7 +59,7 @@
   "lint-staged": {
     "*.{js,ts,tsx}": [
       "prettier --write",
-      "eslint --quiet --ignore-path .eslintignore --config .eslintrc-lite.js --no-eslintrc",
+      "eslint --quiet --ignore-path .eslintignore --config ../eslint-config-utopia/index.js --no-eslintrc",
       "git add"
     ],
     "*.{css,html}": [
@@ -68,7 +68,7 @@
     ],
     "../puppeteer-tests/src/**/*.{js,ts,tsx}": [
       "prettier --write",
-      "eslint --quiet --ignore-path .eslintignore --config .eslintrc-lite.js --no-eslintrc",
+      "eslint --quiet --ignore-path .eslintignore --config ../eslint-config-utopia/index.js --no-eslintrc",
       "git add"
     ],
     "../puppeteer-tests/src/**/*.{css,html}": [
@@ -77,7 +77,7 @@
     ],
     "../utopia-api/src/**/*.{js,ts,tsx}": [
       "prettier --write",
-      "eslint --quiet --ignore-path .eslintignore --config .eslintrc-lite.js --no-eslintrc",
+      "eslint --quiet --ignore-path .eslintignore --config ../eslint-config-utopia/index.js --no-eslintrc",
       "git add"
     ],
     "../utopia-api/src/**/*.{css,html}": [
@@ -86,7 +86,7 @@
     ],
     "../utopia-remix/app/**/*.{js,ts,tsx}": [
       "prettier --write",
-      "eslint --quiet --ignore-path .eslintignore --config .eslintrc-lite.js --no-eslintrc",
+      "eslint --quiet --ignore-path .eslintignore --config ../eslint-config-utopia/index.js --no-eslintrc",
       "git add"
     ],
     "../utopia-remix/app/**/*.{css,html}": [
@@ -95,7 +95,7 @@
     ],
     "../utopia-vscode-extension/src/**/*.{js,ts,tsx}": [
       "prettier --write",
-      "eslint --quiet --ignore-path .eslintignore --config .eslintrc-lite.js --no-eslintrc",
+      "eslint --quiet --ignore-path .eslintignore --config ../eslint-config-utopia/index.js --no-eslintrc",
       "git add"
     ],
     "../utopia-vscode-extension/src/**/*.{css,html}": [
@@ -104,7 +104,7 @@
     ],
     "../utopia-vscode-common/src/**/*.{js,ts,tsx}": [
       "prettier --write",
-      "eslint --quiet --ignore-path .eslintignore --config .eslintrc-lite.js --no-eslintrc",
+      "eslint --quiet --ignore-path .eslintignore --config ../eslint-config-utopia/index.js --no-eslintrc",
       "git add"
     ],
     "../utopia-vscode-common/src/**/*.{css,html}": [
@@ -113,7 +113,7 @@
     ],
     "../website-next/pages/**/*.{js,ts,tsx}": [
       "prettier --write",
-      "eslint --quiet --ignore-path .eslintignore --config .eslintrc-lite.js --no-eslintrc",
+      "eslint --quiet --ignore-path .eslintignore --config ../eslint-config-utopia/index.js --no-eslintrc",
       "git add"
     ],
     "../website-next/pages/**/*.{css,html}": [
@@ -122,7 +122,7 @@
     ],
     "../website-next/components/**/*.{js,ts,tsx}": [
       "prettier --write",
-      "eslint --quiet --ignore-path .eslintignore --config .eslintrc-lite.js --no-eslintrc",
+      "eslint --quiet --ignore-path .eslintignore --config ../eslint-config-utopia/index.js --no-eslintrc",
       "git add"
     ],
     "../website-next/components/**/*.{css,html}": [
@@ -183,6 +183,7 @@
     "eslint-plugin-jsx-a11y": "6.5.1",
     "eslint-plugin-react": "7.23.2",
     "eslint-plugin-react-hooks": "4.2.0",
+    "eslint-config-utopia": "link:../eslint-config-utopia",
     "eslint4b": "6.6.0",
     "fast-deep-equal": "2.0.1",
     "fontfaceobserver": "2.1.0",

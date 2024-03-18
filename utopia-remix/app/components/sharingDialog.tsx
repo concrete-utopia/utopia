@@ -127,6 +127,7 @@ function AccessRequests({
         <Flex key={request.token} justify='between'>
           <Text size='1'>{request.User?.name ?? request.User?.email ?? request.user_id}</Text>
           {status === AccessRequestStatus.PENDING ? (
+            // eslint-disable-next-line react/jsx-no-bind
             <Button size='1' variant='ghost' onClick={onApprove}>
               Approve
             </Button>
@@ -188,6 +189,7 @@ function VisibilityDropdown({
               style={{ height: 28, fontSize: 12, paddingLeft: 30 }}
               checked={accessLevel === level}
               disabled={accessLevel === level}
+              // eslint-disable-next-line react/jsx-no-bind
               onCheckedChange={onCheckedChange}
             >
               {VisibilityUIComponents[level].text}
