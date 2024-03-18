@@ -57,6 +57,9 @@ services:
   utopia-fga-model:
     profiles:
       - manual
+    depends_on:
+      openfga:
+        condition: service_healthy
     image: alpine:3.19.1
     container_name: utopia-fga-model
     volumes:
