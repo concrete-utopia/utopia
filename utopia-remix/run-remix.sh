@@ -7,9 +7,7 @@ set -e
 
 if [ "${LOCAL}" == 'true' ] ; then
 	# Make sure the .env file exists
-	if ! [ -f .env ] ; then
-		touch .env
-	fi
+	touch .env
 
 	HOST_ENV_KEY="FGA_API_HOST"
 	STORE_ENV_KEY="FGA_STORE_ID"
