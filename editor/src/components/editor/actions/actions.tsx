@@ -561,7 +561,10 @@ import type { ProjectServerState } from '../store/project-server-state'
 import { updateFileIfPossible } from './can-update-file'
 import { getPrintAndReparseCodeResult } from '../../../core/workers/parser-printer/parser-printer-worker'
 import { isSteganographyEnabled } from '../../../core/shared/stegano-text'
-import { deleteComponentRegistrationFromFile } from '../store/dispatch'
+import {
+  ComponentDescriptorFile,
+  deleteComponentRegistrationFromFile,
+} from '../../../core/property-controls/property-controls-local'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -3847,7 +3850,7 @@ export const UPDATE_FNS = {
           ...editor,
           projectContents: updatedProjectContents,
         }
-        if (action.filename === '/utopia/components.js') {
+        if (action.filename === ComponentDescriptorFile) {
           return {
             ...nextEditor,
             propertyControlsInfo: deleteComponentRegistrationFromFile(action.filename),

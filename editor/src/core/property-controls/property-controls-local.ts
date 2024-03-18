@@ -1,8 +1,4 @@
-import type React from 'react'
 import type {
-  registerModule as registerModuleAPI,
-  registerInternalComponent as registerInternalComponentAPI,
-  registerExternalComponent as registerExternalComponentAPI,
   ComponentToRegister,
   ComponentInsertOption,
   PropertyControls,
@@ -12,6 +8,7 @@ import type { ProjectContentTreeRoot } from '../../components/assets'
 import { packageJsonFileFromProjectContents } from '../../components/assets'
 import type {
   ComponentDescriptorWithName,
+  ComponentDescriptorsForFile,
   ComponentInfo,
   PropertyControlsInfo,
 } from '../../components/custom-code/code-file'
@@ -19,7 +16,6 @@ import { dependenciesFromPackageJson } from '../../components/editor/npm-depende
 import { parseControlDescription } from './property-controls-parser'
 import type { ParseResult } from '../../utils/value-parser-utils'
 import {
-  getParseErrorDetails,
   objectKeyParser,
   optionalObjectKeyParser,
   parseArray,
@@ -27,27 +23,17 @@ import {
   parseObject,
   parseString,
 } from '../../utils/value-parser-utils'
-import type { UtopiaTsWorkers } from '../workers/common/worker-types'
+import type { ParseOrPrintResult, UtopiaTsWorkers } from '../workers/common/worker-types'
 import { getCachedParseResultForUserStrings } from './property-controls-local-parser-bridge'
 import type { Either } from '../shared/either'
-import {
-  applicative2Either,
-  applicative3Either,
-  applicative4Either,
-  bimapEither,
-  foldEither,
-  mapEither,
-  sequenceEither,
-} from '../shared/either'
+import { applicative3Either, applicative4Either, mapEither, sequenceEither } from '../shared/either'
 import { setOptionalProp } from '../shared/object-utils'
-import type { ControlsToCheck } from '../../components/canvas/canvas-globals'
-import { addRegisteredControls } from '../../components/canvas/canvas-globals'
-import { getGlobalEvaluatedFileName } from '../shared/code-exec-utils'
-import { memoize } from '../shared/memoize'
-import fastDeepEqual from 'fast-deep-equal'
-import { TimedCacheMap } from '../shared/timed-cache-map'
-import { dropFileExtension } from '../shared/file-utils'
-import { isComponentRendererComponent } from '../../components/canvas/ui-jsx-canvas-renderer/component-renderer-component'
+import type { EditorDispatch } from '../../components/editor/action-types'
+import { isParseSuccess } from '../shared/project-file-types'
+import { resolveParamsAndRunJsCode } from '../shared/javascript-cache'
+import * as EditorActions from '../../components/editor/actions/action-creators'
+import { mapArrayToDictionary } from '../shared/array-utils'
+import { DefaultThirdPartyControlDefinitions } from '../../core/third-party/third-party-controls'
 
 async function parseInsertOption(
   insertOption: ComponentInsertOption,
@@ -72,6 +58,115 @@ async function parseInsertOption(
       importsToAdd: importsToAdd,
     }
   }, parsedParams)
+}
+
+export const ComponentDescriptorFile = '/utopia/components.utopia.js'
+
+export function maybeUpdateComponentDescriptor(
+  parseResult: Array<ParseOrPrintResult>,
+  workers: UtopiaTsWorkers,
+  dispatch: EditorDispatch,
+) {
+  // TODO: check file extension here
+  // e.g. `.utopia.registration.js`
+  const componentsFile = parseResult.find((parse) => parse.filename === ComponentDescriptorFile)
+  if (componentsFile == null) {
+    return
+  }
+  if (!isParseSuccess(componentsFile.parseResult)) {
+    return
+  }
+  const combinedTopLevelArbitraryBlock = componentsFile.parseResult.combinedTopLevelArbitraryBlock
+
+  if (combinedTopLevelArbitraryBlock == null) {
+    return
+  }
+
+  try {
+    // TODO: this isn't the right function to call, as `resolveParamsAndRunJsCode` doesn't actually give us access to the exports/default exports
+    const evaluatedFile = resolveParamsAndRunJsCode(
+      componentsFile.filename,
+      combinedTopLevelArbitraryBlock,
+      {},
+      {},
+    )
+
+    // TODO: unhardcode these values
+    const parsedComponents = parseComponents(evaluatedFile['Components']['/src/playground'])
+
+    if (parsedComponents.type === 'LEFT') {
+      return
+    }
+
+    const componentDescriptorPromises = Object.entries(parsedComponents.value).map(
+      ([componentName, componentToRegister]) => {
+        return componentDescriptorForComponentToRegister(
+          componentToRegister,
+          componentName,
+          '/src/playground', // TODO: unhardcode this value
+          workers,
+        )
+      },
+    )
+
+    const componentDescriptorsUnsequenced = Promise.all(componentDescriptorPromises)
+    const componentDescriptors = componentDescriptorsUnsequenced.then((unsequenced) =>
+      sequenceEither(unsequenced),
+    )
+
+    void componentDescriptors.then((result) => {
+      if (result.type === 'LEFT') {
+        // TODO: error handling
+        return
+      }
+
+      const updatedPropertyControlsInfo = updateWithComponentDescriptors(
+        componentsFile.filename,
+        result.value,
+      )
+      dispatch([EditorActions.updatePropertyControlsInfo(updatedPropertyControlsInfo)])
+      return
+    })
+  } catch (e) {
+    console.warn('Error evaluating component descriptor file')
+  }
+}
+
+const COMPONENTS_FILE_CACHE: { current: { [path: string]: ComponentDescriptorWithName[] } } = {
+  current: {},
+}
+
+export function deleteComponentRegistrationFromFile(fileName: string): PropertyControlsInfo {
+  return updateWithComponentDescriptors(fileName, [])
+}
+
+function updateWithComponentDescriptors(
+  componentFileName: string,
+  info: ComponentDescriptorWithName[],
+): PropertyControlsInfo {
+  COMPONENTS_FILE_CACHE.current[componentFileName] = info
+
+  // TODO: this might not be ideal for perf, but it's a generic problem at this point
+  const allComponentDescriptors = Object.values(COMPONENTS_FILE_CACHE.current).flatMap(
+    (descriptors) => descriptors,
+  )
+  const newDescriptorsForFile: ComponentDescriptorsForFile = mapArrayToDictionary(
+    allComponentDescriptors,
+    (descriptorWithName) => descriptorWithName.componentName,
+    (descriptorWithName) => {
+      return {
+        properties: descriptorWithName.properties,
+        supportsChildren: descriptorWithName.supportsChildren,
+        variants: descriptorWithName.variants,
+        preferredChildComponents: descriptorWithName.preferredChildComponents ?? [],
+      }
+    },
+  )
+
+  return {
+    'src/playground': newDescriptorsForFile,
+    ...DefaultThirdPartyControlDefinitions,
+  }
 }
 
 function variantsForComponentToRegister(
@@ -115,40 +210,6 @@ export async function componentDescriptorForComponentToRegister(
       variants: variants,
     }
   }, parsedVariants)
-}
-
-interface PreparedComponentDescriptorsForRegistering {
-  sourceFile: string
-  moduleNameOrPath: string
-  componentDescriptors: ControlsToCheck
-}
-
-function prepareComponentDescriptorsForRegistering(
-  workers: UtopiaTsWorkers,
-  moduleNameOrPath: string,
-  components: { [componentName: string]: ComponentToRegister },
-): PreparedComponentDescriptorsForRegistering {
-  const componentNames = Object.keys(components)
-  const componentDescriptorPromises = componentNames.map((componentName) => {
-    const componentToRegister = components[componentName]
-    return componentDescriptorForComponentToRegister(
-      componentToRegister,
-      componentName,
-      moduleNameOrPath,
-      workers,
-    )
-  })
-
-  const componentDescriptorsUnsequenced = Promise.all(componentDescriptorPromises)
-  const componentDescriptors = componentDescriptorsUnsequenced.then((unsequenced) =>
-    sequenceEither(unsequenced),
-  )
-
-  return {
-    sourceFile: getGlobalEvaluatedFileName(),
-    moduleNameOrPath: moduleNameOrPath,
-    componentDescriptors: componentDescriptors,
-  }
 }
 
 function fullyParsePropertyControls(value: unknown): ParseResult<PropertyControls> {
@@ -203,134 +264,6 @@ export const parseComponents: (
   value: unknown,
 ) => ParseResult<{ [componentName: string]: ComponentToRegister }> =
   parseObject(parseComponentToRegister)
-
-function parseAndPrepareComponents(
-  workers: UtopiaTsWorkers,
-  moduleNameOrPath: string,
-  unparsedComponents: unknown,
-): Either<string, PreparedComponentDescriptorsForRegistering> {
-  const parsedComponents = parseComponents(unparsedComponents)
-
-  return bimapEither(
-    (parseError) => {
-      const errorDetails = getParseErrorDetails(parseError)
-      return `registerModule second param (components): ${errorDetails.description} [${errorDetails.path}]`
-    },
-    (components: { [componentName: string]: ComponentToRegister }) => {
-      return prepareComponentDescriptorsForRegistering(workers, moduleNameOrPath, components)
-    },
-    parsedComponents,
-  )
-}
-
-type PartiallyAppliedParseAndPrepareComponents = (
-  unparsedComponents: unknown,
-) => Either<string, PreparedComponentDescriptorsForRegistering>
-
-const partiallyParseAndPrepareComponents = (
-  workers: UtopiaTsWorkers,
-  moduleNameOrPath: string,
-): PartiallyAppliedParseAndPrepareComponents => {
-  return (unparsedComponents: unknown) =>
-    parseAndPrepareComponents(workers, moduleNameOrPath, unparsedComponents)
-}
-
-export function createRegisterModuleAndComponentFunction(workers: UtopiaTsWorkers | null): {
-  registerModule: typeof registerModuleAPI
-  registerInternalComponent: typeof registerInternalComponentAPI
-  registerExternalComponent: typeof registerExternalComponentAPI
-} {
-  let cachedParseAndPrepareComponentsMap = new TimedCacheMap<
-    string,
-    PartiallyAppliedParseAndPrepareComponents
-  >()
-
-  function registerModule(
-    unparsedModuleName: string,
-    unparsedComponents: { [componentName: string]: ComponentToRegister },
-  ): void {
-    const parsedModuleName = parseString(unparsedModuleName)
-
-    foldEither(
-      (parseFailure) => {
-        const errorDetails = getParseErrorDetails(parseFailure)
-        throw new Error(`registerModule first param (moduleName): ${errorDetails.description}`)
-      },
-      (moduleName) => {
-        if (workers != null) {
-          let parseAndPrepareComponentsFn = cachedParseAndPrepareComponentsMap.get(moduleName)
-          if (parseAndPrepareComponentsFn == null) {
-            // Create a memoized function for the handling of component descriptors for the specified module name
-            parseAndPrepareComponentsFn = memoize(
-              partiallyParseAndPrepareComponents(workers, moduleName),
-              {
-                matchesArg: fastDeepEqual,
-                maxSize: 5,
-              },
-            )
-            cachedParseAndPrepareComponentsMap.set(moduleName, parseAndPrepareComponentsFn)
-          }
-
-          const parsedPreparedDescriptors = parseAndPrepareComponentsFn(unparsedComponents)
-          foldEither(
-            (parseFailureErrorMessage) => {
-              throw new Error(parseFailureErrorMessage)
-            },
-            (preparedDescriptors) => {
-              // Fires off asynchronously.
-              addRegisteredControls(
-                preparedDescriptors.sourceFile,
-                preparedDescriptors.moduleNameOrPath,
-                preparedDescriptors.componentDescriptors,
-              )
-            },
-            parsedPreparedDescriptors,
-          )
-        }
-      },
-      parsedModuleName,
-    )
-  }
-
-  function registerInternalComponent(
-    component: React.FunctionComponent,
-    properties: ComponentToRegister,
-  ): void {
-    // when the recieved component is an internal component, it is wrapped into a ComponentRendererComponent
-    if (!isComponentRendererComponent(component)) {
-      console.warn(
-        'registerIntenalComponent failed: component is not internal but imported from external source ',
-        component.displayName,
-      )
-      return
-    }
-    const name = component.originalName
-    const module = dropFileExtension(component.filePath)
-
-    if (name == null) {
-      console.warn(
-        `registerIntenalComponent failed: ComponentRendererComponent of internal component doesn't have originalName`,
-      )
-      return
-    }
-
-    registerModule(module, { [name]: properties })
-  }
-
-  function registerExternalComponent(
-    componentName: string,
-    packageName: string,
-    properties: ComponentToRegister,
-  ): void {
-    registerModule(packageName, { [componentName]: properties })
-  }
-
-  return {
-    registerModule,
-    registerInternalComponent,
-    registerExternalComponent,
-  }
-}
 
 export function getThirdPartyControlsIntrinsic(
   elementName: string,
