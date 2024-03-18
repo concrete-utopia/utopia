@@ -7,7 +7,6 @@ import {
   projectURL,
   thumbnailURL,
   userConfigURL,
-  userPermissionsURL,
 } from '../../common/server'
 import type { PersistentModel, UserConfiguration, UserPermissions } from './store/editor-state'
 import { emptyUserConfiguration, emptyUserPermissions } from './store/editor-state'
@@ -34,6 +33,7 @@ import { liveblocksClient } from '../../../liveblocks.config'
 import type { Collaborator } from '../../core/shared/multiplayer'
 import type { LiveObject } from '@liveblocks/client'
 import { projectIdToRoomId } from '../../utils/room-id'
+import { assertNever } from '../../core/shared/utils'
 
 export { fetchProjectList, fetchShowcaseProjects, getLoginState } from '../../common/server'
 
@@ -330,13 +330,16 @@ export async function getUserPermissions(
   loginState: LoginState,
   projectId: string | null,
 ): Promise<UserPermissions> {
+  if (!isBackendBFF()) {
+    return emptyUserPermissions(true)
+  }
   switch (loginState.type) {
     case 'LOGGED_IN':
       if (projectId == null) {
-        return emptyUserPermissions()
+        return emptyUserPermissions(false)
       }
-      const url = userPermissionsURL(projectId)
-      const response = await fetch(url, {
+      const permissionsUrl = UTOPIA_BACKEND_BASE_URL + `internal/projects/${projectId}/permissions`
+      const response = await fetch(permissionsUrl, {
         method: 'GET',
         credentials: 'include',
         headers: HEADERS,
@@ -353,10 +356,9 @@ export async function getUserPermissions(
     case 'LOGIN_LOST':
     case 'OFFLINE_STATE':
     case 'COOKIES_OR_LOCALFORAGE_UNAVAILABLE':
-      return emptyUserPermissions()
+      return emptyUserPermissions(false)
     default:
-      const _exhaustiveCheck: never = loginState
-      throw new Error(`Unknown login state.`)
+      assertNever(loginState)
   }
 }
 

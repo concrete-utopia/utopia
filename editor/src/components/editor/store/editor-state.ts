@@ -269,9 +269,9 @@ export type UserPermissions = {
   [key in Permissions]: boolean
 }
 
-export function emptyUserPermissions(): UserPermissions {
+export function emptyUserPermissions(defaultValue: boolean): UserPermissions {
   return userProjectPermission.reduce((acc, permission) => {
-    acc[permission] = false
+    acc[permission] = defaultValue
     return acc
   }, {} as UserPermissions)
 }

@@ -82,10 +82,6 @@ export function userConfigURL(): string {
   return urljoin(UTOPIA_BACKEND, 'user', 'config')
 }
 
-export function userPermissionsURL(projectId: string): string {
-  return urljoin(UTOPIA_BACKEND, 'project', projectId, 'permissions')
-}
-
 let CachedLoginStatePromise: Promise<LoginState> | null = null
 
 export async function getLoginState(useCache: 'cache' | 'no-cache'): Promise<LoginState> {
