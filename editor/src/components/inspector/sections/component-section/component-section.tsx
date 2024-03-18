@@ -127,10 +127,27 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
   const { controlDescription, showHiddenControl } = props
   const onSubmitValue = props.propMetadata.onSubmitValue
 
+  const isRequired: boolean = props.controlDescription.required ?? false
+  const hasDefaultValue: boolean = 'defaultValue' in props.controlDescription
+  const safeToDelete = !isRequired || hasDefaultValue
+
   const onDeleteCartouche = React.useCallback(() => {
-    onSubmitValue(null, false)
-    showHiddenControl(PP.firstPartToString(props.propPath))
-  }, [onSubmitValue, showHiddenControl, props.propPath])
+    if (safeToDelete) {
+      if (isRequired) {
+        onSubmitValue(props.controlDescription.defaultValue, false)
+      } else {
+        onSubmitValue(null, false)
+        showHiddenControl(PP.firstPartToString(props.propPath))
+      }
+    }
+  }, [
+    safeToDelete,
+    isRequired,
+    onSubmitValue,
+    props.controlDescription.defaultValue,
+    props.propPath,
+    showHiddenControl,
+  ])
 
   if (controlDescription == null) {
     return null
@@ -147,9 +164,12 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
       return (
         <IdentifierExpressionCartoucheControl
           contents={jsxElementChildToText(attributeExpression, null, null, 'jsx', 'inner')}
+          dataType={props.controlDescription.control}
           matchType='full'
           onOpenDataPicker={props.onOpenDataPicker}
           onDeleteCartouche={onDeleteCartouche}
+          testId={`cartouche-${PP.toString(props.propPath)}`}
+          safeToDelete={safeToDelete}
         />
       )
     }
@@ -163,9 +183,12 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
         return (
           <IdentifierExpressionCartoucheControl
             contents={'Expression'}
+            dataType='none'
             matchType='partial'
             onOpenDataPicker={props.onOpenDataPicker}
             onDeleteCartouche={onDeleteCartouche}
+            testId={`cartouche-${PP.toString(props.propPath)}`}
+            safeToDelete={safeToDelete}
           />
         )
       }
@@ -551,7 +574,7 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
           style={{ gap: 5, justifyContent: 'space-between', flexGrow: 1, paddingRight: 3 }}
         >
           <FlexRow
-            style={{ flex: 1, gap: 5, justifyContent: 'space-between' }}
+            style={{ flex: 1, flexShrink: 0, gap: 5, justifyContent: 'space-between' }}
             ref={dataPickerButtonData.setReferenceElement}
           >
             <PropertyLabel target={[propPath]} style={objectPropertyLabelStyle}>
@@ -723,7 +746,7 @@ const RowForTupleControl = React.memo((props: RowForTupleControlProps) => {
   return (
     <React.Fragment>
       <InspectorSectionHeader>
-        <SimpleFlexRow style={{ flexGrow: 1 }}>
+        <SimpleFlexRow style={{ flexGrow: 1, flexShrink: 0 }}>
           {when(isBaseIndentationLevel(props), <div>I0</div>)}
           <PropertyLabel target={[propPath]} style={{ textTransform: 'capitalize' }}>
             {title}
@@ -863,7 +886,13 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
             ref={dataPickerButtonData.setReferenceElement}
           >
             <SimpleFlexRow
-              style={{ minWidth: 0, flexGrow: 1, paddingRight: 8, justifyContent: 'space-between' }}
+              style={{
+                minWidth: 0,
+                flexGrow: 1,
+                flexShrink: 0,
+                paddingRight: 8,
+                justifyContent: 'space-between',
+              }}
               onClick={handleOnClick}
             >
               <PropertyLabel

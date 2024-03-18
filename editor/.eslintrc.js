@@ -1,5 +1,5 @@
 module.exports = {
-  extends: ['./.eslintrc-lite.js'],
+  extends: ['eslint-config-utopia'],
   parserOptions: {
     tsconfigRootDir: __dirname,
     project: ['./tsconfig.json'],
