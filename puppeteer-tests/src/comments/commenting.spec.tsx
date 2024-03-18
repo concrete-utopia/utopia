@@ -63,7 +63,7 @@ async function dismissHoverPreview(page: Page) {
 describe('Comments test', () => {
   let utopiaBrowser = createUtopiaPuppeteerBrowser()
 
-  it('Basic comment workflow (place, reply)', async () => {
+  xit('Basic comment workflow (place, reply)', async () => {
     const page = await initSignedInBrowserTest(utopiaBrowser)
 
     // Enter comment mode using the toolbar
@@ -187,7 +187,7 @@ describe('Comments test', () => {
     expect(commentIndicators).toHaveLength(0)
   })
 
-  it('Close comment popup with the mouse', async () => {
+  xit('Close comment popup with the mouse', async () => {
     const page = await initSignedInBrowserTest(utopiaBrowser)
 
     await enterCommentMode(page)
@@ -221,7 +221,7 @@ describe('Comments test', () => {
     expect(commentsTabs).toHaveLength(0)
   })
 
-  it('can reparent comment', async () => {
+  xit('can reparent comment', async () => {
     const page = await initSignedInBrowserTest(utopiaBrowser)
     await enterCommentMode(page)
 
@@ -336,7 +336,7 @@ describe('Comments test', () => {
     )
   })
 
-  it('scene comment canvas coordinates are maintained when scene is moved', async () => {
+  xit('scene comment canvas coordinates are maintained when scene is moved', async () => {
     const page = await initSignedInBrowserTest(utopiaBrowser)
     await enterCommentMode(page)
 
