@@ -329,6 +329,7 @@ export function useLoadCollaborators() {
     (store) => store.editor.id,
     'useLoadCollaborators projectId',
   )
+
   const loginState = useEditorState(
     Substores.userState,
     (store) => store.userState.loginState,
@@ -346,9 +347,15 @@ export function useLoadCollaborators() {
       return
     }
     void getCollaborators(projectId).then((collaborators) => {
-      dispatch([setCollaborators(collaborators)])
+      if (collaborators.length === 0 && loginState.type === 'LOGGED_IN') {
+        dispatch([
+          setCollaborators([{ id: loginState.user.userId, name: undefined, avatar: undefined }]),
+        ])
+      } else {
+        dispatch([setCollaborators(collaborators)])
+      }
     })
-  }, [projectId, dispatch])
+  }, [projectId, loginState, dispatch])
 
   // when new users join or update, if they are not available in the collaborators array, refresh them.
   useOthersListener((event) => {

@@ -559,6 +559,7 @@ const CommentIndicatorWrapper = React.memo((props: CommentIndicatorWrapper) => {
     ? { ...commentProps, 'data-theme': 'dark' }
     : commentProps
 
+  // ???
   if (user == null) {
     return <Comment {...updatedCommentProps} />
   }
