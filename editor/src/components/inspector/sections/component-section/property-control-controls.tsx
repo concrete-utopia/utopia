@@ -19,6 +19,7 @@ import type {
   PopUpListControlDescription,
   RadioControlDescription,
   RegularControlDescription,
+  RegularControlType,
   StringInputControlDescription,
   Vector2ControlDescription,
   Vector3ControlDescription,
@@ -40,6 +41,7 @@ import {
   colorTheme,
   Icn,
   Tooltip,
+  iconForControlType,
 } from '../../../../uuiui'
 import type { CSSNumber } from '../../common/css-utils'
 import { printCSSNumber, cssNumber, defaultCSSColor } from '../../common/css-utils'
@@ -230,6 +232,7 @@ export const PopUpListPropertyControl = React.memo(
       <PopupList
         disabled={!propMetadata.controlStyles.interactive}
         value={currentValue}
+        // eslint-disable-next-line react/jsx-no-bind
         onSubmitValue={submitValue}
         options={options}
         containerMode={'default'}
@@ -404,6 +407,7 @@ export const RadioPropertyControl = React.memo(
         value={currentValue}
         controlStatus={propMetadata.controlStatus}
         controlStyles={propMetadata.controlStyles}
+        // eslint-disable-next-line react/jsx-no-bind
         onSubmitValue={submitValue}
         options={options}
       />
@@ -800,6 +804,7 @@ export const Matrix4PropertyControl = React.memo(
 
 interface IdentifierExpressionCartoucheControlProps {
   contents: string
+  dataType: RegularControlType
   matchType: 'full' | 'partial'
   onOpenDataPicker: () => void
   onDeleteCartouche: () => void
@@ -817,11 +822,12 @@ export const IdentifierExpressionCartoucheControl = React.memo(
       [onDeleteCartouche],
     )
 
+    const Icon = iconForControlType(props.dataType)
+
     return (
       <FlexRow
         style={{
           cursor: 'pointer',
-          gap: 6,
           color: props.matchType === 'full' ? colorTheme.bg1.value : colorTheme.primary.value,
           backgroundColor:
             props.matchType === 'full' ? colorTheme.primary.value : colorTheme.primary10.value,
@@ -830,14 +836,7 @@ export const IdentifierExpressionCartoucheControl = React.memo(
         }}
         onClick={props.onOpenDataPicker}
       >
-        <div
-          style={{
-            width: 15,
-            height: 15,
-            borderRadius: 2,
-            backgroundColor: colorTheme.secondaryBlue.value,
-          }}
-        />
+        <Icon style={{ marginLeft: -5 }} />
         <Tooltip title={props.contents}>
           <div
             style={{

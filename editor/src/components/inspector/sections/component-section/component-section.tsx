@@ -164,6 +164,7 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
       return (
         <IdentifierExpressionCartoucheControl
           contents={jsxElementChildToText(attributeExpression, null, null, 'jsx', 'inner')}
+          dataType={props.controlDescription.control}
           matchType='full'
           onOpenDataPicker={props.onOpenDataPicker}
           onDeleteCartouche={onDeleteCartouche}
@@ -182,6 +183,7 @@ const ControlForProp = React.memo((props: ControlForPropProps<RegularControlDesc
         return (
           <IdentifierExpressionCartoucheControl
             contents={'Expression'}
+            dataType='none'
             matchType='partial'
             onOpenDataPicker={props.onOpenDataPicker}
             onDeleteCartouche={onDeleteCartouche}
