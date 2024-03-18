@@ -8,7 +8,7 @@ export async function updateAccessLevel(projectId: string, accessLevel: AccessLe
   return await Promise.all(writes.map((write) => fgaClient.write(write)))
 }
 
-const userProjectPermission = [
+export const fgaUserProjectPermission = [
   'can_view',
   'can_fork',
   'can_play',
@@ -20,12 +20,12 @@ const userProjectPermission = [
   'can_manage',
 ] as const
 
-type UserProjectPermission = (typeof userProjectPermission)[number]
+export type FgaUserProjectPermission = (typeof fgaUserProjectPermission)[number]
 
 async function checkUserProjectPermission(
   projectId: string,
   userId: string,
-  permission: UserProjectPermission,
+  permission: FgaUserProjectPermission,
 ): Promise<boolean> {
   const { allowed } = await fgaClient.check({
     user: `user:${userId}`,
@@ -33,6 +33,18 @@ async function checkUserProjectPermission(
     object: `project:${projectId}`,
   })
   return allowed ?? false
+}
+
+export async function getAllPermissions(projectId: string, userId: string) {
+  const { relations } = await fgaClient.listRelations({
+    user: `user:${userId}`,
+    object: `project:${projectId}`,
+    relations: fgaUserProjectPermission.map((permission) => permission),
+  })
+  return fgaUserProjectPermission.reduce((acc, permission, index) => {
+    acc[permission] = relations.includes(permission)
+    return acc
+  }, {} as Record<FgaUserProjectPermission, boolean>)
 }
 
 export async function canViewProject(projectId: string, userId: string): Promise<boolean> {
@@ -71,8 +83,6 @@ export async function canManageProject(projectId: string, userId: string): Promi
   return checkUserProjectPermission(projectId, userId, 'can_manage')
 }
 
-//
-
 export async function makeUserViewer(projectId: string, userId: string) {
   return fgaClient.write({
     writes: [{ user: `user:${userId}`, relation: 'viewer', object: `project:${projectId}` }],
@@ -96,8 +106,6 @@ export async function makeUserAdmin(projectId: string, userId: string) {
     writes: [{ user: `user:${userId}`, relation: 'admin', object: `project:${projectId}` }],
   })
 }
-
-//
 
 function generalRelation(projectId: string, relation: string) {
   return {
