@@ -18,7 +18,6 @@ import { ContextMenu, Separator, Dialog, Flex, Text } from '@radix-ui/themes'
 import { DotFilledIcon } from '@radix-ui/react-icons'
 import { SharingDialog } from './sharingDialog'
 import { when } from '~/util/react-conditionals'
-import { useCopyProjectLinkToClipboard } from '../util/use-copy-project-link'
 
 type ContextMenuEntry =
   | {
@@ -89,7 +88,6 @@ export const ProjectActionsMenu = React.memo(
     )
 
     const projectEditorLink = useProjectEditorLink()
-    const copyProjectLink = useCopyProjectLinkToClipboard()
 
     const menuEntries = React.useMemo((): ContextMenuEntry[] => {
       switch (selectedCategory) {
@@ -104,7 +102,10 @@ export const ProjectActionsMenu = React.memo(
             'separator',
             {
               text: 'Copy Link',
-              onClick: (selectedProject) => copyProjectLink(selectedProject.proj_id),
+              onClick: (selectedProject) => {
+                window.navigator.clipboard.writeText(projectEditorLink(selectedProject.proj_id))
+                // TODO notification toast
+              },
             },
             {
               text: 'Fork',
@@ -156,7 +157,6 @@ export const ProjectActionsMenu = React.memo(
       destroyProject,
       renameProject,
       restoreProject,
-      copyProjectLink,
     ])
 
     const preventDefault = React.useCallback((event: Event) => {
