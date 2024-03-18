@@ -49,7 +49,22 @@ interface HandleRequest {
   params: Params<string>
 }
 
-export type ProjectAccessValidator = (request: Request, params: Params<string>) => Promise<unknown>
+type ValidationResultOk = { ok: true }
+type ValidationResultError = { ok: false; error: Error }
+export type ValidationResult = ValidationResultOk | ValidationResultError
+
+export function validationOk(): ValidationResult {
+  return { ok: true }
+}
+
+export function validationError(error: Error): ValidationResult {
+  return { ok: false, error: error }
+}
+
+export type ProjectAccessValidator = (
+  request: Request,
+  params: Params<string>,
+) => Promise<ValidationResult>
 
 export type AccessValidator = ProjectAccessValidator
 
@@ -80,7 +95,10 @@ async function handleMethod<T>(
 ): Promise<ApiResponse<T> | unknown> {
   try {
     if (validator != null) {
-      await validator(request, params)
+      const result = await validator(request, params)
+      if (!result.ok) {
+        throw result.error
+      }
     }
 
     const resp = await fn(request, params)

@@ -1,5 +1,7 @@
 import { prisma } from '../db.server'
-import type { ProjectWithoutContent } from '../types'
+import { asAccessLevel, type AccessLevel, type ProjectWithoutContent } from '../types'
+import { ensure } from '../util/api.server'
+import { Status } from '../util/statusCodes'
 
 const selectProjectWithoutContent: Record<keyof ProjectWithoutContent, true> = {
   id: true,
@@ -113,4 +115,15 @@ export async function hardDeleteAllProjects(params: { userId: string }): Promise
       deleted: true,
     },
   })
+}
+
+export async function getProjectAccessLevel(params: { projectId: string }): Promise<AccessLevel> {
+  const projectAccess = await prisma.projectAccess.findUnique({
+    where: { project_id: params.projectId },
+    select: { access_level: true },
+  })
+  ensure(projectAccess != null, 'Project not found', Status.NOT_FOUND)
+  const accessLevel = asAccessLevel(projectAccess.access_level)
+  ensure(accessLevel != null, 'Invalid access level', Status.INTERNAL_ERROR)
+  return accessLevel
 }

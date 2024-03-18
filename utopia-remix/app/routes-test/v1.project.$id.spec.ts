@@ -3,6 +3,7 @@ import { prisma } from '../db.server'
 
 import {
   createTestProject,
+  createTestProjectAccess,
   createTestSession,
   createTestUser,
   newTestRequest,
@@ -11,7 +12,7 @@ import {
 import { loader } from '../routes/v1.project.$id'
 import * as proxyServer from '../util/proxy.server'
 import * as permissionsService from '../services/permissionsService.server'
-import { UserProjectPermission } from '../types'
+import { AccessLevel, UserProjectPermission } from '../types'
 import type { ApiResponse } from '../util/api.server'
 import { Status } from '../util/statusCodes'
 
@@ -59,6 +60,10 @@ describe('getProject', () => {
 
     it('should check access level for a project', async () => {
       await createTestProject(prisma, { id: projectId, ownerId: 'user2' })
+      await createTestProjectAccess(prisma, {
+        projectId: projectId,
+        accessLevel: AccessLevel.COLLABORATIVE,
+      })
       projectProxy.mockResolvedValue({ id: projectId, ownerId: 'user2' })
       hasUserProjectPermission.mockResolvedValue(true)
       const req = newTestRequest({ method: 'GET', authCookie: 'the-key' })
