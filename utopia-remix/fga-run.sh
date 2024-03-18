@@ -8,6 +8,7 @@ STORE_ENV_KEY="FGA_STORE_ID"
 # Only run this if the .env file uses the local FGA store
 if ! grep -qE "^[^#]*\b${HOST_ENV_KEY}\b=['\"]?localhost" .env; then
 	echo "The FGA_API_HOST is either not defined or not set to localhost, so I won't do anything."
+	echo "If you want to enable the local FGA server, please add FGA_API_HOST=localhost:8003 to your environment variables."
 	exit
 fi
 
