@@ -2,6 +2,7 @@ import type { ClientWriteRequest } from '@openfga/sdk'
 import { AccessLevel } from '../types'
 import { fgaClient } from './fgaClient.server'
 import { assertNever } from '../util/assertNever'
+import { mapArrayToDictionary } from '../util/common'
 
 export async function updateAccessLevel(projectId: string, accessLevel: AccessLevel) {
   const writes = accessLevelToFgaWrites(projectId, accessLevel)
@@ -44,17 +45,19 @@ export async function getAllPermissions(
     object: `project:${projectId}`,
     relations: fgaUserProjectPermission as unknown as string[],
   })
-  return fgaUserProjectPermission.reduce((acc, permission, index) => {
-    acc[permission] = relations.includes(permission)
-    return acc
-  }, {} as Record<FgaUserProjectPermission, boolean>)
+  return mapArrayToDictionary(
+    fgaUserProjectPermission,
+    (permission) => permission,
+    (permission) => relations.includes(permission),
+  )
 }
 
 export function getPermissionsOverride(value: boolean): Record<FgaUserProjectPermission, boolean> {
-  return fgaUserProjectPermission.reduce((acc, permission) => {
-    acc[permission] = value
-    return acc
-  }, {} as Record<FgaUserProjectPermission, boolean>)
+  return mapArrayToDictionary(
+    fgaUserProjectPermission,
+    (permission) => permission,
+    () => value,
+  )
 }
 
 export async function canViewProject(projectId: string, userId: string): Promise<boolean> {
