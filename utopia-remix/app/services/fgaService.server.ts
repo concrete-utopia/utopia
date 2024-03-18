@@ -39,7 +39,7 @@ export async function getAllPermissions(projectId: string, userId: string) {
   const { relations } = await fgaClient.listRelations({
     user: `user:${userId}`,
     object: `project:${projectId}`,
-    relations: fgaUserProjectPermission.map((permission) => permission),
+    relations: fgaUserProjectPermission as unknown as string[],
   })
   return fgaUserProjectPermission.reduce((acc, permission, index) => {
     acc[permission] = relations.includes(permission)
