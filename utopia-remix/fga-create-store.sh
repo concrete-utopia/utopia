@@ -15,9 +15,9 @@ if ! grep -qE "^[^#]*\b${HOST_ENV_KEY}\b=['\"]?localhost" .env; then
 	exit
 fi
 
-if command docker &> /dev/null; then
+if type docker &> /dev/null; then
 	RUNTIME=docker
-elif command podman &> /dev/null; then
+elif type podman &> /dev/null; then
 	RUNTIME=podman
 else
 	echo "The docker or podman commands are not found."
