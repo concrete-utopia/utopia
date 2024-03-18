@@ -26,5 +26,5 @@
     }
   },
   "exclude": ["node_modules"],
-  "include": ["src", ".eslintrc.js"]
+  "include": ["src", "test", ".eslintrc.js"]
 }
