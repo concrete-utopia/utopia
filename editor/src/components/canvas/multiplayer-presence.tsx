@@ -215,7 +215,7 @@ const MultiplayerCursors = React.memo(() => {
         return (
           <MultiplayerCursor
             key={`cursor-${other.presenceInfo.id}`}
-            name={other.userInfo.name ?? null}
+            name={other.userInfo.name}
             colorIndex={
               getConnectionById(connections, other.userInfo.id, other.presenceInfo.connectionId)
                 ?.colorIndex ?? null

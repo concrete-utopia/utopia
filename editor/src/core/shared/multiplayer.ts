@@ -18,8 +18,8 @@ import type { ElementPath } from './project-file-types'
 
 export type Collaborator = {
   id: string
-  name: string | undefined
-  avatar: string | undefined
+  name: string | null
+  avatar: string | null
 }
 
 export type MultiplayerColor = {
@@ -84,7 +84,7 @@ export function multiplayerInitialsFromName(name: string): string {
   }
 }
 
-export function normalizeMultiplayerName(name: string | undefined): string {
+export function normalizeMultiplayerName(name: string | null): string {
   if (name == null) {
     return 'Unknown'
   }
