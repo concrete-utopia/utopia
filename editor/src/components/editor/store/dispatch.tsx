@@ -92,6 +92,7 @@ import { isSteganographyEnabled } from '../../../core/shared/stegano-text'
 import { updateCollaborativeProjectContents } from './collaborative-editing'
 import { updateProjectServerStateInStore } from './project-server-state'
 import { ensureSceneIdsExist } from '../../../core/model/scene-id-utils'
+import { resolveParamsAndRunJsCode } from '../../../core/shared/javascript-cache'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -349,6 +350,7 @@ function maybeRequestModelUpdate(
         const updates = parseResult.map((fileResult) => {
           return parseResultToWorkerUpdates(fileResult)
         })
+        maybeRegisterComponents(parseResult, workers)
 
         dispatch([EditorActions.mergeWithPrevUndo([EditorActions.updateFromWorker(updates)])])
         return true
@@ -369,6 +371,31 @@ function maybeRequestModelUpdate(
       parseOrPrintFinished: Promise.resolve(true),
       forciblyParsedFiles: forciblyParsedFiles,
     }
+  }
+}
+
+function maybeRegisterComponents(parseResult: Array<ParseOrPrintResult>, workers: UtopiaTsWorkers) {
+  const componentsFile = parseResult.find((parse) => parse.filename === '/utopia/components.js')
+  if (componentsFile == null) {
+    return
+  }
+  if (!isParseSuccess(componentsFile.parseResult)) {
+    return
+  }
+  const combinedTopLevelArbitraryBlock = componentsFile.parseResult.combinedTopLevelArbitraryBlock
+
+  if (combinedTopLevelArbitraryBlock == null) {
+    return
+  }
+  try {
+    const evaluatedFile = resolveParamsAndRunJsCode(
+      componentsFile.filename,
+      combinedTopLevelArbitraryBlock,
+      {},
+      {},
+    )
+  } catch (e) {
+    console.warn('Error evaluating component descriptor file')
   }
 }
 
