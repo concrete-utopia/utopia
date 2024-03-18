@@ -832,12 +832,15 @@ export const IdentifierExpressionCartoucheControl = React.memo(
           color: props.matchType === 'full' ? colorTheme.bg1.value : colorTheme.primary.value,
           backgroundColor:
             props.matchType === 'full' ? colorTheme.primary.value : colorTheme.primary10.value,
-          padding: '2px 6px',
+          padding: '0px 4px',
           borderRadius: 4,
+          height: 22,
+          display: 'flex',
+          gap: 2,
         }}
         onClick={props.onOpenDataPicker}
       >
-        <Icon style={{ marginLeft: -5 }} />
+        <Icon />
         <Tooltip title={props.contents}>
           <div
             style={{
@@ -859,13 +862,14 @@ export const IdentifierExpressionCartoucheControl = React.memo(
         </Tooltip>
         {when(
           safeToDelete,
-          <div
-            style={{ paddingLeft: 5, paddingRight: 5, marginRight: -5 }}
-            onClick={onDelete}
+          <Icn
+            category='semantic'
+            type='cross-medium'
+            color='on-highlight-main'
+            width={16}
+            height={16}
             data-testid={`delete-${testId}`}
-          >
-            {/* TODO replace the X button with a real icon */}×
-          </div>,
+          />,
         )}
       </FlexRow>
     )
