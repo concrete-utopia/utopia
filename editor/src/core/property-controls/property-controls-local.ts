@@ -91,41 +91,50 @@ export function maybeUpdateComponentDescriptor(
       {},
     )
 
-    // TODO: unhardcode these values
-    const parsedComponents = parseComponents(evaluatedFile['Components']['/src/playground'])
+    // TODO: we don't need to hardcode Components, export default should be used
+    const descriptors = evaluatedFile['Components']
 
-    if (parsedComponents.type === 'LEFT') {
+    if (descriptors == null) {
       return
     }
 
-    const componentDescriptorPromises = Object.entries(parsedComponents.value).map(
-      ([componentName, componentToRegister]) => {
-        return componentDescriptorForComponentToRegister(
-          componentToRegister,
-          componentName,
-          '/src/playground', // TODO: unhardcode this value
-          workers,
-        )
-      },
-    )
+    const updatedPropertyControlsInfo: PropertyControlsInfo = {}
+    Object.entries(descriptors).forEach(([filename, descriptor]) => {
+      const parsedComponents = parseComponents(descriptor)
 
-    const componentDescriptorsUnsequenced = Promise.all(componentDescriptorPromises)
-    const componentDescriptors = componentDescriptorsUnsequenced.then((unsequenced) =>
-      sequenceEither(unsequenced),
-    )
-
-    void componentDescriptors.then((result) => {
-      if (result.type === 'LEFT') {
-        // TODO: error handling
+      if (parsedComponents.type === 'LEFT') {
         return
       }
 
-      const updatedPropertyControlsInfo = updateWithComponentDescriptors(
-        componentsFile.filename,
-        result.value,
+      const componentDescriptorPromises = Object.entries(parsedComponents.value).map(
+        ([componentName, componentToRegister]) => {
+          return componentDescriptorForComponentToRegister(
+            componentToRegister,
+            componentName,
+            filename,
+            workers,
+          )
+        },
       )
-      dispatch([EditorActions.updatePropertyControlsInfo(updatedPropertyControlsInfo)])
-      return
+
+      const componentDescriptorsUnsequenced = Promise.all(componentDescriptorPromises)
+      const componentDescriptors = componentDescriptorsUnsequenced.then((unsequenced) =>
+        sequenceEither(unsequenced),
+      )
+
+      void componentDescriptors.then((result) => {
+        if (result.type === 'LEFT') {
+          // TODO: error handling
+          return
+        }
+
+        const updatedPropertyControlsInfo = updateWithComponentDescriptors(
+          componentsFile.filename,
+          result.value,
+        )
+        dispatch([EditorActions.updatePropertyControlsInfo(updatedPropertyControlsInfo)])
+        return
+      })
     })
   } catch (e) {
     console.warn('Error evaluating component descriptor file')
@@ -141,10 +150,11 @@ export function deleteComponentRegistrationFromFile(fileName: string): PropertyC
 }
 
 function updateWithComponentDescriptors(
-  componentFileName: string,
+  descriptorFileName: string,
   info: ComponentDescriptorWithName[],
 ): PropertyControlsInfo {
-  COMPONENTS_FILE_CACHE.current[componentFileName] = info
+  console.log('info', info)
+  COMPONENTS_FILE_CACHE.current[descriptorFileName] = info
 
   // TODO: this might not be ideal for perf, but it's a generic problem at this point
   const allComponentDescriptors = Object.values(COMPONENTS_FILE_CACHE.current).flatMap(
@@ -208,6 +218,7 @@ export async function componentDescriptorForComponentToRegister(
       preferredChildComponents: componentToRegister.preferredChildComponents ?? [],
       properties: componentToRegister.properties,
       variants: variants,
+      moduleName: moduleName,
     }
   }, parsedVariants)
 }

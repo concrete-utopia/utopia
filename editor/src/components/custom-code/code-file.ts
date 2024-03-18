@@ -144,6 +144,7 @@ export function componentDescriptor(
 
 export interface ComponentDescriptorWithName extends ComponentDescriptor {
   componentName: string
+  moduleName: string
 }
 
 export type ComponentDescriptorsForFile = {
