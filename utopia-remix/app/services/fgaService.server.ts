@@ -35,7 +35,10 @@ async function checkUserProjectPermission(
   return allowed ?? false
 }
 
-export async function getAllPermissions(projectId: string, userId: string) {
+export async function getAllPermissions(
+  projectId: string,
+  userId: string,
+): Promise<Record<FgaUserProjectPermission, boolean>> {
   const { relations } = await fgaClient.listRelations({
     user: `user:${userId}`,
     object: `project:${projectId}`,
@@ -43,6 +46,13 @@ export async function getAllPermissions(projectId: string, userId: string) {
   })
   return fgaUserProjectPermission.reduce((acc, permission, index) => {
     acc[permission] = relations.includes(permission)
+    return acc
+  }, {} as Record<FgaUserProjectPermission, boolean>)
+}
+
+export function getPermissionsOverride(value: boolean): Record<FgaUserProjectPermission, boolean> {
+  return fgaUserProjectPermission.reduce((acc, permission) => {
+    acc[permission] = value
     return acc
   }, {} as Record<FgaUserProjectPermission, boolean>)
 }

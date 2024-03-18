@@ -2,7 +2,6 @@ import { assertNever } from '../util/assertNever'
 import type { AccessLevel } from '../types'
 import { UserProjectPermission, UserProjectRole } from '../types'
 import * as fgaService from './fgaService.server'
-import { mapValues } from '../util/common'
 
 const ANONYMOUS_USER_ID = '__ANON__'
 
@@ -40,20 +39,12 @@ export async function setProjectAccess(projectId: string, accessLevel: AccessLev
   await fgaService.updateAccessLevel(projectId, accessLevel)
 }
 
-export async function getAllPermissions(
-  projectId: string,
-  userId: string | null,
-  ownerId: string,
-): Promise<Record<fgaService.FgaUserProjectPermission, boolean>> {
-  const fgaPermissions = await fgaService.getAllPermissions(projectId, userId ?? ANONYMOUS_USER_ID)
-  // this is here since it's our internal logic, not part of FGA
+export async function getAllPermissions(projectId: string, userId: string | null, ownerId: string) {
+  // this is here since it's part of our internal logic, not part of FGA
   if (userId === ownerId) {
-    return mapValues(() => true, fgaPermissions) as Record<
-      fgaService.FgaUserProjectPermission,
-      boolean
-    >
+    return fgaService.getPermissionsOverride(true)
   }
-  return fgaPermissions
+  return fgaService.getAllPermissions(projectId, userId ?? ANONYMOUS_USER_ID)
 }
 
 export async function grantProjectRoleToUser(
