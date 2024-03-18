@@ -8,7 +8,7 @@ export async function updateAccessLevel(projectId: string, accessLevel: AccessLe
   return await Promise.all(writes.map((write) => fgaClient.write(write)))
 }
 
-const fgaUserProjectPermission = [
+export const fgaUserProjectPermission = [
   'can_view',
   'can_fork',
   'can_play',
