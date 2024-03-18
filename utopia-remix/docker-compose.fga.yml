@@ -57,11 +57,13 @@ services:
   utopia-fga-model:
     profiles:
       - manual
-    depends_on:
-      openfga:
-        condition: service_healthy
-    image: openfga/cli:latest
+    image: alpine:3.19.1
     container_name: utopia-fga-model
     volumes:
       - ./fga/model.fga:/model.fga
-    command: store create --name utopia-local --model /model.fga --api-url http://openfga:8080
+    command: >
+      sh -c "
+        wget -q https://github.com/openfga/cli/releases/download/v0.2.7/fga_0.2.7_linux_arm64.tar.gz
+        tar -xzf fga_0.2.7_linux_arm64.tar.gz
+        ./fga store create --name utopia-local --model /model.fga --api-url http://openfga:8080
+      "
