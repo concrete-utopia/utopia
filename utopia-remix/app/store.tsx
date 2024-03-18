@@ -3,6 +3,7 @@ import { devtools, persist } from 'zustand/middleware'
 import type { Category, SortCriteria } from './routes/projects'
 import type { Operation } from './types'
 import { areBaseOperationsEquivalent } from './types'
+import type { BrowserEnvironmentType } from './env.server'
 
 // State portion that will be persisted
 interface ProjectsStoreStatePersisted {
@@ -23,6 +24,7 @@ interface ProjectsStoreStateNonPersisted {
   selectedCategory: Category
   searchQuery: string
   operations: OperationWithKey[]
+  env: BrowserEnvironmentType | null
 }
 
 const initialProjectsStoreStateNonPersisted: ProjectsStoreStateNonPersisted = {
@@ -30,6 +32,7 @@ const initialProjectsStoreStateNonPersisted: ProjectsStoreStateNonPersisted = {
   selectedCategory: 'allProjects',
   searchQuery: '',
   operations: [],
+  env: null,
 }
 
 type ProjectsStoreState = ProjectsStoreStatePersisted & ProjectsStoreStateNonPersisted
@@ -44,6 +47,7 @@ interface ProjectsStoreActions {
   addOperation: (operation: Operation, key: string) => void
   removeOperation: (key: string) => void
   updateOperation: (key: string, data: { errored: boolean }) => void
+  setEnv: (env: BrowserEnvironmentType) => void
 }
 
 type ProjectsStore = ProjectsStoreState & ProjectsStoreActions
@@ -97,6 +101,9 @@ export const useProjectsStore = create<ProjectsStore>()(
               return other
             }),
           }))
+        },
+        setEnv: (env) => {
+          return set(() => ({ env }))
         },
       }),
       {

@@ -14,7 +14,6 @@ import {
   useLoaderData,
   useRouteError,
 } from '@remix-run/react'
-import { BrowserEnvironment } from './env.server'
 import { styles } from './styles/styles.css'
 import type { ErrorWithStatus } from './util/errors'
 import { isErrorWithStatus } from './util/errors'
@@ -23,12 +22,9 @@ import radixStyle from '@radix-ui/themes/styles.css'
 import './normalize.css'
 import { Theme } from '@radix-ui/themes'
 import { useIsDarkMode } from './hooks/useIsDarkMode'
-
-declare global {
-  interface Window {
-    ENV: BrowserEnvironment
-  }
-}
+import { BrowserEnvironment } from './env.server'
+import React from 'react'
+import { useProjectsStore } from './store'
 
 export const links: LinksFunction = () => [
   ...(cssBundleHref ? [{ rel: 'stylesheet', href: cssBundleHref }] : []),
@@ -50,6 +46,11 @@ export const headers: HeadersFunction = () => ({
 export default function App() {
   const data = useLoaderData<typeof loader>()
   const isDarkMode = useIsDarkMode()
+  const setEnv = useProjectsStore((store) => store.setEnv)
+
+  React.useEffect(() => {
+    setEnv(data.ENV)
+  }, [setEnv, data.ENV])
 
   const theme = isDarkMode ? 'dark' : 'light'
 
@@ -67,12 +68,6 @@ export default function App() {
         <Theme appearance={theme} accentColor='blue' panelBackground='solid'>
           <Outlet />
         </Theme>
-        <script
-          // https://remix.run/docs/en/1.19.3/guides/envvars#browser-environment-variables
-          dangerouslySetInnerHTML={{
-            __html: `window.ENV = ${JSON.stringify(data.ENV)}`,
-          }}
-        />
         <ScrollRestoration />
         <Scripts />
         <LiveReload />
