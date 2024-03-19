@@ -93,8 +93,8 @@ describe('handleChangeAccess', () => {
     })
     const error = await getActionResult('two', AccessLevel.PRIVATE)
     expect(error).toEqual({
-      message: 'Unauthorized Access',
-      status: Status.FORBIDDEN,
+      message: 'Project not found',
+      status: Status.NOT_FOUND,
       error: 'Error',
     })
   })
