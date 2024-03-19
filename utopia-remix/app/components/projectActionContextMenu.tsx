@@ -192,7 +192,7 @@ export const ProjectActionsMenu = React.memo(
                 onSelect={onOpenShareDialog}
               >
                 <Flex justify={'between'} align={'center'} width={'100%'}>
-                  <Text>Share</Text>
+                  <Text>Sharing…</Text>
                   {when(
                     pendingAccessRequests.length > 0,
                     <DotFilledIcon color='red' height={22} width={22} />,

@@ -69,7 +69,7 @@ export type Category = (typeof Categories)[number]
 const categories: { [key in Category]: { name: string; icon: React.ReactNode } } = {
   allProjects: { name: 'All My Projects', icon: <CubeIcon width='16' height='16' /> },
   private: { name: 'Private', icon: <LockClosedIcon width='16' height='16' /> },
-  shared: { name: 'Shared', icon: <PersonIcon width='16' height='16' /> },
+  shared: { name: 'Sharing', icon: <PersonIcon width='16' height='16' /> },
   public: { name: 'Public', icon: <GlobeIcon width='16' height='16' /> },
   trash: { name: 'Trash', icon: <TrashIcon width='16' height='16' /> },
 }
