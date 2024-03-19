@@ -8,8 +8,8 @@ import eslintImportRuleNoWebpackSyntax from 'eslint-plugin-import/lib/rules/no-w
 import Linter from 'eslint4b'
 import BabelEslint from 'babel-eslint'
 
+export type { ESLintLinter }
 export {
-  ESLintLinter,
   reactPluginRules,
   reactHooksPluginRules,
   jsxA11yPluginRules,
