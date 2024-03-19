@@ -1,5 +1,5 @@
 import { prisma } from '../db.server'
-import { asAccessLevel, type AccessLevel, type ProjectWithoutContent } from '../types'
+import { asAccessLevel, AccessLevel, type ProjectWithoutContent } from '../types'
 import { ensure } from '../util/api.server'
 import { Status } from '../util/statusCodes'
 
@@ -44,14 +44,11 @@ export async function getProjectOwnership(
     select: { owner_id: true, ProjectAccess: true },
     where: whereOptions,
   })
-  if (project == null || project.ProjectAccess == null) {
+  if (project == null) {
     return null
   }
-  const accessLevel = asAccessLevel(project.ProjectAccess.access_level)
-  if (accessLevel == null) {
-    console.error(`invalid access level for project ${params.id}`)
-    return null
-  }
+  const accessLevel = asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE // not ideal that projects don't have always an access level
+
   return {
     ownerId: project.owner_id,
     accessLevel: accessLevel,
