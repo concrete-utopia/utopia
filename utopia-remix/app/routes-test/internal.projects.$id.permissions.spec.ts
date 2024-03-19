@@ -11,11 +11,13 @@ import {
 import { ApiError } from '../util/errors'
 import { Status } from '../util/statusCodes'
 import { prisma } from '../db.server'
-import * as permissionsService from '../services/permissionsService.server'
 import type { PermissionsMatrix } from '../services/fgaService.server'
+import * as fgaService from '../services/fgaService.server'
+import { ANONYMOUS_USER_ID } from '../services/permissionsService.server'
 
 describe('handleGetUserProjectPermissions', () => {
   let getAllPermissionsMock: jest.SpyInstance
+  let getPermissionsOverrideMock: jest.SpyInstance
 
   afterEach(async () => {
     await truncateTables([
@@ -26,6 +28,7 @@ describe('handleGetUserProjectPermissions', () => {
       prisma.persistentSession,
     ])
     getAllPermissionsMock.mockRestore()
+    getPermissionsOverrideMock.mockRestore()
   })
 
   beforeEach(async () => {
@@ -35,7 +38,8 @@ describe('handleGetUserProjectPermissions', () => {
     await createTestSession(prisma, { userId: 'bob', key: 'bob-key' })
     await createTestSession(prisma, { userId: 'alice', key: 'alice-key' })
 
-    getAllPermissionsMock = jest.spyOn(permissionsService, 'getAllPermissions')
+    getAllPermissionsMock = jest.spyOn(fgaService, 'getAllPermissions')
+    getPermissionsOverrideMock = jest.spyOn(fgaService, 'getPermissionsOverride')
   })
 
   const fn = (req: Request, params: Params<string>) => async () =>
@@ -68,5 +72,44 @@ describe('handleGetUserProjectPermissions', () => {
     const req = fn(newTestRequest({ authCookie: 'alice-key' }), { id: 'one' })
     const got = await req()
     expect(got).toEqual(perms)
+  })
+
+  it('returns the overridden permissions if the user is the owner', async () => {
+    const perms: PermissionsMatrix = {
+      can_view: true,
+      can_fork: true,
+      can_play: true,
+      can_edit: false,
+      can_comment: true,
+      can_show_presence: false,
+      can_see_live_changes: true,
+      can_request_access: false,
+      can_manage: true,
+    }
+    getPermissionsOverrideMock.mockResolvedValue(perms)
+
+    const req = fn(newTestRequest({ authCookie: 'bob-key' }), { id: 'one' })
+    const got = await req()
+    expect(got).toEqual(perms)
+  })
+
+  it('uses the anonymous user id if no cookie is provided', async () => {
+    const perms: PermissionsMatrix = {
+      can_view: true,
+      can_fork: true,
+      can_play: true,
+      can_edit: false,
+      can_comment: true,
+      can_show_presence: false,
+      can_see_live_changes: true,
+      can_request_access: false,
+      can_manage: true,
+    }
+    getAllPermissionsMock.mockResolvedValue(perms)
+
+    const req = fn(newTestRequest({}), { id: 'one' })
+    const got = await req()
+    expect(got).toEqual(perms)
+    expect(getAllPermissionsMock).toHaveBeenCalledWith('one', ANONYMOUS_USER_ID)
   })
 })

@@ -3,7 +3,7 @@ import type { AccessLevel } from '../types'
 import { UserProjectPermission, UserProjectRole } from '../types'
 import * as fgaService from './fgaService.server'
 
-const ANONYMOUS_USER_ID = '__ANON__'
+export const ANONYMOUS_USER_ID = '__ANON__'
 
 export async function hasUserProjectPermission(
   projectId: string,
