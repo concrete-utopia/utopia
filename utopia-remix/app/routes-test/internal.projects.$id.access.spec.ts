@@ -111,8 +111,8 @@ describe('handleChangeAccess', () => {
     })
     const error = await getActionResult('two', AccessLevel.PRIVATE, 'no-cookie')
     expect(error).toEqual({
-      message: 'Project not found',
-      status: Status.NOT_FOUND,
+      message: 'session not found',
+      status: Status.UNAUTHORIZED,
       error: 'Error',
     })
   })

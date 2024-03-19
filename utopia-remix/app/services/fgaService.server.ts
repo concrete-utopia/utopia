@@ -23,6 +23,8 @@ export const fgaUserProjectPermission = [
 
 export type FgaUserProjectPermission = (typeof fgaUserProjectPermission)[number]
 
+export type PermissionsMatrix = Record<FgaUserProjectPermission, boolean>
+
 async function checkUserProjectPermission(
   projectId: string,
   userId: string,
@@ -39,7 +41,7 @@ async function checkUserProjectPermission(
 export async function getAllPermissions(
   projectId: string,
   userId: string,
-): Promise<Record<FgaUserProjectPermission, boolean>> {
+): Promise<PermissionsMatrix> {
   const { relations } = await fgaClient.listRelations({
     user: `user:${userId}`,
     object: `project:${projectId}`,
@@ -52,7 +54,7 @@ export async function getAllPermissions(
   )
 }
 
-export function getPermissionsOverride(value: boolean): Record<FgaUserProjectPermission, boolean> {
+export function getPermissionsOverride(value: boolean): PermissionsMatrix {
   return mapArrayToDictionary(
     fgaUserProjectPermission,
     (permission) => permission,
