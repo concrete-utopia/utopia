@@ -50,6 +50,7 @@ let
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor/src/packages/runtime-eslint
       ${pnpm}/bin/pnpm install
+      ${pnpm}/bin/pnpm run build
     '')
     (pkgs.writeScriptBin "build-vscode-common" ''
       #!/usr/bin/env bash
