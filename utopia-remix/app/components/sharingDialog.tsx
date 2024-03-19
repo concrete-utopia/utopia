@@ -20,6 +20,9 @@ import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
 import React from 'react'
 import { when } from '../util/react-conditionals'
 import moment from 'moment'
+import { useProjectEditorLink } from '../util/links'
+import { button } from '../styles/button.css'
+import { useCopyProjectLinkToClipboard } from '../util/copyProjectLink'
 
 export function SharingDialog({
   project,
@@ -86,6 +89,10 @@ export function SharingDialog({
             changeProjectAccessLevel={changeProjectAccessLevel}
           />
         </Flex>
+        {when(
+          accessLevel === AccessLevel.COLLABORATIVE || accessLevel === AccessLevel.PUBLIC,
+          <ProjectLink projectId={project.proj_id} />,
+        )}
         {when(
           accessRequests.length > 0,
           <>
@@ -200,3 +207,40 @@ function VisibilityDropdown({
     </DropdownMenu.Root>
   )
 }
+
+const ProjectLink = React.memo(({ projectId }: { projectId: string }) => {
+  const projectLinkRef = React.useRef<HTMLInputElement | null>(null)
+
+  const projectLink = useProjectEditorLink()
+  const copyProjectLink = useCopyProjectLinkToClipboard()
+
+  const onClickCopyProjectLink = React.useCallback(() => {
+    copyProjectLink(projectId)
+    projectLinkRef.current?.select()
+  }, [projectId, copyProjectLink])
+
+  return (
+    <Flex style={{ gap: 10, alignItems: 'stretch' }}>
+      <input
+        ref={projectLinkRef}
+        type='text'
+        value={projectLink(projectId)}
+        readOnly={true}
+        style={{
+          flex: 1,
+          fontSize: 13,
+          padding: '0px 4px',
+          cursor: 'default',
+        }}
+      />
+      <button
+        className={button({ color: 'subtle' })}
+        style={{ fontSize: 13 }}
+        onClick={onClickCopyProjectLink}
+      >
+        Copy
+      </button>
+    </Flex>
+  )
+})
+ProjectLink.displayName = 'ProjectLink'

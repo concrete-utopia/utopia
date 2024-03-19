@@ -35,12 +35,12 @@ export const ServerEnvironment = {
   GITHUB_OAUTH_REDIRECT_URL: mustEnvOrLocalFallback('GITHUB_OAUTH_REDIRECT_URL', ''),
 }
 
-export type BrowserEnvironment = {
+export type BrowserEnvironmentType = {
   EDITOR_URL: string
   UTOPIA_CDN_URL: string
 }
 
-export const BrowserEnvironment: BrowserEnvironment = {
+export const BrowserEnvironment: BrowserEnvironmentType = {
   EDITOR_URL: mustEnvOrLocalFallback('EDITOR_URL', 'http://localhost:8000'),
   UTOPIA_CDN_URL: mustEnvOrLocalFallback('UTOPIA_CDN_URL', 'http://localhost:8000'),
 }
