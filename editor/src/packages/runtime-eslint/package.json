@@ -1,0 +1,16 @@
+{
+  "name": "utopia-runtime-eslint",
+  "version": "1.0.0",
+  "description": "Utopia Runtime ESLint",
+  "type": "module",
+  "main": "index.ts",
+  "dependencies": {
+    "eslint": "7.32.0",
+    "eslint-plugin-react": "7.23.0",
+    "eslint-plugin-react-hooks": "4.2.0",
+    "eslint-plugin-jsx-a11y": "6.5.1",
+    "eslint-plugin-import": "2.25.3",
+    "eslint4b": "0.0.1",
+    "babel-eslint": "10.0.1"
+  }
+}

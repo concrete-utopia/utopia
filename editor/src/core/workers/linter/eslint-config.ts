@@ -1,12 +1,20 @@
-import type { Linter } from 'utopia-runtime-lint-eslint'
-import { rules as reactPluginRules } from 'utopia-runtime-lint-eslint-plugin-react'
-import { rules as reactHooksPluginRules } from 'utopia-runtime-lint-eslint-plugin-react-hooks'
-import { rules as jsxA11yPluginRules } from 'eslint-plugin-jsx-a11y'
-import eslintImportRuleFirst from 'eslint-plugin-import/lib/rules/first'
-import eslintImportRuleNoAmd from 'eslint-plugin-import/lib/rules/no-amd'
-import eslintImportRuleNoWebpackSyntax from 'eslint-plugin-import/lib/rules/no-webpack-loader-syntax'
+import {
+  type ESLintLinter,
+  eslintImportRuleNoWebpackSyntax,
+  eslintImportRuleNoAmd,
+  eslintImportRuleFirst,
+  jsxA11yPluginRules,
+  reactPluginRules,
+  reactHooksPluginRules,
+} from 'utopia-runtime-eslint'
+// import { rules as reactPluginRules } from 'utopia-runtime-lint-eslint-plugin-react'
+// import { rules as reactHooksPluginRules } from 'utopia-runtime-lint-eslint-plugin-react-hooks'
+// import { rules as jsxA11yPluginRules } from 'eslint-plugin-jsx-a11y'
+// import eslintImportRuleFirst from 'eslint-plugin-import/lib/rules/first'
+// import eslintImportRuleNoAmd from 'eslint-plugin-import/lib/rules/no-amd'
+// import eslintImportRuleNoWebpackSyntax from 'eslint-plugin-import/lib/rules/no-webpack-loader-syntax'
 
-const EsLintRecommended: Linter.RulesRecord = {
+const EsLintRecommended: ESLintLinter.RulesRecord = {
   // Currently on 6.8.0 ruleset: https://github.com/eslint/eslint/blob/v6.8.0/conf/eslint-recommended.js
   // This requires manually updating on each release. Urgh.
   'constructor-super': 'error',
@@ -65,7 +73,7 @@ const EsLintRecommended: Linter.RulesRecord = {
   'valid-typeof': 'error',
 }
 
-export const ESLINT_CONFIG: Linter.Config = {
+export const ESLINT_CONFIG: ESLintLinter.Config = {
   parser: 'babel-eslint',
   parserOptions: {
     sourceType: 'module',
