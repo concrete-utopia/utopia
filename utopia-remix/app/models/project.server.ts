@@ -135,3 +135,23 @@ export async function getProjectAccessLevel(params: { projectId: string }): Prom
   ensure(accessLevel != null, 'Invalid access level', Status.INTERNAL_ERROR)
   return accessLevel
 }
+
+export async function listProjectsSharedWithMe(params: {
+  userId: string
+}): Promise<ProjectWithoutContent[]> {
+  const projectIds = await prisma.projectCollaborator.findMany({
+    where: { user_id: params.userId },
+    select: { project_id: true },
+  })
+  const projects = await prisma.project.findMany({
+    where: {
+      proj_id: { in: projectIds.map((p) => p.project_id) },
+      OR: [{ deleted: null }, { deleted: false }],
+    },
+    select: {
+      ...selectProjectWithoutContent,
+      ProjectAccess: true,
+    },
+  })
+  return projects.filter((p) => p.ProjectAccess?.access_level === AccessLevel.COLLABORATIVE)
+}

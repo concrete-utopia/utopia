@@ -1,6 +1,7 @@
 import {
   ArrowDownIcon,
   ArrowUpIcon,
+  AvatarIcon,
   CubeIcon,
   DashboardIcon,
   GlobeIcon,
@@ -21,7 +22,11 @@ import { SortingContextMenu } from '../components/sortProjectsContextMenu'
 import { Spinner } from '../components/spinner'
 import { useCleanupOperations } from '../hooks/useCleanupOperations'
 import { useIsDarkMode } from '../hooks/useIsDarkMode'
-import { listDeletedProjects, listProjects } from '../models/project.server'
+import {
+  listDeletedProjects,
+  listProjects,
+  listProjectsSharedWithMe,
+} from '../models/project.server'
 import { getCollaborators } from '../models/projectCollaborators.server'
 import type { OperationWithKey } from '../store'
 import { useProjectsStore } from '../store'
@@ -58,7 +63,7 @@ import { SharingDialogWrapper } from '../components/sharingDialog'
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
 
-const Categories = ['allProjects', 'trash', 'private', 'public', 'shared'] as const
+const Categories = ['allProjects', 'trash', 'private', 'public', 'shared', 'sharedWithMe'] as const
 
 function isCategory(category: unknown): category is Category {
   return Categories.includes(category as Category)
@@ -66,30 +71,41 @@ function isCategory(category: unknown): category is Category {
 
 export type Category = (typeof Categories)[number]
 
-const categories: { [key in Category]: { name: string; icon: React.ReactNode } } = {
+const categories: {
+  [key in Category]: {
+    name: string
+    icon: React.ReactNode
+  }
+} = {
   allProjects: { name: 'All My Projects', icon: <CubeIcon width='16' height='16' /> },
   private: { name: 'Private', icon: <LockClosedIcon width='16' height='16' /> },
-  shared: { name: 'Shared', icon: <PersonIcon width='16' height='16' /> },
+  shared: { name: 'Sharing', icon: <PersonIcon width='16' height='16' /> },
   public: { name: 'Public', icon: <GlobeIcon width='16' height='16' /> },
+  sharedWithMe: { name: 'Shared with me', icon: <AvatarIcon width='16' height='16' /> },
   trash: { name: 'Trash', icon: <TrashIcon width='16' height='16' /> },
 }
 
 export async function loader(args: LoaderFunctionArgs) {
   const user = await requireUser(args.request, { redirect: auth0LoginURL() })
 
-  const projects = await listProjects({
-    ownerId: user.user_id,
-  })
-  const deletedProjects = await listDeletedProjects({
-    ownerId: user.user_id,
-  })
+  const [projects, deletedProjects, projectsSharedWithMe] = await Promise.all([
+    listProjects({ ownerId: user.user_id }),
+    listDeletedProjects({ ownerId: user.user_id }),
+    listProjectsSharedWithMe({ userId: user.user_id }),
+  ])
   const collaborators = await getCollaborators({
     ids: [...projects, ...deletedProjects].map((p) => p.proj_id),
     userId: user.user_id,
   })
 
   return json(
-    { projects, deletedProjects, user, collaborators },
+    {
+      user,
+      projects,
+      deletedProjects,
+      projectsSharedWithMe,
+      collaborators,
+    },
     { headers: { 'cache-control': 'no-cache' } },
   )
 }
@@ -98,9 +114,10 @@ const ProjectsPage = React.memo(() => {
   useCleanupOperations()
 
   const data = useLoaderData() as unknown as {
-    projects: ProjectWithoutContent[]
     user: UserDetails
+    projects: ProjectWithoutContent[]
     deletedProjects: ProjectWithoutContent[]
+    projectsSharedWithMe: ProjectWithoutContent[]
     collaborators: CollaboratorsByProject
   }
 
@@ -122,10 +139,12 @@ const ProjectsPage = React.memo(() => {
         )
       case 'trash':
         return data.deletedProjects
+      case 'sharedWithMe':
+        return data.projectsSharedWithMe
       default:
         assertNever(selectedCategory)
     }
-  }, [data.projects, data.deletedProjects, selectedCategory])
+  }, [data.projects, data.deletedProjects, data.projectsSharedWithMe, selectedCategory])
 
   const sortCompareProject = useSortCompareProject()
   const projectMatchesQuery = useProjectMatchesQuery()
@@ -473,6 +492,7 @@ const CategoryActions = React.memo(({ projects }: { projects: ProjectWithoutCont
     case 'public':
     case 'private':
     case 'shared':
+    case 'sharedWithMe':
       return null
     case 'trash':
       return <CategoryTrashActions projects={projects} />
@@ -582,6 +602,8 @@ const NoProjectsMessage = React.memo(() => {
         return 'Projects you create that are private to you.'
       case 'shared':
         return 'Projects that you shared to other collaborators.'
+      case 'sharedWithMe':
+        return 'Projects you have been added to as a collaborator.'
       default:
         assertNever(cat)
     }

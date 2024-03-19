@@ -61,6 +61,8 @@ export function useProjectIsOnActiveOperation() {
             return (
               (op.type === 'restore' || op.type === 'destroy') && op.projectId === project.proj_id
             )
+          case 'sharedWithMe':
+            return false
           default:
             assertNever(selectedCategory)
         }

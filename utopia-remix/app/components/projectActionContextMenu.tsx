@@ -132,6 +132,26 @@ export const ProjectActionsMenu = React.memo(
               },
             },
           ]
+        case 'sharedWithMe':
+          return [
+            {
+              text: 'Open',
+              onClick: (selectedProject) => {
+                window.open(projectEditorLink(selectedProject.proj_id), '_blank')
+              },
+            },
+            'separator',
+            {
+              text: 'Copy Link',
+              onClick: (selectedProject) => copyProjectLink(selectedProject.proj_id),
+            },
+            {
+              text: 'Fork',
+              onClick: (selectedProject) => {
+                window.open(projectEditorLink(selectedProject.proj_id) + '/?fork=true', '_blank')
+              },
+            },
+          ]
         case 'trash':
           return [
             {
@@ -192,7 +212,7 @@ export const ProjectActionsMenu = React.memo(
                 onSelect={onOpenShareDialog}
               >
                 <Flex justify={'between'} align={'center'} width={'100%'}>
-                  <Text>Share</Text>
+                  <Text>Sharing…</Text>
                   {when(
                     pendingAccessRequests.length > 0,
                     <DotFilledIcon color='red' height={22} width={22} />,
