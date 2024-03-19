@@ -124,6 +124,7 @@ import {
   LoadActionsDispatched,
 } from '../components/github/github-repository-clone-flow'
 import ProjectNotFound from './project-not-found/ProjectNotFound'
+import { hasReactRouterErrorBeenLogged } from '../core/shared/runtime-report-logs'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -448,6 +449,8 @@ export class Editor {
       this.storedState = dispatchResult
       let entireUpdateFinished = dispatchResult.entireUpdateFinished
 
+      const reactRouterErrorPreviouslyLogged = hasReactRouterErrorBeenLogged()
+
       const shouldRunDOMWalker =
         !dispatchResult.nothingChanged ||
         dispatchedActions.some((a) => a.action === 'RUN_DOM_WALKER')
@@ -558,6 +561,7 @@ export class Editor {
             entireUpdateFinished: entireUpdateFinished,
             nothingChanged: dispatchResult.nothingChanged,
           },
+          reactRouterErrorPreviouslyLogged,
         )
 
         Measure.taskTime(`Update Editor ${updateId}`, () => {
