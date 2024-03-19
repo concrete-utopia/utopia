@@ -261,27 +261,17 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
         <Flex direction='column' gap='2'>
           {Object.entries(categories).map(([category, data]) => {
             return (
-              <React.Fragment key={`category-${category}`}>
-                {when(
-                  category === 'trash',
-                  <div
-                    style={{
-                      height: 1,
-                      background: '#eee', // TODO pick a good color
-                    }}
-                  />,
-                )}
-                <button
-                  className={projectCategoryButton({
-                    color:
-                      category === selectedCategory && searchQuery === '' ? 'selected' : 'neutral',
-                  })}
-                  onClick={handleSelectCategory(category)}
-                >
-                  {data.icon}
-                  <Text size='1'>{data.name}</Text>
-                </button>
-              </React.Fragment>
+              <button
+                key={`category-${category}`}
+                className={projectCategoryButton({
+                  color:
+                    category === selectedCategory && searchQuery === '' ? 'selected' : 'neutral',
+                })}
+                onClick={handleSelectCategory(category)}
+              >
+                {data.icon}
+                <Text size='1'>{data.name}</Text>
+              </button>
             )
           })}
         </Flex>
