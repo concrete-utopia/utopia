@@ -61,32 +61,25 @@ async function parseInsertOption(
   }, parsedParams)
 }
 
-export const ComponentDescriptorFile = '/utopia/components.utopia.js'
+export const isComponentDescriptorFile = (filename: string) => filename.endsWith('utopia.js')
 
-export function maybeUpdateComponentDescriptor(
-  parseResult: Array<ParseOrPrintResult>,
+async function getComponentDescriptorPromises(
+  parseResult: ParseOrPrintResult,
   workers: UtopiaTsWorkers,
-  dispatch: EditorDispatch,
-) {
-  // TODO: check file extension here
-  // e.g. `.utopia.registration.js`
-  const componentsFile = parseResult.find((parse) => parse.filename === ComponentDescriptorFile)
-  if (componentsFile == null) {
-    return
+): Promise<ComponentDescriptorWithName[]> {
+  if (!isParseSuccess(parseResult.parseResult)) {
+    return []
   }
-  if (!isParseSuccess(componentsFile.parseResult)) {
-    return
-  }
-  const combinedTopLevelArbitraryBlock = componentsFile.parseResult.combinedTopLevelArbitraryBlock
+  const combinedTopLevelArbitraryBlock = parseResult.parseResult.combinedTopLevelArbitraryBlock
 
   if (combinedTopLevelArbitraryBlock == null) {
-    return
+    return []
   }
 
   try {
     // TODO: this isn't the right function to call, as `resolveParamsAndRunJsCode` doesn't actually give us access to the exports/default exports
     const evaluatedFile = resolveParamsAndRunJsCode(
-      componentsFile.filename,
+      parseResult.filename,
       combinedTopLevelArbitraryBlock,
       {},
       {},
@@ -96,69 +89,86 @@ export function maybeUpdateComponentDescriptor(
     const descriptors = evaluatedFile['Components']
 
     if (descriptors == null) {
-      return
+      return []
     }
 
-    let componentDescriptorPromises: Promise<Either<string, ComponentDescriptorWithName>>[] = []
+    let result: ComponentDescriptorWithName[] = []
 
-    Object.entries(descriptors).forEach(([moduleName, descriptor]) => {
+    for await (const [moduleName, descriptor] of Object.entries(descriptors)) {
       const parsedComponents = parseComponents(descriptor)
 
       if (parsedComponents.type === 'LEFT') {
-        return
+        continue
       }
 
-      componentDescriptorPromises = componentDescriptorPromises.concat(
-        Object.entries(parsedComponents.value).map(([componentName, componentToRegister]) => {
-          return componentDescriptorForComponentToRegister(
-            componentToRegister,
-            componentName,
-            moduleName,
-            workers,
-          )
-        }),
-      )
-    })
+      for await (const [componentName, componentToRegister] of Object.entries(
+        parsedComponents.value,
+      )) {
+        const componentDescriptor = await componentDescriptorForComponentToRegister(
+          componentToRegister,
+          componentName,
+          moduleName,
+          workers,
+        )
 
-    const componentDescriptorsUnsequenced = Promise.all(componentDescriptorPromises)
-    const componentDescriptors = componentDescriptorsUnsequenced.then((unsequenced) =>
-      sequenceEither(unsequenced),
-    )
-
-    void componentDescriptors.then((result) => {
-      if (result.type === 'LEFT') {
-        // TODO: error handling
-        return
+        if (componentDescriptor.type === 'RIGHT') {
+          return (result = result.concat(componentDescriptor.value))
+        }
+        return []
       }
-
-      const updatedPropertyControlsInfo = updateWithComponentDescriptors(
-        componentsFile.filename,
-        result.value,
-      )
-      dispatch([EditorActions.updatePropertyControlsInfo(updatedPropertyControlsInfo)])
-      return
-    })
-  } catch (e) {
+    }
+    return result
+  } catch {
     console.warn('Error evaluating component descriptor file')
+    return []
   }
 }
 
-const COMPONENTS_FILE_CACHE: { current: { [path: string]: ComponentDescriptorWithName[] } } = {
+export async function maybeUpdateComponentDescriptor(
+  parseResult: Array<ParseOrPrintResult>,
+  workers: UtopiaTsWorkers,
+  dispatch: EditorDispatch,
+) {
+  let componentDescriptorUpdates: {
+    info: ComponentDescriptorWithName[]
+    componentFileName: string
+  }[] = []
+
+  for await (const file of parseResult) {
+    if (isComponentDescriptorFile(file.filename)) {
+      const descriptors = await getComponentDescriptorPromises(file, workers)
+      if (descriptors.length > 0) {
+        componentDescriptorUpdates.push({ info: descriptors, componentFileName: file.filename })
+      }
+    }
+  }
+
+  for (const update of componentDescriptorUpdates) {
+    COMPONENTS_FILE_CACHE.current[update.componentFileName] = update.info
+  }
+
+  const updatedPropertyControlsInfo = updateWithComponentDescriptors(COMPONENTS_FILE_CACHE.current)
+  dispatch([EditorActions.updatePropertyControlsInfo(updatedPropertyControlsInfo)])
+}
+
+interface ComponentDescriptorFileLookup {
+  [path: string]: ComponentDescriptorWithName[]
+}
+
+const COMPONENTS_FILE_CACHE: { current: ComponentDescriptorFileLookup } = {
   current: {},
 }
 
 export function deleteComponentRegistrationFromFile(fileName: string): PropertyControlsInfo {
-  return updateWithComponentDescriptors(fileName, [])
+  COMPONENTS_FILE_CACHE.current[fileName] = []
+  return updateWithComponentDescriptors(COMPONENTS_FILE_CACHE.current)
 }
 
 function updateWithComponentDescriptors(
-  descriptorFileName: string,
-  info: ComponentDescriptorWithName[],
+  componentDescriptorFiles: ComponentDescriptorFileLookup,
 ): PropertyControlsInfo {
-  COMPONENTS_FILE_CACHE.current[descriptorFileName] = info
-
   // TODO: this might not be ideal for perf, but it's a generic problem at this point
-  const allComponentDescriptors = Object.values(COMPONENTS_FILE_CACHE.current).flatMap(
+  const allComponentDescriptors = Object.values(componentDescriptorFiles).flatMap(
     (descriptors) => descriptors,
   )
 

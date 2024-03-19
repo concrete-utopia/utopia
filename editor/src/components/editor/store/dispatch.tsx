@@ -349,7 +349,7 @@ function maybeRequestModelUpdate(
         const updates = parseResult.map((fileResult) => {
           return parseResultToWorkerUpdates(fileResult)
         })
-        maybeUpdateComponentDescriptor(parseResult, workers, dispatch)
+        void maybeUpdateComponentDescriptor(parseResult, workers, dispatch)
 
         dispatch([EditorActions.mergeWithPrevUndo([EditorActions.updateFromWorker(updates)])])
         return true
