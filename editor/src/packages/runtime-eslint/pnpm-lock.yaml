@@ -8,7 +8,7 @@ specifiers:
   eslint-plugin-react: 7.23.0
   eslint-plugin-react-hooks: 4.2.0
   eslint4b: 6.6.0
-  typescript: 4.4.3
+  typescript: 5.4.2
 
 dependencies:
   babel-eslint: 10.0.1_eslint@7.32.0
@@ -20,7 +20,7 @@ dependencies:
   eslint4b: 6.6.0
 
 devDependencies:
-  typescript: 4.4.3
+  typescript: 5.4.2
 
 packages:
 
@@ -1956,9 +1956,9 @@ packages:
       possible-typed-array-names: 1.0.0
     dev: false
 
-  /typescript/4.4.3:
-    resolution: {integrity: sha512-4xfscpisVgqqDfPaJo5vkd+Qd/ItkoagnHpufr+i2QCHBsNYp+G7UAoyFl8aPtx879u38wPV65rZ8qbGZijalA==}
-    engines: {node: '>=4.2.0'}
+  /typescript/5.4.2:
+    resolution: {integrity: sha512-+2/g0Fds1ERlP6JsakQQDXjZdZMM+rqpamFZJEKh4kwTIn3iDkgKtby0CeNd5ATNZ4Ry1ax15TMx0W2V+miizQ==}
+    engines: {node: '>=14.17'}
     hasBin: true
     dev: true
 

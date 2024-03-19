@@ -8,15 +8,15 @@
     "build": "tsc"
   },
   "dependencies": {
+    "babel-eslint": "10.0.1",
     "eslint": "7.32.0",
+    "eslint-plugin-import": "2.25.3",
+    "eslint-plugin-jsx-a11y": "6.5.1",
     "eslint-plugin-react": "7.23.0",
     "eslint-plugin-react-hooks": "4.2.0",
-    "eslint-plugin-jsx-a11y": "6.5.1",
-    "eslint-plugin-import": "2.25.3",
-    "eslint4b": "6.6.0",
-    "babel-eslint": "10.0.1"
+    "eslint4b": "6.6.0"
   },
   "devDependencies": {
-    "typescript": "4.4.3"
+    "typescript": "5.4.2"
   }
 }
