@@ -2,8 +2,8 @@
   "name": "utopia-runtime-eslint",
   "version": "1.0.0",
   "description": "Utopia Runtime ESLint",
-  "types": "index.d.ts",
-  "main": "index.js",
+  "types": "dist/index.d.ts",
+  "main": "dist/index.js",
   "scripts": {
     "build": "tsc"
   },
