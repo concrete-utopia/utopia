@@ -14,6 +14,7 @@ import {
   useLoaderData,
   useRouteError,
 } from '@remix-run/react'
+import { BrowserEnvironment } from './env.server'
 import { styles } from './styles/styles.css'
 import type { ErrorWithStatus } from './util/errors'
 import { isErrorWithStatus } from './util/errors'
@@ -24,7 +25,6 @@ import { Theme } from '@radix-ui/themes'
 import { useIsDarkMode } from './hooks/useIsDarkMode'
 import { ProjectsContext, createProjectsStore } from './store'
 import React from 'react'
-import { BrowserEnvironment } from './env.server'
 
 export const links: LinksFunction = () => [
   ...(cssBundleHref ? [{ rel: 'stylesheet', href: cssBundleHref }] : []),
