@@ -1,6 +1,9 @@
 import React from 'react'
 import type { IcnProps } from './icn'
 import { Icn } from './icn'
+import type { RegularControlType } from 'utopia-api/core'
+import { memoize } from '../core/shared/memoize'
+import { assertNever } from '../core/shared/utils'
 
 const makeIcon = (
   appliedProps: IcnProps,
@@ -509,3 +512,50 @@ export const MenuIcons = {
     color: 'main',
   }),
 }
+
+export const iconForControlType = memoize(
+  (controlType: RegularControlType): ReturnType<typeof makeIcon> => {
+    switch (controlType) {
+      case 'color':
+      case 'expression-input':
+      case 'expression-popuplist':
+      case 'html-input':
+      case 'jsx':
+      case 'none':
+      case 'number-input':
+      case 'string-input':
+      case 'style-controls':
+        return makeIcon({
+          category: 'controltype',
+          type: controlType,
+          width: 18,
+          height: 18,
+          color: 'on-highlight-main',
+        })
+      case 'array':
+      case 'checkbox':
+      case 'euler':
+      case 'matrix3':
+      case 'matrix4':
+      case 'object':
+      case 'popuplist':
+      case 'radio':
+      case 'tuple':
+      case 'union':
+      case 'vector2':
+      case 'vector3':
+      case 'vector4':
+        // fallback icon for the missing cases
+        return makeIcon({
+          category: 'controltype',
+          type: 'expression-input',
+          width: 18,
+          height: 18,
+          color: 'on-highlight-main',
+        })
+      default:
+        // If we add a new control type, make sure it has an icon!
+        assertNever(controlType)
+    }
+  },
+)

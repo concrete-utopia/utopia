@@ -1,7 +1,7 @@
 import { prisma } from '../db.server'
 import { createTestSession, createTestUser, newTestRequest, truncateTables } from '../test-util'
 import type { ApiResponse } from './api.server'
-import { handle, requireUser } from './api.server'
+import { handle, requireUser, validationOk } from './api.server'
 import { ApiError } from './errors'
 import { Status } from './statusCodes'
 
@@ -66,7 +66,7 @@ describe('handle', () => {
             return { data: 'success' }
           },
           validator: async () => {
-            // passes
+            return validationOk()
           },
         },
       },

@@ -1,9 +1,9 @@
 import urlJoin from 'url-join'
-import { useBrowserEnv } from './use-env'
 import React from 'react'
+import { useProjectsStore } from '../store'
 
 export function useProjectEditorLink() {
-  const env = useBrowserEnv()
+  const env = useProjectsStore((store) => store.env)
   return React.useCallback(
     (projectId: string | null) => {
       if (env?.EDITOR_URL == null) {
