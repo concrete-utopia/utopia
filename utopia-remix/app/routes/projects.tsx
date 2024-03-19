@@ -50,6 +50,7 @@ import {
   useProjectMatchesQuery,
   useSortCompareProject,
 } from '../util/use-sort-compare-project'
+import { SharingDialogWrapper } from '../components/sharingDialog'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
@@ -729,6 +730,7 @@ const ProjectCard = React.memo(
           </div>
         </ContextMenu.Trigger>
         <ProjectActionsMenu project={project} accessRequests={accessRequests} />
+        <SharingDialogWrapper project={project} accessRequests={accessRequests} />
       </ContextMenu.Root>
     )
   },
@@ -766,13 +768,13 @@ const ProjectRow = React.memo(
       }
     }, [accessRequestsFetcher])
 
-    const handleSortMenuOpenChange = React.useCallback(() => {
+    const onContextMenuOpenChange = React.useCallback(() => {
       const action = `/internal/projects/${project.proj_id}/access/requests`
       accessRequestsFetcher.submit({}, { method: 'GET', action: action })
     }, [accessRequestsFetcher, project])
 
     return (
-      <ContextMenu.Root onOpenChange={handleSortMenuOpenChange}>
+      <ContextMenu.Root onOpenChange={onContextMenuOpenChange}>
         <ContextMenu.Trigger>
           <div style={{ padding: '8px 0' }}>
             <div
