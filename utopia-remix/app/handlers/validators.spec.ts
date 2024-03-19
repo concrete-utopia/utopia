@@ -79,6 +79,11 @@ describe('validators', () => {
     })
 
     it('does nothing if the user has access', async () => {
+      await createTestProjectAccess(prisma, {
+        projectId: 'one',
+        accessLevel: AccessLevel.COLLABORATIVE,
+      })
+
       hasUserProjectPermissionMock.mockResolvedValue(true)
 
       const got = await validateProjectAccess(perm, { getProjectId: () => 'one' })(
@@ -102,6 +107,11 @@ describe('validators', () => {
       })
 
       it('returns a 403 if the user can request access', async () => {
+        await createTestProjectAccess(prisma, {
+          projectId: 'one',
+          accessLevel: AccessLevel.COLLABORATIVE,
+        })
+
         hasUserProjectPermissionMock.mockImplementation(
           async (_, __, p) => p === UserProjectPermission.CAN_REQUEST_ACCESS,
         )

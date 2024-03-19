@@ -34,11 +34,6 @@ export function validateProjectAccess(
       return validationError(new ApiError('Project not found', Status.NOT_FOUND))
     }
 
-    // the project is public, go on
-    if (ownership.accessLevel === AccessLevel.PUBLIC) {
-      return validationOk()
-    }
-
     const user = await getUser(req)
     const userId = user?.user_id ?? null
 
@@ -47,8 +42,11 @@ export function validateProjectAccess(
       return validationOk()
     }
 
-    // if the project is collaborative…
-    if (ownership.accessLevel === AccessLevel.COLLABORATIVE) {
+    // if the project is collaborative (or public)…
+    if (
+      ownership.accessLevel === AccessLevel.COLLABORATIVE ||
+      ownership.accessLevel === AccessLevel.PUBLIC
+    ) {
       // the user can access the project, go on
       const hasProjectPermissions = await hasUserProjectPermission(projectId, userId, permission)
       if (hasProjectPermissions) {
