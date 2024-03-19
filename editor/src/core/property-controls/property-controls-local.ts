@@ -160,6 +160,7 @@ const COMPONENTS_FILE_CACHE: { current: ComponentDescriptorFileLookup } = {
 }
 
 export function deleteComponentRegistrationFromFile(fileName: string): PropertyControlsInfo {
+  // TODO: spike code, turn this into an actual delete
   COMPONENTS_FILE_CACHE.current[fileName] = []
   return updateWithComponentDescriptors(COMPONENTS_FILE_CACHE.current)
 }
