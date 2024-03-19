@@ -23,12 +23,8 @@ import radixStyle from '@radix-ui/themes/styles.css'
 import './normalize.css'
 import { Theme } from '@radix-ui/themes'
 import { useIsDarkMode } from './hooks/useIsDarkMode'
-
-declare global {
-  interface Window {
-    ENV: BrowserEnvironment
-  }
-}
+import { ProjectsContext, createProjectsStore } from './store'
+import React from 'react'
 
 export const links: LinksFunction = () => [
   ...(cssBundleHref ? [{ rel: 'stylesheet', href: cssBundleHref }] : []),
@@ -37,7 +33,7 @@ export const links: LinksFunction = () => [
 
 export async function loader() {
   return json({
-    ENV: BrowserEnvironment,
+    env: BrowserEnvironment,
   })
 }
 
@@ -51,6 +47,8 @@ export default function App() {
   const data = useLoaderData<typeof loader>()
   const isDarkMode = useIsDarkMode()
 
+  const store = React.useRef(createProjectsStore({ env: data.env })).current
+
   const theme = isDarkMode ? 'dark' : 'light'
 
   return (
@@ -58,19 +56,17 @@ export default function App() {
       <head>
         <meta charSet='utf-8' />
         <meta name='viewport' content='width=device-width, initial-scale=1' />
+        <title>Utopia</title>
+        <meta property='og:title' content='Utopia' />
         <Meta />
         <Links />
       </head>
       <body className={styles.root}>
-        <Theme appearance={theme} accentColor='blue' panelBackground='solid'>
-          <Outlet />
-        </Theme>
-        <script
-          // https://remix.run/docs/en/1.19.3/guides/envvars#browser-environment-variables
-          dangerouslySetInnerHTML={{
-            __html: `window.ENV = ${JSON.stringify(data.ENV)}`,
-          }}
-        />
+        <ProjectsContext.Provider value={store}>
+          <Theme appearance={theme} accentColor='blue' panelBackground='solid'>
+            <Outlet />
+          </Theme>
+        </ProjectsContext.Provider>
         <ScrollRestoration />
         <Scripts />
         <LiveReload />
@@ -100,6 +96,8 @@ export function ErrorBoundary() {
       <head>
         <meta charSet='utf-8' />
         <meta name='viewport' content='width=device-width, initial-scale=1' />
+        <title>Utopia</title>
+        <meta property='og:title' content='Utopia' />
       </head>
       <body
         style={{

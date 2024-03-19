@@ -82,6 +82,7 @@ describe('registered property controls', () => {
             },
             "visible": Object {
               "control": "checkbox",
+              "defaultValue": true,
             },
           },
           "supportsChildren": false,

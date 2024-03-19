@@ -1,15 +1,21 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
-import React from 'react'
 import { jsx } from '@emotion/react'
-import { Button } from '../../uuiui/button'
+import React from 'react'
 import { UTOPIA_BACKEND_BASE_URL } from '../../common/env-vars'
-import { when } from '../../utils/react-conditionals'
 import { requestProjectAccess } from '../../components/editor/server'
+import { when } from '../../utils/react-conditionals'
+import { Button } from '../../uuiui/button'
 
 const PyramidLight404 = `${process.env.UTOPIA_DOMAIN}/editor/404_pyramid_light.png?hash=${process.env.UTOPIA_SHA}`
 
-export default function ProjectNotFound({ projectId }: { projectId?: string }) {
+export default function ProjectNotFound({
+  projectId,
+  loggedIn,
+}: {
+  projectId: string | null
+  loggedIn: boolean
+}) {
   const [accessRequested, setAccessRequested] = React.useState(false)
   const requestAccess = React.useCallback(async () => {
     if (projectId != null) {
@@ -63,7 +69,7 @@ export default function ProjectNotFound({ projectId }: { projectId?: string }) {
             <ActionButton text='Return Home' />
           </a>
           {when(
-            projectId != null,
+            projectId != null && loggedIn,
             <ActionButton
               text={accessRequested ? 'Access Requested' : 'Request Access'}
               onClick={requestAccess}

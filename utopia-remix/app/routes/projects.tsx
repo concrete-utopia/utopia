@@ -1,33 +1,30 @@
 import {
-  Root as DropdownMenuRoot,
-  Trigger as DropdownMenuTrigger,
-} from '@radix-ui/react-dropdown-menu'
-import {
+  ArrowDownIcon,
+  ArrowUpIcon,
   CubeIcon,
   DashboardIcon,
-  DotsHorizontalIcon,
   HamburgerMenuIcon,
   MagnifyingGlassIcon,
   TrashIcon,
 } from '@radix-ui/react-icons'
-import React from 'react'
-import { Badge, Flex } from '@radix-ui/themes'
-import type { LoaderFunctionArgs } from '@remix-run/node'
-import { json } from '@remix-run/node'
+import { Badge, Button, ContextMenu, DropdownMenu, Flex, Text, TextField } from '@radix-ui/themes'
+import { type LoaderFunctionArgs, json } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import type { UserDetails } from 'prisma-client'
-import { ProjectContextMenu } from '../components/projectActionContextMenu'
+import React from 'react'
+import { ProjectActionsMenu } from '../components/projectActionContextMenu'
 import { SortingContextMenu } from '../components/sortProjectsContextMenu'
 import { Spinner } from '../components/spinner'
+import { useCleanupOperations } from '../hooks/useCleanupOperations'
 import { useIsDarkMode } from '../hooks/useIsDarkMode'
 import { listDeletedProjects, listProjects } from '../models/project.server'
 import { getCollaborators } from '../models/projectCollaborators.server'
 import type { OperationWithKey } from '../store'
 import { useProjectsStore } from '../store'
 import { button } from '../styles/button.css'
-import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
 import { projectCards, projectRows } from '../styles/projects.css'
+import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
 import { sprinkles } from '../styles/sprinkles.css'
 import type {
   Collaborator,
@@ -53,8 +50,7 @@ import {
   useProjectMatchesQuery,
   useSortCompareProject,
 } from '../util/use-sort-compare-project'
-import { useCleanupOperations } from '../hooks/useCleanupOperations'
-import { Text, Button } from '@radix-ui/themes'
+import { SharingDialogWrapper } from '../components/sharingDialog'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
@@ -71,9 +67,6 @@ const categories: { [key in Category]: { name: string; icon: React.ReactNode } }
   allProjects: { name: 'All My Projects', icon: <CubeIcon width='16' height='16' /> },
   trash: { name: 'Trash', icon: <TrashIcon width='16' height='16' /> },
 }
-
-const MarginSize = 30
-const SidebarRowHeight = 30
 
 export async function loader(args: LoaderFunctionArgs) {
   const user = await requireUser(args.request, { redirect: auth0LoginURL() })
@@ -138,9 +131,8 @@ const ProjectsPage = React.memo(() => {
   return (
     <div
       style={{
-        margin: MarginSize,
-        height: `calc(100vh - ${MarginSize * 2}px)`,
-        width: `calc(100vw - ${MarginSize * 2}px)`,
+        height: '100vh',
+        width: '100vw',
         gap: 45,
         overflow: 'hidden',
         boxSizing: 'border-box',
@@ -155,7 +147,8 @@ const ProjectsPage = React.memo(() => {
           display: 'flex',
           flexGrow: 1,
           flexDirection: 'column',
-          gap: MarginSize,
+          gap: 30,
+          margin: '30px 30px 0px 0',
         }}
       >
         <TopActionBar />
@@ -176,7 +169,6 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
   const setSelectedCategory = useProjectsStore((store) => store.setSelectedCategory)
   const setSelectedProjectId = useProjectsStore((store) => store.setSelectedProjectId)
-  const [isSearchFocused, setIsSearchFocused] = React.useState(false)
 
   const isDarkMode = useIsDarkMode()
 
@@ -195,6 +187,13 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
     [setSelectedCategory, setSearchQuery, setSelectedProjectId],
   )
 
+  const onChangeSearchQuery = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchQuery(e.target.value)
+    },
+    [setSearchQuery],
+  )
+
   return (
     <div
       style={{
@@ -203,13 +202,14 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
         width: 230,
         flexShrink: 0,
         justifyContent: 'space-between',
+        margin: '30px 0 30px 30px',
       }}
     >
       <div
         style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: 20,
+          gap: 30,
         }}
       >
         <div
@@ -217,6 +217,7 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
             display: 'flex',
             alignItems: 'center',
             gap: 10,
+            padding: '0 6px',
           }}
         >
           <img
@@ -227,42 +228,20 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
           />
           <div className={userName({})}>{user.name}</div>
         </div>
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            border: `1px solid ${isSearchFocused ? '#0075F9' : 'transparent'}`,
-            borderBottom: `1px solid ${isSearchFocused ? '#0075F9' : 'gray'}`,
-            borderRadius: isSearchFocused ? 3 : undefined,
-            overflow: 'visible',
-            padding: '0px 14px',
-            gap: 10,
-          }}
-        >
-          <MagnifyingGlassIcon width='16' height='16' />
-          <input
+        <TextField.Root>
+          <TextField.Slot>
+            <MagnifyingGlassIcon height='16' width='16' style={{ paddingLeft: 8 }} />
+          </TextField.Slot>
+          <TextField.Input
+            radius='full'
+            placeholder='Search…'
             id='search-input'
             autoFocus={true}
             value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value)
-            }}
-            onFocus={() => setIsSearchFocused(true)}
-            onBlur={() => setIsSearchFocused(false)}
-            style={{
-              border: 'none',
-              background: 'transparent',
-              outline: 'none',
-              height: SidebarRowHeight,
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              fontSize: 12,
-            }}
-            placeholder='Search…'
+            onChange={onChangeSearchQuery}
+            style={{ fontSize: 12 }}
           />
-        </div>
+        </TextField.Root>
         <Flex direction='column' gap='2'>
           {Object.entries(categories).map(([category, data]) => {
             return (
@@ -286,16 +265,17 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
           display: 'flex',
           flexDirection: 'row',
           alignItems: 'center',
-          gap: 14,
+          gap: 10,
           fontFamily: 'Reckless',
-          fontSize: 34,
+          fontSize: 22,
+          padding: '0 6px',
         }}
       >
         <div
           style={{
-            height: 60,
-            width: 45,
-            backgroundSize: '45px',
+            height: 40,
+            width: 30,
+            backgroundSize: '30px',
             backgroundRepeat: 'no-repeat',
             backgroundImage: logoPic,
           }}
@@ -313,30 +293,10 @@ const TopActionBar = React.memo(() => {
     return [
       {
         id: 'createProject',
-        title: '+ Blank Project',
+        title: '+ New Project',
         onClick: () => window.open(projectEditorLink(null), '_blank'),
         color: 'blue',
       },
-      // {
-      //   title: '+ Project On GitHub',
-      //   onClick: () => {},
-      //   color: 'pink',
-      // },
-      // {
-      //   title: '+ Import From GitHub',
-      //   onClick: () => {},
-      //   color: 'purple',
-      // },
-      // {
-      //   title: '+ Remix Project',
-      //   onClick: () => {},
-      //   color: 'blue',
-      // },
-      // {
-      //   title: '+ Shopify Store',
-      //   onClick: () => {},
-      //   color: 'green',
-      // },
     ] as const
   }, [projectEditorLink])
 
@@ -392,10 +352,12 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
     }
   }
 
-  const [sortMenuOpen, setSortMenuOpen] = React.useState(false)
-  const handleSortMenuOpenChange = React.useCallback(() => {
-    setSortMenuOpen((prevSortMenuOpen) => !prevSortMenuOpen)
-  }, [])
+  const onClearSearch = React.useCallback(() => {
+    return () => {
+      setSearchQuery('')
+      clearSearchInput()
+    }
+  }, [setSearchQuery])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
@@ -404,7 +366,7 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          height: 40,
+          height: 32,
           flexShrink: 0,
         }}
       >
@@ -414,7 +376,6 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
             flexDirection: 'row',
             alignItems: 'center',
             gap: 10,
-            padding: '5px 10px',
           }}
         >
           <div style={{ fontSize: 16, fontWeight: 600 }}>
@@ -422,13 +383,7 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
               searchQuery !== '',
               <span>
                 <span style={{ color: 'gray', paddingRight: 3 }}>
-                  <span
-                    onClick={() => {
-                      setSearchQuery('')
-                      clearSearchInput()
-                    }}
-                    style={{ cursor: 'pointer' }}
-                  >
+                  <span onClick={onClearSearch} style={{ cursor: 'pointer' }}>
                     ←{' '}
                   </span>{' '}
                   Search results for
@@ -455,25 +410,18 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
             </div>,
           )}
         </div>
-        <div style={{ display: 'flex', flexDirection: 'row', gap: 10 }}>
+        <div style={{ display: 'flex', flexDirection: 'row', gap: 20, alignItems: 'center' }}>
           {when(
             projects.length > 1,
-            <DropdownMenuRoot onOpenChange={handleSortMenuOpenChange}>
-              <DropdownMenuTrigger asChild>
-                <div
-                  className={button()}
-                  style={{
-                    justifyContent: 'flex-end',
-                    gap: 10,
-                    background: sortMenuOpen ? '#a4a4a430' : 'inherit',
-                  }}
-                >
-                  <Text size='1'>{convertToTitleCase(sortCriteria)} </Text>
-                  <div>{sortAscending ? '↑' : '↓'}</div>
-                </div>
-              </DropdownMenuTrigger>
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger>
+                <Button color='gray' variant='ghost' highContrast style={{ fontSize: 12 }}>
+                  {convertToTitleCase(sortCriteria)}
+                  {sortAscending ? <ArrowUpIcon /> : <ArrowDownIcon />}
+                </Button>
+              </DropdownMenu.Trigger>
               <SortingContextMenu />
-            </DropdownMenuRoot>,
+            </DropdownMenu.Root>,
           )}
           {when(
             projects.length > 0,
@@ -496,7 +444,6 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
           )}
         </div>
       </div>
-      {when(projects.length === 0, <NoProjectsMessage />)}
     </div>
   )
 })
@@ -531,7 +478,7 @@ const CategoryTrashActions = React.memo(({ projects }: { projects: ProjectWithou
   return (
     <Button
       onClick={handleEmptyTrash}
-      style={{ display: projects.length === 0 ? 'none' : 'block' }}
+      style={{ display: projects.length === 0 ? 'none' : 'block', fontSize: 12 }}
       color='gray'
       variant='soft'
       highContrast
@@ -593,6 +540,7 @@ const Projects = React.memo(
             ))}
           </div>,
         )}
+        {when(projects.length === 0, <NoProjectsMessage />)}
       </>
     )
   },
@@ -616,7 +564,7 @@ const NoProjectsMessage = React.memo(() => {
 
   const subtitle = searchQuery !== '' ? 'No projects found.' : getCategorySubtitle(selectedCategory)
 
-  return <div style={{ padding: '0px 10px' }}>{subtitle}</div>
+  return <div style={{ padding: '30px 0px', color: 'gray' }}>{subtitle}</div>
 })
 NoProjectsMessage.displayName = 'NoProjectsMessage'
 
@@ -647,115 +595,143 @@ const ProjectCard = React.memo(
       return renaming?.type === 'rename' ? renaming.newTitle : project.title
     }, [project, activeOperations])
 
+    const accessRequestsFetcher = useFetcher()
+    const [accessRequests, setAccessRequests] = React.useState<
+      ProjectAccessRequestWithUserDetails[]
+    >([])
+
+    React.useEffect(() => {
+      if (accessRequestsFetcher.state === 'idle' && accessRequestsFetcher.data != null) {
+        if (isProjectAccessRequestWithUserDetailsArray(accessRequestsFetcher.data)) {
+          setAccessRequests(accessRequestsFetcher.data)
+        }
+      }
+    }, [accessRequestsFetcher])
+
+    const handleSortMenuOpenChange = React.useCallback(() => {
+      const action = `/internal/projects/${project.proj_id}/access/requests`
+      accessRequestsFetcher.submit({}, { method: 'GET', action: action })
+    }, [accessRequestsFetcher, project])
+
     return (
-      <div
-        style={{
-          minHeight: 200,
-          flex: 1,
-          width: '100%',
-          height: 'min-content',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 5,
-          filter: activeOperations.length > 0 ? 'grayscale(1)' : undefined,
-        }}
-      >
-        <div
-          style={{
-            border: selected ? '2px solid #0075F9' : '2px solid transparent',
-            borderRadius: 10,
-            overflow: 'hidden',
-            height: '100%',
-            aspectRatio: 1.6,
-            background: 'linear-gradient(#a4a4a4, #a4a4a410)',
-            backgroundAttachment: 'local',
-            backgroundRepeat: 'no-repeat',
-            position: 'relative',
-          }}
-          onMouseDown={onSelect}
-          onDoubleClick={openProject}
-        >
-          <div style={{ position: 'absolute', right: 6, bottom: 6, display: 'flex', gap: 2 }}>
-            {collaborators.map((collaborator) => {
-              return (
-                <div
-                  key={`collaborator-${project.id}-${collaborator.id}`}
-                  style={{
-                    borderRadius: '100%',
-                    width: 24,
-                    height: 24,
-                    backgroundImage: `url("${collaborator.avatar}")`,
-                    backgroundSize: 'cover',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    fontSize: '.9em',
-                    fontWeight: 700,
-                    filter: project.deleted === true ? 'grayscale(1)' : undefined,
-                  }}
-                  title={collaborator.name ?? UnknownPlayerName}
-                  className={sprinkles({
-                    boxShadow: 'shadow',
-                    color: 'white',
-                    backgroundColor: 'primary',
-                  })}
-                >
-                  {when(collaborator.avatar === '', multiplayerInitialsFromName(collaborator.name))}
-                </div>
-              )
-            })}
-          </div>
-          {when(
-            activeOperations.length > 0,
+      <ContextMenu.Root onOpenChange={handleSortMenuOpenChange}>
+        <ContextMenu.Trigger>
+          <div
+            style={{
+              minHeight: 200,
+              flex: 1,
+              width: '100%',
+              height: 'min-content',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 5,
+              filter: activeOperations.length > 0 ? 'grayscale(1)' : undefined,
+            }}
+          >
             <div
               style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
+                border: selected ? '2px solid #0090FF' : '2px solid transparent',
+                borderRadius: 10,
+                overflow: 'hidden',
+                height: '100%',
+                aspectRatio: 1.6,
+                background: 'linear-gradient(#a1a1a130, #a1a1a115)',
+                backgroundAttachment: 'local',
+                backgroundRepeat: 'no-repeat',
+                position: 'relative',
+              }}
+              onMouseDown={onSelect}
+              onDoubleClick={openProject}
+            >
+              <div style={{ position: 'absolute', right: 6, bottom: 6, display: 'flex', gap: 2 }}>
+                {collaborators.map((collaborator) => {
+                  return (
+                    <div
+                      key={`collaborator-${project.id}-${collaborator.id}`}
+                      style={{
+                        borderRadius: '100%',
+                        width: 24,
+                        height: 24,
+                        backgroundImage: `url("${collaborator.avatar}")`,
+                        backgroundSize: 'cover',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        fontSize: '.9em',
+                        fontWeight: 700,
+                        filter: project.deleted === true ? 'grayscale(1)' : undefined,
+                      }}
+                      title={collaborator.name ?? UnknownPlayerName}
+                      className={sprinkles({
+                        boxShadow: 'shadow',
+                        color: 'white',
+                        backgroundColor: 'primary',
+                      })}
+                    >
+                      {when(
+                        collaborator.avatar === '',
+                        multiplayerInitialsFromName(collaborator.name),
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+              {when(
+                activeOperations.length > 0,
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    pointerEvents: 'none',
+                  }}
+                >
+                  <Spinner className={sprinkles({ backgroundColor: 'primary' })} />
+                </div>,
+              )}
+            </div>
+            <div
+              style={{
                 display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
                 alignItems: 'center',
-                justifyContent: 'center',
-                pointerEvents: 'none',
               }}
             >
-              <Spinner className={sprinkles({ backgroundColor: 'primary' })} />
-            </div>,
-          )}
-        </div>
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <div style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 5, flex: 1 }}>
-            <div style={{ display: 'flex', gap: 5, flex: 1 }}>
-              <Text
-                size='1'
-                style={{
-                  flexGrow: 1,
-                  fontWeight: 500,
-                }}
+              <div
+                style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 5, flex: 1 }}
               >
-                {projectTitle}
-              </Text>
-              <ProjectBadge
-                accessLevel={
-                  asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
-                }
-              />
+                <div style={{ display: 'flex', gap: 5, flex: 1 }}>
+                  <Text
+                    size='1'
+                    style={{
+                      flexGrow: 1,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {projectTitle}
+                  </Text>
+                  <ProjectBadge
+                    accessLevel={
+                      asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
+                    }
+                  />
+                </div>
+                <Text size='1' style={{ opacity: 0.5 }}>
+                  {moment(project.modified_at).fromNow()}
+                </Text>
+              </div>
             </div>
-            <Text size='1' style={{ opacity: 0.5 }}>
-              {moment(project.modified_at).fromNow()}
-            </Text>
           </div>
-          <ProjectCardActions project={project} />
-        </div>
-      </div>
+        </ContextMenu.Trigger>
+        <ProjectActionsMenu project={project} accessRequests={accessRequests} />
+        <SharingDialogWrapper project={project} accessRequests={accessRequests} />
+      </ContextMenu.Root>
     )
   },
 )
@@ -779,156 +755,141 @@ const ProjectRow = React.memo(
       window.open(projectEditorLink(project.proj_id), '_blank')
     }, [project.proj_id, projectEditorLink])
 
+    const accessRequestsFetcher = useFetcher()
+    const [accessRequests, setAccessRequests] = React.useState<
+      ProjectAccessRequestWithUserDetails[]
+    >([])
+
+    React.useEffect(() => {
+      if (accessRequestsFetcher.state === 'idle' && accessRequestsFetcher.data != null) {
+        if (isProjectAccessRequestWithUserDetailsArray(accessRequestsFetcher.data)) {
+          setAccessRequests(accessRequestsFetcher.data)
+        }
+      }
+    }, [accessRequestsFetcher])
+
+    const onContextMenuOpenChange = React.useCallback(() => {
+      const action = `/internal/projects/${project.proj_id}/access/requests`
+      accessRequestsFetcher.submit({}, { method: 'GET', action: action })
+    }, [accessRequestsFetcher, project])
+
     return (
-      <div style={{ padding: '8px 0' }}>
-        <div
-          style={{
-            height: 40,
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            border: selected ? '2px solid #0075F9' : '2px solid transparent',
-            borderRadius: 10,
-            padding: '4px 30px 4px 4px',
-            transition: `.1s background-color ease-in-out`,
-          }}
-          onMouseDown={onSelect}
-          onDoubleClick={openProject}
-        >
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 15,
-              flex: 1,
-            }}
-          >
+      <ContextMenu.Root onOpenChange={onContextMenuOpenChange}>
+        <ContextMenu.Trigger>
+          <div style={{ padding: '8px 0' }}>
             <div
               style={{
-                borderRadius: 8,
-                overflow: 'hidden',
-                height: 40,
-                width: 70,
-                background: 'linear-gradient(#a4a4a4, #a4a4a410)',
-                backgroundAttachment: 'local',
-                backgroundRepeat: 'no-repeat',
-                position: 'relative',
-              }}
-            />
-
-            <Text
-              size='1'
-              style={{
+                height: 60,
                 display: 'flex',
-                gap: '10px',
+                flexDirection: 'row',
                 alignItems: 'center',
-                flexGrow: 1,
-                minWidth: 180,
-                maxWidth: 380,
-                fontWeight: 500,
+                justifyContent: 'space-between',
+                border: selected ? '2px solid #0090FF' : '2px solid transparent',
+                borderRadius: 10,
+                padding: 4,
+                paddingRight: 10,
+                transition: `.1s background-color ease-in-out`,
               }}
+              onMouseDown={onSelect}
+              onDoubleClick={openProject}
             >
-              {project.title}
-            </Text>
-            <ProjectBadge
-              accessLevel={
-                asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
-              }
-            />
-            <Text size='1' style={{ width: 220, opacity: 0.5 }}>
-              {moment(project.modified_at).fromNow()}
-            </Text>
-
-            <div
-              style={{
-                maxWidth: 480,
-                minWidth: 100,
-                display: 'flex',
-                gap: 6,
-              }}
-            >
-              {collaborators.map((collaborator) => {
-                return (
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flex: 1,
+                }}
+              >
+                <Flex gap='6'>
                   <div
-                    key={`collaborator-${project.id}-${collaborator.id}`}
                     style={{
-                      borderRadius: '100%',
-                      width: 24,
-                      height: 24,
-                      backgroundColor: '#0075F9',
-                      backgroundImage: `url("${collaborator.avatar}")`,
-                      backgroundSize: 'cover',
-                      color: 'white',
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      fontSize: '.9em',
-                      fontWeight: 700,
-                      filter: project.deleted === true ? 'grayscale(1)' : undefined,
+                      borderRadius: 6,
+                      overflow: 'hidden',
+                      height: 56,
+                      width: 90,
+                      background: 'linear-gradient(#a1a1a130, #a1a1a115)',
+                      backgroundAttachment: 'local',
+                      backgroundRepeat: 'no-repeat',
+                      position: 'relative',
                     }}
-                    title={collaborator.name ?? UnknownPlayerName}
-                    className={sprinkles({
-                      boxShadow: 'shadow',
-                      color: 'white',
-                      backgroundColor: 'primary',
-                    })}
+                  />
+                  <Text
+                    size='1'
+                    style={{
+                      display: 'flex',
+                      gap: '10px',
+                      alignItems: 'center',
+                      flexGrow: 1,
+                      minWidth: 180,
+                      fontWeight: 500,
+                    }}
                   >
-                    {when(
-                      collaborator.avatar === '',
-                      multiplayerInitialsFromName(collaborator.name),
-                    )}
-                  </div>
-                )
-              })}
+                    {project.title}
+                  </Text>
+                </Flex>
+                <Text size='1' style={{ width: 100, opacity: 0.5 }}>
+                  {moment(project.modified_at).fromNow()}
+                </Text>
+                <div
+                  style={{
+                    flex: 1,
+                    maxWidth: 200,
+                    minWidth: 100,
+                    display: 'flex',
+                    gap: 6,
+                  }}
+                >
+                  {collaborators.map((collaborator) => {
+                    return (
+                      <div
+                        key={`collaborator-${project.id}-${collaborator.id}`}
+                        style={{
+                          borderRadius: '100%',
+                          width: 24,
+                          height: 24,
+                          backgroundColor: '#0075F9',
+                          backgroundImage: `url("${collaborator.avatar}")`,
+                          backgroundSize: 'cover',
+                          color: 'white',
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          fontSize: '.9em',
+                          fontWeight: 700,
+                          filter: project.deleted === true ? 'grayscale(1)' : undefined,
+                        }}
+                        title={collaborator.name ?? UnknownPlayerName}
+                        className={sprinkles({
+                          boxShadow: 'shadow',
+                          color: 'white',
+                          backgroundColor: 'primary',
+                        })}
+                      >
+                        {when(
+                          collaborator.avatar === '',
+                          multiplayerInitialsFromName(collaborator.name),
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+                <ProjectBadge
+                  accessLevel={
+                    asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
+                  }
+                />
+              </div>
             </div>
           </div>
-          <ProjectCardActions project={project} />
-        </div>
-      </div>
+        </ContextMenu.Trigger>
+        <ProjectActionsMenu project={project} accessRequests={accessRequests} />
+      </ContextMenu.Root>
     )
   },
 )
 ProjectRow.displayName = 'ProjectRow'
-
-const ProjectCardActions = React.memo(({ project }: { project: ProjectWithoutContent }) => {
-  const accessRequestsFetcher = useFetcher()
-
-  const [sortMenuOpen, setSortMenuOpen] = React.useState(false)
-  const [accessRequests, setAccessRequests] = React.useState<ProjectAccessRequestWithUserDetails[]>(
-    [],
-  )
-
-  const handleSortMenuOpenChange = React.useCallback(() => {
-    const action = `/internal/projects/${project.proj_id}/access/requests`
-    accessRequestsFetcher.submit({}, { method: 'GET', action: action })
-    setSortMenuOpen((prevSortMenuOpen) => !prevSortMenuOpen)
-  }, [accessRequestsFetcher, project])
-
-  React.useEffect(() => {
-    if (accessRequestsFetcher.state === 'idle' && accessRequestsFetcher.data != null) {
-      if (isProjectAccessRequestWithUserDetailsArray(accessRequestsFetcher.data)) {
-        setAccessRequests(accessRequestsFetcher.data)
-      }
-    }
-  }, [accessRequestsFetcher])
-
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-      <DropdownMenuRoot onOpenChange={handleSortMenuOpenChange}>
-        <DropdownMenuTrigger asChild>
-          <DotsHorizontalIcon
-            className={button({ size: 'ellipses' })}
-            style={{ background: sortMenuOpen ? '#a4a4a430' : 'inherit' }}
-          />
-        </DropdownMenuTrigger>
-        <ProjectContextMenu project={project} accessRequests={accessRequests} />
-      </DropdownMenuRoot>
-    </div>
-  )
-})
-ProjectCardActions.displayName = 'ProjectCardActions'
 
 const ProjectBadge = React.memo(({ accessLevel }: { accessLevel: AccessLevel }) => {
   const [color, backgroundColor] = React.useMemo(() => {
@@ -961,19 +922,17 @@ const ProjectBadge = React.memo(({ accessLevel }: { accessLevel: AccessLevel }) 
     }
   }, [accessLevel])
   return (
-    <Badge
-      style={{
-        backgroundColor: backgroundColor,
-        color: color,
-        padding: '2px 6px',
-        fontSize: 9,
-        borderRadius: 3,
-        fontWeight: 400,
-        height: 20,
-      }}
-    >
-      {text}
-    </Badge>
+    <div style={{ width: 80, display: 'flex', justifyContent: 'flex-end' }}>
+      <Badge
+        style={{
+          backgroundColor: backgroundColor,
+          color: color,
+          fontSize: 9,
+        }}
+      >
+        {text}
+      </Badge>
+    </div>
   )
 })
 ProjectBadge.displayName = 'ProjectBadge'

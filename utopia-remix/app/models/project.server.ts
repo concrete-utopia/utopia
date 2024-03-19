@@ -1,5 +1,7 @@
 import { prisma } from '../db.server'
-import type { ProjectWithoutContent } from '../types'
+import { asAccessLevel, AccessLevel, type ProjectWithoutContent } from '../types'
+import { ensure } from '../util/api.server'
+import { Status } from '../util/statusCodes'
 
 const selectProjectWithoutContent: Record<keyof ProjectWithoutContent, true> = {
   id: true,
@@ -23,10 +25,10 @@ export async function listProjects(params: { ownerId: string }): Promise<Project
   })
 }
 
-export async function getProjectOwnerById(
+export async function getProjectOwnership(
   params: { id: string },
   config: { includeDeleted: boolean } = { includeDeleted: false },
-): Promise<string | null> {
+): Promise<{ ownerId: string; accessLevel: AccessLevel } | null> {
   let whereOptions: {
     proj_id: string
     OR?: { deleted: boolean | null }[]
@@ -39,10 +41,18 @@ export async function getProjectOwnerById(
   }
   // find the project and return the owner_id
   const project = await prisma.project.findFirst({
-    select: { owner_id: true },
+    select: { owner_id: true, ProjectAccess: true },
     where: whereOptions,
   })
-  return project?.owner_id ?? null
+  if (project == null) {
+    return null
+  }
+  const accessLevel = asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE // not ideal that projects don't have always an access level
+
+  return {
+    ownerId: project.owner_id,
+    accessLevel: accessLevel,
+  }
 }
 
 export async function renameProject(params: {
@@ -113,4 +123,15 @@ export async function hardDeleteAllProjects(params: { userId: string }): Promise
       deleted: true,
     },
   })
+}
+
+export async function getProjectAccessLevel(params: { projectId: string }): Promise<AccessLevel> {
+  const projectAccess = await prisma.projectAccess.findUnique({
+    where: { project_id: params.projectId },
+    select: { access_level: true },
+  })
+  ensure(projectAccess != null, 'Project not found', Status.NOT_FOUND)
+  const accessLevel = asAccessLevel(projectAccess.access_level)
+  ensure(accessLevel != null, 'Invalid access level', Status.INTERNAL_ERROR)
+  return accessLevel
 }

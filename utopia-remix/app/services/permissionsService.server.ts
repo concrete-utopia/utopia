@@ -3,7 +3,7 @@ import type { AccessLevel } from '../types'
 import { UserProjectPermission, UserProjectRole } from '../types'
 import * as fgaService from './fgaService.server'
 
-const ANONYMOUS_USER_ID = '__ANON__'
+export const ANONYMOUS_USER_ID = '__ANON__'
 
 export async function hasUserProjectPermission(
   projectId: string,
@@ -37,6 +37,18 @@ export async function hasUserProjectPermission(
 
 export async function setProjectAccess(projectId: string, accessLevel: AccessLevel) {
   await fgaService.updateAccessLevel(projectId, accessLevel)
+}
+
+export async function getAllPermissions(
+  projectId: string,
+  userId: string | null,
+  ownerId: string,
+): Promise<fgaService.PermissionsMatrix> {
+  // this is here since it's part of our internal logic, not part of FGA
+  if (userId === ownerId) {
+    return fgaService.getPermissionsOverride(true)
+  }
+  return fgaService.getAllPermissions(projectId, userId ?? ANONYMOUS_USER_ID)
 }
 
 export async function grantProjectRoleToUser(

@@ -4,7 +4,8 @@ import {
   Cross2Icon,
   GlobeIcon,
   LockClosedIcon,
-  CookieIcon,
+  Link2Icon,
+  PersonIcon,
 } from '@radix-ui/react-icons'
 import {
   asAccessLevel,
@@ -19,8 +20,43 @@ import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
 import React from 'react'
 import { when } from '../util/react-conditionals'
 import moment from 'moment'
+import { useProjectEditorLink } from '../util/links'
+import { button } from '../styles/button.css'
+import { useCopyProjectLinkToClipboard } from '../util/copyProjectLink'
+import { useProjectsStore } from '../store'
 
-export function SharePopup({
+export const SharingDialogWrapper = React.memo(
+  ({
+    project,
+    accessRequests,
+  }: {
+    project: ProjectWithoutContent
+    accessRequests: ProjectAccessRequestWithUserDetails[]
+  }) => {
+    const sharingProjectId = useProjectsStore((store) => store.sharingProjectId)
+    const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
+
+    const onOpenChange = React.useCallback(
+      (open: boolean) => {
+        if (!open) {
+          setSharingProjectId(null)
+        }
+      },
+      [setSharingProjectId],
+    )
+
+    return (
+      <Dialog.Root open={sharingProjectId === project.proj_id} onOpenChange={onOpenChange}>
+        <Dialog.Content>
+          <SharingDialog project={project} accessRequests={accessRequests} />
+        </Dialog.Content>
+      </Dialog.Root>
+    )
+  },
+)
+SharingDialogWrapper.displayName = 'SharingDialogWrapper'
+
+function SharingDialog({
   project,
   accessRequests,
 }: {
@@ -86,9 +122,13 @@ export function SharePopup({
           />
         </Flex>
         {when(
+          accessLevel === AccessLevel.COLLABORATIVE || accessLevel === AccessLevel.PUBLIC,
+          <ProjectLink projectId={project.proj_id} />,
+        )}
+        {when(
           accessRequests.length > 0,
           <>
-            <Separator />
+            <Separator size='4' />
             <AccessRequests
               project={project}
               approveAccessRequest={approveAccessRequest}
@@ -126,6 +166,7 @@ function AccessRequests({
         <Flex key={request.token} justify='between'>
           <Text size='1'>{request.User?.name ?? request.User?.email ?? request.user_id}</Text>
           {status === AccessRequestStatus.PENDING ? (
+            // eslint-disable-next-line react/jsx-no-bind
             <Button size='1' variant='ghost' onClick={onApprove}>
               Approve
             </Button>
@@ -144,11 +185,11 @@ const VisibilityUIComponents = {
   [AccessLevel.PRIVATE]: { text: 'Private', icon: <LockClosedIcon width='16' height='16' /> },
   [AccessLevel.COLLABORATIVE]: {
     text: 'Collaborative',
-    icon: <CookieIcon width='16' height='16' />,
+    icon: <PersonIcon width='16' height='16' />,
   },
   [AccessLevel.WITH_LINK]: {
     text: 'With Link',
-    icon: <CookieIcon width='16' height='16' />,
+    icon: <Link2Icon width='16' height='16' />,
   },
 }
 
@@ -187,6 +228,7 @@ function VisibilityDropdown({
               style={{ height: 28, fontSize: 12, paddingLeft: 30 }}
               checked={accessLevel === level}
               disabled={accessLevel === level}
+              // eslint-disable-next-line react/jsx-no-bind
               onCheckedChange={onCheckedChange}
             >
               {VisibilityUIComponents[level].text}
@@ -197,3 +239,40 @@ function VisibilityDropdown({
     </DropdownMenu.Root>
   )
 }
+
+const ProjectLink = React.memo(({ projectId }: { projectId: string }) => {
+  const projectLinkRef = React.useRef<HTMLInputElement | null>(null)
+
+  const projectLink = useProjectEditorLink()
+  const copyProjectLink = useCopyProjectLinkToClipboard()
+
+  const onClickCopyProjectLink = React.useCallback(() => {
+    copyProjectLink(projectId)
+    projectLinkRef.current?.select()
+  }, [projectId, copyProjectLink])
+
+  return (
+    <Flex style={{ gap: 10, alignItems: 'stretch' }}>
+      <input
+        ref={projectLinkRef}
+        type='text'
+        value={projectLink(projectId)}
+        readOnly={true}
+        style={{
+          flex: 1,
+          fontSize: 13,
+          padding: '0px 4px',
+          cursor: 'default',
+        }}
+      />
+      <button
+        className={button({ color: 'subtle' })}
+        style={{ fontSize: 13 }}
+        onClick={onClickCopyProjectLink}
+      >
+        Copy
+      </button>
+    </Flex>
+  )
+})
+ProjectLink.displayName = 'ProjectLink'

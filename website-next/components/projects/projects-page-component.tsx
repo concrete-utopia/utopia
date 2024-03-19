@@ -529,6 +529,7 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
                 <label>Sort</label>
                 <SortButton
                   selected={this.state.sortMode === 'date'}
+                  // eslint-disable-next-line react/jsx-no-bind
                   onClick={handleSortByDate}
                   sortOrder={this.state.dateSortOrder}
                 >
@@ -536,6 +537,7 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
                 </SortButton>
                 <SortButton
                   selected={this.state.sortMode === 'title'}
+                  // eslint-disable-next-line react/jsx-no-bind
                   onClick={handleSortByTitle}
                   sortOrder={this.state.titleSortOrder}
                 >

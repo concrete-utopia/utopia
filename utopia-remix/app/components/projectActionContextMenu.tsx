@@ -1,9 +1,6 @@
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import React from 'react'
 import { useProjectsStore } from '../store'
-import { contextMenuDropdown, contextMenuItem } from '../styles/contextMenu.css'
-import { sprinkles } from '../styles/sprinkles.css'
-import type { ProjectAccessRequestWithUserDetails, ProjectWithoutContent } from '../types'
+import type { ProjectAccessRequestWithUserDetails } from '../types'
 import {
   AccessRequestStatus,
   operationDelete,
@@ -11,14 +8,16 @@ import {
   operationRename,
   operationRestore,
 } from '../types'
+import type { ProjectWithoutContent } from '../types'
 import { assertNever } from '../util/assertNever'
 import { useProjectEditorLink } from '../util/links'
 import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
 import slugify from 'slugify'
 import { SLUGIFY_OPTIONS } from '../routes/internal.projects.$id.rename'
-import { SharePopup } from './SharePopup'
-import { ContextMenu, Dialog, Flex, Text } from '@radix-ui/themes'
+import { ContextMenu, Separator, Flex, Text } from '@radix-ui/themes'
 import { DotFilledIcon } from '@radix-ui/react-icons'
+import { when } from '~/util/react-conditionals'
+import { useCopyProjectLinkToClipboard } from '../util/copyProjectLink'
 
 type ContextMenuEntry =
   | {
@@ -28,7 +27,7 @@ type ContextMenuEntry =
   | 'separator'
   | 'sharing-dialog'
 
-export const ProjectContextMenu = React.memo(
+export const ProjectActionsMenu = React.memo(
   ({
     project,
     accessRequests,
@@ -40,7 +39,6 @@ export const ProjectContextMenu = React.memo(
     const destroyFetcher = useFetcherWithOperation(project.proj_id, 'destroy')
     const restoreFetcher = useFetcherWithOperation(project.proj_id, 'restore')
     const renameFetcher = useFetcherWithOperation(project.proj_id, 'rename')
-
     const selectedCategory = useProjectsStore((store) => store.selectedCategory)
 
     const deleteProject = React.useCallback(
@@ -53,7 +51,6 @@ export const ProjectContextMenu = React.memo(
       },
       [deleteFetcher, project],
     )
-
     const destroyProject = React.useCallback(
       (projectId: string) => {
         const ok = window.confirm('Are you sure? The project contents will be deleted permanently.')
@@ -91,6 +88,7 @@ export const ProjectContextMenu = React.memo(
     )
 
     const projectEditorLink = useProjectEditorLink()
+    const copyProjectLink = useCopyProjectLinkToClipboard()
 
     const menuEntries = React.useMemo((): ContextMenuEntry[] => {
       switch (selectedCategory) {
@@ -105,10 +103,7 @@ export const ProjectContextMenu = React.memo(
             'separator',
             {
               text: 'Copy Link',
-              onClick: (selectedProject) => {
-                window.navigator.clipboard.writeText(projectEditorLink(selectedProject.proj_id))
-                // TODO notification toast
-              },
+              onClick: (selectedProject) => copyProjectLink(selectedProject.proj_id),
             },
             {
               text: 'Fork',
@@ -116,6 +111,7 @@ export const ProjectContextMenu = React.memo(
                 window.open(projectEditorLink(selectedProject.proj_id) + '/?fork=true', '_blank')
               },
             },
+            'sharing-dialog',
             'separator',
             {
               text: 'Rename',
@@ -132,8 +128,6 @@ export const ProjectContextMenu = React.memo(
                 deleteProject(selectedProject.proj_id)
               },
             },
-            'separator',
-            'sharing-dialog',
           ]
         case 'trash':
           return [
@@ -145,7 +139,7 @@ export const ProjectContextMenu = React.memo(
             },
             'separator',
             {
-              text: 'Delete permanently',
+              text: 'Delete Permanently',
               onClick: (selectedProject) => {
                 destroyProject(selectedProject.proj_id)
               },
@@ -161,71 +155,65 @@ export const ProjectContextMenu = React.memo(
       destroyProject,
       renameProject,
       restoreProject,
+      copyProjectLink,
     ])
-
-    const preventDefault = React.useCallback((event: Event) => {
-      event.preventDefault()
-    }, [])
 
     const pendingAccessRequests = React.useMemo(
       () => accessRequests.filter((r) => r.status === AccessRequestStatus.PENDING),
       [accessRequests],
     )
 
+    const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
+
+    const onOpenShareDialog = React.useCallback(() => {
+      setSharingProjectId(project.proj_id)
+    }, [project, setSharingProjectId])
+
     return (
-      <DropdownMenu.Portal>
-        <DropdownMenu.Content className={contextMenuDropdown()} align='end' sideOffset={5}>
-          {menuEntries.map((entry, index) => {
-            if (entry === 'separator') {
-              return (
-                <DropdownMenu.Separator
-                  key={`separator-${index}`}
-                  className={sprinkles({ backgroundColor: 'separator' })}
-                  style={{ height: 1 }}
-                />
-              )
-            }
-            if (entry === 'sharing-dialog') {
-              return (
-                <Dialog.Root key={`separator-${index}`}>
-                  <Dialog.Trigger>
-                    <DropdownMenu.Item
-                      style={{ height: 28, fontSize: 12 }}
-                      onSelect={preventDefault}
-                      className={contextMenuItem()}
-                    >
-                      <Flex justify={'between'} align={'center'} width={'100%'}>
-                        <Text>Share</Text>
-                        {pendingAccessRequests.length > 0 ? (
-                          <DotFilledIcon color={'#DB9A9A'} height={22} width={22} />
-                        ) : null}
-                      </Flex>
-                    </DropdownMenu.Item>
-                  </Dialog.Trigger>
-                  <Dialog.Content>
-                    <SharePopup project={project} accessRequests={accessRequests} />
-                  </Dialog.Content>
-                </Dialog.Root>
-              )
-            }
-            function onClick() {
-              if (entry != null && typeof entry !== 'string') {
-                entry.onClick(project)
-              }
-            }
+      <ContextMenu.Content style={{ width: 170 }}>
+        {menuEntries.map((entry, index) => {
+          if (entry === 'separator') {
             return (
-              <DropdownMenu.Item
-                key={`entry-${index}`}
-                onClick={onClick}
-                className={contextMenuItem()}
-              >
-                {entry.text}
-              </DropdownMenu.Item>
+              <Separator
+                key={`separator-${index}`}
+                size='4'
+                style={{ marginTop: 5, marginBottom: 5 }}
+              />
             )
-          })}
-        </DropdownMenu.Content>
-      </DropdownMenu.Portal>
+          }
+          if (entry === 'sharing-dialog') {
+            return (
+              <ContextMenu.Item
+                key={`entry-${index}`}
+                style={{ height: 28, fontSize: 12 }}
+                onSelect={onOpenShareDialog}
+              >
+                <Flex justify={'between'} align={'center'} width={'100%'}>
+                  <Text>Share</Text>
+                  {when(
+                    pendingAccessRequests.length > 0,
+                    <DotFilledIcon color='red' height={22} width={22} />,
+                  )}
+                </Flex>
+              </ContextMenu.Item>
+            )
+          }
+          return (
+            <ContextMenu.Item
+              key={`entry-${index}`}
+              /* eslint-disable-next-line react/jsx-no-bind */
+              onSelect={() => entry.onClick(project)}
+              style={{ height: 28, fontSize: 12 }}
+              color={
+                entry.text === 'Delete Permanently' || entry.text === 'Delete' ? 'red' : undefined
+              }
+            >
+              {entry.text}
+            </ContextMenu.Item>
+          )
+        })}
+      </ContextMenu.Content>
     )
   },
 )
-ProjectContextMenu.displayName = 'ProjectContextMenu'
+ProjectActionsMenu.displayName = 'ProjectActionsMenu'
