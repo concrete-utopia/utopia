@@ -9,6 +9,7 @@ import * as http from 'node:http'
 import * as path from 'node:path'
 import * as url from 'node:url'
 import sourceMapSupport from 'source-map-support'
+import chokidar from 'chokidar'
 
 // To make sure everything keeps working and the server doesn't crash, if
 // there are any uncaught errors, log them out gracefully
@@ -93,7 +94,6 @@ async function createDevRequestHandler(initialBuild: ServerBuild) {
     broadcastDevReady(build)
   }
 
-  const chokidar = await import('chokidar')
   chokidar
     .watch(VERSION_PATH, { ignoreInitial: true })
     .on('add', handleServerUpdate)

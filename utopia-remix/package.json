@@ -4,7 +4,7 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
-    "build": "pnpm run build:server && pnpm run build:remix",
+    "build": "pnpm run build:remix && pnpm run build:server",
     "build:server": "esbuild --platform=node --format=esm ./server.ts --outdir=./",
     "build:remix": "remix build",
     "dev": "remix dev -c \"npm run dev:server\" --manual",
