@@ -16,6 +16,8 @@ import { Status } from '../util/statusCodes'
 
 describe('validators', () => {
   describe('validateProjectAccess', () => {
+    let hasUserProjectPermissionMock: jest.SpyInstance
+
     afterEach(async () => {
       await truncateTables([
         prisma.projectID,
@@ -25,7 +27,7 @@ describe('validators', () => {
         prisma.persistentSession,
       ])
 
-      jest.spyOn(permissionsService, 'hasUserProjectPermission').mockRestore()
+      hasUserProjectPermissionMock.mockRestore()
     })
 
     beforeEach(async () => {
@@ -34,6 +36,8 @@ describe('validators', () => {
       await createTestSession(prisma, { key: 'bob-key', userId: 'bob' })
       await createTestSession(prisma, { key: 'alice-key', userId: 'alice' })
       await createTestProject(prisma, { id: 'one', ownerId: 'bob' })
+
+      hasUserProjectPermissionMock = jest.spyOn(permissionsService, 'hasUserProjectPermission')
     })
 
     const perm = UserProjectPermission.CAN_COMMENT_PROJECT // just any of the permissions is fine
@@ -75,7 +79,7 @@ describe('validators', () => {
     })
 
     it('does nothing if the user has access', async () => {
-      jest.spyOn(permissionsService, 'hasUserProjectPermission').mockResolvedValue(true)
+      hasUserProjectPermissionMock.mockResolvedValue(true)
 
       const got = await validateProjectAccess(perm, { getProjectId: () => 'one' })(
         newTestRequest({ authCookie: 'alice-key' }),
@@ -86,7 +90,7 @@ describe('validators', () => {
 
     describe('when access can be requested', () => {
       it('returns a 404 if the user cannot request access', async () => {
-        jest.spyOn(permissionsService, 'hasUserProjectPermission').mockResolvedValue(false)
+        hasUserProjectPermissionMock.mockResolvedValue(false)
 
         const got = await validateProjectAccess(perm, {
           getProjectId: () => 'one',
@@ -98,11 +102,9 @@ describe('validators', () => {
       })
 
       it('returns a 403 if the user can request access', async () => {
-        jest
-          .spyOn(permissionsService, 'hasUserProjectPermission')
-          .mockImplementation(async (_, __, p) => {
-            return p === UserProjectPermission.CAN_REQUEST_ACCESS
-          })
+        hasUserProjectPermissionMock.mockImplementation(
+          async (_, __, p) => p === UserProjectPermission.CAN_REQUEST_ACCESS,
+        )
 
         const got = await validateProjectAccess(perm, {
           getProjectId: () => 'one',
@@ -116,11 +118,9 @@ describe('validators', () => {
 
     describe('when access cannot be requested', () => {
       it('returns a 404 even if the user can request access', async () => {
-        jest
-          .spyOn(permissionsService, 'hasUserProjectPermission')
-          .mockImplementation(async (_, __, p) => {
-            return p === UserProjectPermission.CAN_REQUEST_ACCESS
-          })
+        hasUserProjectPermissionMock.mockImplementation(
+          async (_, __, p) => p === UserProjectPermission.CAN_REQUEST_ACCESS,
+        )
 
         const got = await validateProjectAccess(perm, {
           getProjectId: () => 'one',
@@ -136,7 +136,7 @@ describe('validators', () => {
           accessLevel: AccessLevel.COLLABORATIVE,
         })
 
-        jest.spyOn(permissionsService, 'hasUserProjectPermission').mockResolvedValue(false)
+        hasUserProjectPermissionMock.mockResolvedValue(false)
 
         const got = await validateProjectAccess(perm, {
           getProjectId: () => 'one',
