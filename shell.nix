@@ -48,7 +48,7 @@ let
     (pkgs.writeScriptBin "install-runtime-eslint" ''
       #!/usr/bin/env bash
       set -e
-      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor/src/packages/runtime-eslint
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor/packages/runtime-eslint
       ${pnpm}/bin/pnpm install
       ${pnpm}/bin/pnpm run build
     '')

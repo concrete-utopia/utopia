@@ -180,7 +180,7 @@
     "create-react-class": "15.6.3",
     "css-tree": "2.3.1",
     "eslint-config-utopia": "link:../eslint-config-utopia",
-    "utopia-runtime-eslint": "link:src/packages/runtime-eslint",
+    "utopia-runtime-eslint": "link:packages/runtime-eslint",
     "eslint-plugin-import": "2.25.3",
     "eslint-plugin-jsx-a11y": "6.5.1",
     "eslint-plugin-react": "7.33.2",
