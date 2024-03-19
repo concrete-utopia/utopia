@@ -182,7 +182,7 @@ specifiers:
   eslint-plugin-jsx-a11y: 6.5.1
   eslint-plugin-prettier: 3.1.2
   eslint-plugin-react: 7.33.2
-  eslint-plugin-react-hooks: 4.6.0
+  eslint-plugin-react-hooks: 4.2.0
   eslint4b: 6.6.0
   expect: 26.1.0
   fast-check: 1.15.0
@@ -395,7 +395,7 @@ dependencies:
   eslint-plugin-import: 2.25.3_umpvuyud5lahttedsfo35ymtua
   eslint-plugin-jsx-a11y: 6.5.1_5wlsrnjcorawie777qour2ptie_eslint@8.38.0
   eslint-plugin-react: 7.33.2_eslint@8.38.0
-  eslint-plugin-react-hooks: 4.6.0_eslint@8.38.0
+  eslint-plugin-react-hooks: 4.2.0_eslint@8.38.0
   eslint4b: 6.6.0
   fast-deep-equal: 2.0.1
   fontfaceobserver: 2.1.0
@@ -9628,11 +9628,11 @@ packages:
       prettier-linter-helpers: 1.0.0
     dev: true
 
-  /eslint-plugin-react-hooks/4.6.0_eslint@8.38.0:
-    resolution: {integrity: sha512-oFc7Itz9Qxh2x4gNHStv3BqJq54ExXmfC+a1NjAta66IAN87Wu0R/QArgIS9qKzX3dXKPI9H5crl9QchNMY9+g==}
+  /eslint-plugin-react-hooks/4.2.0_eslint@8.38.0:
+    resolution: {integrity: sha512-623WEiZJqxR7VdxFCKLI6d6LLpwJkGPYKODnkH3D7WpOG5KM8yWueBd8TLsNAetEJNF5iJmolaAKO3F8yzyVBQ==}
     engines: {node: '>=10'}
     peerDependencies:
-      eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0
+      eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0
     dependencies:
       eslint: 8.38.0
     dev: false
