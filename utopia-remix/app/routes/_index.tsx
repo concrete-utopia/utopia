@@ -1,4 +1,4 @@
-import { json, type LinksFunction, type MetaFunction } from '@remix-run/node'
+import { type LinksFunction, type MetaFunction } from '@remix-run/node'
 import {
   ContactUs,
   CookieConsentBar,
@@ -56,7 +56,7 @@ export const meta: MetaFunction<typeof rootLoader> = ({ data }) => {
     { name: 'msapplication-TileColor', content: '#da532c' },
     { name: 'theme-color', content: '#ffffff' },
     { property: 'og:title', content: 'Utopia: Design and Code on one platform' },
-    { property: 'og:image', content: urlJoin(data?.ENV.UTOPIA_CDN_URL ?? '', '/og-card.png') },
+    { property: 'og:image', content: urlJoin(data?.env.UTOPIA_CDN_URL ?? '', '/og-card.png') },
     { property: 'og:type', content: 'website' },
     {
       property: 'og:description',
