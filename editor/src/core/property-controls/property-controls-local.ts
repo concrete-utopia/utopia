@@ -61,7 +61,7 @@ async function parseInsertOption(
   }, parsedParams)
 }
 
-export const isComponentDescriptorFile = (filename: string) => filename.endsWith('utopia.js')
+export const isComponentDescriptorFile = (filename: string) => filename.endsWith('.utopia.js')
 
 async function getComponentDescriptorPromises(
   parseResult: ParseOrPrintResult,
