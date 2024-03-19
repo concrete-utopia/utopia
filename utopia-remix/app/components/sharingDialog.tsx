@@ -23,8 +23,40 @@ import moment from 'moment'
 import { useProjectEditorLink } from '../util/links'
 import { button } from '../styles/button.css'
 import { useCopyProjectLinkToClipboard } from '../util/copyProjectLink'
+import { useProjectsStore } from '../store'
 
-export function SharingDialog({
+export const SharingDialogWrapper = React.memo(
+  ({
+    project,
+    accessRequests,
+  }: {
+    project: ProjectWithoutContent
+    accessRequests: ProjectAccessRequestWithUserDetails[]
+  }) => {
+    const sharingProjectId = useProjectsStore((store) => store.sharingProjectId)
+    const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
+
+    const onOpenChange = React.useCallback(
+      (open: boolean) => {
+        if (!open) {
+          setSharingProjectId(null)
+        }
+      },
+      [setSharingProjectId],
+    )
+
+    return (
+      <Dialog.Root open={sharingProjectId === project.proj_id} onOpenChange={onOpenChange}>
+        <Dialog.Content>
+          <SharingDialog project={project} accessRequests={accessRequests} />
+        </Dialog.Content>
+      </Dialog.Root>
+    )
+  },
+)
+SharingDialogWrapper.displayName = 'SharingDialogWrapper'
+
+function SharingDialog({
   project,
   accessRequests,
 }: {

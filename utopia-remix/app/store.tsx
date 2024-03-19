@@ -27,6 +27,7 @@ interface ProjectsStoreStateNonPersisted {
   searchQuery: string
   operations: OperationWithKey[]
   env: BrowserEnvironmentType | null
+  sharingProjectId: string | null
 }
 
 const initialProjectsStoreStateNonPersisted: ProjectsStoreStateNonPersisted = {
@@ -35,6 +36,7 @@ const initialProjectsStoreStateNonPersisted: ProjectsStoreStateNonPersisted = {
   searchQuery: '',
   operations: [],
   env: null,
+  sharingProjectId: null,
 }
 
 type ProjectsStoreState = ProjectsStoreStatePersisted & ProjectsStoreStateNonPersisted
@@ -49,6 +51,7 @@ interface ProjectsStoreActions {
   addOperation: (operation: Operation, key: string) => void
   removeOperation: (key: string) => void
   updateOperation: (key: string, data: { errored: boolean }) => void
+  setSharingProjectId: (projectId: string | null) => void
 }
 
 type ProjectsStore = ProjectsStoreState & ProjectsStoreActions
@@ -106,6 +109,9 @@ export const createProjectsStore = (
                 return other
               }),
             }))
+          },
+          setSharingProjectId: (projectId) => {
+            return set(() => ({ sharingProjectId: projectId }))
           },
         }),
         {
