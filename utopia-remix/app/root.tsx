@@ -23,7 +23,7 @@ import radixStyle from '@radix-ui/themes/styles.css'
 import './normalize.css'
 import { Theme } from '@radix-ui/themes'
 import { useIsDarkMode } from './hooks/useIsDarkMode'
-import { useProjectsStore } from './store'
+import { ProjectsContext, createProjectsStore } from './store'
 import React from 'react'
 
 export const links: LinksFunction = () => [
@@ -33,7 +33,7 @@ export const links: LinksFunction = () => [
 
 export async function loader() {
   return json({
-    ENV: BrowserEnvironment,
+    env: BrowserEnvironment,
   })
 }
 
@@ -46,11 +46,8 @@ export const headers: HeadersFunction = () => ({
 export default function App() {
   const data = useLoaderData<typeof loader>()
   const isDarkMode = useIsDarkMode()
-  const setEnv = useProjectsStore((store) => store.setEnv)
 
-  React.useEffect(() => {
-    setEnv(data.ENV)
-  }, [setEnv, data.ENV])
+  const store = React.useRef(createProjectsStore({ env: data.env })).current
 
   const theme = isDarkMode ? 'dark' : 'light'
 
@@ -65,9 +62,11 @@ export default function App() {
         <Links />
       </head>
       <body className={styles.root}>
-        <Theme appearance={theme} accentColor='blue' panelBackground='solid'>
-          <Outlet />
-        </Theme>
+        <ProjectsContext.Provider value={store}>
+          <Theme appearance={theme} accentColor='blue' panelBackground='solid'>
+            <Outlet />
+          </Theme>
+        </ProjectsContext.Provider>
         <ScrollRestoration />
         <Scripts />
         <LiveReload />

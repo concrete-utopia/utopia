@@ -1,9 +1,11 @@
-import { create } from 'zustand'
+import type { StoreApi } from 'zustand'
+import { createStore, useStore } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 import type { Category, SortCriteria } from './routes/projects'
 import type { Operation } from './types'
 import { areBaseOperationsEquivalent } from './types'
 import type { BrowserEnvironmentType } from './env.server'
+import React from 'react'
 
 // State portion that will be persisted
 interface ProjectsStoreStatePersisted {
@@ -47,81 +49,81 @@ interface ProjectsStoreActions {
   addOperation: (operation: Operation, key: string) => void
   removeOperation: (key: string) => void
   updateOperation: (key: string, data: { errored: boolean }) => void
-  setEnv: (env: BrowserEnvironmentType) => void
 }
 
 type ProjectsStore = ProjectsStoreState & ProjectsStoreActions
 
-export const useProjectsStore = create<ProjectsStore>()(
-  devtools(
-    persist(
-      (set) => ({
-        ...initialProjectsStoreStatePersisted,
-        ...initialProjectsStoreStateNonPersisted,
+export const createProjectsStore = (
+  initialContextState: Partial<ProjectsStoreState>,
+): StoreApi<ProjectsStore> =>
+  createStore<ProjectsStore>()(
+    devtools(
+      persist(
+        (set) => ({
+          ...initialProjectsStoreStatePersisted,
+          ...initialProjectsStoreStateNonPersisted,
+          ...initialContextState,
 
-        setSelectedCategory: (category: Category) => {
-          return set(() => ({ selectedCategory: category }))
-        },
-        setSelectedProjectId: (projectId: string | null) => {
-          return set(() => ({ selectedProjectId: projectId }))
-        },
-        setSearchQuery: (query) => {
-          return set(() => ({ searchQuery: query }))
-        },
-        setSortCriteria: (sortCriteria) => {
-          return set(() => ({ sortCriteria: sortCriteria }))
-        },
-        setSortAscending: (sortAscending) => {
-          return set(() => ({ sortAscending: sortAscending }))
-        },
-        setGridView: (gridView) => {
-          return set(() => ({ gridView: gridView }))
-        },
-        addOperation: (operation, key) => {
-          return set(({ operations }) => ({
-            operations: operations
-              .filter((other) => !areBaseOperationsEquivalent(other, operation))
-              .concat(operationWithKey(operation, key)),
-          }))
-        },
-        removeOperation: (key) => {
-          return set(({ operations }) => ({
-            operations: operations.filter((other) => other.key !== key),
-          }))
-        },
-        updateOperation: (key, data) => {
-          return set(({ operations }) => ({
-            operations: operations.map((other) => {
-              if (other.key === key) {
-                return {
-                  ...other,
-                  errored: data.errored,
+          setSelectedCategory: (category: Category) => {
+            return set(() => ({ selectedCategory: category }))
+          },
+          setSelectedProjectId: (projectId: string | null) => {
+            return set(() => ({ selectedProjectId: projectId }))
+          },
+          setSearchQuery: (query) => {
+            return set(() => ({ searchQuery: query }))
+          },
+          setSortCriteria: (sortCriteria) => {
+            return set(() => ({ sortCriteria: sortCriteria }))
+          },
+          setSortAscending: (sortAscending) => {
+            return set(() => ({ sortAscending: sortAscending }))
+          },
+          setGridView: (gridView) => {
+            return set(() => ({ gridView: gridView }))
+          },
+          addOperation: (operation, key) => {
+            return set(({ operations }) => ({
+              operations: operations
+                .filter((other) => !areBaseOperationsEquivalent(other, operation))
+                .concat(operationWithKey(operation, key)),
+            }))
+          },
+          removeOperation: (key) => {
+            return set(({ operations }) => ({
+              operations: operations.filter((other) => other.key !== key),
+            }))
+          },
+          updateOperation: (key, data) => {
+            return set(({ operations }) => ({
+              operations: operations.map((other) => {
+                if (other.key === key) {
+                  return {
+                    ...other,
+                    errored: data.errored,
+                  }
                 }
-              }
-              return other
-            }),
-          }))
-        },
-        setEnv: (env) => {
-          return set(() => ({ env }))
-        },
-      }),
-      {
-        name: 'store',
-        partialize: (fullStore) => {
-          const nonPersistedKeys = Object.keys(
-            initialProjectsStoreStateNonPersisted,
-          ) as (keyof ProjectsStoreStateNonPersisted)[]
+                return other
+              }),
+            }))
+          },
+        }),
+        {
+          name: 'store',
+          partialize: (fullStore) => {
+            const nonPersistedKeys = Object.keys(
+              initialProjectsStoreStateNonPersisted,
+            ) as (keyof ProjectsStoreStateNonPersisted)[]
 
-          let persistedStore: Partial<ProjectsStore> = { ...fullStore }
-          nonPersistedKeys.forEach((key) => delete persistedStore[key])
+            let persistedStore: Partial<ProjectsStore> = { ...fullStore }
+            nonPersistedKeys.forEach((key) => delete persistedStore[key])
 
-          return persistedStore
+            return persistedStore
+          },
         },
-      },
+      ),
     ),
-  ),
-)
+  )
 
 export type OperationWithKey = Operation & {
   key: string
@@ -136,4 +138,14 @@ function operationWithKey(operation: Operation, key: string): OperationWithKey {
     startedAt: Date.now(),
     errored: false,
   }
+}
+
+export const ProjectsContext = React.createContext<StoreApi<ProjectsStore> | null>(null)
+
+export function useProjectsStore<T>(selector: (store: ProjectsStore) => T): T {
+  const store = React.useContext(ProjectsContext)
+  if (store == null) {
+    throw new Error('missing store context')
+  }
+  return useStore(store, selector)
 }
