@@ -314,4 +314,6 @@ describe('project model', () => {
       expect(aliceProjects.map((p) => p.proj_id)).toEqual(['four', 'seven'])
     })
   })
+
+  describe('listProjectsSharedWithMe', () => {})
 })
