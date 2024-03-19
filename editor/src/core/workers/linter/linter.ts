@@ -11,11 +11,9 @@ BrowserFS.configure({ fs: 'InMemory', options: {} }, (e) => {
 })
 ;(global as any).BrowserFS = BrowserFS
 
-import type { Linter as ESLintLinter } from 'eslint'
-import Linter from 'eslint4b'
+import { type ESLintLinter, Linter, BabelEslint } from 'utopia-runtime-eslint'
 import { ESLINT_CONFIG, EslintPluginRules } from './eslint-config'
 import type { ErrorMessage } from '../../shared/error-messages'
-import BabelEslint from 'babel-eslint'
 import { getFileExtension } from '../../shared/file-utils'
 
 class CustomUtopiaLinter extends Linter {

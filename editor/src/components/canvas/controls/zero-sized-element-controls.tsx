@@ -341,7 +341,7 @@ export const ZeroSizeResizeControlWrapper = controlForStrategyMemoized(
         {zeroSizeElements.map((element) => {
           if (element.globalFrame != null && isFiniteRectangle(element.globalFrame)) {
             return (
-              <React.Fragment>
+              <React.Fragment key={EP.toString(element.elementPath)}>
                 <ZeroSizeOutlineControl frame={element.globalFrame} scale={scale} color={null} />
                 <ZeroSizeResizeControl
                   element={element}

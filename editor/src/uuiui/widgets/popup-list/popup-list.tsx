@@ -607,9 +607,9 @@ export const PopupList = React.memo<PopupListProps>(
 
       const container: styleFn = getContainer(containerMode, controlStyles, style)
 
-      function isOptionDisabled(option: SelectOption) {
+      const isOptionDisabled = React.useCallback((option: SelectOption) => {
         return option.disabled === true
-      }
+      }, [])
 
       const stopPropagation: KeyboardEventHandler = React.useCallback((event) => {
         if (event.key.includes('Arrow')) {

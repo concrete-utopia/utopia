@@ -1,0 +1,12 @@
+diff --git a/lib/index.js b/lib/index.js
+index d809156..a4e3457 100644
+--- a/lib/index.js
++++ b/lib/index.js
+@@ -12,7 +12,6 @@ module.exports = {
+     'aria-proptypes': require('./rules/aria-proptypes'),
+     'aria-role': require('./rules/aria-role'),
+     'aria-unsupported-elements': require('./rules/aria-unsupported-elements'),
+-    'autocomplete-valid': require('./rules/autocomplete-valid'),
+     'click-events-have-key-events': require('./rules/click-events-have-key-events'),
+     'control-has-associated-label': require('./rules/control-has-associated-label'),
+     'heading-has-content': require('./rules/heading-has-content'),

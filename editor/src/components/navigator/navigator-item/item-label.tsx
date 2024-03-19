@@ -162,9 +162,9 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
     triggerRenameComponent()
   }, [triggerRenameComponent])
 
-  function onInputLabelChange(event: React.ChangeEvent<HTMLInputElement>) {
+  const onInputLabelChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setName(event.target.value)
-  }
+  }, [])
 
   const isActiveBranchOfOverriddenConditional = useEditorState(
     Substores.metadata,
