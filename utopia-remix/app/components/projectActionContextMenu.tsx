@@ -93,6 +93,9 @@ export const ProjectActionsMenu = React.memo(
     const menuEntries = React.useMemo((): ContextMenuEntry[] => {
       switch (selectedCategory) {
         case 'allProjects':
+        case 'public':
+        case 'shared':
+        case 'private':
           return [
             {
               text: 'Open',
