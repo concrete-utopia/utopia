@@ -81,8 +81,12 @@ installGlobals()
 async function createDevRequestHandler(initialBuild) {
   let build = initialBuild
   async function handleServerUpdate() {
+    // 0. give the rebuild time to breathe
+    await new Promise((res) => setTimeout(res, 1000))
+
     // 1. re-import the server build
     build = await reimportServer()
+
     // 2. tell Remix that this app server is now up-to-date and ready
     broadcastDevReady(build)
   }
@@ -197,13 +201,13 @@ function listenCallback(portNumber) {
   return () => {
     console.log(asciiBanner)
     console.log(`Express listening on http://localhost:${portNumber}`)
-    if (process.env.NODE_ENV === 'development') {
+    if (environment.NODE_ENV === 'development') {
       broadcastDevReady(initialBuild)
     }
   }
 }
 
 app.listen(environment.PORT, listenCallback(environment.PORT))
-if (process.env.NODE_ENV === 'development') {
+if (environment.NODE_ENV === 'development') {
   app.listen(environment.PORT + 1, listenCallback(environment.PORT + 1))
 }

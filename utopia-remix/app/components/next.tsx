@@ -2,7 +2,7 @@ import { Popover, Transition } from '@headlessui/react'
 import React from 'react'
 import { Fragment } from 'react'
 import { CookieConsent, getCookieConsentValue } from 'react-cookie-consent'
-import { useBrowserEnv } from '../util/use-env'
+import { useProjectsStore } from '../store'
 
 const mainNavigation = [
   { name: ' ', href: '#' },
@@ -312,7 +312,7 @@ type HostedImageProps = React.DetailedHTMLProps<
 > & { src: string }
 
 export function HostedImage(props: HostedImageProps) {
-  const env = useBrowserEnv()
+  const env = useProjectsStore((store) => store.env)
   if (env == null) {
     return null
   }

@@ -12,10 +12,11 @@ import * as permissionsService from '../services/permissionsService.server'
 import { AccessLevel, UserProjectPermission } from '../types'
 import { ApiError } from '../util/errors'
 import type { ValidationResult } from '../util/api.server'
+import { Status } from '../util/statusCodes'
 
 describe('validators', () => {
   describe('validateProjectAccess', () => {
-    let hasUserProjectPermission: jest.SpyInstance
+    let hasUserProjectPermissionMock: jest.SpyInstance
 
     afterEach(async () => {
       await truncateTables([
@@ -25,9 +26,10 @@ describe('validators', () => {
         prisma.userDetails,
         prisma.persistentSession,
       ])
-      hasUserProjectPermission.mockClear()
-      jest.spyOn(permissionsService, 'hasUserProjectPermission').mockRestore()
+
+      hasUserProjectPermissionMock.mockRestore()
     })
+
     beforeEach(async () => {
       await createTestUser(prisma, { id: 'bob' })
       await createTestUser(prisma, { id: 'alice' })
@@ -35,7 +37,7 @@ describe('validators', () => {
       await createTestSession(prisma, { key: 'alice-key', userId: 'alice' })
       await createTestProject(prisma, { id: 'one', ownerId: 'bob' })
 
-      hasUserProjectPermission = jest.spyOn(permissionsService, 'hasUserProjectPermission')
+      hasUserProjectPermissionMock = jest.spyOn(permissionsService, 'hasUserProjectPermission')
     })
 
     const perm = UserProjectPermission.CAN_COMMENT_PROJECT // just any of the permissions is fine
@@ -49,15 +51,21 @@ describe('validators', () => {
         newTestRequest(),
         {},
       )
-      expect(got.ok).toBe(false)
+
+      const error = mustBeApiErrorValidator(got)
+      expect(error.status).toBe(Status.BAD_REQUEST)
     })
+
     it('errors if the project does not exist', async () => {
       const got = await validateProjectAccess(perm, { getProjectId: () => 'unknown' })(
         newTestRequest(),
         {},
       )
-      expect(got.ok).toBe(false)
+
+      const error = mustBeApiErrorValidator(got)
+      expect(error.status).toBe(Status.NOT_FOUND)
     })
+
     it('does nothing if the user is the owner', async () => {
       await createTestProjectAccess(prisma, {
         projectId: 'one',
@@ -69,14 +77,9 @@ describe('validators', () => {
       )
       expect(got.ok).toBe(true)
     })
-    it('does nothing if the user has access on a collaborative project', async () => {
-      await createTestProjectAccess(prisma, {
-        projectId: 'one',
-        accessLevel: AccessLevel.COLLABORATIVE,
-      })
 
-      jest.spyOn(permissionsService, 'hasUserProjectPermission').mockResolvedValue(true)
-      hasUserProjectPermission = jest.spyOn(permissionsService, 'hasUserProjectPermission')
+    it('does nothing if the user has access', async () => {
+      hasUserProjectPermissionMock.mockResolvedValue(true)
 
       const got = await validateProjectAccess(perm, { getProjectId: () => 'one' })(
         newTestRequest({ authCookie: 'alice-key' }),
@@ -84,117 +87,63 @@ describe('validators', () => {
       )
       expect(got.ok).toBe(true)
     })
-    it("does nothing if the user has access but it's not a collaborative project", async () => {
-      await createTestProjectAccess(prisma, {
-        projectId: 'one',
-        accessLevel: AccessLevel.PRIVATE,
-      })
 
-      jest.spyOn(permissionsService, 'hasUserProjectPermission').mockResolvedValue(true)
-      hasUserProjectPermission = jest.spyOn(permissionsService, 'hasUserProjectPermission')
-
-      const got = await validateProjectAccess(perm, { getProjectId: () => 'one' })(
-        newTestRequest({ authCookie: 'alice-key' }),
-        {},
-      )
-      const error = mustBeApiErrorValidator(got)
-      expect(error.status).toBe(404)
-    })
     describe('when access can be requested', () => {
-      it('returns a 404 if the project is not collaborative', async () => {
-        await createTestProjectAccess(prisma, {
-          projectId: 'one',
-          accessLevel: AccessLevel.PRIVATE,
-        })
-
-        jest.spyOn(permissionsService, 'hasUserProjectPermission').mockResolvedValue(false)
-        hasUserProjectPermission = jest.spyOn(permissionsService, 'hasUserProjectPermission')
-
-        const got = await validateProjectAccess(perm, {
-          getProjectId: () => 'one',
-          canRequestAccess: true,
-        })(newTestRequest({ authCookie: 'alice-key' }), {})
-        expect(got.ok).toBe(false)
-      })
-      it('returns a 403 if the user can request access', async () => {
-        await createTestProjectAccess(prisma, {
-          projectId: 'one',
-          accessLevel: AccessLevel.COLLABORATIVE,
-        })
-
-        jest
-          .spyOn(permissionsService, 'hasUserProjectPermission')
-          .mockImplementation(async (_, __, p) => {
-            return p === UserProjectPermission.CAN_REQUEST_ACCESS
-          })
-        hasUserProjectPermission = jest.spyOn(permissionsService, 'hasUserProjectPermission')
-
-        const got = await validateProjectAccess(perm, {
-          getProjectId: () => 'one',
-          canRequestAccess: true,
-        })(newTestRequest({ authCookie: 'alice-key' }), {})
-        const error = mustBeApiErrorValidator(got)
-        expect(error.status).toBe(403)
-      })
       it('returns a 404 if the user cannot request access', async () => {
-        await createTestProjectAccess(prisma, {
-          projectId: 'one',
-          accessLevel: AccessLevel.COLLABORATIVE,
-        })
-
-        jest
-          .spyOn(permissionsService, 'hasUserProjectPermission')
-          .mockImplementation(async (_, __, p) => {
-            return false
-          })
-        hasUserProjectPermission = jest.spyOn(permissionsService, 'hasUserProjectPermission')
+        hasUserProjectPermissionMock.mockResolvedValue(false)
 
         const got = await validateProjectAccess(perm, {
           getProjectId: () => 'one',
           canRequestAccess: true,
         })(newTestRequest({ authCookie: 'alice-key' }), {})
+
         const error = mustBeApiErrorValidator(got)
-        expect(error.status).toBe(404)
+        expect(error.status).toBe(Status.NOT_FOUND)
+      })
+
+      it('returns a 403 if the user can request access', async () => {
+        hasUserProjectPermissionMock.mockImplementation(
+          async (_, __, p) => p === UserProjectPermission.CAN_REQUEST_ACCESS,
+        )
+
+        const got = await validateProjectAccess(perm, {
+          getProjectId: () => 'one',
+          canRequestAccess: true,
+        })(newTestRequest({ authCookie: 'alice-key' }), {})
+
+        const error = mustBeApiErrorValidator(got)
+        expect(error.status).toBe(Status.FORBIDDEN)
       })
     })
-    describe('when access cannot be requested', () => {
-      it('returns a 404 if the project is not collaborative', async () => {
-        await createTestProjectAccess(prisma, {
-          projectId: 'one',
-          accessLevel: AccessLevel.PRIVATE,
-        })
 
-        jest
-          .spyOn(permissionsService, 'hasUserProjectPermission')
-          .mockImplementation(async (_, __, p) => {
-            return false
-          })
-        hasUserProjectPermission = jest.spyOn(permissionsService, 'hasUserProjectPermission')
+    describe('when access cannot be requested', () => {
+      it('returns a 404 even if the user can request access', async () => {
+        hasUserProjectPermissionMock.mockImplementation(
+          async (_, __, p) => p === UserProjectPermission.CAN_REQUEST_ACCESS,
+        )
 
         const got = await validateProjectAccess(perm, {
           getProjectId: () => 'one',
         })(newTestRequest({ authCookie: 'alice-key' }), {})
+
         const error = mustBeApiErrorValidator(got)
-        expect(error.status).toBe(404)
+        expect(error.status).toBe(Status.NOT_FOUND)
       })
-      it('returns a 404 if the project collaborative but the user has no access', async () => {
+
+      it('returns a 404', async () => {
         await createTestProjectAccess(prisma, {
           projectId: 'one',
           accessLevel: AccessLevel.COLLABORATIVE,
         })
 
-        jest
-          .spyOn(permissionsService, 'hasUserProjectPermission')
-          .mockImplementation(async (_, __, p) => {
-            return false
-          })
-        hasUserProjectPermission = jest.spyOn(permissionsService, 'hasUserProjectPermission')
+        hasUserProjectPermissionMock.mockResolvedValue(false)
 
         const got = await validateProjectAccess(perm, {
           getProjectId: () => 'one',
         })(newTestRequest({ authCookie: 'alice-key' }), {})
+
         const error = mustBeApiErrorValidator(got)
-        expect(error.status).toBe(404)
+        expect(error.status).toBe(Status.NOT_FOUND)
       })
     })
   })
