@@ -12,6 +12,7 @@
     "allowJs": true,
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
+    "module": "ESNext",
     "paths": {
       "~/*": ["./app/*"]
     },

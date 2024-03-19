@@ -6,6 +6,7 @@ export default {
     v3_fetcherPersist: true,
   },
   serverModuleFormat: 'esm',
+  server: './server.ts',
   // appDirectory: "app",
   // assetsBuildDirectory: "public/build",
   // publicPath: "/build/",
