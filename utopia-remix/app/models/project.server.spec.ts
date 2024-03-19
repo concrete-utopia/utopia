@@ -162,7 +162,7 @@ describe('project model', () => {
     })
   })
 
-  describe('getProjectOwnerById', () => {
+  describe('getProjectOwnership', () => {
     beforeEach(async () => {
       await createTestUser(prisma, { id: 'bob' })
       await createTestUser(prisma, { id: 'alice' })
