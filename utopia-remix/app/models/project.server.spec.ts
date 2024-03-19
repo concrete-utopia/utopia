@@ -3,6 +3,7 @@ import { prisma } from '../db.server'
 import {
   createTestProject,
   createTestProjectAccess,
+  createTestProjectCollaborator,
   createTestUser,
   truncateTables,
 } from '../test-util'
@@ -12,6 +13,7 @@ import {
   hardDeleteProject,
   listDeletedProjects,
   listProjects,
+  listProjectsSharedWithMe,
   renameProject,
   restoreDeletedProject,
   softDeleteProject,
@@ -24,6 +26,7 @@ describe('project model', () => {
     await truncateTables([
       prisma.projectID,
       prisma.projectAccess,
+      prisma.projectCollaborator,
       prisma.project,
       prisma.userDetails,
     ])
@@ -315,5 +318,63 @@ describe('project model', () => {
     })
   })
 
-  describe('listProjectsSharedWithMe', () => {})
+  describe('listProjectsSharedWithMe', () => {
+    beforeEach(async () => {
+      await createTestUser(prisma, { id: 'bob' })
+      await createTestUser(prisma, { id: 'alice' })
+      await createTestUser(prisma, { id: 'carol' })
+      await createTestProject(prisma, {
+        id: 'one',
+        ownerId: 'bob',
+        accessLevel: AccessLevel.COLLABORATIVE,
+      })
+      await createTestProject(prisma, {
+        id: 'two',
+        ownerId: 'bob',
+        accessLevel: AccessLevel.COLLABORATIVE,
+      })
+      await createTestProject(prisma, {
+        id: 'three',
+        ownerId: 'alice',
+        accessLevel: AccessLevel.COLLABORATIVE,
+      })
+      await createTestProject(prisma, {
+        id: 'four',
+        ownerId: 'alice',
+        accessLevel: AccessLevel.COLLABORATIVE,
+      })
+      await createTestProject(prisma, {
+        id: 'five',
+        ownerId: 'carol',
+        accessLevel: AccessLevel.PRIVATE,
+      })
+      await createTestProject(prisma, {
+        id: 'six',
+        ownerId: 'carol',
+        accessLevel: AccessLevel.COLLABORATIVE,
+      })
+      await createTestProject(prisma, {
+        id: 'seven',
+        ownerId: 'carol',
+        accessLevel: AccessLevel.COLLABORATIVE,
+      })
+      await createTestProjectCollaborator(prisma, { projectId: 'one', userId: 'carol' })
+      await createTestProjectCollaborator(prisma, { projectId: 'four', userId: 'bob' })
+      await createTestProjectCollaborator(prisma, { projectId: 'four', userId: 'carol' })
+      await createTestProjectCollaborator(prisma, { projectId: 'five', userId: 'bob' })
+      await createTestProjectCollaborator(prisma, { projectId: 'seven', userId: 'bob' })
+    })
+
+    it('returns an empty list if there are no projects with user as a collaborator', async () => {
+      const got = await listProjectsSharedWithMe({ userId: 'alice' })
+      expect(got.length).toBe(0)
+    })
+
+    it('returns the projects for which the user is a collaborator, that are in the COLLABORATIVE state', async () => {
+      const got = await listProjectsSharedWithMe({ userId: 'bob' })
+      expect(got.length).toBe(2)
+      expect(got[0].proj_id).toBe('seven')
+      expect(got[1].proj_id).toBe('four')
+    })
+  })
 })

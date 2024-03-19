@@ -152,6 +152,7 @@ export async function listProjectsSharedWithMe(params: {
       ...selectProjectWithoutContent,
       ProjectAccess: true,
     },
+    orderBy: { modified_at: 'desc' },
   })
   return projects.filter((p) => p.ProjectAccess?.access_level === AccessLevel.COLLABORATIVE)
 }
