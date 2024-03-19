@@ -1,5 +1,13 @@
 lockfileVersion: 5.4
 
+patchedDependencies:
+  babel-eslint@10.0.1:
+    hash: 5mfawfwqhov474admln32ofh3m
+    path: patches/babel-eslint@10.0.1.patch
+  eslint-plugin-jsx-a11y@6.5.1:
+    hash: 5wlsrnjcorawie777qour2ptie
+    path: patches/eslint-plugin-jsx-a11y@6.5.1.patch
+
 specifiers:
   babel-eslint: 10.0.1
   eslint: 7.32.0
@@ -11,10 +19,10 @@ specifiers:
   typescript: 5.4.2
 
 dependencies:
-  babel-eslint: 10.0.1_eslint@7.32.0
+  babel-eslint: 10.0.1_5mfawfwqhov474admln32ofh3m_eslint@7.32.0
   eslint: 7.32.0
   eslint-plugin-import: 2.25.3_eslint@7.32.0
-  eslint-plugin-jsx-a11y: 6.5.1_eslint@7.32.0
+  eslint-plugin-jsx-a11y: 6.5.1_5wlsrnjcorawie777qour2ptie_eslint@7.32.0
   eslint-plugin-react: 7.23.0_eslint@7.32.0
   eslint-plugin-react-hooks: 4.2.0_eslint@7.32.0
   eslint4b: 6.6.0
@@ -373,7 +381,7 @@ packages:
     resolution: {integrity: sha512-Td525n+iPOOyUQIeBfcASuG6uJsDOITl7Mds5gFyerkWiX7qhUTdYUBlSgNMyVqtSJqwpt1kXGLdUt6SykLMRA==}
     dev: false
 
-  /babel-eslint/10.0.1_eslint@7.32.0:
+  /babel-eslint/10.0.1_5mfawfwqhov474admln32ofh3m_eslint@7.32.0:
     resolution: {integrity: sha512-z7OT1iNV+TjOwHNLLyJk+HN+YVWX+CLE6fPD2SymJZOZQBs+QIexFjhm4keGTm8MW9xr4EC9Q0PbaLB24V5GoQ==}
     engines: {node: '>=6'}
     deprecated: babel-eslint is now @babel/eslint-parser. This package will no longer receive updates.
@@ -390,6 +398,7 @@ packages:
     transitivePeerDependencies:
       - supports-color
     dev: false
+    patched: true
 
   /balanced-match/1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
@@ -811,7 +820,7 @@ packages:
       - supports-color
     dev: false
 
-  /eslint-plugin-jsx-a11y/6.5.1_eslint@7.32.0:
+  /eslint-plugin-jsx-a11y/6.5.1_5wlsrnjcorawie777qour2ptie_eslint@7.32.0:
     resolution: {integrity: sha512-sVCFKX9fllURnXT2JwLN5Qgo24Ug5NF6dxhkmxsMEUZhXRcGg+X3e1JbJ84YePQKBl5E0ZjAH5Q4rkdcGY99+g==}
     engines: {node: '>=4.0'}
     peerDependencies:
@@ -831,6 +840,7 @@ packages:
       language-tags: 1.0.9
       minimatch: 3.1.2
     dev: false
+    patched: true
 
   /eslint-plugin-react-hooks/4.2.0_eslint@7.32.0:
     resolution: {integrity: sha512-623WEiZJqxR7VdxFCKLI6d6LLpwJkGPYKODnkH3D7WpOG5KM8yWueBd8TLsNAetEJNF5iJmolaAKO3F8yzyVBQ==}

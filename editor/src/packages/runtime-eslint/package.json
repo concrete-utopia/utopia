@@ -18,5 +18,11 @@
   },
   "devDependencies": {
     "typescript": "5.4.2"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "babel-eslint@10.0.1": "patches/babel-eslint@10.0.1.patch",
+      "eslint-plugin-jsx-a11y@6.5.1": "patches/eslint-plugin-jsx-a11y@6.5.1.patch"
+    }
   }
 }
