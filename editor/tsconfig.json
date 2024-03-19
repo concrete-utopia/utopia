@@ -25,5 +25,6 @@
       "worker-imports": ["src/core/workers/worker-import-utils.ts"]
     }
   },
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
+  "include": ["src", "test", ".eslintrc.js"]
 }
