@@ -1,7 +1,13 @@
 import moment from 'moment'
 import { prisma } from '../db.server'
-import { createTestProject, createTestUser, truncateTables } from '../test-util'
 import {
+  createTestProject,
+  createTestProjectAccess,
+  createTestUser,
+  truncateTables,
+} from '../test-util'
+import {
+  getProjectOwnership,
   hardDeleteAllProjects,
   hardDeleteProject,
   listDeletedProjects,
@@ -9,13 +15,18 @@ import {
   renameProject,
   restoreDeletedProject,
   softDeleteProject,
-  getProjectOwnerById,
 } from './project.server'
+import { AccessLevel } from '../types'
 
 describe('project model', () => {
   afterEach(async () => {
     // cleanup
-    await truncateTables([prisma.projectID, prisma.project, prisma.userDetails])
+    await truncateTables([
+      prisma.projectID,
+      prisma.projectAccess,
+      prisma.project,
+      prisma.userDetails,
+    ])
   })
 
   describe('listProjects', () => {
@@ -151,7 +162,7 @@ describe('project model', () => {
     })
   })
 
-  describe('getProjectOwnerById', () => {
+  describe('getProjectOwnership', () => {
     beforeEach(async () => {
       await createTestUser(prisma, { id: 'bob' })
       await createTestUser(prisma, { id: 'alice' })
@@ -161,18 +172,23 @@ describe('project model', () => {
         ownerId: 'bob',
         deleted: true,
       })
+      await createTestProjectAccess(prisma, { projectId: 'foo', accessLevel: AccessLevel.PRIVATE })
+      await createTestProjectAccess(prisma, {
+        projectId: 'deleted-project',
+        accessLevel: AccessLevel.PRIVATE,
+      })
     })
     it('returns the project owner', async () => {
-      const got = await getProjectOwnerById({ id: 'foo' }, { includeDeleted: false })
-      expect(got).toEqual('bob')
+      const got = await getProjectOwnership({ id: 'foo' }, { includeDeleted: false })
+      expect(got?.ownerId).toEqual('bob')
     })
     it('doesnt return the owner if the project is soft-deleted', async () => {
-      const got = await getProjectOwnerById({ id: 'deleted-project' }, { includeDeleted: false })
+      const got = await getProjectOwnership({ id: 'deleted-project' }, { includeDeleted: false })
       expect(got).toEqual(null)
     })
     it('returns soft-deleted owner if includeDeleted is true', async () => {
-      const got = await getProjectOwnerById({ id: 'deleted-project' }, { includeDeleted: true })
-      expect(got).toEqual('bob')
+      const got = await getProjectOwnership({ id: 'deleted-project' }, { includeDeleted: true })
+      expect(got?.ownerId).toEqual('bob')
     })
   })
 
