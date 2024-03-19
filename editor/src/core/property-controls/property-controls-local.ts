@@ -61,7 +61,9 @@ async function parseInsertOption(
   }, parsedParams)
 }
 
-export const isComponentDescriptorFile = (filename: string) => filename.endsWith('.utopia.js')
+// TODO: find a better way to detect component descriptor files, e.g. package.json
+export const isComponentDescriptorFile = (filename: string) =>
+  filename.startsWith('/utopia/') && filename.endsWith('.utopia.js')
 
 async function getComponentDescriptorPromises(
   parseResult: ParseOrPrintResult,
@@ -141,6 +143,9 @@ export async function maybeUpdateComponentDescriptor(
         componentDescriptorUpdates.push({ info: descriptors, componentFileName: file.filename })
       }
     }
+  }
+  if (componentDescriptorUpdates.length === 0) {
+    return
   }
 
   for (const update of componentDescriptorUpdates) {
