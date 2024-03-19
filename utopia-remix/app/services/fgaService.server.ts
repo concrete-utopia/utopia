@@ -2,13 +2,14 @@ import type { ClientWriteRequest } from '@openfga/sdk'
 import { AccessLevel } from '../types'
 import { fgaClient } from './fgaClient.server'
 import { assertNever } from '../util/assertNever'
+import { mapArrayToDictionary } from '../util/common'
 
 export async function updateAccessLevel(projectId: string, accessLevel: AccessLevel) {
   const writes = accessLevelToFgaWrites(projectId, accessLevel)
   return await Promise.all(writes.map((write) => fgaClient.write(write)))
 }
 
-const userProjectPermission = [
+export const fgaUserProjectPermission = [
   'can_view',
   'can_fork',
   'can_play',
@@ -20,12 +21,12 @@ const userProjectPermission = [
   'can_manage',
 ] as const
 
-type UserProjectPermission = (typeof userProjectPermission)[number]
+export type FgaUserProjectPermission = (typeof fgaUserProjectPermission)[number]
 
 async function checkUserProjectPermission(
   projectId: string,
   userId: string,
-  permission: UserProjectPermission,
+  permission: FgaUserProjectPermission,
 ): Promise<boolean> {
   const { allowed } = await fgaClient.check({
     user: `user:${userId}`,
@@ -33,6 +34,30 @@ async function checkUserProjectPermission(
     object: `project:${projectId}`,
   })
   return allowed ?? false
+}
+
+export async function getAllPermissions(
+  projectId: string,
+  userId: string,
+): Promise<Record<FgaUserProjectPermission, boolean>> {
+  const { relations } = await fgaClient.listRelations({
+    user: `user:${userId}`,
+    object: `project:${projectId}`,
+    relations: fgaUserProjectPermission as unknown as string[],
+  })
+  return mapArrayToDictionary(
+    fgaUserProjectPermission,
+    (permission) => permission,
+    (permission) => relations.includes(permission),
+  )
+}
+
+export function getPermissionsOverride(value: boolean): Record<FgaUserProjectPermission, boolean> {
+  return mapArrayToDictionary(
+    fgaUserProjectPermission,
+    (permission) => permission,
+    () => value,
+  )
 }
 
 export async function canViewProject(projectId: string, userId: string): Promise<boolean> {
@@ -71,8 +96,6 @@ export async function canManageProject(projectId: string, userId: string): Promi
   return checkUserProjectPermission(projectId, userId, 'can_manage')
 }
 
-//
-
 export async function makeUserViewer(projectId: string, userId: string) {
   return fgaClient.write({
     writes: [{ user: `user:${userId}`, relation: 'viewer', object: `project:${projectId}` }],
@@ -96,8 +119,6 @@ export async function makeUserAdmin(projectId: string, userId: string) {
     writes: [{ user: `user:${userId}`, relation: 'admin', object: `project:${projectId}` }],
   })
 }
-
-//
 
 function generalRelation(projectId: string, relation: string) {
   return {
