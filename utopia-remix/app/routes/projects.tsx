@@ -581,7 +581,7 @@ const NoProjectsMessage = React.memo(() => {
       case 'private':
         return 'Projects you create that are private to you.'
       case 'shared':
-        return 'Projects that you shared to other collaborators.'
+        return 'Projects that you have shared with other collaborators.'
       default:
         assertNever(cat)
     }
