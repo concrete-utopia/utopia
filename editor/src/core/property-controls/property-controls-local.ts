@@ -65,7 +65,7 @@ async function parseInsertOption(
 export const isComponentDescriptorFile = (filename: string) =>
   filename.startsWith('/utopia/') && filename.endsWith('.utopia.js')
 
-async function getComponentDescriptorPromises(
+async function getComponentDescriptorPromisesFromParseResult(
   parseResult: ParseOrPrintResult,
   workers: UtopiaTsWorkers,
 ): Promise<ComponentDescriptorWithName[]> {
@@ -151,7 +151,7 @@ export async function maybeUpdatePropertyControls(
   }
 
   for await (const file of componentDescriptorParseResults) {
-    const descriptors = await getComponentDescriptorPromises(file, workers)
+    const descriptors = await getComponentDescriptorPromisesFromParseResult(file, workers)
     if (descriptors.length > 0) {
       componentDescriptorUpdates[file.filename] = descriptors
     }
@@ -195,6 +195,7 @@ function getPropertyControlsFromComponentDescriptors(
     (descriptors) => descriptors,
   )
 
+  // Adding the default third party controls to the property controls here, but maybe we should do this in the UpdatePropertyControlsInfo action
   let propertyControls: PropertyControlsInfo = {
     ...DefaultThirdPartyControlDefinitions,
   }
