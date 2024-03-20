@@ -150,7 +150,7 @@ export async function listSharedWithMeProjectsAndCollaborators(params: {
 }> {
   const projectIds = await prisma.projectCollaborator.findMany({
     where: { user_id: params.userId },
-    select: { project_id: true },
+    select: { project_id: true, User: true },
   })
   const projects = await prisma.project.findMany({
     where: {

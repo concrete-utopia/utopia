@@ -188,7 +188,11 @@ const ProjectsPage = React.memo(() => {
       >
         <TopActionBar />
         <ProjectsHeader projects={filteredProjects} />
-        <Projects projects={filteredProjects} collaborators={data.collaborators} />
+        <Projects
+          projects={filteredProjects}
+          collaborators={data.collaborators}
+          myUserId={data.user.user_id}
+        />
         <ActiveOperations projects={activeProjects} />
       </div>
     </div>
@@ -532,9 +536,11 @@ const Projects = React.memo(
   ({
     projects,
     collaborators,
+    myUserId,
   }: {
     projects: ProjectWithoutContent[]
     collaborators: CollaboratorsByProject
+    myUserId: string
   }) => {
     const gridView = useProjectsStore((store) => store.gridView)
 
@@ -556,6 +562,7 @@ const Projects = React.memo(
               <ProjectRow
                 key={project.proj_id}
                 project={project}
+                isSharedWithMe={project.owner_id !== myUserId}
                 selected={project.proj_id === selectedProjectId}
                 /* eslint-disable-next-line react/jsx-no-bind */
                 onSelect={() => handleProjectSelect(project)}
@@ -571,6 +578,7 @@ const Projects = React.memo(
               <ProjectCard
                 key={project.proj_id}
                 project={project}
+                isSharedWithMe={project.owner_id !== myUserId}
                 selected={project.proj_id === selectedProjectId}
                 /* eslint-disable-next-line react/jsx-no-bind */
                 onSelect={() => handleProjectSelect(project)}
@@ -618,11 +626,13 @@ NoProjectsMessage.displayName = 'NoProjectsMessage'
 const ProjectCard = React.memo(
   ({
     project,
+    isSharedWithMe,
     collaborators,
     selected,
     onSelect,
   }: {
     project: ProjectWithoutContent
+    isSharedWithMe: boolean
     collaborators: Collaborator[]
     selected: boolean
     onSelect: () => void
@@ -659,6 +669,10 @@ const ProjectCard = React.memo(
       const action = `/internal/projects/${project.proj_id}/access/requests`
       accessRequestsFetcher.submit({}, { method: 'GET', action: action })
     }, [accessRequestsFetcher, project])
+
+    const ownerName = React.useMemo(() => {
+      return getOwnerName(project.owner_id, collaborators)
+    }, [collaborators, project])
 
     return (
       <ContextMenu.Root onOpenChange={handleSortMenuOpenChange}>
@@ -772,9 +786,17 @@ const ProjectCard = React.memo(
                     }
                   />
                 </div>
-                <Text size='1' style={{ opacity: 0.5 }}>
-                  {moment(project.modified_at).fromNow()}
-                </Text>
+                <Flex>
+                  <Text size='1' style={{ opacity: 0.5, flex: 1 }}>
+                    {moment(project.modified_at).fromNow()}
+                  </Text>
+                  {when(
+                    isSharedWithMe && ownerName != null,
+                    <Text size='1' style={{ opacity: 0.5 }}>
+                      By {ownerName}
+                    </Text>,
+                  )}
+                </Flex>
               </div>
             </div>
           </div>
@@ -792,11 +814,13 @@ const ProjectRow = React.memo(
     project,
     collaborators,
     selected,
+    isSharedWithMe,
     onSelect,
   }: {
     project: ProjectWithoutContent
     collaborators: Collaborator[]
     selected: boolean
+    isSharedWithMe: boolean
     onSelect: () => void
   }) => {
     const projectEditorLink = useProjectEditorLink()
@@ -822,6 +846,10 @@ const ProjectRow = React.memo(
       const action = `/internal/projects/${project.proj_id}/access/requests`
       accessRequestsFetcher.submit({}, { method: 'GET', action: action })
     }, [accessRequestsFetcher, project])
+
+    const ownerName = React.useMemo(() => {
+      return getOwnerName(project.owner_id, collaborators)
+    }, [collaborators, project])
 
     return (
       <ContextMenu.Root onOpenChange={onContextMenuOpenChange}>
@@ -852,7 +880,7 @@ const ProjectRow = React.memo(
                   flex: 1,
                 }}
               >
-                <Flex gap='6'>
+                <Flex gap='6' style={{ alignItems: 'center' }}>
                   <div
                     style={{
                       borderRadius: 6,
@@ -865,19 +893,29 @@ const ProjectRow = React.memo(
                       position: 'relative',
                     }}
                   />
-                  <Text
-                    size='1'
-                    style={{
-                      display: 'flex',
-                      gap: '10px',
-                      alignItems: 'center',
-                      flexGrow: 1,
-                      minWidth: 180,
-                      fontWeight: 500,
-                    }}
-                  >
-                    {project.title}
-                  </Text>
+                  <Flex style={{ flexDirection: 'column', gap: 0 }}>
+                    <Text
+                      size='1'
+                      style={{
+                        display: 'flex',
+                        gap: '10px',
+                        alignItems: 'center',
+                        flexGrow: 1,
+                        minWidth: 180,
+                        fontWeight: 500,
+                        padding: 0,
+                        height: 'auto',
+                      }}
+                    >
+                      {project.title}
+                    </Text>
+                    {when(
+                      isSharedWithMe && ownerName != null,
+                      <Text size='1' style={{ opacity: 0.5 }}>
+                        By {ownerName}
+                      </Text>,
+                    )}
+                  </Flex>
                 </Flex>
                 <Text size='1' style={{ width: 100, opacity: 0.5 }}>
                   {moment(project.modified_at).fromNow()}
@@ -1082,3 +1120,8 @@ const ActiveOperationToast = React.memo(
   },
 )
 ActiveOperationToast.displayName = 'ActiveOperation'
+
+function getOwnerName(ownerId: string, collaborators: Collaborator[]) {
+  const collaborator = collaborators.find((c) => c.id === ownerId)
+  return collaborator?.name ?? 'Utopia user' // This is a fallback required in case we have misconfigured user details
+}
