@@ -1,4 +1,5 @@
 import {
+  ArchiveIcon,
   ArrowDownIcon,
   ArrowUpIcon,
   AvatarIcon,
@@ -9,7 +10,6 @@ import {
   LockClosedIcon,
   MagnifyingGlassIcon,
   PersonIcon,
-  TrashIcon,
 } from '@radix-ui/react-icons'
 import { Badge, Button, ContextMenu, DropdownMenu, Flex, Text, TextField } from '@radix-ui/themes'
 import { type LoaderFunctionArgs, json } from '@remix-run/node'
@@ -63,7 +63,14 @@ import { SharingDialogWrapper } from '../components/sharingDialog'
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
 
-const Categories = ['allProjects', 'trash', 'private', 'public', 'sharing', 'sharedWithMe'] as const
+const Categories = [
+  'allProjects',
+  'archive',
+  'private',
+  'public',
+  'sharing',
+  'sharedWithMe',
+] as const
 
 function isCategory(category: unknown): category is Category {
   return Categories.includes(category as Category)
@@ -89,20 +96,20 @@ const categories: {
     icon: <PersonIcon width='16' height='16' />,
     description: 'Projects that you shared to other collaborators.',
   },
-  public: {
-    name: 'Public',
-    icon: <GlobeIcon width='16' height='16' />,
-    description: 'Public projects you own.',
-  },
   sharedWithMe: {
     name: 'Shared With Me',
     icon: <AvatarIcon width='16' height='16' />,
     description: 'Projects that you have been added to as a collaborator.',
   },
-  trash: {
-    name: 'Trash',
-    icon: <TrashIcon width='16' height='16' />,
-    description: 'Deleted projects are kept here until you destroy them for good.',
+  public: {
+    name: 'Public',
+    icon: <GlobeIcon width='16' height='16' />,
+    description: 'Public projects you own.',
+  },
+  archive: {
+    name: 'Archive',
+    icon: <ArchiveIcon width='16' height='16' />,
+    description: 'Archived projects are kept here until you delete them for good.',
   },
 }
 
@@ -158,7 +165,7 @@ const ProjectsPage = React.memo(() => {
         return data.projects.filter(
           (p) => p.ProjectAccess?.access_level === AccessLevel.COLLABORATIVE,
         )
-      case 'trash':
+      case 'archive':
         return data.deletedProjects
       case 'sharedWithMe':
         return data.projectsSharedWithMe
@@ -519,20 +526,20 @@ const CategoryActions = React.memo(({ projects }: { projects: ProjectWithoutCont
     case 'sharing':
     case 'sharedWithMe':
       return null
-    case 'trash':
-      return <CategoryTrashActions projects={projects} />
+    case 'archive':
+      return <CategoryArchiveActions projects={projects} />
     default:
       assertNever(selectedCategory)
   }
 })
 CategoryActions.displayName = 'CategoryActions'
 
-const CategoryTrashActions = React.memo(({ projects }: { projects: ProjectWithoutContent[] }) => {
+const CategoryArchiveActions = React.memo(({ projects }: { projects: ProjectWithoutContent[] }) => {
   const fetcher = useFetcher()
 
   const handleEmptyTrash = React.useCallback(() => {
     const ok = window.confirm(
-      'Are you sure? ALL projects in the trash will be deleted permanently.',
+      'Are you sure? ALL projects in the archive will be deleted permanently.',
     )
     if (ok) {
       fetcher.submit({}, { method: 'POST', action: `/internal/projects/destroy` })
@@ -547,11 +554,11 @@ const CategoryTrashActions = React.memo(({ projects }: { projects: ProjectWithou
       variant='soft'
       highContrast
     >
-      Empty Trash
+      Delete All
     </Button>
   )
 })
-CategoryTrashActions.displayName = 'CategoryTrashActions'
+CategoryArchiveActions.displayName = 'CategoryArchiveActions'
 
 const Projects = React.memo(
   ({
@@ -704,6 +711,7 @@ const ProjectCard = React.memo(
                 backgroundAttachment: 'local',
                 backgroundRepeat: 'no-repeat',
                 position: 'relative',
+                filter: project.deleted === true ? 'grayscale(1)' : undefined,
               }}
               onMouseDown={onSelect}
               onDoubleClick={openProject}
@@ -726,7 +734,6 @@ const ProjectCard = React.memo(
                           alignItems: 'center',
                           fontSize: '.9em',
                           fontWeight: 700,
-                          filter: project.deleted === true ? 'grayscale(1)' : undefined,
                         }}
                         title={collaborator.name ?? UnknownPlayerName}
                         className={sprinkles({
@@ -895,6 +902,7 @@ const ProjectRow = React.memo(
                       backgroundAttachment: 'local',
                       backgroundRepeat: 'no-repeat',
                       position: 'relative',
+                      filter: project.deleted === true ? 'grayscale(1)' : undefined,
                     }}
                   />
                   <Flex style={{ flexDirection: 'column', gap: 0 }}>
@@ -952,7 +960,6 @@ const ProjectRow = React.memo(
                             alignItems: 'center',
                             fontSize: '.9em',
                             fontWeight: 700,
-                            filter: project.deleted === true ? 'grayscale(1)' : undefined,
                           }}
                           title={collaborator.name ?? UnknownPlayerName}
                           className={sprinkles({

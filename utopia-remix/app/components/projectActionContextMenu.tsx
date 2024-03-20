@@ -113,10 +113,10 @@ export const ProjectActionsMenu = React.memo(
             renameProject(selectedProject.proj_id, newTitle)
           }
         }),
-        delete: contextMenuEntry('Delete', (selectedProject) => {
+        delete: contextMenuEntry('Archive', (selectedProject) => {
           deleteProject(selectedProject.proj_id)
         }),
-        restore: contextMenuEntry('Restore', (selectedProject) => {
+        restore: contextMenuEntry('Unarchive', (selectedProject) => {
           restoreProject(selectedProject.proj_id)
         }),
         destroy: contextMenuEntry('Delete Permanently', (selectedProject) => {
@@ -151,7 +151,7 @@ export const ProjectActionsMenu = React.memo(
           ]
         case 'sharedWithMe':
           return [actions.open, 'separator', actions.copyLink, actions.fork]
-        case 'trash':
+        case 'archive':
           return [actions.restore, 'separator', actions.destroy]
         default:
           assertNever(selectedCategory)
@@ -189,7 +189,7 @@ export const ProjectActionsMenu = React.memo(
                 onSelect={onOpenShareDialog}
               >
                 <Flex justify={'between'} align={'center'} width={'100%'}>
-                  <Text>Sharing…</Text>
+                  <Text>Sharing</Text>
                   {when(
                     pendingAccessRequests.length > 0,
                     <DotFilledIcon color='red' height={22} width={22} />,
@@ -204,9 +204,7 @@ export const ProjectActionsMenu = React.memo(
               /* eslint-disable-next-line react/jsx-no-bind */
               onSelect={() => entry.onClick(project)}
               style={{ height: 28, fontSize: 12 }}
-              color={
-                entry.text === 'Delete Permanently' || entry.text === 'Delete' ? 'red' : undefined
-              }
+              color={entry.text === 'Delete Permanently' ? 'red' : undefined}
             >
               {entry.text}
             </ContextMenu.Item>
