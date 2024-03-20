@@ -41,8 +41,8 @@ export async function getProjectForEditor(req: Request, params: Params<string>) 
   if (error.status === Status.NOT_FOUND) {
     return json(
       {
-        projectId: projectId,
-        userId: user?.user_id,
+        projectId: null,
+        userId: null,
       },
       {
         status: Status.NOT_FOUND,
