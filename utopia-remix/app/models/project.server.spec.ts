@@ -17,6 +17,7 @@ import {
   renameProject,
   restoreDeletedProject,
   softDeleteProject,
+  updateGithubRepository,
 } from './project.server'
 import { AccessLevel } from '../types'
 
@@ -385,6 +386,74 @@ describe('project model', () => {
       expect(got.collaborators['four'].length).toBe(2)
       expect(got.collaborators['four'].map((c) => c.id)[0]).toBe('bob')
       expect(got.collaborators['four'].map((c) => c.id)[1]).toBe('carol')
+    })
+  })
+
+  describe('updateGithubRepository', () => {
+    beforeEach(async () => {
+      await createTestUser(prisma, { id: 'bob' })
+      await createTestUser(prisma, { id: 'alice' })
+      await createTestProject(prisma, { id: 'one', ownerId: 'bob' })
+      await prisma.project.update({
+        where: { proj_id: 'one' },
+        data: { github_repository: 'something' },
+      })
+    })
+
+    it('errors if the project is not found', async () => {
+      const fn = async () =>
+        updateGithubRepository({ projectId: 'unknown', userId: 'bob', repository: null })
+      await expect(fn).rejects.toThrow('not found')
+    })
+
+    it('errors if the user does not own the project', async () => {
+      const fn = async () =>
+        updateGithubRepository({ projectId: 'one', userId: 'alice', repository: null })
+      await expect(fn).rejects.toThrow('not found')
+    })
+
+    it('updates the repository string (null)', async () => {
+      await updateGithubRepository({ projectId: 'one', userId: 'bob', repository: null })
+      const project = await prisma.project.findUnique({
+        where: { proj_id: 'one' },
+        select: { github_repository: true },
+      })
+      if (project == null) {
+        throw new Error('expected project not to be null')
+      }
+      expect(project.github_repository).toBe(null)
+    })
+
+    it('updates the repository string (without branch)', async () => {
+      await updateGithubRepository({
+        projectId: 'one',
+        userId: 'bob',
+        repository: { owner: 'foo', repository: 'bar', branch: null },
+      })
+      const project = await prisma.project.findUnique({
+        where: { proj_id: 'one' },
+        select: { github_repository: true },
+      })
+      if (project == null) {
+        throw new Error('expected project not to be null')
+      }
+      expect(project.github_repository).toBe('foo/bar')
+    })
+
+    it('updates the repository string (with branch)', async () => {
+      await updateGithubRepository({
+        projectId: 'one',
+        userId: 'bob',
+        repository: { owner: 'foo', repository: 'bar', branch: 'baz' },
+      })
+      const project = await prisma.project.findUnique({
+        where: { proj_id: 'one' },
+        select: { github_repository: true },
+      })
+      if (project == null) {
+        throw new Error('expected project not to be null')
+      }
+      expect(project.github_repository).toBe('foo/bar:baz')
     })
   })
 })

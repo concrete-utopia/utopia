@@ -185,7 +185,7 @@ export async function updateGithubRepository(params: {
   repository: {
     owner: string
     repository: string
-    branch: string
+    branch: string | null
   } | null
 }) {
   function getGithubRepository(): string | null {
