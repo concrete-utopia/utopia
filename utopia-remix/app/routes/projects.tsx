@@ -3,8 +3,11 @@ import {
   ArrowUpIcon,
   CubeIcon,
   DashboardIcon,
+  GlobeIcon,
   HamburgerMenuIcon,
+  LockClosedIcon,
   MagnifyingGlassIcon,
+  PersonIcon,
   TrashIcon,
 } from '@radix-ui/react-icons'
 import { Badge, Button, ContextMenu, DropdownMenu, Flex, Text, TextField } from '@radix-ui/themes'
@@ -50,11 +53,12 @@ import {
   useProjectMatchesQuery,
   useSortCompareProject,
 } from '../util/use-sort-compare-project'
+import { SharingDialogWrapper } from '../components/sharingDialog'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
 
-const Categories = ['allProjects', 'trash'] as const
+const Categories = ['allProjects', 'trash', 'private', 'public', 'shared'] as const
 
 function isCategory(category: unknown): category is Category {
   return Categories.includes(category as Category)
@@ -64,6 +68,9 @@ export type Category = (typeof Categories)[number]
 
 const categories: { [key in Category]: { name: string; icon: React.ReactNode } } = {
   allProjects: { name: 'All My Projects', icon: <CubeIcon width='16' height='16' /> },
+  private: { name: 'Private', icon: <LockClosedIcon width='16' height='16' /> },
+  shared: { name: 'Sharing', icon: <PersonIcon width='16' height='16' /> },
+  public: { name: 'Public', icon: <GlobeIcon width='16' height='16' /> },
   trash: { name: 'Trash', icon: <TrashIcon width='16' height='16' /> },
 }
 
@@ -103,6 +110,16 @@ const ProjectsPage = React.memo(() => {
     switch (selectedCategory) {
       case 'allProjects':
         return data.projects
+      case 'public':
+        return data.projects.filter((p) => p.ProjectAccess?.access_level === AccessLevel.PUBLIC)
+      case 'private':
+        return data.projects.filter(
+          (p) => (p.ProjectAccess?.access_level ?? AccessLevel.PRIVATE) === AccessLevel.PRIVATE,
+        )
+      case 'shared':
+        return data.projects.filter(
+          (p) => p.ProjectAccess?.access_level === AccessLevel.COLLABORATIVE,
+        )
       case 'trash':
         return data.deletedProjects
       default:
@@ -453,6 +470,9 @@ const CategoryActions = React.memo(({ projects }: { projects: ProjectWithoutCont
 
   switch (selectedCategory) {
     case 'allProjects':
+    case 'public':
+    case 'private':
+    case 'shared':
       return null
     case 'trash':
       return <CategoryTrashActions projects={projects} />
@@ -556,6 +576,12 @@ const NoProjectsMessage = React.memo(() => {
         return 'Projects you create or open will show up here.'
       case 'trash':
         return 'Deleted projects are kept here until you destroy them for good.'
+      case 'public':
+        return 'Public projects you own.'
+      case 'private':
+        return 'Projects you create that are private to you.'
+      case 'shared':
+        return 'Projects that you have shared with other collaborators.'
       default:
         assertNever(cat)
     }
@@ -642,39 +668,42 @@ const ProjectCard = React.memo(
               onMouseDown={onSelect}
               onDoubleClick={openProject}
             >
-              <div style={{ position: 'absolute', right: 6, bottom: 6, display: 'flex', gap: 2 }}>
-                {collaborators.map((collaborator) => {
-                  return (
-                    <div
-                      key={`collaborator-${project.id}-${collaborator.id}`}
-                      style={{
-                        borderRadius: '100%',
-                        width: 24,
-                        height: 24,
-                        backgroundImage: `url("${collaborator.avatar}")`,
-                        backgroundSize: 'cover',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        fontSize: '.9em',
-                        fontWeight: 700,
-                        filter: project.deleted === true ? 'grayscale(1)' : undefined,
-                      }}
-                      title={collaborator.name ?? UnknownPlayerName}
-                      className={sprinkles({
-                        boxShadow: 'shadow',
-                        color: 'white',
-                        backgroundColor: 'primary',
-                      })}
-                    >
-                      {when(
-                        collaborator.avatar === '',
-                        multiplayerInitialsFromName(collaborator.name),
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
+              {when(
+                project.ProjectAccess?.access_level === AccessLevel.COLLABORATIVE,
+                <div style={{ position: 'absolute', right: 6, bottom: 6, display: 'flex', gap: 2 }}>
+                  {collaborators.map((collaborator) => {
+                    return (
+                      <div
+                        key={`collaborator-${project.id}-${collaborator.id}`}
+                        style={{
+                          borderRadius: '100%',
+                          width: 24,
+                          height: 24,
+                          backgroundImage: `url("${collaborator.avatar}")`,
+                          backgroundSize: 'cover',
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          fontSize: '.9em',
+                          fontWeight: 700,
+                          filter: project.deleted === true ? 'grayscale(1)' : undefined,
+                        }}
+                        title={collaborator.name ?? UnknownPlayerName}
+                        className={sprinkles({
+                          boxShadow: 'shadow',
+                          color: 'white',
+                          backgroundColor: 'primary',
+                        })}
+                      >
+                        {when(
+                          collaborator.avatar === '',
+                          multiplayerInitialsFromName(collaborator.name),
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>,
+              )}
               {when(
                 activeOperations.length > 0,
                 <div
@@ -729,6 +758,7 @@ const ProjectCard = React.memo(
           </div>
         </ContextMenu.Trigger>
         <ProjectActionsMenu project={project} accessRequests={accessRequests} />
+        <SharingDialogWrapper project={project} accessRequests={accessRequests} />
       </ContextMenu.Root>
     )
   },
@@ -766,13 +796,13 @@ const ProjectRow = React.memo(
       }
     }, [accessRequestsFetcher])
 
-    const handleSortMenuOpenChange = React.useCallback(() => {
+    const onContextMenuOpenChange = React.useCallback(() => {
       const action = `/internal/projects/${project.proj_id}/access/requests`
       accessRequestsFetcher.submit({}, { method: 'GET', action: action })
     }, [accessRequestsFetcher, project])
 
     return (
-      <ContextMenu.Root onOpenChange={handleSortMenuOpenChange}>
+      <ContextMenu.Root onOpenChange={onContextMenuOpenChange}>
         <ContextMenu.Trigger>
           <div style={{ padding: '8px 0' }}>
             <div
@@ -839,39 +869,42 @@ const ProjectRow = React.memo(
                     gap: 6,
                   }}
                 >
-                  {collaborators.map((collaborator) => {
-                    return (
-                      <div
-                        key={`collaborator-${project.id}-${collaborator.id}`}
-                        style={{
-                          borderRadius: '100%',
-                          width: 24,
-                          height: 24,
-                          backgroundColor: '#0075F9',
-                          backgroundImage: `url("${collaborator.avatar}")`,
-                          backgroundSize: 'cover',
-                          color: 'white',
-                          display: 'flex',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          fontSize: '.9em',
-                          fontWeight: 700,
-                          filter: project.deleted === true ? 'grayscale(1)' : undefined,
-                        }}
-                        title={collaborator.name ?? UnknownPlayerName}
-                        className={sprinkles({
-                          boxShadow: 'shadow',
-                          color: 'white',
-                          backgroundColor: 'primary',
-                        })}
-                      >
-                        {when(
-                          collaborator.avatar === '',
-                          multiplayerInitialsFromName(collaborator.name),
-                        )}
-                      </div>
-                    )
-                  })}
+                  {when(
+                    project.ProjectAccess?.access_level === AccessLevel.COLLABORATIVE,
+                    collaborators.map((collaborator) => {
+                      return (
+                        <div
+                          key={`collaborator-${project.id}-${collaborator.id}`}
+                          style={{
+                            borderRadius: '100%',
+                            width: 24,
+                            height: 24,
+                            backgroundColor: '#0075F9',
+                            backgroundImage: `url("${collaborator.avatar}")`,
+                            backgroundSize: 'cover',
+                            color: 'white',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            fontSize: '.9em',
+                            fontWeight: 700,
+                            filter: project.deleted === true ? 'grayscale(1)' : undefined,
+                          }}
+                          title={collaborator.name ?? UnknownPlayerName}
+                          className={sprinkles({
+                            boxShadow: 'shadow',
+                            color: 'white',
+                            backgroundColor: 'primary',
+                          })}
+                        >
+                          {when(
+                            collaborator.avatar === '',
+                            multiplayerInitialsFromName(collaborator.name),
+                          )}
+                        </div>
+                      )
+                    }),
+                  )}
                 </div>
                 <ProjectBadge
                   accessLevel={
@@ -883,6 +916,7 @@ const ProjectRow = React.memo(
           </div>
         </ContextMenu.Trigger>
         <ProjectActionsMenu project={project} accessRequests={accessRequests} />
+        <SharingDialogWrapper project={project} accessRequests={accessRequests} />
       </ContextMenu.Root>
     )
   },

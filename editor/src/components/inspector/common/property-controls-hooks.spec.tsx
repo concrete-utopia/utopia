@@ -32,7 +32,7 @@ import {
   jsxElementWithoutUID,
   sameFileOrigin,
 } from '../../../core/shared/element-template'
-import type { PropertyControls } from 'utopia-api/core'
+import type { PropertyControls } from '../../custom-code/internal-property-controls'
 import { emptyProjectServerState } from '../../editor/store/project-server-state'
 
 const TestAppUID2 = 'app-entity-2'

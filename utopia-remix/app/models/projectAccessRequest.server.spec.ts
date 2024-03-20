@@ -18,6 +18,7 @@ describe('projectAccessRequest', () => {
       await truncateTables([
         prisma.projectID,
         prisma.projectAccessRequest,
+        prisma.projectCollaborator,
         prisma.project,
         prisma.userDetails,
       ])
@@ -81,6 +82,7 @@ describe('projectAccessRequest', () => {
       await truncateTables([
         prisma.projectID,
         prisma.projectAccessRequest,
+        prisma.projectCollaborator,
         prisma.project,
         prisma.userDetails,
       ])
@@ -146,6 +148,29 @@ describe('projectAccessRequest', () => {
       expect(requests[0].project_id).toBe('one')
       expect(requests[0].user_id).toBe('alice')
       expect(requests[0].status).toBe(AccessRequestStatus.APPROVED)
+    })
+    it('adds the user to the collaborators if approved', async () => {
+      const existingCollabs = await prisma.projectCollaborator.findMany({
+        where: { project_id: 'one' },
+      })
+      expect(existingCollabs.length).toBe(0)
+
+      await createTestProjectAccessRequest(prisma, {
+        projectId: 'one',
+        userId: 'alice',
+        token: 'something',
+        status: AccessRequestStatus.PENDING,
+      })
+      await updateAccessRequestStatus({
+        projectId: 'one',
+        ownerId: 'bob',
+        token: 'something',
+        status: AccessRequestStatus.APPROVED,
+      })
+
+      const collabs = await prisma.projectCollaborator.findMany({ where: { project_id: 'one' } })
+      expect(collabs.length).toBe(1)
+      expect(collabs[0].user_id).toBe('alice')
     })
   })
 

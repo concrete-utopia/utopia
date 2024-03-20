@@ -14,9 +14,8 @@ import { useProjectEditorLink } from '../util/links'
 import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
 import slugify from 'slugify'
 import { SLUGIFY_OPTIONS } from '../routes/internal.projects.$id.rename'
-import { ContextMenu, Separator, Dialog, Flex, Text } from '@radix-ui/themes'
+import { ContextMenu, Separator, Flex, Text } from '@radix-ui/themes'
 import { DotFilledIcon } from '@radix-ui/react-icons'
-import { SharingDialog } from './sharingDialog'
 import { when } from '~/util/react-conditionals'
 import { useCopyProjectLinkToClipboard } from '../util/copyProjectLink'
 
@@ -94,6 +93,9 @@ export const ProjectActionsMenu = React.memo(
     const menuEntries = React.useMemo((): ContextMenuEntry[] => {
       switch (selectedCategory) {
         case 'allProjects':
+        case 'public':
+        case 'shared':
+        case 'private':
           return [
             {
               text: 'Open',
@@ -159,14 +161,16 @@ export const ProjectActionsMenu = React.memo(
       copyProjectLink,
     ])
 
-    const preventDefault = React.useCallback((event: Event) => {
-      event.preventDefault()
-    }, [])
-
     const pendingAccessRequests = React.useMemo(
       () => accessRequests.filter((r) => r.status === AccessRequestStatus.PENDING),
       [accessRequests],
     )
+
+    const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
+
+    const onOpenShareDialog = React.useCallback(() => {
+      setSharingProjectId(project.proj_id)
+    }, [project, setSharingProjectId])
 
     return (
       <ContextMenu.Content style={{ width: 170 }}>
@@ -182,22 +186,19 @@ export const ProjectActionsMenu = React.memo(
           }
           if (entry === 'sharing-dialog') {
             return (
-              <Dialog.Root key={`separator-${index}`}>
-                <Dialog.Trigger>
-                  <ContextMenu.Item style={{ height: 28, fontSize: 12 }} onSelect={preventDefault}>
-                    <Flex justify={'between'} align={'center'} width={'100%'}>
-                      <Text>Share</Text>
-                      {when(
-                        pendingAccessRequests.length > 0,
-                        <DotFilledIcon color='red' height={22} width={22} />,
-                      )}
-                    </Flex>
-                  </ContextMenu.Item>
-                </Dialog.Trigger>
-                <Dialog.Content>
-                  <SharingDialog project={project} accessRequests={accessRequests} />
-                </Dialog.Content>
-              </Dialog.Root>
+              <ContextMenu.Item
+                key={`entry-${index}`}
+                style={{ height: 28, fontSize: 12 }}
+                onSelect={onOpenShareDialog}
+              >
+                <Flex justify={'between'} align={'center'} width={'100%'}>
+                  <Text>Sharing…</Text>
+                  {when(
+                    pendingAccessRequests.length > 0,
+                    <DotFilledIcon color='red' height={22} width={22} />,
+                  )}
+                </Flex>
+              </ContextMenu.Item>
             )
           }
           return (

@@ -12,13 +12,8 @@ import type {
   RegularControlDescription,
   TupleControlDescription,
   UnionControlDescription,
-} from 'utopia-api/core'
-import {
-  FolderControlDescription,
-  HigherLevelControlDescription,
-  isBaseControlDescription,
-  PropertyControls,
-} from 'utopia-api/core'
+} from '../../../custom-code/internal-property-controls'
+import { isBaseControlDescription } from '../../../custom-code/internal-property-controls'
 import { PathForSceneProps } from '../../../../core/model/scene-utils'
 import { mapToArray } from '../../../../core/shared/object-utils'
 import type { PropertyPath } from '../../../../core/shared/project-file-types'
