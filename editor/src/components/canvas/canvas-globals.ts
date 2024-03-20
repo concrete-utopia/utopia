@@ -11,6 +11,11 @@ import type { Either } from '../../core/shared/either'
 import { forEachRight } from '../../core/shared/either'
 import { mapArrayToDictionary } from '../../core/shared/array-utils'
 import { fastForEach } from '../../core/shared/utils'
+import {
+  PropertyControlsInfoKeepDeepEquality,
+  PropertyControlsKeepDeepEquality,
+} from '../editor/store/store-deep-equality-instances'
+import { propControlsStore } from './canvas-external-store'
 
 export type ControlsToCheck = Promise<Either<string, Array<ComponentDescriptorWithName>>>
 
@@ -25,6 +30,7 @@ let controlsRegisteredByFileInLastRender: Map<
   string,
   Array<PropertyControlsInfoToCheck>
 > = new Map()
+export let registeredPropertyControlsInfo: PropertyControlsInfo = {}
 
 export function addRegisteredControls(
   sourceFile: string,
@@ -126,6 +132,21 @@ export async function validateControlsToCheck(
 
   previousRegisteredModules = allRegisteredModules
   if (shouldDispatch) {
-    dispatch([updatePropertyControlsInfo(updatedPropertyControlsInfo, moduleNamesOrPathsToDelete)])
+    // dispatch([updatePropertyControlsInfo(updatedPropertyControlsInfo, moduleNamesOrPathsToDelete)])
+
+    let wipPropertyControlsInfo: PropertyControlsInfo = {
+      ...registeredPropertyControlsInfo,
+      ...updatedPropertyControlsInfo,
+    }
+    for (const moduleNameOrPathToDelete of moduleNamesOrPathsToDelete) {
+      delete wipPropertyControlsInfo[moduleNameOrPathToDelete]
+    }
+
+    registeredPropertyControlsInfo = PropertyControlsInfoKeepDeepEquality(
+      registeredPropertyControlsInfo,
+      wipPropertyControlsInfo,
+    ).value
+
+    propControlsStore.setPropertyControls(registeredPropertyControlsInfo)
   }
 }

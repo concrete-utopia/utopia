@@ -74,6 +74,7 @@ import { CommentMaintainer } from '../../core/commenting/comment-maintainer'
 import { useIsLoggedIn, useLiveblocksConnectionListener } from '../../core/shared/multiplayer-hooks'
 import { ForkSearchParamKey, ProjectForkFlow } from './project-fork-flow'
 import { isRoomId, projectIdToRoomId } from '../../utils/room-id'
+import { useDispatchWhenPropertyControlsInfoChanges } from '../canvas/canvas-external-store'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -102,6 +103,9 @@ export interface EditorProps {}
 export const EditorComponentInner = React.memo((props: EditorProps) => {
   const room = useRoom()
   const dispatch = useDispatch()
+
+  useDispatchWhenPropertyControlsInfoChanges()
+
   const editorStoreRef = useRefEditorState((store) => store)
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
   const navigatorTargetsRef = useRefEditorState((store) => store.derived.navigatorTargets)
