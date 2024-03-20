@@ -73,7 +73,6 @@ async function getComponentDescriptorPromises(
     return []
   }
   const exportDefaultIdentifier = parseResult.parseResult.exportsDetail.find(isExportDefault)
-
   if (exportDefaultIdentifier?.name == null) {
     // TODO: error handling
     console.warn('No export default in descriptor file')
@@ -155,6 +154,7 @@ export async function maybeUpdateComponentDescriptor(
     }
   }
   if (componentDescriptorUpdates.length === 0) {
+    // there is nothing to update, return early so no empty dispatch is made
     return
   }
 
