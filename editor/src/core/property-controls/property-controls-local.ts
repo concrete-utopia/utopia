@@ -30,7 +30,7 @@ import type { Either } from '../shared/either'
 import { applicative3Either, applicative4Either, mapEither, sequenceEither } from '../shared/either'
 import { setOptionalProp } from '../shared/object-utils'
 import type { EditorDispatch } from '../../components/editor/action-types'
-import { isParseSuccess } from '../shared/project-file-types'
+import { isExportDefault, isParseSuccess } from '../shared/project-file-types'
 import { resolveParamsAndRunJsCode } from '../shared/javascript-cache'
 import * as EditorActions from '../../components/editor/actions/action-creators'
 import { mapArrayToDictionary } from '../shared/array-utils'
@@ -72,14 +72,23 @@ async function getComponentDescriptorPromises(
   if (!isParseSuccess(parseResult.parseResult)) {
     return []
   }
+  const exportDefaultIdentifier = parseResult.parseResult.exportsDetail.find(isExportDefault)
+
+  if (exportDefaultIdentifier?.name == null) {
+    // TODO: error handling
+    console.warn('No export default in descriptor file')
+    return []
+  }
+
   const combinedTopLevelArbitraryBlock = parseResult.parseResult.combinedTopLevelArbitraryBlock
 
   if (combinedTopLevelArbitraryBlock == null) {
+    // TODO: error handling
     return []
   }
 
   try {
-    // TODO: this isn't the right function to call, as `resolveParamsAndRunJsCode` doesn't actually give us access to the exports/default exports
+    // TODO: provide execution scope, so imports can be resolved
     const evaluatedFile = resolveParamsAndRunJsCode(
       parseResult.filename,
       combinedTopLevelArbitraryBlock,
@@ -87,10 +96,11 @@ async function getComponentDescriptorPromises(
       {},
     )
 
-    // TODO: we don't need to hardcode Components, export default should be used
-    const descriptors = evaluatedFile['Components']
+    const descriptors = evaluatedFile[exportDefaultIdentifier.name]
 
     if (descriptors == null) {
+      // TODO: error handling
+      console.warn('Could not find component descriptors in the descriptor file')
       return []
     }
 
@@ -120,6 +130,7 @@ async function getComponentDescriptorPromises(
     }
     return result
   } catch {
+    // TODO: error handling
     console.warn('Error evaluating component descriptor file')
     return []
   }
