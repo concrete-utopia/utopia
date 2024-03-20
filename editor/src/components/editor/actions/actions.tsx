@@ -350,6 +350,7 @@ import {
   saveAsset as saveAssetToServer,
   saveUserConfiguration,
   updateAssetFileName,
+  updateGithubRepository,
 } from '../server'
 import type {
   CanvasBase64Blobs,
@@ -366,6 +367,7 @@ import type {
   TrueUpTarget,
   TrueUpHuggingElement,
   CollaborativeEditingSupport,
+  ProjectGithubSettings,
 } from '../store/editor-state'
 import {
   trueUpChildrenOfGroupChanged,
@@ -3608,12 +3610,25 @@ export const UPDATE_FNS = {
     }
   },
   UPDATE_GITHUB_SETTINGS: (action: UpdateGithubSettings, editor: EditorModel): EditorModel => {
+    const newGithubSettings: ProjectGithubSettings = {
+      ...editor.githubSettings,
+      ...action.settings,
+    }
+    if (editor.id != null) {
+      void updateGithubRepository(
+        editor.id,
+        newGithubSettings.targetRepository == null
+          ? null
+          : {
+              owner: newGithubSettings.targetRepository.owner,
+              repository: newGithubSettings.targetRepository.repository,
+              branch: newGithubSettings.branchName,
+            },
+      )
+    }
     return normalizeGithubData({
       ...editor,
-      githubSettings: {
-        ...editor.githubSettings,
-        ...action.settings,
-      },
+      githubSettings: newGithubSettings,
     })
   },
   UPDATE_GITHUB_DATA: (action: UpdateGithubData, editor: EditorModel): EditorModel => {

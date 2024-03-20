@@ -8,7 +8,12 @@ import {
   thumbnailURL,
   userConfigURL,
 } from '../../common/server'
-import type { PersistentModel, UserConfiguration, UserPermissions } from './store/editor-state'
+import type {
+  GithubRepo,
+  PersistentModel,
+  UserConfiguration,
+  UserPermissions,
+} from './store/editor-state'
 import { emptyUserConfiguration, emptyUserPermissions } from './store/editor-state'
 import type { LoginState } from '../../uuiui-deps'
 import urljoin from 'url-join'
@@ -607,5 +612,22 @@ export async function requestProjectAccess(projectId: string): Promise<void> {
   })
   if (!response.ok) {
     throw new Error(`Request project access failed (${response.status}): ${response.statusText}`)
+  }
+}
+
+export async function updateGithubRepository(
+  projectId: string,
+  githubRepository: (GithubRepo & { branch: string | null }) | null,
+): Promise<void> {
+  const url = urljoin(`/internal/projects/${projectId}/github/repository/update`)
+  const response = await fetch(url, {
+    method: 'POST',
+    credentials: 'include',
+    headers: HEADERS,
+    mode: MODE,
+    body: JSON.stringify({ githubRepository: githubRepository }),
+  })
+  if (!response.ok) {
+    throw new Error(`Update Github repository failed (${response.status}): ${response.statusText}`)
   }
 }
