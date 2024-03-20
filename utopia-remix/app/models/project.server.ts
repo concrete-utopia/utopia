@@ -148,45 +148,32 @@ export async function listSharedWithMeProjectsAndCollaborators(params: {
   projects: ProjectWithoutContent[]
   collaborators: CollaboratorsByProject
 }> {
-  // 1. grab the project IDs from the collaborators where the user id matches the one passed as argument
-  const projectIds = await prisma.projectCollaborator.findMany({
-    where: { user_id: params.userId },
-    select: { project_id: true, User: true },
-  })
-
-  // 2. grab the projects from those ids
+  // 1. grab the project IDs where the user is the collaborator,
+  // is not an owner, are not deleted, and have the COLLABORATIVE access.
   const projects = await prisma.project.findMany({
     where: {
-      proj_id: { in: projectIds.map((p) => p.project_id) },
+      ProjectAccess: { access_level: AccessLevel.COLLABORATIVE },
+      ProjectCollaborator: { some: { user_id: params.userId } },
+      owner_id: { not: params.userId },
       OR: [{ deleted: null }, { deleted: false }],
     },
     select: {
       ...selectProjectWithoutContent,
-      // we also need the project access
-      ProjectAccess: true,
-      // we also need the collaborator details
       ProjectCollaborator: { include: { User: true } },
     },
     orderBy: { modified_at: 'desc' },
   })
 
-  // 3. filter out non-collaborative projects as well as own projects (cannot do it directly in the query)
-  const filteredProjects = projects.filter((p) => {
-    return (
-      p.owner_id !== params.userId && p.ProjectAccess?.access_level === AccessLevel.COLLABORATIVE
-    )
-  })
-
-  // 4. build the collaborators map
+  // 2. build the collaborators map
   let collaboratorsByProject: CollaboratorsByProject = {}
-  for (const project of filteredProjects) {
+  for (const project of projects) {
     const collaboratorUserDetails = project.ProjectCollaborator.map(({ User }) => User)
     collaboratorsByProject[project.proj_id] = collaboratorUserDetails.map(userToCollaborator)
   }
 
-  // 5. return both projects and collabs
+  // 3. return both projects and collabs
   return {
-    projects: filteredProjects,
+    projects: projects,
     collaborators: collaboratorsByProject,
   }
 }
