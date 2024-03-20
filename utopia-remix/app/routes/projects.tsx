@@ -734,15 +734,16 @@ const ProjectCard = React.memo(
                 <Button
                   radius='full'
                   variant='solid'
+                  color='red'
                   size='1'
                   style={{
                     position: 'absolute',
                     right: 8,
                     top: 8,
-                    backgroundColor: '#ff000080',
                     fontWeight: 600,
                     fontSize: 10,
                     cursor: 'pointer',
+                    height: 20,
                   }}
                   onClick={onOpenShareDialog}
                 >
@@ -1028,14 +1029,13 @@ const ProjectRow = React.memo(
                   }}
                 >
                   {when(
-                    project.ProjectAccess?.access_level === AccessLevel.COLLABORATIVE &&
-                      pendingAccessRequests.length > 0,
+                    pendingAccessRequests.length > 0,
                     <Button
                       radius='full'
                       variant='solid'
+                      color='red'
                       size='1'
                       style={{
-                        backgroundColor: '#ff000080',
                         fontWeight: 600,
                         fontSize: 10,
                         cursor: 'pointer',
