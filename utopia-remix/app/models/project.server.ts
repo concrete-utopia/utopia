@@ -148,10 +148,13 @@ export async function listSharedWithMeProjectsAndCollaborators(params: {
   projects: ProjectWithoutContent[]
   collaborators: CollaboratorsByProject
 }> {
+  // 1. grab the project IDs from the collaborators where the user id matches the one passed as argument
   const projectIds = await prisma.projectCollaborator.findMany({
     where: { user_id: params.userId },
     select: { project_id: true, User: true },
   })
+
+  // 2. grab the projects from those ids
   const projects = await prisma.project.findMany({
     where: {
       proj_id: { in: projectIds.map((p) => p.project_id) },
@@ -159,23 +162,29 @@ export async function listSharedWithMeProjectsAndCollaborators(params: {
     },
     select: {
       ...selectProjectWithoutContent,
+      // we also need the project access
       ProjectAccess: true,
+      // we also need the collaborator details
       ProjectCollaborator: { include: { User: true } },
     },
     orderBy: { modified_at: 'desc' },
   })
+
+  // 3. filter out non-collaborative projects (cannot do it directly in the query)
   const filteredProjects = projects.filter((p) => {
     return (
       p.owner_id !== params.userId && p.ProjectAccess?.access_level === AccessLevel.COLLABORATIVE
     )
   })
 
+  // 4. build the collaborators map
   let collaboratorsByProject: CollaboratorsByProject = {}
   for (const project of filteredProjects) {
     const collaboratorUserDetails = project.ProjectCollaborator.map(({ User }) => User)
     collaboratorsByProject[project.proj_id] = collaboratorUserDetails.map(userToCollaborator)
   }
 
+  // 5. return boh projects and collabs
   return {
     projects: filteredProjects,
     collaborators: collaboratorsByProject,
