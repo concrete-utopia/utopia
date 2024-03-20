@@ -1,13 +1,30 @@
-import React from 'react'
 import type { LoaderFunctionArgs } from '@remix-run/node'
-import { loader as projectLoader } from './loaders/editorLoader.server'
-import { useLoaderData } from '@remix-run/react'
-import ProjectNotFound from '../components/projectNotFound'
+import { validateProjectAccess } from '../handlers/validators'
+import { proxy } from '../util/proxy.server'
+import { UserProjectPermission } from '~/types'
+import { type Params, redirect } from '@remix-run/react'
 
 export async function loader(args: LoaderFunctionArgs) {
-  return projectLoader(args)
+  return getProjectForEditor(args.request, args.params)
 }
-export default function () {
-  const data = useLoaderData() as unknown as { projectId: string | null; userId: string | null }
-  return <ProjectNotFound projectId={data.projectId} userId={data.userId} />
+
+const validator = validateProjectAccess(UserProjectPermission.CAN_VIEW_PROJECT, {
+  canRequestAccess: true,
+  getProjectId: (params) => params.id?.split('-')[0],
+})
+
+export async function getProjectForEditor(req: Request, params: Params<string>) {
+  const validatorResult = await validator(req, params)
+  if (validatorResult.ok) {
+    const proxyResponse: Response = (await proxy(req, {
+      rawOutput: true,
+    })) as Response
+    const body = await proxyResponse.text()
+    return new Response(body, {
+      headers: { 'content-type': 'text/html' },
+      status: proxyResponse.status,
+    })
+  } else {
+    throw redirect(`/project/${params.id}`)
+  }
 }
