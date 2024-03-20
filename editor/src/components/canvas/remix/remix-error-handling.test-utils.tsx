@@ -11,7 +11,7 @@ import { mouseClickAtPoint } from '../event-helpers.test-utils'
 import { DefaultStartingFeatureSwitches, renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import type { EditorRenderResult } from '../ui-jsx.test-utils'
 
-async function renderRemixProject(project: PersistentModel) {
+export async function renderRemixProject(project: PersistentModel) {
   const renderResult = await renderTestEditorWithModel(
     project,
     'await-first-dom-report',
@@ -103,6 +103,49 @@ function createProject(withBoundary: boolean) {
     export default function Thrower() {
       throw new Error('${ErrorText}')
       return <h1>I won't render</h1>
+    }
+    `,
+  })
+}
+
+export function createMaybeFailingProject(induceFailure: boolean): PersistentModel {
+  return createModifiedProject({
+    [StoryboardFilePath]: `import * as React from 'react'
+    import { RemixScene, Storyboard } from 'utopia-api'
+    
+    export var storyboard = (
+      <Storyboard>
+        <RemixScene
+          style={{
+            width: 700,
+            height: 759,
+            position: 'absolute',
+            left: 212,
+            top: 128,
+          }}
+        />
+      </Storyboard>
+    )
+    `,
+    ['/app/root.js']: `import React from 'react'
+    import { Outlet } from '@remix-run/react'
+    
+    export default function Root() {
+      return (
+        <div>
+          <Outlet />
+        </div>
+      )
+    }
+    `,
+    ['/app/routes/_index.js']: `import React from 'react'
+    import { Link } from '@remix-run/react'
+    
+    export default function Index() {
+      ${induceFailure ? '' : '// '}throw new Error('Failure')
+      return (
+        <span>Index Content</span>
+      )
     }
     `,
   })
