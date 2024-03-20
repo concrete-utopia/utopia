@@ -1,6 +1,9 @@
+import React from 'react'
 import { DefaultThirdPartyControlDefinitions } from '../../core/third-party/third-party-controls'
 import type { PropertyControlsInfo } from '../custom-code/code-file'
 import { Substores, useEditorState } from '../editor/store/store-hook'
+import { useDispatch } from '../editor/store/dispatch-context'
+import { updatePropertyControlsInfo } from '../editor/actions/action-creators'
 
 export const PropertyControlsExportedForTestInspection: { current: PropertyControlsInfo } = {
   current: {},
@@ -31,14 +34,18 @@ function emitChange() {
 }
 
 export function usePropertyControlsInfo(): PropertyControlsInfo {
-  const override = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.propertyControlsInfoOverride,
-    'usePropertyControlsInfo override',
-  )
-
   // TODO don't forget about DefaultThirdPartyControlDefinitions
-  const defaultControls = DefaultThirdPartyControlDefinitions
+  return React.useSyncExternalStore(propControlsStore.subscribe, propControlsStore.getSnapshot)
+}
 
-  return override ?? (null as any)
+export function useDispatchWhenPropertyControlsInfoChanges() {
+  const dispatch = useDispatch()
+
+  const previousPropControls = React.useRef<PropertyControlsInfo | null>(null)
+  const propControls = usePropertyControlsInfo()
+  if (previousPropControls.current !== propControls) {
+    dispatch([updatePropertyControlsInfo(propControls)])
+  }
+
+  previousPropControls.current = propControls
 }

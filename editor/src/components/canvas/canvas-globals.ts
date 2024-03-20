@@ -15,6 +15,7 @@ import {
   PropertyControlsInfoKeepDeepEquality,
   PropertyControlsKeepDeepEquality,
 } from '../editor/store/store-deep-equality-instances'
+import { propControlsStore } from './canvas-external-store'
 
 export type ControlsToCheck = Promise<Either<string, Array<ComponentDescriptorWithName>>>
 
@@ -145,5 +146,7 @@ export async function validateControlsToCheck(
       registeredPropertyControlsInfo,
       wipPropertyControlsInfo,
     ).value
+
+    propControlsStore.setPropertyControls(registeredPropertyControlsInfo)
   }
 }

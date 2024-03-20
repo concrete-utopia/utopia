@@ -4387,16 +4387,9 @@ export const UPDATE_FNS = {
     action: UpdatePropertyControlsInfo,
     editor: EditorState,
   ): EditorState => {
-    let updatedPropertyControlsInfo: PropertyControlsInfo = {
-      ...editor.propertyControlsInfo,
-      ...action.propertyControlsInfo,
-    }
-    for (const moduleNameOrPathToDelete of action.moduleNamesOrPathsToDelete) {
-      delete updatedPropertyControlsInfo[moduleNameOrPathToDelete]
-    }
     return {
       ...editor,
-      propertyControlsInfo: updatedPropertyControlsInfo,
+      propertyControlsInfo: action.propertyControlsInfo,
     }
   },
   UPDATE_TEXT: (action: UpdateText, editorStore: EditorStoreUnpatched): EditorStoreUnpatched => {
