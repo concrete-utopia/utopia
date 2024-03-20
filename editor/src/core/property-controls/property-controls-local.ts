@@ -114,9 +114,8 @@ async function getComponentDescriptorPromises(
         )
 
         if (componentDescriptor.type === 'RIGHT') {
-          return (result = result.concat(componentDescriptor.value))
+          result = result.concat(componentDescriptor.value)
         }
-        return []
       }
     }
     return result
