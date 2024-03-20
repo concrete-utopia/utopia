@@ -131,7 +131,7 @@ export interface PreferredChildComponentDescriptor {
 export interface ComponentDescriptor {
   properties: PropertyControls
   supportsChildren: boolean
-  preferredChildComponents: Array<PreferredChildComponent>
+  preferredChildComponents: Array<PreferredChildComponentDescriptor>
   variants: ComponentInfo[]
 }
 
@@ -139,7 +139,7 @@ export function componentDescriptor(
   properties: PropertyControls,
   supportsChildren: boolean,
   variants: Array<ComponentInfo>,
-  preferredChildComponents: Array<PreferredChildComponent>,
+  preferredChildComponents: Array<PreferredChildComponentDescriptor>,
 ): ComponentDescriptor {
   return {
     properties: properties,

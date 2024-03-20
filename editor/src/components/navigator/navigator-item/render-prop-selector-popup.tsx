@@ -1,18 +1,28 @@
 import React from 'react'
 import { useContextMenu, Menu } from 'react-contexify'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import type { JSXElement } from '../../../core/shared/element-template'
 import {
   getJSXElementNameAsString,
   jsExpressionOtherJavaScriptSimple,
+  jsxAttributesFromMap,
+  jsxElement,
 } from '../../../core/shared/element-template'
-import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { setProp_UNSAFE } from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
+import { element } from 'prop-types'
+import { v4 as UUID } from 'uuid'
+import type { PreferredChildComponentDescriptor } from '../../custom-code/code-file'
+import { elementFromInsertMenuItem } from '../../editor/insert-callbacks'
 
-const usePreferredChildrenForTargetProp = (target: ElementPath, prop: string) => {
+const usePreferredChildrenForTargetProp = (
+  target: ElementPath,
+  prop: string,
+): Array<PreferredChildComponentDescriptor> => {
   const selectedJSXElement = useEditorState(
     Substores.metadata,
     (store) => MetadataUtils.getJSXElementFromMetadata(store.editor.jsxMetadata, target),
@@ -52,10 +62,16 @@ const usePreferredChildrenForTargetProp = (target: ElementPath, prop: string) =>
   )
 
   if (selectedJSXElement == null || preferredChildrenForTargetProp == null) {
-    return null
+    return []
   }
 
-  return preferredChildrenForTargetProp
+  // TODO: the problem is that this gets the `preferredChildComponents` from the
+  // jsx control, where it's not parsed what needs to happen is that
+  // propertyControls in the editor cannot directly reuse the types from
+  // utopia-api, but the jsx control needs its internal type which represents
+  // the parsed stuff
+  // return preferredChildrenForTargetProp
+  return []
 }
 
 export const useShowRenderPropPicker = (id: string) => {
@@ -77,6 +93,12 @@ interface RenderPropPickerProps {
   id: string
 }
 
+interface PreferredChildToInsert {
+  elementToInsert: JSXElement
+  additionalImports: Imports | null
+  label: string
+}
+
 export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, target, prop }) => {
   const preferredChildrenForTargetProp = usePreferredChildrenForTargetProp(
     EP.parentPath(target),
@@ -86,15 +108,16 @@ export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, ta
   const dispatch = useDispatch()
 
   const onItemClick = React.useCallback(
-    (rawJSCodeForRenderProp: string) => (e: React.MouseEvent) => {
+    (preferredChildToInsert: PreferredChildToInsert) => (e: React.MouseEvent) => {
       e.stopPropagation()
       e.preventDefault()
 
       dispatch([
+        // TODO: merge imports stuff
         setProp_UNSAFE(
           EP.parentPath(target),
           PP.create(prop),
-          jsExpressionOtherJavaScriptSimple(rawJSCodeForRenderProp, []),
+          preferredChildToInsert.elementToInsert,
         ),
       ])
     },
@@ -105,15 +128,38 @@ export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, ta
     return null
   }
 
-  const rawJSToInsert: Array<string> = (preferredChildrenForTargetProp ?? []).flatMap((data) =>
-    data.variants == null ? `<${data.name} />` : data.variants.map((v) => v.code),
-  )
+  const preferredChildComponentsToInsert: Array<PreferredChildToInsert> = (
+    preferredChildrenForTargetProp ?? []
+  ).flatMap((data) => {
+    if (data.variants == null) {
+      return [
+        {
+          label: element.name,
+          elementToInsert: jsxElement(element.name, UUID(), jsxAttributesFromMap({}), []),
+          additionalImports: data.imports,
+        },
+      ]
+    }
+    return data.variants.flatMap((variant) => {
+      const elementToInsert = elementFromInsertMenuItem(variant.elementToInsert(), UUID())
+      if (elementToInsert.type !== 'JSX_ELEMENT') {
+        return []
+      }
+      return [
+        {
+          label: variant.insertMenuLabel,
+          elementToInsert: elementToInsert,
+          additionalImports: variant.importsToAdd,
+        },
+      ]
+    })
+  })
 
   return (
     <Menu key={key} id={id} animation={false} style={{ padding: 8 }}>
-      {rawJSToInsert.map((option, idx) => (
+      {preferredChildComponentsToInsert.map((option, idx) => (
         <div key={idx} onClick={onItemClick(option)}>
-          {option}
+          {option.label}
         </div>
       ))}
     </Menu>

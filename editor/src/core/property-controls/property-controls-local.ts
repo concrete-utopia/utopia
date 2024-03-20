@@ -13,6 +13,7 @@ import { packageJsonFileFromProjectContents } from '../../components/assets'
 import type {
   ComponentDescriptorWithName,
   ComponentInfo,
+  PreferredChildComponentDescriptor,
   PropertyControlsInfo,
 } from '../../components/custom-code/code-file'
 import { dependenciesFromPackageJson } from '../../components/editor/npm-dependency/npm-dependency'
@@ -36,7 +37,9 @@ import {
   applicative4Either,
   bimapEither,
   foldEither,
+  isLeft,
   mapEither,
+  right,
   sequenceEither,
 } from '../shared/either'
 import { setOptionalProp } from '../shared/object-utils'
@@ -91,6 +94,40 @@ function variantsForComponentToRegister(
   }
 }
 
+async function makePreferredChildDescriptior(
+  preferredChild: PreferredChildComponent,
+  componentName: string,
+  moduleName: string,
+  workers: UtopiaTsWorkers,
+): Promise<Either<string, PreferredChildComponentDescriptor>> {
+  const allRequiredImports = `import { ${componentName} } from '${moduleName}'; ${
+    preferredChild.additionalImports ?? ''
+  }`
+
+  const parsedParams = await getCachedParseResultForUserStrings(workers, allRequiredImports, '</>')
+  if (isLeft(parsedParams)) {
+    return parsedParams
+  }
+
+  const variantsPromise: Array<Promise<Either<string, ComponentInfo>>> =
+    preferredChild.variants == null
+      ? []
+      : preferredChild.variants.map((insertOption) =>
+          parseInsertOption(insertOption, componentName, moduleName, workers),
+        )
+
+  const variants = sequenceEither(await Promise.all(variantsPromise))
+  if (isLeft(variants)) {
+    return variants
+  }
+
+  return right({
+    name: preferredChild.name,
+    imports: parsedParams.value.importsToAdd,
+    variants: variants.value,
+  })
+}
+
 async function componentDescriptorForComponentToRegister(
   componentToRegister: ComponentToRegister,
   componentName: string,
@@ -105,12 +142,23 @@ async function componentDescriptorForComponentToRegister(
 
   const parsedVariantsUnsequenced = await Promise.all(parsedInsertOptionPromises)
   const parsedVariants = sequenceEither(parsedVariantsUnsequenced)
+  const parsePreferredChildrenPromises =
+    componentToRegister.preferredChildComponents == null
+      ? []
+      : componentToRegister.preferredChildComponents.map((c) =>
+          makePreferredChildDescriptior(c, c.name, moduleName, workers),
+        )
+
+  const parsedPreferredChildren = sequenceEither(await Promise.all(parsePreferredChildrenPromises))
+  if (isLeft(parsedPreferredChildren)) {
+    return parsedPreferredChildren
+  }
 
   return mapEither((variants) => {
     return {
       componentName: componentName,
       supportsChildren: componentToRegister.supportsChildren,
-      preferredChildComponents: componentToRegister.preferredChildComponents ?? [],
+      preferredChildComponents: parsedPreferredChildren.value,
       properties: componentToRegister.properties,
       variants: variants,
     }
