@@ -64,9 +64,8 @@ const project = createModifiedProject({
 })
 
 describe('registered property controls', () => {
-  it('registered controls with registerModule are in editor state', async () => {
+  it('registered controls from sidecar file are in editor state', async () => {
     const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
-    await wait(10) // this is quite ugly but we want to wait for a timeout(0) in ui-jsx-canvas before calling validateControlsToCheck
     const editorState = renderResult.getEditorState().editor
 
     expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
