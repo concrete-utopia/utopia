@@ -5,8 +5,9 @@ import { wait } from '../model/performance-scripts'
 import { createModifiedProject } from '../../sample-projects/sample-project-utils.test-utils'
 import { StoryboardFilePath } from '../../components/editor/store/editor-state'
 
-const project = createModifiedProject({
-  [StoryboardFilePath]: `import * as React from 'react'
+const project = (componentDescriptorFiles: { [filename: string]: string }) =>
+  createModifiedProject({
+    [StoryboardFilePath]: `import * as React from 'react'
   import { Scene, Storyboard, View } from 'utopia-api'
 
   export var App = (props) => {
@@ -27,45 +28,50 @@ const project = createModifiedProject({
       </Storyboard>
     )
   }`,
-  ['/utopia/components.utopia.js']: `const Components = {
-    '/src/card': {
-      Card: {
-        supportsChildren: false,
-        properties: {
-          label: {
-            control: 'string-input',
-          },
-          background: {
-            control: 'color',
-          },
-          visible: {
-            control: 'checkbox',
-            defaultValue: true,
-          },
-        },
-        variants: [
-          {
-            code: '<Card />',
-            label: 'Card',
-          },
-          {
-            code: '<Card person={DefaultPerson} />',
-            label: 'ID Card',
-            additionalImports:
-              "import { DefaultPerson } from '/src/defaults';",
-          },
-        ],
-      },
-    },
-  }
-  
-  export default Components
-`,
-})
+    ...componentDescriptorFiles,
+  })
 
 describe('registered property controls', () => {
   it('registered controls from sidecar file are in editor state', async () => {
-    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+    const renderResult = await renderTestEditorWithModel(
+      project({
+        ['/utopia/components.utopia.js']: `const Components = {
+      '/src/card': {
+        Card: {
+          supportsChildren: false,
+          properties: {
+            label: {
+              control: 'string-input',
+            },
+            background: {
+              control: 'color',
+            },
+            visible: {
+              control: 'checkbox',
+              defaultValue: true,
+            },
+          },
+          variants: [
+            {
+              code: '<Card />',
+              label: 'Card',
+            },
+            {
+              code: '<Card person={DefaultPerson} />',
+              label: 'ID Card',
+              additionalImports:
+                "import { DefaultPerson } from '/src/defaults';",
+            },
+          ],
+        },
+      },
+    }
+    
+    export default Components
+  `,
+      }),
+      'await-first-dom-report',
+    )
     const editorState = renderResult.getEditorState().editor
 
     expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
@@ -131,6 +137,230 @@ describe('registered property controls', () => {
           ],
         },
       }
+    `)
+  })
+  it('registered controls for multiple components from sidecar file are in editor state', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      project({
+        ['/utopia/components.utopia.js']: `const Components = {
+      '/src/card': {
+        Card: {
+          supportsChildren: false,
+          properties: {
+            label: {
+              control: 'string-input',
+            },
+            background: {
+              control: 'color',
+            },
+            visible: {
+              control: 'checkbox',
+              defaultValue: true,
+            },
+          },
+          variants: [
+            {
+              code: '<Card />',
+              label: 'Card',
+            },
+            {
+              code: '<Card person={DefaultPerson} />',
+              label: 'ID Card',
+              additionalImports:
+                "import { DefaultPerson } from '/src/defaults';",
+            },
+          ],
+        },
+        Card2: {
+          supportsChildren: false,
+          properties: {
+            label: {
+              control: 'string-input',
+            },
+          },
+          variants: [
+            {
+              code: '<Card2 />',
+              label: 'Card2',
+            },
+            {
+              code: '<Card2 label={DefaultLabel} />',
+              label: 'ID Card',
+              additionalImports:
+                "import { DefaultLabel } from '/src/defaults';",
+            },
+          ],
+        },
+      },
+    }
+    
+    export default Components    
+  `,
+      }),
+      'await-first-dom-report',
+    )
+    const editorState = renderResult.getEditorState().editor
+
+    expect(Object.keys(editorState.propertyControlsInfo['/src/card'])).toMatchInlineSnapshot(`
+      Array [
+        "Card",
+        "Card2",
+      ]
+    `)
+  })
+  it('registered controls for multiple modules from sidecar file are in editor state', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      project({
+        ['/utopia/components.utopia.js']: `const Components = {
+        '/src/card': {
+          Card: {
+            supportsChildren: false,
+            properties: {
+              label: {
+                control: 'string-input',
+              },
+              background: {
+                control: 'color',
+              },
+              visible: {
+                control: 'checkbox',
+                defaultValue: true,
+              },
+            },
+            variants: [
+              {
+                code: '<Card />',
+                label: 'Card',
+              },
+              {
+                code: '<Card person={DefaultPerson} />',
+                label: 'ID Card',
+                additionalImports:
+                  "import { DefaultPerson } from '/src/defaults';",
+              },
+            ],
+          },
+        },
+        '/src/card2': {
+          Card2: {
+            supportsChildren: false,
+            properties: {
+              label: {
+                control: 'string-input',
+              },
+            },
+            variants: [
+              {
+                code: '<Card2 />',
+                label: 'Card2',
+              },
+              {
+                code: '<Card2 label={DefaultLabel} />',
+                label: 'ID Card',
+                additionalImports:
+                  "import { DefaultLabel } from '/src/defaults';",
+              },
+            ],
+          },
+        },
+      }
+      
+      export default Components      
+  `,
+      }),
+      'await-first-dom-report',
+    )
+    const editorState = renderResult.getEditorState().editor
+
+    expect(Object.keys(editorState.propertyControlsInfo['/src/card'])).toMatchInlineSnapshot(`
+      Array [
+        "Card",
+      ]
+    `)
+    expect(Object.keys(editorState.propertyControlsInfo['/src/card2'])).toMatchInlineSnapshot(`
+      Array [
+        "Card2",
+      ]
+    `)
+  })
+  it('registered controls for multiple modules from multiple sidecar files are in editor state', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      project({
+        ['/utopia/components.utopia.js']: `const Components = {
+          '/src/card': {
+            Card: {
+              supportsChildren: false,
+              properties: {
+                label: {
+                  control: 'string-input',
+                },
+                background: {
+                  control: 'color',
+                },
+                visible: {
+                  control: 'checkbox',
+                  defaultValue: true,
+                },
+              },
+              variants: [
+                {
+                  code: '<Card />',
+                  label: 'Card',
+                },
+                {
+                  code: '<Card person={DefaultPerson} />',
+                  label: 'ID Card',
+                  additionalImports:
+                    "import { DefaultPerson } from '/src/defaults';",
+                },
+              ],
+            },
+          },
+        }
+        
+        export default Components        
+  `,
+        ['/utopia/components2.utopia.js']: `const Components = {
+          '/src/card2': {
+            Card2: {
+              supportsChildren: false,
+              properties: {
+                label: {
+                  control: 'string-input',
+                },
+              },
+              variants: [
+                {
+                  code: '<Card2 />',
+                  label: 'Card2',
+                },
+                {
+                  code: '<Card2 label={DefaultLabel} />',
+                  label: 'ID Card',
+                  additionalImports:
+                    "import { DefaultLabel } from '/src/defaults';",
+                },
+              ],
+            },
+          },
+        }
+        
+        export default Components
+        `,
+      }),
+      'await-first-dom-report',
+    )
+    const editorState = renderResult.getEditorState().editor
+
+    expect(Object.keys(editorState.propertyControlsInfo['/src/card'])).toMatchInlineSnapshot(`
+      Array [
+        "Card",
+      ]
+    `)
+    expect(Object.keys(editorState.propertyControlsInfo['/src/card2'])).toMatchInlineSnapshot(`
+      Array [
+        "Card2",
+      ]
     `)
   })
 })
