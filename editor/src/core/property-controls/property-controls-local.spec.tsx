@@ -27,7 +27,7 @@ const project = createModifiedProject({
       </Storyboard>
     )
   }`,
-  ['utopia/components.utopia.js']: `const Components = {
+  ['/utopia/components.utopia.js']: `const Components = {
     '/src/card': {
       Card: {
         supportsChildren: false,
