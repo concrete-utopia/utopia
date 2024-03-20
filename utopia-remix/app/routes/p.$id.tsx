@@ -3,6 +3,7 @@ import { validateProjectAccess } from '../handlers/validators'
 import { proxy } from '../util/proxy.server'
 import { UserProjectPermission } from '~/types'
 import { type Params, redirect } from '@remix-run/react'
+import { getProjectIdFromParams } from '../util/api.server'
 
 export async function loader(args: LoaderFunctionArgs) {
   return getProjectForEditor(args.request, args.params)
@@ -10,7 +11,7 @@ export async function loader(args: LoaderFunctionArgs) {
 
 const validator = validateProjectAccess(UserProjectPermission.CAN_VIEW_PROJECT, {
   canRequestAccess: true,
-  getProjectId: (params) => params.id?.split('-')[0],
+  getProjectId: (params) => getProjectIdFromParams(params, 'id'),
 })
 
 export async function getProjectForEditor(req: Request, params: Params<string>) {

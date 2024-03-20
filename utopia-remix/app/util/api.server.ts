@@ -201,3 +201,7 @@ export async function getUser(request: Request): Promise<UserDetails | null> {
   }
   return getUserFromSession({ key: sessionId })
 }
+
+export function getProjectIdFromParams(params: Params<string>, key: string): string | null {
+  return params[key]?.split('-')[0] ?? null
+}
