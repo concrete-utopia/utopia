@@ -53,6 +53,9 @@ export function useProjectIsOnActiveOperation() {
       return !activeOperations.some((op) => {
         switch (selectedCategory) {
           case 'allProjects':
+          case 'public':
+          case 'private':
+          case 'shared':
             return op.type === 'delete' && op.projectId === project.proj_id
           case 'trash':
             return (

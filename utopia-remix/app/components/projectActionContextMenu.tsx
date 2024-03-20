@@ -93,6 +93,9 @@ export const ProjectActionsMenu = React.memo(
     const menuEntries = React.useMemo((): ContextMenuEntry[] => {
       switch (selectedCategory) {
         case 'allProjects':
+        case 'public':
+        case 'shared':
+        case 'private':
           return [
             {
               text: 'Open',
@@ -189,7 +192,7 @@ export const ProjectActionsMenu = React.memo(
                 onSelect={onOpenShareDialog}
               >
                 <Flex justify={'between'} align={'center'} width={'100%'}>
-                  <Text>Share</Text>
+                  <Text>Sharing…</Text>
                   {when(
                     pendingAccessRequests.length > 0,
                     <DotFilledIcon color='red' height={22} width={22} />,
