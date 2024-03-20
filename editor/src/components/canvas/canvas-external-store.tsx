@@ -6,6 +6,30 @@ export const PropertyControlsExportedForTestInspection: { current: PropertyContr
   current: {},
 }
 
+let listeners: Array<() => void> = []
+
+export const propControlsStore = {
+  setPropertyControls(propertyControls: PropertyControlsInfo) {
+    PropertyControlsExportedForTestInspection.current = propertyControls
+    emitChange()
+  },
+  subscribe(listener: () => void) {
+    listeners = [...listeners, listener]
+    return () => {
+      listeners = listeners.filter((l) => l !== listener)
+    }
+  },
+  getSnapshot(): PropertyControlsInfo {
+    return PropertyControlsExportedForTestInspection.current
+  },
+}
+
+function emitChange() {
+  for (let listener of listeners) {
+    listener()
+  }
+}
+
 export function usePropertyControlsInfo(): PropertyControlsInfo {
   const override = useEditorState(
     Substores.restOfEditor,
