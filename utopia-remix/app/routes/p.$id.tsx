@@ -20,8 +20,7 @@ export async function getProjectForEditor(req: Request, params: Params<string>) 
     const proxyResponse: Response = (await proxy(req, {
       rawOutput: true,
     })) as Response
-    const body = await proxyResponse.text()
-    return new Response(body, {
+    return new Response(proxyResponse.body, {
       headers: { 'content-type': 'text/html' },
       status: proxyResponse.status,
     })
