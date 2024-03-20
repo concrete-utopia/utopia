@@ -2,7 +2,7 @@ import type {
   ControlDescription,
   ArrayControlDescription,
   ObjectControlDescription,
-} from 'utopia-api/core'
+} from '../../../custom-code/internal-property-controls'
 import type { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import type { VariableData } from '../../../canvas/ui-jsx-canvas'
 import { useEditorState, Substores } from '../../../editor/store/store-hook'

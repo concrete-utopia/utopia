@@ -5,9 +5,9 @@ import type {
   registerExternalComponent as registerExternalComponentAPI,
   ComponentToRegister,
   ComponentInsertOption,
-  PropertyControls,
   PreferredChildComponent,
 } from 'utopia-api/core'
+import type { PropertyControls } from '../../components/custom-code/internal-property-controls'
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import { packageJsonFileFromProjectContents } from '../../components/assets'
 import type {
@@ -106,6 +106,7 @@ async function componentDescriptorForComponentToRegister(
   const parsedVariantsUnsequenced = await Promise.all(parsedInsertOptionPromises)
   const parsedVariants = sequenceEither(parsedVariantsUnsequenced)
 
+  // TODO
   return mapEither((variants) => {
     return {
       componentName: componentName,
