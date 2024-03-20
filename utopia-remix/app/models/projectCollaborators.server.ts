@@ -1,4 +1,5 @@
 import type { UserDetails } from 'prisma-client'
+import type { UtopiaPrismaClient } from '../db.server'
 import { prisma } from '../db.server'
 import type { CollaboratorsByProject } from '../types'
 import { userToCollaborator } from '../types'
@@ -21,20 +22,27 @@ export async function getCollaborators(params: {
 }
 
 export async function addToProjectCollaborators(params: {
-  id: string
+  projectId: string
   userId: string
 }): Promise<void> {
+  return addToProjectCollaboratorsWithRunner(prisma, params)
+}
+
+export async function addToProjectCollaboratorsWithRunner(
+  runner: Pick<UtopiaPrismaClient, 'projectCollaborator'>,
+  params: { projectId: string; userId: string },
+) {
   // the Prisma equivalent of INSERT ... ON CONFLICT DO NOTHING
-  await prisma.projectCollaborator.upsert({
+  await runner.projectCollaborator.upsert({
     where: {
       unique_project_collaborator_project_id_user_id: {
         user_id: params.userId,
-        project_id: params.id,
+        project_id: params.projectId,
       },
     },
     update: {},
     create: {
-      project_id: params.id,
+      project_id: params.projectId,
       user_id: params.userId,
     },
   })

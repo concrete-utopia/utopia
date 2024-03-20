@@ -47,7 +47,7 @@ export async function addToCollaborators(req: Request, params: Params<string>) {
   const { id } = params
   ensure(id != null, 'id is null', Status.BAD_REQUEST)
 
-  await addToProjectCollaborators({ id: id, userId: user.user_id })
+  await addToProjectCollaborators({ projectId: id, userId: user.user_id })
 
   return {}
 }
