@@ -184,7 +184,7 @@ export async function listSharedWithMeProjectsAndCollaborators(params: {
     collaboratorsByProject[project.proj_id] = collaboratorUserDetails.map(userToCollaborator)
   }
 
-  // 5. return boh projects and collabs
+  // 5. return both projects and collabs
   return {
     projects: filteredProjects,
     collaborators: collaboratorsByProject,
