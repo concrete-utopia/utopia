@@ -828,6 +828,7 @@ const ProjectCard = React.memo(
                     {projectTitle}
                   </Text>
                   <ProjectBadge
+                    onOpenShareDialog={onOpenShareDialog}
                     accessLevel={
                       asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
                     }
@@ -1055,6 +1056,7 @@ const ProjectRow = React.memo(
                   accessLevel={
                     asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
                   }
+                  onOpenShareDialog={onOpenShareDialog}
                 />
               </div>
             </div>
@@ -1068,50 +1070,62 @@ const ProjectRow = React.memo(
 )
 ProjectRow.displayName = 'ProjectRow'
 
-const ProjectBadge = React.memo(({ accessLevel }: { accessLevel: AccessLevel }) => {
-  const [color, backgroundColor] = React.useMemo(() => {
-    switch (accessLevel) {
-      case AccessLevel.PRIVATE:
-        return ['rgb(209 78 0)', 'rgb(249 144 0 / 15%)']
-      case AccessLevel.PUBLIC:
-        return ['rgb(0 130 77)', 'rgb(0 155 0 / 9%)']
-      case AccessLevel.WITH_LINK:
-        return ['rgb(0 114 222)', 'rgb(0 132 241 / 9%)']
-      case AccessLevel.COLLABORATIVE:
-        return ['rgb(0 114 222)', 'rgb(0 132 241 / 9%)']
-      default:
-        return ['gray', 'lightgray']
-    }
-  }, [accessLevel])
+const ProjectBadge = React.memo(
+  ({
+    accessLevel,
+    onOpenShareDialog,
+  }: {
+    accessLevel: AccessLevel
+    onOpenShareDialog: () => void
+  }) => {
+    const [color, backgroundColor] = React.useMemo(() => {
+      switch (accessLevel) {
+        case AccessLevel.PRIVATE:
+          return ['rgb(209 78 0)', 'rgb(249 144 0 / 15%)']
+        case AccessLevel.PUBLIC:
+          return ['rgb(0 130 77)', 'rgb(0 155 0 / 9%)']
+        case AccessLevel.WITH_LINK:
+          return ['rgb(0 114 222)', 'rgb(0 132 241 / 9%)']
+        case AccessLevel.COLLABORATIVE:
+          return ['rgb(0 114 222)', 'rgb(0 132 241 / 9%)']
+        default:
+          return ['gray', 'lightgray']
+      }
+    }, [accessLevel])
 
-  const text = React.useMemo(() => {
-    switch (accessLevel) {
-      case AccessLevel.PRIVATE:
-        return 'Private'
-      case AccessLevel.PUBLIC:
-        return 'Public'
-      case AccessLevel.WITH_LINK:
-        return 'With Link'
-      case AccessLevel.COLLABORATIVE:
-        return 'Collaborative'
-      default:
-        return 'Unknown'
-    }
-  }, [accessLevel])
-  return (
-    <div style={{ width: 80, display: 'flex', justifyContent: 'flex-end' }}>
-      <Badge
-        style={{
-          backgroundColor: backgroundColor,
-          color: color,
-          fontSize: 10,
-        }}
+    const text = React.useMemo(() => {
+      switch (accessLevel) {
+        case AccessLevel.PRIVATE:
+          return 'Private'
+        case AccessLevel.PUBLIC:
+          return 'Public'
+        case AccessLevel.WITH_LINK:
+          return 'With Link'
+        case AccessLevel.COLLABORATIVE:
+          return 'Collaborative'
+        default:
+          return 'Unknown'
+      }
+    }, [accessLevel])
+    return (
+      <div
+        style={{ width: 80, display: 'flex', justifyContent: 'flex-end' }}
+        onClick={onOpenShareDialog}
       >
-        {text}
-      </Badge>
-    </div>
-  )
-})
+        <Badge
+          style={{
+            backgroundColor: backgroundColor,
+            color: color,
+            fontSize: 10,
+            cursor: 'pointer',
+          }}
+        >
+          {text}
+        </Badge>
+      </div>
+    )
+  },
+)
 ProjectBadge.displayName = 'ProjectBadge'
 
 const ActiveOperations = React.memo(({ projects }: { projects: ProjectWithoutContent[] }) => {
