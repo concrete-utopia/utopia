@@ -71,13 +71,39 @@ function isCategory(category: unknown): category is Category {
 
 export type Category = (typeof Categories)[number]
 
-const categories: { [key in Category]: { name: string; icon: React.ReactNode } } = {
-  allProjects: { name: 'All My Projects', icon: <CubeIcon width='16' height='16' /> },
-  private: { name: 'Private', icon: <LockClosedIcon width='16' height='16' /> },
-  sharing: { name: 'Sharing', icon: <PersonIcon width='16' height='16' /> },
-  public: { name: 'Public', icon: <GlobeIcon width='16' height='16' /> },
-  sharedWithMe: { name: 'Shared With Me', icon: <AvatarIcon width='16' height='16' /> },
-  trash: { name: 'Trash', icon: <TrashIcon width='16' height='16' /> },
+const categories: {
+  [key in Category]: { name: string; icon: React.ReactNode; description: string }
+} = {
+  allProjects: {
+    name: 'All My Projects',
+    icon: <CubeIcon width='16' height='16' />,
+    description: 'Projects you create or open will show up here.',
+  },
+  private: {
+    name: 'Private',
+    icon: <LockClosedIcon width='16' height='16' />,
+    description: 'Projects you create that are private to you.',
+  },
+  sharing: {
+    name: 'Sharing',
+    icon: <PersonIcon width='16' height='16' />,
+    description: 'Projects that you shared to other collaborators.',
+  },
+  public: {
+    name: 'Public',
+    icon: <GlobeIcon width='16' height='16' />,
+    description: 'Public projects you own.',
+  },
+  sharedWithMe: {
+    name: 'Shared With Me',
+    icon: <AvatarIcon width='16' height='16' />,
+    description: 'Projects that you have been added to as a collaborator.',
+  },
+  trash: {
+    name: 'Trash',
+    icon: <TrashIcon width='16' height='16' />,
+    description: 'Deleted projects are kept here until you destroy them for good.',
+  },
 }
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -593,28 +619,11 @@ const NoProjectsMessage = React.memo(() => {
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
   const searchQuery = useProjectsStore((store) => store.searchQuery)
 
-  function getCategorySubtitle(cat: Category) {
-    switch (cat) {
-      case 'allProjects':
-        return 'Projects you create or open will show up here.'
-      case 'trash':
-        return 'Deleted projects are kept here until you destroy them for good.'
-      case 'public':
-        return 'Public projects you own.'
-      case 'private':
-        return 'Projects you create that are private to you.'
-      case 'sharing':
-        return 'Projects that you shared to other collaborators.'
-      case 'sharedWithMe':
-        return 'Projects that you have been added to as a collaborator.'
-      default:
-        assertNever(cat)
-    }
-  }
+  const description = React.useMemo(() => {
+    return searchQuery !== '' ? 'No projects found.' : categories[selectedCategory].description
+  }, [searchQuery, selectedCategory])
 
-  const subtitle = searchQuery !== '' ? 'No projects found.' : getCategorySubtitle(selectedCategory)
-
-  return <div style={{ padding: '30px 0px', color: 'gray' }}>{subtitle}</div>
+  return <div style={{ padding: '30px 0px', color: 'gray' }}>{description}</div>
 })
 NoProjectsMessage.displayName = 'NoProjectsMessage'
 
