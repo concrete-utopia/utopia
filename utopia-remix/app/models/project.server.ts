@@ -170,7 +170,7 @@ export async function listSharedWithMeProjectsAndCollaborators(params: {
     orderBy: { modified_at: 'desc' },
   })
 
-  // 3. filter out non-collaborative projects (cannot do it directly in the query)
+  // 3. filter out non-collaborative projects as well as own projects (cannot do it directly in the query)
   const filteredProjects = projects.filter((p) => {
     return (
       p.owner_id !== params.userId && p.ProjectAccess?.access_level === AccessLevel.COLLABORATIVE
