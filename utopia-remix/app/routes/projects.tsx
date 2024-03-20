@@ -677,10 +677,12 @@ const ProjectCard = React.memo(
       }
     }, [accessRequestsFetcher])
 
-    const handleSortMenuOpenChange = React.useCallback(() => {
+    React.useEffect(() => {
       const action = `/internal/projects/${project.proj_id}/access/requests`
       accessRequestsFetcher.submit({}, { method: 'GET', action: action })
-    }, [accessRequestsFetcher, project])
+      // since fetching changes the fetcher reference, we don't want to get to an infinite loop
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [project.proj_id])
 
     const ownerName = React.useMemo(() => {
       return getOwnerName(project.owner_id, collaborators)
@@ -698,7 +700,7 @@ const ProjectCard = React.memo(
     }, [project, setSharingProjectId])
 
     return (
-      <ContextMenu.Root onOpenChange={handleSortMenuOpenChange}>
+      <ContextMenu.Root>
         <ContextMenu.Trigger>
           <div
             style={{
@@ -887,10 +889,12 @@ const ProjectRow = React.memo(
       }
     }, [accessRequestsFetcher])
 
-    const onContextMenuOpenChange = React.useCallback(() => {
+    React.useEffect(() => {
       const action = `/internal/projects/${project.proj_id}/access/requests`
       accessRequestsFetcher.submit({}, { method: 'GET', action: action })
-    }, [accessRequestsFetcher, project])
+      // since fetching changes the fetcher reference, we don't want to get to an infinite loop
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [project.proj_id])
 
     const ownerName = React.useMemo(() => {
       return getOwnerName(project.owner_id, collaborators)
@@ -908,7 +912,7 @@ const ProjectRow = React.memo(
     }, [project, setSharingProjectId])
 
     return (
-      <ContextMenu.Root onOpenChange={onContextMenuOpenChange}>
+      <ContextMenu.Root>
         <ContextMenu.Trigger>
           <div style={{ padding: '8px 0' }}>
             <div
