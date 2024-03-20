@@ -1,4 +1,4 @@
-import type { PropertyControls } from 'utopia-api/core'
+import type { PropertyControls } from '../../../components/custom-code/internal-property-controls'
 
 const StyleObjectProps: PropertyControls = {
   style: {

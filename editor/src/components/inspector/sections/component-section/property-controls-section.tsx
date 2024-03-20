@@ -1,6 +1,6 @@
 import React from 'react'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
-import type { PropertyControls } from 'utopia-api/core'
+import type { PropertyControls } from '../../../custom-code/internal-property-controls'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { setCursorOverlay } from '../../../editor/actions/action-creators'
 import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'

@@ -5,9 +5,9 @@ import type {
   registerExternalComponent as registerExternalComponentAPI,
   ComponentToRegister,
   ComponentInsertOption,
-  PropertyControls,
   PreferredChildComponent,
 } from 'utopia-api/core'
+import type { PropertyControls } from 'utopia-api/core'
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import { packageJsonFileFromProjectContents } from '../../components/assets'
 import type {

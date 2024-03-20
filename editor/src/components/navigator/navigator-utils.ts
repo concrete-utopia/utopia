@@ -37,7 +37,7 @@ import { findUtopiaCommentFlag, isUtopiaCommentFlagMapCount } from '../../core/s
 import { getPropertyControlsForTarget } from '../../core/property-controls/property-controls-utils'
 import type { PropertyControlsInfo } from '../custom-code/code-file'
 import type { ProjectContentTreeRoot } from '../assets'
-import type { PropertyControls } from 'utopia-api/core'
+import type { PropertyControls } from '../custom-code/internal-property-controls'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 
 export function baseNavigatorDepth(path: ElementPath): number {
