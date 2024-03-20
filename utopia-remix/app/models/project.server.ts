@@ -1,5 +1,11 @@
 import { prisma } from '../db.server'
-import { asAccessLevel, AccessLevel, type ProjectWithoutContent } from '../types'
+import type { CollaboratorsByProject } from '../types'
+import {
+  AccessLevel,
+  asAccessLevel,
+  userToCollaborator,
+  type ProjectWithoutContent,
+} from '../types'
 import { ensure } from '../util/api.server'
 import { Status } from '../util/statusCodes'
 
@@ -136,9 +142,12 @@ export async function getProjectAccessLevel(params: { projectId: string }): Prom
   return accessLevel
 }
 
-export async function listProjectsSharedWithMe(params: {
+export async function listSharedWithMeProjectsAndCollaborators(params: {
   userId: string
-}): Promise<ProjectWithoutContent[]> {
+}): Promise<{
+  projects: ProjectWithoutContent[]
+  collaborators: CollaboratorsByProject
+}> {
   const projectIds = await prisma.projectCollaborator.findMany({
     where: { user_id: params.userId },
     select: { project_id: true },
@@ -151,8 +160,24 @@ export async function listProjectsSharedWithMe(params: {
     select: {
       ...selectProjectWithoutContent,
       ProjectAccess: true,
+      ProjectCollaborator: { include: { User: true } },
     },
     orderBy: { modified_at: 'desc' },
   })
-  return projects.filter((p) => p.ProjectAccess?.access_level === AccessLevel.COLLABORATIVE)
+  const filteredProjects = projects.filter((p) => {
+    return (
+      p.owner_id !== params.userId && p.ProjectAccess?.access_level === AccessLevel.COLLABORATIVE
+    )
+  })
+
+  let collaboratorsByProject: CollaboratorsByProject = {}
+  for (const project of filteredProjects) {
+    const collaboratorUserDetails = project.ProjectCollaborator.map(({ User }) => User)
+    collaboratorsByProject[project.proj_id] = collaboratorUserDetails.map(userToCollaborator)
+  }
+
+  return {
+    projects: filteredProjects,
+    collaborators: collaboratorsByProject,
+  }
 }

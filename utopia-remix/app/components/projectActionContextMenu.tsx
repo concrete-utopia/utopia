@@ -94,7 +94,7 @@ export const ProjectActionsMenu = React.memo(
       switch (selectedCategory) {
         case 'allProjects':
         case 'public':
-        case 'shared':
+        case 'sharing':
         case 'private':
           return [
             {

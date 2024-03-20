@@ -13,7 +13,7 @@ import {
   hardDeleteProject,
   listDeletedProjects,
   listProjects,
-  listProjectsSharedWithMe,
+  listSharedWithMeProjectsAndCollaborators,
   renameProject,
   restoreDeletedProject,
   softDeleteProject,
@@ -318,7 +318,7 @@ describe('project model', () => {
     })
   })
 
-  describe('listProjectsSharedWithMe', () => {
+  describe('listSharedWithMeProjectsAndCollaborators', () => {
     beforeEach(async () => {
       await createTestUser(prisma, { id: 'bob' })
       await createTestUser(prisma, { id: 'alice' })
@@ -366,15 +366,25 @@ describe('project model', () => {
     })
 
     it('returns an empty list if there are no projects with user as a collaborator', async () => {
-      const got = await listProjectsSharedWithMe({ userId: 'alice' })
-      expect(got.length).toBe(0)
+      const got = await listSharedWithMeProjectsAndCollaborators({ userId: 'alice' })
+      expect(got.projects.length).toBe(0)
+      expect(Object.keys(got.collaborators).length).toBe(0)
     })
 
-    it('returns the projects for which the user is a collaborator, that are in the COLLABORATIVE state', async () => {
-      const got = await listProjectsSharedWithMe({ userId: 'bob' })
-      expect(got.length).toBe(2)
-      expect(got[0].proj_id).toBe('seven')
-      expect(got[1].proj_id).toBe('four')
+    it('returns the projects and their collaborators for which the user is a collaborator, that are in the COLLABORATIVE state', async () => {
+      const got = await listSharedWithMeProjectsAndCollaborators({ userId: 'bob' })
+      expect(got.projects.length).toBe(2)
+      expect(got.projects[0].proj_id).toBe('seven')
+      expect(got.projects[1].proj_id).toBe('four')
+
+      expect(Object.keys(got.collaborators).length).toBe(2)
+      expect(Object.keys(got.collaborators)[0]).toBe('seven')
+      expect(got.collaborators['seven'].length).toBe(1)
+      expect(got.collaborators['seven'].map((c) => c.id)[0]).toBe('bob')
+      expect(Object.keys(got.collaborators)[1]).toBe('four')
+      expect(got.collaborators['four'].length).toBe(2)
+      expect(got.collaborators['four'].map((c) => c.id)[0]).toBe('bob')
+      expect(got.collaborators['four'].map((c) => c.id)[1]).toBe('carol')
     })
   })
 })

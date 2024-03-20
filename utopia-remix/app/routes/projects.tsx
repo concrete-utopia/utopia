@@ -25,7 +25,7 @@ import { useIsDarkMode } from '../hooks/useIsDarkMode'
 import {
   listDeletedProjects,
   listProjects,
-  listProjectsSharedWithMe,
+  listSharedWithMeProjectsAndCollaborators,
 } from '../models/project.server'
 import { getCollaborators } from '../models/projectCollaborators.server'
 import type { OperationWithKey } from '../store'
@@ -63,7 +63,7 @@ import { SharingDialogWrapper } from '../components/sharingDialog'
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
 
-const Categories = ['allProjects', 'trash', 'private', 'public', 'shared', 'sharedWithMe'] as const
+const Categories = ['allProjects', 'trash', 'private', 'public', 'sharing', 'sharedWithMe'] as const
 
 function isCategory(category: unknown): category is Category {
   return Categories.includes(category as Category)
@@ -79,7 +79,7 @@ const categories: {
 } = {
   allProjects: { name: 'All My Projects', icon: <CubeIcon width='16' height='16' /> },
   private: { name: 'Private', icon: <LockClosedIcon width='16' height='16' /> },
-  shared: { name: 'Sharing', icon: <PersonIcon width='16' height='16' /> },
+  sharing: { name: 'Sharing', icon: <PersonIcon width='16' height='16' /> },
   public: { name: 'Public', icon: <GlobeIcon width='16' height='16' /> },
   sharedWithMe: { name: 'Shared with me', icon: <AvatarIcon width='16' height='16' /> },
   trash: { name: 'Trash', icon: <TrashIcon width='16' height='16' /> },
@@ -88,10 +88,10 @@ const categories: {
 export async function loader(args: LoaderFunctionArgs) {
   const user = await requireUser(args.request, { redirect: auth0LoginURL() })
 
-  const [projects, deletedProjects, projectsSharedWithMe] = await Promise.all([
+  const [projects, deletedProjects, sharedWithMe] = await Promise.all([
     listProjects({ ownerId: user.user_id }),
     listDeletedProjects({ ownerId: user.user_id }),
-    listProjectsSharedWithMe({ userId: user.user_id }),
+    listSharedWithMeProjectsAndCollaborators({ userId: user.user_id }),
   ])
   const collaborators = await getCollaborators({
     ids: [...projects, ...deletedProjects].map((p) => p.proj_id),
@@ -100,11 +100,11 @@ export async function loader(args: LoaderFunctionArgs) {
 
   return json(
     {
-      user,
-      projects,
-      deletedProjects,
-      projectsSharedWithMe,
-      collaborators,
+      user: user,
+      projects: projects,
+      deletedProjects: deletedProjects,
+      projectsSharedWithMe: sharedWithMe.projects,
+      collaborators: { ...collaborators, ...sharedWithMe.collaborators },
     },
     { headers: { 'cache-control': 'no-cache' } },
   )
@@ -133,7 +133,7 @@ const ProjectsPage = React.memo(() => {
         return data.projects.filter(
           (p) => (p.ProjectAccess?.access_level ?? AccessLevel.PRIVATE) === AccessLevel.PRIVATE,
         )
-      case 'shared':
+      case 'sharing':
         return data.projects.filter(
           (p) => p.ProjectAccess?.access_level === AccessLevel.COLLABORATIVE,
         )
@@ -491,7 +491,7 @@ const CategoryActions = React.memo(({ projects }: { projects: ProjectWithoutCont
     case 'allProjects':
     case 'public':
     case 'private':
-    case 'shared':
+    case 'sharing':
     case 'sharedWithMe':
       return null
     case 'trash':
@@ -600,7 +600,7 @@ const NoProjectsMessage = React.memo(() => {
         return 'Public projects you own.'
       case 'private':
         return 'Projects you create that are private to you.'
-      case 'shared':
+      case 'sharing':
         return 'Projects that you shared to other collaborators.'
       case 'sharedWithMe':
         return 'Projects you have been added to as a collaborator.'
