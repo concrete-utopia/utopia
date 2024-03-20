@@ -24,7 +24,7 @@ import type {
   Vector2ControlDescription,
   Vector3ControlDescription,
   Vector4ControlDescription,
-} from 'utopia-api/core'
+} from '../../../custom-code/internal-property-controls'
 import type { InspectorInfo, InspectorInfoWithRawValue } from '../../common/property-path-hooks'
 import { BooleanControl } from '../../controls/boolean-control'
 import type { NumberInputProps } from '../../../../uuiui'

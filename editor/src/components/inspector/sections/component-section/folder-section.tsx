@@ -4,7 +4,10 @@ import React from 'react'
 import { css, jsx } from '@emotion/react'
 import { unless, when } from '../../../../utils/react-conditionals'
 import type { CSSCursor } from '../../../canvas/canvas-types'
-import type { ControlDescription } from 'utopia-api/core'
+import type {
+  ControlDescription,
+  PropertyControls,
+} from '../../../custom-code/internal-property-controls'
 import { inferControlTypeBasedOnValue } from './component-section-utils'
 import { HiddenControls } from './hidden-controls-section'
 import * as PP from '../../../../core/shared/property-path'
@@ -14,7 +17,6 @@ import { RowForControl } from './component-section'
 import { InspectorWidthAtom } from '../../common/inspector-atoms'
 import { useAtom } from 'jotai'
 import { specialPropertiesToIgnore } from '../../../../core/property-controls/property-controls-utils'
-import type { PropertyControls } from 'utopia-api/core'
 
 interface FolderSectionProps {
   isRoot: boolean
