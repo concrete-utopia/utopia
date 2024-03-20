@@ -1,10 +1,11 @@
 import { prisma } from '../db.server'
-import type { CollaboratorsByProject } from '../types'
+import type { CollaboratorsByProject, GithubRepository } from '../types'
 import {
   AccessLevel,
   asAccessLevel,
   userToCollaborator,
   type ProjectWithoutContent,
+  githubRepositoryStringOrNull,
 } from '../types'
 import { ensure } from '../util/api.server'
 import { Status } from '../util/statusCodes'
@@ -182,29 +183,15 @@ export async function listSharedWithMeProjectsAndCollaborators(params: {
 export async function updateGithubRepository(params: {
   projectId: string
   userId: string
-  repository: {
-    owner: string
-    repository: string
-    branch: string | null
-  } | null
+  repository: GithubRepository | null
 }) {
-  function getGithubRepository(): string | null {
-    if (params.repository == null) {
-      return null
-    } else if (params.repository.branch == null) {
-      return `${params.repository.owner}/${params.repository.repository}`
-    } else {
-      return `${params.repository.owner}/${params.repository.repository}:${params.repository.branch}`
-    }
-  }
-
   return prisma.project.update({
     where: {
       owner_id: params.userId,
       proj_id: params.projectId,
     },
     data: {
-      github_repository: getGithubRepository(),
+      github_repository: githubRepositoryStringOrNull(params.repository),
       modified_at: new Date(),
     },
   })

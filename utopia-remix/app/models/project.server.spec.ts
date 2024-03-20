@@ -19,7 +19,12 @@ import {
   softDeleteProject,
   updateGithubRepository,
 } from './project.server'
-import { AccessLevel } from '../types'
+import {
+  AccessLevel,
+  MaxGithubBranchNameLength,
+  MaxGithubOwnerLength,
+  MaxGithubRepositoryLength,
+} from '../types'
 
 describe('project model', () => {
   afterEach(async () => {
@@ -454,6 +459,36 @@ describe('project model', () => {
         throw new Error('expected project not to be null')
       }
       expect(project.github_repository).toBe('foo/bar:baz')
+    })
+
+    it('updates the repository string (with branch), trimming to max lengths', async () => {
+      const repo = {
+        owner:
+          'foooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo',
+        repository:
+          'barrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr',
+        branch:
+          'bazzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz',
+      }
+      await updateGithubRepository({
+        projectId: 'one',
+        userId: 'bob',
+        repository: repo,
+      })
+      const project = await prisma.project.findUnique({
+        where: { proj_id: 'one' },
+        select: { github_repository: true },
+      })
+      if (project == null) {
+        throw new Error('expected project not to be null')
+      }
+      expect(project.github_repository).toBe(
+        repo.owner.slice(0, MaxGithubOwnerLength) +
+          '/' +
+          repo.repository.slice(0, MaxGithubRepositoryLength) +
+          ':' +
+          repo.branch.slice(0, MaxGithubBranchNameLength),
+      )
     })
   })
 })

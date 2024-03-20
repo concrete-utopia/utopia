@@ -1,6 +1,8 @@
 import type { ProjectAccessRequest, UserDetails } from 'prisma-client'
 import { Prisma } from 'prisma-client'
 import { assertNever } from './util/assertNever'
+import { ensure } from './util/api.server'
+import { Status } from './util/statusCodes'
 
 const fullProject = Prisma.validator<Prisma.ProjectDefaultArgs>()({
   include: {
@@ -250,15 +252,39 @@ export function isProjectAccessRequestWithUserDetailsArray(
   )
 }
 
+export type GithubRepository = {
+  owner: string
+  repository: string
+  branch: string | null
+}
+
 export interface UpdateGithubRepositoryRequestBody {
-  githubRepository: {
-    owner: string
-    repository: string
-    branch: string
-  } | null
+  githubRepository: GithubRepository | null
 }
 
 export function isUpdateGithubRepositoryBody(u: unknown): u is UpdateGithubRepositoryRequestBody {
   const maybe = u as UpdateGithubRepositoryRequestBody
   return u != null && typeof u === 'object' && maybe.githubRepository !== undefined
+}
+
+// Github-specific constraints
+export const MaxGithubOwnerLength = 39 // https://docs.github.com/en/enterprise-cloud@latest/admin/identity-and-access-management/iam-configuration-reference/username-considerations-for-external-authentication
+export const MaxGithubRepositoryLength = 100 // https://github.com/dead-claudia/github-limits
+export const MaxGithubBranchNameLength = 255 // https://stackoverflow.com/questions/24014361/max-length-of-git-branch-name
+
+export function githubRepositoryStringOrNull(repo: GithubRepository | null): string | null {
+  if (repo == null) {
+    return null
+  }
+
+  const owner = repo.owner.trim().slice(0, MaxGithubOwnerLength)
+  ensure(owner.length > 0, 'invalid github owner', Status.BAD_REQUEST)
+
+  const repository = repo.repository.trim().slice(0, MaxGithubRepositoryLength)
+  ensure(repository.length > 0, 'invalid github repository', Status.BAD_REQUEST)
+
+  const branch = repo.branch == null ? null : repo.branch.trim().slice(0, MaxGithubBranchNameLength)
+  ensure(branch == null || branch.length > 0, 'invalid github branch', Status.BAD_REQUEST)
+
+  return branch == null ? `${owner}/${repository}` : `${owner}/${repository}:${branch}`
 }
