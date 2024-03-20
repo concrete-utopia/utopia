@@ -458,7 +458,6 @@ import type {
   ComponentInfo,
   CurriedResolveFn,
   CurriedUtopiaRequireFn,
-  PreferredChildComponentDescriptor,
   PropertyControlsInfo,
 } from '../../custom-code/code-file'
 import {
@@ -576,7 +575,10 @@ import type {
 import type { CommentFilterMode } from '../../inspector/sections/comment-section'
 import type { Collaborator } from '../../../core/shared/multiplayer'
 import type { MultiplayerSubstate } from './store-hook-substore-types'
-import type { PropertyControls } from '../../custom-code/internal-property-controls'
+import type {
+  PreferredChildComponentDescriptor,
+  PropertyControls,
+} from '../../custom-code/internal-property-controls'
 
 export const ProjectMetadataFromServerKeepDeepEquality: KeepDeepEqualityCall<ProjectMetadataFromServer> =
   combine3EqualityCalls(

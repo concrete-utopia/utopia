@@ -4,7 +4,6 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import type { JSXElement } from '../../../core/shared/element-template'
 import {
   getJSXElementNameAsString,
-  jsExpressionOtherJavaScriptSimple,
   jsxAttributesFromMap,
   jsxElement,
 } from '../../../core/shared/element-template'
@@ -16,7 +15,7 @@ import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import { element } from 'prop-types'
 import { v4 as UUID } from 'uuid'
-import type { PreferredChildComponentDescriptor } from '../../custom-code/code-file'
+import type { PreferredChildComponentDescriptor } from '../../custom-code/internal-property-controls'
 import { elementFromInsertMenuItem } from '../../editor/insert-callbacks'
 
 const usePreferredChildrenForTargetProp = (
@@ -65,13 +64,7 @@ const usePreferredChildrenForTargetProp = (
     return []
   }
 
-  // TODO: the problem is that this gets the `preferredChildComponents` from the
-  // jsx control, where it's not parsed what needs to happen is that
-  // propertyControls in the editor cannot directly reuse the types from
-  // utopia-api, but the jsx control needs its internal type which represents
-  // the parsed stuff
-  // return preferredChildrenForTargetProp
-  return []
+  return preferredChildrenForTargetProp
 }
 
 export const useShowRenderPropPicker = (id: string) => {
