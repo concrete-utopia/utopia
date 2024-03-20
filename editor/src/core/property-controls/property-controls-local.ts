@@ -140,7 +140,7 @@ export async function maybeUpdatePropertyControls(
   workers: UtopiaTsWorkers,
   dispatch: EditorDispatch,
 ) {
-  let componentDescriptorUpdates: { [filename: string]: Array<ComponentDescriptorWithName> } = {}
+  let componentDescriptorUpdates: ComponentDescriptorFileLookup = {}
 
   const componentDescriptorParseResults = parseResults.filter((p) =>
     isComponentDescriptorFile(p.filename),
@@ -167,24 +167,24 @@ interface ComponentDescriptorFileLookup {
   [path: string]: ComponentDescriptorWithName[]
 }
 
-const COMPONENTS_FILE_CACHE: { current: ComponentDescriptorFileLookup } = {
+const COMPONENTS_DESCRIPTOR_FILE_CACHE: { current: ComponentDescriptorFileLookup } = {
   current: {},
 }
 
 export function updatePropertyControlsOnDescriptorFileDelete(
   componentDescriptorFile: string,
 ): PropertyControlsInfo {
-  COMPONENTS_FILE_CACHE.current[componentDescriptorFile] = []
-  return getPropertyControlsFromComponentDescriptors(COMPONENTS_FILE_CACHE.current)
+  COMPONENTS_DESCRIPTOR_FILE_CACHE.current[componentDescriptorFile] = []
+  return getPropertyControlsFromComponentDescriptors(COMPONENTS_DESCRIPTOR_FILE_CACHE.current)
 }
 
 export function updatePropertyControlsOnDescriptorFileUpdate(
-  componentDescriptorUpdates: { [filename: string]: Array<ComponentDescriptorWithName> } = {},
+  componentDescriptorUpdates: ComponentDescriptorFileLookup,
 ): PropertyControlsInfo {
   Object.entries(componentDescriptorUpdates).forEach(([filename, componentDescriptors]) => {
-    COMPONENTS_FILE_CACHE.current[filename] = componentDescriptors
+    COMPONENTS_DESCRIPTOR_FILE_CACHE.current[filename] = componentDescriptors
   })
-  return getPropertyControlsFromComponentDescriptors(COMPONENTS_FILE_CACHE.current)
+  return getPropertyControlsFromComponentDescriptors(COMPONENTS_DESCRIPTOR_FILE_CACHE.current)
 }
 
 function getPropertyControlsFromComponentDescriptors(
