@@ -92,6 +92,7 @@ import { isSteganographyEnabled } from '../../../core/shared/stegano-text'
 import { updateCollaborativeProjectContents } from './collaborative-editing'
 import { updateProjectServerStateInStore } from './project-server-state'
 import { ensureSceneIdsExist } from '../../../core/model/scene-id-utils'
+import { setReactRouterErrorHasBeenLogged } from '../../../core/shared/runtime-report-logs'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -477,11 +478,24 @@ export function editorDispatchActionRunner(
   return result
 }
 
+function reactRouterErrorTriggeredReset(
+  editor: EditorState,
+  reactRouterErrorPreviouslyLogged: boolean,
+): EditorState {
+  if (reactRouterErrorPreviouslyLogged) {
+    setReactRouterErrorHasBeenLogged(false)
+    return UPDATE_FNS.RESET_CANVAS(EditorActions.resetCanvas(), editor)
+  } else {
+    return editor
+  }
+}
+
 export function editorDispatchClosingOut(
   boundDispatch: EditorDispatch,
   dispatchedActions: readonly EditorAction[],
   storedState: EditorStoreFull,
   result: DispatchResult,
+  reactRouterErrorPreviouslyLogged: boolean,
 ): DispatchResult {
   const actionGroupsToProcess = dispatchedActions.reduce(reducerToSplitToActionGroups, [[]])
   const isLoadAction = dispatchedActions.some((a) => a.action === 'LOAD')
@@ -695,6 +709,13 @@ export function editorDispatchClosingOut(
         ...finalStoreV1Final.unpatchedEditor,
         filesModifiedByAnotherUser: updatedFilesModifiedByElsewhere,
       },
+    }
+
+    if (filesChanged.length > 0) {
+      finalStoreV1Final.unpatchedEditor = reactRouterErrorTriggeredReset(
+        finalStoreV1Final.unpatchedEditor,
+        reactRouterErrorPreviouslyLogged,
+      )
     }
   }
 

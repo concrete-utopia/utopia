@@ -81,29 +81,29 @@ describe('projectCollaborators model', () => {
     })
 
     it('errors if the project is not found', async () => {
-      const fn = async () => addToProjectCollaborators({ id: 'WRONG', userId: 'bob' })
+      const fn = async () => addToProjectCollaborators({ projectId: 'WRONG', userId: 'bob' })
       await expect(fn).rejects.toThrow('Foreign key constraint failed')
     })
     it('errors if the user is not found', async () => {
-      const fn = async () => addToProjectCollaborators({ id: 'one', userId: 'WRONG' })
+      const fn = async () => addToProjectCollaborators({ projectId: 'one', userId: 'WRONG' })
       await expect(fn).rejects.toThrow('Foreign key constraint failed')
     })
     it('does nothing if the user is already a collaborator', async () => {
-      await addToProjectCollaborators({ id: 'one', userId: 'bob' })
+      await addToProjectCollaborators({ projectId: 'one', userId: 'bob' })
       const collaborators = await prisma.projectCollaborator.findMany({
         where: { project_id: 'one' },
       })
       expect(collaborators.map((p) => p.user_id)).toEqual(['bob'])
     })
     it('adds the user to the collaborators if missing', async () => {
-      await addToProjectCollaborators({ id: 'one', userId: 'alice' })
+      await addToProjectCollaborators({ projectId: 'one', userId: 'alice' })
       let collaborators = await prisma.projectCollaborator.findMany({
         where: { project_id: 'one' },
         orderBy: { id: 'asc' },
       })
       expect(collaborators.map((p) => p.user_id)).toEqual(['bob', 'alice'])
 
-      await addToProjectCollaborators({ id: 'three', userId: 'alice' })
+      await addToProjectCollaborators({ projectId: 'three', userId: 'alice' })
       collaborators = await prisma.projectCollaborator.findMany({
         where: { project_id: 'three' },
         orderBy: { id: 'asc' },

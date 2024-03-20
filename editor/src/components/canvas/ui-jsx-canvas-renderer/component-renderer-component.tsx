@@ -1,4 +1,4 @@
-import type { PropertyControls } from 'utopia-api/core'
+import type { PropertyControls } from '../../custom-code/internal-property-controls'
 import type { UTOPIA_INSTANCE_PATH, UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 

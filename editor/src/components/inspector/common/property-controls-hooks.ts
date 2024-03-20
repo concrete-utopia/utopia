@@ -9,7 +9,10 @@ import {
   controlToUseForUnion,
   getPropertyControlNames,
 } from '../../../core/property-controls/property-control-values'
-import type { UnionControlDescription, RegularControlDescription } from 'utopia-api/core'
+import type {
+  UnionControlDescription,
+  RegularControlDescription,
+} from '../../custom-code/internal-property-controls'
 import type { InspectorInfo, InspectorInfoWithRawValue } from './property-path-hooks'
 import {
   filterUtopiaSpecificProps,
@@ -45,9 +48,9 @@ import {
 } from '../../editor/store/store-deep-equality-instances'
 import { arrayDeepEquality } from '../../../utils/deep-equality'
 import { omit } from '../../../core/shared/object-utils'
-import type { PropertyControls } from 'utopia-api/core'
 import type { AllElementProps } from '../../../components/editor/store/editor-state'
 import * as EP from '../../../core/shared/element-path'
+import type { PropertyControls } from '../../custom-code/internal-property-controls'
 
 type RawValues = Either<string, ModifiableAttribute>[]
 type RealValues = unknown[]

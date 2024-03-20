@@ -53,11 +53,16 @@ export function useProjectIsOnActiveOperation() {
       return !activeOperations.some((op) => {
         switch (selectedCategory) {
           case 'allProjects':
+          case 'public':
+          case 'private':
+          case 'sharing':
             return op.type === 'delete' && op.projectId === project.proj_id
           case 'trash':
             return (
               (op.type === 'restore' || op.type === 'destroy') && op.projectId === project.proj_id
             )
+          case 'sharedWithMe':
+            return false
           default:
             assertNever(selectedCategory)
         }
