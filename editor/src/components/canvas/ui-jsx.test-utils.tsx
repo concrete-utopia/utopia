@@ -115,7 +115,10 @@ import {
   updateNodeModulesContents,
 } from '../editor/actions/action-creators'
 import { EditorModes } from '../editor/editor-modes'
-import { useUpdateOnRuntimeErrors } from '../../core/shared/runtime-report-logs'
+import {
+  hasReactRouterErrorBeenLogged,
+  useUpdateOnRuntimeErrors,
+} from '../../core/shared/runtime-report-logs'
 import type { RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import { clearListOfEvaluatedFiles } from '../../core/shared/code-exec-utils'
 import { createTestProjectWithCode } from '../../sample-projects/sample-project-utils.test-utils'
@@ -408,6 +411,7 @@ export async function renderTestEditorWithModel(
         'Follow up actions took too long.',
       )
     }
+    const reactRouterErrorPreviouslyLogged = hasReactRouterErrorBeenLogged()
 
     flushSync(() => {
       canvasStoreHook.setState(patchedStoreFromFullStore(workingEditorState, 'canvas-store'))
@@ -520,6 +524,7 @@ export async function renderTestEditorWithModel(
       actions,
       originalEditorState,
       workingEditorState,
+      reactRouterErrorPreviouslyLogged,
     )
 
     // update state with new metadata
