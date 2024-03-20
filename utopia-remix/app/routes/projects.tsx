@@ -71,12 +71,7 @@ function isCategory(category: unknown): category is Category {
 
 export type Category = (typeof Categories)[number]
 
-const categories: {
-  [key in Category]: {
-    name: string
-    icon: React.ReactNode
-  }
-} = {
+const categories: { [key in Category]: { name: string; icon: React.ReactNode } } = {
   allProjects: { name: 'All My Projects', icon: <CubeIcon width='16' height='16' /> },
   private: { name: 'Private', icon: <LockClosedIcon width='16' height='16' /> },
   sharing: { name: 'Sharing', icon: <PersonIcon width='16' height='16' /> },
