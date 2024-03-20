@@ -21,7 +21,6 @@ import React from 'react'
 import { when } from '../util/react-conditionals'
 import moment from 'moment'
 import { useProjectEditorLink } from '../util/links'
-import { button } from '../styles/button.css'
 import { useCopyProjectLinkToClipboard } from '../util/copyProjectLink'
 import { useProjectsStore } from '../store'
 
@@ -109,11 +108,15 @@ function SharingDialog({
         <Flex justify='between' align='center'>
           <Text size='3'>Project Sharing</Text>
           <Dialog.Close>
-            <IconButton variant='ghost' color='gray'>
+            <IconButton variant='ghost' color='gray' style={{ border: 'none', outline: 'none' }}>
               <Cross2Icon width='18' height='18' />
             </IconButton>
           </Dialog.Close>
         </Flex>
+        {when(
+          accessLevel === AccessLevel.COLLABORATIVE || accessLevel === AccessLevel.PUBLIC,
+          <ProjectLink projectId={project.proj_id} />,
+        )}
         <Flex justify='between'>
           <Text size='1'>Project Visibility</Text>
           <VisibilityDropdown
@@ -121,10 +124,6 @@ function SharingDialog({
             changeProjectAccessLevel={changeProjectAccessLevel}
           />
         </Flex>
-        {when(
-          accessLevel === AccessLevel.COLLABORATIVE || accessLevel === AccessLevel.PUBLIC,
-          <ProjectLink projectId={project.proj_id} />,
-        )}
         {when(
           accessRequests.length > 0,
           <>
@@ -252,26 +251,16 @@ const ProjectLink = React.memo(({ projectId }: { projectId: string }) => {
   }, [projectId, copyProjectLink])
 
   return (
-    <Flex style={{ gap: 10, alignItems: 'stretch' }}>
-      <input
-        ref={projectLinkRef}
-        type='text'
-        value={projectLink(projectId)}
-        readOnly={true}
-        style={{
-          flex: 1,
-          fontSize: 13,
-          padding: '0px 4px',
-          cursor: 'default',
-        }}
-      />
-      <button
-        className={button({ color: 'subtle' })}
-        style={{ fontSize: 13 }}
-        onClick={onClickCopyProjectLink}
+    <Flex style={{ gap: 10 }}>
+      <Button
+        style={{ fontSize: 11, flex: 1, justifyContent: 'flex-start', cursor: 'default' }}
+        disabled
       >
-        Copy
-      </button>
+        {projectLink(projectId)}
+      </Button>
+      <Button style={{ fontSize: 11 }} onClick={onClickCopyProjectLink}>
+        Copy Link
+      </Button>
     </Flex>
   )
 })
