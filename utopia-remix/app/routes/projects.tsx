@@ -606,7 +606,7 @@ const NoProjectsMessage = React.memo(() => {
       case 'sharing':
         return 'Projects that you shared to other collaborators.'
       case 'sharedWithMe':
-        return 'Projects you have been added to as a collaborator.'
+        return 'Projects that you have been added to as a collaborator.'
       default:
         assertNever(cat)
     }
