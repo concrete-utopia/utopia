@@ -562,7 +562,7 @@ import { updateFileIfPossible } from './can-update-file'
 import { getPrintAndReparseCodeResult } from '../../../core/workers/parser-printer/parser-printer-worker'
 import { isSteganographyEnabled } from '../../../core/shared/stegano-text'
 import {
-  deleteComponentRegistrationFromFile,
+  updatePropertyControlsOnDescriptorFileDelete,
   isComponentDescriptorFile,
 } from '../../../core/property-controls/property-controls-local'
 
@@ -3853,7 +3853,7 @@ export const UPDATE_FNS = {
         if (isComponentDescriptorFile(action.filename)) {
           return {
             ...nextEditor,
-            propertyControlsInfo: deleteComponentRegistrationFromFile(action.filename),
+            propertyControlsInfo: updatePropertyControlsOnDescriptorFileDelete(action.filename),
           }
         }
 

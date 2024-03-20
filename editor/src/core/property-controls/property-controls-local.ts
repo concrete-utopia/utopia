@@ -135,34 +135,31 @@ async function getComponentDescriptorPromises(
   }
 }
 
-export async function maybeUpdateComponentDescriptor(
-  parseResult: Array<ParseOrPrintResult>,
+export async function maybeUpdatePropertyControls(
+  parseResults: Array<ParseOrPrintResult>,
   workers: UtopiaTsWorkers,
   dispatch: EditorDispatch,
 ) {
-  let componentDescriptorUpdates: {
-    info: ComponentDescriptorWithName[]
-    componentFileName: string
-  }[] = []
+  let componentDescriptorUpdates: { [filename: string]: Array<ComponentDescriptorWithName> } = {}
 
-  for await (const file of parseResult) {
-    if (isComponentDescriptorFile(file.filename)) {
-      const descriptors = await getComponentDescriptorPromises(file, workers)
-      if (descriptors.length > 0) {
-        componentDescriptorUpdates.push({ info: descriptors, componentFileName: file.filename })
-      }
-    }
-  }
-  if (componentDescriptorUpdates.length === 0) {
+  const componentDescriptorParseResults = parseResults.filter((p) =>
+    isComponentDescriptorFile(p.filename),
+  )
+  if (componentDescriptorParseResults.length === 0) {
     // there is nothing to update, return early so no empty dispatch is made
     return
   }
 
-  for (const update of componentDescriptorUpdates) {
-    COMPONENTS_FILE_CACHE.current[update.componentFileName] = update.info
+  for await (const file of componentDescriptorParseResults) {
+    const descriptors = await getComponentDescriptorPromises(file, workers)
+    if (descriptors.length > 0) {
+      componentDescriptorUpdates[file.filename] = descriptors
+    }
   }
 
-  const updatedPropertyControlsInfo = updateWithComponentDescriptors(COMPONENTS_FILE_CACHE.current)
+  const updatedPropertyControlsInfo = updatePropertyControlsOnDescriptorFileUpdate(
+    componentDescriptorUpdates,
+  )
   dispatch([EditorActions.updatePropertyControlsInfo(updatedPropertyControlsInfo)])
 }
 
@@ -174,14 +171,23 @@ const COMPONENTS_FILE_CACHE: { current: ComponentDescriptorFileLookup } = {
   current: {},
 }
 
-export function deleteComponentRegistrationFromFile(
+export function updatePropertyControlsOnDescriptorFileDelete(
   componentDescriptorFile: string,
 ): PropertyControlsInfo {
   COMPONENTS_FILE_CACHE.current[componentDescriptorFile] = []
-  return updateWithComponentDescriptors(COMPONENTS_FILE_CACHE.current)
+  return getPropertyControlsFromComponentDescriptors(COMPONENTS_FILE_CACHE.current)
 }
 
-function updateWithComponentDescriptors(
+export function updatePropertyControlsOnDescriptorFileUpdate(
+  componentDescriptorUpdates: { [filename: string]: Array<ComponentDescriptorWithName> } = {},
+): PropertyControlsInfo {
+  Object.entries(componentDescriptorUpdates).forEach(([filename, componentDescriptors]) => {
+    COMPONENTS_FILE_CACHE.current[filename] = componentDescriptors
+  })
+  return getPropertyControlsFromComponentDescriptors(COMPONENTS_FILE_CACHE.current)
+}
+
+function getPropertyControlsFromComponentDescriptors(
   componentDescriptorFiles: ComponentDescriptorFileLookup,
 ): PropertyControlsInfo {
   // TODO: this might not be ideal for perf, but it's a generic problem at this point
