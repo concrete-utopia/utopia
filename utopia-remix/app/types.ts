@@ -249,3 +249,16 @@ export function isProjectAccessRequestWithUserDetailsArray(
     maybe.every(isProjectAccessRequestWithUserDetails)
   )
 }
+
+export interface UpdateGithubRepositoryRequestBody {
+  githubRepository: {
+    owner: string
+    repository: string
+    branch: string
+  } | null
+}
+
+export function isUpdateGithubRepositoryBody(u: unknown): u is UpdateGithubRepositoryRequestBody {
+  const maybe = u as UpdateGithubRepositoryRequestBody
+  return u != null && typeof u === 'object' && maybe.githubRepository !== undefined
+}

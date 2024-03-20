@@ -18,6 +18,7 @@ const selectProjectWithoutContent: Record<keyof ProjectWithoutContent, true> = {
   modified_at: true,
   deleted: true,
   ProjectAccess: true,
+  github_repository: true,
 }
 
 export async function listProjects(params: { ownerId: string }): Promise<ProjectWithoutContent[]> {
@@ -176,4 +177,35 @@ export async function listSharedWithMeProjectsAndCollaborators(params: {
     projects: projects,
     collaborators: collaboratorsByProject,
   }
+}
+
+export async function updateGithubRepository(params: {
+  projectId: string
+  userId: string
+  repository: {
+    owner: string
+    repository: string
+    branch: string
+  } | null
+}) {
+  function getGithubRepository(): string | null {
+    if (params.repository == null) {
+      return null
+    } else if (params.repository.branch == null) {
+      return `${params.repository.owner}/${params.repository.repository}`
+    } else {
+      return `${params.repository.owner}/${params.repository.repository}:${params.repository.branch}`
+    }
+  }
+
+  return prisma.project.update({
+    where: {
+      owner_id: params.userId,
+      proj_id: params.projectId,
+    },
+    data: {
+      github_repository: getGithubRepository(),
+      modified_at: new Date(),
+    },
+  })
 }

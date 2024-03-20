@@ -4,6 +4,7 @@ import {
   AvatarIcon,
   CubeIcon,
   DashboardIcon,
+  GitHubLogoIcon,
   GlobeIcon,
   HamburgerMenuIcon,
   LockClosedIcon,
@@ -59,6 +60,7 @@ import {
   useSortCompareProject,
 } from '../util/use-sort-compare-project'
 import { SharingDialogWrapper } from '../components/sharingDialog'
+import { githubRepositoryPrettyName } from '../util/github'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
@@ -678,6 +680,8 @@ const ProjectCard = React.memo(
       return getOwnerName(project.owner_id, collaborators)
     }, [collaborators, project])
 
+    const isDarkMode = useIsDarkMode()
+
     return (
       <ContextMenu.Root onOpenChange={handleSortMenuOpenChange}>
         <ContextMenu.Trigger>
@@ -775,15 +779,34 @@ const ProjectCard = React.memo(
                 style={{ display: 'flex', flexDirection: 'column', padding: 10, gap: 5, flex: 1 }}
               >
                 <div style={{ display: 'flex', gap: 5, flex: 1 }}>
-                  <Text
-                    size='1'
+                  <Flex
                     style={{
                       flexGrow: 1,
-                      fontWeight: 500,
+                      flex: 1,
                     }}
+                    gap='2'
+                    align={'center'}
+                    justify={'start'}
                   >
-                    {projectTitle}
-                  </Text>
+                    <Text
+                      size='1'
+                      style={{
+                        fontWeight: 500,
+                      }}
+                    >
+                      {projectTitle}
+                    </Text>
+                    {when(
+                      project.github_repository != null,
+                      <Flex title={githubRepositoryPrettyName(project.github_repository)}>
+                        <GitHubLogoIcon
+                          color={isDarkMode ? 'white' : 'black'}
+                          height={14}
+                          width={14}
+                        />
+                      </Flex>,
+                    )}
+                  </Flex>
                   <ProjectBadge
                     accessLevel={
                       asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
@@ -855,6 +878,17 @@ const ProjectRow = React.memo(
       return getOwnerName(project.owner_id, collaborators)
     }, [collaborators, project])
 
+    const activeOperations = useProjectsStore((store) =>
+      store.operations.filter((op) => op.projectId === project.proj_id && !op.errored),
+    )
+
+    const projectTitle = React.useMemo(() => {
+      const renaming = activeOperations.find((op) => op.type === 'rename')
+      return renaming?.type === 'rename' ? renaming.newTitle : project.title
+    }, [project, activeOperations])
+
+    const isDarkMode = useIsDarkMode()
+
     return (
       <ContextMenu.Root onOpenChange={onContextMenuOpenChange}>
         <ContextMenu.Trigger>
@@ -898,21 +932,34 @@ const ProjectRow = React.memo(
                     }}
                   />
                   <Flex style={{ flexDirection: 'column', gap: 0 }}>
-                    <Text
-                      size='1'
+                    <Flex
+                      align='center'
+                      justify='start'
+                      gap='2'
                       style={{
-                        display: 'flex',
-                        gap: '10px',
-                        alignItems: 'center',
                         flexGrow: 1,
                         minWidth: 180,
-                        fontWeight: 500,
-                        padding: 0,
-                        height: 'auto',
                       }}
                     >
-                      {project.title}
-                    </Text>
+                      <Text
+                        size='1'
+                        style={{
+                          fontWeight: 500,
+                        }}
+                      >
+                        {projectTitle}
+                      </Text>
+                      {when(
+                        project.github_repository != null,
+                        <Flex title={githubRepositoryPrettyName(project.github_repository)}>
+                          <GitHubLogoIcon
+                            color={isDarkMode ? 'white' : 'black'}
+                            height={14}
+                            width={14}
+                          />
+                        </Flex>,
+                      )}
+                    </Flex>
                     {when(
                       isSharedWithMe && ownerName != null,
                       <Text size='1' style={{ opacity: 0.5 }}>
