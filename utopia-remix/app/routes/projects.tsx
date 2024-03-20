@@ -45,6 +45,7 @@ import {
   getOperationDescription,
   asAccessLevel,
   isProjectAccessRequestWithUserDetailsArray,
+  AccessRequestStatus,
 } from '../types'
 import type { ProjectAccessRequestWithUserDetails } from '../types'
 import { requireUser } from '../util/api.server'
@@ -685,6 +686,17 @@ const ProjectCard = React.memo(
       return getOwnerName(project.owner_id, collaborators)
     }, [collaborators, project])
 
+    const pendingAccessRequests = React.useMemo(
+      () => accessRequests.filter((r) => r.status === AccessRequestStatus.PENDING),
+      [accessRequests],
+    )
+
+    const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
+
+    const onOpenShareDialog = React.useCallback(() => {
+      setSharingProjectId(project.proj_id)
+    }, [project, setSharingProjectId])
+
     return (
       <ContextMenu.Root onOpenChange={handleSortMenuOpenChange}>
         <ContextMenu.Trigger>
@@ -717,8 +729,29 @@ const ProjectCard = React.memo(
               onDoubleClick={openProject}
             >
               {when(
+                project.ProjectAccess?.access_level === AccessLevel.COLLABORATIVE &&
+                  pendingAccessRequests.length > 0,
+                <Button
+                  radius='full'
+                  variant='solid'
+                  size='1'
+                  style={{
+                    position: 'absolute',
+                    right: 8,
+                    top: 8,
+                    backgroundColor: '#ff000080',
+                    fontWeight: 600,
+                    fontSize: 10,
+                    cursor: 'pointer',
+                  }}
+                  onClick={onOpenShareDialog}
+                >
+                  New Requests
+                </Button>,
+              )}
+              {when(
                 project.ProjectAccess?.access_level === AccessLevel.COLLABORATIVE,
-                <div style={{ position: 'absolute', right: 6, bottom: 6, display: 'flex', gap: 2 }}>
+                <div style={{ position: 'absolute', right: 8, bottom: 8, display: 'flex', gap: 2 }}>
                   {collaborators.map((collaborator) => {
                     return (
                       <div
@@ -862,6 +895,17 @@ const ProjectRow = React.memo(
       return getOwnerName(project.owner_id, collaborators)
     }, [collaborators, project])
 
+    const pendingAccessRequests = React.useMemo(
+      () => accessRequests.filter((r) => r.status === AccessRequestStatus.PENDING),
+      [accessRequests],
+    )
+
+    const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
+
+    const onOpenShareDialog = React.useCallback(() => {
+      setSharingProjectId(project.proj_id)
+    }, [project, setSharingProjectId])
+
     return (
       <ContextMenu.Root onOpenChange={onContextMenuOpenChange}>
         <ContextMenu.Trigger>
@@ -977,6 +1021,32 @@ const ProjectRow = React.memo(
                     }),
                   )}
                 </div>
+                <div
+                  style={{
+                    width: 110,
+                    height: 20,
+                  }}
+                >
+                  {when(
+                    project.ProjectAccess?.access_level === AccessLevel.COLLABORATIVE &&
+                      pendingAccessRequests.length > 0,
+                    <Button
+                      radius='full'
+                      variant='solid'
+                      size='1'
+                      style={{
+                        backgroundColor: '#ff000080',
+                        fontWeight: 600,
+                        fontSize: 10,
+                        cursor: 'pointer',
+                        height: 20,
+                      }}
+                      onClick={onOpenShareDialog}
+                    >
+                      New Requests
+                    </Button>,
+                  )}
+                </div>
                 <ProjectBadge
                   accessLevel={
                     asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
@@ -1030,7 +1100,7 @@ const ProjectBadge = React.memo(({ accessLevel }: { accessLevel: AccessLevel }) 
         style={{
           backgroundColor: backgroundColor,
           color: color,
-          fontSize: 9,
+          fontSize: 10,
         }}
       >
         {text}
