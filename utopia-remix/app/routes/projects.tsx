@@ -76,7 +76,7 @@ const categories: { [key in Category]: { name: string; icon: React.ReactNode } }
   private: { name: 'Private', icon: <LockClosedIcon width='16' height='16' /> },
   sharing: { name: 'Sharing', icon: <PersonIcon width='16' height='16' /> },
   public: { name: 'Public', icon: <GlobeIcon width='16' height='16' /> },
-  sharedWithMe: { name: 'Shared with me', icon: <AvatarIcon width='16' height='16' /> },
+  sharedWithMe: { name: 'Shared With Me', icon: <AvatarIcon width='16' height='16' /> },
   trash: { name: 'Trash', icon: <TrashIcon width='16' height='16' /> },
 }
 
