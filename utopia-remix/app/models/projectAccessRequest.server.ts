@@ -5,6 +5,7 @@ import { ensure } from '../util/api.server'
 import { Status } from '../util/statusCodes'
 import type { ProjectAccessRequestWithUserDetails } from '../types'
 import { AccessRequestStatus, UserProjectRole } from '../types'
+import { addToProjectCollaboratorsWithRunner } from './projectCollaborators.server'
 
 function makeRequestToken(): string {
   return uuid.v4()
@@ -85,6 +86,10 @@ export async function updateAccessRequestStatus(params: {
 
     // …finally, grant the role.
     if (params.status === AccessRequestStatus.APPROVED) {
+      await addToProjectCollaboratorsWithRunner(tx, {
+        projectId: params.projectId,
+        userId: request.user_id,
+      })
       await permissionsService.grantProjectRoleToUser(
         params.projectId,
         request.user_id,
