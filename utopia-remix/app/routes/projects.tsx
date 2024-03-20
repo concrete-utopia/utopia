@@ -89,22 +89,22 @@ const categories: {
   private: {
     name: 'Private',
     icon: <LockClosedIcon width='16' height='16' />,
-    description: 'Projects you create that are private to you.',
+    description: 'Projects you create that are private to you will show up here.',
   },
   sharing: {
     name: 'Sharing',
     icon: <PersonIcon width='16' height='16' />,
-    description: 'Projects that you shared to other collaborators.',
+    description: 'Projects that you share with other collaborators will show up here.',
   },
   sharedWithMe: {
     name: 'Shared With Me',
     icon: <AvatarIcon width='16' height='16' />,
-    description: 'Projects that you have been added to as a collaborator.',
+    description: 'Projects that you have been added to as a collaborator will show up here.',
   },
   public: {
     name: 'Public',
     icon: <GlobeIcon width='16' height='16' />,
-    description: 'Public projects you own.',
+    description: 'Public projects you own will show up here.',
   },
   archive: {
     name: 'Archive',
