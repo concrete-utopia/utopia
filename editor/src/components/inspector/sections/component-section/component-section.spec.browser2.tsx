@@ -901,16 +901,17 @@ describe('Controls from registering components', () => {
             properties: {
               header: {
                 control: 'array',
-                propertyControl: { control: 'jsx' },
+                propertyControl: {
+                  control: 'jsx',
+                  preferredChildComponents: [
+                    {
+                      name: 'span',
+                      variants: [{ code: '<span>Title</span>' }],
+                    },
+                  ],
+                },
               },
             },
-      
-            preferredChildComponents: [
-              {
-                name: 'span',
-                variants: [{ code: '<span>Title</span>' }],
-              },
-            ],
             supportsChildren: true,
             variants: [],
           },
