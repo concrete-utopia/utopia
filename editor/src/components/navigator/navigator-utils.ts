@@ -147,23 +147,21 @@ export function getNavigatorTargets(
             return
           }
 
-          if (isJSXElement(propValue)) {
-            const childPath = EP.appendToPath(path, propValue.uid)
-            const entry = renderPropNavigatorEntry(fakeRenderPropPath, prop)
-            navigatorTargets.push(entry)
-            visibleNavigatorTargets.push(entry)
+          const childPath = EP.appendToPath(path, propValue.uid)
+          const entry = renderPropNavigatorEntry(fakeRenderPropPath, prop)
+          navigatorTargets.push(entry)
+          visibleNavigatorTargets.push(entry)
 
-            const subTreeChild = subTree?.children.find((child) =>
-              EP.pathsEqual(child.path, childPath),
-            )
-            if (subTreeChild != null) {
-              processedPathsAsRenderProp.add(EP.toString(subTreeChild.path))
-              walkAndAddKeys(subTreeChild, collapsedAncestor)
-            } else {
-              const synthEntry = syntheticNavigatorEntry(childPath, propValue)
-              navigatorTargets.push(synthEntry)
-              visibleNavigatorTargets.push(synthEntry)
-            }
+          const subTreeChild = subTree?.children.find((child) =>
+            EP.pathsEqual(child.path, childPath),
+          )
+          if (subTreeChild != null) {
+            processedPathsAsRenderProp.add(EP.toString(subTreeChild.path))
+            walkAndAddKeys(subTreeChild, collapsedAncestor)
+          } else {
+            const synthEntry = syntheticNavigatorEntry(childPath, propValue)
+            navigatorTargets.push(synthEntry)
+            visibleNavigatorTargets.push(synthEntry)
           }
         })
       }
