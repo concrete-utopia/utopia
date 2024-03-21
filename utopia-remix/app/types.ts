@@ -10,7 +10,12 @@ const fullProject = Prisma.validator<Prisma.ProjectDefaultArgs>()({
 
 type FullProject = Prisma.ProjectGetPayload<typeof fullProject>
 
-export interface ProjectListing {
+export type ProjectListing = ProjectWithoutContent & {
+  hasPendingRequests?: boolean
+}
+
+// Legacy response
+export interface ProjectListingV1 {
   id: string
   ownerName: string | null
   ownerPicture: string | null
@@ -20,8 +25,8 @@ export interface ProjectListing {
   modifiedAt: string
 }
 
-export type ListProjectsResponse = {
-  projects: ProjectListing[]
+export type ListProjectsResponseV1 = {
+  projects: ProjectListingV1[]
 }
 
 export type ProjectWithoutContent = Omit<FullProject, 'content'>
