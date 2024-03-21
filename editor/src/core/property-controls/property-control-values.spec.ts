@@ -11,8 +11,7 @@ import type {
   UnionControlDescription,
   RegularControlDescription,
   ExpressionInputControlDescription,
-} from 'utopia-api/core'
-import { ControlDescription } from 'utopia-api/core'
+} from '../../components/custom-code/internal-property-controls'
 import type { JSExpression } from '../shared/element-template'
 import {
   jsxArrayValue,

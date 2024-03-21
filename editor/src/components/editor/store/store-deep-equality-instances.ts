@@ -78,7 +78,7 @@ import {
   exportType,
   singleFileBuildResult,
 } from '../../../core/workers/common/worker-types'
-import type { PreferredChildComponent, PropertyControls, Sides } from 'utopia-api/core'
+import type { PreferredChildComponent, Sides } from 'utopia-api/core'
 import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
@@ -575,6 +575,7 @@ import type {
 import type { CommentFilterMode } from '../../inspector/sections/comment-section'
 import type { Collaborator } from '../../../core/shared/multiplayer'
 import type { MultiplayerSubstate } from './store-hook-substore-types'
+import type { PropertyControls } from '../../custom-code/internal-property-controls'
 
 export const ProjectMetadataFromServerKeepDeepEquality: KeepDeepEqualityCall<ProjectMetadataFromServer> =
   combine3EqualityCalls(

@@ -3,6 +3,7 @@ import { prisma } from '../db.server'
 import { handleChangeProjectAccess } from '../routes/internal.projects.$id.access'
 import {
   createTestProject,
+  createTestProjectAccess,
   createTestSession,
   createTestUser,
   newTestRequest,
@@ -39,6 +40,7 @@ describe('handleChangeAccess', () => {
     await createTestUser(prisma, { id: 'bar' })
     await createTestSession(prisma, { key: 'the-key', userId: 'foo' })
     await createTestProject(prisma, { id: 'one', ownerId: 'foo', title: 'project-one' })
+    await createTestProjectAccess(prisma, { projectId: 'one', accessLevel: AccessLevel.PRIVATE })
     await createTestProject(prisma, { id: 'two', ownerId: 'bar', title: 'project-two' })
     jest.spyOn(permissionsService, 'setProjectAccess').mockResolvedValue()
     hasUserProjectPermission = jest.spyOn(permissionsService, 'hasUserProjectPermission')

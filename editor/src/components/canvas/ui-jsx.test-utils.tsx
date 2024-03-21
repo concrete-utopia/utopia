@@ -115,14 +115,16 @@ import {
   updateNodeModulesContents,
 } from '../editor/actions/action-creators'
 import { EditorModes } from '../editor/editor-modes'
-import { useUpdateOnRuntimeErrors } from '../../core/shared/runtime-report-logs'
+import {
+  hasReactRouterErrorBeenLogged,
+  useUpdateOnRuntimeErrors,
+} from '../../core/shared/runtime-report-logs'
 import type { RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import { clearListOfEvaluatedFiles } from '../../core/shared/code-exec-utils'
 import { createTestProjectWithCode } from '../../sample-projects/sample-project-utils.test-utils'
 import { DummyPersistenceMachine } from '../editor/persistence/persistence.test-utils'
 import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 import { createBuiltInDependenciesList } from '../../core/es-modules/package-manager/built-in-dependencies-list'
-import { clearAllRegisteredControls } from './canvas-globals'
 import { createEmptyStrategyState } from './canvas-strategies/interaction-state'
 import type { DomWalkerMutableStateData } from './dom-walker'
 import {
@@ -334,7 +336,6 @@ export async function renderTestEditorWithModel(
 
   // Reset canvas globals
   resetDispatchGlobals()
-  clearAllRegisteredControls()
   clearListOfEvaluatedFiles()
 
   const asyncTestDispatch = async (
@@ -408,6 +409,7 @@ export async function renderTestEditorWithModel(
         'Follow up actions took too long.',
       )
     }
+    const reactRouterErrorPreviouslyLogged = hasReactRouterErrorBeenLogged()
 
     flushSync(() => {
       canvasStoreHook.setState(patchedStoreFromFullStore(workingEditorState, 'canvas-store'))
@@ -520,6 +522,7 @@ export async function renderTestEditorWithModel(
       actions,
       originalEditorState,
       workingEditorState,
+      reactRouterErrorPreviouslyLogged,
     )
 
     // update state with new metadata

@@ -1,6 +1,12 @@
+import { DotFilledIcon } from '@radix-ui/react-icons'
+import { ContextMenu, Flex, Separator, Text } from '@radix-ui/themes'
 import React from 'react'
+import slugify from 'slugify'
+import { when } from '~/util/react-conditionals'
+import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
+import { SLUGIFY_OPTIONS } from '../routes/internal.projects.$id.rename'
 import { useProjectsStore } from '../store'
-import type { ProjectAccessRequestWithUserDetails } from '../types'
+import type { ProjectAccessRequestWithUserDetails, ProjectWithoutContent } from '../types'
 import {
   AccessRequestStatus,
   operationDelete,
@@ -8,17 +14,9 @@ import {
   operationRename,
   operationRestore,
 } from '../types'
-import type { ProjectWithoutContent } from '../types'
 import { assertNever } from '../util/assertNever'
-import { useProjectEditorLink } from '../util/links'
-import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
-import slugify from 'slugify'
-import { SLUGIFY_OPTIONS } from '../routes/internal.projects.$id.rename'
-import { ContextMenu, Separator, Dialog, Flex, Text } from '@radix-ui/themes'
-import { DotFilledIcon } from '@radix-ui/react-icons'
-import { SharingDialog } from './sharingDialog'
-import { when } from '~/util/react-conditionals'
 import { useCopyProjectLinkToClipboard } from '../util/copyProjectLink'
+import { useProjectEditorLink } from '../util/links'
 
 type ContextMenuEntry =
   | {
@@ -27,6 +25,13 @@ type ContextMenuEntry =
     }
   | 'separator'
   | 'sharing-dialog'
+
+function contextMenuEntry(
+  text: string,
+  onClick: (project: ProjectWithoutContent) => void,
+): ContextMenuEntry {
+  return { text, onClick }
+}
 
 export const ProjectActionsMenu = React.memo(
   ({
@@ -91,82 +96,78 @@ export const ProjectActionsMenu = React.memo(
     const projectEditorLink = useProjectEditorLink()
     const copyProjectLink = useCopyProjectLinkToClipboard()
 
+    const actions = React.useMemo(
+      () => ({
+        open: contextMenuEntry('Open', (selectedProject) => {
+          window.open(projectEditorLink(selectedProject.proj_id), '_blank')
+        }),
+        copyLink: contextMenuEntry('Copy Link', (selectedProject) =>
+          copyProjectLink(selectedProject.proj_id),
+        ),
+        fork: contextMenuEntry('Fork', (selectedProject) => {
+          window.open(projectEditorLink(selectedProject.proj_id) + '/?fork=true', '_blank')
+        }),
+        rename: contextMenuEntry('Rename', (selectedProject) => {
+          const newTitle = window.prompt('New title:', selectedProject.title)
+          if (newTitle != null) {
+            renameProject(selectedProject.proj_id, newTitle)
+          }
+        }),
+        delete: contextMenuEntry('Delete', (selectedProject) => {
+          deleteProject(selectedProject.proj_id)
+        }),
+        restore: contextMenuEntry('Restore', (selectedProject) => {
+          restoreProject(selectedProject.proj_id)
+        }),
+        destroy: contextMenuEntry('Delete Permanently', (selectedProject) => {
+          destroyProject(selectedProject.proj_id)
+        }),
+      }),
+      [
+        projectEditorLink,
+        copyProjectLink,
+        renameProject,
+        deleteProject,
+        restoreProject,
+        destroyProject,
+      ],
+    )
+
     const menuEntries = React.useMemo((): ContextMenuEntry[] => {
       switch (selectedCategory) {
         case 'allProjects':
+        case 'public':
+        case 'sharing':
+        case 'private':
           return [
-            {
-              text: 'Open',
-              onClick: (selectedProject) => {
-                window.open(projectEditorLink(selectedProject.proj_id), '_blank')
-              },
-            },
+            actions.open,
             'separator',
-            {
-              text: 'Copy Link',
-              onClick: (selectedProject) => copyProjectLink(selectedProject.proj_id),
-            },
-            {
-              text: 'Fork',
-              onClick: (selectedProject) => {
-                window.open(projectEditorLink(selectedProject.proj_id) + '/?fork=true', '_blank')
-              },
-            },
+            actions.copyLink,
+            actions.fork,
             'sharing-dialog',
             'separator',
-            {
-              text: 'Rename',
-              onClick: (selectedProject) => {
-                const newTitle = window.prompt('New title:', selectedProject.title)
-                if (newTitle != null) {
-                  renameProject(selectedProject.proj_id, newTitle)
-                }
-              },
-            },
-            {
-              text: 'Delete',
-              onClick: (selectedProject) => {
-                deleteProject(selectedProject.proj_id)
-              },
-            },
+            actions.rename,
+            actions.delete,
           ]
+        case 'sharedWithMe':
+          return [actions.open, 'separator', actions.copyLink, actions.fork]
         case 'trash':
-          return [
-            {
-              text: 'Restore',
-              onClick: (selectedProject) => {
-                restoreProject(selectedProject.proj_id)
-              },
-            },
-            'separator',
-            {
-              text: 'Delete Permanently',
-              onClick: (selectedProject) => {
-                destroyProject(selectedProject.proj_id)
-              },
-            },
-          ]
+          return [actions.restore, 'separator', actions.destroy]
         default:
           assertNever(selectedCategory)
       }
-    }, [
-      selectedCategory,
-      projectEditorLink,
-      deleteProject,
-      destroyProject,
-      renameProject,
-      restoreProject,
-      copyProjectLink,
-    ])
-
-    const preventDefault = React.useCallback((event: Event) => {
-      event.preventDefault()
-    }, [])
+    }, [selectedCategory, actions])
 
     const pendingAccessRequests = React.useMemo(
       () => accessRequests.filter((r) => r.status === AccessRequestStatus.PENDING),
       [accessRequests],
     )
+
+    const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
+
+    const onOpenShareDialog = React.useCallback(() => {
+      setSharingProjectId(project.proj_id)
+    }, [project, setSharingProjectId])
 
     return (
       <ContextMenu.Content style={{ width: 170 }}>
@@ -182,22 +183,19 @@ export const ProjectActionsMenu = React.memo(
           }
           if (entry === 'sharing-dialog') {
             return (
-              <Dialog.Root key={`separator-${index}`}>
-                <Dialog.Trigger>
-                  <ContextMenu.Item style={{ height: 28, fontSize: 12 }} onSelect={preventDefault}>
-                    <Flex justify={'between'} align={'center'} width={'100%'}>
-                      <Text>Share</Text>
-                      {when(
-                        pendingAccessRequests.length > 0,
-                        <DotFilledIcon color='red' height={22} width={22} />,
-                      )}
-                    </Flex>
-                  </ContextMenu.Item>
-                </Dialog.Trigger>
-                <Dialog.Content>
-                  <SharingDialog project={project} accessRequests={accessRequests} />
-                </Dialog.Content>
-              </Dialog.Root>
+              <ContextMenu.Item
+                key={`entry-${index}`}
+                style={{ height: 28, fontSize: 12 }}
+                onSelect={onOpenShareDialog}
+              >
+                <Flex justify={'between'} align={'center'} width={'100%'}>
+                  <Text>Sharing…</Text>
+                  {when(
+                    pendingAccessRequests.length > 0,
+                    <DotFilledIcon color='red' height={22} width={22} />,
+                  )}
+                </Flex>
+              </ContextMenu.Item>
             )
           }
           return (

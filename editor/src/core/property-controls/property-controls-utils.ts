@@ -1,25 +1,13 @@
 import type { PropertyControlsInfo } from '../../components/custom-code/code-file'
-import { ParsedPropertyControls } from './property-controls-parser'
-import type { PropertyControls } from 'utopia-api/core'
-import { ImportType } from 'utopia-api/core'
-import { isRight, foldEither, left, maybeEitherToMaybe, eitherToMaybe } from '../shared/either'
-import { forEachValue } from '../shared/object-utils'
-import { descriptionParseError, ParseResult } from '../../utils/value-parser-utils'
 import type { JSXElementChild } from '../shared/element-template'
 import {
   getJSXElementNameAsString,
   isIntrinsicHTMLElement,
-  JSXElement,
   isIntrinsicElement,
   isJSXElement,
 } from '../shared/element-template'
-import type {
-  NodeModules,
-  ParseSuccess,
-  StaticElementPath,
-  ElementPath,
-} from '../shared/project-file-types'
-import type { DerivedState, EditorState } from '../../components/editor/store/editor-state'
+import type { ParseSuccess, StaticElementPath, ElementPath } from '../shared/project-file-types'
+import type { EditorState } from '../../components/editor/store/editor-state'
 import {
   getOpenUIJSFileKey,
   withUnderlyingTarget,
@@ -29,7 +17,7 @@ import type { ProjectContentTreeRoot } from '../../components/assets'
 import { importedFromWhere } from '../../components/editor/import-utils'
 import { absolutePathFromRelativePath } from '../../utils/path-utils'
 import { getThirdPartyControlsIntrinsic } from './property-controls-local'
-import type { RemixRoutingTable } from '../../components/editor/store/remix-derived-data'
+import type { PropertyControls } from '../../components/custom-code/internal-property-controls'
 
 export function propertyControlsForComponentInFile(
   componentName: string,

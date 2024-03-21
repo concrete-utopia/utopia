@@ -79,6 +79,11 @@ describe('validators', () => {
     })
 
     it('does nothing if the user has access', async () => {
+      await createTestProjectAccess(prisma, {
+        projectId: 'one',
+        accessLevel: AccessLevel.COLLABORATIVE,
+      })
+
       hasUserProjectPermissionMock.mockResolvedValue(true)
 
       const got = await validateProjectAccess(perm, { getProjectId: () => 'one' })(
@@ -88,62 +93,131 @@ describe('validators', () => {
       expect(got.ok).toBe(true)
     })
 
-    describe('when access can be requested', () => {
-      it('returns a 404 if the user cannot request access', async () => {
-        hasUserProjectPermissionMock.mockResolvedValue(false)
-
-        const got = await validateProjectAccess(perm, {
-          getProjectId: () => 'one',
-          canRequestAccess: true,
-        })(newTestRequest({ authCookie: 'alice-key' }), {})
-
-        const error = mustBeApiErrorValidator(got)
-        expect(error.status).toBe(Status.NOT_FOUND)
-      })
-
-      it('returns a 403 if the user can request access', async () => {
-        hasUserProjectPermissionMock.mockImplementation(
-          async (_, __, p) => p === UserProjectPermission.CAN_REQUEST_ACCESS,
-        )
-
-        const got = await validateProjectAccess(perm, {
-          getProjectId: () => 'one',
-          canRequestAccess: true,
-        })(newTestRequest({ authCookie: 'alice-key' }), {})
-
-        const error = mustBeApiErrorValidator(got)
-        expect(error.status).toBe(Status.FORBIDDEN)
-      })
-    })
-
-    describe('when access cannot be requested', () => {
-      it('returns a 404 even if the user can request access', async () => {
-        hasUserProjectPermissionMock.mockImplementation(
-          async (_, __, p) => p === UserProjectPermission.CAN_REQUEST_ACCESS,
-        )
-
-        const got = await validateProjectAccess(perm, {
-          getProjectId: () => 'one',
-        })(newTestRequest({ authCookie: 'alice-key' }), {})
-
-        const error = mustBeApiErrorValidator(got)
-        expect(error.status).toBe(Status.NOT_FOUND)
-      })
-
-      it('returns a 404', async () => {
-        await createTestProjectAccess(prisma, {
-          projectId: 'one',
-          accessLevel: AccessLevel.COLLABORATIVE,
+    describe('when the user is not the owner', () => {
+      describe('when the project is collaborative', () => {
+        beforeEach(async () => {
+          await createTestProjectAccess(prisma, {
+            projectId: 'one',
+            accessLevel: AccessLevel.COLLABORATIVE,
+          })
         })
 
-        hasUserProjectPermissionMock.mockResolvedValue(false)
+        describe('when access can be requested', () => {
+          it('returns a 404 if the user cannot request access', async () => {
+            hasUserProjectPermissionMock.mockResolvedValue(false)
 
-        const got = await validateProjectAccess(perm, {
-          getProjectId: () => 'one',
-        })(newTestRequest({ authCookie: 'alice-key' }), {})
+            const got = await validateProjectAccess(perm, {
+              getProjectId: () => 'one',
+              canRequestAccess: true,
+            })(newTestRequest({ authCookie: 'alice-key' }), {})
 
-        const error = mustBeApiErrorValidator(got)
-        expect(error.status).toBe(Status.NOT_FOUND)
+            const error = mustBeApiErrorValidator(got)
+            expect(error.status).toBe(Status.NOT_FOUND)
+          })
+
+          it('returns a 403 if the user can request access', async () => {
+            hasUserProjectPermissionMock.mockImplementation(
+              async (_, __, p) => p === UserProjectPermission.CAN_REQUEST_ACCESS,
+            )
+
+            const got = await validateProjectAccess(perm, {
+              getProjectId: () => 'one',
+              canRequestAccess: true,
+            })(newTestRequest({ authCookie: 'alice-key' }), {})
+
+            const error = mustBeApiErrorValidator(got)
+            expect(error.status).toBe(Status.FORBIDDEN)
+          })
+        })
+
+        describe('when access cannot be requested', () => {
+          it('returns a 404 even if the user can request access', async () => {
+            hasUserProjectPermissionMock.mockImplementation(
+              async (_, __, p) => p === UserProjectPermission.CAN_REQUEST_ACCESS,
+            )
+
+            const got = await validateProjectAccess(perm, {
+              getProjectId: () => 'one',
+            })(newTestRequest({ authCookie: 'alice-key' }), {})
+
+            const error = mustBeApiErrorValidator(got)
+            expect(error.status).toBe(Status.NOT_FOUND)
+          })
+
+          it('returns a 404', async () => {
+            hasUserProjectPermissionMock.mockResolvedValue(false)
+
+            const got = await validateProjectAccess(perm, {
+              getProjectId: () => 'one',
+            })(newTestRequest({ authCookie: 'alice-key' }), {})
+
+            const error = mustBeApiErrorValidator(got)
+            expect(error.status).toBe(Status.NOT_FOUND)
+          })
+        })
+      })
+
+      describe('when the project is private', () => {
+        beforeEach(async () => {
+          await createTestProjectAccess(prisma, {
+            projectId: 'one',
+            accessLevel: AccessLevel.PRIVATE,
+          })
+        })
+
+        describe('when access can be requested', () => {
+          it('returns a 404', async () => {
+            hasUserProjectPermissionMock.mockResolvedValue(false)
+
+            const got = await validateProjectAccess(perm, {
+              getProjectId: () => 'one',
+              canRequestAccess: true,
+            })(newTestRequest({ authCookie: 'alice-key' }), {})
+
+            const error = mustBeApiErrorValidator(got)
+            expect(error.status).toBe(Status.NOT_FOUND)
+          })
+
+          it('returns a 404 even if the user can request access', async () => {
+            hasUserProjectPermissionMock.mockImplementation(
+              async (_, __, p) => p === UserProjectPermission.CAN_REQUEST_ACCESS,
+            )
+
+            const got = await validateProjectAccess(perm, {
+              getProjectId: () => 'one',
+              canRequestAccess: true,
+            })(newTestRequest({ authCookie: 'alice-key' }), {})
+
+            const error = mustBeApiErrorValidator(got)
+            expect(error.status).toBe(Status.NOT_FOUND)
+          })
+        })
+
+        describe('when access cannot be requested', () => {
+          it('returns a 404', async () => {
+            hasUserProjectPermissionMock.mockResolvedValue(false)
+
+            const got = await validateProjectAccess(perm, {
+              getProjectId: () => 'one',
+            })(newTestRequest({ authCookie: 'alice-key' }), {})
+
+            const error = mustBeApiErrorValidator(got)
+            expect(error.status).toBe(Status.NOT_FOUND)
+          })
+
+          it('returns a 404 even if the user can request access', async () => {
+            hasUserProjectPermissionMock.mockImplementation(
+              async (_, __, p) => p === UserProjectPermission.CAN_REQUEST_ACCESS,
+            )
+
+            const got = await validateProjectAccess(perm, {
+              getProjectId: () => 'one',
+            })(newTestRequest({ authCookie: 'alice-key' }), {})
+
+            const error = mustBeApiErrorValidator(got)
+            expect(error.status).toBe(Status.NOT_FOUND)
+          })
+        })
       })
     })
   })

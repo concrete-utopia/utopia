@@ -1,4 +1,4 @@
-import type { PropertyControls } from 'utopia-api/core'
+import type { PropertyControls } from '../custom-code/internal-property-controls'
 import { URL_HASH } from '../../common/env-vars'
 import {
   hasStyleControls,
