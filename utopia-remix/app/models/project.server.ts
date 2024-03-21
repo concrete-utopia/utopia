@@ -1,5 +1,11 @@
 import { prisma } from '../db.server'
-import { asAccessLevel, AccessLevel, type ProjectWithoutContent } from '../types'
+import type { CollaboratorsByProject } from '../types'
+import {
+  AccessLevel,
+  asAccessLevel,
+  userToCollaborator,
+  type ProjectWithoutContent,
+} from '../types'
 import { ensure } from '../util/api.server'
 import { Status } from '../util/statusCodes'
 
@@ -134,4 +140,40 @@ export async function getProjectAccessLevel(params: { projectId: string }): Prom
   const accessLevel = asAccessLevel(projectAccess.access_level)
   ensure(accessLevel != null, 'Invalid access level', Status.INTERNAL_ERROR)
   return accessLevel
+}
+
+export async function listSharedWithMeProjectsAndCollaborators(params: {
+  userId: string
+}): Promise<{
+  projects: ProjectWithoutContent[]
+  collaborators: CollaboratorsByProject
+}> {
+  // 1. grab the project IDs where the user is the collaborator,
+  // is not an owner, are not deleted, and have the COLLABORATIVE access.
+  const projects = await prisma.project.findMany({
+    where: {
+      ProjectAccess: { access_level: AccessLevel.COLLABORATIVE },
+      ProjectCollaborator: { some: { user_id: params.userId } },
+      owner_id: { not: params.userId },
+      OR: [{ deleted: null }, { deleted: false }],
+    },
+    select: {
+      ...selectProjectWithoutContent,
+      ProjectCollaborator: { include: { User: true } },
+    },
+    orderBy: { modified_at: 'desc' },
+  })
+
+  // 2. build the collaborators map
+  let collaboratorsByProject: CollaboratorsByProject = {}
+  for (const project of projects) {
+    const collaboratorUserDetails = project.ProjectCollaborator.map(({ User }) => User)
+    collaboratorsByProject[project.proj_id] = collaboratorUserDetails.map(userToCollaborator)
+  }
+
+  // 3. return both projects and collabs
+  return {
+    projects: projects,
+    collaborators: collaboratorsByProject,
+  }
 }
