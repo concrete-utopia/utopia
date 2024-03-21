@@ -257,11 +257,13 @@ async function makePreferredChildDescriptor(
   moduleName: string,
   workers: UtopiaTsWorkers,
 ): Promise<Either<string, PreferredChildComponentDescriptor>> {
-  const allRequiredImports = `import { ${componentName} } from '${moduleName}'; ${
-    preferredChild.additionalImports ?? ''
-  }`
+  const allRequiredImports = `import { ${componentName} } from '${preferredChild.additionalImports}';`
 
-  const parsedParams = await getCachedParseResultForUserStrings(workers, allRequiredImports, '</>')
+  const parsedParams = await getCachedParseResultForUserStrings(
+    workers,
+    allRequiredImports,
+    '<placeholder />',
+  )
   if (isLeft(parsedParams)) {
     return parsedParams
   }
@@ -270,7 +272,12 @@ async function makePreferredChildDescriptor(
     preferredChild.variants == null
       ? []
       : preferredChild.variants.map((insertOption) =>
-          parseInsertOption(insertOption, componentName, moduleName, workers),
+          parseInsertOption(
+            insertOption,
+            componentName,
+            preferredChild.additionalImports ?? moduleName,
+            workers,
+          ),
         )
 
   const variants = sequenceEither(await Promise.all(variantsPromise))
@@ -325,7 +332,8 @@ async function makeRegularControlDescription(
 ): Promise<PropertyDescriptorResult<RegularControlDescription>> {
   if (isBaseControlDescription(descriptor)) {
     if (descriptor.control === 'jsx') {
-      return parseJSXControlDescription(descriptor, context)
+      const parsedJSXControlDescription = parseJSXControlDescription(descriptor, context)
+      return parsedJSXControlDescription
     }
     return right(descriptor)
   }
