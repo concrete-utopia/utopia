@@ -870,6 +870,7 @@ export const IdentifierExpressionCartoucheControl = React.memo(
             width={16}
             height={16}
             data-testid={`delete-${testId}`}
+            onClick={onDelete}
           />,
         )}
       </FlexRow>
