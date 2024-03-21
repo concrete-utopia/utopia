@@ -15,3 +15,4 @@ export const Spinner = React.memo(({ className }: { className?: string }) => {
     />
   )
 })
+Spinner.displayName = 'Spinner'
