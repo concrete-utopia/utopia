@@ -106,11 +106,11 @@ export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, ta
       e.preventDefault()
 
       dispatch([
-        // TODO: merge imports stuff
         setProp_UNSAFE(
           EP.parentPath(target),
           PP.create(prop),
           preferredChildToInsert.elementToInsert,
+          preferredChildToInsert.additionalImports ?? undefined,
         ),
       ])
     },

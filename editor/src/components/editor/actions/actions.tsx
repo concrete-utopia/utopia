@@ -1685,10 +1685,13 @@ export const UPDATE_FNS = {
   },
   SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {
     let setPropFailedMessage: string | null = null
-    let updatedEditor = modifyUnderlyingElementForOpenFile(
+    let updatedEditor = modifyUnderlyingTargetElement(
       action.target,
       editor,
       (element) => {
+        if (!isJSXElement(element)) {
+          return element
+        }
         const updatedProps = setJSXValueAtPath(element.props, action.propertyPath, action.value)
         if (
           isRight(updatedProps) &&
@@ -1737,7 +1740,13 @@ export const UPDATE_FNS = {
           updatedProps,
         )
       },
-      (success) => success,
+      (success, _, underlyingFilePath) => {
+        const updatedImports =
+          action.importsToAdd == null
+            ? success.imports
+            : mergeImports(underlyingFilePath, success.imports, action.importsToAdd).imports
+        return { ...success, imports: updatedImports }
+      },
     )
 
     updatedEditor = addToTrueUpElements(updatedEditor, trueUpGroupElementChanged(action.target))
