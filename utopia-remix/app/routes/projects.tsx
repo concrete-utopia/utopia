@@ -53,6 +53,7 @@ import {
   useProjectMatchesQuery,
   useSortCompareProject,
 } from '../util/use-sort-compare-project'
+import { useFetcherData } from '../hooks/useFetcherData'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
@@ -661,13 +662,9 @@ const ProjectCard = React.memo(
     const hasPendingRequestsFetcher = useFetcher()
     const [hasPendingRequests, setHasPendingRequests] = React.useState<boolean>(false)
 
-    React.useEffect(() => {
-      if (hasPendingRequestsFetcher.state === 'idle' && hasPendingRequestsFetcher.data != null) {
-        if (isHasPendingRequests(hasPendingRequestsFetcher.data)) {
-          setHasPendingRequests(hasPendingRequestsFetcher.data.hasPendingRequests)
-        }
-      }
-    }, [hasPendingRequestsFetcher])
+    useFetcherData(hasPendingRequestsFetcher, isHasPendingRequests, (data) => {
+      setHasPendingRequests(data.hasPendingRequests)
+    })
 
     const handleSortMenuOpenChange = React.useCallback(
       (open: boolean) => {
@@ -840,13 +837,9 @@ const ProjectRow = React.memo(
     const hasPendingRequestsFetcher = useFetcher()
     const [hasPendingRequests, setHasPendingRequests] = React.useState<boolean>(false)
 
-    React.useEffect(() => {
-      if (hasPendingRequestsFetcher.state === 'idle' && hasPendingRequestsFetcher.data != null) {
-        if (isHasPendingRequests(hasPendingRequestsFetcher.data)) {
-          setHasPendingRequests(hasPendingRequestsFetcher.data.hasPendingRequests)
-        }
-      }
-    }, [hasPendingRequestsFetcher])
+    useFetcherData(hasPendingRequestsFetcher, isHasPendingRequests, (data) => {
+      setHasPendingRequests(data.hasPendingRequests)
+    })
 
     const onContextMenuOpenChange = React.useCallback(
       (open: boolean) => {
