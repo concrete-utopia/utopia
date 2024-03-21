@@ -1,6 +1,7 @@
 import {
   ArrowDownIcon,
   ArrowUpIcon,
+  AvatarIcon,
   CubeIcon,
   DashboardIcon,
   GlobeIcon,
@@ -21,7 +22,11 @@ import { SortingContextMenu } from '../components/sortProjectsContextMenu'
 import { Spinner } from '../components/spinner'
 import { useCleanupOperations } from '../hooks/useCleanupOperations'
 import { useIsDarkMode } from '../hooks/useIsDarkMode'
-import { listDeletedProjects, listProjects } from '../models/project.server'
+import {
+  listDeletedProjects,
+  listProjects,
+  listSharedWithMeProjectsAndCollaborators,
+} from '../models/project.server'
 import { getCollaborators } from '../models/projectCollaborators.server'
 import type { OperationWithKey } from '../store'
 import { useProjectsStore } from '../store'
@@ -58,7 +63,7 @@ import { SharingDialogWrapper } from '../components/sharingDialog'
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
 
-const Categories = ['allProjects', 'trash', 'private', 'public', 'shared'] as const
+const Categories = ['allProjects', 'trash', 'private', 'public', 'sharing', 'sharedWithMe'] as const
 
 function isCategory(category: unknown): category is Category {
   return Categories.includes(category as Category)
@@ -66,30 +71,62 @@ function isCategory(category: unknown): category is Category {
 
 export type Category = (typeof Categories)[number]
 
-const categories: { [key in Category]: { name: string; icon: React.ReactNode } } = {
-  allProjects: { name: 'All My Projects', icon: <CubeIcon width='16' height='16' /> },
-  private: { name: 'Private', icon: <LockClosedIcon width='16' height='16' /> },
-  shared: { name: 'Sharing', icon: <PersonIcon width='16' height='16' /> },
-  public: { name: 'Public', icon: <GlobeIcon width='16' height='16' /> },
-  trash: { name: 'Trash', icon: <TrashIcon width='16' height='16' /> },
+const categories: {
+  [key in Category]: { name: string; icon: React.ReactNode; description: string }
+} = {
+  allProjects: {
+    name: 'All My Projects',
+    icon: <CubeIcon width='16' height='16' />,
+    description: 'Projects you create or open will show up here.',
+  },
+  private: {
+    name: 'Private',
+    icon: <LockClosedIcon width='16' height='16' />,
+    description: 'Projects you create that are private to you.',
+  },
+  sharing: {
+    name: 'Sharing',
+    icon: <PersonIcon width='16' height='16' />,
+    description: 'Projects that you shared to other collaborators.',
+  },
+  public: {
+    name: 'Public',
+    icon: <GlobeIcon width='16' height='16' />,
+    description: 'Public projects you own.',
+  },
+  sharedWithMe: {
+    name: 'Shared With Me',
+    icon: <AvatarIcon width='16' height='16' />,
+    description: 'Projects that you have been added to as a collaborator.',
+  },
+  trash: {
+    name: 'Trash',
+    icon: <TrashIcon width='16' height='16' />,
+    description: 'Deleted projects are kept here until you destroy them for good.',
+  },
 }
 
 export async function loader(args: LoaderFunctionArgs) {
   const user = await requireUser(args.request, { redirect: auth0LoginURL() })
 
-  const projects = await listProjects({
-    ownerId: user.user_id,
-  })
-  const deletedProjects = await listDeletedProjects({
-    ownerId: user.user_id,
-  })
+  const [projects, deletedProjects, sharedWithMe] = await Promise.all([
+    listProjects({ ownerId: user.user_id }),
+    listDeletedProjects({ ownerId: user.user_id }),
+    listSharedWithMeProjectsAndCollaborators({ userId: user.user_id }),
+  ])
   const collaborators = await getCollaborators({
     ids: [...projects, ...deletedProjects].map((p) => p.proj_id),
     userId: user.user_id,
   })
 
   return json(
-    { projects, deletedProjects, user, collaborators },
+    {
+      user: user,
+      projects: projects,
+      deletedProjects: deletedProjects,
+      projectsSharedWithMe: sharedWithMe.projects,
+      collaborators: { ...collaborators, ...sharedWithMe.collaborators },
+    },
     { headers: { 'cache-control': 'no-cache' } },
   )
 }
@@ -98,9 +135,10 @@ const ProjectsPage = React.memo(() => {
   useCleanupOperations()
 
   const data = useLoaderData() as unknown as {
-    projects: ProjectWithoutContent[]
     user: UserDetails
+    projects: ProjectWithoutContent[]
     deletedProjects: ProjectWithoutContent[]
+    projectsSharedWithMe: ProjectWithoutContent[]
     collaborators: CollaboratorsByProject
   }
 
@@ -116,16 +154,18 @@ const ProjectsPage = React.memo(() => {
         return data.projects.filter(
           (p) => (p.ProjectAccess?.access_level ?? AccessLevel.PRIVATE) === AccessLevel.PRIVATE,
         )
-      case 'shared':
+      case 'sharing':
         return data.projects.filter(
           (p) => p.ProjectAccess?.access_level === AccessLevel.COLLABORATIVE,
         )
       case 'trash':
         return data.deletedProjects
+      case 'sharedWithMe':
+        return data.projectsSharedWithMe
       default:
         assertNever(selectedCategory)
     }
-  }, [data.projects, data.deletedProjects, selectedCategory])
+  }, [data.projects, data.deletedProjects, data.projectsSharedWithMe, selectedCategory])
 
   const sortCompareProject = useSortCompareProject()
   const projectMatchesQuery = useProjectMatchesQuery()
@@ -169,7 +209,11 @@ const ProjectsPage = React.memo(() => {
       >
         <TopActionBar />
         <ProjectsHeader projects={filteredProjects} />
-        <Projects projects={filteredProjects} collaborators={data.collaborators} />
+        <Projects
+          projects={filteredProjects}
+          collaborators={data.collaborators}
+          myUserId={data.user.user_id}
+        />
         <ActiveOperations projects={activeProjects} />
       </div>
     </div>
@@ -472,7 +516,8 @@ const CategoryActions = React.memo(({ projects }: { projects: ProjectWithoutCont
     case 'allProjects':
     case 'public':
     case 'private':
-    case 'shared':
+    case 'sharing':
+    case 'sharedWithMe':
       return null
     case 'trash':
       return <CategoryTrashActions projects={projects} />
@@ -512,9 +557,11 @@ const Projects = React.memo(
   ({
     projects,
     collaborators,
+    myUserId,
   }: {
     projects: ProjectWithoutContent[]
     collaborators: CollaboratorsByProject
+    myUserId: string
   }) => {
     const gridView = useProjectsStore((store) => store.gridView)
 
@@ -536,6 +583,7 @@ const Projects = React.memo(
               <ProjectRow
                 key={project.proj_id}
                 project={project}
+                isSharedWithMe={project.owner_id !== myUserId}
                 selected={project.proj_id === selectedProjectId}
                 /* eslint-disable-next-line react/jsx-no-bind */
                 onSelect={() => handleProjectSelect(project)}
@@ -551,6 +599,7 @@ const Projects = React.memo(
               <ProjectCard
                 key={project.proj_id}
                 project={project}
+                isSharedWithMe={project.owner_id !== myUserId}
                 selected={project.proj_id === selectedProjectId}
                 /* eslint-disable-next-line react/jsx-no-bind */
                 onSelect={() => handleProjectSelect(project)}
@@ -570,37 +619,24 @@ const NoProjectsMessage = React.memo(() => {
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
   const searchQuery = useProjectsStore((store) => store.searchQuery)
 
-  function getCategorySubtitle(cat: Category) {
-    switch (cat) {
-      case 'allProjects':
-        return 'Projects you create or open will show up here.'
-      case 'trash':
-        return 'Deleted projects are kept here until you destroy them for good.'
-      case 'public':
-        return 'Public projects you own.'
-      case 'private':
-        return 'Projects you create that are private to you.'
-      case 'shared':
-        return 'Projects that you have shared with other collaborators.'
-      default:
-        assertNever(cat)
-    }
-  }
+  const description = React.useMemo(() => {
+    return searchQuery !== '' ? 'No projects found.' : categories[selectedCategory].description
+  }, [searchQuery, selectedCategory])
 
-  const subtitle = searchQuery !== '' ? 'No projects found.' : getCategorySubtitle(selectedCategory)
-
-  return <div style={{ padding: '30px 0px', color: 'gray' }}>{subtitle}</div>
+  return <div style={{ padding: '30px 0px', color: 'gray' }}>{description}</div>
 })
 NoProjectsMessage.displayName = 'NoProjectsMessage'
 
 const ProjectCard = React.memo(
   ({
     project,
+    isSharedWithMe,
     collaborators,
     selected,
     onSelect,
   }: {
     project: ProjectWithoutContent
+    isSharedWithMe: boolean
     collaborators: Collaborator[]
     selected: boolean
     onSelect: () => void
@@ -637,6 +673,10 @@ const ProjectCard = React.memo(
       const action = `/internal/projects/${project.proj_id}/access/requests`
       accessRequestsFetcher.submit({}, { method: 'GET', action: action })
     }, [accessRequestsFetcher, project])
+
+    const ownerName = React.useMemo(() => {
+      return getOwnerName(project.owner_id, collaborators)
+    }, [collaborators, project])
 
     return (
       <ContextMenu.Root onOpenChange={handleSortMenuOpenChange}>
@@ -750,9 +790,17 @@ const ProjectCard = React.memo(
                     }
                   />
                 </div>
-                <Text size='1' style={{ opacity: 0.5 }}>
-                  {moment(project.modified_at).fromNow()}
-                </Text>
+                <Flex>
+                  <Text size='1' style={{ opacity: 0.5, flex: 1 }}>
+                    {moment(project.modified_at).fromNow()}
+                  </Text>
+                  {when(
+                    isSharedWithMe && ownerName != null,
+                    <Text size='1' style={{ opacity: 0.5 }}>
+                      By {ownerName}
+                    </Text>,
+                  )}
+                </Flex>
               </div>
             </div>
           </div>
@@ -770,11 +818,13 @@ const ProjectRow = React.memo(
     project,
     collaborators,
     selected,
+    isSharedWithMe,
     onSelect,
   }: {
     project: ProjectWithoutContent
     collaborators: Collaborator[]
     selected: boolean
+    isSharedWithMe: boolean
     onSelect: () => void
   }) => {
     const projectEditorLink = useProjectEditorLink()
@@ -800,6 +850,10 @@ const ProjectRow = React.memo(
       const action = `/internal/projects/${project.proj_id}/access/requests`
       accessRequestsFetcher.submit({}, { method: 'GET', action: action })
     }, [accessRequestsFetcher, project])
+
+    const ownerName = React.useMemo(() => {
+      return getOwnerName(project.owner_id, collaborators)
+    }, [collaborators, project])
 
     return (
       <ContextMenu.Root onOpenChange={onContextMenuOpenChange}>
@@ -830,7 +884,7 @@ const ProjectRow = React.memo(
                   flex: 1,
                 }}
               >
-                <Flex gap='6'>
+                <Flex gap='6' style={{ alignItems: 'center' }}>
                   <div
                     style={{
                       borderRadius: 6,
@@ -843,19 +897,29 @@ const ProjectRow = React.memo(
                       position: 'relative',
                     }}
                   />
-                  <Text
-                    size='1'
-                    style={{
-                      display: 'flex',
-                      gap: '10px',
-                      alignItems: 'center',
-                      flexGrow: 1,
-                      minWidth: 180,
-                      fontWeight: 500,
-                    }}
-                  >
-                    {project.title}
-                  </Text>
+                  <Flex style={{ flexDirection: 'column', gap: 0 }}>
+                    <Text
+                      size='1'
+                      style={{
+                        display: 'flex',
+                        gap: '10px',
+                        alignItems: 'center',
+                        flexGrow: 1,
+                        minWidth: 180,
+                        fontWeight: 500,
+                        padding: 0,
+                        height: 'auto',
+                      }}
+                    >
+                      {project.title}
+                    </Text>
+                    {when(
+                      isSharedWithMe && ownerName != null,
+                      <Text size='1' style={{ opacity: 0.5 }}>
+                        By {ownerName}
+                      </Text>,
+                    )}
+                  </Flex>
                 </Flex>
                 <Text size='1' style={{ width: 100, opacity: 0.5 }}>
                   {moment(project.modified_at).fromNow()}
@@ -1060,3 +1124,8 @@ const ActiveOperationToast = React.memo(
   },
 )
 ActiveOperationToast.displayName = 'ActiveOperation'
+
+function getOwnerName(ownerId: string, collaborators: Collaborator[]) {
+  const collaborator = collaborators.find((c) => c.id === ownerId)
+  return collaborator?.name ?? 'Utopia user' // This is a fallback required in case we have misconfigured user details
+}

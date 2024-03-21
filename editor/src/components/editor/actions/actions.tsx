@@ -561,6 +561,10 @@ import type { ProjectServerState } from '../store/project-server-state'
 import { updateFileIfPossible } from './can-update-file'
 import { getPrintAndReparseCodeResult } from '../../../core/workers/parser-printer/parser-printer-worker'
 import { isSteganographyEnabled } from '../../../core/shared/stegano-text'
+import {
+  updatePropertyControlsOnDescriptorFileDelete,
+  isComponentDescriptorFile,
+} from '../../../core/property-controls/property-controls-local'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -3826,6 +3830,7 @@ export const UPDATE_FNS = {
       editor.projectContents,
       action.filename,
     )
+
     const selectedFile = getOpenFilename(editor)
     const updatedCanvas = selectedFile === action.filename ? null : editor.canvas.openFile
 
@@ -3850,10 +3855,18 @@ export const UPDATE_FNS = {
         }, updatedEditor)
       }
       case 'TEXT_FILE': {
-        return {
+        const nextEditor = {
           ...editor,
           projectContents: updatedProjectContents,
         }
+        if (isComponentDescriptorFile(action.filename)) {
+          return {
+            ...nextEditor,
+            propertyControlsInfo: updatePropertyControlsOnDescriptorFileDelete(action.filename),
+          }
+        }
+
+        return nextEditor
       }
       case 'ASSET_FILE':
       case 'IMAGE_FILE': {
@@ -4396,16 +4409,9 @@ export const UPDATE_FNS = {
     action: UpdatePropertyControlsInfo,
     editor: EditorState,
   ): EditorState => {
-    let updatedPropertyControlsInfo: PropertyControlsInfo = {
-      ...editor.propertyControlsInfo,
-      ...action.propertyControlsInfo,
-    }
-    for (const moduleNameOrPathToDelete of action.moduleNamesOrPathsToDelete) {
-      delete updatedPropertyControlsInfo[moduleNameOrPathToDelete]
-    }
     return {
       ...editor,
-      propertyControlsInfo: updatedPropertyControlsInfo,
+      propertyControlsInfo: action.propertyControlsInfo,
     }
   },
   UPDATE_TEXT: (action: UpdateText, editorStore: EditorStoreUnpatched): EditorStoreUnpatched => {

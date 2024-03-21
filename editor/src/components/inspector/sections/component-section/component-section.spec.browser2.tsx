@@ -1,9 +1,13 @@
 import { within } from '@testing-library/react'
 import * as EP from '../../../../core/shared/element-path'
-import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
+import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
 import { mouseClickAtPoint, pressKey } from '../../../canvas/event-helpers.test-utils'
 import type { EditorRenderResult } from '../../../canvas/ui-jsx.test-utils'
-import { getPrintedUiJsCode, renderTestEditorWithCode } from '../../../canvas/ui-jsx.test-utils'
+import {
+  getPrintedUiJsCode,
+  renderTestEditorWithCode,
+  renderTestEditorWithModel,
+} from '../../../canvas/ui-jsx.test-utils'
 import {
   DataPickerPopupButtonTestId,
   DataPickerPopupTestId,
@@ -16,7 +20,8 @@ import {
   isJSExpressionValue,
   isJSIdentifier,
 } from '../../../../core/shared/element-template'
-import { applyPrettier } from 'utopia-vscode-common'
+import { createModifiedProject } from '../../../../sample-projects/sample-project-utils.test-utils'
+import { StoryboardFilePath } from '../../../editor/store/editor-state'
 
 describe('Set element prop via the data picker', () => {
   it('can pick from the property data picker', async () => {
@@ -28,7 +33,7 @@ describe('Set element prop via the data picker', () => {
         expect(htmlElement.style.getPropertyValue('font-style')).not.toContain('italic')
       }
     }
-    const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
+    const editor = await renderTestEditorWithModel(project, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/title')])
 
     const dataPickerOpenerButton = editor.renderedDOM.getByTestId(DataPickerPopupButtonTestId)
@@ -120,7 +125,7 @@ describe('Set element prop via the data picker', () => {
   })
 
   it('with number input control descriptor present', async () => {
-    const editor = await renderTestEditorWithCode(
+    const editor = await renderTestEditorWithModel(
       projectWithNumberInputControlDescription,
       'await-first-dom-report',
     )
@@ -143,7 +148,7 @@ describe('Set element prop via the data picker', () => {
   })
 
   it('with array control descriptor present', async () => {
-    const editor = await renderTestEditorWithCode(
+    const editor = await renderTestEditorWithModel(
       projectWithObjectsAndArrays,
       'await-first-dom-report',
     )
@@ -171,7 +176,7 @@ describe('Set element prop via the data picker', () => {
   })
 
   it('with object control descriptor present', async () => {
-    const editor = await renderTestEditorWithCode(
+    const editor = await renderTestEditorWithModel(
       projectWithObjectsAndArrays,
       'await-first-dom-report',
     )
@@ -199,7 +204,7 @@ describe('Set element prop via the data picker', () => {
   })
 
   it("with another array matching the prop array's shape", async () => {
-    const editor = await renderTestEditorWithCode(
+    const editor = await renderTestEditorWithModel(
       DataPickerProjectShell(`
       function TableOfContents({ titles }) {
         const content = 'Content'
@@ -248,7 +253,7 @@ describe('Set element prop via the data picker', () => {
   })
 
   it("with another object matching the prop object's shape", async () => {
-    const editor = await renderTestEditorWithCode(
+    const editor = await renderTestEditorWithModel(
       DataPickerProjectShell(`
       function BookDetail({ book }) {
         const content = 'Content'
@@ -318,7 +323,7 @@ describe('Set element prop via the data picker', () => {
   })
 
   it('style props are filterd from `props`', async () => {
-    const editor = await renderTestEditorWithCode(
+    const editor = await renderTestEditorWithModel(
       DataPickerProjectShell(`
       function TableOfContents({ titles }) {
         const content = 'Content'
@@ -368,7 +373,7 @@ describe('Set element prop via the data picker', () => {
   })
 
   it('style props are filtered from destructured props', async () => {
-    const editor = await renderTestEditorWithCode(
+    const editor = await renderTestEditorWithModel(
       DataPickerProjectShell(`
       function TableOfContents({ titles }) {
         const content = 'Content'
@@ -417,7 +422,7 @@ describe('Set element prop via the data picker', () => {
   })
 
   it('object props are reordered by relevance', async () => {
-    const editor = await renderTestEditorWithCode(
+    const editor = await renderTestEditorWithModel(
       DataPickerProjectShell(`
       function Title({ text }) {
         const content = 'Content'
@@ -469,7 +474,7 @@ describe('Set element prop via the data picker', () => {
   })
 
   it('array with matching elements has priority', async () => {
-    const editor = await renderTestEditorWithCode(
+    const editor = await renderTestEditorWithModel(
       DataPickerProjectShell(`
       function Title({ text }) {
         const content = 'Content'
@@ -523,7 +528,7 @@ describe('Set element prop via the data picker', () => {
   })
 
   it('object with matching elements has priority', async () => {
-    const editor = await renderTestEditorWithCode(
+    const editor = await renderTestEditorWithModel(
       DataPickerProjectShell(`
       function Title({ text }) {
         const content = 'Content'
@@ -572,27 +577,14 @@ describe('Set element prop via the data picker', () => {
   })
 
   it('for jsx props react elements have highest priority, strings/numbers are next, and the rest is lower', async () => {
-    const editor = await renderTestEditorWithCode(
-      DataPickerProjectShell(`
+    const editor = await renderTestEditorWithModel(
+      DataPickerProjectShell(
+        `
       function Title({ text }) {
         const content = 'Content'
       
         return <h2 data-uid='aam'>{text}</h2>
-      }
-
-      registerInternalComponent(Title, {
-        supportsChildren: false,
-        properties: {
-          text: {
-            control: 'jsx',
-          },
-        },
-        variants: [
-          {
-            code: '<Title />',
-          },
-        ],
-      })      
+      }      
       
       var Playground = ({ style }) => {
         const nums = [1, 2, 3, 4, 5]
@@ -616,7 +608,25 @@ describe('Set element prop via the data picker', () => {
             />
           </div>
         )
-      }`),
+      }`,
+        `{
+          '/utopia/storyboard': {
+            Title: {
+              supportsChildren: false,
+              properties: {
+                text: {
+                  control: 'jsx',
+                },
+              },
+              variants: [
+                {
+                  code: '<Title />',
+                },
+              ],
+            },
+          },
+        }`,
+      ),
       'await-first-dom-report',
     )
     await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/bd')])
@@ -633,16 +643,9 @@ describe('Set element prop via the data picker', () => {
   })
 
   it('picking data for the children prop', async () => {
-    const editor = await renderTestEditorWithCode(
-      DataPickerProjectShell(`registerInternalComponent(Link, {
-      properties: {
-        children: Utopia.arrayControl({ control: 'jsx' }),
-      },
-      supportsChildren: true,
-      variants: [],
-    })
-    
-    function Link({ href, children }) {
+    const editor = await renderTestEditorWithModel(
+      DataPickerProjectShell(
+        `function Link({ href, children }) {
       return (
         <a href={href} data-uid='a-root'>
           {children}
@@ -665,7 +668,22 @@ describe('Set element prop via the data picker', () => {
           </Link>
         </div>
       )
-    }`),
+    }`,
+        `{
+      '/utopia/storyboard': {
+        Link: {
+          properties: {
+            children: {
+              control: 'array',
+              propertyControl: { control: 'jsx' },
+            },
+          },
+          supportsChildren: true,
+          variants: [],
+        },
+      },
+    }`,
+      ),
       'await-first-dom-report',
     )
 
@@ -716,42 +734,9 @@ describe('Set element prop via the data picker', () => {
   })
 })
 
-// comment out tests temporarily because it causes a dom-walker test to fail
-// describe('Image preview for string control', () => {
-//   it('shows image preview for urls with image extension', async () => {
-//     const editor = await renderTestEditorWithCode(
-//       projectWithImage(
-//         'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAEklEQVQIW2P8z8AARAwMjDAGACwBA/+8RVWvAAAAAElFTkSuQmCC',
-//       ),
-//       'await-first-dom-report',
-//     )
-//     await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/image')])
-
-//     expect(editor.renderedDOM.queryAllByTestId(ImagePreviewTestId)).toHaveLength(1)
-//   })
-//   it('does not show image preview for urls without image extension', async () => {
-//     const editor = await renderTestEditorWithCode(
-//       projectWithImage('https://i.pinimg.com/474x/4d/79/99/4d7999a51a1a397189a6f98168bcde45'),
-//       'await-first-dom-report',
-//     )
-//     await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/image')])
-
-//     expect(editor.renderedDOM.queryAllByTestId(ImagePreviewTestId)).toHaveLength(0)
-//   })
-//   it('does not show image preview for non-urls', async () => {
-//     const editor = await renderTestEditorWithCode(
-//       projectWithImage('hello'),
-//       'await-first-dom-report',
-//     )
-//     await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/image')])
-
-//     expect(editor.renderedDOM.queryAllByTestId(ImagePreviewTestId)).toHaveLength(0)
-//   })
-// })
-
 describe('Controls from registering components', () => {
   it('registering internal component', async () => {
-    const editor = await renderTestEditorWithCode(
+    const editor = await renderTestEditorWithModel(
       registerInternalComponentProject,
       'await-first-dom-report',
     )
@@ -769,7 +754,7 @@ describe('Controls from registering components', () => {
   })
 
   it('registering internal component with html prop shows preview', async () => {
-    const editor = await renderTestEditorWithCode(
+    const editor = await renderTestEditorWithModel(
       registerInternalComponentProjectWithHtmlProp,
       'await-first-dom-report',
     )
@@ -780,7 +765,7 @@ describe('Controls from registering components', () => {
   })
 
   it('registering external component', async () => {
-    const editor = await renderTestEditorWithCode(
+    const editor = await renderTestEditorWithModel(
       registerExternalComponentProject,
       'await-first-dom-report',
     )
@@ -799,22 +784,9 @@ describe('Controls from registering components', () => {
 
   describe('preferred child components', () => {
     it('preferred child components with internal component', async () => {
-      const editor = await renderTestEditorWithCode(
-        DataPickerProjectShell(`registerInternalComponent(Link, {
-          properties: {
-            children: Utopia.arrayControl({ control: 'jsx' }),
-          },
-          preferredChildComponents: [
-            {
-              name: 'span',
-              variants: [{ code: '<span>Link</span>' }],
-            },
-          ],
-          supportsChildren: true,
-          variants: [],
-        })
-      
-      function Link({ href, children }) {
+      const editor = await renderTestEditorWithModel(
+        DataPickerProjectShell(
+          `function Link({ href, children }) {
         return (
           <a href={href} data-uid='root'>
             {children}
@@ -830,7 +802,29 @@ describe('Controls from registering components', () => {
             </Link>
           </div>
         )
-      }`),
+      }`,
+          `{
+        '/utopia/storyboard': {
+          Link: {
+            properties: {
+              children: {
+                control: 'array',
+                propertyControl: { control: 'jsx' },
+              },
+            },
+      
+            preferredChildComponents: [
+              {
+                name: 'span',
+                variants: [{ code: '<span>Link</span>' }],
+              },
+            ],
+            supportsChildren: true,
+            variants: [],
+          },
+        },
+      }`,
+        ),
         'await-first-dom-report',
       )
 
@@ -881,24 +875,9 @@ describe('Controls from registering components', () => {
     })
 
     it('preferred child components with render prop', async () => {
-      const editor = await renderTestEditorWithCode(
-        DataPickerProjectShell(`registerInternalComponent(Card, {
-          properties: {
-            header: Utopia.arrayControl({
-              control: 'jsx',
-              preferredChildComponents: [
-                {
-                  name: 'span',
-                  variants: [{ code: '<span>Title</span>' }],
-                },
-              ],
-            }),
-          },
-          supportsChildren: true,
-          variants: [],
-        })
-      
-      function Card({ header, children }) {
+      const editor = await renderTestEditorWithModel(
+        DataPickerProjectShell(
+          `function Card({ header, children }) {
         return (
           <div data-uid='root'>
             <h2>{header}</h2>
@@ -915,7 +894,30 @@ describe('Controls from registering components', () => {
             </Card>
           </div>
         )
-      }`),
+      }`,
+          `{
+        '/utopia/storyboard': {
+          Card: {
+            properties: {
+              header: {
+                control: 'array',
+                propertyControl: {
+                  control: 'jsx',
+                  preferredChildComponents: [
+                    {
+                      name: 'span',
+                      variants: [{ code: '<span>Title</span>' }],
+                    },
+                  ],
+                },
+              },
+            },
+            supportsChildren: true,
+            variants: [],
+          },
+        },
+      }`,
+        ),
         'await-first-dom-report',
       )
 
@@ -968,52 +970,6 @@ describe('Controls from registering components', () => {
   })
 })
 
-/*
-describe('Delete cartouche handling', () => {
-  async function getEditorWithPropertyExtras(
-    propertyExtras: string,
-    textField: string,
-  ): Promise<EditorRenderResult> {
-    const editor = await renderTestEditorWithCode(
-      registerInternalComponentProjectWithCartouche(propertyExtras, textField),
-      'await-first-dom-report',
-    )
-    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/title')])
-    return editor
-  }
-  it('optional field', async () => {
-    const editor = await getEditorWithPropertyExtras(``, `text={textForTitle}`)
-    const deleteCartoucheButton = editor.renderedDOM.getByTestId(`delete-cartouche-text`)
-    await mouseClickAtPoint(deleteCartoucheButton, { x: 2, y: 2 })
-    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-      registerInternalComponentProjectWithCartouche(``, ``),
-    )
-  })
-  it('required field without default value', async () => {
-    const editor = await getEditorWithPropertyExtras(`required: true`, `text={textForTitle}`)
-    const deleteCartoucheButton = editor.renderedDOM.queryByTestId(`delete-cartouche-text`)
-    expect(deleteCartoucheButton).toBeNull()
-    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-      registerInternalComponentProjectWithCartouche(`required: true`, `text={textForTitle}`),
-    )
-  })
-  it('required field with default value', async () => {
-    const editor = await getEditorWithPropertyExtras(
-      `required: true, defaultValue: 'Placeholder!'`,
-      `text={textForTitle}`,
-    )
-    const deleteCartoucheButton = editor.renderedDOM.getByTestId(`delete-cartouche-text`)
-    await mouseClickAtPoint(deleteCartoucheButton, { x: 2, y: 2 })
-    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-      registerInternalComponentProjectWithCartouche(
-        `required: true, defaultValue: 'Placeholder!'`,
-        `text='Placeholder!'`,
-      ),
-    )
-  })
-})
-*/
-
 const project = DataPickerProjectShell(`
 function Title({ text }) {
   const content = 'Content'
@@ -1042,88 +998,11 @@ var Playground = ({ style }) => {
   )
 }`)
 
-function registerInternalComponentProjectWithCartouche(
-  propertyExtras: string,
-  textField: string,
-): string {
-  return applyPrettier(
-    `import * as React from 'react'
+const registerInternalComponentProject = createModifiedProject({
+  [StoryboardFilePath]: `import * as React from 'react'
 import {
   Storyboard,
   Scene,
-  registerInternalComponent,
-} from 'utopia-api'
-
-function Title({ text }) {
-  return <h2 data-uid='0cd'>{text}</h2>
-}
-
-var Playground = ({ style }) => {
-  const textForTitle = 'Hello Utopia'
-  return (
-    <div style={style} data-uid='root'>
-      <Title ${textField} data-uid='title' />
-    </div>
-  )
-}
-
-export var storyboard = (
-  <Storyboard data-uid='sb'>
-    <Scene
-      style={{
-        width: 521,
-        height: 266,
-        position: 'absolute',
-        left: 554,
-        top: 247,
-        backgroundColor: 'white',
-      }}
-      data-uid='scene'
-      data-testid='scene'
-      commentId='120'
-    >
-      <Playground
-        style={{
-          width: 454,
-          height: 177,
-          position: 'absolute',
-          left: 34,
-          top: 44,
-          backgroundColor: 'white',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-        title='Hello Utopia'
-        data-uid='pg'
-      />
-    </Scene>
-  </Storyboard>
-)
-
-registerInternalComponent(Title, {
-  supportsChildren: false,
-  properties: {
-    text: {
-      control: 'string-input',${propertyExtras}
-    },
-  },
-  variants: [
-    {
-      code: '<Title />',
-    },
-  ],
-})
-`,
-    false,
-  ).formatted
-}
-
-const registerInternalComponentProject = `import * as React from 'react'
-import {
-  Storyboard,
-  Scene,
-  registerInternalComponent,
 } from 'utopia-api'
 
 function Title({ text }) {
@@ -1171,29 +1050,35 @@ export var storyboard = (
     </Scene>
   </Storyboard>
 )
-
-registerInternalComponent(Title, {
-  supportsChildren: false,
-  properties: {
-    text: {
-      control: 'string-input',
+`,
+  ['/utopia/components.utopia.js']: `const Components = {
+  '/utopia/storyboard': {
+    Title: {
+      supportsChildren: false,
+      properties: {
+        text: {
+          control: 'string-input',
+        },
+      },
+      variants: [
+        {
+          code: '<Title />',
+        },
+      ],
     },
   },
-  variants: [
-    {
-      code: '<Title />',
-    },
-  ],
+}
+
+export default Components  
+`,
 })
 
-`
-
-const registerExternalComponentProject = `import * as React from 'react'
+const registerExternalComponentProject = createModifiedProject({
+  [StoryboardFilePath]: `import * as React from 'react'
 import {
   Storyboard,
   Scene,
   View,
-  registerExternalComponent,
 } from 'utopia-api'
 
 var Playground = ({ style }) => {
@@ -1239,37 +1124,34 @@ export var storyboard = (
     </Scene>
   </Storyboard>
 )
-
-registerExternalComponent(
-  View,
-  'utopia-api',
-  {
-    supportsChildren: false,
-    properties: {
-      sampleprop: {
-        control: 'string-input',
-        required: true,
-        defaultValue: 'Sample'
+`,
+  ['/utopia/components.utopia.js']: `const Components = {
+    'utopia-api': {
+      View: {
+        supportsChildren: false,
+        properties: {
+          sampleprop: {
+            control: 'string-input',
+            required: true,
+            defaultValue: 'Sample',
+          },
+        },
+        variants: [
+          {
+            code: '<View />',
+          },
+        ],
       },
     },
-    variants: [
-      {
-        code: '<View />',
-      },
-    ],
-  },
-)`
-
-const projectWithNumberInputControlDescription = DataPickerProjectShell(`
-  registerInternalComponent(Counter, {
-  properties: {
-    count: Utopia.numberControl(),
-  },
-  supportsChildren: false,
-  variants: [],
+  }
+  
+  export default Components
+  
+`,
 })
 
-function Counter({ count }) {
+const projectWithNumberInputControlDescription = DataPickerProjectShell(
+  `function Counter({ count }) {
   const content = 'Content'
 
   return <h2 data-uid='a9c'>{count}</h2>
@@ -1285,33 +1167,24 @@ var Playground = () => {
       <Counter count={''} data-uid='counter' />
     </div>
   )
-}`)
-
-const projectWithObjectsAndArrays =
-  DataPickerProjectShell(`registerInternalComponent(TableOfContents, {
-  properties: {
-    titles: Utopia.arrayControl(
-      Utopia.stringControl(), // control to use for each value in the array
-    ),
+}`,
+  `{
+  '/utopia/storyboard': {
+    Counter: {
+      properties: {
+        count: {
+          control: 'number-input',
+        },
+      },
+      supportsChildren: false,
+      variants: [],
+    },
   },
-  supportsChildren: false,
-  variants: [],
-})
+}`,
+)
 
-registerInternalComponent(BookDetail, {
-  properties: {
-    book: Utopia.objectControl({
-      title: Utopia.stringControl(),
-      published: Utopia.stringControl(),
-      description: Utopia.stringControl(),
-      likes: Utopia.numberControl(),
-    }),
-  },
-  supportsChildren: false,
-  variants: [],
-})
-
-function TableOfContents({ titles }) {
+const projectWithObjectsAndArrays = DataPickerProjectShell(
+  `function TableOfContents({ titles }) {
   const content = 'Content'
 
   return (
@@ -1354,260 +1227,167 @@ var Playground = () => {
       <BookDetail book={{}} data-uid='bd' />
     </div>
   )
-}`)
-
-function DataPickerProjectShell(contents: string) {
-  return `
-  import * as React from 'react'
-import * as Utopia from 'utopia-api'
-import {
-  Storyboard,
-  Scene,
-  registerInternalComponent,
-} from 'utopia-api'
-
-${contents}
-
-export var storyboard = (
-  <Storyboard data-uid='sb'>
-    <Scene
-      style={{
-        width: 521,
-        height: 266,
-        position: 'absolute',
-        left: 554,
-        top: 247,
-        backgroundColor: 'white',
-      }}
-      data-uid='scene'
-      data-testid='scene'
-      commentId='120'
-    >
-      <Playground
-        style={{
-          width: 454,
-          height: 177,
-          position: 'absolute',
-          left: 34,
-          top: 44,
-          backgroundColor: 'white',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-        className='playground'
-        css={{ color: 'red' }}
-        data-uid='pg'
-      />
-    </Scene>
-  </Storyboard>
-)`
-}
-
-const projectWithHtmlProp = (imageUrl: string) => `import * as React from 'react'
-import {
-  Storyboard,
-  Scene,
-  registerInternalComponent,
-} from 'utopia-api'
-
-function Image({ url }) {
-  return <img src={url} />
-}
-
-var Playground = ({ style }) => {
-  return (
-    <div style={style} data-uid='root'>
-      <Image url='${imageUrl}' data-uid='image' />
-    </div>
-  )
-}
-
-export var storyboard = (
-  <Storyboard data-uid='sb'>
-    <Scene
-      style={{
-        width: 521,
-        height: 266,
-        position: 'absolute',
-        left: 554,
-        top: 247,
-        backgroundColor: 'white',
-      }}
-      data-uid='scene'
-      data-testid='scene'
-      commentId='120'
-    >
-      <Playground
-        style={{
-          width: 454,
-          height: 177,
-          position: 'absolute',
-          left: 34,
-          top: 44,
-          backgroundColor: 'white',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-        title='Hello Utopia'
-        data-uid='pg'
-      />
-    </Scene>
-  </Storyboard>
-)
-
-registerInternalComponent(Image, {
-  supportsChildren: false,
-  properties: {
-    url: {
-      control: 'string-input',
+}`,
+  `{
+  '/utopia/storyboard': {
+    TableOfContents: {
+      properties: {
+        titles: {
+          control: 'array',
+          propertyControl: { control: 'string-input' },
+        },
+      },
+      supportsChildren: false,
+      variants: [],
+    },
+    BookDetail: {
+      properties: {
+        book: {
+          control: 'object',
+          object: {
+            title: { control: 'string-input' },
+            published: { control: 'string-input' },
+            description: { control: 'string-input' },
+            likes: { control: 'number-input' },
+          },
+        },
+      },
+      supportsChildren: false,
+      variants: [],
     },
   },
-  variants: [
-    {
-      code: '<Image />',
-    },
-  ],
-})
-
-`
-
-const registerInternalComponentProjectWithHtmlProp = `import * as React from 'react'
-import {
-  Storyboard,
-  Scene,
-  registerInternalComponent,
-} from 'utopia-api'
-
-function Title({ text }) {
-  return <h2 data-uid='0cd'>{text}</h2>
-}
-
-var Playground = ({ style }) => {
-  return (
-    <div style={style} data-uid='root'>
-      <Title text='<p>Hello Utopia</p>' data-uid='title' />
-    </div>
-  )
-}
-
-export var storyboard = (
-  <Storyboard data-uid='sb'>
-    <Scene
-      style={{
-        width: 521,
-        height: 266,
-        position: 'absolute',
-        left: 554,
-        top: 247,
-        backgroundColor: 'white',
-      }}
-      data-uid='scene'
-      data-testid='scene'
-      commentId='120'
-    >
-      <Playground
-        style={{
-          width: 454,
-          height: 177,
-          position: 'absolute',
-          left: 34,
-          top: 44,
-          backgroundColor: 'white',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-        title='Hello Utopia'
-        data-uid='pg'
-      />
-    </Scene>
-  </Storyboard>
+}`,
 )
 
-registerInternalComponent(Title, {
-  supportsChildren: false,
-  properties: {
-    text: {
-      control: 'html-input',
+function DataPickerProjectShell(contents: string, componentDescriptor?: string) {
+  return createModifiedProject({
+    [StoryboardFilePath]: `import * as React from 'react'
+    import * as Utopia from 'utopia-api'
+    import {
+      Storyboard,
+      Scene,
+    } from 'utopia-api'
+    
+    ${contents}
+    
+    export var storyboard = (
+      <Storyboard data-uid='sb'>
+        <Scene
+          style={{
+            width: 521,
+            height: 266,
+            position: 'absolute',
+            left: 554,
+            top: 247,
+            backgroundColor: 'white',
+          }}
+          data-uid='scene'
+          data-testid='scene'
+          commentId='120'
+        >
+          <Playground
+            style={{
+              width: 454,
+              height: 177,
+              position: 'absolute',
+              left: 34,
+              top: 44,
+              backgroundColor: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            className='playground'
+            css={{ color: 'red' }}
+            data-uid='pg'
+          />
+        </Scene>
+      </Storyboard>
+    )
+    `,
+    ['/utopia/components.utopia.js']:
+      componentDescriptor != null
+        ? `const Components = ${componentDescriptor}
+        
+        export default Components`
+        : '',
+  })
+}
+
+const registerInternalComponentProjectWithHtmlProp = createModifiedProject({
+  [StoryboardFilePath]: `import * as React from 'react'
+  import {
+    Storyboard,
+    Scene,
+  } from 'utopia-api'
+  
+  function Title({ text }) {
+    return <h2 data-uid='0cd'>{text}</h2>
+  }
+  
+  var Playground = ({ style }) => {
+    return (
+      <div style={style} data-uid='root'>
+        <Title text='<p>Hello Utopia</p>' data-uid='title' />
+      </div>
+    )
+  }
+  
+  export var storyboard = (
+    <Storyboard data-uid='sb'>
+      <Scene
+        style={{
+          width: 521,
+          height: 266,
+          position: 'absolute',
+          left: 554,
+          top: 247,
+          backgroundColor: 'white',
+        }}
+        data-uid='scene'
+        data-testid='scene'
+        commentId='120'
+      >
+        <Playground
+          style={{
+            width: 454,
+            height: 177,
+            position: 'absolute',
+            left: 34,
+            top: 44,
+            backgroundColor: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          title='Hello Utopia'
+          data-uid='pg'
+        />
+      </Scene>
+    </Storyboard>
+  )
+  `,
+  ['/utopia/components.utopia.js']: `const Components = {
+    '/utopia/storyboard': {
+      Title: {
+        supportsChildren: false,
+        properties: {
+          text: {
+            control: 'html-input',
+          },
+        },
+        variants: [
+          {
+            code: '<Title />',
+          },
+        ],
+      },
     },
-  },
-  variants: [
-    {
-      code: '<Title />',
-    },
-  ],
+  }
+  
+  export default Components  
+`,
 })
-
-`
-
-// const projectWithImage = (imageUrl: string) => `import * as React from 'react'
-// import {
-//   Storyboard,
-//   Scene,
-//   registerInternalComponent,
-// } from 'utopia-api'
-
-// function Image({ url }) {
-//   return <img src={url} />
-// }
-
-// var Playground = ({ style }) => {
-//   return (
-//     <div style={style} data-uid='root'>
-//       <Image url='${imageUrl}' data-uid='image' />
-//     </div>
-//   )
-// }
-
-// export var storyboard = (
-//   <Storyboard data-uid='sb'>
-//     <Scene
-//       style={{
-//         width: 521,
-//         height: 266,
-//         position: 'absolute',
-//         left: 554,
-//         top: 247,
-//         backgroundColor: 'white',
-//       }}
-//       data-uid='scene'
-//       data-testid='scene'
-//       commentId='120'
-//     >
-//       <Playground
-//         style={{
-//           width: 454,
-//           height: 177,
-//           position: 'absolute',
-//           left: 34,
-//           top: 44,
-//           backgroundColor: 'white',
-//           display: 'flex',
-//           alignItems: 'center',
-//           justifyContent: 'center',
-//         }}
-//         title='Hello Utopia'
-//         data-uid='pg'
-//       />
-//     </Scene>
-//   </Storyboard>
-// )
-
-// registerInternalComponent(Image, {
-//   supportsChildren: false,
-//   properties: {
-//     url: {
-//       control: 'string-input',
-//     },
-//   },
-//   variants: [
-//     {
-//       code: '<Image />',
-//     },
-//   ],
-// })
 
 function getRenderedOptions(editor: EditorRenderResult) {
   return [

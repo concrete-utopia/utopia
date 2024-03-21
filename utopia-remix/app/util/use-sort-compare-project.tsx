@@ -55,12 +55,14 @@ export function useProjectIsOnActiveOperation() {
           case 'allProjects':
           case 'public':
           case 'private':
-          case 'shared':
+          case 'sharing':
             return op.type === 'delete' && op.projectId === project.proj_id
           case 'trash':
             return (
               (op.type === 'restore' || op.type === 'destroy') && op.projectId === project.proj_id
             )
+          case 'sharedWithMe':
+            return false
           default:
             assertNever(selectedCategory)
         }
