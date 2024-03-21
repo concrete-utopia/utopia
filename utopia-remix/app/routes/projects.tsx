@@ -668,22 +668,12 @@ const ProjectCard = React.memo(
     }, [])
     useFetcherData(hasPendingRequestsFetcher, isHasPendingRequests, updatePendingRequests)
 
-    const handleSortMenuOpenChange = React.useCallback(
-      (open: boolean) => {
-        if (open) {
-          const action = `/internal/projects/${project.proj_id}/access/requests/pending`
-          hasPendingRequestsFetcher.submit({}, { method: 'GET', action: action })
-        }
-      },
-      [hasPendingRequestsFetcher, project],
-    )
-
     const ownerName = React.useMemo(() => {
       return getOwnerName(project.owner_id, collaborators)
     }, [collaborators, project])
 
     return (
-      <ContextMenu.Root onOpenChange={handleSortMenuOpenChange}>
+      <ContextMenu.Root>
         <ContextMenu.Trigger>
           <div
             style={{
@@ -845,22 +835,12 @@ const ProjectRow = React.memo(
 
     useFetcherData(hasPendingRequestsFetcher, isHasPendingRequests, updatePendingRequests)
 
-    const onContextMenuOpenChange = React.useCallback(
-      (open: boolean) => {
-        if (open) {
-          const action = `/internal/projects/${project.proj_id}/access/requests/pending`
-          hasPendingRequestsFetcher.submit({}, { method: 'GET', action: action })
-        }
-      },
-      [hasPendingRequestsFetcher, project],
-    )
-
     const ownerName = React.useMemo(() => {
       return getOwnerName(project.owner_id, collaborators)
     }, [collaborators, project])
 
     return (
-      <ContextMenu.Root onOpenChange={onContextMenuOpenChange}>
+      <ContextMenu.Root>
         <ContextMenu.Trigger>
           <div style={{ padding: '8px 0' }}>
             <div

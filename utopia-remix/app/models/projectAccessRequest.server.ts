@@ -1,10 +1,10 @@
 import * as uuid from 'uuid'
 import { prisma } from '../db.server'
 import * as permissionsService from '../services/permissionsService.server'
+import type { ProjectAccessRequestWithUserDetails } from '../types'
+import { AccessRequestStatus, UserProjectRole } from '../types'
 import { ensure } from '../util/api.server'
 import { Status } from '../util/statusCodes'
-import type { ProjectAccessRequestWithUserDetails } from '../types'
-import { AccessLevel, AccessRequestStatus, UserProjectRole } from '../types'
 import { addToProjectCollaboratorsWithRunner } from './projectCollaborators.server'
 
 function makeRequestToken(): string {
@@ -126,27 +126,4 @@ export async function listProjectAccessRequests(params: {
     ...r,
     User: users.find((u) => u.user_id === r.user_id) ?? null,
   }))
-}
-
-export async function projectHasPendingRequests(params: {
-  projectId: string
-  userId: string
-}): Promise<boolean> {
-  const project = await prisma.project.findFirst({
-    where: {
-      proj_id: params.projectId,
-      owner_id: params.userId,
-      OR: [{ deleted: null }, { deleted: false }],
-    },
-    select: {
-      ProjectAccess: { select: { access_level: true } },
-      ProjectAccessRequest: { select: { status: true } },
-    },
-  })
-  ensure(project != null, 'project not found', Status.NOT_FOUND)
-
-  return (
-    project.ProjectAccess?.access_level === AccessLevel.COLLABORATIVE &&
-    project.ProjectAccessRequest.some((r) => r.status === AccessRequestStatus.PENDING)
-  )
 }
