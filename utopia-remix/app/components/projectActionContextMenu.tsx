@@ -6,7 +6,7 @@ import { when } from '~/util/react-conditionals'
 import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
 import { SLUGIFY_OPTIONS } from '../routes/internal.projects.$id.rename'
 import { useProjectsStore } from '../store'
-import type { ProjectListing, ProjectWithoutContent } from '../types'
+import type { ProjectListing } from '../types'
 import { operationDelete, operationDestroy, operationRename, operationRestore } from '../types'
 import { assertNever } from '../util/assertNever'
 import { useCopyProjectLinkToClipboard } from '../util/copyProjectLink'
@@ -15,14 +15,14 @@ import { useProjectEditorLink } from '../util/links'
 type ContextMenuEntry =
   | {
       text: string
-      onClick: (project: ProjectWithoutContent) => void
+      onClick: (project: ProjectListing) => void
     }
   | 'separator'
   | 'sharing-dialog'
 
 function contextMenuEntry(
   text: string,
-  onClick: (project: ProjectWithoutContent) => void,
+  onClick: (project: ProjectListing) => void,
 ): ContextMenuEntry {
   return { text, onClick }
 }

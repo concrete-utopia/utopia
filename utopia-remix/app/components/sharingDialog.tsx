@@ -11,7 +11,7 @@ import {
   asAccessLevel,
   operationApproveAccessRequest,
   operationChangeAccess,
-  type ProjectWithoutContent,
+  type ProjectListing,
   AccessRequestStatus,
   type ProjectAccessRequestWithUserDetails,
 } from '../types'
@@ -30,7 +30,7 @@ export const SharingDialogWrapper = React.memo(
     project,
     accessRequests,
   }: {
-    project: ProjectWithoutContent
+    project: ProjectListing
     accessRequests: ProjectAccessRequestWithUserDetails[]
   }) => {
     const sharingProjectId = useProjectsStore((store) => store.sharingProjectId)
@@ -60,7 +60,7 @@ function SharingDialog({
   project,
   accessRequests,
 }: {
-  project: ProjectWithoutContent
+  project: ProjectListing
   accessRequests: ProjectAccessRequestWithUserDetails[]
 }) {
   const accessLevel = asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
@@ -146,7 +146,7 @@ function AccessRequests({
   approveAccessRequest,
   accessRequests,
 }: {
-  project: ProjectWithoutContent
+  project: ProjectListing
   approveAccessRequest: (projectId: string, tokenId: string) => void
   accessRequests: ProjectAccessRequestWithUserDetails[]
 }) {

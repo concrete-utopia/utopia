@@ -5,12 +5,12 @@ import {
   AccessRequestStatus,
   asAccessLevel,
   userToCollaborator,
-  type ProjectWithoutContent,
+  type ProjectWithoutContentFromDB,
 } from '../types'
 import { ensure } from '../util/api.server'
 import { Status } from '../util/statusCodes'
 
-const selectProjectWithoutContent: Record<keyof ProjectWithoutContent, true> = {
+const selectProjectWithoutContent: Record<keyof ProjectWithoutContentFromDB, true> = {
   id: true,
   proj_id: true,
   owner_id: true,
@@ -85,7 +85,7 @@ export async function renameProject(params: {
   id: string
   userId: string
   title: string
-}): Promise<ProjectWithoutContent> {
+}): Promise<ProjectListing> {
   return prisma.project.update({
     where: {
       proj_id: params.id,
