@@ -22,6 +22,7 @@ import { SharingDialogWrapper } from '../components/sharingDialog'
 import { SortingContextMenu } from '../components/sortProjectsContextMenu'
 import { Spinner } from '../components/spinner'
 import { useCleanupOperations } from '../hooks/useCleanupOperations'
+import { useFetcherData } from '../hooks/useFetcherData'
 import { useIsDarkMode } from '../hooks/useIsDarkMode'
 import {
   listDeletedProjects,
@@ -40,7 +41,7 @@ import type {
   CollaboratorsByProject,
   HasPendingRequests,
   Operation,
-  ProjectWithoutContent,
+  ProjectListing,
 } from '../types'
 import { AccessLevel, asAccessLevel, getOperationDescription, isHasPendingRequests } from '../types'
 import { requireUser } from '../util/api.server'
@@ -54,7 +55,6 @@ import {
   useProjectMatchesQuery,
   useSortCompareProject,
 } from '../util/use-sort-compare-project'
-import { useFetcherData } from '../hooks/useFetcherData'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
@@ -132,9 +132,9 @@ const ProjectsPage = React.memo(() => {
 
   const data = useLoaderData() as unknown as {
     user: UserDetails
-    projects: ProjectWithoutContent[]
-    deletedProjects: ProjectWithoutContent[]
-    projectsSharedWithMe: ProjectWithoutContent[]
+    projects: ProjectListing[]
+    deletedProjects: ProjectListing[]
+    projectsSharedWithMe: ProjectListing[]
     collaborators: CollaboratorsByProject
   }
 
@@ -385,7 +385,7 @@ const TopActionBar = React.memo(() => {
 })
 TopActionBar.displayName = 'TopActionBar'
 
-const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutContent[] }) => {
+const ProjectsHeader = React.memo(({ projects }: { projects: ProjectListing[] }) => {
   const searchQuery = useProjectsStore((store) => store.searchQuery)
   const setSearchQuery = useProjectsStore((store) => store.setSearchQuery)
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
@@ -513,7 +513,7 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
 })
 ProjectsHeader.displayName = 'CategoryHeader'
 
-const CategoryActions = React.memo(({ projects }: { projects: ProjectWithoutContent[] }) => {
+const CategoryActions = React.memo(({ projects }: { projects: ProjectListing[] }) => {
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
 
   switch (selectedCategory) {
@@ -531,7 +531,7 @@ const CategoryActions = React.memo(({ projects }: { projects: ProjectWithoutCont
 })
 CategoryActions.displayName = 'CategoryActions'
 
-const CategoryTrashActions = React.memo(({ projects }: { projects: ProjectWithoutContent[] }) => {
+const CategoryTrashActions = React.memo(({ projects }: { projects: ProjectListing[] }) => {
   const fetcher = useFetcher()
 
   const handleEmptyTrash = React.useCallback(() => {
@@ -563,7 +563,7 @@ const Projects = React.memo(
     collaborators,
     myUserId,
   }: {
-    projects: ProjectWithoutContent[]
+    projects: ProjectListing[]
     collaborators: CollaboratorsByProject
     myUserId: string
   }) => {
@@ -573,7 +573,7 @@ const Projects = React.memo(
     const setSelectedProjectId = useProjectsStore((store) => store.setSelectedProjectId)
 
     const handleProjectSelect = React.useCallback(
-      (project: ProjectWithoutContent) =>
+      (project: ProjectListing) =>
         setSelectedProjectId(project.proj_id === selectedProjectId ? null : project.proj_id),
       [setSelectedProjectId, selectedProjectId],
     )
@@ -639,7 +639,7 @@ const ProjectCard = React.memo(
     selected,
     onSelect,
   }: {
-    project: ProjectWithoutContent
+    project: ProjectListing
     isSharedWithMe: boolean
     collaborators: Collaborator[]
     selected: boolean
@@ -824,7 +824,7 @@ const ProjectRow = React.memo(
     isSharedWithMe,
     onSelect,
   }: {
-    project: ProjectWithoutContent
+    project: ProjectListing
     collaborators: Collaborator[]
     selected: boolean
     isSharedWithMe: boolean
@@ -1036,7 +1036,7 @@ const ProjectBadge = React.memo(({ accessLevel }: { accessLevel: AccessLevel }) 
 })
 ProjectBadge.displayName = 'ProjectBadge'
 
-const ActiveOperations = React.memo(({ projects }: { projects: ProjectWithoutContent[] }) => {
+const ActiveOperations = React.memo(({ projects }: { projects: ProjectListing[] }) => {
   const operations = useProjectsStore((store) =>
     store.operations.sort((a, b) => b.startedAt - a.startedAt),
   )
@@ -1073,7 +1073,7 @@ const ActiveOperations = React.memo(({ projects }: { projects: ProjectWithoutCon
 ActiveOperations.displayName = 'ActiveOperations'
 
 const ActiveOperationToast = React.memo(
-  ({ operation, project }: { operation: OperationWithKey; project: ProjectWithoutContent }) => {
+  ({ operation, project }: { operation: OperationWithKey; project: ProjectListing }) => {
     const removeOperation = useProjectsStore((store) => store.removeOperation)
 
     const dismiss = React.useCallback(() => {

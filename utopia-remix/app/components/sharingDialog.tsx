@@ -23,7 +23,7 @@ import {
   operationApproveAccessRequest,
   operationChangeAccess,
   type ProjectAccessRequestWithUserDetails,
-  type ProjectWithoutContent,
+  type ProjectListing,
 } from '../types'
 import { useCopyProjectLinkToClipboard } from '../util/copyProjectLink'
 import { isLikeApiError } from '../util/errors'
@@ -32,7 +32,7 @@ import { when } from '../util/react-conditionals'
 import { Spinner } from './spinner'
 
 export const SharingDialogWrapper = React.memo(
-  ({ project }: { project: ProjectWithoutContent | null }) => {
+  ({ project }: { project: ProjectListing | null }) => {
     const sharingProjectId = useProjectsStore((store) => store.sharingProjectId)
     const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
 
@@ -57,7 +57,7 @@ export const SharingDialogWrapper = React.memo(
 )
 SharingDialogWrapper.displayName = 'SharingDialogWrapper'
 
-function SharingDialog({ project }: { project: ProjectWithoutContent | null }) {
+function SharingDialog({ project }: { project: ProjectListing | null }) {
   const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
   const accessRequests = useProjectsStore((store) => store.sharingProjectAccessRequests)
 
@@ -132,7 +132,7 @@ function SharingDialog({ project }: { project: ProjectWithoutContent | null }) {
   )
 }
 
-const AccessRequestsList = React.memo(({ project }: { project: ProjectWithoutContent }) => {
+const AccessRequestsList = React.memo(({ project }: { project: ProjectListing }) => {
   const accessRequests = useProjectsStore((store) => store.sharingProjectAccessRequests)
 
   const approveAccessRequestFetcher = useFetcherWithOperation(
@@ -186,7 +186,7 @@ function AccessRequests({
   approveAccessRequest,
   accessRequests,
 }: {
-  project: ProjectWithoutContent
+  project: ProjectListing
   approveAccessRequest: (projectId: string, tokenId: string) => void
   accessRequests: ProjectAccessRequestWithUserDetails[]
 }) {

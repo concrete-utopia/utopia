@@ -7,7 +7,7 @@ import { when } from '~/util/react-conditionals'
 import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
 import { SLUGIFY_OPTIONS } from '../routes/internal.projects.$id.rename'
 import { useProjectsStore } from '../store'
-import type { ProjectWithoutContent } from '../types'
+import type { ProjectListing } from '../types'
 import {
   isProjectAccessRequestWithUserDetailsArray,
   operationDelete,
@@ -22,24 +22,25 @@ import { useProjectEditorLink } from '../util/links'
 type ContextMenuEntry =
   | {
       text: string
-      onClick: (project: ProjectWithoutContent) => void
+      onClick: (project: ProjectListing) => void
     }
   | 'separator'
   | 'sharing-dialog'
 
 function contextMenuEntry(
   text: string,
-  onClick: (project: ProjectWithoutContent) => void,
+  onClick: (project: ProjectListing) => void,
 ): ContextMenuEntry {
   return { text, onClick }
 }
 
 export const ProjectActionsMenu = React.memo(
   ({
+    // the project that can receive actions
     project,
     hasPendingRequests,
   }: {
-    project: ProjectWithoutContent
+    project: ProjectListing
     hasPendingRequests: boolean
   }) => {
     const deleteFetcher = useFetcherWithOperation(project.proj_id, 'delete')
@@ -209,7 +210,10 @@ export const ProjectActionsMenu = React.memo(
               >
                 <Flex justify={'between'} align={'center'} width={'100%'}>
                   <Text>Sharing…</Text>
-                  {when(hasPendingRequests, <DotFilledIcon color='red' height={22} width={22} />)}
+                  {when(
+                    project.hasPendingRequests === true,
+                    <DotFilledIcon color='red' height={22} width={22} />,
+                  )}
                 </Flex>
               </ContextMenu.Item>
             )

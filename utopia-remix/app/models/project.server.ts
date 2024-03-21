@@ -1,15 +1,16 @@
 import { prisma } from '../db.server'
-import type { CollaboratorsByProject } from '../types'
+import type { CollaboratorsByProject, ProjectListing } from '../types'
 import {
   AccessLevel,
+  AccessRequestStatus,
   asAccessLevel,
   userToCollaborator,
-  type ProjectWithoutContent,
+  type ProjectWithoutContentFromDB,
 } from '../types'
 import { ensure } from '../util/api.server'
 import { Status } from '../util/statusCodes'
 
-const selectProjectWithoutContent: Record<keyof ProjectWithoutContent, true> = {
+const selectProjectWithoutContent: Record<keyof ProjectWithoutContentFromDB, true> = {
   id: true,
   proj_id: true,
   owner_id: true,
@@ -20,14 +21,33 @@ const selectProjectWithoutContent: Record<keyof ProjectWithoutContent, true> = {
   ProjectAccess: true,
 }
 
-export async function listProjects(params: { ownerId: string }): Promise<ProjectWithoutContent[]> {
-  return prisma.project.findMany({
+export async function listProjects(params: { ownerId: string }): Promise<ProjectListing[]> {
+  const projects = await prisma.project.findMany({
     select: selectProjectWithoutContent,
     where: {
       owner_id: params.ownerId,
       OR: [{ deleted: null }, { deleted: false }],
     },
     orderBy: { modified_at: 'desc' },
+  })
+
+  const pendingRequests = await prisma.projectAccessRequest.findMany({
+    where: {
+      project_id: {
+        in: projects
+          .filter((p) => p.ProjectAccess?.access_level === AccessLevel.COLLABORATIVE)
+          .map((p) => p.proj_id),
+      },
+      status: AccessRequestStatus.PENDING,
+    },
+    select: { project_id: true },
+  })
+
+  return projects.map((project) => {
+    return {
+      ...project,
+      hasPendingRequests: pendingRequests.some((r) => r.project_id === project.proj_id),
+    }
   })
 }
 
@@ -65,7 +85,7 @@ export async function renameProject(params: {
   id: string
   userId: string
   title: string
-}): Promise<ProjectWithoutContent> {
+}): Promise<ProjectListing> {
   return prisma.project.update({
     where: {
       proj_id: params.id,
@@ -99,9 +119,7 @@ export async function restoreDeletedProject(params: { id: string; userId: string
   })
 }
 
-export async function listDeletedProjects(params: {
-  ownerId: string
-}): Promise<ProjectWithoutContent[]> {
+export async function listDeletedProjects(params: { ownerId: string }): Promise<ProjectListing[]> {
   return await prisma.project.findMany({
     select: selectProjectWithoutContent,
     where: {
@@ -145,7 +163,7 @@ export async function getProjectAccessLevel(params: { projectId: string }): Prom
 export async function listSharedWithMeProjectsAndCollaborators(params: {
   userId: string
 }): Promise<{
-  projects: ProjectWithoutContent[]
+  projects: ProjectListing[]
   collaborators: CollaboratorsByProject
 }> {
   // 1. grab the project IDs where the user is the collaborator,
