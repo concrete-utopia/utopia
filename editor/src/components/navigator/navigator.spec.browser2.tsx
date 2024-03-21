@@ -918,6 +918,105 @@ export default Components
 `,
   })
 
+const projectWithThirdPartyRenderProp = (renderPropSource: string) =>
+  createModifiedProject({
+    [StoryboardFilePath]: `import * as React from 'react'
+import * as Utopia from 'utopia-api'
+import {
+  Storyboard,
+  Scene,
+} from 'utopia-api'
+
+function Card({ header, children }) {
+  return (
+    <div data-uid='root'>
+      <h2>{header}</h2>
+      {children}
+    </div>
+  )
+}
+
+var Playground = ({ style }) => {
+  return (
+    <div style={style} data-uid='dbc'>
+      <Card ${renderPropSource} data-uid='78c'>
+        <p>Card contents</p>
+      </Card>
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 521,
+        height: 266,
+        position: 'absolute',
+        left: 554,
+        top: 247,
+        backgroundColor: 'white',
+      }}
+      data-uid='scene'
+      data-testid='scene'
+      commentId='120'
+    >
+      <Playground
+        style={{
+          width: 454,
+          height: 177,
+          position: 'absolute',
+          left: 34,
+          top: 44,
+          backgroundColor: 'white',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+        className='playground'
+        css={{ color: 'red' }}
+        data-uid='pg'
+      />
+    </Scene>
+  </Storyboard>
+)
+`,
+    ['/utopia/components.utopia.js']: `const Components = {
+      '/utopia/storyboard': {
+        Card: {
+          properties: {
+            header: {
+              control: 'jsx',
+              preferredChildComponents: [
+                {
+                  name: 'Heading',
+                  additionalImports: '../src/heading',
+                  variants: [
+                    {
+                      label: 'Heading',
+                      code: '<Heading>Title</Heading>',
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+          supportsChildren: true,
+          variants: [],
+        },
+      },
+    }
+    
+    export default Components    
+`,
+    ['/src/heading.js']: `import React from 'react'
+
+export function Heading({ children }) {
+  return <h1 data-uid='708'>{children}</h1>
+}
+`,
+  })
+
 function getProjectCodeForMultipleSelection(): string {
   return `import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
@@ -4910,6 +5009,93 @@ describe('Navigator', () => {
           </div>
         `),
       )
+    })
+  })
+
+  describe('render prop insertion', () => {
+    it('can insert an intrinsic element into render prop', async () => {
+      const renderResult = await renderTestEditorWithModel(
+        projectWithRenderProp(''), // <- no render prop
+        'await-first-dom-report',
+      )
+
+      const slotElement = renderResult.renderedDOM.getByTestId(
+        'toggle-render-prop-NavigatorItemTestId-slot_sb/scene/pg:dbc/78c/prop_label_header',
+      )
+
+      await mouseClickAtPoint(slotElement, { x: 3, y: 3 })
+
+      await wait(100)
+
+      const renderPropOptionElement = renderResult.renderedDOM.getByText('span')
+      await mouseClickAtPoint(renderPropOptionElement, { x: 3, y: 3 })
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-sb/scene',
+        'regular-sb/scene/pg',
+        'regular-sb/scene/pg:dbc',
+        'regular-sb/scene/pg:dbc/78c',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
+        'regular-sb/scene/pg:dbc/78c/pro', // <- the inserted render prop
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+        'regular-sb/scene/pg:dbc/78c/88b',
+      ])
+      expect(
+        renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-sb/scene',
+        'regular-sb/scene/pg',
+        'regular-sb/scene/pg:dbc',
+        'regular-sb/scene/pg:dbc/78c',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
+        'regular-sb/scene/pg:dbc/78c/pro', // <- the inserted render prop
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+        'regular-sb/scene/pg:dbc/78c/88b',
+      ])
+    })
+    it('can insert an third-party component into render prop', async () => {
+      const renderResult = await renderTestEditorWithModel(
+        projectWithThirdPartyRenderProp(''), // <- no render prop
+        'await-first-dom-report',
+      )
+
+      const slotElement = renderResult.renderedDOM.getByTestId(
+        'toggle-render-prop-NavigatorItemTestId-slot_sb/scene/pg:dbc/78c/prop_label_header',
+      )
+
+      await mouseClickAtPoint(slotElement, { x: 3, y: 3 })
+
+      await wait(100)
+
+      const renderPropOptionElement = renderResult.renderedDOM.getByText('Heading')
+      await mouseClickAtPoint(renderPropOptionElement, { x: 3, y: 3 })
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-sb/scene',
+        'regular-sb/scene/pg',
+        'regular-sb/scene/pg:dbc',
+        'regular-sb/scene/pg:dbc/78c',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
+        'regular-sb/scene/pg:dbc/78c/pro', // <- the inserted render prop
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+        'regular-sb/scene/pg:dbc/78c/88b',
+      ])
+      expect(
+        renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-sb/scene',
+        'regular-sb/scene/pg',
+        'regular-sb/scene/pg:dbc',
+        'regular-sb/scene/pg:dbc/78c',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
+        'regular-sb/scene/pg:dbc/78c/pro', // <- the inserted render prop
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+        'regular-sb/scene/pg:dbc/78c/88b',
+      ])
     })
   })
 })
