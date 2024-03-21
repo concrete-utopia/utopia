@@ -5,14 +5,19 @@ import {
   getJSXElementNameAsString,
   jsExpressionOtherJavaScriptSimple,
 } from '../../../core/shared/element-template'
-import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { setProp_UNSAFE } from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
+import type { PreferredChildComponent } from 'utopia-api'
+import { capitalize } from '../../../core/shared/string-utils'
 
-const usePreferredChildrenForTargetProp = (target: ElementPath, prop: string) => {
+const usePreferredChildrenForTargetProp = (
+  target: ElementPath,
+  prop: string,
+): PreferredChildComponent[] | null => {
   const selectedJSXElement = useEditorState(
     Substores.metadata,
     (store) => MetadataUtils.getJSXElementFromMetadata(store.editor.jsxMetadata, target),
@@ -105,17 +110,193 @@ export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, ta
     return null
   }
 
-  const rawJSToInsert: Array<string> = (preferredChildrenForTargetProp ?? []).flatMap((data) =>
-    data.variants == null ? `<${data.name} />` : data.variants.map((v) => v.code),
-  )
-
   return (
-    <Menu key={key} id={id} animation={false} style={{ padding: 8 }}>
-      {rawJSToInsert.map((option, idx) => (
-        <div key={idx} onClick={onItemClick(option)}>
-          {option}
+    <div>
+      <Menu key={key} id={id} animation={false} style={{ padding: 8 }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 0,
+            width: '100%',
+            height: '100%',
+            padding: 0,
+            backgroundColor: '#ffffff',
+            borderRadius: 10,
+          }}
+        >
+          <div
+            style={{
+              padding: '16px 16px',
+              display: 'flex',
+              flexDirection: 'column',
+              width: '100%',
+              alignItems: 'center',
+              justifyContent: 'flex-start',
+              gap: 10,
+              height: 'max-content',
+            }}
+          >
+            <div
+              style={{
+                width: 428,
+                height: 21,
+                display: 'flex',
+                flexDirection: 'row',
+                gap: 5,
+                fontFamily: 'Inter',
+                fontWeight: 700,
+                fontSize: '11px',
+              }}
+            >
+              <div>Insert into</div>
+              <div
+                style={{
+                  border: '1px solid rgb(0, 0, 0, 1)',
+                  borderRadius: 3,
+                  contain: 'layout',
+                }}
+              >
+                <div
+                  style={{
+                    border: '1px solid rgb(0, 0, 0, 1)',
+                    borderRadius: 3,
+                    padding: 3,
+                    position: 'relative',
+                    left: 3,
+                    top: -2,
+                    lineHeight: 'normal',
+                    backgroundColor: '#ffffff',
+                  }}
+                >
+                  {capitalize(prop)}
+                </div>
+              </div>
+              <div style={{ flexGrow: 100 }} />
+              <div style={{ fontWeight: 600 }}>Preferred</div>
+              <div
+                style={{
+                  fontWeight: 600,
+                  color: 'rgb(152, 153, 153, 1)',
+                }}
+              >
+                All Components
+              </div>
+              <div style={{ flexGrow: 1 }} />
+              <div style={{ fontWeight: 600 }}>X</div>
+            </div>
+            <div
+              style={{
+                padding: '10px 6px',
+                display: 'flex',
+                flexDirection: 'row',
+                width: 428,
+                height: 27,
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                gap: 8,
+                border: '1px solid #989999',
+                borderRadius: 6,
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: 'Inter',
+                  fontStyle: 'normal',
+                  fontWeight: 500,
+                  fontSize: '11px',
+                  color: 'rgb(152, 153, 153, 1)',
+                }}
+              >
+                🔍
+              </div>
+              <div
+                style={{
+                  fontFamily: 'Inter',
+                  fontStyle: 'normal',
+                  fontWeight: 500,
+                  fontSize: '11px',
+                  color: 'rgb(152, 153, 153, 1)',
+                }}
+              >
+                Filter...
+              </div>
+            </div>
+          </div>
+          <div
+            style={{
+              width: '100%',
+              border: '1px solid #E9E9E9',
+            }}
+          />
+          <div
+            style={{
+              padding: 16,
+              display: 'flex',
+              flexDirection: 'column',
+              width: '100%',
+              height: 'max-content',
+              gap: 10,
+            }}
+          >
+            {preferredChildrenForTargetProp.map((option, idx) => {
+              return (
+                <div
+                  style={{
+                    backgroundColor: '#F8F8F8',
+                    borderRadius: 5,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    width: '100%',
+                    height: 'max-content',
+                    gap: 5,
+                    padding: 10,
+                    fontFamily: 'Inter',
+                    fontWeight: 500,
+                    fontSize: '11px',
+                  }}
+                  key={`${idx}-label`}
+                >
+                  <div style={{ fontWeight: 700 }}>{option.name}</div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      width: '100%',
+                      height: 'max-content',
+                      alignItems: 'center',
+                      justifyContent: 'flex-start',
+                      flexWrap: 'wrap',
+                      gap: 9,
+                    }}
+                  >
+                    {option.variants?.map((v, i) => (
+                      <div
+                        key={`${idx}-${v.label ?? i}`}
+                        onClick={onItemClick(v.code)}
+                        style={{
+                          backgroundColor: '#ECECEC',
+                          paddingTop: 5,
+                          paddingRight: 5,
+                          paddingBottom: 5,
+                          paddingLeft: 5,
+                          borderTopLeftRadius: 3,
+                          borderTopRightRadius: 3,
+                          borderBottomRightRadius: 3,
+                          borderBottomLeftRadius: 3,
+                          color: v.label === '(empty)' ? 'rgb(152, 153, 153, 1)' : 'black',
+                        }}
+                      >
+                        {v.label ?? v.code}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         </div>
-      ))}
-    </Menu>
+      </Menu>
+    </div>
   )
 })
