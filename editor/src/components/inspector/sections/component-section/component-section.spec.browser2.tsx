@@ -22,6 +22,7 @@ import {
 } from '../../../../core/shared/element-template'
 import { createModifiedProject } from '../../../../sample-projects/sample-project-utils.test-utils'
 import { StoryboardFilePath } from '../../../editor/store/editor-state'
+import { applyPrettier } from 'utopia-vscode-common'
 
 describe('Set element prop via the data picker', () => {
   it('can pick from the property data picker', async () => {
@@ -970,6 +971,53 @@ describe('Controls from registering components', () => {
   })
 })
 
+describe('Delete cartouche handling', () => {
+  async function getEditorWithPropertyExtras(
+    propertyExtras: string,
+    textField: string,
+  ): Promise<EditorRenderResult> {
+    const editor = await renderTestEditorWithModel(
+      registerInternalComponentProjectWithCartouche(propertyExtras, textField),
+      'await-first-dom-report',
+    )
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/title')])
+    return editor
+  }
+  it('optional field', async () => {
+    const editor = await getEditorWithPropertyExtras(``, `text={textForTitle}`)
+    const deleteCartoucheButton = editor.renderedDOM.getByTestId(`delete-cartouche-text`)
+    await mouseClickAtPoint(deleteCartoucheButton, { x: 2, y: 2 })
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      registerInternalComponentProjectWithCartoucheStoryboard(``, ``),
+    )
+  })
+  it('required field without default value', async () => {
+    const editor = await getEditorWithPropertyExtras(`required: true`, `text={textForTitle}`)
+    const deleteCartoucheButton = editor.renderedDOM.queryByTestId(`delete-cartouche-text`)
+    expect(deleteCartoucheButton).toBeNull()
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      registerInternalComponentProjectWithCartoucheStoryboard(
+        `required: true`,
+        `text={textForTitle}`,
+      ),
+    )
+  })
+  it('required field with default value', async () => {
+    const editor = await getEditorWithPropertyExtras(
+      `required: true, defaultValue: 'Placeholder!'`,
+      `text={textForTitle}`,
+    )
+    const deleteCartoucheButton = editor.renderedDOM.getByTestId(`delete-cartouche-text`)
+    await mouseClickAtPoint(deleteCartoucheButton, { x: 2, y: 2 })
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      registerInternalComponentProjectWithCartoucheStoryboard(
+        `required: true, defaultValue: 'Placeholder!'`,
+        `text='Placeholder!'`,
+      ),
+    )
+  })
+})
+
 const project = DataPickerProjectShell(`
 function Title({ text }) {
   const content = 'Content'
@@ -997,6 +1045,97 @@ var Playground = ({ style }) => {
     </div>
   )
 }`)
+
+function registerInternalComponentProjectWithCartoucheStoryboard(
+  propertyExtras: string,
+  textField: string,
+): string {
+  return applyPrettier(
+    `import * as React from 'react'
+import {
+Storyboard,
+Scene,
+} from 'utopia-api'
+
+function Title({ text }) {
+return <h2 data-uid='0cd'>{text}</h2>
+}
+
+var Playground = ({ style }) => {
+const textForTitle = 'Hello Utopia'
+return (
+  <div style={style} data-uid='root'>
+    <Title ${textField} data-uid='title' />
+  </div>
+)
+}
+
+export var storyboard = (
+<Storyboard data-uid='sb'>
+  <Scene
+    style={{
+      width: 521,
+      height: 266,
+      position: 'absolute',
+      left: 554,
+      top: 247,
+      backgroundColor: 'white',
+    }}
+    data-uid='scene'
+    data-testid='scene'
+    commentId='120'
+  >
+    <Playground
+      style={{
+        width: 454,
+        height: 177,
+        position: 'absolute',
+        left: 34,
+        top: 44,
+        backgroundColor: 'white',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+      title='Hello Utopia'
+      data-uid='pg'
+    />
+  </Scene>
+</Storyboard>
+)
+`,
+    false,
+  ).formatted
+}
+
+function registerInternalComponentProjectWithCartouche(propertyExtras: string, textField: string) {
+  return createModifiedProject({
+    [StoryboardFilePath]: registerInternalComponentProjectWithCartoucheStoryboard(
+      propertyExtras,
+      textField,
+    ),
+    ['/utopia/components.utopia.js']: `const Components = {
+    '/utopia/storyboard': {
+      Title: {
+        supportsChildren: false,
+        properties: {
+          text: {
+            control: 'string-input',${propertyExtras}
+          },
+        },
+        variants: [
+          {
+            code: '<Title />',
+          },
+        ],
+      },
+    },
+  }
+  
+  export default Components  
+  `,
+  })
+}
 
 const registerInternalComponentProject = createModifiedProject({
   [StoryboardFilePath]: `import * as React from 'react'
