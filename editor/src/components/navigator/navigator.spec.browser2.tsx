@@ -29,6 +29,7 @@ import {
   dragElementWithDNDEvents,
   mouseClickAtPoint,
   mouseDoubleClickAtPoint,
+  pressKey,
 } from '../canvas/event-helpers.test-utils'
 import { NavigatorItemTestId } from './navigator-item/navigator-item'
 import { expectNoAction, selectComponentsForTest, wait } from '../../utils/utils.test-utils'
@@ -4910,6 +4911,108 @@ describe('Navigator', () => {
           </div>
         `),
       )
+    })
+  })
+
+  describe('render props', () => {
+    it('can delete an element descended from a render prop', async () => {
+      const editor = await renderTestEditorWithModel(
+        projectWithRenderProp(
+          `header={<div data-uid='render-prop-parent'><span data-uid='render-prop-child'>hi</span></div>}`,
+        ),
+        'await-first-dom-report',
+      )
+
+      // before the render prop child is deleted
+      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        'regular-sb/scene',
+        'regular-sb/scene/pg',
+        'regular-sb/scene/pg:dbc',
+        'regular-sb/scene/pg:dbc/78c',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
+        'regular-sb/scene/pg:dbc/78c/render-prop-parent',
+        'regular-sb/scene/pg:dbc/78c/render-prop-parent/render-prop-child',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+        'regular-sb/scene/pg:dbc/78c/88b',
+      ])
+
+      await selectComponentsForTest(editor, [
+        EP.fromString('sb/scene/pg:dbc/78c/render-prop-parent/render-prop-child'),
+      ])
+      await pressKey('Backspace')
+
+      // before the render prop child is deleted
+      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        'regular-sb/scene',
+        'regular-sb/scene/pg',
+        'regular-sb/scene/pg:dbc',
+        'regular-sb/scene/pg:dbc/78c',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
+        'regular-sb/scene/pg:dbc/78c/render-prop-parent',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+        'regular-sb/scene/pg:dbc/78c/88b',
+      ])
+
+      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        'regular-sb/scene',
+        'regular-sb/scene/pg',
+        'regular-sb/scene/pg:dbc',
+        'regular-sb/scene/pg:dbc/78c',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
+        'regular-sb/scene/pg:dbc/78c/render-prop-parent',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+        'regular-sb/scene/pg:dbc/78c/88b',
+      ])
+    })
+
+    it(`can delete an element that's inside a render prop`, async () => {
+      const editor = await renderTestEditorWithModel(
+        projectWithRenderProp(
+          `header={<div data-uid='render-prop-parent'><span data-uid='render-prop-child'>hi</span></div>}`,
+        ),
+        'await-first-dom-report',
+      )
+
+      // before the render prop child is deleted
+      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        'regular-sb/scene',
+        'regular-sb/scene/pg',
+        'regular-sb/scene/pg:dbc',
+        'regular-sb/scene/pg:dbc/78c',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
+        'regular-sb/scene/pg:dbc/78c/render-prop-parent',
+        'regular-sb/scene/pg:dbc/78c/render-prop-parent/render-prop-child',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+        'regular-sb/scene/pg:dbc/78c/88b',
+      ])
+
+      await selectComponentsForTest(editor, [
+        EP.fromString('sb/scene/pg:dbc/78c/render-prop-parent'),
+      ])
+      await pressKey('Backspace')
+
+      // before the render prop child is deleted
+      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        'regular-sb/scene',
+        'regular-sb/scene/pg',
+        'regular-sb/scene/pg:dbc',
+        'regular-sb/scene/pg:dbc/78c',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
+        'slot_sb/scene/pg:dbc/78c/prop-label-header',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+        'regular-sb/scene/pg:dbc/78c/88b',
+      ])
+
+      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        'regular-sb/scene',
+        'regular-sb/scene/pg',
+        'regular-sb/scene/pg:dbc',
+        'regular-sb/scene/pg:dbc/78c',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
+        'slot_sb/scene/pg:dbc/78c/prop-label-header',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+        'regular-sb/scene/pg:dbc/78c/88b',
+      ])
     })
   })
 })

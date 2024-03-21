@@ -75,7 +75,7 @@ import {
   guaranteeUniqueUids,
   insertJSXElementChildren,
   rearrangeJsxChildren,
-  removeJSXElementChild,
+  removeJSXElement,
   renameJsxElementChild,
   transformJSXComponentAtPath,
 } from './element-template-utils'
@@ -252,7 +252,7 @@ describe('removeJSXElementChild', () => {
   ]
   xit('removes a root element', () => {
     // TODO Scene Implementation
-    const updatedElements = removeJSXElementChild(
+    const updatedElements = removeJSXElement(
       testStaticElementPath([[BakedInStoryboardUID, 'scene-aaa'], ['aaa']]),
       utopiaComponents,
     )
@@ -260,7 +260,7 @@ describe('removeJSXElementChild', () => {
     expect(updatedElements[0]).toEqual(utopiaComponents[1])
   })
   it('removes a non-root element', () => {
-    const updatedElements = removeJSXElementChild(
+    const updatedElements = removeJSXElement(
       testStaticElementPath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['aab', 'aac'],
