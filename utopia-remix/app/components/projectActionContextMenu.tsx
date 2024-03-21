@@ -1,14 +1,15 @@
 import { DotFilledIcon } from '@radix-ui/react-icons'
 import { ContextMenu, Flex, Separator, Text } from '@radix-ui/themes'
+import { useFetcher } from '@remix-run/react'
 import React from 'react'
 import slugify from 'slugify'
 import { when } from '~/util/react-conditionals'
 import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
 import { SLUGIFY_OPTIONS } from '../routes/internal.projects.$id.rename'
 import { useProjectsStore } from '../store'
-import type { ProjectAccessRequestWithUserDetails, ProjectWithoutContent } from '../types'
+import type { ProjectWithoutContent } from '../types'
 import {
-  AccessRequestStatus,
+  isProjectAccessRequestWithUserDetailsArray,
   operationDelete,
   operationDestroy,
   operationRename,
@@ -36,10 +37,10 @@ function contextMenuEntry(
 export const ProjectActionsMenu = React.memo(
   ({
     project,
-    accessRequests,
+    hasPendingRequests,
   }: {
     project: ProjectWithoutContent
-    accessRequests: ProjectAccessRequestWithUserDetails[]
+    hasPendingRequests: boolean
   }) => {
     const deleteFetcher = useFetcherWithOperation(project.proj_id, 'delete')
     const destroyFetcher = useFetcherWithOperation(project.proj_id, 'destroy')
@@ -158,16 +159,34 @@ export const ProjectActionsMenu = React.memo(
       }
     }, [selectedCategory, actions])
 
-    const pendingAccessRequests = React.useMemo(
-      () => accessRequests.filter((r) => r.status === AccessRequestStatus.PENDING),
-      [accessRequests],
+    const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
+
+    const accessRequestsFetcher = useFetcher()
+    const setSharingProjectAccessRequests = useProjectsStore(
+      (store) => store.setSharingProjectAccessRequests,
     )
 
-    const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
+    const fetchAccessRequests = React.useCallback(() => {
+      if (project == null) {
+        return
+      }
+      setSharingProjectAccessRequests({ state: 'loading', requests: [] })
+      const action = `/internal/projects/${project.proj_id}/access/requests`
+      accessRequestsFetcher.submit({}, { method: 'GET', action: action })
+    }, [accessRequestsFetcher, project, setSharingProjectAccessRequests])
+
+    React.useEffect(() => {
+      if (accessRequestsFetcher.state === 'idle' && accessRequestsFetcher.data != null) {
+        if (isProjectAccessRequestWithUserDetailsArray(accessRequestsFetcher.data)) {
+          setSharingProjectAccessRequests({ state: 'ready', requests: accessRequestsFetcher.data })
+        }
+      }
+    }, [accessRequestsFetcher, setSharingProjectAccessRequests])
 
     const onOpenShareDialog = React.useCallback(() => {
       setSharingProjectId(project.proj_id)
-    }, [project, setSharingProjectId])
+      fetchAccessRequests()
+    }, [project, setSharingProjectId, fetchAccessRequests])
 
     return (
       <ContextMenu.Content style={{ width: 170 }}>
@@ -190,10 +209,7 @@ export const ProjectActionsMenu = React.memo(
               >
                 <Flex justify={'between'} align={'center'} width={'100%'}>
                   <Text>Sharing…</Text>
-                  {when(
-                    pendingAccessRequests.length > 0,
-                    <DotFilledIcon color='red' height={22} width={22} />,
-                  )}
+                  {when(hasPendingRequests, <DotFilledIcon color='red' height={22} width={22} />)}
                 </Flex>
               </ContextMenu.Item>
             )

@@ -12,12 +12,13 @@ import {
   TrashIcon,
 } from '@radix-ui/react-icons'
 import { Badge, Button, ContextMenu, DropdownMenu, Flex, Text, TextField } from '@radix-ui/themes'
-import { type LoaderFunctionArgs, json } from '@remix-run/node'
+import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import type { UserDetails } from 'prisma-client'
 import React from 'react'
 import { ProjectActionsMenu } from '../components/projectActionContextMenu'
+import { SharingDialogWrapper } from '../components/sharingDialog'
 import { SortingContextMenu } from '../components/sortProjectsContextMenu'
 import { Spinner } from '../components/spinner'
 import { useCleanupOperations } from '../hooks/useCleanupOperations'
@@ -40,13 +41,7 @@ import type {
   Operation,
   ProjectWithoutContent,
 } from '../types'
-import {
-  AccessLevel,
-  getOperationDescription,
-  asAccessLevel,
-  isProjectAccessRequestWithUserDetailsArray,
-} from '../types'
-import type { ProjectAccessRequestWithUserDetails } from '../types'
+import { AccessLevel, asAccessLevel, getOperationDescription, isHasPendingRequests } from '../types'
 import { requireUser } from '../util/api.server'
 import { assertNever } from '../util/assertNever'
 import { auth0LoginURL } from '../util/auth0.server'
@@ -58,7 +53,6 @@ import {
   useProjectMatchesQuery,
   useSortCompareProject,
 } from '../util/use-sort-compare-project'
-import { SharingDialogWrapper } from '../components/sharingDialog'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
@@ -184,6 +178,11 @@ const ProjectsPage = React.memo(() => {
     [activeProjects, projectMatchesQuery, sortCompareProject, projectIsOnActiveOperation],
   )
 
+  const sharingProjectId = useProjectsStore((store) => store.sharingProjectId)
+  const sharingProject = React.useMemo(() => {
+    return activeProjects.find((p) => p.proj_id === sharingProjectId) ?? null
+  }, [activeProjects, sharingProjectId])
+
   return (
     <div
       style={{
@@ -215,6 +214,7 @@ const ProjectsPage = React.memo(() => {
           myUserId={data.user.user_id}
         />
         <ActiveOperations projects={activeProjects} />
+        <SharingDialogWrapper project={sharingProject} />
       </div>
     </div>
   )
@@ -229,6 +229,7 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
   const setSelectedCategory = useProjectsStore((store) => store.setSelectedCategory)
   const setSelectedProjectId = useProjectsStore((store) => store.setSelectedProjectId)
+  const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
 
   const isDarkMode = useIsDarkMode()
 
@@ -242,9 +243,10 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
         setSelectedCategory(category)
         setSearchQuery('')
         setSelectedProjectId(null)
+        setSharingProjectId(null)
       }
     },
-    [setSelectedCategory, setSearchQuery, setSelectedProjectId],
+    [setSelectedCategory, setSearchQuery, setSelectedProjectId, setSharingProjectId],
   )
 
   const onChangeSearchQuery = React.useCallback(
@@ -656,23 +658,26 @@ const ProjectCard = React.memo(
       return renaming?.type === 'rename' ? renaming.newTitle : project.title
     }, [project, activeOperations])
 
-    const accessRequestsFetcher = useFetcher()
-    const [accessRequests, setAccessRequests] = React.useState<
-      ProjectAccessRequestWithUserDetails[]
-    >([])
+    const hasPendingRequestsFetcher = useFetcher()
+    const [hasPendingRequests, setHasPendingRequests] = React.useState<boolean>(false)
 
     React.useEffect(() => {
-      if (accessRequestsFetcher.state === 'idle' && accessRequestsFetcher.data != null) {
-        if (isProjectAccessRequestWithUserDetailsArray(accessRequestsFetcher.data)) {
-          setAccessRequests(accessRequestsFetcher.data)
+      if (hasPendingRequestsFetcher.state === 'idle' && hasPendingRequestsFetcher.data != null) {
+        if (isHasPendingRequests(hasPendingRequestsFetcher.data)) {
+          setHasPendingRequests(hasPendingRequestsFetcher.data.hasPendingRequests)
         }
       }
-    }, [accessRequestsFetcher])
+    }, [hasPendingRequestsFetcher])
 
-    const handleSortMenuOpenChange = React.useCallback(() => {
-      const action = `/internal/projects/${project.proj_id}/access/requests`
-      accessRequestsFetcher.submit({}, { method: 'GET', action: action })
-    }, [accessRequestsFetcher, project])
+    const handleSortMenuOpenChange = React.useCallback(
+      (open: boolean) => {
+        if (open) {
+          const action = `/internal/projects/${project.proj_id}/access/requests/pending`
+          hasPendingRequestsFetcher.submit({}, { method: 'GET', action: action })
+        }
+      },
+      [hasPendingRequestsFetcher, project],
+    )
 
     const ownerName = React.useMemo(() => {
       return getOwnerName(project.owner_id, collaborators)
@@ -805,8 +810,7 @@ const ProjectCard = React.memo(
             </div>
           </div>
         </ContextMenu.Trigger>
-        <ProjectActionsMenu project={project} accessRequests={accessRequests} />
-        <SharingDialogWrapper project={project} accessRequests={accessRequests} />
+        <ProjectActionsMenu project={project} hasPendingRequests={hasPendingRequests} />
       </ContextMenu.Root>
     )
   },
@@ -833,23 +837,26 @@ const ProjectRow = React.memo(
       window.open(projectEditorLink(project.proj_id), '_blank')
     }, [project.proj_id, projectEditorLink])
 
-    const accessRequestsFetcher = useFetcher()
-    const [accessRequests, setAccessRequests] = React.useState<
-      ProjectAccessRequestWithUserDetails[]
-    >([])
+    const hasPendingRequestsFetcher = useFetcher()
+    const [hasPendingRequests, setHasPendingRequests] = React.useState<boolean>(false)
 
     React.useEffect(() => {
-      if (accessRequestsFetcher.state === 'idle' && accessRequestsFetcher.data != null) {
-        if (isProjectAccessRequestWithUserDetailsArray(accessRequestsFetcher.data)) {
-          setAccessRequests(accessRequestsFetcher.data)
+      if (hasPendingRequestsFetcher.state === 'idle' && hasPendingRequestsFetcher.data != null) {
+        if (isHasPendingRequests(hasPendingRequestsFetcher.data)) {
+          setHasPendingRequests(hasPendingRequestsFetcher.data.hasPendingRequests)
         }
       }
-    }, [accessRequestsFetcher])
+    }, [hasPendingRequestsFetcher])
 
-    const onContextMenuOpenChange = React.useCallback(() => {
-      const action = `/internal/projects/${project.proj_id}/access/requests`
-      accessRequestsFetcher.submit({}, { method: 'GET', action: action })
-    }, [accessRequestsFetcher, project])
+    const onContextMenuOpenChange = React.useCallback(
+      (open: boolean) => {
+        if (open) {
+          const action = `/internal/projects/${project.proj_id}/access/requests/pending`
+          hasPendingRequestsFetcher.submit({}, { method: 'GET', action: action })
+        }
+      },
+      [hasPendingRequestsFetcher, project],
+    )
 
     const ownerName = React.useMemo(() => {
       return getOwnerName(project.owner_id, collaborators)
@@ -979,8 +986,7 @@ const ProjectRow = React.memo(
             </div>
           </div>
         </ContextMenu.Trigger>
-        <ProjectActionsMenu project={project} accessRequests={accessRequests} />
-        <SharingDialogWrapper project={project} accessRequests={accessRequests} />
+        <ProjectActionsMenu project={project} hasPendingRequests={hasPendingRequests} />
       </ContextMenu.Root>
     )
   },
