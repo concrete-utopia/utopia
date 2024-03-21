@@ -1007,6 +1007,7 @@ describe('Controls from registering components', () => {
 })
 
 describe('Delete cartouche handling', () => {
+  afterEach(() => FOR_TESTS_clearComponentDescriptorCache())
   async function getEditorWithPropertyExtras(
     propertyExtras: string,
     textField: string,
@@ -1026,7 +1027,6 @@ describe('Delete cartouche handling', () => {
       registerInternalComponentProjectWithCartoucheStoryboard(``, ``),
     )
   })
-  afterEach(() => FOR_TESTS_clearComponentDescriptorCache())
   it('required field without default value', async () => {
     const editor = await getEditorWithPropertyExtras(`required: true`, `text={textForTitle}`)
     const deleteCartoucheButton = editor.renderedDOM.queryByTestId(`delete-cartouche-text`)
