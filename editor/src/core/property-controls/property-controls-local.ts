@@ -201,12 +201,12 @@ function getPropertyControlsFromComponentDescriptors(
   }
 
   for (const propertyControlsForComponent of allComponentDescriptors) {
-    if (propertyControls[propertyControlsForComponent.filenameNoExtension] == null) {
-      propertyControls[propertyControlsForComponent.filenameNoExtension] = {}
+    if (propertyControls[propertyControlsForComponent.moduleName] == null) {
+      propertyControls[propertyControlsForComponent.moduleName] = {}
     }
 
-    propertyControls[propertyControlsForComponent.filenameNoExtension] = {
-      ...propertyControls[propertyControlsForComponent.filenameNoExtension],
+    propertyControls[propertyControlsForComponent.moduleName] = {
+      ...propertyControls[propertyControlsForComponent.moduleName],
       [propertyControlsForComponent.componentName]: {
         properties: propertyControlsForComponent.properties,
         supportsChildren: propertyControlsForComponent.supportsChildren,
@@ -258,7 +258,7 @@ export async function componentDescriptorForComponentToRegister(
       preferredChildComponents: componentToRegister.preferredChildComponents ?? [],
       properties: componentToRegister.properties,
       variants: variants,
-      filenameNoExtension: moduleName,
+      moduleName: moduleName,
     }
   }, parsedVariants)
 }
