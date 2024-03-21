@@ -9,14 +9,14 @@ import {
 } from '../../../core/shared/element-template'
 import type { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { Substores, useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { setProp_UNSAFE } from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
-import { element } from 'prop-types'
-import { v4 as UUID } from 'uuid'
 import type { PreferredChildComponentDescriptor } from '../../custom-code/internal-property-controls'
 import { elementFromInsertMenuItem } from '../../editor/insert-callbacks'
+import { generateConsistentUID } from '../../../core/shared/uid-utils'
+import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 
 const usePreferredChildrenForTargetProp = (
   target: ElementPath,
@@ -87,7 +87,7 @@ interface RenderPropPickerProps {
 }
 
 interface PreferredChildToInsert {
-  elementToInsert: JSXElement
+  elementToInsert: (uid: string) => JSXElement
   additionalImports: Imports | null
   label: string
 }
@@ -100,21 +100,28 @@ export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, ta
 
   const dispatch = useDispatch()
 
+  const projectContentsRef = useRefEditorState((state) => state.editor.projectContents)
+
   const onItemClick = React.useCallback(
     (preferredChildToInsert: PreferredChildToInsert) => (e: React.MouseEvent) => {
       e.stopPropagation()
       e.preventDefault()
 
+      const uid = generateConsistentUID(
+        'prop',
+        new Set(getAllUniqueUids(projectContentsRef.current).uniqueIDs),
+      )
+
       dispatch([
         setProp_UNSAFE(
           EP.parentPath(target),
           PP.create(prop),
-          preferredChildToInsert.elementToInsert,
+          preferredChildToInsert.elementToInsert(uid),
           preferredChildToInsert.additionalImports ?? undefined,
         ),
       ])
     },
-    [dispatch, prop, target],
+    [dispatch, projectContentsRef, prop, target],
   )
 
   if (preferredChildrenForTargetProp == null) {
@@ -127,21 +134,18 @@ export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, ta
     if (data.variants == null) {
       return [
         {
-          label: element.name,
-          elementToInsert: jsxElement(element.name, UUID(), jsxAttributesFromMap({}), []),
+          label: data.name,
+          elementToInsert: (uid) => jsxElement(data.name, uid, jsxAttributesFromMap({}), []),
           additionalImports: data.imports,
         },
       ]
     }
     return data.variants.flatMap((variant) => {
-      const elementToInsert = elementFromInsertMenuItem(variant.elementToInsert(), UUID())
-      if (elementToInsert.type !== 'JSX_ELEMENT') {
-        return []
-      }
       return [
         {
           label: variant.insertMenuLabel,
-          elementToInsert: elementToInsert,
+          elementToInsert: (uid) =>
+            elementFromInsertMenuItem(variant.elementToInsert(), uid) as JSXElement,
           additionalImports: variant.importsToAdd,
         },
       ]
