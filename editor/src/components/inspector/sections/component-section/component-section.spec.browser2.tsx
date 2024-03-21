@@ -23,6 +23,7 @@ import {
 import { createModifiedProject } from '../../../../sample-projects/sample-project-utils.test-utils'
 import { StoryboardFilePath } from '../../../editor/store/editor-state'
 import { applyPrettier } from 'utopia-vscode-common'
+import { ImagePreviewTestId } from './property-content-preview'
 
 describe('Set element prop via the data picker', () => {
   it('can pick from the property data picker', async () => {
@@ -732,6 +733,39 @@ describe('Set element prop via the data picker', () => {
     } else {
       throw new Error(`Unexpected value: ${possibleElement.value}`)
     }
+  })
+})
+
+// comment out tests temporarily because it causes a dom-walker test to fail
+describe('Image preview for string control', () => {
+  it('shows image preview for urls with image extension', async () => {
+    const editor = await renderTestEditorWithModel(
+      projectWithImage(
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAEklEQVQIW2P8z8AARAwMjDAGACwBA/+8RVWvAAAAAElFTkSuQmCC',
+      ),
+      'await-first-dom-report',
+    )
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/image')])
+
+    expect(editor.renderedDOM.queryAllByTestId(ImagePreviewTestId)).toHaveLength(1)
+  })
+  it('does not show image preview for urls without image extension', async () => {
+    const editor = await renderTestEditorWithModel(
+      projectWithImage('https://i.pinimg.com/474x/4d/79/99/4d7999a51a1a397189a6f98168bcde45'),
+      'await-first-dom-report',
+    )
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/image')])
+
+    expect(editor.renderedDOM.queryAllByTestId(ImagePreviewTestId)).toHaveLength(0)
+  })
+  it('does not show image preview for non-urls', async () => {
+    const editor = await renderTestEditorWithModel(
+      projectWithImage('hello'),
+      'await-first-dom-report',
+    )
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/image')])
+
+    expect(editor.renderedDOM.queryAllByTestId(ImagePreviewTestId)).toHaveLength(0)
   })
 })
 
@@ -1527,6 +1561,83 @@ const registerInternalComponentProjectWithHtmlProp = createModifiedProject({
   export default Components  
 `,
 })
+
+const projectWithImage = (imageUrl: string) =>
+  createModifiedProject({
+    [StoryboardFilePath]: `import * as React from 'react'
+import {
+  Storyboard,
+  Scene,
+  registerInternalComponent,
+} from 'utopia-api'
+
+function Image({ url }) {
+  return <img src={url} />
+}
+
+var Playground = ({ style }) => {
+  return (
+    <div style={style} data-uid='root'>
+      <Image url='${imageUrl}' data-uid='image' />
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 521,
+        height: 266,
+        position: 'absolute',
+        left: 554,
+        top: 247,
+        backgroundColor: 'white',
+      }}
+      data-uid='scene'
+      data-testid='scene'
+      commentId='120'
+    >
+      <Playground
+        style={{
+          width: 454,
+          height: 177,
+          position: 'absolute',
+          left: 34,
+          top: 44,
+          backgroundColor: 'white',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+        title='Hello Utopia'
+        data-uid='pg'
+      />
+    </Scene>
+  </Storyboard>
+)
+`,
+    ['/utopia/components.utopia.js']: `const Components = {
+  '/utopia/storyboard': {
+    Image: {
+      supportsChildren: false,
+      properties: {
+        url: {
+          control: 'string-input',
+        },
+      },
+      variants: [
+        {
+          code: '<Image />',
+        },
+      ],
+    }
+  },
+}
+
+export default Components  
+`,
+  })
 
 function getRenderedOptions(editor: EditorRenderResult) {
   return [
