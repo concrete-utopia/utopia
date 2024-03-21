@@ -89,8 +89,6 @@ export function getPropertyControlsForTarget(
             filenameForLookup = openFilePath.replace(/\.(js|jsx|ts|tsx)$/, '')
           }
         } else {
-          // maybe?
-          // filenameForLookup = importedFrom.filePath.replace(/\.(js|jsx|ts|tsx)$/, '')
           filenameForLookup = importedFrom.filePath
         }
 
