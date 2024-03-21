@@ -38,6 +38,7 @@ import type {
   Collaborator,
   CollaboratorsByProject,
   Operation,
+  ProjectListing,
   ProjectWithoutContent,
 } from '../types'
 import {
@@ -137,9 +138,9 @@ const ProjectsPage = React.memo(() => {
 
   const data = useLoaderData() as unknown as {
     user: UserDetails
-    projects: ProjectWithoutContent[]
-    deletedProjects: ProjectWithoutContent[]
-    projectsSharedWithMe: ProjectWithoutContent[]
+    projects: ProjectListing[]
+    deletedProjects: ProjectListing[]
+    projectsSharedWithMe: ProjectListing[]
     collaborators: CollaboratorsByProject
   }
 
@@ -560,7 +561,7 @@ const Projects = React.memo(
     collaborators,
     myUserId,
   }: {
-    projects: ProjectWithoutContent[]
+    projects: ProjectListing[]
     collaborators: CollaboratorsByProject
     myUserId: string
   }) => {
@@ -636,7 +637,7 @@ const ProjectCard = React.memo(
     selected,
     onSelect,
   }: {
-    project: ProjectWithoutContent
+    project: ProjectListing
     isSharedWithMe: boolean
     collaborators: Collaborator[]
     selected: boolean
@@ -804,7 +805,7 @@ const ProjectCard = React.memo(
             </div>
           </div>
         </ContextMenu.Trigger>
-        <ProjectActionsMenu project={project} accessRequests={accessRequests} />
+        <ProjectActionsMenu project={project} />
         <SharingDialogWrapper project={project} accessRequests={accessRequests} />
       </ContextMenu.Root>
     )
@@ -820,7 +821,7 @@ const ProjectRow = React.memo(
     isSharedWithMe,
     onSelect,
   }: {
-    project: ProjectWithoutContent
+    project: ProjectListing
     collaborators: Collaborator[]
     selected: boolean
     isSharedWithMe: boolean
@@ -976,7 +977,7 @@ const ProjectRow = React.memo(
             </div>
           </div>
         </ContextMenu.Trigger>
-        <ProjectActionsMenu project={project} accessRequests={accessRequests} />
+        <ProjectActionsMenu project={project} />
         <SharingDialogWrapper project={project} accessRequests={accessRequests} />
       </ContextMenu.Root>
     )
