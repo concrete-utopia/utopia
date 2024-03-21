@@ -4,10 +4,11 @@ import { useFetcher } from '@remix-run/react'
 import React from 'react'
 import slugify from 'slugify'
 import { when } from '~/util/react-conditionals'
+import { useFetcherData } from '../hooks/useFetcherData'
 import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
 import { SLUGIFY_OPTIONS } from '../routes/internal.projects.$id.rename'
 import { useProjectsStore } from '../store'
-import type { ProjectListing } from '../types'
+import type { ProjectAccessRequestWithUserDetails, ProjectListing } from '../types'
 import {
   isProjectAccessRequestWithUserDetailsArray,
   operationDelete,
@@ -176,13 +177,18 @@ export const ProjectActionsMenu = React.memo(
       accessRequestsFetcher.submit({}, { method: 'GET', action: action })
     }, [accessRequestsFetcher, project, setSharingProjectAccessRequests])
 
-    React.useEffect(() => {
-      if (accessRequestsFetcher.state === 'idle' && accessRequestsFetcher.data != null) {
-        if (isProjectAccessRequestWithUserDetailsArray(accessRequestsFetcher.data)) {
-          setSharingProjectAccessRequests({ state: 'ready', requests: accessRequestsFetcher.data })
-        }
-      }
-    }, [accessRequestsFetcher, setSharingProjectAccessRequests])
+    const updateAccessRequests = React.useCallback(
+      (data: ProjectAccessRequestWithUserDetails[]) => {
+        setSharingProjectAccessRequests({ state: 'ready', requests: data })
+      },
+      [setSharingProjectAccessRequests],
+    )
+
+    useFetcherData(
+      accessRequestsFetcher,
+      isProjectAccessRequestWithUserDetailsArray,
+      updateAccessRequests,
+    )
 
     const onOpenShareDialog = React.useCallback(() => {
       setSharingProjectId(project.proj_id)
