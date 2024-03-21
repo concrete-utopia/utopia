@@ -884,8 +884,6 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
               style={{
                 minWidth: 0,
                 flexGrow: 1,
-                flexShrink: 0,
-                paddingRight: 8,
                 justifyContent: 'space-between',
               }}
               onClick={handleOnClick}
@@ -895,13 +893,14 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
                 style={{
                   ...objectPropertyLabelStyle,
                   paddingLeft: indentation,
+                  paddingRight: 4,
                   cursor: props.disableToggling ? 'default' : 'pointer',
                 }}
               >
                 {title}
                 {unless(props.disableToggling, <ObjectIndicator open={open} />)}
               </PropertyLabel>
-              <div style={{ minWidth: 0 }} onClick={stopPropagation}>
+              <div style={{ minWidth: 0, flex: 1 }} onClick={stopPropagation}>
                 <ControlForProp
                   propPath={propPath}
                   propName={propName}
