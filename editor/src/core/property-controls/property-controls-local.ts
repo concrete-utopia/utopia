@@ -258,7 +258,7 @@ export async function componentDescriptorForComponentToRegister(
       preferredChildComponents: componentToRegister.preferredChildComponents ?? [],
       properties: componentToRegister.properties,
       variants: variants,
-      moduleName: moduleName,
+      filenameNoExtension: moduleName,
     }
   }, parsedVariants)
 }
