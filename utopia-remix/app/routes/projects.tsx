@@ -59,6 +59,7 @@ import {
   useSortCompareProject,
 } from '../util/use-sort-compare-project'
 import { SharingDialogWrapper } from '../components/sharingDialog'
+import { useFetcherData } from '../hooks/useFetcherData'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
@@ -661,13 +662,11 @@ const ProjectCard = React.memo(
       ProjectAccessRequestWithUserDetails[]
     >([])
 
-    React.useEffect(() => {
-      if (accessRequestsFetcher.state === 'idle' && accessRequestsFetcher.data != null) {
-        if (isProjectAccessRequestWithUserDetailsArray(accessRequestsFetcher.data)) {
-          setAccessRequests(accessRequestsFetcher.data)
-        }
-      }
-    }, [accessRequestsFetcher])
+    useFetcherData(
+      accessRequestsFetcher,
+      isProjectAccessRequestWithUserDetailsArray,
+      setAccessRequests,
+    )
 
     const handleSortMenuOpenChange = React.useCallback(() => {
       const action = `/internal/projects/${project.proj_id}/access/requests`
@@ -838,13 +837,11 @@ const ProjectRow = React.memo(
       ProjectAccessRequestWithUserDetails[]
     >([])
 
-    React.useEffect(() => {
-      if (accessRequestsFetcher.state === 'idle' && accessRequestsFetcher.data != null) {
-        if (isProjectAccessRequestWithUserDetailsArray(accessRequestsFetcher.data)) {
-          setAccessRequests(accessRequestsFetcher.data)
-        }
-      }
-    }, [accessRequestsFetcher])
+    useFetcherData(
+      accessRequestsFetcher,
+      isProjectAccessRequestWithUserDetailsArray,
+      setAccessRequests,
+    )
 
     const onContextMenuOpenChange = React.useCallback(() => {
       const action = `/internal/projects/${project.proj_id}/access/requests`
