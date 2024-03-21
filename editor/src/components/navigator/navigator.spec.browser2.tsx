@@ -3,6 +3,7 @@ import {
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
+  renderTestEditorWithModel,
   TestAppUID,
   TestSceneUID,
 } from '../canvas/ui-jsx.test-utils'
@@ -30,11 +31,12 @@ import {
   mouseDoubleClickAtPoint,
 } from '../canvas/event-helpers.test-utils'
 import { NavigatorItemTestId } from './navigator-item/navigator-item'
-import { expectNoAction, selectComponentsForTest } from '../../utils/utils.test-utils'
+import { expectNoAction, selectComponentsForTest, wait } from '../../utils/utils.test-utils'
 import {
   DefaultNavigatorWidth,
   navigatorEntryToKey,
   regularNavigatorEntry,
+  StoryboardFilePath,
   varSafeNavigatorEntryToKey,
 } from '../editor/store/editor-state'
 import {
@@ -50,6 +52,7 @@ import type { Modifiers } from '../../utils/modifiers'
 import { shiftModifier } from '../../utils/modifiers'
 import { back, front } from '../../utils/utils'
 import { createNavigatorReparentPostActionActions } from '../canvas/canvas-strategies/post-action-options/post-action-options'
+import { createModifiedProject } from '../../sample-projects/sample-project-utils.test-utils'
 
 const SceneRootId = 'sceneroot'
 const DragMeId = 'dragme'
@@ -828,29 +831,14 @@ export var storyboard = (props) => {
 }
 `
 
-const projectWithRenderProp = (renderPropSource: string) => `import * as React from 'react'
+const projectWithRenderProp = (renderPropSource: string) =>
+  createModifiedProject({
+    [StoryboardFilePath]: `import * as React from 'react'
 import * as Utopia from 'utopia-api'
 import {
   Storyboard,
   Scene,
-  registerInternalComponent,
 } from 'utopia-api'
-
-registerInternalComponent(Card, {
-  properties: {
-    header: {
-      control: 'jsx',
-      preferredChildComponents: [
-        {
-          name: 'span',
-          variants: [{ code: '<span>Title</span>' }],
-        },
-      ],
-    },
-  },
-  supportsChildren: true,
-  variants: [],
-})
 
 function Card({ header, children }) {
   return (
@@ -905,7 +893,30 @@ export var storyboard = (
     </Scene>
   </Storyboard>
 )
-`
+`,
+    ['/utopia/components.utopia.js']: `const Components = {
+  '/utopia/storyboard': {
+    Card: {
+      properties: {
+        header: {
+          control: 'jsx',
+          preferredChildComponents: [
+            {
+              name: 'span',
+              variants: [{ code: '<span>Title</span>' }],
+            },
+          ],
+        },
+      },
+      supportsChildren: true,
+      variants: [],
+    },
+  },
+}
+
+export default Components
+`,
+  })
 
 function getProjectCodeForMultipleSelection(): string {
   return `import * as React from 'react'
@@ -5198,7 +5209,7 @@ describe('Navigator row order', () => {
   })
 
   it('is correct for a project with elements with render prop', async () => {
-    const renderResult = await renderTestEditorWithCode(
+    const renderResult = await renderTestEditorWithModel(
       projectWithRenderProp('header={<span>Title</span>}'),
       'await-first-dom-report',
     )
@@ -5231,13 +5242,12 @@ describe('Navigator row order', () => {
     ])
   })
   it('is correct for a project with elements with missing render prop', async () => {
-    const renderResult = await renderTestEditorWithCode(
+    const renderResult = await renderTestEditorWithModel(
       projectWithRenderProp(''), // <- no render prop
       'await-first-dom-report',
     )
 
     await renderResult.getDispatchFollowUpActionsFinished()
-
     expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
       [
         'regular-sb/scene',
@@ -5264,7 +5274,7 @@ describe('Navigator row order', () => {
     ])
   })
   it('is correct for a project with elements with render prop set to `null`', async () => {
-    const renderResult = await renderTestEditorWithCode(
+    const renderResult = await renderTestEditorWithModel(
       projectWithRenderProp('header={null}'),
       'await-first-dom-report',
     )

@@ -151,6 +151,7 @@ export function componentDescriptor(
 
 export interface ComponentDescriptorWithName extends ComponentDescriptor {
   componentName: string
+  moduleName: string // if local module, then it's always absolute path without extension
 }
 
 export type ComponentDescriptorsForFile = {
