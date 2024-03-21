@@ -39,10 +39,8 @@ export const ProjectActionsMenu = React.memo(
   ({
     // the project that can receive actions
     project,
-    hasPendingRequests,
   }: {
     project: ProjectListing
-    hasPendingRequests: boolean
   }) => {
     const deleteFetcher = useFetcherWithOperation(project.proj_id, 'delete')
     const destroyFetcher = useFetcherWithOperation(project.proj_id, 'destroy')

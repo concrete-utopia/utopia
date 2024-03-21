@@ -1,10 +1,10 @@
 import React from 'react'
 import { useProjectsStore } from '../store'
-import type { ProjectWithoutContent } from '../types'
+import type { ProjectListing } from '../types'
 import { AccessLevel } from '../types'
 import { assertNever } from '../util/assertNever'
 
-export function useProjectAccessMatchesSelectedCategory(project: ProjectWithoutContent | null) {
+export function useProjectAccessMatchesSelectedCategory(project: ProjectListing | null) {
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
 
   return React.useMemo(() => {
