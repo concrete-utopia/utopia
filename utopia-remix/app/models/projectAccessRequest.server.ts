@@ -1,10 +1,10 @@
 import * as uuid from 'uuid'
 import { prisma } from '../db.server'
 import * as permissionsService from '../services/permissionsService.server'
-import type { ProjectAccessRequestWithUserDetails } from '../types'
-import { AccessRequestStatus, UserProjectRole } from '../types'
 import { ensure } from '../util/api.server'
 import { Status } from '../util/statusCodes'
+import type { ProjectAccessRequestWithUserDetails } from '../types'
+import { AccessRequestStatus, UserProjectRole } from '../types'
 import { addToProjectCollaboratorsWithRunner } from './projectCollaborators.server'
 
 function makeRequestToken(): string {

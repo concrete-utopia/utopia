@@ -1,8 +1,8 @@
 import type { LoaderFunctionArgs } from '@remix-run/node'
+import { json } from '@remix-run/node'
 import type { Params } from '@remix-run/react'
 import { validateProjectAccess } from '../handlers/validators'
 import { listProjectAccessRequests } from '../models/projectAccessRequest.server'
-import { UserProjectPermission } from '../types'
 import { ensure, handle, requireUser } from '../util/api.server'
 import { Status } from '../util/statusCodes'
 

@@ -23,8 +23,6 @@ export async function handleChangeProjectAccess(req: Request, params: Params<str
   const { id } = params
   ensure(id != null, 'id is null', Status.BAD_REQUEST)
 
-  //   throw new Error('boom')
-
   const formData = await req.formData()
   const accessLevelStr = formData.get('accessLevel')
   const accessLevelNumber = asNumber(accessLevelStr)

@@ -22,7 +22,6 @@ import { SharingDialogWrapper } from '../components/sharingDialog'
 import { SortingContextMenu } from '../components/sortProjectsContextMenu'
 import { Spinner } from '../components/spinner'
 import { useCleanupOperations } from '../hooks/useCleanupOperations'
-import { useFetcherData } from '../hooks/useFetcherData'
 import { useIsDarkMode } from '../hooks/useIsDarkMode'
 import {
   listDeletedProjects,
@@ -36,14 +35,8 @@ import { button } from '../styles/button.css'
 import { projectCards, projectRows } from '../styles/projects.css'
 import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
 import { sprinkles } from '../styles/sprinkles.css'
-import type {
-  Collaborator,
-  CollaboratorsByProject,
-  HasPendingRequests,
-  Operation,
-  ProjectListing,
-} from '../types'
-import { AccessLevel, asAccessLevel, getOperationDescription, isHasPendingRequests } from '../types'
+import type { Collaborator, CollaboratorsByProject, Operation, ProjectListing } from '../types'
+import { AccessLevel, asAccessLevel, getOperationDescription } from '../types'
 import { requireUser } from '../util/api.server'
 import { assertNever } from '../util/assertNever'
 import { auth0LoginURL } from '../util/auth0.server'
@@ -660,14 +653,6 @@ const ProjectCard = React.memo(
       return renaming?.type === 'rename' ? renaming.newTitle : project.title
     }, [project, activeOperations])
 
-    const hasPendingRequestsFetcher = useFetcher()
-    const [hasPendingRequests, setHasPendingRequests] = React.useState<boolean>(false)
-
-    const updatePendingRequests = React.useCallback((data: HasPendingRequests) => {
-      setHasPendingRequests(data.hasPendingRequests)
-    }, [])
-    useFetcherData(hasPendingRequestsFetcher, isHasPendingRequests, updatePendingRequests)
-
     const ownerName = React.useMemo(() => {
       return getOwnerName(project.owner_id, collaborators)
     }, [collaborators, project])
@@ -799,7 +784,7 @@ const ProjectCard = React.memo(
             </div>
           </div>
         </ContextMenu.Trigger>
-        <ProjectActionsMenu project={project} hasPendingRequests={hasPendingRequests} />
+        <ProjectActionsMenu project={project} />
       </ContextMenu.Root>
     )
   },
@@ -825,15 +810,6 @@ const ProjectRow = React.memo(
     const openProject = React.useCallback(() => {
       window.open(projectEditorLink(project.proj_id), '_blank')
     }, [project.proj_id, projectEditorLink])
-
-    const hasPendingRequestsFetcher = useFetcher()
-    const [hasPendingRequests, setHasPendingRequests] = React.useState<boolean>(false)
-
-    const updatePendingRequests = React.useCallback((data: HasPendingRequests) => {
-      setHasPendingRequests(data.hasPendingRequests)
-    }, [])
-
-    useFetcherData(hasPendingRequestsFetcher, isHasPendingRequests, updatePendingRequests)
 
     const ownerName = React.useMemo(() => {
       return getOwnerName(project.owner_id, collaborators)
@@ -963,7 +939,7 @@ const ProjectRow = React.memo(
             </div>
           </div>
         </ContextMenu.Trigger>
-        <ProjectActionsMenu project={project} hasPendingRequests={hasPendingRequests} />
+        <ProjectActionsMenu project={project} />
       </ContextMenu.Root>
     )
   },

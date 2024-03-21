@@ -105,7 +105,7 @@ function SharingDialog({ project }: { project: ProjectListing | null }) {
             {when(
               accessRequests.state === 'loading',
               <motion.div style={{ opacity: 0.1 }} exit={{ opacity: 0 }}>
-                <Spinner width={6} height={6} className={sprinkles({ backgroundColor: 'black' })} />
+                <Spinner className={sprinkles({ backgroundColor: 'black' })} />
               </motion.div>,
             )}
           </AnimatePresence>
