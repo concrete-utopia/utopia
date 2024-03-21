@@ -38,6 +38,7 @@ import { sprinkles } from '../styles/sprinkles.css'
 import type {
   Collaborator,
   CollaboratorsByProject,
+  HasPendingRequests,
   Operation,
   ProjectWithoutContent,
 } from '../types'
@@ -662,9 +663,10 @@ const ProjectCard = React.memo(
     const hasPendingRequestsFetcher = useFetcher()
     const [hasPendingRequests, setHasPendingRequests] = React.useState<boolean>(false)
 
-    useFetcherData(hasPendingRequestsFetcher, isHasPendingRequests, (data) => {
+    const updatePendingRequests = React.useCallback((data: HasPendingRequests) => {
       setHasPendingRequests(data.hasPendingRequests)
-    })
+    }, [])
+    useFetcherData(hasPendingRequestsFetcher, isHasPendingRequests, updatePendingRequests)
 
     const handleSortMenuOpenChange = React.useCallback(
       (open: boolean) => {
@@ -837,9 +839,11 @@ const ProjectRow = React.memo(
     const hasPendingRequestsFetcher = useFetcher()
     const [hasPendingRequests, setHasPendingRequests] = React.useState<boolean>(false)
 
-    useFetcherData(hasPendingRequestsFetcher, isHasPendingRequests, (data) => {
+    const updatePendingRequests = React.useCallback((data: HasPendingRequests) => {
       setHasPendingRequests(data.hasPendingRequests)
-    })
+    }, [])
+
+    useFetcherData(hasPendingRequestsFetcher, isHasPendingRequests, updatePendingRequests)
 
     const onContextMenuOpenChange = React.useCallback(
       (open: boolean) => {

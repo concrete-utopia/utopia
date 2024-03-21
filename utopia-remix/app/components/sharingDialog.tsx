@@ -10,9 +10,12 @@ import { Button, Dialog, DropdownMenu, Flex, IconButton, Separator, Text } from 
 import { AnimatePresence, motion } from 'framer-motion'
 import moment from 'moment'
 import React from 'react'
+import { useFetcherDataUnkown } from '../hooks/useFetcherData'
 import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
+import { useProjectAccessMatchesSelectedCategory } from '../hooks/useProjectMatchingCategory'
 import { useProjectsStore } from '../store'
 import { button } from '../styles/button.css'
+import { sprinkles } from '../styles/sprinkles.css'
 import {
   AccessLevel,
   AccessRequestStatus,
@@ -22,12 +25,10 @@ import {
   type ProjectAccessRequestWithUserDetails,
   type ProjectWithoutContent,
 } from '../types'
-import { assertNever } from '../util/assertNever'
 import { useCopyProjectLinkToClipboard } from '../util/copyProjectLink'
 import { isLikeApiError } from '../util/errors'
 import { useProjectEditorLink } from '../util/links'
 import { when } from '../util/react-conditionals'
-import { sprinkles } from '../styles/sprinkles.css'
 import { Spinner } from './spinner'
 
 export const SharingDialogWrapper = React.memo(
@@ -37,6 +38,7 @@ export const SharingDialogWrapper = React.memo(
 
     const onOpenChange = React.useCallback(
       (open: boolean) => {
+        // Note: this _only_ reacts to Radix internal changes, so concretely meaning only for open===false calls.
         if (!open) {
           setSharingProjectId(null)
         }
@@ -46,7 +48,7 @@ export const SharingDialogWrapper = React.memo(
 
     return (
       <Dialog.Root open={sharingProjectId === project?.proj_id} onOpenChange={onOpenChange}>
-        <Dialog.Content style={{ position: 'relative' }}>
+        <Dialog.Content>
           <SharingDialog project={project} />
         </Dialog.Content>
       </Dialog.Root>
@@ -57,6 +59,7 @@ SharingDialogWrapper.displayName = 'SharingDialogWrapper'
 
 function SharingDialog({ project }: { project: ProjectWithoutContent | null }) {
   const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
+  const accessRequests = useProjectsStore((store) => store.sharingProjectAccessRequests)
 
   const accessLevel = React.useMemo(() => {
     return asAccessLevel(project?.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
@@ -64,39 +67,16 @@ function SharingDialog({ project }: { project: ProjectWithoutContent | null }) {
 
   const changeAccessFetcher = useFetcherWithOperation(project?.proj_id ?? null, 'changeAccess')
 
-  const selectedCategory = useProjectsStore((store) => store.selectedCategory)
-
-  const matching = React.useMemo(() => {
-    if (project == null) {
-      return false
-    }
-    switch (selectedCategory) {
-      case 'allProjects':
-        return true
-      case 'private':
-        return (
-          project.ProjectAccess == null ||
-          project.ProjectAccess.access_level === AccessLevel.PRIVATE
-        )
-      case 'public':
-        return project.ProjectAccess?.access_level === AccessLevel.PUBLIC
-      case 'sharing':
-        return project.ProjectAccess?.access_level === AccessLevel.COLLABORATIVE
-      case 'sharedWithMe':
-      case 'trash':
-        return false
-      default:
-        assertNever(selectedCategory)
-    }
-  }, [selectedCategory, project])
-
-  React.useEffect(() => {
-    if (changeAccessFetcher.state === 'idle' && changeAccessFetcher.data != null) {
-      if (!isLikeApiError(changeAccessFetcher.data) && !matching) {
+  const projectAccessMatchesSelectedCategory = useProjectAccessMatchesSelectedCategory(project)
+  const clearSharingProjectId = React.useCallback(
+    (data: unknown) => {
+      if (!isLikeApiError(data) && !projectAccessMatchesSelectedCategory) {
         setSharingProjectId(null)
       }
-    }
-  }, [changeAccessFetcher, setSharingProjectId, matching])
+    },
+    [setSharingProjectId, projectAccessMatchesSelectedCategory],
+  )
+  useFetcherDataUnkown(changeAccessFetcher, clearSharingProjectId)
 
   const changeProjectAccessLevel = React.useCallback(
     (newAccessLevel: AccessLevel) => {
@@ -111,8 +91,6 @@ function SharingDialog({ project }: { project: ProjectWithoutContent | null }) {
     },
     [changeAccessFetcher, project],
   )
-
-  const accessRequests = useProjectsStore((store) => store.sharingProjectAccessRequests)
 
   if (project == null) {
     return null
