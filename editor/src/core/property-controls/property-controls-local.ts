@@ -171,6 +171,10 @@ const COMPONENTS_DESCRIPTOR_FILE_CACHE: { current: ComponentDescriptorFileLookup
   current: {},
 }
 
+export function FOR_TESTS_clearComponentDescriptorCache() {
+  COMPONENTS_DESCRIPTOR_FILE_CACHE.current = {}
+}
+
 export function updatePropertyControlsOnDescriptorFileDelete(
   componentDescriptorFile: string,
 ): PropertyControlsInfo {
