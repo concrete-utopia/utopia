@@ -29,6 +29,7 @@ export async function createTestProject(
     createdAt?: Date
     modifiedAt?: Date
     deleted?: boolean
+    accessLevel?: AccessLevel
   },
 ) {
   const now = new Date()
@@ -46,6 +47,11 @@ export async function createTestProject(
       deleted: params.deleted ?? null,
     },
   })
+  if (params.accessLevel != null) {
+    await client.projectAccess.create({
+      data: { project_id: params.id, access_level: params.accessLevel, modified_at: new Date() },
+    })
+  }
 }
 
 export async function createTestSession(

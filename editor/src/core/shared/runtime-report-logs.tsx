@@ -88,6 +88,19 @@ const consoleLogsAtom = atomWithPubSub<Array<ConsoleLog>>({
   defaultValue: [],
 })
 
+let reactRouterErrorLogged: boolean = false
+
+export function hasReactRouterErrorBeenLogged(): boolean {
+  return reactRouterErrorLogged
+}
+
+export function setReactRouterErrorHasBeenLogged(value: boolean): void {
+  reactRouterErrorLogged = value
+}
+
+const ReactRouterErrorPrefix = `React Router caught the following error during render`
+const ReactRouterAwaitErrorPrefix = `<Await> caught the following error during render`
+
 export function useUpdateOnConsoleLogs(
   referentiallyStableCallback: (newConsoleLogs: Array<ConsoleLog>) => void,
 ): void {
@@ -117,6 +130,22 @@ export function useWriteOnlyConsoleLogs(): {
         }
         return result
       })
+      // For an error...
+      if (log.method === 'error') {
+        // ...where the first value...
+        const firstLine = log.data[0]
+        // ...is a string...
+        if (typeof firstLine === 'string') {
+          // ...and it starts with these prefixes...
+          if (
+            firstLine.startsWith(ReactRouterErrorPrefix) ||
+            firstLine.startsWith(ReactRouterAwaitErrorPrefix)
+          ) {
+            // ...Mark these as having been seen.
+            setReactRouterErrorHasBeenLogged(true)
+          }
+        }
+      }
     },
     [modifyLogs],
   )

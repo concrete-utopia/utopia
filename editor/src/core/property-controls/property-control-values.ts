@@ -20,8 +20,7 @@ import type {
   FolderControlDescription,
   PropertyControls,
   RegularControlDescription,
-} from 'utopia-api/core'
-import { isBaseControlDescription, HigherLevelControlDescription } from 'utopia-api/core'
+} from '../../components/custom-code/internal-property-controls'
 import type { CSSColor } from '../../components/inspector/common/css-utils'
 import {
   parseColor,
@@ -58,6 +57,7 @@ import type { PropertyPathPart } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import { forEachValue, mapToArray, objectValues } from '../shared/object-utils'
 import { jsxSimpleAttributeToValue } from '../shared/jsx-attribute-utils'
+
 type Printer<T> = (value: T) => JSExpression
 
 export function parseColorValue(value: unknown): ParseResult<CSSColor> {

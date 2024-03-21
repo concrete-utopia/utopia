@@ -1,21 +1,35 @@
 import moment from 'moment'
 import { prisma } from '../db.server'
-import { createTestProject, createTestUser, truncateTables } from '../test-util'
 import {
+  createTestProject,
+  createTestProjectAccess,
+  createTestProjectCollaborator,
+  createTestUser,
+  truncateTables,
+} from '../test-util'
+import {
+  getProjectOwnership,
   hardDeleteAllProjects,
   hardDeleteProject,
   listDeletedProjects,
   listProjects,
+  listSharedWithMeProjectsAndCollaborators,
   renameProject,
   restoreDeletedProject,
   softDeleteProject,
-  getProjectOwnerById,
 } from './project.server'
+import { AccessLevel } from '../types'
 
 describe('project model', () => {
   afterEach(async () => {
     // cleanup
-    await truncateTables([prisma.projectID, prisma.project, prisma.userDetails])
+    await truncateTables([
+      prisma.projectID,
+      prisma.projectAccess,
+      prisma.projectCollaborator,
+      prisma.project,
+      prisma.userDetails,
+    ])
   })
 
   describe('listProjects', () => {
@@ -151,7 +165,7 @@ describe('project model', () => {
     })
   })
 
-  describe('getProjectOwnerById', () => {
+  describe('getProjectOwnership', () => {
     beforeEach(async () => {
       await createTestUser(prisma, { id: 'bob' })
       await createTestUser(prisma, { id: 'alice' })
@@ -161,18 +175,23 @@ describe('project model', () => {
         ownerId: 'bob',
         deleted: true,
       })
+      await createTestProjectAccess(prisma, { projectId: 'foo', accessLevel: AccessLevel.PRIVATE })
+      await createTestProjectAccess(prisma, {
+        projectId: 'deleted-project',
+        accessLevel: AccessLevel.PRIVATE,
+      })
     })
     it('returns the project owner', async () => {
-      const got = await getProjectOwnerById({ id: 'foo' }, { includeDeleted: false })
-      expect(got).toEqual('bob')
+      const got = await getProjectOwnership({ id: 'foo' }, { includeDeleted: false })
+      expect(got?.ownerId).toEqual('bob')
     })
     it('doesnt return the owner if the project is soft-deleted', async () => {
-      const got = await getProjectOwnerById({ id: 'deleted-project' }, { includeDeleted: false })
+      const got = await getProjectOwnership({ id: 'deleted-project' }, { includeDeleted: false })
       expect(got).toEqual(null)
     })
     it('returns soft-deleted owner if includeDeleted is true', async () => {
-      const got = await getProjectOwnerById({ id: 'deleted-project' }, { includeDeleted: true })
-      expect(got).toEqual('bob')
+      const got = await getProjectOwnership({ id: 'deleted-project' }, { includeDeleted: true })
+      expect(got?.ownerId).toEqual('bob')
     })
   })
 
@@ -296,6 +315,76 @@ describe('project model', () => {
       expect(bobProjects.map((p) => p.proj_id)).toEqual(['one', 'five'])
       const aliceProjects = await prisma.project.findMany({ where: { owner_id: 'alice' } })
       expect(aliceProjects.map((p) => p.proj_id)).toEqual(['four', 'seven'])
+    })
+  })
+
+  describe('listSharedWithMeProjectsAndCollaborators', () => {
+    beforeEach(async () => {
+      await createTestUser(prisma, { id: 'bob' })
+      await createTestUser(prisma, { id: 'alice' })
+      await createTestUser(prisma, { id: 'carol' })
+      await createTestProject(prisma, {
+        id: 'one',
+        ownerId: 'bob',
+        accessLevel: AccessLevel.COLLABORATIVE,
+      })
+      await createTestProject(prisma, {
+        id: 'two',
+        ownerId: 'bob',
+        accessLevel: AccessLevel.COLLABORATIVE,
+      })
+      await createTestProject(prisma, {
+        id: 'three',
+        ownerId: 'alice',
+        accessLevel: AccessLevel.COLLABORATIVE,
+      })
+      await createTestProject(prisma, {
+        id: 'four',
+        ownerId: 'alice',
+        accessLevel: AccessLevel.COLLABORATIVE,
+      })
+      await createTestProject(prisma, {
+        id: 'five',
+        ownerId: 'carol',
+        accessLevel: AccessLevel.PRIVATE,
+      })
+      await createTestProject(prisma, {
+        id: 'six',
+        ownerId: 'carol',
+        accessLevel: AccessLevel.COLLABORATIVE,
+      })
+      await createTestProject(prisma, {
+        id: 'seven',
+        ownerId: 'carol',
+        accessLevel: AccessLevel.COLLABORATIVE,
+      })
+      await createTestProjectCollaborator(prisma, { projectId: 'one', userId: 'carol' })
+      await createTestProjectCollaborator(prisma, { projectId: 'four', userId: 'bob' })
+      await createTestProjectCollaborator(prisma, { projectId: 'four', userId: 'carol' })
+      await createTestProjectCollaborator(prisma, { projectId: 'five', userId: 'bob' })
+      await createTestProjectCollaborator(prisma, { projectId: 'seven', userId: 'bob' })
+    })
+
+    it('returns an empty list if there are no projects with user as a collaborator', async () => {
+      const got = await listSharedWithMeProjectsAndCollaborators({ userId: 'alice' })
+      expect(got.projects.length).toBe(0)
+      expect(Object.keys(got.collaborators).length).toBe(0)
+    })
+
+    it('returns the projects and their collaborators for which the user is a collaborator, that are in the COLLABORATIVE state', async () => {
+      const got = await listSharedWithMeProjectsAndCollaborators({ userId: 'bob' })
+      expect(got.projects.length).toBe(2)
+      expect(got.projects[0].proj_id).toBe('seven')
+      expect(got.projects[1].proj_id).toBe('four')
+
+      expect(Object.keys(got.collaborators).length).toBe(2)
+      expect(Object.keys(got.collaborators)[0]).toBe('seven')
+      expect(got.collaborators['seven'].length).toBe(1)
+      expect(got.collaborators['seven'].map((c) => c.id)[0]).toBe('bob')
+      expect(Object.keys(got.collaborators)[1]).toBe('four')
+      expect(got.collaborators['four'].length).toBe(2)
+      expect(got.collaborators['four'].map((c) => c.id)[0]).toBe('bob')
+      expect(got.collaborators['four'].map((c) => c.id)[1]).toBe('carol')
     })
   })
 })
