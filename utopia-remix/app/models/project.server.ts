@@ -166,7 +166,7 @@ export async function listSharedWithMeProjectsAndCollaborators(params: {
   projects: ProjectListing[]
   collaborators: CollaboratorsByProject
 }> {
-  // 1. grab the projects IDs for which the user is a collaborator, are not deleted, are
+  // 1. grab the projects for which the user is a collaborator, are not deleted, are
   // collaborative, and the user is not the owner.
   const projectsAndCollaborators = await prisma.projectCollaborator.findMany({
     where: {
