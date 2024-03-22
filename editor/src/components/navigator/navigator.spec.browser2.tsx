@@ -991,7 +991,7 @@ export var storyboard = (
               preferredChildComponents: [
                 {
                   name: 'Heading',
-                  additionalImports: '../src/heading',
+                  additionalImports: '/src/heading',
                   variants: [
                     {
                       label: 'Heading',
