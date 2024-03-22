@@ -50,6 +50,7 @@ import type { EditorDispatch } from '../../components/editor/action-types'
 import { updatePropertyControlsInfo } from '../../components/editor/actions/action-creators'
 import { DefaultThirdPartyControlDefinitions } from '../third-party/third-party-controls'
 import type { ProjectContentTreeRoot } from '../../components/assets'
+import { isIntrinsicHTMLElement } from '../shared/element-template'
 
 async function parseInsertOption(
   insertOption: ComponentInsertOption,
@@ -271,27 +272,37 @@ async function makePreferredChildDescriptor(
     return parsedParams
   }
 
-  const variantsPromise: Array<Promise<Either<string, ComponentInfo>>> =
-    preferredChild.variants == null
-      ? []
-      : preferredChild.variants.map((insertOption) =>
-          parseInsertOption(
-            insertOption,
-            componentName,
-            preferredChild.additionalImports ?? moduleName,
-            workers,
-          ),
-        )
+  const variants: Array<ComponentInfo> = []
+  const preferredChildVariants = preferredChild.variants ?? []
 
-  const variants = sequenceEither(await Promise.all(variantsPromise))
-  if (isLeft(variants)) {
-    return variants
+  for await (const variant of preferredChildVariants) {
+    const insertOption = await parseInsertOption(
+      variant,
+      componentName,
+      preferredChild.additionalImports ?? moduleName,
+      workers,
+    )
+    if (isLeft(insertOption)) {
+      return insertOption
+    }
+    const element = insertOption.value.elementToInsert()
+
+    const isBuiltinElementType =
+      element.type === 'JSX_CONDITIONAL_EXPRESSION' ||
+      element.type === 'JSX_FRAGMENT' ||
+      (element.type === 'JSX_ELEMENT' && isIntrinsicHTMLElement(element.name))
+
+    if (isBuiltinElementType) {
+      variants.push({ ...insertOption.value, importsToAdd: {} })
+    } else {
+      variants.push(insertOption.value)
+    }
   }
 
   return right({
     name: preferredChild.name,
     imports: parsedParams.value.importsToAdd,
-    variants: variants.value,
+    variants: variants,
   })
 }
 

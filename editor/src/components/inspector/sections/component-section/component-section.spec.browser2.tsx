@@ -838,18 +838,7 @@ describe('Controls from registering components', () => {
               name: 'span',
               variants: [
                 {
-                  importsToAdd: {
-                    '/utopia/storyboard': {
-                      importedAs: null,
-                      importedFromWithin: [
-                        {
-                          alias: 'span',
-                          name: 'span',
-                        },
-                      ],
-                      importedWithName: null,
-                    },
-                  },
+                  importsToAdd: {},
                   insertMenuLabel: 'span',
                 },
               ],
@@ -948,18 +937,7 @@ describe('Controls from registering components', () => {
                     name: 'span',
                     variants: [
                       {
-                        importsToAdd: {
-                          '/utopia/storyboard': {
-                            importedAs: null,
-                            importedFromWithin: [
-                              {
-                                alias: 'span',
-                                name: 'span',
-                              },
-                            ],
-                            importedWithName: null,
-                          },
-                        },
+                        importsToAdd: {},
                         insertMenuLabel: 'span',
                       },
                     ],
