@@ -40,6 +40,7 @@ specifiers:
   '@vanilla-extract/dynamic': 2.1.0
   '@vanilla-extract/recipes': 0.5.1
   '@vanilla-extract/sprinkles': 1.6.1
+  auth0: 4.3.1
   babel-eslint: 10.0.1
   chokidar: 3.6.0
   classnames: 2.5.1
@@ -99,6 +100,7 @@ dependencies:
   '@remix-run/serve': 2.5.1_typescript@5.1.6
   '@tailwindcss/aspect-ratio': 0.4.2_tailwindcss@3.4.1
   '@tailwindcss/typography': 0.5.10_tailwindcss@3.4.1
+  auth0: 4.3.1
   classnames: 2.5.1
   cookie: 0.6.0
   cors: 2.8.5
@@ -4692,6 +4694,14 @@ packages:
     resolution: {integrity: sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==}
     dev: false
 
+  /auth0/4.3.1:
+    resolution: {integrity: sha512-VuR/PdNHwXD9QiYUZf8UN0qiv07yJWHKfF2yEhePaPCrpwbEm6lHM6dkN7ylOdseogCkGmvchxYGMga0IPNrCA==}
+    engines: {node: '>=18'}
+    dependencies:
+      jose: 4.15.5
+      uuid: 9.0.1
+    dev: false
+
   /available-typed-arrays/1.0.6:
     resolution: {integrity: sha512-j1QzY8iPNPG4o4xmO3ptzpRxTciqD3MgEHtifP/YnJpIo58Xu+ne4BejlbkuaLfXn/nz6HFiw29bLpj2PNMdGg==}
     engines: {node: '>= 0.4'}
@@ -7532,6 +7542,10 @@ packages:
     resolution: {integrity: sha512-gFqAIbuKyyso/3G2qhiO2OM6shY6EPP/R0+mkDbyspxKazh8BXDC5FiFsUjlczgdNz/vfra0da2y+aHrusLG/Q==}
     hasBin: true
 
+  /jose/4.15.5:
+    resolution: {integrity: sha512-jc7BFxgKPKi94uOvEmzlSWFFe2+vASyXaKUpdQKatWAESU2MWjDfFf0fdfc83CDKcA5QecabZeNLyfhe3yKNkg==}
+    dev: false
+
   /js-cookie/2.2.1:
     resolution: {integrity: sha512-HvdH2LzI/EAZcUwA8+0nKNtWHqS+ZmijLA30RwZA0bo7ToCckjK5MkGhjED9KoRcXO6BaGI3I9UIzSA1FKFPOQ==}
     dev: false
@@ -10280,7 +10294,6 @@ packages:
   /uuid/9.0.1:
     resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
     hasBin: true
-    dev: true
 
   /uvu/0.5.6:
     resolution: {integrity: sha512-+g8ENReyr8YsOc6fv/NVJs2vFdHBnBNdfE49rshrTzDWOlUx4Gq7KOS2GD8eqhy2j+Ejq29+SbKH8yjkAqXqoA==}

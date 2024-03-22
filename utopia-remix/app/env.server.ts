@@ -22,6 +22,7 @@ export const ServerEnvironment = {
   // Auth0 credentials
   AUTH0_ENDPOINT: mustEnvOrLocalFallback('AUTH0_ENDPOINT', ''),
   AUTH0_CLIENT_ID: mustEnvOrLocalFallback('AUTH0_CLIENT_ID', ''),
+  AUTH0_CLIENT_SECRET: mustEnvOrLocalFallback('AUTH0_CLIENT_SECRET', ''),
   AUTH0_REDIRECT_URI: mustEnvOrLocalFallback('AUTH0_REDIRECT_URI', ''),
   // FGA Credentials
   FGA_STORE_ID: mustEnvOrLocalFallback('FGA_STORE_ID', ''),

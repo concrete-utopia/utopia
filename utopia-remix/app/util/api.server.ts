@@ -199,5 +199,9 @@ export async function getUser(request: Request): Promise<UserDetails | null> {
   if (sessionId == null) {
     return null
   }
-  return getUserFromSession({ key: sessionId })
+  try {
+    return getUserFromSession({ key: sessionId })
+  } catch (err) {
+    return null
+  }
 }

@@ -2,6 +2,7 @@ import type { PersistentSession, UserDetails } from 'prisma-client'
 import { prisma } from '../db.server'
 import { ensure } from '../util/api.server'
 import { Status } from '../util/statusCodes'
+import { v4 } from 'uuid'
 
 export async function getSession(params: { key: string }): Promise<PersistentSession | null> {
   return await prisma.persistentSession.findFirst({
@@ -24,5 +25,20 @@ export async function getUserFromSession(params: { key: string }): Promise<UserD
 
   return prisma.userDetails.findFirst({
     where: { user_id: session.session_json.userID },
+  })
+}
+
+export async function createSession(params: {
+  key: string
+  userId: string
+}): Promise<PersistentSession> {
+  return prisma.persistentSession.create({
+    data: {
+      key: v4(),
+      session: Buffer.from(''), // ! TODO: is this gonna break everything?
+      session_json: { userID: params.userId },
+      created_at: new Date(),
+      accessed_at: new Date(),
+    },
   })
 }

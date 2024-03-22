@@ -1,4 +1,5 @@
-import { type LinksFunction, type MetaFunction } from '@remix-run/node'
+import type { LoaderFunctionArgs } from '@remix-run/node'
+import { type LinksFunction, type MetaFunction, redirect } from '@remix-run/node'
 import {
   ContactUs,
   CookieConsentBar,
@@ -13,6 +14,7 @@ import stylesheet from '~/styles/next-tailwind.css'
 import urlJoin from 'url-join'
 import type { rootLoader } from '../root'
 import React from 'react'
+import { getUser } from '../util/api.server'
 
 export const links: LinksFunction = () => [
   // css
@@ -56,7 +58,7 @@ export const meta: MetaFunction<typeof rootLoader> = ({ data }) => {
     { name: 'msapplication-TileColor', content: '#da532c' },
     { name: 'theme-color', content: '#ffffff' },
     { property: 'og:title', content: 'Utopia: Design and Code on one platform' },
-    { property: 'og:image', content: urlJoin(data?.env.UTOPIA_CDN_URL ?? '', '/og-card.png') },
+    { property: 'og:image', content: urlJoin(data?.env?.UTOPIA_CDN_URL ?? '', '/og-card.png') },
     { property: 'og:type', content: 'website' },
     {
       property: 'og:description',
@@ -64,6 +66,14 @@ export const meta: MetaFunction<typeof rootLoader> = ({ data }) => {
         'Utopia is a production-grade online coding and design tool for React that reads and writes code you’ll want to commit.',
     },
   ]
+}
+
+export async function loader(args: LoaderFunctionArgs) {
+  const user = await getUser(args.request)
+  if (user != null) {
+    return redirect(`/projects`)
+  }
+  return {}
 }
 
 const IndexPage = React.memo(() => {
