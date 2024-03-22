@@ -11,11 +11,11 @@ import { useFetcherData } from './useFetcherData'
  */
 export function useOpenShareDialog(project: ProjectListing) {
   const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
-
-  const accessRequestsFetcher = useFetcher()
   const setSharingProjectAccessRequests = useProjectsStore(
     (store) => store.setSharingProjectAccessRequests,
   )
+
+  const accessRequestsFetcher = useFetcher()
 
   const fetchAccessRequests = React.useCallback(() => {
     if (project == null) {
