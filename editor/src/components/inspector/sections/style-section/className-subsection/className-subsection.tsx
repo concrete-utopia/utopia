@@ -502,11 +502,15 @@ const ClassNameControl = React.memo(() => {
     <div
       style={{
         backgroundColor: theme.emphasizedBackground.value,
-        boxShadow: `0px 0px 1px 0px ${theme.neutralInvertedBackground30.value}`,
         margin: 4,
       }}
     >
-      <InspectorSubsectionHeader style={{ color: theme.primary.value }}>
+      <InspectorSubsectionHeader
+        style={{
+          color: theme.primary.value,
+          border: 'none',
+        }}
+      >
         <span style={{ flexGrow: 1, cursor: 'pointer' }} onClick={toggleIsExpanded}>
           Class Names
         </span>

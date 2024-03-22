@@ -3,6 +3,7 @@ import { prisma } from '../db.server'
 import {
   createTestProject,
   createTestProjectAccess,
+  createTestProjectAccessRequest,
   createTestProjectCollaborator,
   createTestUser,
   truncateTables,
@@ -17,8 +18,15 @@ import {
   renameProject,
   restoreDeletedProject,
   softDeleteProject,
+  updateGithubRepository,
 } from './project.server'
-import { AccessLevel } from '../types'
+import {
+  AccessLevel,
+  MaxGithubBranchNameLength,
+  MaxGithubOwnerLength,
+  MaxGithubRepositoryLength,
+  AccessRequestStatus,
+} from '../types'
 
 describe('project model', () => {
   afterEach(async () => {
@@ -26,6 +34,7 @@ describe('project model', () => {
     await truncateTables([
       prisma.projectID,
       prisma.projectAccess,
+      prisma.projectAccessRequest,
       prisma.projectCollaborator,
       prisma.project,
       prisma.userDetails,
@@ -92,6 +101,36 @@ describe('project model', () => {
         const bobProjects = await listProjects({ ownerId: 'bob' })
         expect(bobProjects.length).toBe(2)
         expect(bobProjects.map((p) => p.proj_id)).toEqual(['baz', 'foo'])
+      })
+
+      it('returns whether projects have pending requests', async () => {
+        await createTestProject(prisma, { id: 'foo', ownerId: 'bob' })
+        await createTestProject(prisma, {
+          id: 'bar',
+          ownerId: 'bob',
+          accessLevel: AccessLevel.COLLABORATIVE,
+        })
+        await createTestProject(prisma, { id: 'baz', ownerId: 'alice' })
+        await createTestProject(prisma, { id: 'qux', ownerId: 'bob' })
+
+        await createTestUser(prisma, { id: 'p1' })
+        await createTestProjectAccessRequest(prisma, {
+          projectId: 'bar',
+          userId: 'p1',
+          status: AccessRequestStatus.PENDING,
+          token: 't1',
+        })
+        await createTestProjectAccessRequest(prisma, {
+          projectId: 'qux',
+          userId: 'p1',
+          status: AccessRequestStatus.APPROVED,
+          token: 't2',
+        })
+
+        const bobProjects = await listProjects({ ownerId: 'bob' })
+        expect(bobProjects.find((p) => p.proj_id === 'foo')?.hasPendingRequests).toBe(false)
+        expect(bobProjects.find((p) => p.proj_id === 'bar')?.hasPendingRequests).toBe(true)
+        expect(bobProjects.find((p) => p.proj_id === 'qux')?.hasPendingRequests).toBe(false)
       })
     })
   })
@@ -385,6 +424,104 @@ describe('project model', () => {
       expect(got.collaborators['four'].length).toBe(2)
       expect(got.collaborators['four'].map((c) => c.id)[0]).toBe('bob')
       expect(got.collaborators['four'].map((c) => c.id)[1]).toBe('carol')
+    })
+  })
+
+  describe('updateGithubRepository', () => {
+    beforeEach(async () => {
+      await createTestUser(prisma, { id: 'bob' })
+      await createTestUser(prisma, { id: 'alice' })
+      await createTestProject(prisma, { id: 'one', ownerId: 'bob' })
+      await prisma.project.update({
+        where: { proj_id: 'one' },
+        data: { github_repository: 'something' },
+      })
+    })
+
+    it('errors if the project is not found', async () => {
+      const fn = async () =>
+        updateGithubRepository({ projectId: 'unknown', userId: 'bob', repository: null })
+      await expect(fn).rejects.toThrow('not found')
+    })
+
+    it('errors if the user does not own the project', async () => {
+      const fn = async () =>
+        updateGithubRepository({ projectId: 'one', userId: 'alice', repository: null })
+      await expect(fn).rejects.toThrow('not found')
+    })
+
+    it('updates the repository string (null)', async () => {
+      await updateGithubRepository({ projectId: 'one', userId: 'bob', repository: null })
+      const project = await prisma.project.findUnique({
+        where: { proj_id: 'one' },
+        select: { github_repository: true },
+      })
+      if (project == null) {
+        throw new Error('expected project not to be null')
+      }
+      expect(project.github_repository).toBe(null)
+    })
+
+    it('updates the repository string (without branch)', async () => {
+      await updateGithubRepository({
+        projectId: 'one',
+        userId: 'bob',
+        repository: { owner: 'foo', repository: 'bar', branch: null },
+      })
+      const project = await prisma.project.findUnique({
+        where: { proj_id: 'one' },
+        select: { github_repository: true },
+      })
+      if (project == null) {
+        throw new Error('expected project not to be null')
+      }
+      expect(project.github_repository).toBe('foo/bar')
+    })
+
+    it('updates the repository string (with branch)', async () => {
+      await updateGithubRepository({
+        projectId: 'one',
+        userId: 'bob',
+        repository: { owner: 'foo', repository: 'bar', branch: 'baz' },
+      })
+      const project = await prisma.project.findUnique({
+        where: { proj_id: 'one' },
+        select: { github_repository: true },
+      })
+      if (project == null) {
+        throw new Error('expected project not to be null')
+      }
+      expect(project.github_repository).toBe('foo/bar:baz')
+    })
+
+    it('updates the repository string (with branch), trimming to max lengths', async () => {
+      const repo = {
+        owner:
+          'foooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo',
+        repository:
+          'barrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr',
+        branch:
+          'bazzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz',
+      }
+      await updateGithubRepository({
+        projectId: 'one',
+        userId: 'bob',
+        repository: repo,
+      })
+      const project = await prisma.project.findUnique({
+        where: { proj_id: 'one' },
+        select: { github_repository: true },
+      })
+      if (project == null) {
+        throw new Error('expected project not to be null')
+      }
+      expect(project.github_repository).toBe(
+        repo.owner.slice(0, MaxGithubOwnerLength) +
+          '/' +
+          repo.repository.slice(0, MaxGithubRepositoryLength) +
+          ':' +
+          repo.branch.slice(0, MaxGithubBranchNameLength),
+      )
     })
   })
 })

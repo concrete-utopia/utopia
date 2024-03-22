@@ -1,7 +1,7 @@
 import moment from 'moment'
 import React from 'react'
 import { useProjectsStore } from '../store'
-import type { ProjectWithoutContent } from '../types'
+import type { ProjectListing } from '../types'
 import { assertNever } from './assertNever'
 
 export function useSortCompareProject() {
@@ -9,7 +9,7 @@ export function useSortCompareProject() {
   const sortAscending = useProjectsStore((store) => store.sortAscending)
 
   return React.useCallback(
-    (a: ProjectWithoutContent, b: ProjectWithoutContent): number => {
+    (a: ProjectListing, b: ProjectListing): number => {
       switch (sortCriteria) {
         case 'title':
           return sortAscending ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title)
@@ -34,7 +34,7 @@ export function useProjectMatchesQuery() {
   const sanitizedQuery = React.useMemo(() => searchQuery.trim().toLowerCase(), [searchQuery])
 
   return React.useCallback(
-    (project: ProjectWithoutContent): boolean => {
+    (project: ProjectListing): boolean => {
       if (sanitizedQuery.length === 0) {
         return true
       }
@@ -49,7 +49,7 @@ export function useProjectIsOnActiveOperation() {
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
 
   return React.useCallback(
-    (project: ProjectWithoutContent): boolean => {
+    (project: ProjectListing): boolean => {
       return !activeOperations.some((op) => {
         switch (selectedCategory) {
           case 'allProjects':

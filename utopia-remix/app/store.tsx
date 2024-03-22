@@ -2,7 +2,7 @@ import type { StoreApi } from 'zustand'
 import { createStore, useStore } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 import type { Category, SortCriteria } from './routes/projects'
-import type { Operation } from './types'
+import type { Operation, ProjectAccessRequestWithUserDetails } from './types'
 import { areBaseOperationsEquivalent } from './types'
 import type { BrowserEnvironmentType } from './env.server'
 import React from 'react'
@@ -20,6 +20,11 @@ const initialProjectsStoreStatePersisted: ProjectsStoreStatePersisted = {
   gridView: true,
 }
 
+export type SharingProjectAccessRequests = {
+  state: 'loading' | 'ready'
+  requests: ProjectAccessRequestWithUserDetails[]
+}
+
 // State portion that will not be persisted
 interface ProjectsStoreStateNonPersisted {
   selectedProjectId: string | null
@@ -28,6 +33,7 @@ interface ProjectsStoreStateNonPersisted {
   operations: OperationWithKey[]
   env: BrowserEnvironmentType | null
   sharingProjectId: string | null
+  sharingProjectAccessRequests: SharingProjectAccessRequests
 }
 
 const initialProjectsStoreStateNonPersisted: ProjectsStoreStateNonPersisted = {
@@ -37,6 +43,7 @@ const initialProjectsStoreStateNonPersisted: ProjectsStoreStateNonPersisted = {
   operations: [],
   env: null,
   sharingProjectId: null,
+  sharingProjectAccessRequests: { state: 'ready', requests: [] },
 }
 
 type ProjectsStoreState = ProjectsStoreStatePersisted & ProjectsStoreStateNonPersisted
@@ -52,6 +59,7 @@ interface ProjectsStoreActions {
   removeOperation: (key: string) => void
   updateOperation: (key: string, data: { errored: boolean }) => void
   setSharingProjectId: (projectId: string | null) => void
+  setSharingProjectAccessRequests: (requests: SharingProjectAccessRequests) => void
 }
 
 type ProjectsStore = ProjectsStoreState & ProjectsStoreActions
@@ -112,6 +120,9 @@ export const createProjectsStore = (
           },
           setSharingProjectId: (projectId) => {
             return set(() => ({ sharingProjectId: projectId }))
+          },
+          setSharingProjectAccessRequests: (requests) => {
+            return set(() => ({ sharingProjectAccessRequests: requests }))
           },
         }),
         {

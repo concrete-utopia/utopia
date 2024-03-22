@@ -3,7 +3,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   findJSXElementAtStaticPath,
   findJSXElementChildAtPath,
-  removeJSXElementChild,
+  removeJSXElement,
   transformJSXComponentAtPath,
 } from '../../../core/model/element-template-utils'
 import {
@@ -1953,7 +1953,7 @@ export function removeElementAtPath(
     return { components, imports: resultImports }
   } else {
     const removedElement = findJSXElementAtStaticPath(components, staticTarget)
-    const remainingComponents = removeJSXElementChild(staticTarget, components)
+    const remainingComponents = removeJSXElement(staticTarget, components)
     if (removedElement != null) {
       resultImports =
         originalImports != null
