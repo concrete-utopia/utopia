@@ -6,14 +6,8 @@ import { when } from '~/util/react-conditionals'
 import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
 import { SLUGIFY_OPTIONS } from '../routes/internal.projects.$id.rename'
 import { useProjectsStore } from '../store'
-import type { ProjectAccessRequestWithUserDetails, ProjectWithoutContent } from '../types'
-import {
-  AccessRequestStatus,
-  operationDelete,
-  operationDestroy,
-  operationRename,
-  operationRestore,
-} from '../types'
+import type { ProjectListing } from '../types'
+import { operationDelete, operationDestroy, operationRename, operationRestore } from '../types'
 import { assertNever } from '../util/assertNever'
 import { useCopyProjectLinkToClipboard } from '../util/copyProjectLink'
 import { useProjectEditorLink } from '../util/links'
@@ -21,25 +15,24 @@ import { useProjectEditorLink } from '../util/links'
 type ContextMenuEntry =
   | {
       text: string
-      onClick: (project: ProjectWithoutContent) => void
+      onClick: (project: ProjectListing) => void
     }
   | 'separator'
   | 'sharing-dialog'
 
 function contextMenuEntry(
   text: string,
-  onClick: (project: ProjectWithoutContent) => void,
+  onClick: (project: ProjectListing) => void,
 ): ContextMenuEntry {
   return { text, onClick }
 }
 
 export const ProjectActionsMenu = React.memo(
   ({
+    // the project that can receive actions
     project,
-    accessRequests,
   }: {
-    project: ProjectWithoutContent
-    accessRequests: ProjectAccessRequestWithUserDetails[]
+    project: ProjectListing
   }) => {
     const deleteFetcher = useFetcherWithOperation(project.proj_id, 'delete')
     const destroyFetcher = useFetcherWithOperation(project.proj_id, 'destroy')
@@ -158,11 +151,6 @@ export const ProjectActionsMenu = React.memo(
       }
     }, [selectedCategory, actions])
 
-    const pendingAccessRequests = React.useMemo(
-      () => accessRequests.filter((r) => r.status === AccessRequestStatus.PENDING),
-      [accessRequests],
-    )
-
     const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
 
     const onOpenShareDialog = React.useCallback(() => {
@@ -191,7 +179,7 @@ export const ProjectActionsMenu = React.memo(
                 <Flex justify={'between'} align={'center'} width={'100%'}>
                   <Text>Sharing</Text>
                   {when(
-                    pendingAccessRequests.length > 0,
+                    project.hasPendingRequests === true,
                     <DotFilledIcon color='red' height={22} width={22} />,
                   )}
                 </Flex>

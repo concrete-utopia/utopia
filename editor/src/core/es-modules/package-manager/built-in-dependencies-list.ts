@@ -18,7 +18,6 @@ import utopiaAPIPackageJSON from '../../../../../utopia-api/package.json'
 import editorPackageJSON from '../../../../package.json'
 import { applyUIDMonkeyPatch } from '../../../utils/canvas-react-utils'
 import type { UtopiaTsWorkers } from '../../workers/common/worker-types'
-import { createRegisterModuleAndComponentFunction } from '../../property-controls/property-controls-local'
 
 const Stub = {}
 
@@ -61,13 +60,8 @@ function builtInDependency(
 export function createBuiltInDependenciesList(
   workers: UtopiaTsWorkers | null,
 ): BuiltInDependencies {
-  const { registerModule, registerInternalComponent, registerExternalComponent } =
-    createRegisterModuleAndComponentFunction(workers)
   const UtopiaAPISpecial: typeof UtopiaAPI & { Group: any } = {
     ...UtopiaAPI,
-    registerModule: registerModule,
-    registerInternalComponent: registerInternalComponent,
-    registerExternalComponent: registerExternalComponent,
     Group: UtopiaApiGroup,
   }
 

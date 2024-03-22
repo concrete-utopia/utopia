@@ -90,8 +90,8 @@ import { unpatchedCreateRemixDerivedDataMemo } from './remix-derived-data'
 import { maybeClearPseudoInsertMode } from '../canvas-toolbar-states'
 import { isSteganographyEnabled } from '../../../core/shared/stegano-text'
 import { updateCollaborativeProjectContents } from './collaborative-editing'
-import { updateProjectServerStateInStore } from './project-server-state'
 import { ensureSceneIdsExist } from '../../../core/model/scene-id-utils'
+import { maybeUpdatePropertyControls } from '../../../core/property-controls/property-controls-local'
 import { setReactRouterErrorHasBeenLogged } from '../../../core/shared/runtime-report-logs'
 
 type DispatchResultFields = {
@@ -350,6 +350,7 @@ function maybeRequestModelUpdate(
         const updates = parseResult.map((fileResult) => {
           return parseResultToWorkerUpdates(fileResult)
         })
+        void maybeUpdatePropertyControls(parseResult, workers, dispatch)
 
         dispatch([EditorActions.mergeWithPrevUndo([EditorActions.updateFromWorker(updates)])])
         return true
