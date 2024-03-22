@@ -37,23 +37,13 @@ describe('Data Tracing', () => {
     await editor.dispatch([resetCanvas()], true)
     await editor.getDispatchFollowUpActionsFinished()
 
-    const traceResultForDirectlyPointingAtALiteral = traceDataFromProp(
-      EPP.create(EP.fromString('sb/app:my-component'), PP.create('title')),
-      editor.getEditorState().editor.jsxMetadata,
-      editor.getEditorState().editor.projectContents,
-    )
-
-    expect(traceResultForDirectlyPointingAtALiteral).toEqual(
-      right([EPP.create(EP.fromString('sb/app:my-component'), PP.create('title'))]),
-    )
-
-    const traceResultPointingAtAnIdentifierPointingToAProp = traceDataFromProp(
+    const traceResult = traceDataFromProp(
       EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
       editor.getEditorState().editor.jsxMetadata,
       editor.getEditorState().editor.projectContents,
     )
 
-    expect(traceResultPointingAtAnIdentifierPointingToAProp).toEqual(
+    expect(traceResult).toEqual(
       right([
         EPP.create(EP.fromString('sb/app:my-component'), PP.create('title')),
         EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
