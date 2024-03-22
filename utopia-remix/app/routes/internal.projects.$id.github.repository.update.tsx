@@ -1,16 +1,14 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from '@remix-run/node'
 import type { Params } from '@remix-run/react'
-import { ALLOW, validateProjectAccess } from '../handlers/validators'
+import { validateProjectAccess } from '../handlers/validators'
 import { updateGithubRepository } from '../models/project.server'
 import { UserProjectPermission, isUpdateGithubRepositoryBody } from '../types'
 import { ensure, handle, handleOptions, requireUser } from '../util/api.server'
 import { Status } from '../util/statusCodes'
-import { handleGetUserProjectPermissions } from './internal.projects.$id.permissions'
 
 export async function loader(args: LoaderFunctionArgs) {
   return handle(args, {
     OPTIONS: handleOptions,
-    GET: { handler: handleGetUserProjectPermissions, validator: ALLOW },
   })
 }
 
