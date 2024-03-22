@@ -183,7 +183,7 @@ export function updatePropertyControlsOnDescriptorFileUpdate(
   previousPropertyControlsInfo: PropertyControlsInfo,
   componentDescriptorUpdates: ComponentDescriptorFileLookup,
 ): PropertyControlsInfo {
-  const updatedPropertyControls: PropertyControlsInfo = {}
+  let updatedPropertyControls: PropertyControlsInfo = {}
 
   // go through the entries and only keep the ones that are not updated
   Object.entries(previousPropertyControlsInfo).forEach(([moduleName, moduleDescriptor]) => {
