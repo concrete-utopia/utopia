@@ -63,8 +63,6 @@ function SharingDialog({ project }: { project: ProjectListing | null }) {
     return asAccessLevel(project?.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
   }, [project])
 
-  const changeAccessFetcher = useFetcherWithOperation(project?.proj_id ?? null, 'changeAccess')
-
   const projectAccessMatchesSelectedCategory = useProjectAccessMatchesSelectedCategory(project)
 
   const clearSharingProjectId = React.useCallback(() => {
@@ -73,6 +71,7 @@ function SharingDialog({ project }: { project: ProjectListing | null }) {
     }
   }, [setSharingProjectId, projectAccessMatchesSelectedCategory])
 
+  const changeAccessFetcher = useFetcherWithOperation(project?.proj_id ?? null, 'changeAccess')
   useFetcherDataUnkown(changeAccessFetcher, clearSharingProjectId)
 
   const changeProjectAccessLevel = React.useCallback(
