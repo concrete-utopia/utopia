@@ -88,7 +88,7 @@ interface RenderPropPickerProps {
 
 interface PreferredChildToInsert {
   elementToInsert: (uid: string) => JSXElementChild
-  additionalImports: Imports | null
+  additionalImports: Imports
   label: string
 }
 
