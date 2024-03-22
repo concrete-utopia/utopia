@@ -650,6 +650,7 @@ const ProjectCard = React.memo(
     onSelect: () => void
   }) => {
     const projectEditorLink = useProjectEditorLink()
+    const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
 
     const openProject = React.useCallback(() => {
       window.open(projectEditorLink(project.proj_id), '_blank')
@@ -664,6 +665,10 @@ const ProjectCard = React.memo(
       return renaming?.type === 'rename' ? renaming.newTitle : project.title
     }, [project, activeOperations])
 
+    const ownerName = React.useMemo(() => {
+      return getOwnerName(project.owner_id, collaborators)
+    }, [collaborators, project])
+
     const accessRequestsFetcher = useFetcher()
     const [accessRequests, setAccessRequests] = React.useState<
       ProjectAccessRequestWithUserDetails[]
@@ -675,23 +680,27 @@ const ProjectCard = React.memo(
       setAccessRequests,
     )
 
-    const handleSortMenuOpenChange = React.useCallback(() => {
+    const fetchAccessRequests = React.useCallback(() => {
       const action = `/internal/projects/${project.proj_id}/access/requests`
       accessRequestsFetcher.submit({}, { method: 'GET', action: action })
     }, [accessRequestsFetcher, project])
 
-    const ownerName = React.useMemo(() => {
-      return getOwnerName(project.owner_id, collaborators)
-    }, [collaborators, project])
-
-    const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
+    const onOpenChange = React.useCallback(
+      (open: boolean) => {
+        if (open) {
+          fetchAccessRequests()
+        }
+      },
+      [fetchAccessRequests],
+    )
 
     const onOpenShareDialog = React.useCallback(() => {
       setSharingProjectId(project.proj_id)
-    }, [project, setSharingProjectId])
+      fetchAccessRequests()
+    }, [project, setSharingProjectId, fetchAccessRequests])
 
     return (
-      <ContextMenu.Root onOpenChange={handleSortMenuOpenChange}>
+      <ContextMenu.Root onOpenChange={onOpenChange}>
         <ContextMenu.Trigger>
           <div
             style={{
@@ -862,6 +871,7 @@ const ProjectRow = React.memo(
     onSelect: () => void
   }) => {
     const projectEditorLink = useProjectEditorLink()
+    const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
 
     const openProject = React.useCallback(() => {
       window.open(projectEditorLink(project.proj_id), '_blank')
@@ -878,23 +888,31 @@ const ProjectRow = React.memo(
       setAccessRequests,
     )
 
-    const onContextMenuOpenChange = React.useCallback(() => {
-      const action = `/internal/projects/${project.proj_id}/access/requests`
-      accessRequestsFetcher.submit({}, { method: 'GET', action: action })
-    }, [accessRequestsFetcher, project])
-
     const ownerName = React.useMemo(() => {
       return getOwnerName(project.owner_id, collaborators)
     }, [collaborators, project])
 
-    const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
+    const fetchAccessRequests = React.useCallback(() => {
+      const action = `/internal/projects/${project.proj_id}/access/requests`
+      accessRequestsFetcher.submit({}, { method: 'GET', action: action })
+    }, [accessRequestsFetcher, project])
+
+    const onOpenChange = React.useCallback(
+      (open: boolean) => {
+        if (open) {
+          fetchAccessRequests()
+        }
+      },
+      [fetchAccessRequests],
+    )
 
     const onOpenShareDialog = React.useCallback(() => {
       setSharingProjectId(project.proj_id)
-    }, [project, setSharingProjectId])
+      fetchAccessRequests()
+    }, [project, setSharingProjectId, fetchAccessRequests])
 
     return (
-      <ContextMenu.Root onOpenChange={onContextMenuOpenChange}>
+      <ContextMenu.Root onOpenChange={onOpenChange}>
         <ContextMenu.Trigger>
           <div style={{ padding: '8px 0' }}>
             <div
