@@ -564,7 +564,7 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
   return (
     <React.Fragment>
       {when(dataPickerButtonData.popupIsOpen, dataPickerButtonData.DataPickerComponent)}
-      <div css={hoverBackgroundStyle}>
+      <div>
         <SimpleFlexRow
           style={{ gap: 5, justifyContent: 'space-between', flexGrow: 1, paddingRight: 3 }}
         >
@@ -868,7 +868,7 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
   )
 
   return (
-    <div css={hoverBackgroundStyle}>
+    <div>
       <div>
         <InspectorContextMenuWrapper
           id={`context-menu-for-${PP.toString(propPath)}`}
@@ -884,8 +884,6 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
               style={{
                 minWidth: 0,
                 flexGrow: 1,
-                flexShrink: 0,
-                paddingRight: 8,
                 justifyContent: 'space-between',
               }}
               onClick={handleOnClick}
@@ -895,13 +893,14 @@ const RowForObjectControl = React.memo((props: RowForObjectControlProps) => {
                 style={{
                   ...objectPropertyLabelStyle,
                   paddingLeft: indentation,
+                  paddingRight: 4,
                   cursor: props.disableToggling ? 'default' : 'pointer',
                 }}
               >
                 {title}
                 {unless(props.disableToggling, <ObjectIndicator open={open} />)}
               </PropertyLabel>
-              <div style={{ minWidth: 0 }} onClick={stopPropagation}>
+              <div style={{ minWidth: 0, flex: 1 }} onClick={stopPropagation}>
                 <ControlForProp
                   propPath={propPath}
                   propName={propName}
@@ -1213,17 +1212,6 @@ export class ComponentSection extends React.Component<
       return <ComponentSectionInner {...this.props} />
     }
   }
-}
-
-const hoverBackgroundStyle = {
-  '&:hover': {
-    boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,20%)',
-    background: 'hsl(0,0%,0%,1%)',
-  },
-  '&:focus-within': {
-    boxShadow: 'inset 1px 0px 0px 0px hsla(0,0%,0%,20%)',
-    background: 'hsl(0,0%,0%,1%)',
-  },
 }
 
 const objectPropertyLabelStyle = {
