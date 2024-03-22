@@ -37,7 +37,7 @@ import {
 import { setOptionalProp } from '../shared/object-utils'
 import type { EditorDispatch } from '../../components/editor/action-types'
 import { isExportDefault, isParseSuccess } from '../shared/project-file-types'
-import { resolveParamsAndRunJsCode } from '../shared/javascript-cache'
+import type { UiJsxCanvasContextData } from '../../components/canvas/ui-jsx-canvas'
 import * as EditorActions from '../../components/editor/actions/action-creators'
 import { DefaultThirdPartyControlDefinitions } from '../../core/third-party/third-party-controls'
 import type { EditorState } from '../../components/editor/store/editor-state'
@@ -73,20 +73,19 @@ async function parseInsertOption(
   }, parsedParams)
 }
 
-interface ModuleEvaluationParams {
-  moduleName: string
-  moduleCode: string
-}
-type ModuleEvaluator = (_: ModuleEvaluationParams) => any
-function createModuleEvaluator(editor: EditorState): ModuleEvaluator {
-  return (params: ModuleEvaluationParams) => {
+export type ModuleEvaluator = (moduleName: string) => any
+export function createModuleEvaluator(editor: EditorState): ModuleEvaluator {
+  return (moduleName: string) => {
     let mutableContextRef: { current: MutableUtopiaCtxRefData } = { current: {} }
     let topLevelComponentRendererComponents: {
       current: MapLike<MapLike<ComponentRendererComponent>>
     } = { current: {} }
+    const emptyMetadataContext: UiJsxCanvasContextData = {
+      current: { spyValues: { allElementProps: {}, metadata: {}, variablesInScope: {} } },
+    }
 
     let resolvedFiles: MapLike<MapLike<any>> = {}
-    let resolvedFileNames: Array<string> = [params.moduleName]
+    let resolvedFileNames: Array<string> = [moduleName]
 
     const requireFn = editor.codeResultCache.curriedRequireFn(editor.projectContents)
     const resolve = editor.codeResultCache.curriedResolveFn(editor.projectContents)
@@ -111,11 +110,11 @@ function createModuleEvaluator(editor: EditorState): ModuleEvaluator {
         customRequire,
         mutableContextRef,
         topLevelComponentRendererComponents,
-        params.moduleName,
+        moduleName,
         editor.canvas.base64Blobs,
         editor.hiddenInstances,
         editor.displayNoneInstances,
-        metadataContext,
+        emptyMetadataContext,
         NO_OP,
         false,
         filePathResolveResult,
@@ -134,16 +133,16 @@ function createModuleEvaluator(editor: EditorState): ModuleEvaluator {
       )
     }
     return createExecutionScope(
-      params.moduleName,
+      moduleName,
       customRequire,
       mutableContextRef,
       topLevelComponentRendererComponents,
       editor.projectContents,
-      params.moduleName,
+      moduleName,
       editor.canvas.base64Blobs,
       editor.hiddenInstances,
       editor.displayNoneInstances,
-      metadataContext,
+      emptyMetadataContext,
       NO_OP,
       false,
       null,
@@ -158,6 +157,7 @@ export const isComponentDescriptorFile = (filename: string) =>
 async function getComponentDescriptorPromisesFromParseResult(
   parseResult: ParseOrPrintResult,
   workers: UtopiaTsWorkers,
+  evaluator: ModuleEvaluator,
 ): Promise<ComponentDescriptorWithName[]> {
   if (!isParseSuccess(parseResult.parseResult)) {
     return []
@@ -169,21 +169,8 @@ async function getComponentDescriptorPromisesFromParseResult(
     return []
   }
 
-  const combinedTopLevelArbitraryBlock = parseResult.parseResult.combinedTopLevelArbitraryBlock
-
-  if (combinedTopLevelArbitraryBlock == null) {
-    // TODO: error handling
-    return []
-  }
-
   try {
-    // TODO: provide execution scope, so imports can be resolved
-    const evaluatedFile = resolveParamsAndRunJsCode(
-      parseResult.filename,
-      combinedTopLevelArbitraryBlock,
-      {},
-      {},
-    )
+    const evaluatedFile = evaluator(parseResult.filename)
 
     const descriptors = evaluatedFile[exportDefaultIdentifier.name]
 
@@ -229,6 +216,7 @@ export async function maybeUpdatePropertyControls(
   parseResults: Array<ParseOrPrintResult>,
   workers: UtopiaTsWorkers,
   dispatch: EditorDispatch,
+  evaluator: ModuleEvaluator,
 ) {
   let componentDescriptorUpdates: ComponentDescriptorFileLookup = {}
 
@@ -241,7 +229,11 @@ export async function maybeUpdatePropertyControls(
   }
 
   for await (const file of componentDescriptorParseResults) {
-    const descriptors = await getComponentDescriptorPromisesFromParseResult(file, workers)
+    const descriptors = await getComponentDescriptorPromisesFromParseResult(
+      file,
+      workers,
+      evaluator,
+    )
     if (descriptors.length > 0) {
       componentDescriptorUpdates[file.filename] = descriptors
     }

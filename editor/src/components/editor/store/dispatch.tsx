@@ -91,7 +91,11 @@ import { maybeClearPseudoInsertMode } from '../canvas-toolbar-states'
 import { isSteganographyEnabled } from '../../../core/shared/stegano-text'
 import { updateCollaborativeProjectContents } from './collaborative-editing'
 import { ensureSceneIdsExist } from '../../../core/model/scene-id-utils'
-import { maybeUpdatePropertyControls } from '../../../core/property-controls/property-controls-local'
+import type { ModuleEvaluator } from '../../../core/property-controls/property-controls-local'
+import {
+  createModuleEvaluator,
+  maybeUpdatePropertyControls,
+} from '../../../core/property-controls/property-controls-local'
 import { setReactRouterErrorHasBeenLogged } from '../../../core/shared/runtime-report-logs'
 
 type DispatchResultFields = {
@@ -327,6 +331,7 @@ function maybeRequestModelUpdate(
   workers: UtopiaTsWorkers,
   forceParseFiles: Array<string>,
   dispatch: EditorDispatch,
+  evaluator: ModuleEvaluator,
 ): {
   modelUpdateRequested: boolean
   parseOrPrintFinished: Promise<boolean>
@@ -350,7 +355,7 @@ function maybeRequestModelUpdate(
         const updates = parseResult.map((fileResult) => {
           return parseResultToWorkerUpdates(fileResult)
         })
-        void maybeUpdatePropertyControls(parseResult, workers, dispatch)
+        void maybeUpdatePropertyControls(parseResult, workers, dispatch, evaluator)
 
         dispatch([EditorActions.mergeWithPrevUndo([EditorActions.updateFromWorker(updates)])])
         return true
@@ -383,11 +388,13 @@ function maybeRequestModelUpdateOnEditor(
     // Prevent repeated requests
     return { editorState: editor, modelUpdateFinished: Promise.resolve(true) }
   } else {
+    const evaluator = createModuleEvaluator(editor)
     const modelUpdateRequested = maybeRequestModelUpdate(
       editor.projectContents,
       workers,
       editor.forceParseFiles,
       dispatch,
+      evaluator,
     )
 
     const remainingForceParseFiles = editor.forceParseFiles.filter(
