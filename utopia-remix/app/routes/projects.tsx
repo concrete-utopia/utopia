@@ -23,6 +23,7 @@ import { SortingContextMenu } from '../components/sortProjectsContextMenu'
 import { Spinner } from '../components/spinner'
 import { useCleanupOperations } from '../hooks/useCleanupOperations'
 import { useIsDarkMode } from '../hooks/useIsDarkMode'
+import { useOpenShareDialog } from '../hooks/useOpenShareDialog'
 import {
   listDeletedProjects,
   listProjects,
@@ -646,7 +647,6 @@ const ProjectCard = React.memo(
     onSelect: () => void
   }) => {
     const projectEditorLink = useProjectEditorLink()
-    const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
 
     const openProject = React.useCallback(() => {
       window.open(projectEditorLink(project.proj_id), '_blank')
@@ -665,9 +665,7 @@ const ProjectCard = React.memo(
       return getOwnerName(project.owner_id, collaborators)
     }, [collaborators, project])
 
-    const onOpenShareDialog = React.useCallback(() => {
-      setSharingProjectId(project.proj_id)
-    }, [setSharingProjectId, project])
+    const onOpenShareDialog = useOpenShareDialog(project)
 
     return (
       <ContextMenu.Root>
@@ -840,7 +838,6 @@ const ProjectRow = React.memo(
     onSelect: () => void
   }) => {
     const projectEditorLink = useProjectEditorLink()
-    const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
 
     const openProject = React.useCallback(() => {
       window.open(projectEditorLink(project.proj_id), '_blank')
@@ -850,9 +847,7 @@ const ProjectRow = React.memo(
       return getOwnerName(project.owner_id, collaborators)
     }, [collaborators, project])
 
-    const onOpenShareDialog = React.useCallback(() => {
-      setSharingProjectId(project.proj_id)
-    }, [setSharingProjectId, project])
+    const onOpenShareDialog = useOpenShareDialog(project)
 
     return (
       <ContextMenu.Root>
@@ -1011,7 +1006,7 @@ const ProjectRow = React.memo(
 )
 ProjectRow.displayName = 'ProjectRow'
 
-const ProjectBadge = React.memo(
+export const ProjectBadge = React.memo(
   ({
     accessLevel,
     onOpenShareDialog,
@@ -1161,7 +1156,7 @@ const ActiveOperationToast = React.memo(
 )
 ActiveOperationToast.displayName = 'ActiveOperation'
 
-function getOwnerName(ownerId: string, collaborators: Collaborator[]) {
+export function getOwnerName(ownerId: string, collaborators: Collaborator[]) {
   const collaborator = collaborators.find((c) => c.id === ownerId)
   return collaborator?.name ?? 'Utopia user' // This is a fallback required in case we have misconfigured user details
 }

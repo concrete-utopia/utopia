@@ -1,21 +1,14 @@
 import { DotFilledIcon } from '@radix-ui/react-icons'
 import { ContextMenu, Flex, Separator, Text } from '@radix-ui/themes'
-import { useFetcher } from '@remix-run/react'
 import React from 'react'
 import slugify from 'slugify'
 import { when } from '~/util/react-conditionals'
-import { useFetcherData } from '../hooks/useFetcherData'
 import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
+import { useOpenShareDialog } from '../hooks/useOpenShareDialog'
 import { SLUGIFY_OPTIONS } from '../routes/internal.projects.$id.rename'
 import { useProjectsStore } from '../store'
-import type { ProjectAccessRequestWithUserDetails, ProjectListing } from '../types'
-import {
-  isProjectAccessRequestWithUserDetailsArray,
-  operationDelete,
-  operationDestroy,
-  operationRename,
-  operationRestore,
-} from '../types'
+import type { ProjectListing } from '../types'
+import { operationDelete, operationDestroy, operationRename, operationRestore } from '../types'
 import { assertNever } from '../util/assertNever'
 import { useCopyProjectLinkToClipboard } from '../util/copyProjectLink'
 import { useProjectEditorLink } from '../util/links'
@@ -159,39 +152,7 @@ export const ProjectActionsMenu = React.memo(
       }
     }, [selectedCategory, actions])
 
-    const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
-
-    const accessRequestsFetcher = useFetcher()
-    const setSharingProjectAccessRequests = useProjectsStore(
-      (store) => store.setSharingProjectAccessRequests,
-    )
-
-    const fetchAccessRequests = React.useCallback(() => {
-      if (project == null) {
-        return
-      }
-      setSharingProjectAccessRequests({ state: 'loading', requests: [] })
-      const action = `/internal/projects/${project.proj_id}/access/requests`
-      accessRequestsFetcher.submit({}, { method: 'GET', action: action })
-    }, [accessRequestsFetcher, project, setSharingProjectAccessRequests])
-
-    const updateAccessRequests = React.useCallback(
-      (data: ProjectAccessRequestWithUserDetails[]) => {
-        setSharingProjectAccessRequests({ state: 'ready', requests: data })
-      },
-      [setSharingProjectAccessRequests],
-    )
-
-    useFetcherData(
-      accessRequestsFetcher,
-      isProjectAccessRequestWithUserDetailsArray,
-      updateAccessRequests,
-    )
-
-    const onOpenShareDialog = React.useCallback(() => {
-      setSharingProjectId(project.proj_id)
-      fetchAccessRequests()
-    }, [project, setSharingProjectId, fetchAccessRequests])
+    const onOpenShareDialog = useOpenShareDialog(project)
 
     return (
       <ContextMenu.Content style={{ width: 170 }}>
