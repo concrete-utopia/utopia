@@ -14,7 +14,6 @@ import { useFetcherDataUnkown } from '../hooks/useFetcherData'
 import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
 import { useProjectAccessMatchesSelectedCategory } from '../hooks/useProjectMatchingCategory'
 import { useProjectsStore } from '../store'
-import { button } from '../styles/button.css'
 import { sprinkles } from '../styles/sprinkles.css'
 import {
   AccessLevel,
@@ -26,7 +25,6 @@ import {
   type ProjectListing,
 } from '../types'
 import { useCopyProjectLinkToClipboard } from '../util/copyProjectLink'
-import { isLikeApiError } from '../util/errors'
 import { useProjectEditorLink } from '../util/links'
 import { when } from '../util/react-conditionals'
 import { Spinner } from './spinner'
@@ -289,26 +287,16 @@ const ProjectLink = React.memo(({ projectId }: { projectId: string }) => {
   }, [projectId, copyProjectLink])
 
   return (
-    <Flex style={{ gap: 10, alignItems: 'stretch' }}>
-      <input
-        ref={projectLinkRef}
-        type='text'
-        value={projectLink(projectId)}
-        readOnly={true}
-        style={{
-          flex: 1,
-          fontSize: 13,
-          padding: '0px 4px',
-          cursor: 'default',
-        }}
-      />
-      <button
-        className={button({ color: 'subtle' })}
-        style={{ fontSize: 13 }}
-        onClick={onClickCopyProjectLink}
+    <Flex style={{ gap: 10 }}>
+      <Button
+        style={{ fontSize: 11, flex: 1, justifyContent: 'flex-start', cursor: 'default' }}
+        disabled
       >
-        Copy
-      </button>
+        {projectLink(projectId)}
+      </Button>
+      <Button style={{ fontSize: 11 }} onClick={onClickCopyProjectLink}>
+        Copy Link
+      </Button>
     </Flex>
   )
 })
