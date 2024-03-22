@@ -835,11 +835,22 @@ describe('Controls from registering components', () => {
         Link: {
           preferredChildComponents: [
             {
-              additionalImports: undefined,
               name: 'span',
               variants: [
                 {
-                  code: '<span>Link</span>',
+                  importsToAdd: {
+                    '/utopia/storyboard': {
+                      importedAs: null,
+                      importedFromWithin: [
+                        {
+                          alias: 'span',
+                          name: 'span',
+                        },
+                      ],
+                      importedWithName: null,
+                    },
+                  },
+                  insertMenuLabel: 'span',
                 },
               ],
             },
@@ -934,11 +945,22 @@ describe('Controls from registering components', () => {
                 control: 'jsx',
                 preferredChildComponents: [
                   {
-                    additionalImports: undefined,
                     name: 'span',
                     variants: [
                       {
-                        code: '<span>Title</span>',
+                        importsToAdd: {
+                          '/utopia/storyboard': {
+                            importedAs: null,
+                            importedFromWithin: [
+                              {
+                                alias: 'span',
+                                name: 'span',
+                              },
+                            ],
+                            importedWithName: null,
+                          },
+                        },
+                        insertMenuLabel: 'span',
                       },
                     ],
                   },
