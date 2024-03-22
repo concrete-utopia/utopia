@@ -28,7 +28,7 @@ export function useProjectAccessMatchesSelectedCategory(project: ProjectListing 
       case 'sharing':
         return project.ProjectAccess?.access_level === AccessLevel.COLLABORATIVE
       case 'sharedWithMe':
-      case 'trash':
+      case 'archive':
         return false
       default:
         assertNever(selectedCategory)

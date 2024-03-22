@@ -665,7 +665,17 @@ const ProjectCard = React.memo(
       return getOwnerName(project.owner_id, collaborators)
     }, [collaborators, project])
 
-    const onOpenShareDialog = useOpenShareDialog(project)
+    const openShareDialog = useOpenShareDialog(project)
+
+    const canOpenShareDialog = React.useMemo(() => {
+      return project.deleted !== true && !isSharedWithMe
+    }, [project, isSharedWithMe])
+
+    const onOpenShareDialog = React.useCallback(() => {
+      if (canOpenShareDialog) {
+        openShareDialog()
+      }
+    }, [openShareDialog, canOpenShareDialog])
 
     return (
       <ContextMenu.Root>
@@ -847,7 +857,17 @@ const ProjectRow = React.memo(
       return getOwnerName(project.owner_id, collaborators)
     }, [collaborators, project])
 
-    const onOpenShareDialog = useOpenShareDialog(project)
+    const openShareDialog = useOpenShareDialog(project)
+
+    const canOpenShareDialog = React.useMemo(() => {
+      return project.deleted !== true && !isSharedWithMe
+    }, [project, isSharedWithMe])
+
+    const onOpenShareDialog = React.useCallback(() => {
+      if (canOpenShareDialog) {
+        openShareDialog()
+      }
+    }, [openShareDialog, canOpenShareDialog])
 
     return (
       <ContextMenu.Root>
