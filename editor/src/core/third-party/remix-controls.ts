@@ -1,4 +1,7 @@
-import type { ComponentDescriptorsForFile } from '../../components/custom-code/code-file'
+import {
+  defaultComponentDescriptor,
+  type ComponentDescriptorsForFile,
+} from '../../components/custom-code/code-file'
 import {
   emptyComments,
   jsExpressionValue,
@@ -37,7 +40,7 @@ export const RemixRunReactComponents: ComponentDescriptorsForFile = {
           ),
       },
     ],
-    sourceDescriptorFile: null,
+    source: defaultComponentDescriptor(),
   },
   Outlet: {
     properties: {},
@@ -61,6 +64,6 @@ export const RemixRunReactComponents: ComponentDescriptorsForFile = {
         elementToInsert: () => jsxElementWithoutUID('Outlet', [], []),
       },
     ],
-    sourceDescriptorFile: null,
+    source: defaultComponentDescriptor(),
   },
 }

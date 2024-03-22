@@ -6,12 +6,13 @@ import type {
 import type { PropertyControls } from 'utopia-api/core'
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import { packageJsonFileFromProjectContents } from '../../components/assets'
-import type {
-  ComponentDescriptor,
-  ComponentDescriptorWithName,
-  ComponentDescriptorsForFile,
-  ComponentInfo,
-  PropertyControlsInfo,
+import {
+  componentDescriptorFromDescriptorFile,
+  type ComponentDescriptorSource,
+  type ComponentDescriptorWithName,
+  type ComponentInfo,
+  type PropertyControlsInfo,
+  isDefaultComponentDescriptor,
 } from '../../components/custom-code/code-file'
 import { dependenciesFromPackageJson } from '../../components/editor/npm-dependency/npm-dependency'
 import { parseControlDescription } from './property-controls-parser'
@@ -120,7 +121,7 @@ async function getComponentDescriptorPromisesFromParseResult(
           componentName,
           moduleName,
           workers,
-          parseResult.filename,
+          componentDescriptorFromDescriptorFile(parseResult.filename),
         )
 
         if (componentDescriptor.type === 'RIGHT') {
@@ -190,8 +191,8 @@ export function updatePropertyControlsOnDescriptorFileUpdate(
     const stillValidPropertyControls = Object.fromEntries(
       Object.entries(moduleDescriptor).filter(
         ([_, componentDescriptor]) =>
-          componentDescriptor.sourceDescriptorFile == null ||
-          componentDescriptorUpdates[componentDescriptor.sourceDescriptorFile] == null,
+          isDefaultComponentDescriptor(componentDescriptor.source) ||
+          componentDescriptorUpdates[componentDescriptor.source.sourceDescriptorFile] == null,
       ),
     )
     if (Object.keys(stillValidPropertyControls).length > 0) {
@@ -211,7 +212,7 @@ export function updatePropertyControlsOnDescriptorFileUpdate(
         supportsChildren: descriptor.supportsChildren,
         variants: descriptor.variants,
         preferredChildComponents: descriptor.preferredChildComponents ?? [],
-        sourceDescriptorFile: descriptor.sourceDescriptorFile,
+        source: descriptor.source,
       }
     })
   })
@@ -241,7 +242,7 @@ export async function componentDescriptorForComponentToRegister(
   componentName: string,
   moduleName: string,
   workers: UtopiaTsWorkers,
-  sourceDescriptorFile: string | null,
+  source: ComponentDescriptorSource,
 ): Promise<Either<string, ComponentDescriptorWithName>> {
   const insertOptionsToParse = variantsForComponentToRegister(componentToRegister, componentName)
 
@@ -260,7 +261,7 @@ export async function componentDescriptorForComponentToRegister(
       properties: componentToRegister.properties,
       variants: variants,
       moduleName: moduleName,
-      sourceDescriptorFile: sourceDescriptorFile,
+      source: source,
     }
   }, parsedVariants)
 }

@@ -1,8 +1,9 @@
 import type { PropertyControls } from '../../components/custom-code/internal-property-controls'
 import { ReactThreeFiberControls } from '../property-controls/third-party-property-controls/react-three-fiber-controls'
-import type {
-  ComponentDescriptor,
-  ComponentDescriptorsForFile,
+import {
+  defaultComponentDescriptor,
+  type ComponentDescriptor,
+  type ComponentDescriptorsForFile,
 } from '../../components/custom-code/code-file'
 import type { JSXAttributes, JSXAttributesEntry } from '../shared/element-template'
 import {
@@ -49,7 +50,7 @@ function createBasicComponent(
         elementToInsert: () => jsxElementWithoutUID(name, attributes?.() ?? [], []),
       },
     ],
-    sourceDescriptorFile: null,
+    source: defaultComponentDescriptor(),
   }
 }
 
