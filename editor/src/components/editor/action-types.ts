@@ -727,7 +727,7 @@ export interface SetProp {
   target: ElementPath
   propertyPath: PropertyPath
   value: JSExpression
-  importsToAdd?: Imports
+  importsToAdd: Imports
 }
 
 export interface SetFilebrowserRenamingTarget {

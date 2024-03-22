@@ -1745,10 +1745,11 @@ export const UPDATE_FNS = {
         )
       },
       (success, _, underlyingFilePath) => {
-        const updatedImports =
-          action.importsToAdd == null
-            ? success.imports
-            : mergeImports(underlyingFilePath, success.imports, action.importsToAdd).imports
+        const updatedImports = mergeImports(
+          underlyingFilePath,
+          success.imports,
+          action.importsToAdd,
+        ).imports
         return { ...success, imports: updatedImports }
       },
     )

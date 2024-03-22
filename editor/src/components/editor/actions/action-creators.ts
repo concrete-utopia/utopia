@@ -1151,7 +1151,7 @@ export function setProp_UNSAFE(
     target: target,
     propertyPath: propertyPath,
     value: value,
-    importsToAdd: importsToAdd,
+    importsToAdd: importsToAdd ?? {},
   }
 }
 
