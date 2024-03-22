@@ -1144,14 +1144,14 @@ export function setProp_UNSAFE(
   target: ElementPath,
   propertyPath: PropertyPath,
   value: JSExpression,
-  importsToAdd?: Imports,
+  importsToAdd: Imports = {},
 ): SetProp {
   return {
     action: 'SET_PROP',
     target: target,
     propertyPath: propertyPath,
     value: value,
-    importsToAdd: importsToAdd ?? {},
+    importsToAdd: importsToAdd,
   }
 }
 
