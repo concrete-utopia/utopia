@@ -7,7 +7,7 @@ import {
   TestAppUID,
   TestSceneUID,
 } from '../canvas/ui-jsx.test-utils'
-import { act, fireEvent, screen } from '@testing-library/react'
+import { act, fireEvent, screen, waitFor } from '@testing-library/react'
 import type { WindowPoint } from '../../core/shared/math-utils'
 import {
   canvasPoint,
@@ -5025,10 +5025,9 @@ describe('Navigator', () => {
       )
 
       await mouseClickAtPoint(slotElement, { x: 3, y: 3 })
-
-      await wait(100)
-
-      const renderPropOptionElement = renderResult.renderedDOM.getByText('span')
+      const renderPropOptionElement = await waitFor(() =>
+        renderResult.renderedDOM.getByText('span'),
+      )
       await mouseClickAtPoint(renderPropOptionElement, { x: 3, y: 3 })
 
       expect(
@@ -5068,9 +5067,10 @@ describe('Navigator', () => {
 
       await mouseClickAtPoint(slotElement, { x: 3, y: 3 })
 
-      await wait(100)
-
-      const renderPropOptionElement = renderResult.renderedDOM.getByText('Heading')
+      await mouseClickAtPoint(slotElement, { x: 3, y: 3 })
+      const renderPropOptionElement = await waitFor(() =>
+        renderResult.renderedDOM.getByText('Heading'),
+      )
       await mouseClickAtPoint(renderPropOptionElement, { x: 3, y: 3 })
 
       expect(
