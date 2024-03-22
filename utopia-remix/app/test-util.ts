@@ -128,11 +128,12 @@ export function newTestRequest(params?: {
   headers?: { [key: string]: string }
   authCookie?: string
   formData?: FormData
+  body?: string
 }): Request {
   const path = (params?.path ?? '').replace(/^\/+/, '')
   const req = new Request(`http://localhost:8000/` + path, {
     method: params?.method,
-    body: params?.formData,
+    body: params?.formData ?? params?.body,
   })
 
   if (params?.headers != null) {

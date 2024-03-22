@@ -1,10 +1,11 @@
 import { prisma } from '../db.server'
-import type { CollaboratorsByProject, ProjectListing } from '../types'
+import type { CollaboratorsByProject, GithubRepository, ProjectListing } from '../types'
 import {
   AccessLevel,
   AccessRequestStatus,
   asAccessLevel,
   userToCollaborator,
+  githubRepositoryStringOrNull,
   type ProjectWithoutContentFromDB,
 } from '../types'
 import { ensure } from '../util/api.server'
@@ -19,6 +20,7 @@ const selectProjectWithoutContent: Record<keyof ProjectWithoutContentFromDB, tru
   modified_at: true,
   deleted: true,
   ProjectAccess: true,
+  github_repository: true,
 }
 
 export async function listProjects(params: { ownerId: string }): Promise<ProjectListing[]> {
@@ -218,4 +220,21 @@ export async function listSharedWithMeProjectsAndCollaborators(params: {
     projects: projects,
     collaborators: collaboratorsByProject,
   }
+}
+
+export async function updateGithubRepository(params: {
+  projectId: string
+  userId: string
+  repository: GithubRepository | null
+}) {
+  return prisma.project.update({
+    where: {
+      owner_id: params.userId,
+      proj_id: params.projectId,
+    },
+    data: {
+      github_repository: githubRepositoryStringOrNull(params.repository),
+      modified_at: new Date(),
+    },
+  })
 }
