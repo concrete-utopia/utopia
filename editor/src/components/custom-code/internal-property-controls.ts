@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
-import type { PreferredChildComponent } from 'utopia-api'
+import type { ComponentInfo } from './code-file'
+import type { Imports } from '../../core/shared/project-file-types'
 
 export type BaseControlType =
   | 'checkbox'
@@ -214,11 +215,17 @@ export interface Vector4ControlDescription {
   defaultValue?: [number, number, number, number]
 }
 
+export interface PreferredChildComponentDescriptor {
+  name: string
+  imports: Imports
+  variants: Array<ComponentInfo>
+}
+
 export interface JSXControlDescription {
   control: 'jsx'
   label?: string
   visibleByDefault?: boolean
-  preferredChildComponents?: Array<PreferredChildComponent>
+  preferredChildComponents?: Array<PreferredChildComponentDescriptor>
   required?: boolean
   defaultValue?: unknown
 }
