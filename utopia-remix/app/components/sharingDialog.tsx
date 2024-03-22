@@ -72,6 +72,7 @@ function SharingDialog({ project }: { project: ProjectListing | null }) {
       setSharingProjectId(null)
     }
   }, [setSharingProjectId, projectAccessMatchesSelectedCategory])
+
   useFetcherDataUnkown(changeAccessFetcher, clearSharingProjectId)
 
   const changeProjectAccessLevel = React.useCallback(
