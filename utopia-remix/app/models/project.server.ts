@@ -192,23 +192,26 @@ export async function listSharedWithMeProjectsAndCollaborators(params: {
   const projects = projectsAndCollaborators.map(({ Project }) => Project)
 
   // 2. grab the owner details in case some are missing from the collaborators
-  const owners = projects.map((p) => p.owner_id)
-  const ownerDetails = await prisma.userDetails.findMany({ where: { user_id: { in: owners } } })
+  const owners = await prisma.userDetails.findMany({
+    where: { user_id: { in: projects.map((p) => p.owner_id) } },
+  })
 
   // 3. build the collaborators map
   let collaboratorsByProject: CollaboratorsByProject = {}
   for (const project of projects) {
     const projectId = project.proj_id
 
-    let collaboratorUserDetails = project.ProjectCollaborator.map(({ User }) => User)
-    collaboratorsByProject[projectId] = collaboratorUserDetails.map(userToCollaborator)
+    collaboratorsByProject[projectId] = project.ProjectCollaborator.map(({ User }) =>
+      userToCollaborator(User),
+    )
 
     // the owner of a project should always appear in the list of collaborators, so
     // make sure to append it if it's missing
-    const projectCollaborators = collaboratorsByProject[projectId]
-    const ownerIsIncluded = projectCollaborators.some((c) => c.id === project.owner_id)
-    if (!ownerIsIncluded) {
-      const owner = ownerDetails.find((d) => d.user_id === project.owner_id)
+    const collaboratorsIncludeOwner = collaboratorsByProject[projectId].some(
+      (collaborator) => collaborator.id === project.owner_id,
+    )
+    if (!collaboratorsIncludeOwner) {
+      const owner = owners.find(({ user_id }) => user_id === project.owner_id)
       if (owner != null) {
         collaboratorsByProject[projectId].push(userToCollaborator(owner))
       }
