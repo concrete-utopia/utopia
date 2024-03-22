@@ -4,6 +4,7 @@ import React from 'react'
 import slugify from 'slugify'
 import { when } from '~/util/react-conditionals'
 import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
+import { useOpenShareDialog } from '../hooks/useOpenShareDialog'
 import { SLUGIFY_OPTIONS } from '../routes/internal.projects.$id.rename'
 import { useProjectsStore } from '../store'
 import type { ProjectListing } from '../types'
@@ -151,11 +152,7 @@ export const ProjectActionsMenu = React.memo(
       }
     }, [selectedCategory, actions])
 
-    const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
-
-    const onOpenShareDialog = React.useCallback(() => {
-      setSharingProjectId(project.proj_id)
-    }, [project, setSharingProjectId])
+    const onOpenShareDialog = useOpenShareDialog(project)
 
     return (
       <ContextMenu.Content style={{ width: 170 }}>
