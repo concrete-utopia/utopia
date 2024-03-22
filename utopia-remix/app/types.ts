@@ -2,15 +2,22 @@ import type { ProjectAccessRequest, UserDetails } from 'prisma-client'
 import { Prisma } from 'prisma-client'
 import { assertNever } from './util/assertNever'
 
-const fullProject = Prisma.validator<Prisma.ProjectDefaultArgs>()({
+const fullProjectFromDB = Prisma.validator<Prisma.ProjectDefaultArgs>()({
   include: {
     ProjectAccess: true,
   },
 })
 
-type FullProject = Prisma.ProjectGetPayload<typeof fullProject>
+type FullProjectFromDB = Prisma.ProjectGetPayload<typeof fullProjectFromDB>
 
-export interface ProjectListing {
+export type ProjectWithoutContentFromDB = Omit<FullProjectFromDB, 'content'>
+
+export type ProjectListing = ProjectWithoutContentFromDB & {
+  hasPendingRequests?: boolean
+}
+
+// Legacy response
+export interface ProjectListingV1 {
   id: string
   ownerName: string | null
   ownerPicture: string | null
@@ -20,11 +27,9 @@ export interface ProjectListing {
   modifiedAt: string
 }
 
-export type ListProjectsResponse = {
-  projects: ProjectListing[]
+export type ListProjectsResponseV1 = {
+  projects: ProjectListingV1[]
 }
-
-export type ProjectWithoutContent = Omit<FullProject, 'content'>
 
 export interface Collaborator {
   id: string
@@ -108,7 +113,7 @@ interface BaseOperation {
   projectId: string
 }
 
-function baseOperation(project: ProjectWithoutContent): BaseOperation {
+function baseOperation(project: ProjectListing): BaseOperation {
   return {
     projectId: project.proj_id,
   }
@@ -119,7 +124,7 @@ type OperationRename = BaseOperation & {
   newTitle: string
 }
 
-export function operationRename(project: ProjectWithoutContent, newTitle: string): OperationRename {
+export function operationRename(project: ProjectListing, newTitle: string): OperationRename {
   return {
     type: 'rename',
     ...baseOperation(project),
@@ -131,7 +136,7 @@ type OperationDelete = BaseOperation & {
   type: 'delete'
 }
 
-export function operationDelete(project: ProjectWithoutContent): OperationDelete {
+export function operationDelete(project: ProjectListing): OperationDelete {
   return { type: 'delete', ...baseOperation(project) }
 }
 
@@ -139,7 +144,7 @@ type OperationDestroy = BaseOperation & {
   type: 'destroy'
 }
 
-export function operationDestroy(project: ProjectWithoutContent): OperationDestroy {
+export function operationDestroy(project: ProjectListing): OperationDestroy {
   return { type: 'destroy', ...baseOperation(project) }
 }
 
@@ -147,7 +152,7 @@ type OperationRestore = BaseOperation & {
   type: 'restore'
 }
 
-export function operationRestore(project: ProjectWithoutContent): OperationRestore {
+export function operationRestore(project: ProjectListing): OperationRestore {
   return { type: 'restore', ...baseOperation(project) }
 }
 
@@ -157,7 +162,7 @@ type OperationChangeAccess = BaseOperation & {
 }
 
 export function operationChangeAccess(
-  project: ProjectWithoutContent,
+  project: ProjectListing,
   newAccessLevel: AccessLevel,
 ): OperationChangeAccess {
   return { type: 'changeAccess', ...baseOperation(project), newAccessLevel: newAccessLevel }
@@ -169,7 +174,7 @@ type OperationApproveAccessRequest = BaseOperation & {
 }
 
 export function operationApproveAccessRequest(
-  project: ProjectWithoutContent,
+  project: ProjectListing,
   tokenId: string,
 ): OperationApproveAccessRequest {
   return { type: 'approveAccessRequest', ...baseOperation(project), tokenId: tokenId }
@@ -195,7 +200,7 @@ export function areBaseOperationsEquivalent(a: Operation, b: Operation): boolean
   return a.projectId === b.projectId && a.type === b.type
 }
 
-export function getOperationDescription(op: Operation, project: ProjectWithoutContent) {
+export function getOperationDescription(op: Operation, project: ProjectListing) {
   switch (op.type) {
     case 'delete':
       return `Deleting project ${project.title}`
