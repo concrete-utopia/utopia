@@ -1,3 +1,6 @@
+/** @jsxRuntime classic */
+/** @jsx jsx */
+import { jsx } from '@emotion/react'
 import React from 'react'
 import { useContextMenu, Menu } from 'react-contexify'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -13,6 +16,7 @@ import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import type { PreferredChildComponent } from 'utopia-api'
 import { capitalize } from '../../../core/shared/string-utils'
+import { OnClickOutsideHOC, useColorTheme } from '../../../uuiui'
 
 const usePreferredChildrenForTargetProp = (
   target: ElementPath,
@@ -83,6 +87,9 @@ interface RenderPropPickerProps {
 }
 
 export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, target, prop }) => {
+  const colorTheme = useColorTheme()
+  const { hideRenderPropPicker } = useShowRenderPropPicker(id)
+
   const preferredChildrenForTargetProp = usePreferredChildrenForTargetProp(
     EP.parentPath(target),
     prop,
@@ -106,13 +113,17 @@ export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, ta
     [dispatch, prop, target],
   )
 
+  const squashEvents = React.useCallback((e: React.MouseEvent<unknown>) => {
+    e.stopPropagation()
+  }, [])
+
   if (preferredChildrenForTargetProp == null) {
     return null
   }
 
   return (
-    <div>
-      <Menu key={key} id={id} animation={false} style={{ padding: 8 }}>
+    <OnClickOutsideHOC onClickOutside={hideRenderPropPicker}>
+      <Menu key={key} id={id} animation={false} style={{ width: 457 }} onClick={squashEvents}>
         <div
           style={{
             display: 'flex',
@@ -121,7 +132,7 @@ export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, ta
             width: '100%',
             height: '100%',
             padding: 0,
-            backgroundColor: '#ffffff',
+            backgroundColor: colorTheme.white.value,
             borderRadius: 10,
           }}
         >
@@ -131,7 +142,7 @@ export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, ta
               display: 'flex',
               flexDirection: 'column',
               width: '100%',
-              alignItems: 'center',
+              alignItems: 'flex-start',
               justifyContent: 'flex-start',
               gap: 10,
               height: 'max-content',
@@ -139,12 +150,11 @@ export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, ta
           >
             <div
               style={{
-                width: 428,
-                height: 21,
+                width: '100%',
                 display: 'flex',
                 flexDirection: 'row',
                 gap: 5,
-                fontFamily: 'Inter',
+                fontFamily: 'Utopian-Inter',
                 fontWeight: 700,
                 fontSize: '11px',
               }}
@@ -154,19 +164,22 @@ export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, ta
                 style={{
                   border: '1px solid rgb(0, 0, 0, 1)',
                   borderRadius: 3,
+                  height: 21,
                   contain: 'layout',
                 }}
               >
                 <div
                   style={{
                     border: '1px solid rgb(0, 0, 0, 1)',
+                    height: 21,
                     borderRadius: 3,
                     padding: 3,
+                    margin: -1, // Honestly I give up
                     position: 'relative',
                     left: 3,
                     top: -2,
                     lineHeight: 'normal',
-                    backgroundColor: '#ffffff',
+                    backgroundColor: colorTheme.white.value,
                   }}
                 >
                   {capitalize(prop)}
@@ -177,7 +190,7 @@ export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, ta
               <div
                 style={{
                   fontWeight: 600,
-                  color: 'rgb(152, 153, 153, 1)',
+                  color: colorTheme.subduedForeground.value,
                 }}
               >
                 All Components
@@ -190,33 +203,34 @@ export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, ta
                 padding: '10px 6px',
                 display: 'flex',
                 flexDirection: 'row',
-                width: 428,
+                width: '100%',
                 height: 27,
                 alignItems: 'center',
                 justifyContent: 'flex-start',
                 gap: 8,
                 border: '1px solid #989999',
+                borderColor: colorTheme.subduedBorder.value,
                 borderRadius: 6,
               }}
             >
               <div
                 style={{
-                  fontFamily: 'Inter',
+                  fontFamily: 'Utopian-Inter',
                   fontStyle: 'normal',
                   fontWeight: 500,
                   fontSize: '11px',
-                  color: 'rgb(152, 153, 153, 1)',
+                  color: colorTheme.subduedForeground.value,
                 }}
               >
                 🔍
               </div>
               <div
                 style={{
-                  fontFamily: 'Inter',
+                  fontFamily: 'Utopian-Inter',
                   fontStyle: 'normal',
                   fontWeight: 500,
                   fontSize: '11px',
-                  color: 'rgb(152, 153, 153, 1)',
+                  color: colorTheme.subduedForeground.value,
                 }}
               >
                 Filter...
@@ -226,7 +240,9 @@ export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, ta
           <div
             style={{
               width: '100%',
-              border: '1px solid #E9E9E9',
+              borderWidth: '1px 0 0 0',
+              borderStyle: 'solid',
+              borderColor: colorTheme.subduedBorder.value,
             }}
           />
           <div
@@ -243,7 +259,7 @@ export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, ta
               return (
                 <div
                   style={{
-                    backgroundColor: '#F8F8F8',
+                    backgroundColor: colorTheme.bg2.value,
                     borderRadius: 5,
                     display: 'flex',
                     flexDirection: 'column',
@@ -251,7 +267,7 @@ export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, ta
                     height: 'max-content',
                     gap: 5,
                     padding: 10,
-                    fontFamily: 'Inter',
+                    fontFamily: 'Utopian-Inter',
                     fontWeight: 500,
                     fontSize: '11px',
                   }}
@@ -274,8 +290,8 @@ export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, ta
                       <div
                         key={`${idx}-${v.label ?? i}`}
                         onClick={onItemClick(v.code)}
-                        style={{
-                          backgroundColor: '#ECECEC',
+                        css={{
+                          backgroundColor: colorTheme.bg5.value,
                           paddingTop: 5,
                           paddingRight: 5,
                           paddingBottom: 5,
@@ -284,7 +300,13 @@ export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, ta
                           borderTopRightRadius: 3,
                           borderBottomRightRadius: 3,
                           borderBottomLeftRadius: 3,
-                          color: v.label === '(empty)' ? 'rgb(152, 153, 153, 1)' : 'black',
+                          color:
+                            v.label === '(empty)'
+                              ? colorTheme.subduedForeground.value
+                              : colorTheme.black.value,
+                          '&:hover': {
+                            backgroundColor: colorTheme.dynamicBlue10.value,
+                          },
                         }}
                       >
                         {v.label ?? v.code}
@@ -297,6 +319,6 @@ export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, ta
           </div>
         </div>
       </Menu>
-    </div>
+    </OnClickOutsideHOC>
   )
 })
