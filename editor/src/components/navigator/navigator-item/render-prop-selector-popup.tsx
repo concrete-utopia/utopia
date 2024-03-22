@@ -1,7 +1,7 @@
 import React from 'react'
 import { useContextMenu, Menu } from 'react-contexify'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import type { JSXElement } from '../../../core/shared/element-template'
+import type { JSXElement, JSXElementChild } from '../../../core/shared/element-template'
 import {
   getJSXElementNameAsString,
   jsxAttributesFromMap,
@@ -87,7 +87,7 @@ interface RenderPropPickerProps {
 }
 
 interface PreferredChildToInsert {
-  elementToInsert: (uid: string) => JSXElement
+  elementToInsert: (uid: string) => JSXElementChild
   additionalImports: Imports | null
   label: string
 }
@@ -112,11 +112,16 @@ export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, ta
         new Set(getAllUniqueUids(projectContentsRef.current).uniqueIDs),
       )
 
+      const element = preferredChildToInsert.elementToInsert(uid)
+      if (element.type !== 'JSX_ELEMENT') {
+        throw new Error('only JSX elements are supported as preferred components')
+      }
+
       dispatch([
         setProp_UNSAFE(
           EP.parentPath(target),
           PP.create(prop),
-          preferredChildToInsert.elementToInsert(uid),
+          element,
           preferredChildToInsert.additionalImports ?? undefined,
         ),
       ])
@@ -144,8 +149,7 @@ export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, ta
       return [
         {
           label: variant.insertMenuLabel,
-          elementToInsert: (uid) =>
-            elementFromInsertMenuItem(variant.elementToInsert(), uid) as JSXElement,
+          elementToInsert: (uid) => elementFromInsertMenuItem(variant.elementToInsert(), uid),
           additionalImports: variant.importsToAdd,
         },
       ]
