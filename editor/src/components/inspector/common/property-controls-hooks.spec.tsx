@@ -190,6 +190,7 @@ function callPropertyControlsHook(
               elementToInsert: () => jsxElementWithoutUID('App', [], []),
             },
           ],
+          sourceDescriptorFile: null,
         },
         OtherComponent: {
           properties: propertyControlsForOtherComponent,
@@ -202,6 +203,7 @@ function callPropertyControlsHook(
               elementToInsert: () => jsxElementWithoutUID('OtherComponent', [], []),
             },
           ],
+          sourceDescriptorFile: null,
         },
       },
     },

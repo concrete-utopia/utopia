@@ -50,6 +50,7 @@ describe('getComponentGroups', () => {
           supportsChildren: false,
           preferredChildComponents: [],
           variants: [],
+          sourceDescriptorFile: null,
         },
       },
     }
@@ -75,6 +76,7 @@ describe('getDependencyStatus', () => {
           supportsChildren: false,
           preferredChildComponents: [],
           variants: [],
+          sourceDescriptorFile: null,
         },
       },
     }

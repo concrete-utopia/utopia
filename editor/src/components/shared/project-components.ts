@@ -366,6 +366,7 @@ function makeHTMLDescriptor(
         elementToInsert: () => jsxElementWithoutUID(tag, attributes?.() ?? [], []),
       },
     ],
+    sourceDescriptorFile: null,
   }
 }
 
@@ -457,6 +458,7 @@ const conditionalElementsDescriptors: ComponentDescriptorsForFile = {
         importsToAdd: {},
       },
     ],
+    sourceDescriptorFile: null,
   },
 }
 
@@ -472,6 +474,7 @@ const groupElementsDescriptors: ComponentDescriptorsForFile = {
         importsToAdd: groupJSXElementImportsToAdd(),
       },
     ],
+    sourceDescriptorFile: null,
   },
 }
 
@@ -493,6 +496,7 @@ const fragmentElementsDescriptors: ComponentDescriptorsForFile = {
     supportsChildren: true,
     variants: [fragmentComponentInfo],
     preferredChildComponents: [],
+    sourceDescriptorFile: null,
   },
 }
 
@@ -508,6 +512,7 @@ const samplesDescriptors: ComponentDescriptorsForFile = {
         importsToAdd: {},
       },
     ],
+    sourceDescriptorFile: null,
   },
 }
 

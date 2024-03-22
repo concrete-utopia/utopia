@@ -48,6 +48,7 @@ const BasicUtopiaComponentDescriptor = (
           jsxElementWithoutUID(name, [jsxAttributesEntry('style', styleProp(), emptyComments)], []),
       },
     ],
+    sourceDescriptorFile: null,
   }
 }
 
@@ -94,6 +95,7 @@ const BasicUtopiaSceneDescriptor = (
           ),
       },
     ],
+    sourceDescriptorFile: null,
   }
 }
 

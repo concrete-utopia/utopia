@@ -120,6 +120,7 @@ async function getComponentDescriptorPromisesFromParseResult(
           componentName,
           moduleName,
           workers,
+          parseResult.filename,
         )
 
         if (componentDescriptor.type === 'RIGHT') {
@@ -212,6 +213,7 @@ function getPropertyControlsFromComponentDescriptors(
         supportsChildren: propertyControlsForComponent.supportsChildren,
         variants: propertyControlsForComponent.variants,
         preferredChildComponents: propertyControlsForComponent.preferredChildComponents ?? [],
+        sourceDescriptorFile: propertyControlsForComponent.sourceDescriptorFile,
       },
     }
   }
@@ -241,6 +243,7 @@ export async function componentDescriptorForComponentToRegister(
   componentName: string,
   moduleName: string,
   workers: UtopiaTsWorkers,
+  sourceDescriptorFile: string | null,
 ): Promise<Either<string, ComponentDescriptorWithName>> {
   const insertOptionsToParse = variantsForComponentToRegister(componentToRegister, componentName)
 
@@ -259,6 +262,7 @@ export async function componentDescriptorForComponentToRegister(
       properties: componentToRegister.properties,
       variants: variants,
       moduleName: moduleName,
+      sourceDescriptorFile: sourceDescriptorFile,
     }
   }, parsedVariants)
 }

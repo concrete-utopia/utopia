@@ -133,6 +133,7 @@ export interface ComponentDescriptor {
   supportsChildren: boolean
   preferredChildComponents: Array<PreferredChildComponent>
   variants: ComponentInfo[]
+  sourceDescriptorFile: string | null
 }
 
 export function componentDescriptor(
@@ -140,12 +141,14 @@ export function componentDescriptor(
   supportsChildren: boolean,
   variants: Array<ComponentInfo>,
   preferredChildComponents: Array<PreferredChildComponent>,
+  sourceDescriptorFile: string | null,
 ): ComponentDescriptor {
   return {
     properties: properties,
     supportsChildren: supportsChildren,
     variants: variants,
     preferredChildComponents: preferredChildComponents,
+    sourceDescriptorFile: sourceDescriptorFile,
   }
 }
 

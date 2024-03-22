@@ -3248,7 +3248,7 @@ const PreferredChildComponentKeepDeepEquality: KeepDeepEqualityCall<PreferredChi
   )
 
 export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<ComponentDescriptor> =
-  combine4EqualityCalls(
+  combine5EqualityCalls(
     (descriptor) => descriptor.properties,
     PropertyControlsKeepDeepEquality,
     (descriptor) => descriptor.supportsChildren,
@@ -3257,6 +3257,8 @@ export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<Component
     arrayDeepEquality(ComponentInfoKeepDeepEquality),
     (descriptor) => descriptor.preferredChildComponents,
     arrayDeepEquality(PreferredChildComponentKeepDeepEquality),
+    (descriptor) => descriptor.sourceDescriptorFile,
+    nullableDeepEquality(StringKeepDeepEquality),
     componentDescriptor,
   )
 

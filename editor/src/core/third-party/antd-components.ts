@@ -52,6 +52,7 @@ function createBasicComponent(
           ),
       },
     ],
+    sourceDescriptorFile: null,
   }
 }
 

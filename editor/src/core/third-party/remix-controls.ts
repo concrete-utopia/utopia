@@ -37,6 +37,7 @@ export const RemixRunReactComponents: ComponentDescriptorsForFile = {
           ),
       },
     ],
+    sourceDescriptorFile: null,
   },
   Outlet: {
     properties: {},
@@ -60,5 +61,6 @@ export const RemixRunReactComponents: ComponentDescriptorsForFile = {
         elementToInsert: () => jsxElementWithoutUID('Outlet', [], []),
       },
     ],
+    sourceDescriptorFile: null,
   },
 }

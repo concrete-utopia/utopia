@@ -90,6 +90,7 @@ describe('registered property controls', () => {
               "defaultValue": true,
             },
           },
+          "sourceDescriptorFile": "/utopia/components.utopia.js",
           "supportsChildren": false,
           "variants": Array [
             Object {

@@ -49,6 +49,7 @@ function createBasicComponent(
         elementToInsert: () => jsxElementWithoutUID(name, attributes?.() ?? [], []),
       },
     ],
+    sourceDescriptorFile: null,
   }
 }
 
