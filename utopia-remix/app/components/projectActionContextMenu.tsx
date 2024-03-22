@@ -4,16 +4,11 @@ import React from 'react'
 import slugify from 'slugify'
 import { when } from '~/util/react-conditionals'
 import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
+import { useOpenShareDialog } from '../hooks/useOpenShareDialog'
 import { SLUGIFY_OPTIONS } from '../routes/internal.projects.$id.rename'
 import { useProjectsStore } from '../store'
-import type { ProjectAccessRequestWithUserDetails, ProjectWithoutContent } from '../types'
-import {
-  AccessRequestStatus,
-  operationDelete,
-  operationDestroy,
-  operationRename,
-  operationRestore,
-} from '../types'
+import type { ProjectListing } from '../types'
+import { operationDelete, operationDestroy, operationRename, operationRestore } from '../types'
 import { assertNever } from '../util/assertNever'
 import { useCopyProjectLinkToClipboard } from '../util/copyProjectLink'
 import { useProjectEditorLink } from '../util/links'
@@ -21,25 +16,24 @@ import { useProjectEditorLink } from '../util/links'
 type ContextMenuEntry =
   | {
       text: string
-      onClick: (project: ProjectWithoutContent) => void
+      onClick: (project: ProjectListing) => void
     }
   | 'separator'
   | 'sharing-dialog'
 
 function contextMenuEntry(
   text: string,
-  onClick: (project: ProjectWithoutContent) => void,
+  onClick: (project: ProjectListing) => void,
 ): ContextMenuEntry {
   return { text, onClick }
 }
 
 export const ProjectActionsMenu = React.memo(
   ({
+    // the project that can receive actions
     project,
-    accessRequests,
   }: {
-    project: ProjectWithoutContent
-    accessRequests: ProjectAccessRequestWithUserDetails[]
+    project: ProjectListing
   }) => {
     const deleteFetcher = useFetcherWithOperation(project.proj_id, 'delete')
     const destroyFetcher = useFetcherWithOperation(project.proj_id, 'destroy')
@@ -113,10 +107,10 @@ export const ProjectActionsMenu = React.memo(
             renameProject(selectedProject.proj_id, newTitle)
           }
         }),
-        delete: contextMenuEntry('Delete', (selectedProject) => {
+        delete: contextMenuEntry('Archive', (selectedProject) => {
           deleteProject(selectedProject.proj_id)
         }),
-        restore: contextMenuEntry('Restore', (selectedProject) => {
+        restore: contextMenuEntry('Unarchive', (selectedProject) => {
           restoreProject(selectedProject.proj_id)
         }),
         destroy: contextMenuEntry('Delete Permanently', (selectedProject) => {
@@ -151,23 +145,14 @@ export const ProjectActionsMenu = React.memo(
           ]
         case 'sharedWithMe':
           return [actions.open, 'separator', actions.copyLink, actions.fork]
-        case 'trash':
+        case 'archive':
           return [actions.restore, 'separator', actions.destroy]
         default:
           assertNever(selectedCategory)
       }
     }, [selectedCategory, actions])
 
-    const pendingAccessRequests = React.useMemo(
-      () => accessRequests.filter((r) => r.status === AccessRequestStatus.PENDING),
-      [accessRequests],
-    )
-
-    const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
-
-    const onOpenShareDialog = React.useCallback(() => {
-      setSharingProjectId(project.proj_id)
-    }, [project, setSharingProjectId])
+    const onOpenShareDialog = useOpenShareDialog(project)
 
     return (
       <ContextMenu.Content style={{ width: 170 }}>
@@ -189,9 +174,9 @@ export const ProjectActionsMenu = React.memo(
                 onSelect={onOpenShareDialog}
               >
                 <Flex justify={'between'} align={'center'} width={'100%'}>
-                  <Text>Sharing…</Text>
+                  <Text>Sharing</Text>
                   {when(
-                    pendingAccessRequests.length > 0,
+                    project.hasPendingRequests === true,
                     <DotFilledIcon color='red' height={22} width={22} />,
                   )}
                 </Flex>
@@ -204,9 +189,7 @@ export const ProjectActionsMenu = React.memo(
               /* eslint-disable-next-line react/jsx-no-bind */
               onSelect={() => entry.onClick(project)}
               style={{ height: 28, fontSize: 12 }}
-              color={
-                entry.text === 'Delete Permanently' || entry.text === 'Delete' ? 'red' : undefined
-              }
+              color={entry.text === 'Delete Permanently' ? 'red' : undefined}
             >
               {entry.text}
             </ContextMenu.Item>

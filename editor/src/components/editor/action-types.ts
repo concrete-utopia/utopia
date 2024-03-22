@@ -860,7 +860,6 @@ export interface SetShortcut {
 export interface UpdatePropertyControlsInfo {
   action: 'UPDATE_PROPERTY_CONTROLS_INFO'
   propertyControlsInfo: PropertyControlsInfo
-  moduleNamesOrPathsToDelete: Array<string>
 }
 
 export interface UpdateText {

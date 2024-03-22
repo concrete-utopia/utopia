@@ -444,7 +444,7 @@ export function rearrangeJsxChildren(
       ).elements
 }
 
-export function removeJSXElementChild(
+export function removeJSXElement(
   target: StaticElementPath,
   components: Array<UtopiaJSXComponent>,
 ): Array<UtopiaJSXComponent> {
@@ -460,12 +460,20 @@ export function removeJSXElementChild(
       let updatedChildren = parentElement.children.filter((child) => {
         return getUtopiaID(child) != targetID
       })
+      let updatedProps = parentElement.props.filter((prop) => {
+        return (
+          prop.type !== 'JSX_ATTRIBUTES_ENTRY' ||
+          prop.value.type !== 'JSX_ELEMENT' ||
+          prop.value.uid !== targetID
+        )
+      })
       updatedChildren = updatedChildren.map((child) => {
         return removeRelevantChild(child, false)
       })
       return {
         ...parentElement,
         children: updatedChildren,
+        props: updatedProps,
       }
     } else if (isJSXFragment(parentElement)) {
       let updatedChildren = parentElement.children.filter((child) => {

@@ -125,7 +125,6 @@ import { createTestProjectWithCode } from '../../sample-projects/sample-project-
 import { DummyPersistenceMachine } from '../editor/persistence/persistence.test-utils'
 import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 import { createBuiltInDependenciesList } from '../../core/es-modules/package-manager/built-in-dependencies-list'
-import { clearAllRegisteredControls } from './canvas-globals'
 import { createEmptyStrategyState } from './canvas-strategies/interaction-state'
 import type { DomWalkerMutableStateData } from './dom-walker'
 import {
@@ -337,7 +336,6 @@ export async function renderTestEditorWithModel(
 
   // Reset canvas globals
   resetDispatchGlobals()
-  clearAllRegisteredControls()
   clearListOfEvaluatedFiles()
 
   const asyncTestDispatch = async (

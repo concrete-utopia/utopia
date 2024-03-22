@@ -1,4 +1,5 @@
 import {
+  ArchiveIcon,
   ArrowDownIcon,
   ArrowUpIcon,
   AvatarIcon,
@@ -10,19 +11,20 @@ import {
   LockClosedIcon,
   MagnifyingGlassIcon,
   PersonIcon,
-  TrashIcon,
 } from '@radix-ui/react-icons'
 import { Badge, Button, ContextMenu, DropdownMenu, Flex, Text, TextField } from '@radix-ui/themes'
-import { type LoaderFunctionArgs, json } from '@remix-run/node'
+import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import type { UserDetails } from 'prisma-client'
 import React from 'react'
 import { ProjectActionsMenu } from '../components/projectActionContextMenu'
+import { SharingDialogWrapper } from '../components/sharingDialog'
 import { SortingContextMenu } from '../components/sortProjectsContextMenu'
 import { Spinner } from '../components/spinner'
 import { useCleanupOperations } from '../hooks/useCleanupOperations'
 import { useIsDarkMode } from '../hooks/useIsDarkMode'
+import { useOpenShareDialog } from '../hooks/useOpenShareDialog'
 import {
   listDeletedProjects,
   listProjects,
@@ -35,19 +37,8 @@ import { button } from '../styles/button.css'
 import { projectCards, projectRows } from '../styles/projects.css'
 import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
 import { sprinkles } from '../styles/sprinkles.css'
-import type {
-  Collaborator,
-  CollaboratorsByProject,
-  Operation,
-  ProjectWithoutContent,
-} from '../types'
-import {
-  AccessLevel,
-  getOperationDescription,
-  asAccessLevel,
-  isProjectAccessRequestWithUserDetailsArray,
-} from '../types'
-import type { ProjectAccessRequestWithUserDetails } from '../types'
+import type { Collaborator, CollaboratorsByProject, Operation, ProjectListing } from '../types'
+import { AccessLevel, asAccessLevel, getOperationDescription } from '../types'
 import { requireUser } from '../util/api.server'
 import { assertNever } from '../util/assertNever'
 import { auth0LoginURL } from '../util/auth0.server'
@@ -59,13 +50,19 @@ import {
   useProjectMatchesQuery,
   useSortCompareProject,
 } from '../util/use-sort-compare-project'
-import { SharingDialogWrapper } from '../components/sharingDialog'
 import { githubRepositoryPrettyName } from '../util/github'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
 
-const Categories = ['allProjects', 'trash', 'private', 'public', 'sharing', 'sharedWithMe'] as const
+const Categories = [
+  'allProjects',
+  'archive',
+  'private',
+  'public',
+  'sharing',
+  'sharedWithMe',
+] as const
 
 function isCategory(category: unknown): category is Category {
   return Categories.includes(category as Category)
@@ -84,27 +81,27 @@ const categories: {
   private: {
     name: 'Private',
     icon: <LockClosedIcon width='16' height='16' />,
-    description: 'Projects you create that are private to you.',
+    description: 'Projects you create that are private to you will show up here.',
   },
   sharing: {
     name: 'Sharing',
     icon: <PersonIcon width='16' height='16' />,
-    description: 'Projects that you shared to other collaborators.',
-  },
-  public: {
-    name: 'Public',
-    icon: <GlobeIcon width='16' height='16' />,
-    description: 'Public projects you own.',
+    description: 'Projects that you share with other collaborators will show up here.',
   },
   sharedWithMe: {
     name: 'Shared With Me',
     icon: <AvatarIcon width='16' height='16' />,
-    description: 'Projects that you have been added to as a collaborator.',
+    description: 'Projects that you have been added to as a collaborator will show up here.',
   },
-  trash: {
-    name: 'Trash',
-    icon: <TrashIcon width='16' height='16' />,
-    description: 'Deleted projects are kept here until you destroy them for good.',
+  public: {
+    name: 'Public',
+    icon: <GlobeIcon width='16' height='16' />,
+    description: 'Public projects you own will show up here.',
+  },
+  archive: {
+    name: 'Archive',
+    icon: <ArchiveIcon width='16' height='16' />,
+    description: 'Archived projects are kept here until you delete them for good.',
   },
 }
 
@@ -138,9 +135,9 @@ const ProjectsPage = React.memo(() => {
 
   const data = useLoaderData() as unknown as {
     user: UserDetails
-    projects: ProjectWithoutContent[]
-    deletedProjects: ProjectWithoutContent[]
-    projectsSharedWithMe: ProjectWithoutContent[]
+    projects: ProjectListing[]
+    deletedProjects: ProjectListing[]
+    projectsSharedWithMe: ProjectListing[]
     collaborators: CollaboratorsByProject
   }
 
@@ -160,7 +157,7 @@ const ProjectsPage = React.memo(() => {
         return data.projects.filter(
           (p) => p.ProjectAccess?.access_level === AccessLevel.COLLABORATIVE,
         )
-      case 'trash':
+      case 'archive':
         return data.deletedProjects
       case 'sharedWithMe':
         return data.projectsSharedWithMe
@@ -185,6 +182,11 @@ const ProjectsPage = React.memo(() => {
 
     [activeProjects, projectMatchesQuery, sortCompareProject, projectIsOnActiveOperation],
   )
+
+  const sharingProjectId = useProjectsStore((store) => store.sharingProjectId)
+  const sharingProject = React.useMemo(() => {
+    return activeProjects.find((p) => p.proj_id === sharingProjectId) ?? null
+  }, [activeProjects, sharingProjectId])
 
   return (
     <div
@@ -217,6 +219,7 @@ const ProjectsPage = React.memo(() => {
           myUserId={data.user.user_id}
         />
         <ActiveOperations projects={activeProjects} />
+        <SharingDialogWrapper project={sharingProject} />
       </div>
     </div>
   )
@@ -231,6 +234,7 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
   const setSelectedCategory = useProjectsStore((store) => store.setSelectedCategory)
   const setSelectedProjectId = useProjectsStore((store) => store.setSelectedProjectId)
+  const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
 
   const isDarkMode = useIsDarkMode()
 
@@ -244,9 +248,10 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
         setSelectedCategory(category)
         setSearchQuery('')
         setSelectedProjectId(null)
+        setSharingProjectId(null)
       }
     },
-    [setSelectedCategory, setSearchQuery, setSelectedProjectId],
+    [setSelectedCategory, setSearchQuery, setSelectedProjectId, setSharingProjectId],
   )
 
   const onChangeSearchQuery = React.useCallback(
@@ -383,7 +388,7 @@ const TopActionBar = React.memo(() => {
 })
 TopActionBar.displayName = 'TopActionBar'
 
-const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutContent[] }) => {
+const ProjectsHeader = React.memo(({ projects }: { projects: ProjectListing[] }) => {
   const searchQuery = useProjectsStore((store) => store.searchQuery)
   const setSearchQuery = useProjectsStore((store) => store.setSearchQuery)
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
@@ -511,7 +516,7 @@ const ProjectsHeader = React.memo(({ projects }: { projects: ProjectWithoutConte
 })
 ProjectsHeader.displayName = 'CategoryHeader'
 
-const CategoryActions = React.memo(({ projects }: { projects: ProjectWithoutContent[] }) => {
+const CategoryActions = React.memo(({ projects }: { projects: ProjectListing[] }) => {
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
 
   switch (selectedCategory) {
@@ -521,20 +526,20 @@ const CategoryActions = React.memo(({ projects }: { projects: ProjectWithoutCont
     case 'sharing':
     case 'sharedWithMe':
       return null
-    case 'trash':
-      return <CategoryTrashActions projects={projects} />
+    case 'archive':
+      return <CategoryArchiveActions projects={projects} />
     default:
       assertNever(selectedCategory)
   }
 })
 CategoryActions.displayName = 'CategoryActions'
 
-const CategoryTrashActions = React.memo(({ projects }: { projects: ProjectWithoutContent[] }) => {
+const CategoryArchiveActions = React.memo(({ projects }: { projects: ProjectListing[] }) => {
   const fetcher = useFetcher()
 
   const handleEmptyTrash = React.useCallback(() => {
     const ok = window.confirm(
-      'Are you sure? ALL projects in the trash will be deleted permanently.',
+      'Are you sure? ALL projects in the archive will be deleted permanently.',
     )
     if (ok) {
       fetcher.submit({}, { method: 'POST', action: `/internal/projects/destroy` })
@@ -549,11 +554,11 @@ const CategoryTrashActions = React.memo(({ projects }: { projects: ProjectWithou
       variant='soft'
       highContrast
     >
-      Empty Trash
+      Delete All
     </Button>
   )
 })
-CategoryTrashActions.displayName = 'CategoryTrashActions'
+CategoryArchiveActions.displayName = 'CategoryArchiveActions'
 
 const Projects = React.memo(
   ({
@@ -561,7 +566,7 @@ const Projects = React.memo(
     collaborators,
     myUserId,
   }: {
-    projects: ProjectWithoutContent[]
+    projects: ProjectListing[]
     collaborators: CollaboratorsByProject
     myUserId: string
   }) => {
@@ -571,7 +576,7 @@ const Projects = React.memo(
     const setSelectedProjectId = useProjectsStore((store) => store.setSelectedProjectId)
 
     const handleProjectSelect = React.useCallback(
-      (project: ProjectWithoutContent) =>
+      (project: ProjectListing) =>
         setSelectedProjectId(project.proj_id === selectedProjectId ? null : project.proj_id),
       [setSelectedProjectId, selectedProjectId],
     )
@@ -637,7 +642,7 @@ const ProjectCard = React.memo(
     selected,
     onSelect,
   }: {
-    project: ProjectWithoutContent
+    project: ProjectListing
     isSharedWithMe: boolean
     collaborators: Collaborator[]
     selected: boolean
@@ -658,32 +663,26 @@ const ProjectCard = React.memo(
       return renaming?.type === 'rename' ? renaming.newTitle : project.title
     }, [project, activeOperations])
 
-    const accessRequestsFetcher = useFetcher()
-    const [accessRequests, setAccessRequests] = React.useState<
-      ProjectAccessRequestWithUserDetails[]
-    >([])
-
-    React.useEffect(() => {
-      if (accessRequestsFetcher.state === 'idle' && accessRequestsFetcher.data != null) {
-        if (isProjectAccessRequestWithUserDetailsArray(accessRequestsFetcher.data)) {
-          setAccessRequests(accessRequestsFetcher.data)
-        }
-      }
-    }, [accessRequestsFetcher])
-
-    const handleSortMenuOpenChange = React.useCallback(() => {
-      const action = `/internal/projects/${project.proj_id}/access/requests`
-      accessRequestsFetcher.submit({}, { method: 'GET', action: action })
-    }, [accessRequestsFetcher, project])
-
     const ownerName = React.useMemo(() => {
       return getOwnerName(project.owner_id, collaborators)
     }, [collaborators, project])
 
     const isDarkMode = useIsDarkMode()
 
+    const openShareDialog = useOpenShareDialog(project)
+
+    const canOpenShareDialog = React.useMemo(() => {
+      return project.deleted !== true && !isSharedWithMe
+    }, [project, isSharedWithMe])
+
+    const onOpenShareDialog = React.useCallback(() => {
+      if (canOpenShareDialog) {
+        openShareDialog()
+      }
+    }, [openShareDialog, canOpenShareDialog])
+
     return (
-      <ContextMenu.Root onOpenChange={handleSortMenuOpenChange}>
+      <ContextMenu.Root>
         <ContextMenu.Trigger>
           <div
             style={{
@@ -708,13 +707,35 @@ const ProjectCard = React.memo(
                 backgroundAttachment: 'local',
                 backgroundRepeat: 'no-repeat',
                 position: 'relative',
+                filter: project.deleted === true ? 'grayscale(1)' : undefined,
               }}
               onMouseDown={onSelect}
               onDoubleClick={openProject}
             >
               {when(
+                project.hasPendingRequests === true,
+                <Button
+                  radius='full'
+                  variant='solid'
+                  color='red'
+                  size='1'
+                  style={{
+                    position: 'absolute',
+                    right: 8,
+                    top: 8,
+                    fontWeight: 600,
+                    fontSize: 10,
+                    cursor: 'pointer',
+                    height: 20,
+                  }}
+                  onClick={onOpenShareDialog}
+                >
+                  New Requests
+                </Button>,
+              )}
+              {when(
                 project.ProjectAccess?.access_level === AccessLevel.COLLABORATIVE,
-                <div style={{ position: 'absolute', right: 6, bottom: 6, display: 'flex', gap: 2 }}>
+                <div style={{ position: 'absolute', right: 8, bottom: 8, display: 'flex', gap: 2 }}>
                   {collaborators.map((collaborator) => {
                     return (
                       <div
@@ -730,7 +751,6 @@ const ProjectCard = React.memo(
                           alignItems: 'center',
                           fontSize: '.9em',
                           fontWeight: 700,
-                          filter: project.deleted === true ? 'grayscale(1)' : undefined,
                         }}
                         title={collaborator.name ?? UnknownPlayerName}
                         className={sprinkles({
@@ -808,6 +828,7 @@ const ProjectCard = React.memo(
                     )}
                   </Flex>
                   <ProjectBadge
+                    onOpenShareDialog={onOpenShareDialog}
                     accessLevel={
                       asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
                     }
@@ -828,8 +849,7 @@ const ProjectCard = React.memo(
             </div>
           </div>
         </ContextMenu.Trigger>
-        <ProjectActionsMenu project={project} accessRequests={accessRequests} />
-        <SharingDialogWrapper project={project} accessRequests={accessRequests} />
+        <ProjectActionsMenu project={project} />
       </ContextMenu.Root>
     )
   },
@@ -844,7 +864,7 @@ const ProjectRow = React.memo(
     isSharedWithMe,
     onSelect,
   }: {
-    project: ProjectWithoutContent
+    project: ProjectListing
     collaborators: Collaborator[]
     selected: boolean
     isSharedWithMe: boolean
@@ -855,24 +875,6 @@ const ProjectRow = React.memo(
     const openProject = React.useCallback(() => {
       window.open(projectEditorLink(project.proj_id), '_blank')
     }, [project.proj_id, projectEditorLink])
-
-    const accessRequestsFetcher = useFetcher()
-    const [accessRequests, setAccessRequests] = React.useState<
-      ProjectAccessRequestWithUserDetails[]
-    >([])
-
-    React.useEffect(() => {
-      if (accessRequestsFetcher.state === 'idle' && accessRequestsFetcher.data != null) {
-        if (isProjectAccessRequestWithUserDetailsArray(accessRequestsFetcher.data)) {
-          setAccessRequests(accessRequestsFetcher.data)
-        }
-      }
-    }, [accessRequestsFetcher])
-
-    const onContextMenuOpenChange = React.useCallback(() => {
-      const action = `/internal/projects/${project.proj_id}/access/requests`
-      accessRequestsFetcher.submit({}, { method: 'GET', action: action })
-    }, [accessRequestsFetcher, project])
 
     const ownerName = React.useMemo(() => {
       return getOwnerName(project.owner_id, collaborators)
@@ -889,8 +891,20 @@ const ProjectRow = React.memo(
 
     const isDarkMode = useIsDarkMode()
 
+    const openShareDialog = useOpenShareDialog(project)
+
+    const canOpenShareDialog = React.useMemo(() => {
+      return project.deleted !== true && !isSharedWithMe
+    }, [project, isSharedWithMe])
+
+    const onOpenShareDialog = React.useCallback(() => {
+      if (canOpenShareDialog) {
+        openShareDialog()
+      }
+    }, [openShareDialog, canOpenShareDialog])
+
     return (
-      <ContextMenu.Root onOpenChange={onContextMenuOpenChange}>
+      <ContextMenu.Root>
         <ContextMenu.Trigger>
           <div style={{ padding: '8px 0' }}>
             <div
@@ -929,6 +943,7 @@ const ProjectRow = React.memo(
                       backgroundAttachment: 'local',
                       backgroundRepeat: 'no-repeat',
                       position: 'relative',
+                      filter: project.deleted === true ? 'grayscale(1)' : undefined,
                     }}
                   />
                   <Flex style={{ flexDirection: 'column', gap: 0 }}>
@@ -999,7 +1014,6 @@ const ProjectRow = React.memo(
                             alignItems: 'center',
                             fontSize: '.9em',
                             fontWeight: 700,
-                            filter: project.deleted === true ? 'grayscale(1)' : undefined,
                           }}
                           title={collaborator.name ?? UnknownPlayerName}
                           className={sprinkles({
@@ -1017,70 +1031,107 @@ const ProjectRow = React.memo(
                     }),
                   )}
                 </div>
+                <div
+                  style={{
+                    width: 110,
+                    height: 20,
+                  }}
+                >
+                  {when(
+                    project.hasPendingRequests === true,
+                    <Button
+                      radius='full'
+                      variant='solid'
+                      color='red'
+                      size='1'
+                      style={{
+                        fontWeight: 600,
+                        fontSize: 10,
+                        cursor: 'pointer',
+                        height: 20,
+                      }}
+                      onClick={onOpenShareDialog}
+                    >
+                      New Requests
+                    </Button>,
+                  )}
+                </div>
                 <ProjectBadge
                   accessLevel={
                     asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
                   }
+                  onOpenShareDialog={onOpenShareDialog}
                 />
               </div>
             </div>
           </div>
         </ContextMenu.Trigger>
-        <ProjectActionsMenu project={project} accessRequests={accessRequests} />
-        <SharingDialogWrapper project={project} accessRequests={accessRequests} />
+        <ProjectActionsMenu project={project} />
       </ContextMenu.Root>
     )
   },
 )
 ProjectRow.displayName = 'ProjectRow'
 
-const ProjectBadge = React.memo(({ accessLevel }: { accessLevel: AccessLevel }) => {
-  const [color, backgroundColor] = React.useMemo(() => {
-    switch (accessLevel) {
-      case AccessLevel.PRIVATE:
-        return ['rgb(209 78 0)', 'rgb(249 144 0 / 15%)']
-      case AccessLevel.PUBLIC:
-        return ['rgb(0 130 77)', 'rgb(0 155 0 / 9%)']
-      case AccessLevel.WITH_LINK:
-        return ['rgb(0 114 222)', 'rgb(0 132 241 / 9%)']
-      case AccessLevel.COLLABORATIVE:
-        return ['rgb(0 114 222)', 'rgb(0 132 241 / 9%)']
-      default:
-        return ['gray', 'lightgray']
-    }
-  }, [accessLevel])
+export const ProjectBadge = React.memo(
+  ({
+    accessLevel,
+    onOpenShareDialog,
+  }: {
+    accessLevel: AccessLevel
+    onOpenShareDialog: () => void
+  }) => {
+    const [color, backgroundColor] = React.useMemo(() => {
+      switch (accessLevel) {
+        case AccessLevel.PRIVATE:
+          return ['rgb(209 78 0)', 'rgb(249 144 0 / 15%)']
+        case AccessLevel.PUBLIC:
+          return ['rgb(0 130 77)', 'rgb(0 155 0 / 9%)']
+        case AccessLevel.WITH_LINK:
+          return ['rgb(0 114 222)', 'rgb(0 132 241 / 9%)']
+        case AccessLevel.COLLABORATIVE:
+          return ['rgb(0 114 222)', 'rgb(0 132 241 / 9%)']
+        default:
+          return ['gray', 'lightgray']
+      }
+    }, [accessLevel])
 
-  const text = React.useMemo(() => {
-    switch (accessLevel) {
-      case AccessLevel.PRIVATE:
-        return 'Private'
-      case AccessLevel.PUBLIC:
-        return 'Public'
-      case AccessLevel.WITH_LINK:
-        return 'With Link'
-      case AccessLevel.COLLABORATIVE:
-        return 'Collaborative'
-      default:
-        return 'Unknown'
-    }
-  }, [accessLevel])
-  return (
-    <div style={{ width: 80, display: 'flex', justifyContent: 'flex-end' }}>
-      <Badge
-        style={{
-          backgroundColor: backgroundColor,
-          color: color,
-          fontSize: 9,
-        }}
+    const text = React.useMemo(() => {
+      switch (accessLevel) {
+        case AccessLevel.PRIVATE:
+          return 'Private'
+        case AccessLevel.PUBLIC:
+          return 'Public'
+        case AccessLevel.WITH_LINK:
+          return 'With Link'
+        case AccessLevel.COLLABORATIVE:
+          return 'Collaborative'
+        default:
+          return 'Unknown'
+      }
+    }, [accessLevel])
+    return (
+      <div
+        style={{ width: 80, display: 'flex', justifyContent: 'flex-end' }}
+        onClick={onOpenShareDialog}
       >
-        {text}
-      </Badge>
-    </div>
-  )
-})
+        <Badge
+          style={{
+            backgroundColor: backgroundColor,
+            color: color,
+            fontSize: 10,
+            cursor: 'pointer',
+          }}
+        >
+          {text}
+        </Badge>
+      </div>
+    )
+  },
+)
 ProjectBadge.displayName = 'ProjectBadge'
 
-const ActiveOperations = React.memo(({ projects }: { projects: ProjectWithoutContent[] }) => {
+const ActiveOperations = React.memo(({ projects }: { projects: ProjectListing[] }) => {
   const operations = useProjectsStore((store) =>
     store.operations.sort((a, b) => b.startedAt - a.startedAt),
   )
@@ -1117,7 +1168,7 @@ const ActiveOperations = React.memo(({ projects }: { projects: ProjectWithoutCon
 ActiveOperations.displayName = 'ActiveOperations'
 
 const ActiveOperationToast = React.memo(
-  ({ operation, project }: { operation: OperationWithKey; project: ProjectWithoutContent }) => {
+  ({ operation, project }: { operation: OperationWithKey; project: ProjectListing }) => {
     const removeOperation = useProjectsStore((store) => store.removeOperation)
 
     const dismiss = React.useCallback(() => {

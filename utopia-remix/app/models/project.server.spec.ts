@@ -3,6 +3,7 @@ import { prisma } from '../db.server'
 import {
   createTestProject,
   createTestProjectAccess,
+  createTestProjectAccessRequest,
   createTestProjectCollaborator,
   createTestUser,
   truncateTables,
@@ -24,6 +25,7 @@ import {
   MaxGithubBranchNameLength,
   MaxGithubOwnerLength,
   MaxGithubRepositoryLength,
+  AccessRequestStatus,
 } from '../types'
 
 describe('project model', () => {
@@ -32,6 +34,7 @@ describe('project model', () => {
     await truncateTables([
       prisma.projectID,
       prisma.projectAccess,
+      prisma.projectAccessRequest,
       prisma.projectCollaborator,
       prisma.project,
       prisma.userDetails,
@@ -98,6 +101,36 @@ describe('project model', () => {
         const bobProjects = await listProjects({ ownerId: 'bob' })
         expect(bobProjects.length).toBe(2)
         expect(bobProjects.map((p) => p.proj_id)).toEqual(['baz', 'foo'])
+      })
+
+      it('returns whether projects have pending requests', async () => {
+        await createTestProject(prisma, { id: 'foo', ownerId: 'bob' })
+        await createTestProject(prisma, {
+          id: 'bar',
+          ownerId: 'bob',
+          accessLevel: AccessLevel.COLLABORATIVE,
+        })
+        await createTestProject(prisma, { id: 'baz', ownerId: 'alice' })
+        await createTestProject(prisma, { id: 'qux', ownerId: 'bob' })
+
+        await createTestUser(prisma, { id: 'p1' })
+        await createTestProjectAccessRequest(prisma, {
+          projectId: 'bar',
+          userId: 'p1',
+          status: AccessRequestStatus.PENDING,
+          token: 't1',
+        })
+        await createTestProjectAccessRequest(prisma, {
+          projectId: 'qux',
+          userId: 'p1',
+          status: AccessRequestStatus.APPROVED,
+          token: 't2',
+        })
+
+        const bobProjects = await listProjects({ ownerId: 'bob' })
+        expect(bobProjects.find((p) => p.proj_id === 'foo')?.hasPendingRequests).toBe(false)
+        expect(bobProjects.find((p) => p.proj_id === 'bar')?.hasPendingRequests).toBe(true)
+        expect(bobProjects.find((p) => p.proj_id === 'qux')?.hasPendingRequests).toBe(false)
       })
     })
   })

@@ -1,10 +1,10 @@
 import { listProjects } from '../models/project.server'
 import { getManyUserDetails } from '../models/userDetails.server'
-import type { ListProjectsResponse } from '../types'
+import type { ListProjectsResponseV1 } from '../types'
 import { requireUser, ensure } from '../util/api.server'
 import { Status } from '../util/statusCodes'
 
-export async function handleListProjects(req: Request): Promise<ListProjectsResponse> {
+export async function handleListProjects(req: Request): Promise<ListProjectsResponseV1> {
   const user = await requireUser(req)
 
   const projects = await listProjects({ ownerId: user.user_id })

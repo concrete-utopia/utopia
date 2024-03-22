@@ -3,6 +3,7 @@ import {
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
+  renderTestEditorWithModel,
   TestAppUID,
   TestSceneUID,
 } from '../canvas/ui-jsx.test-utils'
@@ -28,13 +29,15 @@ import {
   dragElementWithDNDEvents,
   mouseClickAtPoint,
   mouseDoubleClickAtPoint,
+  pressKey,
 } from '../canvas/event-helpers.test-utils'
 import { NavigatorItemTestId } from './navigator-item/navigator-item'
-import { expectNoAction, selectComponentsForTest } from '../../utils/utils.test-utils'
+import { expectNoAction, selectComponentsForTest, wait } from '../../utils/utils.test-utils'
 import {
   DefaultNavigatorWidth,
   navigatorEntryToKey,
   regularNavigatorEntry,
+  StoryboardFilePath,
   varSafeNavigatorEntryToKey,
 } from '../editor/store/editor-state'
 import {
@@ -50,6 +53,7 @@ import type { Modifiers } from '../../utils/modifiers'
 import { shiftModifier } from '../../utils/modifiers'
 import { back, front } from '../../utils/utils'
 import { createNavigatorReparentPostActionActions } from '../canvas/canvas-strategies/post-action-options/post-action-options'
+import { createModifiedProject } from '../../sample-projects/sample-project-utils.test-utils'
 
 const SceneRootId = 'sceneroot'
 const DragMeId = 'dragme'
@@ -828,29 +832,14 @@ export var storyboard = (props) => {
 }
 `
 
-const projectWithRenderProp = (renderPropSource: string) => `import * as React from 'react'
+const projectWithRenderProp = (renderPropSource: string) =>
+  createModifiedProject({
+    [StoryboardFilePath]: `import * as React from 'react'
 import * as Utopia from 'utopia-api'
 import {
   Storyboard,
   Scene,
-  registerInternalComponent,
 } from 'utopia-api'
-
-registerInternalComponent(Card, {
-  properties: {
-    header: {
-      control: 'jsx',
-      preferredChildComponents: [
-        {
-          name: 'span',
-          variants: [{ code: '<span>Title</span>' }],
-        },
-      ],
-    },
-  },
-  supportsChildren: true,
-  variants: [],
-})
 
 function Card({ header, children }) {
   return (
@@ -905,7 +894,30 @@ export var storyboard = (
     </Scene>
   </Storyboard>
 )
-`
+`,
+    ['/utopia/components.utopia.js']: `const Components = {
+  '/utopia/storyboard': {
+    Card: {
+      properties: {
+        header: {
+          control: 'jsx',
+          preferredChildComponents: [
+            {
+              name: 'span',
+              variants: [{ code: '<span>Title</span>' }],
+            },
+          ],
+        },
+      },
+      supportsChildren: true,
+      variants: [],
+    },
+  },
+}
+
+export default Components
+`,
+  })
 
 function getProjectCodeForMultipleSelection(): string {
   return `import * as React from 'react'
@@ -4901,6 +4913,108 @@ describe('Navigator', () => {
       )
     })
   })
+
+  describe('render props', () => {
+    it('can delete an element descended from a render prop', async () => {
+      const editor = await renderTestEditorWithModel(
+        projectWithRenderProp(
+          `header={<div data-uid='render-prop-parent'><span data-uid='render-prop-child'>hi</span></div>}`,
+        ),
+        'await-first-dom-report',
+      )
+
+      // before the render prop child is deleted
+      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        'regular-sb/scene',
+        'regular-sb/scene/pg',
+        'regular-sb/scene/pg:dbc',
+        'regular-sb/scene/pg:dbc/78c',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
+        'regular-sb/scene/pg:dbc/78c/render-prop-parent',
+        'regular-sb/scene/pg:dbc/78c/render-prop-parent/render-prop-child',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+        'regular-sb/scene/pg:dbc/78c/88b',
+      ])
+
+      await selectComponentsForTest(editor, [
+        EP.fromString('sb/scene/pg:dbc/78c/render-prop-parent/render-prop-child'),
+      ])
+      await pressKey('Backspace')
+
+      // before the render prop child is deleted
+      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        'regular-sb/scene',
+        'regular-sb/scene/pg',
+        'regular-sb/scene/pg:dbc',
+        'regular-sb/scene/pg:dbc/78c',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
+        'regular-sb/scene/pg:dbc/78c/render-prop-parent',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+        'regular-sb/scene/pg:dbc/78c/88b',
+      ])
+
+      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        'regular-sb/scene',
+        'regular-sb/scene/pg',
+        'regular-sb/scene/pg:dbc',
+        'regular-sb/scene/pg:dbc/78c',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
+        'regular-sb/scene/pg:dbc/78c/render-prop-parent',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+        'regular-sb/scene/pg:dbc/78c/88b',
+      ])
+    })
+
+    it(`can delete an element that's inside a render prop`, async () => {
+      const editor = await renderTestEditorWithModel(
+        projectWithRenderProp(
+          `header={<div data-uid='render-prop-parent'><span data-uid='render-prop-child'>hi</span></div>}`,
+        ),
+        'await-first-dom-report',
+      )
+
+      // before the render prop child is deleted
+      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        'regular-sb/scene',
+        'regular-sb/scene/pg',
+        'regular-sb/scene/pg:dbc',
+        'regular-sb/scene/pg:dbc/78c',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
+        'regular-sb/scene/pg:dbc/78c/render-prop-parent',
+        'regular-sb/scene/pg:dbc/78c/render-prop-parent/render-prop-child',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+        'regular-sb/scene/pg:dbc/78c/88b',
+      ])
+
+      await selectComponentsForTest(editor, [
+        EP.fromString('sb/scene/pg:dbc/78c/render-prop-parent'),
+      ])
+      await pressKey('Backspace')
+
+      // before the render prop child is deleted
+      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        'regular-sb/scene',
+        'regular-sb/scene/pg',
+        'regular-sb/scene/pg:dbc',
+        'regular-sb/scene/pg:dbc/78c',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
+        'slot_sb/scene/pg:dbc/78c/prop-label-header',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+        'regular-sb/scene/pg:dbc/78c/88b',
+      ])
+
+      expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+        'regular-sb/scene',
+        'regular-sb/scene/pg',
+        'regular-sb/scene/pg:dbc',
+        'regular-sb/scene/pg:dbc/78c',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
+        'slot_sb/scene/pg:dbc/78c/prop-label-header',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+        'regular-sb/scene/pg:dbc/78c/88b',
+      ])
+    })
+  })
 })
 
 describe('Navigator row order', () => {
@@ -5198,7 +5312,7 @@ describe('Navigator row order', () => {
   })
 
   it('is correct for a project with elements with render prop', async () => {
-    const renderResult = await renderTestEditorWithCode(
+    const renderResult = await renderTestEditorWithModel(
       projectWithRenderProp('header={<span>Title</span>}'),
       'await-first-dom-report',
     )
@@ -5230,14 +5344,46 @@ describe('Navigator row order', () => {
       'regular-sb/scene/pg:dbc/78c/88b',
     ])
   })
-  it('is correct for a project with elements with missing render prop', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      projectWithRenderProp(''), // <- no render prop
+  it('is correct for a project with elements with string render prop', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      projectWithRenderProp('header={"Title"}'),
       'await-first-dom-report',
     )
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
+    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
+      [
+        'regular-sb/scene',
+        'regular-sb/scene/pg',
+        'regular-sb/scene/pg:dbc',
+        'regular-sb/scene/pg:dbc/78c',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
+        'synthetic-sb/scene/pg:dbc/78c/d4a-attribute',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+        'regular-sb/scene/pg:dbc/78c/88b',
+      ],
+    )
+    expect(
+      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+    ).toEqual([
+      'regular-sb/scene',
+      'regular-sb/scene/pg',
+      'regular-sb/scene/pg:dbc',
+      'regular-sb/scene/pg:dbc/78c',
+      'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
+      'synthetic-sb/scene/pg:dbc/78c/d4a-attribute',
+      'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+      'regular-sb/scene/pg:dbc/78c/88b',
+    ])
+  })
+  it('is correct for a project with elements with missing render prop', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      projectWithRenderProp(''), // <- no render prop
+      'await-first-dom-report',
+    )
+
+    await renderResult.getDispatchFollowUpActionsFinished()
     expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
       [
         'regular-sb/scene',
@@ -5264,7 +5410,7 @@ describe('Navigator row order', () => {
     ])
   })
   it('is correct for a project with elements with render prop set to `null`', async () => {
-    const renderResult = await renderTestEditorWithCode(
+    const renderResult = await renderTestEditorWithModel(
       projectWithRenderProp('header={null}'),
       'await-first-dom-report',
     )
