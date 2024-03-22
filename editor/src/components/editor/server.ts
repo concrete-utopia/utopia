@@ -619,6 +619,9 @@ export async function updateGithubRepository(
   projectId: string,
   githubRepository: (GithubRepo & { branch: string | null }) | null,
 ): Promise<void> {
+  if (!isBackendBFF()) {
+    return
+  }
   const url = urljoin(`/internal/projects/${projectId}/github/repository/update`)
   const response = await fetch(url, {
     method: 'POST',
