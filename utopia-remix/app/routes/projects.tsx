@@ -1156,7 +1156,7 @@ const ActiveOperationToast = React.memo(
 )
 ActiveOperationToast.displayName = 'ActiveOperation'
 
-export function getOwnerName(ownerId: string, collaborators: Collaborator[]) {
+function getOwnerName(ownerId: string, collaborators: Collaborator[]) {
   const collaborator = collaborators.find((c) => c.id === ownerId)
   return collaborator?.name ?? 'Utopia user' // This is a fallback required in case we have misconfigured user details
 }

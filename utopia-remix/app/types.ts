@@ -254,12 +254,3 @@ export function isProjectAccessRequestWithUserDetailsArray(
     maybe.every(isProjectAccessRequestWithUserDetails)
   )
 }
-
-export type HasPendingRequests = {
-  hasPendingRequests: boolean
-}
-
-export function isHasPendingRequests(u: unknown): u is HasPendingRequests {
-  const maybe = u as HasPendingRequests
-  return u != null && typeof u === 'object' && maybe.hasPendingRequests != null
-}
