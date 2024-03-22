@@ -14,11 +14,13 @@ import type {
   JSXControlDescription,
   PreferredChildComponentDescriptor,
 } from '../../components/custom-code/internal-property-controls'
+import { packageJsonFileFromProjectContents } from '../../components/assets'
 import type {
   ComponentDescriptorWithName,
   ComponentInfo,
   PropertyControlsInfo,
 } from '../../components/custom-code/code-file'
+import { dependenciesFromPackageJson } from '../../components/editor/npm-dependency/npm-dependency'
 import { parseControlDescription } from './property-controls-parser'
 import type { ParseResult } from '../../utils/value-parser-utils'
 import {
@@ -48,8 +50,6 @@ import type { EditorDispatch } from '../../components/editor/action-types'
 import { updatePropertyControlsInfo } from '../../components/editor/actions/action-creators'
 import { DefaultThirdPartyControlDefinitions } from '../third-party/third-party-controls'
 import type { ProjectContentTreeRoot } from '../../components/assets'
-import { packageJsonFileFromProjectContents } from '../../components/assets'
-import { dependenciesFromPackageJson } from '../../components/editor/npm-dependency/npm-dependency'
 
 async function parseInsertOption(
   insertOption: ComponentInsertOption,
@@ -262,6 +262,9 @@ async function makePreferredChildDescriptor(
   const parsedParams = await getCachedParseResultForUserStrings(
     workers,
     allRequiredImports,
+    // this placeholder element is placed here so that
+    // `getCachedParseResultForUserStrings` can be reused to parse the imports
+    // required for the preferred child
     '<placeholder />',
   )
   if (isLeft(parsedParams)) {

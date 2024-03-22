@@ -1,7 +1,7 @@
 import React from 'react'
 import { useContextMenu, Menu } from 'react-contexify'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import type { JSXElement, JSXElementChild } from '../../../core/shared/element-template'
+import type { JSXElementChild } from '../../../core/shared/element-template'
 import {
   getJSXElementNameAsString,
   jsxAttributesFromMap,

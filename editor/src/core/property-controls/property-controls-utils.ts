@@ -13,31 +13,11 @@ import {
   withUnderlyingTarget,
 } from '../../components/editor/store/editor-state'
 import { HtmlElementStyleObjectProps } from '../third-party/html-intrinsic-elements'
-import { packageJsonFileFromProjectContents } from '../../components/assets'
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import { importedFromWhere } from '../../components/editor/import-utils'
 import { absolutePathFromRelativePath } from '../../utils/path-utils'
+import { getThirdPartyControlsIntrinsic } from './property-controls-local'
 import type { PropertyControls } from '../../components/custom-code/internal-property-controls'
-import { dependenciesFromPackageJson } from '../../components/editor/npm-dependency/npm-dependency'
-
-function getThirdPartyControlsIntrinsic(
-  elementName: string,
-  propertyControlsInfo: PropertyControlsInfo,
-  projectContents: ProjectContentTreeRoot,
-): PropertyControls | null {
-  const packageJsonFile = packageJsonFileFromProjectContents(projectContents)
-  const dependencies = dependenciesFromPackageJson(packageJsonFile, 'combined')
-  const foundPackageWithElement = Object.keys(propertyControlsInfo).find((key) => {
-    return (
-      propertyControlsInfo[key][elementName] != null &&
-      dependencies.some((dependency) => dependency.name === key)
-    )
-  })
-  if (foundPackageWithElement != null) {
-    return propertyControlsInfo[foundPackageWithElement]?.[elementName]?.properties
-  }
-  return null
-}
 
 export function propertyControlsForComponentInFile(
   componentName: string,
