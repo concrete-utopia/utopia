@@ -7,9 +7,7 @@ import type { PropertyControls } from 'utopia-api/core'
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import { packageJsonFileFromProjectContents } from '../../components/assets'
 import type {
-  ComponentDescriptor,
   ComponentDescriptorWithName,
-  ComponentDescriptorsForFile,
   ComponentInfo,
   PropertyControlsInfo,
 } from '../../components/custom-code/code-file'
@@ -27,14 +25,28 @@ import {
 import type { ParseOrPrintResult, UtopiaTsWorkers } from '../workers/common/worker-types'
 import { getCachedParseResultForUserStrings } from './property-controls-local-parser-bridge'
 import type { Either } from '../shared/either'
-import { applicative3Either, applicative4Either, mapEither, sequenceEither } from '../shared/either'
+import {
+  applicative3Either,
+  applicative4Either,
+  foldEither,
+  forEachRight,
+  left,
+  mapEither,
+  sequenceEither,
+} from '../shared/either'
 import { setOptionalProp } from '../shared/object-utils'
 import type { EditorDispatch } from '../../components/editor/action-types'
 import { isExportDefault, isParseSuccess } from '../shared/project-file-types'
 import { resolveParamsAndRunJsCode } from '../shared/javascript-cache'
 import * as EditorActions from '../../components/editor/actions/action-creators'
-import { mapArrayToDictionary } from '../shared/array-utils'
 import { DefaultThirdPartyControlDefinitions } from '../../core/third-party/third-party-controls'
+import type { EditorState } from '../../components/editor/store/editor-state'
+import type { MutableUtopiaCtxRefData } from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
+import type { ComponentRendererComponent } from '../../components/canvas/ui-jsx-canvas-renderer/component-renderer-component'
+import type { MapLike } from 'typescript'
+import { attemptToResolveParsedComponents } from '../../components/canvas/ui-jsx-canvas'
+import { NO_OP } from '../shared/utils'
+import { createExecutionScope } from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 
 async function parseInsertOption(
   insertOption: ComponentInsertOption,
@@ -59,6 +71,84 @@ async function parseInsertOption(
       importsToAdd: importsToAdd,
     }
   }, parsedParams)
+}
+
+interface ModuleEvaluationParams {
+  moduleName: string
+  moduleCode: string
+}
+type ModuleEvaluator = (_: ModuleEvaluationParams) => any
+function createModuleEvaluator(editor: EditorState): ModuleEvaluator {
+  return (params: ModuleEvaluationParams) => {
+    let mutableContextRef: { current: MutableUtopiaCtxRefData } = { current: {} }
+    let topLevelComponentRendererComponents: {
+      current: MapLike<MapLike<ComponentRendererComponent>>
+    } = { current: {} }
+
+    let resolvedFiles: MapLike<MapLike<any>> = {}
+    let resolvedFileNames: Array<string> = [params.moduleName]
+
+    const requireFn = editor.codeResultCache.curriedRequireFn(editor.projectContents)
+    const resolve = editor.codeResultCache.curriedResolveFn(editor.projectContents)
+
+    const customRequire = (importOrigin: string, toImport: string) => {
+      if (resolvedFiles[importOrigin] == null) {
+        resolvedFiles[importOrigin] = []
+      }
+      let resolvedFromThisOrigin = resolvedFiles[importOrigin]
+
+      const alreadyResolved = resolvedFromThisOrigin[toImport] !== undefined
+      const filePathResolveResult = alreadyResolved
+        ? left<string, string>('Already resolved')
+        : resolve(importOrigin, toImport)
+
+      forEachRight(filePathResolveResult, (filepath) => resolvedFileNames.push(filepath))
+
+      const resolvedParseSuccess: Either<string, MapLike<any>> = attemptToResolveParsedComponents(
+        resolvedFromThisOrigin,
+        toImport,
+        editor.projectContents,
+        customRequire,
+        mutableContextRef,
+        topLevelComponentRendererComponents,
+        params.moduleName,
+        editor.canvas.base64Blobs,
+        editor.hiddenInstances,
+        editor.displayNoneInstances,
+        metadataContext,
+        NO_OP,
+        false,
+        filePathResolveResult,
+        null,
+      )
+      return foldEither(
+        () => {
+          // We did not find a ParseSuccess, fallback to standard require Fn
+          return requireFn(importOrigin, toImport, false)
+        },
+        (scope) => {
+          // Return an artificial exports object that contains our ComponentRendererComponents
+          return scope
+        },
+        resolvedParseSuccess,
+      )
+    }
+    return createExecutionScope(
+      params.moduleName,
+      customRequire,
+      mutableContextRef,
+      topLevelComponentRendererComponents,
+      editor.projectContents,
+      params.moduleName,
+      editor.canvas.base64Blobs,
+      editor.hiddenInstances,
+      editor.displayNoneInstances,
+      metadataContext,
+      NO_OP,
+      false,
+      null,
+    ).scope
+  }
 }
 
 // TODO: find a better way to detect component descriptor files, e.g. package.json
