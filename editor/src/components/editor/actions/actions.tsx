@@ -3853,7 +3853,10 @@ export const UPDATE_FNS = {
         if (isComponentDescriptorFile(action.filename)) {
           return {
             ...nextEditor,
-            propertyControlsInfo: updatePropertyControlsOnDescriptorFileDelete(action.filename),
+            propertyControlsInfo: updatePropertyControlsOnDescriptorFileDelete(
+              editor.propertyControlsInfo,
+              action.filename,
+            ),
           }
         }
 
