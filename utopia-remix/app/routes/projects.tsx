@@ -48,7 +48,6 @@ import {
   asAccessLevel,
   getOperationDescription,
   isProjectAccessRequestWithUserDetailsArray,
-  AccessRequestStatus,
 } from '../types'
 import { requireUser } from '../util/api.server'
 import { assertNever } from '../util/assertNever'
@@ -685,11 +684,6 @@ const ProjectCard = React.memo(
       return getOwnerName(project.owner_id, collaborators)
     }, [collaborators, project])
 
-    const pendingAccessRequests = React.useMemo(
-      () => accessRequests.filter((r) => r.status === AccessRequestStatus.PENDING),
-      [accessRequests],
-    )
-
     const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
 
     const onOpenShareDialog = React.useCallback(() => {
@@ -728,8 +722,7 @@ const ProjectCard = React.memo(
               onDoubleClick={openProject}
             >
               {when(
-                project.ProjectAccess?.access_level === AccessLevel.COLLABORATIVE &&
-                  pendingAccessRequests.length > 0,
+                project.hasPendingRequests === true,
                 <Button
                   radius='full'
                   variant='solid'
@@ -894,11 +887,6 @@ const ProjectRow = React.memo(
       return getOwnerName(project.owner_id, collaborators)
     }, [collaborators, project])
 
-    const pendingAccessRequests = React.useMemo(
-      () => accessRequests.filter((r) => r.status === AccessRequestStatus.PENDING),
-      [accessRequests],
-    )
-
     const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
 
     const onOpenShareDialog = React.useCallback(() => {
@@ -1027,7 +1015,7 @@ const ProjectRow = React.memo(
                   }}
                 >
                   {when(
-                    pendingAccessRequests.length > 0,
+                    project.hasPendingRequests === true,
                     <Button
                       radius='full'
                       variant='solid'
