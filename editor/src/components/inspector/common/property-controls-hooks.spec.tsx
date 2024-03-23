@@ -34,6 +34,7 @@ import {
 } from '../../../core/shared/element-template'
 import type { PropertyControls } from '../../custom-code/internal-property-controls'
 import { emptyProjectServerState } from '../../editor/store/project-server-state'
+import { defaultComponentDescriptor } from '../../custom-code/code-file'
 
 const TestAppUID2 = 'app-entity-2'
 const TestOtherComponentUID = 'other-component-entity-1'
@@ -190,6 +191,7 @@ function callPropertyControlsHook(
               elementToInsert: () => jsxElementWithoutUID('App', [], []),
             },
           ],
+          source: defaultComponentDescriptor(),
         },
         OtherComponent: {
           properties: propertyControlsForOtherComponent,
@@ -202,6 +204,7 @@ function callPropertyControlsHook(
               elementToInsert: () => jsxElementWithoutUID('OtherComponent', [], []),
             },
           ],
+          source: defaultComponentDescriptor(),
         },
       },
     },

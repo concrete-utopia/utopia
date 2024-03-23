@@ -128,6 +128,7 @@ export interface ComponentDescriptor {
   supportsChildren: boolean
   preferredChildComponents: Array<PreferredChildComponentDescriptor>
   variants: ComponentInfo[]
+  source: ComponentDescriptorSource
 }
 
 export function componentDescriptor(
@@ -135,13 +136,55 @@ export function componentDescriptor(
   supportsChildren: boolean,
   variants: Array<ComponentInfo>,
   preferredChildComponents: Array<PreferredChildComponentDescriptor>,
+  source: ComponentDescriptorSource,
 ): ComponentDescriptor {
   return {
     properties: properties,
     supportsChildren: supportsChildren,
     variants: variants,
     preferredChildComponents: preferredChildComponents,
+    source: source,
   }
+}
+
+export type ComponentDescriptorSource =
+  | DefaultComponentDescriptor
+  | ComponentDescriptorFromDescriptorFile
+
+interface DefaultComponentDescriptor {
+  type: 'DEFAULT'
+}
+
+export function defaultComponentDescriptor(): DefaultComponentDescriptor {
+  return {
+    type: 'DEFAULT',
+  }
+}
+
+export function isDefaultComponentDescriptor(
+  desc: ComponentDescriptorSource,
+): desc is DefaultComponentDescriptor {
+  return desc.type === 'DEFAULT'
+}
+
+export interface ComponentDescriptorFromDescriptorFile {
+  type: 'DESCRIPTOR_FILE'
+  sourceDescriptorFile: string
+}
+
+export function componentDescriptorFromDescriptorFile(
+  sourceDescriptorFile: string,
+): ComponentDescriptorFromDescriptorFile {
+  return {
+    type: 'DESCRIPTOR_FILE',
+    sourceDescriptorFile: sourceDescriptorFile,
+  }
+}
+
+export function isComponentDescriptorFromDescriptorFile(
+  desc: ComponentDescriptorSource,
+): desc is ComponentDescriptorFromDescriptorFile {
+  return desc.type === 'DESCRIPTOR_FILE'
 }
 
 export interface ComponentDescriptorWithName extends ComponentDescriptor {

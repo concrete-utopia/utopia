@@ -453,18 +453,21 @@ import type {
   CodeResult,
   CodeResultCache,
   ComponentDescriptor,
+  ComponentDescriptorSource,
   ComponentDescriptorsForFile,
   ComponentElementToInsert,
   ComponentInfo,
   CurriedResolveFn,
   CurriedUtopiaRequireFn,
   PropertyControlsInfo,
+  ComponentDescriptorFromDescriptorFile,
 } from '../../custom-code/code-file'
 import {
   codeResult,
   codeResultCache,
   componentDescriptor,
   componentInfo,
+  componentDescriptorFromDescriptorFile,
 } from '../../custom-code/code-file'
 import type {
   EvaluationCache,
@@ -3250,8 +3253,38 @@ const PreferredChildComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<Pr
     (name, imports, variants) => ({ name, imports, variants }),
   )
 
+export const DescriptorFileComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<ComponentDescriptorFromDescriptorFile> =
+  combine2EqualityCalls(
+    (descriptor) => descriptor.type,
+    StringKeepDeepEquality,
+    (descriptor) => descriptor.sourceDescriptorFile,
+    StringKeepDeepEquality,
+    componentDescriptorFromDescriptorFile,
+  )
+
+export function ComponentDescriptorSourceKeepDeepEquality(): KeepDeepEqualityCall<ComponentDescriptorSource> {
+  return (oldValue, newValue) => {
+    switch (oldValue.type) {
+      case 'DEFAULT':
+        if (newValue.type === oldValue.type) {
+          return keepDeepEqualityResult(oldValue, true)
+        }
+        break
+      case 'DESCRIPTOR_FILE':
+        if (newValue.type === oldValue.type) {
+          return DescriptorFileComponentDescriptorKeepDeepEquality(oldValue, newValue)
+        }
+        break
+      default:
+        const _exhaustiveCheck: never = oldValue
+        throw new Error(`Unhandled type ${JSON.stringify(oldValue)}`)
+    }
+    return keepDeepEqualityResult(newValue, false)
+  }
+}
+
 export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<ComponentDescriptor> =
-  combine4EqualityCalls(
+  combine5EqualityCalls(
     (descriptor) => descriptor.properties,
     PropertyControlsKeepDeepEquality,
     (descriptor) => descriptor.supportsChildren,
@@ -3260,6 +3293,8 @@ export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<Component
     arrayDeepEquality(ComponentInfoKeepDeepEquality),
     (descriptor) => descriptor.preferredChildComponents,
     arrayDeepEquality(PreferredChildComponentDescriptorKeepDeepEquality),
+    (descriptor) => descriptor.source,
+    ComponentDescriptorSourceKeepDeepEquality(),
     componentDescriptor,
   )
 

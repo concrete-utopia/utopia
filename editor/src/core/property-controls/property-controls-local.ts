@@ -15,7 +15,12 @@ import type {
   PreferredChildComponentDescriptor,
 } from '../../components/custom-code/internal-property-controls'
 import { packageJsonFileFromProjectContents } from '../../components/assets'
+import {
+  componentDescriptorFromDescriptorFile,
+  isDefaultComponentDescriptor,
+} from '../../components/custom-code/code-file'
 import type {
+  ComponentDescriptorSource,
   ComponentDescriptorWithName,
   ComponentInfo,
   PropertyControlsInfo,
@@ -136,6 +141,7 @@ async function getComponentDescriptorPromisesFromParseResult(
           componentName,
           moduleName,
           workers,
+          componentDescriptorFromDescriptorFile(parseResult.filename),
         )
 
         if (componentDescriptor.type === 'RIGHT') {
@@ -152,6 +158,7 @@ async function getComponentDescriptorPromisesFromParseResult(
 }
 
 export async function maybeUpdatePropertyControls(
+  previousPropertyControlsInfo: PropertyControlsInfo,
   parseResults: Array<ParseOrPrintResult>,
   workers: UtopiaTsWorkers,
   dispatch: EditorDispatch,
@@ -174,6 +181,7 @@ export async function maybeUpdatePropertyControls(
   }
 
   const updatedPropertyControlsInfo = updatePropertyControlsOnDescriptorFileUpdate(
+    previousPropertyControlsInfo,
     componentDescriptorUpdates,
   )
   dispatch([updatePropertyControlsInfo(updatedPropertyControlsInfo)])
@@ -183,56 +191,53 @@ interface ComponentDescriptorFileLookup {
   [path: string]: ComponentDescriptorWithName[]
 }
 
-const COMPONENTS_DESCRIPTOR_FILE_CACHE: { current: ComponentDescriptorFileLookup } = {
-  current: {},
-}
-
 export function updatePropertyControlsOnDescriptorFileDelete(
+  previousPropertyControlsInfo: PropertyControlsInfo,
   componentDescriptorFile: string,
 ): PropertyControlsInfo {
-  COMPONENTS_DESCRIPTOR_FILE_CACHE.current[componentDescriptorFile] = []
-  return getPropertyControlsFromComponentDescriptors(COMPONENTS_DESCRIPTOR_FILE_CACHE.current)
+  return updatePropertyControlsOnDescriptorFileUpdate(previousPropertyControlsInfo, {
+    componentDescriptorFile: [],
+  })
 }
 
 export function updatePropertyControlsOnDescriptorFileUpdate(
+  previousPropertyControlsInfo: PropertyControlsInfo,
   componentDescriptorUpdates: ComponentDescriptorFileLookup,
 ): PropertyControlsInfo {
-  Object.entries(componentDescriptorUpdates).forEach(([filename, componentDescriptors]) => {
-    COMPONENTS_DESCRIPTOR_FILE_CACHE.current[filename] = componentDescriptors
+  let updatedPropertyControls: PropertyControlsInfo = {}
+
+  // go through the entries and only keep the ones that are not updated
+  Object.entries(previousPropertyControlsInfo).forEach(([moduleName, moduleDescriptor]) => {
+    const stillValidPropertyControls = Object.fromEntries(
+      Object.entries(moduleDescriptor).filter(
+        ([_, componentDescriptor]) =>
+          isDefaultComponentDescriptor(componentDescriptor.source) ||
+          componentDescriptorUpdates[componentDescriptor.source.sourceDescriptorFile] == null,
+      ),
+    )
+    if (Object.keys(stillValidPropertyControls).length > 0) {
+      updatedPropertyControls[moduleName] = stillValidPropertyControls
+    }
   })
-  return getPropertyControlsFromComponentDescriptors(COMPONENTS_DESCRIPTOR_FILE_CACHE.current)
-}
 
-function getPropertyControlsFromComponentDescriptors(
-  componentDescriptorFiles: ComponentDescriptorFileLookup,
-): PropertyControlsInfo {
-  // TODO: this might not be ideal for perf, but it's a generic problem at this point
-  const allComponentDescriptors = Object.values(componentDescriptorFiles).flatMap(
-    (descriptors) => descriptors,
-  )
+  // go through the updates and add them to the property controls
+  Object.values(componentDescriptorUpdates).forEach((descriptors) => {
+    descriptors.forEach((descriptor) => {
+      if (updatedPropertyControls[descriptor.moduleName] == null) {
+        updatedPropertyControls[descriptor.moduleName] = {}
+      }
 
-  // Adding the default third party controls to the property controls here, but maybe we should do this in the UpdatePropertyControlsInfo action
-  let propertyControls: PropertyControlsInfo = {
-    ...DefaultThirdPartyControlDefinitions,
-  }
+      updatedPropertyControls[descriptor.moduleName][descriptor.componentName] = {
+        properties: descriptor.properties,
+        supportsChildren: descriptor.supportsChildren,
+        variants: descriptor.variants,
+        preferredChildComponents: descriptor.preferredChildComponents ?? [],
+        source: descriptor.source,
+      }
+    })
+  })
 
-  for (const propertyControlsForComponent of allComponentDescriptors) {
-    if (propertyControls[propertyControlsForComponent.moduleName] == null) {
-      propertyControls[propertyControlsForComponent.moduleName] = {}
-    }
-
-    propertyControls[propertyControlsForComponent.moduleName] = {
-      ...propertyControls[propertyControlsForComponent.moduleName],
-      [propertyControlsForComponent.componentName]: {
-        properties: propertyControlsForComponent.properties,
-        supportsChildren: propertyControlsForComponent.supportsChildren,
-        variants: propertyControlsForComponent.variants,
-        preferredChildComponents: propertyControlsForComponent.preferredChildComponents ?? [],
-      },
-    }
-  }
-
-  return propertyControls
+  return updatedPropertyControls
 }
 
 function variantsForComponentToRegister(
@@ -430,6 +435,7 @@ export async function componentDescriptorForComponentToRegister(
   componentName: string,
   moduleName: string,
   workers: UtopiaTsWorkers,
+  source: ComponentDescriptorSource,
 ): Promise<Either<string, ComponentDescriptorWithName>> {
   const insertOptionsToParse = variantsForComponentToRegister(componentToRegister, componentName)
 
@@ -468,6 +474,7 @@ export async function componentDescriptorForComponentToRegister(
       properties: properties.value,
       variants: variants,
       moduleName: moduleName,
+      source: source,
     }
   }, parsedVariants)
 }
