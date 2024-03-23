@@ -579,7 +579,6 @@ import type { CommentFilterMode } from '../../inspector/sections/comment-section
 import type { Collaborator } from '../../../core/shared/multiplayer'
 import type { MultiplayerSubstate } from './store-hook-substore-types'
 import type { PropertyControls } from '../../custom-code/internal-property-controls'
-import { string } from 'prop-types'
 
 export const ProjectMetadataFromServerKeepDeepEquality: KeepDeepEqualityCall<ProjectMetadataFromServer> =
   combine3EqualityCalls(
