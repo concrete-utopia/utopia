@@ -31,6 +31,7 @@ migrateDatabase verbose includeInitial pool = withResource pool $ \connection ->
                               , MigrationFile "007.sql" "./migrations/007.sql"
                               , MigrationFile "008.sql" "./migrations/008.sql"
                               , MigrationFile "009.sql" "./migrations/009.sql"
+                              , MigrationFile "010.sql" "./migrations/010.sql"
                               ]
   let initialMigrationCommand = if includeInitial
                                    then [MigrationFile "initial.sql" "./migrations/initial.sql"]

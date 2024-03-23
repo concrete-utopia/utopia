@@ -8,8 +8,8 @@ export const operationFetcherKeyPrefix = 'operation-'
 /**
  * This is a specialized that returns a fetcher that also updates a given project operation.
  */
-export function useFetcherWithOperation(projectId: string, type: OperationType) {
-  const key = `operation-${projectId}-${type}`
+export function useFetcherWithOperation(projectId: string | null, type: OperationType) {
+  const key = projectId == null ? undefined : `operation-${projectId}-${type}`
 
   const fetcher = useFetcher({ key: key })
   const addOperation = useProjectsStore((store) => store.addOperation)
