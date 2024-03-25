@@ -5644,8 +5644,8 @@ describe('Navigator row order', () => {
         'regular-sb/scene/pg',
         'regular-sb/scene/pg:dbc',
         'regular-sb/scene/pg:dbc/78c',
-        'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-        'slot_sb/scene/pg:dbc/78c/prop-label-header', // <- the slot is shown
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header', // <- the name of this is coming from an import
+        'slot_sb/scene/pg:dbc/78c/prop-label-header',
         'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
         'regular-sb/scene/pg:dbc/78c/88b',
       ],
@@ -5657,8 +5657,8 @@ describe('Navigator row order', () => {
       'regular-sb/scene/pg',
       'regular-sb/scene/pg:dbc',
       'regular-sb/scene/pg:dbc/78c',
-      'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
-      'slot_sb/scene/pg:dbc/78c/prop-label-header', // <- the slot is shown
+      'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header', // <- the name of this is coming from an import
+      'slot_sb/scene/pg:dbc/78c/prop-label-header',
       'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
       'regular-sb/scene/pg:dbc/78c/88b',
     ])

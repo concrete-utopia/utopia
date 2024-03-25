@@ -315,11 +315,9 @@ export function updateEmbeddedPreview(
 
 function maybeRequestModelUpdate(
   projectContents: ProjectContentTreeRoot,
-  previousPropertyControlsInfo: PropertyControlsInfo,
   workers: UtopiaTsWorkers,
   forceParseFiles: Array<string>,
   dispatch: EditorDispatch,
-  evaluator: ModuleEvaluator,
 ): {
   modelUpdateRequested: boolean
   parseOrPrintFinished: Promise<boolean>
@@ -388,14 +386,11 @@ function maybeRequestModelUpdateOnEditor(
     // Prevent repeated requests
     return { editorState: editor, modelUpdateFinished: Promise.resolve(true) }
   } else {
-    const evaluator = createModuleEvaluator(editor)
     const modelUpdateRequested = maybeRequestModelUpdate(
       editor.projectContents,
-      editor.propertyControlsInfo,
       workers,
       editor.forceParseFiles,
       dispatch,
-      evaluator,
     )
 
     const remainingForceParseFiles = editor.forceParseFiles.filter(
