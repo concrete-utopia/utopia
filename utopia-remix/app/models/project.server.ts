@@ -168,30 +168,57 @@ export async function listSharedWithMeProjectsAndCollaborators(params: {
   projects: ProjectListing[]
   collaborators: CollaboratorsByProject
 }> {
-  // 1. grab the project IDs where the user is the collaborator,
-  // is not an owner, are not deleted, and have the COLLABORATIVE access.
-  const projects = await prisma.project.findMany({
+  // 1. grab the projects for which the user is a collaborator, are not deleted, are
+  // collaborative, and the user is not the owner.
+  const projectsAndCollaborators = await prisma.projectCollaborator.findMany({
     where: {
-      ProjectAccess: { access_level: AccessLevel.COLLABORATIVE },
-      ProjectCollaborator: { some: { user_id: params.userId } },
-      owner_id: { not: params.userId },
-      OR: [{ deleted: null }, { deleted: false }],
+      user_id: params.userId, // the user is a collaborator
+      Project: {
+        OR: [{ deleted: null }, { deleted: false }], // project is not deleted
+        owner_id: { not: params.userId }, // the owner is not the user
+        ProjectAccess: { access_level: AccessLevel.COLLABORATIVE }, // the project is collaborative
+      },
     },
     select: {
-      ...selectProjectWithoutContent,
-      ProjectCollaborator: { include: { User: true } },
+      Project: {
+        select: {
+          ...selectProjectWithoutContent,
+          ProjectCollaborator: { select: { User: true } },
+        },
+      },
     },
-    orderBy: { modified_at: 'desc' },
+    orderBy: { Project: { modified_at: 'desc' } },
+  })
+  const projects = projectsAndCollaborators.map(({ Project }) => Project)
+
+  // 2. grab the owner details in case some are missing from the collaborators
+  const owners = await prisma.userDetails.findMany({
+    where: { user_id: { in: projects.map((p) => p.owner_id) } },
   })
 
-  // 2. build the collaborators map
+  // 3. build the collaborators map
   let collaboratorsByProject: CollaboratorsByProject = {}
   for (const project of projects) {
-    const collaboratorUserDetails = project.ProjectCollaborator.map(({ User }) => User)
-    collaboratorsByProject[project.proj_id] = collaboratorUserDetails.map(userToCollaborator)
+    const projectId = project.proj_id
+
+    collaboratorsByProject[projectId] = project.ProjectCollaborator.map(({ User }) =>
+      userToCollaborator(User),
+    )
+
+    // the owner of a project should always appear in the list of collaborators, so
+    // make sure to append it if it's missing
+    const collaboratorsIncludeOwner = collaboratorsByProject[projectId].some(
+      (collaborator) => collaborator.id === project.owner_id,
+    )
+    if (!collaboratorsIncludeOwner) {
+      const owner = owners.find(({ user_id }) => user_id === project.owner_id)
+      if (owner != null) {
+        collaboratorsByProject[projectId].push(userToCollaborator(owner))
+      }
+    }
   }
 
-  // 3. return both projects and collabs
+  // 4. return both projects and collabs
   return {
     projects: projects,
     collaborators: collaboratorsByProject,
