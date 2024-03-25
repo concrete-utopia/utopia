@@ -94,25 +94,7 @@ async function handleMethod<T>(
   validator?: AccessValidator,
 ): Promise<ApiResponse<T> | unknown> {
   try {
-    if (validator != null) {
-      const result = await validator(request, params)
-      if (!result.ok) {
-        throw result.error
-      }
-    }
-
-    const resp = await fn(request, params)
-    if (resp instanceof Response) {
-      let headers = new Headers()
-      resp.headers.forEach((value, key) => {
-        headers.set(key, value)
-      })
-      return new Response(resp.body, {
-        status: resp.status,
-        headers: headers,
-      })
-    }
-    return json(resp, { headers: defaultResponseHeaders() })
+    return await getResponseWithValidation(request, params, fn, { validator: validator })
   } catch (err) {
     const { message, status, name } = getErrorData(err)
 
@@ -123,6 +105,35 @@ async function handleMethod<T>(
       { headers: defaultResponseHeaders(), status: status },
     )
   }
+}
+
+export async function getResponseWithValidation<T>(
+  request: Request,
+  params: Params<string>,
+  fn: (request: Request, params: Params<string>) => Promise<T>,
+  { validator, excludeHeaders }: { validator?: AccessValidator; excludeHeaders?: Set<string> } = {},
+): Promise<ApiResponse<T> | unknown> {
+  if (validator != null) {
+    const result = await validator(request, params)
+    if (!result.ok) {
+      throw result.error
+    }
+  }
+
+  const resp = await fn(request, params)
+  if (resp instanceof Response) {
+    let headers = new Headers()
+    resp.headers.forEach((value, key) => {
+      if (excludeHeaders == null || !excludeHeaders.has(key)) {
+        headers.set(key, value)
+      }
+    })
+    return new Response(resp.body, {
+      status: resp.status,
+      headers: headers,
+    })
+  }
+  return json(resp, { headers: defaultResponseHeaders() })
 }
 
 function getErrorData(err: unknown): { message: string; status: number; name: string } {

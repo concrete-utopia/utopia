@@ -2,29 +2,26 @@ import type { LoaderFunctionArgs } from '@remix-run/node'
 import { validateProjectAccess } from '../handlers/validators'
 import { proxy } from '../util/proxy.server'
 import { UserProjectPermission } from '~/types'
-import { type Params, redirect } from '@remix-run/react'
-import { getProjectIdFromParams } from '../util/api.server'
-
-export async function loader(args: LoaderFunctionArgs) {
-  return getProjectForEditor(args.request, args.params)
-}
+import { redirect } from '@remix-run/react'
+import { getProjectIdFromParams, getResponseWithValidation } from '../util/api.server'
 
 const validator = validateProjectAccess(UserProjectPermission.CAN_VIEW_PROJECT, {
   canRequestAccess: true,
   getProjectId: (params) => getProjectIdFromParams(params, 'id'),
 })
+// due to Remix's current issue with gzip responses (https://github.com/remix-run/remix/issues/6697),
+// we need to remove this header from the response
+const excludeHeaders = new Set(['content-encoding'])
 
-export async function getProjectForEditor(req: Request, params: Params<string>) {
-  const validatorResult = await validator(req, params)
-  if (validatorResult.ok) {
-    const proxyResponse: Response = (await proxy(req, {
-      rawOutput: true,
-    })) as Response
-    return new Response(proxyResponse.body, {
-      headers: { 'content-type': 'text/html' },
-      status: proxyResponse.status,
-    })
-  } else {
-    throw redirect(`/project/${params.id}`)
+export async function loader(args: LoaderFunctionArgs) {
+  try {
+    return await getResponseWithValidation(
+      args.request,
+      args.params,
+      (req: Request) => proxy(req, { rawOutput: true }),
+      { validator: validator, excludeHeaders: excludeHeaders },
+    )
+  } catch (e) {
+    throw redirect(`/project/${args.params.id}`)
   }
 }
