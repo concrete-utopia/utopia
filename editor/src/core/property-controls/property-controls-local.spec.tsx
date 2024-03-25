@@ -4,6 +4,7 @@ import { TestScene0UID } from '../model/test-ui-js-file.test-utils'
 import { createModifiedProject } from '../../sample-projects/sample-project-utils.test-utils'
 import { StoryboardFilePath } from '../../components/editor/store/editor-state'
 import { deleteFile } from '../../components/editor/actions/action-creators'
+import { updateFromCodeEditor } from '../../components/editor/actions/actions-from-vscode'
 
 const project = (componentDescriptorFiles: { [filename: string]: string }) =>
   createModifiedProject({
@@ -431,6 +432,499 @@ describe('Lifecycle management of registering components', () => {
     // property controls from the first descriptor file are gone
     expect(renderResult.getEditorState().editor.propertyControlsInfo).not.toContain('/src/card')
     // property controls from the second descriptor file are still there
+    expect(Object.keys(renderResult.getEditorState().editor.propertyControlsInfo['/src/card2']))
+      .toMatchInlineSnapshot(`
+      Array [
+        "Card2",
+      ]
+    `)
+  })
+  const descriptorFileName1 = '/utopia/components1.utopia.js'
+  const descriptorFileName2 = '/utopia/components2.utopia.js'
+  const descriptorFileContent2 = `const Components = {
+    '/src/card2': {
+      Card2: {
+        supportsChildren: false,
+        properties: {
+          label: {
+            control: 'string-input',
+          },
+        },
+        variants: [],
+      },
+    },
+  }
+  
+  export default Components
+`
+
+  it('Updating a component in a component descriptor file updates the property controls of that component', async () => {
+    const descriptorFileContent1 = `const Components = {
+      '/src/card': {
+        Card: {
+          supportsChildren: false,
+          properties: {
+            label: {
+              control: 'string-input',
+            },
+          },
+          variants: [],
+        },
+      },
+    }
+    
+    export default Components
+  `
+
+    const renderResult = await renderTestEditorWithModel(
+      project({
+        [descriptorFileName1]: descriptorFileContent1,
+        [descriptorFileName2]: descriptorFileContent2,
+      }),
+      'await-first-dom-report',
+    )
+
+    // Card has a label property in the original file
+    expect(
+      Object.keys(
+        renderResult.getEditorState().editor.propertyControlsInfo['/src/card']['Card'].properties,
+      ),
+    ).toMatchInlineSnapshot(`
+      Array [
+        "label",
+      ]
+    `)
+    // Just to check that the property controls from the second descriptor file are there
+    expect(
+      Object.keys(
+        renderResult.getEditorState().editor.propertyControlsInfo['/src/card2']['Card2'].properties,
+      ),
+    ).toMatchInlineSnapshot(`
+      Array [
+        "label",
+      ]
+    `)
+
+    const updatedDescriptorFileContent = `const Components = {
+      '/src/card': {
+        Card: {
+          supportsChildren: false,
+          properties: {
+            label2: {
+              control: 'string-input',
+            },
+          },
+          variants: [],
+        },
+      },
+    }
+
+    export default Components`
+
+    await renderResult.dispatch(
+      [
+        updateFromCodeEditor(
+          descriptorFileName1,
+          descriptorFileContent1,
+          updatedDescriptorFileContent,
+        ),
+      ],
+      true,
+    )
+
+    // Card has a label2 property in the updated file
+    expect(
+      Object.keys(
+        renderResult.getEditorState().editor.propertyControlsInfo['/src/card']['Card'].properties,
+      ),
+    ).toMatchInlineSnapshot(`
+          Array [
+            "label2",
+          ]
+      `)
+    // Card2 has not been changed
+    expect(
+      Object.keys(
+        renderResult.getEditorState().editor.propertyControlsInfo['/src/card2']['Card2'].properties,
+      ),
+    ).toMatchInlineSnapshot(`
+      Array [
+        "label",
+      ]
+    `)
+  })
+  it('Adding a new component in a component descriptor file adds its property controls', async () => {
+    const descriptorFileContent1 = `const Components = {
+      '/src/card': {
+        Card: {
+          supportsChildren: false,
+          properties: {
+            label: {
+              control: 'string-input',
+            },
+          },
+          variants: [],
+        },
+      },
+    }
+    
+    export default Components
+  `
+    const renderResult = await renderTestEditorWithModel(
+      project({
+        [descriptorFileName1]: descriptorFileContent1,
+        [descriptorFileName2]: descriptorFileContent2,
+      }),
+      'await-first-dom-report',
+    )
+    // The Card component is registered from the first descriptor file
+    expect(Object.keys(renderResult.getEditorState().editor.propertyControlsInfo['/src/card']))
+      .toMatchInlineSnapshot(`
+      Array [
+        "Card",
+      ]
+    `)
+    // The Card2 component is registered from the second descriptor file
+    expect(Object.keys(renderResult.getEditorState().editor.propertyControlsInfo['/src/card2']))
+      .toMatchInlineSnapshot(`
+      Array [
+        "Card2",
+      ]
+    `)
+
+    const updatedDescriptorFileContent = `const Components = {
+      '/src/card': {
+        Card: {
+          supportsChildren: false,
+          properties: {
+            label2: {
+              control: 'string-input',
+            },
+          },
+          variants: [],
+        },
+        NewCard: {
+          supportsChildren: false,
+          properties: {
+            label2: {
+              control: 'string-input',
+            },
+          },
+          variants: [],
+        },
+      },
+    }
+
+    export default Components`
+
+    await renderResult.dispatch(
+      [
+        updateFromCodeEditor(
+          descriptorFileName1,
+          descriptorFileContent1,
+          updatedDescriptorFileContent,
+        ),
+      ],
+      true,
+    )
+
+    // The first descriptor file has a new NewCard component in it
+    expect(Object.keys(renderResult.getEditorState().editor.propertyControlsInfo['/src/card']))
+      .toMatchInlineSnapshot(`
+      Array [
+        "Card",
+        "NewCard",
+      ]
+    `)
+    // The second descriptor file has not been changed
+    expect(Object.keys(renderResult.getEditorState().editor.propertyControlsInfo['/src/card2']))
+      .toMatchInlineSnapshot(`
+      Array [
+        "Card2",
+      ]
+    `)
+  })
+  it('Removing a component from a component descriptor file removes its property controls', async () => {
+    const descriptorFileContent1 = `const Components = {
+      '/src/card': {
+        Card: {
+          supportsChildren: false,
+          properties: {
+            label: {
+              control: 'string-input',
+            },
+          },
+          variants: [],
+        },
+        CardToDelete: {
+          supportsChildren: false,
+          properties: {
+            label2: {
+              control: 'string-input',
+            },
+          },
+          variants: [],
+        },
+      },
+    }
+    
+    export default Components
+  `
+    const renderResult = await renderTestEditorWithModel(
+      project({
+        [descriptorFileName1]: descriptorFileContent1,
+        [descriptorFileName2]: descriptorFileContent2,
+      }),
+      'await-first-dom-report',
+    )
+
+    // The Card and CardToDelete component is registered from the first descriptor file
+    expect(Object.keys(renderResult.getEditorState().editor.propertyControlsInfo['/src/card']))
+      .toMatchInlineSnapshot(`
+      Array [
+        "Card",
+        "CardToDelete",
+      ]
+    `)
+    // The Card2 component is registered from the second descriptor file
+    expect(Object.keys(renderResult.getEditorState().editor.propertyControlsInfo['/src/card2']))
+      .toMatchInlineSnapshot(`
+      Array [
+        "Card2",
+      ]
+    `)
+
+    const updatedDescriptorFileContent = `const Components = {
+      '/src/card': {
+        Card: {
+          supportsChildren: false,
+          properties: {
+            label2: {
+              control: 'string-input',
+            },
+          },
+          variants: [],
+        },
+      },
+    }
+
+    export default Components`
+
+    await renderResult.dispatch(
+      [
+        updateFromCodeEditor(
+          descriptorFileName1,
+          descriptorFileContent1,
+          updatedDescriptorFileContent,
+        ),
+      ],
+      true,
+    )
+
+    // The CardToDelete from the first descriptor file has been deleted
+    expect(Object.keys(renderResult.getEditorState().editor.propertyControlsInfo['/src/card']))
+      .toMatchInlineSnapshot(`
+      Array [
+        "Card",
+      ]
+    `)
+    // The second descriptor file has not been changed
+    expect(Object.keys(renderResult.getEditorState().editor.propertyControlsInfo['/src/card2']))
+      .toMatchInlineSnapshot(`
+      Array [
+        "Card2",
+      ]
+    `)
+  })
+  it('Adding a new module to a component descriptor file adds its components', async () => {
+    const descriptorFileContent1 = `const Components = {
+      '/src/card': {
+        Card: {
+          supportsChildren: false,
+          properties: {
+            label: {
+              control: 'string-input',
+            },
+          },
+          variants: [],
+        },
+      },
+    }
+    
+    export default Components
+  `
+    const renderResult = await renderTestEditorWithModel(
+      project({
+        [descriptorFileName1]: descriptorFileContent1,
+        [descriptorFileName2]: descriptorFileContent2,
+      }),
+      'await-first-dom-report',
+    )
+
+    // The Card component from /src/card is registered from the first descriptor file
+    expect(Object.keys(renderResult.getEditorState().editor.propertyControlsInfo['/src/card']))
+      .toMatchInlineSnapshot(`
+      Array [
+        "Card",
+      ]
+    `)
+    // /src/new-module is not registered yet
+    expect(
+      renderResult.getEditorState().editor.propertyControlsInfo['/src/new-module'],
+    ).toBeUndefined()
+    // The Card2 component is registered from the second descriptor file
+    expect(Object.keys(renderResult.getEditorState().editor.propertyControlsInfo['/src/card2']))
+      .toMatchInlineSnapshot(`
+      Array [
+        "Card2",
+      ]
+    `)
+
+    const updatedDescriptorFileContent = `const Components = {
+      '/src/card': {
+        Card: {
+          supportsChildren: false,
+          properties: {
+            label2: {
+              control: 'string-input',
+            },
+          },
+          variants: [],
+        },
+      },
+      '/src/new-module': {
+        NewComp: {
+          supportsChildren: false,
+          properties: {
+            label: {
+              control: 'string-input',
+            },
+          },
+          variants: [],
+        },
+      },
+    }
+
+    export default Components`
+
+    await renderResult.dispatch(
+      [
+        updateFromCodeEditor(
+          descriptorFileName1,
+          descriptorFileContent1,
+          updatedDescriptorFileContent,
+        ),
+      ],
+      true,
+    )
+
+    // The Card from /src/card from the first descriptor is still there
+    expect(Object.keys(renderResult.getEditorState().editor.propertyControlsInfo['/src/card']))
+      .toMatchInlineSnapshot(`
+      Array [
+        "Card",
+      ]
+    `)
+    // The NewComp from the newly added /src/new-module from the first descriptor is registered
+    expect(
+      Object.keys(renderResult.getEditorState().editor.propertyControlsInfo['/src/new-module']),
+    ).toMatchInlineSnapshot(`
+      Array [
+        "NewComp",
+      ]
+    `)
+    // The second descriptor file has not been changed
+    expect(Object.keys(renderResult.getEditorState().editor.propertyControlsInfo['/src/card2']))
+      .toMatchInlineSnapshot(`
+      Array [
+        "Card2",
+      ]
+    `)
+  })
+  it('Deleting a module from a component descriptor file removes it from property controls', async () => {
+    const descriptorFileContent1 = `const Components = {
+      '/src/card': {
+        Card: {
+          supportsChildren: false,
+          properties: {
+            label: {
+              control: 'string-input',
+            },
+          },
+          variants: [],
+        },
+      },
+      
+    }
+    
+    export default Components
+  `
+    const renderResult = await renderTestEditorWithModel(
+      project({
+        [descriptorFileName1]: descriptorFileContent1,
+        [descriptorFileName2]: descriptorFileContent2,
+      }),
+      'await-first-dom-report',
+    )
+
+    // The Card component from /src/card is registered from the first descriptor file
+    expect(Object.keys(renderResult.getEditorState().editor.propertyControlsInfo['/src/card']))
+      .toMatchInlineSnapshot(`
+      Array [
+        "Card",
+      ]
+    `)
+    // The Comp component from /src/module-to-delete is registered from the first descriptor file
+    expect(
+      renderResult.getEditorState().editor.propertyControlsInfo['/src/module-to-delete'],
+    ).toBeUndefined()
+    // The Card2 component is registered from the second descriptor file
+    expect(Object.keys(renderResult.getEditorState().editor.propertyControlsInfo['/src/card2']))
+      .toMatchInlineSnapshot(`
+      Array [
+        "Card2",
+      ]
+    `)
+
+    const updatedDescriptorFileContent = `const Components = {
+      '/src/card': {
+        Card: {
+          supportsChildren: false,
+          properties: {
+            label2: {
+              control: 'string-input',
+            },
+          },
+          variants: [],
+        },
+      },
+    }
+
+    export default Components`
+
+    await renderResult.dispatch(
+      [
+        updateFromCodeEditor(
+          descriptorFileName1,
+          descriptorFileContent1,
+          updatedDescriptorFileContent,
+        ),
+      ],
+      true,
+    )
+
+    // The Card from /src/card from the first descriptor is still there
+    expect(Object.keys(renderResult.getEditorState().editor.propertyControlsInfo['/src/card']))
+      .toMatchInlineSnapshot(`
+      Array [
+        "Card",
+      ]
+    `)
+    // The /src/module-to-delete module is deleted
+    expect(
+      renderResult.getEditorState().editor.propertyControlsInfo['/src/new-module'],
+    ).toBeUndefined()
+    // The second descriptor file has not been changed
     expect(Object.keys(renderResult.getEditorState().editor.propertyControlsInfo['/src/card2']))
       .toMatchInlineSnapshot(`
       Array [
