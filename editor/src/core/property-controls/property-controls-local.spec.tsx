@@ -1,9 +1,9 @@
 import { renderTestEditorWithModel, TestAppUID } from '../../components/canvas/ui-jsx.test-utils'
 import { BakedInStoryboardUID } from '../model/scene-utils'
 import { TestScene0UID } from '../model/test-ui-js-file.test-utils'
-import { wait } from '../model/performance-scripts'
 import { createModifiedProject } from '../../sample-projects/sample-project-utils.test-utils'
 import { StoryboardFilePath } from '../../components/editor/store/editor-state'
+import { deleteFile } from '../../components/editor/actions/action-creators'
 
 const project = (componentDescriptorFiles: { [filename: string]: string }) =>
   createModifiedProject({
@@ -362,6 +362,78 @@ describe('registered property controls', () => {
       ]
     `)
     expect(Object.keys(editorState.propertyControlsInfo['/src/card2'])).toMatchInlineSnapshot(`
+      Array [
+        "Card2",
+      ]
+    `)
+  })
+})
+
+describe('Lifecycle management of registering components', () => {
+  // eslint-disable-next-line
+  it('Deleting a component descriptor file removes the property controls from that file', async () => {
+    const descriptorFileName1 = '/utopia/components1.utopia.js'
+    const descriptorFileName2 = '/utopia/components2.utopia.js'
+    const renderResult = await renderTestEditorWithModel(
+      project({
+        [descriptorFileName1]: `const Components = {
+      '/src/card': {
+        Card: {
+          supportsChildren: false,
+          properties: {
+            label: {
+              control: 'string-input',
+            },
+          },
+          variants: [],
+        },
+      },
+    }
+    
+    export default Components
+  `,
+        [descriptorFileName2]: `const Components = {
+    '/src/card2': {
+      Card2: {
+        supportsChildren: false,
+        properties: {
+          label: {
+            control: 'string-input',
+          },
+        },
+        variants: [],
+      },
+    },
+  }
+  
+  export default Components
+`,
+      }),
+      'await-first-dom-report',
+    )
+
+    // Property controls from both descriptors files are there
+    expect(Object.keys(renderResult.getEditorState().editor.propertyControlsInfo['/src/card']))
+      .toMatchInlineSnapshot(`
+      Array [
+        "Card",
+      ]
+    `)
+    expect(Object.keys(renderResult.getEditorState().editor.propertyControlsInfo['/src/card2']))
+      .toMatchInlineSnapshot(`
+      Array [
+        "Card2",
+      ]
+    `)
+
+    // delete the first descriptor file
+    await renderResult.dispatch([deleteFile(descriptorFileName1)], true)
+
+    // property controls from the first descriptor file are gone
+    expect(renderResult.getEditorState().editor.propertyControlsInfo).not.toContain('/src/card')
+    // property controls from the second descriptor file are still there
+    expect(Object.keys(renderResult.getEditorState().editor.propertyControlsInfo['/src/card2']))
+      .toMatchInlineSnapshot(`
       Array [
         "Card2",
       ]
