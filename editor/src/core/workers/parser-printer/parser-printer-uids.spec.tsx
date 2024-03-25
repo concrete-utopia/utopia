@@ -181,7 +181,6 @@ describe('parseCode', () => {
   import Utopia, {
     Scene,
     Storyboard,
-    registerModule,
   } from 'utopia-api'
   import { App } from '/src/app.js'
 
@@ -256,7 +255,6 @@ describe('parseCode', () => {
   import Utopia, {
     Scene,
     Storyboard,
-    registerModule,
   } from 'utopia-api'
   import { App } from '/src/app.js'
 

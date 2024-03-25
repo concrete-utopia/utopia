@@ -37,7 +37,7 @@ describe('handleDestroyAllProjects', () => {
     const fn = async () =>
       handleDestroyAllProjects(newTestRequest({ method: 'POST', authCookie: 'wrong-key' }), {})
     await expect(fn).rejects.toThrow(ApiError)
-    await expect(fn).rejects.toThrow('session not found')
+    await expect(fn).rejects.toThrow('unauthorized')
   })
   it('hard-deletes all soft-deleted projects owned by the user', async () => {
     const fn = async () => {

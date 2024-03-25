@@ -1040,7 +1040,6 @@ import * as React from 'react'
 import Utopia, {
   Scene,
   Storyboard,
-  registerModule,
 } from 'utopia-api'
 
 function a(n) {
@@ -1091,7 +1090,6 @@ import * as React from 'react'
 import Utopia, {
   Scene,
   Storyboard,
-  registerModule,
 } from 'utopia-api'
 
 export class RenderPropsFunctionChild extends React.Component {

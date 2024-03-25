@@ -1,27 +1,4 @@
 {
-  "registerModule()": {
-    "prefix": "registerModule()",
-    "body": [
-      "registerModule(",
-      "  '${1:${TM_FILEPATH/~(.*)\\..+$/$1/}}', // module name or absolute file path",
-      "  {",
-      "    ${2:ComponentName}: {",
-      "      properties: { // property controls",
-      "        ${3:PropName}: Utopia.stringControl()",
-      "      },",
-      "      variants: [ // each option appears in the insert menu",
-      "        {",
-      "          label: '${2:ComponentName}', // label to use in the insert menu, optional",
-      "          code: '<${2:ComponentName} />',",
-      "          // additionalImports: `import '/src/styles.css';`, // optional",
-      "        },",
-      "      ],",
-      "    },",
-      "  }",
-      ")"
-    ],
-    "description": "Register Module Function Body"
-  },
   "Checkbox Property Control": {
     "prefix": "Utopia.checkboxControl()",
     "body": "Utopia.checkboxControl()"

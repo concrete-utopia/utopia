@@ -924,7 +924,6 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       import Utopia, {
         Scene,
         Storyboard,
-        registerModule,
       } from 'utopia-api'
       const MyComp = (props) => <div css={{ backgroundColor: 'blue', position: 'absolute', left: 15, top: 15, width: 50, height: 50, flex: 15 }}>Utopia</div>
       export var App = (props) => {
@@ -956,7 +955,6 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       import Utopia, {
         Scene,
         Storyboard,
-        registerModule,
       } from 'utopia-api'
       import * as React from "react"
       let MyComp
@@ -1561,7 +1559,6 @@ export var storyboard = (
 import Utopia, {
   Scene,
   Storyboard,
-  registerModule,
 } from 'utopia-api'
 
 export var A = (props) => {
@@ -1607,7 +1604,6 @@ export var storyboard = (
 import Utopia, {
   Scene,
   Storyboard,
-  registerModule,
 } from 'utopia-api'
 
 function a(n) {
@@ -1655,7 +1651,6 @@ export var storyboard = (
 import Utopia, {
   Scene,
   Storyboard,
-  registerModule,
 } from 'utopia-api'
 
 const AppContext = React.createContext({})
@@ -1695,7 +1690,6 @@ import * as React from 'react'
 import Utopia, {
   Scene,
   Storyboard,
-  registerModule,
 } from 'utopia-api'
 
 const AppContext = React.createContext({})
@@ -1741,7 +1735,6 @@ import * as React from 'react'
 import Utopia, {
   Scene,
   Storyboard,
-  registerModule,
 } from 'utopia-api'
 export var App = (props) => {
   return (
@@ -1815,7 +1808,7 @@ export var storyboard = (
       null,
       `
       import * as React from 'react'
-      import { View, Storyboard, Scene, registerModule } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
       
       export var App = (props) => {
         return (
@@ -1841,23 +1834,6 @@ export var storyboard = (
           </Storyboard>
         )
       }
-      registerModule(
-        '/utopia/storyboard',
-        {
-          App: {
-            properties: {
-              test: {
-                control: 'checkbox'
-              }
-            },
-            variants: [
-              {
-                code: '<App />',
-              }
-            ]
-          }
-        }
-      )
       `,
     )
   })

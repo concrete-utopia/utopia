@@ -43,7 +43,6 @@ function projectWithInlineComponentContents(): ProjectContents {
 import Utopia, {
   Scene,
   Storyboard,
-  registerModule,
 } from 'utopia-api'
 import { App } from '/src/app.js'
 
@@ -141,7 +140,6 @@ function projectWithInlineComponentDestructuredContents(): ProjectContents {
 import Utopia, {
   Scene,
   Storyboard,
-  registerModule,
 } from 'utopia-api'
 import { App } from '/src/app.js'
 

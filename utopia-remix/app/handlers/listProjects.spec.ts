@@ -36,7 +36,7 @@ describe('handleListProjects', () => {
     const fn = async () => handleListProjects(req)
 
     await expect(fn).rejects.toThrow(ApiError)
-    await expect(fn).rejects.toThrow('session not found')
+    await expect(fn).rejects.toThrow('unauthorized')
   })
 
   describe('with an authorized user', () => {
