@@ -29,8 +29,9 @@ export async function getProjectForEditor(req: Request, params: Params<string>) 
   if (error.status === Status.NOT_FOUND) {
     return json(
       {
-        projectId: null,
-        user: null,
+        projectId: projectId,
+        user: user,
+        status: Status.NOT_FOUND,
       },
       {
         status: Status.NOT_FOUND,
@@ -41,6 +42,7 @@ export async function getProjectForEditor(req: Request, params: Params<string>) 
       {
         projectId: projectId,
         user: user,
+        status: Status.FORBIDDEN,
       },
       {
         status: Status.FORBIDDEN,
@@ -51,6 +53,10 @@ export async function getProjectForEditor(req: Request, params: Params<string>) 
 }
 
 export default function () {
-  const data = useLoaderData() as unknown as { projectId: string | null; user: UserDetails | null }
-  return <ProjectNotFound projectId={data.projectId} user={data.user} />
+  const data = useLoaderData() as unknown as {
+    projectId: string | null
+    user: UserDetails | null
+    status: number
+  }
+  return <ProjectNotFound projectId={data.projectId} user={data.user} status={data.status} />
 }
