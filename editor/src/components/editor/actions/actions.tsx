@@ -330,7 +330,7 @@ import type {
   SetForking,
   InsertAttributeOtherJavascriptIntoElement,
   SetCollaborators,
-  ParsePropertyControlDescriptorFiles,
+  ExtractPropertyControlsFromDescriptorFiles,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -5665,8 +5665,8 @@ export const UPDATE_FNS = {
   SET_SHOW_RESOLVED_THREADS: (action: SetCommentFilterMode, editor: EditorModel): EditorModel => {
     return { ...editor, commentFilterMode: action.commentFilterMode }
   },
-  PARSE_PROPERTY_CONTROL_DESCRIPTOR_FILES: (
-    action: ParsePropertyControlDescriptorFiles,
+  EXTRACT_PROPERTY_CONTROLS_FROM_DESCRIPTOR_FILES: (
+    action: ExtractPropertyControlsFromDescriptorFiles,
     state: EditorState,
     workers: UtopiaTsWorkers,
     dispatch: EditorDispatch,

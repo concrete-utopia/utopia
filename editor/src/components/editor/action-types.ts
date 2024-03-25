@@ -1095,8 +1095,8 @@ export interface SetCollaborators {
   collaborators: Collaborator[]
 }
 
-export interface ParsePropertyControlDescriptorFiles {
-  action: 'PARSE_PROPERTY_CONTROL_DESCRIPTOR_FILES'
+export interface ExtractPropertyControlsFromDescriptorFiles {
+  action: 'EXTRACT_PROPERTY_CONTROLS_FROM_DESCRIPTOR_FILES'
   paths: string[]
 }
 
@@ -1277,7 +1277,7 @@ export type EditorAction =
   | SetCommentFilterMode
   | SetForking
   | SetCollaborators
-  | ParsePropertyControlDescriptorFiles
+  | ExtractPropertyControlsFromDescriptorFiles
 
 export type DispatchPriority =
   | 'everyone'

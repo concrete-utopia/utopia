@@ -351,7 +351,7 @@ function maybeRequestModelUpdate(
         let actionsToDispatch: EditorAction[] = [EditorActions.updateFromWorker(updates)]
         if (propertyDescriptorFilesToUpdate.length > 0) {
           actionsToDispatch.push(
-            EditorActions.parsePropertyControlDescriptorFiles(
+            EditorActions.extractPropertyControlsFromDescriptorFiles(
               propertyDescriptorFilesToUpdate.map((r) => r.filename),
             ),
           )

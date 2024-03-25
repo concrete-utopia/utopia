@@ -459,8 +459,13 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_FORKING(action, state)
     case 'SET_COLLABORATORS':
       return UPDATE_FNS.SET_COLLABORATORS(action, state)
-    case 'PARSE_PROPERTY_CONTROL_DESCRIPTOR_FILES':
-      return UPDATE_FNS.PARSE_PROPERTY_CONTROL_DESCRIPTOR_FILES(action, state, workers, dispatch)
+    case 'EXTRACT_PROPERTY_CONTROLS_FROM_DESCRIPTOR_FILES':
+      return UPDATE_FNS.EXTRACT_PROPERTY_CONTROLS_FROM_DESCRIPTOR_FILES(
+        action,
+        state,
+        workers,
+        dispatch,
+      )
     default:
       return state
   }

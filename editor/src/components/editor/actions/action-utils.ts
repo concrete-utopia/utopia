@@ -133,7 +133,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_COMMENT_FILTER_MODE':
     case 'SET_FORKING':
     case 'SET_COLLABORATORS':
-    case 'PARSE_PROPERTY_CONTROL_DESCRIPTOR_FILES':
+    case 'EXTRACT_PROPERTY_CONTROLS_FROM_DESCRIPTOR_FILES':
       return true
 
     case 'TRUE_UP_ELEMENTS':

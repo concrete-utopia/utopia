@@ -220,7 +220,7 @@ import type {
   SetCommentFilterMode,
   SetForking,
   SetCollaborators,
-  ParsePropertyControlDescriptorFiles,
+  ExtractPropertyControlsFromDescriptorFiles,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -1738,11 +1738,11 @@ export function setCollaborators(collaborators: Collaborator[]): SetCollaborator
   }
 }
 
-export function parsePropertyControlDescriptorFiles(
+export function extractPropertyControlsFromDescriptorFiles(
   paths: string[],
-): ParsePropertyControlDescriptorFiles {
+): ExtractPropertyControlsFromDescriptorFiles {
   return {
-    action: 'PARSE_PROPERTY_CONTROL_DESCRIPTOR_FILES',
+    action: 'EXTRACT_PROPERTY_CONTROLS_FROM_DESCRIPTOR_FILES',
     paths: paths,
   }
 }
