@@ -370,7 +370,6 @@ describe('registered property controls', () => {
 })
 
 describe('Lifecycle management of registering components', () => {
-  // eslint-disable-next-line
   it('Deleting a component descriptor file removes the property controls from that file', async () => {
     const descriptorFileName1 = '/utopia/components1.utopia.js'
     const descriptorFileName2 = '/utopia/components2.utopia.js'
