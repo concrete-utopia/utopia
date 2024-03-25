@@ -1,12 +1,26 @@
 import type {
+  RegularControlDescription as RegularControlDescriptionFromUtopia,
+  JSXControlDescription as JSXControlDescriptionFromUtopia,
+  PropertyControls as PropertyControlsFromUtopiaAPI,
   ComponentToRegister,
   ComponentInsertOption,
   PreferredChildComponent,
 } from 'utopia-api/core'
-import type { PropertyControls } from 'utopia-api/core'
-import type { ProjectContentTreeRoot } from '../../components/assets'
-import { packageJsonFileFromProjectContents } from '../../components/assets'
+import { isBaseControlDescription } from 'utopia-api/core'
 import type {
+  ObjectControlDescription,
+  PropertyControls,
+  RegularControlDescription,
+  JSXControlDescription,
+  PreferredChildComponentDescriptor,
+} from '../../components/custom-code/internal-property-controls'
+import { packageJsonFileFromProjectContents } from '../../components/assets'
+import {
+  componentDescriptorFromDescriptorFile,
+  isDefaultComponentDescriptor,
+} from '../../components/custom-code/code-file'
+import type {
+  ComponentDescriptorSource,
   ComponentDescriptorWithName,
   ComponentInfo,
   PropertyControlsInfo,
@@ -30,16 +44,16 @@ import {
   applicative4Either,
   foldEither,
   forEachRight,
+  isLeft,
   left,
   mapEither,
+  right,
   sequenceEither,
 } from '../shared/either'
 import { setOptionalProp } from '../shared/object-utils'
-import type { EditorDispatch } from '../../components/editor/action-types'
+import { assertNever } from '../shared/utils'
 import { isExportDefault, isParseSuccess } from '../shared/project-file-types'
 import type { UiJsxCanvasContextData } from '../../components/canvas/ui-jsx-canvas'
-import * as EditorActions from '../../components/editor/actions/action-creators'
-import { DefaultThirdPartyControlDefinitions } from '../../core/third-party/third-party-controls'
 import type { EditorState } from '../../components/editor/store/editor-state'
 import type { MutableUtopiaCtxRefData } from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
 import type { ComponentRendererComponent } from '../../components/canvas/ui-jsx-canvas-renderer/component-renderer-component'
@@ -47,6 +61,10 @@ import type { MapLike } from 'typescript'
 import { attemptToResolveParsedComponents } from '../../components/canvas/ui-jsx-canvas'
 import { NO_OP } from '../shared/utils'
 import { createExecutionScope } from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
+import type { EditorDispatch } from '../../components/editor/action-types'
+import { updatePropertyControlsInfo } from '../../components/editor/actions/action-creators'
+import type { ProjectContentTreeRoot } from '../../components/assets'
+import { isIntrinsicHTMLElement } from '../shared/element-template'
 
 async function parseInsertOption(
   insertOption: ComponentInsertOption,
@@ -197,6 +215,7 @@ async function getComponentDescriptorPromisesFromParseResult(
           componentName,
           moduleName,
           workers,
+          componentDescriptorFromDescriptorFile(parseResult.filename),
         )
 
         if (componentDescriptor.type === 'RIGHT') {
@@ -213,6 +232,7 @@ async function getComponentDescriptorPromisesFromParseResult(
 }
 
 export async function maybeUpdatePropertyControls(
+  previousPropertyControlsInfo: PropertyControlsInfo,
   parseResults: Array<ParseOrPrintResult>,
   workers: UtopiaTsWorkers,
   dispatch: EditorDispatch,
@@ -240,65 +260,63 @@ export async function maybeUpdatePropertyControls(
   }
 
   const updatedPropertyControlsInfo = updatePropertyControlsOnDescriptorFileUpdate(
+    previousPropertyControlsInfo,
     componentDescriptorUpdates,
   )
-  dispatch([EditorActions.updatePropertyControlsInfo(updatedPropertyControlsInfo)])
+  dispatch([updatePropertyControlsInfo(updatedPropertyControlsInfo)])
 }
 
 interface ComponentDescriptorFileLookup {
   [path: string]: ComponentDescriptorWithName[]
 }
 
-const COMPONENTS_DESCRIPTOR_FILE_CACHE: { current: ComponentDescriptorFileLookup } = {
-  current: {},
-}
-
 export function updatePropertyControlsOnDescriptorFileDelete(
+  previousPropertyControlsInfo: PropertyControlsInfo,
   componentDescriptorFile: string,
 ): PropertyControlsInfo {
-  COMPONENTS_DESCRIPTOR_FILE_CACHE.current[componentDescriptorFile] = []
-  return getPropertyControlsFromComponentDescriptors(COMPONENTS_DESCRIPTOR_FILE_CACHE.current)
+  return updatePropertyControlsOnDescriptorFileUpdate(previousPropertyControlsInfo, {
+    componentDescriptorFile: [],
+  })
 }
 
 export function updatePropertyControlsOnDescriptorFileUpdate(
+  previousPropertyControlsInfo: PropertyControlsInfo,
   componentDescriptorUpdates: ComponentDescriptorFileLookup,
 ): PropertyControlsInfo {
-  Object.entries(componentDescriptorUpdates).forEach(([filename, componentDescriptors]) => {
-    COMPONENTS_DESCRIPTOR_FILE_CACHE.current[filename] = componentDescriptors
+  let updatedPropertyControls: PropertyControlsInfo = {}
+
+  // go through the entries and only keep the ones that are not updated
+  Object.entries(previousPropertyControlsInfo).forEach(([moduleName, moduleDescriptor]) => {
+    const stillValidPropertyControls = Object.fromEntries(
+      Object.entries(moduleDescriptor).filter(
+        ([_, componentDescriptor]) =>
+          isDefaultComponentDescriptor(componentDescriptor.source) ||
+          componentDescriptorUpdates[componentDescriptor.source.sourceDescriptorFile] == null,
+      ),
+    )
+    if (Object.keys(stillValidPropertyControls).length > 0) {
+      updatedPropertyControls[moduleName] = stillValidPropertyControls
+    }
   })
-  return getPropertyControlsFromComponentDescriptors(COMPONENTS_DESCRIPTOR_FILE_CACHE.current)
-}
 
-function getPropertyControlsFromComponentDescriptors(
-  componentDescriptorFiles: ComponentDescriptorFileLookup,
-): PropertyControlsInfo {
-  // TODO: this might not be ideal for perf, but it's a generic problem at this point
-  const allComponentDescriptors = Object.values(componentDescriptorFiles).flatMap(
-    (descriptors) => descriptors,
-  )
+  // go through the updates and add them to the property controls
+  Object.values(componentDescriptorUpdates).forEach((descriptors) => {
+    descriptors.forEach((descriptor) => {
+      if (updatedPropertyControls[descriptor.moduleName] == null) {
+        updatedPropertyControls[descriptor.moduleName] = {}
+      }
 
-  // Adding the default third party controls to the property controls here, but maybe we should do this in the UpdatePropertyControlsInfo action
-  let propertyControls: PropertyControlsInfo = {
-    ...DefaultThirdPartyControlDefinitions,
-  }
+      updatedPropertyControls[descriptor.moduleName][descriptor.componentName] = {
+        properties: descriptor.properties,
+        supportsChildren: descriptor.supportsChildren,
+        variants: descriptor.variants,
+        preferredChildComponents: descriptor.preferredChildComponents ?? [],
+        source: descriptor.source,
+      }
+    })
+  })
 
-  for (const propertyControlsForComponent of allComponentDescriptors) {
-    if (propertyControls[propertyControlsForComponent.moduleName] == null) {
-      propertyControls[propertyControlsForComponent.moduleName] = {}
-    }
-
-    propertyControls[propertyControlsForComponent.moduleName] = {
-      ...propertyControls[propertyControlsForComponent.moduleName],
-      [propertyControlsForComponent.componentName]: {
-        properties: propertyControlsForComponent.properties,
-        supportsChildren: propertyControlsForComponent.supportsChildren,
-        variants: propertyControlsForComponent.variants,
-        preferredChildComponents: propertyControlsForComponent.preferredChildComponents ?? [],
-      },
-    }
-  }
-
-  return propertyControls
+  return updatedPropertyControls
 }
 
 function variantsForComponentToRegister(
@@ -318,11 +336,185 @@ function variantsForComponentToRegister(
   }
 }
 
+async function makePreferredChildDescriptor(
+  preferredChild: PreferredChildComponent,
+  componentName: string,
+  moduleName: string,
+  workers: UtopiaTsWorkers,
+): Promise<Either<string, PreferredChildComponentDescriptor>> {
+  const allRequiredImports = `import { ${componentName} } from '${preferredChild.additionalImports}';`
+
+  const parsedParams = await getCachedParseResultForUserStrings(
+    workers,
+    allRequiredImports,
+    // this placeholder element is placed here so that
+    // `getCachedParseResultForUserStrings` can be reused to parse the imports
+    // required for the preferred child
+    '<placeholder />',
+  )
+  if (isLeft(parsedParams)) {
+    return parsedParams
+  }
+
+  const variants: Array<ComponentInfo> = []
+  const preferredChildVariants = preferredChild.variants ?? []
+
+  for await (const variant of preferredChildVariants) {
+    const insertOption = await parseInsertOption(
+      variant,
+      componentName,
+      preferredChild.additionalImports ?? moduleName,
+      workers,
+    )
+    if (isLeft(insertOption)) {
+      return insertOption
+    }
+    const element = insertOption.value.elementToInsert()
+
+    const isBuiltinElementType =
+      element.type === 'JSX_CONDITIONAL_EXPRESSION' ||
+      element.type === 'JSX_FRAGMENT' ||
+      (element.type === 'JSX_ELEMENT' && isIntrinsicHTMLElement(element.name))
+
+    if (isBuiltinElementType) {
+      variants.push({ ...insertOption.value, importsToAdd: {} })
+    } else {
+      variants.push(insertOption.value)
+    }
+  }
+
+  return right({
+    name: preferredChild.name,
+    imports: parsedParams.value.importsToAdd,
+    variants: variants,
+  })
+}
+
+type PropertyDescriptorResult<T> = Either<string, T>
+
+async function parseJSXControlDescription(
+  descriptor: JSXControlDescriptionFromUtopia,
+  context: { moduleName: string; workers: UtopiaTsWorkers },
+): Promise<PropertyDescriptorResult<JSXControlDescription>> {
+  if (descriptor.preferredChildComponents == null) {
+    return right({
+      ...descriptor,
+      preferredChildComponents: undefined,
+    })
+  }
+  const parsedPreferredChildComponents = sequenceEither(
+    await Promise.all(
+      descriptor.preferredChildComponents.map((preferredChildDescriptor) =>
+        makePreferredChildDescriptor(
+          preferredChildDescriptor,
+          preferredChildDescriptor.name,
+          context.moduleName,
+          context.workers,
+        ),
+      ),
+    ),
+  )
+
+  return mapEither(
+    (preferredChildComponents) => ({
+      ...descriptor,
+      preferredChildComponents,
+    }),
+    parsedPreferredChildComponents,
+  )
+}
+
+async function makeRegularControlDescription(
+  descriptor: RegularControlDescriptionFromUtopia,
+  context: { moduleName: string; workers: UtopiaTsWorkers },
+): Promise<PropertyDescriptorResult<RegularControlDescription>> {
+  if (isBaseControlDescription(descriptor)) {
+    if (descriptor.control === 'jsx') {
+      const parsedJSXControlDescription = parseJSXControlDescription(descriptor, context)
+      return parsedJSXControlDescription
+    }
+    return right(descriptor)
+  }
+  switch (descriptor.control) {
+    case 'array':
+      const parsedArrayPropertyControl = await makeRegularControlDescription(
+        descriptor.propertyControl,
+        context,
+      )
+      return mapEither(
+        (propertyControl) => ({ ...descriptor, propertyControl }),
+        parsedArrayPropertyControl,
+      )
+    case 'object':
+      const parsedObject: ObjectControlDescription['object'] = {}
+      for await (const [key, value] of Object.entries(descriptor.object)) {
+        const parsedValue = await makeRegularControlDescription(value, context)
+        if (isLeft(parsedValue)) {
+          return parsedValue
+        }
+        parsedObject[key] = parsedValue.value
+      }
+      return right({ ...descriptor, object: parsedObject })
+    case 'tuple':
+      const parsedTuplePropertyControls = sequenceEither(
+        await Promise.all(
+          descriptor.propertyControls.map((tuplePropertyControl) =>
+            makeRegularControlDescription(tuplePropertyControl, context),
+          ),
+        ),
+      )
+
+      return mapEither(
+        (propertyControls) => ({ ...descriptor, propertyControls }),
+        parsedTuplePropertyControls,
+      )
+
+    case 'union':
+      const parsedUnionPropertyControls = sequenceEither(
+        await Promise.all(
+          descriptor.controls.map((tuplePropertyControl) =>
+            makeRegularControlDescription(tuplePropertyControl, context),
+          ),
+        ),
+      )
+
+      return mapEither((controls) => ({ ...descriptor, controls }), parsedUnionPropertyControls)
+    default:
+      assertNever(descriptor)
+  }
+}
+
+async function makePropertyDescriptors(
+  properties: PropertyControlsFromUtopiaAPI,
+  context: { moduleName: string; workers: UtopiaTsWorkers },
+): Promise<PropertyDescriptorResult<PropertyControls>> {
+  let result: PropertyControls = {}
+
+  for await (const [propertyName, descriptor] of Object.entries(properties)) {
+    if (descriptor.control === 'folder') {
+      const parsedControlsInFolder = await makePropertyDescriptors(descriptor.controls, context)
+      if (isLeft(parsedControlsInFolder)) {
+        return parsedControlsInFolder
+      }
+      result['propertyName'] = { ...descriptor, controls: parsedControlsInFolder.value }
+    } else {
+      const parsedRegularControl = await makeRegularControlDescription(descriptor, context)
+      if (isLeft(parsedRegularControl)) {
+        return parsedRegularControl
+      }
+      result[propertyName] = parsedRegularControl.value
+    }
+  }
+
+  return right(result)
+}
+
 export async function componentDescriptorForComponentToRegister(
   componentToRegister: ComponentToRegister,
   componentName: string,
   moduleName: string,
   workers: UtopiaTsWorkers,
+  source: ComponentDescriptorSource,
 ): Promise<Either<string, ComponentDescriptorWithName>> {
   const insertOptionsToParse = variantsForComponentToRegister(componentToRegister, componentName)
 
@@ -332,20 +524,41 @@ export async function componentDescriptorForComponentToRegister(
 
   const parsedVariantsUnsequenced = await Promise.all(parsedInsertOptionPromises)
   const parsedVariants = sequenceEither(parsedVariantsUnsequenced)
+  const parsePreferredChildrenPromises =
+    componentToRegister.preferredChildComponents == null
+      ? []
+      : componentToRegister.preferredChildComponents.map((c) =>
+          makePreferredChildDescriptor(c, c.name, moduleName, workers),
+        )
+
+  const parsedPreferredChildren = sequenceEither(await Promise.all(parsePreferredChildrenPromises))
+  if (isLeft(parsedPreferredChildren)) {
+    return parsedPreferredChildren
+  }
+
+  const properties = await makePropertyDescriptors(componentToRegister.properties, {
+    moduleName,
+    workers,
+  })
+
+  if (isLeft(properties)) {
+    return properties
+  }
 
   return mapEither((variants) => {
     return {
       componentName: componentName,
       supportsChildren: componentToRegister.supportsChildren,
-      preferredChildComponents: componentToRegister.preferredChildComponents ?? [],
-      properties: componentToRegister.properties,
+      preferredChildComponents: parsedPreferredChildren.value,
+      properties: properties.value,
       variants: variants,
       moduleName: moduleName,
+      source: source,
     }
   }, parsedVariants)
 }
 
-function fullyParsePropertyControls(value: unknown): ParseResult<PropertyControls> {
+function fullyParsePropertyControls(value: unknown): ParseResult<PropertyControlsFromUtopiaAPI> {
   return parseObject(parseControlDescription)(value)
 }
 

@@ -1,18 +1,27 @@
 import React from 'react'
 import { useContextMenu, Menu } from 'react-contexify'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import type { JSXElementChild } from '../../../core/shared/element-template'
 import {
   getJSXElementNameAsString,
-  jsExpressionOtherJavaScriptSimple,
+  jsxAttributesFromMap,
+  jsxElement,
 } from '../../../core/shared/element-template'
-import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { Substores, useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { setProp_UNSAFE } from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
+import type { PreferredChildComponentDescriptor } from '../../custom-code/internal-property-controls'
+import { elementFromInsertMenuItem } from '../../editor/insert-callbacks'
+import { generateConsistentUID } from '../../../core/shared/uid-utils'
+import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 
-const usePreferredChildrenForTargetProp = (target: ElementPath, prop: string) => {
+const usePreferredChildrenForTargetProp = (
+  target: ElementPath,
+  prop: string,
+): Array<PreferredChildComponentDescriptor> => {
   const selectedJSXElement = useEditorState(
     Substores.metadata,
     (store) => MetadataUtils.getJSXElementFromMetadata(store.editor.jsxMetadata, target),
@@ -52,7 +61,7 @@ const usePreferredChildrenForTargetProp = (target: ElementPath, prop: string) =>
   )
 
   if (selectedJSXElement == null || preferredChildrenForTargetProp == null) {
-    return null
+    return []
   }
 
   return preferredChildrenForTargetProp
@@ -77,6 +86,12 @@ interface RenderPropPickerProps {
   id: string
 }
 
+interface PreferredChildToInsert {
+  elementToInsert: (uid: string) => JSXElementChild
+  additionalImports: Imports
+  label: string
+}
+
 export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, target, prop }) => {
   const preferredChildrenForTargetProp = usePreferredChildrenForTargetProp(
     EP.parentPath(target),
@@ -85,35 +100,67 @@ export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, ta
 
   const dispatch = useDispatch()
 
+  const projectContentsRef = useRefEditorState((state) => state.editor.projectContents)
+
   const onItemClick = React.useCallback(
-    (rawJSCodeForRenderProp: string) => (e: React.MouseEvent) => {
+    (preferredChildToInsert: PreferredChildToInsert) => (e: React.MouseEvent) => {
       e.stopPropagation()
       e.preventDefault()
+
+      const uid = generateConsistentUID(
+        'prop',
+        new Set(getAllUniqueUids(projectContentsRef.current).uniqueIDs),
+      )
+
+      const element = preferredChildToInsert.elementToInsert(uid)
+      if (element.type !== 'JSX_ELEMENT') {
+        throw new Error('only JSX elements are supported as preferred components')
+      }
 
       dispatch([
         setProp_UNSAFE(
           EP.parentPath(target),
           PP.create(prop),
-          jsExpressionOtherJavaScriptSimple(rawJSCodeForRenderProp, []),
+          element,
+          preferredChildToInsert.additionalImports ?? undefined,
         ),
       ])
     },
-    [dispatch, prop, target],
+    [dispatch, projectContentsRef, prop, target],
   )
 
   if (preferredChildrenForTargetProp == null) {
     return null
   }
 
-  const rawJSToInsert: Array<string> = (preferredChildrenForTargetProp ?? []).flatMap((data) =>
-    data.variants == null ? `<${data.name} />` : data.variants.map((v) => v.code),
-  )
+  const preferredChildComponentsToInsert: Array<PreferredChildToInsert> = (
+    preferredChildrenForTargetProp ?? []
+  ).flatMap((data) => {
+    if (data.variants == null) {
+      return [
+        {
+          label: data.name,
+          elementToInsert: (uid) => jsxElement(data.name, uid, jsxAttributesFromMap({}), []),
+          additionalImports: data.imports,
+        },
+      ]
+    }
+    return data.variants.flatMap((variant) => {
+      return [
+        {
+          label: variant.insertMenuLabel,
+          elementToInsert: (uid) => elementFromInsertMenuItem(variant.elementToInsert(), uid),
+          additionalImports: variant.importsToAdd,
+        },
+      ]
+    })
+  })
 
   return (
     <Menu key={key} id={id} animation={false} style={{ padding: 8 }}>
-      {rawJSToInsert.map((option, idx) => (
+      {preferredChildComponentsToInsert.map((option, idx) => (
         <div key={idx} onClick={onItemClick(option)}>
-          {option}
+          {option.label}
         </div>
       ))}
     </Menu>

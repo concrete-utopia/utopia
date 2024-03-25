@@ -870,11 +870,11 @@ describe('Controls from registering components', () => {
         Link: {
           preferredChildComponents: [
             {
-              additionalImports: undefined,
               name: 'span',
               variants: [
                 {
-                  code: '<span>Link</span>',
+                  importsToAdd: {},
+                  insertMenuLabel: 'span',
                 },
               ],
             },
@@ -969,11 +969,11 @@ describe('Controls from registering components', () => {
                 control: 'jsx',
                 preferredChildComponents: [
                   {
-                    additionalImports: undefined,
                     name: 'span',
                     variants: [
                       {
-                        code: '<span>Title</span>',
+                        importsToAdd: {},
+                        insertMenuLabel: 'span',
                       },
                     ],
                   },

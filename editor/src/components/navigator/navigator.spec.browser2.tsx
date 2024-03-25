@@ -7,7 +7,7 @@ import {
   TestAppUID,
   TestSceneUID,
 } from '../canvas/ui-jsx.test-utils'
-import { act, fireEvent, screen } from '@testing-library/react'
+import { act, fireEvent, screen, waitFor } from '@testing-library/react'
 import type { WindowPoint } from '../../core/shared/math-utils'
 import {
   canvasPoint,
@@ -5018,6 +5018,91 @@ describe('Navigator', () => {
   })
 
   describe('render props', () => {
+    it('can insert an intrinsic element into render prop', async () => {
+      const renderResult = await renderTestEditorWithModel(
+        projectWithRenderProp(''), // <- no render prop
+        'await-first-dom-report',
+      )
+
+      const slotElement = renderResult.renderedDOM.getByTestId(
+        'toggle-render-prop-NavigatorItemTestId-slot_sb/scene/pg:dbc/78c/prop_label_header',
+      )
+
+      await mouseClickAtPoint(slotElement, { x: 3, y: 3 })
+      const renderPropOptionElement = await waitFor(() =>
+        renderResult.renderedDOM.getByText('span'),
+      )
+      await mouseClickAtPoint(renderPropOptionElement, { x: 3, y: 3 })
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-sb/scene',
+        'regular-sb/scene/pg',
+        'regular-sb/scene/pg:dbc',
+        'regular-sb/scene/pg:dbc/78c',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
+        'regular-sb/scene/pg:dbc/78c/pro', // <- the inserted render prop
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+        'regular-sb/scene/pg:dbc/78c/88b',
+      ])
+      expect(
+        renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-sb/scene',
+        'regular-sb/scene/pg',
+        'regular-sb/scene/pg:dbc',
+        'regular-sb/scene/pg:dbc/78c',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
+        'regular-sb/scene/pg:dbc/78c/pro', // <- the inserted render prop
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+        'regular-sb/scene/pg:dbc/78c/88b',
+      ])
+    })
+    it('can insert an third-party component into render prop', async () => {
+      const renderResult = await renderTestEditorWithModel(
+        projectWithThirdPartyRenderProp(''), // <- no render prop
+        'await-first-dom-report',
+      )
+
+      const slotElement = renderResult.renderedDOM.getByTestId(
+        'toggle-render-prop-NavigatorItemTestId-slot_sb/scene/pg:dbc/78c/prop_label_header',
+      )
+
+      await mouseClickAtPoint(slotElement, { x: 3, y: 3 })
+
+      await mouseClickAtPoint(slotElement, { x: 3, y: 3 })
+      const renderPropOptionElement = await waitFor(() =>
+        renderResult.renderedDOM.getByText('Heading'),
+      )
+      await mouseClickAtPoint(renderPropOptionElement, { x: 3, y: 3 })
+
+      expect(
+        renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-sb/scene',
+        'regular-sb/scene/pg',
+        'regular-sb/scene/pg:dbc',
+        'regular-sb/scene/pg:dbc/78c',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
+        'regular-sb/scene/pg:dbc/78c/pro', // <- the inserted render prop
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+        'regular-sb/scene/pg:dbc/78c/88b',
+      ])
+      expect(
+        renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+      ).toEqual([
+        'regular-sb/scene',
+        'regular-sb/scene/pg',
+        'regular-sb/scene/pg:dbc',
+        'regular-sb/scene/pg:dbc/78c',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
+        'regular-sb/scene/pg:dbc/78c/pro', // <- the inserted render prop
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+        'regular-sb/scene/pg:dbc/78c/88b',
+      ])
+    })
+
     it('can delete an element descended from a render prop', async () => {
       const editor = await renderTestEditorWithModel(
         projectWithRenderProp(

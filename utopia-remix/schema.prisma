@@ -40,6 +40,7 @@ model Project {
     ProjectCollaborator  ProjectCollaborator[]
     ProjectAccess        ProjectAccess?
     ProjectAccessRequest ProjectAccessRequest[]
+    github_repository    String?
 
     @@map("project")
 }
