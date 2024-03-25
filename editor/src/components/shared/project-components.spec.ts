@@ -5,7 +5,7 @@ import type {
 import { resolvedNpmDependency } from '../../core/shared/npm-dependency-types'
 import { DefaultThirdPartyControlDefinitions } from '../../core/third-party/third-party-controls'
 import { simpleDefaultProjectPreParsed } from '../../sample-projects/sample-project-utils.test-utils'
-import type { PropertyControlsInfo } from '../custom-code/code-file'
+import { defaultComponentDescriptor, type PropertyControlsInfo } from '../custom-code/code-file'
 import {
   clearInsertableComponentGroupUniqueIDs,
   getComponentGroups,
@@ -50,6 +50,7 @@ describe('getComponentGroups', () => {
           supportsChildren: false,
           preferredChildComponents: [],
           variants: [],
+          source: defaultComponentDescriptor(),
         },
       },
     }
@@ -75,6 +76,7 @@ describe('getDependencyStatus', () => {
           supportsChildren: false,
           preferredChildComponents: [],
           variants: [],
+          source: defaultComponentDescriptor(),
         },
       },
     }

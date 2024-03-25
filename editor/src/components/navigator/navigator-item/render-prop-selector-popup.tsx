@@ -1,24 +1,23 @@
 import React from 'react'
 import { useContextMenu, Menu } from 'react-contexify'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import {
-  getJSXElementNameAsString,
-  jsExpressionOtherJavaScriptSimple,
-} from '../../../core/shared/element-template'
+import { getJSXElementNameAsString } from '../../../core/shared/element-template'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { Substores, useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { setProp_UNSAFE } from '../../editor/actions/action-creators'
 import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
-import type { PreferredChildComponent } from 'utopia-api'
-import { OnClickOutsideHOC, useColorTheme } from '../../../uuiui'
-import { ComponentPicker } from './component-picker'
+import { OnClickOutsideHOC } from '../../../uuiui'
+import { ComponentPicker, type ElementToInsert } from './component-picker'
+import type { PreferredChildComponentDescriptor } from '../../custom-code/internal-property-controls'
+import { generateConsistentUID } from '../../../core/shared/uid-utils'
+import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 
 const usePreferredChildrenForTargetProp = (
   target: ElementPath,
   prop: string,
-): PreferredChildComponent[] | null => {
+): Array<PreferredChildComponentDescriptor> => {
   const selectedJSXElement = useEditorState(
     Substores.metadata,
     (store) => MetadataUtils.getJSXElementFromMetadata(store.editor.jsxMetadata, target),
@@ -58,7 +57,7 @@ const usePreferredChildrenForTargetProp = (
   )
 
   if (selectedJSXElement == null || preferredChildrenForTargetProp == null) {
-    return null
+    return []
   }
 
   return preferredChildrenForTargetProp
@@ -93,20 +92,33 @@ export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, ta
 
   const dispatch = useDispatch()
 
+  const projectContentsRef = useRefEditorState((state) => state.editor.projectContents)
+
   const onItemClick = React.useCallback(
-    (rawJSCodeForRenderProp: string) => (e: React.MouseEvent) => {
+    (preferredChildToInsert: ElementToInsert) => (e: React.MouseEvent) => {
       e.stopPropagation()
       e.preventDefault()
+
+      const uid = generateConsistentUID(
+        'prop',
+        new Set(getAllUniqueUids(projectContentsRef.current).uniqueIDs),
+      )
+
+      const element = preferredChildToInsert.elementToInsert(uid)
+      if (element.type !== 'JSX_ELEMENT') {
+        throw new Error('only JSX elements are supported as preferred components')
+      }
 
       dispatch([
         setProp_UNSAFE(
           EP.parentPath(target),
           PP.create(prop),
-          jsExpressionOtherJavaScriptSimple(rawJSCodeForRenderProp, []),
+          element,
+          preferredChildToInsert.additionalImports ?? undefined,
         ),
       ])
     },
-    [dispatch, prop, target],
+    [dispatch, projectContentsRef, prop, target],
   )
 
   const squashEvents = React.useCallback((e: React.MouseEvent<unknown>) => {

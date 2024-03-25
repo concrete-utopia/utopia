@@ -4,14 +4,22 @@ import { jsx } from '@emotion/react'
 import React from 'react'
 import { useColorTheme } from '../../../uuiui'
 import { capitalize } from '../../../core/shared/string-utils'
-import { type PreferredChildComponent } from 'utopia-api'
+import { type PreferredChildComponentDescriptor } from '../../custom-code/internal-property-controls'
+import { type JSXElementChild } from '../../../core/shared/element-template'
+import { type Imports } from '../../../core/shared/project-file-types'
+import { elementFromInsertMenuItem } from '../../editor/insert-callbacks'
 
 export interface ComponentPickerProps {
   insertionTargetName: string
-  preferredComponents: PreferredChildComponent[]
-  allComponents: PreferredChildComponent[]
-  onItemClick: (codeToInsert: string) => React.MouseEventHandler
+  preferredComponents: PreferredChildComponentDescriptor[]
+  allComponents: PreferredChildComponentDescriptor[]
+  onItemClick: (elementToInsert: ElementToInsert) => React.MouseEventHandler
   onClickCloseButton?: React.MouseEventHandler
+}
+
+export interface ElementToInsert {
+  elementToInsert: (uid: string) => JSXElementChild
+  additionalImports: Imports
 }
 
 export function componentPickerTestIdForProp(prop: string): string {
@@ -249,8 +257,11 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
               >
                 {option.variants?.map((v, i) => (
                   <div
-                    key={`${idx}-${v.label ?? i}`}
-                    onClick={props.onItemClick(v.code)}
+                    key={`${idx}-${v.insertMenuLabel}`}
+                    onClick={props.onItemClick({
+                      elementToInsert: (uid) => elementFromInsertMenuItem(v.elementToInsert(), uid),
+                      additionalImports: v.importsToAdd,
+                    })}
                     css={{
                       backgroundColor: colorTheme.bg5.value,
                       paddingTop: 5,
@@ -262,16 +273,16 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
                       borderBottomRightRadius: 3,
                       borderBottomLeftRadius: 3,
                       color:
-                        v.label === '(empty)'
+                        v.insertMenuLabel === '(empty)'
                           ? colorTheme.subduedForeground.value
                           : colorTheme.black.value,
                       '&:hover': {
                         backgroundColor: colorTheme.dynamicBlue10.value,
                       },
                     }}
-                    data-testId={componentPickerOptionTestId(option.name, v.label ?? 'no-label')}
+                    data-testId={componentPickerOptionTestId(option.name, v.insertMenuLabel)}
                   >
-                    {v.label ?? v.code}
+                    {v.insertMenuLabel}
                   </div>
                 ))}
               </div>

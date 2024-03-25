@@ -220,6 +220,7 @@ import type {
   SetCommentFilterMode,
   SetForking,
   SetCollaborators,
+  ExtractPropertyControlsFromDescriptorFiles,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -1144,12 +1145,14 @@ export function setProp_UNSAFE(
   target: ElementPath,
   propertyPath: PropertyPath,
   value: JSExpression,
+  importsToAdd: Imports = {},
 ): SetProp {
   return {
     action: 'SET_PROP',
     target: target,
     propertyPath: propertyPath,
     value: value,
+    importsToAdd: importsToAdd,
   }
 }
 
@@ -1732,5 +1735,14 @@ export function setCollaborators(collaborators: Collaborator[]): SetCollaborator
   return {
     action: 'SET_COLLABORATORS',
     collaborators: collaborators,
+  }
+}
+
+export function extractPropertyControlsFromDescriptorFiles(
+  paths: string[],
+): ExtractPropertyControlsFromDescriptorFiles {
+  return {
+    action: 'EXTRACT_PROPERTY_CONTROLS_FROM_DESCRIPTOR_FILES',
+    paths: paths,
   }
 }

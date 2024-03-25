@@ -778,6 +778,9 @@ export const NavigatorItem: React.FunctionComponent<
   return (
     <div
       onClick={navigatorEntry.type === 'SLOT' ? showContextMenu : hideContextMenu}
+      data-testid={`toggle-render-prop-${NavigatorItemTestId(
+        varSafeNavigatorEntryToKey(navigatorEntry),
+      )}`}
       style={{
         outline: `1px solid ${
           props.parentOutline === 'solid' && isOutletOrDescendantOfOutlet
