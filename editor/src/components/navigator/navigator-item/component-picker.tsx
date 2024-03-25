@@ -2,7 +2,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import { HeadlessStringInput, StringInput, useColorTheme } from '../../../uuiui'
+import { useColorTheme } from '../../../uuiui'
 import { capitalize } from '../../../core/shared/string-utils'
 import { type PreferredChildComponent } from 'utopia-api'
 
@@ -12,6 +12,18 @@ export interface ComponentPickerProps {
   allComponents: PreferredChildComponent[]
   onItemClick: (codeToInsert: string) => React.MouseEventHandler
   onClickCloseButton?: React.MouseEventHandler
+}
+
+export function componentPickerTestIdForProp(prop: string): string {
+  return `component-picker-${prop}`
+}
+
+export const componentPickerCloseButtonTestId = `component-picker-close-button`
+export const componentPickerFilterInputTestId = `component-picker-filter-input`
+
+export function componentPickerOptionTestId(componentName: string, variant?: string): string {
+  const variantSuffix = variant == null ? '' : `-${variant}`
+  return `component-picker-option-${componentName}${variantSuffix}`
 }
 
 export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
@@ -54,6 +66,7 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
         backgroundColor: colorTheme.white.value,
         borderRadius: 10,
       }}
+      data-testId={componentPickerTestIdForProp(props.insertionTargetName)}
     >
       <div
         style={{
@@ -100,6 +113,7 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
                 lineHeight: 'normal',
                 backgroundColor: colorTheme.white.value,
               }}
+              data-testId={`${componentPickerTestIdForProp(props.insertionTargetName)}-prop-field`}
             >
               {capitalize(props.insertionTargetName)}
             </div>
@@ -129,7 +143,11 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
           </div>
           <div style={{ flexGrow: 1 }} />
           {props.onClickCloseButton != null ? (
-            <div style={{ fontWeight: 600 }} onClick={props.onClickCloseButton}>
+            <div
+              style={{ fontWeight: 600 }}
+              onClick={props.onClickCloseButton}
+              data-testId={componentPickerCloseButtonTestId}
+            >
               X
             </div>
           ) : null}
@@ -160,7 +178,6 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
           >
             🔍
           </div>
-          {/* <HeadlessStringInput */}
           <input
             style={{
               fontFamily: 'Utopian-Inter',
@@ -168,7 +185,6 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
               fontWeight: 500,
               fontSize: '11px',
               width: '100%',
-              // backgroundColor: 'transparent',
               border: 'none',
             }}
             placeholder='Filter...'
@@ -177,6 +193,7 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
             onKeyDown={handleFilterKeydown}
             onChange={handleFilterChange}
             value={filter}
+            data-testId={componentPickerFilterInputTestId}
           />
         </div>
       </div>
@@ -215,6 +232,7 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
                 fontSize: '11px',
               }}
               key={`${idx}-label`}
+              data-testId={componentPickerOptionTestId(option.name)}
             >
               <div style={{ fontWeight: 700 }}>{option.name}</div>
               <div
@@ -251,6 +269,7 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
                         backgroundColor: colorTheme.dynamicBlue10.value,
                       },
                     }}
+                    data-testId={componentPickerOptionTestId(option.name, v.label ?? 'no-label')}
                   >
                     {v.label ?? v.code}
                   </div>
