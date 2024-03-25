@@ -1,20 +1,48 @@
 import urlJoin from 'url-join'
 import { ServerEnvironment } from '../env.server'
+import { UserInfoClient, AuthenticationClient } from 'auth0'
+import { singleton } from '../singleton.server'
+import { getOrCreateDummyUser } from '../models/userDetails.server'
+import { v4 } from 'uuid'
 
-export function auth0LoginURL(): string {
-  const behaviour = 'auto-close'
+export const Auth0TokenExpiration: {
+  amount: number
+  unit: moment.unitOfTime.Base
+} = { amount: 1, unit: 'month' }
 
-  const useAuth0 =
+export const auth0UserClient = singleton(
+  'auth0UserClient',
+  () =>
+    new UserInfoClient({
+      domain: ServerEnvironment.AUTH0_ENDPOINT,
+    }),
+)
+
+export const auth0AuthClient = singleton(
+  'auth0AuthClient',
+  () =>
+    new AuthenticationClient({
+      domain: ServerEnvironment.AUTH0_ENDPOINT,
+      clientId: ServerEnvironment.AUTH0_CLIENT_ID,
+      clientSecret: ServerEnvironment.AUTH0_CLIENT_SECRET,
+    }),
+)
+
+export function auth0Enabled(): boolean {
+  return (
     ServerEnvironment.AUTH0_ENDPOINT !== '' &&
     ServerEnvironment.AUTH0_CLIENT_ID !== '' &&
     ServerEnvironment.AUTH0_REDIRECT_URI !== ''
-  if (!useAuth0) {
+  )
+}
+
+export function auth0LoginURL(): string {
+  if (!auth0Enabled()) {
     console.warn(
       'Auth0 is disabled, if you need it be sure to set the AUTH0_ENDPOINT, AUTH0_CLIENT_ID, AUTH0_REDIRECT_URI environment variables',
     )
-    const url = new URL(urlJoin(ServerEnvironment.BACKEND_URL, 'authenticate'))
+    const url = new URL(urlJoin(ServerEnvironment.CORS_ORIGIN, '/authenticate'))
     url.searchParams.set('code', 'logmein')
-    url.searchParams.set('onto', behaviour)
     return url.href
   }
 
@@ -24,8 +52,30 @@ export function auth0LoginURL(): string {
   url.searchParams.set('client_id', ServerEnvironment.AUTH0_CLIENT_ID)
 
   const redirectURL = new URL(ServerEnvironment.AUTH0_REDIRECT_URI)
-  redirectURL.searchParams.set('onto', behaviour)
-
   url.searchParams.set('redirect_uri', redirectURL.href)
+
   return url.href
+}
+
+export async function getAuth0Grant(
+  authCode: string,
+): Promise<{ key: string; userId: string } | null> {
+  if (!auth0Enabled()) {
+    const dummyUser = await getOrCreateDummyUser()
+    return authCode === 'logmein' ? { key: v4(), userId: dummyUser.user_id } : null
+  }
+
+  // get the token from auth0
+  const grant = await auth0AuthClient.oauth.authorizationCodeGrant({
+    client_id: ServerEnvironment.AUTH0_CLIENT_ID,
+    client_secret: ServerEnvironment.AUTH0_CLIENT_SECRET,
+    code: authCode,
+    redirect_uri: ServerEnvironment.AUTH0_REDIRECT_URI,
+  })
+  const accessToken = grant.data.access_token
+
+  // grab the user info for the token
+  const userInfo = await auth0UserClient.getUserInfo(accessToken)
+
+  return { key: v4(), userId: userInfo.data.sub }
 }

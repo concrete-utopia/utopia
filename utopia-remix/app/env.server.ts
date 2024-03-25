@@ -10,6 +10,10 @@ declare global {
 
 export type AppEnv = 'local' | 'stage' | 'prod' | 'test'
 
+export function isProductionOrStaging(env: AppEnv): boolean {
+  return env === 'prod' || env === 'stage'
+}
+
 const environment = getAppEnv()
 console.info(`Remix app environment: ${environment}`)
 
