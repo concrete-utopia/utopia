@@ -245,17 +245,18 @@ export async function maybeUpdatePropertyControls(
   evaluator: ModuleEvaluator,
 ) {
   let componentDescriptorUpdates: ComponentDescriptorFileLookup = {}
-
-  for await (const file of filesToUpdate) {
-    const descriptors = await getComponentDescriptorPromisesFromParseResult(
-      file,
-      workers,
-      evaluator,
-    )
-    if (descriptors.length > 0) {
-      componentDescriptorUpdates[file.path] = descriptors
-    }
-  }
+  await Promise.all(
+    filesToUpdate.map(async (file) => {
+      const descriptors = await getComponentDescriptorPromisesFromParseResult(
+        file,
+        workers,
+        evaluator,
+      )
+      if (descriptors.length > 0) {
+        componentDescriptorUpdates[file.path] = descriptors
+      }
+    }),
+  )
 
   const updatedPropertyControlsInfo = updatePropertyControlsOnDescriptorFileUpdate(
     previousPropertyControlsInfo,
