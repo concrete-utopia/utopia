@@ -1095,6 +1095,11 @@ export interface SetCollaborators {
   collaborators: Collaborator[]
 }
 
+export interface ParsePropertyControlDescriptorFiles {
+  action: 'PARSE_PROPERTY_CONTROL_DESCRIPTOR_FILES'
+  paths: string[]
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
@@ -1272,6 +1277,7 @@ export type EditorAction =
   | SetCommentFilterMode
   | SetForking
   | SetCollaborators
+  | ParsePropertyControlDescriptorFiles
 
 export type DispatchPriority =
   | 'everyone'

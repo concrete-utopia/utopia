@@ -330,6 +330,7 @@ import type {
   SetForking,
   InsertAttributeOtherJavascriptIntoElement,
   SetCollaborators,
+  ParsePropertyControlDescriptorFiles,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -563,9 +564,12 @@ import type { ProjectServerState } from '../store/project-server-state'
 import { updateFileIfPossible } from './can-update-file'
 import { getPrintAndReparseCodeResult } from '../../../core/workers/parser-printer/parser-printer-worker'
 import { isSteganographyEnabled } from '../../../core/shared/stegano-text'
+import type { ParsedTextFileWithPath } from '../../../core/property-controls/property-controls-local'
 import {
   updatePropertyControlsOnDescriptorFileDelete,
   isComponentDescriptorFile,
+  createModuleEvaluator,
+  maybeUpdatePropertyControls,
 } from '../../../core/property-controls/property-controls-local'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
@@ -5660,6 +5664,31 @@ export const UPDATE_FNS = {
   },
   SET_SHOW_RESOLVED_THREADS: (action: SetCommentFilterMode, editor: EditorModel): EditorModel => {
     return { ...editor, commentFilterMode: action.commentFilterMode }
+  },
+  PARSE_PROPERTY_CONTROL_DESCRIPTOR_FILES: (
+    action: ParsePropertyControlDescriptorFiles,
+    state: EditorState,
+    workers: UtopiaTsWorkers,
+    dispatch: EditorDispatch,
+  ): EditorModel => {
+    const evaluator = createModuleEvaluator(state)
+
+    const filesToUpdate: ParsedTextFileWithPath[] = []
+    for (const filePath of action.paths) {
+      const file = getProjectFileByFilePath(state.projectContents, filePath)
+      if (file != null && file.type === 'TEXT_FILE') {
+        filesToUpdate.push({ path: filePath, file: file.fileContents.parsed })
+      }
+    }
+
+    void maybeUpdatePropertyControls(
+      state.propertyControlsInfo,
+      filesToUpdate,
+      workers,
+      dispatch,
+      evaluator,
+    )
+    return state
   },
 }
 
