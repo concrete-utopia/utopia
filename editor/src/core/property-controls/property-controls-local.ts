@@ -274,7 +274,7 @@ export function updatePropertyControlsOnDescriptorFileDelete(
   componentDescriptorFile: string,
 ): PropertyControlsInfo {
   return updatePropertyControlsOnDescriptorFileUpdate(previousPropertyControlsInfo, {
-    componentDescriptorFile: [],
+    [componentDescriptorFile]: [],
   })
 }
 
