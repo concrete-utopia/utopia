@@ -2,7 +2,7 @@ import urlJoin from 'url-join'
 import { ServerEnvironment } from '../env.server'
 
 export function auth0LoginURL(): string {
-  const behaviour = 'auto-close'
+  const behaviour: 'auto-close' | 'authd-redirect' = 'authd-redirect'
 
   const useAuth0 =
     ServerEnvironment.AUTH0_ENDPOINT !== '' &&
