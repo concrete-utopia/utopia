@@ -56,6 +56,7 @@ import { updatePropertyControlsInfo } from '../../components/editor/actions/acti
 import { DefaultThirdPartyControlDefinitions } from '../third-party/third-party-controls'
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import { isIntrinsicHTMLElement } from '../shared/element-template'
+import { stripNulls } from '../shared/array-utils'
 
 async function parseInsertOption(
   insertOption: ComponentInsertOption,
@@ -171,17 +172,15 @@ export async function maybeUpdatePropertyControls(
     return
   }
 
-  const componentDescriptorUpdates: ComponentDescriptorFileLookup =
-    await componentDescriptorParseResults.reduce(async (acc, file) => {
+  let componentDescriptorUpdates: ComponentDescriptorFileLookup = {}
+  await Promise.all(
+    componentDescriptorParseResults.map(async (file) => {
       const descriptors = await getComponentDescriptorPromisesFromParseResult(file, workers)
       if (descriptors.length > 0) {
-        return {
-          ...acc,
-          [file.filename]: descriptors,
-        }
+        componentDescriptorUpdates[file.filename] = descriptors
       }
-      return acc
-    }, Promise.resolve({}))
+    }),
+  )
 
   const updatedPropertyControlsInfo = updatePropertyControlsOnDescriptorFileUpdate(
     previousPropertyControlsInfo,
