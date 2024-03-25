@@ -418,12 +418,14 @@ describe('project model', () => {
 
       expect(Object.keys(got.collaborators).length).toBe(2)
       expect(Object.keys(got.collaborators)[0]).toBe('seven')
-      expect(got.collaborators['seven'].length).toBe(1)
+      expect(got.collaborators['seven'].length).toBe(2)
       expect(got.collaborators['seven'].map((c) => c.id)[0]).toBe('bob')
+      expect(got.collaborators['seven'].map((c) => c.id)[1]).toBe('carol') // the owner is included implicitly!
       expect(Object.keys(got.collaborators)[1]).toBe('four')
-      expect(got.collaborators['four'].length).toBe(2)
+      expect(got.collaborators['four'].length).toBe(3)
       expect(got.collaborators['four'].map((c) => c.id)[0]).toBe('bob')
       expect(got.collaborators['four'].map((c) => c.id)[1]).toBe('carol')
+      expect(got.collaborators['four'].map((c) => c.id)[2]).toBe('alice') // the owner is included implicitly!
     })
   })
 

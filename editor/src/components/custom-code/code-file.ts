@@ -15,9 +15,10 @@ import {
 import type { RawSourceMap } from '../../core/workers/ts/ts-typings/RawSourceMap'
 import type { EmitFileResult } from '../../core/workers/ts/ts-worker'
 import Utils from '../../utils/utils'
-
-import type { PropertyControls } from './internal-property-controls'
-import type { PreferredChildComponent } from 'utopia-api/core'
+import type {
+  PreferredChildComponentDescriptor,
+  PropertyControls,
+} from './internal-property-controls'
 import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 import { resolveModulePath } from '../../core/es-modules/package-manager/module-resolution'
 import type { EvaluationCache } from '../../core/es-modules/package-manager/package-manager'
@@ -122,31 +123,68 @@ export function componentInfo(
   }
 }
 
-export interface PreferredChildComponentDescriptor {
-  name: string
-  imports: Imports
-  variants: Array<ComponentInfo>
-}
-
 export interface ComponentDescriptor {
   properties: PropertyControls
   supportsChildren: boolean
-  preferredChildComponents: Array<PreferredChildComponent>
+  preferredChildComponents: Array<PreferredChildComponentDescriptor>
   variants: ComponentInfo[]
+  source: ComponentDescriptorSource
 }
 
 export function componentDescriptor(
   properties: PropertyControls,
   supportsChildren: boolean,
   variants: Array<ComponentInfo>,
-  preferredChildComponents: Array<PreferredChildComponent>,
+  preferredChildComponents: Array<PreferredChildComponentDescriptor>,
+  source: ComponentDescriptorSource,
 ): ComponentDescriptor {
   return {
     properties: properties,
     supportsChildren: supportsChildren,
     variants: variants,
     preferredChildComponents: preferredChildComponents,
+    source: source,
   }
+}
+
+export type ComponentDescriptorSource =
+  | DefaultComponentDescriptor
+  | ComponentDescriptorFromDescriptorFile
+
+interface DefaultComponentDescriptor {
+  type: 'DEFAULT'
+}
+
+export function defaultComponentDescriptor(): DefaultComponentDescriptor {
+  return {
+    type: 'DEFAULT',
+  }
+}
+
+export function isDefaultComponentDescriptor(
+  desc: ComponentDescriptorSource,
+): desc is DefaultComponentDescriptor {
+  return desc.type === 'DEFAULT'
+}
+
+export interface ComponentDescriptorFromDescriptorFile {
+  type: 'DESCRIPTOR_FILE'
+  sourceDescriptorFile: string
+}
+
+export function componentDescriptorFromDescriptorFile(
+  sourceDescriptorFile: string,
+): ComponentDescriptorFromDescriptorFile {
+  return {
+    type: 'DESCRIPTOR_FILE',
+    sourceDescriptorFile: sourceDescriptorFile,
+  }
+}
+
+export function isComponentDescriptorFromDescriptorFile(
+  desc: ComponentDescriptorSource,
+): desc is ComponentDescriptorFromDescriptorFile {
+  return desc.type === 'DESCRIPTOR_FILE'
 }
 
 export interface ComponentDescriptorWithName extends ComponentDescriptor {

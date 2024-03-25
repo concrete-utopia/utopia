@@ -253,7 +253,7 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
   )
 }
 
-function elementFromInsertMenuItem(
+export function elementFromInsertMenuItem(
   element: ComponentElementToInsert,
   uid: string,
 ): JSXElementChild {

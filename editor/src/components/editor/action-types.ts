@@ -727,6 +727,7 @@ export interface SetProp {
   target: ElementPath
   propertyPath: PropertyPath
   value: JSExpression
+  importsToAdd: Imports
 }
 
 export interface SetFilebrowserRenamingTarget {
@@ -1094,6 +1095,11 @@ export interface SetCollaborators {
   collaborators: Collaborator[]
 }
 
+export interface ExtractPropertyControlsFromDescriptorFiles {
+  action: 'EXTRACT_PROPERTY_CONTROLS_FROM_DESCRIPTOR_FILES'
+  paths: string[]
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
@@ -1271,6 +1277,7 @@ export type EditorAction =
   | SetCommentFilterMode
   | SetForking
   | SetCollaborators
+  | ExtractPropertyControlsFromDescriptorFiles
 
 export type DispatchPriority =
   | 'everyone'
