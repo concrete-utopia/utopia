@@ -163,8 +163,6 @@ export async function maybeUpdatePropertyControls(
   workers: UtopiaTsWorkers,
   dispatch: EditorDispatch,
 ) {
-  let componentDescriptorUpdates: ComponentDescriptorFileLookup = {}
-
   const componentDescriptorParseResults = parseResults.filter((p) =>
     isComponentDescriptorFile(p.filename),
   )
@@ -173,12 +171,17 @@ export async function maybeUpdatePropertyControls(
     return
   }
 
-  for await (const file of componentDescriptorParseResults) {
-    const descriptors = await getComponentDescriptorPromisesFromParseResult(file, workers)
-    if (descriptors.length > 0) {
-      componentDescriptorUpdates[file.filename] = descriptors
-    }
-  }
+  const componentDescriptorUpdates: ComponentDescriptorFileLookup =
+    await componentDescriptorParseResults.reduce(async (acc, file) => {
+      const descriptors = await getComponentDescriptorPromisesFromParseResult(file, workers)
+      if (descriptors.length > 0) {
+        return {
+          ...acc,
+          [file.filename]: descriptors,
+        }
+      }
+      return acc
+    }, Promise.resolve({}))
 
   const updatedPropertyControlsInfo = updatePropertyControlsOnDescriptorFileUpdate(
     previousPropertyControlsInfo,
