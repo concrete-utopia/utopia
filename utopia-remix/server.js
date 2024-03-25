@@ -176,7 +176,6 @@ const app = express()
 app.disable('x-powered-by')
 
 // proxy middleware hooks
-app.use('/authenticate', proxy)
 app.use('/editor', proxy)
 app.use('/hashed-assets.json', proxy)
 app.use('/logout', proxy)
