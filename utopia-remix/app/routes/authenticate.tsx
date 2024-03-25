@@ -32,6 +32,7 @@ function authFromEditor(resp: Response) {
   return new Response(resp.body, {
     headers: {
       'content-type': 'text/html',
+      'cache-control': 'no-cache',
       'set-cookie': resp.headers.get('set-cookie') ?? '',
     },
     status: resp.status,
