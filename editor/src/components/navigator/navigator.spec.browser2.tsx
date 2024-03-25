@@ -980,13 +980,13 @@ export var storyboard = (
 )
 `,
     ['/utopia/components.utopia.js']: `
-    // import { Title } from "../src/title"
+    import { ExportedForTheSakeOfExportingIt } from "../src/header"
     
     const Components = {
       '/utopia/storyboard': {
         Card: {
           properties: {
-            header: {
+            [ExportedForTheSakeOfExportingIt]: {
               control: 'jsx',
               preferredChildComponents: [
                 {
@@ -1010,15 +1010,8 @@ export var storyboard = (
     
     export default Components    
 `,
-    ['/src/heading.js']: `import React from 'react'
-export function Heading({ children }) {
-  return <h1 data-uid='708'>{children}</h1>
-}
-`,
-    ['/src/title.js']: `import React from 'react'
-export function Title({ children }) {
-return <h2 data-uid='708'>{children}</h2>
-}
+    ['/src/header.js']: `
+    export const ExportedForTheSakeOfExportingIt = 'header'
 `,
   })
 
