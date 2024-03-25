@@ -904,7 +904,10 @@ export var storyboard = (
           preferredChildComponents: [
             {
               name: 'span',
-              variants: [{ code: '<span>Title</span>' }],
+              variants: [{
+                label: 'Span with Title',
+                code: '<span>Title</span>',
+              }],
             },
           ],
         },
@@ -994,7 +997,7 @@ export var storyboard = (
                   additionalImports: '/src/heading',
                   variants: [
                     {
-                      label: 'Heading',
+                      label: 'Heading with Title',
                       code: '<Heading>Title</Heading>',
                     },
                   ],
@@ -5029,7 +5032,7 @@ describe('Navigator', () => {
 
       await mouseClickAtPoint(slotElement, { x: 3, y: 3 })
       const renderPropOptionElement = await waitFor(() =>
-        renderResult.renderedDOM.getByText('span'),
+        renderResult.renderedDOM.getByText('Span with Title'),
       )
       await mouseClickAtPoint(renderPropOptionElement, { x: 3, y: 3 })
 
@@ -5072,7 +5075,7 @@ describe('Navigator', () => {
 
       await mouseClickAtPoint(slotElement, { x: 3, y: 3 })
       const renderPropOptionElement = await waitFor(() =>
-        renderResult.renderedDOM.getByText('Heading'),
+        renderResult.renderedDOM.getByText('Heading with Title'),
       )
       await mouseClickAtPoint(renderPropOptionElement, { x: 3, y: 3 })
 
