@@ -286,7 +286,7 @@ describe('The navigator render prop picker', () => {
     }
 
     export var storyboard = (
-      <Storyboard data-uid='sb'>
+      <Storyboard>
         <Card
           style={{
             backgroundColor: '#aaaaaa33',
@@ -296,8 +296,11 @@ describe('The navigator render prop picker', () => {
             width: 139,
             height: 87,
           }}
-          title={<div>three totally real placeholders</div>}
-          data-uid='card'
+          title={
+            <div style={{ width: 100, height: 100 }}>
+              three totally real placeholders
+            </div>
+          }
         />
       </Storyboard>
     )
