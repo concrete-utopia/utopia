@@ -6,11 +6,11 @@ import type { UserDetails } from 'prisma-client'
 import { PrismaClientKnownRequestError } from 'prisma-client/runtime/library.js'
 import invariant from 'tiny-invariant'
 import { ALLOW } from '../handlers/validators'
-import { getUserFromSession } from '../models/session.server'
 import { ApiError } from './errors'
 import type { Method } from './methods.server'
 import { Status } from './statusCodes'
 import { ServerEnvironment } from '../env.server'
+import { maybeGetUserFromSession } from '../models/session.server'
 
 interface ErrorResponse {
   error: string
@@ -192,8 +192,8 @@ export async function requireUser(
   try {
     const sessionId = getSessionId(request)
     ensure(sessionId != null, 'missing session cookie', Status.UNAUTHORIZED)
-    const user = await getUserFromSession({ key: sessionId })
-    ensure(user != null, 'user not found', Status.UNAUTHORIZED)
+    const user = await maybeGetUserFromSession({ key: sessionId })
+    ensure(user != null, 'unauthorized', Status.UNAUTHORIZED)
     return user
   } catch (error) {
     if (error instanceof ApiError && error.status === Status.UNAUTHORIZED) {
@@ -210,7 +210,7 @@ export async function getUser(request: Request): Promise<UserDetails | null> {
   if (sessionId == null) {
     return null
   }
-  return getUserFromSession({ key: sessionId })
+  return maybeGetUserFromSession({ key: sessionId })
 }
 
 export function getProjectIdFromParams(params: Params<string>, key: string): string | null {
