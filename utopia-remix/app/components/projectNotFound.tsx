@@ -108,7 +108,7 @@ function ActionButton({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        color: 'white',
+        color: colors.white,
         backgroundColor: colors.primary,
         padding: '10px 30px',
         transition: 'background-color 0.3s',
