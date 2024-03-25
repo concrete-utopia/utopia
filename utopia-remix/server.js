@@ -180,12 +180,15 @@ app.use('/authenticate', proxy)
 app.use('/editor', proxy)
 app.use('/hashed-assets.json', proxy)
 app.use('/logout', proxy)
-app.use('/p', proxy)
-app.use('/project', proxy)
 app.use('/share', proxy)
 app.use('/sockjs-node', proxy)
 app.use('/v1/javascript/packager', proxy)
 app.use('/vscode', proxy)
+
+// this will use the proxy only for `/p` and `/project` paths
+// for `/p/{id} and `/project/{id}` we will use Remix routes
+app.use('/p/?$', proxy)
+app.use('/project/?$', proxy)
 
 // other middlewares
 app.use(corsMiddleware)
