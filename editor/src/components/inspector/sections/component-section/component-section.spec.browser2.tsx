@@ -801,7 +801,7 @@ describe('Controls from registering components', () => {
 
   it('registering external component', async () => {
     const editor = await renderTestEditorWithModel(
-      registerExternalComponentProject,
+      registerThirdPartyComponentProject,
       'await-first-dom-report',
     )
     await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/title')])
@@ -1246,7 +1246,7 @@ export default Components
 `,
 })
 
-const registerExternalComponentProject = createModifiedProject({
+const registerThirdPartyComponentProject = createModifiedProject({
   [StoryboardFilePath]: `import * as React from 'react'
 import {
   Storyboard,
