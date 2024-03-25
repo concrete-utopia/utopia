@@ -93,7 +93,6 @@ export function createComplexDefaultProjectContents(): ProjectContents {
 import Utopia, {
   Scene,
   Storyboard,
-  registerModule,
 } from 'utopia-api'
 import { App } from '/src/app.js'
 

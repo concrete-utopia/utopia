@@ -864,7 +864,6 @@ import Utopia, {
   Scene,
   View,
   Storyboard,
-  registerModule,
 } from 'utopia-api'
 
 export var App = (props) => {

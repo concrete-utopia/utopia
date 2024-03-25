@@ -2366,7 +2366,6 @@ describe('inspector tests with real metadata', () => {
   import Utopia, {
     Scene,
     Storyboard,
-    registerModule,
   } from 'utopia-api'
   import { App } from '/src/app.js'
 
