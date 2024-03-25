@@ -532,8 +532,6 @@ describe('Lifecycle management of registering components', () => {
       true,
     )
 
-    await renderResult.getDispatchFollowUpActionsFinished() // property controls from the first descriptor file are gone
-
     // Card has a label2 property in the updated file
     expect(
       Object.keys(
@@ -630,8 +628,6 @@ describe('Lifecycle management of registering components', () => {
       true,
     )
 
-    await renderResult.getDispatchFollowUpActionsFinished() // property controls from the first descriptor file are gone
-
     // The first descriptor file has a new NewCard component in it
     expect(Object.keys(renderResult.getEditorState().editor.propertyControlsInfo['/src/card']))
       .toMatchInlineSnapshot(`
@@ -724,8 +720,6 @@ describe('Lifecycle management of registering components', () => {
       ],
       true,
     )
-
-    await renderResult.getDispatchFollowUpActionsFinished() // property controls from the first descriptor file are gone
 
     // The CardToDelete from the first descriptor file has been deleted
     expect(Object.keys(renderResult.getEditorState().editor.propertyControlsInfo['/src/card']))
@@ -824,8 +818,6 @@ describe('Lifecycle management of registering components', () => {
       true,
     )
 
-    await renderResult.getDispatchFollowUpActionsFinished() // property controls from the first descriptor file are gone
-
     // The Card from /src/card from the first descriptor is still there
     expect(Object.keys(renderResult.getEditorState().editor.propertyControlsInfo['/src/card']))
       .toMatchInlineSnapshot(`
@@ -920,8 +912,6 @@ describe('Lifecycle management of registering components', () => {
       ],
       true,
     )
-
-    await renderResult.getDispatchFollowUpActionsFinished() // property controls from the first descriptor file are gone
 
     // The Card from /src/card from the first descriptor is still there
     expect(Object.keys(renderResult.getEditorState().editor.propertyControlsInfo['/src/card']))
