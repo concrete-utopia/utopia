@@ -5,10 +5,10 @@ import React from 'react'
 import { useColorTheme } from '../../../uuiui'
 import { capitalize } from '../../../core/shared/string-utils'
 import { type PreferredChildComponentDescriptor } from '../../custom-code/internal-property-controls'
-import { type JSXElementChild } from '../../../core/shared/element-template'
+import { jsxElementWithoutUID, type JSXElementChild } from '../../../core/shared/element-template'
 import { type Imports } from '../../../core/shared/project-file-types'
 import { elementFromInsertMenuItem } from '../../editor/insert-callbacks'
-import { type ComponentInfo } from '../../custom-code/code-file'
+import { componentInfo, type ComponentInfo } from '../../custom-code/code-file'
 
 export interface ComponentPickerProps {
   insertionTargetName: string
@@ -348,6 +348,15 @@ const ComponentPickerOption = React.memo((props: ComponentPickerOptionProps) => 
   const colorTheme = useColorTheme()
   const { componentDescriptor, onItemClick } = props
 
+  const variants: ComponentInfo[] = [
+    componentInfo(
+      '(empty)',
+      () => jsxElementWithoutUID(componentDescriptor.name, [], []),
+      componentDescriptor.imports,
+    ),
+    ...(componentDescriptor.variants ?? []),
+  ]
+
   return (
     <div
       style={{
@@ -378,7 +387,7 @@ const ComponentPickerOption = React.memo((props: ComponentPickerOptionProps) => 
           gap: 9,
         }}
       >
-        {componentDescriptor.variants?.map((v) => (
+        {variants?.map((v) => (
           <ComponentPickerVariant
             key={`${componentDescriptor.name}-${v.insertMenuLabel}`}
             componentName={componentDescriptor.name}
