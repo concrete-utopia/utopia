@@ -52,6 +52,7 @@ import {
 } from '../shared/either'
 import { setOptionalProp } from '../shared/object-utils'
 import { assertNever } from '../shared/utils'
+import type { ParsedTextFile } from '../shared/project-file-types'
 import { isExportDefault, isParseSuccess } from '../shared/project-file-types'
 import type { UiJsxCanvasContextData } from '../../components/canvas/ui-jsx-canvas'
 import type { EditorState } from '../../components/editor/store/editor-state'
@@ -173,14 +174,14 @@ export const isComponentDescriptorFile = (filename: string) =>
   filename.startsWith('/utopia/') && filename.endsWith('.utopia.js')
 
 async function getComponentDescriptorPromisesFromParseResult(
-  parseResult: ParseOrPrintResult,
+  descriptorFile: ParsedTextFileWithPath,
   workers: UtopiaTsWorkers,
   evaluator: ModuleEvaluator,
 ): Promise<ComponentDescriptorWithName[]> {
-  if (!isParseSuccess(parseResult.parseResult)) {
+  if (!isParseSuccess(descriptorFile.file)) {
     return []
   }
-  const exportDefaultIdentifier = parseResult.parseResult.exportsDetail.find(isExportDefault)
+  const exportDefaultIdentifier = descriptorFile.file.exportsDetail.find(isExportDefault)
   if (exportDefaultIdentifier?.name == null) {
     // TODO: error handling
     console.warn('No export default in descriptor file')
@@ -188,7 +189,7 @@ async function getComponentDescriptorPromisesFromParseResult(
   }
 
   try {
-    const evaluatedFile = evaluator(parseResult.filename)
+    const evaluatedFile = evaluator(descriptorFile.path)
 
     const descriptors = evaluatedFile[exportDefaultIdentifier.name]
 
@@ -215,7 +216,7 @@ async function getComponentDescriptorPromisesFromParseResult(
           componentName,
           moduleName,
           workers,
-          componentDescriptorFromDescriptorFile(parseResult.filename),
+          componentDescriptorFromDescriptorFile(descriptorFile.path),
         )
 
         if (componentDescriptor.type === 'RIGHT') {
@@ -231,31 +232,28 @@ async function getComponentDescriptorPromisesFromParseResult(
   }
 }
 
+export interface ParsedTextFileWithPath {
+  file: ParsedTextFile
+  path: string
+}
+
 export async function maybeUpdatePropertyControls(
   previousPropertyControlsInfo: PropertyControlsInfo,
-  parseResults: Array<ParseOrPrintResult>,
+  filesToUpdate: ParsedTextFileWithPath[],
   workers: UtopiaTsWorkers,
   dispatch: EditorDispatch,
   evaluator: ModuleEvaluator,
 ) {
   let componentDescriptorUpdates: ComponentDescriptorFileLookup = {}
 
-  const componentDescriptorParseResults = parseResults.filter((p) =>
-    isComponentDescriptorFile(p.filename),
-  )
-  if (componentDescriptorParseResults.length === 0) {
-    // there is nothing to update, return early so no empty dispatch is made
-    return
-  }
-
-  for await (const file of componentDescriptorParseResults) {
+  for await (const file of filesToUpdate) {
     const descriptors = await getComponentDescriptorPromisesFromParseResult(
       file,
       workers,
       evaluator,
     )
     if (descriptors.length > 0) {
-      componentDescriptorUpdates[file.filename] = descriptors
+      componentDescriptorUpdates[file.path] = descriptors
     }
   }
 

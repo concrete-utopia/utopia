@@ -80,7 +80,7 @@ import { ensureSceneIdsExist } from '../../../core/model/scene-id-utils'
 import type { ModuleEvaluator } from '../../../core/property-controls/property-controls-local'
 import {
   createModuleEvaluator,
-  maybeUpdatePropertyControls,
+  isComponentDescriptorFile,
 } from '../../../core/property-controls/property-controls-local'
 import { setReactRouterErrorHasBeenLogged } from '../../../core/shared/runtime-report-logs'
 import type { PropertyControlsInfo } from '../../custom-code/code-file'
@@ -343,15 +343,21 @@ function maybeRequestModelUpdate(
         const updates = parseResult.map((fileResult) => {
           return parseResultToWorkerUpdates(fileResult)
         })
-        void maybeUpdatePropertyControls(
-          previousPropertyControlsInfo,
-          parseResult,
-          workers,
-          dispatch,
-          evaluator,
+
+        const propertyDescriptorFilesToUpdate = parseResult.filter((result) =>
+          isComponentDescriptorFile(result.filename),
         )
 
-        dispatch([EditorActions.mergeWithPrevUndo([EditorActions.updateFromWorker(updates)])])
+        let actionsToDispatch: EditorAction[] = [EditorActions.updateFromWorker(updates)]
+        if (propertyDescriptorFilesToUpdate.length > 0) {
+          actionsToDispatch.push(
+            EditorActions.parsePropertyControlDescriptorFiles(
+              propertyDescriptorFilesToUpdate.map((r) => r.filename),
+            ),
+          )
+        }
+
+        dispatch([EditorActions.mergeWithPrevUndo(actionsToDispatch)])
         return true
       })
       .catch((e) => {
