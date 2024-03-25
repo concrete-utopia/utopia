@@ -3,21 +3,7 @@ import { BakedInStoryboardUID } from '../model/scene-utils'
 import { TestScene0UID } from '../model/test-ui-js-file.test-utils'
 import { createModifiedProject } from '../../sample-projects/sample-project-utils.test-utils'
 import { StoryboardFilePath } from '../../components/editor/store/editor-state'
-import { deleteFile, updateFile } from '../../components/editor/actions/action-creators'
-import { lintAndParse } from '../workers/parser-printer/parser-printer'
-import { emptySet } from '../shared/set-utils'
-import {
-  codeFile,
-  isParseSuccess,
-  ParsedTextFile,
-  RevisionsState,
-  TextFile,
-  textFile,
-  textFileContents,
-} from '../shared/project-file-types'
-import { forceNotNull } from '../shared/optional-utils'
-import { getProjectFileByFilePath } from '../../components/assets'
-import { wait } from '../../utils/utils.test-utils'
+import { deleteFile } from '../../components/editor/actions/action-creators'
 import { updateFromCodeEditor } from '../../components/editor/actions/actions-from-vscode'
 
 const project = (componentDescriptorFiles: { [filename: string]: string }) =>
