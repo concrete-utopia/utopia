@@ -53,7 +53,6 @@ import { isExportDefault, isParseSuccess } from '../shared/project-file-types'
 import { resolveParamsAndRunJsCode } from '../shared/javascript-cache'
 import type { EditorDispatch } from '../../components/editor/action-types'
 import { updatePropertyControlsInfo } from '../../components/editor/actions/action-creators'
-import { DefaultThirdPartyControlDefinitions } from '../third-party/third-party-controls'
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import { isIntrinsicHTMLElement } from '../shared/element-template'
 
@@ -163,8 +162,6 @@ export async function maybeUpdatePropertyControls(
   workers: UtopiaTsWorkers,
   dispatch: EditorDispatch,
 ) {
-  let componentDescriptorUpdates: ComponentDescriptorFileLookup = {}
-
   const componentDescriptorParseResults = parseResults.filter((p) =>
     isComponentDescriptorFile(p.filename),
   )
@@ -173,12 +170,15 @@ export async function maybeUpdatePropertyControls(
     return
   }
 
-  for await (const file of componentDescriptorParseResults) {
-    const descriptors = await getComponentDescriptorPromisesFromParseResult(file, workers)
-    if (descriptors.length > 0) {
-      componentDescriptorUpdates[file.filename] = descriptors
-    }
-  }
+  let componentDescriptorUpdates: ComponentDescriptorFileLookup = {}
+  await Promise.all(
+    componentDescriptorParseResults.map(async (file) => {
+      const descriptors = await getComponentDescriptorPromisesFromParseResult(file, workers)
+      if (descriptors.length > 0) {
+        componentDescriptorUpdates[file.filename] = descriptors
+      }
+    }),
+  )
 
   const updatedPropertyControlsInfo = updatePropertyControlsOnDescriptorFileUpdate(
     previousPropertyControlsInfo,
