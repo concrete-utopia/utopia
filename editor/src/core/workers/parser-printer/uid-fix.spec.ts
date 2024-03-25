@@ -1265,7 +1265,6 @@ function createFileText(codeSnippet: string): string {
   import Utopia, {
     Scene,
     Storyboard,
-    registerModule,
   } from 'utopia-api'
   import { View } from 'utopia-api'
 

@@ -18,9 +18,6 @@ declare module 'utopia-api/helpers/helper-functions' {
       properties: PropertyControls;
       variants: Array<ComponentInsertOption>;
   }
-  export function registerModule(moduleName: string, components: {
-      [componentName: string]: ComponentToRegister;
-  }): void;
   export type RawSingleBorderWidth = number | string;
   export type RawSplitBorderWidth = [
       RawSingleBorderWidth,
