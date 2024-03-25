@@ -53,7 +53,7 @@ describe('projectCollaborators model', () => {
     it('returns the collaborator details by project id', async () => {
       const ids = ['one', 'two', 'four', 'five']
       const got = await getCollaborators({ ids: ids, userId: 'bob' })
-      expect(Object.keys(got)).toEqual(ids)
+      expect(Object.keys(got).length).toEqual(4)
       expect(got['one'].map((c) => c.id)).toEqual(['bob'])
       expect(got['two'].map((c) => c.id)).toEqual(['bob', 'wendy'])
       expect(got['four'].map((c) => c.id)).toEqual([])
@@ -62,7 +62,7 @@ describe('projectCollaborators model', () => {
     it('ignores mismatching projects', async () => {
       const ids = ['one', 'two', 'three']
       const got = await getCollaborators({ ids: ids, userId: 'bob' })
-      expect(Object.keys(got)).toEqual(['one', 'two'])
+      expect(Object.keys(got).length).toEqual(2)
       expect(got['one'].map((c) => c.id)).toEqual(['bob'])
       expect(got['two'].map((c) => c.id)).toEqual(['bob', 'wendy'])
     })

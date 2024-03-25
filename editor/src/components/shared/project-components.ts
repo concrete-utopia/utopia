@@ -41,7 +41,10 @@ import type {
   ComponentElementToInsert,
   ComponentInfo,
 } from '../custom-code/code-file'
-import { clearComponentElementToInsertUniqueIDs } from '../custom-code/code-file'
+import {
+  clearComponentElementToInsertUniqueIDs,
+  defaultComponentDescriptor,
+} from '../custom-code/code-file'
 import { defaultElementStyle } from '../editor/defaults'
 import { getExportedComponentImportsFromParseSuccess } from '../editor/export-utils'
 import {
@@ -366,6 +369,7 @@ function makeHTMLDescriptor(
         elementToInsert: () => jsxElementWithoutUID(tag, attributes?.() ?? [], []),
       },
     ],
+    source: defaultComponentDescriptor(),
   }
 }
 
@@ -457,6 +461,7 @@ const conditionalElementsDescriptors: ComponentDescriptorsForFile = {
         importsToAdd: {},
       },
     ],
+    source: defaultComponentDescriptor(),
   },
 }
 
@@ -472,6 +477,7 @@ const groupElementsDescriptors: ComponentDescriptorsForFile = {
         importsToAdd: groupJSXElementImportsToAdd(),
       },
     ],
+    source: defaultComponentDescriptor(),
   },
 }
 
@@ -493,6 +499,7 @@ const fragmentElementsDescriptors: ComponentDescriptorsForFile = {
     supportsChildren: true,
     variants: [fragmentComponentInfo],
     preferredChildComponents: [],
+    source: defaultComponentDescriptor(),
   },
 }
 
@@ -508,6 +515,7 @@ const samplesDescriptors: ComponentDescriptorsForFile = {
         importsToAdd: {},
       },
     ],
+    source: defaultComponentDescriptor(),
   },
 }
 

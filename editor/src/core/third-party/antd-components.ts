@@ -1,8 +1,9 @@
 import { AntdControls } from '../property-controls/third-party-property-controls/antd-controls'
 import type { PropertyControls } from '../../components/custom-code/internal-property-controls'
-import type {
-  ComponentDescriptor,
-  ComponentDescriptorsForFile,
+import {
+  defaultComponentDescriptor,
+  type ComponentDescriptor,
+  type ComponentDescriptorsForFile,
 } from '../../components/custom-code/code-file'
 import type { JSXAttributes } from '../shared/element-template'
 import { jsxElementName, jsxElementWithoutUID, simpleAttribute } from '../shared/element-template'
@@ -52,6 +53,7 @@ function createBasicComponent(
           ),
       },
     ],
+    source: defaultComponentDescriptor(),
   }
 }
 

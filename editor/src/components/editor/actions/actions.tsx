@@ -350,6 +350,7 @@ import {
   saveAsset as saveAssetToServer,
   saveUserConfiguration,
   updateAssetFileName,
+  updateGithubRepository,
 } from '../server'
 import type {
   CanvasBase64Blobs,
@@ -366,6 +367,7 @@ import type {
   TrueUpTarget,
   TrueUpHuggingElement,
   CollaborativeEditingSupport,
+  ProjectGithubSettings,
 } from '../store/editor-state'
 import {
   trueUpChildrenOfGroupChanged,
@@ -1689,10 +1691,13 @@ export const UPDATE_FNS = {
   },
   SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {
     let setPropFailedMessage: string | null = null
-    let updatedEditor = modifyUnderlyingElementForOpenFile(
+    let updatedEditor = modifyUnderlyingTargetElement(
       action.target,
       editor,
       (element) => {
+        if (!isJSXElement(element)) {
+          return element
+        }
         const updatedProps = setJSXValueAtPath(element.props, action.propertyPath, action.value)
         if (
           isRight(updatedProps) &&
@@ -1741,7 +1746,14 @@ export const UPDATE_FNS = {
           updatedProps,
         )
       },
-      (success) => success,
+      (success, _, underlyingFilePath) => {
+        const updatedImports = mergeImports(
+          underlyingFilePath,
+          success.imports,
+          action.importsToAdd,
+        ).imports
+        return { ...success, imports: updatedImports }
+      },
     )
 
     updatedEditor = addToTrueUpElements(updatedEditor, trueUpGroupElementChanged(action.target))
@@ -3612,12 +3624,25 @@ export const UPDATE_FNS = {
     }
   },
   UPDATE_GITHUB_SETTINGS: (action: UpdateGithubSettings, editor: EditorModel): EditorModel => {
+    const newGithubSettings: ProjectGithubSettings = {
+      ...editor.githubSettings,
+      ...action.settings,
+    }
+    if (editor.id != null) {
+      void updateGithubRepository(
+        editor.id,
+        newGithubSettings.targetRepository == null
+          ? null
+          : {
+              owner: newGithubSettings.targetRepository.owner,
+              repository: newGithubSettings.targetRepository.repository,
+              branch: newGithubSettings.branchName,
+            },
+      )
+    }
     return normalizeGithubData({
       ...editor,
-      githubSettings: {
-        ...editor.githubSettings,
-        ...action.settings,
-      },
+      githubSettings: newGithubSettings,
     })
   },
   UPDATE_GITHUB_DATA: (action: UpdateGithubData, editor: EditorModel): EditorModel => {
@@ -3853,7 +3878,10 @@ export const UPDATE_FNS = {
         if (isComponentDescriptorFile(action.filename)) {
           return {
             ...nextEditor,
-            propertyControlsInfo: updatePropertyControlsOnDescriptorFileDelete(action.filename),
+            propertyControlsInfo: updatePropertyControlsOnDescriptorFileDelete(
+              editor.propertyControlsInfo,
+              action.filename,
+            ),
           }
         }
 
