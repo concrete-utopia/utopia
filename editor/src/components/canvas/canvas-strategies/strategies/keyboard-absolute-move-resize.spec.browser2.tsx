@@ -860,11 +860,7 @@ async function pressCmdShiftZ() {
 const TestProjectDeluxeStallion = (bbbDimensions: { [key: string]: any }) => {
   let dimensionLines: Array<string> = []
   const prefix = `import * as React from 'react'
-import Utopia, {
-  Scene,
-  View,
-  Storyboard,
-} from 'utopia-api'
+import Utopia, { Scene, View, Storyboard } from 'utopia-api'
 
 export var App = (props) => {
   return (
