@@ -53,10 +53,8 @@ import { isExportDefault, isParseSuccess } from '../shared/project-file-types'
 import { resolveParamsAndRunJsCode } from '../shared/javascript-cache'
 import type { EditorDispatch } from '../../components/editor/action-types'
 import { updatePropertyControlsInfo } from '../../components/editor/actions/action-creators'
-import { DefaultThirdPartyControlDefinitions } from '../third-party/third-party-controls'
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import { isIntrinsicHTMLElement } from '../shared/element-template'
-import { stripNulls } from '../shared/array-utils'
 
 async function parseInsertOption(
   insertOption: ComponentInsertOption,
