@@ -49,7 +49,7 @@ describe('handleDeleteProject', () => {
     const fn = async () =>
       handleListDeletedProjects(newTestRequest({ method: 'POST', authCookie: 'wrong-key' }), {})
     await expect(fn).rejects.toThrow(ApiError)
-    await expect(fn).rejects.toThrow('session not found')
+    await expect(fn).rejects.toThrow('unauthorized')
   })
   it('returns deleted projects', async () => {
     const fn = async () => {

@@ -2,7 +2,7 @@ import urlJoin from 'url-join'
 import { ServerEnvironment } from '../env.server'
 
 export function auth0LoginURL(): string {
-  const behaviour = 'auto-close'
+  const behaviour: 'auto-close' | 'authd-redirect' = 'authd-redirect'
 
   const useAuth0 =
     ServerEnvironment.AUTH0_ENDPOINT !== '' &&
@@ -12,7 +12,7 @@ export function auth0LoginURL(): string {
     console.warn(
       'Auth0 is disabled, if you need it be sure to set the AUTH0_ENDPOINT, AUTH0_CLIENT_ID, AUTH0_REDIRECT_URI environment variables',
     )
-    const url = new URL(urlJoin(ServerEnvironment.BACKEND_URL, 'authenticate'))
+    const url = new URL(urlJoin(ServerEnvironment.CORS_ORIGIN, 'authenticate'))
     url.searchParams.set('code', 'logmein')
     url.searchParams.set('onto', behaviour)
     return url.href

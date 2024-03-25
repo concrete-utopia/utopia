@@ -32,14 +32,14 @@ describe('requireUser', () => {
     const req = newTestRequest({ authCookie: 'wrong' })
     const fn = async () => requireUser(req)
     await expect(fn).rejects.toThrow(ApiError)
-    await expect(fn).rejects.toThrow('session not found')
+    await expect(fn).rejects.toThrow('unauthorized')
   })
 
   it('needs a user for the session cookie', async () => {
     const req = newTestRequest({ authCookie: 'invalid-key' })
     const fn = async () => requireUser(req)
     await expect(fn).rejects.toThrow(ApiError)
-    await expect(fn).rejects.toThrow('user not found')
+    await expect(fn).rejects.toThrow('unauthorized')
   })
 
   it('returns the user details', async () => {

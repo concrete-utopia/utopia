@@ -31,7 +31,7 @@ describe('handleUpdateGithubRepository', () => {
     const fn = async () =>
       handleUpdateGithubRepository(newTestRequest({ method: 'POST', authCookie: 'wrong-key' }), {})
     await expect(fn).rejects.toThrow(ApiError)
-    await expect(fn).rejects.toThrow('session not found')
+    await expect(fn).rejects.toThrow('unauthorized')
   })
   it('requires a valid id', async () => {
     const fn = async () =>
