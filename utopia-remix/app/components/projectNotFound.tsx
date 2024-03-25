@@ -1,11 +1,11 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
 import React from 'react'
-import { jsx } from '@emotion/react'
 import { when } from '../util/react-conditionals'
 import { Button } from '@radix-ui/themes'
 import { useFetcher } from '@remix-run/react'
 import { useProjectsStore } from '../store'
+import { colors } from '../styles/sprinkles.css'
+import { hover } from './projectNotFound.css'
+import cx from 'classnames'
 
 export default function ProjectNotFound({
   projectId,
@@ -99,9 +99,9 @@ function ActionButton({
     <Button
       disabled={disabled}
       onClick={onClick}
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      css={{
+      radius='full'
+      className={cx(hover)}
+      style={{
         boxSizing: 'border-box',
         height: 'auto',
         fontSize: '18px',
@@ -109,13 +109,9 @@ function ActionButton({
         alignItems: 'center',
         justifyContent: 'center',
         color: 'white',
-        backgroundColor: '#0075f9',
-        borderRadius: '90px',
+        backgroundColor: colors.primary,
         padding: '10px 30px',
         transition: 'background-color 0.3s',
-        '&:hover': {
-          backgroundColor: '#5DA9FF',
-        },
       }}
     >
       {text}
