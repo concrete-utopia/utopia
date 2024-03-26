@@ -1,46 +1,37 @@
 import React from 'react'
-import type { ProjectAccessRequestWithUserDetails } from '../types'
-import { isProjectAccessRequestWithUserDetailsArray, type ProjectListing } from '../types'
-import { useFetcher } from '@remix-run/react'
 import { useProjectsStore } from '../store'
-import { useFetcherData } from './useFetcherData'
+import type { ProjectAccessRequestWithUserDetails } from '../types'
+import { isProjectAccessRequestWithUserDetailsArray } from '../types'
 
 /**
  * 1. set the sharing project id to the given project's id
  * 2. fetch access requests asynchronously and set them in the contextual store
  */
-export function useOpenShareDialog(project: ProjectListing) {
+export function useOpenShareDialog(projectId: string) {
   const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
   const setSharingProjectAccessRequests = useProjectsStore(
     (store) => store.setSharingProjectAccessRequests,
   )
 
-  const accessRequestsFetcher = useFetcher()
-
-  const fetchAccessRequests = React.useCallback(() => {
-    if (project == null) {
-      return
-    }
+  const fetchAccessRequests = React.useCallback(async () => {
     setSharingProjectAccessRequests({ state: 'loading', requests: [] })
-    const action = `/internal/projects/${project.proj_id}/access/requests`
-    accessRequestsFetcher.submit({}, { method: 'GET', action: action })
-  }, [accessRequestsFetcher, project, setSharingProjectAccessRequests])
-
-  const updateAccessRequests = React.useCallback(
-    (data: ProjectAccessRequestWithUserDetails[]) => {
-      setSharingProjectAccessRequests({ state: 'ready', requests: data })
-    },
-    [setSharingProjectAccessRequests],
-  )
-
-  useFetcherData(
-    accessRequestsFetcher,
-    isProjectAccessRequestWithUserDetailsArray,
-    updateAccessRequests,
-  )
+    let requests: ProjectAccessRequestWithUserDetails[] = []
+    try {
+      const resp = await fetch(`/internal/projects/${projectId}/access/requests`, {
+        method: 'GET',
+        credentials: 'include',
+      })
+      const data = await resp.json()
+      if (isProjectAccessRequestWithUserDetailsArray(data)) {
+        requests = data
+      }
+    } finally {
+      setSharingProjectAccessRequests({ state: 'ready', requests: requests })
+    }
+  }, [setSharingProjectAccessRequests, projectId])
 
   return React.useCallback(() => {
-    setSharingProjectId(project.proj_id)
+    setSharingProjectId(projectId)
     fetchAccessRequests()
-  }, [setSharingProjectId, fetchAccessRequests, project])
+  }, [fetchAccessRequests, setSharingProjectId, projectId])
 }
