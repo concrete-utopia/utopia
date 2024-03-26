@@ -28,6 +28,7 @@ import { useFetcherDataUnkown } from '../hooks/useFetcherData'
 import { useProjectAccessMatchesSelectedCategory } from '../hooks/useProjectMatchingCategory'
 import { sprinkles } from '../styles/sprinkles.css'
 import { Spinner } from './spinner'
+import { isLikeApiError } from '../util/errors'
 
 export const SharingDialogWrapper = React.memo(
   ({ project }: { project: ProjectListing | null }) => {
@@ -59,26 +60,40 @@ function SharingDialog({ project }: { project: ProjectListing | null }) {
   const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
   const accessRequests = useProjectsStore((store) => store.sharingProjectAccessRequests)
 
+  // keep track of possible new access levels to avoid jumpy single-frame updates
+  const [currentAccessLevel, setCurrentAccessLevel] = React.useState<AccessLevel | null>(null)
+
   const accessLevel = React.useMemo(() => {
-    return asAccessLevel(project?.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
-  }, [project])
+    return (
+      currentAccessLevel ??
+      asAccessLevel(project?.ProjectAccess?.access_level) ??
+      AccessLevel.PRIVATE
+    )
+  }, [project, currentAccessLevel])
 
   const projectAccessMatchesSelectedCategory = useProjectAccessMatchesSelectedCategory(project)
 
-  const clearSharingProjectId = React.useCallback(() => {
-    if (!projectAccessMatchesSelectedCategory) {
-      setSharingProjectId(null)
-    }
-  }, [setSharingProjectId, projectAccessMatchesSelectedCategory])
+  const changeAccessFetcherCallback = React.useCallback(
+    (data: unknown) => {
+      if (isLikeApiError(data)) {
+        setCurrentAccessLevel(null)
+      }
+      if (!projectAccessMatchesSelectedCategory) {
+        setSharingProjectId(null)
+      }
+    },
+    [setSharingProjectId, projectAccessMatchesSelectedCategory],
+  )
 
   const changeAccessFetcher = useFetcherWithOperation(project?.proj_id ?? null, 'changeAccess')
-  useFetcherDataUnkown(changeAccessFetcher, clearSharingProjectId)
+  useFetcherDataUnkown(changeAccessFetcher, changeAccessFetcherCallback)
 
   const changeProjectAccessLevel = React.useCallback(
     (newAccessLevel: AccessLevel) => {
       if (project == null) {
         return
       }
+      setCurrentAccessLevel(newAccessLevel)
       changeAccessFetcher.submit(
         operationChangeAccess(project, newAccessLevel),
         { accessLevel: newAccessLevel.toString() },
