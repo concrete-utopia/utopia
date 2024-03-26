@@ -86,11 +86,13 @@ function loadCompleteEvent<ModelType>(
 
 interface LoadFailedEvent {
   type: 'LOAD_FAILED'
+  projectId: string
 }
 
-function loadFailedEvent(): LoadFailedEvent {
+function loadFailedEvent(projectId: string): LoadFailedEvent {
   return {
     type: 'LOAD_FAILED',
+    projectId: projectId,
   }
 }
 
@@ -541,7 +543,7 @@ export function createPersistenceMachine<ModelType, FileType>(
                       } else if (event.data.type === 'PROJECT_NOT_AUTHORIZED') {
                         return loadFailedNotAuthorizedEvent(event.data.projectId)
                       } else {
-                        return loadFailedEvent()
+                        return loadFailedEvent(event.data.projectId)
                       }
                     }),
                   ],

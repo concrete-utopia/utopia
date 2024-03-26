@@ -34,6 +34,7 @@ export interface ProjectLoadSuccess<ModelType> extends ProjectModelWithId<ModelT
 
 export interface ProjectNotFound {
   type: 'PROJECT_NOT_FOUND'
+  projectId: string
 }
 
 export interface ProjectNotAuthorized {
