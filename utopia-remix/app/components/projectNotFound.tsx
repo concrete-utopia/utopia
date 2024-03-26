@@ -66,7 +66,7 @@ function UnauthorizedPage({ projectId, user }: { projectId: string; user: UserDe
         <img src={hmmPyramidLight} height='500px' alt='Utopia 403 Logo' />
       </div>
       <div className={styles.container}>
-        <div style={{ fontSize: '100px', fontWeight: 600, fontStyle: 'italic' }}>Hmmm...</div>
+        <div style={{ fontSize: '100px', fontWeight: 600, fontStyle: 'italic' }}>Hmmm…</div>
         <div className={styles.runningText}>
           <span>Looks like you need permission to access this project. </span>
           <span>You're signed in as {user?.email}.</span>
