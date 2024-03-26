@@ -18,6 +18,7 @@ import {
 describe('The navigator render prop picker', () => {
   const PreferredChildComponents = [
     {
+      component: true, // placeholder
       name: 'FlexRow',
       variants: [
         { label: '(empty)', code: '<div />' },
@@ -77,6 +78,7 @@ describe('The navigator render prop picker', () => {
     const Components = {
       '/utopia/storyboard': {
         Card: {
+          component: true, // placeholder
           supportsChildren: true,
           properties: {
             title: {

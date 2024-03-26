@@ -614,6 +614,7 @@ describe('Set element prop via the data picker', () => {
         `{
           '/utopia/storyboard': {
             Title: {
+              component: true, // placeholder
               supportsChildren: false,
               properties: {
                 text: {
@@ -674,6 +675,7 @@ describe('Set element prop via the data picker', () => {
         `{
       '/utopia/storyboard': {
         Link: {
+          component: true, // placeholder
           properties: {
             children: {
               control: 'array',
