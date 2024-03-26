@@ -9,29 +9,36 @@ import { isProjectAccessRequestWithUserDetailsArray } from '../types'
  */
 export function useOpenShareDialog(projectId: string) {
   const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
+  const fetchAccessRequests = useFetchAccessRequests()
+
+  return React.useCallback(() => {
+    setSharingProjectId(projectId)
+    fetchAccessRequests(projectId)
+  }, [fetchAccessRequests, setSharingProjectId, projectId])
+}
+
+function useFetchAccessRequests() {
   const setSharingProjectAccessRequests = useProjectsStore(
     (store) => store.setSharingProjectAccessRequests,
   )
 
-  const fetchAccessRequests = React.useCallback(async () => {
-    setSharingProjectAccessRequests({ state: 'loading', requests: [] })
-    let requests: ProjectAccessRequestWithUserDetails[] = []
-    try {
-      const resp = await fetch(`/internal/projects/${projectId}/access/requests`, {
-        method: 'GET',
-        credentials: 'include',
-      })
-      const data = await resp.json()
-      if (isProjectAccessRequestWithUserDetailsArray(data)) {
-        requests = data
+  return React.useCallback(
+    async (projectId: string) => {
+      setSharingProjectAccessRequests({ state: 'loading', requests: [] })
+      let requests: ProjectAccessRequestWithUserDetails[] = []
+      try {
+        const resp = await fetch(`/internal/projects/${projectId}/access/requests`, {
+          method: 'GET',
+          credentials: 'include',
+        })
+        const data = await resp.json()
+        if (isProjectAccessRequestWithUserDetailsArray(data)) {
+          requests = data
+        }
+      } finally {
+        setSharingProjectAccessRequests({ state: 'ready', requests: requests })
       }
-    } finally {
-      setSharingProjectAccessRequests({ state: 'ready', requests: requests })
-    }
-  }, [setSharingProjectAccessRequests, projectId])
-
-  return React.useCallback(() => {
-    setSharingProjectId(projectId)
-    fetchAccessRequests()
-  }, [fetchAccessRequests, setSharingProjectId, projectId])
+    },
+    [setSharingProjectAccessRequests],
+  )
 }
