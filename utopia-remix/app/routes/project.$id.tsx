@@ -7,6 +7,7 @@ import { useLoaderData, type Params, json, redirect } from '@remix-run/react'
 import type { ApiError } from '../util/errors'
 import { Status } from '../util/statusCodes'
 import ProjectNotFound from '../components/projectNotFound'
+import type { UserDetails } from 'prisma-client'
 
 export async function loader(args: LoaderFunctionArgs) {
   return getProjectForEditor(args.request, args.params)
@@ -28,8 +29,9 @@ export async function getProjectForEditor(req: Request, params: Params<string>) 
   if (error.status === Status.NOT_FOUND) {
     return json(
       {
-        projectId: null,
-        userId: null,
+        projectId: projectId,
+        user: user,
+        status: Status.NOT_FOUND,
       },
       {
         status: Status.NOT_FOUND,
@@ -39,7 +41,8 @@ export async function getProjectForEditor(req: Request, params: Params<string>) 
     return json(
       {
         projectId: projectId,
-        userId: user?.user_id,
+        user: user,
+        status: Status.FORBIDDEN,
       },
       {
         status: Status.FORBIDDEN,
@@ -50,6 +53,10 @@ export async function getProjectForEditor(req: Request, params: Params<string>) 
 }
 
 export default function () {
-  const data = useLoaderData() as unknown as { projectId: string | null; userId: string | null }
-  return <ProjectNotFound projectId={data.projectId} userId={data.userId} />
+  const data = useLoaderData() as unknown as {
+    projectId: string | null
+    user: UserDetails | null
+    status: number
+  }
+  return <ProjectNotFound projectId={data.projectId} user={data.user} status={data.status} />
 }
