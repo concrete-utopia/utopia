@@ -4,7 +4,7 @@ import type { ProjectAccessRequestWithUserDetails } from '../types'
 import { isProjectAccessRequestWithUserDetailsArray } from '../types'
 
 /**
- * 1. set the sharing project id to the given project's id
+ * 1. set the sharing project id to the given project id
  * 2. fetch access requests asynchronously and set them in the contextual store
  */
 export function useOpenShareDialog(projectId: string) {
