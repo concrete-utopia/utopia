@@ -3,17 +3,6 @@ import { handleLogin } from '../routes/login'
 import { ServerEnvironment } from '../env.server'
 
 describe('handleLogin', () => {
-  let corsOrigin: string
-  beforeAll(() => {
-    corsOrigin = ServerEnvironment.CORS_ORIGIN
-    // this is since in the tests we set CORS_ORIGIN to '*',
-    // so we can't rely on it in URLs
-    ServerEnvironment.CORS_ORIGIN = 'http://localhost:8000'
-  })
-  afterAll(() => {
-    ServerEnvironment.CORS_ORIGIN = corsOrigin
-  })
-
   it('should redirect to auth0 login with the correct redirectTo param', async () => {
     const request = newTestRequest({
       method: 'GET',
