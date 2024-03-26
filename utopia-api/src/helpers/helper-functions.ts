@@ -14,6 +14,7 @@ export interface PreferredChildComponent {
 }
 
 export interface ComponentToRegister {
+  component: React.ReactElement
   properties: PropertyControls
   supportsChildren: boolean
   preferredChildComponents?: Array<PreferredChildComponent>

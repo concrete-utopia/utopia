@@ -31,6 +31,7 @@ import type { ParseResult } from '../../utils/value-parser-utils'
 import {
   objectKeyParser,
   optionalObjectKeyParser,
+  parseAny,
   parseArray,
   parseBoolean,
   parseObject,
@@ -42,6 +43,7 @@ import type { Either } from '../shared/either'
 import {
   applicative3Either,
   applicative4Either,
+  applicative5Either,
   foldEither,
   forEachRight,
   isLeft,
@@ -589,15 +591,17 @@ export function parsePreferredChild(value: unknown): ParseResult<PreferredChildC
 }
 
 function parseComponentToRegister(value: unknown): ParseResult<ComponentToRegister> {
-  return applicative4Either(
-    (properties, supportsChildren, variants, preferredChildComponents) => {
+  return applicative5Either(
+    (component, properties, supportsChildren, variants, preferredChildComponents) => {
       return {
+        component: component,
         properties: properties,
         supportsChildren: supportsChildren,
         variants: variants,
         preferredChildComponents: preferredChildComponents,
       }
     },
+    objectKeyParser(parseAny, 'component')(value),
     objectKeyParser(fullyParsePropertyControls, 'properties')(value),
     objectKeyParser(parseBoolean, 'supportsChildren')(value),
     objectKeyParser(parseArray(parseComponentInsertOption), 'variants')(value),
