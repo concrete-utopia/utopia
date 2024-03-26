@@ -60,29 +60,24 @@ function SharingDialog({ project }: { project: ProjectListing | null }) {
   const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
   const accessRequests = useProjectsStore((store) => store.sharingProjectAccessRequests)
 
-  // keep track of possible new access levels to avoid jumpy single-frame updates
-  const [currentAccessLevel, setCurrentAccessLevel] = React.useState<AccessLevel | null>(null)
+  const projectAccessLevel = React.useMemo(() => {
+    return asAccessLevel(project?.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
+  }, [project])
 
-  const accessLevel = React.useMemo(() => {
-    return (
-      currentAccessLevel ??
-      asAccessLevel(project?.ProjectAccess?.access_level) ??
-      AccessLevel.PRIVATE
-    )
-  }, [project, currentAccessLevel])
+  const [accessLevel, setAccessLevel] = React.useState<AccessLevel>(projectAccessLevel)
 
   const projectAccessMatchesSelectedCategory = useProjectAccessMatchesSelectedCategory(project)
 
   const changeAccessFetcherCallback = React.useCallback(
     (data: unknown) => {
       if (isLikeApiError(data)) {
-        setCurrentAccessLevel(null)
+        setAccessLevel(projectAccessLevel)
       }
       if (!projectAccessMatchesSelectedCategory) {
         setSharingProjectId(null)
       }
     },
-    [setSharingProjectId, projectAccessMatchesSelectedCategory],
+    [setSharingProjectId, projectAccessMatchesSelectedCategory, projectAccessLevel],
   )
 
   const changeAccessFetcher = useFetcherWithOperation(project?.proj_id ?? null, 'changeAccess')
@@ -93,7 +88,7 @@ function SharingDialog({ project }: { project: ProjectListing | null }) {
       if (project == null) {
         return
       }
-      setCurrentAccessLevel(newAccessLevel)
+      setAccessLevel(newAccessLevel)
       changeAccessFetcher.submit(
         operationChangeAccess(project, newAccessLevel),
         { accessLevel: newAccessLevel.toString() },
