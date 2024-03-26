@@ -898,6 +898,7 @@ export var storyboard = (
     ['/utopia/components.utopia.js']: `const Components = {
   '/utopia/storyboard': {
     Card: {
+      component: true, // placeholder
       properties: {
         header: {
           control: 'jsx',
@@ -988,6 +989,7 @@ export var storyboard = (
     const Components = {
       '/utopia/storyboard': {
         Card: {
+          component: true, // placeholder
           properties: {
             [ExportedForTheSakeOfExportingIt]: {
               control: 'jsx',

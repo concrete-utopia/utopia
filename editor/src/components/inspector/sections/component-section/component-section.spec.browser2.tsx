@@ -841,6 +841,7 @@ describe('Controls from registering components', () => {
           `{
         '/utopia/storyboard': {
           Link: {
+            component: true, // placeholder
             properties: {
               children: {
                 control: 'array',
@@ -933,6 +934,7 @@ describe('Controls from registering components', () => {
           `{
         '/utopia/storyboard': {
           Card: {
+            component: true, // placeholder
             properties: {
               header: {
                 control: 'array',
@@ -1344,6 +1346,7 @@ var Playground = () => {
   `{
   '/utopia/storyboard': {
     Counter: {
+      component: true, // placeholder
       properties: {
         count: {
           control: 'number-input',
@@ -1404,6 +1407,7 @@ var Playground = () => {
   `{
   '/utopia/storyboard': {
     TableOfContents: {
+      component: true, // placeholder
       properties: {
         titles: {
           control: 'array',
@@ -1414,6 +1418,7 @@ var Playground = () => {
       variants: [],
     },
     BookDetail: {
+      component: true, // placeholder
       properties: {
         book: {
           control: 'object',
@@ -1543,6 +1548,7 @@ const registerComponentProjectWithHtmlProp = createModifiedProject({
   ['/utopia/components.utopia.js']: `const Components = {
     '/utopia/storyboard': {
       Title: {
+        component: true, // placeholder
         supportsChildren: false,
         properties: {
           text: {
