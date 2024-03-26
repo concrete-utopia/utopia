@@ -778,9 +778,6 @@ export const NavigatorItem: React.FunctionComponent<
   return (
     <div
       onClick={hideContextMenu}
-      data-testid={`toggle-render-prop-${NavigatorItemTestId(
-        varSafeNavigatorEntryToKey(navigatorEntry),
-      )}`}
       style={{
         outline: `1px solid ${
           props.parentOutline === 'solid' && isOutletOrDescendantOfOutlet
@@ -833,6 +830,9 @@ export const NavigatorItem: React.FunctionComponent<
               marginLeft: 28,
               cursor: navigatorEntry.type === 'SLOT' ? 'pointer' : 'inherit',
             }}
+            data-testid={`toggle-render-prop-${NavigatorItemTestId(
+              varSafeNavigatorEntryToKey(navigatorEntry),
+            )}`}
           >
             Empty
           </div>

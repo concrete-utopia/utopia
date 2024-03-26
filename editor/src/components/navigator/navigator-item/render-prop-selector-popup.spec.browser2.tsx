@@ -141,7 +141,7 @@ describe('The navigator render prop picker', () => {
     const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/card')])
     const emptySlot = editor.renderedDOM.getByTestId(
-      'NavigatorItemTestId-slot_sb/card/prop_label_title',
+      'toggle-render-prop-NavigatorItemTestId-slot_sb/card/prop_label_title',
     )
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
 
@@ -159,7 +159,7 @@ describe('The navigator render prop picker', () => {
     const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/card')])
     const emptySlot = editor.renderedDOM.getByTestId(
-      'NavigatorItemTestId-slot_sb/card/prop_label_title',
+      'toggle-render-prop-NavigatorItemTestId-slot_sb/card/prop_label_title',
     )
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
 
@@ -182,7 +182,7 @@ describe('The navigator render prop picker', () => {
     const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/card')])
     const emptySlot = editor.renderedDOM.getByTestId(
-      'NavigatorItemTestId-slot_sb/card/prop_label_title',
+      'toggle-render-prop-NavigatorItemTestId-slot_sb/card/prop_label_title',
     )
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
 
@@ -222,7 +222,7 @@ describe('The navigator render prop picker', () => {
     const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/card')])
     const emptySlot = editor.renderedDOM.getByTestId(
-      'NavigatorItemTestId-slot_sb/card/prop_label_title',
+      'toggle-render-prop-NavigatorItemTestId-slot_sb/card/prop_label_title',
     )
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
 
@@ -254,7 +254,7 @@ describe('The navigator render prop picker', () => {
     const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/card')])
     const emptySlot = editor.renderedDOM.getByTestId(
-      'NavigatorItemTestId-slot_sb/card/prop_label_title',
+      'toggle-render-prop-NavigatorItemTestId-slot_sb/card/prop_label_title',
     )
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
 
@@ -276,7 +276,7 @@ describe('The navigator render prop picker', () => {
     const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/card')])
     const emptySlot = editor.renderedDOM.getByTestId(
-      'NavigatorItemTestId-slot_sb/card/prop_label_title',
+      'toggle-render-prop-NavigatorItemTestId-slot_sb/card/prop_label_title',
     )
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
 
@@ -297,7 +297,7 @@ describe('The navigator render prop picker', () => {
     const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/card')])
     const emptySlot = editor.renderedDOM.getByTestId(
-      'NavigatorItemTestId-slot_sb/card/prop_label_title',
+      'toggle-render-prop-NavigatorItemTestId-slot_sb/card/prop_label_title',
     )
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
 
