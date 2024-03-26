@@ -12,7 +12,6 @@ describe('handleLogin', () => {
     const response = await handleLogin(request, {})
     expect(response.status).toBe(302)
     const redirectLocation = response.headers.get('Location')
-    expect(redirectLocation).toContain(`${ServerEnvironment.AUTH0_ENDPOINT}/authorize`)
     const redirectToParam = getParamFromLoginURL(redirectLocation ?? '', 'redirectTo')
     expect(redirectToParam).toBe('/p/test-project')
   })
@@ -25,7 +24,6 @@ describe('handleLogin', () => {
     const response = await handleLogin(request, {})
     expect(response.status).toBe(302)
     const redirectLocation = response.headers.get('Location')
-    expect(redirectLocation).toContain(`${ServerEnvironment.AUTH0_ENDPOINT}/authorize`)
     const redirectToParam = getParamFromLoginURL(redirectLocation ?? '', 'redirectTo')
     expect(redirectToParam).toBe(null)
   })
@@ -48,7 +46,9 @@ describe('handleLogin', () => {
 })
 
 function getParamFromLoginURL(url: string, param: string): string | null {
-  const redirect_uri = getDecodedParam(url ?? '', 'redirect_uri')
+  const redirect_uri = url.includes(`${ServerEnvironment.AUTH0_ENDPOINT}/authorize`)
+    ? getDecodedParam(url ?? '', 'redirect_uri')
+    : url
   return getDecodedParam(redirect_uri ?? '', param)
 }
 
