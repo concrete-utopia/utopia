@@ -148,7 +148,7 @@ const ComponentPickerTopSection = React.memo((props: ComponentPickerTopSectionPr
         <div style={{ flexGrow: 1 }} />
         {onClickCloseButton != null ? (
           <div
-            style={{ fontWeight: 600 }}
+            style={{ fontWeight: 600, cursor: 'pointer' }}
             onClick={onClickCloseButton}
             data-testId={componentPickerCloseButtonTestId}
           >
@@ -175,6 +175,7 @@ const PickerTabButton = React.memo((props: PickerTabButtonProps) => {
       style={{
         fontWeight: 600,
         color: isSelected ? colorTheme.black.value : colorTheme.subduedForeground.value,
+        cursor: 'pointer',
       }}
       onClick={onClick}
     >
@@ -433,6 +434,7 @@ const ComponentPickerVariant = React.memo((props: ComponentPickerVariantProps) =
         '&:hover': {
           backgroundColor: colorTheme.dynamicBlue10.value,
         },
+        cursor: 'pointer',
       }}
       data-testId={componentPickerOptionTestId(componentName, variant.insertMenuLabel)}
     >
