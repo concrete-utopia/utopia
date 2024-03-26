@@ -39,6 +39,7 @@ describe('registered property controls', () => {
         ['/utopia/components.utopia.js']: `const Components = {
       '/src/card': {
         Card: {
+          component: true, // placeholder
           supportsChildren: false,
           properties: {
             label: {
@@ -152,6 +153,7 @@ describe('registered property controls', () => {
         const Components = {
       '/src/card': {
         Card: {
+          component: true, // placeholder
           supportsChildren: false,
           properties: {
             label: Utopia.stringControl(),
@@ -261,6 +263,7 @@ describe('registered property controls', () => {
         ['/utopia/components.utopia.js']: `const Components = {
       '/src/card': {
         Card: {
+          component: true, // placeholder
           supportsChildren: false,
           properties: {
             label: {
@@ -288,6 +291,7 @@ describe('registered property controls', () => {
           ],
         },
         Card2: {
+          component: true, // placeholder
           supportsChildren: false,
           properties: {
             label: {
@@ -330,6 +334,7 @@ describe('registered property controls', () => {
         ['/utopia/components.utopia.js']: `const Components = {
         '/src/card': {
           Card: {
+            component: true, // placeholder
             supportsChildren: false,
             properties: {
               label: {
@@ -359,6 +364,7 @@ describe('registered property controls', () => {
         },
         '/src/card2': {
           Card2: {
+            component: true, // placeholder
             supportsChildren: false,
             properties: {
               label: {
@@ -405,6 +411,7 @@ describe('registered property controls', () => {
         ['/utopia/components.utopia.js']: `const Components = {
           '/src/card': {
             Card: {
+              component: true, // placeholder
               supportsChildren: false,
               properties: {
                 label: {
@@ -439,6 +446,7 @@ describe('registered property controls', () => {
         ['/utopia/components2.utopia.js']: `const Components = {
           '/src/card2': {
             Card2: {
+              component: true, // placeholder
               supportsChildren: false,
               properties: {
                 label: {
@@ -491,6 +499,7 @@ describe('Lifecycle management of registering components', () => {
           [descriptorFileName1]: `const Components = {
       '/src/card': {
         Card: {
+          component: true, // placeholder
           supportsChildren: false,
           properties: {
             label: {
@@ -507,6 +516,7 @@ describe('Lifecycle management of registering components', () => {
           [descriptorFileName2]: `const Components = {
     '/src/card2': {
       Card2: {
+        component: true, // placeholder
         supportsChildren: false,
         properties: {
           label: {
@@ -556,6 +566,7 @@ describe('Lifecycle management of registering components', () => {
     const descriptorFileContent2 = `const Components = {
       '/src/card2': {
         Card2: {
+          component: true, // placeholder
           supportsChildren: false,
           properties: {
             label: {
@@ -574,6 +585,7 @@ describe('Lifecycle management of registering components', () => {
       const descriptorFileContent1 = `const Components = {
       '/src/card': {
         Card: {
+          component: true, // placeholder
           supportsChildren: false,
           properties: {
             label: {
@@ -621,6 +633,7 @@ describe('Lifecycle management of registering components', () => {
       const updatedDescriptorFileContent = `const Components = {
       '/src/card': {
         Card: {
+          component: true, // placeholder
           supportsChildren: false,
           properties: {
             label2: {
@@ -671,6 +684,7 @@ describe('Lifecycle management of registering components', () => {
       const descriptorFileContent1 = `const Components = {
       '/src/card': {
         Card: {
+          component: true, // placeholder
           supportsChildren: false,
           properties: {
             label: {
@@ -709,6 +723,7 @@ describe('Lifecycle management of registering components', () => {
       const updatedDescriptorFileContent = `const Components = {
       '/src/card': {
         Card: {
+          component: true, // placeholder
           supportsChildren: false,
           properties: {
             label2: {
@@ -718,6 +733,7 @@ describe('Lifecycle management of registering components', () => {
           variants: [],
         },
         NewCard: {
+          component: true, // placeholder
           supportsChildren: false,
           properties: {
             label2: {
@@ -762,6 +778,7 @@ describe('Lifecycle management of registering components', () => {
       const descriptorFileContent1 = `const Components = {
       '/src/card': {
         Card: {
+          component: true, // placeholder
           supportsChildren: false,
           properties: {
             label: {
@@ -771,6 +788,7 @@ describe('Lifecycle management of registering components', () => {
           variants: [],
         },
         CardToDelete: {
+          component: true, // placeholder
           supportsChildren: false,
           properties: {
             label2: {
@@ -811,6 +829,7 @@ describe('Lifecycle management of registering components', () => {
       const updatedDescriptorFileContent = `const Components = {
       '/src/card': {
         Card: {
+          component: true, // placeholder
           supportsChildren: false,
           properties: {
             label2: {
@@ -854,6 +873,7 @@ describe('Lifecycle management of registering components', () => {
       const descriptorFileContent1 = `const Components = {
       '/src/card': {
         Card: {
+          component: true, // placeholder
           supportsChildren: false,
           properties: {
             label: {
@@ -897,6 +917,7 @@ describe('Lifecycle management of registering components', () => {
       const updatedDescriptorFileContent = `const Components = {
       '/src/card': {
         Card: {
+          component: true, // placeholder
           supportsChildren: false,
           properties: {
             label2: {
@@ -908,6 +929,7 @@ describe('Lifecycle management of registering components', () => {
       },
       '/src/new-module': {
         NewComp: {
+          component: true, // placeholder
           supportsChildren: false,
           properties: {
             label: {
@@ -959,6 +981,7 @@ describe('Lifecycle management of registering components', () => {
       const descriptorFileContent1 = `const Components = {
       '/src/card': {
         Card: {
+          component: true, // placeholder
           supportsChildren: false,
           properties: {
             label: {
@@ -1003,6 +1026,7 @@ describe('Lifecycle management of registering components', () => {
       const updatedDescriptorFileContent = `const Components = {
       '/src/card': {
         Card: {
+          component: true, // placeholder
           supportsChildren: false,
           properties: {
             label2: {
@@ -1052,6 +1076,7 @@ describe('Lifecycle management of registering components', () => {
       const descriptorFileContent1 = `const Components = {
       '/src/card': {
         Card: {
+          component: true, // placeholder
           supportsChildren: false,
           properties: {
             label: {
@@ -1097,6 +1122,7 @@ describe('Lifecycle management of registering components', () => {
       const descriptorFileContent1 = `const Components = {
       '/src/card': {
         Card: {
+          component: true, // placeholder
           supportsChildren: false,
           properties: {
             label: {
@@ -1136,6 +1162,7 @@ describe('Lifecycle management of registering components', () => {
       const descriptorFileContent1 = `const Components = {
       '/src/card': {
         Card: {
+          component: true, // placeholder
           supportsChildren: false,
           properties: {
             label: {
