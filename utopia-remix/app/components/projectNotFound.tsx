@@ -70,7 +70,11 @@ function UnauthorizedPage({ projectId, user }: { projectId: string; user: UserDe
         <div className={styles.runningText}>
           <span>Looks like you need permission to access this project. </span>
           <span>You're signed in as </span>
-          <a href='/projects' rel='noopener noreferrer' style={{ textDecoration: 'none' }}>
+          <a
+            href='/projects'
+            rel='noopener noreferrer'
+            style={{ textDecoration: 'none', color: colors.primary }}
+          >
             {user?.email}
           </a>
           <span>.</span>
@@ -109,7 +113,11 @@ function NotFoundPage({ user, projectId }: { user: UserDetails | null; projectId
           {when(user?.user_id != null, () => (
             <>
               <span>You're signed in as </span>{' '}
-              <a href='/projects' rel='noopener noreferrer' style={{ textDecoration: 'none' }}>
+              <a
+                href='/projects'
+                rel='noopener noreferrer'
+                style={{ textDecoration: 'none', color: colors.primary }}
+              >
                 {user?.email}
               </a>
               <span>.</span>
