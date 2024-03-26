@@ -124,6 +124,7 @@ export async function truncateTables(models: DeletableModel[]) {
 
 export function newTestRequest(params?: {
   path?: string
+  search?: Record<string, string>
   method?: string
   headers?: { [key: string]: string }
   authCookie?: string
@@ -131,7 +132,13 @@ export function newTestRequest(params?: {
   body?: string
 }): Request {
   const path = (params?.path ?? '').replace(/^\/+/, '')
-  const req = new Request(`http://localhost:8000/` + path, {
+  const url = new URL(`http://localhost:8000/${path}`)
+  if (params?.search != null) {
+    for (const key of Object.keys(params.search)) {
+      url.searchParams.set(key, params.search[key])
+    }
+  }
+  const req = new Request(url, {
     method: params?.method,
     body: params?.formData ?? params?.body,
   })

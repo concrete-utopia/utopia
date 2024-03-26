@@ -15,6 +15,7 @@ export async function loader(args: LoaderFunctionArgs) {
 async function handleAuthenticate(req: Request) {
   const url = new URL(req.url)
   const autoClose = url.searchParams.get('onto') === 'auto-close'
+  const redirectTo = url.searchParams.get('redirectTo')
   const resp = await proxy(req, { rawOutput: true })
 
   if (resp instanceof Response && resp.ok) {
@@ -22,7 +23,7 @@ async function handleAuthenticate(req: Request) {
       ? // auto-close the window when logins come from the editor
         authFromEditor(resp)
       : // redirect to projects
-        authFromRemix(resp)
+        authFromRemix(resp, redirectTo)
   }
 
   return resp
@@ -39,6 +40,6 @@ function authFromEditor(resp: Response) {
   })
 }
 
-function authFromRemix(resp: Response) {
-  return redirect('/projects', { headers: resp.headers })
+function authFromRemix(resp: Response, redirectTo: string | null) {
+  return redirect(redirectTo ?? '/projects', { headers: resp.headers })
 }
