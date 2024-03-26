@@ -1,8 +1,21 @@
 import urlJoin from 'url-join'
 import { ServerEnvironment } from '../env.server'
 
-export function auth0LoginURL(): string {
+export function auth0LoginURL({
+  redirectTo,
+  fakeUser,
+}: { redirectTo?: string | null; fakeUser?: string | null } = {}): string {
   const behaviour: 'auto-close' | 'authd-redirect' = 'authd-redirect'
+
+  if (fakeUser != null) {
+    const url = new URL(urlJoin(ServerEnvironment.CORS_ORIGIN, 'authenticate'))
+    url.searchParams.set('code', fakeUser)
+    url.searchParams.set('onto', behaviour)
+    if (redirectTo != null) {
+      url.searchParams.set('redirectTo', redirectTo)
+    }
+    return url.href
+  }
 
   const useAuth0 =
     ServerEnvironment.AUTH0_ENDPOINT !== '' &&
@@ -15,6 +28,9 @@ export function auth0LoginURL(): string {
     const url = new URL(urlJoin(ServerEnvironment.CORS_ORIGIN, 'authenticate'))
     url.searchParams.set('code', 'logmein')
     url.searchParams.set('onto', behaviour)
+    if (redirectTo != null) {
+      url.searchParams.set('redirectTo', redirectTo)
+    }
     return url.href
   }
 
@@ -25,6 +41,9 @@ export function auth0LoginURL(): string {
 
   const redirectURL = new URL(ServerEnvironment.AUTH0_REDIRECT_URI)
   redirectURL.searchParams.set('onto', behaviour)
+  if (redirectTo != null) {
+    redirectURL.searchParams.set('redirectTo', redirectTo)
+  }
 
   url.searchParams.set('redirect_uri', redirectURL.href)
   return url.href
