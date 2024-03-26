@@ -9,6 +9,7 @@ import { jsxElementWithoutUID, type JSXElementChild } from '../../../core/shared
 import { type Imports } from '../../../core/shared/project-file-types'
 import { elementFromInsertMenuItem } from '../../editor/insert-callbacks'
 import { componentInfo, type ComponentInfo } from '../../custom-code/code-file'
+import { when } from '../../../utils/react-conditionals'
 
 export interface ComponentPickerProps {
   insertionTargetName: string
@@ -146,7 +147,7 @@ const ComponentPickerTopSection = React.memo((props: ComponentPickerTopSectionPr
           onClick={switchToAllTab}
         />
         <div style={{ flexGrow: 1 }} />
-        {onClickCloseButton != null ? (
+        {when(onClickCloseButton != null, () => (
           <div
             style={{ fontWeight: 600, cursor: 'pointer' }}
             onClick={onClickCloseButton}
@@ -154,7 +155,7 @@ const ComponentPickerTopSection = React.memo((props: ComponentPickerTopSectionPr
           >
             X
           </div>
-        ) : null}
+        ))}
       </div>
       <FilterBar onFilterChange={onFilterChange} />
     </div>
