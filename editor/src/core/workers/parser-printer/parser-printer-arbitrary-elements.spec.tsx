@@ -1167,25 +1167,30 @@ export var storyboard = (
             "219",
             "971",
           ],
-          "js": "function getPicker() {
-          class Picker extends React.Component {
-            renderPicker(locale) {
-              return React.createElement(RenderPropsFunctionChild, null, size => {
-                return React.createElement(\\"div\\", {
-                  id: \\"nasty-div\\"
-                }, locale, \\" \\", size);
-              });
+          "js": "return (() => {
+          function getPicker() {
+            class Picker extends React.Component {
+              renderPicker(locale) {
+                return React.createElement(RenderPropsFunctionChild, null, size => {
+                  return React.createElement(\\"div\\", {
+                    id: \\"nasty-div\\"
+                  }, locale, \\" \\", size);
+                });
+              }
+
+              render() {
+                return React.createElement(RenderPropsFunctionChild, null, this.renderPicker);
+              }
+
             }
 
-            render() {
-              return React.createElement(RenderPropsFunctionChild, null, this.renderPicker);
-            }
-
+            return Picker;
           }
 
-          return Picker;
-        }
-        return { getPicker: getPicker };",
+          return utopiaCanvasBlockRanToEnd({
+            getPicker: getPicker
+          });
+        })();",
         }
       `)
 
@@ -1196,34 +1201,40 @@ export var storyboard = (
             "d1b",
             "064",
           ],
-          "js": "class RenderPropsFunctionChild extends React.Component {
-          render() {
-            return this.props.children('huha');
-          }
-
-        }
-
-        function getPicker() {
-          class Picker extends React.Component {
-            renderPicker(locale) {
-              return React.createElement(RenderPropsFunctionChild, null, size => {
-                return React.createElement(\\"div\\", {
-                  id: \\"nasty-div\\"
-                }, locale, \\" \\", size);
-              });
-            }
-
+          "js": "return (() => {
+          class RenderPropsFunctionChild extends React.Component {
             render() {
-              return React.createElement(RenderPropsFunctionChild, null, this.renderPicker);
+              return this.props.children('huha');
             }
 
           }
 
-          return Picker;
-        }
+          function getPicker() {
+            class Picker extends React.Component {
+              renderPicker(locale) {
+                return React.createElement(RenderPropsFunctionChild, null, size => {
+                  return React.createElement(\\"div\\", {
+                    id: \\"nasty-div\\"
+                  }, locale, \\" \\", size);
+                });
+              }
 
-        const Thing = getPicker();
-        return { RenderPropsFunctionChild: RenderPropsFunctionChild, getPicker: getPicker, Thing: Thing };",
+              render() {
+                return React.createElement(RenderPropsFunctionChild, null, this.renderPicker);
+              }
+
+            }
+
+            return Picker;
+          }
+
+          const Thing = getPicker();
+          return utopiaCanvasBlockRanToEnd({
+            RenderPropsFunctionChild: RenderPropsFunctionChild,
+            getPicker: getPicker,
+            Thing: Thing
+          });
+        })();",
         }
       `)
     } else {

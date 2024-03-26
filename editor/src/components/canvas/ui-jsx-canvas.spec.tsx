@@ -574,18 +574,18 @@ export { ToBeDefaultExported as default }`,
       `
       import { Storyboard, Scene } from 'utopia-api'
       import * as React from "react"
-       class Thing extends React.Component {
-         render() {
-           return <div data-uid="ccc-unparsed-no-template-path">Thing</div>
-         }
-       }
-       export var App = (props) => {
-         return <div data-uid="zzz">
-           <Thing data-uid="aaa" />
-           <Thing data-uid="bbb" />
-         </div>
-       }
-       export var ${BakedInStoryboardVariableName} = (props) => {
+      class Thing extends React.Component {
+        render() {
+          return <div data-uid="ccc-unparsed-no-template-path">Thing</div>
+        }
+      }
+      export var App = (props) => {
+        return <div data-uid="zzz">
+          <Thing data-uid="aaa" />
+          <Thing data-uid="bbb" />
+        </div>
+      }
+      export var ${BakedInStoryboardVariableName} = (props) => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
@@ -599,8 +599,7 @@ export { ToBeDefaultExported as default }`,
             </Scene>
           </Storyboard>
         )
-      }
-       `,
+      }`,
     )
   })
   it('function component is available from arbitrary block in JSX element', () => {
@@ -609,14 +608,14 @@ export { ToBeDefaultExported as default }`,
       `
       import { Storyboard, Scene } from 'utopia-api'
       import * as React from "react"
-       const Thing = (props) => <div data-uid="ccc">Thing</div>
-       export var App = (props) => {
-         return <div data-uid="zzz">
-           <Thing data-uid="aaa" />
-           <Thing data-uid="bbb" />
-         </div>
-       }
-       export var ${BakedInStoryboardVariableName} = (props) => {
+      const Thing = (props) => <div data-uid="ccc">Thing</div>
+      export var App = (props) => {
+        return <div data-uid="zzz">
+          <Thing data-uid="aaa" />
+          <Thing data-uid="bbb" />
+        </div>
+      }
+      export var ${BakedInStoryboardVariableName} = (props) => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
@@ -630,8 +629,7 @@ export { ToBeDefaultExported as default }`,
             </Scene>
           </Storyboard>
         )
-      }
-       `,
+      }`,
     )
   })
   it('function component works inside a map', () => {

@@ -3,6 +3,20 @@
 exports[`getComponentGroups handles a sub-dependency correctly 1`] = `
 Array [
   Object {
+    "insertableComponents": Array [],
+    "source": Object {
+      "path": "/package.json",
+      "type": "PROJECT_COMPONENT_GROUP",
+    },
+  },
+  Object {
+    "insertableComponents": Array [],
+    "source": Object {
+      "path": "/public/index.html",
+      "type": "PROJECT_COMPONENT_GROUP",
+    },
+  },
+  Object {
     "insertableComponents": Array [
       Object {
         "defaultSize": null,
@@ -271,6 +285,20 @@ Array [
 
 exports[`getComponentGroups returns all the various default groups 1`] = `
 Array [
+  Object {
+    "insertableComponents": Array [],
+    "source": Object {
+      "path": "/package.json",
+      "type": "PROJECT_COMPONENT_GROUP",
+    },
+  },
+  Object {
+    "insertableComponents": Array [],
+    "source": Object {
+      "path": "/public/index.html",
+      "type": "PROJECT_COMPONENT_GROUP",
+    },
+  },
   Object {
     "insertableComponents": Array [
       Object {

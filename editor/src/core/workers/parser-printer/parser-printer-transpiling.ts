@@ -21,7 +21,12 @@ import {
   wrapCodeInParens,
   wrapCodeInParensWithMap,
 } from './parser-printer-utils'
-import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../shared/dom-utils'
+import {
+  BLOCK_RAN_TO_END_FUNCTION_NAME,
+  EARLY_RETURN_RESULT_FUNCTION_NAME,
+  EARLY_RETURN_VOID_FUNCTION_NAME,
+  JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+} from '../../shared/dom-utils'
 import type { SteganoTextData } from '../../shared/stegano-text'
 import { cleanSteganoTextData, encodeSteganoData } from '../../shared/stegano-text'
 import { SourceMapConsumer } from 'source-map'
@@ -314,6 +319,132 @@ function babelRewriteJSExpressionCode(
   }
 }
 
+function rewriteBlockToCaptureEarlyReturns(source: string): () => {
+  visitor: BabelTraverse.Visitor
+} {
+  const returnStatementVisitor: BabelTraverse.Visitor = {
+    ArrowFunctionExpression(path) {
+      path.skip()
+    },
+    FunctionExpression(path) {
+      path.skip()
+    },
+    FunctionDeclaration(path) {
+      path.skip()
+    },
+    ClassDeclaration(path) {
+      path.skip()
+    },
+    ReturnStatement(path) {
+      if (path.node.argument == null) {
+        const newReturnArgument = BabelTypes.callExpression(
+          BabelTypes.identifier(EARLY_RETURN_VOID_FUNCTION_NAME),
+          [],
+        )
+        const newReturnStatement = BabelTypes.returnStatement(newReturnArgument)
+        path.replaceWith(newReturnStatement)
+      } else {
+        const newReturnArgument = BabelTypes.callExpression(
+          BabelTypes.identifier(EARLY_RETURN_RESULT_FUNCTION_NAME),
+          [path.node.argument],
+        )
+        const newReturnStatement = BabelTypes.returnStatement(newReturnArgument)
+        path.replaceWith(newReturnStatement)
+      }
+      path.skip()
+    },
+  }
+
+  return () => ({
+    visitor: {
+      // This is the arrow function expression that we wrap around the arbitrary block
+      // so that Babel will parse it without an error.
+      ArrowFunctionExpression(path) {
+        // Check that this is the topmost arrow function as it should be.
+        const firstParentPath = path.parentPath
+        const firstParent = firstParentPath.node
+        if (!BabelTypes.isCallExpression(firstParent)) {
+          return
+        }
+        const secondParentPath = firstParentPath.parentPath
+        const secondParent = secondParentPath?.node
+        if (!BabelTypes.isExpressionStatement(secondParent)) {
+          return
+        }
+        const thirdParentPath = secondParentPath?.parentPath
+        const thirdParent = thirdParentPath?.node
+        if (!BabelTypes.isProgram(thirdParent)) {
+          return
+        }
+        const node = path.node
+        if (BabelTypes.isBlockStatement(node.body)) {
+          const blockStatement = node.body
+          // The value of any return statement is wrapped with the early return value,
+          // as long as it's not inside an arrow function or regular function statement.
+          path.traverse(returnStatementVisitor)
+
+          // Any variables or declarations defined in this block are recorded.
+          let identifiersToReturn: Array<string> = []
+
+          function handleNodeAddingIdentifiers(nodeToProcess: BabelTypes.Node): void {
+            if (BabelTypes.isVariableDeclaration(nodeToProcess)) {
+              for (const declaration of nodeToProcess.declarations) {
+                handleNodeAddingIdentifiers(declaration.id)
+              }
+            } else if (BabelTypes.isIdentifier(nodeToProcess)) {
+              identifiersToReturn.push(nodeToProcess.name)
+            } else if (BabelTypes.isRestElement(nodeToProcess)) {
+              handleNodeAddingIdentifiers(nodeToProcess.argument)
+            } else if (BabelTypes.isObjectPattern(nodeToProcess)) {
+              for (const property of nodeToProcess.properties) {
+                if (BabelTypes.isObjectProperty(property)) {
+                  handleNodeAddingIdentifiers(property.value)
+                } else if (BabelTypes.isRestElement(property)) {
+                  handleNodeAddingIdentifiers(property.argument)
+                }
+              }
+            } else if (BabelTypes.isArrayPattern(nodeToProcess)) {
+              for (const element of nodeToProcess.elements) {
+                if (element != null) {
+                  handleNodeAddingIdentifiers(element)
+                }
+              }
+            } else if (BabelTypes.isFunctionDeclaration(nodeToProcess)) {
+              if (nodeToProcess.id != null) {
+                handleNodeAddingIdentifiers(nodeToProcess.id)
+              }
+            } else if (BabelTypes.isClassDeclaration(nodeToProcess)) {
+              if (nodeToProcess.id != null) {
+                handleNodeAddingIdentifiers(nodeToProcess.id)
+              }
+            }
+          }
+
+          for (const bodyPart of blockStatement.body) {
+            handleNodeAddingIdentifiers(bodyPart)
+          }
+
+          // An additional return statement is added to the end of the block,
+          // which includes all the variables previously recorded.
+          const additionalReturnStatement = BabelTypes.returnStatement(
+            BabelTypes.callExpression(BabelTypes.identifier(BLOCK_RAN_TO_END_FUNCTION_NAME), [
+              BabelTypes.objectExpression(
+                identifiersToReturn.map((identifier) => {
+                  return BabelTypes.objectProperty(
+                    BabelTypes.identifier(identifier),
+                    BabelTypes.identifier(identifier),
+                  )
+                }),
+              ),
+            ]),
+          )
+          blockStatement.body.push(additionalReturnStatement)
+        }
+      },
+    },
+  })
+}
+
 export function transpileJavascript(
   sourceFileName: string,
   sourceFileText: string,
@@ -330,8 +461,9 @@ export function transpileJavascript(
       code,
       rawMap,
       elementsWithin,
-      'do-not-wrap',
+      'wrap-in-anon-fn',
       applySteganography,
+      [rewriteBlockToCaptureEarlyReturns(code)],
     )
   } catch (e: any) {
     return left(e.message)
@@ -545,6 +677,7 @@ export function transpileJavascriptFromCode(
   elementsWithin: ElementsWithinInPosition,
   wrap: 'wrap-in-parens' | 'wrap-in-anon-fn' | 'do-not-wrap',
   applySteganography: SteganographyMode,
+  additionalPlugins: Array<any> = [],
 ): Either<string, TranspileResult> {
   try {
     let codeToUse: string = code
@@ -577,6 +710,7 @@ export function transpileJavascriptFromCode(
     if (Object.keys(elementsWithin).length > 0) {
       plugins.push(babelRewriteJSExpressionCode(elementsWithin, true))
     }
+    plugins.push(...additionalPlugins)
     plugins.push(infiniteLoopPrevention)
     plugins.push('external-helpers')
     plugins.push('transform-typescript')

@@ -35,10 +35,14 @@ import { getPathsFromString, getUtopiaID } from '../../../core/shared/uid-utils'
 import { useGetTopLevelElementsAndImports } from './ui-jsx-canvas-top-level-elements'
 import { useGetCodeAndHighlightBounds } from './ui-jsx-canvas-execution-scope'
 import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
-import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
+import {
+  JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+  applyBlockReturnFunctions,
+} from '../../../core/shared/dom-utils'
 import { objectMap } from '../../../core/shared/object-utils'
 import type { ComponentRendererComponent } from './component-renderer-component'
 import { mapArrayToDictionary } from '../../../core/shared/array-utils'
+import { assertNever } from '../../../core/shared/utils'
 
 function tryToGetInstancePath(
   maybePath: ElementPath | null,
@@ -220,6 +224,9 @@ export function createComponentRendererComponent(params: {
       highlightBounds: highlightBounds,
       editedText: rerenderUtopiaContext.editedText,
     }
+
+    const buildResult = React.useRef<React.ReactElement | null>(null)
+
     if (utopiaJsxComponent.arbitraryJSBlock != null) {
       const propertiesFromParams = propertiesExposedByParams(
         utopiaJsxComponent.arbitraryJSBlock.params,
@@ -239,23 +246,36 @@ export function createComponentRendererComponent(params: {
         scope,
         lookupRenderer,
       )
+      applyBlockReturnFunctions(scope)
 
-      const definedWithinWithValues = runBlockUpdatingScope(
+      const arbitraryBlockResult = runBlockUpdatingScope(
         params.filePath,
         mutableContext.requireResult,
         utopiaJsxComponent.arbitraryJSBlock,
         scope,
       )
 
-      spiedVariablesInScope = {
-        ...spiedVariablesInScope,
-        ...objectMap(
-          (spiedValue) => ({
-            spiedValue: spiedValue,
-            insertionCeiling: null,
-          }),
-          definedWithinWithValues,
-        ),
+      switch (arbitraryBlockResult.type) {
+        case 'ARBITRARY_BLOCK_RAN_TO_END':
+          spiedVariablesInScope = {
+            ...spiedVariablesInScope,
+            ...objectMap(
+              (spiedValue) => ({
+                spiedValue: spiedValue,
+                insertionCeiling: null,
+              }),
+              arbitraryBlockResult.scope,
+            ),
+          }
+          break
+        case 'EARLY_RETURN_VOID':
+          buildResult.current = undefined as any
+          return buildResult.current
+        case 'EARLY_RETURN_RESULT':
+          buildResult.current = arbitraryBlockResult.result as any
+          return buildResult.current
+        default:
+          assertNever(arbitraryBlockResult)
       }
     }
 
@@ -284,9 +304,6 @@ export function createComponentRendererComponent(params: {
       }
     }
 
-    const buildResult = React.useRef<React.ReactElement | null>(
-      buildComponentRenderResult(utopiaJsxComponent.rootElement),
-    )
     if (shouldUpdate()) {
       buildResult.current = buildComponentRenderResult(utopiaJsxComponent.rootElement)
     }
