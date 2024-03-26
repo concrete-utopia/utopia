@@ -152,7 +152,7 @@ export const ProjectActionsMenu = React.memo(
       }
     }, [selectedCategory, actions])
 
-    const onOpenShareDialog = useOpenShareDialog(project)
+    const onOpenShareDialog = useOpenShareDialog(project.proj_id)
 
     return (
       <ContextMenu.Content style={{ width: 170 }}>
