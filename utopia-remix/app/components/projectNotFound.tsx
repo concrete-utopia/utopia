@@ -69,7 +69,11 @@ function UnauthorizedPage({ projectId, user }: { projectId: string; user: UserDe
         <div style={{ fontSize: '100px', fontWeight: 600, fontStyle: 'italic' }}>Hmmm…</div>
         <div className={styles.runningText}>
           <span>Looks like you need permission to access this project. </span>
-          <span>You're signed in as {user?.email}.</span>
+          <span>You're signed in as </span>
+          <a href='/projects' rel='noopener noreferrer' style={{ textDecoration: 'none' }}>
+            {user?.email}
+          </a>
+          <span>.</span>
         </div>
         <div style={{ display: 'flex', gap: '20px' }}>
           {accessRequested ? (
@@ -103,7 +107,13 @@ function NotFoundPage({ user, projectId }: { user: UserDetails | null; projectId
         <div className={styles.runningText}>
           <span>Either this project does not exist, or you need to be granted access to it. </span>
           {when(user?.user_id != null, () => (
-            <span>You're signed in as {user?.email}.</span>
+            <>
+              <span>You're signed in as </span>{' '}
+              <a href='/projects' rel='noopener noreferrer' style={{ textDecoration: 'none' }}>
+                {user?.email}
+              </a>
+              <span>.</span>
+            </>
           ))}
         </div>
         <div style={{ display: 'flex', gap: '20px' }}>
