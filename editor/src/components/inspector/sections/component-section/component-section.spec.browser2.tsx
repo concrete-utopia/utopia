@@ -582,7 +582,7 @@ describe('Set element prop via the data picker', () => {
     const editor = await renderTestEditorWithModel(
       DataPickerProjectShell(
         `
-      function Title({ text }) {
+      export function Title({ text }) {
         const content = 'Content'
       
         return <h2 data-uid='aam'>{text}</h2>
@@ -614,7 +614,7 @@ describe('Set element prop via the data picker', () => {
         `{
           '/utopia/storyboard': {
             Title: {
-              component: true, // placeholder
+              component: Title,
               supportsChildren: false,
               properties: {
                 text: {
@@ -629,6 +629,7 @@ describe('Set element prop via the data picker', () => {
             },
           },
         }`,
+        `import { Title } from './storyboard'`,
       ),
       'await-first-dom-report',
     )
@@ -648,7 +649,7 @@ describe('Set element prop via the data picker', () => {
   it('picking data for the children prop', async () => {
     const editor = await renderTestEditorWithModel(
       DataPickerProjectShell(
-        `function Link({ href, children }) {
+        `export function Link({ href, children }) {
       return (
         <a href={href} data-uid='a-root'>
           {children}
@@ -675,7 +676,7 @@ describe('Set element prop via the data picker', () => {
         `{
       '/utopia/storyboard': {
         Link: {
-          component: true, // placeholder
+          component: Link,
           properties: {
             children: {
               control: 'array',
@@ -687,6 +688,7 @@ describe('Set element prop via the data picker', () => {
         },
       },
     }`,
+        `import { Link } from './storyboard'`,
       ),
       'await-first-dom-report',
     )
@@ -823,7 +825,7 @@ describe('Controls from registering components', () => {
     it('preferred child components with internal component', async () => {
       const editor = await renderTestEditorWithModel(
         DataPickerProjectShell(
-          `function Link({ href, children }) {
+          `export function Link({ href, children }) {
         return (
           <a href={href} data-uid='root'>
             {children}
@@ -843,7 +845,7 @@ describe('Controls from registering components', () => {
           `{
         '/utopia/storyboard': {
           Link: {
-            component: true, // placeholder
+            component: Link,
             properties: {
               children: {
                 control: 'array',
@@ -862,6 +864,7 @@ describe('Controls from registering components', () => {
           },
         },
       }`,
+          `import { Link } from './storyboard'`,
         ),
         'await-first-dom-report',
       )
@@ -915,7 +918,7 @@ describe('Controls from registering components', () => {
     it('preferred child components with render prop', async () => {
       const editor = await renderTestEditorWithModel(
         DataPickerProjectShell(
-          `function Card({ header, children }) {
+          `export function Card({ header, children }) {
         return (
           <div data-uid='root'>
             <h2>{header}</h2>
@@ -936,7 +939,7 @@ describe('Controls from registering components', () => {
           `{
         '/utopia/storyboard': {
           Card: {
-            component: true, // placeholder
+            component: Card,
             properties: {
               header: {
                 control: 'array',
@@ -956,6 +959,7 @@ describe('Controls from registering components', () => {
           },
         },
       }`,
+          `import { Card } from './storyboard';`,
         ),
         'await-first-dom-report',
       )
@@ -1328,7 +1332,7 @@ export var storyboard = (
 })
 
 const projectWithNumberInputControlDescription = DataPickerProjectShell(
-  `function Counter({ count }) {
+  `export function Counter({ count }) {
   const content = 'Content'
 
   return <h2 data-uid='a9c'>{count}</h2>
@@ -1348,7 +1352,7 @@ var Playground = () => {
   `{
   '/utopia/storyboard': {
     Counter: {
-      component: true, // placeholder
+      component: Counter,
       properties: {
         count: {
           control: 'number-input',
@@ -1359,10 +1363,11 @@ var Playground = () => {
     },
   },
 }`,
+  `import { Counter } from './storyboard'`,
 )
 
 const projectWithObjectsAndArrays = DataPickerProjectShell(
-  `function TableOfContents({ titles }) {
+  `export function TableOfContents({ titles }) {
   const content = 'Content'
 
   return (
@@ -1374,7 +1379,7 @@ const projectWithObjectsAndArrays = DataPickerProjectShell(
   )
 }
 
-function BookDetail({ book }) {
+export function BookDetail({ book }) {
   const content = 'Content'
 
   return (
@@ -1409,7 +1414,7 @@ var Playground = () => {
   `{
   '/utopia/storyboard': {
     TableOfContents: {
-      component: true, // placeholder
+      component: TableOfContents,
       properties: {
         titles: {
           control: 'array',
@@ -1420,7 +1425,7 @@ var Playground = () => {
       variants: [],
     },
     BookDetail: {
-      component: true, // placeholder
+      component: BookDetail,
       properties: {
         book: {
           control: 'object',
@@ -1437,9 +1442,10 @@ var Playground = () => {
     },
   },
 }`,
+  `import { TableOfContents, BookDetail } from './storyboard'`,
 )
 
-function DataPickerProjectShell(contents: string, componentDescriptor?: string) {
+function DataPickerProjectShell(contents: string, componentDescriptor?: string, imports?: string) {
   return createModifiedProject({
     [StoryboardFilePath]: `import * as React from 'react'
     import * as Utopia from 'utopia-api'
@@ -1487,7 +1493,9 @@ function DataPickerProjectShell(contents: string, componentDescriptor?: string) 
     `,
     ['/utopia/components.utopia.js']:
       componentDescriptor != null
-        ? `const Components = ${componentDescriptor}
+        ? `${imports}
+        
+        const Components = ${componentDescriptor}
         
         export default Components`
         : '',
@@ -1501,7 +1509,7 @@ const registerComponentProjectWithHtmlProp = createModifiedProject({
     Scene,
   } from 'utopia-api'
   
-  function Title({ text }) {
+  export function Title({ text }) {
     return <h2 data-uid='0cd'>{text}</h2>
   }
   
@@ -1547,10 +1555,12 @@ const registerComponentProjectWithHtmlProp = createModifiedProject({
     </Storyboard>
   )
   `,
-  ['/utopia/components.utopia.js']: `const Components = {
+  ['/utopia/components.utopia.js']: `import { Title } from './storyboard'
+
+  const Components = {
     '/utopia/storyboard': {
       Title: {
-        component: true, // placeholder
+        component: Title,
         supportsChildren: false,
         properties: {
           text: {
