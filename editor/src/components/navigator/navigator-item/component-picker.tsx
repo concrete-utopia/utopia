@@ -344,18 +344,18 @@ interface ComponentPickerOptionProps {
   onItemClick: (elementToInsert: ElementToInsert) => React.MouseEventHandler
 }
 
+function variantsForComponent(component: PreferredChildComponentDescriptor): ComponentInfo[] {
+  return [
+    componentInfo('(empty)', () => jsxElementWithoutUID(component.name, [], []), component.imports),
+    ...(component.variants ?? []),
+  ]
+}
+
 const ComponentPickerOption = React.memo((props: ComponentPickerOptionProps) => {
   const colorTheme = useColorTheme()
   const { componentDescriptor, onItemClick } = props
 
-  const variants: ComponentInfo[] = [
-    componentInfo(
-      '(empty)',
-      () => jsxElementWithoutUID(componentDescriptor.name, [], []),
-      componentDescriptor.imports,
-    ),
-    ...(componentDescriptor.variants ?? []),
-  ]
+  const variants = variantsForComponent(componentDescriptor)
 
   return (
     <div
