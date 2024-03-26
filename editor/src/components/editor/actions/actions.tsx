@@ -3486,6 +3486,7 @@ export const UPDATE_FNS = {
       const { projectContents, updatedFiles } = replaceFilePathResults
       const mainUIFile = getMainUIFromModel(editor)
       let updateUIFile: (e: EditorModel) => EditorModel = (e) => e
+      let updatePropertyControls: (e: EditorModel) => EditorModel = (e) => e
       Utils.fastForEach(updatedFiles, (updatedFile) => {
         const { oldPath, newPath } = updatedFile
         // If the main UI file is what we have renamed, update that later.
@@ -3507,20 +3508,34 @@ export const UPDATE_FNS = {
             void updateAssetFileName(editor.id, stripLeadingSlash(oldPath), newPath)
           }
         }
+        // when we rename a component descriptor file, we need to remove it from property controls
+        // if the new name is a component descriptor filename too, the controls will be readded
+        // if the new name is not a component descriptor filename, then we really have to remove the property controls
+        if (isComponentDescriptorFile(oldPath) && oldPath !== newPath) {
+          updatePropertyControls = (e: EditorModel) => ({
+            ...e,
+            propertyControlsInfo: updatePropertyControlsOnDescriptorFileDelete(
+              e.propertyControlsInfo,
+              oldPath,
+            ),
+          })
+        }
       })
 
-      return updateUIFile({
-        ...editor,
-        projectContents: projectContents,
-        codeEditorErrors: {
-          buildErrors: {},
-          lintErrors: {},
-        },
-        canvas: {
-          ...editor.canvas,
-          openFile: currentDesignerFile,
-        },
-      })
+      return updatePropertyControls(
+        updateUIFile({
+          ...editor,
+          projectContents: projectContents,
+          codeEditorErrors: {
+            buildErrors: {},
+            lintErrors: {},
+          },
+          canvas: {
+            ...editor.canvas,
+            openFile: currentDesignerFile,
+          },
+        }),
+      )
     }
   },
   SET_FOCUS: (action: SetFocus, editor: EditorModel): EditorModel => {
