@@ -40,6 +40,7 @@ import {
   isInvalidOverrideNavigatorEntry,
   isRegularNavigatorEntry,
   isRenderPropNavigatorEntry,
+  isSlotNavigatorEntry,
   isSyntheticNavigatorEntry,
   navigatorEntryToKey,
   varSafeNavigatorEntryToKey,
@@ -143,7 +144,8 @@ function selectItem(
   const selectionActions =
     isConditionalClauseNavigatorEntry(navigatorEntry) ||
     isInvalidOverrideNavigatorEntry(navigatorEntry) ||
-    isRenderPropNavigatorEntry(navigatorEntry)
+    isRenderPropNavigatorEntry(navigatorEntry) ||
+    isSlotNavigatorEntry(navigatorEntry)
       ? []
       : getSelectionActions(getSelectedViewsInRange, index, elementPath, selected, event)
 
