@@ -222,7 +222,6 @@ const OwnerCollaboratorRow = React.memo(() => {
 
   return (
     <CollaboratorRow
-      disabled={false}
       picture={myUser?.picture ?? null}
       name={`${myUser?.name ?? myUser?.email ?? myUser?.id} (you)`}
       starBadge={true}
@@ -253,7 +252,7 @@ function AccessRequests({
     [projectId, approveAccessRequest],
   )
 
-  const isDisabled = React.useMemo(
+  const isPrivate = React.useMemo(
     () => projectAccessLevel === AccessLevel.PRIVATE,
     [projectAccessLevel],
   )
@@ -277,7 +276,7 @@ function AccessRequests({
           key={request.token}
           picture={user.picture}
           name={user.name ?? user.email ?? user.user_id}
-          disabled={isDisabled}
+          isDisabled={isPrivate}
         >
           {status === AccessRequestStatus.PENDING ? (
             <Button size='1' variant='ghost' onClick={onApprove(request.token)}>
@@ -288,7 +287,7 @@ function AccessRequests({
               size='1'
               color={status === AccessRequestStatus.APPROVED ? 'green' : 'red'}
               style={{
-                fontStyle: isDisabled ? 'italic' : 'normal',
+                fontStyle: isPrivate ? 'italic' : 'normal',
                 cursor: 'default',
               }}
             >
@@ -305,19 +304,22 @@ const CollaboratorRow = React.memo(
     picture,
     name,
     children,
-    disabled,
+    isDisabled,
     starBadge,
   }: {
     picture: string | null
     name: string
     children: React.ReactNode
-    disabled: boolean
+    isDisabled?: boolean
     starBadge?: boolean
   }) => {
     return (
       <Flex
         justify='between'
-        style={{ filter: disabled ? 'grayscale(1)' : undefined, opacity: disabled ? 0.5 : 1 }}
+        style={{
+          filter: isDisabled === true ? 'grayscale(1)' : undefined,
+          opacity: isDisabled === true ? 0.5 : 1,
+        }}
       >
         <Flex align='center' gap='2'>
           <UserAvatar

@@ -4,7 +4,7 @@
 import { Theme } from '@radix-ui/themes'
 import radixStyle from '@radix-ui/themes/styles.css'
 import { cssBundleHref } from '@remix-run/css-bundle'
-import type { HeadersFunction, LinksFunction, LoaderFunctionArgs } from '@remix-run/node'
+import type { HeadersFunction, LinksFunction } from '@remix-run/node'
 import {
   Links,
   LiveReload,
@@ -31,7 +31,7 @@ export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: radixStyle },
 ]
 
-export async function loader(args: LoaderFunctionArgs) {
+export async function loader() {
   return json({
     env: BrowserEnvironment,
   })
