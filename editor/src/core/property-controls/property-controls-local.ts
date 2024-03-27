@@ -70,7 +70,7 @@ import { NO_OP } from '../shared/utils'
 import { createExecutionScope } from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import type { EditorDispatch } from '../../components/editor/action-types'
 import {
-  setCodeEditorBuildErrors,
+  setCodeEditorLintErrors,
   updatePropertyControlsInfo,
 } from '../../components/editor/actions/action-creators'
 import type { ProjectContentTreeRoot } from '../../components/assets'
@@ -478,7 +478,7 @@ export async function maybeUpdatePropertyControls(
   )
   dispatch([
     updatePropertyControlsInfo(updatedPropertyControlsInfo),
-    setCodeEditorBuildErrors(errors),
+    setCodeEditorLintErrors(errors),
   ])
 }
 
