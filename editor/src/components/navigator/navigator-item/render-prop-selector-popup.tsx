@@ -85,12 +85,25 @@ interface RenderPropPickerProps {
 export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, target, prop }) => {
   const { hideRenderPropPicker } = useShowRenderPropPicker(id)
 
-  const preferredChildrenForTargetProp = usePreferredChildrenForTargetProp(
-    EP.parentPath(target),
-    prop,
-  )
+  const preferredChildrenForTargetProp = usePreferredChildrenForTargetProp(target, prop)
 
   const dispatch = useDispatch()
+  const targetPropCurrentElementName: string | null = useEditorState(
+    Substores.metadata,
+    (store) => {
+      const targetPropCurrentValue = store.editor.allElementProps[EP.toString(target)]?.[prop]
+      if (targetPropCurrentValue == null) {
+        return null
+      }
+
+      if (typeof targetPropCurrentValue !== 'object' || Array.isArray(targetPropCurrentValue)) {
+        return null
+      }
+
+      return targetPropCurrentValue.props?.elementToRender?.originalName ?? null
+    },
+    'RenderPropPicker targetElementProps',
+  )
 
   const projectContentsRef = useRefEditorState((state) => state.editor.projectContents)
 
@@ -111,7 +124,7 @@ export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, ta
 
       dispatch([
         setProp_UNSAFE(
-          EP.parentPath(target),
+          target,
           PP.create(prop),
           element,
           preferredChildToInsert.additionalImports ?? undefined,
@@ -138,6 +151,7 @@ export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, ta
           allComponents={preferredChildrenForTargetProp}
           onItemClick={onItemClick}
           onClickCloseButton={hideRenderPropPicker}
+          currentElementName={targetPropCurrentElementName}
         />
       </Menu>
     </OnClickOutsideHOC>

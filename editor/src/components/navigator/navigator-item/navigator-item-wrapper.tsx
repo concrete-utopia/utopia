@@ -195,7 +195,7 @@ export function getNavigatorEntryLabel(
       }
     }
     case 'RENDER_PROP':
-      return navigatorEntry.propName
+      return navigatorEntry.prop
     case 'INVALID_OVERRIDE':
       return navigatorEntry.message
     case 'SLOT':
@@ -389,8 +389,9 @@ export const NavigatorItemWrapper: React.FunctionComponent<
   if (props.navigatorEntry.type === 'RENDER_PROP') {
     const entryProps: RenderPropNavigatorItemContainerProps = {
       ...navigatorItemProps,
-      propName: props.navigatorEntry.propName,
+      propName: props.navigatorEntry.prop,
       elementPath: props.navigatorEntry.elementPath,
+      propHasValue: props.navigatorEntry.propHasValue,
       isOutletOrDescendantOfOutlet: false,
     }
     return <RenderPropNavigatorItemContainer {...entryProps} />

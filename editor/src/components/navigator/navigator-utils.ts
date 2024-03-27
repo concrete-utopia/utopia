@@ -139,7 +139,7 @@ export function getNavigatorTargets(
 
           if (propValue == null || (isJSExpressionValue(propValue) && propValue.value == null)) {
             const entries = [
-              renderPropNavigatorEntry(fakeRenderPropPath, prop),
+              renderPropNavigatorEntry(fakeRenderPropPath, prop, false),
               slotNavigatorEntry(fakeRenderPropPath, prop),
             ]
             navigatorTargets.push(...entries)
@@ -148,7 +148,7 @@ export function getNavigatorTargets(
           }
 
           const childPath = EP.appendToPath(path, propValue.uid)
-          const entry = renderPropNavigatorEntry(fakeRenderPropPath, prop)
+          const entry = renderPropNavigatorEntry(fakeRenderPropPath, prop, true)
           navigatorTargets.push(entry)
           visibleNavigatorTargets.push(entry)
 
@@ -298,6 +298,7 @@ export function getNavigatorTargets(
           const entry = renderPropNavigatorEntry(
             EP.appendToPath(path, renderPropId('children')),
             'children',
+            true,
           )
           navigatorTargets.push(entry)
           visibleNavigatorTargets.push(entry)

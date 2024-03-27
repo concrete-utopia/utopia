@@ -13,6 +13,7 @@ import { when } from '../../../utils/react-conditionals'
 
 export interface ComponentPickerProps {
   insertionTargetName: string
+  currentElementName: string | null
   preferredComponents: PreferredChildComponentDescriptor[]
   allComponents: PreferredChildComponentDescriptor[]
   onItemClick: (elementToInsert: ElementToInsert) => React.MouseEventHandler
@@ -79,6 +80,7 @@ export const ComponentPicker = React.memo((props: ComponentPickerProps) => {
         }}
       />
       <ComponentPickerComponentSection
+        currentElementName={props.currentElementName}
         components={componentsToShow}
         onItemClick={props.onItemClick}
       />
@@ -308,13 +310,14 @@ const FilterBar = React.memo((props: FilterBarProps) => {
 })
 
 interface ComponentPickerComponentSectionProps {
+  currentElementName: string | null
   components: PreferredChildComponentDescriptor[]
   onItemClick: (elementToInsert: ElementToInsert) => React.MouseEventHandler
 }
 
 const ComponentPickerComponentSection = React.memo(
   (props: ComponentPickerComponentSectionProps) => {
-    const { components, onItemClick } = props
+    const { currentElementName, components, onItemClick } = props
 
     return (
       <div
@@ -331,6 +334,7 @@ const ComponentPickerComponentSection = React.memo(
           return (
             <ComponentPickerOption
               key={`${componentDescriptor.name}-label`}
+              currentElementName={currentElementName}
               componentDescriptor={componentDescriptor}
               onItemClick={onItemClick}
             />
@@ -342,6 +346,7 @@ const ComponentPickerComponentSection = React.memo(
 )
 
 interface ComponentPickerOptionProps {
+  currentElementName: string | null
   componentDescriptor: PreferredChildComponentDescriptor
   onItemClick: (elementToInsert: ElementToInsert) => React.MouseEventHandler
 }
@@ -355,14 +360,17 @@ function variantsForComponent(component: PreferredChildComponentDescriptor): Com
 
 const ComponentPickerOption = React.memo((props: ComponentPickerOptionProps) => {
   const colorTheme = useColorTheme()
-  const { componentDescriptor, onItemClick } = props
+  const { currentElementName, componentDescriptor, onItemClick } = props
+  const optionMatchesCurrentElement = currentElementName === componentDescriptor.name
 
   const variants = variantsForComponent(componentDescriptor)
 
   return (
     <div
       style={{
-        backgroundColor: colorTheme.bg2.value,
+        backgroundColor: optionMatchesCurrentElement
+          ? colorTheme.dynamicBlue10.value
+          : colorTheme.bg2.value,
         borderRadius: 5,
         display: 'flex',
         flexDirection: 'column',
@@ -376,7 +384,14 @@ const ComponentPickerOption = React.memo((props: ComponentPickerOptionProps) => 
       }}
       data-testId={componentPickerOptionTestId(componentDescriptor.name)}
     >
-      <div style={{ fontWeight: 700 }}>{componentDescriptor.name}</div>
+      <div
+        style={{
+          fontWeight: 700,
+          // color: optionMatchesCurrentElement ? colorTheme.white.value : colorTheme.black.value,
+        }}
+      >
+        {componentDescriptor.name}
+      </div>
       <div
         style={{
           display: 'flex',
@@ -392,6 +407,7 @@ const ComponentPickerOption = React.memo((props: ComponentPickerOptionProps) => 
         {variants?.map((v) => (
           <ComponentPickerVariant
             key={`${componentDescriptor.name}-${v.insertMenuLabel}`}
+            optionMatchesCurrentElement={optionMatchesCurrentElement}
             componentName={componentDescriptor.name}
             variant={v}
             onItemClick={onItemClick}
@@ -403,6 +419,7 @@ const ComponentPickerOption = React.memo((props: ComponentPickerOptionProps) => 
 })
 
 interface ComponentPickerVariantProps {
+  optionMatchesCurrentElement: boolean
   componentName: string
   variant: ComponentInfo
   onItemClick: (elementToInsert: ElementToInsert) => React.MouseEventHandler
@@ -410,7 +427,7 @@ interface ComponentPickerVariantProps {
 
 const ComponentPickerVariant = React.memo((props: ComponentPickerVariantProps) => {
   const colorTheme = useColorTheme()
-  const { onItemClick, variant, componentName } = props
+  const { optionMatchesCurrentElement, onItemClick, variant, componentName } = props
 
   return (
     <div
@@ -419,7 +436,9 @@ const ComponentPickerVariant = React.memo((props: ComponentPickerVariantProps) =
         additionalImports: variant.importsToAdd,
       })}
       css={{
-        backgroundColor: colorTheme.bg5.value,
+        backgroundColor: optionMatchesCurrentElement
+          ? colorTheme.dynamicBlue10.value
+          : colorTheme.bg5.value,
         paddingTop: 5,
         paddingRight: 5,
         paddingBottom: 5,
@@ -429,11 +448,12 @@ const ComponentPickerVariant = React.memo((props: ComponentPickerVariantProps) =
         borderBottomRightRadius: 3,
         borderBottomLeftRadius: 3,
         color:
-          variant.insertMenuLabel === '(empty)'
+          variant.insertMenuLabel === '(empty)' && !optionMatchesCurrentElement
             ? colorTheme.subduedForeground.value
             : colorTheme.black.value,
         '&:hover': {
-          backgroundColor: colorTheme.dynamicBlue10.value,
+          backgroundColor: colorTheme.primary.value,
+          color: colorTheme.white.value,
         },
         cursor: 'pointer',
       }}

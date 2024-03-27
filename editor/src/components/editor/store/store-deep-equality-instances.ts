@@ -660,11 +660,13 @@ export const SyntheticNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<Synth
   )
 
 export const RenderPropNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<RenderPropNavigatorEntry> =
-  combine2EqualityCalls(
+  combine3EqualityCalls(
     (entry) => entry.elementPath,
     ElementPathKeepDeepEquality,
-    (entry) => entry.propName,
+    (entry) => entry.prop,
     StringKeepDeepEquality,
+    (entry) => entry.propHasValue,
+    BooleanKeepDeepEquality,
     renderPropNavigatorEntry,
   )
 

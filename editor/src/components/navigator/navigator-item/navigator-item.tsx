@@ -24,10 +24,10 @@ import type {
 } from '../../../core/shared/element-template'
 import { hasElementsWithin } from '../../../core/shared/element-template'
 import type { ElementPath } from '../../../core/shared/project-file-types'
-import { unless } from '../../../utils/react-conditionals'
+import { unless, when } from '../../../utils/react-conditionals'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import type { IcnColor, IcnProps } from '../../../uuiui'
-import { FlexRow, useColorTheme, UtopiaTheme } from '../../../uuiui'
+import { Button, FlexRow, Icn, useColorTheme, UtopiaTheme } from '../../../uuiui'
 import type { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 import { isEntryAPlaceholder } from '../../canvas/canvas-utils'
 import type { EditorAction, EditorDispatch } from '../../editor/action-types'
@@ -791,17 +791,18 @@ export const NavigatorItem: React.FunctionComponent<
         outlineOffset: props.parentOutline === 'solid' ? '-1px' : 0,
       }}
     >
-      {portalTarget == null || navigatorEntry.type !== 'SLOT'
-        ? null
-        : ReactDOM.createPortal(
+      {portalTarget != null &&
+      (navigatorEntry.type === 'SLOT' || navigatorEntry.type === 'RENDER_PROP')
+        ? ReactDOM.createPortal(
             <RenderPropPicker
-              target={props.navigatorEntry.elementPath}
+              target={EP.parentPath(props.navigatorEntry.elementPath)}
               key={renderPropPickerId}
               id={renderPropPickerId}
               prop={navigatorEntry.prop}
             />,
-            portalTarget,
-          )}
+            portalTarget!,
+          )
+        : null}
       <FlexRow
         data-testid={NavigatorItemTestId(varSafeNavigatorEntryToKey(navigatorEntry))}
         style={rowStyle}
@@ -839,22 +840,57 @@ export const NavigatorItem: React.FunctionComponent<
             Empty
           </div>
         ) : isRenderProp ? (
-          <div
-            key={`label-${props.label}-slot`}
-            style={{
-              width: 140,
-              height: 19,
-              fontWeight: 600,
-              textTransform: 'uppercase',
-              color: colorTheme.fg5.value,
-              border: colorTheme.navigatorResizeHintBorder.value,
-              marginLeft: 23,
-              paddingTop: 6,
-              overflow: 'hidden',
-            }}
-          >
-            {props.label}
-          </div>
+          <FlexRow style={{ justifyContent: 'space-between', ...containerStyle }}>
+            <FlexRow>
+              <div
+                key={`label-${props.label}-slot`}
+                style={{
+                  width: 140,
+                  height: 19,
+                  fontWeight: 600,
+                  textTransform: 'uppercase',
+                  color: colorTheme.fg5.value,
+                  border: colorTheme.navigatorResizeHintBorder.value,
+                  marginLeft: 23,
+                  paddingTop: 6,
+                  overflow: 'hidden',
+                }}
+              >
+                {props.label}
+              </div>
+            </FlexRow>
+            {/* {when(
+              navigatorEntry.propHasValue, */}
+            <FlexRow
+              style={{
+                paddingTop: 6,
+                marginRight: 5,
+                position: 'fixed',
+                right: 0,
+                background: 'transparent',
+              }}
+            >
+              <Button
+                onClick={showContextMenu}
+                style={{
+                  height: 18,
+                  width: 18,
+                  display: 'block',
+                  paddingRight: 1,
+                }}
+              >
+                <Icn
+                  category='element'
+                  type='placeholder'
+                  tooltipText='Set Value'
+                  width={18}
+                  height={18}
+                  style={{ transform: 'scale(.85)' }}
+                />
+              </Button>
+            </FlexRow>
+            {/* )} */}
+          </FlexRow>
         ) : (
           <FlexRow style={{ justifyContent: 'space-between', ...containerStyle }}>
             <FlexRow>
