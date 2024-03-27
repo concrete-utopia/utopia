@@ -1,4 +1,4 @@
-import { isBackendBFF, UTOPIA_BACKEND, UTOPIA_BACKEND_BASE_URL } from '../../common/env-vars'
+import { UTOPIA_BACKEND, UTOPIA_BACKEND_BASE_URL } from '../../common/env-vars'
 import {
   assetURL,
   getLoginState,
@@ -335,9 +335,6 @@ export async function getUserPermissions(
   loginState: LoginState,
   projectId: string | null,
 ): Promise<UserPermissions> {
-  if (!isBackendBFF()) {
-    return emptyUserPermissions(true)
-  }
   switch (loginState.type) {
     case 'LOGGED_IN':
       if (projectId == null) {
@@ -550,9 +547,6 @@ export async function downloadAssetsFromProject(
 }
 
 export async function updateCollaborators(projectId: string) {
-  if (!isBackendBFF()) {
-    return
-  }
   const response = await fetch(
     UTOPIA_BACKEND_BASE_URL + `internal/projects/${projectId}/collaborators`,
     {
@@ -567,10 +561,6 @@ export async function updateCollaborators(projectId: string) {
 }
 
 export async function getCollaborators(projectId: string): Promise<Collaborator[]> {
-  if (!isBackendBFF()) {
-    return getCollaboratorsFromLiveblocks(projectId)
-  }
-
   const response = await fetch(
     UTOPIA_BACKEND_BASE_URL + `internal/projects/${projectId}/collaborators`,
     {
@@ -587,24 +577,7 @@ export async function getCollaborators(projectId: string): Promise<Collaborator[
   }
 }
 
-// TODO remove this once the BFF is on
-async function getCollaboratorsFromLiveblocks(projectId: string): Promise<Collaborator[]> {
-  const room = liveblocksClient.getRoom(projectIdToRoomId(projectId))
-  if (room == null) {
-    return []
-  }
-  const storage = await room.getStorage()
-  const collabs = storage.root.get('collaborators') as LiveObject<{ [userId: string]: User }>
-  if (collabs == null) {
-    return []
-  }
-  return Object.values(collabs.toObject()).map((u) => u.toObject())
-}
-
 export async function requestProjectAccess(projectId: string): Promise<void> {
-  if (!isBackendBFF()) {
-    return
-  }
   const response = await fetch(`/internal/projects/${projectId}/access/request`, {
     method: 'POST',
     credentials: 'include',
@@ -619,9 +592,6 @@ export async function updateGithubRepository(
   projectId: string,
   githubRepository: (GithubRepo & { branch: string | null }) | null,
 ): Promise<void> {
-  if (!isBackendBFF()) {
-    return
-  }
   const url = urljoin(`/internal/projects/${projectId}/github/repository/update`)
   const response = await fetch(url, {
     method: 'POST',

@@ -22,7 +22,6 @@ import {
   useConnections,
   useCollaborators,
   getCollaboratorById,
-  useAddMyselfToCollaborators_DEPRECATED,
 } from '../../core/commenting/comment-hooks'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../core/shared/array-utils'
@@ -115,7 +114,6 @@ export const MultiplayerPresence = React.memo(() => {
     'MultiplayerPresence mode',
   )
 
-  useAddMyselfToCollaborators_DEPRECATED()
   useLoadCollaborators()
 
   useStoreConnection()
