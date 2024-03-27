@@ -1,4 +1,3 @@
-import React from 'react'
 import type { NodeModules, ESCodeFile } from '../../shared/project-file-types'
 import { isEsCodeFile, isEsRemoteDependencyPlaceholder } from '../../shared/project-file-types'
 import type { RequireFn, TypeDefinitions } from '../../shared/npm-dependency-types'
