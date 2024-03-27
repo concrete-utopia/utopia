@@ -108,10 +108,7 @@ export const RenderPropPicker = React.memo<RenderPropPickerProps>(({ key, id, ta
   const projectContentsRef = useRefEditorState((state) => state.editor.projectContents)
 
   const onItemClick = React.useCallback(
-    (preferredChildToInsert: ElementToInsert) => (e: React.MouseEvent) => {
-      e.stopPropagation()
-      e.preventDefault()
-
+    (preferredChildToInsert: ElementToInsert) => {
       const uid = generateConsistentUID(
         'prop',
         new Set(getAllUniqueUids(projectContentsRef.current).uniqueIDs),
