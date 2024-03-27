@@ -2166,17 +2166,20 @@ export function syntheticNavigatorEntriesEqual(
 export interface RenderPropNavigatorEntry {
   type: 'RENDER_PROP'
   elementPath: ElementPath
-  propName: string
+  prop: string
+  propHasValue: boolean
 }
 
 export function renderPropNavigatorEntry(
   elementPath: ElementPath,
-  propName: string,
+  prop: string,
+  propHasValue: boolean,
 ): RenderPropNavigatorEntry {
   return {
     type: 'RENDER_PROP',
     elementPath: elementPath,
-    propName: propName,
+    prop: prop,
+    propHasValue: propHasValue,
   }
 }
 
@@ -2259,7 +2262,7 @@ export function navigatorEntryToKey(entry: NavigatorEntry): string {
       return `synthetic-${EP.toComponentId(entry.elementPath)}-${childOrAttributeDetails}`
     }
     case 'RENDER_PROP': {
-      return `render-prop-${EP.toComponentId(entry.elementPath)}-${entry.propName}`
+      return `render-prop-${EP.toComponentId(entry.elementPath)}-${entry.prop}`
     }
     case 'INVALID_OVERRIDE':
       return `error-${EP.toComponentId(entry.elementPath)}`
@@ -2282,7 +2285,7 @@ export function varSafeNavigatorEntryToKey(entry: NavigatorEntry): string {
         : `element_${getUtopiaID(entry.childOrAttribute)}`
       return `synthetic_${EP.toVarSafeComponentId(entry.elementPath)}_${childOrAttributeDetails}`
     case 'RENDER_PROP':
-      return `renderprop_${EP.toVarSafeComponentId(entry.elementPath)}_${entry.propName}`
+      return `renderprop_${EP.toVarSafeComponentId(entry.elementPath)}_${entry.prop}`
     case 'INVALID_OVERRIDE':
       return `error_${EP.toVarSafeComponentId(entry.elementPath)}`
     case 'SLOT':
