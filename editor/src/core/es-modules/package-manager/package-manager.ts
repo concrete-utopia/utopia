@@ -88,6 +88,9 @@ export const getCurriedEditorRequireFn = (
     )
 }
 
+export const NameSymbol = Symbol('__utopia_name__')
+export const ModuleSymbol = Symbol('__utopia_module__')
+
 export function getRequireFn(
   onRemoteModuleDownload: (moduleDownload: Promise<NodeModules>) => void,
   projectContents: ProjectContentTreeRoot,
@@ -96,10 +99,22 @@ export function getRequireFn(
   builtInDependencies: BuiltInDependencies,
   injectedEvaluator = evaluator,
 ): RequireFn {
+  function extendExportsWithInfo(exports: any, toImport: string): any {
+    Object.entries(exports).forEach(([name, exp]) => {
+      try {
+        ;(exp as any)[NameSymbol] = name
+        ;(exp as any)[ModuleSymbol] = toImport
+        console.debug('Successfully extended exports with info', name, toImport)
+      } catch (e) {
+        console.debug('Failed to extend exports with info', name, toImport)
+      }
+    })
+    return exports
+  }
   return function require(importOrigin, toImport): unknown {
     const builtInDependency = resolveBuiltInDependency(builtInDependencies, toImport)
     if (builtInDependency != null) {
-      return builtInDependency
+      return extendExportsWithInfo(builtInDependency, toImport)
     }
 
     const resolveResult = resolveModule(projectContents, nodeModules, importOrigin, toImport)
@@ -170,7 +185,7 @@ export function getRequireFn(
             throw e
           }
         }
-        return fileCache.exports
+        return extendExportsWithInfo(fileCache.exports, toImport)
       } else if (isEsRemoteDependencyPlaceholder(resolvedFile)) {
         if (!resolvedFile.downloadStarted) {
           // return empty exports object, fire off an async job to fetch the dependency from jsdelivr
