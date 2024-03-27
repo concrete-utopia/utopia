@@ -13,7 +13,6 @@ import React from 'react'
 import { useFetcherDataUnkown } from '../hooks/useFetcherData'
 import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
 import { useProjectAccessMatchesSelectedCategory } from '../hooks/useProjectMatchingCategory'
-import { useProjectsStore } from '../store'
 import { sprinkles } from '../styles/sprinkles.css'
 import {
   AccessLevel,
@@ -30,6 +29,7 @@ import { useProjectEditorLink } from '../util/links'
 import { when } from '../util/react-conditionals'
 import { Spinner } from './spinner'
 import { UserAvatar } from './collaboratorAvatar'
+import { useProjectsStore } from '../stores/projectsStore'
 
 export const SharingDialogWrapper = React.memo(
   ({ project }: { project: ProjectListing | null }) => {

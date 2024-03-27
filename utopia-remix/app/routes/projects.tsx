@@ -31,8 +31,6 @@ import {
   listSharedWithMeProjectsAndCollaborators,
 } from '../models/project.server'
 import { getCollaborators } from '../models/projectCollaborators.server'
-import type { OperationWithKey } from '../store'
-import { useProjectsStore } from '../store'
 import { button } from '../styles/button.css'
 import { projectCards, projectRows } from '../styles/projects.css'
 import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
@@ -52,6 +50,8 @@ import {
 } from '../util/use-sort-compare-project'
 import { githubRepositoryPrettyName } from '../util/github'
 import { UserAvatar } from '../components/collaboratorAvatar'
+import type { OperationWithKey } from '../stores/projectsStore'
+import { createProjectsStore, ProjectsContext, useProjectsStore } from '../stores/projectsStore'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
@@ -131,16 +131,33 @@ export async function loader(args: LoaderFunctionArgs) {
   )
 }
 
+type LoaderData = {
+  user: UserDetails
+  projects: ProjectListing[]
+  deletedProjects: ProjectListing[]
+  projectsSharedWithMe: ProjectListing[]
+  collaborators: CollaboratorsByProject
+}
+
 const ProjectsPage = React.memo(() => {
+  const data = useLoaderData() as unknown as LoaderData
+
+  const store = React.useRef(createProjectsStore({ myUser: data.user })).current
+
+  return (
+    <ProjectsContext.Provider value={store}>
+      <ProjectsPageInner />
+    </ProjectsContext.Provider>
+  )
+})
+ProjectsPage.displayName = 'ProjectsPage'
+
+export default ProjectsPage
+
+const ProjectsPageInner = React.memo(() => {
   useCleanupOperations()
 
-  const data = useLoaderData() as unknown as {
-    user: UserDetails
-    projects: ProjectListing[]
-    deletedProjects: ProjectListing[]
-    projectsSharedWithMe: ProjectListing[]
-    collaborators: CollaboratorsByProject
-  }
+  const data = useLoaderData() as unknown as LoaderData
 
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
 
@@ -221,9 +238,7 @@ const ProjectsPage = React.memo(() => {
     </div>
   )
 })
-ProjectsPage.displayName = 'ProjectsPage'
-
-export default ProjectsPage
+ProjectsPageInner.displayName = 'ProjectsPageInner'
 
 const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
   const searchQuery = useProjectsStore((store) => store.searchQuery)

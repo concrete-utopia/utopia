@@ -1,8 +1,7 @@
 import { Popover, Transition } from '@headlessui/react'
-import React from 'react'
-import { Fragment } from 'react'
+import React, { Fragment } from 'react'
 import { CookieConsent, getCookieConsentValue } from 'react-cookie-consent'
-import { useProjectsStore } from '../store'
+import { useAppStore } from '../stores/appStore'
 
 const mainNavigation = [
   { name: ' ', href: '#' },
@@ -312,7 +311,7 @@ type HostedImageProps = React.DetailedHTMLProps<
 > & { src: string }
 
 export function HostedImage(props: HostedImageProps) {
-  const env = useProjectsStore((store) => store.env)
+  const env = useAppStore((store) => store.env)
   if (env == null) {
     return null
   }
