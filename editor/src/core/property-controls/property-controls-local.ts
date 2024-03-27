@@ -29,6 +29,7 @@ import { dependenciesFromPackageJson } from '../../components/editor/npm-depende
 import { parseControlDescription } from './property-controls-parser'
 import type { ParseError, ParseResult } from '../../utils/value-parser-utils'
 import {
+  getParseErrorDetails,
   objectKeyParser,
   optionalObjectKeyParser,
   parseArray,
@@ -63,9 +64,14 @@ import { attemptToResolveParsedComponents } from '../../components/canvas/ui-jsx
 import { NO_OP } from '../shared/utils'
 import { createExecutionScope } from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import type { EditorDispatch } from '../../components/editor/action-types'
-import { updatePropertyControlsInfo } from '../../components/editor/actions/action-creators'
+import {
+  setCodeEditorBuildErrors,
+  updatePropertyControlsInfo,
+} from '../../components/editor/actions/action-creators'
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import { isIntrinsicHTMLElement } from '../shared/element-template'
+import type { ErrorMessage } from '../shared/error-messages'
+import { errorMessage } from '../shared/error-messages'
 
 async function parseInsertOption(
   insertOption: ComponentInsertOption,
@@ -174,7 +180,8 @@ export const isComponentDescriptorFile = (filename: string) =>
   filename.startsWith('/utopia/') && filename.endsWith('.utopia.js')
 
 type ComponentDescriptorRegistrationError =
-  | { type: 'file-cannot-be-parsed' }
+  | { type: 'file-unparsed' }
+  | { type: 'file-parse-failure'; parseErrorMessages: ErrorMessage[] }
   | { type: 'no-export-default' }
   | { type: 'no-exported-component-descriptors' }
   | { type: 'evaluation-error'; evaluationError: unknown }
@@ -191,8 +198,17 @@ async function getComponentDescriptorPromisesFromParseResult(
   workers: UtopiaTsWorkers,
   evaluator: ModuleEvaluator,
 ): Promise<ComponentDescriptorRegistrationResult> {
-  if (!isParseSuccess(descriptorFile.file)) {
-    return { descriptors: [], errors: [{ type: 'file-cannot-be-parsed' }] }
+  if (descriptorFile.file.type === 'UNPARSED') {
+    return { descriptors: [], errors: [{ type: 'file-unparsed' }] }
+  }
+
+  if (descriptorFile.file.type === 'PARSE_FAILURE') {
+    return {
+      descriptors: [],
+      errors: [
+        { type: 'file-parse-failure', parseErrorMessages: descriptorFile.file.errorMessages },
+      ],
+    }
   }
 
   const exportDefaultIdentifier = descriptorFile.file.exportsDetail.find(isExportDefault)
@@ -252,6 +268,111 @@ async function getComponentDescriptorPromisesFromParseResult(
   }
 }
 
+function errorsFromComponentRegistration(
+  fileName: string,
+  errors: ComponentDescriptorRegistrationError[],
+): ErrorMessage[] {
+  return errors.flatMap((error) => {
+    switch (error.type) {
+      case 'file-unparsed':
+        // we control whether a file is parsed or not, so this failure mode is not surfaced to users
+        return []
+      case 'file-parse-failure':
+        return error.parseErrorMessages
+      case 'evaluation-error':
+        return [
+          errorMessage(
+            fileName,
+            null,
+            null,
+            null,
+            null,
+            '',
+            'fatal',
+            '',
+            `Components file evaluation error: ${JSON.stringify(error.evaluationError)}`,
+            '',
+            'runtime',
+            null,
+          ),
+        ]
+      case 'no-export-default':
+        return [
+          errorMessage(
+            fileName,
+            null,
+            null,
+            null,
+            null,
+            '',
+            'fatal',
+            '',
+            `Components file has no default export`,
+            '',
+            'runtime',
+            null,
+          ),
+        ]
+      case 'no-exported-component-descriptors':
+        return [
+          errorMessage(
+            fileName,
+            null,
+            null,
+            null,
+            null,
+            '',
+            'fatal',
+            '',
+            `Cannot extract default export from file`,
+            '',
+            'runtime',
+            null,
+          ),
+        ]
+      case 'invalid-schema':
+        return [
+          errorMessage(
+            fileName,
+            null,
+            null,
+            null,
+            null,
+            '',
+            'fatal',
+            '',
+            `Malformed component registration: ${
+              getParseErrorDetails(error.invalidSchemaError).description
+            }`,
+            '',
+            'runtime',
+            null,
+          ),
+        ]
+      case 'cannot-extract-component':
+        return [
+          errorMessage(
+            fileName,
+            null,
+            null,
+            null,
+            null,
+            '',
+            'fatal',
+            '',
+            `Malformed component registration: ${error.componentExtractionError}`,
+            '',
+            'runtime',
+            null,
+          ),
+        ]
+
+      default:
+        assertNever(error)
+    }
+  })
+}
+
 export interface ParsedTextFileWithPath {
   file: ParsedTextFile
   path: string
@@ -265,13 +386,12 @@ export async function maybeUpdatePropertyControls(
   evaluator: ModuleEvaluator,
 ) {
   let componentDescriptorUpdates: ComponentDescriptorFileLookup = {}
+  let errors: { [filename: string]: ErrorMessage[] } = {}
   await Promise.all(
     filesToUpdate.map(async (file) => {
       const result = await getComponentDescriptorPromisesFromParseResult(file, workers, evaluator)
-      if (result.errors.length > 0) {
-        // TODO: turn this into build errors
-        console.warn('Cannot parse descriptor file', result.errors)
-      } else if (result.descriptors.length > 0) {
+      errors[file.path] = errorsFromComponentRegistration(file.path, result.errors)
+      if (result.descriptors.length > 0) {
         componentDescriptorUpdates[file.path] = result.descriptors
       }
     }),
@@ -281,7 +401,10 @@ export async function maybeUpdatePropertyControls(
     previousPropertyControlsInfo,
     componentDescriptorUpdates,
   )
-  dispatch([updatePropertyControlsInfo(updatedPropertyControlsInfo)])
+  dispatch([
+    updatePropertyControlsInfo(updatedPropertyControlsInfo),
+    setCodeEditorBuildErrors(errors),
+  ])
 }
 
 interface ComponentDescriptorFileLookup {
