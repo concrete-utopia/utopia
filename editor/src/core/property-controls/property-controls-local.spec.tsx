@@ -167,6 +167,72 @@ describe('registered property controls', () => {
       }
     `)
   })
+  it('control registration fails when the imported component is undefined', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      project({
+        ['/utopia/components.utopia.js']: `import { Cart } from '../src/card'
+        
+        const Components = {
+      '/src/card': {
+        Card: {
+          component: Cart,
+          supportsChildren: false,
+          properties: { },
+          variants: [ ],
+        },
+      },
+    }
+    
+    export default Components
+  `,
+      }),
+      'await-first-dom-report',
+    )
+    const editorState = renderResult.getEditorState().editor
+
+    // /src/card is not here
+    expect(Object.keys(editorState.propertyControlsInfo)).toMatchInlineSnapshot(`
+      Array [
+        "@react-three/fiber",
+        "antd",
+        "utopia-api",
+        "@remix-run/react",
+      ]
+    `)
+  })
+  it('control registration fails when the imported component does not match the name of registration key', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      project({
+        ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
+        
+        const Components = {
+      '/src/card': {
+        Cart: {
+          component: Card,
+          supportsChildren: false,
+          properties: { },
+          variants: [ ],
+        },
+      },
+    }
+    
+    export default Components
+  `,
+      }),
+      'await-first-dom-report',
+    )
+    const editorState = renderResult.getEditorState().editor
+
+    // /src/card is not here
+    expect(Object.keys(editorState.propertyControlsInfo)).toMatchInlineSnapshot(`
+      Array [
+        "@react-three/fiber",
+        "antd",
+        "utopia-api",
+        "@remix-run/react",
+      ]
+    `)
+  })
   it('can use imports in the sidecar file', async () => {
     const renderResult = await renderTestEditorWithModel(
       project({
