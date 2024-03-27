@@ -52,6 +52,7 @@ import { githubRepositoryPrettyName } from '../util/github'
 import { UserAvatar } from '../components/collaboratorAvatar'
 import type { OperationWithKey } from '../stores/projectsStore'
 import { createProjectsStore, ProjectsContext, useProjectsStore } from '../stores/projectsStore'
+import { UserAvatar } from '../components/userAvatar'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
