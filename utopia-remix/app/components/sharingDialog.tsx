@@ -145,7 +145,6 @@ type AccessRequestListProps = {
 }
 
 const AccessRequestsList = React.memo(({ projectId, accessLevel }: AccessRequestListProps) => {
-  const myUser = useProjectsStore((store) => store.myUser)
   const accessRequests = useProjectsStore((store) => store.sharingProjectAccessRequests)
 
   const approveAccessRequestFetcher = useFetcherWithOperation(projectId, 'approveAccessRequest')
@@ -168,31 +167,22 @@ const AccessRequestsList = React.memo(({ projectId, accessLevel }: AccessRequest
     return accessRequests.requests.length > 0 && accessLevel === AccessLevel.PRIVATE
   }, [accessLevel, accessRequests])
 
+  const showAccessRequests = React.useMemo(() => {
+    return accessRequests.state === 'ready' && accessRequests.requests.length > 0
+  }, [accessRequests])
+
   return (
     <AnimatePresence>
       <motion.div>
         <Flex direction={'column'} gap='4'>
           <Separator size='4' />
+
+          {when(hasGonePrivate, <HasGonePrivate />)}
+
+          <OwnerCollaboratorRow />
+
           {when(
-            hasGonePrivate,
-            <Text size='1' style={{ opacity: 0.5 }}>
-              This project was changed to private, previous collaborators can no longer view it.
-            </Text>,
-          )}
-          {myUser != null ? (
-            <CollaboratorRow
-              disabled={false}
-              picture={myUser.picture}
-              name={`${myUser.name ?? myUser.email ?? myUser.id} (you)`}
-              starBadge={true}
-            >
-              <Text size='1' style={{ cursor: 'default' }}>
-                Owner
-              </Text>
-            </CollaboratorRow>
-          ) : null}
-          {when(
-            accessRequests.state === 'ready' && accessRequests.requests.length > 0,
+            showAccessRequests,
             <motion.div
               animate={{ height: 'auto', opacity: 1 }}
               initial={{ height: 0, opacity: 0 }}
@@ -214,6 +204,36 @@ const AccessRequestsList = React.memo(({ projectId, accessLevel }: AccessRequest
   )
 })
 AccessRequestsList.displayName = 'AccessRequestsList'
+
+const HasGonePrivate = React.memo(() => {
+  return (
+    <Text size='1' style={{ opacity: 0.5 }}>
+      This project was changed to private, previous collaborators can no longer view it.
+    </Text>
+  )
+})
+HasGonePrivate.displayName = 'HasGonePrivate'
+
+const OwnerCollaboratorRow = React.memo(() => {
+  const myUser = useProjectsStore((store) => store.myUser)
+  if (myUser == null) {
+    return null
+  }
+
+  return (
+    <CollaboratorRow
+      disabled={false}
+      picture={myUser?.picture ?? null}
+      name={`${myUser?.name ?? myUser?.email ?? myUser?.id} (you)`}
+      starBadge={true}
+    >
+      <Text size='1' style={{ cursor: 'default' }}>
+        Owner
+      </Text>
+    </CollaboratorRow>
+  )
+})
+OwnerCollaboratorRow.displayName = 'OwnerCollaboratorRow'
 
 function AccessRequests({
   projectId,
