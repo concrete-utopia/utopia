@@ -31,8 +31,6 @@ import {
   listSharedWithMeProjectsAndCollaborators,
 } from '../models/project.server'
 import { getCollaborators } from '../models/projectCollaborators.server'
-import type { OperationWithKey } from '../store'
-import { useProjectsStore } from '../store'
 import { button } from '../styles/button.css'
 import { projectCards, projectRows } from '../styles/projects.css'
 import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
@@ -51,6 +49,9 @@ import {
   useSortCompareProject,
 } from '../util/use-sort-compare-project'
 import { githubRepositoryPrettyName } from '../util/github'
+import type { OperationWithKey } from '../stores/projectsStore'
+import { createProjectsStore, ProjectsContext, useProjectsStore } from '../stores/projectsStore'
+import { UserAvatar } from '../components/userAvatar'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
@@ -130,16 +131,33 @@ export async function loader(args: LoaderFunctionArgs) {
   )
 }
 
+type LoaderData = {
+  user: UserDetails
+  projects: ProjectListing[]
+  deletedProjects: ProjectListing[]
+  projectsSharedWithMe: ProjectListing[]
+  collaborators: CollaboratorsByProject
+}
+
 const ProjectsPage = React.memo(() => {
+  const data = useLoaderData() as unknown as LoaderData
+
+  const store = React.useRef(createProjectsStore({ myUser: data.user })).current
+
+  return (
+    <ProjectsContext.Provider value={store}>
+      <ProjectsPageInner />
+    </ProjectsContext.Provider>
+  )
+})
+ProjectsPage.displayName = 'ProjectsPage'
+
+export default ProjectsPage
+
+const ProjectsPageInner = React.memo(() => {
   useCleanupOperations()
 
-  const data = useLoaderData() as unknown as {
-    user: UserDetails
-    projects: ProjectListing[]
-    deletedProjects: ProjectListing[]
-    projectsSharedWithMe: ProjectListing[]
-    collaborators: CollaboratorsByProject
-  }
+  const data = useLoaderData() as unknown as LoaderData
 
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
 
@@ -213,20 +231,14 @@ const ProjectsPage = React.memo(() => {
       >
         <TopActionBar />
         <ProjectsHeader projects={filteredProjects} />
-        <Projects
-          projects={filteredProjects}
-          collaborators={data.collaborators}
-          myUserId={data.user.user_id}
-        />
+        <Projects projects={filteredProjects} collaborators={data.collaborators} />
         <ActiveOperations projects={activeProjects} />
         <SharingDialogWrapper project={sharingProject} />
       </div>
     </div>
   )
 })
-ProjectsPage.displayName = 'ProjectsPage'
-
-export default ProjectsPage
+ProjectsPageInner.displayName = 'ProjectsPageInner'
 
 const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
   const searchQuery = useProjectsStore((store) => store.searchQuery)
@@ -287,11 +299,11 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
             padding: '0 6px',
           }}
         >
-          <img
+          <UserAvatar
+            picture={user.picture}
+            size={32}
+            name={user.name ?? user.email ?? user.user_id}
             className={sprinkles({ borderRadius: 'medium' })}
-            style={{ width: 32 }}
-            src={user.picture ?? undefined}
-            referrerPolicy='no-referrer'
           />
           <div className={userName({})}>{user.name}</div>
         </div>
@@ -564,12 +576,11 @@ const Projects = React.memo(
   ({
     projects,
     collaborators,
-    myUserId,
   }: {
     projects: ProjectListing[]
     collaborators: CollaboratorsByProject
-    myUserId: string
   }) => {
+    const myUser = useProjectsStore((store) => store.myUser)
     const gridView = useProjectsStore((store) => store.gridView)
 
     const selectedProjectId = useProjectsStore((store) => store.selectedProjectId)
@@ -590,7 +601,7 @@ const Projects = React.memo(
               <ProjectRow
                 key={project.proj_id}
                 project={project}
-                isSharedWithMe={project.owner_id !== myUserId}
+                isSharedWithMe={project.owner_id !== myUser?.user_id}
                 selected={project.proj_id === selectedProjectId}
                 /* eslint-disable-next-line react/jsx-no-bind */
                 onSelect={() => handleProjectSelect(project)}
@@ -606,7 +617,7 @@ const Projects = React.memo(
               <ProjectCard
                 key={project.proj_id}
                 project={project}
-                isSharedWithMe={project.owner_id !== myUserId}
+                isSharedWithMe={project.owner_id !== myUser?.user_id}
                 selected={project.proj_id === selectedProjectId}
                 /* eslint-disable-next-line react/jsx-no-bind */
                 onSelect={() => handleProjectSelect(project)}
@@ -738,32 +749,19 @@ const ProjectCard = React.memo(
                 <div style={{ position: 'absolute', right: 8, bottom: 8, display: 'flex', gap: 2 }}>
                   {collaborators.map((collaborator) => {
                     return (
-                      <div
+                      <UserAvatar
                         key={`collaborator-${project.id}-${collaborator.id}`}
-                        style={{
-                          borderRadius: '100%',
-                          width: 24,
-                          height: 24,
-                          backgroundImage: `url("${collaborator.avatar}")`,
-                          backgroundSize: 'cover',
-                          display: 'flex',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          fontSize: '.9em',
-                          fontWeight: 700,
-                        }}
-                        title={collaborator.name ?? UnknownPlayerName}
+                        size={24}
+                        starBadge={collaborator.id === project.owner_id}
+                        picture={collaborator.avatar}
+                        name={collaborator.name ?? UnknownPlayerName}
                         className={sprinkles({
                           boxShadow: 'shadow',
                           color: 'white',
                           backgroundColor: 'primary',
+                          borderRadius: 'full',
                         })}
-                      >
-                        {when(
-                          collaborator.avatar === '',
-                          multiplayerInitialsFromName(collaborator.name),
-                        )}
-                      </div>
+                      />
                     )
                   })}
                 </div>,

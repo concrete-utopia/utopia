@@ -1,5 +1,5 @@
 import React from 'react'
-import { useProjectsStore } from '../store'
+import { useProjectsStore } from '../stores/projectsStore'
 import { DropdownMenu, Separator } from '@radix-ui/themes'
 
 export const SortingContextMenu = React.memo(() => {

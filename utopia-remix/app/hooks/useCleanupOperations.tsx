@@ -1,6 +1,6 @@
 import type { Fetcher } from '@remix-run/react'
 import { useFetchers } from '@remix-run/react'
-import { useProjectsStore } from '../store'
+import { useProjectsStore } from '../stores/projectsStore'
 import React from 'react'
 import { isLikeApiError } from '../util/errors'
 import { operationFetcherKeyPrefix } from './useFetcherWithOperation'

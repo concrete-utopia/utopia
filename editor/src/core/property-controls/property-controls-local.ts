@@ -32,6 +32,7 @@ import {
   getParseErrorDetails,
   objectKeyParser,
   optionalObjectKeyParser,
+  parseAny,
   parseArray,
   parseBoolean,
   parseObject,
@@ -43,6 +44,7 @@ import type { Either } from '../shared/either'
 import {
   applicative3Either,
   applicative4Either,
+  applicative5Either,
   foldEither,
   forEachRight,
   isLeft,
@@ -58,7 +60,10 @@ import { isExportDefault, isParseSuccess } from '../shared/project-file-types'
 import type { UiJsxCanvasContextData } from '../../components/canvas/ui-jsx-canvas'
 import type { EditorState } from '../../components/editor/store/editor-state'
 import type { MutableUtopiaCtxRefData } from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
-import type { ComponentRendererComponent } from '../../components/canvas/ui-jsx-canvas-renderer/component-renderer-component'
+import {
+  isComponentRendererComponent,
+  type ComponentRendererComponent,
+} from '../../components/canvas/ui-jsx-canvas-renderer/component-renderer-component'
 import type { MapLike } from 'typescript'
 import { attemptToResolveParsedComponents } from '../../components/canvas/ui-jsx-canvas'
 import { NO_OP } from '../shared/utils'
@@ -179,6 +184,27 @@ export function createModuleEvaluator(editor: EditorState): ModuleEvaluator {
 export const isComponentDescriptorFile = (filename: string) =>
   filename.startsWith('/utopia/') && filename.endsWith('.utopia.js')
 
+type ComponentRegistrationValidationError =
+  | { type: 'component-undefined'; registrationKey: string }
+  | { type: 'component-name-does-not-match'; componentName: string; registrationKey: string }
+
+function messageForComponentRegistrationValidationError(
+  error: ComponentRegistrationValidationError,
+): string {
+  switch (error.type) {
+    case 'component-name-does-not-match':
+      return `Component name (${error.componentName}) does not match the registration key (${error.registrationKey})`
+    case 'component-undefined':
+      return `Component registered for key '${error.registrationKey}' is undefined`
+    default:
+      assertNever(error)
+  }
+}
+
+type ComponentRegistrationValidationResult =
+  | { type: 'valid' }
+  | ComponentRegistrationValidationError
+
 type ComponentDescriptorRegistrationError =
   | { type: 'file-unparsed' }
   | { type: 'file-parse-failure'; parseErrorMessages: ErrorMessage[] }
@@ -187,10 +213,36 @@ type ComponentDescriptorRegistrationError =
   | { type: 'evaluation-error'; evaluationError: unknown }
   | { type: 'invalid-schema'; invalidSchemaError: ParseError }
   | { type: 'cannot-extract-component'; componentExtractionError: string }
+  | {
+      type: 'registration-validation-failed'
+      validationError: ComponentRegistrationValidationError
+    }
 
 interface ComponentDescriptorRegistrationResult {
   descriptors: ComponentDescriptorWithName[]
   errors: ComponentDescriptorRegistrationError[]
+}
+
+function isComponentRegistrationValid(
+  registrationKey: string,
+  registration: ComponentToRegister,
+): ComponentRegistrationValidationResult {
+  if (typeof registration.component === 'undefined') {
+    return { type: 'component-undefined', registrationKey: registrationKey }
+  }
+
+  if (
+    isComponentRendererComponent(registration.component) &&
+    registration.component.originalName !== registrationKey
+  ) {
+    return {
+      type: 'component-name-does-not-match',
+      registrationKey: registrationKey,
+      componentName: registration.component.originalName ?? 'null',
+    }
+  }
+
+  return { type: 'valid' }
 }
 
 async function getComponentDescriptorPromisesFromParseResult(
@@ -239,6 +291,11 @@ async function getComponentDescriptorPromisesFromParseResult(
       for await (const [componentName, componentToRegister] of Object.entries(
         parsedComponents.value,
       )) {
+        const validationResult = isComponentRegistrationValid(componentName, componentToRegister)
+        if (validationResult.type !== 'valid') {
+          errors.push({ type: 'registration-validation-failed', validationError: validationResult })
+          continue
+        }
         const componentDescriptor = await componentDescriptorForComponentToRegister(
           componentToRegister,
           componentName,
@@ -366,7 +423,25 @@ function errorsFromComponentRegistration(
             null,
           ),
         ]
-
+      case 'registration-validation-failed':
+        return [
+          errorMessage(
+            fileName,
+            null,
+            null,
+            null,
+            null,
+            '',
+            'fatal',
+            '',
+            `Validation failed: ${messageForComponentRegistrationValidationError(
+              error.validationError,
+            )}`,
+            '',
+            'runtime',
+            null,
+          ),
+        ]
       default:
         assertNever(error)
     }
@@ -731,15 +806,17 @@ export function parsePreferredChild(value: unknown): ParseResult<PreferredChildC
 }
 
 function parseComponentToRegister(value: unknown): ParseResult<ComponentToRegister> {
-  return applicative4Either(
-    (properties, supportsChildren, variants, preferredChildComponents) => {
+  return applicative5Either(
+    (component, properties, supportsChildren, variants, preferredChildComponents) => {
       return {
+        component: component,
         properties: properties,
         supportsChildren: supportsChildren,
         variants: variants,
         preferredChildComponents: preferredChildComponents,
       }
     },
+    objectKeyParser(parseAny, 'component')(value),
     objectKeyParser(fullyParsePropertyControls, 'properties')(value),
     objectKeyParser(parseBoolean, 'supportsChildren')(value),
     objectKeyParser(parseArray(parseComponentInsertOption), 'variants')(value),
