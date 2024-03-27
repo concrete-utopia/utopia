@@ -170,42 +170,46 @@ const AccessRequestsList = React.memo(({ projectId, accessLevel }: AccessRequest
 
   return (
     <AnimatePresence>
-      {when(
-        accessRequests.state === 'ready' && accessRequests.requests.length > 0,
-        <motion.div
-          animate={{ height: 'auto', opacity: 1 }}
-          initial={{ height: 0, opacity: 0 }}
-          exit={{ height: 0, opacity: 0 }}
-        >
-          <Flex direction={'column'} gap='4'>
-            <Separator size='4' />
-            {when(
-              hasGonePrivate,
-              <Text size='1' style={{ opacity: 0.5 }}>
-                This project was changed to private, previous collaborators can no longer view it.
-              </Text>,
-            )}
-            {myUser != null ? (
-              <CollaboratorRow
-                disabled={false}
-                picture={myUser.picture}
-                name={`${myUser.name ?? myUser.email ?? myUser.id} (you)`}
-                starBadge={true}
-              >
-                <Text size='1' style={{ cursor: 'default' }}>
-                  Owner
-                </Text>
-              </CollaboratorRow>
-            ) : null}
-            <AccessRequests
-              projectId={projectId}
-              projectAccessLevel={accessLevel}
-              approveAccessRequest={approveAccessRequest}
-              accessRequests={accessRequests.requests}
-            />
-          </Flex>
-        </motion.div>,
-      )}
+      <motion.div>
+        <Flex direction={'column'} gap='4'>
+          <Separator size='4' />
+          {when(
+            hasGonePrivate,
+            <Text size='1' style={{ opacity: 0.5 }}>
+              This project was changed to private, previous collaborators can no longer view it.
+            </Text>,
+          )}
+          {myUser != null ? (
+            <CollaboratorRow
+              disabled={false}
+              picture={myUser.picture}
+              name={`${myUser.name ?? myUser.email ?? myUser.id} (you)`}
+              starBadge={true}
+            >
+              <Text size='1' style={{ cursor: 'default' }}>
+                Owner
+              </Text>
+            </CollaboratorRow>
+          ) : null}
+          {when(
+            accessRequests.state === 'ready' && accessRequests.requests.length > 0,
+            <motion.div
+              animate={{ height: 'auto', opacity: 1 }}
+              initial={{ height: 0, opacity: 0 }}
+              exit={{ height: 0, opacity: 0 }}
+            >
+              <Flex direction={'column'} gap='4'>
+                <AccessRequests
+                  projectId={projectId}
+                  projectAccessLevel={accessLevel}
+                  approveAccessRequest={approveAccessRequest}
+                  accessRequests={accessRequests.requests}
+                />
+              </Flex>
+            </motion.div>,
+          )}
+        </Flex>
+      </motion.div>
     </AnimatePresence>
   )
 })
