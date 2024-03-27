@@ -454,7 +454,7 @@ export function transpileJavascript(
 ): Either<string, TranspileResult> {
   try {
     const { code, map } = fileSourceNode.toStringWithSourceMap({ file: sourceFileName })
-    const rawMap = JSON.parse(map.toString())
+    const rawMap = map.toJSON()
     return transpileJavascriptFromCode(
       sourceFileName,
       sourceFileText,

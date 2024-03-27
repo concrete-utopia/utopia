@@ -32,13 +32,7 @@ function b(n) {
     "params": Array [],
     "sourceMap": Object {
       "file": "code.tsx",
-<<<<<<< HEAD
-      "mappings": "AAMoBA,CAAAA,MAAAA;AAEnBC,WAASC,CAATD,CAAWE,CAAXF,EAAcG;AACZC,QAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,aAAOD,CAAPC;AACDF,KAFDD,MAEOD;AACLI,aAAOC,CAACC,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDR;AAWFA;;AAEDC,WAASQ,CAATR,CAAWE,CAAXF,EAAcG;AACZC,QAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,aAAOD,CAAPC;AACDF,KAFDD,MAEOD;AACLI,aAAON,CAACQ,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDR;AACHY;;AA1BmBZ;AAAAA;AAAAA;AAAAA;AA0BnBY,CA1BmBZ",
-||||||| 6db569738
-      "mappings": "AAQCA,SAASC,CAATD,CAAWE,CAAXF,EAAcG;AACZC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAOC,CAACC,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AAWFA;;AAEDX,SAASQ,CAATR,CAAWE,CAAXF,EAAcG;AACZC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAON,CAACQ,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AACHC",
-=======
-      "mappings": "AAOCA,SAASC,CAATD,CAAWE,CAAXF,EAAcG;AACZC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAOC,CAACC,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AAWFA;;AAEDX,SAASQ,CAATR,CAAWE,CAAXF,EAAcG;AACZC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAON,CAACQ,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AACHC",
->>>>>>> origin
+      "mappings": "AAKoBA,CAAAA,MAAAA;AAEnBC,WAASC,CAATD,CAAWE,CAAXF,EAAcG;AACZC,QAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,aAAOD,CAAPC;AACDF,KAFDD,MAEOD;AACLI,aAAOC,CAACC,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDR;AAWFA;;AAEDC,WAASQ,CAATR,CAAWE,CAAXF,EAAcG;AACZC,QAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,aAAOD,CAAPC;AACDF,KAFDD,MAEOD;AACLI,aAAON,CAACQ,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDR;AACHY;;AA1BmBZ;AAAAA;AAAAA;AAAAA;AA0BnBY,CA1BmBZ",
       "names": Array [
         "
 ",
@@ -141,24 +135,6 @@ export var storyboard = (
     },
   ],
   "fullHighlightBounds": Object {
-<<<<<<< HEAD
-||||||| 6db569738
-    "066": Object {
-      "endCol": 1,
-      "endLine": 32,
-      "startCol": 0,
-      "startLine": 26,
-      "uid": "066",
-    },
-=======
-    "066": Object {
-      "endCol": 1,
-      "endLine": 31,
-      "startCol": 0,
-      "startLine": 25,
-      "uid": "066",
-    },
->>>>>>> origin
     "0a3": Object {
       "endCol": 28,
       "endLine": 19,
@@ -201,24 +177,6 @@ export var storyboard = (
       "startLine": 20,
       "uid": "377",
     },
-<<<<<<< HEAD
-||||||| 6db569738
-    "44c": Object {
-      "endCol": 3,
-      "endLine": 23,
-      "startCol": 2,
-      "startLine": 17,
-      "uid": "44c",
-    },
-=======
-    "44c": Object {
-      "endCol": 3,
-      "endLine": 22,
-      "startCol": 2,
-      "startLine": 16,
-      "uid": "44c",
-    },
->>>>>>> origin
     "4bd": Object {
       "endCol": 64,
       "endLine": 37,
@@ -242,9 +200,9 @@ export var storyboard = (
     },
     "611": Object {
       "endCol": 1,
-      "endLine": 32,
+      "endLine": 31,
       "startCol": 0,
-      "startLine": 26,
+      "startLine": 25,
       "uid": "611",
     },
     "6e3": Object {
@@ -277,9 +235,9 @@ export var storyboard = (
     },
     "7ce": Object {
       "endCol": 1,
-      "endLine": 14,
+      "endLine": 13,
       "startCol": 0,
-      "startLine": 8,
+      "startLine": 7,
       "uid": "7ce",
     },
     "854": Object {
@@ -296,24 +254,6 @@ export var storyboard = (
       "startLine": 39,
       "uid": "8b3",
     },
-<<<<<<< HEAD
-||||||| 6db569738
-    "98f": Object {
-      "endCol": 1,
-      "endLine": 14,
-      "startCol": 0,
-      "startLine": 8,
-      "uid": "98f",
-    },
-=======
-    "98f": Object {
-      "endCol": 1,
-      "endLine": 13,
-      "startCol": 0,
-      "startLine": 7,
-      "uid": "98f",
-    },
->>>>>>> origin
     "a42": Object {
       "endCol": 44,
       "endLine": 19,
@@ -512,13 +452,7 @@ export var storyboard = (
       "params": Array [],
       "sourceMap": Object {
         "file": "code.tsx",
-<<<<<<< HEAD
-        "mappings": "AAQCA,CAAAA,MAAAA;AAAQC,WAAOC,CAAPD,CAAOC,CAAPD,EAAOC;AACbC,QAAIC,CAACH,IAAII,CAATF,EAAYG;AACVC,aAAOF,CAAPE;AACDN,KAFDE,MAEOG;AACLC,aAAOC,CAACC,CAACL,CAACH,GAAGS,CAALD,CAARF;AACDL;AACHS;;AANAX;AAAAA;AAAAA;AAMAW,CANAX",
-||||||| 6db569738
-        "mappings": "AAQCA,SAASC,CAATD,CAAWE,CAAXF,EAAcG;AACZC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAOC,CAACC,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AACHC",
-=======
-        "mappings": "AAOCA,SAASC,CAATD,CAAWE,CAAXF,EAAcG;AACZC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAOC,CAACC,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AACHC",
->>>>>>> origin
+        "mappings": "AAOCA,CAAAA,MAAAA;AAAQC,WAAOC,CAAPD,CAAOC,CAAPD,EAAOC;AACbC,QAAIC,CAACH,IAAII,CAATF,EAAYG;AACVC,aAAOF,CAAPE;AACDN,KAFDE,MAEOG;AACLC,aAAOC,CAACC,CAACL,CAACH,GAAGS,CAALD,CAARF;AACDL;AACHS;;AANAX;AAAAA;AAAAA;AAMAW,CANAX",
         "names": Array [
           "function",
           " ",
@@ -883,13 +817,7 @@ export var storyboard = (
       "params": Array [],
       "sourceMap": Object {
         "file": "code.tsx",
-<<<<<<< HEAD
-        "mappings": "AA0BCA,CAAAA,MAAAA;AAAQC,WAAOC,CAAPD,CAAOC,CAAPD,EAAOC;AACbC,QAAIC,CAACH,IAAII,CAATF,EAAYG;AACVC,aAAOF,CAAPE;AACDN,KAFDE,MAEOG;AACLC,aAAOC,CAACC,CAACL,CAACH,GAAGS,CAALD,CAARF;AACDL;AACHS;;AANAX;AAAAA;AAAAA;AAMAW,CANAX",
-||||||| 6db569738
-        "mappings": "AA0BCA,SAASC,CAATD,CAAWE,CAAXF,EAAcG;AACZC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAOC,CAACC,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AACHC",
-=======
-        "mappings": "AAyBCA,SAASC,CAATD,CAAWE,CAAXF,EAAcG;AACZC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAOC,CAACC,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AACHC",
->>>>>>> origin
+        "mappings": "AAyBCA,CAAAA,MAAAA;AAAQC,WAAOC,CAAPD,CAAOC,CAAPD,EAAOC;AACbC,QAAIC,CAACH,IAAII,CAATF,EAAYG;AACVC,aAAOF,CAAPE;AACDN,KAFDE,MAEOG;AACLC,aAAOC,CAACC,CAACL,CAACH,GAAGS,CAALD,CAARF;AACDL;AACHS;;AANAX;AAAAA;AAAAA;AAMAW,CANAX",
         "names": Array [
           "function",
           " ",

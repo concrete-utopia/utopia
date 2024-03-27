@@ -1442,7 +1442,7 @@ export function parseJSExpressionMapOrOtherJavascript(
           )
         } else {
           const { map } = fileSourceNode.toStringWithSourceMap({ file: filename })
-          const rawMap = JSON.parse(map.toString())
+          const rawMap = map.toJSON()
 
           const dataUIDFixed = insertDataUIDsIntoCode(
             filename,
@@ -3635,7 +3635,7 @@ export function parseArbitraryNodes(
       }
 
       const { map } = fileSourceNode.toStringWithSourceMap({ file: filename })
-      const rawMap = JSON.parse(map.toString())
+      const rawMap = map.toJSON()
 
       const transpileEither = transpileJavascript(
         sourceFile.fileName,
