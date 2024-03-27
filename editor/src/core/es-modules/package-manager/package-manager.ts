@@ -104,10 +104,8 @@ export function getRequireFn(
       try {
         ;(exp as any)[NameSymbol] = name
         ;(exp as any)[ModuleSymbol] = toImport
-        console.debug('Successfully extended exports with info', name, toImport)
-      } catch (e) {
-        console.debug('Failed to extend exports with info', name, toImport)
-      }
+        // eslint-disable-next-line no-empty
+      } catch (e) {}
     })
     return exports
   }
