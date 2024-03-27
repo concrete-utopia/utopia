@@ -70,6 +70,9 @@ Object {
   "combinedTopLevelArbitraryBlock": Object {
     "definedElsewhere": Array [
       "utopiaCanvasJSXLookup",
+      "utopiaCanvasBlockRanToEnd",
+      "utopiaCanvasEarlyReturnResult",
+      "utopiaCanvasEarlyReturnVoid",
     ],
     "definedWithin": Array [
       "cakeFn",
@@ -85,15 +88,15 @@ function otherFn(n) {
     "params": Array [],
     "sourceMap": Object {
       "file": "code.tsx",
-      "mappings": "AAYCA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AACjBC,SAAOF,CAAPE;AACDC;;AACDL,SAASM,OAATN,CAAiBE,CAAjBF,EAAoBG;AAClBC,SAAOF,CAAPE;AACFG",
+      "mappings": "AAWoBA,CAAAA,MAAAA;AACnBC,WAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AACjBC,WAAOF,CAAPE;AACDL;;AACDC,WAASK,OAATL,CAAiBE,CAAjBF,EAAoBG;AAClBC,WAAOF,CAAPE;AACFE;;AANmBP;AAAAA;AAAAA;AAAAA;AAMnBO,CANmBP",
       "names": Array [
+        "
+",
         "function",
         "cakeFn",
         "n",
         "{",
         "return",
-        "
-",
         "otherFn",
         "}",
       ],
@@ -133,14 +136,20 @@ export var whatever = (props) => {
       ],
       "version": 3,
     },
-    "transpiledJavascript": "function cakeFn(n) {
-  return n;
-}
+    "transpiledJavascript": "return (() => {
+  function cakeFn(n) {
+    return n;
+  }
 
-function otherFn(n) {
-  return n;
-}
-return { cakeFn: cakeFn, otherFn: otherFn };",
+  function otherFn(n) {
+    return n;
+  }
+
+  return utopiaCanvasBlockRanToEnd({
+    cakeFn: cakeFn,
+    otherFn: otherFn
+  });
+})();",
     "type": "ARBITRARY_JS_BLOCK",
     "uid": "",
   },
@@ -151,6 +160,20 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
     },
   ],
   "fullHighlightBounds": Object {
+    "075": Object {
+      "endCol": 1,
+      "endLine": 14,
+      "startCol": 0,
+      "startLine": 12,
+      "uid": "075",
+    },
+    "427": Object {
+      "endCol": 1,
+      "endLine": 17,
+      "startCol": 0,
+      "startLine": 15,
+      "uid": "427",
+    },
     "6e3": Object {
       "endCol": 24,
       "endLine": 20,
@@ -178,27 +201,6 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
       "startCol": 6,
       "startLine": 21,
       "uid": "aab",
-    },
-    "b63": Object {
-      "endCol": 1,
-      "endLine": 17,
-      "startCol": 0,
-      "startLine": 15,
-      "uid": "b63",
-    },
-    "bcc": Object {
-      "endCol": 1,
-      "endLine": 14,
-      "startCol": 0,
-      "startLine": 12,
-      "uid": "bcc",
-    },
-    "f8d": Object {
-      "endCol": 3,
-      "endLine": 26,
-      "startCol": 2,
-      "startLine": 19,
-      "uid": "f8d",
     },
     "feb": Object {
       "endCol": 22,
@@ -350,6 +352,9 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
     Object {
       "definedElsewhere": Array [
         "utopiaCanvasJSXLookup",
+        "utopiaCanvasBlockRanToEnd",
+        "utopiaCanvasEarlyReturnResult",
+        "utopiaCanvasEarlyReturnVoid",
       ],
       "definedWithin": Array [
         "cakeFn",
@@ -361,13 +366,15 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
       "params": Array [],
       "sourceMap": Object {
         "file": "code.tsx",
-        "mappings": "AAYCA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AACjBC,SAAOF,CAAPE;AACFC",
+        "mappings": "AAYCA,CAAAA,MAAAA;AAAQC,WAASC,MAATD,CAAYE,CAAZF,EAAYE;AAClBC,WAAOC,CAAPD;AACFE;;AAFAN;AAAAA;AAAAA;AAEAM,CAFAN",
         "names": Array [
           "function",
-          "cakeFn",
-          "n",
-          "{",
+          " ",
+          ")",
+          "
+",
           "return",
+          "n",
           "}",
         ],
         "sources": Array [
@@ -406,10 +413,15 @@ export var whatever = (props) => {
         ],
         "version": 3,
       },
-      "transpiledJavascript": "function cakeFn(n) {
-  return n;
-}
-return { cakeFn: cakeFn };",
+      "transpiledJavascript": "return (() => {
+  function cakeFn(n) {
+    return n;
+  }
+
+  return utopiaCanvasBlockRanToEnd({
+    cakeFn: cakeFn
+  });
+})();",
       "type": "ARBITRARY_JS_BLOCK",
       "uid": "",
     },
@@ -421,6 +433,9 @@ return { cakeFn: cakeFn };",
     Object {
       "definedElsewhere": Array [
         "utopiaCanvasJSXLookup",
+        "utopiaCanvasBlockRanToEnd",
+        "utopiaCanvasEarlyReturnResult",
+        "utopiaCanvasEarlyReturnVoid",
       ],
       "definedWithin": Array [
         "otherFn",
@@ -432,12 +447,13 @@ return { cakeFn: cakeFn };",
       "params": Array [],
       "sourceMap": Object {
         "file": "code.tsx",
-        "mappings": "AAeCA,SAASC,OAATD,CAAiBE,CAAjBF,EAAoBG;AAClBC,SAAOF,CAAPE;AACFC",
+        "mappings": "AAeCA,CAAAA,MAAAA;AAAQC,WAASC,OAATD,CAAaE,CAAbF,EAAaE;AACnBC,WAAOF,CAAPE;AACFC;;AAFAL;AAAAA;AAAAA;AAEAK,CAFAL",
         "names": Array [
           "function",
-          "otherFn",
+          " ",
           "n",
-          "{",
+          "
+",
           "return",
           "}",
         ],
@@ -477,10 +493,15 @@ export var whatever = (props) => {
         ],
         "version": 3,
       },
-      "transpiledJavascript": "function otherFn(n) {
-  return n;
-}
-return { otherFn: otherFn };",
+      "transpiledJavascript": "return (() => {
+  function otherFn(n) {
+    return n;
+  }
+
+  return utopiaCanvasBlockRanToEnd({
+    otherFn: otherFn
+  });
+})();",
       "type": "ARBITRARY_JS_BLOCK",
       "uid": "",
     },
@@ -1255,6 +1276,9 @@ Object {
   "combinedTopLevelArbitraryBlock": Object {
     "definedElsewhere": Array [
       "utopiaCanvasJSXLookup",
+      "utopiaCanvasBlockRanToEnd",
+      "utopiaCanvasEarlyReturnResult",
+      "utopiaCanvasEarlyReturnVoid",
     ],
     "definedWithin": Array [
       "a",
@@ -1264,8 +1288,10 @@ Object {
     "params": Array [],
     "sourceMap": Object {
       "file": "code.tsx",
-      "mappings": "AAWCA,MAAMC,CAACC,GAAGC,MAAVH",
+      "mappings": "AAUqBA,CAAAA,MAAAA;AACpBC,QAAMC,CAACC,GAAGC,MAAVH;AADoBD;AAAAA;AAAAA;AACLI,CADKJ",
       "names": Array [
+        "
+",
         "const",
         "a",
         " ",
@@ -1294,8 +1320,12 @@ export var App = (props) => <View data-uid='bbb'>
       ],
       "version": 3,
     },
-    "transpiledJavascript": "const a = \\"cake\\";
-return { a: a };",
+    "transpiledJavascript": "return (() => {
+  const a = \\"cake\\";
+  return utopiaCanvasBlockRanToEnd({
+    a: a
+  });
+})();",
     "type": "ARBITRARY_JS_BLOCK",
     "uid": "",
   },
@@ -1313,19 +1343,19 @@ return { a: a };",
       "startLine": 13,
       "uid": "5b5",
     },
+    "7a3": Object {
+      "endCol": 16,
+      "endLine": 11,
+      "startCol": 0,
+      "startLine": 11,
+      "uid": "7a3",
+    },
     "854": Object {
       "endCol": 48,
       "endLine": 12,
       "startCol": 43,
       "startLine": 12,
       "uid": "854",
-    },
-    "86a": Object {
-      "endCol": 16,
-      "endLine": 11,
-      "startCol": 0,
-      "startLine": 11,
-      "uid": "86a",
     },
     "bbb": Object {
       "endCol": 7,
@@ -1445,6 +1475,9 @@ return { a: a };",
     Object {
       "definedElsewhere": Array [
         "utopiaCanvasJSXLookup",
+        "utopiaCanvasBlockRanToEnd",
+        "utopiaCanvasEarlyReturnResult",
+        "utopiaCanvasEarlyReturnVoid",
       ],
       "definedWithin": Array [
         "a",
@@ -1454,11 +1487,12 @@ return { a: a };",
       "params": Array [],
       "sourceMap": Object {
         "file": "code.tsx",
-        "mappings": "AAWCA,MAAMC,CAACC,GAAGC,MAAVH",
+        "mappings": "AAWCA,CAAAA,MAAOC;AAACC,QAAGC,CAAIC,GAAAA,MAAPF;AAADD;AAAAA;AAAAA;AAAQG,CAAfJ",
         "names": Array [
           "const",
-          "a",
           " ",
+          "=",
+          "cake",
           "\\"",
         ],
         "sources": Array [
@@ -1484,8 +1518,12 @@ export var App = (props) => <View data-uid='bbb'>
         ],
         "version": 3,
       },
-      "transpiledJavascript": "const a = \\"cake\\";
-return { a: a };",
+      "transpiledJavascript": "return (() => {
+  const a = \\"cake\\";
+  return utopiaCanvasBlockRanToEnd({
+    a: a
+  });
+})();",
       "type": "ARBITRARY_JS_BLOCK",
       "uid": "",
     },

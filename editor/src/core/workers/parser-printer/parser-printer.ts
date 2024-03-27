@@ -1379,12 +1379,12 @@ export function parseCode(
           false,
           applySteganography,
         )
-        topLevelElements.push(
-          mapEither((parsed) => {
+        forEachRight(nodeParseResult, (parsed) => {
+          if (parsed != null) {
+            topLevelElements.push(right(parsed.value))
             highlightBounds = parsed.highlightBounds
-            return parsed.value
-          }, nodeParseResult),
-        )
+          }
+        })
         allArbitraryNodes = [
           ...allArbitraryNodes,
           {
@@ -1773,7 +1773,9 @@ export function parseCode(
         applySteganography,
       )
       forEachRight(nodeParseResult, (nodeParseSuccess) => {
-        combinedTopLevelArbitraryBlock = nodeParseSuccess.value
+        if (nodeParseSuccess != null) {
+          combinedTopLevelArbitraryBlock = nodeParseSuccess.value
+        }
       })
 
       const componentsRenderedByReactDOM = flatMapArray(

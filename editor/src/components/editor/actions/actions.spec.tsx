@@ -408,6 +408,8 @@ describe('UPDATE_FILE_PATH', () => {
     })
     expect(filesAndTheirImports).toMatchInlineSnapshot(`
       Object {
+        "/package.json": Array [],
+        "/public/index.html": Array [],
         "/src2/app.js": Array [
           "/src2/card.js",
           "react",

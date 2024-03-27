@@ -44,7 +44,12 @@ import {
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../model/scene-utils'
 import { TestAppUID, TestSceneUID } from '../../../components/canvas/ui-jsx.test-utils'
 import { applyPrettier } from 'utopia-vscode-common'
-import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../shared/dom-utils'
+import {
+  BLOCK_RAN_TO_END_FUNCTION_NAME,
+  EARLY_RETURN_RESULT_FUNCTION_NAME,
+  EARLY_RETURN_VOID_FUNCTION_NAME,
+  JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+} from '../../shared/dom-utils'
 import { styleStringInArray } from '../../../utils/common-constants'
 
 describe('JSX parser', () => {
@@ -419,16 +424,25 @@ export var whatever = (props) => {
       ],
     )
     const jsCode = `const arr = [ { n: 1 } ]`
-    const transpiledJsCode = `const arr = [{
-  n: 1
-}];
-return { arr: arr };`
+    const transpiledJsCode = `return (() => {
+  const arr = [{
+    n: 1
+  }];
+  return utopiaCanvasBlockRanToEnd({
+    arr: arr
+  });
+})();`
     const arbitraryBlock = arbitraryJSBlock(
       [],
       jsCode,
       transpiledJsCode,
       ['arr'],
-      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+      [
+        JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+        BLOCK_RAN_TO_END_FUNCTION_NAME,
+        EARLY_RETURN_RESULT_FUNCTION_NAME,
+        EARLY_RETURN_VOID_FUNCTION_NAME,
+      ],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
@@ -515,18 +529,27 @@ export var whatever = (props) => {
       ],
     )
     const jsCode = `const arr = [ { a: { n: 1 } } ]`
-    const transpiledJsCode = `const arr = [{
-  a: {
-    n: 1
-  }
-}];
-return { arr: arr };`
+    const transpiledJsCode = `return (() => {
+  const arr = [{
+    a: {
+      n: 1
+    }
+  }];
+  return utopiaCanvasBlockRanToEnd({
+    arr: arr
+  });
+})();`
     const arbitraryBlock = arbitraryJSBlock(
       [],
       jsCode,
       transpiledJsCode,
       ['arr'],
-      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+      [
+        JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+        BLOCK_RAN_TO_END_FUNCTION_NAME,
+        EARLY_RETURN_RESULT_FUNCTION_NAME,
+        EARLY_RETURN_VOID_FUNCTION_NAME,
+      ],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
@@ -612,14 +635,23 @@ export var whatever = (props) => {
       ],
     )
     const jsCode = `const arr = [ [ 1 ] ]`
-    const transpiledJsCode = `const arr = [[1]];
-return { arr: arr };`
+    const transpiledJsCode = `return (() => {
+  const arr = [[1]];
+  return utopiaCanvasBlockRanToEnd({
+    arr: arr
+  });
+})();`
     const arbitraryBlock = arbitraryJSBlock(
       [],
       jsCode,
       transpiledJsCode,
       ['arr'],
-      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
+      [
+        JSX_CANVAS_LOOKUP_FUNCTION_NAME,
+        BLOCK_RAN_TO_END_FUNCTION_NAME,
+        EARLY_RETURN_RESULT_FUNCTION_NAME,
+        EARLY_RETURN_VOID_FUNCTION_NAME,
+      ],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
@@ -1165,25 +1197,30 @@ export var storyboard = (
             "219",
             "971",
           ],
-          "js": "function getPicker() {
-          class Picker extends React.Component {
-            renderPicker(locale) {
-              return React.createElement(RenderPropsFunctionChild, null, size => {
-                return React.createElement(\\"div\\", {
-                  id: \\"nasty-div\\"
-                }, locale, \\" \\", size);
-              });
+          "js": "return (() => {
+          function getPicker() {
+            class Picker extends React.Component {
+              renderPicker(locale) {
+                return React.createElement(RenderPropsFunctionChild, null, size => {
+                  return React.createElement(\\"div\\", {
+                    id: \\"nasty-div\\"
+                  }, locale, \\" \\", size);
+                });
+              }
+
+              render() {
+                return React.createElement(RenderPropsFunctionChild, null, this.renderPicker);
+              }
+
             }
 
-            render() {
-              return React.createElement(RenderPropsFunctionChild, null, this.renderPicker);
-            }
-
+            return Picker;
           }
 
-          return Picker;
-        }
-        return { getPicker: getPicker };",
+          return utopiaCanvasBlockRanToEnd({
+            getPicker: getPicker
+          });
+        })();",
         }
       `)
 
@@ -1194,34 +1231,40 @@ export var storyboard = (
             "d1b",
             "064",
           ],
-          "js": "class RenderPropsFunctionChild extends React.Component {
-          render() {
-            return this.props.children('huha');
-          }
-
-        }
-
-        function getPicker() {
-          class Picker extends React.Component {
-            renderPicker(locale) {
-              return React.createElement(RenderPropsFunctionChild, null, size => {
-                return React.createElement(\\"div\\", {
-                  id: \\"nasty-div\\"
-                }, locale, \\" \\", size);
-              });
-            }
-
+          "js": "return (() => {
+          class RenderPropsFunctionChild extends React.Component {
             render() {
-              return React.createElement(RenderPropsFunctionChild, null, this.renderPicker);
+              return this.props.children('huha');
             }
 
           }
 
-          return Picker;
-        }
+          function getPicker() {
+            class Picker extends React.Component {
+              renderPicker(locale) {
+                return React.createElement(RenderPropsFunctionChild, null, size => {
+                  return React.createElement(\\"div\\", {
+                    id: \\"nasty-div\\"
+                  }, locale, \\" \\", size);
+                });
+              }
 
-        const Thing = getPicker();
-        return { RenderPropsFunctionChild: RenderPropsFunctionChild, getPicker: getPicker, Thing: Thing };",
+              render() {
+                return React.createElement(RenderPropsFunctionChild, null, this.renderPicker);
+              }
+
+            }
+
+            return Picker;
+          }
+
+          const Thing = getPicker();
+          return utopiaCanvasBlockRanToEnd({
+            RenderPropsFunctionChild: RenderPropsFunctionChild,
+            getPicker: getPicker,
+            Thing: Thing
+          });
+        })();",
         }
       `)
     } else {

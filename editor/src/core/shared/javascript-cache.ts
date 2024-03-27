@@ -3,7 +3,6 @@ import type {
   ArbitraryJSBlock,
   JSXMapExpression,
 } from './element-template'
-import { JSExpression } from './element-template'
 import type { MapLike } from 'typescript'
 import { SafeFunctionCurriedErrorHandler } from './code-exec-utils'
 
