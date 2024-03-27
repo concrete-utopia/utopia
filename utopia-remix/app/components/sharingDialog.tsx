@@ -1,35 +1,35 @@
+import { Dialog, Flex, IconButton, Text, Button, DropdownMenu, Separator } from '@radix-ui/themes'
 import {
   CaretDownIcon,
   Cross2Icon,
   GlobeIcon,
-  Link2Icon,
   LockClosedIcon,
+  Link2Icon,
   PersonIcon,
 } from '@radix-ui/react-icons'
-import { Button, Dialog, DropdownMenu, Flex, IconButton, Separator, Text } from '@radix-ui/themes'
-import { AnimatePresence, motion } from 'framer-motion'
-import moment from 'moment'
-import React from 'react'
-import { useFetcherDataUnkown } from '../hooks/useFetcherData'
-import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
-import { useProjectAccessMatchesSelectedCategory } from '../hooks/useProjectMatchingCategory'
-import { sprinkles } from '../styles/sprinkles.css'
 import {
-  AccessLevel,
-  AccessRequestStatus,
   asAccessLevel,
   operationApproveAccessRequest,
   operationChangeAccess,
-  type ProjectAccessRequestWithUserDetails,
   type ProjectListing,
+  AccessRequestStatus,
+  type ProjectAccessRequestWithUserDetails,
 } from '../types'
-import { useCopyProjectLinkToClipboard } from '../util/copyProjectLink'
-import { isLikeApiError } from '../util/errors'
-import { useProjectEditorLink } from '../util/links'
+import { AccessLevel } from '../types'
+import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
+import React from 'react'
 import { when } from '../util/react-conditionals'
-import { Spinner } from './spinner'
-import { UserAvatar } from './collaboratorAvatar'
+import moment from 'moment'
+import { useProjectEditorLink } from '../util/links'
+import { useCopyProjectLinkToClipboard } from '../util/copyProjectLink'
 import { useProjectsStore } from '../stores/projectsStore'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useFetcherDataUnkown } from '../hooks/useFetcherData'
+import { useProjectAccessMatchesSelectedCategory } from '../hooks/useProjectMatchingCategory'
+import { sprinkles } from '../styles/sprinkles.css'
+import { Spinner } from './spinner'
+import { isLikeApiError } from '../util/errors'
+import { UserAvatar } from './userAvatar'
 
 export const SharingDialogWrapper = React.memo(
   ({ project }: { project: ProjectListing | null }) => {
