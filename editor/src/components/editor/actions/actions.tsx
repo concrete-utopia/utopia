@@ -330,6 +330,7 @@ import type {
   SetForking,
   InsertAttributeOtherJavascriptIntoElement,
   SetCollaborators,
+  ExtractPropertyControlsFromDescriptorFiles,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -563,9 +564,12 @@ import type { ProjectServerState } from '../store/project-server-state'
 import { updateFileIfPossible } from './can-update-file'
 import { getPrintAndReparseCodeResult } from '../../../core/workers/parser-printer/parser-printer-worker'
 import { isSteganographyEnabled } from '../../../core/shared/stegano-text'
+import type { ParsedTextFileWithPath } from '../../../core/property-controls/property-controls-local'
 import {
   updatePropertyControlsOnDescriptorFileDelete,
   isComponentDescriptorFile,
+  createModuleEvaluator,
+  maybeUpdatePropertyControls,
 } from '../../../core/property-controls/property-controls-local'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
@@ -3482,6 +3486,7 @@ export const UPDATE_FNS = {
       const { projectContents, updatedFiles } = replaceFilePathResults
       const mainUIFile = getMainUIFromModel(editor)
       let updateUIFile: (e: EditorModel) => EditorModel = (e) => e
+      let updatePropertyControls: (e: EditorModel) => EditorModel = (e) => e
       Utils.fastForEach(updatedFiles, (updatedFile) => {
         const { oldPath, newPath } = updatedFile
         // If the main UI file is what we have renamed, update that later.
@@ -3503,20 +3508,34 @@ export const UPDATE_FNS = {
             void updateAssetFileName(editor.id, stripLeadingSlash(oldPath), newPath)
           }
         }
+        // when we rename a component descriptor file, we need to remove it from property controls
+        // if the new name is a component descriptor filename too, the controls will be readded
+        // if the new name is not a component descriptor filename, then we really have to remove the property controls
+        if (isComponentDescriptorFile(oldPath) && oldPath !== newPath) {
+          updatePropertyControls = (e: EditorModel) => ({
+            ...e,
+            propertyControlsInfo: updatePropertyControlsOnDescriptorFileDelete(
+              e.propertyControlsInfo,
+              oldPath,
+            ),
+          })
+        }
       })
 
-      return updateUIFile({
-        ...editor,
-        projectContents: projectContents,
-        codeEditorErrors: {
-          buildErrors: {},
-          lintErrors: {},
-        },
-        canvas: {
-          ...editor.canvas,
-          openFile: currentDesignerFile,
-        },
-      })
+      return updatePropertyControls(
+        updateUIFile({
+          ...editor,
+          projectContents: projectContents,
+          codeEditorErrors: {
+            buildErrors: {},
+            lintErrors: {},
+          },
+          canvas: {
+            ...editor.canvas,
+            openFile: currentDesignerFile,
+          },
+        }),
+      )
     }
   },
   SET_FOCUS: (action: SetFocus, editor: EditorModel): EditorModel => {
@@ -5660,6 +5679,31 @@ export const UPDATE_FNS = {
   },
   SET_SHOW_RESOLVED_THREADS: (action: SetCommentFilterMode, editor: EditorModel): EditorModel => {
     return { ...editor, commentFilterMode: action.commentFilterMode }
+  },
+  EXTRACT_PROPERTY_CONTROLS_FROM_DESCRIPTOR_FILES: (
+    action: ExtractPropertyControlsFromDescriptorFiles,
+    state: EditorState,
+    workers: UtopiaTsWorkers,
+    dispatch: EditorDispatch,
+  ): EditorModel => {
+    const evaluator = createModuleEvaluator(state)
+
+    const filesToUpdate: ParsedTextFileWithPath[] = []
+    for (const filePath of action.paths) {
+      const file = getProjectFileByFilePath(state.projectContents, filePath)
+      if (file != null && file.type === 'TEXT_FILE') {
+        filesToUpdate.push({ path: filePath, file: file.fileContents.parsed })
+      }
+    }
+
+    void maybeUpdatePropertyControls(
+      state.propertyControlsInfo,
+      filesToUpdate,
+      workers,
+      dispatch,
+      evaluator,
+    )
+    return state
   },
 }
 

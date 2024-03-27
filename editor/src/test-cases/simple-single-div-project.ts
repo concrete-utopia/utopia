@@ -27,7 +27,7 @@ export const SmallSingleDivProjectContents: ProjectContentTreeRoot = {
       'storyboard.js': {
         content: {
           fileContents: {
-            code: "import * as React from 'react'\nimport Utopia, {\n  Scene,\n  Storyboard,\n  registerModule,\n} from 'utopia-api'\nimport { App } from '/src/app.js'\n\nexport var storyboard = (\n  <Storyboard data-uid='storyboard-entity'>\n    <Scene\n      data-label='Imported App'\n      data-uid='scene-1-entity'\n      style={{\n        position: 'absolute',\n        left: 0,\n        top: 0,\n        width: 375,\n        height: 812,\n      }}\n    >\n      <App data-uid='app-entity' />\n    </Scene>\n  </Storyboard>\n)\n",
+            code: "import * as React from 'react'\nimport Utopia, {\n  Scene,\n  Storyboard,\n} from 'utopia-api'\nimport { App } from '/src/app.js'\n\nexport var storyboard = (\n  <Storyboard data-uid='storyboard-entity'>\n    <Scene\n      data-label='Imported App'\n      data-uid='scene-1-entity'\n      style={{\n        position: 'absolute',\n        left: 0,\n        top: 0,\n        width: 375,\n        height: 812,\n      }}\n    >\n      <App data-uid='app-entity' />\n    </Scene>\n  </Storyboard>\n)\n",
             revisionsState: RevisionsState.CodeAhead,
             parsed: {
               type: 'UNPARSED',

@@ -564,7 +564,6 @@ describe('action DELETE_SELECTED', () => {
   import Utopia, {
     Scene,
     Storyboard,
-    registerModule,
   } from 'utopia-api'
   import { App } from '/src/app.js'
 

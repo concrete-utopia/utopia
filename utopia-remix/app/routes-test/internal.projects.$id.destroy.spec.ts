@@ -46,7 +46,7 @@ describe('handleDestroyProject', () => {
     const fn = async () =>
       handleDestroyProject(newTestRequest({ method: 'POST', authCookie: 'wrong-key' }), {})
     await expect(fn).rejects.toThrow(ApiError)
-    await expect(fn).rejects.toThrow('session not found')
+    await expect(fn).rejects.toThrow('unauthorized')
   })
   it('requires a valid id', async () => {
     const fn = async () =>

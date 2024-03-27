@@ -77,7 +77,11 @@ import { maybeClearPseudoInsertMode } from '../canvas-toolbar-states'
 import { isSteganographyEnabled } from '../../../core/shared/stegano-text'
 import { updateCollaborativeProjectContents } from './collaborative-editing'
 import { ensureSceneIdsExist } from '../../../core/model/scene-id-utils'
-import { maybeUpdatePropertyControls } from '../../../core/property-controls/property-controls-local'
+import type { ModuleEvaluator } from '../../../core/property-controls/property-controls-local'
+import {
+  createModuleEvaluator,
+  isComponentDescriptorFile,
+} from '../../../core/property-controls/property-controls-local'
 import { setReactRouterErrorHasBeenLogged } from '../../../core/shared/runtime-report-logs'
 import type { PropertyControlsInfo } from '../../custom-code/code-file'
 
@@ -311,7 +315,6 @@ export function updateEmbeddedPreview(
 
 function maybeRequestModelUpdate(
   projectContents: ProjectContentTreeRoot,
-  previousPropertyControlsInfo: PropertyControlsInfo,
   workers: UtopiaTsWorkers,
   forceParseFiles: Array<string>,
   dispatch: EditorDispatch,
@@ -338,14 +341,21 @@ function maybeRequestModelUpdate(
         const updates = parseResult.map((fileResult) => {
           return parseResultToWorkerUpdates(fileResult)
         })
-        void maybeUpdatePropertyControls(
-          previousPropertyControlsInfo,
-          parseResult,
-          workers,
-          dispatch,
+
+        const propertyDescriptorFilesToUpdate = parseResult.filter((result) =>
+          isComponentDescriptorFile(result.filename),
         )
 
-        dispatch([EditorActions.mergeWithPrevUndo([EditorActions.updateFromWorker(updates)])])
+        let actionsToDispatch: EditorAction[] = [EditorActions.updateFromWorker(updates)]
+        if (propertyDescriptorFilesToUpdate.length > 0) {
+          actionsToDispatch.push(
+            EditorActions.extractPropertyControlsFromDescriptorFiles(
+              propertyDescriptorFilesToUpdate.map((r) => r.filename),
+            ),
+          )
+        }
+
+        dispatch([EditorActions.mergeWithPrevUndo(actionsToDispatch)])
         return true
       })
       .catch((e) => {
@@ -378,7 +388,6 @@ function maybeRequestModelUpdateOnEditor(
   } else {
     const modelUpdateRequested = maybeRequestModelUpdate(
       editor.projectContents,
-      editor.propertyControlsInfo,
       workers,
       editor.forceParseFiles,
       dispatch,

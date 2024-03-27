@@ -42,18 +42,28 @@ import type { Either } from '../shared/either'
 import {
   applicative3Either,
   applicative4Either,
+  foldEither,
+  forEachRight,
   isLeft,
+  left,
   mapEither,
   right,
   sequenceEither,
 } from '../shared/either'
 import { setOptionalProp } from '../shared/object-utils'
 import { assertNever } from '../shared/utils'
+import type { ParsedTextFile } from '../shared/project-file-types'
 import { isExportDefault, isParseSuccess } from '../shared/project-file-types'
-import { resolveParamsAndRunJsCode } from '../shared/javascript-cache'
+import type { UiJsxCanvasContextData } from '../../components/canvas/ui-jsx-canvas'
+import type { EditorState } from '../../components/editor/store/editor-state'
+import type { MutableUtopiaCtxRefData } from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
+import type { ComponentRendererComponent } from '../../components/canvas/ui-jsx-canvas-renderer/component-renderer-component'
+import type { MapLike } from 'typescript'
+import { attemptToResolveParsedComponents } from '../../components/canvas/ui-jsx-canvas'
+import { NO_OP } from '../shared/utils'
+import { createExecutionScope } from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import type { EditorDispatch } from '../../components/editor/action-types'
 import { updatePropertyControlsInfo } from '../../components/editor/actions/action-creators'
-import { DefaultThirdPartyControlDefinitions } from '../third-party/third-party-controls'
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import { isIntrinsicHTMLElement } from '../shared/element-template'
 
@@ -82,39 +92,104 @@ async function parseInsertOption(
   }, parsedParams)
 }
 
+export type ModuleEvaluator = (moduleName: string) => any
+export function createModuleEvaluator(editor: EditorState): ModuleEvaluator {
+  return (moduleName: string) => {
+    let mutableContextRef: { current: MutableUtopiaCtxRefData } = { current: {} }
+    let topLevelComponentRendererComponents: {
+      current: MapLike<MapLike<ComponentRendererComponent>>
+    } = { current: {} }
+    const emptyMetadataContext: UiJsxCanvasContextData = {
+      current: { spyValues: { allElementProps: {}, metadata: {}, variablesInScope: {} } },
+    }
+
+    let resolvedFiles: MapLike<MapLike<any>> = {}
+    let resolvedFileNames: Array<string> = [moduleName]
+
+    const requireFn = editor.codeResultCache.curriedRequireFn(editor.projectContents)
+    const resolve = editor.codeResultCache.curriedResolveFn(editor.projectContents)
+
+    const customRequire = (importOrigin: string, toImport: string) => {
+      if (resolvedFiles[importOrigin] == null) {
+        resolvedFiles[importOrigin] = []
+      }
+      let resolvedFromThisOrigin = resolvedFiles[importOrigin]
+
+      const alreadyResolved = resolvedFromThisOrigin[toImport] !== undefined
+      const filePathResolveResult = alreadyResolved
+        ? left<string, string>('Already resolved')
+        : resolve(importOrigin, toImport)
+
+      forEachRight(filePathResolveResult, (filepath) => resolvedFileNames.push(filepath))
+
+      const resolvedParseSuccess: Either<string, MapLike<any>> = attemptToResolveParsedComponents(
+        resolvedFromThisOrigin,
+        toImport,
+        editor.projectContents,
+        customRequire,
+        mutableContextRef,
+        topLevelComponentRendererComponents,
+        moduleName,
+        editor.canvas.base64Blobs,
+        editor.hiddenInstances,
+        editor.displayNoneInstances,
+        emptyMetadataContext,
+        NO_OP,
+        false,
+        filePathResolveResult,
+        null,
+      )
+      return foldEither(
+        () => {
+          // We did not find a ParseSuccess, fallback to standard require Fn
+          return requireFn(importOrigin, toImport, false)
+        },
+        (scope) => {
+          // Return an artificial exports object that contains our ComponentRendererComponents
+          return scope
+        },
+        resolvedParseSuccess,
+      )
+    }
+    return createExecutionScope(
+      moduleName,
+      customRequire,
+      mutableContextRef,
+      topLevelComponentRendererComponents,
+      editor.projectContents,
+      moduleName,
+      editor.canvas.base64Blobs,
+      editor.hiddenInstances,
+      editor.displayNoneInstances,
+      emptyMetadataContext,
+      NO_OP,
+      false,
+      null,
+    ).scope
+  }
+}
+
 // TODO: find a better way to detect component descriptor files, e.g. package.json
 export const isComponentDescriptorFile = (filename: string) =>
   filename.startsWith('/utopia/') && filename.endsWith('.utopia.js')
 
 async function getComponentDescriptorPromisesFromParseResult(
-  parseResult: ParseOrPrintResult,
+  descriptorFile: ParsedTextFileWithPath,
   workers: UtopiaTsWorkers,
+  evaluator: ModuleEvaluator,
 ): Promise<ComponentDescriptorWithName[]> {
-  if (!isParseSuccess(parseResult.parseResult)) {
+  if (!isParseSuccess(descriptorFile.file)) {
     return []
   }
-  const exportDefaultIdentifier = parseResult.parseResult.exportsDetail.find(isExportDefault)
+  const exportDefaultIdentifier = descriptorFile.file.exportsDetail.find(isExportDefault)
   if (exportDefaultIdentifier?.name == null) {
     // TODO: error handling
     console.warn('No export default in descriptor file')
     return []
   }
 
-  const combinedTopLevelArbitraryBlock = parseResult.parseResult.combinedTopLevelArbitraryBlock
-
-  if (combinedTopLevelArbitraryBlock == null) {
-    // TODO: error handling
-    return []
-  }
-
   try {
-    // TODO: provide execution scope, so imports can be resolved
-    const evaluatedFile = resolveParamsAndRunJsCode(
-      parseResult.filename,
-      combinedTopLevelArbitraryBlock,
-      {},
-      {},
-    )
+    const evaluatedFile = evaluator(descriptorFile.path)
 
     const descriptors = evaluatedFile[exportDefaultIdentifier.name]
 
@@ -141,7 +216,7 @@ async function getComponentDescriptorPromisesFromParseResult(
           componentName,
           moduleName,
           workers,
-          componentDescriptorFromDescriptorFile(parseResult.filename),
+          componentDescriptorFromDescriptorFile(descriptorFile.path),
         )
 
         if (componentDescriptor.type === 'RIGHT') {
@@ -157,28 +232,31 @@ async function getComponentDescriptorPromisesFromParseResult(
   }
 }
 
+export interface ParsedTextFileWithPath {
+  file: ParsedTextFile
+  path: string
+}
+
 export async function maybeUpdatePropertyControls(
   previousPropertyControlsInfo: PropertyControlsInfo,
-  parseResults: Array<ParseOrPrintResult>,
+  filesToUpdate: ParsedTextFileWithPath[],
   workers: UtopiaTsWorkers,
   dispatch: EditorDispatch,
+  evaluator: ModuleEvaluator,
 ) {
   let componentDescriptorUpdates: ComponentDescriptorFileLookup = {}
-
-  const componentDescriptorParseResults = parseResults.filter((p) =>
-    isComponentDescriptorFile(p.filename),
+  await Promise.all(
+    filesToUpdate.map(async (file) => {
+      const descriptors = await getComponentDescriptorPromisesFromParseResult(
+        file,
+        workers,
+        evaluator,
+      )
+      if (descriptors.length > 0) {
+        componentDescriptorUpdates[file.path] = descriptors
+      }
+    }),
   )
-  if (componentDescriptorParseResults.length === 0) {
-    // there is nothing to update, return early so no empty dispatch is made
-    return
-  }
-
-  for await (const file of componentDescriptorParseResults) {
-    const descriptors = await getComponentDescriptorPromisesFromParseResult(file, workers)
-    if (descriptors.length > 0) {
-      componentDescriptorUpdates[file.filename] = descriptors
-    }
-  }
 
   const updatedPropertyControlsInfo = updatePropertyControlsOnDescriptorFileUpdate(
     previousPropertyControlsInfo,
@@ -196,7 +274,7 @@ export function updatePropertyControlsOnDescriptorFileDelete(
   componentDescriptorFile: string,
 ): PropertyControlsInfo {
   return updatePropertyControlsOnDescriptorFileUpdate(previousPropertyControlsInfo, {
-    componentDescriptorFile: [],
+    [componentDescriptorFile]: [],
   })
 }
 

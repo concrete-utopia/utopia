@@ -2323,6 +2323,10 @@ export function isRenderPropNavigatorEntry(
   return entry.type === 'RENDER_PROP'
 }
 
+export function isSlotNavigatorEntry(entry: NavigatorEntry): entry is SlotNavigatorEntry {
+  return entry.type === 'SLOT'
+}
+
 export interface DerivedState {
   navigatorTargets: Array<NavigatorEntry>
   visibleNavigatorTargets: Array<NavigatorEntry>

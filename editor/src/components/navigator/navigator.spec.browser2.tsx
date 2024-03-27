@@ -904,7 +904,10 @@ export var storyboard = (
           preferredChildComponents: [
             {
               name: 'span',
-              variants: [{ code: '<span>Title</span>' }],
+              variants: [{
+                label: 'Span with Title',
+                code: '<span>Title</span>',
+              }],
             },
           ],
         },
@@ -927,7 +930,6 @@ import {
   Storyboard,
   Scene,
 } from 'utopia-api'
-
 function Card({ header, children }) {
   return (
     <div data-uid='root'>
@@ -936,7 +938,6 @@ function Card({ header, children }) {
     </div>
   )
 }
-
 var Playground = ({ style }) => {
   return (
     <div style={style} data-uid='dbc'>
@@ -946,7 +947,6 @@ var Playground = ({ style }) => {
     </div>
   )
 }
-
 export var storyboard = (
   <Storyboard data-uid='sb'>
     <Scene
@@ -982,11 +982,14 @@ export var storyboard = (
   </Storyboard>
 )
 `,
-    ['/utopia/components.utopia.js']: `const Components = {
+    ['/utopia/components.utopia.js']: `
+    import { ExportedForTheSakeOfExportingIt } from "../src/header"
+    
+    const Components = {
       '/utopia/storyboard': {
         Card: {
           properties: {
-            header: {
+            [ExportedForTheSakeOfExportingIt]: {
               control: 'jsx',
               preferredChildComponents: [
                 {
@@ -994,7 +997,7 @@ export var storyboard = (
                   additionalImports: '/src/heading',
                   variants: [
                     {
-                      label: 'Heading',
+                      label: 'Heading with Title',
                       code: '<Heading>Title</Heading>',
                     },
                   ],
@@ -1009,6 +1012,9 @@ export var storyboard = (
     }
     
     export default Components    
+`,
+    ['/src/header.js']: `
+    export const ExportedForTheSakeOfExportingIt = 'header'
 `,
     ['/src/heading.js']: `import React from 'react'
 
@@ -5026,7 +5032,7 @@ describe('Navigator', () => {
 
       await mouseClickAtPoint(slotElement, { x: 3, y: 3 })
       const renderPropOptionElement = await waitFor(() =>
-        renderResult.renderedDOM.getByText('span'),
+        renderResult.renderedDOM.getByText('Span with Title'),
       )
       await mouseClickAtPoint(renderPropOptionElement, { x: 3, y: 3 })
 
@@ -5069,7 +5075,7 @@ describe('Navigator', () => {
 
       await mouseClickAtPoint(slotElement, { x: 3, y: 3 })
       const renderPropOptionElement = await waitFor(() =>
-        renderResult.renderedDOM.getByText('Heading'),
+        renderResult.renderedDOM.getByText('Heading with Title'),
       )
       await mouseClickAtPoint(renderPropOptionElement, { x: 3, y: 3 })
 
@@ -5622,6 +5628,40 @@ describe('Navigator row order', () => {
       'regular-sb/scene/pg:dbc/78c',
       'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header',
       'slot_sb/scene/pg:dbc/78c/prop-label-header', // <- the slot is shown
+      'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+      'regular-sb/scene/pg:dbc/78c/88b',
+    ])
+  })
+
+  it('is correct for a project where an import is present in the component registration', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      projectWithThirdPartyRenderProp(''),
+      'await-first-dom-report',
+    )
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
+      [
+        'regular-sb/scene',
+        'regular-sb/scene/pg',
+        'regular-sb/scene/pg:dbc',
+        'regular-sb/scene/pg:dbc/78c',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header', // <- the name of this is coming from an import
+        'slot_sb/scene/pg:dbc/78c/prop-label-header',
+        'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
+        'regular-sb/scene/pg:dbc/78c/88b',
+      ],
+    )
+    expect(
+      renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
+    ).toEqual([
+      'regular-sb/scene',
+      'regular-sb/scene/pg',
+      'regular-sb/scene/pg:dbc',
+      'regular-sb/scene/pg:dbc/78c',
+      'render-prop-sb/scene/pg:dbc/78c/prop-label-header-header', // <- the name of this is coming from an import
+      'slot_sb/scene/pg:dbc/78c/prop-label-header',
       'render-prop-sb/scene/pg:dbc/78c/prop-label-children-children',
       'regular-sb/scene/pg:dbc/78c/88b',
     ])

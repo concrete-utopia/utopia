@@ -772,7 +772,7 @@ describe('Set element prop via the data picker', () => {
 describe('Controls from registering components', () => {
   it('registering internal component', async () => {
     const editor = await renderTestEditorWithModel(
-      registerInternalComponentProject,
+      registerComponentProject,
       'await-first-dom-report',
     )
     await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/title')])
@@ -790,7 +790,7 @@ describe('Controls from registering components', () => {
 
   it('registering internal component with html prop shows preview', async () => {
     const editor = await renderTestEditorWithModel(
-      registerInternalComponentProjectWithHtmlProp,
+      registerComponentProjectWithHtmlProp,
       'await-first-dom-report',
     )
     await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/title')])
@@ -801,7 +801,7 @@ describe('Controls from registering components', () => {
 
   it('registering external component', async () => {
     const editor = await renderTestEditorWithModel(
-      registerExternalComponentProject,
+      registerThirdPartyComponentProject,
       'await-first-dom-report',
     )
     await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/title')])
@@ -1011,7 +1011,7 @@ describe('Controls from registering components', () => {
 //     textField: string,
 //   ): Promise<EditorRenderResult> {
 //     const editor = await renderTestEditorWithModel(
-//       registerInternalComponentProjectWithCartouche(propertyExtras, textField),
+//       registerComponentProjectWithCartouche(propertyExtras, textField),
 //       'await-first-dom-report',
 //     )
 //     await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/title')])
@@ -1022,7 +1022,7 @@ describe('Controls from registering components', () => {
 //     const deleteCartoucheButton = editor.renderedDOM.getByTestId(`delete-cartouche-text`)
 //     await mouseClickAtPoint(deleteCartoucheButton, { x: 2, y: 2 })
 //     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-//       registerInternalComponentProjectWithCartoucheStoryboard(``, ``),
+//       registerProjectWithCartoucheStoryboard(``, ``),
 //     )
 //   })
 //   it('required field without default value', async () => {
@@ -1030,7 +1030,7 @@ describe('Controls from registering components', () => {
 //     const deleteCartoucheButton = editor.renderedDOM.queryByTestId(`delete-cartouche-text`)
 //     expect(deleteCartoucheButton).toBeNull()
 //     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-//       registerInternalComponentProjectWithCartoucheStoryboard(
+//       registerComponentProjectWithCartoucheStoryboard(
 //         `required: true`,
 //         `text={textForTitle}`,
 //       ),
@@ -1044,7 +1044,7 @@ describe('Controls from registering components', () => {
 //     const deleteCartoucheButton = editor.renderedDOM.getByTestId(`delete-cartouche-text`)
 //     await mouseClickAtPoint(deleteCartoucheButton, { x: 2, y: 2 })
 //     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-//       registerInternalComponentProjectWithCartoucheStoryboard(
+//       registerComponentProjectWithCartoucheStoryboard(
 //         `required: true, defaultValue: 'Placeholder!'`,
 //         `text='Placeholder!'`,
 //       ),
@@ -1080,7 +1080,7 @@ var Playground = ({ style }) => {
   )
 }`)
 
-function registerInternalComponentProjectWithCartoucheStoryboard(
+function registerComponentProjectWithCartoucheStoryboard(
   propertyExtras: string,
   textField: string,
 ): string {
@@ -1142,9 +1142,9 @@ export var storyboard = (
   ).formatted
 }
 
-function registerInternalComponentProjectWithCartouche(propertyExtras: string, textField: string) {
+function registerComponentProjectWithCartouche(propertyExtras: string, textField: string) {
   return createModifiedProject({
-    [StoryboardFilePath]: registerInternalComponentProjectWithCartoucheStoryboard(
+    [StoryboardFilePath]: registerComponentProjectWithCartoucheStoryboard(
       propertyExtras,
       textField,
     ),
@@ -1171,7 +1171,7 @@ function registerInternalComponentProjectWithCartouche(propertyExtras: string, t
   })
 }
 
-const registerInternalComponentProject = createModifiedProject({
+const registerComponentProject = createModifiedProject({
   [StoryboardFilePath]: `import * as React from 'react'
 import {
   Storyboard,
@@ -1246,7 +1246,7 @@ export default Components
 `,
 })
 
-const registerExternalComponentProject = createModifiedProject({
+const registerThirdPartyComponentProject = createModifiedProject({
   [StoryboardFilePath]: `import * as React from 'react'
 import {
   Storyboard,
@@ -1487,7 +1487,7 @@ function DataPickerProjectShell(contents: string, componentDescriptor?: string) 
   })
 }
 
-const registerInternalComponentProjectWithHtmlProp = createModifiedProject({
+const registerComponentProjectWithHtmlProp = createModifiedProject({
   [StoryboardFilePath]: `import * as React from 'react'
   import {
     Storyboard,
@@ -1568,7 +1568,6 @@ const projectWithImage = (imageUrl: string) =>
 import {
   Storyboard,
   Scene,
-  registerInternalComponent,
 } from 'utopia-api'
 
 function Image({ url }) {
