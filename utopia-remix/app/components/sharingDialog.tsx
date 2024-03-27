@@ -191,7 +191,7 @@ const AccessRequestsList = React.memo(({ projectId, accessLevel }: AccessRequest
               <Flex direction={'column'} gap='4'>
                 <AccessRequests
                   projectId={projectId}
-                  projectAccessLevel={accessLevel}
+                  isPrivateProject={accessLevel === AccessLevel.PRIVATE}
                   approveAccessRequest={approveAccessRequest}
                   accessRequests={accessRequests.requests}
                 />
@@ -236,12 +236,12 @@ OwnerCollaboratorRow.displayName = 'OwnerCollaboratorRow'
 
 function AccessRequests({
   projectId,
-  projectAccessLevel,
+  isPrivateProject,
   approveAccessRequest,
   accessRequests,
 }: {
   projectId: string
-  projectAccessLevel: AccessLevel
+  isPrivateProject: boolean
   approveAccessRequest: (projectId: string, tokenId: string) => void
   accessRequests: ProjectAccessRequestWithUserDetails[]
 }) {
@@ -250,11 +250,6 @@ function AccessRequests({
       approveAccessRequest(projectId, token)
     },
     [projectId, approveAccessRequest],
-  )
-
-  const isPrivate = React.useMemo(
-    () => projectAccessLevel === AccessLevel.PRIVATE,
-    [projectAccessLevel],
   )
 
   return accessRequests
@@ -276,7 +271,7 @@ function AccessRequests({
           key={request.token}
           picture={user.picture}
           name={user.name ?? user.email ?? user.user_id}
-          isDisabled={isPrivate}
+          isDisabled={isPrivateProject}
         >
           {status === AccessRequestStatus.PENDING ? (
             <Button size='1' variant='ghost' onClick={onApprove(request.token)}>
@@ -287,7 +282,7 @@ function AccessRequests({
               size='1'
               color={status === AccessRequestStatus.APPROVED ? 'green' : 'red'}
               style={{
-                fontStyle: isPrivate ? 'italic' : 'normal',
+                fontStyle: isPrivateProject ? 'italic' : 'normal',
                 cursor: 'default',
               }}
             >
