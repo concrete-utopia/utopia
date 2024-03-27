@@ -1,6 +1,6 @@
 import { LiveObject, createClient } from '@liveblocks/client'
 import { createRoomContext } from '@liveblocks/react'
-import { UTOPIA_BACKEND, getProjectID, isBackendBFF } from './src/common/env-vars'
+import { UTOPIA_BACKEND, getProjectID } from './src/common/env-vars'
 import type { ActiveFrameAction } from './src/components/canvas/commands/set-active-frames-command'
 import {
   type CanvasRectangle,
@@ -26,7 +26,7 @@ async function authCall(room?: string) {
 
 export const liveblocksClient = createClient({
   throttle: liveblocksThrottle,
-  authEndpoint: isBackendBFF() ? authCall : '/v1/liveblocks/authentication',
+  authEndpoint: authCall,
   unstable_fallbackToHTTP: true,
   resolveUsers: async ({ userIds }) => {
     // Used only for Comments. Return a list of user information retrieved

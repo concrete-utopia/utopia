@@ -193,7 +193,6 @@ const config = {
     new webpack.EnvironmentPlugin({
       GOOGLE_WEB_FONTS_KEY: '', // providing an empty default for GOOGLE_WEB_FONTS_KEY for now
       REACT_APP_BROWSER_TEST_DEBUG: 'false',
-      USE_BFF: 'false',
     }),
 
     new webpack.ProvidePlugin({ BrowserFS: 'browserfs' }), // weirdly, the browserfs/dist/shims/fs shim assumes a global BrowserFS being available

@@ -29,26 +29,7 @@ export const IS_BROWSER_TEST_DEBUG: boolean =
 export const DEVELOPMENT_ENV: boolean =
   !PRODUCTION_OR_STAGING_CONFIG && !IS_TEST_ENVIRONMENT && HOSTNAME === 'localhost'
 
-const USE_BFF: boolean = process.env.USE_BFF === 'true'
-
-type BackendType =
-  | 'bff' // proxied calls via the Remix BFF
-  | 'direct' // direct calls to the backend
-
-const LOCAL_BACKEND_PORTS: { [type in BackendType]: number } = {
-  direct: 8002,
-  bff: 8000,
-}
-
-export const BACKEND_TYPE: BackendType = DEVELOPMENT_ENV || USE_BFF ? 'bff' : 'direct'
-
-export function isBackendBFF(): boolean {
-  return BACKEND_TYPE === 'bff'
-}
-
-export const UTOPIA_BACKEND_BASE_URL = isLocalHost
-  ? `${SCHEME}//${HOSTNAME}:${LOCAL_BACKEND_PORTS[BACKEND_TYPE]}/`
-  : BASE_URL
+export const UTOPIA_BACKEND_BASE_URL = isLocalHost ? `${SCHEME}//${HOSTNAME}:8000/` : BASE_URL
 
 export const UTOPIA_BACKEND = UTOPIA_BACKEND_BASE_URL + 'v1/'
 
