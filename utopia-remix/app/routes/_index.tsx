@@ -11,10 +11,10 @@ import {
 } from '../components/next'
 
 import stylesheet from '~/styles/next-tailwind.css'
-import urlJoin from 'url-join'
 import type { rootLoader } from '../root'
 import React from 'react'
 import { getUser } from '../util/api.server'
+import { cdnLink } from '../util/cdnLink'
 
 export const links: LinksFunction = () => [
   // css
@@ -58,7 +58,7 @@ export const meta: MetaFunction<typeof rootLoader> = ({ data }) => {
     { name: 'msapplication-TileColor', content: '#da532c' },
     { name: 'theme-color', content: '#ffffff' },
     { property: 'og:title', content: 'Utopia: Design and Code on one platform' },
-    { property: 'og:image', content: urlJoin(data?.env?.UTOPIA_CDN_URL ?? '', '/og-card.png') },
+    { property: 'og:image', content: cdnLink(data?.env?.UTOPIA_CDN_URL ?? null, '/og-card.png') },
     { property: 'og:type', content: 'website' },
     {
       property: 'og:description',

@@ -222,8 +222,8 @@ const OwnerCollaboratorRow = React.memo(() => {
 
   return (
     <CollaboratorRow
-      picture={myUser?.picture ?? null}
-      name={`${myUser?.name ?? myUser?.email ?? myUser?.id} (you)`}
+      picture={myUser.picture ?? null}
+      name={`${myUser.name ?? myUser.email ?? myUser.id} (you)`}
       starBadge={true}
     >
       <Text size='1' style={{ cursor: 'default' }}>
