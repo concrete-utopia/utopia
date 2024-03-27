@@ -752,7 +752,7 @@ describe('Lifecycle management of registering components', () => {
           `)
     })
     it('Removing a component from a component descriptor file removes its property controls', async () => {
-      const descriptorFileContent1 = `import { Card } from '../src/card'
+      const descriptorFileContent1 = `import { Card, CardToDelete } from '../src/card'
       
       const Components = {
       '/src/card': {
