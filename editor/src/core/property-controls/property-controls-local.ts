@@ -31,6 +31,7 @@ import type { ParseResult } from '../../utils/value-parser-utils'
 import {
   objectKeyParser,
   optionalObjectKeyParser,
+  parseAny,
   parseArray,
   parseBoolean,
   parseObject,
@@ -42,6 +43,7 @@ import type { Either } from '../shared/either'
 import {
   applicative3Either,
   applicative4Either,
+  applicative5Either,
   foldEither,
   forEachRight,
   isLeft,
@@ -57,7 +59,10 @@ import { isExportDefault, isParseSuccess } from '../shared/project-file-types'
 import type { UiJsxCanvasContextData } from '../../components/canvas/ui-jsx-canvas'
 import type { EditorState } from '../../components/editor/store/editor-state'
 import type { MutableUtopiaCtxRefData } from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
-import type { ComponentRendererComponent } from '../../components/canvas/ui-jsx-canvas-renderer/component-renderer-component'
+import {
+  isComponentRendererComponent,
+  type ComponentRendererComponent,
+} from '../../components/canvas/ui-jsx-canvas-renderer/component-renderer-component'
 import type { MapLike } from 'typescript'
 import { attemptToResolveParsedComponents } from '../../components/canvas/ui-jsx-canvas'
 import { NO_OP } from '../shared/utils'
@@ -173,6 +178,21 @@ export function createModuleEvaluator(editor: EditorState): ModuleEvaluator {
 export const isComponentDescriptorFile = (filename: string) =>
   filename.startsWith('/utopia/') && filename.endsWith('.utopia.js')
 
+function isComponentRegistrationValid(
+  registrationKey: string,
+  registration: ComponentToRegister,
+): boolean {
+  if (typeof registration.component === 'undefined') {
+    return false
+  }
+
+  if (isComponentRendererComponent(registration.component)) {
+    return registration.component.originalName === registrationKey
+  }
+
+  return true
+}
+
 async function getComponentDescriptorPromisesFromParseResult(
   descriptorFile: ParsedTextFileWithPath,
   workers: UtopiaTsWorkers,
@@ -211,23 +231,26 @@ async function getComponentDescriptorPromisesFromParseResult(
       for await (const [componentName, componentToRegister] of Object.entries(
         parsedComponents.value,
       )) {
-        const componentDescriptor = await componentDescriptorForComponentToRegister(
-          componentToRegister,
-          componentName,
-          moduleName,
-          workers,
-          componentDescriptorFromDescriptorFile(descriptorFile.path),
-        )
+        // TODO: error handing
+        if (isComponentRegistrationValid(componentName, componentToRegister)) {
+          const componentDescriptor = await componentDescriptorForComponentToRegister(
+            componentToRegister,
+            componentName,
+            moduleName,
+            workers,
+            componentDescriptorFromDescriptorFile(descriptorFile.path),
+          )
 
-        if (componentDescriptor.type === 'RIGHT') {
-          result = result.concat(componentDescriptor.value)
+          if (componentDescriptor.type === 'RIGHT') {
+            result = result.concat(componentDescriptor.value)
+          }
         }
       }
     }
     return result
-  } catch {
+  } catch (e) {
     // TODO: error handling
-    console.warn('Error evaluating component descriptor file')
+    console.warn('Error evaluating component descriptor file', e)
     return []
   }
 }
@@ -589,15 +612,17 @@ export function parsePreferredChild(value: unknown): ParseResult<PreferredChildC
 }
 
 function parseComponentToRegister(value: unknown): ParseResult<ComponentToRegister> {
-  return applicative4Either(
-    (properties, supportsChildren, variants, preferredChildComponents) => {
+  return applicative5Either(
+    (component, properties, supportsChildren, variants, preferredChildComponents) => {
       return {
+        component: component,
         properties: properties,
         supportsChildren: supportsChildren,
         variants: variants,
         preferredChildComponents: preferredChildComponents,
       }
     },
+    objectKeyParser(parseAny, 'component')(value),
     objectKeyParser(fullyParsePropertyControls, 'properties')(value),
     objectKeyParser(parseBoolean, 'supportsChildren')(value),
     objectKeyParser(parseArray(parseComponentInsertOption), 'variants')(value),

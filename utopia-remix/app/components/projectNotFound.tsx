@@ -1,13 +1,13 @@
-import React from 'react'
-import { when } from '../util/react-conditionals'
 import { Button } from '@radix-ui/themes'
 import { useFetcher } from '@remix-run/react'
-import { useProjectsStore } from '../store'
-import { colors } from '../styles/sprinkles.css'
-import * as styles from './projectNotFound.css'
 import cx from 'classnames'
 import type { UserDetails } from 'prisma-client'
+import React from 'react'
+import { useAppStore } from '../stores/appStore'
+import { colors } from '../styles/sprinkles.css'
+import { when } from '../util/react-conditionals'
 import { Status } from '../util/statusCodes'
+import * as styles from './projectNotFound.css'
 
 export default function ProjectNotFound({
   projectId,
@@ -43,7 +43,7 @@ export default function ProjectNotFound({
 }
 
 function UnauthorizedPage({ projectId, user }: { projectId: string; user: UserDetails }) {
-  const env = useProjectsStore((store) => store.env)
+  const env = useAppStore((store) => store.env)
   const hmmPyramidLight = `${env?.UTOPIA_CDN_URL}/editor/hmmm_pyramid_light.png`
   const [accessRequested, setAccessRequested] = React.useState(false)
 
@@ -98,7 +98,7 @@ function UnauthorizedPage({ projectId, user }: { projectId: string; user: UserDe
 }
 
 function NotFoundPage({ user, projectId }: { user: UserDetails | null; projectId: string | null }) {
-  const env = useProjectsStore((store) => store.env)
+  const env = useAppStore((store) => store.env)
   const PyramidLight404 = `${env?.UTOPIA_CDN_URL}/editor/404_pyramid_light.png`
   return (
     <>
