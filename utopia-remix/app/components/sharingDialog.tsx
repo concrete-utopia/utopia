@@ -139,73 +139,76 @@ function SharingDialog({ project }: { project: ProjectListing | null }) {
   )
 }
 
-const AccessRequestsList = React.memo(
-  ({ projectId, accessLevel }: { projectId: string; accessLevel: AccessLevel }) => {
-    const myUser = useProjectsStore((store) => store.myUser)
-    const accessRequests = useProjectsStore((store) => store.sharingProjectAccessRequests)
+type AccessRequestListProps = {
+  projectId: string
+  accessLevel: AccessLevel
+}
 
-    const approveAccessRequestFetcher = useFetcherWithOperation(projectId, 'approveAccessRequest')
+const AccessRequestsList = React.memo(({ projectId, accessLevel }: AccessRequestListProps) => {
+  const myUser = useProjectsStore((store) => store.myUser)
+  const accessRequests = useProjectsStore((store) => store.sharingProjectAccessRequests)
 
-    const approveAccessRequest = React.useCallback(
-      (tokenId: string) => {
-        approveAccessRequestFetcher.submit(
-          operationApproveAccessRequest(projectId, tokenId),
-          { tokenId: tokenId },
-          {
-            method: 'POST',
-            action: `/internal/projects/${projectId}/access/request/${tokenId}/approve`,
-          },
-        )
-      },
-      [approveAccessRequestFetcher, projectId],
-    )
+  const approveAccessRequestFetcher = useFetcherWithOperation(projectId, 'approveAccessRequest')
 
-    const hasGonePrivate = React.useMemo(() => {
-      return accessRequests.requests.length > 0 && accessLevel === AccessLevel.PRIVATE
-    }, [accessLevel, accessRequests])
+  const approveAccessRequest = React.useCallback(
+    (tokenId: string) => {
+      approveAccessRequestFetcher.submit(
+        operationApproveAccessRequest(projectId, tokenId),
+        { tokenId: tokenId },
+        {
+          method: 'POST',
+          action: `/internal/projects/${projectId}/access/request/${tokenId}/approve`,
+        },
+      )
+    },
+    [approveAccessRequestFetcher, projectId],
+  )
 
-    return (
-      <AnimatePresence>
-        {when(
-          accessRequests.state === 'ready' && accessRequests.requests.length > 0,
-          <motion.div
-            animate={{ height: 'auto', opacity: 1 }}
-            initial={{ height: 0, opacity: 0 }}
-            exit={{ height: 0, opacity: 0 }}
-          >
-            <Flex direction={'column'} gap='4'>
-              <Separator size='4' />
-              {when(
-                hasGonePrivate,
-                <Text size='1' style={{ opacity: 0.5 }}>
-                  This project was changed to private, previous collaborators can no longer view it.
-                </Text>,
-              )}
-              {myUser != null ? (
-                <CollaboratorRow
-                  disabled={false}
-                  picture={myUser.picture}
-                  name={`${myUser.name ?? myUser.email ?? myUser.id} (you)`}
-                  starBadge={true}
-                >
-                  <Text size='1' style={{ cursor: 'default' }}>
-                    Owner
-                  </Text>
-                </CollaboratorRow>
-              ) : null}
-              <AccessRequests
-                projectId={projectId}
-                projectAccessLevel={accessLevel}
-                approveAccessRequest={approveAccessRequest}
-                accessRequests={accessRequests.requests}
-              />
-            </Flex>
-          </motion.div>,
-        )}
-      </AnimatePresence>
-    )
-  },
-)
+  const hasGonePrivate = React.useMemo(() => {
+    return accessRequests.requests.length > 0 && accessLevel === AccessLevel.PRIVATE
+  }, [accessLevel, accessRequests])
+
+  return (
+    <AnimatePresence>
+      {when(
+        accessRequests.state === 'ready' && accessRequests.requests.length > 0,
+        <motion.div
+          animate={{ height: 'auto', opacity: 1 }}
+          initial={{ height: 0, opacity: 0 }}
+          exit={{ height: 0, opacity: 0 }}
+        >
+          <Flex direction={'column'} gap='4'>
+            <Separator size='4' />
+            {when(
+              hasGonePrivate,
+              <Text size='1' style={{ opacity: 0.5 }}>
+                This project was changed to private, previous collaborators can no longer view it.
+              </Text>,
+            )}
+            {myUser != null ? (
+              <CollaboratorRow
+                disabled={false}
+                picture={myUser.picture}
+                name={`${myUser.name ?? myUser.email ?? myUser.id} (you)`}
+                starBadge={true}
+              >
+                <Text size='1' style={{ cursor: 'default' }}>
+                  Owner
+                </Text>
+              </CollaboratorRow>
+            ) : null}
+            <AccessRequests
+              projectId={projectId}
+              projectAccessLevel={accessLevel}
+              approveAccessRequest={approveAccessRequest}
+              accessRequests={accessRequests.requests}
+            />
+          </Flex>
+        </motion.div>,
+      )}
+    </AnimatePresence>
+  )
+})
 AccessRequestsList.displayName = 'AccessRequestsList'
 
 function AccessRequests({
