@@ -1,6 +1,7 @@
-import type {
-  ComponentDescriptor,
-  ComponentDescriptorsForFile,
+import {
+  defaultComponentDescriptor,
+  type ComponentDescriptor,
+  type ComponentDescriptorsForFile,
 } from '../../components/custom-code/code-file'
 import {
   defaultFlexRowOrColStyle,
@@ -48,6 +49,7 @@ const BasicUtopiaComponentDescriptor = (
           jsxElementWithoutUID(name, [jsxAttributesEntry('style', styleProp(), emptyComments)], []),
       },
     ],
+    source: defaultComponentDescriptor(),
   }
 }
 
@@ -94,6 +96,7 @@ const BasicUtopiaSceneDescriptor = (
           ),
       },
     ],
+    source: defaultComponentDescriptor(),
   }
 }
 

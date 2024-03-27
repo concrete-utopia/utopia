@@ -19,3 +19,7 @@ export function useFetcherData<T>(
     }
   }, [fetcher.state, fetcher.data, dataValidator, callback])
 }
+
+export function useFetcherDataUnkown(fetcher: FetcherLike, callback: (data: unknown) => void) {
+  return useFetcherData(fetcher, (u: unknown): u is unknown => true, callback)
+}

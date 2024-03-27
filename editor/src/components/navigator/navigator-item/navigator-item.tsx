@@ -40,6 +40,7 @@ import {
   isInvalidOverrideNavigatorEntry,
   isRegularNavigatorEntry,
   isRenderPropNavigatorEntry,
+  isSlotNavigatorEntry,
   isSyntheticNavigatorEntry,
   navigatorEntryToKey,
   varSafeNavigatorEntryToKey,
@@ -55,7 +56,7 @@ import { ExpandableIndicator } from './expandable-indicator'
 import { ItemLabel } from './item-label'
 import { LayoutIcon } from './layout-icon'
 import { NavigatorItemActionSheet } from './navigator-item-components'
-import { CanvasContextMenuPortalTargetID, assertNever } from '../../../core/shared/utils'
+import { CanvasContextMenuPortalTargetID, NO_OP, assertNever } from '../../../core/shared/utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { MapCounter } from './map-counter'
 import ReactDOM from 'react-dom'
@@ -143,7 +144,8 @@ function selectItem(
   const selectionActions =
     isConditionalClauseNavigatorEntry(navigatorEntry) ||
     isInvalidOverrideNavigatorEntry(navigatorEntry) ||
-    isRenderPropNavigatorEntry(navigatorEntry)
+    isRenderPropNavigatorEntry(navigatorEntry) ||
+    isSlotNavigatorEntry(navigatorEntry)
       ? []
       : getSelectionActions(getSelectedViewsInRange, index, elementPath, selected, event)
 
@@ -777,7 +779,7 @@ export const NavigatorItem: React.FunctionComponent<
 
   return (
     <div
-      onClick={navigatorEntry.type === 'SLOT' ? showContextMenu : hideContextMenu}
+      onClick={hideContextMenu}
       style={{
         outline: `1px solid ${
           props.parentOutline === 'solid' && isOutletOrDescendantOfOutlet
@@ -810,6 +812,7 @@ export const NavigatorItem: React.FunctionComponent<
         {isPlaceholder ? (
           <div
             key={`label-${props.label}-slot`}
+            onClick={navigatorEntry.type === 'SLOT' ? showContextMenu : NO_OP}
             style={{
               width: 140,
               height: 19,
@@ -827,7 +830,11 @@ export const NavigatorItem: React.FunctionComponent<
                   : colorTheme.unavailableGrey10.value
               }`,
               marginLeft: 28,
+              cursor: navigatorEntry.type === 'SLOT' ? 'pointer' : 'inherit',
             }}
+            data-testid={`toggle-render-prop-${NavigatorItemTestId(
+              varSafeNavigatorEntryToKey(navigatorEntry),
+            )}`}
           >
             Empty
           </div>

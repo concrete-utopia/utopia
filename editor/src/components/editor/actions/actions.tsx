@@ -330,6 +330,7 @@ import type {
   SetForking,
   InsertAttributeOtherJavascriptIntoElement,
   SetCollaborators,
+  ExtractPropertyControlsFromDescriptorFiles,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -350,6 +351,7 @@ import {
   saveAsset as saveAssetToServer,
   saveUserConfiguration,
   updateAssetFileName,
+  updateGithubRepository,
 } from '../server'
 import type {
   CanvasBase64Blobs,
@@ -366,6 +368,7 @@ import type {
   TrueUpTarget,
   TrueUpHuggingElement,
   CollaborativeEditingSupport,
+  ProjectGithubSettings,
 } from '../store/editor-state'
 import {
   trueUpChildrenOfGroupChanged,
@@ -561,9 +564,12 @@ import type { ProjectServerState } from '../store/project-server-state'
 import { updateFileIfPossible } from './can-update-file'
 import { getPrintAndReparseCodeResult } from '../../../core/workers/parser-printer/parser-printer-worker'
 import { isSteganographyEnabled } from '../../../core/shared/stegano-text'
+import type { ParsedTextFileWithPath } from '../../../core/property-controls/property-controls-local'
 import {
   updatePropertyControlsOnDescriptorFileDelete,
   isComponentDescriptorFile,
+  createModuleEvaluator,
+  maybeUpdatePropertyControls,
 } from '../../../core/property-controls/property-controls-local'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
@@ -1689,10 +1695,13 @@ export const UPDATE_FNS = {
   },
   SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {
     let setPropFailedMessage: string | null = null
-    let updatedEditor = modifyUnderlyingElementForOpenFile(
+    let updatedEditor = modifyUnderlyingTargetElement(
       action.target,
       editor,
       (element) => {
+        if (!isJSXElement(element)) {
+          return element
+        }
         const updatedProps = setJSXValueAtPath(element.props, action.propertyPath, action.value)
         if (
           isRight(updatedProps) &&
@@ -1741,7 +1750,14 @@ export const UPDATE_FNS = {
           updatedProps,
         )
       },
-      (success) => success,
+      (success, _, underlyingFilePath) => {
+        const updatedImports = mergeImports(
+          underlyingFilePath,
+          success.imports,
+          action.importsToAdd,
+        ).imports
+        return { ...success, imports: updatedImports }
+      },
     )
 
     updatedEditor = addToTrueUpElements(updatedEditor, trueUpGroupElementChanged(action.target))
@@ -3470,6 +3486,7 @@ export const UPDATE_FNS = {
       const { projectContents, updatedFiles } = replaceFilePathResults
       const mainUIFile = getMainUIFromModel(editor)
       let updateUIFile: (e: EditorModel) => EditorModel = (e) => e
+      let updatePropertyControls: (e: EditorModel) => EditorModel = (e) => e
       Utils.fastForEach(updatedFiles, (updatedFile) => {
         const { oldPath, newPath } = updatedFile
         // If the main UI file is what we have renamed, update that later.
@@ -3491,20 +3508,34 @@ export const UPDATE_FNS = {
             void updateAssetFileName(editor.id, stripLeadingSlash(oldPath), newPath)
           }
         }
+        // when we rename a component descriptor file, we need to remove it from property controls
+        // if the new name is a component descriptor filename too, the controls will be readded
+        // if the new name is not a component descriptor filename, then we really have to remove the property controls
+        if (isComponentDescriptorFile(oldPath) && oldPath !== newPath) {
+          updatePropertyControls = (e: EditorModel) => ({
+            ...e,
+            propertyControlsInfo: updatePropertyControlsOnDescriptorFileDelete(
+              e.propertyControlsInfo,
+              oldPath,
+            ),
+          })
+        }
       })
 
-      return updateUIFile({
-        ...editor,
-        projectContents: projectContents,
-        codeEditorErrors: {
-          buildErrors: {},
-          lintErrors: {},
-        },
-        canvas: {
-          ...editor.canvas,
-          openFile: currentDesignerFile,
-        },
-      })
+      return updatePropertyControls(
+        updateUIFile({
+          ...editor,
+          projectContents: projectContents,
+          codeEditorErrors: {
+            buildErrors: {},
+            lintErrors: {},
+          },
+          canvas: {
+            ...editor.canvas,
+            openFile: currentDesignerFile,
+          },
+        }),
+      )
     }
   },
   SET_FOCUS: (action: SetFocus, editor: EditorModel): EditorModel => {
@@ -3612,12 +3643,25 @@ export const UPDATE_FNS = {
     }
   },
   UPDATE_GITHUB_SETTINGS: (action: UpdateGithubSettings, editor: EditorModel): EditorModel => {
+    const newGithubSettings: ProjectGithubSettings = {
+      ...editor.githubSettings,
+      ...action.settings,
+    }
+    if (editor.id != null) {
+      void updateGithubRepository(
+        editor.id,
+        newGithubSettings.targetRepository == null
+          ? null
+          : {
+              owner: newGithubSettings.targetRepository.owner,
+              repository: newGithubSettings.targetRepository.repository,
+              branch: newGithubSettings.branchName,
+            },
+      )
+    }
     return normalizeGithubData({
       ...editor,
-      githubSettings: {
-        ...editor.githubSettings,
-        ...action.settings,
-      },
+      githubSettings: newGithubSettings,
     })
   },
   UPDATE_GITHUB_DATA: (action: UpdateGithubData, editor: EditorModel): EditorModel => {
@@ -3853,7 +3897,10 @@ export const UPDATE_FNS = {
         if (isComponentDescriptorFile(action.filename)) {
           return {
             ...nextEditor,
-            propertyControlsInfo: updatePropertyControlsOnDescriptorFileDelete(action.filename),
+            propertyControlsInfo: updatePropertyControlsOnDescriptorFileDelete(
+              editor.propertyControlsInfo,
+              action.filename,
+            ),
           }
         }
 
@@ -5632,6 +5679,31 @@ export const UPDATE_FNS = {
   },
   SET_SHOW_RESOLVED_THREADS: (action: SetCommentFilterMode, editor: EditorModel): EditorModel => {
     return { ...editor, commentFilterMode: action.commentFilterMode }
+  },
+  EXTRACT_PROPERTY_CONTROLS_FROM_DESCRIPTOR_FILES: (
+    action: ExtractPropertyControlsFromDescriptorFiles,
+    state: EditorState,
+    workers: UtopiaTsWorkers,
+    dispatch: EditorDispatch,
+  ): EditorModel => {
+    const evaluator = createModuleEvaluator(state)
+
+    const filesToUpdate: ParsedTextFileWithPath[] = []
+    for (const filePath of action.paths) {
+      const file = getProjectFileByFilePath(state.projectContents, filePath)
+      if (file != null && file.type === 'TEXT_FILE') {
+        filesToUpdate.push({ path: filePath, file: file.fileContents.parsed })
+      }
+    }
+
+    void maybeUpdatePropertyControls(
+      state.propertyControlsInfo,
+      filesToUpdate,
+      workers,
+      dispatch,
+      evaluator,
+    )
+    return state
   },
 }
 

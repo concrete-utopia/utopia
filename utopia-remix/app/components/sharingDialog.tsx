@@ -21,23 +21,23 @@ import React from 'react'
 import { when } from '../util/react-conditionals'
 import moment from 'moment'
 import { useProjectEditorLink } from '../util/links'
-import { button } from '../styles/button.css'
 import { useCopyProjectLinkToClipboard } from '../util/copyProjectLink'
 import { useProjectsStore } from '../store'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useFetcherDataUnkown } from '../hooks/useFetcherData'
+import { useProjectAccessMatchesSelectedCategory } from '../hooks/useProjectMatchingCategory'
+import { sprinkles } from '../styles/sprinkles.css'
+import { Spinner } from './spinner'
+import { isLikeApiError } from '../util/errors'
 
 export const SharingDialogWrapper = React.memo(
-  ({
-    project,
-    accessRequests,
-  }: {
-    project: ProjectListing
-    accessRequests: ProjectAccessRequestWithUserDetails[]
-  }) => {
+  ({ project }: { project: ProjectListing | null }) => {
     const sharingProjectId = useProjectsStore((store) => store.sharingProjectId)
     const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
 
     const onOpenChange = React.useCallback(
       (open: boolean) => {
+        // Note: this _only_ reacts to Radix internal changes, so concretely meaning only for open===false calls.
         if (!open) {
           setSharingProjectId(null)
         }
@@ -46,9 +46,9 @@ export const SharingDialogWrapper = React.memo(
     )
 
     return (
-      <Dialog.Root open={sharingProjectId === project.proj_id} onOpenChange={onOpenChange}>
+      <Dialog.Root open={sharingProjectId === project?.proj_id} onOpenChange={onOpenChange}>
         <Dialog.Content>
-          <SharingDialog project={project} accessRequests={accessRequests} />
+          <SharingDialog project={project} />
         </Dialog.Content>
       </Dialog.Root>
     )
@@ -56,41 +56,101 @@ export const SharingDialogWrapper = React.memo(
 )
 SharingDialogWrapper.displayName = 'SharingDialogWrapper'
 
-function SharingDialog({
-  project,
-  accessRequests,
-}: {
-  project: ProjectListing
-  accessRequests: ProjectAccessRequestWithUserDetails[]
-}) {
-  const accessLevel = asAccessLevel(project.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
+function SharingDialog({ project }: { project: ProjectListing | null }) {
+  const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
+  const accessRequests = useProjectsStore((store) => store.sharingProjectAccessRequests)
 
-  const changeAccessFetcher = useFetcherWithOperation(project.proj_id, 'changeAccess')
-  const approveAccessRequestFetcher = useFetcherWithOperation(
-    project.proj_id,
-    'approveAccessRequest',
+  const projectAccessLevel = React.useMemo(() => {
+    return asAccessLevel(project?.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
+  }, [project])
+
+  const [accessLevel, setAccessLevel] = React.useState<AccessLevel>(projectAccessLevel)
+
+  const projectAccessMatchesSelectedCategory = useProjectAccessMatchesSelectedCategory(project)
+
+  const changeAccessFetcherCallback = React.useCallback(
+    (data: unknown) => {
+      if (isLikeApiError(data)) {
+        setAccessLevel(projectAccessLevel)
+      }
+      if (!projectAccessMatchesSelectedCategory) {
+        setSharingProjectId(null)
+      }
+    },
+    [setSharingProjectId, projectAccessMatchesSelectedCategory, projectAccessLevel],
   )
 
-  const changeAccessLevel = React.useCallback(
-    (projectId: string, newAccessLevel: AccessLevel) => {
+  const changeAccessFetcher = useFetcherWithOperation(project?.proj_id ?? null, 'changeAccess')
+  useFetcherDataUnkown(changeAccessFetcher, changeAccessFetcherCallback)
+
+  const changeProjectAccessLevel = React.useCallback(
+    (newAccessLevel: AccessLevel) => {
+      if (project == null) {
+        return
+      }
+      setAccessLevel(newAccessLevel)
       changeAccessFetcher.submit(
         operationChangeAccess(project, newAccessLevel),
         { accessLevel: newAccessLevel.toString() },
-        { method: 'POST', action: `/internal/projects/${projectId}/access` },
+        { method: 'POST', action: `/internal/projects/${project.proj_id}/access` },
       )
     },
     [changeAccessFetcher, project],
   )
 
-  const changeProjectAccessLevel = React.useCallback(
-    (newAccessLevel: AccessLevel) => {
-      changeAccessLevel(project.proj_id, newAccessLevel)
-    },
-    [changeAccessLevel, project],
+  if (project == null) {
+    return null
+  }
+
+  return (
+    <Flex direction='column' style={{ gap: 20 }}>
+      <Flex justify='between' align='center'>
+        <Flex align={'center'} gap='2'>
+          <Text size='3'>Project Sharing</Text>
+          <AnimatePresence>
+            {when(
+              accessRequests.state === 'loading',
+              <motion.div style={{ opacity: 0.1 }} exit={{ opacity: 0 }}>
+                <Spinner className={sprinkles({ backgroundColor: 'black' })} />
+              </motion.div>,
+            )}
+          </AnimatePresence>
+        </Flex>
+        <Dialog.Close>
+          <IconButton variant='ghost' color='gray'>
+            <Cross2Icon width='18' height='18' />
+          </IconButton>
+        </Dialog.Close>
+      </Flex>
+      <Flex justify='between'>
+        <Text size='1'>Project Visibility</Text>
+        <VisibilityDropdown
+          accessLevel={accessLevel}
+          changeProjectAccessLevel={changeProjectAccessLevel}
+        />
+      </Flex>
+      {when(
+        accessLevel === AccessLevel.COLLABORATIVE || accessLevel === AccessLevel.PUBLIC,
+        <ProjectLink projectId={project.proj_id} />,
+      )}
+      <AccessRequestsList project={project} />
+    </Flex>
+  )
+}
+
+const AccessRequestsList = React.memo(({ project }: { project: ProjectListing }) => {
+  const accessRequests = useProjectsStore((store) => store.sharingProjectAccessRequests)
+
+  const approveAccessRequestFetcher = useFetcherWithOperation(
+    project.proj_id ?? null,
+    'approveAccessRequest',
   )
 
   const approveAccessRequest = React.useCallback(
     (projectId: string, tokenId: string) => {
+      if (project == null) {
+        return
+      }
       approveAccessRequestFetcher.submit(
         operationApproveAccessRequest(project, tokenId),
         { tokenId: tokenId },
@@ -104,42 +164,28 @@ function SharingDialog({
   )
 
   return (
-    <>
-      <Flex direction='column' style={{ gap: 20 }}>
-        <Flex justify='between' align='center'>
-          <Text size='3'>Project Sharing</Text>
-          <Dialog.Close>
-            <IconButton variant='ghost' color='gray'>
-              <Cross2Icon width='18' height='18' />
-            </IconButton>
-          </Dialog.Close>
-        </Flex>
-        <Flex justify='between'>
-          <Text size='1'>Project Visibility</Text>
-          <VisibilityDropdown
-            accessLevel={accessLevel}
-            changeProjectAccessLevel={changeProjectAccessLevel}
-          />
-        </Flex>
-        {when(
-          accessLevel === AccessLevel.COLLABORATIVE || accessLevel === AccessLevel.PUBLIC,
-          <ProjectLink projectId={project.proj_id} />,
-        )}
-        {when(
-          accessRequests.length > 0,
-          <>
+    <AnimatePresence>
+      {when(
+        accessRequests.state === 'ready' && accessRequests.requests.length > 0,
+        <motion.div
+          animate={{ height: 'auto', opacity: 1 }}
+          initial={{ height: 0, opacity: 0 }}
+          exit={{ height: 0, opacity: 0 }}
+        >
+          <Flex direction={'column'} gap='4'>
             <Separator size='4' />
             <AccessRequests
               project={project}
               approveAccessRequest={approveAccessRequest}
-              accessRequests={accessRequests}
+              accessRequests={accessRequests.requests}
             />
-          </>,
-        )}
-      </Flex>
-    </>
+          </Flex>
+        </motion.div>,
+      )}
+    </AnimatePresence>
   )
-}
+})
+AccessRequestsList.displayName = 'AccessRequestsList'
 
 function AccessRequests({
   project,
@@ -252,26 +298,16 @@ const ProjectLink = React.memo(({ projectId }: { projectId: string }) => {
   }, [projectId, copyProjectLink])
 
   return (
-    <Flex style={{ gap: 10, alignItems: 'stretch' }}>
-      <input
-        ref={projectLinkRef}
-        type='text'
-        value={projectLink(projectId)}
-        readOnly={true}
-        style={{
-          flex: 1,
-          fontSize: 13,
-          padding: '0px 4px',
-          cursor: 'default',
-        }}
-      />
-      <button
-        className={button({ color: 'subtle' })}
-        style={{ fontSize: 13 }}
-        onClick={onClickCopyProjectLink}
+    <Flex style={{ gap: 10 }}>
+      <Button
+        style={{ fontSize: 11, flex: 1, justifyContent: 'flex-start', cursor: 'default' }}
+        disabled
       >
-        Copy
-      </button>
+        {projectLink(projectId)}
+      </Button>
+      <Button style={{ fontSize: 11 }} onClick={onClickCopyProjectLink}>
+        Copy Link
+      </Button>
     </Flex>
   )
 })

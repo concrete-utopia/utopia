@@ -4,6 +4,7 @@ import React from 'react'
 import slugify from 'slugify'
 import { when } from '~/util/react-conditionals'
 import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
+import { useOpenShareDialog } from '../hooks/useOpenShareDialog'
 import { SLUGIFY_OPTIONS } from '../routes/internal.projects.$id.rename'
 import { useProjectsStore } from '../store'
 import type { ProjectListing } from '../types'
@@ -106,10 +107,10 @@ export const ProjectActionsMenu = React.memo(
             renameProject(selectedProject.proj_id, newTitle)
           }
         }),
-        delete: contextMenuEntry('Delete', (selectedProject) => {
+        delete: contextMenuEntry('Archive', (selectedProject) => {
           deleteProject(selectedProject.proj_id)
         }),
-        restore: contextMenuEntry('Restore', (selectedProject) => {
+        restore: contextMenuEntry('Unarchive', (selectedProject) => {
           restoreProject(selectedProject.proj_id)
         }),
         destroy: contextMenuEntry('Delete Permanently', (selectedProject) => {
@@ -144,18 +145,14 @@ export const ProjectActionsMenu = React.memo(
           ]
         case 'sharedWithMe':
           return [actions.open, 'separator', actions.copyLink, actions.fork]
-        case 'trash':
+        case 'archive':
           return [actions.restore, 'separator', actions.destroy]
         default:
           assertNever(selectedCategory)
       }
     }, [selectedCategory, actions])
 
-    const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
-
-    const onOpenShareDialog = React.useCallback(() => {
-      setSharingProjectId(project.proj_id)
-    }, [project, setSharingProjectId])
+    const onOpenShareDialog = useOpenShareDialog(project.proj_id)
 
     return (
       <ContextMenu.Content style={{ width: 170 }}>
@@ -177,7 +174,7 @@ export const ProjectActionsMenu = React.memo(
                 onSelect={onOpenShareDialog}
               >
                 <Flex justify={'between'} align={'center'} width={'100%'}>
-                  <Text>Sharing…</Text>
+                  <Text>Sharing</Text>
                   {when(
                     project.hasPendingRequests === true,
                     <DotFilledIcon color='red' height={22} width={22} />,
@@ -192,9 +189,7 @@ export const ProjectActionsMenu = React.memo(
               /* eslint-disable-next-line react/jsx-no-bind */
               onSelect={() => entry.onClick(project)}
               style={{ height: 28, fontSize: 12 }}
-              color={
-                entry.text === 'Delete Permanently' || entry.text === 'Delete' ? 'red' : undefined
-              }
+              color={entry.text === 'Delete Permanently' ? 'red' : undefined}
             >
               {entry.text}
             </ContextMenu.Item>

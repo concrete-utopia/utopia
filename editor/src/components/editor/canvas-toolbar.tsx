@@ -51,7 +51,6 @@ import { stopPropagation } from '../inspector/common/inspector-utils'
 import { useConvertTo } from './convert-callbacks'
 import { useWrapInDiv } from './wrap-in-callbacks'
 import { ElementsOutsideVisibleAreaIndicator } from './elements-outside-visible-area-indicator'
-import { useResetRemixApps } from '../canvas/remix/remix-hooks'
 import { RemixNavigationBar } from './remix-navigation-bar'
 import {
   fragmentComponentInfo,
@@ -397,12 +396,9 @@ export const CanvasToolbar = React.memo(() => {
     }
   }, [dispatch, isCommentMode])
 
-  const resetRemixApps = useResetRemixApps()
-
   const resetCanvasCallback = React.useCallback(() => {
-    resetRemixApps()
     dispatch([resetCanvas()])
-  }, [dispatch, resetRemixApps])
+  }, [dispatch])
 
   const toggleInsertButtonClicked = React.useCallback(() => {
     if (canvasToolbarMode.primary === 'insert') {

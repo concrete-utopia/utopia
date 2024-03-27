@@ -20,28 +20,6 @@ export interface ComponentToRegister {
   variants: Array<ComponentInsertOption>
 }
 
-export function registerModule(
-  moduleName: string,
-  components: { [componentName: string]: ComponentToRegister },
-): void {
-  // Function is deliberately empty. If called inside the Utopia Editor, it has effect to the running environment
-}
-
-export function registerInternalComponent(
-  component: React.FunctionComponent,
-  properties: ComponentToRegister,
-): void {
-  // Function is deliberately empty. If called inside the Utopia Editor, it has effect to the running environment
-}
-
-export function registerExternalComponent(
-  componentName: string,
-  packageName: string,
-  properties: ComponentToRegister,
-): void {
-  // Function is deliberately empty. If called inside the Utopia Editor, it has effect to the running environment
-}
-
 export type RawSingleBorderWidth = number | string
 export type RawSplitBorderWidth = [
   RawSingleBorderWidth,

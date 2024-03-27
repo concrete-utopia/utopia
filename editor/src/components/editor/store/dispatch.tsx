@@ -1,19 +1,6 @@
-import { PERFORMANCE_MARKS_ALLOWED, PRODUCTION_ENV } from '../../../common/env-vars'
-import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
-import {
-  codeNeedsParsing,
-  codeNeedsPrinting,
-} from '../../../core/workers/common/project-file-utils'
-import type {
-  ParseOrPrint,
-  ParseOrPrintResult,
-  UtopiaTsWorkers,
-} from '../../../core/workers/common/worker-types'
-import {
-  createParseFile,
-  createPrintAndReparseFile,
-  getParseResult,
-} from '../../../core/workers/common/worker-types'
+import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
+import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
+import { getParseResult } from '../../../core/workers/common/worker-types'
 import { runLocalCanvasAction } from '../../../templates/editor-canvas'
 import { runLocalNavigatorAction } from '../../../templates/editor-navigator'
 import { optionalDeepFreeze } from '../../../utils/deep-freeze'
@@ -54,10 +41,10 @@ import {
   runLocalEditorAction,
   runUpdateProjectServerState,
 } from './editor-update'
-import { fastForEach, isBrowserEnvironment } from '../../../core/shared/utils'
+import { isBrowserEnvironment } from '../../../core/shared/utils'
 import type { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import type { ProjectContentTreeRoot } from '../../assets'
-import { treeToContents, walkContentsTree } from '../../assets'
+import { treeToContents } from '../../assets'
 import { isSendPreviewModel, restoreDerivedState, UPDATE_FNS } from '../actions/actions'
 import { getTransitiveReverseDependencies } from '../../../core/shared/project-contents-dependencies'
 import {
@@ -75,7 +62,6 @@ import {
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { handleStrategies, updatePostActionState } from './dispatch-strategies'
 
-import { emptySet } from '../../../core/shared/set-utils'
 import type { MetaCanvasStrategy } from '../../canvas/canvas-strategies/canvas-strategies'
 import { RegisteredCanvasStrategies } from '../../canvas/canvas-strategies/canvas-strategies'
 import { arrayOfPathsEqual, removePathsWithDeadUIDs } from '../../../core/shared/element-path'
@@ -91,8 +77,13 @@ import { maybeClearPseudoInsertMode } from '../canvas-toolbar-states'
 import { isSteganographyEnabled } from '../../../core/shared/stegano-text'
 import { updateCollaborativeProjectContents } from './collaborative-editing'
 import { ensureSceneIdsExist } from '../../../core/model/scene-id-utils'
-import { maybeUpdatePropertyControls } from '../../../core/property-controls/property-controls-local'
+import type { ModuleEvaluator } from '../../../core/property-controls/property-controls-local'
+import {
+  createModuleEvaluator,
+  isComponentDescriptorFile,
+} from '../../../core/property-controls/property-controls-local'
 import { setReactRouterErrorHasBeenLogged } from '../../../core/shared/runtime-report-logs'
+import type { PropertyControlsInfo } from '../../custom-code/code-file'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -350,9 +341,21 @@ function maybeRequestModelUpdate(
         const updates = parseResult.map((fileResult) => {
           return parseResultToWorkerUpdates(fileResult)
         })
-        void maybeUpdatePropertyControls(parseResult, workers, dispatch)
 
-        dispatch([EditorActions.mergeWithPrevUndo([EditorActions.updateFromWorker(updates)])])
+        const propertyDescriptorFilesToUpdate = parseResult.filter((result) =>
+          isComponentDescriptorFile(result.filename),
+        )
+
+        let actionsToDispatch: EditorAction[] = [EditorActions.updateFromWorker(updates)]
+        if (propertyDescriptorFilesToUpdate.length > 0) {
+          actionsToDispatch.push(
+            EditorActions.extractPropertyControlsFromDescriptorFiles(
+              propertyDescriptorFilesToUpdate.map((r) => r.filename),
+            ),
+          )
+        }
+
+        dispatch([EditorActions.mergeWithPrevUndo(actionsToDispatch)])
         return true
       })
       .catch((e) => {

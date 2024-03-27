@@ -22,6 +22,8 @@ import {
 } from '../../../../core/shared/element-template'
 import { createModifiedProject } from '../../../../sample-projects/sample-project-utils.test-utils'
 import { StoryboardFilePath } from '../../../editor/store/editor-state'
+import { applyPrettier } from 'utopia-vscode-common'
+import { ImagePreviewTestId } from './property-content-preview'
 
 describe('Set element prop via the data picker', () => {
   it('can pick from the property data picker', async () => {
@@ -734,10 +736,43 @@ describe('Set element prop via the data picker', () => {
   })
 })
 
+// comment out tests temporarily because it causes a dom-walker test to fail
+// describe('Image preview for string control', () => {
+//   it('shows image preview for urls with image extension', async () => {
+//     const editor = await renderTestEditorWithModel(
+//       projectWithImage(
+//         'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAEklEQVQIW2P8z8AARAwMjDAGACwBA/+8RVWvAAAAAElFTkSuQmCC',
+//       ),
+//       'await-first-dom-report',
+//     )
+//     await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/image')])
+
+//     expect(editor.renderedDOM.queryAllByTestId(ImagePreviewTestId)).toHaveLength(1)
+//   })
+//   it('does not show image preview for urls without image extension', async () => {
+//     const editor = await renderTestEditorWithModel(
+//       projectWithImage('https://i.pinimg.com/474x/4d/79/99/4d7999a51a1a397189a6f98168bcde45'),
+//       'await-first-dom-report',
+//     )
+//     await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/image')])
+
+//     expect(editor.renderedDOM.queryAllByTestId(ImagePreviewTestId)).toHaveLength(0)
+//   })
+//   it('does not show image preview for non-urls', async () => {
+//     const editor = await renderTestEditorWithModel(
+//       projectWithImage('hello'),
+//       'await-first-dom-report',
+//     )
+//     await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/image')])
+
+//     expect(editor.renderedDOM.queryAllByTestId(ImagePreviewTestId)).toHaveLength(0)
+//   })
+// })
+
 describe('Controls from registering components', () => {
   it('registering internal component', async () => {
     const editor = await renderTestEditorWithModel(
-      registerInternalComponentProject,
+      registerComponentProject,
       'await-first-dom-report',
     )
     await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/title')])
@@ -755,7 +790,7 @@ describe('Controls from registering components', () => {
 
   it('registering internal component with html prop shows preview', async () => {
     const editor = await renderTestEditorWithModel(
-      registerInternalComponentProjectWithHtmlProp,
+      registerComponentProjectWithHtmlProp,
       'await-first-dom-report',
     )
     await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/title')])
@@ -766,7 +801,7 @@ describe('Controls from registering components', () => {
 
   it('registering external component', async () => {
     const editor = await renderTestEditorWithModel(
-      registerExternalComponentProject,
+      registerThirdPartyComponentProject,
       'await-first-dom-report',
     )
     await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/title')])
@@ -835,11 +870,11 @@ describe('Controls from registering components', () => {
         Link: {
           preferredChildComponents: [
             {
-              additionalImports: undefined,
               name: 'span',
               variants: [
                 {
-                  code: '<span>Link</span>',
+                  importsToAdd: {},
+                  insertMenuLabel: 'span',
                 },
               ],
             },
@@ -934,11 +969,11 @@ describe('Controls from registering components', () => {
                 control: 'jsx',
                 preferredChildComponents: [
                   {
-                    additionalImports: undefined,
                     name: 'span',
                     variants: [
                       {
-                        code: '<span>Title</span>',
+                        importsToAdd: {},
+                        insertMenuLabel: 'span',
                       },
                     ],
                   },
@@ -970,6 +1005,53 @@ describe('Controls from registering components', () => {
   })
 })
 
+// describe('Delete cartouche handling', () => {
+//   async function getEditorWithPropertyExtras(
+//     propertyExtras: string,
+//     textField: string,
+//   ): Promise<EditorRenderResult> {
+//     const editor = await renderTestEditorWithModel(
+//       registerComponentProjectWithCartouche(propertyExtras, textField),
+//       'await-first-dom-report',
+//     )
+//     await selectComponentsForTest(editor, [EP.fromString('sb/scene/pg:root/title')])
+//     return editor
+//   }
+//   it('optional field', async () => {
+//     const editor = await getEditorWithPropertyExtras(``, `text={textForTitle}`)
+//     const deleteCartoucheButton = editor.renderedDOM.getByTestId(`delete-cartouche-text`)
+//     await mouseClickAtPoint(deleteCartoucheButton, { x: 2, y: 2 })
+//     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+//       registerProjectWithCartoucheStoryboard(``, ``),
+//     )
+//   })
+//   it('required field without default value', async () => {
+//     const editor = await getEditorWithPropertyExtras(`required: true`, `text={textForTitle}`)
+//     const deleteCartoucheButton = editor.renderedDOM.queryByTestId(`delete-cartouche-text`)
+//     expect(deleteCartoucheButton).toBeNull()
+//     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+//       registerComponentProjectWithCartoucheStoryboard(
+//         `required: true`,
+//         `text={textForTitle}`,
+//       ),
+//     )
+//   })
+//   it('required field with default value', async () => {
+//     const editor = await getEditorWithPropertyExtras(
+//       `required: true, defaultValue: 'Placeholder!'`,
+//       `text={textForTitle}`,
+//     )
+//     const deleteCartoucheButton = editor.renderedDOM.getByTestId(`delete-cartouche-text`)
+//     await mouseClickAtPoint(deleteCartoucheButton, { x: 2, y: 2 })
+//     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+//       registerComponentProjectWithCartoucheStoryboard(
+//         `required: true, defaultValue: 'Placeholder!'`,
+//         `text='Placeholder!'`,
+//       ),
+//     )
+//   })
+// })
+
 const project = DataPickerProjectShell(`
 function Title({ text }) {
   const content = 'Content'
@@ -998,7 +1080,98 @@ var Playground = ({ style }) => {
   )
 }`)
 
-const registerInternalComponentProject = createModifiedProject({
+function registerComponentProjectWithCartoucheStoryboard(
+  propertyExtras: string,
+  textField: string,
+): string {
+  return applyPrettier(
+    `import * as React from 'react'
+import {
+Storyboard,
+Scene,
+} from 'utopia-api'
+
+function Title({ text }) {
+return <h2 data-uid='0cd'>{text}</h2>
+}
+
+var Playground = ({ style }) => {
+const textForTitle = 'Hello Utopia'
+return (
+  <div style={style} data-uid='root'>
+    <Title ${textField} data-uid='title' />
+  </div>
+)
+}
+
+export var storyboard = (
+<Storyboard data-uid='sb'>
+  <Scene
+    style={{
+      width: 521,
+      height: 266,
+      position: 'absolute',
+      left: 554,
+      top: 247,
+      backgroundColor: 'white',
+    }}
+    data-uid='scene'
+    data-testid='scene'
+    commentId='120'
+  >
+    <Playground
+      style={{
+        width: 454,
+        height: 177,
+        position: 'absolute',
+        left: 34,
+        top: 44,
+        backgroundColor: 'white',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+      title='Hello Utopia'
+      data-uid='pg'
+    />
+  </Scene>
+</Storyboard>
+)
+`,
+    false,
+  ).formatted
+}
+
+function registerComponentProjectWithCartouche(propertyExtras: string, textField: string) {
+  return createModifiedProject({
+    [StoryboardFilePath]: registerComponentProjectWithCartoucheStoryboard(
+      propertyExtras,
+      textField,
+    ),
+    ['/utopia/components.utopia.js']: `const Components = {
+    '/utopia/storyboard': {
+      Title: {
+        supportsChildren: false,
+        properties: {
+          text: {
+            control: 'string-input',${propertyExtras}
+          },
+        },
+        variants: [
+          {
+            code: '<Title />',
+          },
+        ],
+      },
+    },
+  }
+  
+  export default Components  
+  `,
+  })
+}
+
+const registerComponentProject = createModifiedProject({
   [StoryboardFilePath]: `import * as React from 'react'
 import {
   Storyboard,
@@ -1073,7 +1246,7 @@ export default Components
 `,
 })
 
-const registerExternalComponentProject = createModifiedProject({
+const registerThirdPartyComponentProject = createModifiedProject({
   [StoryboardFilePath]: `import * as React from 'react'
 import {
   Storyboard,
@@ -1314,7 +1487,7 @@ function DataPickerProjectShell(contents: string, componentDescriptor?: string) 
   })
 }
 
-const registerInternalComponentProjectWithHtmlProp = createModifiedProject({
+const registerComponentProjectWithHtmlProp = createModifiedProject({
   [StoryboardFilePath]: `import * as React from 'react'
   import {
     Storyboard,
@@ -1388,6 +1561,82 @@ const registerInternalComponentProjectWithHtmlProp = createModifiedProject({
   export default Components  
 `,
 })
+
+const projectWithImage = (imageUrl: string) =>
+  createModifiedProject({
+    [StoryboardFilePath]: `import * as React from 'react'
+import {
+  Storyboard,
+  Scene,
+} from 'utopia-api'
+
+function Image({ url }) {
+  return <img src={url} />
+}
+
+var Playground = ({ style }) => {
+  return (
+    <div style={style} data-uid='root'>
+      <Image url='${imageUrl}' data-uid='image' />
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 521,
+        height: 266,
+        position: 'absolute',
+        left: 554,
+        top: 247,
+        backgroundColor: 'white',
+      }}
+      data-uid='scene'
+      data-testid='scene'
+      commentId='120'
+    >
+      <Playground
+        style={{
+          width: 454,
+          height: 177,
+          position: 'absolute',
+          left: 34,
+          top: 44,
+          backgroundColor: 'white',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+        title='Hello Utopia'
+        data-uid='pg'
+      />
+    </Scene>
+  </Storyboard>
+)
+`,
+    ['/utopia/components.utopia.js']: `const Components = {
+  '/utopia/storyboard': {
+    Image: {
+      supportsChildren: false,
+      properties: {
+        url: {
+          control: 'string-input',
+        },
+      },
+      variants: [
+        {
+          code: '<Image />',
+        },
+      ],
+    }
+  },
+}
+
+export default Components  
+`,
+  })
 
 function getRenderedOptions(editor: EditorRenderResult) {
   return [

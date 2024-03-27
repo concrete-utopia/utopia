@@ -13,7 +13,6 @@ const SampleCode = [
     code: `import Utopia, {
   Scene,
   Storyboard,
-  registerModule,
 } from 'utopia-api''`,
   },
   {

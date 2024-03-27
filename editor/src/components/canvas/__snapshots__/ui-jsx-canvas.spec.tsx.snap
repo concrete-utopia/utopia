@@ -48736,7 +48736,7 @@ Object {
               },
               "name": "storeRef",
               "sourceMap": Object {
-                "mappings": "CAaiC",
+                "mappings": "CAYiC",
                 "names": Array [],
                 "sources": Array [
                   "code.tsx",
@@ -48746,7 +48746,6 @@ Object {
 import Utopia, {
   Scene,
   Storyboard,
-  registerModule,
 } from 'utopia-api'
 
 const AppContext = React.createContext({})
@@ -50537,7 +50536,7 @@ Object {
             "params": Array [],
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAqBSA,CAACC,CAAHC,CAAGD,CAAFE",
+              "mappings": "OAoBSA,CAACC,CAAHC,CAAGD,CAAFE",
               "names": Array [
                 "5",
                 ")",
@@ -50552,7 +50551,6 @@ Object {
 import Utopia, {
   Scene,
   Storyboard,
-  registerModule,
 } from 'utopia-api'
 
 function a(n) {
@@ -50617,7 +50615,7 @@ export var storyboard = (
             "params": Array [],
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAqBkBA,CAACC,CAAHC,CAAGD,CAAFE",
+              "mappings": "OAoBkBA,CAACC,CAAHC,CAAGD,CAAFE",
               "names": Array [
                 "5",
                 ")",
@@ -50632,7 +50630,6 @@ export var storyboard = (
 import Utopia, {
   Scene,
   Storyboard,
-  registerModule,
 } from 'utopia-api'
 
 function a(n) {
@@ -50832,7 +50829,7 @@ export var storyboard = (
         "params": Array [],
         "sourceMap": Object {
           "file": "code.tsx",
-          "mappings": "OAqBSA,CAACC,CAAHC,CAAGD,CAAFE",
+          "mappings": "OAoBSA,CAACC,CAAHC,CAAGD,CAAFE",
           "names": Array [
             "5",
             ")",
@@ -50847,7 +50844,6 @@ export var storyboard = (
 import Utopia, {
   Scene,
   Storyboard,
-  registerModule,
 } from 'utopia-api'
 
 function a(n) {
@@ -50994,7 +50990,7 @@ export var storyboard = (
         "params": Array [],
         "sourceMap": Object {
           "file": "code.tsx",
-          "mappings": "OAqBkBA,CAACC,CAAHC,CAAGD,CAAFE",
+          "mappings": "OAoBkBA,CAACC,CAAHC,CAAGD,CAAFE",
           "names": Array [
             "5",
             ")",
@@ -51009,7 +51005,6 @@ export var storyboard = (
 import Utopia, {
   Scene,
   Storyboard,
-  registerModule,
 } from 'utopia-api'
 
 function a(n) {
