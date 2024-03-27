@@ -48,6 +48,7 @@ import fastDeepEqual from 'fast-deep-equal'
 import { TimedCacheMap } from '../shared/timed-cache-map'
 import { dropFileExtension } from '../shared/file-utils'
 import { isComponentRendererComponent } from '../../components/canvas/ui-jsx-canvas-renderer/component-renderer-component'
+import { ModuleSymbol, NameSymbol } from '../es-modules/package-manager/package-manager'
 
 async function parseInsertOption(
   insertOption: ComponentInsertOption,
@@ -296,6 +297,10 @@ export function createRegisterModuleAndComponentFunction(workers: UtopiaTsWorker
     component: React.FunctionComponent,
     properties: ComponentToRegister,
   ): void {
+    console.log('registerComponent')
+    console.log('Name: ', (component as any)[NameSymbol])
+    console.log('Module: ', (component as any)[ModuleSymbol])
+
     // when the recieved component is an internal component, it is wrapped into a ComponentRendererComponent
     if (!isComponentRendererComponent(component)) {
       console.warn(

@@ -1,3 +1,4 @@
+import React from 'react'
 import type { NodeModules, ESCodeFile } from '../../shared/project-file-types'
 import { isEsCodeFile, isEsRemoteDependencyPlaceholder } from '../../shared/project-file-types'
 import type { RequireFn, TypeDefinitions } from '../../shared/npm-dependency-types'
@@ -88,6 +89,9 @@ export const getCurriedEditorRequireFn = (
     )
 }
 
+export const NameSymbol = Symbol('__utopia_name__')
+export const ModuleSymbol = Symbol('__utopia_module__')
+
 export function getRequireFn(
   onRemoteModuleDownload: (moduleDownload: Promise<NodeModules>) => void,
   projectContents: ProjectContentTreeRoot,
@@ -96,10 +100,19 @@ export function getRequireFn(
   builtInDependencies: BuiltInDependencies,
   injectedEvaluator = evaluator,
 ): RequireFn {
+  function extendExportsWithInfo(exports: any, toImport: string): any {
+    Object.entries(exports).forEach(([name, exp]) => {
+      if (toImport === '@shopify/hydrogen' && name === 'Image') {
+        ;(exp as any)[NameSymbol] = name
+        ;(exp as any)[ModuleSymbol] = toImport
+      }
+    })
+    return exports
+  }
   return function require(importOrigin, toImport): unknown {
     const builtInDependency = resolveBuiltInDependency(builtInDependencies, toImport)
     if (builtInDependency != null) {
-      return builtInDependency
+      return extendExportsWithInfo(builtInDependency, toImport)
     }
 
     const resolveResult = resolveModule(projectContents, nodeModules, importOrigin, toImport)
