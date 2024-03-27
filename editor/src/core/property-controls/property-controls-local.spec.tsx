@@ -171,7 +171,7 @@ describe('registered property controls', () => {
     const renderResult = await renderTestEditorWithModel(
       project({
         ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
-        import { Utopia } from 'utopia-api'
+        import * as Utopia from 'utopia-api'
         const Components = {
       '/src/card': {
         Card: {
@@ -210,7 +210,74 @@ describe('registered property controls', () => {
     )
     const editorState = renderResult.getEditorState().editor
 
-    expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`undefined`)
+    expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
+      Object {
+        "Card": Object {
+          "preferredChildComponents": Array [],
+          "properties": Object {
+            "background": Object {
+              "control": "color",
+            },
+            "label": Object {
+              "control": "string-input",
+            },
+            "visible": Object {
+              "control": "checkbox",
+              "defaultValue": true,
+            },
+          },
+          "source": Object {
+            "sourceDescriptorFile": "/utopia/components.utopia.js",
+            "type": "DESCRIPTOR_FILE",
+          },
+          "supportsChildren": false,
+          "variants": Array [
+            Object {
+              "elementToInsert": [Function],
+              "importsToAdd": Object {
+                "/src/card": Object {
+                  "importedAs": null,
+                  "importedFromWithin": Array [
+                    Object {
+                      "alias": "Card",
+                      "name": "Card",
+                    },
+                  ],
+                  "importedWithName": null,
+                },
+              },
+              "insertMenuLabel": "Card",
+            },
+            Object {
+              "elementToInsert": [Function],
+              "importsToAdd": Object {
+                "/src/card": Object {
+                  "importedAs": null,
+                  "importedFromWithin": Array [
+                    Object {
+                      "alias": "Card",
+                      "name": "Card",
+                    },
+                  ],
+                  "importedWithName": null,
+                },
+                "/src/defaults": Object {
+                  "importedAs": null,
+                  "importedFromWithin": Array [
+                    Object {
+                      "alias": "DefaultPerson",
+                      "name": "DefaultPerson",
+                    },
+                  ],
+                  "importedWithName": null,
+                },
+              },
+              "insertMenuLabel": "ID Card",
+            },
+          ],
+        },
+      }
+    `)
   })
   it('registered controls for multiple components from sidecar file are in editor state', async () => {
     const renderResult = await renderTestEditorWithModel(

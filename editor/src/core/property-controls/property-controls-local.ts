@@ -248,9 +248,9 @@ async function getComponentDescriptorPromisesFromParseResult(
       }
     }
     return result
-  } catch {
+  } catch (e) {
     // TODO: error handling
-    console.warn('Error evaluating component descriptor file')
+    console.warn('Error evaluating component descriptor file', e)
     return []
   }
 }
