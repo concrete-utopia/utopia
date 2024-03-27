@@ -173,19 +173,29 @@ export function createModuleEvaluator(editor: EditorState): ModuleEvaluator {
 export const isComponentDescriptorFile = (filename: string) =>
   filename.startsWith('/utopia/') && filename.endsWith('.utopia.js')
 
+type ComponentDescriptorRegistrationError =
+  | { type: 'file-cannot-be-parsed' }
+  | { type: 'no-export-default' }
+  | { type: 'no-exported-component-descriptors' }
+  | { type: 'evaluation-error'; error: unknown }
+
+interface ComponentDescriptorRegistrationResult {
+  descriptors: ComponentDescriptorWithName[]
+  errors: ComponentDescriptorRegistrationError[]
+}
+
 async function getComponentDescriptorPromisesFromParseResult(
   descriptorFile: ParsedTextFileWithPath,
   workers: UtopiaTsWorkers,
   evaluator: ModuleEvaluator,
-): Promise<ComponentDescriptorWithName[]> {
+): Promise<ComponentDescriptorRegistrationResult> {
   if (!isParseSuccess(descriptorFile.file)) {
-    return []
+    return { descriptors: [], errors: [{ type: 'file-cannot-be-parsed' }] }
   }
+
   const exportDefaultIdentifier = descriptorFile.file.exportsDetail.find(isExportDefault)
   if (exportDefaultIdentifier?.name == null) {
-    // TODO: error handling
-    console.warn('No export default in descriptor file')
-    return []
+    return { descriptors: [], errors: [{ type: 'no-export-default' }] }
   }
 
   try {
@@ -194,12 +204,11 @@ async function getComponentDescriptorPromisesFromParseResult(
     const descriptors = evaluatedFile[exportDefaultIdentifier.name]
 
     if (descriptors == null) {
-      // TODO: error handling
-      console.warn('Could not find component descriptors in the descriptor file')
-      return []
+      return { descriptors: [], errors: [{ type: 'no-exported-component-descriptors' }] }
     }
 
     let result: ComponentDescriptorWithName[] = []
+    let errors: ComponentDescriptorRegistrationError[] = []
 
     for await (const [moduleName, descriptor] of Object.entries(descriptors)) {
       const parsedComponents = parseComponents(descriptor)
@@ -224,11 +233,9 @@ async function getComponentDescriptorPromisesFromParseResult(
         }
       }
     }
-    return result
-  } catch {
-    // TODO: error handling
-    console.warn('Error evaluating component descriptor file')
-    return []
+    return { descriptors: result, errors: errors }
+  } catch (e) {
+    return { descriptors: [], errors: [{ type: 'evaluation-error', error: e }] }
   }
 }
 
@@ -247,13 +254,12 @@ export async function maybeUpdatePropertyControls(
   let componentDescriptorUpdates: ComponentDescriptorFileLookup = {}
   await Promise.all(
     filesToUpdate.map(async (file) => {
-      const descriptors = await getComponentDescriptorPromisesFromParseResult(
-        file,
-        workers,
-        evaluator,
-      )
-      if (descriptors.length > 0) {
-        componentDescriptorUpdates[file.path] = descriptors
+      const result = await getComponentDescriptorPromisesFromParseResult(file, workers, evaluator)
+      if (result.errors.length > 0) {
+        // TODO: turn this into build errors
+        console.warn('Cannot parse descriptor file', result.errors)
+      } else if (result.descriptors.length > 0) {
+        componentDescriptorUpdates[file.path] = result.descriptors
       }
     }),
   )
