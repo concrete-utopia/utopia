@@ -101,9 +101,12 @@ export function getRequireFn(
 ): RequireFn {
   function extendExportsWithInfo(exports: any, toImport: string): any {
     Object.entries(exports).forEach(([name, exp]) => {
-      if (toImport === '@shopify/hydrogen' && name === 'Image') {
+      try {
         ;(exp as any)[NameSymbol] = name
         ;(exp as any)[ModuleSymbol] = toImport
+        console.debug('Successfully extended exports with info', name, toImport)
+      } catch (e) {
+        console.debug('Failed to extend exports with info', name, toImport)
       }
     })
     return exports
@@ -182,7 +185,7 @@ export function getRequireFn(
             throw e
           }
         }
-        return fileCache.exports
+        return extendExportsWithInfo(fileCache.exports, toImport)
       } else if (isEsRemoteDependencyPlaceholder(resolvedFile)) {
         if (!resolvedFile.downloadStarted) {
           // return empty exports object, fire off an async job to fetch the dependency from jsdelivr
