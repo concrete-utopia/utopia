@@ -191,7 +191,7 @@ const AccessRequestsList = React.memo(({ projectId, accessLevel }: AccessRequest
               <Flex direction={'column'} gap='4'>
                 <AccessRequests
                   projectId={projectId}
-                  isPrivateProject={accessLevel === AccessLevel.PRIVATE}
+                  projectAccessLevel={accessLevel}
                   approveAccessRequest={approveAccessRequest}
                   accessRequests={accessRequests.requests}
                 />
@@ -236,12 +236,12 @@ OwnerCollaboratorRow.displayName = 'OwnerCollaboratorRow'
 
 function AccessRequests({
   projectId,
-  isPrivateProject,
+  projectAccessLevel,
   approveAccessRequest,
   accessRequests,
 }: {
   projectId: string
-  isPrivateProject: boolean
+  projectAccessLevel: AccessLevel
   approveAccessRequest: (projectId: string, tokenId: string) => void
   accessRequests: ProjectAccessRequestWithUserDetails[]
 }) {
@@ -251,6 +251,10 @@ function AccessRequests({
     },
     [projectId, approveAccessRequest],
   )
+
+  const isCollaborative = React.useMemo(() => {
+    return projectAccessLevel === AccessLevel.COLLABORATIVE
+  }, [projectAccessLevel])
 
   return accessRequests
     .sort((a, b) => {
@@ -266,27 +270,36 @@ function AccessRequests({
       }
 
       const status = request.status
+      const canBeApproved = isCollaborative && status === AccessRequestStatus.PENDING
+      const color =
+        status === AccessRequestStatus.PENDING
+          ? 'gray'
+          : status === AccessRequestStatus.APPROVED
+          ? 'green'
+          : 'red'
       return (
         <CollaboratorRow
           key={request.token}
           picture={user.picture}
           name={user.name ?? user.email ?? user.user_id}
-          isDisabled={isPrivateProject}
+          isDisabled={!isCollaborative}
         >
-          {status === AccessRequestStatus.PENDING ? (
+          {canBeApproved ? (
             <Button size='1' variant='ghost' onClick={onApprove(request.token)}>
               Approve
             </Button>
           ) : (
             <Text
               size='1'
-              color={status === AccessRequestStatus.APPROVED ? 'green' : 'red'}
+              color={color}
               style={{
-                fontStyle: isPrivateProject ? 'italic' : 'normal',
+                fontStyle: !isCollaborative ? 'italic' : 'normal',
                 cursor: 'default',
               }}
             >
-              {status === AccessRequestStatus.APPROVED ? 'Approved' : 'Rejected'}
+              {when(status === AccessRequestStatus.PENDING, 'Pending')}
+              {when(status === AccessRequestStatus.APPROVED, 'Approved')}
+              {when(status === AccessRequestStatus.REJECTED, 'Rejected')}
             </Text>
           )}
         </CollaboratorRow>
