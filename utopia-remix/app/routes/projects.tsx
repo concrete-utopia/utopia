@@ -669,7 +669,7 @@ const ProjectCard = React.memo(
 
     const isDarkMode = useIsDarkMode()
 
-    const openShareDialog = useOpenShareDialog(project)
+    const openShareDialog = useOpenShareDialog(project.proj_id)
 
     const canOpenShareDialog = React.useMemo(() => {
       return project.deleted !== true && !isSharedWithMe
@@ -891,7 +891,7 @@ const ProjectRow = React.memo(
 
     const isDarkMode = useIsDarkMode()
 
-    const openShareDialog = useOpenShareDialog(project)
+    const openShareDialog = useOpenShareDialog(project.proj_id)
 
     const canOpenShareDialog = React.useMemo(() => {
       return project.deleted !== true && !isSharedWithMe

@@ -20,26 +20,28 @@ describe('The navigator render prop picker', () => {
     {
       name: 'FlexRow',
       variants: [
-        { label: '(empty)', code: '<div />' },
         {
           label: 'with three placeholders',
-          code: '<div>three totally real placeholders</div>',
+          code: '<FlexRow>three totally real placeholders</FlexRow>',
         },
         {
           label: 'Fully Loaded (limited time only!)',
-          code: '<div>The Fully Loaded one</div>',
+          code: '<FlexRow>The Fully Loaded one</FlexRow>',
         },
         {
           label: 'With Auto-Sizing Content',
-          code: '<div>Sizes automatically</div>',
+          code: '<FlexRow>Sizes automatically</FlexRow>',
         },
       ],
+      additionalImports: '/src/utils',
     },
     {
       name: 'FlexCol',
+      additionalImports: '/src/utils',
     },
     {
       name: 'Flex',
+      additionalImports: '/src/utils',
     },
   ]
 
@@ -93,13 +95,55 @@ describe('The navigator render prop picker', () => {
     
     export default Components    
     `,
+    ['/src/utils.js']: `
+    import * as React from 'react'
+
+    export function FlexRow({ children, style, ...props }) {
+      return (
+        <div
+          {...props}
+          style={{
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'row',
+            ...style,
+          }}
+        >
+          {children}
+        </div>
+      )
+    }
+
+    export function FlexCol({ children, style, ...props }) {
+      return (
+        <div
+          {...props}
+          style={{
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            ...style,
+          }}
+        >
+          {children}
+        </div>
+      )
+    }
+    `,
   })
+
+  function variantsForComponent(componentName: string) {
+    return [
+      { label: '(empty)', code: `<${componentName} />` },
+      ...(PreferredChildComponents.find((v) => v.name === componentName)?.variants ?? []),
+    ]
+  }
 
   it('Should be displayed with the correct prop when clicking a render prop slot in the navigator', async () => {
     const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/card')])
     const emptySlot = editor.renderedDOM.getByTestId(
-      'NavigatorItemTestId-slot_sb/card/prop_label_title',
+      'toggle-render-prop-NavigatorItemTestId-slot_sb/card/prop_label_title',
     )
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
 
@@ -117,7 +161,7 @@ describe('The navigator render prop picker', () => {
     const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/card')])
     const emptySlot = editor.renderedDOM.getByTestId(
-      'NavigatorItemTestId-slot_sb/card/prop_label_title',
+      'toggle-render-prop-NavigatorItemTestId-slot_sb/card/prop_label_title',
     )
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
 
@@ -127,13 +171,11 @@ describe('The navigator render prop picker', () => {
       )
       expect(renderedOptionLabel).not.toBeNull()
 
-      if (childComponent.variants != null) {
-        for (const variant of childComponent.variants) {
-          const renderedOptionVariant = editor.renderedDOM.queryByTestId(
-            componentPickerOptionTestId(childComponent.name, variant.label),
-          )
-          expect(renderedOptionVariant).not.toBeNull()
-        }
+      for (const variant of variantsForComponent(childComponent.name)) {
+        const renderedOptionVariant = editor.renderedDOM.queryByTestId(
+          componentPickerOptionTestId(childComponent.name, variant.label),
+        )
+        expect(renderedOptionVariant).not.toBeNull()
       }
     }
   })
@@ -142,7 +184,7 @@ describe('The navigator render prop picker', () => {
     const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/card')])
     const emptySlot = editor.renderedDOM.getByTestId(
-      'NavigatorItemTestId-slot_sb/card/prop_label_title',
+      'toggle-render-prop-NavigatorItemTestId-slot_sb/card/prop_label_title',
     )
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
 
@@ -164,17 +206,15 @@ describe('The navigator render prop picker', () => {
         expect(renderedOptionLabel).toBeNull()
       }
 
-      if (childComponent.variants != null) {
-        for (const variant of childComponent.variants) {
-          const renderedOptionVariant = editor.renderedDOM.queryByTestId(
-            componentPickerOptionTestId(childComponent.name, variant.label),
-          )
+      for (const variant of variantsForComponent(childComponent.name)) {
+        const renderedOptionVariant = editor.renderedDOM.queryByTestId(
+          componentPickerOptionTestId(childComponent.name, variant.label),
+        )
 
-          if (childComponent.name === 'FlexRow') {
-            expect(renderedOptionVariant).not.toBeNull()
-          } else {
-            expect(renderedOptionVariant).toBeNull()
-          }
+        if (childComponent.name === 'FlexRow') {
+          expect(renderedOptionVariant).not.toBeNull()
+        } else {
+          expect(renderedOptionVariant).toBeNull()
         }
       }
     }
@@ -184,7 +224,7 @@ describe('The navigator render prop picker', () => {
     const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/card')])
     const emptySlot = editor.renderedDOM.getByTestId(
-      'NavigatorItemTestId-slot_sb/card/prop_label_title',
+      'toggle-render-prop-NavigatorItemTestId-slot_sb/card/prop_label_title',
     )
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
 
@@ -202,14 +242,12 @@ describe('The navigator render prop picker', () => {
 
       expect(renderedOptionLabel).not.toBeNull()
 
-      if (childComponent.variants != null) {
-        for (const variant of childComponent.variants) {
-          const renderedOptionVariant = editor.renderedDOM.queryByTestId(
-            componentPickerOptionTestId(childComponent.name, variant.label),
-          )
+      for (const variant of variantsForComponent(childComponent.name)) {
+        const renderedOptionVariant = editor.renderedDOM.queryByTestId(
+          componentPickerOptionTestId(childComponent.name, variant.label),
+        )
 
-          expect(renderedOptionVariant).not.toBeNull()
-        }
+        expect(renderedOptionVariant).not.toBeNull()
       }
     }
   })
@@ -218,7 +256,7 @@ describe('The navigator render prop picker', () => {
     const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/card')])
     const emptySlot = editor.renderedDOM.getByTestId(
-      'NavigatorItemTestId-slot_sb/card/prop_label_title',
+      'toggle-render-prop-NavigatorItemTestId-slot_sb/card/prop_label_title',
     )
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
 
@@ -240,7 +278,7 @@ describe('The navigator render prop picker', () => {
     const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/card')])
     const emptySlot = editor.renderedDOM.getByTestId(
-      'NavigatorItemTestId-slot_sb/card/prop_label_title',
+      'toggle-render-prop-NavigatorItemTestId-slot_sb/card/prop_label_title',
     )
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
 
@@ -261,7 +299,7 @@ describe('The navigator render prop picker', () => {
     const editor = await renderTestEditorWithModel(TestProject, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString('sb/card')])
     const emptySlot = editor.renderedDOM.getByTestId(
-      'NavigatorItemTestId-slot_sb/card/prop_label_title',
+      'toggle-render-prop-NavigatorItemTestId-slot_sb/card/prop_label_title',
     )
     await mouseClickAtPoint(emptySlot, { x: 2, y: 2 })
 
@@ -277,6 +315,7 @@ describe('The navigator render prop picker', () => {
       formatTestProjectCode(`
     import * as React from 'react'
     import { Storyboard } from 'utopia-api'
+    import { FlexRow } from '/src/utils'
 
     export const Card = (props) => {
       return (
@@ -299,9 +338,9 @@ describe('The navigator render prop picker', () => {
             height: 87,
           }}
           title={
-            <div style={{ width: 100, height: 100 }}>
+            <FlexRow style={{ width: 100, height: 100 }}>
               three totally real placeholders
-            </div>
+            </FlexRow>
           }
         />
       </Storyboard>
