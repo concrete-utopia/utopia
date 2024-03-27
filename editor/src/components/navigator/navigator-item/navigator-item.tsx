@@ -873,19 +873,18 @@ export const NavigatorItem: React.FunctionComponent<
               <Button
                 onClick={showContextMenu}
                 style={{
-                  height: 18,
-                  width: 18,
+                  height: 16,
+                  width: 16,
                   display: 'block',
                   paddingRight: 1,
                 }}
               >
                 <Icn
                   category='element'
-                  type='placeholder'
+                  type='picker'
                   tooltipText='Set Value'
-                  width={18}
-                  height={18}
-                  style={{ transform: 'scale(.85)' }}
+                  width={16}
+                  height={16}
                 />
               </Button>
             </FlexRow>
