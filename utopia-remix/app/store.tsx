@@ -6,6 +6,7 @@ import type { Operation, ProjectAccessRequestWithUserDetails } from './types'
 import { areBaseOperationsEquivalent } from './types'
 import type { BrowserEnvironmentType } from './env.server'
 import React from 'react'
+import type { UserDetails } from 'prisma-client'
 
 // State portion that will be persisted
 interface ProjectsStoreStatePersisted {
@@ -34,6 +35,7 @@ interface ProjectsStoreStateNonPersisted {
   env: BrowserEnvironmentType | null
   sharingProjectId: string | null
   sharingProjectAccessRequests: SharingProjectAccessRequests
+  myUser: UserDetails | null
 }
 
 const initialProjectsStoreStateNonPersisted: ProjectsStoreStateNonPersisted = {
@@ -44,6 +46,7 @@ const initialProjectsStoreStateNonPersisted: ProjectsStoreStateNonPersisted = {
   env: null,
   sharingProjectId: null,
   sharingProjectAccessRequests: { state: 'ready', requests: [] },
+  myUser: null,
 }
 
 type ProjectsStoreState = ProjectsStoreStatePersisted & ProjectsStoreStateNonPersisted
@@ -60,6 +63,7 @@ interface ProjectsStoreActions {
   updateOperation: (key: string, data: { errored: boolean }) => void
   setSharingProjectId: (projectId: string | null) => void
   setSharingProjectAccessRequests: (requests: SharingProjectAccessRequests) => void
+  setMyUser: (user: UserDetails) => void
 }
 
 type ProjectsStore = ProjectsStoreState & ProjectsStoreActions
@@ -123,6 +127,9 @@ export const createProjectsStore = (
           },
           setSharingProjectAccessRequests: (requests) => {
             return set(() => ({ sharingProjectAccessRequests: requests }))
+          },
+          setMyUser: (user) => {
+            return set(() => ({ myUser: user }))
           },
         }),
         {

@@ -1,34 +1,35 @@
-import { Dialog, Flex, IconButton, Text, Button, DropdownMenu, Separator } from '@radix-ui/themes'
 import {
   CaretDownIcon,
   Cross2Icon,
   GlobeIcon,
-  LockClosedIcon,
   Link2Icon,
+  LockClosedIcon,
   PersonIcon,
 } from '@radix-ui/react-icons'
+import { Button, Dialog, DropdownMenu, Flex, IconButton, Separator, Text } from '@radix-ui/themes'
+import { AnimatePresence, motion } from 'framer-motion'
+import moment from 'moment'
+import React from 'react'
+import { useFetcherDataUnkown } from '../hooks/useFetcherData'
+import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
+import { useProjectAccessMatchesSelectedCategory } from '../hooks/useProjectMatchingCategory'
+import { useProjectsStore } from '../store'
+import { sprinkles } from '../styles/sprinkles.css'
 import {
+  AccessLevel,
+  AccessRequestStatus,
   asAccessLevel,
   operationApproveAccessRequest,
   operationChangeAccess,
-  type ProjectListing,
-  AccessRequestStatus,
   type ProjectAccessRequestWithUserDetails,
+  type ProjectListing,
 } from '../types'
-import { AccessLevel } from '../types'
-import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
-import React from 'react'
-import { when } from '../util/react-conditionals'
-import moment from 'moment'
-import { useProjectEditorLink } from '../util/links'
 import { useCopyProjectLinkToClipboard } from '../util/copyProjectLink'
-import { useProjectsStore } from '../store'
-import { AnimatePresence, motion } from 'framer-motion'
-import { useFetcherDataUnkown } from '../hooks/useFetcherData'
-import { useProjectAccessMatchesSelectedCategory } from '../hooks/useProjectMatchingCategory'
-import { sprinkles } from '../styles/sprinkles.css'
-import { Spinner } from './spinner'
 import { isLikeApiError } from '../util/errors'
+import { useProjectEditorLink } from '../util/links'
+import { when } from '../util/react-conditionals'
+import { Spinner } from './spinner'
+import { UserAvatar } from './collaboratorAvatar'
 
 export const SharingDialogWrapper = React.memo(
   ({ project }: { project: ProjectListing | null }) => {
@@ -90,7 +91,7 @@ function SharingDialog({ project }: { project: ProjectListing | null }) {
       }
       setAccessLevel(newAccessLevel)
       changeAccessFetcher.submit(
-        operationChangeAccess(project, newAccessLevel),
+        operationChangeAccess(project.proj_id, newAccessLevel),
         { accessLevel: newAccessLevel.toString() },
         { method: 'POST', action: `/internal/projects/${project.proj_id}/access` },
       )
@@ -133,69 +134,103 @@ function SharingDialog({ project }: { project: ProjectListing | null }) {
         accessLevel === AccessLevel.COLLABORATIVE || accessLevel === AccessLevel.PUBLIC,
         <ProjectLink projectId={project.proj_id} />,
       )}
-      <AccessRequestsList project={project} />
+      <AccessRequestsList projectId={project.proj_id} accessLevel={accessLevel} />
     </Flex>
   )
 }
 
-const AccessRequestsList = React.memo(({ project }: { project: ProjectListing }) => {
-  const accessRequests = useProjectsStore((store) => store.sharingProjectAccessRequests)
+const AccessRequestsList = React.memo(
+  ({ projectId, accessLevel }: { projectId: string; accessLevel: AccessLevel }) => {
+    const myUser = useProjectsStore((store) => store.myUser)
+    const accessRequests = useProjectsStore((store) => store.sharingProjectAccessRequests)
 
-  const approveAccessRequestFetcher = useFetcherWithOperation(
-    project.proj_id ?? null,
-    'approveAccessRequest',
-  )
+    const approveAccessRequestFetcher = useFetcherWithOperation(projectId, 'approveAccessRequest')
 
-  const approveAccessRequest = React.useCallback(
-    (projectId: string, tokenId: string) => {
-      if (project == null) {
-        return
-      }
-      approveAccessRequestFetcher.submit(
-        operationApproveAccessRequest(project, tokenId),
-        { tokenId: tokenId },
-        {
-          method: 'POST',
-          action: `/internal/projects/${projectId}/access/request/${tokenId}/approve`,
-        },
-      )
-    },
-    [approveAccessRequestFetcher, project],
-  )
+    const approveAccessRequest = React.useCallback(
+      (tokenId: string) => {
+        approveAccessRequestFetcher.submit(
+          operationApproveAccessRequest(projectId, tokenId),
+          { tokenId: tokenId },
+          {
+            method: 'POST',
+            action: `/internal/projects/${projectId}/access/request/${tokenId}/approve`,
+          },
+        )
+      },
+      [approveAccessRequestFetcher, projectId],
+    )
 
-  return (
-    <AnimatePresence>
-      {when(
-        accessRequests.state === 'ready' && accessRequests.requests.length > 0,
-        <motion.div
-          animate={{ height: 'auto', opacity: 1 }}
-          initial={{ height: 0, opacity: 0 }}
-          exit={{ height: 0, opacity: 0 }}
-        >
-          <Flex direction={'column'} gap='4'>
-            <Separator size='4' />
-            <AccessRequests
-              project={project}
-              approveAccessRequest={approveAccessRequest}
-              accessRequests={accessRequests.requests}
-            />
-          </Flex>
-        </motion.div>,
-      )}
-    </AnimatePresence>
-  )
-})
+    const hasGonePrivate = React.useMemo(() => {
+      return accessRequests.requests.length > 0 && accessLevel === AccessLevel.PRIVATE
+    }, [accessLevel, accessRequests])
+
+    return (
+      <AnimatePresence>
+        {when(
+          accessRequests.state === 'ready' && accessRequests.requests.length > 0,
+          <motion.div
+            animate={{ height: 'auto', opacity: 1 }}
+            initial={{ height: 0, opacity: 0 }}
+            exit={{ height: 0, opacity: 0 }}
+          >
+            <Flex direction={'column'} gap='4'>
+              <Separator size='4' />
+              {when(
+                hasGonePrivate,
+                <Text size='1' style={{ opacity: 0.5 }}>
+                  This project was changed to private, previous collaborators can no longer view it.
+                </Text>,
+              )}
+              {myUser != null ? (
+                <CollaboratorRow
+                  disabled={false}
+                  picture={myUser.picture}
+                  name={`${myUser.name ?? myUser.email ?? myUser.id} (you)`}
+                  starBadge={true}
+                >
+                  <Text size='1' style={{ cursor: 'default' }}>
+                    Owner
+                  </Text>
+                </CollaboratorRow>
+              ) : null}
+              <AccessRequests
+                projectId={projectId}
+                projectAccessLevel={accessLevel}
+                approveAccessRequest={approveAccessRequest}
+                accessRequests={accessRequests.requests}
+              />
+            </Flex>
+          </motion.div>,
+        )}
+      </AnimatePresence>
+    )
+  },
+)
 AccessRequestsList.displayName = 'AccessRequestsList'
 
 function AccessRequests({
-  project,
+  projectId,
+  projectAccessLevel,
   approveAccessRequest,
   accessRequests,
 }: {
-  project: ProjectListing
+  projectId: string
+  projectAccessLevel: AccessLevel
   approveAccessRequest: (projectId: string, tokenId: string) => void
   accessRequests: ProjectAccessRequestWithUserDetails[]
 }) {
+  const onApprove = React.useCallback(
+    (token: string) => () => {
+      approveAccessRequest(projectId, token)
+    },
+    [projectId, approveAccessRequest],
+  )
+
+  const isDisabled = React.useMemo(
+    () => projectAccessLevel === AccessLevel.PRIVATE,
+    [projectAccessLevel],
+  )
+
   return accessRequests
     .sort((a, b) => {
       if (a.status !== b.status) {
@@ -204,27 +239,75 @@ function AccessRequests({
       return moment(a.updated_at).unix() - moment(b.updated_at).unix()
     })
     .map((request) => {
-      function onApprove() {
-        approveAccessRequest(project.proj_id, request.token)
+      const user = request.User
+      if (user == null) {
+        return null
       }
+
       const status = request.status
       return (
-        <Flex key={request.token} justify='between'>
-          <Text size='1'>{request.User?.name ?? request.User?.email ?? request.user_id}</Text>
+        <CollaboratorRow
+          key={request.token}
+          picture={user.picture}
+          name={user.name ?? user.email ?? user.user_id}
+          disabled={isDisabled}
+        >
           {status === AccessRequestStatus.PENDING ? (
-            // eslint-disable-next-line react/jsx-no-bind
-            <Button size='1' variant='ghost' onClick={onApprove}>
+            <Button size='1' variant='ghost' onClick={onApprove(request.token)}>
               Approve
             </Button>
           ) : (
-            <Text size='1' color={status === AccessRequestStatus.APPROVED ? 'green' : 'red'}>
+            <Text
+              size='1'
+              color={status === AccessRequestStatus.APPROVED ? 'green' : 'red'}
+              style={{
+                fontStyle: isDisabled ? 'italic' : 'normal',
+                cursor: 'default',
+              }}
+            >
               {status === AccessRequestStatus.APPROVED ? 'Approved' : 'Rejected'}
             </Text>
           )}
-        </Flex>
+        </CollaboratorRow>
       )
     })
 }
+
+const CollaboratorRow = React.memo(
+  ({
+    picture,
+    name,
+    children,
+    disabled,
+    starBadge,
+  }: {
+    picture: string | null
+    name: string
+    children: React.ReactNode
+    disabled: boolean
+    starBadge?: boolean
+  }) => {
+    return (
+      <Flex
+        justify='between'
+        style={{ filter: disabled ? 'grayscale(1)' : undefined, opacity: disabled ? 0.5 : 1 }}
+      >
+        <Flex align='center' gap='2'>
+          <UserAvatar
+            picture={picture}
+            starBadge={starBadge}
+            size={22}
+            name={name}
+            className={sprinkles({ borderRadius: 'full' })}
+          />
+          <Text size='1'>{name}</Text>
+        </Flex>
+        {children}
+      </Flex>
+    )
+  },
+)
+CollaboratorRow.displayName = 'CollaboratorRow'
 
 const VisibilityUIComponents = {
   [AccessLevel.PUBLIC]: { text: 'Public', icon: <GlobeIcon width='16' height='16' /> },

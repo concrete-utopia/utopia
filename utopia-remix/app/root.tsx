@@ -2,7 +2,7 @@
 // FIXME Move the eslint and prettier config files and scripts to the root level
 
 import { cssBundleHref } from '@remix-run/css-bundle'
-import type { HeadersFunction, LinksFunction } from '@remix-run/node'
+import type { HeadersFunction, LinksFunction, LoaderFunctionArgs } from '@remix-run/node'
 import {
   Links,
   LiveReload,
@@ -14,6 +14,7 @@ import {
   useLoaderData,
   useRouteError,
 } from '@remix-run/react'
+import type { BrowserEnvironmentType } from './env.server'
 import { BrowserEnvironment } from './env.server'
 import { styles } from './styles/styles.css'
 import type { ErrorWithStatus } from './util/errors'
@@ -25,15 +26,19 @@ import { Theme } from '@radix-ui/themes'
 import { useIsDarkMode } from './hooks/useIsDarkMode'
 import { ProjectsContext, createProjectsStore } from './store'
 import React from 'react'
+import type { UserDetails } from 'prisma-client'
+import { getUser } from './util/api.server'
 
 export const links: LinksFunction = () => [
   ...(cssBundleHref ? [{ rel: 'stylesheet', href: cssBundleHref }] : []),
   { rel: 'stylesheet', href: radixStyle },
 ]
 
-export async function loader() {
+export async function loader(args: LoaderFunctionArgs) {
+  const user = await getUser(args.request)
   return json({
     env: BrowserEnvironment,
+    myUser: user,
   })
 }
 
@@ -44,10 +49,13 @@ export const headers: HeadersFunction = () => ({
 })
 
 export default function App() {
-  const data = useLoaderData<typeof loader>()
+  const data = useLoaderData<typeof loader>() as unknown as {
+    env: BrowserEnvironmentType
+    myUser: UserDetails
+  }
   const isDarkMode = useIsDarkMode()
 
-  const store = React.useRef(createProjectsStore({ env: data.env })).current
+  const store = React.useRef(createProjectsStore({ env: data.env, myUser: data.myUser })).current
 
   const theme = isDarkMode ? 'dark' : 'light'
 
