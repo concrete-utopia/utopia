@@ -28,6 +28,7 @@ import { useFetcherDataUnkown } from '../hooks/useFetcherData'
 import { useProjectAccessMatchesSelectedCategory } from '../hooks/useProjectMatchingCategory'
 import { sprinkles } from '../styles/sprinkles.css'
 import { Spinner } from './spinner'
+import { isLikeApiError } from '../util/errors'
 
 export const SharingDialogWrapper = React.memo(
   ({ project }: { project: ProjectListing | null }) => {
@@ -59,26 +60,35 @@ function SharingDialog({ project }: { project: ProjectListing | null }) {
   const setSharingProjectId = useProjectsStore((store) => store.setSharingProjectId)
   const accessRequests = useProjectsStore((store) => store.sharingProjectAccessRequests)
 
-  const accessLevel = React.useMemo(() => {
+  const projectAccessLevel = React.useMemo(() => {
     return asAccessLevel(project?.ProjectAccess?.access_level) ?? AccessLevel.PRIVATE
   }, [project])
 
+  const [accessLevel, setAccessLevel] = React.useState<AccessLevel>(projectAccessLevel)
+
   const projectAccessMatchesSelectedCategory = useProjectAccessMatchesSelectedCategory(project)
 
-  const clearSharingProjectId = React.useCallback(() => {
-    if (!projectAccessMatchesSelectedCategory) {
-      setSharingProjectId(null)
-    }
-  }, [setSharingProjectId, projectAccessMatchesSelectedCategory])
+  const changeAccessFetcherCallback = React.useCallback(
+    (data: unknown) => {
+      if (isLikeApiError(data)) {
+        setAccessLevel(projectAccessLevel)
+      }
+      if (!projectAccessMatchesSelectedCategory) {
+        setSharingProjectId(null)
+      }
+    },
+    [setSharingProjectId, projectAccessMatchesSelectedCategory, projectAccessLevel],
+  )
 
   const changeAccessFetcher = useFetcherWithOperation(project?.proj_id ?? null, 'changeAccess')
-  useFetcherDataUnkown(changeAccessFetcher, clearSharingProjectId)
+  useFetcherDataUnkown(changeAccessFetcher, changeAccessFetcherCallback)
 
   const changeProjectAccessLevel = React.useCallback(
     (newAccessLevel: AccessLevel) => {
       if (project == null) {
         return
       }
+      setAccessLevel(newAccessLevel)
       changeAccessFetcher.submit(
         operationChangeAccess(project, newAccessLevel),
         { accessLevel: newAccessLevel.toString() },
