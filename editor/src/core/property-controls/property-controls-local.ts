@@ -27,7 +27,7 @@ import type {
 } from '../../components/custom-code/code-file'
 import { dependenciesFromPackageJson } from '../../components/editor/npm-dependency/npm-dependency'
 import { parseControlDescription } from './property-controls-parser'
-import type { ParseResult } from '../../utils/value-parser-utils'
+import type { ParseError, ParseResult } from '../../utils/value-parser-utils'
 import {
   objectKeyParser,
   optionalObjectKeyParser,
@@ -177,7 +177,9 @@ type ComponentDescriptorRegistrationError =
   | { type: 'file-cannot-be-parsed' }
   | { type: 'no-export-default' }
   | { type: 'no-exported-component-descriptors' }
-  | { type: 'evaluation-error'; error: unknown }
+  | { type: 'evaluation-error'; evaluationError: unknown }
+  | { type: 'invalid-schema'; invalidSchemaError: ParseError }
+  | { type: 'cannot-extract-component'; componentExtractionError: string }
 
 interface ComponentDescriptorRegistrationResult {
   descriptors: ComponentDescriptorWithName[]
@@ -214,6 +216,7 @@ async function getComponentDescriptorPromisesFromParseResult(
       const parsedComponents = parseComponents(descriptor)
 
       if (parsedComponents.type === 'LEFT') {
+        errors.push({ type: 'invalid-schema', invalidSchemaError: parsedComponents.value })
         continue
       }
 
@@ -228,14 +231,24 @@ async function getComponentDescriptorPromisesFromParseResult(
           componentDescriptorFromDescriptorFile(descriptorFile.path),
         )
 
-        if (componentDescriptor.type === 'RIGHT') {
-          result = result.concat(componentDescriptor.value)
+        switch (componentDescriptor.type) {
+          case 'LEFT':
+            errors.push({
+              type: 'cannot-extract-component',
+              componentExtractionError: componentDescriptor.value,
+            })
+            break
+          case 'RIGHT':
+            result = result.concat(componentDescriptor.value)
+            break
+          default:
+            assertNever(componentDescriptor)
         }
       }
     }
     return { descriptors: result, errors: errors }
   } catch (e) {
-    return { descriptors: [], errors: [{ type: 'evaluation-error', error: e }] }
+    return { descriptors: [], errors: [{ type: 'evaluation-error', evaluationError: e }] }
   }
 }
 
