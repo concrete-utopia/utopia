@@ -349,7 +349,7 @@ function errorsFromComponentRegistration(
             '',
             `Components file evaluation error: ${JSON.stringify(error.evaluationError)}`,
             '',
-            'runtime',
+            'eslint',
             null,
           ),
         ]
@@ -366,7 +366,7 @@ function errorsFromComponentRegistration(
             '',
             `Components file has no default export`,
             '',
-            'runtime',
+            'eslint',
             null,
           ),
         ]
@@ -383,7 +383,7 @@ function errorsFromComponentRegistration(
             '',
             `Cannot extract default export from file`,
             '',
-            'runtime',
+            'eslint',
             null,
           ),
         ]
@@ -402,7 +402,7 @@ function errorsFromComponentRegistration(
               getParseErrorDetails(error.invalidSchemaError).description
             }`,
             '',
-            'runtime',
+            'eslint',
             null,
           ),
         ]
@@ -419,7 +419,7 @@ function errorsFromComponentRegistration(
             '',
             `Malformed component registration: ${error.componentExtractionError}`,
             '',
-            'runtime',
+            'eslint',
             null,
           ),
         ]
@@ -438,7 +438,7 @@ function errorsFromComponentRegistration(
               error.validationError,
             )}`,
             '',
-            'runtime',
+            'eslint',
             null,
           ),
         ]
