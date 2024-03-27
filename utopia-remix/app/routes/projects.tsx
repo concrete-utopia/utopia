@@ -51,6 +51,7 @@ import {
 import { githubRepositoryPrettyName } from '../util/github'
 import type { OperationWithKey } from '../stores/projectsStore'
 import { createProjectsStore, ProjectsContext, useProjectsStore } from '../stores/projectsStore'
+import { UserAvatar } from '../components/userAvatar'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
@@ -298,11 +299,11 @@ const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
             padding: '0 6px',
           }}
         >
-          <img
+          <UserAvatar
+            picture={user.picture}
+            size={32}
+            name={user.name ?? user.email ?? user.user_id}
             className={sprinkles({ borderRadius: 'medium' })}
-            style={{ width: 32 }}
-            src={user.picture ?? undefined}
-            referrerPolicy='no-referrer'
           />
           <div className={userName({})}>{user.name}</div>
         </div>
@@ -748,32 +749,19 @@ const ProjectCard = React.memo(
                 <div style={{ position: 'absolute', right: 8, bottom: 8, display: 'flex', gap: 2 }}>
                   {collaborators.map((collaborator) => {
                     return (
-                      <div
+                      <UserAvatar
                         key={`collaborator-${project.id}-${collaborator.id}`}
-                        style={{
-                          borderRadius: '100%',
-                          width: 24,
-                          height: 24,
-                          backgroundImage: `url("${collaborator.avatar}")`,
-                          backgroundSize: 'cover',
-                          display: 'flex',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          fontSize: '.9em',
-                          fontWeight: 700,
-                        }}
-                        title={collaborator.name ?? UnknownPlayerName}
+                        size={24}
+                        starBadge={collaborator.id === project.owner_id}
+                        picture={collaborator.avatar}
+                        name={collaborator.name ?? UnknownPlayerName}
                         className={sprinkles({
                           boxShadow: 'shadow',
                           color: 'white',
                           backgroundColor: 'primary',
+                          borderRadius: 'full',
                         })}
-                      >
-                        {when(
-                          collaborator.avatar === '',
-                          multiplayerInitialsFromName(collaborator.name),
-                        )}
-                      </div>
+                      />
                     )
                   })}
                 </div>,
