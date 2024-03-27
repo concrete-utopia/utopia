@@ -1,6 +1,6 @@
 import moment from 'moment'
 import React from 'react'
-import { useProjectsStore } from '../store'
+import { useProjectsStore } from '../stores/projectsStore'
 import type { ProjectListing } from '../types'
 import { assertNever } from './assertNever'
 

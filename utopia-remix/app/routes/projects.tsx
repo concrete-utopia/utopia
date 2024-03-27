@@ -31,8 +31,6 @@ import {
   listSharedWithMeProjectsAndCollaborators,
 } from '../models/project.server'
 import { getCollaborators } from '../models/projectCollaborators.server'
-import type { OperationWithKey } from '../store'
-import { useProjectsStore } from '../store'
 import { button } from '../styles/button.css'
 import { projectCards, projectRows } from '../styles/projects.css'
 import { projectCategoryButton, userName } from '../styles/sidebarComponents.css'
@@ -51,6 +49,8 @@ import {
   useSortCompareProject,
 } from '../util/use-sort-compare-project'
 import { githubRepositoryPrettyName } from '../util/github'
+import type { OperationWithKey } from '../stores/projectsStore'
+import { createProjectsStore, ProjectsContext, useProjectsStore } from '../stores/projectsStore'
 
 const SortOptions = ['title', 'dateCreated', 'dateModified'] as const
 export type SortCriteria = (typeof SortOptions)[number]
@@ -130,16 +130,33 @@ export async function loader(args: LoaderFunctionArgs) {
   )
 }
 
+type LoaderData = {
+  user: UserDetails
+  projects: ProjectListing[]
+  deletedProjects: ProjectListing[]
+  projectsSharedWithMe: ProjectListing[]
+  collaborators: CollaboratorsByProject
+}
+
 const ProjectsPage = React.memo(() => {
+  const data = useLoaderData() as unknown as LoaderData
+
+  const store = React.useRef(createProjectsStore({ myUser: data.user })).current
+
+  return (
+    <ProjectsContext.Provider value={store}>
+      <ProjectsPageInner />
+    </ProjectsContext.Provider>
+  )
+})
+ProjectsPage.displayName = 'ProjectsPage'
+
+export default ProjectsPage
+
+const ProjectsPageInner = React.memo(() => {
   useCleanupOperations()
 
-  const data = useLoaderData() as unknown as {
-    user: UserDetails
-    projects: ProjectListing[]
-    deletedProjects: ProjectListing[]
-    projectsSharedWithMe: ProjectListing[]
-    collaborators: CollaboratorsByProject
-  }
+  const data = useLoaderData() as unknown as LoaderData
 
   const selectedCategory = useProjectsStore((store) => store.selectedCategory)
 
@@ -213,20 +230,14 @@ const ProjectsPage = React.memo(() => {
       >
         <TopActionBar />
         <ProjectsHeader projects={filteredProjects} />
-        <Projects
-          projects={filteredProjects}
-          collaborators={data.collaborators}
-          myUserId={data.user.user_id}
-        />
+        <Projects projects={filteredProjects} collaborators={data.collaborators} />
         <ActiveOperations projects={activeProjects} />
         <SharingDialogWrapper project={sharingProject} />
       </div>
     </div>
   )
 })
-ProjectsPage.displayName = 'ProjectsPage'
-
-export default ProjectsPage
+ProjectsPageInner.displayName = 'ProjectsPageInner'
 
 const Sidebar = React.memo(({ user }: { user: UserDetails }) => {
   const searchQuery = useProjectsStore((store) => store.searchQuery)
@@ -564,12 +575,11 @@ const Projects = React.memo(
   ({
     projects,
     collaborators,
-    myUserId,
   }: {
     projects: ProjectListing[]
     collaborators: CollaboratorsByProject
-    myUserId: string
   }) => {
+    const myUser = useProjectsStore((store) => store.myUser)
     const gridView = useProjectsStore((store) => store.gridView)
 
     const selectedProjectId = useProjectsStore((store) => store.selectedProjectId)
@@ -590,7 +600,7 @@ const Projects = React.memo(
               <ProjectRow
                 key={project.proj_id}
                 project={project}
-                isSharedWithMe={project.owner_id !== myUserId}
+                isSharedWithMe={project.owner_id !== myUser?.user_id}
                 selected={project.proj_id === selectedProjectId}
                 /* eslint-disable-next-line react/jsx-no-bind */
                 onSelect={() => handleProjectSelect(project)}
@@ -606,7 +616,7 @@ const Projects = React.memo(
               <ProjectCard
                 key={project.proj_id}
                 project={project}
-                isSharedWithMe={project.owner_id !== myUserId}
+                isSharedWithMe={project.owner_id !== myUser?.user_id}
                 selected={project.proj_id === selectedProjectId}
                 /* eslint-disable-next-line react/jsx-no-bind */
                 onSelect={() => handleProjectSelect(project)}
