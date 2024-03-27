@@ -71,6 +71,7 @@ import type { EditorDispatch } from '../../components/editor/action-types'
 import { updatePropertyControlsInfo } from '../../components/editor/actions/action-creators'
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import { isIntrinsicHTMLElement } from '../shared/element-template'
+import { NameSymbol } from '../es-modules/package-manager/package-manager'
 
 async function parseInsertOption(
   insertOption: ComponentInsertOption,
@@ -188,6 +189,10 @@ function isComponentRegistrationValid(
 
   if (isComponentRendererComponent(registration.component)) {
     return registration.component.originalName === registrationKey
+  }
+
+  if (registration.component[NameSymbol] != null) {
+    return registration.component[NameSymbol] === registrationKey
   }
 
   return true
