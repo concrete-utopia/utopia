@@ -195,7 +195,7 @@ export function createModuleEvaluator(editor: EditorState): ModuleEvaluator {
         },
         resolvedParseSuccess,
       )
-      const absoluteFilenameOrPackage = isRight(filePathResolveResult)
+      const absoluteFilenameOrPackage = defaultEither(toImport, filePathResolveResult)
         ? filePathResolveResult.value
         : toImport
       return extendExportsWithInfo(result, absoluteFilenameOrPackage)
