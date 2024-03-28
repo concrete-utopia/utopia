@@ -325,6 +325,10 @@ async function getComponentDescriptorPromisesFromParseResult(
   }
 }
 
+function simpleErrorMessage(fileName: string, error: string): ErrorMessage {
+  return errorMessage(fileName, null, null, null, null, '', 'fatal', '', error, '', 'eslint', null)
+}
+
 function errorsFromComponentRegistration(
   fileName: string,
   errors: ComponentDescriptorRegistrationError[],
@@ -338,108 +342,38 @@ function errorsFromComponentRegistration(
         return error.parseErrorMessages
       case 'evaluation-error':
         return [
-          errorMessage(
+          simpleErrorMessage(
             fileName,
-            null,
-            null,
-            null,
-            null,
-            '',
-            'fatal',
-            '',
             `Components file evaluation error: ${JSON.stringify(error.evaluationError)}`,
-            '',
-            'eslint',
-            null,
           ),
         ]
       case 'no-export-default':
-        return [
-          errorMessage(
-            fileName,
-            null,
-            null,
-            null,
-            null,
-            '',
-            'fatal',
-            '',
-            `Components file has no default export`,
-            '',
-            'eslint',
-            null,
-          ),
-        ]
+        return [simpleErrorMessage(fileName, `Components file has no default export`)]
       case 'no-exported-component-descriptors':
-        return [
-          errorMessage(
-            fileName,
-            null,
-            null,
-            null,
-            null,
-            '',
-            'fatal',
-            '',
-            `Cannot extract default export from file`,
-            '',
-            'eslint',
-            null,
-          ),
-        ]
+        return [simpleErrorMessage(fileName, `Cannot extract default export from file`)]
       case 'invalid-schema':
         return [
-          errorMessage(
+          simpleErrorMessage(
             fileName,
-            null,
-            null,
-            null,
-            null,
-            '',
-            'fatal',
-            '',
             `Malformed component registration: ${
               getParseErrorDetails(error.invalidSchemaError).description
             }`,
-            '',
-            'eslint',
-            null,
           ),
         ]
       case 'cannot-extract-component':
         return [
-          errorMessage(
+          simpleErrorMessage(
             fileName,
-            null,
-            null,
-            null,
-            null,
-            '',
-            'fatal',
-            '',
             `Malformed component registration: ${error.componentExtractionError}`,
-            '',
-            'eslint',
-            null,
           ),
         ]
       case 'registration-validation-failed':
         return [
-          errorMessage(
+          simpleErrorMessage(
             fileName,
-            null,
-            null,
-            null,
-            null,
-            '',
-            'fatal',
-            '',
             `Validation failed: ${messageForComponentRegistrationValidationError(
               error.validationError,
             )}`,
-            '',
-            'eslint',
-            null,
           ),
         ]
       default:
