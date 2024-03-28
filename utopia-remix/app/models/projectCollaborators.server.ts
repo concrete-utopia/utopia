@@ -1,8 +1,9 @@
-import type { UserDetails } from 'prisma-client'
+import type { ProjectCollaborator, UserDetails } from 'prisma-client'
 import type { UtopiaPrismaClient } from '../db.server'
 import { prisma } from '../db.server'
 import type { CollaboratorsByProject } from '../types'
 import { userToCollaborator } from '../types'
+import type { GetBatchResult } from 'prisma-client/runtime/library.js'
 
 export async function getCollaborators(params: {
   ids: string[]
@@ -44,6 +45,26 @@ export async function addToProjectCollaboratorsWithRunner(
     create: {
       project_id: params.projectId,
       user_id: params.userId,
+    },
+  })
+}
+
+export async function removeFromProjectCollaborators(params: {
+  projectId: string
+  userId: string
+}): Promise<GetBatchResult> {
+  return removeFromProjectCollaboratorsWithRunner(prisma, params)
+}
+
+export async function removeFromProjectCollaboratorsWithRunner(
+  runner: Pick<UtopiaPrismaClient, 'projectCollaborator'>,
+  params: { projectId: string; userId: string },
+) {
+  // using delete many so not to explode if the record is not found
+  return await runner.projectCollaborator.deleteMany({
+    where: {
+      user_id: params.userId,
+      project_id: params.projectId,
     },
   })
 }

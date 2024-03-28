@@ -9,6 +9,7 @@ import {
   getCollaborators,
   addToProjectCollaborators,
   listProjectCollaborators,
+  removeFromProjectCollaborators,
 } from './projectCollaborators.server'
 
 describe('projectCollaborators model', () => {
@@ -106,6 +107,43 @@ describe('projectCollaborators model', () => {
       await addToProjectCollaborators({ projectId: 'three', userId: 'alice' })
       collaborators = await prisma.projectCollaborator.findMany({
         where: { project_id: 'three' },
+        orderBy: { id: 'asc' },
+      })
+      expect(collaborators.map((p) => p.user_id)).toEqual(['alice'])
+    })
+  })
+
+  describe('removeFromProjectCollaborators', () => {
+    beforeEach(async () => {
+      await createTestUser(prisma, { id: 'bob' })
+      await createTestUser(prisma, { id: 'alice' })
+      await createTestProject(prisma, { id: 'one', ownerId: 'bob' })
+      await createTestProject(prisma, { id: 'two', ownerId: 'alice' })
+      await createTestProject(prisma, { id: 'three', ownerId: 'bob' })
+      await createTestProjectCollaborator(prisma, { projectId: 'one', userId: 'bob' })
+      await createTestProjectCollaborator(prisma, { projectId: 'two', userId: 'alice' })
+      await createTestProjectCollaborator(prisma, { projectId: 'two', userId: 'bob' })
+    })
+
+    it('errors if the project is not found', async () => {
+      const removed = await removeFromProjectCollaborators({ projectId: 'WRONG', userId: 'alice' })
+      expect(removed.count).toBe(0)
+    })
+    it('does nothing if the user is not found', async () => {
+      const removed = await removeFromProjectCollaborators({ projectId: 'one', userId: 'alice' })
+      expect(removed.count).toBe(0)
+
+      const collaborators = await prisma.projectCollaborator.findMany({
+        where: { project_id: 'one' },
+      })
+      expect(collaborators.map((p) => p.user_id)).toEqual(['bob'])
+    })
+    it('removes the user from the collaborators if present', async () => {
+      const removed = await removeFromProjectCollaborators({ projectId: 'two', userId: 'bob' })
+      expect(removed.count).toBe(1)
+
+      let collaborators = await prisma.projectCollaborator.findMany({
+        where: { project_id: 'two' },
         orderBy: { id: 'asc' },
       })
       expect(collaborators.map((p) => p.user_id)).toEqual(['alice'])
