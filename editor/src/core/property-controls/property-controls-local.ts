@@ -125,11 +125,13 @@ export function setRequireInfoOnComponent(exported: any, name: string, moduleNam
 
 function extendExportsWithInfo(exports: any, toImport: string): any {
   Object.entries(exports).forEach(([name, exp]) => {
-    try {
-      ;(exp as any)[exportedNameSymbol] = name
-      ;(exp as any)[moduleNameSymbol] = toImport
-      // eslint-disable-next-line no-empty
-    } catch (e) {}
+    if (typeof exp === 'object') {
+      try {
+        ;(exp as any)[exportedNameSymbol] = name
+        ;(exp as any)[moduleNameSymbol] = toImport
+        // eslint-disable-next-line no-empty
+      } catch (e) {}
+    }
   })
   return exports
 }
