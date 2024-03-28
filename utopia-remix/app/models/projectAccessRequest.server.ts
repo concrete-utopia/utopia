@@ -5,7 +5,10 @@ import { ensure } from '../util/api.server'
 import { Status } from '../util/statusCodes'
 import type { ProjectAccessRequestWithUserDetails } from '../types'
 import { AccessRequestStatus, UserProjectRole } from '../types'
-import { addToProjectCollaboratorsWithRunner } from './projectCollaborators.server'
+import {
+  addToProjectCollaboratorsWithRunner,
+  removeFromProjectCollaboratorsWithRunner,
+} from './projectCollaborators.server'
 import { assertNever } from '../util/assertNever'
 
 function makeRequestToken(): string {
@@ -99,6 +102,10 @@ export async function updateAccessRequestStatus(params: {
         )
         break
       case AccessRequestStatus.REJECTED:
+        await removeFromProjectCollaboratorsWithRunner(tx, {
+          projectId: params.projectId,
+          userId: request.user_id,
+        })
         await permissionsService.revokeAllRolesFromUser(params.projectId, request.user_id)
         break
       case AccessRequestStatus.PENDING:
