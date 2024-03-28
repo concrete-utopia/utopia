@@ -212,15 +212,11 @@ describe('registered property controls', () => {
       },
     })
 
-    // /src/card is not here
-    expect(Object.keys(editorState.propertyControlsInfo)).toMatchInlineSnapshot(`
-      Array [
-        "@react-three/fiber",
-        "antd",
-        "utopia-api",
-        "@remix-run/react",
-      ]
-    `)
+    const srcCardKey = Object.keys(renderResult.getEditorState().editor.propertyControlsInfo).find(
+      (key) => key === '/src/card',
+    )
+
+    expect(srcCardKey).toBeUndefined()
   })
   it('control registration fails when the imported component does not match the name of registration key', async () => {
     const renderResult = await renderTestEditorWithModel(
@@ -268,15 +264,11 @@ describe('registered property controls', () => {
       },
     })
 
-    // /src/card is not here
-    expect(Object.keys(editorState.propertyControlsInfo)).toMatchInlineSnapshot(`
-      Array [
-        "@react-three/fiber",
-        "antd",
-        "utopia-api",
-        "@remix-run/react",
-      ]
-    `)
+    const srcCardKey = Object.keys(renderResult.getEditorState().editor.propertyControlsInfo).find(
+      (key) => key === '/src/card',
+    )
+
+    expect(srcCardKey).toBeUndefined()
   })
   it('updating the control registration removes the build errors', async () => {
     const renderResult = await renderTestEditorWithModel(
@@ -323,16 +315,11 @@ describe('registered property controls', () => {
       },
     })
 
-    // /src/card is not here
-    expect(Object.keys(renderResult.getEditorState().editor.propertyControlsInfo))
-      .toMatchInlineSnapshot(`
-      Array [
-        "@react-three/fiber",
-        "antd",
-        "utopia-api",
-        "@remix-run/react",
-      ]
-    `)
+    const srcCardKey = Object.keys(renderResult.getEditorState().editor.propertyControlsInfo).find(
+      (key) => key === '/src/card',
+    )
+
+    expect(srcCardKey).toBeUndefined()
 
     await renderResult.dispatch(
       [
@@ -380,7 +367,6 @@ describe('registered property controls', () => {
       },
     })
 
-    // /src/card is not here
     expect(Object.keys(renderResult.getEditorState().editor.propertyControlsInfo)).toEqual([
       '@react-three/fiber',
       'antd',
