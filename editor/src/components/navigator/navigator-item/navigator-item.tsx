@@ -432,6 +432,11 @@ export const NavigatorItem: React.FunctionComponent<
     index,
   } = props
 
+  // TODO Should be we using isHovered rather than isHighlighted for everything here?
+  const [isHovered, setIsHovered] = React.useState(false)
+  const setIsHoveredTrue = React.useCallback(() => setIsHovered(true), [])
+  const setIsHoveredFalse = React.useCallback(() => setIsHovered(false), [])
+
   const colorTheme = useColorTheme()
 
   const autoFocusedPaths = useEditorState(
@@ -790,6 +795,8 @@ export const NavigatorItem: React.FunctionComponent<
         }`,
         outlineOffset: props.parentOutline === 'solid' ? '-1px' : 0,
       }}
+      onMouseEnter={setIsHoveredTrue}
+      onMouseLeave={setIsHoveredFalse}
     >
       {portalTarget != null &&
       (navigatorEntry.type === 'SLOT' || navigatorEntry.type === 'RENDER_PROP')
@@ -859,8 +866,6 @@ export const NavigatorItem: React.FunctionComponent<
                 {props.label}
               </div>
             </FlexRow>
-            {/* {when(
-              navigatorEntry.propHasValue, */}
             <FlexRow
               style={{
                 paddingTop: 6,
@@ -875,21 +880,13 @@ export const NavigatorItem: React.FunctionComponent<
                 style={{
                   height: 18,
                   width: 18,
-                  display: 'block',
+                  display: isHovered ? 'block' : 'none',
                   paddingRight: 1,
                 }}
               >
-                <Icn
-                  category='element'
-                  type='placeholder'
-                  tooltipText='Set Value'
-                  width={18}
-                  height={18}
-                  style={{ transform: 'scale(.85)' }}
-                />
+                <Icn type='picker' tooltipText='Set Prop' style={{ transform: 'scale(.85)' }} />
               </Button>
             </FlexRow>
-            {/* )} */}
           </FlexRow>
         ) : (
           <FlexRow style={{ justifyContent: 'space-between', ...containerStyle }}>
