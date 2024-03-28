@@ -140,7 +140,7 @@ describe('create new project', () => {
     const userId = 'user1'
 
     let projectProxy: jest.SpyInstance
-    let setProjectAccessMock: jest.SpyInstance
+    let createProjectAccessMock: jest.SpyInstance
     afterEach(async () => {
       await truncateTables([
         prisma.projectAccess,
@@ -152,7 +152,7 @@ describe('create new project', () => {
       ])
 
       projectProxy.mockClear()
-      setProjectAccessMock.mockClear()
+      createProjectAccessMock.mockClear()
     })
 
     beforeEach(async () => {
@@ -160,12 +160,12 @@ describe('create new project', () => {
       await createTestSession(prisma, { key: 'the-key', userId: userId })
 
       projectProxy = jest.spyOn(proxyServer, 'proxy')
-      setProjectAccessMock = jest.spyOn(projectAccessModel, 'setProjectAccess')
+      createProjectAccessMock = jest.spyOn(projectAccessModel, 'createProjectAccess')
     })
 
     it('should set access level for a new project', async () => {
       projectProxy.mockResolvedValue({ id: projectId, ownerId: userId })
-      setProjectAccessMock.mockResolvedValue(null)
+      createProjectAccessMock.mockResolvedValue(null)
       const req = newTestRequest({
         method: 'PUT',
         authCookie: 'the-key',
@@ -178,14 +178,14 @@ describe('create new project', () => {
       }) as Promise<ApiResponse<{ id: string; projectId: string }>>)
       const project = await response.json()
       expect(project).toEqual({ id: projectId, ownerId: userId })
-      expect(setProjectAccessMock).toHaveBeenCalledWith({
+      expect(createProjectAccessMock).toHaveBeenCalledWith({
         projectId: projectId,
         accessLevel: AccessLevel.PUBLIC,
       })
     })
-    it('shouldnt set access level for a new project if not provided', async () => {
+    it('should set access level to PRIVATE for a new project if not provided', async () => {
       projectProxy.mockResolvedValue({ id: projectId, ownerId: userId })
-      setProjectAccessMock.mockResolvedValue(null)
+      createProjectAccessMock.mockResolvedValue(null)
       const req = newTestRequest({
         method: 'PUT',
         authCookie: 'the-key',
@@ -198,11 +198,14 @@ describe('create new project', () => {
       }) as Promise<ApiResponse<{ id: string; projectId: string }>>)
       const project = await response.json()
       expect(project).toEqual({ id: projectId, ownerId: userId })
-      expect(setProjectAccessMock).not.toHaveBeenCalled()
+      expect(createProjectAccessMock).toHaveBeenCalledWith({
+        projectId: projectId,
+        accessLevel: AccessLevel.PRIVATE,
+      })
     })
-    it('shouldnt set access level for a new project if access level is invalid', async () => {
+    it('should set access level to PRIVATE for a new project if access level is invalid', async () => {
       projectProxy.mockResolvedValue({ id: projectId, ownerId: userId })
-      setProjectAccessMock.mockResolvedValue(null)
+      createProjectAccessMock.mockResolvedValue(null)
       const req = newTestRequest({
         method: 'PUT',
         authCookie: 'the-key',
@@ -215,11 +218,14 @@ describe('create new project', () => {
       }) as Promise<ApiResponse<{ id: string; projectId: string }>>)
       const project = await response.json()
       expect(project).toEqual({ id: projectId, ownerId: userId })
-      expect(setProjectAccessMock).not.toHaveBeenCalled()
+      expect(createProjectAccessMock).toHaveBeenCalledWith({
+        projectId: projectId,
+        accessLevel: AccessLevel.PRIVATE,
+      })
     })
     it('shouldnt set access level if the endpoint is a POST', async () => {
       projectProxy.mockResolvedValue({ id: projectId, ownerId: userId })
-      setProjectAccessMock.mockResolvedValue(null)
+      createProjectAccessMock.mockResolvedValue(null)
       const req = newTestRequest({
         method: 'POST',
         authCookie: 'the-key',
@@ -232,7 +238,7 @@ describe('create new project', () => {
       }) as Promise<ApiResponse<{ id: string; projectId: string }>>)
       const project = await response.json()
       expect(project).toEqual({ id: projectId, ownerId: userId })
-      expect(setProjectAccessMock).not.toHaveBeenCalled()
+      expect(createProjectAccessMock).not.toHaveBeenCalled()
     })
   })
 })

@@ -4,7 +4,7 @@ import { ensure, handle, handleOptions } from '../util/api.server'
 import { AccessLevel, UserProjectPermission } from '../types'
 import { ALLOW, validateProjectAccess } from '../handlers/validators'
 import type { Params } from '@remix-run/react'
-import { setProjectAccess } from '../models/projectAccess.server'
+import { createProjectAccess } from '../models/projectAccess.server'
 import { Status } from '../util/statusCodes'
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -43,16 +43,15 @@ async function createProject(req: Request, params: Params<string>) {
   // handle access level setting
   const url = new URL(req.url)
   const accessLevelParam = url.searchParams.get('accessLevel')
-  const accessLevel: AccessLevel | null = accessLevelParamToAccessLevel(accessLevelParam)
-  if (accessLevel != null) {
-    await setProjectAccess({ projectId: id, accessLevel: accessLevel })
-  }
+  const accessLevel: AccessLevel | null =
+    accessLevelParamToAccessLevel(accessLevelParam) ?? AccessLevel.PRIVATE
+  await createProjectAccess({ projectId: id, accessLevel: accessLevel })
 
   return project
 }
 
 function accessLevelParamToAccessLevel(accessLevelParam: string | null): AccessLevel | null {
-  if (accessLevelParam == null) {
+  if (accessLevelParam == null || accessLevelParam == '') {
     return null
   }
   switch (accessLevelParam) {
