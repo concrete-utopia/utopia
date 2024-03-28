@@ -103,6 +103,37 @@ async function parseInsertOption(
   }, parsedParams)
 }
 
+const exportedNameSymbol = Symbol('__utopia__exportedName')
+const moduleNameSymbol = Symbol('__utopia__moduleName')
+
+export interface RequireInfo {
+  name: string
+  moduleName: string
+}
+
+export function getRequireInfoFromComponent(component: any): RequireInfo {
+  return {
+    name: component[exportedNameSymbol],
+    moduleName: component[moduleNameSymbol],
+  }
+}
+
+export function setRequireInfoOnComponent(exported: any, name: string, moduleName: string): void {
+  exported[exportedNameSymbol] = name
+  exported[moduleNameSymbol] = moduleName
+}
+
+function extendExportsWithInfo(exports: any, toImport: string): any {
+  Object.entries(exports).forEach(([name, exp]) => {
+    try {
+      ;(exp as any)[exportedNameSymbol] = name
+      ;(exp as any)[moduleNameSymbol] = toImport
+      // eslint-disable-next-line no-empty
+    } catch (e) {}
+  })
+  return exports
+}
+
 export type ModuleEvaluator = (moduleName: string) => any
 export function createModuleEvaluator(editor: EditorState): ModuleEvaluator {
   return (moduleName: string) => {
@@ -150,7 +181,7 @@ export function createModuleEvaluator(editor: EditorState): ModuleEvaluator {
         filePathResolveResult,
         null,
       )
-      return foldEither(
+      const result = foldEither(
         () => {
           // We did not find a ParseSuccess, fallback to standard require Fn
           return requireFn(importOrigin, toImport, false)
@@ -161,6 +192,7 @@ export function createModuleEvaluator(editor: EditorState): ModuleEvaluator {
         },
         resolvedParseSuccess,
       )
+      return extendExportsWithInfo(result, toImport)
     }
     return createExecutionScope(
       moduleName,
@@ -239,6 +271,15 @@ function isComponentRegistrationValid(
       type: 'component-name-does-not-match',
       registrationKey: registrationKey,
       componentName: registration.component.originalName ?? 'null',
+    }
+  }
+
+  const { name } = getRequireInfoFromComponent(registration.component)
+  if (name != null && name !== registrationKey) {
+    return {
+      type: 'component-name-does-not-match',
+      registrationKey: registrationKey,
+      componentName: name ?? 'null',
     }
   }
 
