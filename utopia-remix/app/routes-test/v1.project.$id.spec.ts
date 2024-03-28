@@ -119,3 +119,119 @@ describe('getProject', () => {
     })
   })
 })
+
+describe('create new project', () => {
+  beforeAll(async () => {
+    await truncateTables([
+      prisma.projectAccess,
+      prisma.projectCollaborator,
+      prisma.userDetails,
+      prisma.persistentSession,
+      prisma.project,
+      prisma.projectID,
+    ])
+  })
+  afterAll(async () => {
+    jest.restoreAllMocks()
+  })
+  describe('access level', () => {
+    const projectId = 'project1'
+    const userId = 'user1'
+
+    let projectProxy: jest.SpyInstance
+    let setProjectAccessMock: jest.SpyInstance
+    afterEach(async () => {
+      await truncateTables([
+        prisma.projectAccess,
+        prisma.projectCollaborator,
+        prisma.userDetails,
+        prisma.persistentSession,
+        prisma.project,
+        prisma.projectID,
+      ])
+
+      projectProxy.mockClear()
+      setProjectAccessMock.mockClear()
+    })
+
+    beforeEach(async () => {
+      await createTestUser(prisma, { id: userId })
+      await createTestSession(prisma, { key: 'the-key', userId: userId })
+
+      projectProxy = jest.spyOn(proxyServer, 'proxy')
+      setProjectAccessMock = jest.spyOn(permissionsService, 'setProjectAccess')
+    })
+
+    it('should set access level for a new project', async () => {
+      projectProxy.mockResolvedValue({ id: projectId, ownerId: userId })
+      setProjectAccessMock.mockResolvedValue(null)
+      const req = newTestRequest({
+        method: 'PUT',
+        authCookie: 'the-key',
+        search: { accessLevel: 'public' },
+      })
+      const response = await (loader({
+        request: req,
+        params: { id: projectId },
+        context: {},
+      }) as Promise<ApiResponse<{ id: string; projectId: string }>>)
+      const project = await response.json()
+      expect(project).toEqual({ id: projectId, ownerId: userId })
+      expect(setProjectAccessMock).toHaveBeenCalledWith({
+        projectId: projectId,
+        accessLevel: AccessLevel.PUBLIC,
+      })
+    })
+    it('shouldnt set access level for a new project if not provided', async () => {
+      projectProxy.mockResolvedValue({ id: projectId, ownerId: userId })
+      setProjectAccessMock.mockResolvedValue(null)
+      const req = newTestRequest({
+        method: 'PUT',
+        authCookie: 'the-key',
+        search: {},
+      })
+      const response = await (loader({
+        request: req,
+        params: { id: projectId },
+        context: {},
+      }) as Promise<ApiResponse<{ id: string; projectId: string }>>)
+      const project = await response.json()
+      expect(project).toEqual({ id: projectId, ownerId: userId })
+      expect(setProjectAccessMock).not.toHaveBeenCalled()
+    })
+    it('shouldnt set access level for a new project if access level is invalid', async () => {
+      projectProxy.mockResolvedValue({ id: projectId, ownerId: userId })
+      setProjectAccessMock.mockResolvedValue(null)
+      const req = newTestRequest({
+        method: 'PUT',
+        authCookie: 'the-key',
+        search: { accessLevel: 'invalid' },
+      })
+      const response = await (loader({
+        request: req,
+        params: { id: projectId },
+        context: {},
+      }) as Promise<ApiResponse<{ id: string; projectId: string }>>)
+      const project = await response.json()
+      expect(project).toEqual({ id: projectId, ownerId: userId })
+      expect(setProjectAccessMock).not.toHaveBeenCalled()
+    })
+    it('shouldnt set access level if the endpoint is a POST', async () => {
+      projectProxy.mockResolvedValue({ id: projectId, ownerId: userId })
+      setProjectAccessMock.mockResolvedValue(null)
+      const req = newTestRequest({
+        method: 'POST',
+        authCookie: 'the-key',
+        search: { accessLevel: 'public' },
+      })
+      const response = await (loader({
+        request: req,
+        params: { id: projectId },
+        context: {},
+      }) as Promise<ApiResponse<{ id: string; projectId: string }>>)
+      const project = await response.json()
+      expect(project).toEqual({ id: projectId, ownerId: userId })
+      expect(setProjectAccessMock).not.toHaveBeenCalled()
+    })
+  })
+})
