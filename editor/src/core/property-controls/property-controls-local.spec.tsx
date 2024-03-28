@@ -28,7 +28,7 @@ const project = (componentDescriptorFiles: { [filename: string]: string }) =>
       return <div>{label}</div>
     }
     `,
-    ['/src/newmodule.js']: `import React from 'react'
+    ['/src/new-module.js']: `import React from 'react'
     
     export const NewCard = ({ label }) => {
       return <div>{label}</div>
@@ -1321,9 +1321,9 @@ describe('Lifecycle management of registering components', () => {
                 "Card",
               ]
           `)
-      // /src/newmodule is not registered yet
+      // /src/new-module is not registered yet
       expect(
-        renderResult.getEditorState().editor.propertyControlsInfo['/src/newmodule'],
+        renderResult.getEditorState().editor.propertyControlsInfo['/src/new-module'],
       ).toBeUndefined()
       // The Card2 component is registered from the second descriptor file
       expect(Object.keys(renderResult.getEditorState().editor.propertyControlsInfo['/src/card2']))
@@ -1334,7 +1334,7 @@ describe('Lifecycle management of registering components', () => {
           `)
 
       const updatedDescriptorFileContent = `import { Card } from '../src/card'
-      import { NewCard } from '../src/newmodule'
+      import { NewCard } from '../src/new-module'
       
       const Components = {
       '/src/card': {
@@ -1349,7 +1349,7 @@ describe('Lifecycle management of registering components', () => {
           variants: [],
         },
       },
-      '/src/newmodule': {
+      '/src/new-module': {
         NewCard: {
           component: NewCard,
           supportsChildren: false,
@@ -1383,9 +1383,9 @@ describe('Lifecycle management of registering components', () => {
                 "Card",
               ]
           `)
-      // The NewComp from the newly added /src/newmodule from the first descriptor is registered
+      // The NewComp from the newly added /src/new-module from the first descriptor is registered
       expect(
-        Object.keys(renderResult.getEditorState().editor.propertyControlsInfo['/src/newmodule']),
+        Object.keys(renderResult.getEditorState().editor.propertyControlsInfo['/src/new-module']),
       ).toMatchInlineSnapshot(`
               Array [
                 "NewCard",
@@ -1486,7 +1486,7 @@ describe('Lifecycle management of registering components', () => {
           `)
       // The /src/module-to-delete module is deleted
       expect(
-        renderResult.getEditorState().editor.propertyControlsInfo['/src/newmodule'],
+        renderResult.getEditorState().editor.propertyControlsInfo['/src/new-module'],
       ).toBeUndefined()
       // The second descriptor file has not been changed
       expect(Object.keys(renderResult.getEditorState().editor.propertyControlsInfo['/src/card2']))
