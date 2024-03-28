@@ -6,6 +6,7 @@ import { ALLOW, validateProjectAccess } from '../handlers/validators'
 import type { Params } from '@remix-run/react'
 import { createProjectAccess } from '../models/projectAccess.server'
 import { Status } from '../util/statusCodes'
+import { ApiError } from '../util/errors'
 
 export async function loader(args: LoaderFunctionArgs) {
   return handle(args, {
@@ -62,7 +63,6 @@ function accessLevelParamToAccessLevel(accessLevelParam: string | null): AccessL
     case 'collaborative':
       return AccessLevel.COLLABORATIVE
     default:
-      console.error(`Invalid access level: ${accessLevelParam}`)
-      return null
+      throw new ApiError('Invalid access level', Status.BAD_REQUEST)
   }
 }

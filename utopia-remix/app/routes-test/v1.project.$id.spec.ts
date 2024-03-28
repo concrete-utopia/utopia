@@ -203,7 +203,7 @@ describe('create new project', () => {
         accessLevel: AccessLevel.PRIVATE,
       })
     })
-    it('should set access level to PRIVATE for a new project if access level is invalid', async () => {
+    it('should throw an error for a new project if access level is invalid', async () => {
       projectProxy.mockResolvedValue({ id: projectId, ownerId: userId })
       createProjectAccessMock.mockResolvedValue(null)
       const req = newTestRequest({
@@ -211,16 +211,16 @@ describe('create new project', () => {
         authCookie: 'the-key',
         search: { accessLevel: 'invalid' },
       })
-      const response = await (action({
+      const response = (await action({
         request: req,
         params: { id: projectId },
         context: {},
-      }) as Promise<ApiResponse<{ id: string; projectId: string }>>)
-      const project = await response.json()
-      expect(project).toEqual({ id: projectId, ownerId: userId })
-      expect(createProjectAccessMock).toHaveBeenCalledWith({
-        projectId: projectId,
-        accessLevel: AccessLevel.PRIVATE,
+      })) as ApiResponse<{ id: string; projectId: string }>
+      const result = await response.json()
+      expect(result).toEqual({
+        error: 'Error',
+        message: 'Invalid access level',
+        status: Status.BAD_REQUEST,
       })
     })
     it('shouldnt set access level if the endpoint is a POST', async () => {
