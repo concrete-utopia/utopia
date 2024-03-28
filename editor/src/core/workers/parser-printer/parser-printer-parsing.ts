@@ -2231,16 +2231,7 @@ function getAttributeExpression(
   applySteganography: SteganographyMode,
 ): Either<string, WithParserMetadata<JSExpression>> {
   if (TS.isStringLiteral(initializer)) {
-    const comments = getComments(sourceText, initializer)
-    return right(
-      createExpressionValue(
-        sourceFile,
-        initializer,
-        initializer.text,
-        comments,
-        alreadyExistingUIDs,
-      ),
-    )
+    return right(createJSXTextBlock(sourceFile, initializer, initializer.text, alreadyExistingUIDs))
   } else if (TS.isJsxExpression(initializer)) {
     // Need to handle trailing comments on the open brace,
     // passing them down to be the handled elsewhere.
