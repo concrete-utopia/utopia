@@ -778,6 +778,7 @@ function runJSExpression(
     case 'JS_ELEMENT_ACCESS':
     case 'JS_IDENTIFIER':
     case 'JSX_ELEMENT':
+    case 'JSX_TEXT_BLOCK':
       return jsxAttributeToValue(currentScope, block, elementPath, renderContext, uid, codeError)
 
     case 'JSX_MAP_EXPRESSION':

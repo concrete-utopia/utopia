@@ -793,6 +793,7 @@ export function roundAttributeLayoutValues(
       case 'JS_ELEMENT_ACCESS':
       case 'JS_IDENTIFIER':
       case 'JSX_ELEMENT':
+      case 'JSX_TEXT_BLOCK':
         return workingAttributes
       default:
         const _exhaustiveCheck: never = value

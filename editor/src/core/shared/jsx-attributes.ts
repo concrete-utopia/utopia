@@ -102,6 +102,7 @@ export function jsxFunctionAttributeToValue(
     case 'JS_PROPERTY_ACCESS':
     case 'JS_IDENTIFIER':
     case 'JSX_ELEMENT':
+    case 'JSX_TEXT_BLOCK':
       return left(null)
     case 'ATTRIBUTE_FUNCTION_CALL':
       const extractedSimpleValueParameters = traverseEither(
@@ -136,6 +137,7 @@ export function jsxFunctionAttributeToRawValue(
     case 'JS_PROPERTY_ACCESS':
     case 'JS_IDENTIFIER':
     case 'JSX_ELEMENT':
+    case 'JSX_TEXT_BLOCK':
       return left(null)
     case 'ATTRIBUTE_FUNCTION_CALL':
       return right({
@@ -214,6 +216,8 @@ export function innerAttributeToValue(
       return renderCoreElement(attribute, innerPath, inScope, renderContext, uid, codeError)
     case 'ATTRIBUTE_VALUE':
       return attribute.value
+    case 'JSX_TEXT_BLOCK':
+      return attribute.text
     case 'JS_IDENTIFIER':
       if (attribute.name in inScope) {
         return inScope[attribute.name]
@@ -527,6 +531,7 @@ function unsetJSXValueInAttributeAtPath(
         case 'JS_PROPERTY_ACCESS':
         case 'JS_IDENTIFIER':
         case 'JSX_ELEMENT':
+        case 'JSX_TEXT_BLOCK':
           return left('Cannot unset a value set inside a value set from elsewhere.')
         case 'ATTRIBUTE_NESTED_ARRAY':
           if (typeof attributeKey === 'number') {
@@ -644,6 +649,7 @@ function walkAttribute(
     case 'JS_PROPERTY_ACCESS':
     case 'JS_ELEMENT_ACCESS':
     case 'JSX_ELEMENT':
+    case 'JSX_TEXT_BLOCK':
       break
     case 'ATTRIBUTE_NESTED_ARRAY':
       fastForEach(attribute.content, (elem, index) => {

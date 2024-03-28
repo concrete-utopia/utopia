@@ -551,6 +551,7 @@ export type JSExpression =
   | JSExpressionFunctionCall
   | JSXMapExpression
   | JSXElement
+  | JSXTextBlock
 
 export type JSExpressionMapOrOtherJavascript = JSExpressionOtherJavaScript | JSXMapExpression
 
@@ -596,6 +597,7 @@ export function simplifyAttributeIfPossible(attribute: JSExpression): JSExpressi
     case 'JS_ELEMENT_ACCESS':
     case 'JS_PROPERTY_ACCESS':
     case 'JSX_ELEMENT':
+    case 'JSX_TEXT_BLOCK':
       return attribute
     case 'ATTRIBUTE_NESTED_ARRAY':
       let simpleArray: Array<unknown> = []
@@ -684,6 +686,8 @@ export function simplifyAttributeIfPossible(attribute: JSExpression): JSExpressi
 
 export function clearExpressionUniqueIDs(attribute: JSExpression): JSExpression {
   switch (attribute.type) {
+    case 'JSX_TEXT_BLOCK':
+      return jsxTextBlock(attribute.text, '')
     case 'JSX_ELEMENT':
       return jsxElement(attribute.name, '', attribute.props, attribute.children)
     case 'ATTRIBUTE_VALUE':
@@ -813,6 +817,7 @@ export function clearExpressionSourceMaps(attribute: JSExpression): JSExpression
         attribute.children.map((c) => clearJSXElementChildSourceMaps(c)),
       )
     case 'ATTRIBUTE_VALUE':
+    case 'JSX_TEXT_BLOCK':
       return attribute
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
@@ -1133,6 +1138,7 @@ export function attributeReferencesElsewhere(attribute: JSExpression): boolean {
         attribute.children.some(elementReferencesElsewhere)
       )
     case 'ATTRIBUTE_VALUE':
+    case 'JSX_TEXT_BLOCK':
       return false
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
@@ -1283,6 +1289,7 @@ export function getDefinedElsewhereFromAttribute(attribute: JSExpression): Array
     case 'JS_IDENTIFIER':
       return [attribute.name]
     case 'ATTRIBUTE_VALUE':
+    case 'JSX_TEXT_BLOCK':
       return []
     case 'JSX_MAP_EXPRESSION':
       return attribute.definedElsewhere

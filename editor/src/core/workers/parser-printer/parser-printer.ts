@@ -148,6 +148,7 @@ function getJSXAttributeComments(attribute: JSExpression): ParsedComments {
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
     case 'ATTRIBUTE_FUNCTION_CALL':
     case 'JSX_ELEMENT':
+    case 'JSX_TEXT_BLOCK':
       return emptyComments
     default:
       const _exhaustiveCheck: never = attribute
@@ -203,6 +204,8 @@ function jsxAttributeToExpression(
         } else {
           return jsonToExpression(attribute.value)
         }
+      case 'JSX_TEXT_BLOCK':
+        return TS.createLiteral(attribute.text)
       case 'ATTRIBUTE_NESTED_OBJECT':
         const contents = attribute.content
         const objectPropertyExpressions: Array<TS.ObjectLiteralElementLike> = contents.map(

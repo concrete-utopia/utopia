@@ -1172,6 +1172,11 @@ export const JSExpressionKeepDeepEqualityCall: KeepDeepEqualityCall<JSExpression
         return JSXElementKeepDeepEquality(oldAttribute, newAttribute)
       }
       break
+    case 'JSX_TEXT_BLOCK':
+      if (isJSXTextBlock(newAttribute)) {
+        return JSXTextBlockKeepDeepEquality(oldAttribute, newAttribute)
+      }
+      break
     default:
       assertNever(oldAttribute)
   }

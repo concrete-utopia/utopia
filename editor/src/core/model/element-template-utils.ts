@@ -868,6 +868,7 @@ function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttributes): b
         case 'ATTRIBUTE_NOT_FOUND':
           return false
         case 'ATTRIBUTE_VALUE':
+        case 'JSX_TEXT_BLOCK':
           return false
         case 'JSX_MAP_EXPRESSION':
         case 'ATTRIBUTE_OTHER_JAVASCRIPT':
@@ -921,6 +922,7 @@ function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttributes): b
               case 'ATTRIBUTE_NOT_FOUND':
                 return false
               case 'ATTRIBUTE_VALUE':
+              case 'JSX_TEXT_BLOCK':
                 return false
               case 'JSX_MAP_EXPRESSION':
               case 'ATTRIBUTE_OTHER_JAVASCRIPT':
@@ -1049,6 +1051,7 @@ export function propertyComesFromPropsStyle(
     case 'ATTRIBUTE_NOT_FOUND':
       return false
     case 'ATTRIBUTE_VALUE':
+    case 'JSX_TEXT_BLOCK':
       return false
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
@@ -1266,6 +1269,7 @@ export function attributeUsesProperty(
 ): boolean {
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
+    case 'JSX_TEXT_BLOCK':
       return false
     case 'JSX_ELEMENT':
       const fromChildren = attribute.children.some((child) => {
