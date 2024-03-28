@@ -1385,6 +1385,9 @@ export function parseCode(
             highlightBounds = parsed.highlightBounds
           }
         })
+        forEachLeft(nodeParseResult, (errorMessage) => {
+          topLevelElements.push(left(errorMessage))
+        })
         allArbitraryNodes = [
           ...allArbitraryNodes,
           {
