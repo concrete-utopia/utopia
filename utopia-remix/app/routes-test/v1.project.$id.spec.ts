@@ -12,6 +12,7 @@ import {
 import { loader, action } from '../routes/v1.project.$id'
 import * as proxyServer from '../util/proxy.server'
 import * as permissionsService from '../services/permissionsService.server'
+import * as projectAccessModel from '../models/projectAccess.server'
 import { AccessLevel, UserProjectPermission } from '../types'
 import type { ApiResponse } from '../util/api.server'
 import { Status } from '../util/statusCodes'
@@ -159,7 +160,7 @@ describe('create new project', () => {
       await createTestSession(prisma, { key: 'the-key', userId: userId })
 
       projectProxy = jest.spyOn(proxyServer, 'proxy')
-      setProjectAccessMock = jest.spyOn(permissionsService, 'setProjectAccess')
+      setProjectAccessMock = jest.spyOn(projectAccessModel, 'setProjectAccess')
     })
 
     it('should set access level for a new project', async () => {
