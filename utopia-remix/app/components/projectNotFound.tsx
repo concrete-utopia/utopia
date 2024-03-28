@@ -3,11 +3,11 @@ import { useFetcher } from '@remix-run/react'
 import cx from 'classnames'
 import type { UserDetails } from 'prisma-client'
 import React from 'react'
-import { useAppStore } from '../stores/appStore'
 import { colors } from '../styles/sprinkles.css'
 import { when } from '../util/react-conditionals'
 import { Status } from '../util/statusCodes'
 import * as styles from './projectNotFound.css'
+import { useCDNLink } from '../util/cdnLink'
 
 export default function ProjectNotFound({
   projectId,
@@ -43,8 +43,11 @@ export default function ProjectNotFound({
 }
 
 function UnauthorizedPage({ projectId, user }: { projectId: string; user: UserDetails }) {
-  const env = useAppStore((store) => store.env)
-  const hmmPyramidLight = `${env?.UTOPIA_CDN_URL}/editor/hmmm_pyramid_light.png`
+  const cdnLink = useCDNLink()
+  const hmmPyramidLight = React.useMemo(() => {
+    return cdnLink('/editor/hmmm_pyramid_light.png')
+  }, [cdnLink])
+
   const [accessRequested, setAccessRequested] = React.useState(false)
 
   const accessRequestsFetcher = useFetcher()
@@ -98,8 +101,11 @@ function UnauthorizedPage({ projectId, user }: { projectId: string; user: UserDe
 }
 
 function NotFoundPage({ user, projectId }: { user: UserDetails | null; projectId: string | null }) {
-  const env = useAppStore((store) => store.env)
-  const PyramidLight404 = `${env?.UTOPIA_CDN_URL}/editor/404_pyramid_light.png`
+  const cdnLink = useCDNLink()
+  const PyramidLight404 = React.useMemo(() => {
+    return cdnLink('editor/404_pyramid_light.png')
+  }, [cdnLink])
+
   return (
     <>
       <div className={styles.image}>
