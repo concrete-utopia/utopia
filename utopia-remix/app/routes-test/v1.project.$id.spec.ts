@@ -9,7 +9,7 @@ import {
   newTestRequest,
   truncateTables,
 } from '../test-util'
-import { loader } from '../routes/v1.project.$id'
+import { loader, action } from '../routes/v1.project.$id'
 import * as proxyServer from '../util/proxy.server'
 import * as permissionsService from '../services/permissionsService.server'
 import { AccessLevel, UserProjectPermission } from '../types'
@@ -170,7 +170,7 @@ describe('create new project', () => {
         authCookie: 'the-key',
         search: { accessLevel: 'public' },
       })
-      const response = await (loader({
+      const response = await (action({
         request: req,
         params: { id: projectId },
         context: {},
@@ -190,7 +190,7 @@ describe('create new project', () => {
         authCookie: 'the-key',
         search: {},
       })
-      const response = await (loader({
+      const response = await (action({
         request: req,
         params: { id: projectId },
         context: {},
@@ -207,7 +207,7 @@ describe('create new project', () => {
         authCookie: 'the-key',
         search: { accessLevel: 'invalid' },
       })
-      const response = await (loader({
+      const response = await (action({
         request: req,
         params: { id: projectId },
         context: {},
@@ -224,7 +224,7 @@ describe('create new project', () => {
         authCookie: 'the-key',
         search: { accessLevel: 'public' },
       })
-      const response = await (loader({
+      const response = await (action({
         request: req,
         params: { id: projectId },
         context: {},
