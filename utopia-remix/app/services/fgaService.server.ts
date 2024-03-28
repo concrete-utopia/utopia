@@ -162,3 +162,13 @@ function accessLevelToFgaWrites(projectId: string, accessLevel: AccessLevel): Cl
       assertNever(accessLevel)
   }
 }
+
+export async function revokeRelations(projectId: string, userId: string, relations: string[]) {
+  return await Promise.all(
+    relations.map((relation) =>
+      fgaClient.write({
+        deletes: [{ user: `user:${userId}`, relation: relation, object: `project:${projectId}` }],
+      }),
+    ),
+  )
+}
