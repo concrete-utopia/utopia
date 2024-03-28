@@ -87,8 +87,6 @@ describe('create project access', () => {
     await createTestUser(prisma, { id: 'alice' })
     await createTestProject(prisma, { id: 'one', ownerId: 'bob' })
     await createTestProject(prisma, { id: 'two', ownerId: 'bob' })
-    await createTestProjectAccess(prisma, { projectId: 'one', accessLevel: 0 })
-    await createTestProjectAccess(prisma, { projectId: 'two', accessLevel: 1 })
     jest.spyOn(permissionsService, 'setProjectAccess').mockResolvedValue()
   })
   afterEach(async () => {
