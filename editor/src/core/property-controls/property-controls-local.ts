@@ -125,7 +125,7 @@ export function setRequireInfoOnComponent(exported: any, name: string, moduleNam
 
 function extendExportsWithInfo(exports: any, toImport: string): any {
   Object.entries(exports).forEach(([name, exp]) => {
-    if (typeof exp === 'object') {
+    if (typeof exp === 'object' || typeof exp === 'function') {
       try {
         ;(exp as any)[exportedNameSymbol] = name
         ;(exp as any)[moduleNameSymbol] = toImport

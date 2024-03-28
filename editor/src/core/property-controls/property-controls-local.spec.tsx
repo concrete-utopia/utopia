@@ -218,7 +218,7 @@ describe('registered property controls', () => {
 
     expect(srcCardKey).toBeUndefined()
   })
-  it('control registration fails when the imported component does not match the name of registration key', async () => {
+  it('control registration fails when the imported internal component does not match the name of registration key', async () => {
     const renderResult = await renderTestEditorWithModel(
       project({
         ['/utopia/components.utopia.js']: `import { Card } from '../src/card'
@@ -253,6 +253,58 @@ describe('registered property controls', () => {
             fileName: '/utopia/components.utopia.js',
             message:
               'Validation failed: Component name (Card) does not match the registration key (Cart)',
+            passTime: null,
+            severity: 'fatal',
+            source: 'eslint',
+            startColumn: null,
+            startLine: null,
+            type: '',
+          },
+        ],
+      },
+    })
+
+    const srcCardKey = Object.keys(renderResult.getEditorState().editor.propertyControlsInfo).find(
+      (key) => key === '/src/card',
+    )
+
+    expect(srcCardKey).toBeUndefined()
+  })
+  it('control registration fails when the imported external component does not match the name of registration key', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      project({
+        ['/utopia/components.utopia.js']: `import { View } from 'utopia-api'
+        
+        const Components = {
+      'utopia-api': {
+        Vieww: {
+          component: View,
+          supportsChildren: false,
+          properties: { },
+          variants: [ ],
+        },
+      },
+    }
+    
+    export default Components
+  `,
+      }),
+      'await-first-dom-report',
+    )
+    const editorState = renderResult.getEditorState().editor
+
+    expect(editorState.codeEditorErrors).toEqual({
+      buildErrors: {},
+      lintErrors: {
+        '/utopia/components.utopia.js': [
+          {
+            codeSnippet: '',
+            endColumn: null,
+            endLine: null,
+            errorCode: '',
+            fileName: '/utopia/components.utopia.js',
+            message:
+              'Validation failed: Component name (View) does not match the registration key (Vieww)',
             passTime: null,
             severity: 'fatal',
             source: 'eslint',
