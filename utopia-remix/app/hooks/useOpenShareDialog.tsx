@@ -1,5 +1,5 @@
 import React from 'react'
-import { useProjectsStore } from '../store'
+import { useProjectsStore } from '../stores/projectsStore'
 import type { ProjectAccessRequestWithUserDetails } from '../types'
 import { isProjectAccessRequestWithUserDetailsArray } from '../types'
 

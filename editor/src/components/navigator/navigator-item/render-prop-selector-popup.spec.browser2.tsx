@@ -50,7 +50,7 @@ describe('The navigator render prop picker', () => {
     import * as React from 'react'
     import { Storyboard } from 'utopia-api'
 
-    const Card = (props) => {
+    export const Card = (props) => {
       return (
         <div style={props.style}>
           {props.title}
@@ -75,10 +75,12 @@ describe('The navigator render prop picker', () => {
       </Storyboard>
     )
     `,
-    ['/utopia/components.utopia.js']: `
+    ['/utopia/components.utopia.js']: `import { Card } from './storyboard'
+
     const Components = {
       '/utopia/storyboard': {
         Card: {
+          component: Card,
           supportsChildren: true,
           properties: {
             title: {
@@ -315,7 +317,7 @@ describe('The navigator render prop picker', () => {
     import { Storyboard } from 'utopia-api'
     import { FlexRow } from '/src/utils'
 
-    const Card = (props) => {
+    export const Card = (props) => {
       return (
         <div style={props.style}>
           {props.title}

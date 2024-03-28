@@ -115,9 +115,9 @@ interface BaseOperation {
   projectId: string
 }
 
-function baseOperation(project: ProjectListing): BaseOperation {
+function baseOperation(projectId: string): BaseOperation {
   return {
-    projectId: project.proj_id,
+    projectId: projectId,
   }
 }
 
@@ -126,10 +126,10 @@ type OperationRename = BaseOperation & {
   newTitle: string
 }
 
-export function operationRename(project: ProjectListing, newTitle: string): OperationRename {
+export function operationRename(projectId: string, newTitle: string): OperationRename {
   return {
     type: 'rename',
-    ...baseOperation(project),
+    ...baseOperation(projectId),
     newTitle: newTitle,
   }
 }
@@ -138,24 +138,24 @@ type OperationDelete = BaseOperation & {
   type: 'delete'
 }
 
-export function operationDelete(project: ProjectListing): OperationDelete {
-  return { type: 'delete', ...baseOperation(project) }
+export function operationDelete(projectId: string): OperationDelete {
+  return { type: 'delete', ...baseOperation(projectId) }
 }
 
 type OperationDestroy = BaseOperation & {
   type: 'destroy'
 }
 
-export function operationDestroy(project: ProjectListing): OperationDestroy {
-  return { type: 'destroy', ...baseOperation(project) }
+export function operationDestroy(projectId: string): OperationDestroy {
+  return { type: 'destroy', ...baseOperation(projectId) }
 }
 
 type OperationRestore = BaseOperation & {
   type: 'restore'
 }
 
-export function operationRestore(project: ProjectListing): OperationRestore {
-  return { type: 'restore', ...baseOperation(project) }
+export function operationRestore(projectId: string): OperationRestore {
+  return { type: 'restore', ...baseOperation(projectId) }
 }
 
 type OperationChangeAccess = BaseOperation & {
@@ -164,10 +164,10 @@ type OperationChangeAccess = BaseOperation & {
 }
 
 export function operationChangeAccess(
-  project: ProjectListing,
+  projectId: string,
   newAccessLevel: AccessLevel,
 ): OperationChangeAccess {
-  return { type: 'changeAccess', ...baseOperation(project), newAccessLevel: newAccessLevel }
+  return { type: 'changeAccess', ...baseOperation(projectId), newAccessLevel: newAccessLevel }
 }
 
 type OperationApproveAccessRequest = BaseOperation & {
@@ -176,10 +176,10 @@ type OperationApproveAccessRequest = BaseOperation & {
 }
 
 export function operationApproveAccessRequest(
-  project: ProjectListing,
+  projectId: string,
   tokenId: string,
 ): OperationApproveAccessRequest {
-  return { type: 'approveAccessRequest', ...baseOperation(project), tokenId: tokenId }
+  return { type: 'approveAccessRequest', ...baseOperation(projectId), tokenId: tokenId }
 }
 
 export type Operation =

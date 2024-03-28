@@ -6,7 +6,7 @@ import { when } from '~/util/react-conditionals'
 import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
 import { useOpenShareDialog } from '../hooks/useOpenShareDialog'
 import { SLUGIFY_OPTIONS } from '../routes/internal.projects.$id.rename'
-import { useProjectsStore } from '../store'
+import { useProjectsStore } from '../stores/projectsStore'
 import type { ProjectListing } from '../types'
 import { operationDelete, operationDestroy, operationRename, operationRestore } from '../types'
 import { assertNever } from '../util/assertNever'
@@ -44,7 +44,7 @@ export const ProjectActionsMenu = React.memo(
     const deleteProject = React.useCallback(
       (projectId: string) => {
         deleteFetcher.submit(
-          operationDelete(project),
+          operationDelete(project.proj_id),
           {},
           { method: 'POST', action: `/internal/projects/${projectId}/delete` },
         )
@@ -56,7 +56,7 @@ export const ProjectActionsMenu = React.memo(
         const ok = window.confirm('Are you sure? The project contents will be deleted permanently.')
         if (ok) {
           destroyFetcher.submit(
-            operationDestroy(project),
+            operationDestroy(project.proj_id),
             {},
             { method: 'POST', action: `/internal/projects/${projectId}/destroy` },
           )
@@ -68,7 +68,7 @@ export const ProjectActionsMenu = React.memo(
     const restoreProject = React.useCallback(
       (projectId: string) => {
         restoreFetcher.submit(
-          operationRestore(project),
+          operationRestore(project.proj_id),
           {},
           { method: 'POST', action: `/internal/projects/${projectId}/restore` },
         )
@@ -79,7 +79,7 @@ export const ProjectActionsMenu = React.memo(
     const renameProject = React.useCallback(
       (projectId: string, newTitle: string) => {
         renameFetcher.submit(
-          operationRename(project, slugify(newTitle, SLUGIFY_OPTIONS)),
+          operationRename(project.proj_id, slugify(newTitle, SLUGIFY_OPTIONS)),
           { title: newTitle },
           { method: 'POST', action: `/internal/projects/${projectId}/rename` },
         )
