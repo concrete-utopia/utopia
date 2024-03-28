@@ -275,6 +275,7 @@ function isComponentRegistrationValid(
     return { type: 'component-undefined', registrationKey: registrationKey }
   }
 
+  // check validity of internal component
   if (isComponentRendererComponent(component)) {
     if (component.originalName !== registrationKey) {
       return {
@@ -291,8 +292,10 @@ function isComponentRegistrationValid(
         moduleName: moduleName,
       }
     }
+    return { type: 'valid' }
   }
 
+  // check validity of external component
   const { name, moduleName } = getRequireInfoFromComponent(component)
   if (name != null && name !== registrationKey) {
     return {
