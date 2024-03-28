@@ -1,32 +1,49 @@
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import { MetadataUtils } from '../model/element-metadata-utils'
-import type { UtopiaJSXComponent } from '../shared/element-template'
+import type {
+  JSElementAccess,
+  JSExpression,
+  JSIdentifier,
+  JSPropertyAccess,
+  UtopiaJSXComponent,
+} from '../shared/element-template'
 import { isJSXElement, type ElementInstanceMetadataMap } from '../shared/element-template'
 import { forceNotNull } from '../shared/optional-utils'
-import type { ElementPath, ElementPropertyPath, PropertyPath } from '../shared/project-file-types'
+import type {
+  ElementPath,
+  ElementPropertyPath,
+  PropertyPath,
+  PropertyPathPart,
+} from '../shared/project-file-types'
 import type { Either } from '../shared/either'
-import { isRight, left, mapEither, right } from '../shared/either'
+import { isLeft, isRight, left, mapEither, right } from '../shared/either'
 import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
 import invariant from '../../third-party/remix/invariant'
-import { getJSXAttributesAtPath } from '../shared/jsx-attribute-utils'
+import {
+  getJSExpressionAtPathParts,
+  getJSXAttributesAtPath,
+  jsxSimpleAttributeToValue,
+  setJSXValueInAttributeAtPathParts,
+} from '../shared/jsx-attribute-utils'
 import { withUnderlyingTarget } from '../../components/editor/store/editor-state'
 import { findContainingComponentForPath } from '../model/element-template-utils'
 import { create } from '../../components/template-property-path'
+import { assertNever } from '../shared/utils'
 
-export type DatPath = Array<string> // this placeholder type will evolve
+export type DataPath = Array<string>
 
 export type DataTracingToLiteralAttribute = {
   type: 'literal-attribute'
   elementPath: ElementPath
   property: PropertyPath
-  dataPathIntoAttribute: DatPath
+  dataPathIntoAttribute: Array<string | number>
 }
 
 export function dataTracingToLiteralAttribute(
   elementPath: ElementPath,
   property: PropertyPath,
-  dataPathIntoAttribute: DatPath,
+  dataPathIntoAttribute: Array<string | number>,
 ): DataTracingToLiteralAttribute {
   return {
     type: 'literal-attribute',
@@ -57,10 +74,61 @@ function findContainingComponentForElementPath(
   })
 }
 
+function processJSPropertyAccessors(
+  expression: JSExpression,
+): Either<string, { path: DataPath; originalIdentifier: JSIdentifier | null }> {
+  switch (expression.type) {
+    case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'ATTRIBUTE_NESTED_ARRAY':
+    case 'ATTRIBUTE_NESTED_OBJECT':
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+    case 'ATTRIBUTE_VALUE':
+    case 'JSX_ELEMENT':
+    case 'JSX_MAP_EXPRESSION':
+      return left(`encountered unsupported expression type ${expression.type}`)
+    case 'JS_IDENTIFIER': {
+      return right({ path: [], originalIdentifier: expression })
+    }
+    case 'JS_ELEMENT_ACCESS': {
+      const elementToSimpleValue = jsxSimpleAttributeToValue(expression.onValue)
+      if (isLeft(elementToSimpleValue)) {
+        return left(
+          `Cannot convert JS_ELEMENT_ACCESS element into simple value, reason: ${elementToSimpleValue.value}`,
+        )
+      }
+
+      const elementValue = elementToSimpleValue.value
+      if (!(typeof elementValue === 'string' || typeof elementValue === 'number')) {
+        return left(
+          `Cannot convert JS_ELEMENT_ACCESS element into simple value, encountered: ${elementValue}`,
+        )
+      }
+
+      return mapEither((resultSoFar) => {
+        return {
+          path: [...resultSoFar.path, `${elementValue}`],
+          originalIdentifier: resultSoFar.originalIdentifier,
+        }
+      }, processJSPropertyAccessors(expression.onValue))
+    }
+    case 'JS_PROPERTY_ACCESS':
+      return mapEither((resultSoFar) => {
+        return {
+          path: [...resultSoFar.path, expression.property],
+          originalIdentifier: resultSoFar.originalIdentifier,
+        }
+      }, processJSPropertyAccessors(expression.onValue))
+
+    default:
+      assertNever(expression)
+  }
+}
+
 export function traceDataFromProp(
   startFrom: ElementPropertyPath,
   metadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
+  pathDrillSoFar: Array<string>,
 ): DataTracingResult {
   const elementHoldingProp = forceNotNull(
     'traceDataFromProp did not find element at path',
@@ -90,21 +158,47 @@ export function traceDataFromProp(
     // bingo
     return dataTracingToLiteralAttribute(startFrom.elementPath, startFrom.propertyPath, [])
   }
-  if (propDeclaration.attribute.type === 'JS_IDENTIFIER') {
-    // for JSIdentifier we want to make sure the identifier points to a prop
+  if (propDeclaration.attribute.type === 'ATTRIBUTE_NESTED_OBJECT') {
+    const partOfObject = getJSExpressionAtPathParts(propDeclaration.attribute, pathDrillSoFar, 0)
+    // TODO we may want to actually do something with this partOfObject, for validation?
+
+    return dataTracingToLiteralAttribute(
+      startFrom.elementPath,
+      startFrom.propertyPath,
+      pathDrillSoFar,
+    )
+  }
+  if (
+    propDeclaration.attribute.type === 'JS_IDENTIFIER' ||
+    propDeclaration.attribute.type === 'JS_ELEMENT_ACCESS' ||
+    propDeclaration.attribute.type === 'JS_PROPERTY_ACCESS'
+  ) {
+    // first, let's try to find the jsIdentifier at the root
+    const dataPath = processJSPropertyAccessors(propDeclaration.attribute)
+
+    if (isLeft(dataPath)) {
+      return dataTracingFailed(dataPath.value)
+    }
+
+    const identifier = dataPath.value.originalIdentifier
+
+    if (identifier == null) {
+      return dataTracingFailed(
+        'could not find identifier at the root of property access expression',
+      )
+    }
 
     // let's try to match the name to the containing component's props!
-    const foundPropSameName = componentHoldingElement.propsUsed.includes(
-      propDeclaration.attribute.name,
-    )
+    const foundPropSameName = componentHoldingElement.propsUsed.includes(identifier.name)
 
     if (foundPropSameName) {
       // ok, so let's now travel to the containing component's instance in the metadata and continue the lookup!
       const parentComponentInstance = EP.getContainingComponent(startFrom.elementPath)
       return traceDataFromProp(
-        create(parentComponentInstance, PP.create(propDeclaration.attribute.name)),
+        create(parentComponentInstance, PP.create(identifier.name)),
         metadata,
         projectContents,
+        dataPath.value.path,
       )
     }
   }

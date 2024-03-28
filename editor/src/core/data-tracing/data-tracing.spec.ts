@@ -8,6 +8,7 @@ import * as EPP from '../../components/template-property-path'
 import { BakedInStoryboardVariableName } from '../model/scene-utils'
 import { right } from '../shared/either'
 import * as EP from '../shared/element-path'
+import { jsIdentifier } from '../shared/element-template'
 import type { ElementPath } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import { dataTracingToLiteralAttribute, traceDataFromProp } from './data-tracing'
@@ -29,6 +30,7 @@ describe('Data Tracing', () => {
       EPP.create(EP.fromString('sb/app:my-component'), PP.create('title')),
       editor.getEditorState().editor.jsxMetadata,
       editor.getEditorState().editor.projectContents,
+      [],
     )
 
     expect(traceResult).toEqual(
@@ -56,10 +58,41 @@ describe('Data Tracing', () => {
       EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
       editor.getEditorState().editor.jsxMetadata,
       editor.getEditorState().editor.projectContents,
+      [],
     )
 
     expect(traceResult).toEqual(
       dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('title'), []),
+    )
+  })
+
+  it('Traces back a prop to an object literal jsx attribute with a data path', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithStoryboard(`
+      function MyComponent({doc}) {
+        return <div data-uid='component-root' title={doc.title} />
+      }
+
+      function App() {
+        return <MyComponent data-uid='my-component' doc={{title: 'string literal here'}} />
+      }
+      `),
+      'await-first-dom-report',
+    )
+
+    await focusOnComponentForTest(editor, EP.fromString('sb/app:my-component'))
+
+    const traceResult = traceDataFromProp(
+      EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
+      editor.getEditorState().editor.jsxMetadata,
+      editor.getEditorState().editor.projectContents,
+      [],
+    )
+
+    expect(traceResult).toEqual(
+      dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('doc'), [
+        'title',
+      ]),
     )
   })
 })
