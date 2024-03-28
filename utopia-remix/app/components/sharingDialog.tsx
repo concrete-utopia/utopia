@@ -6,14 +6,18 @@ import {
   LockClosedIcon,
   Link2Icon,
   PersonIcon,
+  CheckIcon,
+  ChevronDownIcon,
+  MinusCircledIcon,
 } from '@radix-ui/react-icons'
+import type { UpdateAccessRequestAction } from '../types'
 import {
   asAccessLevel,
-  operationApproveAccessRequest,
   operationChangeAccess,
   type ProjectListing,
   AccessRequestStatus,
   type ProjectAccessRequestWithUserDetails,
+  operationUpdateAccessRequest,
 } from '../types'
 import { AccessLevel } from '../types'
 import { useFetcherWithOperation } from '../hooks/useFetcherWithOperation'
@@ -30,6 +34,7 @@ import { sprinkles } from '../styles/sprinkles.css'
 import { Spinner } from './spinner'
 import { isLikeApiError } from '../util/errors'
 import { UserAvatar } from './userAvatar'
+import { assertNever } from '../util/assertNever'
 
 export const SharingDialogWrapper = React.memo(
   ({ project }: { project: ProjectListing | null }) => {
@@ -147,22 +152,6 @@ type AccessRequestListProps = {
 const AccessRequestsList = React.memo(({ projectId, accessLevel }: AccessRequestListProps) => {
   const accessRequests = useProjectsStore((store) => store.sharingProjectAccessRequests)
 
-  const approveAccessRequestFetcher = useFetcherWithOperation(projectId, 'approveAccessRequest')
-
-  const approveAccessRequest = React.useCallback(
-    (tokenId: string) => {
-      approveAccessRequestFetcher.submit(
-        operationApproveAccessRequest(projectId, tokenId),
-        { tokenId: tokenId },
-        {
-          method: 'POST',
-          action: `/internal/projects/${projectId}/access/request/${tokenId}/approve`,
-        },
-      )
-    },
-    [approveAccessRequestFetcher, projectId],
-  )
-
   const hasGonePrivate = React.useMemo(() => {
     return accessRequests.requests.length > 0 && accessLevel === AccessLevel.PRIVATE
   }, [accessLevel, accessRequests])
@@ -192,7 +181,6 @@ const AccessRequestsList = React.memo(({ projectId, accessLevel }: AccessRequest
                 <AccessRequests
                   projectId={projectId}
                   projectAccessLevel={accessLevel}
-                  approveAccessRequest={approveAccessRequest}
                   accessRequests={accessRequests.requests}
                 />
               </Flex>
@@ -234,23 +222,59 @@ const OwnerCollaboratorRow = React.memo(() => {
 })
 OwnerCollaboratorRow.displayName = 'OwnerCollaboratorRow'
 
-function AccessRequests({
-  projectId,
-  projectAccessLevel,
-  approveAccessRequest,
-  accessRequests,
-}: {
+function AccessRequests(props: {
   projectId: string
   projectAccessLevel: AccessLevel
-  approveAccessRequest: (projectId: string, tokenId: string) => void
   accessRequests: ProjectAccessRequestWithUserDetails[]
 }) {
-  const onApprove = React.useCallback(
-    (token: string) => () => {
-      approveAccessRequest(projectId, token)
+  const { projectId, projectAccessLevel } = props
+
+  // the access requests, including in-flight optimistic statuses
+  const [accessRequests, setAccessRequests] = React.useState(props.accessRequests)
+  // the last successfully-obtained access requests that can be used to roll-back in case of issues when updating requests
+  const [stableAccessRequests, setStableAccessRequests] = React.useState(props.accessRequests)
+
+  const updateAccessRequestFetcher = useFetcherWithOperation(projectId, 'updateAccessRequest')
+  const onUpdateAccessRequest = React.useCallback(
+    (token: string, action: UpdateAccessRequestAction) => () => {
+      setStableAccessRequests(accessRequests)
+      setAccessRequests((reqs) => {
+        return action === 'destroy'
+          ? reqs.filter((r) => r.token !== token)
+          : reqs.map((r) => {
+              if (r.token === token) {
+                switch (action) {
+                  case 'approve':
+                    return { ...r, status: AccessRequestStatus.APPROVED }
+                  case 'reject':
+                    return { ...r, status: AccessRequestStatus.REJECTED }
+                  default:
+                    assertNever(action)
+                }
+              }
+              return r
+            })
+      })
+      updateAccessRequestFetcher.submit(
+        operationUpdateAccessRequest(projectId, token, action),
+        { tokenId: token },
+        {
+          method: 'POST',
+          action: `/internal/projects/${projectId}/access/request/${token}/${action}`,
+        },
+      )
     },
-    [projectId, approveAccessRequest],
+    [updateAccessRequestFetcher, projectId, accessRequests],
   )
+  const resetAccessRequests = React.useCallback(
+    (data: unknown) => {
+      if (isLikeApiError(data)) {
+        setAccessRequests(stableAccessRequests)
+      }
+    },
+    [stableAccessRequests],
+  )
+  useFetcherDataUnkown(updateAccessRequestFetcher, resetAccessRequests)
 
   const isCollaborative = React.useMemo(() => {
     return projectAccessLevel === AccessLevel.COLLABORATIVE
@@ -258,10 +282,7 @@ function AccessRequests({
 
   return accessRequests
     .sort((a, b) => {
-      if (a.status !== b.status) {
-        return a.status - b.status
-      }
-      return moment(a.updated_at).unix() - moment(b.updated_at).unix()
+      return moment(a.created_at).unix() - moment(b.created_at).unix()
     })
     .map((request) => {
       const user = request.User
@@ -270,13 +291,6 @@ function AccessRequests({
       }
 
       const status = request.status
-      const canBeApproved = isCollaborative && status === AccessRequestStatus.PENDING
-      const color =
-        status === AccessRequestStatus.PENDING
-          ? 'gray'
-          : status === AccessRequestStatus.APPROVED
-          ? 'green'
-          : 'red'
       return (
         <CollaboratorRow
           key={request.token}
@@ -284,22 +298,80 @@ function AccessRequests({
           name={user.name ?? user.email ?? user.user_id}
           isDisabled={!isCollaborative}
         >
-          {canBeApproved ? (
-            <Button size='1' variant='ghost' onClick={onApprove(request.token)}>
-              Approve
-            </Button>
+          {isCollaborative ? (
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger>
+                {status === AccessRequestStatus.PENDING ? (
+                  <Button size='1' color='amber' radius='full'>
+                    Requests Access
+                    <ChevronDownIcon />
+                  </Button>
+                ) : status === AccessRequestStatus.APPROVED ? (
+                  <Button size='1' radius='medium' variant='ghost' color='gray' highContrast={true}>
+                    Collaborator
+                    <ChevronDownIcon />
+                  </Button>
+                ) : status === AccessRequestStatus.REJECTED ? (
+                  <Button size='1' radius='medium' variant='ghost' color='red'>
+                    Denied Access
+                    <ChevronDownIcon />
+                  </Button>
+                ) : null}
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Content>
+                {when(
+                  status !== AccessRequestStatus.REJECTED,
+                  <DropdownMenu.Item
+                    style={{ height: 28 }}
+                    color={'red'}
+                    onClick={onUpdateAccessRequest(request.token, 'reject')}
+                  >
+                    <Flex align='center' gap='2'>
+                      <Cross2Icon />
+                      <Text size='1'>Block</Text>
+                    </Flex>
+                  </DropdownMenu.Item>,
+                )}
+                {when(
+                  status !== AccessRequestStatus.APPROVED,
+                  <DropdownMenu.Item
+                    style={{ height: 28 }}
+                    onClick={onUpdateAccessRequest(request.token, 'approve')}
+                  >
+                    <Flex align='center' gap='2'>
+                      <CheckIcon />
+                      <Text size='1'>Allow To Collaborate</Text>
+                    </Flex>
+                  </DropdownMenu.Item>,
+                )}
+                <DropdownMenu.Separator />
+                <DropdownMenu.Item
+                  style={{ height: 28 }}
+                  color='gray'
+                  onClick={onUpdateAccessRequest(request.token, 'destroy')}
+                >
+                  <Flex align='center' gap='2'>
+                    <MinusCircledIcon />
+                    <Text size='1'>
+                      {status === AccessRequestStatus.PENDING
+                        ? 'Delete Request'
+                        : 'Remove From Project'}
+                    </Text>
+                  </Flex>
+                </DropdownMenu.Item>
+              </DropdownMenu.Content>
+            </DropdownMenu.Root>
           ) : (
             <Text
               size='1'
-              color={color}
               style={{
                 fontStyle: !isCollaborative ? 'italic' : 'normal',
                 cursor: 'default',
               }}
             >
               {when(status === AccessRequestStatus.PENDING, 'Pending')}
-              {when(status === AccessRequestStatus.APPROVED, 'Approved')}
-              {when(status === AccessRequestStatus.REJECTED, 'Rejected')}
+              {when(status === AccessRequestStatus.APPROVED, 'Collaborator')}
+              {when(status === AccessRequestStatus.REJECTED, 'Blocked')}
             </Text>
           )}
         </CollaboratorRow>

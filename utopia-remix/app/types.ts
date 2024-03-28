@@ -170,16 +170,25 @@ export function operationChangeAccess(
   return { type: 'changeAccess', ...baseOperation(projectId), newAccessLevel: newAccessLevel }
 }
 
-type OperationApproveAccessRequest = BaseOperation & {
-  type: 'approveAccessRequest'
+export type UpdateAccessRequestAction = 'approve' | 'reject' | 'destroy'
+
+type OperationUpdateAccessRequest = BaseOperation & {
+  type: 'updateAccessRequest'
   tokenId: string
+  action: UpdateAccessRequestAction
 }
 
-export function operationApproveAccessRequest(
+export function operationUpdateAccessRequest(
   projectId: string,
   tokenId: string,
-): OperationApproveAccessRequest {
-  return { type: 'approveAccessRequest', ...baseOperation(projectId), tokenId: tokenId }
+  action: UpdateAccessRequestAction,
+): OperationUpdateAccessRequest {
+  return {
+    type: 'updateAccessRequest',
+    ...baseOperation(projectId),
+    tokenId: tokenId,
+    action: action,
+  }
 }
 
 export type Operation =
@@ -188,7 +197,7 @@ export type Operation =
   | OperationDestroy
   | OperationRestore
   | OperationChangeAccess
-  | OperationApproveAccessRequest
+  | OperationUpdateAccessRequest
 
 export type OperationType =
   | 'rename'
@@ -196,13 +205,13 @@ export type OperationType =
   | 'destroy'
   | 'restore'
   | 'changeAccess'
-  | 'approveAccessRequest'
+  | 'updateAccessRequest'
 
 export function areBaseOperationsEquivalent(a: Operation, b: Operation): boolean {
   return a.projectId === b.projectId && a.type === b.type
 }
 
-export function getOperationDescription(op: Operation, project: ProjectListing) {
+export function getOperationDescription(op: Operation, project: ProjectListing): string {
   switch (op.type) {
     case 'delete':
       return `Deleting project ${project.title}`
@@ -214,8 +223,18 @@ export function getOperationDescription(op: Operation, project: ProjectListing) 
       return `Restoring project ${project.title}`
     case 'changeAccess':
       return `Changing access level of project ${project.title}`
-    case 'approveAccessRequest':
-      return `Granting access request to project ${project.title}`
+    case 'updateAccessRequest':
+      switch (op.action) {
+        case 'approve':
+          return `Granting access request to project ${project.title}`
+        case 'reject':
+          return `Rejecting access request to project ${project.title}`
+        case 'destroy':
+          return `Deleting access request to project ${project.title}`
+        default:
+          assertNever(op.action)
+      }
+      break // required for typecheck
     default:
       assertNever(op)
   }
