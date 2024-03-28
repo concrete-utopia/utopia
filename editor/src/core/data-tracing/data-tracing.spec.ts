@@ -10,7 +10,7 @@ import { right } from '../shared/either'
 import * as EP from '../shared/element-path'
 import type { ElementPath } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
-import { traceDataFromProp } from './data-tracing'
+import { dataTracingToLiteralAttribute, traceDataFromProp } from './data-tracing'
 
 describe('Data Tracing', () => {
   it('Pointing it at a string literal prop just returns the string literal prop all right', async () => {
@@ -32,7 +32,7 @@ describe('Data Tracing', () => {
     )
 
     expect(traceResult).toEqual(
-      right([EPP.create(EP.fromString('sb/app:my-component'), PP.create('title'))]),
+      dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('title'), []),
     )
   })
 
@@ -59,10 +59,7 @@ describe('Data Tracing', () => {
     )
 
     expect(traceResult).toEqual(
-      right([
-        EPP.create(EP.fromString('sb/app:my-component'), PP.create('title')),
-        EPP.create(EP.fromString('sb/app:my-component:component-root'), PP.create('title')),
-      ]),
+      dataTracingToLiteralAttribute(EP.fromString('sb/app:my-component'), PP.create('title'), []),
     )
   })
 })
