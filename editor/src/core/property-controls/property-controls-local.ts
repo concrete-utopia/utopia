@@ -48,6 +48,7 @@ import {
   foldEither,
   forEachRight,
   isLeft,
+  isRight,
   left,
   mapEither,
   right,
@@ -194,7 +195,10 @@ export function createModuleEvaluator(editor: EditorState): ModuleEvaluator {
         },
         resolvedParseSuccess,
       )
-      return extendExportsWithInfo(result, toImport)
+      const absoluteFilenameOrPackage = isRight(filePathResolveResult)
+        ? filePathResolveResult.value
+        : toImport
+      return extendExportsWithInfo(result, absoluteFilenameOrPackage)
     }
     return createExecutionScope(
       moduleName,
