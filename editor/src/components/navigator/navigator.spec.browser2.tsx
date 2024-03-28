@@ -841,7 +841,7 @@ import {
   Scene,
 } from 'utopia-api'
 
-function Card({ header, children }) {
+export function Card({ header, children }) {
   return (
     <div data-uid='root'>
       <h2>{header}</h2>
@@ -895,9 +895,12 @@ export var storyboard = (
   </Storyboard>
 )
 `,
-    ['/utopia/components.utopia.js']: `const Components = {
+    ['/utopia/components.utopia.js']: `import { Card } from './storyboard'
+    
+    const Components = {
   '/utopia/storyboard': {
     Card: {
+      component: Card,
       properties: {
         header: {
           control: 'jsx',
@@ -930,7 +933,7 @@ import {
   Storyboard,
   Scene,
 } from 'utopia-api'
-function Card({ header, children }) {
+export function Card({ header, children }) {
   return (
     <div data-uid='root'>
       <h2>{header}</h2>
@@ -983,11 +986,13 @@ export var storyboard = (
 )
 `,
     ['/utopia/components.utopia.js']: `
+    import { Card } from './storyboard'
     import { ExportedForTheSakeOfExportingIt } from "../src/header"
     
     const Components = {
       '/utopia/storyboard': {
         Card: {
+          component: Card,
           properties: {
             [ExportedForTheSakeOfExportingIt]: {
               control: 'jsx',

@@ -1,6 +1,6 @@
 import { useFetcher } from '@remix-run/react'
 import React from 'react'
-import { useProjectsStore } from '../store'
+import { useProjectsStore } from '../stores/projectsStore'
 import type { Operation, OperationType } from '../types'
 
 export const operationFetcherKeyPrefix = 'operation-'

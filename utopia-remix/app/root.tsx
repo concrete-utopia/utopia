@@ -1,6 +1,8 @@
 /* eslint-disable react/react-in-jsx-scope */
 // FIXME Move the eslint and prettier config files and scripts to the root level
 
+import { Theme } from '@radix-ui/themes'
+import radixStyle from '@radix-ui/themes/styles.css'
 import { cssBundleHref } from '@remix-run/css-bundle'
 import type { HeadersFunction, LinksFunction } from '@remix-run/node'
 import {
@@ -14,17 +16,15 @@ import {
   useLoaderData,
   useRouteError,
 } from '@remix-run/react'
+import React from 'react'
 import { BrowserEnvironment } from './env.server'
+import { useIsDarkMode } from './hooks/useIsDarkMode'
+import './normalize.css'
+import { AppContext, createAppStore } from './stores/appStore'
 import { styles } from './styles/styles.css'
 import type { ErrorWithStatus } from './util/errors'
 import { isErrorWithStatus } from './util/errors'
 import { Status, getStatusName } from './util/statusCodes'
-import radixStyle from '@radix-ui/themes/styles.css'
-import './normalize.css'
-import { Theme } from '@radix-ui/themes'
-import { useIsDarkMode } from './hooks/useIsDarkMode'
-import { ProjectsContext, createProjectsStore } from './store'
-import React from 'react'
 
 export const links: LinksFunction = () => [
   ...(cssBundleHref ? [{ rel: 'stylesheet', href: cssBundleHref }] : []),
@@ -47,7 +47,7 @@ export default function App() {
   const data = useLoaderData<typeof loader>()
   const isDarkMode = useIsDarkMode()
 
-  const store = React.useRef(createProjectsStore({ env: data.env })).current
+  const store = React.useRef(createAppStore({ env: data.env })).current
 
   const theme = isDarkMode ? 'dark' : 'light'
 
@@ -62,11 +62,11 @@ export default function App() {
         <Links />
       </head>
       <body className={styles.root}>
-        <ProjectsContext.Provider value={store}>
+        <AppContext.Provider value={store}>
           <Theme appearance={theme} accentColor='blue' panelBackground='solid'>
             <Outlet />
           </Theme>
-        </ProjectsContext.Provider>
+        </AppContext.Provider>
         <ScrollRestoration />
         <Scripts />
         <LiveReload />
